@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Torsional degrees of freedom &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -370,6 +371,43 @@ Hamiltonian matrix in J/mol.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Torsional degrees of freedom</a><ul>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor"><code class="docutils literal notranslate"><span class="pre">HinderedRotor</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.as_dict"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.as_dict()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.barrier"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.barrier</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.energies"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.energies</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.fit_cosine_potential_to_data"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.fit_cosine_potential_to_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.fit_fourier_potential_to_data"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.fit_fourier_potential_to_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.fourier"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.fourier</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.frequency"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.frequency</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_density_of_states"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_density_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_enthalpy"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_enthalpy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_entropy"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_entropy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_frequency"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_frequency()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_hamiltonian"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_hamiltonian()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_heat_capacity"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_level_degeneracy"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_level_degeneracy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_level_energy"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_level_energy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_partition_function"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_partition_function()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_potential"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_potential()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.get_sum_of_states"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.get_sum_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.inertia"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.inertia</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.make_object"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.make_object()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.quantum"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.quantum</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.rotationalConstant"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.rotationalConstant</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.semiclassical"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.semiclassical</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.solve_schrodinger_equation"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.solve_schrodinger_equation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.HinderedRotor.symmetry"><code class="docutils literal notranslate"><span class="pre">HinderedRotor.symmetry</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -437,7 +475,7 @@ Hamiltonian matrix in J/mol.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

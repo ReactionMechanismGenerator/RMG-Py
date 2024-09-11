@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.qm.molecule &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -354,6 +355,50 @@ then we start to use the crude coordinates.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.qm.molecule</a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry"><code class="docutils literal notranslate"><span class="pre">Geometry</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.generate_rdkit_geometries"><code class="docutils literal notranslate"><span class="pre">Geometry.generate_rdkit_geometries()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.get_crude_mol_file_path"><code class="docutils literal notranslate"><span class="pre">Geometry.get_crude_mol_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.get_file_path"><code class="docutils literal notranslate"><span class="pre">Geometry.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.get_refined_mol_file_path"><code class="docutils literal notranslate"><span class="pre">Geometry.get_refined_mol_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.rd_build"><code class="docutils literal notranslate"><span class="pre">Geometry.rd_build()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.rd_embed"><code class="docutils literal notranslate"><span class="pre">Geometry.rd_embed()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.save_coordinates_from_qm_data"><code class="docutils literal notranslate"><span class="pre">Geometry.save_coordinates_from_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.unique_id"><code class="docutils literal notranslate"><span class="pre">Geometry.unique_id</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.Geometry.unique_id_long"><code class="docutils literal notranslate"><span class="pre">Geometry.unique_id_long</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule"><code class="docutils literal notranslate"><span class="pre">QMMolecule</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.calculate_chirality_correction"><code class="docutils literal notranslate"><span class="pre">QMMolecule.calculate_chirality_correction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.calculate_thermo_data"><code class="docutils literal notranslate"><span class="pre">QMMolecule.calculate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.check_paths"><code class="docutils literal notranslate"><span class="pre">QMMolecule.check_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.check_ready"><code class="docutils literal notranslate"><span class="pre">QMMolecule.check_ready()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.create_geometry"><code class="docutils literal notranslate"><span class="pre">QMMolecule.create_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.determine_point_group"><code class="docutils literal notranslate"><span class="pre">QMMolecule.determine_point_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.generate_qm_data"><code class="docutils literal notranslate"><span class="pre">QMMolecule.generate_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.generate_thermo_data"><code class="docutils literal notranslate"><span class="pre">QMMolecule.generate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.get_augmented_inchi_key"><code class="docutils literal notranslate"><span class="pre">QMMolecule.get_augmented_inchi_key()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.get_file_path"><code class="docutils literal notranslate"><span class="pre">QMMolecule.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.get_mol_file_path_for_calculation"><code class="docutils literal notranslate"><span class="pre">QMMolecule.get_mol_file_path_for_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.get_thermo_file_path"><code class="docutils literal notranslate"><span class="pre">QMMolecule.get_thermo_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.initialize"><code class="docutils literal notranslate"><span class="pre">QMMolecule.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.input_file_path"><code class="docutils literal notranslate"><span class="pre">QMMolecule.input_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.load_thermo_data"><code class="docutils literal notranslate"><span class="pre">QMMolecule.load_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.max_attempts"><code class="docutils literal notranslate"><span class="pre">QMMolecule.max_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.output_file_path"><code class="docutils literal notranslate"><span class="pre">QMMolecule.output_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.parse"><code class="docutils literal notranslate"><span class="pre">QMMolecule.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.save_thermo_data"><code class="docutils literal notranslate"><span class="pre">QMMolecule.save_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.molecule.QMMolecule.script_attempts"><code class="docutils literal notranslate"><span class="pre">QMMolecule.script_attempts</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -421,7 +466,7 @@ then we start to use the crude coordinates.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

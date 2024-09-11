@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.solver.SimpleReactor &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -344,6 +345,46 @@ and <cite>dydt</cite> attributes.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.solver.SimpleReactor</a><ul>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor"><code class="docutils literal notranslate"><span class="pre">SimpleReactor</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.add_reactions_to_surface"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.add_reactions_to_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.advance"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.advance()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.calculate_effective_pressure"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.calculate_effective_pressure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.compute_network_variables"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.compute_network_variables()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.compute_rate_derivative"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.compute_rate_derivative()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.convert_initial_keys_to_species_objects"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.convert_initial_keys_to_species_objects()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.generate_rate_coefficients"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.generate_rate_coefficients()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.generate_reactant_product_indices"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.generate_reactant_product_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.generate_reaction_indices"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.generate_reaction_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.generate_species_indices"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.generate_species_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.get_const_spc_indices"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.get_const_spc_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.get_layering_indices"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.get_layering_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.get_species_index"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.get_species_index()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.get_threshold_rate_constants"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.get_threshold_rate_constants()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.initialize"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.initialize_model"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.initialize_model()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.initialize_surface"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.initialize_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.initiate_tolerances"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.initiate_tolerances()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.jacobian"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.jacobian()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.log_conversions"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.log_conversions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.log_rates"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.log_rates()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.reset_max_edge_species_rate_ratios"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.reset_max_edge_species_rate_ratios()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.residual"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.residual()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.set_colliders"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.set_colliders()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.set_initial_conditions"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.set_initial_conditions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.set_initial_derivative"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.set_initial_derivative()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.simulate"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.simulate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SimpleReactor.step"><code class="docutils literal notranslate"><span class="pre">SimpleReactor.step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -411,7 +452,7 @@ and <cite>dydt</cite> attributes.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

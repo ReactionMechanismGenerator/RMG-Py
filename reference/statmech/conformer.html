@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.statmech.Conformer &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -208,6 +209,7 @@ centers of mass of both groups</p></td>
 </table>
 <div class="math notranslate nohighlight">
 \[\frac{1}{I^{(2,option)}} = \frac{1}{I_1} + \frac{1}{I_2}\]</div>
+<aside class="footnote-list brackets">
 <aside class="footnote brackets" id="id3" role="note">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id1">1</a><span class="fn-bracket">]</span></span>
 <p>Pitzer, K. S. <em>J. Chem. Phys.</em> <strong>14</strong>, p. 239-243 (1946).</p>
@@ -215,6 +217,7 @@ centers of mass of both groups</p></td>
 <aside class="footnote brackets" id="id4" role="note">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">2</a><span class="fn-bracket">]</span></span>
 <p>East, A. L. L. and Radom, L. <em>J. Chem. Phys.</em> <strong>106</strong>, p. 6655-6674 (1997).</p>
+</aside>
 </aside>
 </dd></dl>
 
@@ -370,6 +373,42 @@ used.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.statmech.Conformer</a><ul>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer"><code class="docutils literal notranslate"><span class="pre">Conformer</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.E0"><code class="docutils literal notranslate"><span class="pre">Conformer.E0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.as_dict"><code class="docutils literal notranslate"><span class="pre">Conformer.as_dict()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.coordinates"><code class="docutils literal notranslate"><span class="pre">Conformer.coordinates</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_active_modes"><code class="docutils literal notranslate"><span class="pre">Conformer.get_active_modes()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_center_of_mass"><code class="docutils literal notranslate"><span class="pre">Conformer.get_center_of_mass()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_density_of_states"><code class="docutils literal notranslate"><span class="pre">Conformer.get_density_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_enthalpy"><code class="docutils literal notranslate"><span class="pre">Conformer.get_enthalpy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_entropy"><code class="docutils literal notranslate"><span class="pre">Conformer.get_entropy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_free_energy"><code class="docutils literal notranslate"><span class="pre">Conformer.get_free_energy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_heat_capacity"><code class="docutils literal notranslate"><span class="pre">Conformer.get_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_internal_reduced_moment_of_inertia"><code class="docutils literal notranslate"><span class="pre">Conformer.get_internal_reduced_moment_of_inertia()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_moment_of_inertia_tensor"><code class="docutils literal notranslate"><span class="pre">Conformer.get_moment_of_inertia_tensor()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_number_degrees_of_freedom"><code class="docutils literal notranslate"><span class="pre">Conformer.get_number_degrees_of_freedom()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_partition_function"><code class="docutils literal notranslate"><span class="pre">Conformer.get_partition_function()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_principal_moments_of_inertia"><code class="docutils literal notranslate"><span class="pre">Conformer.get_principal_moments_of_inertia()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_sum_of_states"><code class="docutils literal notranslate"><span class="pre">Conformer.get_sum_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_symmetric_top_rotors"><code class="docutils literal notranslate"><span class="pre">Conformer.get_symmetric_top_rotors()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.get_total_mass"><code class="docutils literal notranslate"><span class="pre">Conformer.get_total_mass()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.make_object"><code class="docutils literal notranslate"><span class="pre">Conformer.make_object()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.mass"><code class="docutils literal notranslate"><span class="pre">Conformer.mass</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.modes"><code class="docutils literal notranslate"><span class="pre">Conformer.modes</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.number"><code class="docutils literal notranslate"><span class="pre">Conformer.number</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.optical_isomers"><code class="docutils literal notranslate"><span class="pre">Conformer.optical_isomers</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.statmech.Conformer.spin_multiplicity"><code class="docutils literal notranslate"><span class="pre">Conformer.spin_multiplicity</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -437,7 +476,7 @@ used.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

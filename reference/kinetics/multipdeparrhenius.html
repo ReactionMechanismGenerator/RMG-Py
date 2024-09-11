@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.kinetics.MultiPDepArrhenius &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -300,6 +301,40 @@ ct_reaction is a list of cantera reaction objects.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.kinetics.MultiPDepArrhenius</a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.Pmax"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.Pmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.Pmin"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.Pmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.Tmax"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.Tmin"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.arrhenius"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.arrhenius</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.change_rate"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.change_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.comment"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.discrepancy"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.efficiencies"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.efficiencies</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.get_cantera_efficiencies"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.get_cantera_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.get_effective_collider_efficiencies"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.get_effective_collider_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.get_effective_pressure"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.get_effective_pressure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.highPlimit"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.highPlimit</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.is_identical_to"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.is_pressure_dependent"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.is_pressure_dependent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.is_pressure_valid"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.is_pressure_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.is_similar_to"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.to_html"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiPDepArrhenius.uncertainty"><code class="docutils literal notranslate"><span class="pre">MultiPDepArrhenius.uncertainty</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -367,7 +402,7 @@ ct_reaction is a list of cantera reaction objects.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

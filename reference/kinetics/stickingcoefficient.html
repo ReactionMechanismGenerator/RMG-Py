@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.kinetics.StickingCoefficient &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -320,6 +321,41 @@ returned.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.kinetics.StickingCoefficient</a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.A"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.A</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.Ea"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.Ea</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.Pmax"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.Pmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.Pmin"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.Pmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.T0"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.T0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.Tmax"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.Tmin"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.change_rate"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.change_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.change_t0"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.change_t0()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.comment"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.coverage_dependence"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.coverage_dependence</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.discrepancy"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.fit_to_data"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.fit_to_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.get_sticking_coefficient"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.get_sticking_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.is_identical_to"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.is_pressure_dependent"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.is_pressure_dependent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.is_similar_to"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.n"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.n</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.to_html"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.uncertainty"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.uncertainty</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -387,7 +423,7 @@ returned.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

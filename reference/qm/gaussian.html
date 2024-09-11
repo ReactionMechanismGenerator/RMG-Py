@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.qm.gaussian &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -705,6 +706,111 @@ for the <cite>attempt</cite>.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.qm.gaussian</a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.Gaussian"><code class="docutils literal notranslate"><span class="pre">Gaussian</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.Gaussian.failure_keys"><code class="docutils literal notranslate"><span class="pre">Gaussian.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.Gaussian.parse"><code class="docutils literal notranslate"><span class="pre">Gaussian.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.Gaussian.success_keys"><code class="docutils literal notranslate"><span class="pre">Gaussian.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.Gaussian.verify_output_file"><code class="docutils literal notranslate"><span class="pre">Gaussian.verify_output_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol"><code class="docutils literal notranslate"><span class="pre">GaussianMol</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.calculate_chirality_correction"><code class="docutils literal notranslate"><span class="pre">GaussianMol.calculate_chirality_correction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.calculate_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMol.calculate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.check_paths"><code class="docutils literal notranslate"><span class="pre">GaussianMol.check_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.check_ready"><code class="docutils literal notranslate"><span class="pre">GaussianMol.check_ready()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.create_geometry"><code class="docutils literal notranslate"><span class="pre">GaussianMol.create_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.determine_point_group"><code class="docutils literal notranslate"><span class="pre">GaussianMol.determine_point_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.failure_keys"><code class="docutils literal notranslate"><span class="pre">GaussianMol.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.generate_qm_data"><code class="docutils literal notranslate"><span class="pre">GaussianMol.generate_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.generate_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMol.generate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.get_augmented_inchi_key"><code class="docutils literal notranslate"><span class="pre">GaussianMol.get_augmented_inchi_key()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.get_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMol.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.get_mol_file_path_for_calculation"><code class="docutils literal notranslate"><span class="pre">GaussianMol.get_mol_file_path_for_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.get_parser"><code class="docutils literal notranslate"><span class="pre">GaussianMol.get_parser()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.get_thermo_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMol.get_thermo_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.initialize"><code class="docutils literal notranslate"><span class="pre">GaussianMol.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.input_file_keywords"><code class="docutils literal notranslate"><span class="pre">GaussianMol.input_file_keywords()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.input_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMol.input_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.load_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMol.load_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.max_attempts"><code class="docutils literal notranslate"><span class="pre">GaussianMol.max_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.output_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMol.output_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.parse"><code class="docutils literal notranslate"><span class="pre">GaussianMol.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.save_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMol.save_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.script_attempts"><code class="docutils literal notranslate"><span class="pre">GaussianMol.script_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.success_keys"><code class="docutils literal notranslate"><span class="pre">GaussianMol.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.verify_output_file"><code class="docutils literal notranslate"><span class="pre">GaussianMol.verify_output_file()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMol.write_input_file"><code class="docutils literal notranslate"><span class="pre">GaussianMol.write_input_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.calculate_chirality_correction"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.calculate_chirality_correction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.calculate_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.calculate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.check_paths"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.check_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.check_ready"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.check_ready()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.create_geometry"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.create_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.determine_point_group"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.determine_point_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.failure_keys"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.generate_qm_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.generate_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.generate_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.generate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_augmented_inchi_key"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.get_augmented_inchi_key()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_mol_file_path_for_calculation"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.get_mol_file_path_for_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_parser"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.get_parser()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.get_thermo_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.get_thermo_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.initialize"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.input_file_keywords"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.input_file_keywords()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.input_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.input_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.keywords"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.keywords</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.load_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.load_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.max_attempts"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.max_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.output_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.output_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.parse"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.save_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.save_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.script_attempts"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.script_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.success_keys"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.verify_output_file"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.verify_output_file()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM3.write_input_file"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM3.write_input_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.calculate_chirality_correction"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.calculate_chirality_correction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.calculate_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.calculate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.check_paths"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.check_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.check_ready"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.check_ready()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.create_geometry"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.create_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.determine_point_group"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.determine_point_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.failure_keys"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.generate_qm_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.generate_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.generate_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.generate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_augmented_inchi_key"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.get_augmented_inchi_key()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_mol_file_path_for_calculation"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.get_mol_file_path_for_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_parser"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.get_parser()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.get_thermo_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.get_thermo_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.initialize"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.input_file_keywords"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.input_file_keywords()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.input_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.input_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.keywords"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.keywords</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.load_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.load_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.max_attempts"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.max_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.output_file_path"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.output_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.parse"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.save_thermo_data"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.save_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.script_attempts"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.script_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.success_keys"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.verify_output_file"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.verify_output_file()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.gaussian.GaussianMolPM6.write_input_file"><code class="docutils literal notranslate"><span class="pre">GaussianMolPM6.write_input_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -772,7 +878,7 @@ for the <cite>attempt</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

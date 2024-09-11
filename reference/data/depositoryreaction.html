@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.data.kinetics.DepositoryReaction &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -63,7 +64,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.data.kinetics.DepositoryReaction<a class="headerlink" href="#rmgpy-data-kinetics-depositoryreaction" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.data.kinetics.DepositoryReaction">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.data.kinetics.</span></span><span class="sig-name descname"><span class="pre">DepositoryReaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-</span> <span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_collider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reversible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duplicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depository</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">family</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.data.kinetics.</span></span><span class="sig-name descname"><span class="pre">DepositoryReaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_collider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reversible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duplicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">depository</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">family</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">entry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.kinetics.DepositoryReaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Reaction object generated from a reaction depository. In addition to the
 usual attributes, this class includes <cite>depository</cite> and <cite>entry</cite> attributes to
 store the library and the entry in that depository that it was created from.</p>
@@ -548,6 +549,63 @@ the labels plus the index in parentheses</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.data.kinetics.DepositoryReaction</a><ul>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.calculate_coll_limit"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.calculate_coll_limit()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.calculate_microcanonical_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.calculate_microcanonical_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.calculate_tst_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.calculate_tst_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.can_tst"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.can_tst()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.check_collision_limit_violation"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.check_collision_limit_violation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.copy"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.degeneracy"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.degeneracy</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.draw"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.draw()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.ensure_species"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.ensure_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.fix_barrier_height"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.fix_barrier_height()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.fix_diffusion_limited_a_factor"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.fix_diffusion_limited_a_factor()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.generate_3d_ts"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.generate_3d_ts()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.generate_high_p_limit_kinetics"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.generate_high_p_limit_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.generate_pairs"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.generate_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.generate_reverse_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.generate_reverse_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_enthalpies_of_reaction"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_enthalpies_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_enthalpy_of_reaction"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_enthalpy_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_entropies_of_reaction"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_entropies_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_entropy_of_reaction"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_entropy_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_equilibrium_constant"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_equilibrium_constant()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_equilibrium_constants"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_equilibrium_constants()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_free_energies_of_reaction"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_free_energies_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_free_energy_of_reaction"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_free_energy_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_mean_sigma_and_epsilon"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_mean_sigma_and_epsilon()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_reduced_mass"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_reduced_mass()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_source"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_source()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_stoichiometric_coefficient"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_stoichiometric_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_surface_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_surface_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.get_url"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.get_url()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.has_template"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.has_template()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.is_association"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.is_association()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.is_balanced"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.is_balanced()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.is_dissociation"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.is_dissociation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.is_isomerization"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.is_isomerization()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.is_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.is_surface_reaction"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.is_surface_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.is_unimolecular"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.is_unimolecular()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.matches_species"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.matches_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.reverse_arrhenius_rate"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.reverse_arrhenius_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.reverse_sticking_coeff_rate"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.reverse_sticking_coeff_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.reverse_surface_arrhenius_rate"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.reverse_surface_arrhenius_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.to_cantera"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.to_cantera()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.to_chemkin"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.to_chemkin()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.DepositoryReaction.to_labeled_str"><code class="docutils literal notranslate"><span class="pre">DepositoryReaction.to_labeled_str()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -615,7 +673,7 @@ the labels plus the index in parentheses</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

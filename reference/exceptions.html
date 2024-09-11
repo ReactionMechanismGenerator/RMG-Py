@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>RMG Exceptions (rmgpy.exceptions) &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../_static/underscore.js"></script>
     <script src="../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../_static/doctools.js"></script>
+    <script src="../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
@@ -612,6 +613,160 @@ set self.__traceback__ to tb and return self.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">RMG Exceptions (<code class="xref py py-mod docutils literal notranslate"><span class="pre">rmgpy.exceptions</span></code>)</a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ActionError"><code class="docutils literal notranslate"><span class="pre">ActionError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ActionError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ActionError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.AtomTypeError"><code class="docutils literal notranslate"><span class="pre">AtomTypeError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.AtomTypeError.with_traceback"><code class="docutils literal notranslate"><span class="pre">AtomTypeError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ChemicallySignificantEigenvaluesError"><code class="docutils literal notranslate"><span class="pre">ChemicallySignificantEigenvaluesError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ChemicallySignificantEigenvaluesError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ChemicallySignificantEigenvaluesError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ChemkinError"><code class="docutils literal notranslate"><span class="pre">ChemkinError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ChemkinError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ChemkinError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.CollisionError"><code class="docutils literal notranslate"><span class="pre">CollisionError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.CollisionError.with_traceback"><code class="docutils literal notranslate"><span class="pre">CollisionError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.CoreError"><code class="docutils literal notranslate"><span class="pre">CoreError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.CoreError.with_traceback"><code class="docutils literal notranslate"><span class="pre">CoreError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.DatabaseError"><code class="docutils literal notranslate"><span class="pre">DatabaseError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.DatabaseError.with_traceback"><code class="docutils literal notranslate"><span class="pre">DatabaseError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.DependencyError"><code class="docutils literal notranslate"><span class="pre">DependencyError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.DependencyError.with_traceback"><code class="docutils literal notranslate"><span class="pre">DependencyError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ElementError"><code class="docutils literal notranslate"><span class="pre">ElementError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ElementError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ElementError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ForbiddenStructureException"><code class="docutils literal notranslate"><span class="pre">ForbiddenStructureException</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ForbiddenStructureException.with_traceback"><code class="docutils literal notranslate"><span class="pre">ForbiddenStructureException.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ILPSolutionError"><code class="docutils literal notranslate"><span class="pre">ILPSolutionError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ILPSolutionError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ILPSolutionError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ImplicitBenzeneError"><code class="docutils literal notranslate"><span class="pre">ImplicitBenzeneError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ImplicitBenzeneError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ImplicitBenzeneError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.InchiException"><code class="docutils literal notranslate"><span class="pre">InchiException</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.InchiException.with_traceback"><code class="docutils literal notranslate"><span class="pre">InchiException.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.InputError"><code class="docutils literal notranslate"><span class="pre">InputError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.InputError.with_traceback"><code class="docutils literal notranslate"><span class="pre">InputError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.InvalidActionError"><code class="docutils literal notranslate"><span class="pre">InvalidActionError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.InvalidActionError.with_traceback"><code class="docutils literal notranslate"><span class="pre">InvalidActionError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.InvalidAdjacencyListError"><code class="docutils literal notranslate"><span class="pre">InvalidAdjacencyListError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.InvalidAdjacencyListError.with_traceback"><code class="docutils literal notranslate"><span class="pre">InvalidAdjacencyListError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError"><code class="docutils literal notranslate"><span class="pre">InvalidMicrocanonicalRateError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError.badness"><code class="docutils literal notranslate"><span class="pre">InvalidMicrocanonicalRateError.badness()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.exceptions.InvalidMicrocanonicalRateError.with_traceback"><code class="docutils literal notranslate"><span class="pre">InvalidMicrocanonicalRateError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.KekulizationError"><code class="docutils literal notranslate"><span class="pre">KekulizationError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.KekulizationError.with_traceback"><code class="docutils literal notranslate"><span class="pre">KekulizationError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.KineticsError"><code class="docutils literal notranslate"><span class="pre">KineticsError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.KineticsError.with_traceback"><code class="docutils literal notranslate"><span class="pre">KineticsError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ModifiedStrongCollisionError"><code class="docutils literal notranslate"><span class="pre">ModifiedStrongCollisionError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ModifiedStrongCollisionError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ModifiedStrongCollisionError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.NegativeBarrierException"><code class="docutils literal notranslate"><span class="pre">NegativeBarrierException</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.NegativeBarrierException.with_traceback"><code class="docutils literal notranslate"><span class="pre">NegativeBarrierException.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.NetworkError"><code class="docutils literal notranslate"><span class="pre">NetworkError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.NetworkError.with_traceback"><code class="docutils literal notranslate"><span class="pre">NetworkError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.OutputError"><code class="docutils literal notranslate"><span class="pre">OutputError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.OutputError.with_traceback"><code class="docutils literal notranslate"><span class="pre">OutputError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.PressureDependenceError"><code class="docutils literal notranslate"><span class="pre">PressureDependenceError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.PressureDependenceError.with_traceback"><code class="docutils literal notranslate"><span class="pre">PressureDependenceError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.QuantityError"><code class="docutils literal notranslate"><span class="pre">QuantityError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.QuantityError.with_traceback"><code class="docutils literal notranslate"><span class="pre">QuantityError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ReactionError"><code class="docutils literal notranslate"><span class="pre">ReactionError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ReactionError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ReactionError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ReactionPairsError"><code class="docutils literal notranslate"><span class="pre">ReactionPairsError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ReactionPairsError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ReactionPairsError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ReservoirStateError"><code class="docutils literal notranslate"><span class="pre">ReservoirStateError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ReservoirStateError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ReservoirStateError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.ResonanceError"><code class="docutils literal notranslate"><span class="pre">ResonanceError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.ResonanceError.with_traceback"><code class="docutils literal notranslate"><span class="pre">ResonanceError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.SettingsError"><code class="docutils literal notranslate"><span class="pre">SettingsError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.SettingsError.with_traceback"><code class="docutils literal notranslate"><span class="pre">SettingsError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.SpeciesError"><code class="docutils literal notranslate"><span class="pre">SpeciesError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.SpeciesError.with_traceback"><code class="docutils literal notranslate"><span class="pre">SpeciesError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.StatmechError"><code class="docutils literal notranslate"><span class="pre">StatmechError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.StatmechError.with_traceback"><code class="docutils literal notranslate"><span class="pre">StatmechError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.StatmechFitError"><code class="docutils literal notranslate"><span class="pre">StatmechFitError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.StatmechFitError.with_traceback"><code class="docutils literal notranslate"><span class="pre">StatmechFitError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.UndeterminableKineticsError"><code class="docutils literal notranslate"><span class="pre">UndeterminableKineticsError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.UndeterminableKineticsError.with_traceback"><code class="docutils literal notranslate"><span class="pre">UndeterminableKineticsError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.UnexpectedChargeError"><code class="docutils literal notranslate"><span class="pre">UnexpectedChargeError</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.UnexpectedChargeError.with_traceback"><code class="docutils literal notranslate"><span class="pre">UnexpectedChargeError.with_traceback()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.exceptions.VF2Error"><code class="docutils literal notranslate"><span class="pre">VF2Error</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.exceptions.VF2Error.with_traceback"><code class="docutils literal notranslate"><span class="pre">VF2Error.with_traceback()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -670,7 +825,7 @@ set self.__traceback__ to tb and return self.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

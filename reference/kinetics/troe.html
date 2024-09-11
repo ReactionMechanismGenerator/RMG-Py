@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.kinetics.Troe &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -378,6 +379,46 @@ for a cantera FalloffReaction.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.kinetics.Troe</a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe"><code class="docutils literal notranslate"><span class="pre">Troe</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.Pmax"><code class="docutils literal notranslate"><span class="pre">Troe.Pmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.Pmin"><code class="docutils literal notranslate"><span class="pre">Troe.Pmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.T1"><code class="docutils literal notranslate"><span class="pre">Troe.T1</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.T2"><code class="docutils literal notranslate"><span class="pre">Troe.T2</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.T3"><code class="docutils literal notranslate"><span class="pre">Troe.T3</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.Tmax"><code class="docutils literal notranslate"><span class="pre">Troe.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.Tmin"><code class="docutils literal notranslate"><span class="pre">Troe.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.alpha"><code class="docutils literal notranslate"><span class="pre">Troe.alpha</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.arrheniusHigh"><code class="docutils literal notranslate"><span class="pre">Troe.arrheniusHigh</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.arrheniusLow"><code class="docutils literal notranslate"><span class="pre">Troe.arrheniusLow</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.change_rate"><code class="docutils literal notranslate"><span class="pre">Troe.change_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.comment"><code class="docutils literal notranslate"><span class="pre">Troe.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.discrepancy"><code class="docutils literal notranslate"><span class="pre">Troe.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.efficiencies"><code class="docutils literal notranslate"><span class="pre">Troe.efficiencies</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.get_cantera_efficiencies"><code class="docutils literal notranslate"><span class="pre">Troe.get_cantera_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.get_effective_collider_efficiencies"><code class="docutils literal notranslate"><span class="pre">Troe.get_effective_collider_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.get_effective_pressure"><code class="docutils literal notranslate"><span class="pre">Troe.get_effective_pressure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">Troe.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.highPlimit"><code class="docutils literal notranslate"><span class="pre">Troe.highPlimit</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.is_identical_to"><code class="docutils literal notranslate"><span class="pre">Troe.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.is_pressure_dependent"><code class="docutils literal notranslate"><span class="pre">Troe.is_pressure_dependent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.is_pressure_valid"><code class="docutils literal notranslate"><span class="pre">Troe.is_pressure_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.is_similar_to"><code class="docutils literal notranslate"><span class="pre">Troe.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">Troe.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">Troe.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.to_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">Troe.to_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.to_html"><code class="docutils literal notranslate"><span class="pre">Troe.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Troe.uncertainty"><code class="docutils literal notranslate"><span class="pre">Troe.uncertainty</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -445,7 +486,7 @@ for a cantera FalloffReaction.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.data.kinetics.KineticsDatabase &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -289,6 +290,36 @@ The new style is as multiple sets with different labels.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.data.kinetics.KineticsDatabase</a><ul>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.extract_source_from_comments"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.extract_source_from_comments()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.generate_reactions"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.generate_reactions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_families"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.generate_reactions_from_families()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_libraries"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.generate_reactions_from_libraries()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.generate_reactions_from_library"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.generate_reactions_from_library()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.get_forward_reaction_for_family_entry"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.get_forward_reaction_for_family_entry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.load"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.load()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.load_families"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.load_families()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.load_libraries"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.load_libraries()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.load_old"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.load_old()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.load_recommended_families"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.load_recommended_families()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.react_molecules"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.react_molecules()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.reconstruct_kinetics_from_source"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.reconstruct_kinetics_from_source()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.save"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.save()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.save_families"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.save_families()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.save_libraries"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.save_libraries()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.save_old"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.save_old()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsDatabase.save_recommended_families"><code class="docutils literal notranslate"><span class="pre">KineticsDatabase.save_recommended_families()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -356,7 +387,7 @@ The new style is as multiple sets with different labels.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

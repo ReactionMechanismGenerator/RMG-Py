@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.rmg.main.RMG &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -435,6 +436,45 @@ True then the graph generation will be attempted either way</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.rmg.main.RMG</a><ul>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG"><code class="docutils literal notranslate"><span class="pre">RMG</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.check_input"><code class="docutils literal notranslate"><span class="pre">RMG.check_input()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.check_libraries"><code class="docutils literal notranslate"><span class="pre">RMG.check_libraries()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.check_model"><code class="docutils literal notranslate"><span class="pre">RMG.check_model()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.clear"><code class="docutils literal notranslate"><span class="pre">RMG.clear()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.execute"><code class="docutils literal notranslate"><span class="pre">RMG.execute()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.finish"><code class="docutils literal notranslate"><span class="pre">RMG.finish()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.generate_cantera_files"><code class="docutils literal notranslate"><span class="pre">RMG.generate_cantera_files()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.initialize"><code class="docutils literal notranslate"><span class="pre">RMG.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.initialize_seed_mech"><code class="docutils literal notranslate"><span class="pre">RMG.initialize_seed_mech()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.load_input"><code class="docutils literal notranslate"><span class="pre">RMG.load_input()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.load_thermo_input"><code class="docutils literal notranslate"><span class="pre">RMG.load_thermo_input()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.log_header"><code class="docutils literal notranslate"><span class="pre">RMG.log_header()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.make_seed_mech"><code class="docutils literal notranslate"><span class="pre">RMG.make_seed_mech()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.make_species_labels_independent"><code class="docutils literal notranslate"><span class="pre">RMG.make_species_labels_independent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.process_pdep_networks"><code class="docutils literal notranslate"><span class="pre">RMG.process_pdep_networks()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.process_reactions_to_species"><code class="docutils literal notranslate"><span class="pre">RMG.process_reactions_to_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.process_to_species_networks"><code class="docutils literal notranslate"><span class="pre">RMG.process_to_species_networks()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.react_init_tuples"><code class="docutils literal notranslate"><span class="pre">RMG.react_init_tuples()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.register_listeners"><code class="docutils literal notranslate"><span class="pre">RMG.register_listeners()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.run_model_analysis"><code class="docutils literal notranslate"><span class="pre">RMG.run_model_analysis()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.run_uncertainty_analysis"><code class="docutils literal notranslate"><span class="pre">RMG.run_uncertainty_analysis()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.save_everything"><code class="docutils literal notranslate"><span class="pre">RMG.save_everything()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.save_input"><code class="docutils literal notranslate"><span class="pre">RMG.save_input()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.update_reaction_threshold_and_react_flags"><code class="docutils literal notranslate"><span class="pre">RMG.update_reaction_threshold_and_react_flags()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.initialize_log"><code class="docutils literal notranslate"><span class="pre">initialize_log()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.make_profile_graph"><code class="docutils literal notranslate"><span class="pre">make_profile_graph()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.process_profile_stats"><code class="docutils literal notranslate"><span class="pre">process_profile_stats()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -502,7 +542,7 @@ True then the graph generation will be attempted either way</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

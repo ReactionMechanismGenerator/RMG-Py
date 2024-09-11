@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.solver.ReactionSystem &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -286,6 +287,39 @@ and <cite>dydt</cite> attributes.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.solver.ReactionSystem</a><ul>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem"><code class="docutils literal notranslate"><span class="pre">ReactionSystem</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.add_reactions_to_surface"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.add_reactions_to_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.advance"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.advance()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.compute_network_variables"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.compute_network_variables()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.compute_rate_derivative"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.compute_rate_derivative()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.generate_reactant_product_indices"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.generate_reactant_product_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.generate_reaction_indices"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.generate_reaction_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.generate_species_indices"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.generate_species_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.get_layering_indices"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.get_layering_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.get_species_index"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.get_species_index()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.initialize"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.initialize_model"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.initialize_model()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.initialize_surface"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.initialize_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.initiate_tolerances"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.initiate_tolerances()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.log_conversions"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.log_conversions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.log_rates"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.log_rates()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.reset_max_edge_species_rate_ratios"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.reset_max_edge_species_rate_ratios()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.residual"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.residual()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.set_initial_conditions"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.set_initial_conditions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.set_initial_derivative"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.set_initial_derivative()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.simulate"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.simulate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.ReactionSystem.step"><code class="docutils literal notranslate"><span class="pre">ReactionSystem.step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -353,7 +387,7 @@ and <cite>dydt</cite> attributes.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

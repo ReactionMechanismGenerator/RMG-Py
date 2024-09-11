@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.kinetics.Chebyshev &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -387,6 +388,47 @@ where T’s are in units of K, P’s in units of Pa, and coeffs is 2D array of (
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.kinetics.Chebyshev</a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev"><code class="docutils literal notranslate"><span class="pre">Chebyshev</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.Pmax"><code class="docutils literal notranslate"><span class="pre">Chebyshev.Pmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.Pmin"><code class="docutils literal notranslate"><span class="pre">Chebyshev.Pmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.Tmax"><code class="docutils literal notranslate"><span class="pre">Chebyshev.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.Tmin"><code class="docutils literal notranslate"><span class="pre">Chebyshev.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.change_rate"><code class="docutils literal notranslate"><span class="pre">Chebyshev.change_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.chebyshev"><code class="docutils literal notranslate"><span class="pre">Chebyshev.chebyshev()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.coeffs"><code class="docutils literal notranslate"><span class="pre">Chebyshev.coeffs</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.comment"><code class="docutils literal notranslate"><span class="pre">Chebyshev.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.degreeP"><code class="docutils literal notranslate"><span class="pre">Chebyshev.degreeP</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.degreeT"><code class="docutils literal notranslate"><span class="pre">Chebyshev.degreeT</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.discrepancy"><code class="docutils literal notranslate"><span class="pre">Chebyshev.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.efficiencies"><code class="docutils literal notranslate"><span class="pre">Chebyshev.efficiencies</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.fit_to_data"><code class="docutils literal notranslate"><span class="pre">Chebyshev.fit_to_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.get_cantera_efficiencies"><code class="docutils literal notranslate"><span class="pre">Chebyshev.get_cantera_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.get_effective_collider_efficiencies"><code class="docutils literal notranslate"><span class="pre">Chebyshev.get_effective_collider_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.get_effective_pressure"><code class="docutils literal notranslate"><span class="pre">Chebyshev.get_effective_pressure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">Chebyshev.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.get_reduced_pressure"><code class="docutils literal notranslate"><span class="pre">Chebyshev.get_reduced_pressure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.get_reduced_temperature"><code class="docutils literal notranslate"><span class="pre">Chebyshev.get_reduced_temperature()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.highPlimit"><code class="docutils literal notranslate"><span class="pre">Chebyshev.highPlimit</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.is_identical_to"><code class="docutils literal notranslate"><span class="pre">Chebyshev.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.is_pressure_dependent"><code class="docutils literal notranslate"><span class="pre">Chebyshev.is_pressure_dependent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.is_pressure_valid"><code class="docutils literal notranslate"><span class="pre">Chebyshev.is_pressure_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.is_similar_to"><code class="docutils literal notranslate"><span class="pre">Chebyshev.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">Chebyshev.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.kunits"><code class="docutils literal notranslate"><span class="pre">Chebyshev.kunits</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">Chebyshev.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.to_html"><code class="docutils literal notranslate"><span class="pre">Chebyshev.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Chebyshev.uncertainty"><code class="docutils literal notranslate"><span class="pre">Chebyshev.uncertainty</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -454,7 +496,7 @@ where T’s are in units of K, P’s in units of Pa, and coeffs is 2D array of (
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

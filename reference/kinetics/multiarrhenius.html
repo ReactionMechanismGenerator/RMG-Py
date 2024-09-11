@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.kinetics.MultiArrhenius &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -257,6 +258,35 @@ data.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.kinetics.MultiArrhenius</a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.Pmax"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.Pmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.Pmin"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.Pmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.Tmax"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.Tmin"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.arrhenius"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.arrhenius</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.change_rate"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.change_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.comment"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.discrepancy"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.is_identical_to"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.is_pressure_dependent"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.is_pressure_dependent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.is_similar_to"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.to_arrhenius"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.to_arrhenius()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.to_html"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.MultiArrhenius.uncertainty"><code class="docutils literal notranslate"><span class="pre">MultiArrhenius.uncertainty</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -324,7 +354,7 @@ data.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

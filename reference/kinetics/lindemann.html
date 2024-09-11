@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.kinetics.Lindemann &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -333,6 +334,42 @@ returned.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.kinetics.Lindemann</a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann"><code class="docutils literal notranslate"><span class="pre">Lindemann</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.Pmax"><code class="docutils literal notranslate"><span class="pre">Lindemann.Pmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.Pmin"><code class="docutils literal notranslate"><span class="pre">Lindemann.Pmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.Tmax"><code class="docutils literal notranslate"><span class="pre">Lindemann.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.Tmin"><code class="docutils literal notranslate"><span class="pre">Lindemann.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.arrheniusHigh"><code class="docutils literal notranslate"><span class="pre">Lindemann.arrheniusHigh</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.arrheniusLow"><code class="docutils literal notranslate"><span class="pre">Lindemann.arrheniusLow</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.change_rate"><code class="docutils literal notranslate"><span class="pre">Lindemann.change_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.comment"><code class="docutils literal notranslate"><span class="pre">Lindemann.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.discrepancy"><code class="docutils literal notranslate"><span class="pre">Lindemann.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.efficiencies"><code class="docutils literal notranslate"><span class="pre">Lindemann.efficiencies</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.get_cantera_efficiencies"><code class="docutils literal notranslate"><span class="pre">Lindemann.get_cantera_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.get_effective_collider_efficiencies"><code class="docutils literal notranslate"><span class="pre">Lindemann.get_effective_collider_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.get_effective_pressure"><code class="docutils literal notranslate"><span class="pre">Lindemann.get_effective_pressure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">Lindemann.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.highPlimit"><code class="docutils literal notranslate"><span class="pre">Lindemann.highPlimit</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.is_identical_to"><code class="docutils literal notranslate"><span class="pre">Lindemann.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.is_pressure_dependent"><code class="docutils literal notranslate"><span class="pre">Lindemann.is_pressure_dependent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.is_pressure_valid"><code class="docutils literal notranslate"><span class="pre">Lindemann.is_pressure_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.is_similar_to"><code class="docutils literal notranslate"><span class="pre">Lindemann.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">Lindemann.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">Lindemann.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.to_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">Lindemann.to_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.to_html"><code class="docutils literal notranslate"><span class="pre">Lindemann.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Lindemann.uncertainty"><code class="docutils literal notranslate"><span class="pre">Lindemann.uncertainty</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -400,7 +437,7 @@ returned.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

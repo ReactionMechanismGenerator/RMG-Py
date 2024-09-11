@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.molecule.Atom &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -385,6 +386,48 @@ number and types of bonds, radicals, and lone pairs.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.molecule.Atom</a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom"><code class="docutils literal notranslate"><span class="pre">Atom</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.apply_action"><code class="docutils literal notranslate"><span class="pre">Atom.apply_action()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.copy"><code class="docutils literal notranslate"><span class="pre">Atom.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.decrement_lone_pairs"><code class="docutils literal notranslate"><span class="pre">Atom.decrement_lone_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.decrement_radical"><code class="docutils literal notranslate"><span class="pre">Atom.decrement_radical()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.equivalent"><code class="docutils literal notranslate"><span class="pre">Atom.equivalent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.get_total_bond_order"><code class="docutils literal notranslate"><span class="pre">Atom.get_total_bond_order()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.increment_lone_pairs"><code class="docutils literal notranslate"><span class="pre">Atom.increment_lone_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.increment_radical"><code class="docutils literal notranslate"><span class="pre">Atom.increment_radical()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_bonded_to_halogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_bonded_to_halogen()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_bonded_to_surface"><code class="docutils literal notranslate"><span class="pre">Atom.is_bonded_to_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_bromine"><code class="docutils literal notranslate"><span class="pre">Atom.is_bromine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_carbon"><code class="docutils literal notranslate"><span class="pre">Atom.is_carbon()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_chlorine"><code class="docutils literal notranslate"><span class="pre">Atom.is_chlorine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_fluorine"><code class="docutils literal notranslate"><span class="pre">Atom.is_fluorine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_halogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_halogen()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_hydrogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_hydrogen()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_iodine"><code class="docutils literal notranslate"><span class="pre">Atom.is_iodine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_nitrogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_nitrogen()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_non_hydrogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_non_hydrogen()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_nos"><code class="docutils literal notranslate"><span class="pre">Atom.is_nos()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_oxygen"><code class="docutils literal notranslate"><span class="pre">Atom.is_oxygen()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_phosphorus"><code class="docutils literal notranslate"><span class="pre">Atom.is_phosphorus()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_silicon"><code class="docutils literal notranslate"><span class="pre">Atom.is_silicon()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_specific_case_of"><code class="docutils literal notranslate"><span class="pre">Atom.is_specific_case_of()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_sulfur"><code class="docutils literal notranslate"><span class="pre">Atom.is_sulfur()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_surface_site"><code class="docutils literal notranslate"><span class="pre">Atom.is_surface_site()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.reset_connectivity_values"><code class="docutils literal notranslate"><span class="pre">Atom.reset_connectivity_values()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.set_lone_pairs"><code class="docutils literal notranslate"><span class="pre">Atom.set_lone_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.sorting_key"><code class="docutils literal notranslate"><span class="pre">Atom.sorting_key</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.update_charge"><code class="docutils literal notranslate"><span class="pre">Atom.update_charge()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -452,7 +495,7 @@ number and types of bonds, radicals, and lone pairs.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

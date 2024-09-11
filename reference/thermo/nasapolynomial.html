@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.thermo.NASAPolynomial &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -389,6 +390,47 @@ returned.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.thermo.NASAPolynomial</a><ul>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.Cp0"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.Cp0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.CpInf"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.CpInf</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.E0"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.E0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.Tmax"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.Tmin"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.as_dict"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.as_dict()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.c0"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.c0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.c1"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.c1</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.c2"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.c2</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.c3"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.c3</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.c4"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.c4</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.c5"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.c5</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.c6"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.c6</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.change_base_enthalpy"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.change_base_enthalpy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.change_base_entropy"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.change_base_entropy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.cm1"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.cm1</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.cm2"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.cm2</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.coeffs"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.coeffs</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.comment"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.discrepancy"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.get_enthalpy"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.get_enthalpy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.get_entropy"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.get_entropy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.get_free_energy"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.get_free_energy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.get_heat_capacity"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.get_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.is_identical_to"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.is_similar_to"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.label"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.label</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASAPolynomial.make_object"><code class="docutils literal notranslate"><span class="pre">NASAPolynomial.make_object()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -456,7 +498,7 @@ returned.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

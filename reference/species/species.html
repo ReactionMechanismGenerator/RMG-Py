@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.species.Species &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -453,6 +454,58 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.species.Species</a><ul>
+<li><a class="reference internal" href="#rmgpy.species.Species"><code class="docutils literal notranslate"><span class="pre">Species</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.species.Species.calculate_cp0"><code class="docutils literal notranslate"><span class="pre">Species.calculate_cp0()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.calculate_cpinf"><code class="docutils literal notranslate"><span class="pre">Species.calculate_cpinf()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.contains_surface_site"><code class="docutils literal notranslate"><span class="pre">Species.contains_surface_site()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.copy"><code class="docutils literal notranslate"><span class="pre">Species.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.fingerprint"><code class="docutils literal notranslate"><span class="pre">Species.fingerprint</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.from_adjacency_list"><code class="docutils literal notranslate"><span class="pre">Species.from_adjacency_list()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.from_smiles"><code class="docutils literal notranslate"><span class="pre">Species.from_smiles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.generate_energy_transfer_model"><code class="docutils literal notranslate"><span class="pre">Species.generate_energy_transfer_model()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.generate_resonance_structures"><code class="docutils literal notranslate"><span class="pre">Species.generate_resonance_structures()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.generate_statmech"><code class="docutils literal notranslate"><span class="pre">Species.generate_statmech()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.generate_transport_data"><code class="docutils literal notranslate"><span class="pre">Species.generate_transport_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_density_of_states"><code class="docutils literal notranslate"><span class="pre">Species.get_density_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_enthalpy"><code class="docutils literal notranslate"><span class="pre">Species.get_enthalpy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_entropy"><code class="docutils literal notranslate"><span class="pre">Species.get_entropy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_free_energy"><code class="docutils literal notranslate"><span class="pre">Species.get_free_energy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_heat_capacity"><code class="docutils literal notranslate"><span class="pre">Species.get_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_partition_function"><code class="docutils literal notranslate"><span class="pre">Species.get_partition_function()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_resonance_hybrid"><code class="docutils literal notranslate"><span class="pre">Species.get_resonance_hybrid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_sum_of_states"><code class="docutils literal notranslate"><span class="pre">Species.get_sum_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_symmetry_number"><code class="docutils literal notranslate"><span class="pre">Species.get_symmetry_number()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_thermo_data"><code class="docutils literal notranslate"><span class="pre">Species.get_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_transport_data"><code class="docutils literal notranslate"><span class="pre">Species.get_transport_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.has_reactive_molecule"><code class="docutils literal notranslate"><span class="pre">Species.has_reactive_molecule()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.has_statmech"><code class="docutils literal notranslate"><span class="pre">Species.has_statmech()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.has_thermo"><code class="docutils literal notranslate"><span class="pre">Species.has_thermo()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.inchi"><code class="docutils literal notranslate"><span class="pre">Species.inchi</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.is_identical"><code class="docutils literal notranslate"><span class="pre">Species.is_identical()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">Species.is_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.is_structure_in_list"><code class="docutils literal notranslate"><span class="pre">Species.is_structure_in_list()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.is_surface_site"><code class="docutils literal notranslate"><span class="pre">Species.is_surface_site()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.molecular_weight"><code class="docutils literal notranslate"><span class="pre">Species.molecular_weight</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.multiplicity"><code class="docutils literal notranslate"><span class="pre">Species.multiplicity</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.number_of_surface_sites"><code class="docutils literal notranslate"><span class="pre">Species.number_of_surface_sites()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.set_e0_with_thermo"><code class="docutils literal notranslate"><span class="pre">Species.set_e0_with_thermo()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.set_structure"><code class="docutils literal notranslate"><span class="pre">Species.set_structure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.smiles"><code class="docutils literal notranslate"><span class="pre">Species.smiles</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.sorting_key"><code class="docutils literal notranslate"><span class="pre">Species.sorting_key</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.to_adjacency_list"><code class="docutils literal notranslate"><span class="pre">Species.to_adjacency_list()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.to_cantera"><code class="docutils literal notranslate"><span class="pre">Species.to_cantera()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.to_chemkin"><code class="docutils literal notranslate"><span class="pre">Species.to_chemkin()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -520,7 +573,7 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

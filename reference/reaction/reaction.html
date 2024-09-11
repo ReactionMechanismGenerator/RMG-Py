@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.reaction.Reaction &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -619,6 +620,62 @@ the labels plus the index in parentheses</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.reaction.Reaction</a><ul>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction"><code class="docutils literal notranslate"><span class="pre">Reaction</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.calculate_coll_limit"><code class="docutils literal notranslate"><span class="pre">Reaction.calculate_coll_limit()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.calculate_microcanonical_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">Reaction.calculate_microcanonical_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.calculate_tst_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">Reaction.calculate_tst_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.can_tst"><code class="docutils literal notranslate"><span class="pre">Reaction.can_tst()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.check_collision_limit_violation"><code class="docutils literal notranslate"><span class="pre">Reaction.check_collision_limit_violation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.copy"><code class="docutils literal notranslate"><span class="pre">Reaction.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.degeneracy"><code class="docutils literal notranslate"><span class="pre">Reaction.degeneracy</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.draw"><code class="docutils literal notranslate"><span class="pre">Reaction.draw()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.ensure_species"><code class="docutils literal notranslate"><span class="pre">Reaction.ensure_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.fix_barrier_height"><code class="docutils literal notranslate"><span class="pre">Reaction.fix_barrier_height()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.fix_diffusion_limited_a_factor"><code class="docutils literal notranslate"><span class="pre">Reaction.fix_diffusion_limited_a_factor()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.generate_3d_ts"><code class="docutils literal notranslate"><span class="pre">Reaction.generate_3d_ts()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.generate_high_p_limit_kinetics"><code class="docutils literal notranslate"><span class="pre">Reaction.generate_high_p_limit_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.generate_pairs"><code class="docutils literal notranslate"><span class="pre">Reaction.generate_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.generate_reverse_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">Reaction.generate_reverse_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_enthalpies_of_reaction"><code class="docutils literal notranslate"><span class="pre">Reaction.get_enthalpies_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_enthalpy_of_reaction"><code class="docutils literal notranslate"><span class="pre">Reaction.get_enthalpy_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_entropies_of_reaction"><code class="docutils literal notranslate"><span class="pre">Reaction.get_entropies_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_entropy_of_reaction"><code class="docutils literal notranslate"><span class="pre">Reaction.get_entropy_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_equilibrium_constant"><code class="docutils literal notranslate"><span class="pre">Reaction.get_equilibrium_constant()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_equilibrium_constants"><code class="docutils literal notranslate"><span class="pre">Reaction.get_equilibrium_constants()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_free_energies_of_reaction"><code class="docutils literal notranslate"><span class="pre">Reaction.get_free_energies_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_free_energy_of_reaction"><code class="docutils literal notranslate"><span class="pre">Reaction.get_free_energy_of_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_mean_sigma_and_epsilon"><code class="docutils literal notranslate"><span class="pre">Reaction.get_mean_sigma_and_epsilon()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">Reaction.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_reduced_mass"><code class="docutils literal notranslate"><span class="pre">Reaction.get_reduced_mass()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_stoichiometric_coefficient"><code class="docutils literal notranslate"><span class="pre">Reaction.get_stoichiometric_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_surface_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">Reaction.get_surface_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.get_url"><code class="docutils literal notranslate"><span class="pre">Reaction.get_url()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.has_template"><code class="docutils literal notranslate"><span class="pre">Reaction.has_template()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.is_association"><code class="docutils literal notranslate"><span class="pre">Reaction.is_association()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.is_balanced"><code class="docutils literal notranslate"><span class="pre">Reaction.is_balanced()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.is_dissociation"><code class="docutils literal notranslate"><span class="pre">Reaction.is_dissociation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.is_isomerization"><code class="docutils literal notranslate"><span class="pre">Reaction.is_isomerization()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">Reaction.is_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.is_surface_reaction"><code class="docutils literal notranslate"><span class="pre">Reaction.is_surface_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.is_unimolecular"><code class="docutils literal notranslate"><span class="pre">Reaction.is_unimolecular()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.matches_species"><code class="docutils literal notranslate"><span class="pre">Reaction.matches_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.reverse_arrhenius_rate"><code class="docutils literal notranslate"><span class="pre">Reaction.reverse_arrhenius_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.reverse_sticking_coeff_rate"><code class="docutils literal notranslate"><span class="pre">Reaction.reverse_sticking_coeff_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.reverse_surface_arrhenius_rate"><code class="docutils literal notranslate"><span class="pre">Reaction.reverse_surface_arrhenius_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.to_cantera"><code class="docutils literal notranslate"><span class="pre">Reaction.to_cantera()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.to_chemkin"><code class="docutils literal notranslate"><span class="pre">Reaction.to_chemkin()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.reaction.Reaction.to_labeled_str"><code class="docutils literal notranslate"><span class="pre">Reaction.to_labeled_str()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -686,7 +743,7 @@ the labels plus the index in parentheses</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

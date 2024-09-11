@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.pdep.Network &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -362,6 +363,34 @@ population profiles for each configuration.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.pdep.Network</a><ul>
+<li><a class="reference internal" href="#rmgpy.pdep.Network"><code class="docutils literal notranslate"><span class="pre">Network</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.apply_chemically_significant_eigenvalues_method"><code class="docutils literal notranslate"><span class="pre">Network.apply_chemically_significant_eigenvalues_method()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.apply_modified_strong_collision_method"><code class="docutils literal notranslate"><span class="pre">Network.apply_modified_strong_collision_method()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.apply_reservoir_state_method"><code class="docutils literal notranslate"><span class="pre">Network.apply_reservoir_state_method()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.calculate_collision_model"><code class="docutils literal notranslate"><span class="pre">Network.calculate_collision_model()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.calculate_densities_of_states"><code class="docutils literal notranslate"><span class="pre">Network.calculate_densities_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.calculate_equilibrium_ratios"><code class="docutils literal notranslate"><span class="pre">Network.calculate_equilibrium_ratios()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.calculate_microcanonical_rates"><code class="docutils literal notranslate"><span class="pre">Network.calculate_microcanonical_rates()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.get_all_species"><code class="docutils literal notranslate"><span class="pre">Network.get_all_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.initialize"><code class="docutils literal notranslate"><span class="pre">Network.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.invalidate"><code class="docutils literal notranslate"><span class="pre">Network.invalidate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.log_summary"><code class="docutils literal notranslate"><span class="pre">Network.log_summary()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.map_densities_of_states"><code class="docutils literal notranslate"><span class="pre">Network.map_densities_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.select_energy_grains"><code class="docutils literal notranslate"><span class="pre">Network.select_energy_grains()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.set_conditions"><code class="docutils literal notranslate"><span class="pre">Network.set_conditions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.solve_full_me"><code class="docutils literal notranslate"><span class="pre">Network.solve_full_me()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Network.solve_reduced_me"><code class="docutils literal notranslate"><span class="pre">Network.solve_reduced_me()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -429,7 +458,7 @@ population profiles for each configuration.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

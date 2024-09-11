@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.pdep.Configuration &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -224,6 +225,35 @@ total angular momentum quantum numbers <cite>j_list</cite>.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.pdep.Configuration</a><ul>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration"><code class="docutils literal notranslate"><span class="pre">Configuration</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.E0"><code class="docutils literal notranslate"><span class="pre">Configuration.E0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.calculate_collision_frequency"><code class="docutils literal notranslate"><span class="pre">Configuration.calculate_collision_frequency()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.calculate_density_of_states"><code class="docutils literal notranslate"><span class="pre">Configuration.calculate_density_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.cleanup"><code class="docutils literal notranslate"><span class="pre">Configuration.cleanup()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.generate_collision_matrix"><code class="docutils literal notranslate"><span class="pre">Configuration.generate_collision_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.get_enthalpy"><code class="docutils literal notranslate"><span class="pre">Configuration.get_enthalpy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.get_entropy"><code class="docutils literal notranslate"><span class="pre">Configuration.get_entropy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.get_free_energy"><code class="docutils literal notranslate"><span class="pre">Configuration.get_free_energy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.get_heat_capacity"><code class="docutils literal notranslate"><span class="pre">Configuration.get_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.has_statmech"><code class="docutils literal notranslate"><span class="pre">Configuration.has_statmech()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.has_thermo"><code class="docutils literal notranslate"><span class="pre">Configuration.has_thermo()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.is_bimolecular"><code class="docutils literal notranslate"><span class="pre">Configuration.is_bimolecular()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.is_termolecular"><code class="docutils literal notranslate"><span class="pre">Configuration.is_termolecular()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.is_transition_state"><code class="docutils literal notranslate"><span class="pre">Configuration.is_transition_state()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.is_unimolecular"><code class="docutils literal notranslate"><span class="pre">Configuration.is_unimolecular()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.map_density_of_states"><code class="docutils literal notranslate"><span class="pre">Configuration.map_density_of_states()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.pdep.Configuration.map_sum_of_states"><code class="docutils literal notranslate"><span class="pre">Configuration.map_sum_of_states()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -291,7 +321,7 @@ total angular momentum quantum numbers <cite>j_list</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

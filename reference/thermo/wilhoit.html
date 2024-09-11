@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.thermo.Wilhoit &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -439,6 +440,47 @@ polynomial (rather than two).</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.thermo.Wilhoit</a><ul>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit"><code class="docutils literal notranslate"><span class="pre">Wilhoit</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.B"><code class="docutils literal notranslate"><span class="pre">Wilhoit.B</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.Cp0"><code class="docutils literal notranslate"><span class="pre">Wilhoit.Cp0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.CpInf"><code class="docutils literal notranslate"><span class="pre">Wilhoit.CpInf</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.E0"><code class="docutils literal notranslate"><span class="pre">Wilhoit.E0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.H0"><code class="docutils literal notranslate"><span class="pre">Wilhoit.H0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.S0"><code class="docutils literal notranslate"><span class="pre">Wilhoit.S0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.Tmax"><code class="docutils literal notranslate"><span class="pre">Wilhoit.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.Tmin"><code class="docutils literal notranslate"><span class="pre">Wilhoit.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.a0"><code class="docutils literal notranslate"><span class="pre">Wilhoit.a0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.a1"><code class="docutils literal notranslate"><span class="pre">Wilhoit.a1</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.a2"><code class="docutils literal notranslate"><span class="pre">Wilhoit.a2</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.a3"><code class="docutils literal notranslate"><span class="pre">Wilhoit.a3</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.as_dict"><code class="docutils literal notranslate"><span class="pre">Wilhoit.as_dict()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.comment"><code class="docutils literal notranslate"><span class="pre">Wilhoit.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.copy"><code class="docutils literal notranslate"><span class="pre">Wilhoit.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.discrepancy"><code class="docutils literal notranslate"><span class="pre">Wilhoit.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.fit_to_data"><code class="docutils literal notranslate"><span class="pre">Wilhoit.fit_to_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.fit_to_data_for_constant_b"><code class="docutils literal notranslate"><span class="pre">Wilhoit.fit_to_data_for_constant_b()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.get_enthalpy"><code class="docutils literal notranslate"><span class="pre">Wilhoit.get_enthalpy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.get_entropy"><code class="docutils literal notranslate"><span class="pre">Wilhoit.get_entropy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.get_free_energy"><code class="docutils literal notranslate"><span class="pre">Wilhoit.get_free_energy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.get_heat_capacity"><code class="docutils literal notranslate"><span class="pre">Wilhoit.get_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.is_identical_to"><code class="docutils literal notranslate"><span class="pre">Wilhoit.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.is_similar_to"><code class="docutils literal notranslate"><span class="pre">Wilhoit.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">Wilhoit.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.label"><code class="docutils literal notranslate"><span class="pre">Wilhoit.label</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.make_object"><code class="docutils literal notranslate"><span class="pre">Wilhoit.make_object()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.to_nasa"><code class="docutils literal notranslate"><span class="pre">Wilhoit.to_nasa()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.Wilhoit.to_thermo_data"><code class="docutils literal notranslate"><span class="pre">Wilhoit.to_thermo_data()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -506,7 +548,7 @@ polynomial (rather than two).</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.molecule.GroupAtom &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -287,6 +288,35 @@ self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.molecule.GroupAtom</a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom"><code class="docutils literal notranslate"><span class="pre">GroupAtom</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.apply_action"><code class="docutils literal notranslate"><span class="pre">GroupAtom.apply_action()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.copy"><code class="docutils literal notranslate"><span class="pre">GroupAtom.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.count_bonds"><code class="docutils literal notranslate"><span class="pre">GroupAtom.count_bonds()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.equivalent"><code class="docutils literal notranslate"><span class="pre">GroupAtom.equivalent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.has_wildcards"><code class="docutils literal notranslate"><span class="pre">GroupAtom.has_wildcards()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_bonded_to_surface"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_bonded_to_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_bromine"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_bromine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_carbon"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_carbon()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_chlorine"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_chlorine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_fluorine"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_fluorine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_nitrogen"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_nitrogen()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_oxygen"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_oxygen()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_specific_case_of"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_specific_case_of()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_sulfur"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_sulfur()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.is_surface_site"><code class="docutils literal notranslate"><span class="pre">GroupAtom.is_surface_site()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.make_sample_atom"><code class="docutils literal notranslate"><span class="pre">GroupAtom.make_sample_atom()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.GroupAtom.reset_connectivity_values"><code class="docutils literal notranslate"><span class="pre">GroupAtom.reset_connectivity_values()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -354,7 +384,7 @@ self.atomtype, self.radical_electrons, self.lone_pairs, and self.charge</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

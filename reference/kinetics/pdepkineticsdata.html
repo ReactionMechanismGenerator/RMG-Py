@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.kinetics.PDepKineticsData &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -302,6 +303,41 @@ returned.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.kinetics.PDepKineticsData</a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.Pdata"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.Pdata</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.Pmax"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.Pmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.Pmin"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.Pmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.Tdata"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.Tdata</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.Tmax"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.Tmin"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.comment"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.discrepancy"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.efficiencies"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.efficiencies</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.get_cantera_efficiencies"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.get_cantera_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.get_effective_collider_efficiencies"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.get_effective_collider_efficiencies()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.get_effective_pressure"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.get_effective_pressure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.highPlimit"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.highPlimit</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.is_identical_to"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.is_pressure_dependent"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.is_pressure_dependent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.is_pressure_valid"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.is_pressure_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.is_similar_to"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.kdata"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.kdata</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.to_html"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.PDepKineticsData.uncertainty"><code class="docutils literal notranslate"><span class="pre">PDepKineticsData.uncertainty</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -369,7 +405,7 @@ returned.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

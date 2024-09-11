@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.data.statmechfit &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -487,9 +488,42 @@ the status of the solve. The possible output values of the flag are:</p>
     <h3><a href="../../contents.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">rmgpy.data.statmechfit</a><ul>
-<li><a class="reference internal" href="#fitting-functions">Fitting functions</a></li>
-<li><a class="reference internal" href="#helper-functions">Helper functions</a></li>
-<li><a class="reference internal" href="#helper-classes">Helper classes</a></li>
+<li><a class="reference internal" href="#fitting-functions">Fitting functions</a><ul>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.fit_statmech_to_heat_capacity"><code class="docutils literal notranslate"><span class="pre">fit_statmech_to_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.fit_statmech_direct"><code class="docutils literal notranslate"><span class="pre">fit_statmech_direct()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.fit_statmech_pseudo_rotors"><code class="docutils literal notranslate"><span class="pre">fit_statmech_pseudo_rotors()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.fit_statmech_pseudo"><code class="docutils literal notranslate"><span class="pre">fit_statmech_pseudo()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#helper-functions">Helper functions</a><ul>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.harmonic_oscillator_heat_capacity"><code class="docutils literal notranslate"><span class="pre">harmonic_oscillator_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.harmonic_oscillator_d_heat_capacity_d_freq"><code class="docutils literal notranslate"><span class="pre">harmonic_oscillator_d_heat_capacity_d_freq()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.hindered_rotor_heat_capacity"><code class="docutils literal notranslate"><span class="pre">hindered_rotor_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_freq"><code class="docutils literal notranslate"><span class="pre">hindered_rotor_d_heat_capacity_d_freq()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.hindered_rotor_d_heat_capacity_d_barr"><code class="docutils literal notranslate"><span class="pre">hindered_rotor_d_heat_capacity_d_barr()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#helper-classes">Helper classes</a><ul>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.DirectFit"><code class="docutils literal notranslate"><span class="pre">DirectFit</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.DirectFit.evaluate"><code class="docutils literal notranslate"><span class="pre">DirectFit.evaluate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.DirectFit.initialize"><code class="docutils literal notranslate"><span class="pre">DirectFit.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.DirectFit.solve"><code class="docutils literal notranslate"><span class="pre">DirectFit.solve()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.PseudoRotorFit"><code class="docutils literal notranslate"><span class="pre">PseudoRotorFit</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.PseudoRotorFit.evaluate"><code class="docutils literal notranslate"><span class="pre">PseudoRotorFit.evaluate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize"><code class="docutils literal notranslate"><span class="pre">PseudoRotorFit.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve"><code class="docutils literal notranslate"><span class="pre">PseudoRotorFit.solve()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.PseudoFit"><code class="docutils literal notranslate"><span class="pre">PseudoFit</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.PseudoFit.evaluate"><code class="docutils literal notranslate"><span class="pre">PseudoFit.evaluate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.PseudoFit.initialize"><code class="docutils literal notranslate"><span class="pre">PseudoFit.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.statmechfit.PseudoFit.solve"><code class="docutils literal notranslate"><span class="pre">PseudoFit.solve()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -562,7 +596,7 @@ the status of the solve. The possible output values of the flag are:</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

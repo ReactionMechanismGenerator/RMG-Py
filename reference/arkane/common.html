@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>arkane.common &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -321,6 +322,34 @@ Search for knows phrases which were replace, and fix the format on the fly.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">arkane.common</a><ul>
+<li><a class="reference internal" href="#arkane.common.ArkaneSpecies"><code class="docutils literal notranslate"><span class="pre">ArkaneSpecies</span></code></a><ul>
+<li><a class="reference internal" href="#arkane.common.ArkaneSpecies.as_dict"><code class="docutils literal notranslate"><span class="pre">ArkaneSpecies.as_dict()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.ArkaneSpecies.load_yaml"><code class="docutils literal notranslate"><span class="pre">ArkaneSpecies.load_yaml()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.ArkaneSpecies.make_object"><code class="docutils literal notranslate"><span class="pre">ArkaneSpecies.make_object()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.ArkaneSpecies.save_yaml"><code class="docutils literal notranslate"><span class="pre">ArkaneSpecies.save_yaml()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.ArkaneSpecies.update_species_attributes"><code class="docutils literal notranslate"><span class="pre">ArkaneSpecies.update_species_attributes()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.ArkaneSpecies.update_xyz_string"><code class="docutils literal notranslate"><span class="pre">ArkaneSpecies.update_xyz_string()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#arkane.common.check_conformer_energy"><code class="docutils literal notranslate"><span class="pre">check_conformer_energy()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.clean_dir"><code class="docutils literal notranslate"><span class="pre">clean_dir()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.convert_imaginary_freq_to_negative_float"><code class="docutils literal notranslate"><span class="pre">convert_imaginary_freq_to_negative_float()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.get_center_of_mass"><code class="docutils literal notranslate"><span class="pre">get_center_of_mass()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.get_element_mass"><code class="docutils literal notranslate"><span class="pre">get_element_mass()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.get_moment_of_inertia_tensor"><code class="docutils literal notranslate"><span class="pre">get_moment_of_inertia_tensor()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.get_principal_moments_of_inertia"><code class="docutils literal notranslate"><span class="pre">get_principal_moments_of_inertia()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.is_pdep"><code class="docutils literal notranslate"><span class="pre">is_pdep()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.replace_yaml_syntax"><code class="docutils literal notranslate"><span class="pre">replace_yaml_syntax()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.common.str_repr"><code class="docutils literal notranslate"><span class="pre">str_repr()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -388,7 +417,7 @@ Search for knows phrases which were replace, and fix the format on the fly.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

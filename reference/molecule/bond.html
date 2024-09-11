@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.molecule.Bond &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -314,6 +315,32 @@ following bond types:</p>
     <h3><a href="../../contents.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">rmgpy.molecule.Bond</a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond"><code class="docutils literal notranslate"><span class="pre">Bond</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.apply_action"><code class="docutils literal notranslate"><span class="pre">Bond.apply_action()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.copy"><code class="docutils literal notranslate"><span class="pre">Bond.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.decrement_order"><code class="docutils literal notranslate"><span class="pre">Bond.decrement_order()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.equivalent"><code class="docutils literal notranslate"><span class="pre">Bond.equivalent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.get_bde"><code class="docutils literal notranslate"><span class="pre">Bond.get_bde()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.get_bond_string"><code class="docutils literal notranslate"><span class="pre">Bond.get_bond_string()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.get_order_num"><code class="docutils literal notranslate"><span class="pre">Bond.get_order_num()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.get_order_str"><code class="docutils literal notranslate"><span class="pre">Bond.get_order_str()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.get_other_vertex"><code class="docutils literal notranslate"><span class="pre">Bond.get_other_vertex()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.increment_order"><code class="docutils literal notranslate"><span class="pre">Bond.increment_order()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_benzene"><code class="docutils literal notranslate"><span class="pre">Bond.is_benzene()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_double"><code class="docutils literal notranslate"><span class="pre">Bond.is_double()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_hydrogen_bond"><code class="docutils literal notranslate"><span class="pre">Bond.is_hydrogen_bond()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_order"><code class="docutils literal notranslate"><span class="pre">Bond.is_order()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_quadruple"><code class="docutils literal notranslate"><span class="pre">Bond.is_quadruple()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_reaction_bond"><code class="docutils literal notranslate"><span class="pre">Bond.is_reaction_bond()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_single"><code class="docutils literal notranslate"><span class="pre">Bond.is_single()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_specific_case_of"><code class="docutils literal notranslate"><span class="pre">Bond.is_specific_case_of()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_triple"><code class="docutils literal notranslate"><span class="pre">Bond.is_triple()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.is_van_der_waals"><code class="docutils literal notranslate"><span class="pre">Bond.is_van_der_waals()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.set_order_num"><code class="docutils literal notranslate"><span class="pre">Bond.set_order_num()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.set_order_str"><code class="docutils literal notranslate"><span class="pre">Bond.set_order_str()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Bond.sorting_key"><code class="docutils literal notranslate"><span class="pre">Bond.sorting_key</span></code></a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#bond-types">Bond types</a></li>
 </ul>
 </li>
@@ -387,7 +414,7 @@ following bond types:</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

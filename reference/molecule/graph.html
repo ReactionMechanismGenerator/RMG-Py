@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.molecule.graph.Graph &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -432,6 +433,57 @@ used to accelerate the isomorphism checking.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.molecule.graph.Graph</a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph"><code class="docutils literal notranslate"><span class="pre">Graph</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.add_edge"><code class="docutils literal notranslate"><span class="pre">Graph.add_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.add_vertex"><code class="docutils literal notranslate"><span class="pre">Graph.add_vertex()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.copy"><code class="docutils literal notranslate"><span class="pre">Graph.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.copy_and_map"><code class="docutils literal notranslate"><span class="pre">Graph.copy_and_map()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.find_isomorphism"><code class="docutils literal notranslate"><span class="pre">Graph.find_isomorphism()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.find_subgraph_isomorphisms"><code class="docutils literal notranslate"><span class="pre">Graph.find_subgraph_isomorphisms()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_all_cycles"><code class="docutils literal notranslate"><span class="pre">Graph.get_all_cycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_all_cycles_of_size"><code class="docutils literal notranslate"><span class="pre">Graph.get_all_cycles_of_size()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_all_cyclic_vertices"><code class="docutils literal notranslate"><span class="pre">Graph.get_all_cyclic_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_all_edges"><code class="docutils literal notranslate"><span class="pre">Graph.get_all_edges()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_all_polycyclic_vertices"><code class="docutils literal notranslate"><span class="pre">Graph.get_all_polycyclic_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_all_simple_cycles_of_size"><code class="docutils literal notranslate"><span class="pre">Graph.get_all_simple_cycles_of_size()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_disparate_cycles"><code class="docutils literal notranslate"><span class="pre">Graph.get_disparate_cycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_edge"><code class="docutils literal notranslate"><span class="pre">Graph.get_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_edges"><code class="docutils literal notranslate"><span class="pre">Graph.get_edges()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_edges_in_cycle"><code class="docutils literal notranslate"><span class="pre">Graph.get_edges_in_cycle()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_largest_ring"><code class="docutils literal notranslate"><span class="pre">Graph.get_largest_ring()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_max_cycle_overlap"><code class="docutils literal notranslate"><span class="pre">Graph.get_max_cycle_overlap()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_monocycles"><code class="docutils literal notranslate"><span class="pre">Graph.get_monocycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_polycycles"><code class="docutils literal notranslate"><span class="pre">Graph.get_polycycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_relevant_cycles"><code class="docutils literal notranslate"><span class="pre">Graph.get_relevant_cycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.get_smallest_set_of_smallest_rings"><code class="docutils literal notranslate"><span class="pre">Graph.get_smallest_set_of_smallest_rings()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.has_edge"><code class="docutils literal notranslate"><span class="pre">Graph.has_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.has_vertex"><code class="docutils literal notranslate"><span class="pre">Graph.has_vertex()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.is_cyclic"><code class="docutils literal notranslate"><span class="pre">Graph.is_cyclic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.is_edge_in_cycle"><code class="docutils literal notranslate"><span class="pre">Graph.is_edge_in_cycle()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">Graph.is_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.is_mapping_valid"><code class="docutils literal notranslate"><span class="pre">Graph.is_mapping_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.is_subgraph_isomorphic"><code class="docutils literal notranslate"><span class="pre">Graph.is_subgraph_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.is_vertex_in_cycle"><code class="docutils literal notranslate"><span class="pre">Graph.is_vertex_in_cycle()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.merge"><code class="docutils literal notranslate"><span class="pre">Graph.merge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.remove_edge"><code class="docutils literal notranslate"><span class="pre">Graph.remove_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.remove_vertex"><code class="docutils literal notranslate"><span class="pre">Graph.remove_vertex()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.reset_connectivity_values"><code class="docutils literal notranslate"><span class="pre">Graph.reset_connectivity_values()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.restore_vertex_order"><code class="docutils literal notranslate"><span class="pre">Graph.restore_vertex_order()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.sort_cyclic_vertices"><code class="docutils literal notranslate"><span class="pre">Graph.sort_cyclic_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.sort_vertices"><code class="docutils literal notranslate"><span class="pre">Graph.sort_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.split"><code class="docutils literal notranslate"><span class="pre">Graph.split()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.graph.Graph.update_connectivity_values"><code class="docutils literal notranslate"><span class="pre">Graph.update_connectivity_values()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -499,7 +551,7 @@ used to accelerate the isomorphism checking.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Saving Arkane output &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -211,6 +212,31 @@ onto multiple lines, indenting as appropriate for readability.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Saving Arkane output</a><ul>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor</span></code></a><ul>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.generic_visit"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.generic_visit()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Call"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Call()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Dict"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Dict()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_List"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_List()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Num"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Num()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Str"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Str()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Tuple"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Tuple()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_UnaryOp"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_UnaryOp()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#arkane.output.get_str_xyz"><code class="docutils literal notranslate"><span class="pre">get_str_xyz()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.prettify"><code class="docutils literal notranslate"><span class="pre">prettify()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.save_kinetics_lib"><code class="docutils literal notranslate"><span class="pre">save_kinetics_lib()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.save_thermo_lib"><code class="docutils literal notranslate"><span class="pre">save_thermo_lib()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -278,7 +304,7 @@ onto multiple lines, indenting as appropriate for readability.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.molecule.Group &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -840,6 +841,106 @@ isomorphism checks.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.molecule.Group</a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.Group"><code class="docutils literal notranslate"><span class="pre">Group</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.add_atom"><code class="docutils literal notranslate"><span class="pre">Group.add_atom()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.add_bond"><code class="docutils literal notranslate"><span class="pre">Group.add_bond()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.add_edge"><code class="docutils literal notranslate"><span class="pre">Group.add_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.add_explicit_ligands"><code class="docutils literal notranslate"><span class="pre">Group.add_explicit_ligands()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.add_implicit_atoms_from_atomtype"><code class="docutils literal notranslate"><span class="pre">Group.add_implicit_atoms_from_atomtype()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.add_implicit_benzene"><code class="docutils literal notranslate"><span class="pre">Group.add_implicit_benzene()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.add_vertex"><code class="docutils literal notranslate"><span class="pre">Group.add_vertex()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.atoms"><code class="docutils literal notranslate"><span class="pre">Group.atoms</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.classify_benzene_carbons"><code class="docutils literal notranslate"><span class="pre">Group.classify_benzene_carbons()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.clear_labeled_atoms"><code class="docutils literal notranslate"><span class="pre">Group.clear_labeled_atoms()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.clear_reg_dims"><code class="docutils literal notranslate"><span class="pre">Group.clear_reg_dims()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.contains_labeled_atom"><code class="docutils literal notranslate"><span class="pre">Group.contains_labeled_atom()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.contains_surface_site"><code class="docutils literal notranslate"><span class="pre">Group.contains_surface_site()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.copy"><code class="docutils literal notranslate"><span class="pre">Group.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.copy_and_map"><code class="docutils literal notranslate"><span class="pre">Group.copy_and_map()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.create_and_connect_atom"><code class="docutils literal notranslate"><span class="pre">Group.create_and_connect_atom()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.draw"><code class="docutils literal notranslate"><span class="pre">Group.draw()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.find_isomorphism"><code class="docutils literal notranslate"><span class="pre">Group.find_isomorphism()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.find_subgraph_isomorphisms"><code class="docutils literal notranslate"><span class="pre">Group.find_subgraph_isomorphisms()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.from_adjacency_list"><code class="docutils literal notranslate"><span class="pre">Group.from_adjacency_list()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_all_cycles"><code class="docutils literal notranslate"><span class="pre">Group.get_all_cycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_all_cycles_of_size"><code class="docutils literal notranslate"><span class="pre">Group.get_all_cycles_of_size()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_all_cyclic_vertices"><code class="docutils literal notranslate"><span class="pre">Group.get_all_cyclic_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_all_edges"><code class="docutils literal notranslate"><span class="pre">Group.get_all_edges()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_all_labeled_atoms"><code class="docutils literal notranslate"><span class="pre">Group.get_all_labeled_atoms()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_all_polycyclic_vertices"><code class="docutils literal notranslate"><span class="pre">Group.get_all_polycyclic_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_all_simple_cycles_of_size"><code class="docutils literal notranslate"><span class="pre">Group.get_all_simple_cycles_of_size()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_bond"><code class="docutils literal notranslate"><span class="pre">Group.get_bond()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_bonds"><code class="docutils literal notranslate"><span class="pre">Group.get_bonds()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_disparate_cycles"><code class="docutils literal notranslate"><span class="pre">Group.get_disparate_cycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_edge"><code class="docutils literal notranslate"><span class="pre">Group.get_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_edges"><code class="docutils literal notranslate"><span class="pre">Group.get_edges()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_edges_in_cycle"><code class="docutils literal notranslate"><span class="pre">Group.get_edges_in_cycle()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_element_count"><code class="docutils literal notranslate"><span class="pre">Group.get_element_count()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_extensions"><code class="docutils literal notranslate"><span class="pre">Group.get_extensions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_labeled_atoms"><code class="docutils literal notranslate"><span class="pre">Group.get_labeled_atoms()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_largest_ring"><code class="docutils literal notranslate"><span class="pre">Group.get_largest_ring()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_max_cycle_overlap"><code class="docutils literal notranslate"><span class="pre">Group.get_max_cycle_overlap()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_monocycles"><code class="docutils literal notranslate"><span class="pre">Group.get_monocycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_net_charge"><code class="docutils literal notranslate"><span class="pre">Group.get_net_charge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_polycycles"><code class="docutils literal notranslate"><span class="pre">Group.get_polycycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_relevant_cycles"><code class="docutils literal notranslate"><span class="pre">Group.get_relevant_cycles()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_smallest_set_of_smallest_rings"><code class="docutils literal notranslate"><span class="pre">Group.get_smallest_set_of_smallest_rings()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.get_surface_sites"><code class="docutils literal notranslate"><span class="pre">Group.get_surface_sites()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.has_atom"><code class="docutils literal notranslate"><span class="pre">Group.has_atom()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.has_bond"><code class="docutils literal notranslate"><span class="pre">Group.has_bond()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.has_edge"><code class="docutils literal notranslate"><span class="pre">Group.has_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.has_vertex"><code class="docutils literal notranslate"><span class="pre">Group.has_vertex()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.has_wildcards"><code class="docutils literal notranslate"><span class="pre">Group.has_wildcards()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_aromatic_ring"><code class="docutils literal notranslate"><span class="pre">Group.is_aromatic_ring()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_benzene_explicit"><code class="docutils literal notranslate"><span class="pre">Group.is_benzene_explicit()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_cyclic"><code class="docutils literal notranslate"><span class="pre">Group.is_cyclic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_edge_in_cycle"><code class="docutils literal notranslate"><span class="pre">Group.is_edge_in_cycle()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_identical"><code class="docutils literal notranslate"><span class="pre">Group.is_identical()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">Group.is_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_mapping_valid"><code class="docutils literal notranslate"><span class="pre">Group.is_mapping_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_subgraph_isomorphic"><code class="docutils literal notranslate"><span class="pre">Group.is_subgraph_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_surface_site"><code class="docutils literal notranslate"><span class="pre">Group.is_surface_site()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_vertex_in_cycle"><code class="docutils literal notranslate"><span class="pre">Group.is_vertex_in_cycle()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.make_sample_molecule"><code class="docutils literal notranslate"><span class="pre">Group.make_sample_molecule()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.merge"><code class="docutils literal notranslate"><span class="pre">Group.merge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.merge_groups"><code class="docutils literal notranslate"><span class="pre">Group.merge_groups()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.pick_wildcards"><code class="docutils literal notranslate"><span class="pre">Group.pick_wildcards()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.remove_atom"><code class="docutils literal notranslate"><span class="pre">Group.remove_atom()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.remove_bond"><code class="docutils literal notranslate"><span class="pre">Group.remove_bond()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.remove_edge"><code class="docutils literal notranslate"><span class="pre">Group.remove_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.remove_van_der_waals_bonds"><code class="docutils literal notranslate"><span class="pre">Group.remove_van_der_waals_bonds()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.remove_vertex"><code class="docutils literal notranslate"><span class="pre">Group.remove_vertex()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.reset_connectivity_values"><code class="docutils literal notranslate"><span class="pre">Group.reset_connectivity_values()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.reset_ring_membership"><code class="docutils literal notranslate"><span class="pre">Group.reset_ring_membership()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.restore_vertex_order"><code class="docutils literal notranslate"><span class="pre">Group.restore_vertex_order()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.sort_atoms"><code class="docutils literal notranslate"><span class="pre">Group.sort_atoms()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.sort_by_connectivity"><code class="docutils literal notranslate"><span class="pre">Group.sort_by_connectivity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.sort_cyclic_vertices"><code class="docutils literal notranslate"><span class="pre">Group.sort_cyclic_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.sort_vertices"><code class="docutils literal notranslate"><span class="pre">Group.sort_vertices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.specify_atom_extensions"><code class="docutils literal notranslate"><span class="pre">Group.specify_atom_extensions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.specify_bond_extensions"><code class="docutils literal notranslate"><span class="pre">Group.specify_bond_extensions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.specify_external_new_bond_extensions"><code class="docutils literal notranslate"><span class="pre">Group.specify_external_new_bond_extensions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.specify_internal_new_bond_extensions"><code class="docutils literal notranslate"><span class="pre">Group.specify_internal_new_bond_extensions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.specify_ring_extensions"><code class="docutils literal notranslate"><span class="pre">Group.specify_ring_extensions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.specify_unpaired_extensions"><code class="docutils literal notranslate"><span class="pre">Group.specify_unpaired_extensions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.split"><code class="docutils literal notranslate"><span class="pre">Group.split()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.standardize_atomtype"><code class="docutils literal notranslate"><span class="pre">Group.standardize_atomtype()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.standardize_group"><code class="docutils literal notranslate"><span class="pre">Group.standardize_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.to_adjacency_list"><code class="docutils literal notranslate"><span class="pre">Group.to_adjacency_list()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.update_charge"><code class="docutils literal notranslate"><span class="pre">Group.update_charge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.update_connectivity_values"><code class="docutils literal notranslate"><span class="pre">Group.update_connectivity_values()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.update_fingerprint"><code class="docutils literal notranslate"><span class="pre">Group.update_fingerprint()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -907,7 +1008,7 @@ isomorphism checks.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

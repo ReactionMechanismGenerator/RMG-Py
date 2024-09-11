@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.rmg.model.CoreEdgeReactionModel &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -510,6 +511,61 @@ model and <cite>other</cite>.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.rmg.model.CoreEdgeReactionModel</a><ul>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_new_surface_objects"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_new_surface_objects()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_edge"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_reaction_library_to_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_library_to_output"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_reaction_library_to_output()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_core"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_reaction_to_core()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_edge"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_reaction_to_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_reaction_to_unimolecular_networks"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_reaction_to_unimolecular_networks()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_seed_mechanism_to_core"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_seed_mechanism_to_core()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_core"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_species_to_core()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.add_species_to_edge"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.add_species_to_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.adjust_surface"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.adjust_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.apply_kinetics_to_reaction"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.apply_kinetics_to_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.apply_thermo_to_species"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.apply_thermo_to_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_reaction"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.check_for_existing_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.check_for_existing_species"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.check_for_existing_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.clear_surface_adjustments"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.clear_surface_adjustments()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.enlarge"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.enlarge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generate_kinetics"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.generate_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.generate_thermo"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.generate_thermo()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_model_size"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.get_model_size()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_species_reaction_lists"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.get_species_reaction_lists()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.get_stoichiometry_matrix"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.get_stoichiometry_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.initialize_index_species_dict"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.initialize_index_species_dict()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.log_enlarge_summary"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.log_enlarge_summary()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_pdep_reaction"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.make_new_pdep_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_reaction"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.make_new_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.make_new_species"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.make_new_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.mark_chemkin_duplicates"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.mark_chemkin_duplicates()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.process_coverage_dependence"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.process_coverage_dependence()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.process_new_reactions"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.process_new_reactions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.prune"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.prune()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.register_reaction"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.register_reaction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.remove_empty_pdep_networks"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.remove_empty_pdep_networks()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.remove_species_from_edge"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.remove_species_from_edge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.retrieve"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.retrieve()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.search_retrieve_reactions"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.search_retrieve_reactions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.set_thermodynamic_filtering_parameters"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.set_thermodynamic_filtering_parameters()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_down"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.thermo_filter_down()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.thermo_filter_species"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.thermo_filter_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.CoreEdgeReactionModel.update_unimolecular_reaction_networks"><code class="docutils literal notranslate"><span class="pre">CoreEdgeReactionModel.update_unimolecular_reaction_networks()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.rmg.model.ReactionModel"><code class="docutils literal notranslate"><span class="pre">ReactionModel</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.rmg.model.ReactionModel.merge"><code class="docutils literal notranslate"><span class="pre">ReactionModel.merge()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -577,7 +633,7 @@ model and <cite>other</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

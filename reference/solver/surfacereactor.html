@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.solver.SurfaceReactor &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -316,6 +317,43 @@ and <cite>dydt</cite> attributes.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.solver.SurfaceReactor</a><ul>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.add_reactions_to_surface"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.add_reactions_to_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.advance"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.advance()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.compute_network_variables"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.compute_network_variables()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.compute_rate_derivative"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.compute_rate_derivative()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.convert_initial_keys_to_species_objects"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.convert_initial_keys_to_species_objects()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.generate_rate_coefficients"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.generate_rate_coefficients()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.generate_reactant_product_indices"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.generate_reactant_product_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.generate_reaction_indices"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.generate_reaction_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.generate_species_indices"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.generate_species_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.get_layering_indices"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.get_layering_indices()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.get_species_index"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.get_species_index()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.get_threshold_rate_constants"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.get_threshold_rate_constants()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.initialize"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.initialize_model"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.initialize_model()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.initialize_surface"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.initialize_surface()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.initiate_tolerances"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.initiate_tolerances()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.log_conversions"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.log_conversions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.log_initial_conditions"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.log_initial_conditions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.log_rates"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.log_rates()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.reset_max_edge_species_rate_ratios"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.reset_max_edge_species_rate_ratios()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.residual"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.residual()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.set_initial_conditions"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.set_initial_conditions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.set_initial_derivative"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.set_initial_derivative()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.simulate"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.simulate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.step"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.step()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -383,7 +421,7 @@ and <cite>dydt</cite> attributes.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

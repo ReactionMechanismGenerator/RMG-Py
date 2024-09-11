@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.data.kinetics.KineticsLibrary &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -345,6 +346,47 @@ syntax.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.data.kinetics.KineticsLibrary</a><ul>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.ancestors"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.ancestors()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.are_siblings"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.are_siblings()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.check_for_duplicates"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.check_for_duplicates()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.convert_duplicates_to_multi"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.convert_duplicates_to_multi()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.descend_tree"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.descend_tree()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.descendants"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.descendants()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.generate_old_tree"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.generate_old_tree()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.get_entries_to_save"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.get_entries_to_save()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.get_library_reactions"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.get_library_reactions()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.get_species"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.get_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.load"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.load()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.load_entry"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.load_entry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.load_old"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.load_old()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.load_old_dictionary"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.load_old_dictionary()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.load_old_library"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.load_old_library()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.load_old_tree"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.load_old_tree()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.mark_valid_duplicates"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.mark_valid_duplicates()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.match_node_to_child"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.match_node_to_child()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.match_node_to_node"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.match_node_to_node()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.match_node_to_structure"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.match_node_to_structure()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.parse_old_library"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.parse_old_library()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.remove_group"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.remove_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.save"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.save()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.save_dictionary"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.save_dictionary()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.save_entry"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.save_entry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.save_old"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.save_old()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.save_old_dictionary"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.save_old_dictionary()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.save_old_library"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.save_old_library()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.data.kinetics.KineticsLibrary.save_old_tree"><code class="docutils literal notranslate"><span class="pre">KineticsLibrary.save_old_tree()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -412,7 +454,7 @@ syntax.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

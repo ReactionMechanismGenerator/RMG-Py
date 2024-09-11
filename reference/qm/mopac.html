@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.qm.mopac &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -903,6 +904,142 @@ for the <cite>attempt</cite>.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.qm.mopac</a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.Mopac"><code class="docutils literal notranslate"><span class="pre">Mopac</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.Mopac.failure_keys"><code class="docutils literal notranslate"><span class="pre">Mopac.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.Mopac.get_parser"><code class="docutils literal notranslate"><span class="pre">Mopac.get_parser()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.Mopac.success_keys"><code class="docutils literal notranslate"><span class="pre">Mopac.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.Mopac.verify_output_file"><code class="docutils literal notranslate"><span class="pre">Mopac.verify_output_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol"><code class="docutils literal notranslate"><span class="pre">MopacMol</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.calculate_chirality_correction"><code class="docutils literal notranslate"><span class="pre">MopacMol.calculate_chirality_correction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.calculate_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMol.calculate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.check_paths"><code class="docutils literal notranslate"><span class="pre">MopacMol.check_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.check_ready"><code class="docutils literal notranslate"><span class="pre">MopacMol.check_ready()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.create_geometry"><code class="docutils literal notranslate"><span class="pre">MopacMol.create_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.determine_point_group"><code class="docutils literal notranslate"><span class="pre">MopacMol.determine_point_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.failure_keys"><code class="docutils literal notranslate"><span class="pre">MopacMol.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.generate_qm_data"><code class="docutils literal notranslate"><span class="pre">MopacMol.generate_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.generate_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMol.generate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.get_augmented_inchi_key"><code class="docutils literal notranslate"><span class="pre">MopacMol.get_augmented_inchi_key()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.get_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMol.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.get_mol_file_path_for_calculation"><code class="docutils literal notranslate"><span class="pre">MopacMol.get_mol_file_path_for_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.get_parser"><code class="docutils literal notranslate"><span class="pre">MopacMol.get_parser()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.get_thermo_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMol.get_thermo_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.initialize"><code class="docutils literal notranslate"><span class="pre">MopacMol.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.input_file_keywords"><code class="docutils literal notranslate"><span class="pre">MopacMol.input_file_keywords()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.input_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMol.input_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.keywords"><code class="docutils literal notranslate"><span class="pre">MopacMol.keywords</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.load_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMol.load_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.max_attempts"><code class="docutils literal notranslate"><span class="pre">MopacMol.max_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.output_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMol.output_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.parse"><code class="docutils literal notranslate"><span class="pre">MopacMol.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.save_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMol.save_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.script_attempts"><code class="docutils literal notranslate"><span class="pre">MopacMol.script_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.success_keys"><code class="docutils literal notranslate"><span class="pre">MopacMol.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.verify_output_file"><code class="docutils literal notranslate"><span class="pre">MopacMol.verify_output_file()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMol.write_input_file"><code class="docutils literal notranslate"><span class="pre">MopacMol.write_input_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.calculate_chirality_correction"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.calculate_chirality_correction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.calculate_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.calculate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.check_paths"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.check_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.check_ready"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.check_ready()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.create_geometry"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.create_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.determine_point_group"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.determine_point_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.failure_keys"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.generate_qm_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.generate_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.generate_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.generate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.get_augmented_inchi_key"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.get_augmented_inchi_key()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.get_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.get_mol_file_path_for_calculation"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.get_mol_file_path_for_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.get_parser"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.get_parser()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.get_thermo_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.get_thermo_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.initialize"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.input_file_keywords"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.input_file_keywords()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.input_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.input_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.keywords"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.keywords</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.load_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.load_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.max_attempts"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.max_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.output_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.output_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.parse"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.save_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.save_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.script_attempts"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.script_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.success_keys"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.verify_output_file"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.verify_output_file()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM3.write_input_file"><code class="docutils literal notranslate"><span class="pre">MopacMolPM3.write_input_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.calculate_chirality_correction"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.calculate_chirality_correction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.calculate_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.calculate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.check_paths"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.check_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.check_ready"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.check_ready()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.create_geometry"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.create_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.determine_point_group"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.determine_point_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.failure_keys"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.generate_qm_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.generate_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.generate_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.generate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.get_augmented_inchi_key"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.get_augmented_inchi_key()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.get_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.get_mol_file_path_for_calculation"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.get_mol_file_path_for_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.get_parser"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.get_parser()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.get_thermo_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.get_thermo_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.initialize"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.input_file_keywords"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.input_file_keywords()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.input_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.input_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.keywords"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.keywords</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.load_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.load_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.max_attempts"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.max_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.output_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.output_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.parse"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.save_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.save_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.script_attempts"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.script_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.success_keys"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.verify_output_file"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.verify_output_file()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM6.write_input_file"><code class="docutils literal notranslate"><span class="pre">MopacMolPM6.write_input_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.calculate_chirality_correction"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.calculate_chirality_correction()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.calculate_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.calculate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.check_paths"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.check_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.check_ready"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.check_ready()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.create_geometry"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.create_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.determine_point_group"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.determine_point_group()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.failure_keys"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.failure_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.generate_qm_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.generate_qm_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.generate_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.generate_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.get_augmented_inchi_key"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.get_augmented_inchi_key()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.get_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.get_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.get_mol_file_path_for_calculation"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.get_mol_file_path_for_calculation()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.get_parser"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.get_parser()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.get_thermo_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.get_thermo_file_path()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.initialize"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.initialize()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.input_file_keywords"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.input_file_keywords()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.input_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.input_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.keywords"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.keywords</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.load_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.load_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.max_attempts"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.max_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.output_file_path"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.output_file_path</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.parse"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.parse()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.save_thermo_data"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.save_thermo_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.script_attempts"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.script_attempts</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.success_keys"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.success_keys</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.verify_output_file"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.verify_output_file()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.qm.mopac.MopacMolPM7.write_input_file"><code class="docutils literal notranslate"><span class="pre">MopacMolPM7.write_input_file()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -970,7 +1107,7 @@ for the <cite>attempt</cite>.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

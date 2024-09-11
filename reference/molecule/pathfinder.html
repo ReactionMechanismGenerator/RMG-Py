@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.molecule.pathfinder &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -279,6 +280,30 @@ We don’t allow O to remain with no lone pairs</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.molecule.pathfinder</a><ul>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.add_allyls"><code class="docutils literal notranslate"><span class="pre">add_allyls()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.add_inverse_allyls"><code class="docutils literal notranslate"><span class="pre">add_inverse_allyls()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.add_unsaturated_bonds"><code class="docutils literal notranslate"><span class="pre">add_unsaturated_bonds()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.compute_atom_distance"><code class="docutils literal notranslate"><span class="pre">compute_atom_distance()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_N5dc_radical_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_N5dc_radical_delocalization_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_multiple_bond_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_adj_lone_pair_multiple_bond_delocalization_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_adj_lone_pair_radical_delocalization_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_adj_lone_pair_radical_multiple_bond_delocalization_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_allyl_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_allyl_delocalization_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_allyl_end_with_charge"><code class="docutils literal notranslate"><span class="pre">find_allyl_end_with_charge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_butadiene"><code class="docutils literal notranslate"><span class="pre">find_butadiene()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_butadiene_end_with_charge"><code class="docutils literal notranslate"><span class="pre">find_butadiene_end_with_charge()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_lone_pair_multiple_bond_paths"><code class="docutils literal notranslate"><span class="pre">find_lone_pair_multiple_bond_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.is_atom_able_to_gain_lone_pair"><code class="docutils literal notranslate"><span class="pre">is_atom_able_to_gain_lone_pair()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.is_atom_able_to_lose_lone_pair"><code class="docutils literal notranslate"><span class="pre">is_atom_able_to_lose_lone_pair()</span></code></a></li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -346,7 +371,7 @@ We don’t allow O to remain with no lone pairs</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

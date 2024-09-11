@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Sensitivity Analysis &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -233,6 +234,31 @@ If unperturb is <cite>False</cite>, this is done by subtracting.</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">Sensitivity Analysis</a><ul>
+<li><a class="reference internal" href="#arkane.sensitivity.KineticsSensitivity"><code class="docutils literal notranslate"><span class="pre">KineticsSensitivity</span></code></a><ul>
+<li><a class="reference internal" href="#arkane.sensitivity.KineticsSensitivity.execute"><code class="docutils literal notranslate"><span class="pre">KineticsSensitivity.execute()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.sensitivity.KineticsSensitivity.perturb"><code class="docutils literal notranslate"><span class="pre">KineticsSensitivity.perturb()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.sensitivity.KineticsSensitivity.plot"><code class="docutils literal notranslate"><span class="pre">KineticsSensitivity.plot()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.sensitivity.KineticsSensitivity.save"><code class="docutils literal notranslate"><span class="pre">KineticsSensitivity.save()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.sensitivity.KineticsSensitivity.unperturb"><code class="docutils literal notranslate"><span class="pre">KineticsSensitivity.unperturb()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#arkane.sensitivity.PDepSensitivity"><code class="docutils literal notranslate"><span class="pre">PDepSensitivity</span></code></a><ul>
+<li><a class="reference internal" href="#arkane.sensitivity.PDepSensitivity.execute"><code class="docutils literal notranslate"><span class="pre">PDepSensitivity.execute()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.sensitivity.PDepSensitivity.perturb"><code class="docutils literal notranslate"><span class="pre">PDepSensitivity.perturb()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.sensitivity.PDepSensitivity.plot"><code class="docutils literal notranslate"><span class="pre">PDepSensitivity.plot()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.sensitivity.PDepSensitivity.save"><code class="docutils literal notranslate"><span class="pre">PDepSensitivity.save()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.sensitivity.PDepSensitivity.unperturb"><code class="docutils literal notranslate"><span class="pre">PDepSensitivity.unperturb()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -300,7 +326,7 @@ If unperturb is <cite>False</cite>, this is done by subtracting.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

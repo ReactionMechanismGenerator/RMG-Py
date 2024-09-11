@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>Reading Chemkin files &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -174,8 +175,20 @@ If the comment is encoded with latin-1, it is converted to utf-8.</p>
     <h3><a href="../../contents.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">Reading Chemkin files</a><ul>
-<li><a class="reference internal" href="#main-functions">Main functions</a></li>
-<li><a class="reference internal" href="#helper-functions">Helper functions</a></li>
+<li><a class="reference internal" href="#main-functions">Main functions</a><ul>
+<li><a class="reference internal" href="#rmgpy.chemkin.load_chemkin_file"><code class="docutils literal notranslate"><span class="pre">load_chemkin_file()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.chemkin.load_species_dictionary"><code class="docutils literal notranslate"><span class="pre">load_species_dictionary()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.chemkin.load_transport_file"><code class="docutils literal notranslate"><span class="pre">load_transport_file()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#helper-functions">Helper functions</a><ul>
+<li><a class="reference internal" href="#rmgpy.chemkin.read_kinetics_entry"><code class="docutils literal notranslate"><span class="pre">read_kinetics_entry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.chemkin.read_reaction_comments"><code class="docutils literal notranslate"><span class="pre">read_reaction_comments()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.chemkin.read_reactions_block"><code class="docutils literal notranslate"><span class="pre">read_reactions_block()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.chemkin.read_thermo_entry"><code class="docutils literal notranslate"><span class="pre">read_thermo_entry()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.chemkin.remove_comment_from_line"><code class="docutils literal notranslate"><span class="pre">remove_comment_from_line()</span></code></a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -248,7 +261,7 @@ If the comment is encoded with latin-1, it is converted to utf-8.</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");

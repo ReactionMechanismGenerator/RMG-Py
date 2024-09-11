@@ -4,7 +4,7 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
     <title>rmgpy.kinetics.SurfaceArrhenius &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
@@ -15,6 +15,7 @@
     <script src="../../_static/underscore.js"></script>
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
     <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
@@ -331,6 +332,42 @@ Cantera.ArrheniusRate</p>
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">rmgpy.kinetics.SurfaceArrhenius</a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.A"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.A</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.Ea"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.Ea</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.Pmax"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.Pmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.Pmin"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.Pmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.T0"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.T0</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.Tmax"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.Tmax</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.Tmin"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.Tmin</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.change_rate"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.change_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.change_t0"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.change_t0()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.comment"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.comment</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.coverage_dependence"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.coverage_dependence</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.discrepancy"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.discrepancy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.fit_to_data"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.fit_to_data()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.get_rate_coefficient()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.is_identical_to"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.is_identical_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.is_pressure_dependent"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.is_pressure_dependent()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.is_similar_to"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.is_similar_to()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.is_temperature_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.n"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.n</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.to_arrhenius_ep"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.to_arrhenius_ep()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.to_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.to_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.to_html"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.uncertainty"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.uncertainty</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
@@ -398,7 +435,7 @@ Cantera.ArrheniusRate</p>
 
     <div class="footer" role="contentinfo">
         &#169; Copyright 2002-2024, William H. Green, Richard H. West, and the RMG Team.
-      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.0.2.
+      Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 5.3.0.
     </div>
 <script type="text/javascript">
   var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
