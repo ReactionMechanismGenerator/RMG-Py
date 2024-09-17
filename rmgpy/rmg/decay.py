@@ -47,7 +47,461 @@ decay_group_recipe_pairs = [(Group().from_adjacency_list("""
     ['LOSE_RADICAL', '*1','1'],
     ['GAIN_RADICAL','*3','1']
     ])),
-                            ]
+
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 O u0 p3 c-1 {2,S}
+2 *1 N  u0 p0 c+1 {1,S} {3,S} {5,S} {6,S}
+3 *2 N  u1 p1 c0 {2,S} {4,S}
+4 O u0 p2 c0 {3,S} {7,S}
+5 *3 N  u1 p1 c0 {2,S} {8,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {4,S}
+8 H u0 p0 c0 {5,S}
+"""),
+ ReactionRecipe(actions=[
+    ['BREAK_BOND', '*1', 1, '*2'],
+    ['CHANGE_BOND', '*1', 1, '*3'],
+    ['LOSE_RADICAL', '*3','1'],
+    ['GAIN_RADICAL','*2','1']
+ ])),       
+
+    
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *3 O u0 p3 c-1 {2,S}
+2 *5 N u0 p0 c+1 {1,S} {3,S} {5,S} {6,S}
+3 *4 N u0 p1 c0 {2,S} {4,D}
+4 *1 N u0 p1 c0 {3,D} {7,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {2,S}
+7 *2 H u0 p0 c0 {4,S}
+"""),
+ ReactionRecipe(actions=[
+    ['BREAK_BOND', '*1', 1, '*2'],
+    ['BREAK_BOND', '*4', 1, '*5'],
+    ['FORM_BOND', '*2', 1, '*3'],
+    ['CHANGE_BOND', '*1', 1, '*4'],
+    ['LOSE_PAIR', '*3', 1],
+    ['GAIN_PAIR', '*5', 1],
+    
+ ])),          
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *5 N u0 p2 c-1 {2,S} {5,S}
+2 *4 O u0 p2 c0 {1,S} {3,S}
+3 *3 O u0 p2 c0 {2,S} {4,S}
+4 *2 N u0 p1 c0 {3,S} {5,S} {6,S}
+5 *1 N u0 p0 c+1 {1,S} {4,S} {7,S} {8,S}
+6 H u0 p0 c0 {4,S}
+7 H u0 p0 c0 {5,S}
+8 H u0 p0 c0 {5,S}
+"""),
+ ReactionRecipe(actions=[
+    ['BREAK_BOND', '*3', 1, '*4'],
+    ['BREAK_BOND', '*1', 1, '*2'],
+    ['CHANGE_BOND', '*2', 1, '*3'],
+    ['CHANGE_BOND', '*5', 1, '*4'],
+    ['LOSE_PAIR', '*5', 1],
+    ['GAIN_PAIR', '*1', 1],
+    
+ ])),    
+
+(Group().from_adjacency_list("""
+multiplicity [2]
+1 *4 O u0 p2 c0 {2,S} {6,S}
+2 *3 N u0 p1 c0 {1,S} {3,D}
+3 *1 N u0 p0 c+1 {2,D} {4,S} {5,S}
+4 *6 O u0 p2 c0 {3,S} {7,S}
+5 *2 N u1 p2 c-1 {3,S}
+6 *5 H u0 p0 c0 {1,S}
+7 H u0 p0 c0 {4,S}
+"""),
+ ReactionRecipe(actions=[
+    ['FORM_BOND', '*5', 1, '*6'],
+    ['BREAK_BOND', '*1', 1, '*6'],
+    ['BREAK_BOND', '*1', 2, '*3'],
+    ['BREAK_BOND', '*4', 1, '*5'],
+    ['CHANGE_BOND', '*3', 1, '*4'],
+    ['CHANGE_BOND', '*1', 2, '*2'],
+    ['GAIN_RADICAL', '*3', '1'],
+    ['LOSE_RADICAL', '*2', '1'],
+    ['LOSE_PAIR', '*2', 1],
+    ['GAIN_PAIR', '*1', 1],
+    
+    
+ ])),    
+
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 *1 N u2 p1 c0 {2,S}
+2 *2 N u0 p1 c0 {1,S} {3,S} {5,S}
+3 *3 N u0 p1 c0 {2,S} {4,S} {6,S}
+4 O u0 p2 c0 {3,S} {5,S}
+5 *4 O u0 p2 c0 {2,S} {4,S}
+6 H u0 p0 c0 {3,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2', 1, '*3'],
+     ['BREAK_BOND', '*2', 1, '*4'],
+     ['CHANGE_BOND', '*1',2,'*2'],
+     ['LOSE_RADICAL','*1',2],
+     ['GAIN_RADICAL','*3',1],
+     ['GAIN_RADICAL','*4',1],
+    
+    
+ ])),    
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 *1 N u2 p1 c0 {2,S}
+2 *2 O u0 p2 c0 {1,S} {3,S}
+3 *3 O u0 p2 c0 {2,S} {4,S}
+4 H u0 p0 c0 {3,S}
+"""),
+ ReactionRecipe(actions=[
+     ['CHANGE_BOND', '*1',1,'*2'],
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['LOSE_RADICAL','*1',1],
+     ['GAIN_RADICAL','*3',1],
+ ])),    
+
+
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *1 N u0 p2 c-1 {2,D}
+2 *2 N u0 p0 c+1 {1,D} {3,S} {4,S}
+3 *4 O u0 p2 c0 {2,S} {4,S}
+4 *3 N u0 p1 c0 {2,S} {3,S} {5,S}
+5 O u0 p2 c0 {4,S} {6,S}
+6 H u0 p0 c0 {5,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*4'],
+     ['CHANGE_BOND','*3',1,'*4'],
+     ['GAIN_PAIR','*2',1],
+     ['LOSE_PAIR','*3',1],
+     
+ ])),   
+
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *1 N u0 p2 c-1 {2,S} {5,S}
+2 *2 N u0 p0 c+1 {1,S} {3,S} {4,S} {6,S}
+3 *3 N u0 p1 c0 {2,S} {4,S} {7,S}
+4 *4 O u0 p2 c0 {2,S} {3,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {3,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*4'],
+     ['CHANGE_BOND','*3',1,'*4'],
+     ['GAIN_PAIR','*2',1],
+     ['LOSE_PAIR','*3',1],
+     
+ ])), 
+
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *1 O u0 p3 c-1 {2,S}
+2 *2 N u0 p0 c+1 {1,S} {3,S} {5,S} {6,S}
+3 *3 N u0 p1 c0 {2,S} {4,D}
+4 *4 N u0 p1 c0 {3,D} {7,S}
+5 O u0 p2 c0 {2,S} {8,S}
+6 H u0 p0 c0 {2,S}
+7 *5 H u0 p0 c0 {4,S}
+8 H u0 p0 c0 {5,S}
+"""),
+ ReactionRecipe(actions=[
+     ['FORM_BOND', '*1',1,'*5'],
+     ['BREAK_BOND','*4',1,'*5'],
+     ['CHANGE_BOND','*3',1,'*4'],
+     ['BREAK_BOND','*2',1,'*3'],
+     ['GAIN_PAIR','*2',1],
+     ['LOSE_PAIR','*1',1],
+     
+ ])), 
+
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 *1 N u1 p2 c-1 {2,S}
+2 *2 N u0 p0 c+1 {1,S} {3,S} {4,S} {5,S}
+3 O u1 p2 c0 {2,S}
+4 N u0 p1 c0 {2,S} {5,S} {6,S}
+5 *3 O u0 p2 c0 {2,S} {4,S}
+6 H u0 p0 c0 {4,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND','*2',1,'*3'],
+     ['CHANGE_BOND', '*1',1,'*2'],
+     ['GAIN_RADICAL','*3',1],
+     ['LOSE_RADICAL','*1',1],
+     
+ ])), 
+
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *1 N u0 p1 c0 {2,D} {6,S}
+2 *5 N u0 p1 c0 {1,D} {3,S}
+3 *4 O u0 p2 c0 {2,S} {4,S}
+4 *3 N u0 p1 c0 {3,S} {5,D}
+5 O u0 p2 c0 {4,D}
+6 *2 H u0 p0 c0 {1,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND','*4',1,'*5'],
+     ['BREAK_BOND', '*1',1,'*2'],
+     ['FORM_BOND','*2',1,'*3'],
+     ['GAIN_PAIR','*4',1],
+     ['CHANGE_BOND','*1',1,'*5'],
+     ['LOSE_PAIR','*3',1],
+     
+ ])), 
+
+(Group().from_adjacency_list(""" 
+multiplicity [1]
+1 N u0 p2 c-1 {2,D}
+2 *1 N u0 p0 c+1 {1,D} {3,S} {4,S}
+3 *2 N u0 p1 c0 {2,S} {4,S} {5,S}
+4 *3 O u0 p2 c0 {2,S} {3,S}
+5 H u0 p0 c0 {3,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND','*1',1,'*3'],
+     ['CHANGE_BOND','*2',1,'*3'],
+     ['GAIN_PAIR','*1',1],
+     ['LOSE_PAIR','*2',1],
+     
+ ])), 
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 *1 N u1 p1 c0 {2,S} {5,S}
+2 *2 N u0 p1 c0 {1,S} {3,D}
+3 *3 N u0 p1 c0 {2,D} {4,S}
+4 *4 O u1 p2 c0 {3,S}
+5 H u0 p0 c0 {1,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND','*2',2,'*3'],
+     ['CHANGE_BOND','*4',1,'*3'],
+     ['CHANGE_BOND','*1',1,'*2'],
+     ['GAIN_RADICAL','*3',1],
+     ['LOSE_RADICAL','*4',1],
+     ['GAIN_RADICAL','*2',1],
+     ['LOSE_RADICAL','*1',1],
+     
+ ])), 
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *1 O u0 p3 c-1 {2,S}
+2 *2 N u0 p0 c+1 {1,S} {3,S} {4,S} {6,S}
+3 *3 O u0 p2 c0 {2,S} {4,S}
+4 *4 N u0 p1 c0 {2,S} {3,S} {5,S}
+5 *5 N u0 p1 c0 {4,S} {7,S} {8,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {5,S}
+8 H u0 p0 c0 {5,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['BREAK_BOND', '*2',1,'*4'],
+     ['CHANGE_BOND', '*3',1,'*4'],
+     ['CHANGE_BOND', '*1',1,'*2'],
+     ['LOSE_PAIR','*1',1],
+     ['GAIN_PAIR','*2',1],
+     
+ ])), 
+(Group().from_adjacency_list("""
+multiplicity [2]
+1 *2 N u0 p2 c-1 {2,S} {4,S}
+2 *3 N u0 p0 c+1 {1,S} {3,S} {5,S} {6,S}
+3 N u0 p1 c0 {2,S} {7,S} {8,S}
+4 *1 O u1 p2 c0 {1,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {3,S}
+8 H u0 p0 c0 {3,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['CHANGE_BOND', '*1',1,'*2'],
+     ['LOSE_RADICAL','*1',1],
+     ['GAIN_RADICAL','*2',1],
+     ['LOSE_PAIR','*2',1],
+     ['GAIN_PAIR','*3',1],
+ ])), 
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *1 N u0 p2 c-1 {2,S} {6,S}
+2 *2 N u0 p0 c+1 {1,S} {3,S} {7,S} {8,S}
+3 *4 O u0 p2 c0 {2,S} {4,S}
+4 N u0 p1 c0 {3,S} {5,D}
+5 O u0 p2 c0 {4,D}
+6 H u0 p0 c0 {1,S}
+7 *3 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['BREAK_BOND', '*2',1,'*4'],
+     ['FORM_BOND','*3',1,'*4'],
+     ['CHANGE_BOND', '*1',1,'*2'],
+     ['LOSE_PAIR','*1',1],
+     ['GAIN_PAIR','*2',1],
+ ])), 
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 *3 N u2 p1 c0 {2,S}
+2 *2 N u0 p1 c0 {1,S} {3,S} {5,S}
+3 *4 N u0 p1 c0 {2,S} {4,D}
+4 O u0 p2 c0 {3,D}
+5 *1 O u0 p2 c0 {2,S} {6,S}
+6 H u0 p0 c0 {5,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*1'],
+     ['BREAK_BOND', '*2',1,'*4'],
+     ['CHANGE_BOND', '*3',2,'*2'],
+     ['LOSE_RADICAL','*3',2],
+     ['GAIN_RADICAL','*1',1],
+     ['GAIN_RADICAL','*4',1],
+ ])), 
+
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *2 N u0 p2 c-1 {2,S} {5,S}
+2 *3 O u0 p2 c0 {1,S} {3,S}
+3 *4 N u0 p1 c0 {2,S} {4,S} {6,S}
+4 *5 O u0 p2 c0 {3,S} {5,S}
+5 *1 N u0 p0 c+1 {1,S} {4,S} {7,S} {8,S}
+6 H u0 p0 c0 {3,S}
+7 H u0 p0 c0 {5,S}
+8 H u0 p0 c0 {5,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*5',1,'*1'],
+     ['BREAK_BOND', '*3',1,'*4'],
+     ['CHANGE_BOND', '*4',1,'*5'],
+     ['CHANGE_BOND', '*2',1,'*3'],
+     ['LOSE_PAIR','*2',1],
+     ['GAIN_PAIR','*1',1],
+ ])), 
+
+(Group().from_adjacency_list("""
+multiplicity [1]
+1 *1 O u0 p3 c-1 {2,S}
+2 *2 N u0 p0 c+1 {1,S} {3,S} {4,S} {5,S}
+3 N u0 p1 c0 {2,S} {6,S} {7,S}
+4 *3 N u0 p1 c0 {2,S} {5,S} {8,S}
+5 *4 O u0 p2 c0 {2,S} {4,S}
+6 H u0 p0 c0 {3,S}
+7 H u0 p0 c0 {3,S}
+8 H u0 p0 c0 {4,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['BREAK_BOND', '*2',1,'*4'],
+     ['CHANGE_BOND', '*1',1,'*2'],
+     ['CHANGE_BOND', '*4',1,'*3'],
+     ['LOSE_PAIR','*1',1],
+     ['GAIN_PAIR','*2',1],
+ ])), 
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 *4 N u1 p1 c0 {2,S} {5,S}
+2 *3 N u0 p1 c0 {1,S} {3,S} {6,S}
+3 *2 O u0 p2 c0 {2,S} {4,S}
+4 *1 O u1 p2 c0 {3,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['CHANGE_BOND', '*4',1,'*3'],
+     ['LOSE_RADICAL','*4',1],
+     ['GAIN_RADICAL','*2',1],
+ ])), 
+(Group().from_adjacency_list("""
+multiplicity [2]
+1 *1 O u0 p3 c-1 {2,S}
+2 *2 O u0 p2 c0 {1,S} {3,S}
+3 *3 N u0 p0 c+1 {2,S} {4,D} {5,S}
+4 N u1 p1 c0 {3,D}
+5 N u0 p1 c0 {3,S} {6,S} {7,S}
+6 H u0 p0 c0 {5,S}
+7 H u0 p0 c0 {5,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['LOSE_PAIR','*1',1],
+     ['GAIN_PAIR','*3',1],
+     ['GAIN_RADICAL','*2',1],
+     ['GAIN_RADICAL','*1',1],
+ ])), 
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 *1 N u1 p1 c0 {2,S} {5,S}
+2 *2 O u0 p2 c0 {1,S} {3,S}
+3 *3 N u0 p1 c0 {2,S} {4,D}
+4 *4 N u1 p1 c0 {3,D}
+5 H u0 p0 c0 {1,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['CHANGE_BOND', '*3',1,'*4'],
+     ['LOSE_RADICAL','*4',1],
+     ['GAIN_RADICAL','*2',1],
+ ])), 
+
+(Group().from_adjacency_list("""
+multiplicity [2]
+1 *1 O u0 p2 c0 {2,S} {4,S}
+2 *2 N u0 p1 c0 {1,S} {3,D}
+3 *3 N u1 p1 c0 {2,D}
+4 H u0 p0 c0 {1,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*1'],
+     ['CHANGE_BOND', '*3',1,'*2'],
+     ['LOSE_RADICAL','*3',1],
+     ['GAIN_RADICAL','*1',1],
+ ])), 
+
+(Group().from_adjacency_list("""
+multiplicity [3]
+1 *2 N u0 p2 c-1 {2,S} {4,S}
+2 *3 N u0 p0 c+1 {1,S} {3,S} {5,S} {6,S}
+3 N u1 p1 c0 {2,S} {7,S}
+4 *1 O u1 p2 c0 {1,S}
+5 H u0 p0 c0 {2,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {3,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['CHANGE_BOND', '*1',1,'*2'],
+     ['LOSE_RADICAL','*1',1],
+     ['GAIN_RADICAL','*2',1],
+     ['LOSE_PAIR','*2',1],
+     ['GAIN_PAIR','*3',1],
+ ])), 
+
+(Group().from_adjacency_list("""
+multiplicity [2]
+1 *1 N u1 p2 c-1 {2,S}
+2 *2 O u0 p2 c0 {1,S} {3,S}
+3 *3 N u0 p0 c+1 {2,S} {4,S} {5,S} {6,S}
+4 H u0 p0 c0 {3,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {3,S}
+"""),
+ ReactionRecipe(actions=[
+     ['BREAK_BOND', '*2',1,'*3'],
+     ['CHANGE_BOND', '*1',1,'*2'],
+     ['LOSE_PAIR','*1',1],
+     ['GAIN_PAIR','*3',1],
+ ])), 
+]
 
 def decay_species(spc, check_deterministic=True):
     """
