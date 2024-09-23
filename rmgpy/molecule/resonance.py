@@ -96,9 +96,9 @@ def populate_resonance_algorithms(features=None):
             method_list.append(generate_allyl_delocalization_resonance_structures)
         if features['is_cyclic']:
             method_list.append(generate_aryne_resonance_structures)
-        if features['hasNitrogenVal5']:
+        if features['hasNitrogenVal5'] and not features['is_adsorbate']:
             method_list.append(generate_N5dc_radical_resonance_structures)
-        if features['hasLonePairs']:
+        if features['hasLonePairs'] and not features['is_adsorbate']:
             method_list.append(generate_adj_lone_pair_radical_resonance_structures)
             method_list.append(generate_adj_lone_pair_multiple_bond_resonance_structures)
             method_list.append(generate_adj_lone_pair_radical_multiple_bond_resonance_structures)
@@ -130,6 +130,7 @@ def analyze_molecule(mol, save_order=False):
                 'is_aryl_radical': False,
                 'hasNitrogenVal5': False,
                 'hasLonePairs': False,
+                'is_adsorbate':mol.contains_surface_site(),
                 }
 
     if features['is_cyclic']:
