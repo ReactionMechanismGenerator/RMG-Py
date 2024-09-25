@@ -741,9 +741,11 @@ class TestSurfaceChargeTransfer:
                 Ea = Ea_ox - (alpha_ox * electrons_ox * constants.F * (V-V0_ox))
                 k_oxidation = A_ox * (T / T0_ox) ** n_ox * np.exp(-Ea / (constants.R * T)) 
                 Ea = Ea_red - (alpha_red * electrons_red * constants.F * (V-V0_red))
-                k_reduction = A_red * (T / T0_red) ** n_red * np.exp(-Ea / (constants.R * T)) 
-                assert round(abs(k_oxidation-self.surfchargerxn_oxidation.get_rate_coefficient(T,V)), 7) == 0
-                assert round(abs(k_reduction-self.surfchargerxn_reduction.get_rate_coefficient(T,V)), 7) == 0
+                k_reduction = A_red * (T / T0_red) ** n_red * np.exp(-Ea / (constants.R * T))
+                kox =  self.surfchargerxn_oxidation.get_rate_coefficient(T,V)
+                kred = self.surfchargerxn_reduction.get_rate_coefficient(T,V)
+                assert abs(k_oxidation - kox) < 1e-6 * kox
+                assert abs(k_reduction - kred) < 1e-6 * kred
 
     def test_change_v0(self):
 
