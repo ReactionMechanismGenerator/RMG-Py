@@ -4,7 +4,9 @@ database(
     reactionLibraries = [('Surface/CPOX_Pt/Deutschmann2006_adjusted', False)],
     seedMechanisms = [],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['surface','electrochem'],
+    kineticsFamilies = ['electrochem', 
+                        'surface',
+                        ],
     kineticsEstimator = 'rate rules',
 
 )
@@ -50,29 +52,6 @@ species(
 """),
 )
 
-# species(
-#    label='water',
-#    reactive=True,
-#    structure=adjacencyList(
-#        """
-# 1 H u0 p0 c0 {3,S}
-# 2 H u0 p0 c0 {3,S}
-# 3 O u0 p2 c0 {1,S} {2,S}
-# """),
-# )
-
-# species(
-#     label='CO2X2',
-#     reactive=True,
-#     structure=adjacencyList("""
-# 1 O u0 p2 c0 {3,S} {5,S}
-# 2 O u0 p2 c0 {3,D}
-# 3 C u0 p0 c0 {1,S} {2,D} {4,S}
-# 4 X u0 p0 c0 {3,S}
-# 5 X u0 p0 c0 {1,S}
-# """),
-# )
-
 species(
     label='CO2X',
     reactive=True,
@@ -96,33 +75,111 @@ species(
 """),
 )
 
-# species(
-#     label='HX',
-#     reactive=True,
-#     structure=adjacencyList(
-#         """
-# 1 X u0 {2,S}
-# 2 H u0 p0 c0 {1,S}
-# """),
-# )
+species(
+    label='CO2HX',
+    reactive=True,
+    structure=adjacencyList("""
+1 O u0 p2 c0 {2,S} {4,S}
+2 C u0 p0 c0 {1,S} {3,D} {5,S}
+3 O u0 p2 c0 {2,D}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {2,S}
+
+"""),
+)
+
+species(
+    label='OCX',
+    reactive=True,
+    structure=adjacencyList("""
+1 O u0 p2 c0 {2,D} 
+2 C u0 p0 c0 {1,D} {3,D}
+3 X u0 p0 c0 {2,D}
+"""),
+)
+
+species(
+    label='OX',
+    reactive=True,
+    structure=adjacencyList("""
+1 O u0 p2 c0 {2,D} 
+2 X u0 p0 c0 {1,D}
+"""),
+)
+
+species(
+    label='CH2O2X',
+    reactive=True,
+    structure=adjacencyList("""
+1 O u0 p2 c0 {3,S} {5,S}
+2 O u0 p2 c0 {3,D}
+3 C u0 p0 c0 {1,S} {2,D} {4,S}
+4 H u0 p0 c0 {3,S}
+5 H u0 p0 c0 {1,S}
+6 X u0 p0 c0
+"""),
+)
+
+species(
+    label='CHOX',
+    reactive=True,
+    structure=adjacencyList("""
+1 O u0 p2 c0 {2,D}
+2 C u0 p0 c0 {1,D} {3,S} {4,S}
+3 H u0 p0 c0 {2,S}
+4 X u0 p0 c0 {2,S}
+"""),
+)
+
+species(
+    label='CH2OX',
+    reactive=True,
+    structure=adjacencyList("""
+1 O u0 p2 c0 {2,D}
+2 C u0 p0 c0 {1,D} {3,S} {4,S}
+3 H u0 p0 c0 {2,S}
+4 H u0 p0 c0 {2,S}
+5 X u0 p0 c0
+"""),
+)
+
+
+forbidden(
+        label='CO2-bidentate',
+        structure=adjacencyList(
+                """
+                1 O u0 p2 c0 {2,D}
+                2 C u0 p0 c0 {1,D} {3,S} {4,S}
+                3 X u0 p0 c0 {2,S}
+                4 O u0 p2 c0 {2,S} {5,S}
+                5 X u0 p0 c0 {4,S}
+                """
+        )
+)
 
 liquidSurfaceReactor(
     temperature=(300,'K'),
     liqPotential=(0,'V'),
-    surfPotential=(-1.2,'V'),
+    surfPotential=(-1.5,'V'),
     initialConcentrations={
-        # "CO2": (1e-3,'mol/cm^3'),
-        "proton": (1e-3,'mol/m^3'),
-        # "water": (0.055, 'mol/cm^3'),
+        "CO2": (1e-3,'mol/cm^3'),
+        "proton": (1e-4,'mol/m^3'),
     },
 	initialSurfaceCoverages={
         # "HX": 0.5,
         # # "CXO2": 0.0,
-        "CHO2X": 1.0,
-        # "vacantX": 1.0,
+        "CHO2X": 0.1,
+        "CO2HX": 0.1,
+        "vacantX": 0.1,
+        "CO2X": 0.4,
+        'OX': 0.1,
+        'OCX': 0.1,
+        'CH2O2X': 0.05,
+        'CHOX': 0.04,
+        'CH2OX': 0.01
     },
     surfaceVolumeRatio=(1.0e5, 'm^-1'),
-    terminationTime=(1.0,'sec'),
+    terminationTime=(1,'sec'),
     # terminationConversion={'CO2': 0.90},
     # constantSpecies=["proton"],
  )
@@ -138,9 +195,9 @@ simulator(
 
 model(
     toleranceKeepInEdge=1E-16,
-    toleranceMoveToCore=1E-8,
-    toleranceRadMoveToCore=1E-10,
-    toleranceInterruptSimulation=1E10,
+    toleranceMoveToCore=1E-6,
+    toleranceRadMoveToCore=1E-8,
+    toleranceInterruptSimulation=1E6,
     filterReactions=False,
     maximumEdgeSpecies=10000,
     toleranceBranchReactionToCore=1E-8,
@@ -160,7 +217,6 @@ generatedSpeciesConstraints(
     allowed=['input species','reaction libraries'],
     maximumSurfaceSites=2,
     maximumCarbonAtoms=4,
-    maximumOxygenAtoms=4,
+    maximumOxygenAtoms=2,
     maximumRadicalElectrons=1,
 )
-
