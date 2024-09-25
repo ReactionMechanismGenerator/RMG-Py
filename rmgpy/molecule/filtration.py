@@ -135,16 +135,14 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
             continue
         val_electrons = 2 * (int(atom.get_total_bond_order()) + atom.lone_pairs) + atom.radical_electrons
         if atom.is_carbon() or atom.is_nitrogen() or atom.is_oxygen():
-            if '(F)[C]OC(F)' in mol.smiles: #we need to have an exception for some PFAS chemistry 
+            if '(F)[C]OC(F)' in mol.smiles or 'C[C]OC' in mol.smiles: #we need to have an exception for some PFAS chemistry 
                 # There are some cases for PFAS chemistry where a resonance structure of molecules like FC(F)(F)[C]OC(F)(F)F is FC(F)(F)[C-]=[O+]C(F)(F)F. 
                 # However, the get_octet_deviation function marks the FC(F)(F)[C]OC(F)(F)F as unreactive and keeps the FC(F)(F)[C-]=[O+]C(F)(F)F as reactive. 
-                # This is a problem because Brown University calculated reaction rates using the first structure, so we want to keep that reactive and write a reaction recipe with this structure. 
+                # This is a problem because Brown University calculated reaction rates using the first structure, so we want to keep that reactive and write a reaction recipe with this structure. All this addition is doing is modifying the code so that resonance structures like FC(F)(F)[C]OC(F)(F)F do not get filtered out. 
                 if atom.is_carbon() and val_electrons==6: #this is the C with just 2 single bonds and no unpaired
                     val_electrons += 2 #add two to the valence charge so we get a total octet deviation of 0
                 if atom.is_oxygen():
                     pass #no modification of oxygen valence 
-            else: 
-                pass  # if not related to PFAS chemistry
             octet_deviation += abs(8 - val_electrons)  # expecting C/N/O to be near octet
 
         elif atom.is_sulfur():
