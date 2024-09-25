@@ -132,7 +132,9 @@ class TestDatabase:
                     ), "Kinetics surface family {0}: entries have surface attributes?".format(family_name)
                 if family_name not in {
                     "Surface_Proton_Electron_Reduction_Alpha",
+                    "Surface_Proton_Electron_Reduction_Alpha_vdW",
                     "Surface_Proton_Electron_Reduction_Beta",
+                    "Surface_Proton_Electron_Reduction_Beta_vdW",
                     "Surface_Proton_Electron_Reduction_Beta_Dissociation",
                 }:
                     with check:
