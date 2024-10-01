@@ -25,6 +25,7 @@
 # 2023-07-17 - made it pass by default
 # 2023-07-21 - upload the regression results summary as artifact (for use as a comment on PRs)
 # 2023-07-31 - removed option to run from RMG-database with GitHub resuable workflows
+# 2024-10-01 - deprecated Mambaforge with Miniforge3 for environment creation
 
 name: Continuous Integration
 
@@ -62,11 +63,11 @@ jobs:
         uses: actions/checkout@v4
 
       # configures the mamba environment manager and builds the environment
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Miniforge Python 3.7
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           python-version: 3.7
           activate-environment: rmg_env
@@ -112,11 +113,11 @@ jobs:
         uses: actions/checkout@v4
 
       # configures the mamba environment manager and builds the environment
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Miniforge Python 3.7
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           python-version: 3.7
           activate-environment: rmg_env
