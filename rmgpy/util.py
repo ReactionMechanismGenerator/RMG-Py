@@ -33,6 +33,7 @@ import os.path
 import shutil
 import time
 from functools import wraps
+import numpy as np
 
 
 class Subject(object):
@@ -238,3 +239,13 @@ def as_list(item, default=None):
         return default
     else:
         return [item]
+
+class np_list(np.ndarray):
+    """
+    A subclass of numpy.ndarray which rendered as a list when printed.
+    """
+    def __new__(cls, input_array):
+        obj = np.asarray(input_array).view(cls)
+        return obj
+    def __repr__(self):
+        return str(self.tolist())
