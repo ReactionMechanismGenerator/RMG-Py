@@ -805,9 +805,9 @@ C 1 H 3 N 1 O 2 S 1 X 1
         chemkin_path = os.path.join(folder, "surface", "chem-surface.inp")
         dictionary_path = os.path.join(folder, "surface", "species_dictionary.txt")
         chemkin_save_path = os.path.join(folder, "surface", "chem-surface-test.inp")
-        species, reactions = load_chemkin_file(chemkin_path, dictionary_path)
-
-        surface_atom_count = species[3].molecule[0].get_num_atoms("X")
+        species, reactions = load_chemkin_file(chemkin_path, dictionary_path, use_chemkin_names=True)
+        chox3 = next(iter(s for s in species if s.label=="CHOX3"))
+        surface_atom_count = chox3.molecule[0].get_num_atoms("X")
         assert surface_atom_count == 3
         save_chemkin_surface_file(
             chemkin_save_path,
@@ -817,17 +817,12 @@ C 1 H 3 N 1 O 2 S 1 X 1
             check_for_duplicates=False,
         )
 
-        bidentate_test = "    CH2OX2(52)/2/             \n"
-        tridentate_test = "    CHOX3(61)/3/             \n"
+        bidentate_test = "CH2OX2/2/"
+        tridentate_test = "CHOX3/3/"
         with open(chemkin_save_path, "r") as f:
-            for i, line in enumerate(f):
-                if i == 3:
-                    bidentate_read = line
-                if i == 4:
-                    tridentate_read = line
-
-        assert bidentate_test.strip() == bidentate_read.strip()
-        assert tridentate_test.strip() == tridentate_read.strip()
+            lines = [line.strip() for line in f]
+        assert bidentate_test in lines
+        assert tridentate_test in lines
 
         os.remove(chemkin_save_path)
 
