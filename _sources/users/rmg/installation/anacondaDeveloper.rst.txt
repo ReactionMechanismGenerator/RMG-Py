@@ -4,26 +4,7 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-#. Install the `conda` package manager, if you do not already have it (or Anaconda).
-   Select one of the following options:
-
-   a. Users of Fedora Linux and Red Hat derivatives (RHEL, CentOS Stream) may install from the official repositories and EPEL, respectively, with the command ::
-
-       sudo dnf install conda
-
-   b. All other users, download and install `Miniconda <https://docs.conda.io/en/latest/miniconda.html>`_.
-
-      The download will be a .sh file with a name like ``Miniconda3-latest-Linux-x86_64.sh``.
-      Open a terminal in the same directory as this file, and type the following to install Conda
-      (replace the name of your .sh file below). ::
-
-       bash Miniconda3-latest-Linux-x86_64.sh
-
-      **When prompted to append Anaconda to your PATH, select or type Yes**. 
-      Install the Conda folder inside your home directory 
-      (typically ``/home/YourUsername/`` in Linux and ``/Users/YourUsername`` in Mac).
-
-      Note that you should reinitialize or restart your terminal in order for the changes to take effect, as the installer will tell you.
+#. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
 #. There are a few system-level dependencies which are required and should not be installed via Conda. These include
    `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
