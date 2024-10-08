@@ -200,7 +200,19 @@ def octet_filtration(mol_list, octet_deviation_list):
     for index, mol in enumerate(mol_list):
         if octet_deviation_list[index] == min(octet_deviation_list):
             filtered_list.append(mol)
-            charge_span_list.append(mol.get_charge_span())
+
+            # we need an exception for some PFAS chemistry.
+            # Background: Brown university calculated unimolecular PFAS reaction rates that involve partially-charged species (with an overall negative charge).
+            # As the source code is currently written, RMG marks these molecules as unreactive and its resonance structure as reactive (due to the values in the charge_span_list). 
+            # i.e. C2F5OCCF3 <=> CF2OC(CF3)CF3, where the smiles for C2F5OCCF3 is 'FC(F)(F)[C-]=[O+]C(F)(F)C(F)(F)F' in the training data and fits 1,3_sigmatropic_rearrangment when this structure is used. 
+            # Originally, RMG marks this partially charged structure as unreactive and generates its resonance structure, ('FC(F)(F)[C]OC(F)(F)C(F)(F)F'), which it marks as reactive because it has the minimum value in the charge_span_list. 
+            # As a consequence, this training data no longer fits the 1,3_sigmatropic_rearrangment kinetic family since the "wrong" resonance structure is being used. It's important that we keep this training data as it was written, 
+            # since Caroline from the Goldsmith group specifically calculated them because RMG was originally generating these reactions (with not so accurate rates) from this kinetic family for multiple PFAS models. 
+            if '(F)[C-]=[O+]C' in mol.smiles or "C[C-]=[O+]C" in mol.smiles : 
+                charge_span_list.append(mol.get_charge_span()-1) #subtract 1 from the charge_span. If there are any additional partial charges besides the ones associated with [C-]=[O+] (which is 1), they will be accounted for here. 
+            else: 
+                charge_span_list.append(mol.get_charge_span())
+            
 
     return filtered_list, charge_span_list
 
@@ -444,6 +456,8 @@ def mark_unreactive_structures(filtered_list, mol_list, save_order=False):
         # been filtered out. However, for processing reactions (e.g., degeneracy calculations) it should be kept
         # (e.g., [::N]O <=> [::N][::O.] + [H.], where [::N][::O.] should be recognized as [:N.]=[::O]).
         mol = mol_list[0]
+        if mol.smiles == "FC(F)(F)[C-]=[O+]C(F)(F)C(F)(F)F":
+            logging.error('printing')
         mol.reactive = False
         filtered_list.append(mol)
 
