@@ -41,6 +41,8 @@ from rmgpy.molecule.pathfinder import (
     find_lone_pair_multiple_bond_paths,
     find_N5dc_radical_delocalization_paths,
     find_shortest_path,
+    find_adsorbate_delocalization_paths,
+    find_adsorbate_conjugate_delocalization_paths,
 )
 
 
@@ -458,7 +460,7 @@ class FindLonePairMultipleBondPathsTest:
         assert paths
 
 
-class FindAdjLonePairRadicalDelocalizationPaths:
+class FindAdjLonePairRadicalDelocalizationPathsTest:
     """
     test the find_lone_pair_radical_delocalization_paths method
     """
@@ -490,7 +492,7 @@ class FindAdjLonePairRadicalDelocalizationPaths:
         assert paths
 
 
-class FindAdjLonePairMultipleBondDelocalizationPaths:
+class FindAdjLonePairMultipleBondDelocalizationPathsTest:
     """
     test the find_lone_pair_multiple_bond_delocalization_paths method
     """
@@ -502,7 +504,7 @@ class FindAdjLonePairMultipleBondDelocalizationPaths:
         assert paths
 
 
-class FindAdjLonePairRadicalMultipleBondDelocalizationPaths:
+class FindAdjLonePairRadicalMultipleBondDelocalizationPathsTest:
     """
     test the find_lone_pair_radical_multiple_bond_delocalization_paths method
     """
@@ -520,7 +522,7 @@ class FindAdjLonePairRadicalMultipleBondDelocalizationPaths:
         assert paths
 
 
-class FindN5dcRadicalDelocalizationPaths:
+class FindN5dcRadicalDelocalizationPathsTest:
     """
     test the find_N5dc_radical_delocalization_paths method
     """
@@ -529,4 +531,42 @@ class FindN5dcRadicalDelocalizationPaths:
         smiles = "N=[N+]([O])([O-])"
         mol = Molecule().from_smiles(smiles)
         paths = find_N5dc_radical_delocalization_paths(mol.atoms[1])
+        assert paths
+
+class FindAdsorbateDelocalizationPathsTest:
+    """
+    test the find_adsorbate_delocalization_paths method
+    """
+
+    def test_cch(self):
+        adjlist = """
+1 X u0 p0 c0 {3,D}
+2 X u0 p0 c0 {4,S}
+3 C u0 p0 c0 {1,D} {4,D}
+4 C u0 p0 c0 {2,S} {3,D} {5,S}
+5 H u0 p0 c0 {4,S}  
+        """
+
+        mol = Molecule().from_adjacency_list(adjlist)
+        paths = find_adsorbate_delocalization_paths(mol.atoms[0])
+        assert paths
+
+class FindAdsorbateConjugateDelocalizationPathsTest:
+    """
+    test the find_adsorbate_conjugate_delocalization_paths
+    """
+
+    def test_chchc(self):
+        adjlist = """
+1 X u0 p0 c0 {3,T}
+2 X u0 p0 c0 {5,S}
+3 C u0 p0 c0 {1,T} {4,S}
+4 C u0 p0 c0 {3,S} {5,D} {6,S}
+5 C u0 p0 c0 {2,S} {4,D} {7,S}
+6 H u0 p0 c0 {4,S}
+7 H u0 p0 c0 {5,S}
+        """
+
+        mol = Molecule().from_adjacency_list(adjlist)
+        paths = find_adsorbate_conjugate_delocalization_paths(mol.atoms[0])
         assert paths
