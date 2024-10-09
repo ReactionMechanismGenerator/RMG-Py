@@ -73,7 +73,10 @@ SPECIES_LABELS = [
     'Methane',
     'Methyl',
     'Ammonia',
-    'Chloromethane'
+    'Chloromethane',
+    # Lithium species shall be uncommented after we reconcile the difference in AECs and BACs
+    # 'Lithium Hydride',
+    # 'Lithium Fluoride'
 ]
 
 

@@ -113,6 +113,31 @@ class TestAtom:
             else:
                 assert not atom.is_hydrogen()
 
+    def test_is_proton(self):
+        """
+        Test the Atom.is_proton() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=0, charge=1, label='*1', lone_pairs=0)
+            if element.symbol == 'H':
+                assert atom.is_hydrogen()
+                assert atom.is_proton()
+                atom.charge = 0
+                assert not atom.is_proton()
+            else:
+                assert not atom.is_proton()
+
+    def test_is_electron(self):
+        """
+        Test the Atom.is_electron() method.
+        """
+        for element in element_list:
+            atom = Atom(element=element, radical_electrons=1, charge=-1, label='*1', lone_pairs=0)
+            if element.symbol == 'e':
+                assert atom.is_electron()
+            else:
+                assert not atom.is_electron()
+
     def test_is_non_hydrogen(self):
         """
         Test the Atom.is_non_hydrogen() method.
@@ -394,6 +419,36 @@ class TestAtom:
             assert atom0.element == atom.element
             assert atom0.radical_electrons == atom.radical_electrons + 1
             assert atom0.charge == atom.charge
+            assert atom0.label == atom.label
+
+    def test_apply_action_gain_charge(self):
+        """
+        Test the Atom.apply_action() method for a GAIN_CHARGE action.
+        """
+        action = ['GAIN_CHARGE', '*1', 1]
+        for element in element_list:
+            atom0 = Atom(element=element, radical_electrons=0, charge=0, label='*1', lone_pairs=0)
+            atom = atom0.copy()
+            atom.apply_action(action)
+            assert atom0.element == atom.element
+            # If the below test is un-commented, it will need to be changed to pytest-style, i.e. a plain assert
+            # self.assertEqual(atom0.radical_electrons, atom.radical_electrons + 1)
+            assert atom0.charge == atom.charge - 1
+            assert atom0.label == atom.label
+
+    def test_apply_action_lose_charge(self):
+        """
+        Test the Atom.apply_action() method for a LOSE_CHARGE action.
+        """
+        action = ['LOSE_CHARGE', '*1', 1]
+        for element in element_list:
+            atom0 = Atom(element=element, radical_electrons=0, charge=0, label='*1', lone_pairs=0)
+            atom = atom0.copy()
+            atom.apply_action(action)
+            assert atom0.element == atom.element
+            # If the below test is un-commented, it will need to be changed to pytest-style, i.e. a plain assert
+            # self.assertEqual(atom0.radical_electrons, atom.radical_electrons - 1)
+            assert atom0.charge == atom.charge + 1
             assert atom0.label == atom.label
 
     def test_equivalent(self):
@@ -945,6 +1000,18 @@ class TestMolecule:
         self.mol1 = Molecule(smiles="C")
         self.mol2 = Molecule(smiles="C")
         self.mol3 = Molecule(smiles="CC")
+
+    def test_is_proton(self):
+        """Test the Molecule `is_proton()` method"""
+        proton = Molecule().from_adjacency_list("""1 H u0 c+1""")
+        hydrogen = Molecule().from_adjacency_list("""1 H u1""")
+        assert proton.is_proton()
+        assert not hydrogen.is_proton()
+        
+    def test_is_electron(self):
+        """Test the Molecule `is_electron()` method"""
+        electron = Molecule().from_adjacency_list("""1 e u1 c-1""")
+        assert electron.is_electron()
 
     def test_equality(self):
         """Test that we can perform equality comparison with Molecule objects"""

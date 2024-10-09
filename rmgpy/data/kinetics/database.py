@@ -45,11 +45,12 @@ from rmgpy.exceptions import DatabaseError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, StickingCoefficient, \
-                           StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, ArrheniusBM
+                           StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, \
+                           ArrheniusBM, SurfaceChargeTransfer, KineticsModel, Marcus
 from rmgpy.molecule import Molecule, Group
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
-
+from rmgpy.data.solvation import SoluteData, SoluteTSData, SoluteTSDiffData
 
 ################################################################################
 
@@ -80,8 +81,14 @@ class KineticsDatabase(object):
             'StickingCoefficientBEP': StickingCoefficientBEP,
             'SurfaceArrhenius': SurfaceArrhenius,
             'SurfaceArrheniusBEP': SurfaceArrheniusBEP,
+            'SurfaceChargeTransfer': SurfaceChargeTransfer,
             'R': constants.R,
-            'ArrheniusBM': ArrheniusBM
+            'ArrheniusBM': ArrheniusBM,
+            'SoluteData': SoluteData,
+            'SoluteTSData': SoluteTSData,
+            'SoluteTSDiffData': SoluteTSDiffData,
+            'KineticsModel': KineticsModel,
+            'Marcus': Marcus,
         }
         self.global_context = {}
 
