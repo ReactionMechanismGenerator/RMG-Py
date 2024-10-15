@@ -29,10 +29,12 @@
 
 from rmgpy.kinetics.model import KineticsModel, PDepKineticsModel, TunnelingModel, \
                    get_rate_coefficient_units_from_reaction_order, get_reaction_order_from_rate_coefficient_units
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusBM
+from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
+                   ArrheniusBM, ArrheniusChargeTransfer, ArrheniusChargeTransferBM, Marcus
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.kinetics.falloff import ThirdBody, Lindemann, Troe
 from rmgpy.kinetics.kineticsdata import KineticsData, PDepKineticsData
 from rmgpy.kinetics.tunneling import Wigner, Eckart
 from rmgpy.kinetics.surface import SurfaceArrhenius, SurfaceArrheniusBEP, \
-                     StickingCoefficient, StickingCoefficientBEP
+                    StickingCoefficient, StickingCoefficientBEP, \
+                    SurfaceChargeTransfer, SurfaceChargeTransferBEP

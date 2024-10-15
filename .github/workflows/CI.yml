@@ -2,7 +2,7 @@
 # This file contains the script used by GitHub actions to execute the Continuous Integration (CI)
 # for RMG-Py. This includes building RMG and its dependencies, executing the unit tests,
 # functional tests, database tests, and regression tests.
-# 
+#
 # This will run automatically on any push to any branch, but will only run one instance of
 # itself at a time per branch (to avoid spawning tons of runners, which prevents them from
 # executing).
@@ -14,7 +14,7 @@
 #
 #
 # Changelog:
-# 2023-04    - Jackson Burns - Added this header, regression tests, cleanup of action in 
+# 2023-04    - Jackson Burns - Added this header, regression tests, cleanup of action in
 #              in general, and documentation throughout the file.
 # 2023-05    - added Docker build steps
 # 2023-05-12 - added changes to allow running on forks
@@ -47,7 +47,7 @@ concurrency:
 env:
   # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
   # main with the name of the branch
-  RMG_DATABASE_BRANCH: main
+  RMG_DATABASE_BRANCH: lithium_rebase
 
 
 jobs:
@@ -55,6 +55,11 @@ jobs:
     runs-on: macos-13
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
+    env:
+      # Update this if needed to match a pull request on the RMG-database:
+      RMG_DATABASE_BRANCH: lithium
+      # This is true only if this is a reference case for the regression testing:
+      REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && matrix.os =='ubuntu-latest' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
       run:
         shell: bash -l {0}
@@ -113,7 +118,7 @@ jobs:
     runs-on: ubuntu-latest
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
-    env: 
+    env:
       # This is true only if this is a reference case for the regression testing:
       REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
@@ -175,7 +180,7 @@ jobs:
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
           python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator'
+          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="marcus_development")); using ReactionMechanismSimulator'
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
@@ -296,7 +301,7 @@ jobs:
               export FAILED=Yes
             fi
             echo "" # blank line so next block is interpreted as markdown
-            cat "$regr_test-core.log"
+            cat "$regr_test-core.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-core.log")
             echo "</details>"
             echo "<details>"
             if python-jl scripts/checkModels.py \
@@ -313,7 +318,7 @@ jobs:
               export FAILED=Yes
             fi
             echo "" # blank line so next block is interpreted as markdown
-            cat "$regr_test-edge.log"
+            cat "$regr_test-edge.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-core.log")
             echo "</details>"
 
             # Check for Regression between Reference and Dynamic (skip superminimal)
