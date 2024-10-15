@@ -7,7 +7,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 #. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
 #. There are a few system-level dependencies which are required and should not be installed via Conda. These include
-   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
+   `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG. For WSL users, `libxrender1 <https://packages.debian.org/sid/libxrender1>`_ may also need to be installed.
 
    For Linux users, you can check whether these are already installed by simply calling them via the command line, which
    will let you know if they are missing. To install any missing packages, you should use the appropriate package manager
@@ -15,7 +15,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    a. On Ubuntu and Debian the package manager is ``apt`` ::
 
-       sudo apt install git gcc g++ make
+       sudo apt install git gcc g++ make libxrender1
 
    b. On Fedora and Red Hat derivatives (RHEL 8+) the package manager is ``dnf`` ::
 
