@@ -101,8 +101,8 @@ dependencies:
   # Note that _some other_ dep. in this list requires diffeqpy in its recipe
   # which will cause it to be downloaded from the rmg conda channel
 
-# conda mutex metapackage
-  - nomkl
+# configure packages to use OpenBLAS instead of Intel MKL
+  - blas=*=openblas
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)

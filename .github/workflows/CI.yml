@@ -62,6 +62,16 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v4
 
+      # Step to create a custom condarc.yml before setting up conda
+      - name: Create custom conda config file
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "channels:" > $RUNNER_CWD/condarc.yml
+          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
+          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
+          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
+          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
+
       # configures the mamba environment manager and builds the environment
       - name: Setup Miniforge Python 3.7
         uses: conda-incubator/setup-miniconda@v3
@@ -70,6 +80,7 @@ jobs:
           miniforge-variant: Miniforge3
           miniforge-version: latest
           python-version: 3.7
+          condarc-file: condarc.yml
           activate-environment: rmg_env
           use-mamba: true
 
@@ -112,6 +123,16 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v4
 
+      # Step to create a custom condarc.yml before setting up conda
+      - name: Create custom condarc.yml
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "channels:" > $RUNNER_CWD/condarc.yml
+          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
+          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
+          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
+          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
+
       # configures the mamba environment manager and builds the environment
       - name: Setup Miniforge Python 3.7
         uses: conda-incubator/setup-miniconda@v3
@@ -120,6 +141,7 @@ jobs:
           miniforge-variant: Miniforge3
           miniforge-version: latest
           python-version: 3.7
+          condarc-file: condarc.yml
           activate-environment: rmg_env
           use-mamba: true
 
