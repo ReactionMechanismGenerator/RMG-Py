@@ -245,6 +245,7 @@ class Reaction:
         else:
             return rmgpy.chemkin.write_reaction_string(self)
 
+
     def to_cantera(self, species_list=None, use_chemkin_identifier=False):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
@@ -288,7 +289,10 @@ class Reaction:
         if self.kinetics:
             if isinstance(self.kinetics, Arrhenius):
                 # Create an Elementary Reaction
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
+                if isinstance(self.kinetics, SurfaceArrhenius):  # SurfaceArrhenius inherits from Arrhenius
+                    ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.InterfaceArrheniusRate())
+                else:
+                    ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
             elif isinstance(self.kinetics, MultiArrhenius):
                 # Return a list of elementary reactions which are duplicates
                 ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
@@ -339,6 +343,14 @@ class Reaction:
                         reactants=ct_reactants, products=ct_products, rate=rate
                     )
 
+            elif isinstance(self.kinetics, SurfaceArrhenius):
+                rate = self.kinetics.to_cantera_kinetics()
+                ct_reaction = ct.InterfaceReaction(equation=str(self), rate=rate)
+
+            elif isinstance(self.kinetics, StickingCoefficient):
+                rate = self.kinetics.to_cantera_kinetics()
+                ct_reaction = ct.Reaction(equation=str(self), rate=rate)
+
             elif isinstance(self.kinetics, Lindemann):
                 high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
                 low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
@@ -355,6 +367,9 @@ class Reaction:
                     ct_reaction = ct.FalloffReaction(
                         reactants=ct_reactants, products=ct_products, rate=rate
                     )
+
+            elif isinstance(self.kinetics, StickingCoefficient):
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.StickingArrheniusRate())
 
             else:
                 raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
@@ -1174,7 +1189,7 @@ class Reaction:
         from rmgpy.molecule.element import element_list
         from rmgpy.molecule.fragment import CuttingLabel, Fragment
 
-        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Graph, atom=Vertex, element=Element)
+        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Molecule, atom=Atom, element=Element)
 
         reactant_elements = {}
         product_elements = {}

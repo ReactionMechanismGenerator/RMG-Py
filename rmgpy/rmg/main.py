@@ -79,7 +79,8 @@ from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
-from rmgpy.yml import RMSWriter
+from rmgpy.yaml_rms import RMSWriter
+from rmgpy.yaml_cantera import CanteraWriter
 from rmgpy.rmg.reactors import Reactor
 
 ################################################################################
@@ -724,6 +725,7 @@ class RMG(util.Subject):
 
         self.attach(ChemkinWriter(self.output_directory))
         self.attach(RMSWriter(self.output_directory))
+        self.attach(CanteraWriter(self.output_directory))
 
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
@@ -1755,7 +1757,7 @@ class RMG(util.Subject):
         """
         transport_file = os.path.join(os.path.dirname(chemkin_file), "tran.dat")
         file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + ".yaml"
-        out_name = os.path.join(self.output_directory, "cantera", file_name)
+        out_name = os.path.join(self.output_directory, "cantera_from_ck", file_name)
         if "surface_file" in kwargs:
             out_name = out_name.replace("-gas.", ".")
         cantera_dir = os.path.dirname(out_name)
