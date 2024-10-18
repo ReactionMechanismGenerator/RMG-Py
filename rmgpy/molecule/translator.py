@@ -373,7 +373,7 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
         if identifier_type == 'smi':
             rdkitmol = to_rdkit_mol(input_object, sanitize=False)
         else:
-            rdkitmol = to_rdkit_mol(input_object, sanitize=True)
+            rdkitmol = to_rdkit_mol(input_object, sanitize=True, X=78) # Use Pt (78) for surface sites.
         if identifier_type == 'inchi':
             output = Chem.inchi.MolToInchi(rdkitmol, options='-SNon')
         elif identifier_type == 'inchikey':
@@ -441,6 +441,9 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
             raise ValueError('Unexpected identifier type {0}.'.format(identifier_type))
         obmol = to_ob_mol(input_object)
         output = ob_conversion.WriteString(obmol).strip()
+        if identifier_type == 'smi':
+            # If we use * for surface sites, RDKit can read it again.
+            output = output.replace('[Pt]','*')
     else:
         raise ValueError('Unexpected input format. Should be a Molecule or a string.')
 

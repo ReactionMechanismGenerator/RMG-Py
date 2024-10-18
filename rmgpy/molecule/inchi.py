@@ -602,7 +602,7 @@ def create_augmented_layers(mol):
     else:
         molcopy = mol.copy(deep=True)
 
-        rdkitmol = to_rdkit_mol(molcopy, remove_h=True)
+        rdkitmol = to_rdkit_mol(molcopy, remove_h=True, X=78)
         _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
 
         hydrogens = [at for at in molcopy.atoms if at.number == 1]
