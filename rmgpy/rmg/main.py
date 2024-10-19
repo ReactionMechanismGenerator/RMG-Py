@@ -1252,8 +1252,8 @@ class RMG(util.Subject):
                                 for sp in self.reaction_model.core.species:
                                     if sp.is_isomorphic(mol, strict=False):
                                         parameters['units'] = {'energy':'J', 'quantity':'mol'}
-                                        parameters['enthalpy-coefficients'] = [float(value) for value in parameters['enthalpy-coefficients']]
-                                        parameters['entropy-coefficients'] = [float(value) for value in parameters['entropy-coefficients']]
+                                        parameters['enthalpy-coefficients'] = [value.value_si for value in parameters['enthalpy-coefficients']]
+                                        parameters['entropy-coefficients'] = [value.value_si for value in parameters['entropy-coefficients']]
                                         try:
                                             content["species"][gas.n_species+surf.species_index(sp.to_chemkin())]['coverage-dependencies'][sp.to_chemkin()] = parameters
                                         except KeyError:
