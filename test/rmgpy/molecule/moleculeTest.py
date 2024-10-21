@@ -262,7 +262,7 @@ class TestAtom:
         """
         for element in element_list:
             atom = Atom(element=element, radical_electrons=0, charge=0, label="*1", lone_pairs=0)
-            if element.symbol == "X":
+            if element.symbol in ["X", "Pt"]:
                 assert atom.is_surface_site()
             else:
                 assert not atom.is_surface_site()
@@ -1632,6 +1632,24 @@ multiplicity 2
             "CCCC",
             "O=C=O",
             "[C]#N",
+            "[X]",
+            "[X]C=C[X]",
+            "O[X]",
+            "CO[X]",
+            "[XH]",
+            "C=C[X]",
+            "CO.[X]",
+            "C#[X]",
+            "CCC(C)[X]",
+            "[Pt]",
+            "[Pt]C=C[Pt]",
+            "O[Pt]",
+            "CO[Pt]",
+            "[PtH]",
+            "C=C[Pt]",
+            "CO.[Pt]",
+            "C#[Pt]",
+            "CCC(C)[Pt]"
         ]
         for s in test_strings:
             molecule = Molecule(smiles=s)
