@@ -307,8 +307,8 @@ ATOMTYPES['Ptv'] = AtomType(label='Ptv', generic=['Rx', 'Rx!H', 'X', 'Pt', 'Xv']
                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
                             benzene=[0], lone_pairs=[0])
 ATOMTYPES['Pto'] = AtomType(label='Pto', generic=['Rx', 'Rx!H', 'X', 'Pt', 'Xo'], specific=[],
-                            single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
-                            benzene=[0], lone_pairs=[0])
+                            single=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], all_double=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], r_double=[], o_double=[], s_double=[], triple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+                            quadruple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], benzene=[0], lone_pairs=[0])
 
 # Non-surface atomTypes, R being the most generic:
 ATOMTYPES['R'] = AtomType(label='R', generic=['Rx'], specific=[

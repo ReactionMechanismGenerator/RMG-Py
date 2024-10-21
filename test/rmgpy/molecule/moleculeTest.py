@@ -287,7 +287,7 @@ class TestAtom:
         """
         for element in element_list:
             atom = Atom(element=element, radical_electrons=0, charge=0, label="*1", lone_pairs=0)
-            if element.symbol == "X":
+            if element.symbol in ["X", "Pt"]:
                 assert atom.is_surface_site()
             else:
                 assert not atom.is_surface_site()

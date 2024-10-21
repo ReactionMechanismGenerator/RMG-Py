@@ -383,6 +383,11 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
         output = from_rdkit_mol(mol, rdkitmol)
     elif isinstance(input_object, mm.Molecule):
         # We are converting from a molecule to a string identifier
+        generic_X = False # keep track of whether this is generic 'X' or specific 'Pt'
+        for atom in input_object.vertices:
+            if atom.element.symbol == 'X':
+                generic_X = True
+                break
         if identifier_type == 'smi':
             rdkitmol = to_rdkit_mol(input_object, sanitize=False)
         else:
@@ -404,6 +409,8 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
     else:
         raise ValueError('Unexpected input format. Should be a Molecule or a string.')
 
+    if generic_X:
+        output = output.replace('Pt', 'X')
     return output
 
 
