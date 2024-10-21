@@ -1707,7 +1707,16 @@ multiplicity 2
             "C=C[X]",
             "CO.[X]",
             "C#[X]",
-            "CCC(C)[X]"
+            "CCC(C)[X]",
+            "[Pt]",
+            "[Pt]C=C[Pt]",
+            "O[Pt]",
+            "CO[Pt]",
+            "[PtH]",
+            "C=C[Pt]",
+            "CO.[Pt]",
+            "C#[Pt]",
+            "CCC(C)[Pt]"
         ]
         for s in test_strings:
             molecule = Molecule(smiles=s)

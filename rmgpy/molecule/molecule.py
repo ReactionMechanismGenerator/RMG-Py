@@ -432,7 +432,7 @@ class Atom(Vertex):
         """
         Return ``True`` if the atom represents a surface site or ``False`` if not.
         """
-        return self.symbol == 'X'
+        return self.symbol == 'X' or self.symbol in [z.label for z in ATOMTYPES['X'].specific]
 
     def is_bonded_to_surface(self):
         """
@@ -1036,18 +1036,23 @@ class Molecule(Graph):
             self.from_inchi(inchi)
             self._inchi = inchi
         elif smiles:
-            if 'X' in smiles:
-                self.from_smiles(smiles.replace('X', 'Ar'))
-                lines = self.to_adjacency_list().split('\n')
-                for i, line in enumerate(lines):
-                    if 'Ar' in line:
-                        lines[i] = lines[i].replace('Ar', 'X')
-                        # remove any extra electron pairs
-                        lines[i] = lines[i].replace('p3', 'p0')
-                        lines[i] = lines[i].replace('p2', 'p0')
-                        lines[i] = lines[i].replace('p1', 'p0')
-                adj_list = '\n'.join(lines)
-                self = self.from_adjacency_list(adj_list)
+            for surface_site_symbol in ['X', 'Pt']:
+                if surface_site_symbol in smiles:
+                    assert 'Ar' not in smiles
+                    self.from_smiles(smiles.replace(surface_site_symbol, 'Ar'))
+                    lines = self.to_adjacency_list().split('\n')
+                    for i, line in enumerate(lines):
+                        if 'Ar' in line:  # The adjacency list needs to use the identified 'X' for a site
+                            lines[i] = lines[i].replace('Ar', surface_site_symbol)
+                            # remove any extra electron pairs
+                            lines[i] = lines[i].replace('p3', 'p0')
+                            lines[i] = lines[i].replace('p2', 'p0')
+                            lines[i] = lines[i].replace('p1', 'p0')
+                    adj_list = '\n'.join(lines)
+                    self = self.from_adjacency_list(adj_list)
+                    # but now we have to change the symbol back to 'Pt or 'X' for the smiles
+                    # self.smiles = self.smiles.replace('X', surface_site_symbol)
+                    break
             else:
                 self.from_smiles(smiles)
             self._smiles = smiles
@@ -1218,9 +1223,11 @@ class Molecule(Graph):
         Returns ``True`` iff the molecule contains an 'X' surface site.
         """
         cython.declare(atom=Atom)
+        cython.declare(z=AtomType)
         for atom in self.atoms:
-            if atom.symbol == 'X':
+            if atom.symbol == 'X' or atom.symbol in [z.label for z in ATOMTYPES['X'].specific]:
                 return True
+            # atom_type = get_atomtype(atom, atom.bonds)
         return False
 
     def number_of_surface_sites(self):
