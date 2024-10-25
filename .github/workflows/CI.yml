@@ -406,18 +406,12 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: reactionmechanismgenerator/rmg:latest
 
   build-and-push-docker-echem:
-    # after testing and on pushes to main, build and push docker image
-    # technically we could live without the 'needs' since _in theory_
-    # nothing will ever be merged into main that fails the tests, but
-    # who knows ¯\_(ツ)_/¯
-    #
-    # taken from https://github.com/docker/build-push-action
     needs: build-and-test-linux
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/echem-rebase' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
@@ -435,7 +429,11 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: reactionmechanismgenerator/rmg:electrocat
+          build-args: |
+            RMG_Py_Branch = echem-rebase
+            RMG_Database_Branch = lithium_rebase
+            RMS_Branch = marcus_development
