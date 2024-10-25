@@ -117,7 +117,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Install and Link Julia dependencies: ::
 
-     julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="main")); using ReactionMechanismSimulator;'
+     julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator;'
 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
