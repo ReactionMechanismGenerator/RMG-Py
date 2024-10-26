@@ -76,6 +76,6 @@ jobs:
           push: true
           tags: reactionmechanismgenerator/rmg:electrocat
           build-args: |
-            RMG_Py_Branch="echem-rebase"
-            RMG_Database_Branch="lithium_rebase"
+            RMG_Py_Branch=echem-rebase
+            RMG_Database_Branch=lithium_rebase
             RMS_Branch="marcus_development"
