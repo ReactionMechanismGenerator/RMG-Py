@@ -78,4 +78,4 @@ jobs:
           build-args: |
             RMG_Py_Branch=echem-rebase
             RMG_Database_Branch=lithium_rebase
-            RMS_Branch="marcus_development"
+            RMS_Branch=marcus_development
