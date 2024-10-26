@@ -35,6 +35,7 @@ SHELL ["/bin/bash", "-c"]
 ARG RMG_Py_Branch=main
 ARG RMG_Database_Branch=main
 ARG RMS_Branch="main"
+ENV rmsbranch=${RMS_Branch}
 
 # cd
 WORKDIR /rmg
@@ -65,7 +66,7 @@ ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 # setting this env variable fixes an issue with Julia precompilation on Windows
 ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 RUN make && \
-    julia -e 'using Pkg; Pkg.add(PackageSpec(name="PyCall",rev="master")); Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev=RMS_Branch)); using ReactionMechanismSimulator' && \
+    julia -e 'using Pkg; Pkg.add(PackageSpec(name="PyCall",rev="master")); Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev=ENV["rmsbranch"])); using ReactionMechanismSimulator' && \
     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
