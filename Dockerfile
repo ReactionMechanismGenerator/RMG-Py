@@ -40,8 +40,8 @@ ARG RMS_Branch="main"
 WORKDIR /rmg
 
 # Clone the RMG base and database repositories
-RUN git clone --single-branch --branch RMG_Py_Branch --depth 1 https://github.com/ReactionMechanismGenerator/RMG-Py.git && \
-    git clone --single-branch --branch RMG_Database_Branch --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
+RUN git clone --single-branch --branch ${RMG_Py_Branch} --depth 1 https://github.com/ReactionMechanismGenerator/RMG-Py.git && \
+    git clone --single-branch --branch ${RMG_Database_Branch} --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
 
 WORKDIR /rmg/RMG-Py
 # build the conda environment
