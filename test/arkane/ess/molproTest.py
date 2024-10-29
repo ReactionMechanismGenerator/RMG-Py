@@ -144,6 +144,14 @@ class MolproLogTest:
         e0 = molpro_log.load_energy()
         assert round(abs(e0 - -301585968.58196217), 7) == 0
 
+    def test_load_rs2c_e0(self):
+        """
+        Load E0 for RS2C from a molpro output file
+        """
+        molpro_log = MolproLog(os.path.join(self.data_path, "HO2_RS2C.out"))
+        e0 = molpro_log.load_energy()
+        assert round(abs(e0 - -395663227.2323160), 6) == 0
+
     def test_load_mrci_e0(self):
         """
         Load the MRCI and MRCI+Davidson energies from a molpro output file

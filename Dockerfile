@@ -23,10 +23,10 @@ RUN apt-get update && \
     apt-get clean -y
 
 # Install conda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda && \
-    rm Miniconda3-latest-Linux-x86_64.sh
-ENV PATH="$PATH:/miniconda/bin"
+RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh" && \ 
+    bash Miniforge3-Linux-x86_64.sh -b -p /miniforge && \
+    rm Miniforge3-Linux-x86_64.sh
+ENV PATH="$PATH:/miniforge/bin"
 
 # Set solver backend to mamba for speed
 RUN conda install -n base conda-libmamba-solver && \
@@ -35,12 +35,18 @@ RUN conda install -n base conda-libmamba-solver && \
 # Set Bash as the default shell for following commands
 SHELL ["/bin/bash", "-c"]
 
+# Add build arguments for RMG-Py, RMG-database, and RMS branches.
+ARG RMG_Py_Branch=main
+ARG RMG_Database_Branch=main
+ARG RMS_Branch=main
+ENV rmsbranch=${RMS_Branch}
+
 # cd
 WORKDIR /rmg
 
 # Clone the RMG base and database repositories
-RUN git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-Py.git && \
-    git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
+RUN git clone --single-branch --branch ${RMG_Py_Branch} --depth 1 https://github.com/ReactionMechanismGenerator/RMG-Py.git && \
+    git clone --single-branch --branch ${RMG_Database_Branch} --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
 
 WORKDIR /rmg/RMG-Py
 # build the conda environment

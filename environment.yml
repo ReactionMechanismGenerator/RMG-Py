@@ -19,9 +19,10 @@
 # - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
 # - March 15, 2024 - started migration to Python 3.9
 #
+# - April 17, 2024 Limit versions of cclib at advice of maintainers.
+# - August 4, 2024 Restricted pyrms to <2
 name: rmg_env
 channels:
-  - defaults
   - rmg
   - conda-forge
   - cantera
@@ -47,7 +48,8 @@ dependencies:
   - coolprop
   - cantera::cantera =2.6
   - conda-forge::mopac
-  - conda-forge::cclib >=1.6.3,<1.8.0
+  # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
+  - conda-forge::cclib >=1.6.3,<1.9
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
 
@@ -85,8 +87,8 @@ dependencies:
   - rmg::pydqed >=1.0.3
   - rmg::symmetry
 
-# conda mutex metapackage
-  - nomkl
+# configure packages to use OpenBLAS instead of Intel MKL
+  - blas=*=openblas
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
