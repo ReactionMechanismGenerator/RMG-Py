@@ -1016,12 +1016,13 @@ def _clar_optimization(mol, save_order=False):
             else:
                 exo.append(0)
         else:
-            exo.append(None)
+            exo.append(0)
 
     # Dimensions
     n_ring = len(aromatic_rings)
     n_atom = len(atoms)
-    n_bond = n_ring + len(bonds)
+    n_bond = len(bonds)
+    n_decision_variables = n_bond + n_ring
 
     # The aromaticity assignment problem is formulated as an MILP problem
     # minimize:
@@ -1038,26 +1039,26 @@ def _clar_optimization(mol, save_order=False):
         in_ring = [1 if atom in ring else 0 for ring in aromatic_rings]
         in_bond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
         A.append(in_ring + in_bond)
-    constraints = (LinearConstraint(
+    constraint = (LinearConstraint(
         A=np.array(A, dtype=int), lb=np.ones(n_atom, dtype=int), ub=np.ones(n_atom, dtype=int)
     ), )
 
     # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
-    c = - np.array([1] * n_ring + [0] * n_bond, dtype=int)
+    c = np.array([1] * n_ring + [0] * n_bond, dtype=int)
 
     # Variable bounds
     bounds = Bounds(
         lb=np.array(
-            [0] * n_ring + [1 if val == 1 else 0 for val in exo],
+            [0] * n_ring + exo,
             dtype=int,
-        ),  # lower bounds: 0 except for exo double bonds
+        ),  # lower bounds: 0 except for exo double bonds, which must be 1 (aka, do not modify them)
         ub=np.array(
-            [1] * n_ring + [0 if val == 0 else 1 for val in exo],
+            [1] * n_decision_variables,  # + [0 if val == 0 else 1 for val in exo],
             dtype=int,
-        ),  # upper bounds: 1 except for exo single bonds
+        ),  # upper is 1 for all
     )
 
-    solutions = _solve_clar_milp(c, bounds, constraints, n_ring)
+    solutions = _solve_clar_milp(c, bounds, constraint, n_ring)
 
     return aromatic_rings, bonds, solutions
 
