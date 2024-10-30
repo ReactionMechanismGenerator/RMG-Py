@@ -35,7 +35,7 @@ dependencies:
   - xlrd
   - xlwt
   - h5py
-  - gcc
+  - boost # needed for rdkit
   - graphviz
   - markupsafe
   - psutil
