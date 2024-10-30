@@ -124,7 +124,7 @@ jobs:
         run: |
           echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
           # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
+          echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
           # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
           # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
           # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
