@@ -72,7 +72,7 @@ jobs:
         uses: actions/checkout@v4
 
       # Step to create a custom condarc.yml before setting up conda
-      - name: Create custom condarc.yml and set LD_LIBRARY_PATH
+      - name: Create custom condarc.yml
         run: |
           RUNNER_CWD=$(pwd)
           echo "channels:" > $RUNNER_CWD/condarc.yml
@@ -80,7 +80,6 @@ jobs:
           echo "  - rmg" >> $RUNNER_CWD/condarc.yml
           echo "  - cantera" >> $RUNNER_CWD/condarc.yml
           echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
-          export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/
 
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python ${{ matrix.python-version }}
