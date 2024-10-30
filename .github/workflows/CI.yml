@@ -122,7 +122,7 @@ jobs:
       # Setup Juliaup
       - name: Set Julia paths
         run: |
-          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
+          echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
           # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
           # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
           # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
@@ -136,7 +136,7 @@ jobs:
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
         with:
-          channel: '1.10'
+          channel: '1.9'
 
       - name: Check Julia version
         run: julia --version
