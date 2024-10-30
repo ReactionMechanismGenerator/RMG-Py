@@ -35,7 +35,7 @@ dependencies:
   - xlrd
   - xlwt
   - h5py
-  - boost # needed for rdkit
+  - libstdcxx-ng # needed for rdkit (?) but not available for macs (?)
   - graphviz
   - markupsafe
   - psutil
