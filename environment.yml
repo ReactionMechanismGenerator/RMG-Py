@@ -35,7 +35,7 @@ dependencies:
   - xlrd
   - xlwt
   - h5py
-  - libstdcxx-ng # needed for rdkit (?) but not available for macs (?)
+  - compilers  # going to provide: maybe libstdcxx-ng # needed for rdkit (?) but not available for macs (?)
   - graphviz
   - markupsafe
   - psutil
