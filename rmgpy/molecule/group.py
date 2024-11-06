@@ -1418,6 +1418,8 @@ class Group(Graph):
         and radical electrons. This method is used for products of specific families with recipes that modify charges.
         """
         for atom in self.atoms:
+            if isinstance(atom, CuttingLabel):
+                continue
             if (len(atom.charge) == 1) and (len(atom.lone_pairs) == 1) and (len(atom.radical_electrons) == 1):
                 # if the charge of the group is not labeled, then no charge update will be
                 # performed. If there multiple charges are assigned, no update either.

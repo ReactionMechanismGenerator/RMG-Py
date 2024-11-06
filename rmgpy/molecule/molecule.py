@@ -1276,7 +1276,8 @@ class Molecule(Graph):
     def update_charge(self):
 
         for atom in self.atoms:
-            atom.update_charge()
+            if not isinstance(atom, CuttingLabel):
+                atom.update_charge()
 
     def update(self, log_species=True, raise_atomtype_exception=True, sort_atoms=True):
         """
