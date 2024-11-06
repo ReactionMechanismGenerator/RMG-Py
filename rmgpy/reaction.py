@@ -996,7 +996,7 @@ class Reaction:
 
         if self.kinetics is None:
             raise KineticsError("Cannot fix barrier height for reactions with no kinetics attribute")
-        
+
         if isinstance(self.kinetics, Marcus):
             if apply_solvation_correction and solvent:
                 self.apply_solvent_correction(solvent)
@@ -1039,7 +1039,7 @@ class Reaction:
                     logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
                         self, self.kinetics.Ea.value_si / 1000., Ea / 1000.))
                     self.kinetics.Ea.value_si = Ea
-            if isinstance(self.kinetics, (Arrhenius, StickingCoefficient, ArrheniusChargeTransfer)):  # SurfaceArrhenius is a subclass of Arrhenius
+            if isinstance(self.kinetics, (Arrhenius, StickingCoefficient, ArrheniusChargeTransfer, SurfaceChargeTransfer)):  # SurfaceArrhenius is a subclass of Arrhenius
                 if apply_solvation_correction and solvent and self.kinetics.solute:
                     self.apply_solvent_correction(solvent)
                 Ea = self.kinetics.Ea.value_si

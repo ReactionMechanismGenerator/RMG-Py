@@ -601,22 +601,20 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         A = obj._A.value_si
         if obj._T0.value_si != 1.0:
             A /= ((obj._T0.value_si) ** obj._n.value_si)
-        if obj._V0.value_si != 0.0:
-            A *= np.exp(obj._alpha.value_si*obj._electrons.value_si*constants.F*obj.V0.value_si)
         n = obj._n.value_si
         Ea = obj._Ea.value_si
         q = obj._alpha.value_si*obj._electrons.value_si
-        return rms.Arrheniusq(A, n, Ea, q, rms.EmptyRateUncertainty())
+        V0 = obj._V0.value_si
+        return rms.Arrheniusq(A, n, Ea, q, V0, rms.EmptyRateUncertainty())
     elif isinstance(obj, SurfaceChargeTransfer):
         A = obj._A.value_si
         if obj._T0.value_si != 1.0:
             A /= ((obj._T0.value_si) ** obj._n.value_si)
-        if obj._V0.value_si != 0.0:
-            A *= np.exp(obj._alpha.value_si*obj._electrons.value_si*constants.F*obj.V0.value_si)
         n = obj._n.value_si
         Ea = obj._Ea.value_si
         q = obj._alpha.value_si*obj._electrons.value_si
-        return rms.Arrheniusq(A, n, Ea, q, rms.EmptyRateUncertainty())
+        V0 = obj._V0.value_si
+        return rms.Arrheniusq(A, n, Ea, q, V0, rms.EmptyRateUncertainty())
     elif isinstance(obj, Marcus):
         A = obj._A.value_si
         n = obj._n.value_si
@@ -725,7 +723,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
             else:
                 atomnums[atm.element.symbol] = 1
         bondnum = len(mol.get_all_edges())
-        
+
         if not obj.molecule[0].contains_surface_site():
             rad = rms.getspeciesradius(atomnums, bondnum)
             diff = rms.StokesDiffusivity(rad)
