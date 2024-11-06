@@ -44,6 +44,7 @@ from rmgpy.exceptions import ActionError, ImplicitBenzeneError, UnexpectedCharge
 from rmgpy.molecule.atomtype import ATOMTYPES, allElements, nonSpecifics, get_features, AtomType
 from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.graph import Vertex, Edge, Graph
+from rmgpy.molecule.fragment import CuttingLabel
 
 
 ################################################################################

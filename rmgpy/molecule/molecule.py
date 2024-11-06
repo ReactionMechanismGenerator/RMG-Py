@@ -58,6 +58,7 @@ from rmgpy.molecule.element import bdes
 from rmgpy.molecule.graph import Vertex, Edge, Graph, get_vertex_connectivity_value
 from rmgpy.molecule.kekulize import kekulize
 from rmgpy.molecule.pathfinder import find_shortest_path
+from rmgpy.molecule.fragment import CuttingLabel
 
 ################################################################################
 

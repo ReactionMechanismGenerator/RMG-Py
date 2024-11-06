@@ -1520,9 +1520,10 @@ class KineticsFamily(Database):
             # (families with charged substances), the charge of structures will be updated
             if isinstance(struct, Molecule):
                 struct.update_charge()
-                struct.update(sort_atoms=not self.save_order)
-            elif isinstance(struct, Fragment):
-                struct.update()
+                if isinstance(struct, Fragment):
+                    struct.update()
+                else:
+                    struct.update(sort_atoms=not self.save_order)
             elif isinstance(struct, Group):
                 is_molecule = False
                 struct.reset_ring_membership()
