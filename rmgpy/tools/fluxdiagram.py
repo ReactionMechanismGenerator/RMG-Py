@@ -540,7 +540,7 @@ def create_flux_diagram(input_file, chemkin_file, species_dict, save_path=None, 
     a species_dict txt file, plus an optional chemkin_output file.
     """
     if species_path is None:
-        species_path = os.path.join(os.path.dirname(input_file), 'species')
+        species_path = os.path.join(os.path.dirname(os.path.abspath(input_file)), 'species')
         generate_images = True
     else:
         generate_images = False
