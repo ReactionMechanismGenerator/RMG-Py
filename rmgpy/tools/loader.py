@@ -50,6 +50,7 @@ def load_rmg_job(
     use_java=False,
     use_chemkin_names=False,
     check_duplicates=True,
+    surface_path=False,
 ):
     # The argument is an RMG-Py input file
     rmg = load_rmg_py_job(
@@ -59,13 +60,14 @@ def load_rmg_job(
         generate_images,
         use_chemkin_names=use_chemkin_names,
         check_duplicates=check_duplicates,
+        surface_path=surface_path,
     )
 
     return rmg
 
 
 def load_rmg_py_job(input_file, chemkin_file=None, species_dict=None, generate_images=True,
-                    use_chemkin_names=False, check_duplicates=True):
+                    use_chemkin_names=False, check_duplicates=True, surface_path=False):
     """
     Load the results of an RMG-Py job generated from the given `input_file`.
     """
@@ -83,7 +85,9 @@ def load_rmg_py_job(input_file, chemkin_file=None, species_dict=None, generate_i
         species_dict = os.path.join(os.path.dirname(input_file), 'chemkin', 'species_dictionary.txt')
     species_list, reaction_list = load_chemkin_file(chemkin_file, species_dict,
                                                     use_chemkin_names=use_chemkin_names,
-                                                    check_duplicates=check_duplicates)
+                                                    check_duplicates=check_duplicates,
+                                                    surface_path=surface_path,
+                                                    )
 
     # Created "observed" versions of all reactive species that are not explicitly
     # identified as  "constant" species
