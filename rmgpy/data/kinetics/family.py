@@ -1927,9 +1927,10 @@ class KineticsFamily(Database):
                 logging.error("Reactant: {0!r}".format(reactant))
             for product in reaction.products:
                 logging.error("Product: {0!r}".format(product))
-            raise KineticsError(('Unable to calculate degeneracy for reaction {0} '
+            logging.error(('Unable to calculate degeneracy for reaction {0} '
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
+            return 1
         return reactions[0].degeneracy
 
     def _generate_reactions(self, reactants, products=None, forward=True, prod_resonance=True,
