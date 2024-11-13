@@ -122,7 +122,7 @@ and the equilibrium constant (as calculated from thermodynamic parameters).
 
 Reaction Comments
 -----------------
-Reaction comments are saved by RMG to the chem_annotated.inp Chemkin input file. 
+Reaction comments are saved by RMG to the ``chem_annotated.inp`` Chemkin input file. 
 These comments contain information about the source of the reaction rate and are read by RMG when 
 loading the Chemkin file. These comments are compiled from many different locations in the code.
 

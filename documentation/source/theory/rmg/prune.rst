@@ -18,7 +18,7 @@ Key Parameters in Pruning
 
 * ``toleranceMoveToCore``
 
-  Any edge species to enter core model should have flux at some point larger than ``toleranceMoveToCore`` :math:`*` characteristic flux Thus, in general, smaller values will lead to larger core mechanisms.
+  Any edge species to enter core model should have flux at some point larger than ``toleranceMoveToCore`` :math:`*` characteristic flux. Thus, in general, smaller values will lead to larger core mechanisms.
 
 * ``toleranceInterruptSimulation``
 
