@@ -1033,7 +1033,7 @@ It is now possible to concatenate different model and simulator blocks into the 
 
 There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file.
 
-To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.
+To enable easier manipulation of staging a new parameter in the model block was developed ``maxNumSpecies`` that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.
 
 For example ::
 
