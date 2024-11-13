@@ -647,9 +647,9 @@ this is more likely to kick out species RMG might otherwise have added to core.
 
 Advanced Setting: Taking Multiple Species At A Time
 ----------------------------------------------------
-Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
+Taking multiple objects (``Species``, ``Reaction``s or ``PDepNetwork``s) during a given simulation can often decrease your overall model generation time
 over only taking one.  For this purpose there is a ``maxNumObjsPerIter`` parameter that allows RMG to take
-that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.
+that many ``Species``, ``Reaction``s or ``PDepNetwork``s from a given simulation. This is done in the order they trigger their respective criteria.
 
 You can also set ``terminateAtMaxObjects=True`` to cause it to terminate when it has the maximum
 number of objects allowed rather than waiting around until it hits an interrupt tolerance.  This
@@ -668,6 +668,11 @@ For example ::
 
 Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
 object at a time) pick up chemistry that would otherwise have been missed.
+
+
+Other Advanced Settings
+----------------------------------------------------
+
 
 .. _ontheflyquantumcalculations:
 
