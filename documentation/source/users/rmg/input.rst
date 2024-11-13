@@ -670,8 +670,11 @@ Note that this can also result in larger models, however, sometimes these larger
 object at a time) pick up chemistry that would otherwise have been missed.
 
 
-Other Advanced Settings
+Advanced Settings: Other 
 ----------------------------------------------------
+- ``dynamicsTimeScale``: The time before which the dynamics criterion cannot be used to bring reactions into the model. This is useful because the math behind the dynamics criterion breaks down as ``t`` approaches 0, thus restricting the use of the dynamics criterion until later times may reduce the number of junk species/reactions added to the model.
+
+- ``ignoreOverallFluxCriterion``: Causes RMG to use the given flux criterion only for determining if a ``PDepNetwork`` should be explored and not whether species should enter the model. Lets you run pressure dependence alongside the dynamics criterion without the flux criterion.
 
 
 .. _ontheflyquantumcalculations:
