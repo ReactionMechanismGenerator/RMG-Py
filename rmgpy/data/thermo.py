@@ -1646,19 +1646,18 @@ class ThermoDatabase(object):
                 else:
                     atom.label = label
 
-            # a tuple of the H298, the ThermoData object, and the molecule
-            resonance_data.append((thermo.get_enthalpy(298), thermo, molecule))
+            # a tuple of molecule and its thermo
+            resonance_data.append((molecule, thermo))
 
         # Get the enthalpy of formation of every adsorbate at 298 K and
         # determine the resonance structure with the lowest enthalpy of formation.
         # We assume that the lowest enthalpy of formation is the correct
-        # thermodynamic property for the adsorbate.
+        # thermodynamic property for the adsorbate, and the preferred representation.
 
-        # first element of each tuple is H298, so sort by that
-        resonance_data = sorted(resonance_data)
+        resonance_data = sorted(resonance_data, key=lambda x: x[1].H298.value_si)
 
         # reorder the resonance structures (molecules) by their H298
-        species.molecule = [mol for h, thermo, mol in resonance_data]
+        species.molecule = [mol for mol, thermo in resonance_data]
 
         thermo = resonance_data[0][1]
 
