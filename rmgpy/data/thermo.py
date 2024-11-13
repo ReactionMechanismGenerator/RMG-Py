@@ -1561,8 +1561,7 @@ class ThermoDatabase(object):
         """
 
         # define the comparison function to find the lowest energy
-
-        def lowest_energy(species):
+        def species_enthalpy(species):
             if hasattr(species.thermo, 'H298'):
                 return species.thermo.H298.value_si
             else:
@@ -1577,9 +1576,7 @@ class ThermoDatabase(object):
         resonance_data = []
 
         # iterate over all resonance structures of the species
-
-        for i in range(len(species.molecule)):
-            molecule = species.molecule[i]
+        for molecule in species.molecule:
             # store any labeled atoms to reapply at the end
             labeled_atoms = molecule.get_all_labeled_atoms()
             molecule.clear_labeled_atoms()
@@ -1591,7 +1588,10 @@ class ThermoDatabase(object):
             if len(dummy_molecules) == 0:
                 raise RuntimeError(f"Cannot get thermo for gas-phase molecule. No valid dummy molecules from original molecule:\n{molecule.to_adjacency_list()}")
         
-            # if len(molecule) > 1, it will assume all resonance structures have already been generated when it tries to generate them, so evaluate each configuration separately and pick the lowest energy one by H298 value
+            # if len(molecule) > 1, it will assume all resonance structures
+            # have already been generated when it tries to generate them, so
+            # evaluate each configuration separately and pick the lowest energy
+            # one by H298 value
             gas_phase_species_from_libraries = []
             gas_phase_species_estimates = []
             for dummy_molecule in dummy_molecules:
@@ -1605,13 +1605,13 @@ class ThermoDatabase(object):
                     gas_phase_species_estimates.append(dummy_species)
 
             if gas_phase_species_from_libraries:
-                gas_phase_species = min(gas_phase_species_from_libraries, key=lowest_energy)
+                gas_phase_species = min(gas_phase_species_from_libraries, key=species_enthalpy)
             else:
-                gas_phase_species = min(gas_phase_species_estimates, key=lowest_energy)
+                gas_phase_species = min(gas_phase_species_estimates, key=species_enthalpy)
 
             thermo = gas_phase_species.thermo
             thermo.comment = f"Gas phase thermo for {thermo.label or gas_phase_species.molecule[0].to_smiles()} from {thermo.comment}. Adsorption correction:"
-            logging.debug("Using thermo from gas phase for species {}\n".format(gas_phase_species.label) + repr(thermo))
+            logging.debug("Using thermo from gas phase for species %s: %r", gas_phase_species.label, thermo)
 
             if not isinstance(thermo, ThermoData):
                 thermo = thermo.to_thermo_data()
@@ -1619,7 +1619,6 @@ class ThermoDatabase(object):
 
             # Get the adsorption energy
             # Create the ThermoData object
-
             adsorption_thermo = ThermoData(
                 Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
                 Cpdata=([0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0], "J/(mol*K)"),
@@ -1639,7 +1638,6 @@ class ThermoDatabase(object):
             # (group_additivity=True means it appends the comments)
             add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
 
-            resonance_data.append(thermo)
             # if the molecule had labels, reapply them
             for label, atom in labeled_atoms.items():
                 if isinstance(atom,list):
@@ -1648,15 +1646,21 @@ class ThermoDatabase(object):
                 else:
                     atom.label = label
 
-        # Get the enthalpy of formation of every adsorbate at 298 K and determine the resonance structure with the lowest enthalpy of formation
-        # We assume that the lowest enthalpy of formation is the correct thermodynamic property for the adsorbate
+            # a tuple of the H298, the ThermoData object, and the molecule
+            resonance_data.append((thermo.get_enthalpy(298), thermo, molecule))
 
-        enthalpy298 = []
+        # Get the enthalpy of formation of every adsorbate at 298 K and
+        # determine the resonance structure with the lowest enthalpy of formation.
+        # We assume that the lowest enthalpy of formation is the correct
+        # thermodynamic property for the adsorbate.
 
-        for i in range(len(resonance_data)):
-            enthalpy298.append(resonance_data[i].get_enthalpy(298))
+        # first element of each tuple is H298, so sort by that
+        resonance_data = sorted(resonance_data)
 
-        thermo = resonance_data[np.argmin(enthalpy298)]
+        # reorder the resonance structures (molecules) by their H298
+        species.molecule = [mol for h, thermo, mol in resonance_data]
+
+        thermo = resonance_data[0][1]
 
         if thermo.label:
             thermo.label += 'X' * len(surface_sites)
