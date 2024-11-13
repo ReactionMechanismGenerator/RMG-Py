@@ -25,6 +25,7 @@
 # 2023-07-17 - made it pass by default
 # 2023-07-21 - upload the regression results summary as artifact (for use as a comment on PRs)
 # 2023-07-31 - removed option to run from RMG-database with GitHub resuable workflows
+# 2024-10-01 - deprecated Mambaforge with Miniforge3 for environment creation
 
 name: Continuous Integration
 
@@ -61,14 +62,25 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v4
 
+      # Step to create a custom condarc.yml before setting up conda
+      - name: Create custom conda config file
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "channels:" > $RUNNER_CWD/condarc.yml
+          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
+          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
+          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
+          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
+
       # configures the mamba environment manager and builds the environment
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Miniforge Python 3.7
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           python-version: 3.7
+          condarc-file: condarc.yml
           activate-environment: rmg_env
           use-mamba: true
 
@@ -111,14 +123,25 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v4
 
+      # Step to create a custom condarc.yml before setting up conda
+      - name: Create custom condarc.yml
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "channels:" > $RUNNER_CWD/condarc.yml
+          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
+          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
+          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
+          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
+
       # configures the mamba environment manager and builds the environment
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Miniforge Python 3.7
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           python-version: 3.7
+          condarc-file: condarc.yml
           activate-environment: rmg_env
           use-mamba: true
 
@@ -167,7 +190,7 @@ jobs:
         id: regression-execution
         timeout-minutes: 60
         run: |
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment;
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
             if python-jl rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
@@ -218,16 +241,16 @@ jobs:
       - name : Find ID of Reference Results
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # this will search for the last successful execution of CI on main
         run: |
-          run_id=$(gh run list -R ReactionMechanismGenerator/RMG-Py --workflow="Continuous Integration" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
+          run_id=$(gh run list -R ReactionMechanismGenerator/RMG-Py --workflow="Continuous Integration" --branch main --limit 15 --json databaseId,conclusion --jq 'map(select(.conclusion == "success")) | .[0].databaseId')
           echo "CI_RUN_ID=$run_id" >> $GITHUB_ENV
 
       - name: Retrieve Stable Regression Results
         if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/download-artifact@v4
         with:
-        # this will search for the last successful execution of CI on main and download
-        # the stable regression results
+        # download stable regression results
           run-id: ${{ env.CI_RUN_ID }}
           repository: ReactionMechanismGenerator/RMG-Py
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -243,7 +266,7 @@ jobs:
         run: |
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           mkdir -p "test/regression-diff"
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment;
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
             echo ""
             echo "### Regression test $regr_test:"
@@ -378,7 +401,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: reactionmechanismgenerator/rmg:latest

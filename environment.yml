@@ -16,10 +16,10 @@
 #   made dependency list more explicit (@JacksonBurns).
 # - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
 #   moved diffeqpy to pip and (temporarily) removed chemprop
+# - April 17, 2024 Limit versions of cclib at advice of maintainers.
 # - August 4, 2024 Restricted pyrms to <2
 name: rmg_env
 channels:
-  - defaults
   - rmg
   - conda-forge
   - cantera
@@ -44,7 +44,8 @@ dependencies:
   - coolprop
   - cantera::cantera=2.6
   - conda-forge::mopac
-  - conda-forge::cclib >=1.6.3,<1.8.0
+  # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
+  - conda-forge::cclib >=1.6.3,<1.9
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
 
@@ -100,8 +101,8 @@ dependencies:
   # Note that _some other_ dep. in this list requires diffeqpy in its recipe
   # which will cause it to be downloaded from the rmg conda channel
 
-# conda mutex metapackage
-  - nomkl
+# configure packages to use OpenBLAS instead of Intel MKL
+  - blas=*=openblas
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
