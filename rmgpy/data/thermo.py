@@ -1640,6 +1640,13 @@ class ThermoDatabase(object):
             add_thermo_data(thermo, adsorption_thermo, group_additivity=True)
 
             resonance_data.append(thermo)
+            # if the molecule had labels, reapply them
+            for label, atom in labeled_atoms.items():
+                if isinstance(atom,list):
+                    for a in atom:
+                        a.label = label
+                else:
+                    atom.label = label
 
         # Get the enthalpy of formation of every adsorbate at 298 K and determine the resonance structure with the lowest enthalpy of formation
         # We assume that the lowest enthalpy of formation is the correct thermodynamic property for the adsorbate
@@ -1655,14 +1662,6 @@ class ThermoDatabase(object):
             thermo.label += 'X' * len(surface_sites)
 
         find_cp0_and_cpinf(species, thermo)
-
-        # if the molecule had labels, reapply them 
-        for label,atom in labeled_atoms.items():
-            if isinstance(atom,list):
-                for a in atom:
-                    a.label = label
-            else:
-                atom.label = label
 
         return thermo
 
