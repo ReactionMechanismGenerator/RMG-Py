@@ -119,7 +119,7 @@ Logging
 --------
 As RMG runs, it will continuously log information as the run progresses. By default, this will include
 input file information, databases loaded, kinetic rate rules used, thermo estimation, model enlargment details, 
-reaction simulation (to see if termination criteria are met), and finally (after several iterations), final mechanism
+reaction simulation (to see if termination criteria are met), and (after several iterations) final mechanism
 details, execution time, and memory usage.
 
 The logged information can be controlled by
