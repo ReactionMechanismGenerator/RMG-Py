@@ -18,7 +18,7 @@
 #   moved diffeqpy to pip and (temporarily) removed chemprop
 # - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
 # - March 15, 2024 - started migration to Python 3.9
-#
+# - Mar 11, 2024 Removed Julia dependencies, now considered optional
 # - April 17, 2024 Limit versions of cclib at advice of maintainers.
 # - August 4, 2024 Restricted pyrms to <2
 name: rmg_env
@@ -53,9 +53,6 @@ dependencies:
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
 
-# general-purpose external software tools
-  - conda-forge::pyjuliacall # for calling julia packages
-
 # Python tools
   - python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
   - coverage
@@ -89,6 +86,19 @@ dependencies:
 
 # configure packages to use OpenBLAS instead of Intel MKL
   - blas=*=openblas
+
+# optional dependencies for using ReactionMechanismSimulator
+# remove the leading '#' to install the required dependencies
+  # - conda-forge::julia=1.9.1
+  # - conda-forge::pyjulia >=0.6
+  # - rmg::pyrms
+  # - rmg::diffeqpy
+
+# Note about diffeqpy:
+# we should use the official verison https://github.com/SciML/diffeqpy),
+# rather than ours (which is only made so that we can get it from conda)
+# It is only on pip, so we will need to do something like:
+# https://stackoverflow.com/a/35245610
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
