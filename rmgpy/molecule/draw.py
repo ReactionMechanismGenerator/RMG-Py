@@ -184,7 +184,8 @@ class MoleculeDrawer(object):
         surface_sites = []
         for atom in self.molecule.atoms:
             if isinstance(atom, Atom) and atom.is_hydrogen() and atom.label == '':
-                atoms_to_remove.append(atom)
+                if not any(bond.is_hydrogen_bond() for bond in atom.bonds.values()):
+                    atoms_to_remove.append(atom)
             elif atom.is_surface_site():
                 surface_sites.append(atom)
         if len(atoms_to_remove) < len(self.molecule.atoms) - len(surface_sites):
