@@ -35,7 +35,6 @@ dependencies:
   - xlrd
   - xlwt
   - h5py
-  - libstdcxx-ng  # going to provide: maybe libstdcxx-ng # needed for rdkit (?) but not available for macs (?)
   - graphviz
   - markupsafe
   - psutil
@@ -89,10 +88,7 @@ dependencies:
 
 # optional dependencies for using ReactionMechanismSimulator
 # remove the leading '#' to install the required dependencies
-  # - conda-forge::julia=1.9.1
-  # - conda-forge::pyjulia >=0.6
-  # - rmg::pyrms
-  # - rmg::diffeqpy
+  # - conda-forge::pyjuliacall
 
 # Note about diffeqpy:
 # we should use the official verison https://github.com/SciML/diffeqpy),
