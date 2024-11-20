@@ -59,7 +59,7 @@ jobs:
         os: [macos-13, macos-latest, ubuntu-latest]
         test_julia: [yes, no]
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }}
+    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }} (Julia? ${{ matrix.test_julia }})
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
