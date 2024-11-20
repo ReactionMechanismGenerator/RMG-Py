@@ -33,8 +33,8 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron: "0 8 * * *"
-  # runs on all branches on both RMG-Py and forks
-  push:
+  # allow running on RMG-Py on a pushed branch, only if triggered manually
+  workflow_dispatch:
   # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
   pull_request:
 
