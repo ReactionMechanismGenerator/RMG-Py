@@ -257,7 +257,7 @@ ATOMTYPES['Rx'] = AtomType(label='Rx', generic=[], specific=[
     'Cl','Cl1s',
     'Br','Br1s',
     'I','I1s',
-    'F','F1s','X','Xv','Xo'])
+    'F','F1s','X','Xv','Xo','Pt','Ptv','Pto'])
 
 ATOMTYPES['Rx!H'] = AtomType(label='Rx!H', generic=['Rx'], specific=[
     'R!H',
@@ -273,20 +273,29 @@ ATOMTYPES['Rx!H'] = AtomType(label='Rx!H', generic=['Rx'], specific=[
     'Cl','Cl1s',
     'Br','Br1s',
     'I','I1s',
-    'F','F1s','X','Xv','Xo'])
+    'F','F1s','X','Xv','Xo','Pt','Ptv','Pto'])
 
 # Surface sites:
-ATOMTYPES['X'] = AtomType(label='X', generic=['Rx', 'Rx!H'], specific=['Xv', 'Xo'])
+ATOMTYPES['X'] = AtomType(label='X', generic=['Rx', 'Rx!H'], specific=['Xv', 'Xo', 'Pt'])
 
 # Vacant surface site:
-ATOMTYPES['Xv'] = AtomType('Xv', generic=['X','Rx', 'Rx!H'], specific=[],
+ATOMTYPES['Xv'] = AtomType('Xv', generic=['X','Rx', 'Rx!H'], specific=['Ptv'],
                              single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
                              benzene=[0], lone_pairs=[0])
 # Occupied surface site:
-ATOMTYPES['Xo'] = AtomType('Xo', generic=['X','Rx', 'Rx!H'], specific=[],
+ATOMTYPES['Xo'] = AtomType('Xo', generic=['X','Rx', 'Rx!H'], specific=['Pto'],
                              single=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], all_double=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], r_double=[], o_double=[], s_double=[], triple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
                              quadruple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], benzene=[0], lone_pairs=[0])
 
+ATOMTYPES['Pt'] = AtomType(label='Pt', generic=['Rx', 'Rx!H', 'X'], specific=['Ptv', 'Pto'])
+                            # single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                            # benzene=[0], lone_pairs=[0])
+ATOMTYPES['Ptv'] = AtomType(label='Ptv', generic=['Rx', 'Rx!H', 'X', 'Pt', 'Xv'], specific=[],
+                            single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                            benzene=[0], lone_pairs=[0])
+ATOMTYPES['Pto'] = AtomType(label='Pto', generic=['Rx', 'Rx!H', 'X', 'Pt', 'Xo'], specific=[],
+                            single=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], all_double=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], r_double=[], o_double=[], s_double=[], triple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
+                            quadruple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], benzene=[0], lone_pairs=[0])
 
 # Non-surface atomTypes, R being the most generic:
 ATOMTYPES['R'] = AtomType(label='R', generic=['Rx'], specific=[
@@ -675,6 +684,12 @@ ATOMTYPES['Rx!H'].set_actions(increment_bond=['Rx!H'], decrement_bond=['Rx!H'], 
 ATOMTYPES['X'].set_actions(increment_bond=['X'], decrement_bond=['X'], form_bond=['X'], break_bond=['X'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Xv'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Xo'], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
 ATOMTYPES['Xo'].set_actions(increment_bond=['Xo'], decrement_bond=['Xo'], form_bond=[], break_bond=['Xv'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
+ATOMTYPES['Pt'].set_actions(increment_bond=['Pt'], decrement_bond=['Pt'], form_bond=['Pt'], break_bond=['Pt'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
+ATOMTYPES['Ptv'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Pto'], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
+ATOMTYPES['Pto'].set_actions(increment_bond=['Pto'], decrement_bond=['Pto'], form_bond=[], break_bond=['Ptv'], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[])
+
+
+
 
 ATOMTYPES['R'].set_actions(increment_bond=['R'], decrement_bond=['R'], form_bond=['R'], break_bond=['R'], increment_radical=['R'], decrement_radical=['R'], increment_lone_pair=['R'], decrement_lone_pair=['R'])
 ATOMTYPES['R!H'].set_actions(increment_bond=['R!H'], decrement_bond=['R!H'], form_bond=['R!H'], break_bond=['R!H'], increment_radical=['R!H'], decrement_radical=['R!H'], increment_lone_pair=['R!H'], decrement_lone_pair=['R!H'])
@@ -812,7 +827,7 @@ ATOMTYPES['F'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['F']
 ATOMTYPES['F1s'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['F1s'], break_bond=['F1s'], increment_radical=['F1s'], decrement_radical=['F1s'], increment_lone_pair=[], decrement_lone_pair=[])
 
 # these are ordered in priority of picking if a more general atomtype is encountered
-allElements = ['H', 'C', 'O', 'N', 'S', 'P', 'Si', 'F', 'Cl', 'Br', 'I', 'Ne', 'Ar', 'He', 'X']
+allElements = ['H', 'C', 'O', 'N', 'S', 'P', 'Si', 'F', 'Cl', 'Br', 'I', 'Ne', 'Ar', 'He', 'X', 'Pt']
 # list of elements that do not have more specific atomTypes
 nonSpecifics = ['H', 'He', 'Ne', 'Ar',]
 
