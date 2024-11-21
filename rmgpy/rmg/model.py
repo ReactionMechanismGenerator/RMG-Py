@@ -548,6 +548,10 @@ class CoreEdgeReactionModel:
             #  correct barrier heights of estimated kinetics
             if isinstance(forward, (TemplateReaction, DepositoryReaction)):  # i.e. not LibraryReaction
                 forward.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
+            elif isinstance(forward, LibraryReaction) and forward.is_surface_reaction():
+                # do fix the library reaction barrier if this is scaled from another metal
+                if any(['Binding energy corrected by LSR' in x.thermo.comment for x in forward.reactants + forward.products]):
+                    forward.fix_barrier_height()            
 
             if self.pressure_dependence and forward.is_unimolecular():
                 # If this is going to be run through pressure dependence code,
