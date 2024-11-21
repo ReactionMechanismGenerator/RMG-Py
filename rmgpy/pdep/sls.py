@@ -41,7 +41,7 @@ import scipy.sparse as sparse
 
 import rmgpy.constants as constants
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
-from rmgpy.rmg.reactors import to_julia
+from rmgpy.rmg.reactionmechanismsimulator_reactors import to_julia
 
 NO_JULIA = False
 try:

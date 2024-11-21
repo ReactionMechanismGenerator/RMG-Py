@@ -3389,9 +3389,9 @@ class KineticsFamily(Database):
 
         if nprocs > 1:
             pool = mp.Pool(nprocs)
-            kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
+            kinetics_list = np.array(pool.map(_make_rule, list(inputs[i] for i in inds)))
         else:
-            kinetics_list = np.array(list(map(_make_rule, inputs[inds])))
+            kinetics_list = np.array(list(map(_make_rule, list(inputs[i] for i in inds))))
 
         kinetics_list = kinetics_list[revinds]  # fix order
 
