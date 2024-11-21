@@ -31,7 +31,7 @@ dependencies:
 # but by installing them in the conda environment we get better control
   - cairo
   - cairocffi
-  - ffmpeg
+  - conda-forge::ffmpeg
   - xlrd
   - xlwt
   - h5py
