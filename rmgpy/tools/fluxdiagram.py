@@ -309,9 +309,9 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                'flux_diagram.avi']  # Output filename
 
     try:
-        subprocess.run(command, shell=True, check=True, capture_output=True, cwd=output_directory)
+        subprocess.run(command, check=True, capture_output=True, cwd=output_directory)
     except subprocess.CalledProcessError as err:
-        raise RuntimeError(f"{err} {err.stderr.decode('utf8')}") from err
+        raise RuntimeError(f"{err} {err.stderr.decode('utf8')} {err.stdout.decode('utf8')}") from err
 
 
 ################################################################################
