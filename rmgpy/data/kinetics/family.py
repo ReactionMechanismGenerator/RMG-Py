@@ -228,13 +228,15 @@ class TemplateReaction(Reaction):
         if len(self.reactants) == 1:
             reactant_combined_spin = {self.reactants[0].multiplicity}
         elif len(self.reactants) == 2:
-            reactant_combined_spin = set([self.reactants[0].multiplicity + self.reactants[1].multiplicity -1, np.abs(self.reactants[0].multiplicity-self.reactants[1].multiplicity)+1])  
+            reactant_spin_string =  "+".join(sorted([str(reactant.multiplicity) for reactant in self.reactants]))
+            reactant_combined_spin = allowed_spin[reactant_spin_string]
         else:
             return None
         if len(self.products) == 1:
             product_combined_spin = {self.products[0].multiplicity}
         elif len(self.products) == 2:
-            product_combined_spin = set([self.products[0].multiplicity + self.products[1].multiplicity -1, np.abs(self.products[0].multiplicity-self.products[1].multiplicity)+1])  
+            product_spin_string = "+".join(sorted([str(product.multiplicity) for product in self.products]))
+            product_combined_spin = allowed_spin[product_spin_string]
         else:
             return None
         return reactant_combined_spin, product_combined_spin
@@ -1678,6 +1680,7 @@ class KineticsFamily(Database):
         # Apply the generated species constraints (if given)
         for struct in product_structures:
             if self.is_molecule_forbidden(struct):
+                # logging.info(f"{str(struct)} is forbidden!")
                 raise ForbiddenStructureException()
             if fails_species_constraints(struct):
                 raise ForbiddenStructureException()
@@ -1740,8 +1743,8 @@ class KineticsFamily(Database):
                 reaction.labeled_atoms[key] = dict(reaction.labeled_atoms[key], **species.get_all_labeled_atoms())
         if check_spin:
             if not reaction.check_if_spin_allowed():
-                logging.warn("Did not create the following reaction, which violates conservation of spin...")
-                logging.warn(str(reaction))
+                logging.info("Did not create the following reaction, which violates conservation of spin...")
+                logging.info(str(reaction))
                 return None
         return reaction
 
@@ -2011,6 +2014,7 @@ class KineticsFamily(Database):
             reactant_num = self.product_num
 
         if self.auto_generated and reactant_num != len(reactants):
+            # logging.info("self.auto_generated and reactant_num != len(reactants)")
             return []
 
         if len(reactants) > len(template.reactants):
@@ -4937,3 +4941,17 @@ def get_site_solute_data(rxn):
         return None
 
 allowed_spin_violation_families =['1,2-Birad_to_alkene','1,4_Cyclic_birad_scission','1,4_Linear_birad_scission']
+allowed_spin = {
+    "1+1": set([1]),
+    "1+2": set([2]),
+    "1+3": set([3]),
+    "1+4": set([4]),
+    "1+5": set([5]),
+    "2+2": set([1,3]),
+    "2+3": set([2,4]),
+    "2+4": set([3,5]),
+    "2+5": set([4,6]),
+    "3+3": set([1,3,5]),
+    "3+4": set([2,4,6]),
+    "3+5": set([3,5,7]),
+}
