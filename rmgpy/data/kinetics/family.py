@@ -2636,30 +2636,6 @@ class KineticsFamily(Database):
 
         return kinetics_list
 
-    def estimate_kinetics_using_group_additivity(self, template, degeneracy=1):
-        """
-        Determine the appropriate kinetics for a reaction with the given
-        `template` using group additivity.
-
-        Returns just the kinetics, or None.
-        """
-        warnings.warn("Group additivity is no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        # Start with the generic kinetics of the top-level nodes
-        kinetics = None
-        root = self.get_root_template()
-        kinetics = self.get_kinetics_for_template(root)
-
-        if kinetics is None:
-            # raise UndeterminableKineticsError('Cannot determine group additivity kinetics estimate for '
-            #                                   'template "{0}".'.format(','.join([e.label for e in template])))
-            return None
-        else:
-            kinetics = kinetics[0]
-
-        # Now add in more specific corrections if possible
-        return self.groups.estimate_kinetics_using_group_additivity(template, kinetics, degeneracy)
-
     def estimate_kinetics_using_rate_rules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
