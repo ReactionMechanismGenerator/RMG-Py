@@ -1701,9 +1701,9 @@ class KineticsFamily(Database):
         )
 
         if not self.allow_charged_species:
-            charged_species = [spc for spc in (reaction.reactants + reaction.products) if spc.get_net_charge() != 0]
-            if charged_species:
-                return None
+            for spc in (reaction.reactants + reaction.products):
+                if spc.get_net_charge() != 0:
+                    return None
 
         if not reaction.is_balanced():
             return None
