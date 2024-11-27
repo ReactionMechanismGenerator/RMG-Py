@@ -310,6 +310,9 @@ class Reaction:
             ct_collider[self.specific_collider.to_chemkin() if use_chemkin_identifier else self.specific_collider.label] = 1
 
         if self.kinetics:
+            # Create the Cantera reaction object,
+            # with the correct type of kinetics object
+            # but don't actually set its kinetics (we do that at the end)
             if isinstance(self.kinetics, Arrhenius):
                 # Create an Elementary Reaction
                 if isinstance(self.kinetics, SurfaceArrhenius):  # SurfaceArrhenius inherits from Arrhenius
@@ -338,61 +341,47 @@ class Reaction:
                     ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
 
             elif isinstance(self.kinetics, Troe):
-                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
-                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
-                A = self.kinetics.alpha
-                T3 = self.kinetics.T3.value_si
-                T1 = self.kinetics.T1.value_si
-
-                if self.kinetics.T2 is None:
-                    rate = ct.TroeRate(
-                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1]
-                    )
-                else:
-                    T2 = self.kinetics.T2.value_si
-                    rate = ct.TroeRate(
-                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1, T2]
-                    )
-
                 if ct_collider is not None:
                     ct_reaction = ct.FalloffReaction(
                         reactants=ct_reactants,
                         products=ct_products,
                         tbody=ct_collider,
-                        rate=rate,
+                        rate=ct.TroeRate()
                     )
                 else:
                     ct_reaction = ct.FalloffReaction(
-                        reactants=ct_reactants, products=ct_products, rate=rate
+                        reactants=ct_reactants,
+                        products=ct_products,
+                        rate=ct.TroeRate()
                     )
-
-
-            elif isinstance(self.kinetics, StickingCoefficient):
-                rate = self.kinetics.to_cantera_kinetics()
-                ct_reaction = ct.Reaction(equation=str(self), rate=rate)
 
             elif isinstance(self.kinetics, Lindemann):
-                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
-                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
-                falloff = []
-                rate = ct.LindemannRate(low_rate, high_rate, falloff)
                 if ct_collider is not None:
                     ct_reaction = ct.FalloffReaction(
                         reactants=ct_reactants,
                         products=ct_products,
                         tbody=ct_collider,
-                        rate=rate,
+                        rate=ct.LindemannRate()
                     )
                 else:
                     ct_reaction = ct.FalloffReaction(
-                        reactants=ct_reactants, products=ct_products, rate=rate
+                        reactants=ct_reactants,
+                        products=ct_products,
+                        rate=ct.LindemannRate()
                     )
 
+            elif isinstance(self.kinetics, SurfaceArrhenius):
+                ct_reaction = ct.InterfaceReaction(reactants=ct_reactants,
+                                                   products=ct_products,
+                                                   rate=ct.InterfaceArrheniusRate())
+
             elif isinstance(self.kinetics, StickingCoefficient):
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.StickingArrheniusRate())
+                ct_reaction = ct.Reaction(reactants=ct_reactants,
+                                          products=ct_products,
+                                          rate=ct.StickingArrheniusRate())
 
             else:
-                raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
+                raise NotImplementedError(f"Unable to set cantera kinetics for {self.kinetics}")
 
             # Set reversibility, duplicate, and ID attributes
             if isinstance(ct_reaction, list):
@@ -407,6 +396,7 @@ class Reaction:
                 ct_reaction.duplicate = self.duplicate
                 ct_reaction.ID = str(self.index)
 
+            # Now we set the kinetics.
             self.kinetics.set_cantera_kinetics(ct_reaction, species_list)
 
             return ct_reaction
