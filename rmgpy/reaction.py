@@ -366,9 +366,6 @@ class Reaction:
                         reactants=ct_reactants, products=ct_products, rate=rate
                     )
 
-            elif isinstance(self.kinetics, SurfaceArrhenius):
-                rate = self.kinetics.to_cantera_kinetics()
-                ct_reaction = ct.InterfaceReaction(equation=str(self), rate=rate)
 
             elif isinstance(self.kinetics, StickingCoefficient):
                 rate = self.kinetics.to_cantera_kinetics()
