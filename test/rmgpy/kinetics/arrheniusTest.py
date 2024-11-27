@@ -48,7 +48,7 @@ from rmgpy.kinetics.arrhenius import (
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
-from rmgpy.thermo import NASA, NASAPolynomial
+from rmgpy.thermo import NASA, NASAPolynomial, ThermoData
 import pytest
 
 
@@ -443,7 +443,7 @@ class TestArrheniusBM:
         self.A = 8.00037e12
         self.n = 0.391734
         self.w0 = 798000
-        self.E0 = 115905
+        self.E0 = 116249.32617478925
         self.Tmin = 300.0
         self.Tmax = 2000.0
         self.comment = "rxn001084"
@@ -541,6 +541,41 @@ class TestArrheniusBM:
             CpInf=(232.805, "J/(mol*K)"),
             comment="""Thermo library: Spiekermann_refining_elementary_reactions""",
         )
+        CF2 = Species().from_adjacency_list(
+            """
+            1 F u0 p3 c0 {2,S}
+            2 C u0 p1 c0 {1,S} {3,S}
+            3 F u0 p3 c0 {2,S}
+            """
+        )
+        CF2.thermo = NASA(
+            polynomials=[
+                    NASAPolynomial(coeffs=[2.28591,0.0107608,-1.05382e-05,4.89881e-09,-8.86384e-13,-24340.7,13.1348], Tmin=(298,'K'), Tmax=(1300,'K')), 
+                    NASAPolynomial(coeffs=[5.33121,0.00197748,-9.60248e-07,2.10704e-10,-1.5954e-14,-25190.9,-2.56367], Tmin=(1300,'K'), Tmax=(3000,'K'))
+                ], 
+                Tmin=(298,'K'), Tmax=(3000,'K'), Cp0=(33.2579,'J/mol/K'), CpInf=(58.2013,'J/mol/K'),
+                comment="""Thermo library: halogens"""
+            )
+        C2H6 = Species(smiles="CC")
+        C2H6.thermo = ThermoData(
+            Tdata = ([300,400,500,600,800,1000,1500],'K'),
+            Cpdata = ([12.565,15.512,18.421,21.059,25.487,28.964,34.591],'cal/(mol*K)','+|-',[0.8,1.1,1.3,1.4,1.5,1.5,1.2]),
+            H298 = (-20.028,'kcal/mol','+|-',0.1),
+            S298 = (54.726,'cal/(mol*K)','+|-',0.6),
+            comment="""Thermo library: DFT_QCI_thermo"""
+            )
+        CH3CF2CH3 = Species(smiles="CC(F)(F)C")
+        CH3CF2CH3.thermo = NASA(
+            polynomials = [
+                NASAPolynomial(coeffs=[3.89769,0.00706735,0.000140168,-3.37628e-07,2.51812e-10,-68682.1,8.74321], Tmin=(10,'K'), Tmax=(436.522,'K')),
+                NASAPolynomial(coeffs=[2.78849,0.0356982,-2.16715e-05,6.45057e-09,-7.47989e-13,-68761.2,11.1597], Tmin=(436.522,'K'), Tmax=(3000,'K')),
+            ],
+            Tmin = (10,'K'), Tmax = (3000,'K'), Cp0 = (33.2579,'J/(mol*K)'), CpInf = (249.434,'J/(mol*K)'),
+            comment="""Thermo library: CHOF_G4"""
+            )
+        kinetics = Arrhenius(A=(0.222791,'cm^3/(mol*s)'), n=3.59921, Ea=(320.496,'kJ/mol'), T0=(1,'K'), Tmin=(298,'K'), Tmax=(2500,'K'), comment="""Training Rxn 54 for 1,2_Insertion_carbene""")
+        self.reaction = Reaction(reactants=[CF2,C2H6],products=[CH3CF2CH3],kinetics=kinetics)
+        self.reaction_w0 = 519000 # J/mol
 
     def test_a_factor(self):
         """
@@ -604,11 +639,22 @@ class TestArrheniusBM:
             products=[Species(molecule=[product], thermo=self.p_thermo)],
             kinetics=self.arrhenius,
         )
-
+        Tdata = np.array([300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500])
+        kdata = np.array([reaction.kinetics.get_rate_coefficient(T) for T in Tdata])
         arrhenius_bm = ArrheniusBM().fit_to_reactions([reaction], w0=self.w0)
         assert abs(arrhenius_bm.A.value_si - self.arrhenius_bm.A.value_si) < 1.5e1
         assert round(abs(arrhenius_bm.n.value_si - self.arrhenius_bm.n.value_si), 1) == 0, 4
         assert round(abs(arrhenius_bm.E0.value_si - self.arrhenius_bm.E0.value_si), 1) == 0
+        arrhenius = arrhenius_bm.to_arrhenius(reaction.get_enthalpy_of_reaction(298))
+        for T, k in zip(Tdata, kdata):
+            assert abs(k - arrhenius.get_rate_coefficient(T)) < 1e-6 * k
+
+        # A second check, with a different reaction
+        arrhenius_bm = ArrheniusBM().fit_to_reactions([self.reaction], w0=self.reaction_w0)
+        arrhenius = arrhenius_bm.to_arrhenius(self.reaction.get_enthalpy_of_reaction(298))
+        kdata = np.array([self.reaction.kinetics.get_rate_coefficient(T) for T in Tdata])
+        for T, k in zip(Tdata, kdata):
+            assert abs(k - arrhenius.get_rate_coefficient(T)) < 1e-6 * k
 
     def test_get_activation_energy(self):
         """
@@ -616,7 +662,12 @@ class TestArrheniusBM:
         """
         Hrxn = -44000  # J/mol
         Ea = self.arrhenius_bm.get_activation_energy(Hrxn)
-        assert abs(Ea - 95074) < 1e1
+        w = self.w0
+        E0 = self.E0
+        Vp = 2 * w * (w + E0)/(w - E0)
+        Ea_exp = (w + Hrxn/2) * (Vp - 2*w + Hrxn)**2 / (Vp*Vp - 4*w*w + Hrxn*Hrxn)
+
+        assert abs(Ea - Ea_exp) < 1e1
 
 
 class TestPDepArrhenius:

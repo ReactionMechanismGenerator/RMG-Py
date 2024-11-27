@@ -58,6 +58,7 @@ from rmgpy.molecule.element import bdes
 from rmgpy.molecule.graph import Vertex, Edge, Graph, get_vertex_connectivity_value
 from rmgpy.molecule.kekulize import kekulize
 from rmgpy.molecule.pathfinder import find_shortest_path
+from rmgpy.molecule.fragment import CuttingLabel
 
 ################################################################################
 
@@ -354,6 +355,23 @@ class Atom(Vertex):
         a.props = deepcopy(self.props)
         return a
 
+    def is_electron(self):
+        """
+        Return ``True`` if the atom represents an electron or ``False`` if
+        not.
+        """
+        return self.element.number == -1
+    
+    def is_proton(self):
+        """
+        Return ``True`` if the atom represents a proton or ``False`` if
+        not.
+        """
+
+        if self.element.number == 1 and self.charge == 1:
+            return True
+        return False
+
     def is_hydrogen(self):
         """
         Return ``True`` if the atom represents a hydrogen atom or ``False`` if
@@ -381,6 +399,13 @@ class Atom(Vertex):
         not.
         """
         return self.element.number == 6
+
+    def is_lithium(self):
+        """
+        Return ``True`` if the atom represents a hydrogen atom or ``False`` if
+        not.
+        """
+        return self.element.number == 3
 
     def is_nitrogen(self):
         """
@@ -503,6 +528,18 @@ class Atom(Vertex):
             raise gr.ActionError('Unable to update Atom due to LOSE_RADICAL action: '
                                  'Invalid radical electron set "{0}".'.format(self.radical_electrons))
 
+    def increment_charge(self):
+        """
+        Update the atom pattern as a result of applying a GAIN_CHARGE action
+        """
+        self.charge += 1
+
+    def decrement_charge(self):
+        """
+        Update the atom pattern as a result of applying a LOSE_CHARGE action
+        """
+        self.charge -= 1
+
     def set_lone_pairs(self, lone_pairs):
         """
         Set the number of lone electron pairs.
@@ -544,6 +581,10 @@ class Atom(Vertex):
         if self.is_surface_site():
             self.charge = 0
             return
+        if self.is_electron():
+            self.charge = -1
+            return
+
         valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
         order = self.get_total_bond_order()
         self.charge = valence_electron - order - self.radical_electrons - 2 * self.lone_pairs
@@ -566,6 +607,10 @@ class Atom(Vertex):
             for i in range(action[2]): self.increment_radical()
         elif act == 'LOSE_RADICAL':
             for i in range(abs(action[2])): self.decrement_radical()
+        elif act == 'GAIN_CHARGE':
+            for i in range(action[2]): self.increment_charge()
+        elif act == 'LOSE_CHARGE':
+            for i in range(abs(action[2])): self.decrement_charge()
         elif action[0].upper() == 'GAIN_PAIR':
             for i in range(action[2]): self.increment_lone_pairs()
         elif action[0].upper() == 'LOSE_PAIR':
@@ -1175,6 +1220,14 @@ class Molecule(Graph):
         """Returns ``True`` iff the molecule is nothing but a surface site 'X'."""
         return len(self.atoms) == 1 and self.atoms[0].is_surface_site()
 
+    def is_electron(self):
+        """Returns ``True`` iff the molecule is nothing but an electron 'e'."""
+        return len(self.atoms) == 1 and self.atoms[0].is_electron()
+
+    def is_proton(self):
+        """Returns ``True`` iff the molecule is nothing but a proton 'H+'."""
+        return len(self.atoms) == 1 and self.atoms[0].is_proton()
+
     def remove_atom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does
@@ -1221,17 +1274,22 @@ class Molecule(Graph):
         for index, vertex in enumerate(self.vertices):
             vertex.sorting_label = index
 
+    def update_charge(self):
+
+        for atom in self.atoms:
+            if not isinstance(atom, CuttingLabel):
+                atom.update_charge()
+
     def update(self, log_species=True, raise_atomtype_exception=True, sort_atoms=True):
         """
-        Update the charge and atom types of atoms.
+        Update the lone_pairs, charge, and atom types of atoms.
         Update multiplicity, and sort atoms (if ``sort_atoms`` is ``True``)
         Does not necessarily update the connectivity values (which are used in isomorphism checks)
         If you need that, call update_connectivity_values()
         """
 
-        for atom in self.atoms:
-            atom.update_charge()
-
+        self.update_lone_pairs()
+        self.update_charge()
         self.update_atomtypes(log_species=log_species, raise_exception=raise_atomtype_exception)
         self.update_multiplicity()
         if sort_atoms:
@@ -1810,7 +1868,7 @@ class Molecule(Graph):
         return self
 
     def from_adjacency_list(self, adjlist, saturate_h=False, raise_atomtype_exception=True,
-                            raise_charge_exception=True, check_consistency=True):
+                            raise_charge_exception=False, check_consistency=True):
         """
         Convert a string adjacency list `adjlist` to a molecular structure.
         Skips the first line (assuming it's a label) unless `withLabel` is
@@ -2007,7 +2065,7 @@ class Molecule(Graph):
         ONinds = [n for n, a in enumerate(self.atoms) if a.is_oxygen() or a.is_nitrogen()]
 
         for i, atm1 in enumerate(self.atoms):
-            if atm1.atomtype.label == 'H':
+            if atm1.atomtype.label == 'H0':
                 atm_covs = [q for q in atm1.bonds.keys()]
                 if len(atm_covs) > 1:  # H is already H bonded
                     continue
@@ -2270,10 +2328,15 @@ class Molecule(Graph):
 
     def generate_resonance_structures(self, keep_isomorphic=False, filter_structures=True, save_order=False):
         """Returns a list of resonance structures of the molecule."""
-        return resonance.generate_resonance_structures(self, keep_isomorphic=keep_isomorphic,
+
+        try:
+            return resonance.generate_resonance_structures(self, keep_isomorphic=keep_isomorphic,
                                                        filter_structures=filter_structures,
                                                        save_order=save_order,
                                                        )
+        except:
+            logging.warning("Resonance structure generation failed for {}".format(self))
+            return [self.copy(deep=True)]
 
     def get_url(self):
         """
@@ -2303,7 +2366,7 @@ class Molecule(Graph):
         """
         cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
         for atom1 in self.vertices:
-            if atom1.is_hydrogen() or atom1.is_surface_site():
+            if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron() or atom1.is_lithium():
                 atom1.lone_pairs = 0
             else:
                 order = atom1.get_total_bond_order()

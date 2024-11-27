@@ -109,9 +109,9 @@ class MoleculeDrawer(object):
     This class provides functionality for drawing the skeletal formula of
     molecules using the Cairo 2D graphics engine. The most common use case is
     simply::
-    
+
         MoleculeDrawer().draw(molecule, file_format='png', path='molecule.png')
-    
+
     where ``molecule`` is the :class:`Molecule` object to draw. You can also
     pass a dict of options to the constructor to affect how the molecules are
     drawn.
@@ -343,7 +343,7 @@ class MoleculeDrawer(object):
 
     def _generate_coordinates(self, fix_surface_sites=True):
         """
-        Generate the 2D coordinates to be used when drawing the current 
+        Generate the 2D coordinates to be used when drawing the current
         molecule. The function uses rdKits 2D coordinate generation.
         Updates the self.coordinates Array in place.
         If `fix_surface_sites` is True, then the surface sites are placed
@@ -406,7 +406,7 @@ class MoleculeDrawer(object):
                                     [-math.sin(angle), math.cos(angle)]], float)
                     # need to keep self.coordinates and coordinates referring to the same object
                     self.coordinates = coordinates = np.dot(coordinates, rot)
-            
+
             # If two atoms lie on top of each other, push them apart a bit
             # This is ugly, but at least the mess you end up with isn't as misleading
             # as leaving everything piled on top of each other at the origin
@@ -726,7 +726,7 @@ class MoleculeDrawer(object):
     def _generate_straight_chain_coordinates(self, atoms):
         """
         Update the coordinates for the linear straight chain of `atoms` in
-        the current molecule. 
+        the current molecule.
         """
         coordinates = self.coordinates
 
@@ -1374,6 +1374,8 @@ class MoleculeDrawer(object):
                 cr.set_source_rgba(0.5, 0.0, 0.5, 1.0)
             elif heavy_atom == 'X':
                 cr.set_source_rgba(0.5, 0.25, 0.5, 1.0)
+            elif heavy_atom == 'e':
+                cr.set_source_rgba(1.0, 0.0, 1.0, 1.0)
             else:
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
 
@@ -1567,7 +1569,7 @@ class MoleculeDrawer(object):
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.show_text(text)
 
-            # Draw lone electron pairs            
+            # Draw lone electron pairs
             # Draw them for nitrogen containing molecules only
             if draw_lone_pairs:
                 for i in range(atom.lone_pairs):
@@ -1706,9 +1708,9 @@ class ReactionDrawer(object):
     This class provides functionality for drawing chemical reactions using the
     skeletal formula of each reactant and product molecule via the Cairo 2D
     graphics engine. The most common use case is simply::
-    
+
         ReactionDrawer().draw(reaction, file_format='png', path='reaction.png')
-    
+
     where ``reaction`` is the :class:`Reaction` object to draw. You can also
     pass a dict of options to the constructor to affect how the molecules are
     drawn.
@@ -1728,7 +1730,7 @@ class ReactionDrawer(object):
         Draw the given `reaction` using the given image `file_format` - pdf, svg,
         ps, or png. If `path` is given, the drawing is saved to that location
         on disk.
-        
+
         This function returns the Cairo surface and context used to create the
         drawing, as well as a bounding box for the molecule being drawn as the
         tuple (`left`, `top`, `width`, `height`).

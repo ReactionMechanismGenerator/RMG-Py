@@ -34,6 +34,7 @@ import numpy as np
 import sys
 import logging
 import itertools
+import rmgpy.constants as constants
 
 if __debug__:
     try:
@@ -55,18 +56,19 @@ else:
     from diffeqpy import de
     from julia import Main
 
+from rmgpy import constants
 from rmgpy.species import Species
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
 from rmgpy.thermo.nasa import NASAPolynomial, NASA
 from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.thermo.thermodata import ThermoData
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius
+from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusChargeTransfer, Marcus
 from rmgpy.kinetics.kineticsdata import KineticsData
 from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.data.solvation import SolventData
-from rmgpy.kinetics.surface import StickingCoefficient
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceChargeTransfer
 from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.depository import DepositoryReaction
@@ -488,14 +490,19 @@ class ConstantTLiquidSurfaceReactor(Reactor):
         liq = phase_system.phases["Default"]
         surf = phase_system.phases["Surface"]
         interface = list(phase_system.interfaces.values())[0]
-        liq = rms.IdealDiluteSolution(liq.species, liq.reactions, liq.solvent, name="liquid")
+        if "mu" in self.initial_conditions["liquid"].keys():
+            solv = rms.Solvent("solvent",rms.ConstantViscosity(self.initial_conditions["liquid"]["mu"]))
+            liq_initial_cond = self.initial_conditions["liquid"].copy()
+            del liq_initial_cond["mu"]
+        else:
+            solv = liq.solvent
+            liq_initial_cond = self.initial_conditions["liquid"]
+        liq = rms.IdealDiluteSolution(liq.species, liq.reactions, solv, name="liquid",diffusionlimited=True)
         surf = rms.IdealSurface(surf.species, surf.reactions, surf.site_density, name="surface")
         liq_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in liq.species]]
         cat_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in surf.species]]
-        domainliq, y0liq, pliq = rms.ConstantTVDomain(phase=liq, initialconds=self.initial_conditions["liquid"], constantspecies=liq_constant_species)
-        domaincat, y0cat, pcat = rms.ConstantTAPhiDomain(
-            phase=surf, initialconds=self.initial_conditions["surface"], constantspecies=cat_constant_species
-        )
+        domainliq,y0liq,pliq = rms.ConstantTVDomain(phase=liq,initialconds=liq_initial_cond,constantspecies=liq_constant_species)
+        domaincat,y0cat,pcat  = rms.ConstantTAPhiDomain(phase=surf,initialconds=self.initial_conditions["surface"],constantspecies=cat_constant_species)
         if interface.reactions == []:
             inter, pinter = rms.ReactiveInternalInterfaceConstantTPhi(
                 domainliq,
@@ -590,6 +597,28 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         n = obj._n.value_si
         Ea = obj._Ea.value_si
         return rms.Arrhenius(A, n, Ea, rms.EmptyRateUncertainty())
+    elif isinstance(obj, ArrheniusChargeTransfer):
+        A = obj._A.value_si
+        if obj._T0.value_si != 1.0:
+            A /= ((obj._T0.value_si) ** obj._n.value_si)
+        n = obj._n.value_si
+        Ea = obj._Ea.value_si
+        q = obj._alpha.value_si*obj._electrons.value_si
+        V0 = obj._V0.value_si
+        return rms.Arrheniusq(A, n, Ea, q, V0, rms.EmptyRateUncertainty())
+    elif isinstance(obj, SurfaceChargeTransfer):
+        A = obj._A.value_si
+        if obj._T0.value_si != 1.0:
+            A /= ((obj._T0.value_si) ** obj._n.value_si)
+        n = obj._n.value_si
+        Ea = obj._Ea.value_si
+        q = obj._alpha.value_si*obj._electrons.value_si
+        V0 = obj._V0.value_si
+        return rms.Arrheniusq(A, n, Ea, q, V0, rms.EmptyRateUncertainty())
+    elif isinstance(obj, Marcus):
+        A = obj._A.value_si
+        n = obj._n.value_si
+        return rms.Marcus(A,n,obj._lmbd_i_coefs.value_si,obj._lmbd_o.value_si, obj._wr.value_si, obj._wp.value_si, obj._beta.value_si, rms.EmptyRateUncertainty())
     elif isinstance(obj, PDepArrhenius):
         Ps = obj._pressures.value_si
         arrs = [to_rms(arr) for arr in obj.arrhenius]
@@ -694,7 +723,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
             else:
                 atomnums[atm.element.symbol] = 1
         bondnum = len(mol.get_all_edges())
-        
+
         if not obj.molecule[0].contains_surface_site():
             rad = rms.getspeciesradius(atomnums, bondnum)
             diff = rms.StokesDiffusivity(rad)
@@ -752,22 +781,12 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         productinds = [species_names.index(spc.label) for spc in obj.products]
         reactants = [rms_species_list[i] for i in reactantinds]
         products = [rms_species_list[i] for i in productinds]
+        if isinstance(obj.kinetics, SurfaceChargeTransfer):
+            obj.set_reference_potential(300)
         kinetics = to_rms(obj.kinetics, species_names=species_names, rms_species_list=rms_species_list, rmg_species=rmg_species)
-        radchange = sum([spc.molecule[0].multiplicity - 1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity - 1 for spc in obj.reactants])
-        electronchange = 0  # for now
-        return rms.ElementaryReaction(
-            index=obj.index,
-            reactants=reactants,
-            reactantinds=reactantinds,
-            products=products,
-            productinds=productinds,
-            kinetics=kinetics,
-            electronchange=electronchange,
-            radicalchange=radchange,
-            reversible=obj.reversible,
-            pairs=[],
-            comment=obj.kinetics.comment,
-        )
+        radchange = sum([spc.molecule[0].multiplicity-1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity-1 for spc in obj.reactants])
+        electronchange = -sum([spc.molecule[0].get_net_charge() for spc in obj.products]) + sum([spc.molecule[0].get_net_charge() for spc in obj.reactants])
+        return rms.ElementaryReaction(index=obj.index, reactants=reactants, reactantinds=reactantinds, products=products, productinds=productinds, kinetics=kinetics, electronchange=electronchange, radicalchange=radchange, reversible=obj.reversible, pairs=[], comment=obj.kinetics.comment)
     elif isinstance(obj, SolventData):
         return rms.Solvent("solvent", rms.RiedelViscosity(float(obj.A), float(obj.B), float(obj.C), float(obj.D), float(obj.E)))
     elif isinstance(obj, TerminationTime):
