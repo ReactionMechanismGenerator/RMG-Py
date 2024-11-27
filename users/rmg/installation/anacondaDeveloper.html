@@ -181,7 +181,7 @@ export PATH=YourFolder/RMG-Py/:$PATH
 <p>Be sure to either close and reopen your terminal to refresh your environment variables (<code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.bashrc</span></code> or <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.zshrc</span></code>).</p>
 </li>
 <li><p>Install and Link Julia dependencies:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">julia</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;using Pkg; Pkg.add(&quot;PyCall&quot;);Pkg.build(&quot;PyCall&quot;);Pkg.add(PackageSpec(name=&quot;ReactionMechanismSimulator&quot;,rev=&quot;main&quot;)); using ReactionMechanismSimulator;&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">julia</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;using Pkg; Pkg.add(&quot;PyCall&quot;);Pkg.build(&quot;PyCall&quot;);Pkg.add(PackageSpec(name=&quot;ReactionMechanismSimulator&quot;,rev=&quot;for_rmg&quot;)); using ReactionMechanismSimulator;&#39;</span>
 
 <span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import julia; julia.install(); import diffeqpy; diffeqpy.install()&quot;</span>
 </pre></div>

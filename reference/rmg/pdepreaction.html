@@ -66,6 +66,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.rmg.pdep.</span></span><span class="sig-name descname"><span class="pre">PDepReaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reactants</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">products</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">specific_collider</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_kinetics</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reversible</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transition_state</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">duplicate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">degeneracy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.apply_solvent_correction">
+<span class="sig-name descname"><span class="pre">apply_solvent_correction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solvent</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.apply_solvent_correction" title="Permalink to this definition">¶</a></dt>
+<dd><p>apply kinetic solvent correction</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.calculate_coll_limit">
 <span class="sig-name descname"><span class="pre">calculate_coll_limit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.calculate_coll_limit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the collision limit rate in m3/mol-s for the given temperature
@@ -172,7 +178,7 @@ If <code class="docutils literal notranslate"><span class="pre">save_order</span
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.fix_barrier_height">
-<span class="sig-name descname"><span class="pre">fix_barrier_height</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force_positive</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.fix_barrier_height" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">fix_barrier_height</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">force_positive</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solvent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">apply_solvation_correction</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.fix_barrier_height" title="Permalink to this definition">¶</a></dt>
 <dd><p>Turns the kinetics into Arrhenius (if they were ArrheniusEP)
 and ensures the activation energy is at least the endothermicity
 for endothermic reactions, and is not negative only as a result
@@ -282,7 +288,7 @@ in K.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constant">
-<span class="sig-name descname"><span class="pre">get_equilibrium_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constant" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_equilibrium_constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constant for the reaction at the specified
 temperature <cite>T</cite> in K and reference <cite>surface_site_density</cite>
 in mol/m^2 (2.5e-05 default) The <cite>type</cite> parameter lets you specify
@@ -290,12 +296,13 @@ the quantities used in the equilibrium constant: <code class="docutils literal n
 <code class="docutils literal notranslate"><span class="pre">Kc</span></code> for concentrations (default), or <code class="docutils literal notranslate"><span class="pre">Kp</span></code> for pressures.  This
 function assumes a reference pressure of 1e5 Pa for gas phases species
 and uses the ideal gas law to determine reference concentrations. For
-surface species, the <cite>surface_site_density</cite> is the assumed reference.</p>
+surface species, the <cite>surface_site_density</cite> is the assumed reference. For protons (H+),
+a reference concentration of 1000 mol/m^3 (1 mol/L) is assumed</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constants">
-<span class="sig-name descname"><span class="pre">get_equilibrium_constants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constants" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_equilibrium_constants</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_equilibrium_constants" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the equilibrium constants for the reaction at the specified
 temperatures <cite>Tlist</cite> in K. The <cite>type</cite> parameter lets you specify the
 quantities used in the equilibrium constant: <code class="docutils literal notranslate"><span class="pre">Ka</span></code> for activities,
@@ -305,16 +312,16 @@ this function currently assumes an ideal gas mixture.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.get_free_energies_of_reaction">
-<span class="sig-name descname"><span class="pre">get_free_energies_of_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_free_energies_of_reaction" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_free_energies_of_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Tlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_free_energies_of_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energies of reaction in J/mol evaluated at
 temperatures <cite>Tlist</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.get_free_energy_of_reaction">
-<span class="sig-name descname"><span class="pre">get_free_energy_of_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_free_energy_of_reaction" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_free_energy_of_reaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_free_energy_of_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the Gibbs free energy of reaction in J/mol evaluated at
-temperature <cite>T</cite> in K.</p>
+temperature <cite>T</cite> in K and potential in Volts (if applicable)</p>
 </dd></dl>
 
 <dl class="py method">
@@ -327,7 +334,7 @@ If reverse is <code class="docutils literal notranslate"><span class="pre">False
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.get_rate_coefficient">
-<span class="sig-name descname"><span class="pre">get_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">P</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the overall rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K and pressure <cite>P</cite> in Pa, including any reaction
 path degeneracies.</p>
@@ -343,6 +350,12 @@ in <cite>mol/m^2</cite> must be provided</p>
 <span class="sig-name descname"><span class="pre">get_reduced_mass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reverse</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_reduced_mass" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the reduced mass of the reactants if reverse is <code class="docutils literal notranslate"><span class="pre">False</span></code>
 Returns the reduced mass of the products if reverse is <code class="docutils literal notranslate"><span class="pre">True</span></code></p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.get_reversible_potential">
+<span class="sig-name descname"><span class="pre">get_reversible_potential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_reversible_potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the Potential in <cite>V</cite> at T in ‘K’ at which the charge transfer reaction is at equilibrium</p>
 </dd></dl>
 
 <dl class="py method">
@@ -362,7 +375,7 @@ as a reactant.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.get_surface_rate_coefficient">
-<span class="sig-name descname"><span class="pre">get_surface_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_surface_rate_coefficient" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_surface_rate_coefficient</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_site_density</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">potential</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.get_surface_rate_coefficient" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the overall surface rate coefficient for the forward reaction at
 temperature <cite>T</cite> in K with surface site density <cite>surface_site_density</cite> in mol/m2.
 Value is returned in combination of [m,mol,s]</p>
@@ -394,6 +407,12 @@ and <cite>products</cite>, which are both lists of <code class="xref py py-class
 <span class="sig-name descname"><span class="pre">is_balanced</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.is_balanced" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the reaction has the same number of each atom on
 each side of the reaction equation, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.is_charge_transfer_reaction">
+<span class="sig-name descname"><span class="pre">is_charge_transfer_reaction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.is_charge_transfer_reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if one or more reactants or products are electrons</p>
 </dd></dl>
 
 <dl class="py method">
@@ -435,6 +454,12 @@ ignoring molecular structure comparisons</p></li>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.is_surface_charge_transfer_reaction">
+<span class="sig-name descname"><span class="pre">is_surface_charge_transfer_reaction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.is_surface_charge_transfer_reaction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if one or more reactants or products are electrons</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.is_surface_reaction">
 <span class="sig-name descname"><span class="pre">is_surface_reaction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.is_surface_reaction" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if one or more reactants or products are surface species (or surface sites)</p>
@@ -463,6 +488,20 @@ and products of this reaction. Both directions are checked.</p>
 </dl>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.protons">
+<span class="sig-name descname"><span class="pre">protons</span></span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.protons" title="Permalink to this definition">¶</a></dt>
+<dd><p>The stochiometric coeff for protons in charge transfer reactions</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_charge_transfer_rate">
+<span class="sig-name descname"><span class="pre">reverse_arrhenius_charge_transfer_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k_forward</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse_units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_charge_transfer_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
+You must supply the correct units for the reverse rate.
+The equilibrium constant is evaluated from the current reaction instance (self).</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_rate">
 <span class="sig-name descname"><span class="pre">reverse_arrhenius_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k_forward</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse_units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_rate" title="Permalink to this definition">¶</a></dt>
@@ -486,6 +525,21 @@ The surface_site_density in <cite>mol/m^2</cite> is used to evalaute the forward
 <dd><p>Reverses the given k_forward, which must be a SurfaceArrhenius type.
 You must supply the correct units for the reverse rate.
 The equilibrium constant is evaluated from the current reaction instance (self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.reverse_surface_charge_transfer_rate">
+<span class="sig-name descname"><span class="pre">reverse_surface_charge_transfer_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">k_forward</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reverse_units</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.reverse_surface_charge_transfer_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reverses the given k_forward, which must be a SurfaceChargeTransfer type.
+You must supply the correct units for the reverse rate.
+The equilibrium constant is evaluated from the current reaction instance (self).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.pdep.PDepReaction.set_reference_potential">
+<span class="sig-name descname"><span class="pre">set_reference_potential</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.pdep.PDepReaction.set_reference_potential" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the reference Potential of the <cite>SurfaceChargeTransfer</cite> kinetics model to the reversible potential
+of the reaction</p>
 </dd></dl>
 
 <dl class="py method">
@@ -550,6 +604,7 @@ the labels plus the index in parentheses</p>
     <ul>
 <li><a class="reference internal" href="#">rmgpy.rmg.pdep.PDepReaction</a><ul>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction"><code class="docutils literal notranslate"><span class="pre">PDepReaction</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.apply_solvent_correction"><code class="docutils literal notranslate"><span class="pre">PDepReaction.apply_solvent_correction()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.calculate_coll_limit"><code class="docutils literal notranslate"><span class="pre">PDepReaction.calculate_coll_limit()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.calculate_microcanonical_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">PDepReaction.calculate_microcanonical_rate_coefficient()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.calculate_tst_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">PDepReaction.calculate_tst_rate_coefficient()</span></code></a></li>
@@ -576,6 +631,7 @@ the labels plus the index in parentheses</p>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.get_mean_sigma_and_epsilon"><code class="docutils literal notranslate"><span class="pre">PDepReaction.get_mean_sigma_and_epsilon()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.get_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">PDepReaction.get_rate_coefficient()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.get_reduced_mass"><code class="docutils literal notranslate"><span class="pre">PDepReaction.get_reduced_mass()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.get_reversible_potential"><code class="docutils literal notranslate"><span class="pre">PDepReaction.get_reversible_potential()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.get_source"><code class="docutils literal notranslate"><span class="pre">PDepReaction.get_source()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.get_stoichiometric_coefficient"><code class="docutils literal notranslate"><span class="pre">PDepReaction.get_stoichiometric_coefficient()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.get_surface_rate_coefficient"><code class="docutils literal notranslate"><span class="pre">PDepReaction.get_surface_rate_coefficient()</span></code></a></li>
@@ -583,15 +639,21 @@ the labels plus the index in parentheses</p>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.has_template"><code class="docutils literal notranslate"><span class="pre">PDepReaction.has_template()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_association"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_association()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_balanced"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_balanced()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_charge_transfer_reaction"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_charge_transfer_reaction()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_dissociation"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_dissociation()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_isomerization"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_isomerization()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_surface_charge_transfer_reaction"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_surface_charge_transfer_reaction()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_surface_reaction"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_surface_reaction()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.is_unimolecular"><code class="docutils literal notranslate"><span class="pre">PDepReaction.is_unimolecular()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.matches_species"><code class="docutils literal notranslate"><span class="pre">PDepReaction.matches_species()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.protons"><code class="docutils literal notranslate"><span class="pre">PDepReaction.protons</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_charge_transfer_rate"><code class="docutils literal notranslate"><span class="pre">PDepReaction.reverse_arrhenius_charge_transfer_rate()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_rate"><code class="docutils literal notranslate"><span class="pre">PDepReaction.reverse_arrhenius_rate()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.reverse_sticking_coeff_rate"><code class="docutils literal notranslate"><span class="pre">PDepReaction.reverse_sticking_coeff_rate()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.reverse_surface_arrhenius_rate"><code class="docutils literal notranslate"><span class="pre">PDepReaction.reverse_surface_arrhenius_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.reverse_surface_charge_transfer_rate"><code class="docutils literal notranslate"><span class="pre">PDepReaction.reverse_surface_charge_transfer_rate()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.set_reference_potential"><code class="docutils literal notranslate"><span class="pre">PDepReaction.set_reference_potential()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.to_cantera"><code class="docutils literal notranslate"><span class="pre">PDepReaction.to_cantera()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.to_chemkin"><code class="docutils literal notranslate"><span class="pre">PDepReaction.to_chemkin()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.pdep.PDepReaction.to_labeled_str"><code class="docutils literal notranslate"><span class="pre">PDepReaction.to_labeled_str()</span></code></a></li>

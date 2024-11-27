@@ -265,6 +265,17 @@ returned.</p>
 rate to a Cantera ArrheniusRate object.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.solute">
+<span class="sig-name descname"><span class="pre">solute</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.solute" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>solute</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.to_arrhenius_ep">
 <span class="sig-name descname"><span class="pre">to_arrhenius_ep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">alpha=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">dHrxn=0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrheniusEP</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.to_arrhenius_ep" title="Permalink to this definition">¶</a></dt>
@@ -287,6 +298,13 @@ Cantera.ArrheniusRate</p>
 <dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.to_html">
 <span class="sig-name descname"><span class="pre">to_html</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.to_html" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return an HTML rendering.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.to_surface_charge_transfer">
+<span class="sig-name descname"><span class="pre">to_surface_charge_transfer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">V0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">electrons=-1</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">SurfaceChargeTransfer</span></span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.to_surface_charge_transfer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an <code class="xref py py-class docutils literal notranslate"><span class="pre">SurfaceChargeTransfer</span></code> instance of the kinetics model with reversible
+potential <cite>V0</cite> in Volts and electron stochiometric coeff ` electrons`</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -357,9 +375,11 @@ Cantera.ArrheniusRate</p>
 <li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.is_temperature_valid()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.n"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.n</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.solute"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.solute</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.to_arrhenius_ep"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.to_arrhenius_ep()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.to_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.to_cantera_kinetics()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.to_html"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.to_html()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.to_surface_charge_transfer"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.to_surface_charge_transfer()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.SurfaceArrhenius.uncertainty"><code class="docutils literal notranslate"><span class="pre">SurfaceArrhenius.uncertainty</span></code></a></li>
 </ul>
 </li>

@@ -244,12 +244,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/rmg/pdepnetwork.html#rmgpy.rmg.pdep.PDepNetwork.apply_chemically_significant_eigenvalues_method">(rmgpy.rmg.pdep.PDepNetwork method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/data/reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe.apply_forward">apply_forward() (rmgpy.data.kinetics.ReactionRecipe method)</a>
 </li>
       <li><a href="reference/pdep/reaction.html#rmgpy.pdep.reaction.apply_inverse_laplace_transform_method">apply_inverse_laplace_transform_method() (in module rmgpy.pdep.reaction)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.apply_kinetics_to_reaction">apply_kinetics_to_reaction() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/pdep/methods.html#rmgpy.pdep.msc.apply_modified_strong_collision_method">apply_modified_strong_collision_method() (in module rmgpy.pdep.msc)</a>
@@ -274,6 +274,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/pdep/reaction.html#rmgpy.pdep.reaction.apply_rrkm_theory">apply_rrkm_theory() (in module rmgpy.pdep.reaction)</a>
 </li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.apply_solvent_correction">apply_solvent_correction() (rmgpy.data.kinetics.DepositoryReaction method)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.apply_solvent_correction">(rmgpy.data.kinetics.LibraryReaction method)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.apply_solvent_correction">(rmgpy.data.kinetics.TemplateReaction method)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.apply_solvent_correction">(rmgpy.reaction.Reaction method)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.apply_solvent_correction">(rmgpy.rmg.pdep.PDepReaction method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.apply_thermo_to_species">apply_thermo_to_species() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/data/database.html#rmgpy.data.base.Database.are_siblings">are_siblings() (rmgpy.data.base.Database method)</a>
@@ -1029,6 +1041,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <li><a href="reference/exceptions.html#rmgpy.exceptions.DatabaseError">DatabaseError</a>
 </li>
       <li><a href="reference/molecule/converter.html#rmgpy.molecule.converter.debug_rdkit_mol">debug_rdkit_mol() (in module rmgpy.molecule.converter)</a>
+</li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.decrement_charge">decrement_charge() (rmgpy.molecule.Atom method)</a>
 </li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.decrement_lone_pairs">decrement_lone_pairs() (rmgpy.molecule.Atom method)</a>
 </li>
@@ -2280,8 +2294,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.get_extension_edge">get_extension_edge() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.get_extensions">get_extensions() (rmgpy.molecule.Group method)</a>
 </li>
       <li><a href="reference/molecule/atomtype.html#rmgpy.molecule.AtomType.get_features">get_features() (rmgpy.molecule.AtomType method)</a>
@@ -2306,6 +2318,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM7.get_file_path">(rmgpy.qm.mopac.MopacMolPM7 method)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.get_formula">get_formula() (rmgpy.molecule.Molecule method)</a>
 </li>
       <li><a href="reference/data/kineticsdatabase.html#rmgpy.data.kinetics.KineticsDatabase.get_forward_reaction_for_family_entry">get_forward_reaction_for_family_entry() (rmgpy.data.kinetics.KineticsDatabase method)</a>
@@ -2519,6 +2533,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       <ul>
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.get_net_charge">(rmgpy.molecule.Molecule method)</a>
 </li>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.get_net_charge">(rmgpy.species.Species method)</a>
+</li>
       </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.get_nth_neighbor">get_nth_neighbor() (rmgpy.molecule.Molecule method)</a>
 </li>
@@ -2710,6 +2726,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/data/reactionrecipe.html#rmgpy.data.kinetics.ReactionRecipe.get_reverse">get_reverse() (rmgpy.data.kinetics.ReactionRecipe method)</a>
 </li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.get_reversible_potential">get_reversible_potential() (rmgpy.data.kinetics.DepositoryReaction method)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.get_reversible_potential">(rmgpy.data.kinetics.LibraryReaction method)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.get_reversible_potential">(rmgpy.data.kinetics.TemplateReaction method)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.get_reversible_potential">(rmgpy.reaction.Reaction method)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.get_reversible_potential">(rmgpy.rmg.pdep.PDepReaction method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/data/thermodatabase.html#rmgpy.data.thermo.ThermoDatabase.get_ring_groups_from_comments">get_ring_groups_from_comments() (rmgpy.data.thermo.ThermoDatabase method)</a>
 </li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.get_root_template">get_root_template() (rmgpy.data.kinetics.KineticsFamily method)</a>
@@ -3124,6 +3152,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.InchiException">InchiException</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.increment_charge">increment_charge() (rmgpy.molecule.Atom method)</a>
+</li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.increment_lone_pairs">increment_lone_pairs() (rmgpy.molecule.Atom method)</a>
 </li>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.increment_order">increment_order() (rmgpy.molecule.Bond method)</a>
@@ -3278,6 +3308,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/exceptions.html#rmgpy.exceptions.InvalidMicrocanonicalRateError">InvalidMicrocanonicalRateError</a>
 </li>
+      <li><a href="reference/molecule/filtration.html#rmgpy.molecule.filtration.ionic_bond_filteration">ionic_bond_filteration() (in module rmgpy.molecule.filtration)</a>
+</li>
       <li><a href="reference/thermo/thermodata.html#rmgpy.thermo.ThermoData.is_all_zeros">is_all_zeros() (rmgpy.thermo.ThermoData method)</a>
 </li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_aromatic">is_aromatic() (rmgpy.molecule.Molecule method)</a>
@@ -3348,6 +3380,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.is_carbon">(rmgpy.molecule.GroupAtom method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_charge_transfer_reaction">is_charge_transfer_reaction() (rmgpy.data.kinetics.DepositoryReaction method)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_charge_transfer_reaction">(rmgpy.data.kinetics.LibraryReaction method)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_charge_transfer_reaction">(rmgpy.data.kinetics.TemplateReaction method)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.is_charge_transfer_reaction">(rmgpy.reaction.Reaction method)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.is_charge_transfer_reaction">(rmgpy.rmg.pdep.PDepReaction method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_chlorine">is_chlorine() (rmgpy.molecule.Atom method)</a>
 
       <ul>
@@ -3386,6 +3430,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.is_edge_in_cycle">(rmgpy.molecule.Group method)</a>
 </li>
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_edge_in_cycle">(rmgpy.molecule.Molecule method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_electron">is_electron() (rmgpy.molecule.Atom method)</a>
+
+      <ul>
+        <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.is_electron">(rmgpy.molecule.Group method)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.is_electron">(rmgpy.molecule.GroupAtom method)</a>
+</li>
+        <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_electron">(rmgpy.molecule.Molecule method)</a>
+</li>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.is_electron">(rmgpy.species.Species method)</a>
 </li>
       </ul></li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.is_entry_match">is_entry_match() (rmgpy.data.kinetics.KineticsFamily method)</a>
@@ -3490,6 +3546,12 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
       </ul></li>
       <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_linear">is_linear() (rmgpy.molecule.Molecule method)</a>
 </li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_lithium">is_lithium() (rmgpy.molecule.Atom method)</a>
+
+      <ul>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.is_lithium">(rmgpy.molecule.GroupAtom method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/molecule/graph.html#rmgpy.molecule.graph.Graph.is_mapping_valid">is_mapping_valid() (rmgpy.molecule.graph.Graph method)</a>
 
       <ul>
@@ -3562,6 +3624,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.is_pressure_valid">(rmgpy.kinetics.ThirdBody method)</a>
 </li>
         <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.is_pressure_valid">(rmgpy.kinetics.Troe method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/molecule/atom.html#rmgpy.molecule.Atom.is_proton">is_proton() (rmgpy.molecule.Atom method)</a>
+
+      <ul>
+        <li><a href="reference/molecule/group.html#rmgpy.molecule.Group.is_proton">(rmgpy.molecule.Group method)</a>
+</li>
+        <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.is_proton">(rmgpy.molecule.GroupAtom method)</a>
+</li>
+        <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.is_proton">(rmgpy.molecule.Molecule method)</a>
+</li>
+        <li><a href="reference/species/species.html#rmgpy.species.Species.is_proton">(rmgpy.species.Species method)</a>
 </li>
       </ul></li>
       <li><a href="reference/molecule/bond.html#rmgpy.molecule.Bond.is_quadruple">is_quadruple() (rmgpy.molecule.Bond method)</a>
@@ -3652,6 +3726,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
       <ul>
         <li><a href="reference/molecule/groupatom.html#rmgpy.molecule.GroupAtom.is_sulfur">(rmgpy.molecule.GroupAtom method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_surface_charge_transfer_reaction">is_surface_charge_transfer_reaction() (rmgpy.data.kinetics.DepositoryReaction method)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.is_surface_charge_transfer_reaction">(rmgpy.data.kinetics.LibraryReaction method)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.is_surface_charge_transfer_reaction">(rmgpy.data.kinetics.TemplateReaction method)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.is_surface_charge_transfer_reaction">(rmgpy.reaction.Reaction method)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.is_surface_charge_transfer_reaction">(rmgpy.rmg.pdep.PDepReaction method)</a>
 </li>
       </ul></li>
       <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.is_surface_reaction">is_surface_reaction() (rmgpy.data.kinetics.DepositoryReaction method)</a>
@@ -4845,6 +4931,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG.process_to_species_networks">process_to_species_networks() (rmgpy.rmg.main.RMG method)</a>
 </li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.protons">protons (rmgpy.data.kinetics.DepositoryReaction attribute)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.protons">(rmgpy.data.kinetics.LibraryReaction attribute)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.protons">(rmgpy.data.kinetics.TemplateReaction attribute)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.protons">(rmgpy.reaction.Reaction attribute)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.protons">(rmgpy.rmg.pdep.PDepReaction attribute)</a>
+</li>
+      </ul></li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.prune">prune() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/data/thermodatabase.html#rmgpy.data.thermo.ThermoDatabase.prune_heteroatoms">prune_heteroatoms() (rmgpy.data.thermo.ThermoDatabase method)</a>
@@ -5077,14 +5175,26 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.restore_vertex_order">(rmgpy.molecule.Molecule method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.retrieve">retrieve() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.retrieve_original_entry">retrieve_original_entry() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
       <li><a href="reference/data/kineticsfamily.html#rmgpy.data.kinetics.KineticsFamily.retrieve_template">retrieve_template() (rmgpy.data.kinetics.KineticsFamily method)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.reverse_arrhenius_charge_transfer_rate">reverse_arrhenius_charge_transfer_rate() (rmgpy.data.kinetics.DepositoryReaction method)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.reverse_arrhenius_charge_transfer_rate">(rmgpy.data.kinetics.LibraryReaction method)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.reverse_arrhenius_charge_transfer_rate">(rmgpy.data.kinetics.TemplateReaction method)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.reverse_arrhenius_charge_transfer_rate">(rmgpy.reaction.Reaction method)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.reverse_arrhenius_charge_transfer_rate">(rmgpy.rmg.pdep.PDepReaction method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.reverse_arrhenius_rate">reverse_arrhenius_rate() (rmgpy.data.kinetics.DepositoryReaction method)</a>
 
       <ul>
@@ -5119,6 +5229,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.reverse_surface_arrhenius_rate">(rmgpy.reaction.Reaction method)</a>
 </li>
         <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.reverse_surface_arrhenius_rate">(rmgpy.rmg.pdep.PDepReaction method)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.reverse_surface_charge_transfer_rate">reverse_surface_charge_transfer_rate() (rmgpy.data.kinetics.DepositoryReaction method)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.reverse_surface_charge_transfer_rate">(rmgpy.data.kinetics.LibraryReaction method)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.reverse_surface_charge_transfer_rate">(rmgpy.data.kinetics.TemplateReaction method)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.reverse_surface_charge_transfer_rate">(rmgpy.reaction.Reaction method)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.reverse_surface_charge_transfer_rate">(rmgpy.rmg.pdep.PDepReaction method)</a>
 </li>
       </ul></li>
       <li><a href="reference/rmg/main.html#rmgpy.rmg.main.RMG">RMG (class in rmgpy.rmg.main)</a>
@@ -5600,8 +5722,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/arkane/kinetics.html#arkane.KineticsJob.save_yaml">(arkane.KineticsJob method)</a>
 </li>
       </ul></li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/quantity/scalarquantity.html#rmgpy.quantity.ScalarQuantity">ScalarQuantity (class in rmgpy.quantity)</a>
 </li>
       <li><a href="reference/qm/gaussian.html#rmgpy.qm.gaussian.GaussianMol.script_attempts">script_attempts (rmgpy.qm.gaussian.GaussianMol property)</a>
@@ -5622,6 +5742,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/qm/mopac.html#rmgpy.qm.mopac.MopacMolPM7.script_attempts">(rmgpy.qm.mopac.MopacMolPM7 property)</a>
 </li>
       </ul></li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.search_retrieve_reactions">search_retrieve_reactions() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
 </li>
       <li><a href="reference/pdep/network.html#rmgpy.pdep.Network.select_energy_grains">select_energy_grains() (rmgpy.pdep.Network method)</a>
@@ -5716,6 +5838,18 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/groupbond.html#rmgpy.molecule.GroupBond.set_order_str">(rmgpy.molecule.GroupBond method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/data/depositoryreaction.html#rmgpy.data.kinetics.DepositoryReaction.set_reference_potential">set_reference_potential() (rmgpy.data.kinetics.DepositoryReaction method)</a>
+
+      <ul>
+        <li><a href="reference/data/libraryreaction.html#rmgpy.data.kinetics.LibraryReaction.set_reference_potential">(rmgpy.data.kinetics.LibraryReaction method)</a>
+</li>
+        <li><a href="reference/data/templatereaction.html#rmgpy.data.kinetics.TemplateReaction.set_reference_potential">(rmgpy.data.kinetics.TemplateReaction method)</a>
+</li>
+        <li><a href="reference/reaction/reaction.html#rmgpy.reaction.Reaction.set_reference_potential">(rmgpy.reaction.Reaction method)</a>
+</li>
+        <li><a href="reference/rmg/pdepreaction.html#rmgpy.rmg.pdep.PDepReaction.set_reference_potential">(rmgpy.rmg.pdep.PDepReaction method)</a>
+</li>
+      </ul></li>
       <li><a href="reference/species/species.html#rmgpy.species.Species.set_structure">set_structure() (rmgpy.species.Species method)</a>
 </li>
       <li><a href="reference/rmg/coreedgereactionmodel.html#rmgpy.rmg.model.CoreEdgeReactionModel.set_thermodynamic_filtering_parameters">set_thermodynamic_filtering_parameters() (rmgpy.rmg.model.CoreEdgeReactionModel method)</a>
@@ -5744,6 +5878,32 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 
       <ul>
         <li><a href="reference/species/species.html#rmgpy.species.Species.smiles">(rmgpy.species.Species attribute)</a>
+</li>
+      </ul></li>
+      <li><a href="reference/kinetics/arrhenius.html#rmgpy.kinetics.Arrhenius.solute">solute (rmgpy.kinetics.Arrhenius attribute)</a>
+
+      <ul>
+        <li><a href="reference/kinetics/chebyshev.html#rmgpy.kinetics.Chebyshev.solute">(rmgpy.kinetics.Chebyshev attribute)</a>
+</li>
+        <li><a href="reference/kinetics/kineticsdata.html#rmgpy.kinetics.KineticsData.solute">(rmgpy.kinetics.KineticsData attribute)</a>
+</li>
+        <li><a href="reference/kinetics/lindemann.html#rmgpy.kinetics.Lindemann.solute">(rmgpy.kinetics.Lindemann attribute)</a>
+</li>
+        <li><a href="reference/kinetics/multiarrhenius.html#rmgpy.kinetics.MultiArrhenius.solute">(rmgpy.kinetics.MultiArrhenius attribute)</a>
+</li>
+        <li><a href="reference/kinetics/multipdeparrhenius.html#rmgpy.kinetics.MultiPDepArrhenius.solute">(rmgpy.kinetics.MultiPDepArrhenius attribute)</a>
+</li>
+        <li><a href="reference/kinetics/pdeparrhenius.html#rmgpy.kinetics.PDepArrhenius.solute">(rmgpy.kinetics.PDepArrhenius attribute)</a>
+</li>
+        <li><a href="reference/kinetics/pdepkineticsdata.html#rmgpy.kinetics.PDepKineticsData.solute">(rmgpy.kinetics.PDepKineticsData attribute)</a>
+</li>
+        <li><a href="reference/kinetics/stickingcoefficient.html#rmgpy.kinetics.StickingCoefficient.solute">(rmgpy.kinetics.StickingCoefficient attribute)</a>
+</li>
+        <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.solute">(rmgpy.kinetics.SurfaceArrhenius attribute)</a>
+</li>
+        <li><a href="reference/kinetics/thirdbody.html#rmgpy.kinetics.ThirdBody.solute">(rmgpy.kinetics.ThirdBody attribute)</a>
+</li>
+        <li><a href="reference/kinetics/troe.html#rmgpy.kinetics.Troe.solute">(rmgpy.kinetics.Troe attribute)</a>
 </li>
       </ul></li>
       <li><a href="reference/data/statmechfit.html#rmgpy.data.statmechfit.DirectFit.solve">solve() (rmgpy.data.statmechfit.DirectFit method)</a>
@@ -6194,6 +6354,8 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
         <li><a href="reference/molecule/molecule.html#rmgpy.molecule.Molecule.to_smiles">(rmgpy.molecule.Molecule method)</a>
 </li>
       </ul></li>
+      <li><a href="reference/kinetics/surfacearrhenius.html#rmgpy.kinetics.SurfaceArrhenius.to_surface_charge_transfer">to_surface_charge_transfer() (rmgpy.kinetics.SurfaceArrhenius method)</a>
+</li>
       <li><a href="reference/thermo/nasa.html#rmgpy.thermo.NASA.to_thermo_data">to_thermo_data() (rmgpy.thermo.NASA method)</a>
 
       <ul>

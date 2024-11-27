@@ -241,6 +241,13 @@ temperature <cite>T</cite> in K.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.species.Species.get_net_charge">
+<span class="sig-name descname"><span class="pre">get_net_charge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_net_charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Iterate through the atoms in the structure and calculate the net charge
+on the overall molecule.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.get_partition_function">
 <span class="sig-name descname"><span class="pre">get_partition_function</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_partition_function" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the partition function for the species at the specified
@@ -316,6 +323,12 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.species.Species.is_electron">
+<span class="sig-name descname"><span class="pre">is_electron</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.is_electron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species is an electron</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.is_identical">
 <span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.is_identical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if at least one molecule of the species is identical to <cite>other</cite>,
@@ -337,6 +350,12 @@ either a <code class="xref py py-class docutils literal notranslate"><span class
 </ul>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.species.Species.is_proton">
+<span class="sig-name descname"><span class="pre">is_proton</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.is_proton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species is a proton</p>
 </dd></dl>
 
 <dl class="py method">
@@ -475,6 +494,7 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 <li><a class="reference internal" href="#rmgpy.species.Species.get_entropy"><code class="docutils literal notranslate"><span class="pre">Species.get_entropy()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.get_free_energy"><code class="docutils literal notranslate"><span class="pre">Species.get_free_energy()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.get_heat_capacity"><code class="docutils literal notranslate"><span class="pre">Species.get_heat_capacity()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.get_net_charge"><code class="docutils literal notranslate"><span class="pre">Species.get_net_charge()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.get_partition_function"><code class="docutils literal notranslate"><span class="pre">Species.get_partition_function()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.get_resonance_hybrid"><code class="docutils literal notranslate"><span class="pre">Species.get_resonance_hybrid()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.get_sum_of_states"><code class="docutils literal notranslate"><span class="pre">Species.get_sum_of_states()</span></code></a></li>
@@ -485,8 +505,10 @@ instead. Be sure that species’ labels are unique when setting it False.</p>
 <li><a class="reference internal" href="#rmgpy.species.Species.has_statmech"><code class="docutils literal notranslate"><span class="pre">Species.has_statmech()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.has_thermo"><code class="docutils literal notranslate"><span class="pre">Species.has_thermo()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.inchi"><code class="docutils literal notranslate"><span class="pre">Species.inchi</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.is_electron"><code class="docutils literal notranslate"><span class="pre">Species.is_electron()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.is_identical"><code class="docutils literal notranslate"><span class="pre">Species.is_identical()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">Species.is_isomorphic()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.species.Species.is_proton"><code class="docutils literal notranslate"><span class="pre">Species.is_proton()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.is_structure_in_list"><code class="docutils literal notranslate"><span class="pre">Species.is_structure_in_list()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.is_surface_site"><code class="docutils literal notranslate"><span class="pre">Species.is_surface_site()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.species.Species.molecular_weight"><code class="docutils literal notranslate"><span class="pre">Species.molecular_weight</span></code></a></li>

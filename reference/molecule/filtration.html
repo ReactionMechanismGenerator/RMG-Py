@@ -165,6 +165,13 @@ third row elements (currently sulfur is the only hypervalance third row element 
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="rmgpy.molecule.filtration.ionic_bond_filteration">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">ionic_bond_filteration</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.ionic_bond_filteration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a filtered list removing structures that put a negative charge on lithium
+which is ionically bonded and thus cannot donate/recieve electrons covalently</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.filtration.mark_unreactive_structures">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.filtration.</span></span><span class="sig-name descname"><span class="pre">mark_unreactive_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filtered_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mol_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.filtration.mark_unreactive_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Mark selected structures in filtered_list with the Molecule.reactive flag set to <cite>False</cite> (it is <cite>True</cite> by default)
@@ -240,6 +247,7 @@ Opposite charges will be as close as possible to one another, and vice versa.</p
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.get_charge_span_list"><code class="docutils literal notranslate"><span class="pre">get_charge_span_list()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.get_octet_deviation"><code class="docutils literal notranslate"><span class="pre">get_octet_deviation()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.get_octet_deviation_list"><code class="docutils literal notranslate"><span class="pre">get_octet_deviation_list()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.filtration.ionic_bond_filteration"><code class="docutils literal notranslate"><span class="pre">ionic_bond_filteration()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.mark_unreactive_structures"><code class="docutils literal notranslate"><span class="pre">mark_unreactive_structures()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.octet_filtration"><code class="docutils literal notranslate"><span class="pre">octet_filtration()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.filtration.stabilize_charges_by_electronegativity"><code class="docutils literal notranslate"><span class="pre">stabilize_charges_by_electronegativity()</span></code></a></li>

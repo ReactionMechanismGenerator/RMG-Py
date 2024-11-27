@@ -536,6 +536,12 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Group.is_electron">
+<span class="sig-name descname"><span class="pre">is_electron</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_electron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> iff the group is an electron</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.is_identical">
 <span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_identical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is identical and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.
@@ -563,6 +569,12 @@ mapping are mutually equivalent.  If equivalent is <code class="docutils literal
 if atoms and edges are equivalent, if <code class="docutils literal notranslate"><span class="pre">False</span></code> it checks if they
 are specific cases of each other. If strict is <code class="docutils literal notranslate"><span class="pre">True</span></code>, electrons
 and bond orders are considered, and ignored if <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Group.is_proton">
+<span class="sig-name descname"><span class="pre">is_proton</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_proton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> iff the group is a proton</p>
 </dd></dl>
 
 <dl class="py method">
@@ -899,9 +911,11 @@ isomorphism checks.</p>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_benzene_explicit"><code class="docutils literal notranslate"><span class="pre">Group.is_benzene_explicit()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_cyclic"><code class="docutils literal notranslate"><span class="pre">Group.is_cyclic()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_edge_in_cycle"><code class="docutils literal notranslate"><span class="pre">Group.is_edge_in_cycle()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_electron"><code class="docutils literal notranslate"><span class="pre">Group.is_electron()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_identical"><code class="docutils literal notranslate"><span class="pre">Group.is_identical()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">Group.is_isomorphic()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_mapping_valid"><code class="docutils literal notranslate"><span class="pre">Group.is_mapping_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Group.is_proton"><code class="docutils literal notranslate"><span class="pre">Group.is_proton()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_subgraph_isomorphic"><code class="docutils literal notranslate"><span class="pre">Group.is_subgraph_isomorphic()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_surface_site"><code class="docutils literal notranslate"><span class="pre">Group.is_surface_site()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Group.is_vertex_in_cycle"><code class="docutils literal notranslate"><span class="pre">Group.is_vertex_in_cycle()</span></code></a></li>

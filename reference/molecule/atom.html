@@ -155,6 +155,12 @@ attributes of the copy will not affect the original.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Atom.decrement_charge">
+<span class="sig-name descname"><span class="pre">decrement_charge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.decrement_charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the atom pattern as a result of applying a LOSE_CHARGE action</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Atom.decrement_lone_pairs">
 <span class="sig-name descname"><span class="pre">decrement_lone_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.decrement_lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the lone electron pairs pattern as a result of applying a LOSE_PAIR action.</p>
@@ -186,6 +192,12 @@ input atom.</p>
 <p>Some special consideration for the order <cite>B</cite> bond. For atoms having
 three <cite>B</cite> bonds, the order for each is 4/3.0, while for atoms having other
 than three <cite>B</cite> bonds, the order for  each is 3/2.0</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Atom.increment_charge">
+<span class="sig-name descname"><span class="pre">increment_charge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.increment_charge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the atom pattern as a result of applying a GAIN_CHARGE action</p>
 </dd></dl>
 
 <dl class="py method">
@@ -237,6 +249,13 @@ not.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Atom.is_electron">
+<span class="sig-name descname"><span class="pre">is_electron</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.is_electron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an electron or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Atom.is_fluorine">
 <span class="sig-name descname"><span class="pre">is_fluorine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.is_fluorine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a fluorine atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
@@ -261,6 +280,13 @@ not.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.Atom.is_iodine">
 <span class="sig-name descname"><span class="pre">is_iodine</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.is_iodine" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents an iodine atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Atom.is_lithium">
+<span class="sig-name descname"><span class="pre">is_lithium</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.is_lithium" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a hydrogen atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
@@ -296,6 +322,13 @@ not.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.Atom.is_phosphorus">
 <span class="sig-name descname"><span class="pre">is_phosphorus</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.is_phosphorus" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a phosphorus atom or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
+not.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Atom.is_proton">
+<span class="sig-name descname"><span class="pre">is_proton</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Atom.is_proton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the atom represents a proton or <code class="docutils literal notranslate"><span class="pre">False</span></code> if
 not.</p>
 </dd></dl>
 
@@ -393,10 +426,12 @@ number and types of bonds, radicals, and lone pairs.</p>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom"><code class="docutils literal notranslate"><span class="pre">Atom</span></code></a><ul>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.apply_action"><code class="docutils literal notranslate"><span class="pre">Atom.apply_action()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.copy"><code class="docutils literal notranslate"><span class="pre">Atom.copy()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.decrement_charge"><code class="docutils literal notranslate"><span class="pre">Atom.decrement_charge()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.decrement_lone_pairs"><code class="docutils literal notranslate"><span class="pre">Atom.decrement_lone_pairs()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.decrement_radical"><code class="docutils literal notranslate"><span class="pre">Atom.decrement_radical()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.equivalent"><code class="docutils literal notranslate"><span class="pre">Atom.equivalent()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.get_total_bond_order"><code class="docutils literal notranslate"><span class="pre">Atom.get_total_bond_order()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.increment_charge"><code class="docutils literal notranslate"><span class="pre">Atom.increment_charge()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.increment_lone_pairs"><code class="docutils literal notranslate"><span class="pre">Atom.increment_lone_pairs()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.increment_radical"><code class="docutils literal notranslate"><span class="pre">Atom.increment_radical()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_bonded_to_halogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_bonded_to_halogen()</span></code></a></li>
@@ -404,15 +439,18 @@ number and types of bonds, radicals, and lone pairs.</p>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_bromine"><code class="docutils literal notranslate"><span class="pre">Atom.is_bromine()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_carbon"><code class="docutils literal notranslate"><span class="pre">Atom.is_carbon()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_chlorine"><code class="docutils literal notranslate"><span class="pre">Atom.is_chlorine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_electron"><code class="docutils literal notranslate"><span class="pre">Atom.is_electron()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_fluorine"><code class="docutils literal notranslate"><span class="pre">Atom.is_fluorine()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_halogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_halogen()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_hydrogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_hydrogen()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_iodine"><code class="docutils literal notranslate"><span class="pre">Atom.is_iodine()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_lithium"><code class="docutils literal notranslate"><span class="pre">Atom.is_lithium()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_nitrogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_nitrogen()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_non_hydrogen"><code class="docutils literal notranslate"><span class="pre">Atom.is_non_hydrogen()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_nos"><code class="docutils literal notranslate"><span class="pre">Atom.is_nos()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_oxygen"><code class="docutils literal notranslate"><span class="pre">Atom.is_oxygen()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_phosphorus"><code class="docutils literal notranslate"><span class="pre">Atom.is_phosphorus()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Atom.is_proton"><code class="docutils literal notranslate"><span class="pre">Atom.is_proton()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_silicon"><code class="docutils literal notranslate"><span class="pre">Atom.is_silicon()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_specific_case_of"><code class="docutils literal notranslate"><span class="pre">Atom.is_specific_case_of()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Atom.is_sulfur"><code class="docutils literal notranslate"><span class="pre">Atom.is_sulfur()</span></code></a></li>

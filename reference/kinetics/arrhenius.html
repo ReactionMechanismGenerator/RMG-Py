@@ -64,7 +64,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.kinetics.Arrhenius<a class="headerlink" href="#rmgpy-kinetics-arrhenius" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></span><span class="sig-name descname"><span class="pre">Arrhenius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">'K')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.kinetics.</span></span><span class="sig-name descname"><span class="pre">Arrhenius</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">A</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ea</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">T0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">'K')</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Pmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uncertainty</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">solute</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius" title="Permalink to this definition">¶</a></dt>
 <dd><p>A kinetics model based on the (modified) Arrhenius equation. The attributes
 are:</p>
 <table class="docutils align-default">
@@ -98,7 +98,10 @@ are:</p>
 <tr class="row-odd"><td><p><cite>Pmax</cite></p></td>
 <td><p>The maximum pressure at which the model is valid, or zero if unknown or undefined</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>comment</cite></p></td>
+<tr class="row-even"><td><p><cite>solute</cite></p></td>
+<td><p>Transition state solute data</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>comment</cite></p></td>
 <td><p>Information about the model (e.g. its source)</p></td>
 </tr>
 </tbody>
@@ -243,6 +246,17 @@ returned.</p>
 rate to a Cantera ArrheniusRate object.</p>
 </dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.solute">
+<span class="sig-name descname"><span class="pre">solute</span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.solute" title="Permalink to this definition">¶</a></dt>
+<dd><p>object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>solute</p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.Arrhenius.to_arrhenius_ep">
 <span class="sig-name descname"><span class="pre">to_arrhenius_ep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">alpha=0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">dHrxn=0.0</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">ArrheniusEP</span></span></span><a class="headerlink" href="#rmgpy.kinetics.Arrhenius.to_arrhenius_ep" title="Permalink to this definition">¶</a></dt>
@@ -334,6 +348,7 @@ Cantera.ArrheniusRate</p>
 <li><a class="reference internal" href="#rmgpy.kinetics.Arrhenius.is_temperature_valid"><code class="docutils literal notranslate"><span class="pre">Arrhenius.is_temperature_valid()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.Arrhenius.n"><code class="docutils literal notranslate"><span class="pre">Arrhenius.n</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.Arrhenius.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">Arrhenius.set_cantera_kinetics()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.Arrhenius.solute"><code class="docutils literal notranslate"><span class="pre">Arrhenius.solute</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.Arrhenius.to_arrhenius_ep"><code class="docutils literal notranslate"><span class="pre">Arrhenius.to_arrhenius_ep()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.Arrhenius.to_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">Arrhenius.to_cantera_kinetics()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.Arrhenius.to_html"><code class="docutils literal notranslate"><span class="pre">Arrhenius.to_html()</span></code></a></li>

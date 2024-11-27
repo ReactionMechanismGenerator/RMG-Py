@@ -820,6 +820,12 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_electron">
+<span class="sig-name descname"><span class="pre">is_electron</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_electron" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> iff the molecule is nothing but an electron ‘e’.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_heterocyclic">
 <span class="sig-name descname"><span class="pre">is_heterocyclic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_heterocyclic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if the molecule is heterocyclic, or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not.</p>
@@ -871,6 +877,12 @@ mapping are mutually equivalent.  If equivalent is <code class="docutils literal
 if atoms and edges are equivalent, if <code class="docutils literal notranslate"><span class="pre">False</span></code> it checks if they
 are specific cases of each other. If strict is <code class="docutils literal notranslate"><span class="pre">True</span></code>, electrons
 and bond orders are considered, and ignored if <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_proton">
+<span class="sig-name descname"><span class="pre">is_proton</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_proton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> iff the molecule is nothing but a proton ‘H+’.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1144,7 +1156,7 @@ and removes Hydrogen atoms.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.update">
 <span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_atoms</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.update" title="Permalink to this definition">¶</a></dt>
-<dd><p>Update the charge and atom types of atoms.
+<dd><p>Update the lone_pairs, charge, and atom types of atoms.
 Update multiplicity, and sort atoms (if <code class="docutils literal notranslate"><span class="pre">sort_atoms</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>)
 Does not necessarily update the connectivity values (which are used in isomorphism checks)
 If you need that, call update_connectivity_values()</p>
@@ -1302,11 +1314,13 @@ number of lone electron pairs, assuming a neutral molecule.</p>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_bond_in_cycle"><code class="docutils literal notranslate"><span class="pre">Molecule.is_bond_in_cycle()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_cyclic"><code class="docutils literal notranslate"><span class="pre">Molecule.is_cyclic()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_edge_in_cycle"><code class="docutils literal notranslate"><span class="pre">Molecule.is_edge_in_cycle()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_electron"><code class="docutils literal notranslate"><span class="pre">Molecule.is_electron()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_heterocyclic"><code class="docutils literal notranslate"><span class="pre">Molecule.is_heterocyclic()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_identical"><code class="docutils literal notranslate"><span class="pre">Molecule.is_identical()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_isomorphic"><code class="docutils literal notranslate"><span class="pre">Molecule.is_isomorphic()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_linear"><code class="docutils literal notranslate"><span class="pre">Molecule.is_linear()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_mapping_valid"><code class="docutils literal notranslate"><span class="pre">Molecule.is_mapping_valid()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_proton"><code class="docutils literal notranslate"><span class="pre">Molecule.is_proton()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_radical"><code class="docutils literal notranslate"><span class="pre">Molecule.is_radical()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_subgraph_isomorphic"><code class="docutils literal notranslate"><span class="pre">Molecule.is_subgraph_isomorphic()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.is_surface_site"><code class="docutils literal notranslate"><span class="pre">Molecule.is_surface_site()</span></code></a></li>
