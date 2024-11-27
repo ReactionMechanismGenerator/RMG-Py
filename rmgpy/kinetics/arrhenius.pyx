@@ -743,10 +743,7 @@ cdef class ArrheniusBM(KineticsModel):
                                  'cm^6/(molecule^2*s)': 1000000,
                                  }
 
-        if self._T0.value_si != 1:
-            A = self._A.value_si / (self._T0.value_si) ** self._n.value_si
-        else:
-            A = self._A.value_si
+        A = self._A.value_si
 
         try:
             A *= rate_units_conversion[self._A.units] # convert from /mol to /kmol
