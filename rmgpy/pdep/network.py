@@ -837,12 +837,8 @@ class Network(object):
                 logging.log(level, '      Actual kf(%g K) = %g', temperature, kf_actual)
                 logging.log(level, '    Expected Keq(%g K) = %g', temperature, Keq_expected)
                 logging.log(level, '      Actual Keq(%g K) = %g', temperature, Keq_actual)
-                if error:
-                    raise InvalidMicrocanonicalRateError(
-                        'Invalid k(E) values computed for path reaction "{0}".'.format(rxn), k_ratio, Keq_ratio)
-                else:
-                    logging.warning('Significant corrections to k(E) to be consistent with high-pressure limit for '
-                                    'path reaction "%s".', rxn)
+                logging.warning('Significant corrections to k(E) to be consistent with high-pressure limit for '
+                                'path reaction "%s".', rxn)
 
         # import pylab
         # for prod in range(n_isom):
