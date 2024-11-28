@@ -298,7 +298,14 @@ cdef class NASA(HeatCapacityModel):
         elif self.poly3 is not None and self.poly3.is_temperature_valid(T):
             return self.poly3
         else:
-            raise ValueError('No valid NASA polynomial at temperature {0:g} K.'.format(T))
+            if self.poly3 is not None:
+                return self.poly3
+            elif self.poly2 is not None:
+                return self.poly2
+            elif self.poly1 is not None:
+                return self.poly1
+            else:
+                raise ValueError('No valid NASA polynomials are available')
     
     cpdef double get_heat_capacity(self, double T) except -1000000000:
         """
