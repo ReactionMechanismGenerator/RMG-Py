@@ -1866,8 +1866,9 @@ class KineticsFamily(Database):
                     logging.error("Still experiencing error: Expecting one matching reverse reaction, not {0} in "
                                   "reaction family {1} for forward reaction {2}."
                                   "\n".format(len(reactions), self.label, str(rxn)))
-                    raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction "
-                                        "{1}.".format(self.label, str(rxn)))
+                    # raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction "
+                    #                     "{1}.".format(self.label, str(rxn)))
+                    return False
             elif (len(reactions) > 1 and
                     not all([reactions[0].is_isomorphic(other, strict=False, check_template_rxn_products=True)
                              for other in reactions])):
