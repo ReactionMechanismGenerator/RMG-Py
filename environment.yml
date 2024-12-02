@@ -23,28 +23,28 @@
 # - August 4, 2024 Restricted pyrms to <2
 name: rmg_env
 channels:
-  - rmg
   - conda-forge
   - cantera
+  - rmg
 dependencies:
 # System-level dependencies - we could install these at the OS level
 # but by installing them in the conda environment we get better control
-  - cairo
-  - cairocffi
-  - conda-forge::ffmpeg
-  - xlrd
-  - xlwt
-  - h5py
-  - graphviz >=12
-  - markupsafe
-  - psutil
+  - conda-forge::cairo
+  - conda-forge::cairocffi
+  - conda-forge::ffmpeg >= 7
+  - conda-forge::xlrd
+  - conda-forge::xlwt
+  - conda-forge::h5py
+  - conda-forge::graphviz >=12
+  - conda-forge::markupsafe
+  - conda-forge::psutil
   # conda-forge not default, since default has a version information bug
   # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
   - conda-forge::suitesparse
 
 # external software tools for chemistry
-  - coolprop
+  - conda-forge::coolprop
   - cantera::cantera =2.6
   - conda-forge::mopac
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
@@ -53,26 +53,26 @@ dependencies:
   - conda-forge::rdkit >=2022.09.1
 
 # Python tools
-  - python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
-  - coverage
-  - cython >=0.25.2
-  - scikit-learn
-  - scipy >=1.9
-  - numpy >=1.10.0
-  - pydot
-  - jinja2
-  - jupyter
-  - pymongo
-  - pyparsing
-  - pyyaml
-  - networkx
-  - pytest
-  - pytest-cov
+  - conda-forge::python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
+  - conda-forge::coverage
+  - conda-forge::cython >=0.25.2
+  - conda-forge::scikit-learn
+  - conda-forge::scipy >=1.9
+  - conda-forge::numpy >=1.10.0
+  - conda-forge::pydot
+  - conda-forge::jinja2
+  - conda-forge::jupyter
+  - conda-forge::pymongo
+  - conda-forge::pyparsing
+  - conda-forge::pyyaml
+  - conda-forge::networkx
+  - conda-forge::pytest
+  - conda-forge::pytest-cov
   - conda-forge::pytest-check
-  - pyutilib
-  - matplotlib >=1.5
-  - mpmath
-  - pandas
+  - conda-forge::pyutilib
+  - conda-forge::matplotlib >=1.5
+  - conda-forge::mpmath
+  - conda-forge::pandas
   - conda-forge::gprof2dot
   - conda-forge::numdifftools
   # bug in quantities, see:
@@ -91,12 +91,6 @@ dependencies:
 # optional dependencies for using ReactionMechanismSimulator
 # remove the leading '#' to install the required dependencies
   # - conda-forge::pyjuliacall
-
-# Note about diffeqpy:
-# we should use the official verison https://github.com/SciML/diffeqpy),
-# rather than ours (which is only made so that we can get it from conda)
-# It is only on pip, so we will need to do something like:
-# https://stackoverflow.com/a/35245610
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
