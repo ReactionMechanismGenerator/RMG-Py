@@ -52,8 +52,6 @@ from cantera import ck2yaml
 from scipy.optimize import brute
 
 import rmgpy.util as util
-from rmgpy.rmg.model import Species, CoreEdgeReactionModel
-from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints
@@ -61,26 +59,31 @@ from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError
-from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
-from rmgpy.kinetics import ThirdBody
-from rmgpy.kinetics import Troe
+from rmgpy.exceptions import (
+    CoreError,
+    DatabaseError,
+    ForbiddenStructureException,
+    InputError,
+)
+from rmgpy.kinetics import ThirdBody, Troe
+from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
-from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
+from rmgpy.rmg.listener import SimulationProfilePlotter, SimulationProfileWriter
+from rmgpy.rmg.model import CoreEdgeReactionModel, Species
 from rmgpy.rmg.output import OutputHTMLWriter
-from rmgpy.rmg.pdep import PDepReaction
+from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
+from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
 from rmgpy.rmg.settings import ModelSettings
-from rmgpy.solver.base import TerminationTime, TerminationConversion
+from rmgpy.solver.base import TerminationConversion, TerminationTime
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yml import RMSWriter
-from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
 
 ################################################################################
 
@@ -268,12 +271,6 @@ class RMG(util.Subject):
             self.reaction_model.pressure_dependence = self.pressure_dependence
         if self.solvent:
             self.reaction_model.solvent_name = self.solvent
-
-        if self.surface_site_density:
-            self.reaction_model.surface_site_density = self.surface_site_density
-            self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
-            self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
-        self.reaction_model.coverage_dependence = self.coverage_dependence
 
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
@@ -514,6 +511,13 @@ class RMG(util.Subject):
         # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
         requires_rms = any(isinstance(reactor_system, RMSReactor) for reactor_system in self.reaction_systems)
 
+        if self.surface_site_density:
+            self.reaction_model.surface_site_density = self.surface_site_density
+            if requires_rms:
+                self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
+                self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
+        self.reaction_model.coverage_dependence = self.coverage_dependence
+
         if kwargs.get("restart", ""):
             import rmgpy.rmg.input
 
@@ -589,8 +593,9 @@ class RMG(util.Subject):
         # Do all liquid-phase startup things:
         if self.solvent:
             solvent_data = self.database.solvation.get_solvent_data(self.solvent)
-            self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
-            self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
+            if requires_rms:
+                self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
+                self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
 
             diffusion_limiter.enable(solvent_data, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
@@ -1259,8 +1264,9 @@ class RMG(util.Subject):
                 )
                 self.uncertainty["global"] = False
             else:
-                import re
                 import random
+                import re
+
                 from rmgpy.tools.canteramodel import Cantera
                 from rmgpy.tools.globaluncertainty import ReactorPCEFactory
 
@@ -2451,7 +2457,16 @@ def make_profile_graph(stats_file, force_graph_generation=False):
 
     if display_found or force_graph_generation:
         try:
-            from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes, TIME, TIME_RATIO, TOTAL_TIME, TOTAL_TIME_RATIO
+            from gprof2dot import (
+                SAMPLES,
+                TIME,
+                TIME_RATIO,
+                TOTAL_TIME,
+                TOTAL_TIME_RATIO,
+                DotWriter,
+                PstatsParser,
+                themes,
+            )
         except ImportError:
             logging.warning("Trouble importing from package gprof2dot. Unable to create a graph of the profile statistics.")
             logging.warning("Try getting the latest version with something like `pip install --upgrade gprof2dot`.")
