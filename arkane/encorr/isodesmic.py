@@ -42,7 +42,6 @@ https://doi.org/10.1021/jp404158v
 """
 
 import logging
-import signal
 from copy import deepcopy
 from typing import List, Union
 
@@ -516,9 +515,9 @@ class SpeciesConstraints:
         # Check that the target and reference species have the same elements to be able to satisfy mass conservation
         if set(self.target.molecule.get_element_count().keys()) != all_elements:
             logging.warning(
-                f"Target species and reference species do not have the same elements:",
-                f"Target: {self.target.molecule.get_element_count().keys()}",
-                f"Reference: {all_elements}",
+                "Target species and reference species do not have the same elements:"
+                f"Target: {' '.join(self.target.molecule.get_element_count().keys())}"
+                f"Reference: {all_elements}"
             )
 
         all_elements.update(self.target.molecule.get_element_count().keys())
@@ -656,7 +655,7 @@ class ErrorCancelingScheme:
         n = c_matrix.shape[1]
         split = int(m / 2)
 
-        constraints = [LinearConstraint(A=np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j]), lb=targets[j], ub=targets[j])) for j in n]
+        constraints = tuple((LinearConstraint(A=np.concatenate((c_matrix[:split, j], -1 * c_matrix[split:, j])), lb=targets[j], ub=targets[j]) for j in range(n)))
 
         result = milp(
             sum_constraints,
@@ -733,7 +732,7 @@ class ErrorCancelingScheme:
 
         return reaction_list
 
-    def calculate_target_enthalpy(self, n_reactions_max=5, milp_software=None):
+    def calculate_target_enthalpy(self, n_reactions_max=5):
         """
         Perform a multiple error canceling reactions search and calculate hf298 for the target species by taking the
         median hf298 value from among the error canceling reactions found
@@ -741,17 +740,13 @@ class ErrorCancelingScheme:
         Args:
             n_reactions_max (int, optional): The maximum number of found reactions that will returned, after which no
                 further searching will occur even if there are possible subsets left in the queue.
-            milp_software (list, optional): Solvers to try in order. Defaults to ['lpsolve'] or if pyomo is available
-                defaults to ['lpsolve', 'pyomo']. lpsolve is usually faster.
 
         Returns:
             tuple(ScalarQuantity, list)
             - Standard heat of formation at 298 K calculated for the target species
             - reaction list containing all error canceling reactions found
         """
-        reaction_list = self.multiple_error_canceling_reaction_search(
-            n_reactions_max, milp_software
-        )
+        reaction_list = self.multiple_error_canceling_reaction_search(n_reactions_max)
         if len(reaction_list) == 0:  # No reactions found
             return None, reaction_list
         h298_list = np.zeros(len(reaction_list))
@@ -760,18 +755,6 @@ class ErrorCancelingScheme:
             h298_list[i] = rxn.calculate_target_thermo().value_si
 
         return ScalarQuantity(np.median(h298_list), "J/mol"), reaction_list
-
-
-def _pyo_obj_expression(model):
-    return pyo.summation(model.v, model.s, index=model.i)
-
-
-def _pyo_constraint_rule(model, col):
-    return (
-        sum(model.v[row] * model.c[row, col] for row in model.r)
-        - sum(model.v[row] * model.c[row, col] for row in model.p)
-        == model.t[col]
-    )
 
 
 class IsodesmicScheme(ErrorCancelingScheme):

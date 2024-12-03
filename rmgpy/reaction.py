@@ -1809,8 +1809,8 @@ class Reaction:
         """
         raise NotImplementedError("generate_high_p_limit_kinetics is not implemented for all Reaction subclasses.")
 
-def same_object(object1, object2, _check_identical, _only_check_label,
-             _generate_initial_map, _strict, _save_order):
+def _same_object(object1, object2, _check_identical=False, _only_check_label=False,
+             _generate_initial_map=False, _strict=True, _save_order=False):
     if _only_check_label:
         return str(object1) == str(object2)
     elif _check_identical:
@@ -1840,10 +1840,10 @@ def same_species_lists(list1, list2, check_identical=False, only_check_label=Fal
     """
     
     same_object_passthrough = partial(
-        same_object,
+        _same_object,
         _check_identical=check_identical,
         _only_check_label=only_check_label,
-        _generate_intial_map=generate_initial_map,
+        _generate_initial_map=generate_initial_map,
         _strict=strict,
         _save_order=save_order,
     )
