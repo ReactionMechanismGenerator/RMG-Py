@@ -77,7 +77,7 @@ The attributes are:</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p><cite>A</cite></p></td>
-<td><p>The preexponential factor</p></td>
+<td><p>The preexponential factor. Unitless (sticking probability)</p></td>
 </tr>
 <tr class="row-odd"><td><p><cite>T0</cite></p></td>
 <td><p>The reference temperature</p></td>
@@ -269,7 +269,8 @@ returned.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.StickingCoefficient.set_cantera_kinetics">
 <span class="sig-name descname"><span class="pre">set_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.StickingCoefficient.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets the kinetics for a cantera reaction object.</p>
+<dd><p>Passes in a cantera Reaction() object and sets its
+rate to a Cantera ArrheniusRate object.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -281,6 +282,13 @@ returned.</p>
 <dd class="field-odd"><p>solute</p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.kinetics.StickingCoefficient.to_cantera_kinetics">
+<span class="sig-name descname"><span class="pre">to_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.StickingCoefficient.to_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the RMG StickingCoefficient object to a cantera StickingArrheniusRate</p>
+<p>StickingArrheniusRate(A,b,E)  where A is dimensionless, b is dimensionless, and E is in J/kmol</p>
 </dd></dl>
 
 <dl class="py method">
@@ -359,6 +367,7 @@ returned.</p>
 <li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.n"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.n</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.set_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.set_cantera_kinetics()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.solute"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.solute</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.to_cantera_kinetics"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.to_cantera_kinetics()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.to_html"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.to_html()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.kinetics.StickingCoefficient.uncertainty"><code class="docutils literal notranslate"><span class="pre">StickingCoefficient.uncertainty</span></code></a></li>
 </ul>

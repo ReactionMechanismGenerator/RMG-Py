@@ -129,7 +129,7 @@ is the activation energy.</p>
 <dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.A">
 <span class="sig-name descname"><span class="pre">A</span></span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.A" title="Permalink to this definition">¶</a></dt>
 <dd><p>The preexponential factor.</p>
-<p>This is the only thing different from a normal Arrhenius class.</p>
+<p>This (and the coverage dependence) is the only thing different from a normal Arrhenius class.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -261,8 +261,8 @@ returned.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.set_cantera_kinetics">
 <span class="sig-name descname"><span class="pre">set_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Passes in a cantera Reaction() object and sets its
-rate to a Cantera ArrheniusRate object.</p>
+<dd><p>Takes in a cantera Reaction object and sets its
+rate to a cantera InterfaceArrheniusRate object.</p>
 </dd></dl>
 
 <dl class="py attribute">
@@ -286,12 +286,10 @@ in J/mol (and vise versa).</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.kinetics.SurfaceArrhenius.to_cantera_kinetics">
-<span class="sig-name descname"><span class="pre">to_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">arrhenius_class</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.to_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts the RMG Arrhenius object to a cantera ArrheniusRate or
-the auxiliary cantera Arrhenius class (used by falloff reactions).
-Inputs for both are (A,b,E)  where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol</p>
-<p>arrhenius_class: If <code class="docutils literal notranslate"><span class="pre">True</span></code>, uses cantera.Arrhenius (for falloff reactions). If <code class="docutils literal notranslate"><span class="pre">False</span></code>, uses
-Cantera.ArrheniusRate</p>
+<span class="sig-name descname"><span class="pre">to_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.SurfaceArrhenius.to_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the RMG SurfaceArrhenius object to a cantera InterfaceArrheniusRate</p>
+<p>InterfaceArrheniusRate(A,b,E)  where A is in units like m^2/kmol/s (depending on dimensionality)
+b is dimensionless, and E is in J/kmol</p>
 </dd></dl>
 
 <dl class="py method">
