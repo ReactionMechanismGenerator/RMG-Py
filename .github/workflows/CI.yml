@@ -33,8 +33,8 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron: "0 8 * * *"
-  # runs on all branches on both RMG-Py and forks
-  push:
+  # allow running on RMG-Py on a pushed branch, only if triggered manually
+  workflow_dispatch:
   # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
   pull_request:
 
@@ -57,8 +57,9 @@ jobs:
       matrix:
         python-version: ["3.9"]
         os: [macos-13, macos-latest, ubuntu-latest]
+        test_julia: [yes, no]
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }}
+    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }} (Julia? ${{ matrix.test_julia }})
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
@@ -82,16 +83,6 @@ jobs:
           use-mamba: true
           show-channel-urls: true
           channels: conda-forge,cantera,rmg
-
-      - name: Fix ARM Mac environment
-        if: matrix.os == 'macos-latest'
-        run: |
-          conda deactivate
-          conda env remove -n rmg_env
-          conda create -n rmg_env
-          conda activate rmg_env
-          conda config --env --set subdir osx-64
-          conda env update -f environment.yml
 
       # list the environment for debugging purposes
       - name: mamba info
@@ -120,31 +111,36 @@ jobs:
 
       # Setup Juliaup
       - name: Set Julia paths
+        if: matrix.test_julia == 'yes'
         run: |
-          echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
-          echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
-          echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
-          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
-          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
-          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
+          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
+          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
+          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
+          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
+          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
+          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
+          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
+          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
           echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
-          echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
+          # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
 
       - name: Setup Juliaup
+        if: matrix.test_julia == 'yes'
         uses: julia-actions/install-juliaup@v2
         with:
-          channel: '1.10'
+          channel: '1.9'
 
       - name: Check Julia version
+        if: matrix.test_julia == 'yes'
         run: julia --version
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
+        if: matrix.test_julia == 'yes'
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
         run: |
+          mamba install conda-forge::pyjuliacall
           julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Install Q2DTor

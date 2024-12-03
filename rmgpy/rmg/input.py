@@ -35,23 +35,36 @@ import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.base import Entry
+from rmgpy.data.solvation import SolventData
+from rmgpy.data.surface import MetalDatabase
+from rmgpy.data.vaporLiquidMassTransfer import (
+    liquidVolumetricMassTransferCoefficientPowerLaw,
+)
 from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
+from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
-from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
+from rmgpy.quantity import Energy, Quantity, RateCoefficient, SurfaceConcentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.rmg.reactionmechanismsimulator_reactors import (
+    NO_JULIA,
+    ConstantTLiquidSurfaceReactor,
+    ConstantTPIdealGasReactor,
+    ConstantTVLiquidReactor,
+    ConstantVIdealGasReactor,
+    Reactor,
+)
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
-from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.termination import (
+    TerminationConversion,
+    TerminationRateRatio,
+    TerminationTime,
+)
 from rmgpy.util import as_list
-from rmgpy.data.surface import MetalDatabase
-from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
-from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
-from rmgpy.molecule.fragment import Fragment
-from rmgpy.data.solvation import SolventData
 
 ################################################################################
 
@@ -1580,6 +1593,11 @@ def read_input_file(path, rmg0):
         exec(f.read(), global_context, local_context)
     except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
+        if NO_JULIA:
+            logging.error(
+                "During runtime, import of Julia dependencies failed. To use phase systems and RMS reactors, install RMG-Py with RMS."
+                " (https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/anacondaDeveloper.html)"
+            )
         logging.exception(e)
         raise
     finally:
