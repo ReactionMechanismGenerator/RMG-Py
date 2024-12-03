@@ -47,7 +47,7 @@ nbproject/*
 .vscode/*
 
 # Unit test files
-.coverage
+.coverage*
 testing/*
 htmlcov/*
 
@@ -103,6 +103,7 @@ test/rmgpy/test_data/temp_dir_for_testing/cantera/chem001.yaml
 rmgpy/test_data/copied_kinetic_lib/
 testing/qm/*
 test_log.txt
+rmgpy/tools/data/flux/flux/1/*.dot
 
 # example directory - save the inputs but not the outputs
 # cantera input files
@@ -117,3 +118,4 @@ examples/**/dictionary.txt
 examples/**/reactions.py
 examples/**/RMG_libraries
 examples/**/species
+examples/**/plots

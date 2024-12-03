@@ -29,7 +29,6 @@
 
 import os
 
-
 import numpy as np
 
 from rmgpy.kinetics import Arrhenius
@@ -635,5 +634,7 @@ class LiquidReactorTest:
         import rmgpy.data.rmg
 
         rmgpy.data.rmg.database = None
-
-        os.remove(os.path.join(cls.file_dir, "restart_from_seed.py"))
+        try:
+            os.remove(os.path.join(cls.file_dir, "restart_from_seed.py"))
+        except FileNotFoundError:
+            pass  # file will not be present if any tests failed
