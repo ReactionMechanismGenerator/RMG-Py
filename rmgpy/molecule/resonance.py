@@ -1101,13 +1101,18 @@ def _clar_optimization(mol, recursion_constraints=None, clar_number=-1, save_ord
         if status == 2:  # infeasible
             raise RuntimeError("All valid Clar formulae have been enumerated!")
         else:
-            raise RuntimeError(f"Clar optimization failed (Exit Code {status}) for an unexpected reason: {result.message}")
+            raise RuntimeError(f"Optimization failed (Exit Code {status}) for an unexpected reason '{result.message}'")
 
     _clar_number, solution = -result.fun, result.x
 
     # optimization may have reached a bad local minimum - this case is rare
     if _clar_number == 0:
         return []
+
+    # on later runs, non-integer solutions occur - branching might be able to find actual solutions,
+    # but we just call it good enough here
+    if any([x != 1 and x != 0 for x in solution]):
+        raise RuntimeError("Optimization obtained a non-integer solution - no more formulae will be enumerated.")
 
     # first solution, so the result should be an upper limit
     if clar_number == -1:
