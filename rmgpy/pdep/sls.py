@@ -33,15 +33,31 @@ and implementing the SLS master equation reduction method
 """
 
 from juliacall import Main
+
 Main.seval("using ReactionMechanismSimulator.SciMLBase")
 Main.seval("using ReactionMechanismSimulator.Sundials")
+import sys
+import logging
+
 import numpy as np
 import scipy.linalg
 import scipy.optimize as opt
+import scipy.sparse as sparse
 
 import rmgpy.constants as constants
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
-from rmgpy.rmg.reactors import to_julia
+from rmgpy.rmg.reactionmechanismsimulator_reactors import to_julia
+
+NO_JULIA = False
+try:
+    from diffeqpy import de
+    from julia import Main
+except Exception as e:
+    logging.info(
+        f"Unable to import Julia dependencies, original error: {str(e)}"
+        ". Master equation method 'ode' will not be available on this execution."
+    )
+    NO_JULIA = True
 
 
 def get_initial_condition(network, x0, indices):
@@ -153,6 +169,11 @@ def get_rate_coefficients_SLS(network, T, P, method="mexp", neglect_high_energy_
     tau = np.abs(1.0 / fastest_reaction)
 
     if method == "ode":
+        if NO_JULIA:
+            raise RuntimeError(
+                "Required Julia dependencies for method 'ode' are not installed.\n"
+                "Please follow the steps to install Julia dependencies at https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/anacondaDeveloper.html."
+            )
         f = Main.seval(
             """
 function f(du, u, M, t)

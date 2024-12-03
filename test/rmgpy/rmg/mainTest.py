@@ -32,15 +32,12 @@ import os
 import shutil
 from unittest.mock import patch
 
+import pandas as pd
 import pytest
 
-import pandas as pd
-
-from rmgpy.rmg.main import RMG, initialize_log, make_profile_graph
-from rmgpy.rmg.main import RMG_Memory
-from rmgpy import get_path
-from rmgpy import settings
+from rmgpy import get_path, settings
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.rmg.main import RMG, RMG_Memory, initialize_log, make_profile_graph
 from rmgpy.rmg.model import CoreEdgeReactionModel
 
 originalPath = get_path()
@@ -195,7 +192,10 @@ class TestRestartWithFilters:
         cls.outputDir = os.path.join(cls.testDir, "output_w_filters")
         cls.databaseDirectory = settings["database.directory"]
 
-        os.mkdir(cls.outputDir)
+        try:
+            os.mkdir(cls.outputDir)
+        except FileExistsError:
+            pass  # output directory already exists
         initialize_log(logging.INFO, os.path.join(cls.outputDir, "RMG.log"))
 
         cls.rmg = RMG(

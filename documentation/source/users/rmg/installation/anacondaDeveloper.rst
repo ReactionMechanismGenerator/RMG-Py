@@ -6,6 +6,11 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
+#. If your `conda` version is older than 23.10.0, switch the solver backend to `libmamba` ::
+
+    conda install -n base conda-libmamba-solver
+    conda config --set solver libmamba
+
 #. There are a few system-level dependencies which are required and should not be installed via Conda. These include
    `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
 
@@ -52,11 +57,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    For information on using ``ssh`` with GitHub see the `Connecting to GitHub with SSH <https://docs.github.com/en/authentication/connecting-to-github-with-ssh>`_
 
-#. Switch the conda solver backend to speed up creation of the RMG environment ::
-
-    conda install -n base conda-libmamba-solver
-    conda config --set solver libmamba
-
 #. Navigate to the RMG-Py directory ::
 
     cd RMG-Py
@@ -91,16 +91,11 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     conda activate rmg_env
 
-#. Switch the conda solver to libmamba again, to accelerate any changes you might make to this conda environment in the future::
-
-    conda config --set solver libmamba
-
 #. Compile RMG-Py after activating the conda environment ::
 
     make
 
 #. Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
-   *This is important before the next step in which julia dependencies are installed.*
    Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder.
 
    In general, these commands should be placed in the appropriate shell initialization file.
@@ -115,12 +110,13 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
-#. Install and Link Julia dependencies: ::
+#. **Optional (Recommended)**: Install and Link Julia dependencies. Ensure that you have modified your environment variables as described above, and then run the following: ::
 
      julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator;'
 
      python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
 
+    Installing these dependencies will allow using ``method='ode'`` when solving the Master Equation with Arkane and using ``ReactionMechanismSimulator.jl``-based reactors in RMG.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 

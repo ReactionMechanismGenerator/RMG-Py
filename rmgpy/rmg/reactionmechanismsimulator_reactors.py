@@ -93,11 +93,26 @@ def to_julia(obj):
     if isinstance(obj, dict):
         return Main.PythonCall.pyconvert(Main.Dict, obj)
     elif isinstance(obj, (list, np.ndarray)):
-        if obj.getattr("shape", False) and len(obj.shape) > 1:
+        if getattr(obj, "shape", False) and len(obj.shape) > 1:
             return Main.PythonCall.pyconvert(Main.Matrix, obj)
         return Main.PythonCall.pyconvert(Main.Vector, obj)
     else: # Other native Python project does not need special conversion.
         return obj
+
+NO_JULIA = False
+try:
+    if __debug__:
+        from os.path import abspath, dirname, exists, join
+
+        from julia.api import Julia
+        path_rms = dirname(dirname(dirname(abspath(__file__))))
+        jl = Julia(sysimage=join(path_rms, "rms.so")) if exists(join(path_rms, "rms.so")) else Julia(compiled_modules=False)
+    from diffeqpy import de
+    from julia import Main
+    from pyrms import rms
+except Exception as e:
+    logging.info("Unable to import Julia dependencies, original error: " + str(e) + ". RMS features will not be available on this execution.")
+    NO_JULIA = True
 
 
 class PhaseSystem:

@@ -20,33 +20,37 @@
 # - August 4, 2024 Restricted pyrms to <2
 # - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
 # - March 15, 2024 - started migration to Python 3.9
+# - Mar 11, 2024 Removed Julia dependencies, now considered optional
 #
 name: rmg_env
 channels:
-  - rmg
   - conda-forge
   - cantera
+  - rmg
 dependencies:
 # System-level dependencies - we could install these at the OS level
 # but by installing them in the conda environment we get better control
-  - cairo
-  - cairocffi
-  - ffmpeg
-  - xlrd
-  - xlwt
-  - h5py
-  - markupsafe
-  - psutil
+  - conda-forge::cairo
+  - conda-forge::cairocffi
+  - conda-forge::ffmpeg >= 7
+  - conda-forge::xlrd
+  - conda-forge::xlwt
+  - conda-forge::h5py
+  - conda-forge::graphviz >=12
+  - conda-forge::markupsafe
+  - conda-forge::psutil
   # conda-forge not default, since default has a version information bug
   # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
   - conda-forge::suitesparse
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2750
   - conda-forge::graphviz 
+  # ThermoCentralDatabaseInterface fails if pyopenssl is too old. 20 is just a guess at the version number. 
+  - conda-forge::pyopenssl >20
 
 # external software tools for chemistry
-  - coolprop
-  - cantera::cantera >=3
+  - conda-forge::coolprop
+  - cantera::cantera =2.6
   - conda-forge::mopac
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
   - conda-forge::cclib >=1.6.3,<1.9
@@ -57,30 +61,31 @@ dependencies:
   - conda-forge::pyjuliacall # for calling julia packages
 
 # Python tools
-  - python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
-  - coverage
-  - cython >=0.25.2
-  - scikit-learn
-  - scipy >=1.9
-  - numpy >=1.10.0
-  - pydot
-  - jinja2
-  - jupyter
-  - pymongo
-  - pyparsing
-  - pyyaml
-  - networkx
-  - pytest
-  - pytest-cov
+  - conda-forge::python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
+  - conda-forge::coverage
+  - conda-forge::cython >=0.25.2
+  - conda-forge::scikit-learn
+  - conda-forge::scipy >=1.9
+  - conda-forge::numpy >=1.10.0
+  - conda-forge::pydot
+  - conda-forge::jinja2
+  - conda-forge::jupyter
+  - conda-forge::pymongo
+  - conda-forge::pyparsing
+  - conda-forge::pyyaml
+  - conda-forge::networkx
+  - conda-forge::pytest
+  - conda-forge::pytest-cov
   - conda-forge::pytest-check
-  - pyutilib
-  - matplotlib >=1.5
-  - mpmath
-  - pandas
+  - conda-forge::pyutilib
+  - conda-forge::matplotlib >=1.5
+  - conda-forge::mpmath
+  - conda-forge::pandas
   - conda-forge::gprof2dot
   - conda-forge::numdifftools
-  - conda-forge::quantities
-  - conda-forge::lpsolve55
+  # bug in quantities, see:
+  # https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2694#issuecomment-2489286263
+  - conda-forge::quantities !=0.16.0,!=0.16.1
   - conda-forge::ringdecomposerlib-python
 
 # packages we maintain
@@ -91,17 +96,9 @@ dependencies:
 # configure packages to use OpenBLAS instead of Intel MKL
   - blas=*=openblas
 
-# Cantera 2.6 on the Cantera channel is configured to use Intel MKL. It doesn't specify a version minimum
-# but crashes if MKL is too old, so we have to enforce a minimum version here. But, if we can switch over
-# to the conda-forge version, we should be able to remove this line (and maybe the two after it)
-# because it use OpenBLAS instead. 
-  - conda-forge::mkl >=2023.1.0
-  # 2023.1.0 is just a guess at the minimum version. Older versions might work too.
-  - conda-forge::libcurl <= 8.9 
-  # There's a Julia/PyCall installation bug associated with libcurl 8.10+:
-  # https://discourse.julialang.org/t/curl-multi-assign-and-segmentation-fault-when-installing-package/120901/3
-  - conda-forge::pyopenssl >20
-  # ThermoCentralDatabaseInterface fails if pyopenssl is too old. 20 is just a guess at the version number. 
+# optional dependencies for using ReactionMechanismSimulator
+# remove the leading '#' to install the required dependencies
+  # - conda-forge::pyjuliacall
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)

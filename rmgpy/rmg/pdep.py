@@ -736,7 +736,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                 self.reactants.remove(prod)
             self.products = self.products_cache
 
-    def update(self, reaction_model, pdep_settings):
+    def update(self, reaction_model, pdep_settings, requires_rms=False):
         """
         Regenerate the :math:`k(T,P)` values for this partial network if the
         network is marked as invalid.
@@ -917,7 +917,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                                              f'from the {rxn.library} library, and was not added to the model')
                                 break
                         else:
-                            reaction_model.add_reaction_to_core(net_reaction)
+                            reaction_model.add_reaction_to_core(net_reaction, requires_rms=requires_rms)
                     else:
                         # Check whether netReaction already exists in the edge as a LibraryReaction
                         for rxn in reaction_model.edge.reactions:
@@ -929,7 +929,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                                              f'from the {rxn.library} library, and was not added to the model')
                                 break
                         else:
-                            reaction_model.add_reaction_to_edge(net_reaction)
+                            reaction_model.add_reaction_to_edge(net_reaction, requires_rms=requires_rms)
 
                 # Set/update the net reaction kinetics using interpolation model
                 kdata = K[:, :, i, j].copy()

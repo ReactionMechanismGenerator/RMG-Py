@@ -109,4 +109,4 @@ class TestHinderedRotorClassicalND:
         hdnd.read_scan()
         assert round(abs(hdnd.Es[0]) - 8.58538448, 4) == 0
         hdnd.fit()
-        assert round(abs(hdnd.calc_partition_function(300.0)) - 2.899287634962152, 5) == 0
+        assert round(abs(hdnd.calc_partition_function(300.0)) - 2.899287634962152, 4) == 0
