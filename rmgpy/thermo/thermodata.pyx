@@ -35,6 +35,7 @@ cimport numpy as np
 from libc.math cimport log
 
 import rmgpy.quantity as quantity
+from rmgpy.util import np_list
 
 ################################################################################
 
@@ -43,27 +44,29 @@ cdef class ThermoData(HeatCapacityModel):
     A heat capacity model based on a set of discrete heat capacity data points.
     The attributes are:
     
-    =============== ============================================================
-    Attribute       Description
-    =============== ============================================================
-    `Tdata`         An array of temperatures at which the heat capacity is known
-    `Cpdata`        An array of heat capacities at the given temperatures
-    `H298`          The standard enthalpy of formation at 298 K
-    `S298`          The standard entropy at 298 K
-    `Tmin`          The minimum temperature at which the model is valid, or zero if unknown or undefined
-    `Tmax`          The maximum temperature at which the model is valid, or zero if unknown or undefined
-    `E0`            The energy at zero Kelvin (including zero point energy)
-    `comment`       Information about the model (e.g. its source)
-    =============== ============================================================
+    ===========================  ============================================================
+    Attribute                    Description
+    ===========================  ============================================================
+    `Tdata`                      An array of temperatures at which the heat capacity is known
+    `Cpdata`                     An array of heat capacities at the given temperatures
+    `H298`                       The standard enthalpy of formation at 298 K
+    `S298`                       The standard entropy at 298 K
+    `Tmin`                       The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`                       The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `E0`                         The energy at zero Kelvin (including zero point energy)
+    `thermo_coverage_dependence` The coverage dependence of the thermo
+    `comment`                    Information about the model (e.g. its source)
+    ===========================  ============================================================
     
     """
 
-    def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, label = '',comment=''):
+    def __init__(self, Tdata=None, Cpdata=None, H298=None, S298=None, Cp0=None, CpInf=None, Tmin=None, Tmax=None, E0=None, label = '', thermo_coverage_dependence=None, comment=''):
         HeatCapacityModel.__init__(self, Tmin=Tmin, Tmax=Tmax, E0=E0, Cp0=Cp0, CpInf=CpInf, label=label, comment=comment)
         self.H298 = H298
         self.S298 = S298
         self.Tdata = Tdata
         self.Cpdata = Cpdata
+        self.thermo_coverage_dependence = thermo_coverage_dependence
     
     def __repr__(self):
         """
@@ -77,6 +80,7 @@ cdef class ThermoData(HeatCapacityModel):
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
         if self.E0 is not None: string += ', E0={0!r}'.format(self.E0)
         if self.label != '': string +=', label="""{0}"""'.format(self.label)
+        if self.thermo_coverage_dependence is not None: string += ', thermo_coverage_dependence={0!r}'.format(self.thermo_coverage_dependence)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -85,7 +89,7 @@ cdef class ThermoData(HeatCapacityModel):
         """
         A helper function used when pickling a ThermoData object.
         """
-        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.E0, self.label, self.comment))
+        return (ThermoData, (self.Tdata, self.Cpdata, self.H298, self.S298, self.Cp0, self.CpInf, self.Tmin, self.Tmax, self.E0, self.label, self.thermo_coverage_dependence, self.comment))
 
     property Tdata:
         """An array of temperatures at which the heat capacity is known."""
@@ -114,6 +118,21 @@ cdef class ThermoData(HeatCapacityModel):
             return self._S298
         def __set__(self, value):
             self._S298 = quantity.Entropy(value)
+    
+    property thermo_coverage_dependence:
+        """The coverage dependence of the thermo"""
+        def __get__(self):
+            return self._thermo_coverage_dependence
+        def __set__(self, value):
+            self._thermo_coverage_dependence = {}
+            if value:
+                 for species, parameters in value.items():
+                    # just the polynomial model for now
+                     processed_parameters = {'model': parameters['model'],
+                                             'enthalpy-coefficients': np_list([quantity.Enthalpy(p) for p in parameters['enthalpy-coefficients']]),
+                                             'entropy-coefficients': np_list([quantity.Entropy(p) for p in parameters['entropy-coefficients']]),
+                                             }
+                     self._thermo_coverage_dependence[species] = processed_parameters
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
@@ -361,12 +380,12 @@ cdef class ThermoData(HeatCapacityModel):
         S298 = self.get_entropy(298)
         Cp0 = self._Cp0.value_si
         CpInf = self._CpInf.value_si
-        
+        thermo_cov_dep = self.thermo_coverage_dependence
         
         if B:
-            return Wilhoit(label=self.label,comment=self.comment).fit_to_data_for_constant_b(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
+            return Wilhoit(label=self.label, thermo_coverage_dependence=thermo_cov_dep, comment=self.comment).fit_to_data_for_constant_b(Tdata, Cpdata, Cp0, CpInf, H298, S298, B=B)
         else:
-            return Wilhoit(label=self.label,comment=self.comment).fit_to_data(Tdata, Cpdata, Cp0, CpInf, H298, S298)
+            return Wilhoit(label=self.label, thermo_coverage_dependence=thermo_cov_dep, comment=self.comment).fit_to_data(Tdata, Cpdata, Cp0, CpInf, H298, S298)
 
     cpdef NASA to_nasa(self, double Tmin, double Tmax, double Tint, bint fixedTint=False, bint weighting=True, int continuity=3):
         """
