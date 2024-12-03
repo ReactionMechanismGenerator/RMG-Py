@@ -34,15 +34,20 @@ import itertools
 import logging
 import sys
 
-import juliacall
 import numpy as np
-from juliacall import Main
 
 import rmgpy.constants as constants
 
-Main.seval("using PythonCall")
-Main.seval("using ReactionMechanismSimulator")
-Main.seval("using ReactionMechanismSimulator.Sundials")
+NO_JULIA = True
+try:
+    import juliacall
+    from juliacall import Main
+    Main.seval("using PythonCall")
+    Main.seval("using ReactionMechanismSimulator")
+    Main.seval("using ReactionMechanismSimulator.Sundials")
+    NO_JULIA = False
+except:
+    logging.warning("Julia import failed, RMS reactors not available.")
 
 from rmgpy import constants
 from rmgpy.data.kinetics.depository import DepositoryReaction

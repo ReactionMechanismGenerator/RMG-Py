@@ -32,12 +32,8 @@ Contains functionality for directly simulating the master equation
 and implementing the SLS master equation reduction method
 """
 
-from juliacall import Main
-
-Main.seval("using ReactionMechanismSimulator.SciMLBase")
-Main.seval("using ReactionMechanismSimulator.Sundials")
-import sys
 import logging
+import sys
 
 import numpy as np
 import scipy.linalg
@@ -50,8 +46,10 @@ from rmgpy.rmg.reactionmechanismsimulator_reactors import to_julia
 
 NO_JULIA = False
 try:
-    from diffeqpy import de
-    from julia import Main
+    from juliacall import Main
+
+    Main.seval("using ReactionMechanismSimulator.SciMLBase")
+    Main.seval("using ReactionMechanismSimulator.Sundials")
 except Exception as e:
     logging.info(
         f"Unable to import Julia dependencies, original error: {str(e)}"
