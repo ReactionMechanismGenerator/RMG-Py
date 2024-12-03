@@ -36,12 +36,6 @@ jobs:
           activate-environment: rmg_env
           use-mamba: true
 
-      # installs the extra RMS conda dependencies
-      - name: Add RMS dependencies
-        run: |
-          mamba install -c conda-forge julia=1.9.1 pyjulia>=0.6 
-          mamba install -c rmg pyrms diffeqpy
-
       - name: Install sphinx
         run: mamba install -y sphinx
 
@@ -65,13 +59,6 @@ jobs:
         run: |
           make clean
           make
-
-      - name: Install and link Julia dependencies
-        timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
-        run: |
-          which julia
-          export JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba
-          julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v2
