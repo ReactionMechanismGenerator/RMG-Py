@@ -57,9 +57,6 @@ dependencies:
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
 
-# general-purpose external software tools
-  - conda-forge::pyjuliacall # for calling julia packages
-
 # Python tools
   - conda-forge::python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
   - conda-forge::coverage
