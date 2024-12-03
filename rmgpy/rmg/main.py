@@ -566,9 +566,6 @@ class RMG(util.Subject):
         # Load databases
         self.load_database()
 
-        for spec in self.initial_species:
-            self.reaction_model.add_species_to_edge(spec, requires_rms=requires_rms)
-
         for reaction_system in self.reaction_systems:
             if isinstance(reaction_system, RMSReactor):
                 reaction_system.finish_termination_criteria()
