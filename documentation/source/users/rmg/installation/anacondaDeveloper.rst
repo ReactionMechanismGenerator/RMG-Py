@@ -127,6 +127,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     python-jl replace/with/path/to/rmg.py input.py
 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
+For more information about using conda, please check out the `conda user guide <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
 
 
 Debugging
