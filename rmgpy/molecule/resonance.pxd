@@ -66,6 +66,4 @@ cpdef list generate_kekule_structure(Graph mol)
 
 cpdef list generate_clar_structures(Graph mol, bint save_order=?)
 
-cpdef list _clar_optimization(Graph mol, list recursion_constraints=?, int max_num=?, bint save_order=?)
-
-cpdef void _clar_transformation(Graph mol, list aromatic_ring)
+cpdef list _clar_optimization(Graph mol, list recursion_constraints=?, int clar_number=?, bint save_order=?)

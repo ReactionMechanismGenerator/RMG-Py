@@ -926,8 +926,6 @@ def generate_clar_structures(mol, save_order=False):
     mol_list = []
 
     for new_mol, aromatic_rings, bonds, solution in solutions:
-
-        new_mol = mol.copy(deep=True)
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
@@ -946,13 +944,16 @@ def generate_clar_structures(mol, save_order=False):
         # Then apply locations of aromatic sextets by converting to benzene bonds
         for index, ring in enumerate(aromatic_rings):
             if y[index] == 1:
-                _clar_transformation(new_mol, ring)
+                for i, atom_1 in enumerate(ring):
+                    for j, atom_2 in enumerate(ring):
+                        if new_mol.has_bond(atom_1, atom_2):
+                            new_mol.get_bond(atom_1, atom_2).order = 1.5
 
         try:
             new_mol.update_atomtypes()
         except AtomTypeError:
             pass
-        else:
+        finally:
             mol_list.append(new_mol)
 
     return mol_list
@@ -965,21 +966,27 @@ def _tuplize_bond(bond):
     return (bond.atom1.id, bond.atom2.id)
 
 
-def _clar_optimization(mol, recursion_constraints=None, max_num=-1, save_order=False):
+def _clar_optimization(mol, recursion_constraints=None, clar_number=-1, save_order=False):
     """
-    Implements linear programming algorithm for finding Clar structures.
+    Implements Mixed Integer Linear Programming for finding Clar structures.
+
+    First finds the Clar number (and an arbitrary structure with that number), then recursively
+    calls itself to enumerate more structures with that Clar number. No guarantees about
+    which structures will be found, or how many (we stop solving once solution would require
+    branching, which typically happens after at least a couple have already been found).
 
     Returns a list of valid Clar solutions in the form of a tuple, with the following entries:
-        [0] List of aromatic rings
-        [1] List of bonds
-        [2] Optimization solutions
+        [0] Copy of mol
+        [1] List of aromatic rings
+        [2] List of bonds
+        [3] Solution vector
 
-    The optimization solutions may contain multiple valid solutions, each is an array of boolean values with sextet assignments
-    followed by double bond assignments, with indices corresponding to the list of aromatic rings and list of bonds, respectively.
+    The solution vector is a binary integer list of length (# aromatic rings + # bonds) indicating
+    if each ring is aromatic and if each bond is double.
 
-    Method adapted from:
-        Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
-            J. Math. Chem. 1994, 15 (1), 93–107.
+    This implementation follows the original implementation very closely (Hansen, P.; Zheng, M. The
+    Clar Number of a Benzenoid Hydrocarbon and Linear Programming. J. Math. Chem. 1994, 15 (1), 93–107.)
+    with only slight modifications to prevent changing bond orders for exocyclic atoms.
     """
     cython.declare(
         molecule=Graph,
@@ -992,26 +999,30 @@ def _clar_optimization(mol, recursion_constraints=None, max_num=-1, save_order=F
         solutions=list,
     )
 
-    # Make a copy of the molecule so we don't destroy the original
+    # after we find all the Clar structures we will modify the molecule bond orders to be aromatic,
+    # so we make explicit copies to avoid overwrites.
     molecule = mol.copy(deep=True)
 
     aromatic_rings = molecule.get_aromatic_rings(save_order=save_order)[0]
+
+    # doesn't work for system without aromatic rings, just exit
     if len(aromatic_rings) == 0:
         return []
 
+    # stability between multiple runs
     aromatic_rings.sort(key=_sum_atom_ids)
-    
+
     # Cython doesn't allow mutable defaults, so we just set it here instead
     if recursion_constraints is None:
         recursion_constraints = []
 
-    # Get list of atoms that are in rings
+    # Get set of atoms that are in rings
     atoms = set()
     for ring in aromatic_rings:
         atoms.update(ring)
     atoms = sorted(atoms, key=attrgetter('id'))
 
-    # Get list of bonds involving the ring atoms, ignoring bonds to hydrogen
+    # Get set of bonds involving the ring atoms, ignoring bonds to hydrogen
     bonds = set()
     for atom in atoms:
         bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.is_non_hydrogen()])
@@ -1053,6 +1064,18 @@ def _clar_optimization(mol, recursion_constraints=None, max_num=-1, save_order=F
         A=np.array(A, dtype=int), lb=np.ones(n_atom, dtype=int), ub=np.ones(n_atom, dtype=int)
     )]
 
+    # on recursive calls we already know the Clar number, so we can additionally constrain the system
+    # to only find structures with this number. Allows detecting when all formulae have been found and,
+    # in theory, should solve faster
+    if clar_number != -1:
+        initial_constraint += [
+            LinearConstraint(
+                A=np.array([1] * n_ring + [0] * n_bond),
+                ub=clar_number,
+                lb=clar_number,
+            ),
+        ]
+
     # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
     # we negate because the original problem is formulated as maximization, whereas SciPy only does min
     c = -np.array([1] * n_ring + [0] * n_bond, dtype=int)
@@ -1074,69 +1097,39 @@ def _clar_optimization(mol, recursion_constraints=None, max_num=-1, save_order=F
         options={'time_limit': 10},
     )
 
-    if result.status != 0:
-        raise RuntimeError("Optimization could not find a valid solution.")
+    if (status := result.status) != 0:
+        if status == 2:  # infeasible
+            raise RuntimeError("All valid Clar formulae have been enumerated!")
+        else:
+            raise RuntimeError(f"Clar optimization failed (Exit Code {status}) for an unexpected reason: {result.message}")
 
-    clar_num, solution = -result.fun, result.x
-    print(f"{clar_num=} {max_num=} {solution=}")
+    _clar_number, solution = -result.fun, result.x
 
-    # Check that the result contains at least one aromatic sextet
-    # on recursive calls, this will eventually be the 'break case'
-    if clar_num == 0:
+    # optimization may have reached a bad local minimum - this case is rare
+    if _clar_number == 0:
         return []
 
-    # Check that the solution contains the maximum number of sextets possible
-    if max_num == -1:
-        max_num = clar_num  # This is the first solution, so the result should be an upper limit
-    elif clar_num < max_num:
-        raise RuntimeError("Optimization obtained a sub-optimal solution.")
+    # first solution, so the result should be an upper limit
+    if clar_number == -1:
+        clar_number = _clar_number
 
-    # on later runs, non-integer solutions occur - branching might be able to find actual solutions,
-    # but we just call it good enough here
-    if any([x != 1 and x != 0 for x in solution]):
-        raise RuntimeError('Optimization obtained a non-integer solution.')
-
-    # Subsequent Clar structures will have one fewer sextet
     selected_sextets = list(solution[:n_ring])
     # restrict those rings which were selected for the current clar structure
     # from forming it again by requiring that their sum is 1 less than it used
     # to be
-    print(np.array(selected_sextets + [0] * n_bond), np.array(selected_sextets + [0] * n_bond).dot(solution), clar_num - 1)
     recursion_constraints += [
         LinearConstraint(
             A=np.array(selected_sextets + [0] * n_bond),
-            ub=clar_num - 1,
+            ub=clar_number - 1,
             lb=0,
         ),
     ]
 
     # Run optimization with additional constraints
     try:
-        inner_solutions = _clar_optimization(mol, recursion_constraints=recursion_constraints, max_num=max_num, save_order=save_order)
-    except RuntimeError:
+        inner_solutions = _clar_optimization(mol, recursion_constraints=recursion_constraints, clar_number=clar_number, save_order=save_order)
+    except RuntimeError as e:
+        logging.debug(f"Clar Optimization stopped: {e}")
         inner_solutions = []
 
     return inner_solutions + [(molecule, aromatic_rings, bonds, solution)]
-
-
-def _clar_transformation(mol, aromatic_ring):
-    """
-    Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
-
-    Args:
-        mol             a :class:`Molecule` object
-        aromaticRing    a list of :class:`Atom` objects corresponding to an aromatic ring in mol
-
-    This function directly modifies the input molecule and does not return anything.
-    """
-    cython.declare(bondList=list, i=cython.int, atom1=Vertex, atom2=Vertex, bond=Edge)
-
-    bond_list = []
-
-    for i, atom1 in enumerate(aromatic_ring):
-        for atom2 in aromatic_ring[i + 1:]:
-            if mol.has_bond(atom1, atom2):
-                bond_list.append(mol.get_bond(atom1, atom2))
-
-    for bond in bond_list:
-        bond.order = 1.5
