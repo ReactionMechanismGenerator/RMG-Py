@@ -30,7 +30,7 @@ jobs:
         uses: conda-incubator/setup-miniconda@v2
         with:
           environment-file: environment.yml
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           python-version: 3.9
           activate-environment: rmg_env
@@ -59,13 +59,6 @@ jobs:
         run: |
           make clean
           make
-
-      - name: Install and link Julia dependencies
-        timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
-        run: |
-          which julia
-          export JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba
-          julia -e 'ENV["JULIA_CONDAPKG_BACKEND"] = "Current"; using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v2

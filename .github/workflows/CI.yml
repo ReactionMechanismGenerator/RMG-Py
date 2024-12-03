@@ -25,6 +25,7 @@
 # 2023-07-17 - made it pass by default
 # 2023-07-21 - upload the regression results summary as artifact (for use as a comment on PRs)
 # 2023-07-31 - removed option to run from RMG-database with GitHub resuable workflows
+# 2024-10-01 - deprecated Mambaforge with Miniforge3 for environment creation
 
 name: Continuous Integration
 
@@ -32,8 +33,8 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron: "0 8 * * *"
-  # runs on all branches on both RMG-Py and forks
-  push:
+  # allow running on RMG-Py on a pushed branch, only if triggered manually
+  workflow_dispatch:
   # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
   pull_request:
 
@@ -56,8 +57,9 @@ jobs:
       matrix:
         python-version: ["3.9"]
         os: [macos-13, macos-latest, ubuntu-latest]
+        test_julia: [yes, no]
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }}
+    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }} (Julia? ${{ matrix.test_julia }})
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
@@ -70,26 +72,27 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v4
 
+      # Step to create a custom condarc.yml before setting up conda
+      - name: Create custom condarc.yml
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "channels:" > $RUNNER_CWD/condarc.yml
+          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
+          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
+          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
+          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
+
       # configures the mamba environment manager and builds the environment
       - name: Setup Mambaforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
           python-version: ${{ matrix.python-version }}
+          condarc-file: condarc.yml
           activate-environment: rmg_env
           use-mamba: true
-
-      - name: Fix ARM Mac environment
-        if: matrix.os == 'macos-latest'
-        run: |
-          conda deactivate
-          conda env remove -n rmg_env
-          conda create -n rmg_env
-          conda activate rmg_env
-          conda config --env --set subdir osx-64
-          conda env update -f environment.yml
 
       # list the environment for debugging purposes
       - name: mamba info
@@ -118,31 +121,36 @@ jobs:
 
       # Setup Juliaup
       - name: Set Julia paths
+        if: matrix.test_julia == 'yes'
         run: |
-          echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
-          echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
-          echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
-          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
-          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
-          echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
+          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
+          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
+          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
+          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
+          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
+          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
+          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
+          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
           echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
-          echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
+          # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
 
       - name: Setup Juliaup
+        if: matrix.test_julia == 'yes'
         uses: julia-actions/install-juliaup@v2
         with:
-          channel: '1.10'
+          channel: '1.9'
 
       - name: Check Julia version
+        if: matrix.test_julia == 'yes'
         run: julia --version
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
+        if: matrix.test_julia == 'yes'
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
         run: |
+          mamba install conda-forge::pyjuliacall
           julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Install Q2DTor
@@ -158,7 +166,7 @@ jobs:
         id: regression-execution
         timeout-minutes: 60
         run: |
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment;
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
             if python rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
@@ -209,16 +217,16 @@ jobs:
       - name : Find ID of Reference Results
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        # this will search for the last successful execution of CI on main
         run: |
-          run_id=$(gh run list -R ReactionMechanismGenerator/RMG-Py --workflow="Continuous Integration" --branch main --limit 1 --json databaseId --jq '.[0].databaseId')
+          run_id=$(gh run list -R ReactionMechanismGenerator/RMG-Py --workflow="Continuous Integration" --branch main --limit 15 --json databaseId,conclusion --jq 'map(select(.conclusion == "success")) | .[0].databaseId')
           echo "CI_RUN_ID=$run_id" >> $GITHUB_ENV
 
       - name: Retrieve Stable Regression Results
         if: ${{ env.REFERENCE_JOB == 'false' }}
         uses: actions/download-artifact@v4
         with:
-        # this will search for the last successful execution of CI on main and download
-        # the stable regression results
+        # download stable regression results
           run-id: ${{ env.CI_RUN_ID }}
           repository: ReactionMechanismGenerator/RMG-Py
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -234,7 +242,7 @@ jobs:
         run: |
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           mkdir -p "test/regression-diff"
-          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment;
+          for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
             echo ""
             echo "### Regression test $regr_test:"
@@ -369,7 +377,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Build and Push
-        uses: docker/build-push-action@v4
+        uses: docker/build-push-action@v6
         with:
           push: true
           tags: reactionmechanismgenerator/rmg:latest

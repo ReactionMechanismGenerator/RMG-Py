@@ -23,29 +23,30 @@ RUN apt-get update && \
     apt-get clean -y
 
 # Install conda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda && \
-    rm Miniconda3-latest-Linux-x86_64.sh
-ENV PATH="$PATH:/miniconda/bin"
-
-# Set solver backend to mamba for speed
-RUN conda install -n base conda-libmamba-solver && \
-    conda config --set solver libmamba
+RUN wget "https://github.com/conda-forge/miniforge/releases/latest/download/Miniforge3-Linux-x86_64.sh" && \ 
+    bash Miniforge3-Linux-x86_64.sh -b -p /miniforge && \
+    rm Miniforge3-Linux-x86_64.sh
+ENV PATH="$PATH:/miniforge/bin"
 
 # Set Bash as the default shell for following commands
 SHELL ["/bin/bash", "-c"]
+
+# Add build arguments for RMG-Py, RMG-database, and RMS branches.
+ARG RMG_Py_Branch=main
+ARG RMG_Database_Branch=main
+ARG RMS_Branch=main
+ENV rmsbranch=${RMS_Branch}
 
 # cd
 WORKDIR /rmg
 
 # Clone the RMG base and database repositories
-RUN git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-Py.git && \
-    git clone --single-branch --branch main --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
+RUN git clone --single-branch --branch ${RMG_Py_Branch} --depth 1 https://github.com/ReactionMechanismGenerator/RMG-Py.git && \
+    git clone --single-branch --branch ${RMG_Database_Branch} --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
 
 WORKDIR /rmg/RMG-Py
 # build the conda environment
-RUN conda env create --file environment.yml && \
-    conda clean --all --yes
+RUN conda env create --file environment.yml
 
 # This runs all subsequent commands inside the rmg_env conda environment
 #
@@ -53,6 +54,10 @@ RUN conda env create --file environment.yml && \
 # since that requires running conda init and restarting the shell (not possible
 # in a Dockerfile build script)
 SHELL ["conda", "run", "--no-capture-output", "-n", "rmg_env", "/bin/bash", "-c"]
+
+RUN conda install -c conda-forge julia=1.9.1 pyjulia>=0.6 && \
+    conda install -c rmg pyrms diffeqpy && \
+    conda clean --all --yes
 
 # Set environment variables as directed in the RMG installation instructions
 ENV RUNNER_CWD=/rmg

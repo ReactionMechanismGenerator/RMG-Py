@@ -52,8 +52,6 @@ from cantera import ck2yaml
 from scipy.optimize import brute
 
 import rmgpy.util as util
-from rmgpy.rmg.model import Species, CoreEdgeReactionModel
-from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints
@@ -61,26 +59,31 @@ from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError
-from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
-from rmgpy.kinetics import ThirdBody
-from rmgpy.kinetics import Troe
+from rmgpy.exceptions import (
+    CoreError,
+    DatabaseError,
+    ForbiddenStructureException,
+    InputError,
+)
+from rmgpy.kinetics import ThirdBody, Troe
+from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
-from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
+from rmgpy.rmg.listener import SimulationProfilePlotter, SimulationProfileWriter
+from rmgpy.rmg.model import CoreEdgeReactionModel, Species
 from rmgpy.rmg.output import OutputHTMLWriter
-from rmgpy.rmg.pdep import PDepReaction
+from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
+from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
 from rmgpy.rmg.settings import ModelSettings
-from rmgpy.solver.base import TerminationTime, TerminationConversion
+from rmgpy.solver.base import TerminationConversion, TerminationTime
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yml import RMSWriter
-from rmgpy.rmg.reactors import Reactor
 
 ################################################################################
 
@@ -268,12 +271,6 @@ class RMG(util.Subject):
             self.reaction_model.pressure_dependence = self.pressure_dependence
         if self.solvent:
             self.reaction_model.solvent_name = self.solvent
-
-        if self.surface_site_density:
-            self.reaction_model.surface_site_density = self.surface_site_density
-            self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
-            self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
-        self.reaction_model.coverage_dependence = self.coverage_dependence
 
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
@@ -507,6 +504,19 @@ class RMG(util.Subject):
 
         # Read input file
         self.load_input(self.input_file)
+        
+        # Check if ReactionMechanismSimulator reactors are being used
+        # if RMS is not installed but the user attempted to use it, the load_input_file would have failed
+        # if RMS is installed but they did not use it, we can avoid extra work
+        # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
+        requires_rms = any(isinstance(reactor_system, RMSReactor) for reactor_system in self.reaction_systems)
+
+        if self.surface_site_density:
+            self.reaction_model.surface_site_density = self.surface_site_density
+            if requires_rms:
+                self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
+                self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
+        self.reaction_model.coverage_dependence = self.coverage_dependence
 
         if kwargs.get("restart", ""):
             import rmgpy.rmg.input
@@ -550,10 +560,10 @@ class RMG(util.Subject):
         self.load_database()
 
         for spec in self.initial_species:
-            self.reaction_model.add_species_to_edge(spec)
+            self.reaction_model.add_species_to_edge(spec, requires_rms=requires_rms)
 
         for reaction_system in self.reaction_systems:
-            if isinstance(reaction_system, Reactor):
+            if isinstance(reaction_system, RMSReactor):
                 reaction_system.finish_termination_criteria()
 
         # Load restart seed mechanism (if specified)
@@ -583,8 +593,9 @@ class RMG(util.Subject):
         # Do all liquid-phase startup things:
         if self.solvent:
             solvent_data = self.database.solvation.get_solvent_data(self.solvent)
-            self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
-            self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
+            if requires_rms:
+                self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
+                self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
 
             diffusion_limiter.enable(solvent_data, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
@@ -618,12 +629,12 @@ class RMG(util.Subject):
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
         for seed_mechanism in self.seed_mechanisms:
-            self.reaction_model.add_seed_mechanism_to_core(seed_mechanism, react=False)
+            self.reaction_model.add_seed_mechanism_to_core(seed_mechanism, react=False, requires_rms=requires_rms)
 
         # Reaction libraries: add species and reactions from reaction library to the edge so
         # that RMG can find them if their rates are large enough
         for library, option in self.reaction_libraries:
-            self.reaction_model.add_reaction_library_to_edge(library)
+            self.reaction_model.add_reaction_library_to_edge(library, requires_rms=requires_rms)
 
         # Also always add in a few bath gases (since RMG-Java does)
         for label, smiles in [("Ar", "[Ar]"), ("He", "[He]"), ("Ne", "[Ne]"), ("N2", "N#N")]:
@@ -695,35 +706,37 @@ class RMG(util.Subject):
         # This is necessary so that the PDep algorithm can identify the bath gas
         for spec in self.initial_species:
             if not spec.reactive:
-                self.reaction_model.enlarge(spec)
+                self.reaction_model.enlarge(spec, requires_rms=requires_rms)
         for spec in self.initial_species:
             if spec.reactive:
-                self.reaction_model.enlarge(spec)
+                self.reaction_model.enlarge(spec, requires_rms=requires_rms)
 
         # chatelak: store constant SPC indices in the reactor attributes if any constant SPC provided in the input file
         # advantages to write it here: this is run only once (as species indexes does not change over the generation)
         if self.solvent is not None:
             for index, reaction_system in enumerate(self.reaction_systems):
                 if (
-                    not isinstance(reaction_system, Reactor) and reaction_system.const_spc_names is not None
-                ):  # if no constant species provided do nothing
+                    not isinstance(reaction_system, RMSReactor)
+                ) and reaction_system.const_spc_names is not None:  # if no constant species provided do nothing
                     reaction_system.get_const_spc_indices(self.reaction_model.core.species)  # call the function to identify indices in the solver
 
         self.initialize_reaction_threshold_and_react_flags()
         if self.filter_reactions and self.init_react_tuples:
-            self.react_init_tuples()
+            self.react_init_tuples(requires_rms=requires_rms)
         self.reaction_model.initialize_index_species_dict()
 
         self.initialize_seed_mech()
+        return requires_rms
 
-    def register_listeners(self):
+    def register_listeners(self, requires_rms=False):
         """
         Attaches listener classes depending on the options
         found in the RMG input file.
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        self.attach(RMSWriter(self.output_directory))
+        if requires_rms:
+            self.attach(RMSWriter(self.output_directory))
 
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
@@ -735,7 +748,7 @@ class RMG(util.Subject):
 
         if self.save_simulation_profiles:
             for index, reaction_system in enumerate(self.reaction_systems):
-                if isinstance(reaction_system, Reactor):
+                if requires_rms and isinstance(reaction_system, RMSReactor):
                     typ = type(reaction_system)
                     raise InputError(f"save_simulation_profiles=True not compatible with reactor of type {typ}")
                 reaction_system.attach(SimulationProfileWriter(self.output_directory, index, self.reaction_model.core.species))
@@ -749,10 +762,10 @@ class RMG(util.Subject):
         """
 
         if initialize:
-            self.initialize(**kwargs)
+            requires_rms = self.initialize(**kwargs)
 
         # register listeners
-        self.register_listeners()
+        self.register_listeners(requires_rms=requires_rms)
 
         self.done = False
 
@@ -779,7 +792,7 @@ class RMG(util.Subject):
             # Update react flags
             if self.filter_reactions:
                 # Run the reaction system to update threshold and react flags
-                if isinstance(reaction_system, Reactor):
+                if requires_rms and isinstance(reaction_system, RMSReactor):
                     self.update_reaction_threshold_and_react_flags(
                         rxn_sys_unimol_threshold=np.zeros((len(self.reaction_model.core.species),), bool),
                         rxn_sys_bimol_threshold=np.zeros((len(self.reaction_model.core.species), len(self.reaction_model.core.species)), bool),
@@ -822,6 +835,7 @@ class RMG(util.Subject):
                 unimolecular_react=self.unimolecular_react,
                 bimolecular_react=self.bimolecular_react,
                 trimolecular_react=self.trimolecular_react,
+                requires_rms=requires_rms,
             )
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
@@ -834,7 +848,7 @@ class RMG(util.Subject):
             )
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-            self.reaction_model.thermo_filter_down(maximum_edge_species=self.model_settings_list[0].maximum_edge_species)
+            self.reaction_model.thermo_filter_down(maximum_edge_species=self.model_settings_list[0].maximum_edge_species, requires_rms=requires_rms)
 
         logging.info("Completed initial enlarge edge step.\n")
 
@@ -900,7 +914,7 @@ class RMG(util.Subject):
                             prune = False
 
                         try:
-                            if isinstance(reaction_system, Reactor):
+                            if requires_rms and isinstance(reaction_system, RMSReactor):
                                 (
                                     terminated,
                                     resurrected,
@@ -993,7 +1007,7 @@ class RMG(util.Subject):
 
                         # Add objects to enlarge to the core first
                         for objectToEnlarge in objects_to_enlarge:
-                            self.reaction_model.enlarge(objectToEnlarge)
+                            self.reaction_model.enlarge(objectToEnlarge, requires_rms=requires_rms)
 
                         if model_settings.filter_reactions:
                             # Run a raw simulation to get updated reaction system threshold values
@@ -1002,7 +1016,7 @@ class RMG(util.Subject):
                             temp_model_settings.tol_keep_in_edge = 0
                             if not resurrected:
                                 try:
-                                    if isinstance(reaction_system, Reactor):
+                                    if requires_rms and isinstance(reaction_system, RMSReactor):
                                         (
                                             terminated,
                                             resurrected,
@@ -1071,7 +1085,7 @@ class RMG(util.Subject):
                                     skip_update=True,
                                 )
                                 logging.warning(
-                                    "Reaction thresholds/flags for Reaction System {0} was not updated due " "to resurrection".format(index + 1)
+                                    "Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection".format(index + 1)
                                 )
 
                             logging.info("")
@@ -1094,13 +1108,14 @@ class RMG(util.Subject):
                             unimolecular_react=self.unimolecular_react,
                             bimolecular_react=self.bimolecular_react,
                             trimolecular_react=self.trimolecular_react,
+                            requires_rms=requires_rms,
                         )
 
                         if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(self.reaction_model.core.reactions):
                             reactor_done = False
 
                         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-                            self.reaction_model.thermo_filter_down(maximum_edge_species=model_settings.maximum_edge_species)
+                            self.reaction_model.thermo_filter_down(maximum_edge_species=model_settings.maximum_edge_species, requires_rms=requires_rms)
 
                         max_num_spcs_hit = len(self.reaction_model.core.species) >= model_settings.max_num_species
 
@@ -1127,6 +1142,7 @@ class RMG(util.Subject):
                             model_settings.tol_move_to_core,
                             model_settings.maximum_edge_species,
                             model_settings.min_species_exist_iterations_for_prune,
+                            requires_rms=requires_rms,
                         )
                         # Perform garbage collection after pruning
                         collected = gc.collect()
@@ -1248,8 +1264,9 @@ class RMG(util.Subject):
                 )
                 self.uncertainty["global"] = False
             else:
-                import re
                 import random
+                import re
+
                 from rmgpy.tools.canteramodel import Cantera
                 from rmgpy.tools.globaluncertainty import ReactorPCEFactory
 
@@ -1894,7 +1911,7 @@ class RMG(util.Subject):
                         if self.trimolecular:
                             self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs] = False
 
-    def react_init_tuples(self):
+    def react_init_tuples(self, requires_rms=False):
         """
         Reacts tuples given in the react block
         """
@@ -1927,6 +1944,7 @@ class RMG(util.Subject):
             unimolecular_react=self.unimolecular_react,
             bimolecular_react=self.bimolecular_react,
             trimolecular_react=self.trimolecular_react,
+            requires_rms=requires_rms,
         )
 
     def update_reaction_threshold_and_react_flags(
@@ -2221,7 +2239,7 @@ class RMG_Memory(object):
                 if isinstance(value, list):
                     self.Ranges[key] = [v.value_si for v in value]
 
-        if isinstance(reaction_system, Reactor):
+        if isinstance(reaction_system, RMSReactor):
             self.tmax = reaction_system.tf
         else:
             for term in reaction_system.termination:
@@ -2439,7 +2457,16 @@ def make_profile_graph(stats_file, force_graph_generation=False):
 
     if display_found or force_graph_generation:
         try:
-            from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes, TIME, TIME_RATIO, TOTAL_TIME, TOTAL_TIME_RATIO
+            from gprof2dot import (
+                SAMPLES,
+                TIME,
+                TIME_RATIO,
+                TOTAL_TIME,
+                TOTAL_TIME_RATIO,
+                DotWriter,
+                PstatsParser,
+                themes,
+            )
         except ImportError:
             logging.warning("Trouble importing from package gprof2dot. Unable to create a graph of the profile statistics.")
             logging.warning("Try getting the latest version with something like `pip install --upgrade gprof2dot`.")

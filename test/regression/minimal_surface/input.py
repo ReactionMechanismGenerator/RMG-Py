@@ -104,7 +104,8 @@ model(
     toleranceKeepInEdge=0.0,
     toleranceMoveToCore=1e-1,
     toleranceInterruptSimulation=0.1,
-    maximumEdgeSpecies=100000,
+    maximumEdgeSpecies=100,
+    maxNumSpecies=10,
 )
 options(
     units='si',

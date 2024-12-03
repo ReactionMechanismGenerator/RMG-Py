@@ -371,6 +371,9 @@ class MolproLog(ESSAdapter):
                     if 'CCSD' in line and 'energy=' in line:
                         e_elect = float(line.split()[-1])
                         break
+                    if 'RS2C' in line and 'energy' in line:
+                        e_elect = float(line.split()[-1])
+                        break
             if e_elect is None and mrci:
                 # No Davidson correction is given, search for MRCI energy
                 read_e_elect = False
@@ -435,10 +438,10 @@ class MolproLog(ESSAdapter):
         if len(freqs) == 1:
             return -float(freqs[0])
         elif len(freqs) > 1:
-            logging.info('More than one imaginary frequency in Molpro output file {0}.'.format(self.path))
+            logging.info(f'More than one imaginary frequency in Molpro output file {self.path}.')
             return -float(freqs[0])
         else:
-            raise LogError('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
+            raise LogError(f'Unable to find imaginary frequency in Molpro output file {self.path}')
 
     def load_scan_energies(self):
         """
@@ -458,7 +461,8 @@ class MolproLog(ESSAdapter):
             if 'T1 diagnostic:  ' in line:
                 items = line.split()
                 return float(items[-1])
-        raise LogError('Unable to find T1 diagnostic in energy file: {0}'.format(self.path))
+        logging.warning(f'Unable to find T1 diagnostic in energy file: {self.path}')
+        return None
 
     def get_D1_diagnostic(self):
         """
@@ -472,7 +476,8 @@ class MolproLog(ESSAdapter):
             if 'D1 diagnostic:  ' in line:
                 items = line.split()
                 return float(items[-1])
-        raise LogError('Unable to find D1 diagnostic in energy file: {0}'.format(self.path))
+        logging.warning(f'Unable to find D1 diagnostic in energy file: {self.path}')
+        return None
 
     def load_scan_pivot_atoms(self):
         """Not implemented for Molpro"""

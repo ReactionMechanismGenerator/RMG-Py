@@ -109,6 +109,9 @@ class OrcaLog(ESSAdapter):
         The units of the returned force constants are J/m^2.
         If no force constant matrix can be found, ``None`` is returned.
         """
+        n_atoms = self.get_number_of_atoms()
+        if n_atoms == 1:
+            return None
         hess_files = list()
         for (_, _, files) in os.walk(os.path.dirname(self.path)):
             for file_ in files:
@@ -196,7 +199,7 @@ class OrcaLog(ESSAdapter):
         you can use the `symmetry` parameter to substitute your own value; if
         not provided, the value in the Orca log file will be adopted.
         """
-        freq, mmass, rot, unscaled_frequencies = [], [], [], []
+        freq, mmass, rot, unscaled_frequencies, modes = [], [], [], [], []
         e0 = 0.0
 
         if optical_isomers is None or symmetry is None:
@@ -230,7 +233,7 @@ class OrcaLog(ESSAdapter):
         symbols = [symbol_by_number[i] for i in number]
         inertia = get_principal_moments_of_inertia(coord, numbers=number, symbols=symbols)
         inertia = list(inertia[0])
-        if len(inertia):
+        if len(inertia) and not all(i == 0.0 for i in inertia):
             if any(i == 0.0 for i in inertia):
                 inertia.remove(0.0)
                 rot.append(LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry))
@@ -241,7 +244,11 @@ class OrcaLog(ESSAdapter):
         mmass.append(translation)
 
         # Take only the last modes found (in the event of multiple jobs).
-        modes = [mmass[-1], rot[-1], freq[-1]]
+        modes = [mmass[-1]]
+        if len(rot):
+            modes.append(rot[-1])
+        if len(freq):
+            modes.append(freq[-1])
 
         return Conformer(E0=(e0 * 0.001, "kJ/mol"),
                          modes=modes,

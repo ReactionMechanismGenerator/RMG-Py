@@ -48,9 +48,10 @@ from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.util import as_list
 from rmgpy.data.surface import MetalDatabase
-from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
 from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
 from rmgpy.molecule.fragment import Fragment
+from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor, NO_JULIA
+ 
 
 ################################################################################
 
@@ -1558,6 +1559,11 @@ def read_input_file(path, rmg0):
         exec(f.read(), global_context, local_context)
     except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
+        if NO_JULIA:
+            logging.error(
+                "During runtime, import of Julia dependencies failed. To use phase systems and RMS reactors, install RMG-Py with RMS."
+                " (https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/anacondaDeveloper.html)"
+            )
         logging.exception(e)
         raise
     finally:

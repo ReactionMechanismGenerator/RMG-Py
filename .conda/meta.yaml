@@ -14,7 +14,6 @@ requirements:
     - {{ compiler('c') }} # [unix]
   host:
     - cython >=0.25.2
-    - lpsolve55
     - numpy
     - openbabel >=3
     - pydas >=1.0.2
@@ -39,7 +38,6 @@ requirements:
     - h5py
     - jinja2
     - jupyter
-    - lpsolve55
     - markupsafe
     - matplotlib >=1.5
     - mopac

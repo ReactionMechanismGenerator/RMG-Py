@@ -18,65 +18,66 @@
 #   moved diffeqpy to pip and (temporarily) removed chemprop
 # - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
 # - March 15, 2024 - started migration to Python 3.9
-#
+# - Mar 11, 2024 Removed Julia dependencies, now considered optional
+# - April 17, 2024 Limit versions of cclib at advice of maintainers.
+# - August 4, 2024 Restricted pyrms to <2
 name: rmg_env
 channels:
-  - defaults
-  - rmg
   - conda-forge
   - cantera
+  - rmg
 dependencies:
 # System-level dependencies - we could install these at the OS level
 # but by installing them in the conda environment we get better control
-  - cairo
-  - cairocffi
-  - ffmpeg
-  - xlrd
-  - xlwt
-  - h5py
-  - graphviz
-  - markupsafe
-  - psutil
+  - conda-forge::cairo
+  - conda-forge::cairocffi
+  - conda-forge::ffmpeg >= 7
+  - conda-forge::xlrd
+  - conda-forge::xlwt
+  - conda-forge::h5py
+  - conda-forge::graphviz >=12
+  - conda-forge::markupsafe
+  - conda-forge::psutil
   # conda-forge not default, since default has a version information bug
   # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
   - conda-forge::suitesparse
 
 # external software tools for chemistry
-  - coolprop
-  - cantera::cantera >=3
+  - conda-forge::coolprop
+  - cantera::cantera =2.6
   - conda-forge::mopac
-  - conda-forge::cclib >=1.6.3
+  # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
+  - conda-forge::cclib >=1.6.3,<1.9
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
 
-# general-purpose external software tools
-  - conda-forge::pyjuliacall # for calling julia packages
-
 # Python tools
-  - python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
-  - coverage
-  - cython >=0.25.2
-  - scikit-learn
-  - scipy
-  - numpy >=1.10.0
-  - pydot
-  - jinja2
-  - jupyter
-  - pymongo
-  - pyparsing
-  - pyyaml
-  - networkx
-  - pytest
-  - pytest-cov
+  - conda-forge::python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
+  - conda-forge::coverage
+  - conda-forge::cython >=0.25.2
+  - conda-forge::scikit-learn
+  - conda-forge::scipy >=1.9
+  - conda-forge::numpy >=1.10.0
+  - conda-forge::pydot
+  - conda-forge::jinja2
+  - conda-forge::jupyter
+  - conda-forge::pymongo
+  - conda-forge::pyparsing
+  - conda-forge::pyyaml
+  - conda-forge::networkx
+  - conda-forge::pytest
+  - conda-forge::pytest-cov
   - conda-forge::pytest-check
-  - matplotlib >=1.5
-  - mpmath
-  - pandas
+  - conda-forge::pyutilib
+  - conda-forge::matplotlib >=1.5
+  - conda-forge::mpmath
+  - conda-forge::pandas
   - conda-forge::gprof2dot
   - conda-forge::numdifftools
-  - conda-forge::quantities
-  - conda-forge::lpsolve55
+  # bug in quantities, see:
+  # https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2694#issuecomment-2489286263
+  - conda-forge::quantities !=0.16.0,!=0.16.1
   - conda-forge::ringdecomposerlib-python
 
 # packages we maintain
@@ -84,8 +85,12 @@ dependencies:
   - rmg::pydqed >=1.0.3
   - rmg::symmetry
 
-# conda mutex metapackage
-  - nomkl
+# configure packages to use OpenBLAS instead of Intel MKL
+  - blas=*=openblas
+
+# optional dependencies for using ReactionMechanismSimulator
+# remove the leading '#' to install the required dependencies
+  # - conda-forge::pyjuliacall
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)

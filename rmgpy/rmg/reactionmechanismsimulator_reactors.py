@@ -35,12 +35,6 @@ import sys
 import logging
 import itertools
 
-import juliacall
-from juliacall import Main
-Main.seval("using PythonCall")
-Main.seval("using ReactionMechanismSimulator")
-Main.seval("using ReactionMechanismSimulator.Sundials")
-
 from rmgpy.species import Species
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
@@ -56,6 +50,17 @@ from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.depository import DepositoryReaction
+
+NO_JULIA = False
+try:
+    import juliacall
+    from juliacall import Main
+    Main.seval("using PythonCall")
+    Main.seval("using ReactionMechanismSimulator")
+    Main.seval("using ReactionMechanismSimulator.Sundials")
+except Exception as e:
+    logging.info("Unable to import Julia dependencies, original error: " + str(e) + ". RMS features will not be available on this execution.")
+    NO_JULIA = True
 
 
 def to_julia(obj):
@@ -76,7 +81,7 @@ def to_julia(obj):
     if isinstance(obj, dict):
         return Main.PythonCall.pyconvert(Main.Dict, obj)
     elif isinstance(obj, (list, np.ndarray)):
-        if obj.getattr("shape", False) and len(obj.shape) > 1:
+        if getattr(obj, "shape", False) and len(obj.shape) > 1:
             return Main.PythonCall.pyconvert(Main.Matrix, obj)
         return Main.PythonCall.pyconvert(Main.Vector, obj)
     else: # Other native Python project does not need special conversion.
