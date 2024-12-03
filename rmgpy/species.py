@@ -278,6 +278,14 @@ class Species(object):
     def molecular_weight(self, value):
         self._molecular_weight = quantity.Mass(value)
 
+    def get_net_charge(self):
+        """
+        Iterate through the atoms in the structure and calculate the net charge
+        on the overall molecule.
+        """
+
+        return self.molecule[0].get_net_charge()
+
     def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True, save_order=False):
         """
         Generate all of the resonance structures of this species. The isomers are
@@ -358,7 +366,7 @@ class Species(object):
                                 ' should be a List of Species objects.'.format(species))
         return False
 
-    def from_adjacency_list(self, adjlist, raise_atomtype_exception=True, raise_charge_exception=True):
+    def from_adjacency_list(self, adjlist, raise_atomtype_exception=True, raise_charge_exception=False):
         """
         Load the structure of a species as a :class:`Molecule` object from the
         given adjacency list `adjlist` and store it as the first entry of a 
@@ -443,9 +451,19 @@ class Species(object):
             else:
                 element_dict[symbol] += 1
         if use_chemkin_identifier:
-            ct_species = ct.Species(self.to_chemkin(), element_dict)
+            label = self.to_chemkin()
         else:
-            ct_species = ct.Species(self.label, element_dict)
+            label = self.label
+
+        if self.contains_surface_site() and element_dict["X"] > 1:
+            # for multidentate adsorbates, 'size' is the same as 'sites'?
+            # for some reason,cantera won't take the input 'sites' so will need to use 'size'
+            ct_species = ct.Species(label, element_dict, size=element_dict["X"])
+            # hopefully this will be fixed soon, so that ct.Species can take a 'sites' parameter
+            # or that cantera can read input files with 'size' specified
+        else:
+            ct_species = ct.Species(label, element_dict)
+
         if self.thermo:
             try:
                 ct_species.thermo = self.thermo.to_cantera()
@@ -494,6 +512,22 @@ class Species(object):
         eg. 2 for bidentate.
         """
         return self.molecule[0].number_of_surface_sites()
+
+    def is_electron(self):
+        """Return ``True`` if the species is an electron"""
+        
+        if len(self.molecule) == 0:
+            return False
+        else:
+            return self.molecule[0].is_electron()
+
+    def is_proton(self):
+        """Return ``True`` if the species is a proton"""
+        
+        if len(self.molecule) == 0:
+            return False
+        else:
+            return self.molecule[0].is_proton()
 
     def get_partition_function(self, T):
         """

@@ -33,6 +33,8 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.group import ActionError, GroupAtom, GroupBond, Group
 
+import pytest
+
 
 class TestGroupAtom:
     """
@@ -228,6 +230,128 @@ class TestGroupAtom:
         atom1.apply_action(action)
         assert atom1.radical_electrons == [0, 1, 2, 3]
 
+    def test_apply_action_gain_charge(self):
+        """
+        Test the GroupAtom.apply_action() method for a GAIN_CHARGE action.
+        """
+        action = ['GAIN_CHARGE', '*1', 1]
+        for label, atomtype in ATOMTYPES.items():
+            atom0 = GroupAtom(atomtype=[atomtype], radical_electrons=[0], charge=[0], label='*1', lone_pairs=[0])
+            atom = atom0.copy()
+            try:
+                atom.apply_action(action)
+                assert len(atom.atomtype) == len(atomtype.increment_charge)
+                for a in atomtype.increment_charge:
+                    assert a in atom.atomtype, \
+                                    "GAIN_CHARGE on {0} gave {1} not {2}".format(atomtype, atom.atomtype,
+                                                                                    atomtype.increment_charge)
+                # If the below test is un-commented, it will need to be changed to pytest-style, i.e. a plain assert
+                # self.assertEqual(atom0.radical_electrons, [r + 1 for r in atom.radical_electrons])
+                assert atom0.charge == [c - 1 for c in atom.charge]
+                assert atom0.label == atom.label
+                assert atom0.lone_pairs == atom.lone_pairs
+            except ActionError:
+                assert len(atomtype.increment_charge) == 0
+
+        # test when radicals unspecified
+        group = Group().from_adjacency_list("""
+        1 R ux
+        """)  # ux causes a wildcard for radicals
+        atom1 = group.atoms[0]
+        atom1.apply_action(action)
+        # If the below test is un-commented, it will need to be changed to pytest-style, i.e. a plain assert
+        #self.assertListEqual(atom1.radical_electrons, [0, 1, 2, 3])
+
+    def test_apply_action_lose_charge(self):
+        """
+        Test the GroupAtom.apply_action() method for a LOSE_CHARGE action.
+        """
+        action = ['LOSE_CHARGE', '*1', 1]
+        for label, atomtype in ATOMTYPES.items():
+            atom0 = GroupAtom(atomtype=[atomtype], radical_electrons=[1], charge=[0], label='*1', lone_pairs=[0])
+            atom = atom0.copy()
+            try:
+                atom.apply_action(action)
+                assert len(atom.atomtype) == len(atomtype.decrement_charge)
+                for a in atomtype.decrement_charge:
+                    assert a in atom.atomtype, \
+                                    "LOSE_CHARGE on {0} gave {1} not {2}".format(atomtype, atom.atomtype,
+                                                                                    atomtype.decrement_charge)
+                # If the below test is un-commented, it will need to be changed to pytest-style, i.e. a plain assert
+                # self.assertEqual(atom0.radical_electrons, [r - 1 for r in atom.radical_electrons])
+                assert atom0.charge == [c + 1 for c in atom.charge]
+                assert atom0.label == atom.label
+                assert atom0.lone_pairs == atom.lone_pairs
+            except ActionError:
+                assert len(atomtype.decrement_charge) == 0
+
+        # test when radicals unspecified
+        group = Group().from_adjacency_list("""
+        1 R ux
+        """)  # ux causes a wildcard for radicals
+        atom1 = group.atoms[0]
+        atom1.apply_action(action)
+        # If the below test is un-commented, it will need to be changed to pytest-style, i.e. a plain assert
+        #self.assertListEqual(atom1.radical_electrons, [1, 2, 3, 4])
+
+    def test_apply_action_gain_charge(self):
+        """
+        Test the GroupAtom.apply_action() method for a GAIN_CHARGE action.
+        """
+        action = ['GAIN_CHARGE', '*1', 1]
+        for label, atomtype in ATOMTYPES.items():
+            atom0 = GroupAtom(atomtype=[atomtype], radical_electrons=[0], charge=[0], label='*1', lone_pairs=[0])
+            atom = atom0.copy()
+            try:
+                atom.apply_action(action)
+                assert len(atom.atomtype) == len(atomtype.increment_charge)
+                for a in atomtype.increment_charge:
+                    assert a in atom.atomtype, "GAIN_CHARGE on {0} gave {1} not {2}".format(atomtype, atom.atomtype,
+                                                                                  atomtype.increment_charge)
+                # self.assertEqual(atom0.radical_electrons, [r + 1 for r in atom.radical_electrons])
+                assert atom0.charge == [c - 1 for c in atom.charge]
+                assert atom0.label == atom.label
+                assert atom0.lone_pairs == atom.lone_pairs
+            except ActionError:
+                assert len(atomtype.increment_charge) == 0
+
+        # test when radicals unspecified
+        group = Group().from_adjacency_list("""
+        1 R ux
+        """)  # ux causes a wildcard for radicals
+        atom1 = group.atoms[0]
+        atom1.apply_action(action)
+        #self.assertListEqual(atom1.radical_electrons, [0, 1, 2, 3])
+
+    def test_apply_action_lose_charge(self):
+        """
+        Test the GroupAtom.apply_action() method for a LOSE_CHARGE action.
+        """
+        action = ['LOSE_CHARGE', '*1', 1]
+        for label, atomtype in ATOMTYPES.items():
+            atom0 = GroupAtom(atomtype=[atomtype], radical_electrons=[1], charge=[0], label='*1', lone_pairs=[0])
+            atom = atom0.copy()
+            try:
+                atom.apply_action(action)
+                assert len(atom.atomtype) == len(atomtype.decrement_charge)
+                for a in atomtype.decrement_charge:
+                    assert a in atom.atomtype,"LOSE_CHARGE on {0} gave {1} not {2}".format(atomtype, atom.atomtype,
+                                                                                  atomtype.decrement_charge)
+                # self.assertEqual(atom0.radical_electrons, [r - 1 for r in atom.radical_electrons])
+                assert atom0.charge == [c + 1 for c in atom.charge]
+                assert atom0.label == atom.label
+                assert atom0.lone_pairs == atom.lone_pairs
+            except ActionError:
+                assert len(atomtype.decrement_charge) == 0
+
+        # test when radicals unspecified
+        group = Group().from_adjacency_list("""
+        1 R ux
+        """)  # ux causes a wildcard for radicals
+        atom1 = group.atoms[0]
+        atom1.apply_action(action)
+        #self.assertListEqual(atom1.radical_electrons, [1, 2, 3, 4])
+
     def test_apply_action_gain_pair(self):
         """
         Test the GroupAtom.apply_action() method for a GAIN_PAIR action when lone_pairs is either specified or not.
@@ -272,6 +396,20 @@ class TestGroupAtom:
                 assert [0, 1, 2, 3] == [r - 1 for r in atom.lone_pairs]
             except ActionError:
                 assert len(atomtype.increment_lone_pair) == 0
+    
+    def test_is_electron(self):
+        """
+        Test the GroupAtom.is_electron() method.
+        """
+        electron = GroupAtom(atomtype=[ATOMTYPES['e']])
+        assert electron.is_electron()
+
+    def test_is_proton(self):
+        """
+        Test the GroupAtom.is_proton() method.
+        """
+        proton = GroupAtom(atomtype=[ATOMTYPES['H+']])
+        assert proton.is_proton()
 
     def test_apply_action_lose_pair(self):
         """
@@ -361,6 +499,22 @@ class TestGroupAtom:
                         else:
                             assert not atom1.equivalent(atom3), "{0!s} is equivalent to {1!s}".format(atom1, atom3)
                             assert not atom1.equivalent(atom3), "{0!s} is equivalent to {1!s}".format(atom3, atom1)
+
+    def test_is_electron(self):
+        """
+        Test the Group.is_electron() method.
+        """
+        assert not self.group.is_electron()
+        electron = Group().from_adjacency_list("""1 *1 e u1 p0 c-1""")
+        assert electron.is_electron()
+
+    def test_is_proton(self):
+        """
+        Test the Group.is_proton() method.
+        """
+        assert not self.group.is_proton()
+        proton = Group().from_adjacency_list("""1 *1 H+ u0 p0 c+1""")
+        assert proton.is_proton()
 
     def test_is_specific_case_of(self):
         """
@@ -482,6 +636,19 @@ class TestGroupAtom:
         assert new_atom.charge == 0
         assert new_atom.lone_pairs == 0
 
+    def test_is_electron(self):
+        """
+        Test the GroupAtom.is_electron() method.
+        """
+        electron = GroupAtom(atomtype=[ATOMTYPES['e']])
+        assert electron.is_electron()
+
+    def test_is_proton(self):
+        """
+        Test the GroupAtom.is_proton() method.
+        """
+        proton = GroupAtom(atomtype=[ATOMTYPES['H+']])
+        assert proton.is_proton()
 
 class TestGroupBond:
     """
@@ -510,6 +677,35 @@ class TestGroupBond:
         """
         bond = GroupBond(None, None, order=[1, 2, 3, 1.5])
         assert bond.get_order_str() == ["S", "D", "T", "B"]
+    
+
+    def test_apply_action_gain_charge(self):
+        """
+        Test the GroupBond.apply_action() method for a GAIN_RADICAL action.
+        """
+        action = ['GAIN_CHARGE', '*1', 1]
+        for order0 in self.orderList:
+            bond0 = GroupBond(None, None, order=order0)
+            bond = bond0.copy()
+            try:
+                bond.apply_action(action)
+                pytest.fail(reason='GroupBond.apply_action() unexpectedly processed a GAIN_CHARGE action.')
+            except ActionError:
+                pass
+
+    def test_apply_action_lose_charge(self):
+        """
+        Test the GroupBond.apply_action() method for a LOSE_CHARGE action.
+        """
+        action = ['LOSE_CHARGE', '*1', 1]
+        for order0 in self.orderList:
+            bond0 = GroupBond(None, None, order=order0)
+            bond = bond0.copy()
+            try:
+                bond.apply_action(action)
+                pytest.fail(reason='GroupBond.apply_action() unexpectedly processed a LOSE_CHARGE action.')
+            except ActionError:
+                pass
 
     def test_set_order_str(self):
         """
@@ -666,6 +862,35 @@ class TestGroupBond:
             except ActionError:
                 pass
 
+    
+    def test_apply_action_gain_charge(self):
+        """
+        Test the GroupBond.apply_action() method for a GAIN_RADICAL action.
+        """
+        action = ['GAIN_CHARGE', '*1', 1]
+        for order0 in self.orderList:
+            bond0 = GroupBond(None, None, order=order0)
+            bond = bond0.copy()
+            try:
+                bond.apply_action(action)
+                self.fail('GroupBond.apply_action() unexpectedly processed a GAIN_CHARGE action.')
+            except ActionError:
+                pass
+
+    def test_apply_action_lose_charge(self):
+        """
+        Test the GroupBond.apply_action() method for a LOSE_CHARGE action.
+        """
+        action = ['LOSE_CHARGE', '*1', 1]
+        for order0 in self.orderList:
+            bond0 = GroupBond(None, None, order=order0)
+            bond = bond0.copy()
+            try:
+                bond.apply_action(action)
+                self.fail('GroupBond.apply_action() unexpectedly processed a LOSE_CHARGE action.')
+            except ActionError:
+                pass
+
     def test_equivalent(self):
         """
         Test the GroupBond.equivalent() method.
@@ -774,6 +999,22 @@ class TestGroup:
         assert not surface_group.is_surface_site()
         surface_site = Group().from_adjacency_list("1 *1 X u0")
         assert surface_site.is_surface_site()
+
+    def test_is_electron(self):
+        """
+        Test the Group.is_electron() method.
+        """
+        assert not self.group.is_electron()
+        electron = Group().from_adjacency_list("""1 *1 e u1 p0 c-1""")
+        assert electron.is_electron()
+
+    def test_is_proton(self):
+        """
+        Test the Group.is_proton() method.
+        """
+        assert not self.group.is_proton()
+        proton = Group().from_adjacency_list("""1 *1 H+ u0 p0 c+1""")
+        assert proton.is_proton()
 
     def test_get_labeled_atom(self):
         """

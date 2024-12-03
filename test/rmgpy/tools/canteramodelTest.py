@@ -104,6 +104,27 @@ class RMGToCanteraTest:
         self.ctSpecies = job.model.species()
         self.ctReactions = job.model.reactions()
 
+        # Now load surface species and kinetics
+        folder = os.path.join(os.path.dirname(os.path.dirname(__file__)), "test_data", "chemkin", "chemkin_py")
+        chemkin_path = os.path.join(folder, "surface", "chem-gas.inp")
+        chemkin_surface_path = os.path.join(folder, "surface", "chem-surface.inp")
+        dictionary_path = os.path.join(folder, "surface", "species_dictionary.txt")
+        species, reactions = load_chemkin_file(chemkin_surface_path, dictionary_path)
+        self.rmg_surface_ct_species = [spec.to_cantera(use_chemkin_identifier=True) for spec in species]
+        self.rmg_surface_ct_reactions = []
+        for rxn in reactions:
+            converted_reactions = rxn.to_cantera(species, use_chemkin_identifier=True)
+            if isinstance(converted_reactions, list):
+                self.rmg_surface_ct_reactions.extend(converted_reactions)
+            else:
+                self.rmg_surface_ct_reactions.append(converted_reactions)
+        job = Cantera()
+        job.surface = True
+        job.load_chemkin_model(chemkin_path, surface_file=chemkin_surface_path, quiet=True)
+        self.ct_surface_species = job.surface.species()
+        self.ct_surface_reactions = job.surface.reactions()
+
+
     def test_species_conversion(self):
         """
         Test that species objects convert properly
@@ -115,9 +136,31 @@ class RMGToCanteraTest:
 
     def test_reaction_conversion(self):
         """
-        Test that species objects convert properly
+        Test that reaction objects convert properly
         """
         from rmgpy.tools.canteramodel import check_equivalent_cantera_reaction
 
         for i in range(len(self.ctReactions)):
             assert check_equivalent_cantera_reaction(self.ctReactions[i], self.rmg_ctReactions[i])
+
+    def test_surface_species_conversion(self):
+        """
+        Test that surface species objects convert properly
+        """
+        from rmgpy.tools.canteramodel import check_equivalent_cantera_species
+
+        for i in range(len(self.ct_surface_species)):
+            #print("Chemkin-to-Cantera:", self.ct_surfaceSpecies[i].input_data)
+            #print("Chemkin-to-RMG-to-Cantera:", self.rmg_surface_ctSpecies[i].input_data)
+            assert check_equivalent_cantera_species(self.ct_surface_species[i], self.rmg_surface_ct_species[i])
+
+    def test_surface_reaction_conversion(self):
+        """
+        Test that surface reaction objects convert properly
+        """
+        from rmgpy.tools.canteramodel import check_equivalent_cantera_reaction
+
+        for i in range(len(self.ct_surface_reactions)):
+            #print("Chemkin-to-Cantera:", self.ct_surfaceReactions[i].input_data)
+            #print("Chemkin-to-RMG-to-Cantera:", self.rmg_surface_ctReactions[i].input_data)
+            assert check_equivalent_cantera_reaction(self.ct_surface_reactions[i], self.rmg_surface_ct_reactions[i])

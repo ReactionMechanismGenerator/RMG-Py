@@ -103,7 +103,17 @@ SMILES_LOOKUPS = {
         """
         multiplicity 1
         1 X u0
+        """,
+    'e':
         """
+        multiplicity 1
+        1 e u0 p0 c-1
+        """,
+    '[H+]':
+        """
+        multiplicity 1
+        1 H u0 p0 c+1
+        """,
 }
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
@@ -128,6 +138,8 @@ MOLECULE_LOOKUPS = {
     'ClH': 'Cl',
     'I2': '[I][I]',
     'HI': 'I',
+    'H': 'H+',
+    'e': 'e'
 }
 
 RADICAL_LOOKUPS = {
@@ -155,7 +167,8 @@ RADICAL_LOOKUPS = {
     'I': '[I]',
     'CF': '[C]F',
     'CCl': '[C]Cl',
-    'CBr': '[C]Br'
+    'CBr': '[C]Br',
+    'e': 'e'
 }
 
 
@@ -506,7 +519,7 @@ def _read(mol, identifier, identifier_type, backend, raise_atomtype_exception=Tr
 
     if _lookup(mol, identifier, identifier_type) is not None:
         if _check_output(mol, identifier):
-            mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
+            mol.update(log_species=True, raise_atomtype_exception=raise_atomtype_exception, sort_atoms=False)
             return mol
 
     for option in _get_backend_list(backend):
@@ -518,7 +531,7 @@ def _read(mol, identifier, identifier_type, backend, raise_atomtype_exception=Tr
             raise NotImplementedError("Unrecognized backend {0}".format(option))
 
         if _check_output(mol, identifier):
-            mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
+            mol.update(log_species=True, raise_atomtype_exception=raise_atomtype_exception, sort_atoms=False)
             return mol
         else:
             logging.debug('Backend {0} is not able to parse identifier {1}'.format(option, identifier))

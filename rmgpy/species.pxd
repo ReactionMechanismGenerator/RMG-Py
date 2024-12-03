@@ -61,7 +61,9 @@ cdef class Species:
     cdef str _smiles
 
     cpdef generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
-    
+
+    cpdef get_net_charge(self)
+
     cpdef bint is_isomorphic(self, other, bint generate_initial_map=?, bint save_order=?, bint strict=?) except -2
 
     cpdef bint is_identical(self, other, bint strict=?) except -2
@@ -77,6 +79,10 @@ cdef class Species:
     cpdef bint contains_surface_site(self) except -2
 
     cpdef bint is_surface_site(self) except -2
+
+    cpdef bint is_electron(self) except -2
+
+    cpdef bint is_proton(self) except -2
 
     cpdef bint has_statmech(self) except -2
 

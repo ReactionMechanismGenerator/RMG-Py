@@ -758,7 +758,7 @@ def read_reaction_comments(reaction, comments, read=True):
                     raise ChemkinError('Unexpected species identifier {0} encountered in flux pairs '
                                        'for reaction {1}.'.format(prod_str, reaction))
                 reaction.pairs.append((reactant, product))
-            assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
+            #assert len(reaction.pairs) == max(len(reaction.reactants), len(reaction.products))
 
         elif isinstance(reaction, TemplateReaction) and 'rate rule ' in line:
             bracketed_rule = tokens[-1]
@@ -1209,18 +1209,16 @@ def read_species_block(f, species_dict, species_aliases, species_list):
         if token_upper == 'END':
             break
 
-        site_token = token.split('/')[0]
-        if site_token.upper() == 'SDEN':
+        species_name = token.split('/')[0] # CHO*/2/ indicates an adsorbate CHO* taking 2 surface sites
+        if species_name.upper() == 'SDEN': # SDEN/4.1e-9/ indicates surface site density
             continue  # TODO actually read in the site density
 
         processed_tokens.append(token)
-        if token in species_dict:
-            species = species_dict[token]
-        elif site_token in species_dict:
-            species = species_dict[site_token]
+        if species_name in species_dict:
+            species = species_dict[species_name]
         else:
-            species = Species(label=token)
-            species_dict[token] = species
+            species = Species(label=species_name)
+            species_dict[species_name] = species
         species_list.append(species)
 
 

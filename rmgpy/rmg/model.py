@@ -44,22 +44,27 @@ from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
-from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
-from rmgpy.molecule.group import Group
 from rmgpy.data.rmg import get_db
+from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
-from rmgpy.kinetics import KineticsData, Arrhenius
+from rmgpy.kinetics import Arrhenius, KineticsData
+from rmgpy.molecule.fragment import Fragment
+from rmgpy.molecule.group import Group
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction
-from rmgpy.rmg.pdep import PDepReaction, PDepNetwork
+from rmgpy.rmg.decay import decay_species
+from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.rmg.react import react_all
+from rmgpy.rmg.reactionmechanismsimulator_reactors import (
+    NO_JULIA,
+    Interface,
+    Phase,
+    PhaseSystem,
+)
+from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
 from rmgpy.species import Species
 from rmgpy.thermo.thermoengine import submit
-from rmgpy.rmg.decay import decay_species
-from rmgpy.rmg.reactionmechanismsimulator_reactors import PhaseSystem, Phase, Interface, NO_JULIA
-from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
-from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 
@@ -548,13 +553,18 @@ class CoreEdgeReactionModel:
             if isinstance(forward.kinetics, KineticsData):
                 forward.kinetics = forward.kinetics.to_arrhenius()
             #  correct barrier heights of estimated kinetics
-            if isinstance(forward, (TemplateReaction, DepositoryReaction)):  # i.e. not LibraryReaction
-                forward.fix_barrier_height()  # also converts ArrheniusEP to Arrhenius.
-
+            if isinstance(forward, (TemplateReaction,DepositoryReaction)): # i.e. not LibraryReaction
+                forward.fix_barrier_height(solvent=self.solvent_name)  # also converts ArrheniusEP to Arrhenius.
+            elif isinstance(forward, LibraryReaction) and forward.is_surface_reaction():
+                # do fix the library reaction barrier if this is scaled from another metal
+                if any(['Binding energy corrected by LSR' in x.thermo.comment for x in forward.reactants + forward.products]):
+                    forward.fix_barrier_height(solvent=self.solvent_name)            
+            elif forward.kinetics.solute:
+                forward.apply_solvent_correction(solvent=self.solvent_name)
             if self.pressure_dependence and forward.is_unimolecular():
                 # If this is going to be run through pressure dependence code,
                 # we need to make sure the barrier is positive.
-                forward.fix_barrier_height(force_positive=True)
+                forward.fix_barrier_height(force_positive=True,solvent="")
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
@@ -812,7 +822,11 @@ class CoreEdgeReactionModel:
         Makes a reaction and decides where to put it: core, edge, or PDepNetwork.
         """
         for rxn in new_reactions:
-            rxn, is_new = self.make_new_reaction(rxn, generate_thermo=generate_thermo, generate_kinetics=generate_kinetics)
+            try:
+                rxn, is_new = self.make_new_reaction(rxn, generate_thermo=generate_thermo, generate_kinetics=generate_kinetics)
+            except Exception as e:
+                logging.error(f"Error when making reaction {rxn} from {rxn.family}")
+                raise e
             if rxn is None:
                 # Skip this reaction because there was something wrong with it
                 continue
@@ -1687,7 +1701,7 @@ class CoreEdgeReactionModel:
                 for spec in itertools.chain(rxn.reactants, rxn.products):
                     submit(spec, self.solvent_name)
 
-                rxn.fix_barrier_height(force_positive=True)
+                rxn.fix_barrier_height(force_positive=True, solvent=self.solvent_name)
             self.add_reaction_to_core(rxn, requires_rms=requires_rms)
 
         # Check we didn't introduce unmarked duplicates
