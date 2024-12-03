@@ -251,12 +251,6 @@ class TestErrorCancelingScheme:
 
     @classmethod
     def setup_class(cls):
-        try:
-            import pyomo as pyo
-        except ImportError:
-            pyo = None
-        cls.pyo = pyo
-
         lot = LevelOfTheory("test")
         cls.propene = ErrorCancelingSpecies(Molecule(smiles="CC=C"), (100, "kJ/mol"), lot, (105, "kJ/mol"))
         cls.propane = ErrorCancelingSpecies(Molecule(smiles="CCC"), (75, "kJ/mol"), lot, (80, "kJ/mol"))
@@ -286,26 +280,20 @@ class TestErrorCancelingScheme:
 
         assert isodesmic_scheme.reference_species == [self.butane, self.benzene]
 
-    # def test_find_error_canceling_reaction(self):
-    #     """
-    #     Test that the MILP problem can be solved to find a single isodesmic reaction
-    #     """
-    #     scheme = IsodesmicScheme(
-    #         self.propene,
-    #         [self.propane, self.butane, self.butene, self.caffeine, self.ethyne],
-    #     )
+    def test_find_error_canceling_reaction(self):
+        """
+        Test that the MILP problem can be solved to find a single isodesmic reaction
+        """
+        scheme = IsodesmicScheme(
+            self.propene,
+            [self.propane, self.butane, self.butene, self.caffeine, self.ethyne],
+        )
 
-    #     # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
-    #     rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=["lpsolve"])
-    #     assert rxn.species[self.butane] == -1
-    #     assert rxn.species[self.propane] == 1
-    #     assert rxn.species[self.butene] == 1
-
-    #     if self.pyo is not None:
-    #         rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2], milp_software=["pyomo"])
-    #         assert rxn.species[self.butane] == -1
-    #         assert rxn.species[self.propane] == 1
-    #         assert rxn.species[self.butene] == 1
+        # Note that caffeine and ethyne will not be allowed, so for the full set the indices are [0, 1, 2]
+        rxn, _ = scheme._find_error_canceling_reaction([0, 1, 2])
+        assert rxn.species[self.butane] == -1
+        assert rxn.species[self.propane] == 1
+        assert rxn.species[self.butene] == 1
 
     def test_multiple_error_canceling_reactions(self):
         """
@@ -333,13 +321,6 @@ class TestErrorCancelingScheme:
         rxn_str2 = "<ErrorCancelingReaction 1*C=CC + 1*CCCC <=> 1*C=CCC + 1*CCC >"
         assert any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2])
 
-        if self.pyo is not None:
-            # pyomo is slower, so don't test as many
-            reaction_list = scheme.multiple_error_canceling_reaction_search(n_reactions_max=5, milp_software=["pyomo"])
-            assert len(reaction_list) == 5
-            reaction_string = reaction_list.__repr__()
-            assert any(rxn_string in reaction_string for rxn_string in [rxn_str1, rxn_str2])
-
     def test_calculate_target_enthalpy(self):
         """
         Test that ErrorCancelingScheme is able to calculate thermochemistry for the target species
@@ -358,10 +339,6 @@ class TestErrorCancelingScheme:
             ],
         )
 
-        target_thermo, rxn_list = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software=["lpsolve"])
+        target_thermo, rxn_list = scheme.calculate_target_enthalpy(n_reactions_max=3)
         assert target_thermo.value_si == 110000.0
         assert isinstance(rxn_list[0], ErrorCancelingReaction)
-
-        if self.pyo is not None:
-            target_thermo, _ = scheme.calculate_target_enthalpy(n_reactions_max=3, milp_software=["pyomo"])
-            assert target_thermo.value_si == 110000.0

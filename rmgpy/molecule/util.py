@@ -30,8 +30,8 @@
 import itertools
 import re
 
-from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
+from rmgpy.molecule.molecule import Molecule
 
 
 def get_element_count(obj):
@@ -47,7 +47,7 @@ def get_element_count(obj):
             match = re.match(r"([a-z]+)([0-9]*)", piece, re.I)
             if match:
                 element, count = match.groups()
-                if count is '':
+                if count == '':
                     count = 1
                 if element in element_count:
                     element_count[element] += int(count)

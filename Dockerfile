@@ -28,10 +28,6 @@ RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh &
     rm Miniconda3-latest-Linux-x86_64.sh
 ENV PATH="$PATH:/miniconda/bin"
 
-# Set solver backend to mamba for speed
-RUN conda install -n base conda-libmamba-solver && \
-    conda config --set solver libmamba
-
 # Set Bash as the default shell for following commands
 SHELL ["/bin/bash", "-c"]
 
@@ -50,8 +46,7 @@ RUN git clone --single-branch --branch ${RMG_Py_Branch} --depth 1 https://github
 
 WORKDIR /rmg/RMG-Py
 # build the conda environment
-RUN conda env create --file environment.yml && \
-    conda clean --all --yes
+RUN conda env create --file environment.yml
 
 # This runs all subsequent commands inside the rmg_env conda environment
 #
@@ -59,6 +54,10 @@ RUN conda env create --file environment.yml && \
 # since that requires running conda init and restarting the shell (not possible
 # in a Dockerfile build script)
 SHELL ["conda", "run", "--no-capture-output", "-n", "rmg_env", "/bin/bash", "-c"]
+
+RUN conda install -c conda-forge julia=1.9.1 pyjulia>=0.6 && \
+    conda install -c rmg pyrms diffeqpy && \
+    conda clean --all --yes
 
 # Set environment variables as directed in the RMG installation instructions
 ENV RUNNER_CWD=/rmg
