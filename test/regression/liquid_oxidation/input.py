@@ -63,4 +63,5 @@ model(
 
 options(
     saveEdgeSpecies=True,
+    generateRMSEachIter=False,
 )

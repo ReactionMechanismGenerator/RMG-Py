@@ -85,4 +85,5 @@ model(
 options(
     units="si",
     saveEdgeSpecies=True,
+    generateRMSEachIter=False,
 )
