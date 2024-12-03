@@ -268,6 +268,7 @@ class Reaction:
         else:
             return rmgpy.chemkin.write_reaction_string(self)
 
+
     def to_cantera(self, species_list=None, use_chemkin_identifier=False):
         """
         Converts the RMG Reaction object to a Cantera Reaction object
@@ -308,99 +309,105 @@ class Reaction:
         if self.specific_collider:  # add a specific collider if exists
             ct_collider[self.specific_collider.to_chemkin() if use_chemkin_identifier else self.specific_collider.label] = 1
 
-        if self.kinetics:
-            if isinstance(self.kinetics, Arrhenius):
-                # Create an Elementary Reaction
+        if not self.kinetics:
+            raise Exception('Cantera reaction cannot be created because there was no kinetics.')
+
+        # Create the Cantera reaction object,
+        # with the correct type of kinetics object
+        # but don't actually set its kinetics (we do that at the end)
+        if isinstance(self.kinetics, Arrhenius):
+            # Create an Elementary Reaction
+            if isinstance(self.kinetics, SurfaceArrhenius):  # SurfaceArrhenius inherits from Arrhenius
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.InterfaceArrheniusRate())
+            else:
                 ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
-            elif isinstance(self.kinetics, MultiArrhenius):
-                # Return a list of elementary reactions which are duplicates
-                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
-                               for arr in self.kinetics.arrhenius]
+        elif isinstance(self.kinetics, MultiArrhenius):
+            # Return a list of elementary reactions which are duplicates
+            ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
+                            for arr in self.kinetics.arrhenius]
 
-            elif isinstance(self.kinetics, PDepArrhenius):
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
+        elif isinstance(self.kinetics, PDepArrhenius):
+            ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
 
-            elif isinstance(self.kinetics, MultiPDepArrhenius):
-                ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
-                               for arr in self.kinetics.arrhenius]
+        elif isinstance(self.kinetics, MultiPDepArrhenius):
+            ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
+                            for arr in self.kinetics.arrhenius]
 
-            elif isinstance(self.kinetics, Chebyshev):
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
+        elif isinstance(self.kinetics, Chebyshev):
+            ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
 
-            elif isinstance(self.kinetics, ThirdBody):
-                if ct_collider is not None:
-                    ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider)
-                else:
-                    ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
-
-            elif isinstance(self.kinetics, Troe):
-                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
-                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
-                A = self.kinetics.alpha
-                T3 = self.kinetics.T3.value_si
-                T1 = self.kinetics.T1.value_si
-
-                if self.kinetics.T2 is None:
-                    rate = ct.TroeRate(
-                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1]
-                    )
-                else:
-                    T2 = self.kinetics.T2.value_si
-                    rate = ct.TroeRate(
-                        high=high_rate, low=low_rate, falloff_coeffs=[A, T3, T1, T2]
-                    )
-
-                if ct_collider is not None:
-                    ct_reaction = ct.FalloffReaction(
-                        reactants=ct_reactants,
-                        products=ct_products,
-                        tbody=ct_collider,
-                        rate=rate,
-                    )
-                else:
-                    ct_reaction = ct.FalloffReaction(
-                        reactants=ct_reactants, products=ct_products, rate=rate
-                    )
-
-            elif isinstance(self.kinetics, Lindemann):
-                high_rate = self.kinetics.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
-                low_rate = self.kinetics.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
-                falloff = []
-                rate = ct.LindemannRate(low_rate, high_rate, falloff)
-                if ct_collider is not None:
-                    ct_reaction = ct.FalloffReaction(
-                        reactants=ct_reactants,
-                        products=ct_products,
-                        tbody=ct_collider,
-                        rate=rate,
-                    )
-                else:
-                    ct_reaction = ct.FalloffReaction(
-                        reactants=ct_reactants, products=ct_products, rate=rate
-                    )
-
+        elif isinstance(self.kinetics, ThirdBody):
+            if ct_collider is not None:
+                ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider)
             else:
-                raise NotImplementedError('Unable to set cantera kinetics for {0}'.format(self.kinetics))
+                ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
 
-            # Set reversibility, duplicate, and ID attributes
-            if isinstance(ct_reaction, list):
-                for rxn in ct_reaction:
-                    rxn.reversible = self.reversible
-                    # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius
-                    rxn.duplicate = True
-                    # Set the ID flag to the original rmg index
-                    rxn.ID = str(self.index)
+        elif isinstance(self.kinetics, Troe):
+            if ct_collider is not None:
+                ct_reaction = ct.FalloffReaction(
+                    reactants=ct_reactants,
+                    products=ct_products,
+                    tbody=ct_collider,
+                    rate=ct.TroeRate()
+                )
             else:
-                ct_reaction.reversible = self.reversible
-                ct_reaction.duplicate = self.duplicate
-                ct_reaction.ID = str(self.index)
+                ct_reaction = ct.FalloffReaction(
+                    reactants=ct_reactants,
+                    products=ct_products,
+                    rate=ct.TroeRate()
+                )
 
-            self.kinetics.set_cantera_kinetics(ct_reaction, species_list)
+        elif isinstance(self.kinetics, Lindemann):
+            if ct_collider is not None:
+                ct_reaction = ct.FalloffReaction(
+                    reactants=ct_reactants,
+                    products=ct_products,
+                    tbody=ct_collider,
+                    rate=ct.LindemannRate()
+                )
+            else:
+                ct_reaction = ct.FalloffReaction(
+                    reactants=ct_reactants,
+                    products=ct_products,
+                    rate=ct.LindemannRate()
+                )
 
-            return ct_reaction
+        elif isinstance(self.kinetics, SurfaceArrhenius):
+            ct_reaction = ct.InterfaceReaction(
+                reactants=ct_reactants,
+                products=ct_products,
+                rate=ct.InterfaceArrheniusRate()
+            )
+
+        elif isinstance(self.kinetics, StickingCoefficient):
+            ct_reaction = ct.Reaction(
+                reactants=ct_reactants,
+                products=ct_products,
+                rate=ct.StickingArrheniusRate()
+            )
 
         else:
-            raise Exception('Cantera reaction cannot be created because there was no kinetics.')
+            raise NotImplementedError(f"Unable to set cantera kinetics for {self.kinetics}")
+
+        # Set reversibility, duplicate, and ID attributes
+        if isinstance(ct_reaction, list):
+            for rxn in ct_reaction:
+                rxn.reversible = self.reversible
+                # Set the duplicate flag to true since this reaction comes from multiarrhenius or multipdeparrhenius
+                rxn.duplicate = True
+                # Set the ID flag to the original rmg index
+                rxn.ID = str(self.index)
+        else:
+            ct_reaction.reversible = self.reversible
+            ct_reaction.duplicate = self.duplicate
+            ct_reaction.ID = str(self.index)
+
+        # Now we set the kinetics.
+        self.kinetics.set_cantera_kinetics(ct_reaction, species_list)
+
+        return ct_reaction
+
+
 
     def get_url(self):
         """

@@ -50,7 +50,7 @@ cdef class StickingCoefficient(KineticsModel):
     ======================= =============================================================
     Attribute               Description
     ======================= =============================================================
-    `A`                     The preexponential factor
+    `A`                     The preexponential factor. Unitless (sticking probability)
     `T0`                    The reference temperature
     `n`                     The temperature exponent
     `Ea`                    The activation energy
@@ -285,6 +285,34 @@ cdef class StickingCoefficient(KineticsModel):
 
         return string
 
+    def to_cantera_kinetics(self):
+        """
+        Converts the RMG StickingCoefficient object to a cantera StickingArrheniusRate
+        
+        StickingArrheniusRate(A,b,E)  where A is dimensionless, b is dimensionless, and E is in J/kmol
+        """
+        import cantera as ct
+        import rmgpy.quantity
+        if type(self._A) != rmgpy.quantity.ScalarQuantity:
+            raise TypeError("A factor must be a dimensionless ScalarQuantity")
+        A = self._A.value_si
+        b = self._n.value_si
+        E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
+
+        return ct.StickingArrheniusRate(A, b, E)
+
+
+    def set_cantera_kinetics(self, ct_reaction, species_list):
+        """
+        Passes in a cantera Reaction() object and sets its
+        rate to a Cantera ArrheniusRate object.
+        """
+        import cantera as ct
+        assert isinstance(ct_reaction.rate, ct.StickingArrheniusRate), "Must have a Cantera StickingArrheniusRate attribute"
+
+        # Set the rate parameter to a cantera Arrhenius object
+        ct_reaction.rate = self.to_cantera_kinetics()
+
 ################################################################################
 cdef class StickingCoefficientBEP(KineticsModel):
     """
@@ -352,7 +380,7 @@ cdef class StickingCoefficientBEP(KineticsModel):
                                          self.Pmin, self.Pmax, self.coverage_dependence, self.comment))
 
     property A:
-        """The preexponential factor."""
+        """The preexponential factor. Dimensionless (sticking probability)"""
         def __get__(self):
             return self._A
         def __set__(self, value):
@@ -395,7 +423,8 @@ cdef class StickingCoefficientBEP(KineticsModel):
     cpdef double get_sticking_coefficient(self, double T, double dHrxn=0.0) except -1:
         """
         Return the sticking coefficient (dimensionless) at
-        temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol. 
+        temperature `T` in K and enthalpy of reaction `dHrxn` in J/mol.
+        Never exceeds 1.0.
         """
         cdef double A, n, Ea, stickingCoefficient
         Ea = self.get_activation_energy(dHrxn)
@@ -524,7 +553,7 @@ cdef class SurfaceArrhenius(Arrhenius):
     property A:
         """The preexponential factor. 
     
-        This is the only thing different from a normal Arrhenius class."""
+        This (and the coverage dependence) is the only thing different from a normal Arrhenius class."""
         def __get__(self):
             return self._A
         def __set__(self, value):
@@ -588,6 +617,56 @@ cdef class SurfaceArrhenius(Arrhenius):
             comment=self.comment,
         )
 
+
+    def to_cantera_kinetics(self):
+        """
+        Converts the RMG SurfaceArrhenius object to a cantera InterfaceArrheniusRate
+
+        InterfaceArrheniusRate(A,b,E)  where A is in units like m^2/kmol/s (depending on dimensionality)
+        b is dimensionless, and E is in J/kmol
+        """
+        import cantera as ct
+
+        rate_units_conversion = {'1/s': 1,
+                                 's^-1': 1,
+                                 'm^2/(mol*s)': 1000,
+                                 'm^4/(mol^2*s)': 1000000,
+                                 'cm^2/(mol*s)': 1000,
+                                 'cm^4/(mol^2*s)': 1000000,
+                                 'm^2/(molecule*s)': 1000,
+                                 'm^4/(molecule^2*s)': 1000000,
+                                 'cm^2/(molecule*s)': 1000,
+                                 'cm^4/(molecule^2*s)': 1000000,
+                                 'cm^5/(mol^2*s)': 1000000,
+                                 'm^5/(mol^2*s)': 1000000,
+                                 }
+
+        if self._T0.value_si != 1:
+            A = self._A.value_si / (self._T0.value_si) ** self._n.value_si
+        else:
+            A = self._A.value_si
+
+        try:
+            A *= rate_units_conversion[self._A.units] # convert from /mol to /kmol
+        except KeyError:
+            raise ValueError('Arrhenius A-factor units {0} not found among accepted units for converting to '
+                             'Cantera Arrhenius object.'.format(self._A.units))
+
+        b = self._n.value_si
+        E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
+        return ct.InterfaceArrheniusRate(A, b, E)
+
+    def set_cantera_kinetics(self, ct_reaction, species_list):
+        """
+        Takes in a cantera Reaction object and sets its
+        rate to a cantera InterfaceArrheniusRate object.
+        """
+        import cantera as ct
+        if not isinstance(ct_reaction.rate, ct.InterfaceArrheniusRate):
+            raise TypeError("ct_reaction.rate must be an InterfaceArrheniusRate")
+
+        # Set the rate parameter to a cantera Arrhenius object
+        ct_reaction.rate = self.to_cantera_kinetics()
 
 ################################################################################
 

@@ -722,12 +722,49 @@ cdef class ArrheniusBM(KineticsModel):
         """
         self._A.value_si *= factor
 
+    def to_cantera_kinetics(self):
+        """
+        Converts the RMG ArrheniusBM object to a cantera BlowersMaselRate. 
+
+        BlowersMaselRate(A, b, Ea, W)  where A is in units of m^3/kmol/s, 
+        b is dimensionless, and Ea and W are in J/kmol
+        """
+        import cantera as ct
+
+        rate_units_conversion = {'1/s': 1,
+                                 's^-1': 1,
+                                 'm^3/(mol*s)': 1000,
+                                 'm^6/(mol^2*s)': 1000000,
+                                 'cm^3/(mol*s)': 1000,
+                                 'cm^6/(mol^2*s)': 1000000,
+                                 'm^3/(molecule*s)': 1000,
+                                 'm^6/(molecule^2*s)': 1000000,
+                                 'cm^3/(molecule*s)': 1000,
+                                 'cm^6/(molecule^2*s)': 1000000,
+                                 }
+
+        A = self._A.value_si
+
+        try:
+            A *= rate_units_conversion[self._A.units] # convert from /mol to /kmol
+        except KeyError:
+            raise ValueError(f'ArrheniusBM A-factor units {self._A.units} not found among accepted '
+                             'units for converting to Cantera BlowersMaselRate object.')
+
+        b = self._n.value_si
+        Ea = self._E0.value_si * 1000  # convert from J/mol to J/kmol
+        w = self._w0.value_si * 1000  # convert from J/mol to J/kmol
+
+        return ct.BlowersMaselRate(A, b, Ea, w)
+
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
-        Sets a cantera Reaction() object with the modified Arrhenius object
-        converted to an Arrhenius form.
+        Accepts a cantera Reaction object and sets its rate to a Cantera BlowersMaselRate object.
         """
-        raise NotImplementedError('set_cantera_kinetics() is not implemented for ArrheniusBM class kinetics.')
+        import cantera as ct
+        if not isinstance(ct_reaction.rate, ct.BlowersMaselRate):
+            raise TypeError("ct_reaction must have a cantera BlowersMaselRate as the rate attribute")
+        ct_reaction.rate = self.to_cantera_kinetics()
 
 ################################################################################
 
