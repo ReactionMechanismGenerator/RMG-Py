@@ -24,7 +24,6 @@ Briefly, RMG depends on the following packages, almost all of which can be found
 * **graphviz:** generating flux diagrams
 * **jinja2:** Python templating language for html rendering
 * **jupyter:** (optional) for using IPython notebooks
-* **lpsolve:** mixed integer linear programming solver, used for resonance structure generation. Must also install Python extension.
 * **markupsafe:** implements XML/HTML/XHTML markup safe strings for Python
 * **matplotlib:** library for making plots
 * **mock:** for unit-testing
