@@ -1239,6 +1239,8 @@ class Group(Graph):
         for index, atom in enumerate(self.atoms):
             atom_type = '{0!s} {1!s} '.format(index+1, atom.label if atom.label != '' else '')
             atom_type += ','.join([at.label for at in atom.atomtype])
+            if len(atom.radical_electrons) == 1 and atom.radical_electrons[0] == 1:
+                atom_type += '·'
             atom_type = '"' + atom_type + '"'
             graph.add_node(pydot.Node(name=str(index + 1), label=atom_type, fontname="Helvetica", fontsize="16"))
         for atom1 in self.atoms:
