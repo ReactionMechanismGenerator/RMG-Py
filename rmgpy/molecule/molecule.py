@@ -883,6 +883,13 @@ class Bond(Edge):
         """
         return self.is_order(4)
 
+    def is_double_or_triple(self):
+        """
+        Return ``True`` if the bond represents a double or triple bond or ``False``
+        if not.
+        """
+        return self.is_order(2) or self.is_order(3)
+
     def is_benzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
