@@ -1180,20 +1180,21 @@ def generate_adsorbate_shift_up_resonance_structures(mol):
         for atom in mol.vertices:
             paths = pathfinder.find_adsorbate_delocalization_paths(atom)
             for atom1, atom2, atom3, atom4, bond12, bond23, bond34 in paths:
-                if (bond12.is_double() and bond23.is_single() and bond34.is_double()) or (bond23.is_double() and bond12.is_double() and bond34.is_double()) or (bond12.is_triple() and bond23.is_single() and bond34.is_triple()) or (bond12.is_triple() and bond23.is_single() and bond34.is_double()):
-                    bond12.decrement_order()
-                    bond23.increment_order()
-                    bond34.decrement_order()
-                    structure = mol.copy(deep=True)
-                    bond12.increment_order()
-                    bond23.decrement_order()
-                    bond34.increment_order()
-                    try:
-                        structure.update_atomtypes(log_species=False)
-                    except AtomTypeError:
-                        pass
-                    else:
-                        structures.append(structure)
+                if ((bond12.is_double_or_triple() and bond23.is_single() and bond34.is_double_or_triple()) or
+                    (bond12.is_double() and bond23.is_double() and bond34.is_double())):
+                        bond12.decrement_order()
+                        bond23.increment_order()
+                        bond34.decrement_order()
+                        structure = mol.copy(deep=True)
+                        bond12.increment_order()
+                        bond23.decrement_order()
+                        bond34.increment_order()
+                        try:
+                            structure.update_atomtypes(log_species=False)
+                        except AtomTypeError:
+                            pass
+                        else:
+                            structures.append(structure)
     return structures
 
 
@@ -1215,9 +1216,9 @@ def generate_adsorbate_conjugate_resonance_structures(mol):
         for atom in mol.vertices:
             paths = pathfinder.find_adsorbate_conjugate_delocalization_paths(atom)
             for atom1, atom2, atom3, atom4, atom45, bond12, bond23, bond34, bond45 in paths:
-                    if ((bond12.is_double() or bond12.is_triple()) and
+                    if (bond12.is_double_or_triple() and
                         (bond23.is_single() or bond23.is_double()) and
-                        (bond34.is_double() or bond34.is_triple()) and
+                        bond34.is_double_or_triple() and
                         (bond45.is_single() or bond45.is_double())):
                                 bond12.decrement_order()
                                 bond23.increment_order()
