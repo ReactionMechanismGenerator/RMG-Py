@@ -538,7 +538,7 @@ class FindAdsorbateDelocalizationPathsTest:
     test the find_adsorbate_delocalization_paths method
     """
 
-    def test_cch(self):
+    def test_xcxch(self):
         adjlist = """
 1 X u0 p0 c0 {3,D}
 2 X u0 p0 c0 {4,S}
@@ -549,14 +549,33 @@ class FindAdsorbateDelocalizationPathsTest:
 
         mol = Molecule().from_adjacency_list(adjlist)
         paths = find_adsorbate_delocalization_paths(mol.atoms[0])
+        no_surface_sites = sum(atom.is_surface_site() for atom in paths[0][:4])
         assert paths
+        assert no_surface_sites == 2
+
+    def test_xcxch2(self):
+        adjlist = """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 {1,S} {6,T}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 X u0 p0 c0 {1,S}
+6 X u0 p0 c0 {2,T}
+        """
+
+        mol = Molecule().from_adjacency_list(adjlist)
+        paths = find_adsorbate_delocalization_paths(mol.atoms[0])
+        assert len(paths) == 0
+
+
+
 
 class FindAdsorbateConjugateDelocalizationPathsTest:
     """
     test the find_adsorbate_conjugate_delocalization_paths
     """
 
-    def test_chchc(self):
+    def test_xchchxc(self):
         adjlist = """
 1 X u0 p0 c0 {3,T}
 2 X u0 p0 c0 {5,S}
@@ -569,4 +588,24 @@ class FindAdsorbateConjugateDelocalizationPathsTest:
 
         mol = Molecule().from_adjacency_list(adjlist)
         paths = find_adsorbate_conjugate_delocalization_paths(mol.atoms[0])
+        no_surface_sites = sum(atom.is_surface_site() for atom in paths[0][:5])
         assert paths
+        assert no_surface_sites == 2
+
+    def test_xchch2xch2(self):
+        adjlist = """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 C u0 p0 c0 {1,S} {6,S} {7,S} {9,S}
+3 C u0 p0 c0 {1,S} {8,S} {10,D}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {2,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {3,S}
+9 X u0 p0 c0 {2,S}
+10 X u0 p0 c0 {3,D}
+        """
+
+        mol = Molecule().from_adjacency_list(adjlist)
+        paths = find_adsorbate_conjugate_delocalization_paths(mol.atoms[0])
+        assert len(paths) == 0
