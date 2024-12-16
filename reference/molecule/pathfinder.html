@@ -187,6 +187,34 @@ In direction 2 atom1 &lt;gains&gt; a lone pair, looses a radical, and atom2 gain
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="rmgpy.molecule.pathfinder.find_adsorbate_conjugate_delocalization_paths">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.pathfinder.</span></span><span class="sig-name descname"><span class="pre">find_adsorbate_conjugate_delocalization_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_adsorbate_conjugate_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all multidentate adsorbates which have a bonding configuration X-C-C-C-X.
+Examples:</p>
+<ul class="simple">
+<li><p>XCHCHXCH/XCHCHXC, where X is the surface site. The adsorption site X
+is always placed on the left-hand side of the adatom and every adatom
+is bonded to only one surface site X.</p></li>
+</ul>
+<p>In this transition atom1 and atom5 are surface sites while atom2, atom3,
+and atom4 are carbon or nitrogen atoms.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="rmgpy.molecule.pathfinder.find_adsorbate_delocalization_paths">
+<span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.pathfinder.</span></span><span class="sig-name descname"><span class="pre">find_adsorbate_delocalization_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_adsorbate_delocalization_paths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find all multidentate adsorbates which have a bonding configuration X-C-C-X.
+Examples:</p>
+<ul class="simple">
+<li><p>XCXC, XCHXCH, XCXCH, where X is the surface site. The adsorption site X
+is always placed on the left-hand side of the adatom and every adatom
+is bonded to only one surface site X.</p></li>
+</ul>
+<p>In this transition atom1 and atom4 are surface sites while atom2 and atom3
+are carbon or nitrogen atoms.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="rmgpy.molecule.pathfinder.find_allyl_delocalization_paths">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.pathfinder.</span></span><span class="sig-name descname"><span class="pre">find_allyl_delocalization_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atom1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.pathfinder.find_allyl_delocalization_paths" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find all the delocalization paths allyl to the radical center indicated by <cite>atom1</cite>.</p>
@@ -292,6 +320,8 @@ We don’t allow O to remain with no lone pairs</p>
 <li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_multiple_bond_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_adj_lone_pair_multiple_bond_delocalization_paths()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_adj_lone_pair_radical_delocalization_paths()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_adj_lone_pair_radical_multiple_bond_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_adj_lone_pair_radical_multiple_bond_delocalization_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_adsorbate_conjugate_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_adsorbate_conjugate_delocalization_paths()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_adsorbate_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_adsorbate_delocalization_paths()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_allyl_delocalization_paths"><code class="docutils literal notranslate"><span class="pre">find_allyl_delocalization_paths()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_allyl_end_with_charge"><code class="docutils literal notranslate"><span class="pre">find_allyl_end_with_charge()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.pathfinder.find_butadiene"><code class="docutils literal notranslate"><span class="pre">find_butadiene()</span></code></a></li>
