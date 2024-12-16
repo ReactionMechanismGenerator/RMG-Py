@@ -74,6 +74,7 @@ options(
     generatePlots=False,
     saveEdgeSpecies=True,
     saveSimulationProfiles=False,
+    generateRMSEachIter=False,
 )
 
 generatedSpeciesConstraints(
