@@ -883,6 +883,13 @@ class Bond(Edge):
         """
         return self.is_order(4)
 
+    def is_double_or_triple(self):
+        """
+        Return ``True`` if the bond represents a double or triple bond or ``False``
+        if not.
+        """
+        return self.is_order(2) or self.is_order(3)
+
     def is_benzene(self):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
@@ -2863,6 +2870,16 @@ class Molecule(Graph):
         """
         cython.declare(atom=Atom)
         return [atom for atom in self.atoms if atom.is_surface_site()]
+
+    def is_multidentate(self):
+        """
+        Return ``True`` if the adsorbate contains at least two binding sites,
+        or ``False`` otherwise.
+        """
+        cython.declare(atom=Atom)
+        if len([atom for atom in self.atoms if atom.is_surface_site()])>=2:
+            return True
+        return False
 
     def get_adatoms(self):
         """

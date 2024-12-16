@@ -49,6 +49,10 @@ Currently supported resonance types:
     - ``generate_kekule_structure``: generate a single Kekule structure for an aromatic compound (single/double bond form)
     - ``generate_opposite_kekule_structure``: for monocyclic aromatic species, rotate the double bond assignment
     - ``generate_clar_structures``: generate all structures with the maximum number of pi-sextet assignments
+- Multidentate adsorbates only
+    - ``generate_adsorbate_shift_down_resonance_structures``: shift 2 electrons from a C=/#C bond to the X-C bond
+    - ``generate_adsorbate_shift_up_resonance_structures``: shift 2 electrons from a X=/#C bond to a C-C bond
+    - ``generate_adsorbate_conjugate_resonance_structures``: shift 2 electrons in a conjugate pi system for bridged X-C-C-C-X adsorbates
 """
 
 import logging
@@ -87,6 +91,9 @@ def populate_resonance_algorithms(features=None):
             generate_aryne_resonance_structures,
             generate_kekule_structure,
             generate_clar_structures,
+            generate_adsorbate_shift_down_resonance_structures,
+            generate_adsorbate_shift_up_resonance_structures,
+            generate_adsorbate_conjugate_resonance_structures
         ]
     else:
         # If the molecule is aromatic, then radical resonance has already been considered
@@ -110,7 +117,10 @@ def populate_resonance_algorithms(features=None):
                 # solution. A more holistic approach would be to identify these cases in generate_resonance_structures,
                 # and pass a list of forbidden atom ID's to find_lone_pair_multiple_bond_paths.
                 method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
-
+        if features['is_multidentate']:
+            method_list.append(generate_adsorbate_shift_down_resonance_structures)
+            method_list.append(generate_adsorbate_shift_up_resonance_structures)
+            method_list.append(generate_adsorbate_conjugate_resonance_structures)
     return method_list
 
 
@@ -130,6 +140,7 @@ def analyze_molecule(mol, save_order=False):
                 'is_aryl_radical': False,
                 'hasNitrogenVal5': False,
                 'hasLonePairs': False,
+                'is_multidentate': mol.is_multidentate(),
                 }
 
     if features['is_cyclic']:
@@ -1117,3 +1128,111 @@ def _clar_transformation(mol, aromatic_ring):
 
     for bond in bond_list:
         bond.order = 1.5
+
+
+def generate_adsorbate_shift_down_resonance_structures(mol):
+    """
+    Generate all of the resonance structures formed by the shift a pi bond between two C-C atoms to both X-C bonds.
+    Example XCHXCH: [X]C=C[X] <=> [X]=CC=[X]
+    (where '=' denotes a double bond)
+    """
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, atom4=Vertex, bond12=Edge, bond23=Edge, bond34=Edge)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    structures = []
+    if mol.is_multidentate():
+        for atom in mol.vertices:
+            paths = pathfinder.find_adsorbate_delocalization_paths(atom)
+            for atom1, atom2, atom3, atom4, bond12, bond23, bond34 in paths:
+                if bond23.is_single():
+                    continue
+                else:
+                    bond12.increment_order()
+                    bond23.decrement_order()
+                    bond34.increment_order()
+                    structure = mol.copy(deep=True)
+                    bond12.decrement_order()
+                    bond23.increment_order()
+                    bond34.decrement_order()
+                    try:
+                        structure.update_atomtypes(log_species=False)
+                    except AtomTypeError:
+                        pass
+                    else:
+                        structures.append(structure)
+    return structures
+
+
+def generate_adsorbate_shift_up_resonance_structures(mol):
+    """
+    Generate all of the resonance structures formed by the shift of two electrons from X-C bonds to increase the bond
+    order between two C-C atoms by 1.
+    Example XCHXCH: [X]=CC=[X] <=> [X]C=C[X]
+    (where '=' denotes a double bond, '#' denotes a triple bond)
+    """
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, atom4=Vertex, bond12=Edge, bond23=Edge, bond34=Edge)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    structures = []
+    if mol.is_multidentate():
+        for atom in mol.vertices:
+            paths = pathfinder.find_adsorbate_delocalization_paths(atom)
+            for atom1, atom2, atom3, atom4, bond12, bond23, bond34 in paths:
+                if ((bond12.is_double_or_triple() and bond23.is_single() and bond34.is_double_or_triple()) or
+                    (bond12.is_double() and bond23.is_double() and bond34.is_double())):
+                        bond12.decrement_order()
+                        bond23.increment_order()
+                        bond34.decrement_order()
+                        structure = mol.copy(deep=True)
+                        bond12.increment_order()
+                        bond23.decrement_order()
+                        bond34.increment_order()
+                        try:
+                            structure.update_atomtypes(log_species=False)
+                        except AtomTypeError:
+                            pass
+                        else:
+                            structures.append(structure)
+    return structures
+
+
+def generate_adsorbate_conjugate_resonance_structures(mol):
+    """
+    Generate all of the resonance structures formed by the shift of two
+    electrons in a conjugated pi bond system of a bidentate adsorbate
+    with a bridging atom in between.
+
+    Example XCHCHXC: [X]#CC=C[X] <=> [X]=C=CC=[X]
+    (where '#' denotes a triple bond, '=' denotes a double bond)
+    """
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, atom4=Vertex, atom5=Vertex, bond12=Edge, bond23=Edge, bond34=Edge, bond45=Edge)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    structures = []
+    if mol.is_multidentate():
+        for atom in mol.vertices:
+            paths = pathfinder.find_adsorbate_conjugate_delocalization_paths(atom)
+            for atom1, atom2, atom3, atom4, atom45, bond12, bond23, bond34, bond45 in paths:
+                    if (bond12.is_double_or_triple() and
+                        (bond23.is_single() or bond23.is_double()) and
+                        bond34.is_double_or_triple() and
+                        (bond45.is_single() or bond45.is_double())):
+                                bond12.decrement_order()
+                                bond23.increment_order()
+                                bond34.decrement_order()
+                                bond45.increment_order()
+                                structure = mol.copy(deep=True)
+                                bond12.increment_order()
+                                bond23.decrement_order()
+                                bond34.increment_order()
+                                bond45.decrement_order()
+                                try:
+                                    structure.update_atomtypes(log_species=False)
+                                except AtomTypeError:
+                                    pass
+                                else:
+                                    structures.append(structure)
+    return structures
