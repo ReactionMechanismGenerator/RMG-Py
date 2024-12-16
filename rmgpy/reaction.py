@@ -1429,7 +1429,7 @@ class Reaction:
         from rmgpy.molecule.element import element_list
         from rmgpy.molecule.fragment import CuttingLabel, Fragment
 
-        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Graph, atom=Vertex, element=Element,
+        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Molecule, atom=Atom, element=Element,
                        reactants_net_charge=cython.int, products_net_charge=cython.int)
 
         reactant_elements = {}
