@@ -647,9 +647,9 @@ this is more likely to kick out species RMG might otherwise have added to core.
 
 Advanced Setting: Taking Multiple Species At A Time
 ----------------------------------------------------
-Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
+Taking multiple objects (``Species``, ``Reaction`` or ``PDepNetwork``) during a given simulation can often decrease your overall model generation time
 over only taking one.  For this purpose there is a ``maxNumObjsPerIter`` parameter that allows RMG to take
-that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.
+that many ``Species``, ``Reaction`` or ``PDepNetwork`` from a given simulation. This is done in the order they trigger their respective criteria.
 
 You can also set ``terminateAtMaxObjects=True`` to cause it to terminate when it has the maximum
 number of objects allowed rather than waiting around until it hits an interrupt tolerance.  This
@@ -668,6 +668,14 @@ For example ::
 
 Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
 object at a time) pick up chemistry that would otherwise have been missed.
+
+
+Advanced Settings: Other 
+----------------------------------------------------
+- ``dynamicsTimeScale``: The time before which the dynamics criterion cannot be used to bring reactions into the model. This is useful because the math behind the dynamics criterion breaks down as ``t`` approaches 0, thus restricting the use of the dynamics criterion until later times may reduce the number of junk species/reactions added to the model.
+
+- ``ignoreOverallFluxCriterion``: Causes RMG to use the given flux criterion only for determining if a ``PDepNetwork`` should be explored and not whether species should enter the model. Lets you run pressure dependence alongside the dynamics criterion without the flux criterion.
+
 
 .. _ontheflyquantumcalculations:
 
@@ -1033,7 +1041,7 @@ It is now possible to concatenate different model and simulator blocks into the 
 
 There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file.
 
-To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.
+To enable easier manipulation of staging a new parameter in the model block was developed ``maxNumSpecies`` that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.
 
 For example ::
 
