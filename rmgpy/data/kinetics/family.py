@@ -213,6 +213,31 @@ class TemplateReaction(Reaction):
         other.is_forward = self.is_forward
 
         return other
+    
+    def check_if_spin_allowed(self):
+        # get the combined spin for reactants and products
+        reactants_combined_spin, products_combined_spin = self.calculate_combined_spin()
+        # check if there are any matches for combined spin between reactants and products
+        if reactants_combined_spin.intersection(products_combined_spin) != set([]):
+            return True
+        else:
+            logging.debug(f"Reactants combined spin is {reactants_combined_spin}, but the products combined spin is {products_combined_spin}")
+            return False
+        
+    def calculate_combined_spin(self):
+        if len(self.reactants) == 1:
+            reactant_combined_spin = {self.reactants[0].multiplicity}
+        elif len(self.reactants) == 2:
+            reactant_combined_spin = set([self.reactants[0].multiplicity + self.reactants[1].multiplicity -1, np.abs(self.reactants[0].multiplicity-self.reactants[1].multiplicity)+1])  
+        else:
+            return None
+        if len(self.products) == 1:
+            product_combined_spin = {self.products[0].multiplicity}
+        elif len(self.products) == 2:
+            product_combined_spin = set([self.products[0].multiplicity + self.products[1].multiplicity -1, np.abs(self.products[0].multiplicity-self.products[1].multiplicity)+1])  
+        else:
+            return None
+        return reactant_combined_spin, product_combined_spin
 
     def apply_solvent_correction(self, solvent):
         """
@@ -1678,7 +1703,7 @@ class KineticsFamily(Database):
 
         return False
 
-    def _create_reaction(self, reactants, products, is_forward):
+    def _create_reaction(self, reactants, products, is_forward, check_spin = True):
         """
         Create and return a new :class:`Reaction` object containing the
         provided `reactants` and `products` as lists of :class:`Molecule`
@@ -1713,7 +1738,11 @@ class KineticsFamily(Database):
         for key, species_list in zip(['reactants', 'products'], [reaction.reactants, reaction.products]):
             for species in species_list:
                 reaction.labeled_atoms[key] = dict(reaction.labeled_atoms[key], **species.get_all_labeled_atoms())
-
+        if check_spin:
+            if not reaction.check_if_spin_allowed():
+                logging.warn("Did not create the following reaction, which violates conservation of spin...")
+                logging.warn(str(reaction))
+                return None
         return reaction
 
     def _match_reactant_to_template(self, reactant, template_reactant):
