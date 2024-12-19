@@ -44,7 +44,7 @@ import rmgpy.pdep.network
 import rmgpy.reaction
 from rmgpy.constants import R
 from rmgpy.data.kinetics.library import LibraryReaction
-from rmgpy.exceptions import PressureDependenceError, NetworkError
+from rmgpy.exceptions import PressureDependenceError, NetworkError, InvalidMicrocanonicalRateError
 from rmgpy.pdep import Configuration
 from rmgpy.rmg.react import react_species
 from rmgpy.statmech import Conformer
@@ -877,7 +877,13 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Calculate the rate coefficients
         self.initialize(Tmin, Tmax, Pmin, Pmax, maximum_grain_size, minimum_grain_count, active_j_rotor, active_k_rotor,
                         rmgmode)
-        K = self.calculate_rate_coefficients(Tlist, Plist, method)
+        try:
+            K = self.calculate_rate_coefficients(Tlist, Plist, method)
+        except InvalidMicrocanonicalRateError:
+            if output_directory:
+                job.draw(output_directory, file_format='pdf')
+                logging.info(f"Network {self.index} has been drawn and saved as a pdf in {output_directory}.")
+            raise
 
         # Generate PDepReaction objects
         configurations = []
