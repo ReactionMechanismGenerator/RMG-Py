@@ -1498,7 +1498,7 @@ class RMG(util.Subject):
             os.rename(new_file, old_file)
         if violators:
             logging.info("\n")
-            logging.warning(
+            logging.debug(
                 "{0} CORE reactions violate the collision rate limit!"
                 "\nSee the 'collision_rate_violators.log' for details.\n\n".format(len(violators))
             )
@@ -1520,7 +1520,7 @@ class RMG(util.Subject):
                         f"{rxn_string}\n" f"Direction: {direction}\n" f"Violation factor: {ratio:.2f}\n" f"Violation condition: {condition}\n\n\n"
                     )
         else:
-            logging.info("No collision rate violators found in the model's core.")
+            logging.debug("No collision rate violators found in the model's core.")
 
     def initialize_seed_mech(self):
         """
