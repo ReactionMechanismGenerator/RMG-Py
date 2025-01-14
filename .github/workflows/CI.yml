@@ -57,9 +57,8 @@ jobs:
       matrix:
         python-version: ["3.9"]
         os: [macos-13, macos-latest, ubuntu-latest]
-        test_julia: [yes, no]
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }} (Julia? ${{ matrix.test_julia }})
+    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }}
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     env: 
@@ -115,7 +114,6 @@ jobs:
 
       # Setup Juliaup
       - name: Set Julia paths
-        if: matrix.test_julia == 'yes'
         run: |
           # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
           # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
@@ -129,18 +127,15 @@ jobs:
           # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
 
       - name: Setup Juliaup
-        if: matrix.test_julia == 'yes'
         uses: julia-actions/install-juliaup@v2
         with:
           channel: '1.9'
 
       - name: Check Julia version
-        if: matrix.test_julia == 'yes'
         run: julia --version
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
-        if: matrix.test_julia == 'yes'
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
         run: |
