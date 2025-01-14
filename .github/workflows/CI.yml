@@ -140,7 +140,7 @@ jobs:
         # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
         run: |
           mamba install conda-forge::pyjuliacall
-          julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+          julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git", rev="for_rmg")); using ReactionMechanismSimulator'
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
