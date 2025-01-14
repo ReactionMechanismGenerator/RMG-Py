@@ -864,7 +864,7 @@ class TestTreeGeneration:
         """
         test that appropriate regularization dimensions have been identified
         """
-        template_rxn_map = self.family.get_reaction_matches(thermo_database=self.database.thermo, estimate_thermo=False)
+        template_rxn_map = self.family.get_reaction_matches(thermo_database=self.thermoDatabase)
 
         for entry in self.family.groups.entries.values():
             if entry.children == []:
