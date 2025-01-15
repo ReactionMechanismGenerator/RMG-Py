@@ -125,7 +125,7 @@ jobs:
           # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
           # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
           # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
-          echo "JULIA_CONDAPKG_BACKEND='System'" >> $GITHUB_ENV
+          echo "JULIA_CONDAPKG_BACKEND=System" >> $GITHUB_ENV
           echo "JULIA_CONDAPKG_EXE=$CONDA_EXE" >> $GITHUB_ENV
 
       - name: Setup Juliaup
