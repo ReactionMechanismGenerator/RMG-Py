@@ -331,14 +331,14 @@ jobs:
 
       - name: Upload regression summary artifact
        # the annotate workflow uses this artifact to add a comment to the PR
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if : ${{ github.event_name == 'pull_request' }}
         with:
           name: regression_summary
           path: summary.txt
 
       - name: Upload Comparison Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: regression_test_comparison_results
           path: |
