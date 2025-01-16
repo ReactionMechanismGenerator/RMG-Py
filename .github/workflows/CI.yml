@@ -127,7 +127,7 @@ jobs:
           # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
           echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
           echo "JULIA_CONDAPKG_EXE=$CONDA_EXE" >> $GITHUB_ENV
-          echo "PYTHON=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV  # JULIA_PYTHONCALL_EXE instead?
+          echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
           # echo "JULIA_PYTHONCALL_EXE=@PyCall" >> $GITHUB_ENV
           echo "AHHHHHHHHHHHHHHHH"
           echo $PYTHONHOME
