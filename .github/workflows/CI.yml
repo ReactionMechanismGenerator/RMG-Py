@@ -128,6 +128,9 @@ jobs:
           echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
           echo "JULIA_CONDAPKG_EXE=$CONDA_EXE" >> $GITHUB_ENV
           # echo "JULIA_PYTHONCALL_EXE=@PyCall" >> $GITHUB_ENV
+          echo "AHHHHHHHHHHHHHHHH"
+          echo $LD_LIBRARY_PATH
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/" >> $GITHUB_ENV
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
