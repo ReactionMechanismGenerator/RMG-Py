@@ -100,11 +100,11 @@ jobs:
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
 
       # modify env variables as directed in the RMG installation instructions
-      # - name: Set Environment Variables
-      #   run: |
-      #     RUNNER_CWD=$(pwd)
-      #     echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
-      #     echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
+      - name: Set Environment Variables
+        run: |
+          RUNNER_CWD=$(pwd)
+          # echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
+          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
       # RMG build step
       - name: make RMG
