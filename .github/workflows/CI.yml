@@ -75,7 +75,7 @@ jobs:
         if: matrix.os == 'macos-latest'
         run: |
           echo "CONDA_SUBDIR=osx-64" >> $GITHUB_ENV
-          softwareupdate --install-rosetta --agree-to-license
+          # softwareupdate --install-rosetta --agree-to-license   # did not help with encodings issue
 
       - name: Setup Miniforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
@@ -88,6 +88,7 @@ jobs:
           use-mamba: true
           show-channel-urls: true
           channels: conda-forge,cantera,rmg
+          conda-remove-defaults: "true"
 
       # list the environment for debugging purposes
       - name: mamba info
@@ -101,12 +102,12 @@ jobs:
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-      # modify env variables as directed in the RMG installation instructions
-      - name: Set Environment Variables
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
-          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
+      # # modify env variables as directed in the RMG installation instructions
+      # - name: Set Environment Variables
+      #   run: |
+      #     RUNNER_CWD=$(pwd)
+      #     echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
+      #     echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
       # RMG build step
       - name: make RMG
@@ -135,22 +136,24 @@ jobs:
           echo $PYTHONHOME
           echo $PYTHONPATH
           echo $LD_LIBRARY_PATH
-          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/" >> $GITHUB_ENV
+          # echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/" >> $GITHUB_ENV
 
-      - name: Setup Juliaup
-        uses: julia-actions/install-juliaup@v2
-        with:
-          channel: '1.9'
+      # - name: Setup Juliaup
+      #   uses: julia-actions/install-juliaup@v2
+      #   with:
+      #     channel: '1.9'
 
-      - name: Check Julia version
-        run: julia --version
+      # - name: Check Julia version
+      #   run: julia --version
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
         run: |
-          mamba install conda-forge::pyjuliacall
+          mamba install conda-forge::pyjuliacall conda-forge::juliaup
+          echo "HERES WHERE JULIA IS BRO"
+          which julia
           julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
 
       - name: Install Q2DTor
