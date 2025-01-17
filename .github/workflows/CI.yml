@@ -73,7 +73,9 @@ jobs:
 
       - name: Compel Arm-based Mac to use x86
         if: matrix.os == 'macos-latest'
-        run: echo "CONDA_SUBDIR=osx-64" >> $GITHUB_ENV
+        run: |
+          echo "CONDA_SUBDIR=osx-64" >> $GITHUB_ENV
+          softwareupdate --install-rosetta --agree-to-license
 
       - name: Setup Miniforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
