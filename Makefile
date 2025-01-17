@@ -9,7 +9,7 @@ CXX=g++
 
 .PHONY : all check clean install decython documentation test q2dtor
 
-all: pycheck install check
+all: check install check
 
 check:
 	@ python utilities.py check-dependencies
