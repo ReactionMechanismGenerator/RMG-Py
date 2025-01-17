@@ -102,68 +102,29 @@ jobs:
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-      # # modify env variables as directed in the RMG installation instructions
-      # - name: Set Environment Variables
-      #   run: |
-      #     RUNNER_CWD=$(pwd)
-      #     echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
-      #     echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
+      # modify env variables as directed in the RMG installation instructions
+      - name: Set Environment Variables
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
 
       # RMG build step
       - name: make RMG
         run: |
-          make clean
-          make
+          make install
 
-      # Setup Juliaup
-      - name: Set Julia paths
-        run: |
-          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
-          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
-          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
-          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
-          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
-          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
-          # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
-          # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
-          echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
-          echo "JULIA_CONDAPKG_EXE=$CONDA_EXE" >> $GITHUB_ENV
-          echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
-          # echo "JULIA_PYTHONCALL_EXE=@PyCall" >> $GITHUB_ENV
-          echo "AHHHHHHHHHHHHHHHH"
-          echo $PYTHONHOME
-          echo $PYTHONPATH
-          echo $LD_LIBRARY_PATH
-          # echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/" >> $GITHUB_ENV
-
-      # - name: Setup Juliaup
-      #   uses: julia-actions/install-juliaup@v2
-      #   with:
-      #     channel: '1.9'
-
-      # - name: Check Julia version
-      #   run: julia --version
+      - name: Setup Juliaup
+        uses: julia-actions/install-juliaup@v2
+        with:
+          channel: '1.9'
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
-        # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
-        run: |
-          mamba install conda-forge::pyjuliacall conda-forge::juliaup
-          echo "HERES WHERE JULIA IS BRO"
-          which julia
-          julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+        run: . install_rms.sh
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
-
-      - name: Ensure PYTHONHOME isn't set, somehow
-        run: |
-          echo "AHHHHHHHHHHHHHHHH"
-          echo $PYTHONHOME
-          echo $PYTHONPATH
 
       # non-regression testing
       - name: Run Unit, Functional, and Database Tests

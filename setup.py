@@ -168,34 +168,40 @@ arkane_ext_modules = [
 ################################################################################
 
 ext_modules = []
-if 'install' in sys.argv:
-    # This is so users can still do simply `python setup.py install`
-    ext_modules.extend(main_ext_modules)
-    ext_modules.extend(solver_ext_modules)
-if 'main' in sys.argv:
-    # This is for `python setup.py build_ext main`
-    sys.argv.remove('main')
-    ext_modules.extend(main_ext_modules)
-if 'solver' in sys.argv:
-    # This is for `python setup.py build_ext solver`
-    sys.argv.remove('solver')
-    ext_modules.extend(solver_ext_modules)
-if 'arkane' in sys.argv:
-    # This is for `python setup.py build_ext arkane`
-    sys.argv.remove('arkane')
-    ext_modules.extend(main_ext_modules)
-    ext_modules.extend(arkane_ext_modules)
-if 'minimal' in sys.argv:
-    # This starts with the full install list, but removes anything that has a pure python mode
-    # i.e. in only includes things whose source is .pyx
-    sys.argv.remove('minimal')
-    temporary_list = []
-    temporary_list.extend(main_ext_modules)
-    temporary_list.extend(solver_ext_modules)
-    for module in temporary_list:
-        for source in module.sources:
-            if os.path.splitext(source)[1] == '.pyx':
-                ext_modules.append(module)
+
+ext_modules.extend(main_ext_modules)
+ext_modules.extend(solver_ext_modules)
+ext_modules.extend(arkane_ext_modules)
+
+
+# if 'install' in sys.argv:
+#     # This is so users can still do simply `python setup.py install`
+#     ext_modules.extend(main_ext_modules)
+#     ext_modules.extend(solver_ext_modules)
+# if 'main' in sys.argv:
+#     # This is for `python setup.py build_ext main`
+#     sys.argv.remove('main')
+#     ext_modules.extend(main_ext_modules)
+# if 'solver' in sys.argv:
+#     # This is for `python setup.py build_ext solver`
+#     sys.argv.remove('solver')
+#     ext_modules.extend(solver_ext_modules)
+# if 'arkane' in sys.argv:
+#     # This is for `python setup.py build_ext arkane`
+#     sys.argv.remove('arkane')
+#     ext_modules.extend(main_ext_modules)
+#     ext_modules.extend(arkane_ext_modules)
+# if 'minimal' in sys.argv:
+#     # This starts with the full install list, but removes anything that has a pure python mode
+#     # i.e. in only includes things whose source is .pyx
+#     sys.argv.remove('minimal')
+#     temporary_list = []
+#     temporary_list.extend(main_ext_modules)
+#     temporary_list.extend(solver_ext_modules)
+#     for module in temporary_list:
+#         for source in module.sources:
+#             if os.path.splitext(source)[1] == '.pyx':
+#                 ext_modules.append(module)
 
 # Remove duplicates while preserving order:
 ext_modules = list(OrderedDict.fromkeys(ext_modules))
@@ -215,7 +221,6 @@ scripts = [
     'scripts/standardizeModelSpeciesNames.py',
     'scripts/thermoEstimator.py',
     'scripts/isotopes.py',
-    'testing/databaseTest.py',
 ]
 
 modules = []
@@ -250,6 +255,6 @@ setup(
     packages=['rmgpy', 'arkane'],
     py_modules=modules,
     scripts=scripts,
-    ext_modules=cythonize(ext_modules, build_dir='build', compiler_directives=directives),
+    ext_modules=cythonize(ext_modules, compiler_directives=directives),
     include_dirs=['.', numpy.get_include()],
 )
