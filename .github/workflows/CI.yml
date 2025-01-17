@@ -113,6 +113,11 @@ jobs:
         run: |
           make install
 
+      - name: PRE-JULIA ENVIRONMENT
+        run: |
+          printenv | sort
+          conda list
+
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
         with:
@@ -122,6 +127,11 @@ jobs:
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: . install_rms.sh
+
+      - name: POST-JULIA ENVIRONMENT
+        run: |
+          printenv | sort
+          conda list
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor

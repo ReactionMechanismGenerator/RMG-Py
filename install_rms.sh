@@ -10,4 +10,4 @@ conda install -y conda-forge::pyjuliacall
 export JULIA_CONDAPKG_BACKEND=Current
 export JULIA_CONDAPKG_EXE=$CONDA_EXE
 export JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
-julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+julia -t 1 -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
