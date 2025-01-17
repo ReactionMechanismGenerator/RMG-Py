@@ -7,28 +7,14 @@
 CC=gcc
 CXX=g++
 
-.PHONY : all minimal main solver check pycheck arkane clean install decython documentation test q2dtor
+.PHONY : all check clean install decython documentation test q2dtor
 
-all: pycheck main solver check
-
-minimal:
-	python setup.py build_ext minimal --inplace --build-temp .
-
-main:
-	python setup.py build_ext main --inplace --build-temp .
-
-solver:
-	@ python utilities.py check-pydas
-	python setup.py build_ext solver --inplace --build-temp .
-
-arkane:
-	python setup.py build_ext arkane --inplace --build-temp .
+all: pycheck install check
 
 check:
 	@ python utilities.py check-dependencies
-
-pycheck:
 	@ python utilities.py check-python
+	@ python utilities.py check-pydas
 
 documentation:
 	$(MAKE) -C documentation html
