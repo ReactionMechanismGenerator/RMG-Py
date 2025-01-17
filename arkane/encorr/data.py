@@ -54,6 +54,8 @@ from arkane.encorr.reference import ReferenceSpecies, ReferenceDatabase
 from arkane.exceptions import BondAdditivityCorrectionError
 from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory
 
+pybel.ob.obErrorLog.SetOutputLevel(0)
+
 # ######## Database loading ##########
 quantum_corrections_path = os.path.join(settings['database.directory'], 'quantum_corrections', 'data.py')
 spec = importlib.util.spec_from_file_location("quantum_calculations", quantum_corrections_path)
