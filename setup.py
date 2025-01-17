@@ -156,7 +156,7 @@ setup(
     scripts=scripts,
     include_package_data=True,
     package_data={
-        "rmgpy": ["*.pxd", "*.pyx", "*.c", "*.cpp"],
+        "rmgpy": ["*.pxd"],
     },
     ext_modules=cythonize(ext_modules, nthreads=8, compiler_directives=directives),
     include_dirs=numpy.get_include(),
