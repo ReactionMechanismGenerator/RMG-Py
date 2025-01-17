@@ -50,7 +50,7 @@ except ImportError:
 from setuptools import find_packages
 
 # Create annotated HTML files for each of the Cython modules
-Options.annotate = True
+Options.annotate = False
 
 directives = {
     # Set input language version to python 3
