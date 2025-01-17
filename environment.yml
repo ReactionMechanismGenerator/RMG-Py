@@ -39,7 +39,7 @@ dependencies:
   - conda-forge::ncurses
   - conda-forge::suitesparse
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2750
-  - conda-forge::graphviz
+  - conda-forge::graphviz 
 
 # external software tools for chemistry
   - coolprop
