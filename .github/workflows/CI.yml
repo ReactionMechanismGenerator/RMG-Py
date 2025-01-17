@@ -154,6 +154,12 @@ jobs:
       - name: Install Q2DTor
         run: echo "" | make q2dtor
 
+      - name: Ensure PYTHONHOME isn't set, somehow
+        run: |
+          echo "AHHHHHHHHHHHHHHHH"
+          echo $PYTHONHOME
+          echo $PYTHONPATH
+
       # non-regression testing
       - name: Run Unit, Functional, and Database Tests
         # aggregate into one command so we only have to eat the collection time once
