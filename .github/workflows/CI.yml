@@ -132,8 +132,8 @@ jobs:
           echo "AHHHHHHHHHHHHHHHH"
           echo $PYTHONHOME
           echo $PYTHONPATH
-          # echo $LD_LIBRARY_PATH
-          # echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/" >> $GITHUB_ENV
+          echo $LD_LIBRARY_PATH
+          echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$CONDA_PREFIX/lib/" >> $GITHUB_ENV
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
