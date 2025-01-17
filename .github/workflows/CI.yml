@@ -85,16 +85,16 @@ jobs:
           miniforge-version: latest
           python-version: ${{ matrix.python-version }}
           activate-environment: rmg_env
-          use-mamba: true
+          auto-update-conda: true
           show-channel-urls: true
           channels: conda-forge,cantera,rmg
           conda-remove-defaults: "true"
 
       # list the environment for debugging purposes
-      - name: mamba info
+      - name: conda info
         run: |
-          mamba info
-          mamba list
+          conda info
+          conda list
 
       # Clone RMG-database
       - name: Clone RMG-database
@@ -320,7 +320,7 @@ jobs:
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
         run: |
-          mamba install -y -c conda-forge codecov
+          conda install -y -c conda-forge codecov
           codecov
 
   build-and-push-docker:
