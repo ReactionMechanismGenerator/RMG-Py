@@ -27,12 +27,7 @@
 #                                                                             #
 ###############################################################################
 
-try:
-    from distutils.core import setup
-    from distutils.extension import Extension
-except ImportError:
-    print('The distutils package is required to build or install RMG Py.')
-    raise
+from setuptools import setup
     
 try:
     from Cython.Build import cythonize
@@ -152,13 +147,13 @@ setup(
     author_email='rmg_dev@mit.edu',
     url='http://reactionmechanismgenerator.github.io',
     python_requires='>=3.9,<3.10',
-    packages=find_packages(["rmgpy", "arkane"]),
+    packages=find_packages(where='.', include=["rmgpy*"]) + find_packages(where='.', include=["arkane*"]),
     scripts=scripts,
     include_package_data=True,
     package_data={
-        "rmgpy": ["*.pxd"],
+        "": ["*.pxd"],
     },
-    ext_modules=cythonize(ext_modules, nthreads=8, compiler_directives=directives),
+    ext_modules=cythonize(ext_modules, compiler_directives=directives),
     include_dirs=numpy.get_include(),
     install_requires=["Cython", "numpy"],
 )

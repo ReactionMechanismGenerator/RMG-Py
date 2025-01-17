@@ -42,7 +42,7 @@ clean-solver:
 
 install:
 	@ python utilities.py check-pydas
-	python -m pip install -vv .
+	python -m pip install -vv --no-cache-dir -e .
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"

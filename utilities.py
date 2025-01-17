@@ -253,7 +253,7 @@ def clean(subdirectory=''):
     if platform.system() == 'Windows':
         extensions = ['.pyd', '.pyc']
     else:
-        extensions = ['.so', '.pyc']
+        extensions = ['.so', '.pyc', ".c"]
 
     # Remove temporary build files
     print('Removing build directory...')
