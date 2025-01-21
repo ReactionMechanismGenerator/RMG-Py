@@ -89,6 +89,9 @@ class TestReact:
         Test that the ``react`` function works in parallel using Python multiprocessing
         """
         import rmgpy.rmg.main
+        import multiprocessing
+
+        multiprocessing.set_start_method('fork')
 
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
@@ -133,6 +136,9 @@ class TestReact:
         Test that the ``react_all`` function works in parallel using Python multiprocessing
         """
         import rmgpy.rmg.main
+        import multiprocessing
+
+        multiprocessing.set_start_method('fork')
 
         rmgpy.rmg.main.maxproc = 2
         procnum = 2
