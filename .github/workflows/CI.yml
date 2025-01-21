@@ -122,15 +122,25 @@ jobs:
         run: |
           printenv | sort
           conda list
-      
-      - name: Try and Make Julia stop ruining the Compilers
-        run: |
-          echo "export LD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
         with:
           channel: '1.9'
+
+      - name: POST JULIAUP
+        run: |
+          printenv | sort
+          conda list
+      
+      - name: Try and Make Julia stop ruining the Compilers
+        run: |
+          echo "export LD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
+
+      - name: POST LIBRARY PATH UPDATE
+        run: |
+          printenv | sort
+          conda list
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
