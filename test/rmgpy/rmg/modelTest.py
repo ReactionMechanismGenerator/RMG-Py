@@ -321,9 +321,6 @@ class TestCoreEdgeReactionModel:
         """
         basic test that surface movement object management works properly
         """
-        import multiprocessing
-
-        multiprocessing.set_start_method('fork')
 
         # create object with ReactionSystem behavior
         class rsys:
@@ -451,9 +448,6 @@ class TestCoreEdgeReactionModel:
         """
         Test that CoreEdgeReactionModel.make_new_reaction method correctly works.
         """
-        import multiprocessing
-
-        multiprocessing.set_start_method('fork')
 
         procnum = 2
         spcA = Species().from_smiles("[OH]")
