@@ -2,8 +2,8 @@
 # start by installing juliaup on your system globally
 # curl -fsSL https://install.julialang.org | sh
 # # restart shell
-# juliaup add 1.9
-# juliaup default 1.9
+# juliaup add 1.11
+# juliaup default 1.11
 
 # actual steps
 conda install -y conda-forge::pyjuliacall
