@@ -122,6 +122,10 @@ jobs:
         run: |
           printenv | sort
           conda list
+      
+      - name: Try and Make Julia stop ruining the Compilers
+        run: |
+          echo "LD_PRELOAD=$CONDA_PREFIX/lib/libstdc++.so.6" >> $GITHUB_ENV
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
