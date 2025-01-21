@@ -125,7 +125,7 @@ jobs:
       
       - name: Try and Make Julia stop ruining the Compilers
         run: |
-          echo "LD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
+          echo "export LD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
