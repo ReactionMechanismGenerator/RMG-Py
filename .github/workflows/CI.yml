@@ -130,7 +130,7 @@ jobs:
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
         with:
-          channel: '1.11'
+          channel: '1.9'
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
