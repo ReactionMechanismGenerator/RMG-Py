@@ -142,10 +142,10 @@ jobs:
           printenv | sort
           conda list
 
-      - name: Rebuild RMG
-        run: |
-          make clean
-          make
+      # - name: Rebuild RMG
+      #   run: |
+      #     make clean
+      #     make
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
