@@ -32,13 +32,14 @@ dependencies:
   - xlrd
   - xlwt
   - h5py
-  - graphviz
   - markupsafe
   - psutil
   # conda-forge not default, since default has a version information bug
   # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
   - conda-forge::suitesparse
+  # see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2750
+  - conda-forge::graphviz 
 
 # external software tools for chemistry
   - coolprop
