@@ -89,6 +89,11 @@ jobs:
           show-channel-urls: true
           channels: conda-forge,cantera,rmg
           conda-remove-defaults: "true"
+      
+      - name: Continue to Coerce Arm-Mac
+        if: matrix.os == 'macos-latest'
+        run: |
+          conda config --env --set subdir osx-64
 
       # list the environment for debugging purposes
       - name: conda info
