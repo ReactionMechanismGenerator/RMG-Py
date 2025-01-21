@@ -135,7 +135,7 @@ jobs:
       
       - name: Try and Make Julia stop ruining the Compilers
         run: |
-          echo "export LD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
+          echo "LD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
 
       - name: POST LIBRARY PATH UPDATE
         run: |
