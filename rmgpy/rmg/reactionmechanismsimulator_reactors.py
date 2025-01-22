@@ -46,8 +46,8 @@ try:
     Main.seval("using ReactionMechanismSimulator")
     Main.seval("using ReactionMechanismSimulator.Sundials")
     NO_JULIA = False
-except:
-    logging.warning("Julia import failed, RMS reactors not available.")
+except Exception as e:
+    logging.warning(f"Julia import failed, RMS reactors not available.\nException: {str(e)}\nStacktrace:\n{e.__traceback__}")
 
 from rmgpy import constants
 from rmgpy.data.kinetics.depository import DepositoryReaction
