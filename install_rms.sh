@@ -15,9 +15,9 @@ conda install -y conda-forge::pyjuliacall  # conda-forge::pyside2
 # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
 export JULIA_CONDAPKG_BACKEND=Null
 export JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
-# export MPLBACKEND=qt5agg  # supported backend for PythonPlot.jl, needed by RMS
+# export MPLBACKEND=tkagg  # supported backend for PythonPlot.jl, needed by RMS
 
-julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator; Pkg.instantiate()'
+julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator; Pkg.instantiate()' | echo "RMS install error - continuing anyway ¯\_(ツ)_/¯"
 
 # ensure that juliacall in Python uses the correct julia executable: https://github.com/JuliaPy/PyJuliaPkg?tab=readme-ov-file#which-julia-gets-used
 export PYTHON_JULIAPKG_EXE=$(which julia)
