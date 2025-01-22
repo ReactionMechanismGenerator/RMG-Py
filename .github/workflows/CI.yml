@@ -133,14 +133,14 @@ jobs:
           printenv | sort
           conda list
       
-      - name: Try and Make Julia stop ruining the Compilers
-        run: |
-          echo "LD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
+      # - name: Try and Make Julia stop ruining the Compilers
+      #   run: |
+      #     echo "LD_LIBRARY_PATH=$CONDA_PREFIX/lib" >> $GITHUB_ENV
 
-      - name: POST LIBRARY PATH UPDATE
-        run: |
-          printenv | sort
-          conda list
+      # - name: POST LIBRARY PATH UPDATE
+      #   run: |
+      #     printenv | sort
+      #     conda list
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
