@@ -90,10 +90,10 @@ jobs:
           channels: conda-forge,cantera,rmg
           conda-remove-defaults: "true"
       
-      - name: Continue to Coerce Arm-Mac
-        if: matrix.os == 'macos-latest'
-        run: |
-          conda config --env --set subdir osx-64
+      # - name: Continue to Coerce Arm-Mac  # pure python mode works without this, so it isn't required
+      #   if: matrix.os == 'macos-latest'
+      #   run: |
+      #     conda config --env --set subdir osx-64
 
       # list the environment for debugging purposes
       - name: conda info
