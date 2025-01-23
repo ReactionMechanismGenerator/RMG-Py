@@ -142,10 +142,23 @@ jobs:
       #     printenv | sort
       #     conda list
 
+      - name: Set some env vars
+        run: |
+          echo "JULIA_CONDAPKG_BACKEND=Null" >> $GITHUB_ENV
+          echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
+
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: . install_rms.sh
+
+      - name: Where is RMS?
+        run: julia -E "using ReactionMechanismSimulator; pathof(ReactionMechanismSimulator)"
+
+      - name: Set some other env vars
+        run: |
+          echo "PYTHON_JULIAPKG_EXE=$(which julia)" >> $GITHUB_ENV
+          echo "PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages" >> $GITHUB_ENV
 
       - name: POST-JULIA ENVIRONMENT
         run: |
