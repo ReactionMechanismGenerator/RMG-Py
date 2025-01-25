@@ -514,8 +514,8 @@ class RMG(util.Subject):
         
         # Check if ReactionMechanismSimulator reactors are being used
         # if RMS is not installed but the user attempted to use it, the load_input_file would have failed
-        # if RMS is installed but they did not use it, we can avoid extra work
         # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
+        # if RMS is installed but they did not use it, we can avoid extra work
         requires_rms = any(isinstance(reactor_system, RMSReactor) for reactor_system in self.reaction_systems)
 
         if self.surface_site_density:
@@ -654,7 +654,7 @@ class RMG(util.Subject):
             if vapor_liquid_mass_transfer.enabled:
                 spec.get_liquid_volumetric_mass_transfer_coefficient_data()
                 spec.get_henry_law_constant_data()
-            self.reaction_model.add_species_to_edge(spec)
+            self.reaction_model.add_species_to_edge(spec, requires_rms=requires_rms)
 
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
@@ -795,6 +795,7 @@ class RMG(util.Subject):
         ``initialize`` is a ``bool`` type flag used to determine whether to call self.initialize()
         """
 
+        requires_rms=False
         if initialize:
             requires_rms = self.initialize(**kwargs)
 
