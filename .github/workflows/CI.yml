@@ -406,7 +406,7 @@ jobs:
     # who knows ¯\_(ツ)_/¯
     #
     # taken from https://github.com/docker/build-push-action
-    needs: build-and-test
+    needs: regression-test
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
     steps:
