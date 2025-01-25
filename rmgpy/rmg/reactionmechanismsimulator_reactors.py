@@ -32,32 +32,13 @@ Contains classes for building RMS simulations
 """
 import itertools
 import logging
-import sys
 
 import numpy as np
 
-import rmgpy.constants as constants
-
-NO_JULIA = True
-try:
-    import juliacall
-    from juliacall import Main
-    Main.seval("using PythonCall")
-    Main.seval("using ReactionMechanismSimulator")
-    Main.seval("using ReactionMechanismSimulator.Sundials")
-    NO_JULIA = False
-except:
-    logging.warning("Julia import failed, RMS reactors not available.")
-
-from rmgpy import constants
-from rmgpy.data.kinetics.depository import DepositoryReaction
-from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.solvation import SolventData
 from rmgpy.kinetics.arrhenius import (
     Arrhenius,
-    ArrheniusBM,
     ArrheniusChargeTransfer,
-    ArrheniusEP,
     Marcus,
     MultiArrhenius,
     MultiPDepArrhenius,
@@ -65,7 +46,6 @@ from rmgpy.kinetics.arrhenius import (
 )
 from rmgpy.kinetics.chebyshev import Chebyshev
 from rmgpy.kinetics.falloff import Lindemann, ThirdBody, Troe
-from rmgpy.kinetics.kineticsdata import KineticsData
 from rmgpy.kinetics.surface import StickingCoefficient, SurfaceChargeTransfer
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
@@ -77,7 +57,17 @@ from rmgpy.solver.termination import (
 from rmgpy.species import Species
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
 from rmgpy.thermo.thermodata import ThermoData
-from rmgpy.thermo.wilhoit import Wilhoit
+
+
+NO_JULIA = True
+try:
+    from juliacall import Main
+    Main.seval("using PythonCall")
+    Main.seval("using ReactionMechanismSimulator")
+    Main.seval("using ReactionMechanismSimulator.Sundials")
+    NO_JULIA = False
+except Exception as e:
+    logging.warning(f"Julia import failed, RMS reactors not available.\nException: {str(e)}\nStacktrace:\n{e.__traceback__}")
 
 
 def to_julia(obj):
@@ -103,21 +93,6 @@ def to_julia(obj):
         return Main.PythonCall.pyconvert(Main.Vector, obj)
     else: # Other native Python project does not need special conversion.
         return obj
-
-NO_JULIA = False
-try:
-    if __debug__:
-        from os.path import abspath, dirname, exists, join
-
-        from julia.api import Julia
-        path_rms = dirname(dirname(dirname(abspath(__file__))))
-        jl = Julia(sysimage=join(path_rms, "rms.so")) if exists(join(path_rms, "rms.so")) else Julia(compiled_modules=False)
-    from diffeqpy import de
-    from julia import Main
-    from pyrms import rms
-except Exception as e:
-    logging.info("Unable to import Julia dependencies, original error: " + str(e) + ". RMS features will not be available on this execution.")
-    NO_JULIA = True
 
 
 class PhaseSystem:
