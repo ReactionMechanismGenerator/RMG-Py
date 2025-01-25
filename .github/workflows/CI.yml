@@ -49,7 +49,6 @@ env:
   # main with the name of the branch
   RMG_DATABASE_BRANCH: main
 
-
 jobs:
   build-and-test:
     strategy:
@@ -57,13 +56,16 @@ jobs:
       matrix:
         python-version: ["3.9"]
         os: [macos-13, macos-latest, ubuntu-latest]
+        include-rms: ["", "with RMS"]
+        exclude:
+          - os: macos-latest  # needs Cantera 3 b/c x86 emulation breaks with Julia
+            include-rms: 'with RMS'
+          - os: macos-13  # GitHub's runners just aren't up to the task of installing Julia
+            include-rms: 'with RMS'
     runs-on: ${{ matrix.os }}
-    name: ${{ matrix.os }} Build and Test Python ${{ matrix.python-version }}
+    name: Python ${{ matrix.python-version }} ${{ matrix.os }} Build and Test ${{ matrix.include-rms }}
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
-    env: 
-      # This is true only if this is a reference case for the regression testing:
-      REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
       run:
         shell: bash -l {0}
@@ -83,15 +85,16 @@ jobs:
           miniforge-version: latest
           python-version: ${{ matrix.python-version }}
           activate-environment: rmg_env
-          use-mamba: true
+          auto-update-conda: true
           show-channel-urls: true
           channels: conda-forge,cantera,rmg
+          conda-remove-defaults: "true"
 
       # list the environment for debugging purposes
-      - name: mamba info
+      - name: conda info
         run: |
-          mamba info
-          mamba list
+          conda info
+          conda list
 
       # Clone RMG-database
       - name: Clone RMG-database
@@ -99,56 +102,110 @@ jobs:
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-      # modify env variables as directed in the RMG installation instructions
-      - name: Set Environment Variables
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
-          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
-
       # RMG build step
-      - name: make RMG
-        run: |
-          make clean
-          make
-
-      # Setup Juliaup
-      - name: Set Julia paths
-        run: |
-          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
-          # echo "JULIAUP_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_ENV
-          # echo "JULIA_DEPOT_PATH=$CONDA/envs/rmg_env/.julia" >> $GITHUB_PATH
-          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
-          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
-          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_ENV
-          # echo "JULIA_CONDAPKG_EXE=$CONDA/condabin/mamba" >> $GITHUB_PATH
-          echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_ENV
-          # echo "JULIA_CONDAPKG_BACKEND=Current" >> $GITHUB_PATH
+      - run: make install
 
       - name: Setup Juliaup
+        if: matrix.include-rms == 'with RMS'
         uses: julia-actions/install-juliaup@v2
         with:
           channel: '1.9'
 
-      - name: Check Julia version
-        run: julia --version
+      - name: Set some env vars
+        if: matrix.include-rms == 'with RMS'
+        run: |
+          # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
+          echo "JULIA_CONDAPKG_BACKEND=Null" >> $GITHUB_ENV
+          echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
+        if: matrix.include-rms == 'with RMS'
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
-        # JULIA_CONDAPKG_EXE points to the existing conda/mamba to avoid JuliaCall from installing their own. See https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-a-Conda-environment.
+        run: . install_rms.sh
+
+      - name: Set some other env vars
+        if: matrix.include-rms == 'with RMS'
         run: |
-          mamba install conda-forge::pyjuliacall
-          julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator'
+          # ensure that juliacall in Python uses the correct julia executable and packages: https://github.com/JuliaPy/PyJuliaPkg?tab=readme-ov-file#which-julia-gets-used
+          echo "PYTHON_JULIAPKG_EXE=$(which julia)" >> $GITHUB_ENV
+          echo "PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages" >> $GITHUB_ENV
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
 
       # non-regression testing
       - name: Run Unit, Functional, and Database Tests
-        # aggregate into one command so we only have to eat the collection time once
         run: make test-all
+
+  regression-test:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    name: Regression Test
+    # skip scheduled runs from forks
+    if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
+    env: 
+      # This is true only if this is a reference case for the regression testing:
+      REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - name: Checkout RMG-Py
+        uses: actions/checkout@v4
+
+      - name: Setup Miniforge Python 3.9
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          environment-file: environment.yml
+          miniforge-variant: Miniforge3
+          miniforge-version: latest
+          python-version: 3.9
+          activate-environment: rmg_env
+          auto-update-conda: true
+          show-channel-urls: true
+          channels: conda-forge,cantera,rmg
+          conda-remove-defaults: "true"
+
+      # list the environment for debugging purposes
+      - name: conda info
+        run: |
+          conda info
+          conda list
+
+      # Clone RMG-database
+      - name: Clone RMG-database
+        run: |
+          cd ..
+          git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
+
+      # RMG build step
+      - run: make install
+
+      - name: Setup Juliaup
+        uses: julia-actions/install-juliaup@v2
+        with:
+          channel: '1.9'
+
+      - name: Set some env vars
+        run: |
+          # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
+          echo "JULIA_CONDAPKG_BACKEND=Null" >> $GITHUB_ENV
+          echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
+
+      # RMS installation and linking to Julia
+      - name: Install and link Julia dependencies
+        timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
+        run: . install_rms.sh
+
+      - name: Set some other env vars
+        run: |
+          # ensure that juliacall in Python uses the correct julia executable and packages: https://github.com/JuliaPy/PyJuliaPkg?tab=readme-ov-file#which-julia-gets-used
+          echo "PYTHON_JULIAPKG_EXE=$(which julia)" >> $GITHUB_ENV
+          echo "PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages" >> $GITHUB_ENV
+
+      - name: Install Q2DTor
+        run: echo "" | make q2dtor
 
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
@@ -322,14 +379,14 @@ jobs:
 
       - name: Upload regression summary artifact
        # the annotate workflow uses this artifact to add a comment to the PR
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if : ${{ github.event_name == 'pull_request' }}
         with:
           name: regression_summary
           path: summary.txt
 
       - name: Upload Comparison Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: regression_test_comparison_results
           path: |
@@ -339,7 +396,7 @@ jobs:
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
         run: |
-          mamba install -y -c conda-forge codecov
+          conda install -y -c conda-forge codecov
           codecov
 
   build-and-push-docker:
