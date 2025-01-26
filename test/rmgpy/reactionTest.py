@@ -2954,7 +2954,7 @@ reactions:
             # Check that the reaction string is the same
             assert repr(converted_obj) == repr(ct_obj)
             # Check that the Arrhenius rates are identical
-            assert str(converted_obj.rates) == str(ct_obj.rates)
+            assert str(converted_obj.rate.rates) == str(ct_obj.rate.rates)
 
     def test_multi_pdep_arrhenius(self):
         """
@@ -2975,7 +2975,7 @@ reactions:
                 # Check that the reaction string is the same
                 assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                assert str(converted_rxn.rates) == str(ct_rxn.rates)
+                assert str(converted_rxn.rate.rates) == str(ct_rxn.rate.rates)
 
     def test_chebyshev(self):
         """
@@ -2996,18 +2996,18 @@ reactions:
         assert round(abs(ct_troe.rate.low_rate.pre_exponential_factor - self.ct_troe.rate.low_rate.pre_exponential_factor), 3) == 0
         assert ct_troe.rate.low_rate.temperature_exponent == self.ct_troe.rate.low_rate.temperature_exponent
         assert ct_troe.rate.low_rate.activation_energy == self.ct_troe.rate.low_rate.activation_energy
-        assert ct_troe.efficiencies == self.ct_troe.efficiencies
+        assert ct_troe.third_body.efficiencies == self.ct_troe.third_body.efficiencies
 
         ct_third_body = self.thirdBody.to_cantera(self.species_list, use_chemkin_identifier=True)
         assert type(ct_third_body.rate) == type(self.ct_thirdBody.rate)
         assert round(abs(ct_third_body.rate.pre_exponential_factor - self.ct_thirdBody.rate.pre_exponential_factor), 3) == 0
         assert ct_third_body.rate.temperature_exponent == self.ct_thirdBody.rate.temperature_exponent
         assert ct_third_body.rate.activation_energy == self.ct_thirdBody.rate.activation_energy
-        assert ct_third_body.efficiencies == self.ct_thirdBody.efficiencies
+        assert ct_third_body.third_body.efficiencies == self.ct_thirdBody.third_body.efficiencies
 
         ct_lindemann = self.lindemann.to_cantera(self.species_list, use_chemkin_identifier=True)
         assert type(ct_lindemann.rate) == type(self.ct_lindemann.rate)
-        assert ct_lindemann.efficiencies == self.ct_lindemann.efficiencies
+        assert ct_lindemann.third_body.efficiencies == self.ct_lindemann.third_body.efficiencies
         assert str(ct_lindemann.rate.low_rate) == str(self.ct_lindemann.rate.low_rate)
         assert str(ct_lindemann.rate.high_rate) == str(self.ct_lindemann.rate.high_rate)
 

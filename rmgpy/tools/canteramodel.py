@@ -840,20 +840,15 @@ def check_equivalent_cantera_reaction(ct_rxn1, ct_rxn2, check_id=False, dE=1e-5)
                     for j in range(ct_rxn1.rate.data.shape[1]):
                         assert check_nearly_equal(ct_rxn1.rate.data[i, j], ct_rxn2.rate.data[i, j], dE), \
                             "Similar Chebyshev coefficients"
-
-        elif isinstance(ct_rxn1, ct.ThreeBodyReaction):
-            assert ct_rxn1.default_efficiency == ct_rxn2.default_efficiency, "Same default efficiency"
-            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficiencies"
-
-        elif isinstance(ct_rxn1, ct.FalloffReaction):
-            assert ct_rxn1.default_efficiency == ct_rxn2.default_efficiency, "Same default efficiency"
-            assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficiencies"
-            if ct_rxn1.falloff or ct_rxn2.falloff:
-                check_equivalent_falloff(ct_rxn1.falloff, ct_rxn2.falloff)
-            if ct_rxn1.high_rate or ct_rxn2.high_rate:
-                check_equivalent_arrhenius(ct_rxn1.high_rate, ct_rxn2.high_rate)
-            if ct_rxn1.low_rate or ct_rxn2.low_rate:
-                check_equivalent_arrhenius(ct_rxn1.low_rate, ct_rxn2.low_rate)
+            else:
+                assert ct_rxn1.default_efficiency == ct_rxn2.default_efficiency, "Same default efficiency"
+                assert ct_rxn1.efficiencies == ct_rxn2.efficiencies, "Same efficiencies"
+                if ct_rxn1.falloff or ct_rxn2.falloff:
+                    check_equivalent_falloff(ct_rxn1.falloff, ct_rxn2.falloff)
+                if ct_rxn1.high_rate or ct_rxn2.high_rate:
+                    check_equivalent_arrhenius(ct_rxn1.high_rate, ct_rxn2.high_rate)
+                if ct_rxn1.low_rate or ct_rxn2.low_rate:
+                    check_equivalent_arrhenius(ct_rxn1.low_rate, ct_rxn2.low_rate)
 
     except Exception as e:
         print("Cantera reaction {0} failed equivalency check on: {1}".format(ct_rxn1, e))

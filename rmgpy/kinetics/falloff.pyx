@@ -122,11 +122,11 @@ cdef class ThirdBody(PDepKineticsModel):
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
-        Sets the kinetics and efficiencies for a cantera `ThreeBodyReaction` object
+        Sets the kinetics and efficiencies for a cantera Reaction representing a Three Body Rate
         """
         import cantera as ct
-        assert isinstance(ct_reaction, ct.ThreeBodyReaction), "Must be a Cantera ThreeBodyReaction object"
-        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        # assert ct_reaction.third_body is not None, "Cantera Reaction must have third_body attribute"
+        ct_reaction.third_body.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
         self.arrheniusLow.set_cantera_kinetics(ct_reaction, species_list)
 
 ################################################################################
@@ -398,7 +398,7 @@ cdef class Troe(PDepKineticsModel):
         """
         import cantera as ct
         assert isinstance(ct_reaction.rate, ct.TroeRate), "Must have a Cantera TroeRate attribute"
-        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        ct_reaction.third_body.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
         ct_reaction.rate = self.to_cantera_kinetics() 
 
     def to_cantera_kinetics(self): 

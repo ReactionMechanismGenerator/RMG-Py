@@ -25,7 +25,6 @@
 name: rmg_env
 channels:
   - conda-forge
-  - cantera
   - rmg
 dependencies:
 # System-level dependencies - we could install these at the OS level
@@ -46,7 +45,7 @@ dependencies:
 
 # external software tools for chemistry
   - conda-forge::coolprop
-  - cantera::cantera =2.6
+  - conda-forge::cantera >= 3
   - conda-forge::mopac
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
   - conda-forge::cclib >=1.6.3,<1.9
@@ -59,7 +58,7 @@ dependencies:
   - conda-forge::cython >=0.25.2
   - conda-forge::scikit-learn
   - conda-forge::scipy >=1.9
-  - conda-forge::numpy >=1.10.0
+  - conda-forge::numpy >=1.10.0,<2
   - conda-forge::pydot
   - conda-forge::jinja2
   - conda-forge::jupyter
