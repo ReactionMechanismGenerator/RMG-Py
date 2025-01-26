@@ -1157,7 +1157,9 @@ cpdef _process_duplicate_reactions(list reaction_list):
                 elif reaction1.kinetics.is_pressure_dependent() == reaction2.kinetics.is_pressure_dependent():
                     # If both reactions are pressure-independent or both are pressure-dependent, then they need
                     # duplicate tags. Chemkin treates pdep and non-pdep reactions as different, so those are okay
-                    raise ChemkinError('Encountered unmarked duplicate reaction {0}.'.format(reaction1))
+                    # raise ChemkinError('Encountered unmarked duplicate reaction {0}.'.format(reaction1))
+                    reaction1.duplicate = True
+                    reaction2.duplicate = True
 
     for reaction in duplicate_reactions_to_remove:
         reaction_list.remove(reaction)
