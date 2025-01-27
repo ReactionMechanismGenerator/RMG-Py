@@ -101,7 +101,7 @@ def match_concentrations_with_same_sums(conc1, conc2, rtol=1e-6):
     seq1 = [tup[1] for tup in conc1]
     seq2 = [tup[1] for tup in conc2]
 
-    matches_seq = FragList.match_sequences(seq1, seq2, rtol)
+    matches_seq = match_sequences(seq1, seq2, rtol)
 
     matches_conc = []
     for match_seq in matches_seq:
@@ -187,7 +187,7 @@ def match_concentrations_with_different_sums(conc1, conc2):
     # let matches_conc match with remaining seq2
     elif pin1 == len(seq1) and pin2 < len(seq2):
         remain_conc2 = [(labels2[pin2], val2)] + conc2[(pin2 + 1):]
-        matches_conc = FragList.match_concentrations_with_different_sums(
+        matches_conc = match_concentrations_with_different_sums(
             matches_conc, remain_conc2
         )
 
@@ -219,7 +219,7 @@ def flatten(combo):
     return_list = []
     for i in combo:
         if isinstance(i, tuple):
-            return_list.extend(FragList.flatten(i))
+            return_list.extend(flatten(i))
         else:
             return_list.append(i)
     return return_list
@@ -281,10 +281,10 @@ def merge_frag_list(to_be_merged):
         frag2 = to_be_merged[-1].smiles  # last fragment in list
 
         if 'R' in frag1 and 'L' in frag2:
-            newfrag = FragList.merge_frag_to_frag(frag1, frag2, 'L')
+            newfrag = merge_frag_to_frag(frag1, frag2, 'L')
 
         elif 'L' in frag1 and 'R' in frag2:
-            newfrag = FragList.merge_frag_to_frag(frag1, frag2, 'R')
+            newfrag = merge_frag_to_frag(frag1, frag2, 'R')
 
         # warn user if last two fragments in list cannot be merged (no R/L
         # combo to be made)
@@ -293,7 +293,7 @@ def merge_frag_list(to_be_merged):
                 frag1, frag2))
 
             if 'L' in frag1 and 'L' in frag2:
-                newfrag = FragList.merge_frag_to_frag(
+                newfrag = merge_frag_to_frag(
                     frag1.replace('L', 'R'), frag2, 'L')
         if len(to_be_merged) > 2:
             cut = len(to_be_merged) - 2
