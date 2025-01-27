@@ -268,7 +268,16 @@ class KineticsDatabase(object):
                 for f in files:
                     if f.lower() == 'reactions.py':
                         library_file = os.path.join(root, f)
-                        label = os.path.dirname(library_file)[len(path) + 1:]
+                        dirname = os.path.dirname(library_file)
+                        if dirname == path:
+                            label = os.path.basename(dirname)
+                        else:
+                            label = os.path.relpath(dirname, path)
+
+                        if not label:
+                            logging.warning(f"Empty label for {library_file}. Using 'default'.")
+                            label = "default"
+                        
                         logging.info(f'Loading kinetics library {label} from {library_file}...')
                         library = KineticsLibrary(label=label)
                         try:
