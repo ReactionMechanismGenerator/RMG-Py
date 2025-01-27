@@ -143,6 +143,8 @@ def obj_to_dict(obj, spcs, names=None, label="solvent"):
         result_dict["radicalchange"] = sum([get_radicals(x) for x in obj.products]) - \
                                        sum([get_radicals(x) for x in obj.reactants])
         result_dict["electronchange"] = -sum([spc.molecule[0].get_net_charge() for spc in obj.products]) + sum([spc.molecule[0].get_net_charge() for spc in obj.reactants])
+        if not obj.reversible:
+            result_dict["reversible"] = obj.reversible
         result_dict["comment"] = obj.kinetics.comment
     elif isinstance(obj, Arrhenius):
         obj.change_t0(1.0)

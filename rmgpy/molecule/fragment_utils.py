@@ -1,4 +1,7 @@
-from rmgpy.molecule.fragment import Fragment
+from rmgpy.molecule.fragment import Fragment,CuttingLabel
+from rmgpy.molecule.molecule import Bond
+from rdkit import Chem
+from numpy.random import randint
 from rmgpy.tools.canteramodel import Cantera
 from rmgpy.chemkin import load_chemkin_file
 import re
@@ -310,3 +313,236 @@ def merge_frag_list(to_be_merged):
     # print('{}% of fragments fully merged...'.format(np.round(100*(i+1)/len(flattened_matches_random)),1))
 # print(newfraglist)
     return newfraglist
+
+import re
+def check_if_radical_near_cutting_label(species_smiles):
+    species_fragment = Fragment().from_smiles_like_string(species_smiles)
+    for i, atom in enumerate(species_fragment.atoms):
+        species_fragment.atoms[i].id = i
+    for atom in species_fragment.atoms:
+        if atom.radical_electrons ==1:
+            bonded_atoms = list(atom.bonds.keys())
+            bonded_atom_types = [type(x) for x in bonded_atoms]
+            if CuttingLabel in bonded_atom_types:
+                radical_near_cutting_label = atom
+                nearest_cutting_label = bonded_atoms[bonded_atom_types.index(CuttingLabel)]
+                return species_fragment, nearest_cutting_label
+            for atom2 in bonded_atoms:
+                bonded_atoms_2 = list(atom2.bonds.keys())
+                bonded_atom_types_2 = [type(x) for x in bonded_atoms_2]
+                if CuttingLabel in bonded_atom_types_2:
+                    radical_near_cutting_label = atom2
+                    nearest_cutting_label = bonded_atoms_2[bonded_atom_types_2.index(CuttingLabel)]
+                    return species_fragment, nearest_cutting_label
+    else:
+        return False
+
+def check_if_pibond_near_cutting_label(species_smiles):
+    species_fragment = Fragment().from_smiles_like_string(species_smiles)
+    for i, atom in enumerate(species_fragment.atoms):
+        species_fragment.atoms[i].id = i
+    for atom in species_fragment.atoms:
+        neighboring_bond_orders = [x.order for x in atom.bonds.values()]
+        if 2 in neighboring_bond_orders:
+            bonded_atoms = list(atom.bonds.keys())
+            bonded_atom_types = [type(x) for x in bonded_atoms]
+            if CuttingLabel in bonded_atom_types:
+                nearest_cutting_label = bonded_atoms[bonded_atom_types.index(CuttingLabel)]
+                return species_fragment, nearest_cutting_label
+            for atom2 in bonded_atoms:
+                bonded_atoms_2 = list(atom2.bonds.keys())
+                bonded_atom_types_2 = [type(x) for x in bonded_atoms_2]
+                if CuttingLabel in bonded_atom_types_2:
+                    nearest_cutting_label = bonded_atoms_2[bonded_atom_types_2.index(CuttingLabel)]
+                    return species_fragment, nearest_cutting_label
+    else:
+        return False
+
+def merge_fragment_a_to_cutting_label_on_b(smiles_a,smiles_b,cuttinglabel):
+    a_frag = Fragment().from_smiles_like_string(smiles_a)
+    b_frag = Fragment().from_smiles_like_string(smiles_b)
+    for vertex in b_frag.vertices:
+        if isinstance(vertex, CuttingLabel):
+
+            if vertex.symbol == cuttinglabel.symbol and str(vertex.bonds) == str(cuttinglabel.bonds):
+                cutb = vertex
+
+                atom2 = list(cutb.edges.keys())[0]
+                b_frag.remove_atom(cutb)
+                break
+    if cutb.symbol[0] == 'L':
+        Ctl = cutb.symbol.replace('L', 'R')
+    else:  # that means this CuttingLabel is R something
+        Ctl = cutb.symbol.replace('R', 'L')
+
+    # merge to frag_spe1
+    for vertex in a_frag.vertices:
+        if isinstance(vertex, CuttingLabel):
+            if vertex.symbol == Ctl:
+                cuta = vertex
+                atom1 = list(cuta.edges.keys())[0]
+                a_frag.remove_atom(cuta)
+                break
+
+    # new merged fragment
+    new_frag = a_frag.merge(b_frag)
+    new_frag.add_bond(Bond(atom1=atom1, atom2=atom2, order=1))
+    new_frag = new_frag.copy(deep=True)
+    new_frag.update()
+    for i, atom in enumerate(new_frag.atoms):
+        new_frag.atoms[i].id = i
+    return new_frag  # return Fragment obtl
+
+def get_single_cc_bonds(frag):
+    single_cc_bonds = [tuple(sorted([x.atom1.id, x.atom2.id])) for x in frag.get_all_edges() if x.atom1.symbol =="C" and x.atom2.symbol=="C" and x.order ==1]
+    return frag, single_cc_bonds
+
+def get_atoms_neighboring_bond(frag, bond_idx):
+    atom1id,atom2id = bond_idx
+    atom1 = frag.atoms[atom1id]
+    atom2 = frag.atoms[atom2id]
+    neighboring_atoms = [x for x in list(set(list(atom1.bonds.keys())+list(atom2.bonds.keys()))) if x!=atom1 and x!=atom2]
+    return frag, neighboring_atoms
+
+def flatten_list_of_lists(list_of_lists):
+    return [item for lst in list_of_lists for item in lst]
+    
+def get_atoms_nearby_bond(frag, bond_idx):
+    atom1id,atom2id = bond_idx
+    atom1 = frag.atoms[atom1id]
+    atom2 = frag.atoms[atom2id]
+    frag, neighboring_atoms = get_atoms_neighboring_bond(frag, bond_idx)
+    neighboring_atoms = [x for x in neighboring_atoms]
+    neighboring_atoms_ = []
+    for atom in neighboring_atoms:
+        neighboring_atoms_ += [x for x in atom.bonds.keys() ]
+    
+    nearby_atoms = list(set(neighboring_atoms + neighboring_atoms_))
+    return frag, nearby_atoms
+
+def cut_specific_bond(frag, cut_bond_idx):
+
+    rdfrag, atom_mapping = frag.to_rdkit_mol(remove_h=False, return_mapping=True,  save_order=True)
+
+    atom_mapping_flipped = {v:k for k,v in atom_mapping.items()}
+
+
+    rdfrag,atom_mapping_flipped = replace_cutting_labels_with_metals(rdfrag, atom_mapping_flipped)
+    atom1 = atom_mapping[frag.atoms[cut_bond_idx[0]]]
+    atom2 = atom_mapping[frag.atoms[cut_bond_idx[1]]]
+
+    bond_to_cut = rdfrag.GetBondBetweenAtoms(atom1,atom2)
+
+    frag_list = cut_and_place_cutting_labels(rdfrag, bond_to_cut)
+    return frag_list
+    
+def replace_cutting_labels_with_metals(rdfrag,atom_mapping_flipped):
+    for idx,atom in atom_mapping_flipped.items():
+        if isinstance(atom, CuttingLabel):
+            if atom.symbol == "R":
+                rdfrag.GetAtomWithIdx(idx).SetAtomicNum(11) # [Na]
+            else:
+                rdfrag.GetAtomWithIdx(idx).SetAtomicNum(19)  # [K]
+
+    return rdfrag, atom_mapping_flipped
+
+def cut_and_place_cutting_labels(rdfrag, bond_to_cut):
+
+    newmol = Chem.RWMol(rdfrag)
+    new_mol = Chem.FragmentOnBonds(newmol, [bond_to_cut.GetIdx()], dummyLabels=[(0,0)])
+    mol_set = Chem.GetMolFrags(new_mol, asMols=True)
+    
+    if len(mol_set) == 2:
+        frag1 = Chem.MolToSmiles(mol_set[0])
+        frag2 = Chem.MolToSmiles(mol_set[1])
+
+        frag1_R = frag1.count("Na")
+        frag1_L = frag1.count("K")
+        frag2_R = frag2.count("Na")
+        frag2_L = frag2.count("K")
+
+        if frag1_R > frag2_R and frag1_L <= frag2_L:
+            frag1_smi = frag1.replace("*", "L")
+            frag2_smi = frag2.replace("*", "R")
+        elif frag1_L > frag2_L and frag1_R <= frag2_R:
+            frag1_smi = frag1.replace("*", "R")
+            frag2_smi = frag2.replace("*", "L")
+        elif frag2_L > frag1_L and frag2_R <= frag1_R:
+            frag1_smi = frag1.replace("*", "L")
+            frag2_smi = frag2.replace("*", "R")
+        elif frag2_R > frag1_R and frag2_L <= frag1_L:
+            frag1_smi = frag1.replace("*", "R")
+            frag2_smi = frag2.replace("*", "L")
+        elif randint(0,1)==1:
+            frag1_smi = frag1.replace("*", "L")
+            frag2_smi = frag2.replace("*", "R")
+        else:
+            frag1_smi = frag1.replace("*", "R")
+            frag2_smi = frag2.replace("*", "L")
+        frag1_smi = frag1_smi.replace("[Na]", "R")
+        frag1_smi = frag1_smi.replace("[K]", "L")
+        frag2_smi = frag2_smi.replace("[Na]","R")
+        frag2_smi = frag2_smi.replace("[K]","L")
+        frag_list = [frag1_smi,frag2_smi]
+        frag_list = [Fragment().from_smiles_like_string(x).smiles for x in frag_list]
+
+        return frag_list
+
+def add_starting_fragment_cut_if_needed(species_fragment, nearest_cutting_label, starting_fragment_smiles,species_cutting_threshold = 20):
+    merged_frag = merge_fragment_a_to_cutting_label_on_b(starting_fragment_smiles,species_fragment.smiles, nearest_cutting_label)
+    merged_frag_smiles = merged_frag.smiles
+    if merged_frag_smiles.count("C") + merged_frag_smiles.count("c") > species_cutting_threshold:
+        cuttable_bonds = return_cuttable_bonds(merged_frag)
+        options = []
+        for cuttable_bond_idx_tuple in cuttable_bonds:
+            frag1smi, frag2smi = cut_specific_bond(merged_frag, cuttable_bond_idx_tuple)
+            options.append([frag1smi,frag2smi])
+        
+        return options
+    else:
+        return [[merged_frag_smiles]]
+    
+def check_if_bond_is_cuttable(frag, bond_idx_tuple):
+    frag, nearby_atoms = get_atoms_nearby_bond(frag, bond_idx_tuple)
+    
+    nearby_bond_orders = flatten_list_of_lists([[x.order for x in atom.bonds.values()] for atom in nearby_atoms])
+    nearby_cl_bool = (sum([1 for x in nearby_atoms if type(x)==CuttingLabel])>0)
+    nearby_radical_bool = (sum([x.radical_electrons for x in nearby_atoms]) > 0)
+    nearby_pi_bond_bool = any(x>1 for x in nearby_bond_orders)
+    if nearby_radical_bool ==False and nearby_pi_bond_bool == False and nearby_cl_bool ==False:
+        return True
+    else:
+        return False
+
+def return_cuttable_bonds(frag):
+    frag, single_cc_bonds = get_single_cc_bonds(frag)
+    
+    cuttable_bonds = []
+    for bond_idx_tuple in single_cc_bonds:
+        cuttable_bool = check_if_bond_is_cuttable(frag, bond_idx_tuple)
+        if cuttable_bool:
+            cuttable_bonds.append(bond_idx_tuple)
+    cuttable_bonds = list(set(cuttable_bonds))
+    return cuttable_bonds
+
+def process_new_fragment(species_smiles, starting_fragment_smiles,species_cutting_threshold = 20):
+
+    radical_result = check_if_radical_near_cutting_label(species_smiles)
+    
+
+    if radical_result != False:
+        species_fragment, nearest_cutting_label = radical_result
+        options = add_starting_fragment_cut_if_needed(species_fragment, nearest_cutting_label, starting_fragment_smiles,species_cutting_threshold = species_cutting_threshold)
+        return options
+    else:
+        pibond_result = check_if_pibond_near_cutting_label(species_smiles)
+        if pibond_result!=False:
+            species_fragment, nearest_cutting_label = pibond_result
+            options = add_starting_fragment_cut_if_needed(species_fragment, nearest_cutting_label, starting_fragment_smiles,species_cutting_threshold = species_cutting_threshold)
+            return options
+        else:
+            return species_smiles
+
+def make_new_reaction_string(species_smiles, starting_fragment_smiles, frag_list):
+    frag_list_str = " + ".join(frag_list)
+    return f"{species_smiles} + {starting_fragment_smiles} => {frag_list_str}"

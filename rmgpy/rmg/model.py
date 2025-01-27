@@ -59,7 +59,7 @@ from rmgpy.thermo.thermoengine import submit
 from rmgpy.rmg.decay import decay_species
 from rmgpy.rmg.reactors import PhaseSystem, Phase, Interface, Reactor
 from rmgpy.molecule.fragment import Fragment
-
+from rmgpy.molecule.molecule import Molecule
 ################################################################################
 
 
@@ -303,12 +303,17 @@ class CoreEdgeReactionModel:
 
         # If we're here then we're ready to make the new species
         if check_cut:
-            try:
-                mols = molecule.cut_molecule(cut_through=False)
-            except AttributeError:
-                # it's Molecule object, change it to Fragment and then cut
+            # set size_threshold to about half the molecule size
+            size_threshold = int((molecule.smiles.count("C")+molecule.smiles.count("c"))/2)
+            # if the molecule type is Molecule, change type to Fragment before cutting
+            if type(molecule) == Molecule:
                 molecule = Fragment().from_adjacency_list(molecule.to_adjacency_list())
+            # try to cut_molecule with size threshold set above
+            mols = molecule.cut_molecule(cut_through=False,size_threshold=size_threshold)
+            # if cut above can't be made try with default size_threshold = 5
+            if len(mols) == 1:
                 mols = molecule.cut_molecule(cut_through=False)
+            # if cut above can't be made, don't cut
             if len(mols) == 1:
                 molecule = mols[0]
             else:
