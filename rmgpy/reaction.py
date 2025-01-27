@@ -348,13 +348,13 @@ class Reaction:
 
         elif isinstance(self.kinetics, ThirdBody):
             # Cantera 3 doesn't have a ThirdBody class, only third body attribute in the normal class
-            if ct_collider is not None:
+            if ct_collider:
                 ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider, rate=ct.ArrheniusRate())
             else:  # provide the default collider (if we don't have one) to establish this as a ThirdBody reaction
                 ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, third_body=ct.ThirdBody(), rate=ct.ArrheniusRate())
 
         elif isinstance(self.kinetics, Troe):
-            if ct_collider is not None:
+            if ct_collider:
                 ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
@@ -369,7 +369,7 @@ class Reaction:
                 )
 
         elif isinstance(self.kinetics, Lindemann):
-            if ct_collider is not None:
+            if ct_collider:
                 ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
