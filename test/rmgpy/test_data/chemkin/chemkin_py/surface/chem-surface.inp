@@ -6,7 +6,7 @@ ELEMENTS
 	X /195.083/
 END
 
-SITE SDEN/2.4830E-09/ ! mol/cm^2
+SITE/site0/ SDEN/2.4830E-09/ ! mol/cm^2
     X
     HX
 	OX
