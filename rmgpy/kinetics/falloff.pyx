@@ -226,7 +226,7 @@ cdef class Lindemann(PDepKineticsModel):
         """
         import cantera as ct
         assert isinstance(ct_reaction.rate, ct.LindemannRate), "Must have a Cantera LindemannRate attribute"
-        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        ct_reaction.third_body.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
         ct_reaction.rate = self.to_cantera_kinetics() 
         
 
