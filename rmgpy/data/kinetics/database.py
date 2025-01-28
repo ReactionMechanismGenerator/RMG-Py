@@ -46,7 +46,9 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, StickingCoefficient, \
                            StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, \
-                           ArrheniusBM, SurfaceChargeTransfer, KineticsModel, Marcus
+                           ArrheniusBM, SurfaceChargeTransfer, KineticsModel, Marcus, \
+                           ArrheniusChargeTransfer, ArrheniusChargeTransferBM
+from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.molecule import Molecule, Group
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
@@ -70,6 +72,7 @@ class KineticsDatabase(object):
             'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
             'ArrheniusEP': ArrheniusEP,
+            'ArrheniusChargeTransfer': ArrheniusChargeTransfer,
             'MultiArrhenius': MultiArrhenius,
             'MultiPDepArrhenius': MultiPDepArrhenius,
             'PDepArrhenius': PDepArrhenius,
@@ -84,11 +87,13 @@ class KineticsDatabase(object):
             'SurfaceChargeTransfer': SurfaceChargeTransfer,
             'R': constants.R,
             'ArrheniusBM': ArrheniusBM,
+            'ArrheniusChargeTransferBM': ArrheniusChargeTransferBM,
             'SoluteData': SoluteData,
             'SoluteTSData': SoluteTSData,
             'SoluteTSDiffData': SoluteTSDiffData,
             'KineticsModel': KineticsModel,
             'Marcus': Marcus,
+            'RateUncertainty': RateUncertainty,
         }
         self.global_context = {}
 
@@ -263,7 +268,16 @@ class KineticsDatabase(object):
                 for f in files:
                     if f.lower() == 'reactions.py':
                         library_file = os.path.join(root, f)
-                        label = os.path.dirname(library_file)[len(path) + 1:]
+                        dirname = os.path.dirname(library_file)
+                        if dirname == path:
+                            label = os.path.basename(dirname)
+                        else:
+                            label = os.path.relpath(dirname, path)
+
+                        if not label:
+                            logging.warning(f"Empty label for {library_file}. Using 'default'.")
+                            label = "default"
+                        
                         logging.info(f'Loading kinetics library {label} from {library_file}...')
                         library = KineticsLibrary(label=label)
                         try:
