@@ -11,48 +11,88 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v4
+      - name: Create custom conda config file
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "channels:" > $RUNNER_CWD/condarc.yml
+          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
+          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
+      - name: Setup Conda       
+        uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
+          miniforge-variant: Miniforge3
+          miniforge-version: latest
           python-version: 3.7
           activate-environment: rmg_env
+          use-mamba: true
       - name: Conda info
         run: |
-          conda info
-          conda list
-      - name: Build Binary
-        env: 
-          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          mamba info
+          mamba list
+      - name: Install Build Tools
         run: |
-          conda install -y conda-build 
-          conda install -y anaconda-client 
-          conda config --add channels rmg
-          conda config --set anaconda_upload yes
-          conda build --token $CONDA_TOKEN --user rmg .conda
+          mamba install -y anaconda-client conda-build conda-verify
+      - name: Configure Auto-Upload
+        run: |
+          conda config --set anaconda_upload yes          
+      - name: Build Binary
+        run: |
+          # Set the CONDA_TOKEN environment variable
+          if [ -z "${{ secrets.ANACONDA_TOKEN }}" ]; then
+            export CONDA_TOKEN="default_value"
+          else
+            export CONDA_TOKEN="${{ secrets.ANACONDA_TOKEN }}"
+          fi
+
+          echo "CONDA_TOKEN=$CONDA_TOKEN" >> $GITHUB_ENV
+      
+          # Build the Conda binary
+          conda-build --token "$CONDA_TOKEN" --user rmg .conda
+  
   build-osx:
     runs-on: macos-latest
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
-      - uses: conda-incubator/setup-miniconda@v2
+      - uses: actions/checkout@v4
+      - name: Create custom conda config file
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "channels:" > $RUNNER_CWD/condarc.yml
+          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
+          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml    
+      - name: Setup Conda       
+        uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
+          miniforge-variant: Miniforge3
+          miniforge-version: latest
           python-version: 3.7
           activate-environment: rmg_env
+          use-mamba: true
       - name: Conda info
         run: |
-          conda info
-          conda list
-      - name: Build Binary
-        env: 
-          CONDA_TOKEN: ${{ secrets.ANACONDA_TOKEN }}
+          mamba info
+          mamba list
+      - name: Install Build Tools
         run: |
-            conda install -y conda-build 
-            conda install -y anaconda-client 
-            conda config --add channels rmg
-            conda config --set anaconda_upload yes
-            xcrun --show-sdk-path
-            conda build --token $CONDA_TOKEN --user rmg .conda
+          mamba install -y anaconda-client conda-build conda-verify
+      - name: Configure Auto-Upload
+        run: |
+          conda config --set anaconda_upload yes   
+      - name: Build Binary
+        run: |
+          # Set the CONDA_TOKEN environment variable
+          if [ -z "${{ secrets.ANACONDA_TOKEN }}" ]; then
+            export CONDA_TOKEN="default_value"
+          else
+            export CONDA_TOKEN="${{ secrets.ANACONDA_TOKEN }}"
+          fi
+
+          echo "CONDA_TOKEN=$CONDA_TOKEN" >> $GITHUB_ENV
+
+          xcrun --show-sdk-path
+          conda build --token $CONDA_TOKEN --user rmg .conda
