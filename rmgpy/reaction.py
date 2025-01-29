@@ -347,36 +347,37 @@ class Reaction:
             ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
 
         elif isinstance(self.kinetics, ThirdBody):
-            if ct_collider is not None:
-                ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider)
-            else:
-                ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
+            # Cantera 3 doesn't have a ThirdBody class, only third body attribute in the normal class
+            if ct_collider:
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider, rate=ct.ArrheniusRate())
+            else:  # provide the default collider (if we don't have one) to establish this as a ThirdBody reaction
+                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, third_body=ct.ThirdBody(), rate=ct.ArrheniusRate())
 
         elif isinstance(self.kinetics, Troe):
-            if ct_collider is not None:
-                ct_reaction = ct.FalloffReaction(
+            if ct_collider:
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
-                    tbody=ct_collider,
+                    third_body=ct_collider,
                     rate=ct.TroeRate()
                 )
             else:
-                ct_reaction = ct.FalloffReaction(
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
                     rate=ct.TroeRate()
                 )
 
         elif isinstance(self.kinetics, Lindemann):
-            if ct_collider is not None:
-                ct_reaction = ct.FalloffReaction(
+            if ct_collider:
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
-                    tbody=ct_collider,
+                    third_body=ct_collider,
                     rate=ct.LindemannRate()
                 )
             else:
-                ct_reaction = ct.FalloffReaction(
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
                     rate=ct.LindemannRate()
