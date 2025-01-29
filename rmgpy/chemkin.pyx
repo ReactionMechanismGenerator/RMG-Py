@@ -1180,7 +1180,8 @@ def read_species_block(f, species_dict, species_aliases, species_list):
     tokens_upper = line.upper().split()
     first_token = tokens.pop(0)
     first_token = tokens_upper.pop(0)  # pop from both lists
-    assert first_token in ['SPECIES', 'SPEC', 'SITE']  # should be first token in first line
+    # first token can have a name like SITE/SITE0/
+    assert first_token.split('/')[0] in ['SPECIES', 'SPEC', 'SITE'], f"{first_token=} not expected"
     # Build list of species identifiers
     while 'END' not in tokens_upper:
         line = f.readline()
