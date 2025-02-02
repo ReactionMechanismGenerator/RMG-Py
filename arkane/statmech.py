@@ -575,6 +575,8 @@ class StatMechJob(object):
         # and the zero point energy scaling factor, see https://pubs.acs.org/doi/10.1021/ct100326h Section 3.1.3.
         zpe_scale_factor = self.frequencyScaleFactor / 1.014
 
+        e_electronic_with_corrections, zpe = 0, 0
+
         logging.debug('    Reading energy...')
         if e0 is None:
             if e_electronic is None:
