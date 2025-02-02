@@ -688,7 +688,7 @@ class StatMechJob(object):
             # Set the difference as the isodesmic EO correction
             e_electronic_with_corrections += isodesmic_thermo.value_si - uncorrected_thermo
 
-        e0 = e_electronic_with_corrections + zpe
+        e0 = e_electronic_with_corrections + zpe if e0 is None else e0
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
         conformer.E0 = (e0 * 0.001, "kJ/mol")
 
