@@ -713,7 +713,7 @@ class StatMechJob(object):
         else:
             self.supporting_info.append(None)
         self.supporting_info.append(e_electronic)
-        self.supporting_info.append(e_electronic + zpe)
+        self.supporting_info.append(e_electronic + zpe if e_electronic is not None and zpe is not None else None)
         self.supporting_info.append(e0)
         self.supporting_info.append(list([symbol_by_number[x] for x in number]))  # atom symbols
         self.supporting_info.append(coordinates)
