@@ -219,17 +219,11 @@ def generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_
                     if surface_mol_frac_list != []:
                         for surface_mol_frac in surface_mol_frac_list:
                             for T in Tlist:
-                                print(T)
                                 for P in Plist:
-                                    print(P)
-                                    print(CanteraCondition(reactor_type, reaction_time, mol_frac, surface_mol_frac=surface_mol_frac, T0=T, P0=P))
                                     conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, surface_mol_frac=surface_mol_frac, T0=T, P0=P))
                     else:                        
                         for T in Tlist:
-                            print(T)
                             for P in Plist:
-                                print(P)
-                                print(CanteraCondition(reactor_type, reaction_time, mol_frac, T0=T, P0=P))
                                 conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac,  T0=T, P0=P))
             
 
