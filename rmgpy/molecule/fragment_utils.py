@@ -8,7 +8,9 @@ import re
 import os
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.random import default_rng
 
+rng = default_rng(0)
 
 def match_sequences(seq1, seq2, rtol=1e-6):
     '''
@@ -224,9 +226,14 @@ def flatten(combo):
             return_list.append(i)
     return return_list
 
-
-# label should match the desired merging l/'abel on frag2
 def merge_frag_to_frag(frag1, frag2, label):
+    """
+    Merge two fragments with cutting labels by
+    1.  identifying the cutting labels in each fragment as L or R
+    2.  Remove cutting labels 
+    3.  Merge fragments at cutting label sites by adding bond between 
+    cutting label sites
+    """
     from rmgpy.molecule import Bond
     from rmgpy.molecule.fragment import Fragment, CuttingLabel
 
@@ -246,7 +253,6 @@ def merge_frag_to_frag(frag1, frag2, label):
     if cut2.symbol[0] == 'L':
         Ctl = cut2.symbol.replace('L', 'R')
     else:  # that means this CuttingLabel is R something
-
         Ctl = cut2.symbol.replace('R', 'L')
 
     # merge to frag_spe1
@@ -267,13 +273,13 @@ def merge_frag_to_frag(frag1, frag2, label):
 
 
 def merge_frag_list(to_be_merged):
-    import os
+    """
+    Merge a list of fragments (with the same mole fraction) into 
+    1 molecule by using the merge_frag_to_frag function to merge 
+    the first two fragments in the to_be_merged list until the list 
+    length is only 1.
+    """
     # merges fragments in list from right to left
-    species_list = []
-    ethylene = []
-    newlist = []
-    warnings = []
-
     while len(to_be_merged) > 1:
 
         # second to last fragmentin list
@@ -310,6 +316,11 @@ def merge_frag_list(to_be_merged):
     return newfraglist
 
 def check_if_radical_near_cutting_label(species_smiles):
+    """
+    returns True if there is a radical center within 2 atoms of a cutting label
+    by looping through atoms, identifying radical centers, checking if any of 
+    the radical center's neighbors or neighbor's neighbors are cutting labels
+    """
     species_fragment = Fragment().from_smiles_like_string(species_smiles)
     for i, atom in enumerate(species_fragment.atoms):
         species_fragment.atoms[i].id = i
@@ -332,6 +343,12 @@ def check_if_radical_near_cutting_label(species_smiles):
         return False
 
 def check_if_pibond_near_cutting_label(species_smiles):
+    """
+    returns True if there is a pi bond within 2 atoms of a cutting label
+    by looping through atoms, finding any atoms participating in double 
+    bonds (bond order 2), and checking if the other atom in the bond is 
+    a cutting label or bonded to a cutting label
+    """
     species_fragment = Fragment().from_smiles_like_string(species_smiles)
     for i, atom in enumerate(species_fragment.atoms):
         species_fragment.atoms[i].id = i
@@ -400,10 +417,16 @@ def merge_fragment_a_to_cutting_label_on_b(smiles_a, smiles_b, cuttinglabel):
     return new_frag  # return Fragment obtl
 
 def get_single_cc_bonds(frag):
+    """
+    returns the input fragment and a list of single C-C bonds in a fragment or molecule
+    """
     single_cc_bonds = [tuple(sorted([x.atom1.id, x.atom2.id])) for x in frag.get_all_edges() if x.atom1.is_carbon() and x.atom2.is_carbon() and x.order ==1]
     return frag, single_cc_bonds
 
 def get_atoms_neighboring_bond(frag, bond_idx):
+    """
+    returns the input fragment and a list of atoms neighboring the input bond index in a fragment or molecule
+    """
     atom1id,atom2id = bond_idx
     atom1 = frag.atoms[atom1id]
     atom2 = frag.atoms[atom2id]
@@ -411,9 +434,17 @@ def get_atoms_neighboring_bond(frag, bond_idx):
     return frag, neighboring_atoms
 
 def flatten_list_of_lists(list_of_lists):
+    """
+    returns a flattened version of a nested list, e.g.
+    [[0,1],[1,2],[2,3]] --> [0,1,1,2,2,3]
+    """
     return [item for lst in list_of_lists for item in lst]
     
 def get_atoms_nearby_bond(frag, bond_idx):
+    """
+    returns the input fragment and a list of atoms neighboring the input bond index and atoms neighboring neighboring atoms
+    in a frragment or molecule
+    """
     atom1id,atom2id = bond_idx
     atom1 = frag.atoms[atom1id]
     atom2 = frag.atoms[atom2id]
@@ -427,6 +458,9 @@ def get_atoms_nearby_bond(frag, bond_idx):
     return frag, nearby_atoms
 
 def cut_specific_bond(frag, cut_bond_idx):
+    """
+    returns a fragment list resulting from cutting the input fragment at a specified bond index
+    """
 
     rdfrag, atom_mapping = frag.to_rdkit_mol(remove_h=False, return_mapping=True,  save_order=True)
 
@@ -443,6 +477,10 @@ def cut_specific_bond(frag, cut_bond_idx):
     return frag_list
     
 def replace_cutting_labels_with_metals(rdfrag,atom_mapping_flipped):
+    """
+    replace the cutting labels in an rdkit fragment with metal atoms
+    where R becomes Na and L becomes K.
+    """
     for idx,atom in atom_mapping_flipped.items():
         if isinstance(atom, CuttingLabel):
             if atom.symbol == "R":
@@ -453,7 +491,11 @@ def replace_cutting_labels_with_metals(rdfrag,atom_mapping_flipped):
     return rdfrag, atom_mapping_flipped
 
 def cut_and_place_cutting_labels(rdfrag, bond_to_cut):
-
+    """
+    returns a list of RMG fragments based on RDKit fragment with metal atoms and
+    a specified bond. The cutting labels are chosen in such a way that fragments
+    with 2 or more of the same cutting label are avoided if possible.
+    """
     newmol = Chem.RWMol(rdfrag)
     new_mol = Chem.FragmentOnBonds(newmol, [bond_to_cut.GetIdx()], dummyLabels=[(0,0)])
     mol_set = Chem.GetMolFrags(new_mol, asMols=True)
@@ -479,7 +521,7 @@ def cut_and_place_cutting_labels(rdfrag, bond_to_cut):
         elif frag2_R > frag1_R and frag2_L <= frag1_L:
             frag1_smi = frag1.replace("*", "R")
             frag2_smi = frag2.replace("*", "L")
-        elif randint(0,1)==1:
+        elif rng.integers(low=0, high=2, size=1)[0]==1:
             frag1_smi = frag1.replace("*", "L")
             frag2_smi = frag2.replace("*", "R")
         else:
@@ -509,8 +551,11 @@ def add_starting_fragment_cut_if_needed(species_fragment, nearest_cutting_label,
         return [[merged_frag_smiles]]
     
 def check_if_bond_is_cuttable(frag, bond_idx_tuple):
+    """
+    returns True if cutting the fragment at the bond index tuple specified does not result in a cutting label 
+    near another cutting label, a radical center, or a pi bond
+    """
     frag, nearby_atoms = get_atoms_nearby_bond(frag, bond_idx_tuple)
-    
     nearby_bond_orders = flatten_list_of_lists([[x.order for x in atom.bonds.values()] for atom in nearby_atoms])
     nearby_cl_bool = (sum([1 for x in nearby_atoms if type(x)==CuttingLabel])>0)
     nearby_radical_bool = (sum([x.radical_electrons for x in nearby_atoms]) > 0)
@@ -521,8 +566,11 @@ def check_if_bond_is_cuttable(frag, bond_idx_tuple):
         return False
 
 def return_cuttable_bonds(frag):
+    """
+    returns all bonds in a fragment or molecule which have been determined cuttable by the 
+    check_if_bond_is_cuttable function
+    """
     frag, single_cc_bonds = get_single_cc_bonds(frag)
-    
     cuttable_bonds = []
     for bond_idx_tuple in single_cc_bonds:
         cuttable_bool = check_if_bond_is_cuttable(frag, bond_idx_tuple)
@@ -532,10 +580,13 @@ def return_cuttable_bonds(frag):
     return cuttable_bonds
 
 def process_new_fragment(species_smiles, starting_fragment_smiles,species_cutting_threshold = 20):
+    """
+    returns a list of fragment list options for the input species_smiles with acceptable cuts
+    (no cuts near pi bonds, radicals, or other cutting labels)
+    """
 
     radical_result = check_if_radical_near_cutting_label(species_smiles)
     
-
     if radical_result != False:
         species_fragment, nearest_cutting_label = radical_result
         options = add_starting_fragment_cut_if_needed(species_fragment, nearest_cutting_label, starting_fragment_smiles,species_cutting_threshold = species_cutting_threshold)
@@ -550,11 +601,19 @@ def process_new_fragment(species_smiles, starting_fragment_smiles,species_cuttin
             return species_smiles
 
 def make_new_reaction_string(species_smiles, starting_fragment_smiles, frag_list):
+    """
+    returns reaction string for partial reattachment of species_smiles and
+    starting_fragment_smiles
+    """
     frag_list_str = " + ".join(frag_list)
     return f"{species_smiles} + {starting_fragment_smiles} => {frag_list_str}"
 
 
 def generate_add_partial_reattachment_reactions(seed_dir, starting_fragments):
+    """
+    automatically generates partial reattachment reactions given path to seed 
+    directory for fragment mechanism and updates the reactions.py files 
+    """
     seed_reactions_filename = os.path.join(seed_dir, "reactions.py")
     seed_dictionary_filename = os.path.join(seed_dir, "dictionary.txt")
 
