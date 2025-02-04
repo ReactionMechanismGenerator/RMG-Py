@@ -307,11 +307,6 @@ def merge_frag_list(to_be_merged):
         to_be_merged = newfraglist
 
     to_be_merged = newfraglist
-    # newlist.append(newfraglist) # if done merging list, write final
-    # structure to list of smiles structures
-
-    # print('{}% of fragments fully merged...'.format(np.round(100*(i+1)/len(flattened_matches_random)),1))
-# print(newfraglist)
     return newfraglist
 
 def check_if_radical_near_cutting_label(species_smiles):
@@ -405,7 +400,7 @@ def merge_fragment_a_to_cutting_label_on_b(smiles_a, smiles_b, cuttinglabel):
     return new_frag  # return Fragment obtl
 
 def get_single_cc_bonds(frag):
-    single_cc_bonds = [tuple(sorted([x.atom1.id, x.atom2.id])) for x in frag.get_all_edges() if x.atom1.symbol =="C" and x.atom2.symbol=="C" and x.order ==1]
+    single_cc_bonds = [tuple(sorted([x.atom1.id, x.atom2.id])) for x in frag.get_all_edges() if x.atom1.is_carbon() and x.atom2.is_carbon() and x.order ==1]
     return frag, single_cc_bonds
 
 def get_atoms_neighboring_bond(frag, bond_idx):

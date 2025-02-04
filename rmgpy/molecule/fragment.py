@@ -39,7 +39,10 @@ from rmgpy.molecule.graph import Graph, Vertex
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.atomtype import get_atomtype, AtomTypeError, ATOMTYPES, AtomType
 from rdkit import Chem
-from numpy.random import randint
+from numpy.random import default_rng
+
+rng = default_rng(0)
+
 # this variable is used to name atom IDs so that there are as few conflicts by
 # using the entire space of integer objects
 ATOM_ID_COUNTER = -(2**15)
@@ -948,7 +951,7 @@ class Fragment(Molecule):
                     mol_set = Chem.GetMolFrags(new_mol, asMols=True)
                     # check all fragments' size
 
-                    if all(sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6) >= size_threshold for mol in mol_set):
+                    if all(sum(1 for atom in mol.GetAtoms() if atom.is_carbon()) >= size_threshold for mol in mol_set):
                         if len(mol_set) == 2:
                             frag1 = Chem.MolToSmiles(mol_set[0])
                             frag2 = Chem.MolToSmiles(mol_set[1])
@@ -989,7 +992,7 @@ class Fragment(Molecule):
                             # else if frag 1 and frag 2 have equal number 
                             # of Rs and Ls or one frag has more Rs and 
                             # more Ls than the other, choose randomly
-                            elif randint(0, 1) == 1:
+                            elif rng.integers(low=0, high=2, size=1)[0] == 1:
                                 frag1_smi = frag1.replace("*", "L")
                                 frag2_smi = frag2.replace("*", "R")
                             else:
@@ -1111,7 +1114,7 @@ class Fragment(Molecule):
                     # mol_set contains new set of fragments
                     mol_set = Chem.GetMolFrags(new_mol, asMols=True)
                     # check all fragments' size
-                    if all(sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6) >= size_threshold for mol in mol_set):
+                    if all(sum(1 for atom in mol.GetAtoms() if atom.is_carbon()) >= size_threshold for mol in mol_set):
                         if len(mol_set) == 2:
                             frag1 = Chem.MolToSmiles(mol_set[0])
                             frag2 = Chem.MolToSmiles(mol_set[1])
@@ -1133,7 +1136,7 @@ class Fragment(Molecule):
                             elif frag2_R > frag1_R and frag2_L <= frag1_L:
                                 frag1_smi = frag1.replace("*", "R")
                                 frag2_smi = frag2.replace("*", "L")
-                            elif randint(0,1)==1:
+                            elif rng.integers(low=0, high=2, size=1)[0] ==1:
                                 frag1_smi = frag1.replace("*", "L")
                                 frag2_smi = frag2.replace("*", "R")
                             else:
