@@ -38,7 +38,7 @@ from rmgpy.data.kinetics.family import ReactionRecipe
 decay_group_recipe_pairs = [(Group().from_adjacency_list("""
     1  *3 O u0 p2 c0 {2,S} {4,S}
     2  *2 O u0 p2 c0 {1,S} {3,S}
-    3  *1 R!H u1 px c0 {2,S}
+    3  *1 C u1 px c0 {2,S}
     4  H u0 p0  c0 {1,S}
     """),
     ReactionRecipe(actions=[
