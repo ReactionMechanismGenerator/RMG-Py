@@ -1078,13 +1078,10 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             d[3 * i + 2, 5] = (p[i, 0] * inertia_xyz[2, 1] - p[i, 1] * inertia_xyz[2, 0]) * amass[i]
 
     # Make sure projection matrix is orthonormal
-
-    inertia = np.identity(n_atoms * 3, float)
-
+    identity = np.identity(n_atoms * 3, float)
     p = np.zeros((n_atoms * 3, 3 * n_atoms + external), float)
-
     p[:, 0:external] = d[:, 0:external]
-    p[:, external:external + 3 * n_atoms] = inertia[:, 0:3 * n_atoms]
+    p[:, external:external + 3 * n_atoms] = identity[:, 0:3 * n_atoms]
 
     for i in range(3 * n_atoms + external):
         norm = 0.0
@@ -1234,8 +1231,8 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     # Do the projection
     d_int_proj = np.dot(vmw.T, d_int)
     proj = np.dot(d_int, d_int.T)
-    inertia = np.identity(n_atoms * 3, float)
-    proj = inertia - proj
+    identity = np.identity(n_atoms * 3, float)
+    proj = identity - proj
     fm = np.dot(proj, np.dot(fm, proj))
     # Get eigenvalues of mass-weighted force constant matrix
     eig, v = np.linalg.eigh(fm)
