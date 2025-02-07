@@ -1078,39 +1078,33 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             d[3 * i + 2, 5] = (p[i, 0] * inertia_xyz[2, 1] - p[i, 1] * inertia_xyz[2, 0]) * amass[i]
 
     # Make sure projection matrix is orthonormal
-    identity = np.identity(n_atoms * 3, float)
-    p = np.zeros((n_atoms * 3, 3 * n_atoms + external), float)
-    p[:, 0:external] = d[:, 0:external]
-    p[:, external:external + 3 * n_atoms] = identity[:, 0:3 * n_atoms]
+    p = np.hstack((d, np.identity(n_atoms * 3, float)))
 
-    # modified Gram–Schmidt orthonormalization
-    for i in range(3 * n_atoms + external):
-        norm = 0.0
-        for j in range(3 * n_atoms):
-            norm += p[j, i] * p[j, i]
-        for j in range(3 * n_atoms):
-            if norm > 1E-15:
-                p[j, i] /= np.sqrt(norm)
-            else:
-                p[j, i] = 0.0  # zeroing out vectors that are nearly zero or dependent, could lose a basis
-        for j in range(i + 1, 3 * n_atoms + external):
-            proj = 0.0
-            for k in range(3 * n_atoms):
-                proj += p[k, i] * p[k, j]
-            for k in range(3 * n_atoms):
-                p[k, j] -= proj * p[k, i]
+    # Compute the QR decomposition in reduced mode
+    Q, R = np.linalg.qr(p, mode='reduced')
 
-    # Order p, since there will be vectors that are 0.0
-    i = 0
-    is_zero_column = (p*p).sum(axis=0) < 0.5
-    # put the columns that are zeros at the end
-    temporary = np.hstack((p[:, ~is_zero_column], p[:, is_zero_column]))
-    p[:, :] = temporary
+    # Verify that Q has orthonormal columns:
+    if np.isclose(np.dot(Q.T, Q), np.eye(Q.shape[1])).all():
+        logging.debug("Q has orthonormal columns")
+    else:
+        logging.warning("Q does not have orthonormal columns")
+    # Verify the reconstruction
+    reconstructed_p = Q @ R
+    if np.isclose(p, reconstructed_p).all():
+        logging.debug("Reconstruction of projection matrix is correct")
+    else:
+        logging.warning("Reconstruction of projection matrix is incorrect")
+
+    # Check for nearly zero columns in the QR decomposition
+    for i, rkk in enumerate(R.diagonal()):
+        if abs(rkk) < 1E-15:
+            logging.warning(f'Column {i} of the QR decomposition is nearly zero, could lose a basis')
+
 
     # T is the transformation vector from cartesian to internal coordinates
     T = np.zeros((n_atoms * 3, 3 * n_atoms - external), float)
 
-    T[:, 0:3 * n_atoms - external] = p[:, external:3 * n_atoms]
+    T[:, :] = Q[:, external:3 * n_atoms]
 
     # Generate mass-weighted force constant matrix
     # This converts the axes to mass-weighted Cartesian axes
