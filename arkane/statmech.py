@@ -1198,23 +1198,19 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
                 d_int[j, i] += d_int_proj[k, i] * vmw[j, k]
 
     # Ortho normalize
-    for i in range(n_rotors):
-        norm = 0.0
-        for j in range(3 * n_atoms):
-            norm += d_int[j, i] * d_int[j, i]
-        for j in range(3 * n_atoms):
-            d_int[j, i] /= np.sqrt(norm)
-        for j in range(i + 1, n_rotors):
-            proj = 0.0
-            for k in range(3 * n_atoms):
-                proj += d_int[k, i] * d_int[k, j]
-            for k in range(3 * n_atoms):
-                d_int[k, j] -= proj * d_int[k, i]
+    # Here, Q will have orthonormal columns, and R is the triangular factor.
+    Q, R = np.linalg.qr(d_int, mode='reduced')
+    # replace d_int with its orthonormalized version:
+    d_int = Q
 
     # calculate the frequencies corresponding to the internal rotors
     int_proj = np.dot(fm, d_int)
     kmus = np.array([np.linalg.norm(int_proj[:, i]) for i in range(int_proj.shape[1])])
     int_rotor_freqs = np.sqrt(kmus) / (2.0 * math.pi * constants.c * 100.0)
+
+    logging.debug('Frequencies from internal rotors:')
+    for i in range(n_rotors):
+        logging.debug(int_rotor_freqs[i])
 
     if get_projected_out_freqs:
         return int_rotor_freqs
