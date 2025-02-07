@@ -1083,6 +1083,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     p[:, 0:external] = d[:, 0:external]
     p[:, external:external + 3 * n_atoms] = identity[:, 0:3 * n_atoms]
 
+    # modified Gram–Schmidt orthonormalization
     for i in range(3 * n_atoms + external):
         norm = 0.0
         for j in range(3 * n_atoms):
@@ -1091,7 +1092,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             if norm > 1E-15:
                 p[j, i] /= np.sqrt(norm)
             else:
-                p[j, i] = 0.0
+                p[j, i] = 0.0  # zeroing out vectors that are nearly zero or dependent, could lose a basis
         for j in range(i + 1, 3 * n_atoms + external):
             proj = 0.0
             for k in range(3 * n_atoms):
@@ -1099,7 +1100,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             for k in range(3 * n_atoms):
                 p[k, j] -= proj * p[k, i]
 
-    # Order p, there will be vectors that are 0.0
+    # Order p, since there will be vectors that are 0.0
     i = 0
     is_zero_column = (p*p).sum(axis=0) < 0.5
     # put the columns that are zeros at the end
