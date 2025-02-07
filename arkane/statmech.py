@@ -1101,14 +1101,10 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     # Order p, there will be vectors that are 0.0
     i = 0
-    while i < 3 * n_atoms:
-        norm = 0.0
-        for j in range(3 * n_atoms):
-            norm += p[j, i] * p[j, i]
-        if norm < 0.5:
-            p[:, i:3 * n_atoms + external - 1] = p[:, i + 1:3 * n_atoms + external]
-        else:
-            i += 1
+    is_zero_column = (p*p).sum(axis=0) < 0.5
+    # put the columns that are zeros at the end
+    temporary = np.hstack((p[:, ~is_zero_column], p[:, is_zero_column]))
+    p[:, :] = temporary
 
     # T is the transformation vector from cartesian to internal coordinates
     T = np.zeros((n_atoms * 3, 3 * n_atoms - external), float)
