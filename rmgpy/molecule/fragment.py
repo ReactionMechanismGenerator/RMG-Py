@@ -950,8 +950,11 @@ class Fragment(Molecule):
                     # mol_set contains new set of fragments
                     mol_set = Chem.GetMolFrags(new_mol, asMols=True)
                     # check all fragments' size
-
-                    if all(sum(1 for atom in mol.GetAtoms() if atom.is_carbon()) >= size_threshold for mol in mol_set):
+                    if all(
+                        sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6)
+                        >= size_threshold
+                        for mol in mol_set
+                    ):
                         if len(mol_set) == 2:
                             frag1 = Chem.MolToSmiles(mol_set[0])
                             frag2 = Chem.MolToSmiles(mol_set[1])
@@ -1114,7 +1117,11 @@ class Fragment(Molecule):
                     # mol_set contains new set of fragments
                     mol_set = Chem.GetMolFrags(new_mol, asMols=True)
                     # check all fragments' size
-                    if all(sum(1 for atom in mol.GetAtoms() if atom.is_carbon()) >= size_threshold for mol in mol_set):
+                    if all(
+                        sum(1 for atom in mol.GetAtoms() if atom.GetAtomicNum() == 6)
+                        >= size_threshold
+                        for mol in mol_set
+                    ):
                         if len(mol_set) == 2:
                             frag1 = Chem.MolToSmiles(mol_set[0])
                             frag2 = Chem.MolToSmiles(mol_set[1])
