@@ -113,6 +113,13 @@ average for :math:`A` is a geometric mean, while the average for :math:`n`,
 If there are still no "sibling" kinetics, then the groups will continue to fall
 up to more and more general nodes. In the worst case, the root nodes may be used.
 
+Kinetic averaging takes into account the nodal distances (the distance between a child node and its parent).
+By default, the nodal distance is 1, but custom values can be specified within a ``group.py`` file, in order of 
+ascending precedence: either in a list of values for each tree e.g. ``treeDistances = [1,2,5]``, 
+or directly assigned to an entry in the group definition e.g. ``Entry(... nodalDistance=5, )``.
+This may be desired in special cases where one or more child nodes matches the family but has very different 
+kinetics, leading to poor overall tree estimates.
+
 A :ref:`Full List of the Kinetics Families <kinetics_families_db>` in RMG is available.
 
 Reverse Rates
