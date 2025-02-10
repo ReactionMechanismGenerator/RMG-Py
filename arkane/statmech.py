@@ -575,6 +575,8 @@ class StatMechJob(object):
         # and the zero point energy scaling factor, see https://pubs.acs.org/doi/10.1021/ct100326h Section 3.1.3.
         zpe_scale_factor = self.frequencyScaleFactor / 1.014
 
+        e_electronic_with_corrections, zpe = 0, 0
+
         logging.debug('    Reading energy...')
         if e0 is None:
             if e_electronic is None:
@@ -686,7 +688,7 @@ class StatMechJob(object):
             # Set the difference as the isodesmic EO correction
             e_electronic_with_corrections += isodesmic_thermo.value_si - uncorrected_thermo
 
-        e0 = e_electronic_with_corrections + zpe
+        e0 = e_electronic_with_corrections + zpe if e0 is None else e0
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
         conformer.E0 = (e0 * 0.001, "kJ/mol")
 
@@ -711,7 +713,7 @@ class StatMechJob(object):
         else:
             self.supporting_info.append(None)
         self.supporting_info.append(e_electronic)
-        self.supporting_info.append(e_electronic + zpe)
+        self.supporting_info.append(e_electronic + zpe if e_electronic is not None and zpe is not None else None)
         self.supporting_info.append(e0)
         self.supporting_info.append(list([symbol_by_number[x] for x in number]))  # atom symbols
         self.supporting_info.append(coordinates)
