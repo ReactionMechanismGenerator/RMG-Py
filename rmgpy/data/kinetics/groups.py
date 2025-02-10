@@ -83,7 +83,7 @@ class KineticsGroups(Database):
         Method for parsing entries in database files.
         Note that these argument names are retained for backward compatibility.
 
-        nodal_distance is the distance between a given entry and its parent specified by a float
+        nodalDistance is the distance between a given entry and its parent specified by a float
         """
         if (group[0:3].upper() == 'OR{' or
                 group[0:4].upper() == 'AND{' or

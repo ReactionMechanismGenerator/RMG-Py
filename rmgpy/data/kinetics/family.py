@@ -612,7 +612,7 @@ class KineticsFamily(Database):
 
     def distribute_tree_distances(self):
         """
-        fills in nodal_distance (the distance between an entry and its parent)
+        Fills in nodal_distance (the distance between an entry and its parent)
         if not already entered with the value from tree_distances associated
         with the tree the entry comes from
         """
