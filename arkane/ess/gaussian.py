@@ -227,6 +227,10 @@ class GaussianLog(ESSAdapter):
                     logging.debug('Conformer {0} is assigned a spin multiplicity of {1}'
                                   .format(label, spin_multiplicity))
 
+                # Keep track of rotational constants as we go in case Gaussian prints ****** instead of the value
+                if 'Rotational constants (GHZ):' in line and '*****' not in line:
+                    rot_const = [float(d) for d in line.split()[-3:]]
+
                 # The data we want is in the Thermochemistry section of the output
                 if '- Thermochemistry -' in line:
                     modes = []
@@ -246,9 +250,15 @@ class GaussianLog(ESSAdapter):
 
                         # Read moments of inertia for external rotational modes
                         elif 'Rotational constants (GHZ):' in line:
-                            inertia = [float(d) for d in line.split()[-3:]]
+                            inertia = [d for d in line.split()[-3:]]
+                            for i in range(len(inertia)):
+                                if '*******' in inertia[i]:
+                                    try:  # set rotational constant to the last known value
+                                        inertia[i] = rot_const[i]
+                                    except NameError:
+                                        raise LogError('Rotational constant listed as ***** and no previous value given')
                             for i in range(3):
-                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
+                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * float(inertia[i]) * 1e9) \
                                              * constants.Na * 1e23
                             rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
