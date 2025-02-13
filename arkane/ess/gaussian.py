@@ -132,8 +132,13 @@ class GaussianLog(ESSAdapter):
         only the last is returned. The units of the returned force constants
         are J/m^2. If no force constant matrix can be found in the log file,
         ``None`` is returned.
+        Also checks that the force constant matrix was computed using the correct
+        (input orientation Cartesian) coordinates.
+        IOP(2/9=2000) must be specified for large cases (14+ atoms)
         """
         force = None
+
+        iop2_9_equals_2000 = False
 
         n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
@@ -141,6 +146,9 @@ class GaussianLog(ESSAdapter):
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
+                if '2/9=2000' in line:
+                    iop2_9_equals_2000 = True
+
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
                     force = np.zeros((n_rows, n_rows), float)
@@ -157,6 +165,11 @@ class GaussianLog(ESSAdapter):
                     force *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
 
+        if n_atoms > 13 and not iop2_9_equals_2000:
+            raise LogError(f'Gaussian output file {self.path} contains more than 13 atoms. '
+                           f'Please add the `iop(2/9=2000)` keyword to your input file '
+                           f'so Gaussian will compute force matrix using the input orientation Cartesians.')
+
         return force
 
     def load_geometry(self):
@@ -164,18 +177,12 @@ class GaussianLog(ESSAdapter):
         Return the optimum geometry of the molecular configuration from the
         Gaussian log file. If multiple such geometries are identified, only the
         last is returned.
-        Also checks that the Cartesian coordinates are printed in the input orientation:
-        IOP(2/9=2000) must be specified for large cases (14+ atoms)
         """
         number, coord, mass = [], [], []
-
-        iop2_9_equals_2000 = False
+        
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
-                if '2/9=2000' in line:
-                    iop2_9_equals_2000 = True
-
                 # Automatically determine the number of atoms
                 if 'Input orientation:' in line:
                     number, coord = [], []
@@ -201,11 +208,6 @@ class GaussianLog(ESSAdapter):
                            'Make sure the output file is not corrupt.\nNote: if your species has '
                            '50 or more atoms, you will need to add the `iop(2/9=2000)` keyword to your '
                            'input file so Gaussian will print the input orientation geometry.'.format(self.path))
-
-        if len(number) > 13 and not iop2_9_equals_2000:
-            raise LogError(f'Gaussian output file {self.path} contains more than 13 atoms. '
-                           f'Please add the `iop(2/9=2000)` keyword to your input file '
-                           f'so Gaussian will print the geometry using the input orientation.')
 
         return coord, number, mass
 
