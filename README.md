@@ -30,18 +30,17 @@ Please see the [Download and Install](http://reactionmechanismgenerator.github.i
 - [RMG API Reference](http://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_API_Reference.pdf))
 
 ## How to Contribute
-Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/RMG-Contributor-Guidelines)
+Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CONTRIBUTING.md)
 for details on how to contribute to RMG-Py, Arkane, or RMG-database.
 
 ## How to Give Feedback
 
 Please post any issues you may have to the [issues page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/)
-or drop in to the [chat room](https://gitter.im/ReactionMechanismGenerator/RMG-Py) or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
+or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
 
 ## Useful Links
 - [Interactive Website](https://rmg.mit.edu): Visit this site to visualize RMG-generated models, view the databases, and 
 perform thermodynamics and kinetics searches
-- [Wiki](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki): a wiki for developer notes
 - [Issues Page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/): view current issues and feature requests
 
 ## Credits
