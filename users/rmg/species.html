@@ -62,9 +62,27 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <section id="species-representation">
 <span id="species"></span><h1><span class="section-number">10. </span>Species Representation<a class="headerlink" href="#species-representation" title="Permalink to this heading">¶</a></h1>
-<p>Species objects in RMG contain a variety of attributes, including user given names,
-thermochemistry, as well as structural isomers.  See the <a class="reference internal" href="../../reference/species/species.html#rmgpy-species-species"><span class="std std-ref">rmgpy.species.Species</span></a> class
-documentation for more information.</p>
+<p>The base class for chemical structures in RMG is <code class="docutils literal notranslate"><span class="pre">Graph</span></code> (see <span class="xref std std-ref">rmgpy.molecule.Graph</span>),
+which is a basic implementation of a 2D mathematical graph.
+A graph is comprised of a set of vertices connected by a set of edges.
+In RMG, the Graph class does not store any chemical information on its own,
+but it is the parent class of Group and Molecule.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">Group</span></code> class is used to represent a molecular fragment, whereas the <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> class
+is used to represent a specific molecular structure.
+A <code class="docutils literal notranslate"><span class="pre">Group</span></code> object can have a list of allowed specifications for each atom or bond property,
+while a <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> object  can only have one. Additionally, a <code class="docutils literal notranslate"><span class="pre">Group</span></code> object does not
+have to have a complete molecule while a Molecule object must be a full chemical structure.
+See the <span class="xref std std-ref">rmgpy.molecule.Group</span> and <span class="xref std std-ref">rmgpy.molecule.Molecule</span> class documentation.</p>
+<p>Finally, there is the <code class="docutils literal notranslate"><span class="pre">Species</span></code> class. Although colloquially we use molecules and species
+interchangeably, these terms have precise meanings in RMG.
+A <code class="docutils literal notranslate"><span class="pre">Species</span></code> object contains a list of molecule objects which are different representations of
+the same chemical compound (i.e., resonance structures).
+It also contains a descriptive label for the species, its thermochemical properties, transport data,
+and molecular weight, among other information. This distinction is important because many chemical
+compounds have resonance structures. Therefore, a <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> object is a graph that denotes the structure
+of a specific resonance isomer, while a <code class="docutils literal notranslate"><span class="pre">Species</span></code> incorporates all resonance structures found into one object.
+This prevents duplicate reactions from being generated for two molecule objects that are really the same chemical compound.
+See the <a class="reference internal" href="../../reference/species/species.html#rmgpy-species-species"><span class="std std-ref">rmgpy.species.Species</span></a> class documentation for more information.</p>
 <p>RMG considers each species to be unique, and comprised of a set of molecular structural
 isomers, including resonance isomers.  RMG uses the list of resonance isomers to
 compare whether two species are the same. Each molecular structure is stored in RMG using

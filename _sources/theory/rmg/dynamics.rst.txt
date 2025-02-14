@@ -67,31 +67,31 @@ for movement from surface to bulk core based on flux or dynamics criterion.
 Key Parameters for Dynamics Criterion and Surface Algorithm
 ===========================================================
 
-* **toleranceMoveEdgeReactionToCore**
+* ``toleranceMoveEdgeReactionToCore``
 
   An edge reaction will be pulled directly into the bulk core if its dynamics number
   ever exceeds this value.
 
-* **toleranceMoveEdgeReactionToSurface**
+* ``toleranceMoveEdgeReactionToSurface``
 
   An edge reaction will be pulled into the surface if its dynamics number
   ever exceeds this value.
 
-* **toleranceMoveEdgeReactionToCoreInterrupt**
+* ``toleranceMoveEdgeReactionToCoreInterrupt``
 
   When any reaction's dynamics number exceeds this value the simulation will be interrupted.
 
-* **toleranceMoveEdgeReactionToSurfaceInterrupt**
+* ``toleranceMoveEdgeReactionToSurfaceInterrupt``
 
   When the dynamics number of any reaction that would be valid for movement to the surface
   exceeds this value the simulation will be interrupted
 
-* **toleranceMoveSurfaceReactionToCore**
+* ``toleranceMoveSurfaceReactionToCore``
 
   A surface reaction will be pulled into the bulk core if its dynamics number
   ever exceeds this value.  Note this is done on the fly during simulation.
 
-* **toleranceMoveSurfaceSpeciesToCore**
+* ``toleranceMoveSurfaceSpeciesToCore``
 
   A surface species will be pulled into the bulk core if it's rate ratio
   ever exceeds this value.  Note this is done on the fly during simulation.

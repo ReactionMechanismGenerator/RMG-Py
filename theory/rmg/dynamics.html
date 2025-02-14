@@ -115,26 +115,26 @@ for movement from surface to bulk core based on flux or dynamics criterion.</p>
 <section id="key-parameters-for-dynamics-criterion-and-surface-algorithm">
 <h2><span class="section-number">3.3. </span>Key Parameters for Dynamics Criterion and Surface Algorithm<a class="headerlink" href="#key-parameters-for-dynamics-criterion-and-surface-algorithm" title="Permalink to this heading">¶</a></h2>
 <ul>
-<li><p><strong>toleranceMoveEdgeReactionToCore</strong></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceMoveEdgeReactionToCore</span></code></p>
 <p>An edge reaction will be pulled directly into the bulk core if its dynamics number
 ever exceeds this value.</p>
 </li>
-<li><p><strong>toleranceMoveEdgeReactionToSurface</strong></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceMoveEdgeReactionToSurface</span></code></p>
 <p>An edge reaction will be pulled into the surface if its dynamics number
 ever exceeds this value.</p>
 </li>
-<li><p><strong>toleranceMoveEdgeReactionToCoreInterrupt</strong></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceMoveEdgeReactionToCoreInterrupt</span></code></p>
 <p>When any reaction’s dynamics number exceeds this value the simulation will be interrupted.</p>
 </li>
-<li><p><strong>toleranceMoveEdgeReactionToSurfaceInterrupt</strong></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceMoveEdgeReactionToSurfaceInterrupt</span></code></p>
 <p>When the dynamics number of any reaction that would be valid for movement to the surface
 exceeds this value the simulation will be interrupted</p>
 </li>
-<li><p><strong>toleranceMoveSurfaceReactionToCore</strong></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceMoveSurfaceReactionToCore</span></code></p>
 <p>A surface reaction will be pulled into the bulk core if its dynamics number
 ever exceeds this value.  Note this is done on the fly during simulation.</p>
 </li>
-<li><p><strong>toleranceMoveSurfaceSpeciesToCore</strong></p>
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceMoveSurfaceSpeciesToCore</span></code></p>
 <p>A surface species will be pulled into the bulk core if it’s rate ratio
 ever exceeds this value.  Note this is done on the fly during simulation.</p>
 </li>

@@ -69,25 +69,25 @@ in order to achieve both low memory consumption and mechanism accuracy. Pruning 
 <section id="key-parameters-in-pruning">
 <h2><span class="section-number">2.1. </span>Key Parameters in Pruning<a class="headerlink" href="#key-parameters-in-pruning" title="Permalink to this heading">¶</a></h2>
 <ul>
-<li><p>toleranceKeepInEdge</p>
-<p>Any edge species to prune should have peak flux along the whole conversion course lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Thus, larger values will lead to smaller edge mechanisms.</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceKeepInEdge</span></code></p>
+<p>Any edge species to prune should have peak flux along the whole conversion course lower than <code class="docutils literal notranslate"><span class="pre">toleranceKeepInEdge</span></code> <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Thus, larger values will lead to smaller edge mechanisms.</p>
 </li>
-<li><p>toleranceMoveToCore</p>
-<p>Any edge species to enter core model should have flux at some point larger than toleranceMoveToCore <span class="math notranslate nohighlight">\(*\)</span> characteristic flux Thus, in general, smaller values will lead to larger core mechanisms.</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code></p>
+<p>Any edge species to enter core model should have flux at some point larger than <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Thus, in general, smaller values will lead to larger core mechanisms.</p>
 </li>
-<li><p>toleranceInterrupSimulation</p>
-<p>Once flux of any edge species exceeds toleranceInterruptSimulation <span class="math notranslate nohighlight">\(*\)</span> characteristic flux, dynamic simulation will be stopped.
+<li><p><code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code></p>
+<p>Once flux of any edge species exceeds <code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code> <span class="math notranslate nohighlight">\(*\)</span> characteristic flux, dynamic simulation will be stopped.
 Usually this tolerance will be set a very high value so that any flux’s exceeding that means mechanism is too incomplete to continue
 dynamic simulation.</p>
 </li>
-<li><p>maximumEdgeSpecies</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">maximumEdgeSpecies</span></code></p>
 <p>If dynamic simulation isn’t interrupted in half way and total number of the edge species whose peak fluxes are higher than
-toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux exceeds maximumEdgeSpecies, such excessive amount of edge species with lowest peak fluxes will be pruned.</p>
+<code class="docutils literal notranslate"><span class="pre">toleranceKeepInEdge</span></code> <span class="math notranslate nohighlight">\(*\)</span> characteristic flux exceeds <code class="docutils literal notranslate"><span class="pre">maximumEdgeSpecies</span></code>, such excessive amount of edge species with lowest peak fluxes will be pruned.</p>
 </li>
-<li><p>minCoreSizeForPrune</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">minCoreSizeForPrune</span></code></p>
 <p>Ensures that a minimum number of species are in the core before pruning occurs, in order to avoid pruning the model when it is far away from completeness.  The default value is set to 50 species.</p>
 </li>
-<li><p>minSpeciesExistIterationsForPrune</p>
+<li><p><code class="docutils literal notranslate"><span class="pre">minSpeciesExistIterationsForPrune</span></code></p>
 <p>Set the number of iterations an edge species must stay in the job before it can be pruned.  The default value is 2 iterations.</p>
 </li>
 </ul>
@@ -99,22 +99,22 @@ toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> char
 <figcaption>
 <p><span class="caption-text">The goal of pruning is to delete those “useless” edge species. So “usefulness” should be defined and it’s natural to have flux as a
 criterion for “usefulness”. Since flux changes with reactant conversion, peak flux is chosen here to make decision of pruning or not.
-Every time pruning is triggered, edge species with peak flux lower than toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux will be deleted.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+Every time pruning is triggered, edge species with peak flux lower than <code class="docutils literal notranslate"><span class="pre">toleranceKeepInEdge</span></code> <span class="math notranslate nohighlight">\(*\)</span> characteristic flux will be deleted.</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
 </figcaption>
 </figure>
 <figure class="align-default" id="id2">
 <img alt="../../_images/fluxDiagramWithTolerance.png" src="../../_images/fluxDiagramWithTolerance.png" />
 <figcaption>
-<p><span class="caption-text">However, pruning is not always triggered because of toleranceInterruptSimulation. As mentioned above, in order to prune, RMG needs to figure out
+<p><span class="caption-text">However, pruning is not always triggered because of <code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code>. As mentioned above, in order to prune, RMG needs to figure out
 the peak flux of each edge species, which requires dynamic simulation to complete. If some run of dynamic simulation is terminated in half way
-by toleranceInterruptSimulation, pruning is rejected although there might be some edge species with peak fluxes lower than
-toleranceKeepInEdge <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Since pruning requires to complete dynamic simulation, setting toleranceInterruptSimulation to be positive infinity,
-as an extreme case, means always enabling pruning. Another extreme case would be that it has same value as toleranceMoveToCore where
+by <code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code>, pruning is rejected although there might be some edge species with peak fluxes lower than
+<code class="docutils literal notranslate"><span class="pre">toleranceKeepInEdge</span></code> <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Since pruning requires to complete dynamic simulation, setting <code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code> to be positive infinity,
+as an extreme case, means always enabling pruning. Another extreme case would be that it has same value as <code class="docutils literal notranslate"><span class="pre">toleranceMoveToCore</span></code> where
 no pruning occurs.</span><a class="headerlink" href="#id2" title="Permalink to this image">¶</a></p>
 <div class="legend">
-<p>In summary, each run of dynamic simulation will proceed towards terminationConversion unless some flux exceeds
-toleranceInterruptSimulation <span class="math notranslate nohighlight">\(*\)</span> characteristic flux.Following complete simulation is the pruning of edge species whose flux is not high enough be kept
-in the edge, which is followed by pruning of excessive amount of edge species to make sure total edge species number is no greater than maximumEdgeSpecies.</p>
+<p>In summary, each run of dynamic simulation will proceed towards <code class="docutils literal notranslate"><span class="pre">terminationConversion</span></code> unless some flux exceeds
+<code class="docutils literal notranslate"><span class="pre">toleranceInterruptSimulation</span></code> <span class="math notranslate nohighlight">\(*\)</span> characteristic flux. Following complete simulation is the pruning of edge species whose flux is not high enough be kept
+in the edge, which is followed by pruning of excessive amount of edge species to make sure total edge species number is no greater than <code class="docutils literal notranslate"><span class="pre">maximumEdgeSpecies</span></code>.</p>
 </div>
 </figcaption>
 </figure>

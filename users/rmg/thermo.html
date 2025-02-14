@@ -170,7 +170,7 @@ can be found here: <a class="reference internal" href="database/thermo.html#ther
 <span id="qm"></span><h2><span class="section-number">13.3. </span>On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)<a class="headerlink" href="#on-the-fly-quantum-chemical-calculation-of-thermochemical-properties-qmtp" title="Permalink to this heading">¶</a></h2>
 <p>An interface for performing on-the-fly quantum and force field calculations
 has been developed and integrated into RMG to complement the species thermochemistry databases and
-group contribution methods [Magoon and Green]_. This interface is particularly interesting for the estimation of
+group contribution methods <a class="reference internal" href="#magoonandgreen" id="id3"><span>[MagoonAndGreen]</span></a>. This interface is particularly interesting for the estimation of
 thermochemistry of molecules that are not present in one of the species thermochemistry databases,
 and which cannot be estimated with sufficient accuracy using the Benson group additivity framework. This
 pertains specifically to polycyclic fused ring containing species, whose ring strain cannot be modeled using
@@ -180,7 +180,7 @@ the available ring corrections in RMG’s ring strain correction databases.</p>
 <p>In a first step the connectivity representation is converted into a three-dimensional structure of the molecule
 through the generation of 3D coordinates for the atoms in the molecule. This is accomplished using
 a combination of a distance geometry method, followed by a optimization using the UFF force field available in
-RDKit <a class="reference internal" href="#rdkit2" id="id3"><span>[RDKit2]</span></a>. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
+RDKit <a class="reference internal" href="#rdkit2" id="id4"><span>[RDKit2]</span></a>. Next, an input file is created containing the 3D atomic coordinates along with a number of keywords. This file is sent to a computational chemistry package, either OpenMopac or Gaussian,
 that calculates the thermochemistry of the given molecule “on-the-fly”. The keywords specify the type of calculation, and the level-of-theory.
 Finally, the calculated thermochemistry data is sent back to RMG.</p>
 <p>The QMTP calculation creates a folder ‘QMfiles’ that contains a number of files that are created during the process.
@@ -233,7 +233,7 @@ the given species, RMG will initiate a new QMTP calculation.</p>
 <h3><span class="section-number">13.3.1. </span>Supported QM packages, and levels of theory<a class="headerlink" href="#supported-qm-packages-and-levels-of-theory" title="Permalink to this heading">¶</a></h3>
 <p>The following table shows an overview of the computational chemistry packages
 and levels of theory that are currently  supported in the QMTP interface of RMG.</p>
-<p>The MM4 force field software originates from Allinger and Lii. <a class="reference internal" href="#allinger" id="id4"><span>[Allinger]</span></a>.</p>
+<p>The MM4 force field software originates from Allinger and Lii. <a class="reference internal" href="#allinger" id="id5"><span>[Allinger]</span></a>.</p>
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>QM Package</p></th>
@@ -262,18 +262,18 @@ and levels of theory that are currently  supported in the QMTP interface of RMG.
 Molecular symmetry refers to the indistinguishable orientations of a molecule and
 can be represented by molecular groups or a symmetry number. RMG uses a symmetry number
 which is the number of superimposible configurations, which includes external symmetry and internal
-free rotors, which is described by detail by <a class="reference internal" href="#benson" id="id5"><span>[Benson]</span></a>.
+free rotors, which is described by detail by <a class="reference internal" href="#benson" id="id6"><span>[Benson]</span></a>.
 This is macroscopically quantified as a decrease of the entropy S by a term  <span class="math notranslate nohighlight">\(-R * ln(\sigma)\)</span>
 with R the universal gas constant and <span class="math notranslate nohighlight">\(\sigma\)</span> the global symmetry number,
 corresponding to the number of indistinguishable orientations of the molecule.</p>
 <p>In RMG, <span class="math notranslate nohighlight">\(\sigma\)</span> is calculated  as the product of contributions of three symmetry center types : atoms, bonds and axes, cf. below.</p>
 <div class="math notranslate nohighlight">
 \[\sigma = \prod_{i}\sigma_{atom,i}.\prod_{j}\sigma_{bond,j}.\prod_{k}\sigma_{axis,k}\]</div>
-<p>More information can be found in the Ph.D Thesis of Joanna Yu <a class="reference internal" href="#yu" id="id6"><span>[Yu]</span></a>.</p>
+<p>More information can be found in the Ph.D Thesis of Joanna Yu <a class="reference internal" href="#yu" id="id7"><span>[Yu]</span></a>.</p>
 <p>For molecules whose thermochemistry is calculated through group contribution techniques, the
 rotational symmetry number is calculated through graph algorithms of RMG based on the above equation. If
 the thermochemistry is calculated through the QMTP process, the external, rotational symmetry number is calculatedµ
-using the open-source software SYMMETRY “Brute Force Symmetry Analyzer” <a class="reference internal" href="#patchkovskii" id="id7"><span>[Patchkovskii]</span></a>. This program uses the optimized
+using the open-source software SYMMETRY “Brute Force Symmetry Analyzer” <a class="reference internal" href="#patchkovskii" id="id8"><span>[Patchkovskii]</span></a>. This program uses the optimized
 three-dimensional geometry and calculates the corresponding point group.</p>
 </section>
 <section id="chirality">
@@ -301,29 +301,31 @@ for each chiral center.</p>
 <p>Benson, Sidney William. “Thermochemical kinetics.” (1976)</p>
 </div>
 <div class="citation" id="benson" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">Benson</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">Benson</a><span class="fn-bracket">]</span></span>
 <p>Benson, S.W. (1965), <a class="reference external" href="https://en.wikipedia.org/wiki/Benson_group_increment_theory">https://en.wikipedia.org/wiki/Benson_group_increment_theory</a></p>
 </div>
 <div class="citation" id="lay1995" role="doc-biblioentry">
 <span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id2">Lay1995</a><span class="fn-bracket">]</span></span>
 <p>Lay, T.; Bozzelli, J.; Dean, A.; Ritter, E. J. Phys. Chem. 1995, 99,14514-14527</p>
 </div>
+<div class="citation" id="magoonandgreen" role="doc-biblioentry">
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">MagoonAndGreen</a><span class="fn-bracket">]</span></span>
+<p>Magoon, Gregory R., and William H. Green. “Design and implementation of a next-generation software interface for on-the-fly quantum and force field calculations in automated reaction mechanism generation.” Computers &amp; Chemical Engineering 52 (2013): 35-45.</p>
 </div>
-<div role="list" class="citation-list">
 <div class="citation" id="allinger" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">Allinger</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id5">Allinger</a><span class="fn-bracket">]</span></span>
 <p>Allinger, N. L., &amp; Lii, J.-H. (2008). MM4(2008) and MM4(2003).</p>
 </div>
 <div class="citation" id="patchkovskii" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">Patchkovskii</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id8">Patchkovskii</a><span class="fn-bracket">]</span></span>
 <p>Patchkovskii, S. (2003). SYMMETRY, originally from <code class="docutils literal notranslate"><span class="pre">http://www.cobalt.chem.ucalgary.ca/ps/symmetry/</span></code> now mirrored at <a class="reference external" href="https://github.com/nquesada/symmetry">https://github.com/nquesada/symmetry</a>.</p>
 </div>
 <div class="citation" id="yu" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id6">Yu</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id7">Yu</a><span class="fn-bracket">]</span></span>
 <p>“Estimation method for the thermochemical properties of polycyclic aromatic molecules” (Ph.D), Joanna Yu, M.I.T (2005)</p>
 </div>
 <div class="citation" id="rdkit2" role="doc-biblioentry">
-<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id3">RDKit2</a><span class="fn-bracket">]</span></span>
+<span class="label"><span class="fn-bracket">[</span><a role="doc-backlink" href="#id4">RDKit2</a><span class="fn-bracket">]</span></span>
 <p>Landrum, G. (2012). RDKit: Open-source cheminformatics, <a class="reference external" href="https://www.rdkit.org">https://www.rdkit.org</a>.</p>
 </div>
 </div>

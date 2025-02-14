@@ -630,9 +630,9 @@ this is more likely to kick out species RMG might otherwise have added to core.<
 </section>
 <section id="advanced-setting-taking-multiple-species-at-a-time">
 <h3><span class="section-number">4.7.8. </span>Advanced Setting: Taking Multiple Species At A Time<a class="headerlink" href="#advanced-setting-taking-multiple-species-at-a-time" title="Permalink to this heading">¶</a></h3>
-<p>Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
+<p>Taking multiple objects (<code class="docutils literal notranslate"><span class="pre">Species</span></code>, <code class="docutils literal notranslate"><span class="pre">Reaction</span></code> or <code class="docutils literal notranslate"><span class="pre">PDepNetwork</span></code>) during a given simulation can often decrease your overall model generation time
 over only taking one.  For this purpose there is a <code class="docutils literal notranslate"><span class="pre">maxNumObjsPerIter</span></code> parameter that allows RMG to take
-that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.</p>
+that many <code class="docutils literal notranslate"><span class="pre">Species</span></code>, <code class="docutils literal notranslate"><span class="pre">Reaction</span></code> or <code class="docutils literal notranslate"><span class="pre">PDepNetwork</span></code> from a given simulation. This is done in the order they trigger their respective criteria.</p>
 <p>You can also set <code class="docutils literal notranslate"><span class="pre">terminateAtMaxObjects=True</span></code> to cause it to terminate when it has the maximum
 number of objects allowed rather than waiting around until it hits an interrupt tolerance.  This
 avoids additional simulation time, but will also make it less likely to finish simulations, which can
@@ -649,6 +649,13 @@ affect flux pruning.</p>
 </div>
 <p>Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
 object at a time) pick up chemistry that would otherwise have been missed.</p>
+</section>
+<section id="advanced-settings-other">
+<h3><span class="section-number">4.7.9. </span>Advanced Settings: Other<a class="headerlink" href="#advanced-settings-other" title="Permalink to this heading">¶</a></h3>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">dynamicsTimeScale</span></code>: The time before which the dynamics criterion cannot be used to bring reactions into the model. This is useful because the math behind the dynamics criterion breaks down as <code class="docutils literal notranslate"><span class="pre">t</span></code> approaches 0, thus restricting the use of the dynamics criterion until later times may reduce the number of junk species/reactions added to the model.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ignoreOverallFluxCriterion</span></code>: Causes RMG to use the given flux criterion only for determining if a <code class="docutils literal notranslate"><span class="pre">PDepNetwork</span></code> should be explored and not whether species should enter the model. Lets you run pressure dependence alongside the dynamics criterion without the flux criterion.</p></li>
+</ul>
 </section>
 </section>
 <section id="on-the-fly-quantum-calculations">
@@ -986,7 +993,7 @@ If fragments are not desired, the <code class="docutils literal notranslate"><sp
 <h2><span class="section-number">4.14. </span>Staging<a class="headerlink" href="#staging" title="Permalink to this heading">¶</a></h2>
 <p>It is now possible to concatenate different model and simulator blocks into the same run in stages.  Any given stage will terminate when the RMG run terminates and then the current group of model and simulator parameters will be switched out with the next group and the run will continue until that stage terminates.  Once the last stage terminates the run ends normally.  This is currently enabled only for the model and simulator blocks.</p>
 <p>There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file.</p>
-<p>To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.</p>
+<p>To enable easier manipulation of staging a new parameter in the model block was developed <code class="docutils literal notranslate"><span class="pre">maxNumSpecies</span></code> that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.</p>
 <p>For example</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">model</span><span class="p">(</span>
         <span class="n">toleranceKeepInEdge</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
@@ -1095,6 +1102,7 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
 <li><a class="reference internal" href="#advanced-setting-speed-up-by-pruning">4.7.6. Advanced Setting: Speed Up by Pruning</a></li>
 <li><a class="reference internal" href="#advanced-setting-thermodynamic-pruning">4.7.7. Advanced Setting: Thermodynamic Pruning</a></li>
 <li><a class="reference internal" href="#advanced-setting-taking-multiple-species-at-a-time">4.7.8. Advanced Setting: Taking Multiple Species At A Time</a></li>
+<li><a class="reference internal" href="#advanced-settings-other">4.7.9. Advanced Settings: Other</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#on-the-fly-quantum-calculations">4.8. On the fly Quantum Calculations</a></li>

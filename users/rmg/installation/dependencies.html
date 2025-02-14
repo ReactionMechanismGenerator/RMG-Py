@@ -64,48 +64,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="id1"></span><h1><span class="section-number">3.5.1. </span>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h1>
 <section id="list-of-dependencies">
 <h2><span class="section-number">3.5.1.1. </span>List of Dependencies<a class="headerlink" href="#list-of-dependencies" title="Permalink to this heading">¶</a></h2>
-<p>Briefly, RMG depends on the following packages, almost all of which can be found in the <a class="reference external" href="https://anaconda.org/rmg">RMG anaconda channel</a> as binary packages.</p>
-<ul class="simple">
-<li><p><strong>boost:</strong> portable C++ source libraries</p></li>
-<li><p><strong>cairo:</strong> a 2D vector graphics library with support for multiple backends including image buffers, PNG, PostScript, PDF, and SVG file output.  Used for molecular diagram generation</p></li>
-<li><p><strong>cairocffi:</strong> a set of Python bindings and object-oriented API for cairo</p></li>
-<li><p><strong>coverage:</strong> code coverage measurement for Python</p></li>
-<li><p><strong>cython:</strong> compiling Python modules to C for speed up</p></li>
-<li><p><strong>dde:</strong> Data Driven Estimator for neural network thermochemistry prediction</p></li>
-<li><p><strong>ffmpeg:</strong> (optional) used to encode videos, necessary for generating video flux diagrams</p></li>
-<li><p><strong>gaussian:</strong> (optional) commerical software program for quantum mechanical calculations.  Must be installed separately.</p></li>
-<li><p><strong>gcc:</strong> GNU compiler collection for C,C++, and Fortran. (MinGW is used in windows)</p></li>
-<li><p><strong>gprof2dot:</strong> converts Python profiling output to a dot graph</p></li>
-<li><p><strong>graphviz:</strong> generating flux diagrams</p></li>
-<li><p><strong>jinja2:</strong> Python templating language for html rendering</p></li>
-<li><p><strong>jupyter:</strong> (optional) for using IPython notebooks</p></li>
-<li><p><strong>lpsolve:</strong> mixed integer linear programming solver, used for resonance structure generation. Must also install Python extension.</p></li>
-<li><p><strong>markupsafe:</strong> implements XML/HTML/XHTML markup safe strings for Python</p></li>
-<li><p><strong>matplotlib:</strong> library for making plots</p></li>
-<li><p><strong>mock:</strong> for unit-testing</p></li>
-<li><p><strong>mopac:</strong> semi-empirical software package for QM calculations</p></li>
-<li><p><strong>mpmath:</strong> for arbitrary-precision arithmetic used in Arkane</p></li>
-<li><p><strong>muq:</strong> (optional) MIT Uncertainty Quantification library, used for global uncertainty analysis</p></li>
-<li><p><strong>networkx:</strong> (optional) network analysis for reaction-path analysis IPython notebook</p></li>
-<li><p><strong>pytest:</strong> advanced unit test controls</p></li>
-<li><p><strong>numpy:</strong> fast matrix operations</p></li>
-<li><p><strong>openbabel:</strong> chemical toolbox for speaking the many languages of chemical data</p></li>
-<li><p><strong>psutil:</strong> system utilization diagnostic tool</p></li>
-<li><p><strong>pydas:</strong> differential algebraic system solver</p></li>
-<li><p><strong>pydot:</strong> interface to Dot graph language</p></li>
-<li><p><strong>pydqed:</strong> constrained nonlinear optimization</p></li>
-<li><p><strong>pyparsing:</strong> a general parsing module for python</p></li>
-<li><p><strong>pyrdl:</strong> RingDecomposerLib for graph ring perception</p></li>
-<li><p><strong>pyyaml:</strong> Python framework for YAML</p></li>
-<li><p><strong>pyzmq:</strong> Python bindings for zeroMQ</p></li>
-<li><p><strong>quantities:</strong> unit conversion</p></li>
-<li><p><strong>rdkit:</strong> open-source cheminformatics toolkit</p></li>
-<li><p><strong>scipy:</strong> fast mathematical toolkit</p></li>
-<li><p><strong>setuptools:</strong> for packaging Python projects</p></li>
-<li><p><strong>sphinx:</strong> documentation generation</p></li>
-<li><p><strong>symmetry:</strong> calculating symmetry numbers of chemical point groups</p></li>
-<li><p><strong>xlwt:</strong> generating Excel output files</p></li>
-</ul>
+<p>A list of RMG’s dependencies can be found in the <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file on the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/environment.yml">RMG GitHub page</a>.</p>
 </section>
 <section id="license-restrictions-on-dependencies">
 <span id="dependenciesrestrictions"></span><h2><span class="section-number">3.5.1.2. </span>License Restrictions on Dependencies<a class="headerlink" href="#license-restrictions-on-dependencies" title="Permalink to this heading">¶</a></h2>
@@ -113,10 +72,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <ul class="simple">
 <li><p><strong>pydas</strong>: The DAE solvers used in the simulations come from <a class="reference external" href="https://cse.cs.ucsb.edu/software/">Linda Petzold’s research group</a> at UCSB.  For running sensitivity analysis in RMG, the DASPK 3.1 solver is required, which “is subject to copyright restrictions” for non-academic use. Please visit their website for more details. To run RMG without this restriction, one may switch to compiling with the DASSL solver instead in RMG, which is “available in the public domain.”</p></li>
 </ul>
-<p>If you wish to do on-the-fly quantum chemistry calculations of thermochemistry (advisable for fused cyclic species in particular, where the ring corrections to group additive estimates are lacking),
-the then you will need the third-party software for the QM calculations:</p>
+<p>If you wish to do on-the-fly quantum chemistry calculations of thermochemistry (such as to improve estimates for fused cyclic species),
+then you will need the third-party software for the QM calculations:</p>
 <ul class="simple">
-<li><p><strong>gaussian</strong>: Gaussian03 and Gaussian09 are currently supported and commercially available.  See <a class="reference external" href="https://gaussian.com">https://gaussian.com</a> for more details.</p></li>
+<li><p><strong>gaussian</strong>: Gaussian16, Gaussian09 and Gaussian03 are currently supported and commercially available.  See <a class="reference external" href="https://gaussian.com">https://gaussian.com</a> for more details.</p></li>
 </ul>
 </section>
 </section>

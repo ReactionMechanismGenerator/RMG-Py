@@ -122,20 +122,20 @@ parameters</p>
 </table>
 <p>The rank of 0 is assigned to kinetics that are generally default values for top level nodes
 that we have little faith in.  It is never used in generation and its value will in fact be overriden
-by averages of its child nodes, which generates an averaged rate rule with rank 11.</p>
+by averages of its child nodes, which generates an averaged rate rule with rank 10.</p>
 <p>Only non-zero rules are used in generation.  A rank of 1 is assigned to the most trustworthy kinetics, while a rank of 10 is considered very poor.
 Thus, a rate rule of rank 3 will be given priority over a rate rule of rank 5.</p>
-<p>Short Glossary:</p>
-<p>FCI (Full Configuration Interaction):  Exact solution to Schrodinger equation within the chosen basis
+<p><strong>Short Glossary:</strong></p>
+<p><strong>FCI (Full Configuration Interaction):</strong>  Exact solution to Schrodinger equation within the chosen basis
 set and Born-Oppenheimer approximation; possible for about 12 electrons with reasonably sized basis set
 (cost grows factorially with number of electrons).</p>
-<p>Wn (Weizmann-n):  Composite methods often with sub-kJ/mol accuracies; W1 is possible for about 9 heavy
+<p><strong>Wn (Weizmann-n):</strong>  Composite methods often with sub-kJ/mol accuracies; W1 is possible for about 9 heavy
 atoms; W1 aims to reproduce CCSD(T)/CBS; W4 aims to reproduce CCSDTQ5/CBS.</p>
-<p>HEAT (High Accuracy Extrapolated ab inito thermochemistry):  Sub-kJ/mol accuracies; essentially
+<p><strong>HEAT (High Accuracy Extrapolated ab inito thermochemistry):</strong>  Sub-kJ/mol accuracies; essentially
 CCSDTQ with various corrections; similar in cost to Wn.</p>
-<p>CBS (Complete Basis Set):  Typically obtained by extrapolating to the complete basis set limit,
+<p><strong>CBS (Complete Basis Set):</strong>  Typically obtained by extrapolating to the complete basis set limit,
 i.e., successive cc-pVDZ, cc-pVTZ, cc-pVQZ, etc. calculations with some extrapolation formula.</p>
-<p>CCSD(T)-F12:  Coupled cluster with explicit electron correlation; chemical accuracy (1 kcal/mol)
+<p><strong>CCSD(T)-F12:</strong>  Coupled cluster with explicit electron correlation; chemical accuracy (1 kcal/mol)
 possible with double-zeta basis sets.</p>
 </section>
 <section id="kinetic-families">
@@ -164,7 +164,29 @@ average for <span class="math notranslate nohighlight">\(A\)</span> is a geometr
 <span class="math notranslate nohighlight">\(E_a\)</span>, and <span class="math notranslate nohighlight">\(\alpha\)</span> are arithmetic means.</p>
 <p>If there are still no “sibling” kinetics, then the groups will continue to fall
 up to more and more general nodes. In the worst case, the root nodes may be used.</p>
+<p>Kinetic averaging takes into account the nodal distances (the distance between a child node and its parent).
+By default, the nodal distance is 1, but custom values can be specified within a <code class="docutils literal notranslate"><span class="pre">group.py</span></code> file, in order of
+ascending precedence: either in a list of values for each tree e.g. <code class="docutils literal notranslate"><span class="pre">treeDistances</span> <span class="pre">=</span> <span class="pre">[1,2,5]</span></code>,
+or directly assigned to an entry in the group definition e.g. <code class="docutils literal notranslate"><span class="pre">Entry(...</span> <span class="pre">nodalDistance=5,</span> <span class="pre">)</span></code>.
+This may be desired in special cases where one or more child nodes matches the family but has very different
+kinetics, leading to poor overall tree estimates.</p>
 <p>A <a class="reference internal" href="database/kinetics.html#kinetics-families-db"><span class="std std-ref">Full List of the Kinetics Families</span></a> in RMG is available.</p>
+</section>
+<section id="reverse-rates">
+<h2><span class="section-number">14.3. </span>Reverse Rates<a class="headerlink" href="#reverse-rates" title="Permalink to this heading">¶</a></h2>
+<p>Rates in the reverse direction are calculated from the forward rate (as defined by the family)
+and the equilibrium constant (as calculated from thermodynamic parameters).</p>
+</section>
+<section id="reaction-comments">
+<h2><span class="section-number">14.4. </span>Reaction Comments<a class="headerlink" href="#reaction-comments" title="Permalink to this heading">¶</a></h2>
+<p>Reaction comments are saved by RMG to the <code class="docutils literal notranslate"><span class="pre">chem_annotated.inp</span></code> Chemkin input file.
+These comments contain information about the source of the reaction rate and are read by RMG when
+loading the Chemkin file. These comments are compiled from many different locations in the code.</p>
+<p>Comments attached to the kinetics attribute of the entry used are included first.
+These can occur if there is a comment hard-coded in the kinetics database, or if the rate rule was
+derived from a training reaction, in which case <code class="docutils literal notranslate"><span class="pre">From</span> <span class="pre">Training</span> <span class="pre">reaction</span> <span class="pre">#</span> <span class="pre">for</span> <span class="pre">rate</span> <span class="pre">rule</span> <span class="pre">##</span></code>
+is automatically added. Then, comments describing the match are added based on the details of
+how the kinetics were estiamted. Finally, additional metadata about the reaction type are included.</p>
 </section>
 </section>
 
@@ -202,6 +224,8 @@ up to more and more general nodes. In the worst case, the root nodes may be used
 <li><a class="reference internal" href="#">14. Kinetics Estimation</a><ul>
 <li><a class="reference internal" href="#priority-of-kinetic-databases">14.1. Priority of Kinetic Databases</a></li>
 <li><a class="reference internal" href="#kinetic-families">14.2. Kinetic Families</a></li>
+<li><a class="reference internal" href="#reverse-rates">14.3. Reverse Rates</a></li>
+<li><a class="reference internal" href="#reaction-comments">14.4. Reaction Comments</a></li>
 </ul>
 </li>
 </ul>
