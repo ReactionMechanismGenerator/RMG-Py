@@ -15,6 +15,8 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 
     conda activate rmg_env
 
+   For more information about using conda, please check out the `conda user guide <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
+
 #. You may now run an RMG test job. Save the `Minimal Example Input File <https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py>`_
    to a local directory.  Use the terminal to run your RMG job inside that folder using the following command ::
 
