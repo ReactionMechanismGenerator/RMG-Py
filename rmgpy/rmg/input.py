@@ -1702,9 +1702,13 @@ def save_input_file(path, rmg):
     if rmg.surface_site_density or rmg.binding_energies:
         f.write('catalystProperties(\n')
         if rmg.surface_site_density:
-            f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
+            f.write('    surfaceSiteDensity = ({0:g}, "{1!s}"),'.format(rmg.surface_site_density.value, rmg.surface_site_density.units) + '\n')
         if rmg.binding_energies:
-            f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
+            f.write('    bindingEnergies = {\n')
+            for spc, be in rmg.binding_energies.items():
+                f.write('        "{0!s}": ({1:g}, "{2!s}"),\n'.format(spc, be.value, be.units))
+            f.write('    },\n')
+
         f.write(')\n\n')
 
     # Species
@@ -1718,17 +1722,36 @@ def save_input_file(path, rmg):
         f.write('"""),\n')
         f.write(')\n\n')
 
+    def format_temperature(system):
+        """Get temperature string format for reaction system, whether single value or range"""
+        if system.T is not None:
+            return '({0:g},"{1!s}")'.format(system.T.value, system.T.units)
+        
+        return f'[({system.Trange[0].value:g}, "{system.Trange[0].units}"), ({system.Trange[1].value:g}, "{system.Trange[1].units}")],'
+
     # Reaction systems
     for system in rmg.reaction_systems:
+        # TODO add ranging pressures
         if rmg.solvent:
             f.write('liquidReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
+            f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
+        elif isinstance(system, SurfaceReactor):
+            f.write('surfaceReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    initialPressure = ({0:g},"{1!s}"),\n'.format(system.P_initial.value, system.P_initial.units))
+            f.write('    initialGasMoleFractions={\n')
+            for spcs, molfrac in system.initial_gas_mole_fractions.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write('    },\n')
+            f.write('    initialSurfaceCoverages={\n')
+            for spcs, cov in system.initial_surface_coverages.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, cov))
         else:
             f.write('simpleReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
+            f.write('    temperature = ' + format_temperature(system) + '\n')
             # Convert the pressure from SI pascal units to bar here
             # Do something more fancy later for converting to user's desired units for both T and P..
             f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.value, system.P.units))
