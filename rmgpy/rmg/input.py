@@ -1643,6 +1643,8 @@ def read_thermo_input_file(path, rmg0):
     rmg.reaction_model = CoreEdgeReactionModel()
     rmg.initial_species = []
     rmg.reaction_systems = []
+    if rmg.output_directory is None:
+        rmg.output_directory = os.path.dirname(full_path)
     species_dict = {}
 
     global_context = {'__builtins__': None}
@@ -1765,9 +1767,12 @@ def save_input_file(path, rmg):
         for term in system.termination:
             if isinstance(term, TerminationTime):
                 f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.value, term.time.units))
-
-            else:
+            elif isinstance(term, TerminationRateRatio):
+                f.write('    terminationRateRatio = {0:g},\n'.format(term.ratio))
+            elif isinstance(term, TerminationConversion):
                 conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
+            else:
+                raise NotImplementedError('Termination criteria of type {0} not supported'.format(type(term)))
         if conversions:
             f.write('    terminationConversion = {\n')
             f.write(conversions)
