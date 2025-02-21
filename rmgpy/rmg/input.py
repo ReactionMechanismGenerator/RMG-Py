@@ -1815,9 +1815,9 @@ def save_input_file(path, rmg):
     if rmg.pressure_dependence:
         f.write('pressureDependence(\n')
         f.write('    method = {0!r},\n'.format(rmg.pressure_dependence.method))
-        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.grain_size.value,
-                                                                   rmg.pressure_dependence.grain_size.units))
-        f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressure_dependence.grain_count))
+        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.maximum_grain_size.value,
+                                                                   rmg.pressure_dependence.maximum_grain_size.units))
+        f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressure_dependence.minimum_grain_count))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
             rmg.pressure_dependence.Tmin.value,
             rmg.pressure_dependence.Tmax.value,
