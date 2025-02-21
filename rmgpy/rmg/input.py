@@ -1731,9 +1731,26 @@ def save_input_file(path, rmg):
         
         return f'[({system.Trange[0].value:g}, "{system.Trange[0].units}"), ({system.Trange[1].value:g}, "{system.Trange[1].units}")],'
 
+    def format_pressure(system):
+        """Get pressure string format for reaction system, whether single value or range"""
+        if system.P is not None:
+            return '({0:g},"{1!s}")'.format(system.P.value, system.P.units)
+        
+        return f'[({system.Prange[0].value:g}, "{system.Prange[0].units}"), ({system.Prange[1].value:g}, "{system.Prange[1].units}")],'
+
+    def format_initial_mole_fractions(system):
+        """Get initial mole fractions string format for reaction system"""
+        mole_fractions = ''
+        for spcs, molfrac in system.initial_mole_fractions.items():
+            if isinstance(molfrac, list):
+                mole_fractions += '        "{0!s}": [{1:g}, {2:g}],\n'.format(spcs.label, molfrac[0], molfrac[1])
+            else:
+                mole_fractions += '        "{0!s}": {1:g},\n'.format(spcs.label, molfrac)
+        return mole_fractions
+
+
     # Reaction systems
     for system in rmg.reaction_systems:
-        # TODO add ranging pressures
         if rmg.solvent:
             f.write('liquidReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
@@ -1754,12 +1771,9 @@ def save_input_file(path, rmg):
         else:
             f.write('simpleReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
-            # Convert the pressure from SI pascal units to bar here
-            # Do something more fancy later for converting to user's desired units for both T and P..
-            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.value, system.P.units))
+            f.write('    pressure = ' + format_pressure(system) + '\n')
             f.write('    initialMoleFractions={\n')
-            for spcs, molfrac in system.initial_mole_fractions.items():
-                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write(format_initial_mole_fractions(system))
         f.write('    },\n')
 
         # Termination criteria
