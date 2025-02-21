@@ -38,7 +38,7 @@ from rmgpy.data.base import Entry
 from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.group import Group
-from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
+from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration, Concentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
@@ -647,7 +647,7 @@ def liquid_cat_reactor(temperature,
             concentration = Quantity(conc)
             # check the dimensions are ok
             # convert to mol/m^3 (or something numerically nice? or must it be SI)
-            initialConcentrations[spec] = concentration.value_si
+            initialConcentrations[spec] = concentration.value_si  # is this a mistake? shouldn't this also be quantity?
         else:
             if len(conc) != 2:
                 raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
@@ -1741,6 +1741,9 @@ def save_input_file(path, rmg):
             f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
+                # conc may have been converted to SI, so we need to convert back
+                if type(conc) == float:
+                    conc = Quantity(conc, Concentration.units)
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
         elif isinstance(system, SurfaceReactor):
             f.write('surfaceReactor(\n')
