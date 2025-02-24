@@ -246,3 +246,28 @@ class ArkaneGaussianLogTest:
         with pytest.raises(LogError):
             log = GaussianLog(os.path.join(self.data_path, "rocbs-qb3_85_methanol.out"))
             imaginary_freq = log.load_negative_frequency()
+
+    def test_load_rotational_constants(self):
+        """
+        Load the rotational constants from a Gaussian output file.
+        """
+        # try reading rotational constants from a regular gaussian log file with no stars
+        log = GaussianLog(os.path.join(self.data_path, "ethylene.log"))
+        conformer, unscaled_freqs = log.load_conformer()
+        assert NonlinearRotor in [type(mode) for mode in conformer.modes]
+        for mode in conformer.modes:
+            if isinstance(mode, NonlinearRotor):
+                assert mode.symmetry == 4
+                # test the rotational constants are read in correctly
+                assert np.all(np.isclose(mode.inertia.value_si, np.array([5.69516245e-47, 2.77584017e-46, 3.34535660e-46]), atol=1e-48))
+
+
+        # test that it can read in the rotational constants even if the last instance is stars instead of digits
+        log = GaussianLog(os.path.join(self.data_path, "starred_rotational_constant.log"))
+        conformer, unscaled_freqs = log.load_conformer()
+        assert NonlinearRotor in [type(mode) for mode in conformer.modes]
+        for mode in conformer.modes:
+            if isinstance(mode, NonlinearRotor):
+                assert mode.symmetry == 1
+                # test the rotational constants are read in correctly
+                assert np.all(np.isclose(mode.inertia.value_si, np.array([5.64469824e-54, 1.86319657e-46, 1.86319657e-46]), atol=1e-48))
