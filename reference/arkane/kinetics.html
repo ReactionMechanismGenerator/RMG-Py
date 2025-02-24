@@ -61,91 +61,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <section id="arkane-kineticsjob">
 <h1>arkane.KineticsJob<a class="headerlink" href="#arkane-kineticsjob" title="Permalink to this heading">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="arkane.KineticsJob">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arkane.</span></span><span class="sig-name descname"><span class="pre">KineticsJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tlist</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tcount</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity_conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">three_params</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob" title="Permalink to this definition">¶</a></dt>
-<dd><p>A representation of an Arkane kinetics job. This job is used to compute
-and save the high-pressure-limit kinetics information for a single reaction.</p>
-<dl class="simple">
-<dt><cite>usedTST</cite> - a boolean representing if TST was used to calculate the kinetics</dt><dd><p>if kinetics is already given in the input, then it is False.</p>
-</dd>
-<dt><cite>three_params</cite> - a boolean representing if the modified three-parameter Arrhenius equation is used to calculate</dt><dd><p>high pressure kinetic rate coefficients. If it is False, the classical two-parameter Arrhenius
-equation is used.</p>
-</dd>
-</dl>
-<dl class="py property">
-<dt class="sig sig-object py" id="arkane.KineticsJob.Tlist">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tlist</span></span><a class="headerlink" href="#arkane.KineticsJob.Tlist" title="Permalink to this definition">¶</a></dt>
-<dd><p>The temperatures at which the k(T) values are computed.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="arkane.KineticsJob.Tmax">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tmax</span></span><a class="headerlink" href="#arkane.KineticsJob.Tmax" title="Permalink to this definition">¶</a></dt>
-<dd><p>The maximum temperature at which the computed k(T) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
-</dd></dl>
-
-<dl class="py property">
-<dt class="sig sig-object py" id="arkane.KineticsJob.Tmin">
-<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">Tmin</span></span><a class="headerlink" href="#arkane.KineticsJob.Tmin" title="Permalink to this definition">¶</a></dt>
-<dd><p>The minimum temperature at which the computed k(T) values are valid, or <code class="docutils literal notranslate"><span class="pre">None</span></code> if not defined.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.KineticsJob.draw">
-<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.draw" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate a PDF drawing of the reaction.
-This requires that Cairo and its Python wrapper be available; if not,
-the drawing is not generated.</p>
-<p>You may also generate different formats of drawings, by changing format to
-one of the following: <cite>pdf</cite>, <cite>svg</cite>, <cite>png</cite>.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.KineticsJob.execute">
-<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the kinetics job, saving the results within
-the <cite>output_directory</cite>.</p>
-<p>If <cite>plot</cite> is True, then plots of the raw and fitted values for the kinetics
-will be saved.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.KineticsJob.generate_kinetics">
-<span class="sig-name descname"><span class="pre">generate_kinetics</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.generate_kinetics" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the kinetics data for the reaction and fit it to a modified Arrhenius model.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.KineticsJob.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot both the raw kinetics data and the Arrhenius fit versus
-temperature. The plot is saved to the file <code class="docutils literal notranslate"><span class="pre">kinetics.pdf</span></code> in the
-output directory. The plot is not generated if <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> is not
-installed.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.KineticsJob.save_yaml">
-<span class="sig-name descname"><span class="pre">save_yaml</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.save_yaml" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a YAML file for TSs if structures of the respective reactant/s and product/s are known</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.KineticsJob.write_chemkin">
-<span class="sig-name descname"><span class="pre">write_chemkin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.write_chemkin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Appends the kinetics rates to <cite>chem.inp</cite> in <cite>outut_directory</cite></p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.KineticsJob.write_output">
-<span class="sig-name descname"><span class="pre">write_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.KineticsJob.write_output" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the kinetics job to the <cite>output.py</cite> file located
-in <cite>output_directory</cite>.</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 
 
@@ -176,28 +91,6 @@ in <cite>output_directory</cite>.</p>
           </a>
         </div>
         <div class="menuitem">
-  <div>
-    <h3><a href="../../contents.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">arkane.KineticsJob</a><ul>
-<li><a class="reference internal" href="#arkane.KineticsJob"><code class="docutils literal notranslate"><span class="pre">KineticsJob</span></code></a><ul>
-<li><a class="reference internal" href="#arkane.KineticsJob.Tlist"><code class="docutils literal notranslate"><span class="pre">KineticsJob.Tlist</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.Tmax"><code class="docutils literal notranslate"><span class="pre">KineticsJob.Tmax</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.Tmin"><code class="docutils literal notranslate"><span class="pre">KineticsJob.Tmin</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.draw"><code class="docutils literal notranslate"><span class="pre">KineticsJob.draw()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.execute"><code class="docutils literal notranslate"><span class="pre">KineticsJob.execute()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.generate_kinetics"><code class="docutils literal notranslate"><span class="pre">KineticsJob.generate_kinetics()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.plot"><code class="docutils literal notranslate"><span class="pre">KineticsJob.plot()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.save_yaml"><code class="docutils literal notranslate"><span class="pre">KineticsJob.save_yaml()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.write_chemkin"><code class="docutils literal notranslate"><span class="pre">KineticsJob.write_chemkin()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.KineticsJob.write_output"><code class="docutils literal notranslate"><span class="pre">KineticsJob.write_output()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  </div>
         </div>
         <div class="menuitem">
   <div>

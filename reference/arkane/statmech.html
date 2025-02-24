@@ -61,52 +61,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <section id="arkane-statmechjob">
 <h1>arkane.StatMechJob<a class="headerlink" href="#arkane-statmechjob" title="Permalink to this heading">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="arkane.StatMechJob">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arkane.</span></span><span class="sig-name descname"><span class="pre">StatMechJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob" title="Permalink to this definition">¶</a></dt>
-<dd><p>A representation of a Arkane statistical mechanics job. This job is used
-to compute and save the statistical mechanics information for a single
-species or transition state.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.StatMechJob.create_hindered_rotor_figure">
-<span class="sig-name descname"><span class="pre">create_hindered_rotor_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">angle</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cosine_rotor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fourier_rotor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rotor_index</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.create_hindered_rotor_figure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the potential for the rotor, along with its cosine and Fourier
-series potential fits, and save it in the <cite>hindered_rotor_plots</cite> attribute.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.StatMechJob.execute">
-<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the statmech job, saving the results within
-the <cite>output_directory</cite>.</p>
-<p>If <cite>plot</cite> is True, then plots of the hindered rotor fits will be saved.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.StatMechJob.load">
-<span class="sig-name descname"><span class="pre">load</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.load" title="Permalink to this definition">¶</a></dt>
-<dd><p>Load the statistical mechanics parameters for each conformer from
-the associated files on disk. Creates <code class="xref py py-class docutils literal notranslate"><span class="pre">Conformer</span></code> objects for
-each conformer and appends them to the list of conformers on the
-species object.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.StatMechJob.save_hindered_rotor_figures">
-<span class="sig-name descname"><span class="pre">save_hindered_rotor_figures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.save_hindered_rotor_figures" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save hindered rotor plots as set of files of the form
-<code class="docutils literal notranslate"><span class="pre">rotor_[species_label]_0.pdf</span></code> in the specified directory</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.StatMechJob.write_output">
-<span class="sig-name descname"><span class="pre">write_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.StatMechJob.write_output" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the statmech job to the <cite>output.py</cite> file located
-in <cite>output_directory</cite>.</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 
 
@@ -137,23 +91,6 @@ in <cite>output_directory</cite>.</p>
           </a>
         </div>
         <div class="menuitem">
-  <div>
-    <h3><a href="../../contents.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">arkane.StatMechJob</a><ul>
-<li><a class="reference internal" href="#arkane.StatMechJob"><code class="docutils literal notranslate"><span class="pre">StatMechJob</span></code></a><ul>
-<li><a class="reference internal" href="#arkane.StatMechJob.create_hindered_rotor_figure"><code class="docutils literal notranslate"><span class="pre">StatMechJob.create_hindered_rotor_figure()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.StatMechJob.execute"><code class="docutils literal notranslate"><span class="pre">StatMechJob.execute()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.StatMechJob.load"><code class="docutils literal notranslate"><span class="pre">StatMechJob.load()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.StatMechJob.save_hindered_rotor_figures"><code class="docutils literal notranslate"><span class="pre">StatMechJob.save_hindered_rotor_figures()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.StatMechJob.write_output"><code class="docutils literal notranslate"><span class="pre">StatMechJob.write_output()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  </div>
         </div>
         <div class="menuitem">
   <div>

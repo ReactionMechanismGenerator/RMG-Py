@@ -61,73 +61,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <section id="arkane-thermojob">
 <h1>arkane.ThermoJob<a class="headerlink" href="#arkane-thermojob" title="Permalink to this heading">¶</a></h1>
-<dl class="py class">
-<dt class="sig sig-object py" id="arkane.ThermoJob">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arkane.</span></span><span class="sig-name descname"><span class="pre">ThermoJob</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_class</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob" title="Permalink to this definition">¶</a></dt>
-<dd><p>A representation of an Arkane thermodynamics job. This job is used to
-compute and save the thermodynamics information for a single species.</p>
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.ThermoJob.element_count_from_conformer">
-<span class="sig-name descname"><span class="pre">element_count_from_conformer</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.element_count_from_conformer" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get an element count in a dictionary form (e.g.,  {‘C’: 3, ‘H’: 8}) from the species.conformer attribute.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><dl class="simple">
-<dt>Element count, keys are element symbols,</dt><dd><p>values are number of occurrences of the element in the molecule.</p>
-</dd>
-</dl>
-</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>dict</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.ThermoJob.execute">
-<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.execute" title="Permalink to this definition">¶</a></dt>
-<dd><p>Execute the thermodynamics job, saving the results within
-the <cite>output_directory</cite>.</p>
-<p>If <cite>plot</cite> is true, then plots of the raw and fitted values for heat
-capacity, entropy, enthalpy, gibbs free energy, and hindered rotors
-will be saved.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.ThermoJob.generate_thermo">
-<span class="sig-name descname"><span class="pre">generate_thermo</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.generate_thermo" title="Permalink to this definition">¶</a></dt>
-<dd><p>Generate the thermodynamic data for the species and fit it to the
-desired heat capacity model (as specified in the <cite>thermo_class</cite>
-attribute).</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.ThermoJob.plot">
-<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.plot" title="Permalink to this definition">¶</a></dt>
-<dd><p>Plot the heat capacity, enthapy, entropy, and Gibbs free energy of the
-fitted thermodynamics model, along with the same values from the
-statistical mechanics model that the thermodynamics model was fitted
-to. The plot is saved to the file <code class="docutils literal notranslate"><span class="pre">thermo.pdf</span></code> in the output
-directory. The plot is not generated if <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code> is not installed.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.ThermoJob.write_chemkin">
-<span class="sig-name descname"><span class="pre">write_chemkin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.write_chemkin" title="Permalink to this definition">¶</a></dt>
-<dd><p>Appends the thermo block to <cite>chem.inp</cite> and species name to
-<cite>species_dictionary.txt</cite> within the <cite>outut_directory</cite> specified</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.ThermoJob.write_output">
-<span class="sig-name descname"><span class="pre">write_output</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ThermoJob.write_output" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save the results of the thermodynamics job to the <cite>output.py</cite> file located
-in <cite>output_directory</cite>.</p>
-</dd></dl>
-
-</dd></dl>
-
 </section>
 
 
@@ -158,24 +91,6 @@ in <cite>output_directory</cite>.</p>
           </a>
         </div>
         <div class="menuitem">
-  <div>
-    <h3><a href="../../contents.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">arkane.ThermoJob</a><ul>
-<li><a class="reference internal" href="#arkane.ThermoJob"><code class="docutils literal notranslate"><span class="pre">ThermoJob</span></code></a><ul>
-<li><a class="reference internal" href="#arkane.ThermoJob.element_count_from_conformer"><code class="docutils literal notranslate"><span class="pre">ThermoJob.element_count_from_conformer()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.ThermoJob.execute"><code class="docutils literal notranslate"><span class="pre">ThermoJob.execute()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.ThermoJob.generate_thermo"><code class="docutils literal notranslate"><span class="pre">ThermoJob.generate_thermo()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.ThermoJob.plot"><code class="docutils literal notranslate"><span class="pre">ThermoJob.plot()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.ThermoJob.write_chemkin"><code class="docutils literal notranslate"><span class="pre">ThermoJob.write_chemkin()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.ThermoJob.write_output"><code class="docutils literal notranslate"><span class="pre">ThermoJob.write_output()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-
-  </div>
         </div>
         <div class="menuitem">
   <div>

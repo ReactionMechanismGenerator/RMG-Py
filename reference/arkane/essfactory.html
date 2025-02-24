@@ -61,46 +61,6 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <section id="arkane-ess-factory">
 <h1>Arkane ESS factory<a class="headerlink" href="#arkane-ess-factory" title="Permalink to this heading">¶</a></h1>
-<dl class="py function">
-<dt class="sig sig-object py" id="arkane.ess.factory.register_ess_adapter">
-<span class="sig-prename descclassname"><span class="pre">arkane.ess.factory.</span></span><span class="sig-name descname"><span class="pre">register_ess_adapter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ess</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ess_class</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="essadapter.html#arkane.ess.ESSAdapter" title="arkane.ess.adapter.ESSAdapter"><span class="pre">ESSAdapter</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#arkane.ess.factory.register_ess_adapter" title="Permalink to this definition">¶</a></dt>
-<dd><p>A register for the ESS adapters.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>ess</strong> – A string representation for an ESS adapter.</p></li>
-<li><p><strong>ess_class</strong> – The ESS adapter class.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>TypeError</strong> – If <code class="docutils literal notranslate"><span class="pre">ess_class</span></code> is not an <code class="docutils literal notranslate"><span class="pre">ESSAdapter</span></code> instance.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="arkane.ess.factory.ess_factory">
-<span class="sig-prename descclassname"><span class="pre">arkane.ess.factory.</span></span><span class="sig-name descname"><span class="pre">ess_factory</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fullpath</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_errors</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scratch_directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">Type</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="essadapter.html#arkane.ess.ESSAdapter" title="arkane.ess.adapter.ESSAdapter"><span class="pre">ESSAdapter</span></a><span class="p"><span class="pre">]</span></span></span></span><a class="headerlink" href="#arkane.ess.factory.ess_factory" title="Permalink to this definition">¶</a></dt>
-<dd><p>A factory generating the ESS adapter corresponding to <code class="docutils literal notranslate"><span class="pre">ess_adapter</span></code>.
-Given a path to the log file of a QM software, determine whether it is
-Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>fullpath</strong> (<em>str</em>) – The disk location of the output file of interest.</p></li>
-<li><p><strong>check_for_errors</strong> (<em>bool</em>) – Boolean indicating whether to check the QM log for common errors
-before parsing relevant information.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The requested ESSAdapter child, initialized with the respective arguments.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Type[<a class="reference internal" href="essadapter.html#arkane.ess.ESSAdapter" title="arkane.ess.ESSAdapter">ESSAdapter</a>]</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 
 
@@ -131,17 +91,6 @@ before parsing relevant information.</p></li>
           </a>
         </div>
         <div class="menuitem">
-  <div>
-    <h3><a href="../../contents.html">Table of Contents</a></h3>
-    <ul>
-<li><a class="reference internal" href="#">Arkane ESS factory</a><ul>
-<li><a class="reference internal" href="#arkane.ess.factory.register_ess_adapter"><code class="docutils literal notranslate"><span class="pre">register_ess_adapter()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.ess.factory.ess_factory"><code class="docutils literal notranslate"><span class="pre">ess_factory()</span></code></a></li>
-</ul>
-</li>
-</ul>
-
-  </div>
         </div>
         <div class="menuitem">
   <div>
