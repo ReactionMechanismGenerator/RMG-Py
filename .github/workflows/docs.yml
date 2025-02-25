@@ -36,7 +36,6 @@ jobs:
           activate-environment: rmg_env
           use-mamba: true
           show-channel-urls: true
-          channels: conda-forge,cantera,rmg
 
       - name: Make libtiff Symlink to Avoid Runner Bug
         run: | # This action may need to be removed/adjusted in future runs.
