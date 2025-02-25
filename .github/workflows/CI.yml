@@ -58,8 +58,6 @@ jobs:
         os: [macos-13, macos-latest, ubuntu-latest]
         include-rms: ["", "with RMS"]
         exclude:
-          - os: macos-latest  # needs Cantera 3 b/c x86 emulation breaks with Julia
-            include-rms: 'with RMS'
           - os: macos-13  # GitHub's runners just aren't up to the task of installing Julia
             include-rms: 'with RMS'
     runs-on: ${{ matrix.os }}
@@ -73,10 +71,6 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v4
 
-      - name: Compel Arm-based Mac to use x86
-        if: matrix.os == 'macos-latest'
-        run: echo "CONDA_SUBDIR=osx-64" >> $GITHUB_ENV
-
       - name: Setup Miniforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
         with:
@@ -87,7 +81,6 @@ jobs:
           activate-environment: rmg_env
           auto-update-conda: true
           show-channel-urls: true
-          channels: conda-forge,cantera,rmg
           conda-remove-defaults: "true"
 
       # list the environment for debugging purposes
@@ -164,7 +157,6 @@ jobs:
           activate-environment: rmg_env
           auto-update-conda: true
           show-channel-urls: true
-          channels: conda-forge,cantera,rmg
           conda-remove-defaults: "true"
 
       # list the environment for debugging purposes
