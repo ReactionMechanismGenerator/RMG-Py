@@ -46,7 +46,7 @@ dependencies:
 
 # external software tools for chemistry
   - conda-forge::coolprop
-  - cantera::cantera =2.6
+  - conda-forge::cantera =2.6
   - conda-forge::mopac
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
   - conda-forge::cclib >=1.6.3,<1.9
