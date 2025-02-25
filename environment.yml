@@ -25,7 +25,6 @@
 name: rmg_env
 channels:
   - conda-forge
-  - cantera
   - rmg
 dependencies:
 # System-level dependencies - we could install these at the OS level
