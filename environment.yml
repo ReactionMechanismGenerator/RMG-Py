@@ -63,7 +63,7 @@ dependencies:
   - conda-forge::cython >=0.25.2
   - conda-forge::scikit-learn
   - conda-forge::scipy >=1.9
-  - conda-forge::numpy >=1.10.0
+  - conda-forge::numpy >=1.10.0,<2
   - conda-forge::pydot
   - conda-forge::jinja2
   - conda-forge::jupyter
