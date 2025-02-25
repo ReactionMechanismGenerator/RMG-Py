@@ -81,7 +81,6 @@ jobs:
           activate-environment: rmg_env
           auto-update-conda: true
           show-channel-urls: true
-          channels: conda-forge,cantera,rmg
           conda-remove-defaults: "true"
 
       # list the environment for debugging purposes
@@ -158,7 +157,6 @@ jobs:
           activate-environment: rmg_env
           auto-update-conda: true
           show-channel-urls: true
-          channels: conda-forge,cantera,rmg
           conda-remove-defaults: "true"
 
       # list the environment for debugging purposes

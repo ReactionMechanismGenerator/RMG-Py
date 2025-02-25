@@ -36,7 +36,6 @@ jobs:
           activate-environment: rmg_env
           use-mamba: true
           show-channel-urls: true
-          channels: conda-forge,cantera,rmg
 
       - name: Install sphinx
         run: mamba install -y sphinx
