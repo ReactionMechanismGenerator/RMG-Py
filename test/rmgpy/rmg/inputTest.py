@@ -117,7 +117,7 @@ class TestInputMLEstimator:
         assert isinstance(rmg.ml_settings, dict)
 
 
-class TestInputThemoCentralDatabase:
+class TestInputThermoCentralDatabase:
     """
     Contains unit tests rmgpy.rmg.input.thermo_central_database
     """
@@ -127,7 +127,7 @@ class TestInputThemoCentralDatabase:
         global rmg
         rmg.thermo_central_database = None
 
-    def test_themo_central_database(self):
+    def test_thermo_central_database(self):
         """
         Test that we can input.
         """

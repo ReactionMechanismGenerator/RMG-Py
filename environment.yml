@@ -110,6 +110,7 @@ dependencies:
 # depends on OpenBLAS instead
   - conda-forge::mkl >=2023.1.0
   - conda-forge::libcurl <= 8.9  # this is because of a Julia bug associated with libcurl 8.10+
+  - conda-forge::pyopenssl >20
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
