@@ -48,7 +48,6 @@ def check_dependencies():
     print('{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location'))
 
     missing = {
-        'lpsolve': _check_lpsolve(),
         'openbabel': _check_openbabel(),
         'pydqed': _check_pydqed(),
         'pyrdl': _check_pyrdl(),
@@ -60,41 +59,14 @@ def check_dependencies():
         print("""
 There are missing dependencies as listed above. Please install them before proceeding.
 
-Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
-
-    conda install -c rmg [package name]
-{0}
-You can alternatively update your environment and install all missing dependencies as follows:
-
     conda env update -f environment.yml
 
 Be sure to activate your conda environment (rmg_env by default) before installing or updating.
-""".format("""
-RDKit should be installed from the RDKit channel instead:
-
-    conda install -c rdkit rdkit
-""" if missing['rdkit'] else ''))
+""")
     else:
         print("""
 Everything was found :)
 """)
-
-
-def _check_lpsolve():
-    """Check for lpsolve"""
-    missing = False
-
-    try:
-        import lpsolve55
-    except ImportError:
-        print('{0:<30}{1}'.format('lpsolve55',
-                                  'Not found. Necessary for generating Clar structures for aromatic species.'))
-        missing = True
-    else:
-        location = lpsolve55.__file__
-        print('{0:<30}{1}'.format('lpsolve55', location))
-
-    return missing
 
 
 def _check_openbabel():
@@ -246,21 +218,6 @@ def check_pydas():
             elif dassl:
                 f.write('DEF DASPK = 0\n')
 
-
-def check_python():
-    """
-    Check that Python 3 is in the environment.
-    """
-    major = sys.version_info.major
-    minor = sys.version_info.minor
-    if not (major == 3 and minor >= 7):
-        sys.exit('\nRMG-Py requires Python 3.7 or higher. You are using Python {0}.{1}.\n\n'
-                 'If you are using Anaconda, you should create a new environment using\n\n'
-                 '    conda env create -f environment.yml\n\n'
-                 'If you have an existing rmg_env, you can remove it using\n\n'
-                 '    conda remove --name rmg_env --all\n'.format(major, minor))
-
-
 def clean(subdirectory=''):
     """
     Removes files generated during compilation.
@@ -271,7 +228,7 @@ def clean(subdirectory=''):
     if platform.system() == 'Windows':
         extensions = ['.pyd', '.pyc']
     else:
-        extensions = ['.so', '.pyc']
+        extensions = ['.so', '.pyc', ".c"]
 
     # Remove temporary build files
     print('Removing build directory...')
@@ -310,7 +267,7 @@ def update_headers():
     start of each file, be sure to double-check the results to make sure
     important lines aren't accidentally overwritten.
     """
-    shebang = """#!/usr/bin/env python-jl
+    shebang = """#!/usr/bin/env python
 
 """
 
@@ -411,7 +368,6 @@ if __name__ == '__main__':
     parser.add_argument('command', metavar='COMMAND', type=str,
                         choices=['check-dependencies',
                                  'check-pydas',
-                                 'check-python',
                                  'clean',
                                  'clean-solver',
                                  'update-headers'],
@@ -423,8 +379,6 @@ if __name__ == '__main__':
         check_dependencies()
     elif args.command == 'check-pydas':
         check_pydas()
-    elif args.command == 'check-python':
-        check_python()
     elif args.command == 'clean':
         clean()
     elif args.command == 'clean-solver':

@@ -36,6 +36,8 @@ from rmgpy.molecule.graph cimport Vertex, Edge, Graph
 ################################################################################
 cdef dict bond_orders 
 
+cdef tuple _skip_first(in_tuple)
+
 cdef class Atom(Vertex):
 
     cdef public Element element

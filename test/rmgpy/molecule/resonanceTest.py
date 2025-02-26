@@ -31,7 +31,6 @@
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.molecule.resonance import (
     _clar_optimization,
-    _clar_transformation,
     generate_clar_structures,
     generate_kekule_structure,
     generate_optimal_aromatic_resonance_structures,
@@ -1426,15 +1425,6 @@ class ClarTest:
     """
     Contains unit tests for Clar structure methods.
     """
-
-    def test_clar_transformation(self):
-        """Test that clarTransformation generates an aromatic ring."""
-        mol = Molecule().from_smiles("c1ccccc1")
-        sssr = mol.get_smallest_set_of_smallest_rings()
-        _clar_transformation(mol, sssr[0])
-        mol.update_atomtypes()
-
-        assert mol.is_aromatic()
 
     def test_clar_optimization(self):
         """Test to ensure pi electrons are conserved during optimization"""
