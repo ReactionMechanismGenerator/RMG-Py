@@ -105,6 +105,11 @@ dependencies:
 # configure packages to use OpenBLAS instead of Intel MKL
   - blas=*=openblas
 
+# except that Cantera is configured to use Intel MKL, so we have to make sure its version is recent
+# but if we can switch over to the conda-forge version, we should be able to remove this line because it
+# depends on OpenBLAS instead
+  - conda-forge::mkl >=2023.1.0
+
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
   # in the environment. Normally we would add this to the environment file with
