@@ -6,7 +6,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
-#. If your `conda` version is older than 23.10.0, switch the solver backend to `libmamba` ::
+#. If your `conda` version is older than 23.10.0, manually switch the solver backend to `libmamba` ::
 
     conda install -n base conda-libmamba-solver
     conda config --set solver libmamba
@@ -61,16 +61,6 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     cd RMG-Py
 
-#. Apple silicon (M1+) users only: execute the following commands
-   **instead of** the following `conda env create -f environment.yml` step.
-   (This will tell conda that we want to the environment to use x86 
-   architecture rather than the native ARM64 architecture) ::
-
-    conda create -n rmg_env
-    conda activate rmg_env
-    conda config --env --set subdir osx-64
-    conda env update -f environment.yml
-
 #. Create the conda environment for RMG-Py::
 
     conda env create -f environment.yml
@@ -95,28 +85,25 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     make
 
-#. Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
-   Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder.
+#. **Optional**: add your RMG-Py folder to ``PATH`` to launch ``rmg.py`` from any folder.
 
-   In general, these commands should be placed in the appropriate shell initialization file.
+   In general, this commands should be placed in the appropriate shell initialization file.
    For Linux users using bash (the default on distributions mentioned here), these should be placed in ``~/.bashrc``.
    For MacOS users using bash (default before MacOS Catalina), these should be placed in ``~/.bash_profile``, which you should create if it doesn't exist.
    For MacOS users using zsh (default beginning in MacOS Catalina), these should be placed in ``~/.zshrc``. ::
 
-    export PYTHONPATH=YourFolder/RMG-Py/:$PYTHONPATH
     export PATH=YourFolder/RMG-Py/:$PATH
 
    NOTE: Make sure to change ``YourFolder`` to the path leading to the ``RMG-Py`` code. Not doing so will lead to an error stating that python cannot find the module ``rmgpy``.
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
-#. **Optional (Recommended)**: Install and Link Julia dependencies. Ensure that you have modified your environment variables as described above, and then run the following: ::
+#. **Optional (Recommended)**: Install and Link Julia dependencies using ``install_rms.sh``. Ensure that you have modified your environment variables as described above, and then run the following: ::
 
-     julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator;'
+     . install_rms.sh
 
-     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-
-    Installing these dependencies will allow using ``method='ode'`` when solving the Master Equation with Arkane and using ``ReactionMechanismSimulator.jl``-based reactors in RMG.
+    Follow the final set of instructions from this installation script with regard to setting additional environment variables.
+    Installing RMS will allow using ``method='ode'`` when solving the Master Equation with Arkane and using ``ReactionMechanismSimulator.jl``-based reactors in RMG.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
