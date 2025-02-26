@@ -105,6 +105,8 @@ dependencies:
 # configure packages to use OpenBLAS instead of Intel MKL
   - blas=*=openblas
 
+# adding a nothing change to see if pycall fails in testing
+
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
   # in the environment. Normally we would add this to the environment file with
