@@ -105,6 +105,18 @@ dependencies:
 # configure packages to use OpenBLAS instead of Intel MKL
   - blas=*=openblas
 
+# Cantera 2.6 on the Cantera channel is configured to use Intel MKL. It doesn't specify a version minimum
+# but crashes if MKL is too old, so we have to enforce a minimum version here. But, if we can switch over
+# to the conda-forge version, we should be able to remove this line (and maybe the two after it)
+# because it use OpenBLAS instead. 
+  - conda-forge::mkl >=2023.1.0
+  # 2023.1.0 is just a guess at the minimum version. Older versions might work too.
+  - conda-forge::libcurl <= 8.9 
+  # There's a Julia/PyCall installation bug associated with libcurl 8.10+:
+  # https://discourse.julialang.org/t/curl-multi-assign-and-segmentation-fault-when-installing-package/120901/3
+  - conda-forge::pyopenssl >20
+  # ThermoCentralDatabaseInterface fails if pyopenssl is too old. 20 is just a guess at the version number. 
+
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)
   # in the environment. Normally we would add this to the environment file with
