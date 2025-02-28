@@ -61,6 +61,129 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <section id="arkane-ess-qchemlog">
 <h1>arkane.ess.QchemLog<a class="headerlink" href="#arkane-ess-qchemlog" title="Permalink to this heading">¶</a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">arkane.ess.</span></span><span class="sig-name descname"><span class="pre">QChemLog</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_for_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scratch_directory</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Represent an output file from QChem. The attribute <cite>path</cite> refers to the
+location on disk of the QChem output file of interest. Methods are provided
+to extract a variety of information into Arkane classes and/or NumPy
+arrays. QChemLog is an adapter for the abstract class ESSAdapter.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.check_for_errors">
+<span class="sig-name descname"><span class="pre">check_for_errors</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.check_for_errors" title="Permalink to this definition">¶</a></dt>
+<dd><p>Checks for common errors in a QChem log file.
+If any are found, this method will raise an error and crash.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.get_D1_diagnostic">
+<span class="sig-name descname"><span class="pre">get_D1_diagnostic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_D1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the D1 diagnostic from output log.
+If multiple occurrences exist, returns the last occurrence.
+Should be implemented by the relevant subclass.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.get_T1_diagnostic">
+<span class="sig-name descname"><span class="pre">get_T1_diagnostic</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_T1_diagnostic" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the T1 diagnostic from output log.
+If multiple occurrences exist, returns the last occurrence.
+Should be implemented by the relevant subclass.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.get_number_of_atoms">
+<span class="sig-name descname"><span class="pre">get_number_of_atoms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_number_of_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the number of atoms in the molecular configuration used in
+the QChem output file.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.get_software">
+<span class="sig-name descname"><span class="pre">get_software</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_software" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the name of the software. Should correspond to the class
+name without ‘Log’.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.get_symmetry_properties">
+<span class="sig-name descname"><span class="pre">get_symmetry_properties</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.get_symmetry_properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method uses the symmetry package from RMG’s QM module
+and returns a tuple where the first element is the number
+of optical isomers, the second element is the symmetry number,
+and the third element is the point group identified.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_conformer">
+<span class="sig-name descname"><span class="pre">load_conformer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symmetry</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spin_multiplicity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">optical_isomers</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_conformer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the molecular degree of freedom data from an output file created as the result of a
+QChem “Freq” calculation. As QChem’s guess of the external symmetry number is not always correct,
+you can use the <cite>symmetry</cite> parameter to substitute your own value;
+if not provided, the value in the QChem output file will be adopted.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_energy">
+<span class="sig-name descname"><span class="pre">load_energy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">zpe_scale_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the energy in J/mol from a QChem log file. Prioritize the energy from a converged
+geometry optimization. If the file does not contain an optimization job or if the optimization
+hit the maximum cycles, return the next equivalent source, such as from a frequency job.
+The zero-point energy is <em>not</em> included in the returned value.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_force_constant_matrix">
+<span class="sig-name descname"><span class="pre">load_force_constant_matrix</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_force_constant_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the force constant matrix (in Cartesian coordinates) from the
+QChem log file. If multiple such matrices are identified,
+only the last is returned. The units of the returned force constants
+are J/m^2. If no force constant matrix can be found in the log file,
+<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_geometry">
+<span class="sig-name descname"><span class="pre">load_geometry</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the optimum geometry of the molecular configuration from the
+QChem log file. If multiple such geometries are identified, only the
+last is returned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_negative_frequency">
+<span class="sig-name descname"><span class="pre">load_negative_frequency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the imaginary frequency from a transition state frequency
+calculation in cm^-1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_scan_energies">
+<span class="sig-name descname"><span class="pre">load_scan_energies</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_scan_energies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract the optimized energies in J/mol from a QChem log file, e.g. the
+result of a QChem “PES Scan” quantum chemistry calculation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_scan_frozen_atoms">
+<span class="sig-name descname"><span class="pre">load_scan_frozen_atoms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_scan_frozen_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for QChem</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_scan_pivot_atoms">
+<span class="sig-name descname"><span class="pre">load_scan_pivot_atoms</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_scan_pivot_atoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Not implemented for QChem</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.QChemLog.load_zero_point_energy">
+<span class="sig-name descname"><span class="pre">load_zero_point_energy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.QChemLog.load_zero_point_energy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the unscaled zero-point energy in J/mol from a QChem output file.</p>
+</dd></dl>
+
+</dd></dl>
+
 </section>
 
 
@@ -91,6 +214,33 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           </a>
         </div>
         <div class="menuitem">
+  <div>
+    <h3><a href="../../contents.html">Table of Contents</a></h3>
+    <ul>
+<li><a class="reference internal" href="#">arkane.ess.QchemLog</a><ul>
+<li><a class="reference internal" href="#arkane.ess.QChemLog"><code class="docutils literal notranslate"><span class="pre">QChemLog</span></code></a><ul>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.check_for_errors"><code class="docutils literal notranslate"><span class="pre">QChemLog.check_for_errors()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.get_D1_diagnostic"><code class="docutils literal notranslate"><span class="pre">QChemLog.get_D1_diagnostic()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.get_T1_diagnostic"><code class="docutils literal notranslate"><span class="pre">QChemLog.get_T1_diagnostic()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.get_number_of_atoms"><code class="docutils literal notranslate"><span class="pre">QChemLog.get_number_of_atoms()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.get_software"><code class="docutils literal notranslate"><span class="pre">QChemLog.get_software()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.get_symmetry_properties"><code class="docutils literal notranslate"><span class="pre">QChemLog.get_symmetry_properties()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_conformer"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_conformer()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_energy"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_energy()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_force_constant_matrix"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_force_constant_matrix()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_geometry"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_geometry()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_negative_frequency"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_negative_frequency()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_scan_energies"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_scan_energies()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_scan_frozen_atoms"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_scan_frozen_atoms()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_scan_pivot_atoms"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_scan_pivot_atoms()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.QChemLog.load_zero_point_energy"><code class="docutils literal notranslate"><span class="pre">QChemLog.load_zero_point_energy()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  </div>
         </div>
         <div class="menuitem">
   <div>
