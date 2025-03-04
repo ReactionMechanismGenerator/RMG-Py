@@ -350,7 +350,7 @@ class MolproLog(ESSAdapter):
             # Search for e_elect
             for line in lines:
                 if f12 and f12a:
-                    if 'CCSD(T)-F12a' in line and 'energy' in line:
+                    if ('CCSD(T)-F12a' in line or 'CCSD(T)-F12/' in line and '!' not in line) and 'energy' in line:
                         e_elect = float(line.split()[-1])
                         break
                 elif f12 and f12b:
