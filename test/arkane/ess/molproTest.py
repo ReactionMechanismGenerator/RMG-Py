@@ -106,8 +106,11 @@ class MolproLogTest:
         """
         log = MolproLog(os.path.join(self.data_path, "OH_f12.out"))
         e0 = log.load_energy()
-
         assert round(abs(e0 / constants.Na / constants.E_h - -75.663696424380), 5) == 0
+
+        log = MolproLog(os.path.join(self.data_path, "C5OH5_CCSD(T)_F12.out"))
+        e0 = log.load_energy()
+        assert round(abs(e0 / constants.Na / constants.E_h - -268.317057640597), 5) == 0
 
     def test_load_hosi_from_molpro_log(self):
         """
