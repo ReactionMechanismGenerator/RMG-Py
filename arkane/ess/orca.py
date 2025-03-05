@@ -236,7 +236,7 @@ class OrcaLog(ESSAdapter):
         if len(inertia) and not all(i == 0.0 for i in inertia):
             if any(i == 0.0 for i in inertia):
                 inertia.remove(0.0)
-                rot.append(LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry))
+                rot.append(LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry))
             else:
                 rot.append(NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry))
 
