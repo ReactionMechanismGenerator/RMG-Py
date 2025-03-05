@@ -134,6 +134,10 @@ class OrcaTest:
         conformer, unscaled_frequencies = log.load_conformer()
         assert len(conformer.modes[2]._frequencies.value) == 11
         assert conformer.modes[2]._frequencies.value[2] == 331.23
+        log = OrcaLog(os.path.join(self.data_path, "freq_orca_5.0.4.log"))
+        conformer, unscaled_frequencies = log.load_conformer()
+        assert len(conformer.modes[2]._frequencies.value) == 6
+        assert conformer.modes[2]._frequencies.value[0] == 228.25
 
     def test_load_modes_from_orca_log(self):
         """
