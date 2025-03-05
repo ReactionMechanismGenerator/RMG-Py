@@ -169,3 +169,17 @@ class ConverterTest:
             new_mol = from_ob_mol(Molecule(), ob_mol)
             assert mol.is_isomorphic(new_mol) or self.test_Hbond_free_mol.is_isomorphic(new_mol)
             assert mol.get_element_count() == new_mol.get_element_count()
+
+    def test_rdkit_adsorbate_round_trip(self):
+        """Test conversion to and from RDKitMol for adsorbates"""
+        adsorbates = [
+            Molecule().from_smiles("C*"),
+            Molecule().from_smiles("[*H]"),
+            Molecule().from_smiles("CC(=*)CO"),
+            Molecule().from_smiles("*COC*"),
+        ]
+        for mol in adsorbates:
+            rdkit_mol = to_rdkit_mol(mol)
+            new_mol = from_rdkit_mol(Molecule(), rdkit_mol)
+            assert mol.is_isomorphic(new_mol)
+            assert mol.get_element_count() == new_mol.get_element_count()
