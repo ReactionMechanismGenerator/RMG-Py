@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 
 ###############################################################################
 #                                                                             #
@@ -38,7 +38,7 @@ from rmgpy.data.base import Entry
 from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.group import Group
-from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
+from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration, Concentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
@@ -647,7 +647,7 @@ def liquid_cat_reactor(temperature,
             concentration = Quantity(conc)
             # check the dimensions are ok
             # convert to mol/m^3 (or something numerically nice? or must it be SI)
-            initialConcentrations[spec] = concentration.value_si
+            initialConcentrations[spec] = concentration.value_si  # is this a mistake? shouldn't this also be quantity?
         else:
             if len(conc) != 2:
                 raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
@@ -1628,6 +1628,8 @@ def read_thermo_input_file(path, rmg0):
     rmg.reaction_model = CoreEdgeReactionModel()
     rmg.initial_species = []
     rmg.reaction_systems = []
+    if rmg.output_directory is None:
+        rmg.output_directory = os.path.dirname(full_path)
     species_dict = {}
 
     global_context = {'__builtins__': None}
@@ -1684,12 +1686,16 @@ def save_input_file(path, rmg):
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
     f.write(')\n\n')
 
-    if rmg.surfaceSiteDenisty or rmg.binding_energies:
+    if rmg.surface_site_density or rmg.binding_energies:
         f.write('catalystProperties(\n')
-        if rmg.surfaceSiteDenisty:
-            f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
+        if rmg.surface_site_density:
+            f.write('    surfaceSiteDensity = ({0:g}, "{1!s}"),'.format(rmg.surface_site_density.value, rmg.surface_site_density.units) + '\n')
         if rmg.binding_energies:
-            f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
+            f.write('    bindingEnergies = {\n')
+            for spc, be in rmg.binding_energies.items():
+                f.write('        "{0!s}": ({1:g}, "{2!s}"),\n'.format(spc, be.value, be.units))
+            f.write('    },\n')
+
         f.write(')\n\n')
 
     # Species
@@ -1703,23 +1709,59 @@ def save_input_file(path, rmg):
         f.write('"""),\n')
         f.write(')\n\n')
 
+    def format_temperature(system):
+        """Get temperature string format for reaction system, whether single value or range"""
+        if system.T is not None:
+            return '({0:g},"{1!s}")'.format(system.T.value, system.T.units)
+        
+        return f'[({system.Trange[0].value:g}, "{system.Trange[0].units}"), ({system.Trange[1].value:g}, "{system.Trange[1].units}")],'
+
+    def format_pressure(system):
+        """Get pressure string format for reaction system, whether single value or range"""
+        if system.P is not None:
+            return '({0:g},"{1!s}")'.format(system.P.value, system.P.units)
+        
+        return f'[({system.Prange[0].value:g}, "{system.Prange[0].units}"), ({system.Prange[1].value:g}, "{system.Prange[1].units}")],'
+
+    def format_initial_mole_fractions(system):
+        """Get initial mole fractions string format for reaction system"""
+        mole_fractions = ''
+        for spcs, molfrac in system.initial_mole_fractions.items():
+            if isinstance(molfrac, list):
+                mole_fractions += '        "{0!s}": [{1:g}, {2:g}],\n'.format(spcs.label, molfrac[0], molfrac[1])
+            else:
+                mole_fractions += '        "{0!s}": {1:g},\n'.format(spcs.label, molfrac)
+        return mole_fractions
+
+
     # Reaction systems
     for system in rmg.reaction_systems:
         if rmg.solvent:
             f.write('liquidReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
+            f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
+                # conc may have been converted to SI, so we need to convert back
+                if type(conc) == float:
+                    conc = Quantity(conc, Concentration.units)
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
+        elif isinstance(system, SurfaceReactor):
+            f.write('surfaceReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    initialPressure = ({0:g},"{1!s}"),\n'.format(system.P_initial.value, system.P_initial.units))
+            f.write('    initialGasMoleFractions={\n')
+            for spcs, molfrac in system.initial_gas_mole_fractions.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write('    },\n')
+            f.write('    initialSurfaceCoverages={\n')
+            for spcs, cov in system.initial_surface_coverages.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, cov))
         else:
             f.write('simpleReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
-            # Convert the pressure from SI pascal units to bar here
-            # Do something more fancy later for converting to user's desired units for both T and P..
-            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.value, system.P.units))
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    pressure = ' + format_pressure(system) + '\n')
             f.write('    initialMoleFractions={\n')
-            for spcs, molfrac in system.initial_mole_fractions.items():
-                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write(format_initial_mole_fractions(system))
         f.write('    },\n')
 
         # Termination criteria
@@ -1727,9 +1769,12 @@ def save_input_file(path, rmg):
         for term in system.termination:
             if isinstance(term, TerminationTime):
                 f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.value, term.time.units))
-
-            else:
+            elif isinstance(term, TerminationRateRatio):
+                f.write('    terminationRateRatio = {0:g},\n'.format(term.ratio))
+            elif isinstance(term, TerminationConversion):
                 conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
+            else:
+                raise NotImplementedError('Termination criteria of type {0} not supported'.format(type(term)))
         if conversions:
             f.write('    terminationConversion = {\n')
             f.write(conversions)
@@ -1772,9 +1817,9 @@ def save_input_file(path, rmg):
     if rmg.pressure_dependence:
         f.write('pressureDependence(\n')
         f.write('    method = {0!r},\n'.format(rmg.pressure_dependence.method))
-        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.grain_size.value,
-                                                                   rmg.pressure_dependence.grain_size.units))
-        f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressure_dependence.grain_count))
+        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.maximum_grain_size.value,
+                                                                   rmg.pressure_dependence.maximum_grain_size.units))
+        f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressure_dependence.minimum_grain_count))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
             rmg.pressure_dependence.Tmin.value,
             rmg.pressure_dependence.Tmax.value,
