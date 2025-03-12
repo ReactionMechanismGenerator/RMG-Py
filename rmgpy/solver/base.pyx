@@ -57,6 +57,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
 from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
+from rmgpy.exceptions import NetworkError
 ################################################################################
 
 cdef class ReactionSystem(DASx):
@@ -733,7 +734,7 @@ cdef class ReactionSystem(DASx):
                     self.step(step_time)
                     if np.isnan(self.y).any():
                         raise DASxError("nans in moles")
-                except DASxError as e:
+                except (DASxError, NetworkError) as e:
                     logging.error("Trying to step from time {0} to {1} resulted in a solver (DASPK) error: "
                                   "{2!s}".format(prev_time, step_time, e))
 
