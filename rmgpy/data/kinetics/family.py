@@ -1868,7 +1868,7 @@ class KineticsFamily(Database):
                                   "\n".format(len(reactions), self.label, str(rxn)))
                     # raise KineticsError("Did not find reverse reaction in reaction family {0} for reaction "
                     #                     "{1}.".format(self.label, str(rxn)))
-                    return False
+                    return True
             elif (len(reactions) > 1 and
                     not all([reactions[0].is_isomorphic(other, strict=False, check_template_rxn_products=True)
                              for other in reactions])):
@@ -1931,7 +1931,9 @@ class KineticsFamily(Database):
             logging.error(('Unable to calculate degeneracy for reaction {0} '
                                  'in reaction family {1}. Expected 1 reaction '
                                  'but generated {2}').format(reaction, self.label, len(reactions)))
-            return 1
+            if not len(reactions):
+                return 1
+            reactions[0].degeneracy = 1
         return reactions[0].degeneracy
 
     def _generate_reactions(self, reactants, products=None, forward=True, prod_resonance=True,
@@ -4766,7 +4768,7 @@ def average_kinetics(kinetics_list):
     average log A (geometric average)
     """
     if type(kinetics_list[0]) not in [Arrhenius,SurfaceChargeTransfer,ArrheniusChargeTransfer,Marcus]:
-        raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
+        raise Exception('Invalid kinetics type')
     
     Aunits = kinetics_list[0].A.units
     if Aunits in {'cm^3/(mol*s)', 'cm^3/(molecule*s)', 'm^3/(molecule*s)'}:

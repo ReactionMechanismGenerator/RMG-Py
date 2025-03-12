@@ -137,7 +137,7 @@ def get_models_to_merge(input_model_files):
 
 def combine_models(models):
     """
-    Takes in a list of ReactionModels and and merges them into a single ReactionModel
+    Takes in a list of ReactionModels and merges them into a single ReactionModel
     Reindexes species with the same label and index
     """
     final_model = ReactionModel()

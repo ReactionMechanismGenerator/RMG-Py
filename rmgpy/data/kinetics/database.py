@@ -246,6 +246,8 @@ class KineticsDatabase(object):
                 library_file = os.path.join(path, library_name, 'reactions.py')
                 if os.path.exists(library_name):
                     library_file = os.path.join(library_name, 'reactions.py')
+                    if not os.path.exists(library_file):
+                        continue
                     short_library_name = os.path.basename(library_name.rstrip(os.path.sep))
                     logging.info(f'Loading kinetics library {short_library_name} from {library_name}...')
                     library = KineticsLibrary(label=short_library_name)
