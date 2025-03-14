@@ -87,7 +87,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. **Optional**: add your RMG-Py folder to ``PATH`` to launch ``rmg.py`` from any folder.
 
-   In general, this commands should be placed in the appropriate shell initialization file.
+   In general, this command should be placed in the appropriate shell initialization file.
    For Linux users using bash (the default on distributions mentioned here), these should be placed in ``~/.bashrc``.
    For MacOS users using bash (default before MacOS Catalina), these should be placed in ``~/.bash_profile``, which you should create if it doesn't exist.
    For MacOS users using zsh (default beginning in MacOS Catalina), these should be placed in ``~/.zshrc``. ::

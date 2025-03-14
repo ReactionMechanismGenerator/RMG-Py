@@ -2,7 +2,7 @@
 #
 # Convenience script to install ReactionMechanismSimulator inside your rmg_env conda environment
 #
-# Note that you will have to manually install juliaup before running this script:
+# Note that you will have to manually install juliaup before running this script by uncommenting and executing the following lines:
 # curl -fsSL https://install.julialang.org | sh
 # # restart shell
 # juliaup add 1.9
