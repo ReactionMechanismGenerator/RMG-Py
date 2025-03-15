@@ -46,7 +46,7 @@ import rmgpy.qm.symmetry as symmetry
 import rmgpy.quantity
 import rmgpy.statmech
 import rmgpy.thermo
-from rmgpy.qm.qmdata import parse_cclib_data
+# from rmgpy.qm.qmdata import parse_cclib_data
 from rmgpy.thermo import ThermoData
 
 

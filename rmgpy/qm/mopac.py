@@ -35,7 +35,7 @@ import shutil
 import tempfile
 from subprocess import Popen, PIPE
 
-import cclib
+# import cclib
 
 from rmgpy.exceptions import DependencyError, AtomTypeError
 from rmgpy.molecule.molecule import Molecule
