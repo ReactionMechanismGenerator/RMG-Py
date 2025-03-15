@@ -34,7 +34,7 @@ import os
 import re
 from subprocess import Popen
 
-import cclib
+# import cclib
 
 from rmgpy.molecule.molecule import Molecule
 from rmgpy.qm.molecule import QMMolecule
