@@ -60,14 +60,7 @@ from rmgpy.thermo.thermodata import ThermoData
 
 
 NO_JULIA = True
-try:
-    from juliacall import Main
-    Main.seval("using PythonCall")
-    Main.seval("using ReactionMechanismSimulator")
-    Main.seval("using ReactionMechanismSimulator.Sundials")
-    NO_JULIA = False
-except Exception as e:
-    logging.warning(f"Julia import failed, RMS reactors not available.\nException: {str(e)}\nStacktrace:\n{e.__traceback__}")
+logging.warning(f"Julia import skipped to save time while debugging!")
 
 
 def to_julia(obj):
