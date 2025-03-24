@@ -1064,6 +1064,26 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
         d[3 * i + 1, 1] = amass[i]
         d[3 * i + 2, 2] = amass[i]
 
+    # Check if projection matrix is full rank at this point
+        # Compute the QR decomposition in reduced mode
+    Q, R = np.linalg.qr(p, mode='reduced')
+    # Verify that Q has orthonormal columns:
+    if np.isclose(np.dot(Q.T, Q), np.eye(Q.shape[1])).all():
+        logging.debug("Q has orthonormal columns")
+    else:
+        logging.warning("Q does not have orthonormal columns")
+    # Verify the reconstruction
+    reconstructed_p = Q @ R
+    if np.isclose(p, reconstructed_p).all():
+        logging.debug("Reconstruction of projection matrix is correct")
+    else:
+        logging.warning("Reconstruction of projection matrix is incorrect")
+    # Check for nearly zero columns in the QR decomposition
+    for i, rkk in enumerate(R.diagonal()):
+        if abs(rkk) < 1E-15:
+            logging.warning(f'Column {i} of the QR decomposition is nearly zero, could lose a basis')
+
+
     # Construction of the projection vectors for external rotation
     for i in range(n_atoms):
         d[3 * i, 3] = (p[i, 1] * inertia_xyz[0, 2] - p[i, 2] * inertia_xyz[0, 1]) * amass[i]
