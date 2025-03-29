@@ -62,7 +62,7 @@ from rmgpy.molecule.fragment import CuttingLabel
 
 ################################################################################
 
-bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5, 'vdW': 0}
 
 globals().update({
     'bond_orders': bond_orders,
@@ -1258,9 +1258,19 @@ class Molecule(Graph):
         Remove all van der Waals bonds.
         """
         cython.declare(bond=Bond)
-        for bond in self.get_all_edges():
-            if bond.is_van_der_waals():
-                self.remove_bond(bond)
+        if self.is_multidentate():
+            #bond_types =
+            #possible_bonds_with_resonance =  #TODO: Include possible nitrogen bonds
+            if any([k in ['O-X', 'C#X', 'C=X', 'C-X'] for k in self.enumerate_bonds()]):
+                pass
+            else:
+                for bond in self.get_all_edges():
+                    if bond.is_van_der_waals():
+                        self.remove_bond(bond)
+        else:
+            for bond in self.get_all_edges():
+                if bond.is_van_der_waals():
+                    self.remove_bond(bond)
 
     def sort_atoms(self):
         """
@@ -2942,6 +2952,8 @@ class Molecule(Graph):
                     bonded_atom.increment_radical()
                     bonded_atom.increment_lone_pairs()
                     bonded_atom.label = '*4'
+                elif bond.is_van_der_waals():
+                    bonded_atom.label = '*5'
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
             desorbed_molecule.remove_atom(site)
