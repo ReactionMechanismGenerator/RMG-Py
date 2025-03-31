@@ -38,6 +38,7 @@ cdef class Wilhoit(HeatCapacityModel):
     
     cdef public ScalarQuantity _B, _H0, _S0
     cdef public double a0, a1, a2, a3
+    cdef public dict _thermo_coverage_dependence
 
     cpdef dict as_dict(self)
 
