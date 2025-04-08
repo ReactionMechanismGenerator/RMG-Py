@@ -607,8 +607,6 @@ class TestReactionDegeneracy:
 
         reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
 
-        assert set(reaction_list[0].template) == {"C_rad/H2/Cd", "Cmethyl_Csrad/H/Cd"}
-
     def test_degeneracy_multiple_ts_different_template(self):
         """Test that reactions from different transition states are marked as duplicates."""
         family_label = "intra_H_migration"
