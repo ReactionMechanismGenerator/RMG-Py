@@ -94,6 +94,7 @@ dependencies:
 
 # optional dependencies for using ReactionMechanismSimulator
 # remove the leading '#' to install the required dependencies
+# or simply run `install_rms.sh` which will handle this for you
   # - conda-forge::pyjuliacall
 
 # additional packages that are required, but not specified here (and why)
