@@ -48,6 +48,8 @@ env:
   # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
   # main with the name of the branch
   RMG_DATABASE_BRANCH: main
+  # julia parallel pre-compilation leads to race conditions and hangs, so we limit it to run in serial
+  JULIA_NUM_PRECOMPILE_TASKS: 1
 
 jobs:
   build-and-test:
