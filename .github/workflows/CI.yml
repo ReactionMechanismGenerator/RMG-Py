@@ -175,11 +175,17 @@ jobs:
 
       # RMG build step
       - run: make install
+      
+      - name: LD_LIBRARY_PATH check
+        run: echo $LD_LIBRARY_PATH
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
         with:
           channel: '1.9'
+      
+      - name: LD_LIBRARY_PATH check
+        run: echo $LD_LIBRARY_PATH
 
       - name: Set some env vars
         run: |
@@ -191,6 +197,9 @@ jobs:
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: . install_rms.sh
+      
+      - name: LD_LIBRARY_PATH check
+        run: echo $LD_LIBRARY_PATH
 
       - name: Set some other env vars
         run: |
@@ -272,6 +281,9 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           name: stable_regression_results
           path: stable_regression_results
+      
+      - name: LD_LIBRARY_PATH check
+        run: echo $LD_LIBRARY_PATH
 
       # Regression Testing - Actual Comparisons
       - name: Regression Tests - Compare to Baseline
