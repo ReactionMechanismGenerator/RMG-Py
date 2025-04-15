@@ -10,14 +10,14 @@
 # juliaup remove release
 
 # prevent Sundials.jl from breaking the already installed version of Sundials used by Cantera
-CVODES_SO_PATH=$(find "$CONDA_PREFIX" -name "libcvodes*.so*" 2>/dev/null | head -n 1)
-if [ -z "$CVODES_SO_PATH" ]; then
-    echo "❌ CVODES shared library not found in the current conda environment."
+SUNDIALS_SO_PATH=$(find "$CONDA_PREFIX" -name "libsundials*.so*" 2>/dev/null | head -n 1)
+if [ -z "$SUNDIALS_SO_PATH" ]; then
+    echo "❌ sundials shared library not found in the current conda environment."
     exit 1
 fi
-CVODES_DIR=$(dirname "$CVODES_SO_PATH")
-# export LD_LIBRARY_PATH="$CVODES_DIR:$LD_LIBRARY_PATH"
-export DL_LOAD_PATH="$CVODES_DIR:$DL_LOAD_PATH"
+SUNDIALS_SO_PATH=$(dirname "$SUNDIALS_SO_PATH")
+# export LD_LIBRARY_PATH="$SUNDIALS_SO_PATH:$LD_LIBRARY_PATH"
+export DL_LOAD_PATH="$SUNDIALS_SO_PATH:$DL_LOAD_PATH"
 
 conda install -y conda-forge::pyjuliacall
 
