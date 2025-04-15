@@ -5,8 +5,8 @@
 # Note that you will have to manually install juliaup before running this script:
 # curl -fsSL https://install.julialang.org | sh
 # # restart shell
-# juliaup add 1.9
-# juliaup default 1.9
+# juliaup add 1.11
+# juliaup default 1.11
 # juliaup remove release
 
 
