@@ -10,7 +10,7 @@
 # juliaup remove release
 
 # prevent Sundials.jl from breaking the already installed version of Sundials used by Cantera
-SUNDIALS_SO_PATH=$(find "$CONDA_PREFIX" -name "libsundials*.so*" 2>/dev/null | head -n 1)
+SUNDIALS_SO_PATH=$(find "$CONDA_PREFIX" -name "libcantera*.so*" 2>/dev/null | head -n 1)
 if [ -z "$SUNDIALS_SO_PATH" ]; then
     echo "❌ sundials shared library not found in the current conda environment."
     exit 1
