@@ -1,4 +1,4 @@
-#!/usr/bin/env python-jl
+#!/usr/bin/env python
 
 ###############################################################################
 #                                                                             #
@@ -33,16 +33,6 @@ RMG is an automatic chemical mechanism generator. It is awesomely awesome.
 
 import os.path
 import logging
-
-# Before importing any RMG modules, check Python version
-try:
-    import utilities
-except ImportError:  # This is likely the binary install version, which does not include utilities
-    # If this is in fact the binary version, conda has ensured that the python version is correct.
-    # It is okay to skip this test here
-    utilities = None
-else:
-    utilities.check_python()
 
 import rmgpy
 from rmgpy.rmg.main import RMG, initialize_log, process_profile_stats, make_profile_graph

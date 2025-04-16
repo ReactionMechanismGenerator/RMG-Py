@@ -29,7 +29,6 @@
 
 import os
 
-
 import numpy as np
 
 from rmgpy.kinetics import Arrhenius
@@ -168,21 +167,21 @@ class LiquidReactorTest:
 
         # Check that we're computing the species fluxes correctly
         for i in range(t.shape[0]):
-            assert abs(reaction_rates[i, 0] - species_rates[i, 0]) < abs(
+            assert abs(reaction_rates[i, 0] - species_rates[i, 0]) <= abs(
                 1e-6 * reaction_rates[i, 0]
             )
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) < abs(
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 1]) <= abs(
                 1e-6 * reaction_rates[i, 0]
             )
-            assert abs(reaction_rates[i, 0] - -species_rates[i, 2]) < abs(
+            assert abs(reaction_rates[i, 0] - -species_rates[i, 2]) <= abs(
                 1e-6 * reaction_rates[i, 0]
             )
-            assert abs(reaction_rates[i, 0] - species_rates[i, 3]) < abs(
+            assert abs(reaction_rates[i, 0] - species_rates[i, 3]) <= abs(
                 1e-6 * reaction_rates[i, 0]
             )
 
         # Check that we've reached equilibrium
-        assert abs(reaction_rates[-1, 0] - 0.0) < 1e-2
+        assert abs(reaction_rates[-1, 0] - 0.0) <= 1e-2
 
     def test_jacobian(self):
         """
@@ -635,5 +634,7 @@ class LiquidReactorTest:
         import rmgpy.data.rmg
 
         rmgpy.data.rmg.database = None
-
-        os.remove(os.path.join(cls.file_dir, "restart_from_seed.py"))
+        try:
+            os.remove(os.path.join(cls.file_dir, "restart_from_seed.py"))
+        except FileNotFoundError:
+            pass  # file will not be present if any tests failed
