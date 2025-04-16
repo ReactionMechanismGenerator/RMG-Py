@@ -35,10 +35,11 @@ SUNDIALS_SO_DIR=$(dirname "$SUNDIALS_SO_PATH")
 # the sundials docs specifically request setting this environment variable
 # (https://github.com/SciML/Sundials.jl?tab=readme-ov-file#installation)
 # rather than the more common LD_LIBRARY_PATH
-# for macos we set DYLD_LIBRARY_PATH, which is (allegedly) the Mac equivalent
-# though this might be the wrong thing to do
+# for macos we set DYLD_FALLBACK_LIBRARY_PATH, which is (allegedly) the Mac equivalent
+# though this might be the wrong thing to do. we do not set DYLD_LIBRARY_PATH which breaks
+# applications built against the standard libraries
 if [ "$IS_MAC" = true ]; then
-    export DYLD_LIBRARY_PATH="$SUNDIALS_SO_DIR:$DYLD_LIBRARY_PATH"
+    export DYLD_FALLBACK_LIBRARY_PATH="$SUNDIALS_SO_DIR:$DYLD_FALLBACK_LIBRARY_PATH"
     echo "✅ DYLD_LIBRARY_PATH updated for macOS."
 else
     export DL_LOAD_PATH="$SUNDIALS_SO_DIR:$DL_LOAD_PATH"
