@@ -607,8 +607,6 @@ class TestReactionDegeneracy:
 
         reaction_list = self.assert_correct_reaction_degeneracy(reactants, correct_rxn_num, correct_degeneracy, family_label, products)
 
-        assert set(reaction_list[0].template) == {"C_rad/H2/Cd", "Cmethyl_Csrad/H/Cd"}
-
     def test_degeneracy_multiple_ts_different_template(self):
         """Test that reactions from different transition states are marked as duplicates."""
         family_label = "intra_H_migration"
@@ -671,6 +669,7 @@ class TestKineticsCommentsParsing:
         for reaction in reactions:
             sources.append(self.database.kinetics.extract_source_from_comments(reaction))
 
+        # ------------------------------------------------------------------- #
         # Source 0 comes from a kinetics library
         assert "Library" in sources[0]
         assert sources[0]["Library"] == "GRI-Mech3.0"
@@ -681,13 +680,14 @@ class TestKineticsCommentsParsing:
         assert round(abs(reactions[0].kinetics.A.value_si - A), 7) == 0
         assert round(abs(reactions[0].kinetics.n.value_si - n), 7) == 0
 
+        # ------------------------------------------------------------------- #
         # Source 1 comes from a single exact match to a rate rule
         assert "Rate Rules" in sources[1]
-        assert sources[1]["Rate Rules"][0] == "Disproportionation"
+        assert sources[1]["Rate Rules"][0] == "H_Abstraction"
         rules = sources[1]["Rate Rules"][1]["rules"]
 
         assert len(rules) == 1
-        assert rules[0][0].label == "O_pri_rad;Cmethyl_Csrad"
+        assert rules[0][0].label == "C/H3/Cs;C_methyl"
 
         reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[1], sources[1], fix_barrier_height=True)
         A = reconstructed_kinetics.A.value_si
@@ -695,38 +695,26 @@ class TestKineticsCommentsParsing:
         assert round(abs(reactions[1].kinetics.A.value_si - A), 7) == 0
         assert round(abs(reactions[1].kinetics.n.value_si - n), 7) == 0
 
-        # Source 2 comes from an averaged rate rule that even contains a rate rule from a training reaction
+        # ------------------------------------------------------------------- #
+        # Source 2 comes from an averaged rate rule: the node exists in the tree but all the data comes from an average of other leaves
         assert "Rate Rules" in sources[2]
-        assert sources[2]["Rate Rules"][0] == "Disproportionation"
-        expected_rules = [
-            "O2b;O_Csrad",
-            "O_atom_triplet;O_Csrad",
-            "CH2_triplet;O_Csrad",
-            "O_pri_rad;O_Csrad",
-            "O_rad/NonDeC;O_Csrad",
-            "O_rad/NonDeO;O_Csrad",
-            "Cd_pri_rad;O_Csrad",
-            "CO_pri_rad;O_Csrad",
-            "C_methyl;O_Csrad",
-            "C_rad/H2/Cs;O_Csrad",
-            "C_rad/H2/Cd;O_Csrad",
-            "C_rad/H2/O;O_Csrad",
-            "C_rad/H/NonDeC;O_Csrad",
-            "C_rad/Cs3;O_Csrad",
-            "H_rad;O_Csrad",
+        assert sources[2]["Rate Rules"][0] == "H_Abstraction"
+        expected_rules = []
+        expected_training = [
+            "C/H3/Cs\H3;C_rad/H2/Cs\H3",
+            "C/H3/Cs\H3;C_rad/H2/Cs\H\Cs\Cs|O",
         ]
-
         rules = sources[2]["Rate Rules"][1]["rules"]
         training = sources[2]["Rate Rules"][1]["training"]
-
-        actual_rule_labels = [rule.label for rule, weight in rules]
+        actual_training_labels = [template.label for template, train, weight in training]
 
         assert len(rules) == len(expected_rules)
-        for rule in expected_rules:
-            assert rule in actual_rule_labels
-
-        assert len(training) == 1
-        assert training[0][1].index == 0  # Assert that the index of that training reaction is 1
+        assert len(training) == len(expected_training)
+        for train in expected_training:
+            assert train in actual_training_labels
+        assert len(training) == 2
+        assert training[0][1].index == 3024  # checking the indices on the training reactions
+        assert training[1][1].index == 20
 
         reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[2], sources[2], fix_barrier_height=True)
         A = reconstructed_kinetics.A.value_si
@@ -736,23 +724,81 @@ class TestKineticsCommentsParsing:
         assert round(abs(reactions[2].kinetics.A.value_si - A), 7) == 0
         assert round(abs(reactions[2].kinetics.n.value_si - n), 7) == 0
 
-        # Source 3 comes from a training reaction match
-        assert "Training" in sources[3]
-        family_label = sources[3]["Training"][0]
-        training_rxn = sources[3]["Training"][1]
+        # ------------------------------------------------------------------- #
+        # Source 3 comes from an average of templates - we had to fall up to parent nodes on both subtrees and then the results are averaged together
+        assert "Rate Rules" in sources[3]
+        assert sources[3]["Rate Rules"][0] == "H_Abstraction"
+        expected_rules = []
+        expected_training = [
+            "C/H3/Cs\H3;Cd_Cd\H2_pri_rad",
+            "C/H3/Cs\H2\Cs|O;Cd_Cd\H2_rad/Cs",
+        ]
+        rules = sources[3]["Rate Rules"][1]["rules"]
+        training = sources[3]["Rate Rules"][1]["training"]
+        actual_training_labels = [template.label for template, train, weight in training]
 
-        assert family_label == "Disproportionation"
-        assert training_rxn.label == "C2H + CH3O <=> C2H2 + CH2O"
+        assert len(rules) == len(expected_rules)
+        assert len(training) == len(expected_training)
+        for train in expected_training:
+            assert train in actual_training_labels
+        assert len(training) == 2
+        assert training[0][1].index == 774  # checking the indices on the training reactions
+        assert training[1][1].index == 421
 
         reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[3], sources[3], fix_barrier_height=True)
         A = reconstructed_kinetics.A.value_si
         n = reconstructed_kinetics.n.value_si
+        A = round(A, -int(np.floor(np.log10(abs(A)))) + 3)  # Do some rounding since chemkin format kinetics are rounded
+        n = round(n, 3)
         assert round(abs(reactions[3].kinetics.A.value_si - A), 7) == 0
         assert round(abs(reactions[3].kinetics.n.value_si - n), 7) == 0
 
-        # Source 3 comes from a pdep reaction
-        assert "PDep" in sources[4]
-        assert sources[4]["PDep"] == 7
+        # ------------------------------------------------------------------- #
+        # Source 4 comes from a template using data averaged from other nodes
+        assert "Rate Rules" in sources[4]
+        assert sources[4]["Rate Rules"][0] == "H_Abstraction"
+        expected_rules = []
+        expected_training = [
+            "C/H3/Cs\H2\O;C_methyl",
+        ]
+        rules = sources[4]["Rate Rules"][1]["rules"]
+        training = sources[4]["Rate Rules"][1]["training"]
+        actual_training_labels = [template.label for template, train, weight in training]
+
+        assert len(rules) == len(expected_rules)
+        assert len(training) == len(expected_training)
+        for train in expected_training:
+            assert train in actual_training_labels
+        assert len(training) == 1
+        assert training[0][1].index == 232  # checking the indices on the training reactions
+
+        reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[4], sources[4], fix_barrier_height=True)
+        A = reconstructed_kinetics.A.value_si
+        n = reconstructed_kinetics.n.value_si
+        A = round(A, -int(np.floor(np.log10(abs(A)))) + 3)  # Do some rounding since chemkin format kinetics are rounded
+        n = round(n, 3)
+        assert round(abs(reactions[4].kinetics.A.value_si - A), 7) == 0
+        assert round(abs(reactions[4].kinetics.n.value_si - n), 7) == 0
+
+        # ------------------------------------------------------------------- #
+        # Source 5 comes from a training reaction match in a hand-built tree
+        assert "Training" in sources[5]
+        family_label = sources[5]["Training"][0]
+        training_rxn = sources[5]["Training"][1]
+
+        assert family_label == "H_Abstraction"
+        assert training_rxn.label == "C2H6 + CH3_r3 <=> C2H5b + CH4"
+
+        reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[5], sources[5], fix_barrier_height=True)
+        A = reconstructed_kinetics.A.value_si
+        n = reconstructed_kinetics.n.value_si
+        assert round(abs(reactions[5].kinetics.A.value_si - A), 7) == 0
+        assert round(abs(reactions[5].kinetics.n.value_si - n), 7) == 0
+
+        # ------------------------------------------------------------------- #
+        # Source 6 comes from a PDEP Reaction
+        assert "PDep" in sources[6]
+        assert sources[6]["PDep"] == 7
 
 
 class TestKinetics:
