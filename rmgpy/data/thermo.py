@@ -1538,15 +1538,16 @@ class ThermoDatabase(object):
 
         # now edit the adsorptionThermo using LSR
         comments = []
-        for element,bond in normalized_bonds.items():
+        change_in_binding_energy = 0
+        for element, bond in normalized_bonds.items():
             if bond:
                 try:
-                    change_in_binding_energy = delta_atomic_adsorption_energy[element].value_si * bond
+                    change_in_binding_energy += delta_atomic_adsorption_energy[element].value_si * bond
                 except KeyError:
                     continue
-                thermo.H298.value_si += change_in_binding_energy
                 comments.append(f'{bond:.2f}{element}')
-        thermo.comment += " Binding energy corrected by LSR ({}) from {}".format('+'.join(comments), metal_to_scale_from)
+        thermo.H298.value_si += change_in_binding_energy
+        thermo.comment += f" Binding energy corrected by LSR ({'+'.join(comments)}) from {metal_to_scale_from} (H={change_in_binding_energy/1e3:+.0f}kJ/mol)"
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
