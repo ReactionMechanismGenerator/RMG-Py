@@ -12,25 +12,17 @@
 #!/bin/bash
 
 ### Julia breaks the Cantera installation (by changing the installed version of Sundials) - this prevents that (hopefully)
+
 # Detect platform
 OS=$(uname)
 IS_MAC=false
 if [ "$OS" = "Darwin" ]; then
     IS_MAC=true
 fi
-# Determine extension based on platform
-if [ "$IS_MAC" = true ]; then
-    LIB_EXT="dylib"
-else
-    LIB_EXT="so"
-fi
-# Find the Cantera-linked shared library
-SUNDIALS_SO_PATH=$(find "$CONDA_PREFIX" -name "libcantera*.${LIB_EXT}*" 2>/dev/null | head -n 1)
-if [ -z "$SUNDIALS_SO_PATH" ]; then
-    echo "❌ Cantera-linked SUNDIALS library not found in the current conda environment."
-    exit 1
-fi
-SUNDIALS_SO_DIR=$(dirname "$SUNDIALS_SO_PATH")
+
+# point towards rmg conda-installed sundials binaries
+SUNDIALS_SO_DIR=$CONDA_PREFIX/lib
+
 # Export the correct environment variable
 # the sundials docs specifically request setting this environment variable
 # (https://github.com/SciML/Sundials.jl?tab=readme-ov-file#installation)
@@ -40,10 +32,8 @@ SUNDIALS_SO_DIR=$(dirname "$SUNDIALS_SO_PATH")
 # applications built against the standard libraries
 if [ "$IS_MAC" = true ]; then
     export DYLD_FALLBACK_LIBRARY_PATH="$SUNDIALS_SO_DIR:$DYLD_FALLBACK_LIBRARY_PATH"
-    echo "✅ DYLD_LIBRARY_PATH updated for macOS."
 else
     export DL_LOAD_PATH="$SUNDIALS_SO_DIR:$DL_LOAD_PATH"
-    echo "✅ DL_LOAD_PATH updated for Linux."
 fi
 ###
 
