@@ -121,3 +121,41 @@ entry(
     longDesc="""Made up""",
     metal="Ni",
 )
+
+entry(
+    index=8,
+    label="CH4 + OX + Ni <=> CH3X + HOX",
+    kinetics = StickingCoefficientBEP(
+        A = 5e-6,
+        n = 0,
+        alpha = 0,
+        E0 = (68.66, 'kJ/mol'),
+        Tmin = (200, 'K'),
+        Tmax = (3000, 'K'),
+    ),
+    shortDesc="StickingCoefficientBEP Eley-Rideal example",
+    longDesc="""Because a gas phase molecule (CH4) reactss with an adsorbate,
+                we use StickingCoefficientBEP.
+                Copied from Surface_EleyRideal_Addition_Multiple_Bond.
+                Note the kinetics are therefore for a reaction with one surface site
+                but being used for one with two. They might be very inappropriate.""",
+    metal="Ni",
+)
+
+entry(
+    index=10,
+    label="H2 + Ni + Ni <=> HX + HX",
+    kinetics=StickingCoefficientBEP(
+        A=0.01,
+        n=0,
+        alpha=0,
+        E0=(10, "kcal/mol"),
+        Tmin=(200, "K"),
+        Tmax=(3000, "K"),
+    ),
+    shortDesc="BEP sticking coefficient example",
+    longDesc="""This is an example reaction using the BEP kinetics model
+                for a sticking coefficient.
+                Copied from the Surface_Adsorption_Dissociative family.""",
+    metal="Ni",
+)
