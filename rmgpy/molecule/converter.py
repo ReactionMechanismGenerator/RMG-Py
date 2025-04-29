@@ -49,11 +49,13 @@ import rmgpy.molecule.molecule as mm
 from rmgpy.exceptions import DependencyError
 
 
-def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_order=False):
+def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_order=False, X=0):
     """
     Convert a molecular structure to a RDKit rdmol object. Uses
     `RDKit <http://rdkit.org/>`_ to perform the conversion.
     Perceives aromaticity and, unless remove_h==False, removes Hydrogen atoms.
+    X is the atomic number or symbol to use for surface sites
+    (default is 0, which works well for SMILES, but you might want 78 (Pt) for InChIs).
 
     If return_mapping==True then it also returns a dictionary mapping the
     atoms to RDKit's atom indices.
@@ -69,7 +71,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
-            rd_atom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
+            rd_atom = Chem.rdchem.Atom(X) # set in the function call. Default 0
         else:
             rd_atom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
