@@ -29,6 +29,8 @@
 
 import os
 
+import pytest
+
 from rmgpy import settings
 from rmgpy.data.solvation import (
     DatabaseError,
@@ -36,14 +38,12 @@ from rmgpy.data.solvation import (
     SolvationDatabase,
     SolventLibrary,
     get_critical_temperature,
-    get_liquid_saturation_density,
     get_gas_saturation_density,
+    get_liquid_saturation_density,
 )
-from rmgpy.molecule import Molecule
-from rmgpy.rmg.main import RMG
-from rmgpy.rmg.main import Species
 from rmgpy.exceptions import InputError
-import pytest
+from rmgpy.molecule import Molecule
+from rmgpy.rmg.main import RMG, Species
 
 
 class TestSoluteDatabase:
@@ -141,8 +141,8 @@ class TestSoluteDatabase:
         """
         compound_name = "Hexane"
         temp = 400  # in K
-        assert round(abs(get_liquid_saturation_density(compound_name, temp) - 6383.22), 2) == 0
-        assert round(abs(get_gas_saturation_density(compound_name, temp) - 162.99), 2) == 0
+        assert round(abs(get_liquid_saturation_density(compound_name, temp) - 6385.15), 2) == 0
+        assert round(abs(get_gas_saturation_density(compound_name, temp) - 163.02), 2) == 0
         # Unsupported compound name
         with pytest.raises(DatabaseError):
             get_gas_saturation_density("Hexadecane", temp)

@@ -37,6 +37,7 @@ import logging
 import math
 import os
 import pathlib
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -1134,8 +1135,8 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     logging.debug('Frequencies from internal Hessian')
     for i in range(3 * n_atoms - external):
-        with np.warnings.catch_warnings():
-            np.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
             logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
     # Now we can start thinking about projecting out the internal rotations
@@ -1245,8 +1246,8 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     logging.debug('Frequencies from projected Hessian')
     for i in range(3 * n_atoms):
-        with np.warnings.catch_warnings():
-            np.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
             logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
     return np.sqrt(eig[-n_vib:]) / (2 * math.pi * constants.c * 100)
