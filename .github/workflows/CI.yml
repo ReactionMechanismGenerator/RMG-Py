@@ -192,6 +192,10 @@ jobs:
           # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
           echo "JULIA_CONDAPKG_BACKEND=Null" >> $GITHUB_ENV
           echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
+          # try not to destroy sundials
+          SUNDIALS_SO_DIR=$CONDA_PREFIX/lib
+          echo 'DYLD_FALLBACK_LIBRARY_PATH="$SUNDIALS_SO_DIR:$DYLD_FALLBACK_LIBRARY_PATH"'
+          echo 'DL_LOAD_PATH="$SUNDIALS_SO_DIR:$DL_LOAD_PATH"'
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
