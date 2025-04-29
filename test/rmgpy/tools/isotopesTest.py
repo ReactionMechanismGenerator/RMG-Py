@@ -1090,7 +1090,7 @@ multiplicity 3
             reactants=[methyl, methyl],
             products=[methane, craigie],
             family="H_Abstraction",
-            template=["Xrad_H", "Y_rad"],
+            template=['CH3_rad_H', 'C_methyl'],
             degeneracy=3,
         )
         reaction.kinetics = Arrhenius(A=(1e5, "cm^3/(mol*s)"), Ea=(0, "J/mol"))
@@ -1139,7 +1139,7 @@ multiplicity 3
             reactants=[ethyl, methane],
             products=[ethane, methyl],
             family="H_Abstraction",
-            template=["C/H4", "Y_rad"],
+            template=['C_methane', 'C_rad/H2/Cs\\H3'],
             degeneracy=4,
         )
         reaction.kinetics = Arrhenius(A=(1e5, "cm^3/(mol*s)"), Ea=(0, "J/mol"))
