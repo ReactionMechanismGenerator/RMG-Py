@@ -785,6 +785,68 @@ class TestReaction:
         )
         self.reaction4_pairs = [(PO3, HOPO2), (H2, H_atom)]
 
+        # Reaction definitions for testing flux pair generation
+        # Isomerization
+        PC4H9 = Species().from_smiles("[CH2]CCC")
+        SC4H9 = Species().from_smiles("C[CH]CCC")
+        self.isomerization_reaction = Reaction(
+            reactants=[PC4H9],
+            products=[SC4H9],
+        )
+        self.isomerization_reaction_pairs = [(PC4H9, SC4H9)]
+
+        # Association
+        propyl = Species().from_smiles("[CH2]CC")
+        methylene = Species().from_smiles("[CH2]")
+        self.association_reaction = Reaction(
+            reactants=[propyl, methylene],
+            products=[PC4H9],
+        )
+        self.association_reaction_pairs = [(propyl, PC4H9), (methylene, PC4H9)]
+
+        # Dissociation
+        self.dissociation_reaction = Reaction(
+            reactants=[PC4H9],
+            products=[propyl, methylene],
+        )
+        self.dissociation_reaction_pairs = [(PC4H9, propyl), (PC4H9, methylene)]
+
+        # Bimolecular
+        butane = Species().from_smiles("CCCC")
+        oh = Species().from_smiles("[OH]")
+        h2o = Species().from_smiles("O")
+        self.bimolecular_reaction = Reaction(
+            reactants=[butane, oh],
+            products=[SC4H9, h2o],
+        )
+        self.bimolecular_reaction_pairs = [(butane, SC4H9), (oh, h2o)]
+
+        # Surface dissociative adsorption
+        NH3 = Species().from_smiles("N")
+        X = Species().from_adjacency_list("1 X u0 p0")
+        HX = Species().from_adjacency_list(
+"""
+1 H u0 p0 c0 {2,S}
+2 X u0 p0 c0 {1,S}
+""")
+        H2NX = Species().from_adjacency_list(
+"""
+1 N u0 p1 c0 {2,S} {3,S} {4,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 X u0 p0 c0 {1,S}
+""")
+        self.surf_dissociation_reaction = Reaction(
+            reactants=[NH3, X, X],
+            products=[H2NX, HX],
+        )
+        self.surf_dissociation_reaction_pairs = [
+            (NH3, H2NX),
+            (NH3, HX),
+            (X, H2NX),
+            (X, HX),
+        ]
+
     def test_is_isomerization(self):
         """
         Test the Reaction.is_isomerization() method.
@@ -1823,6 +1885,57 @@ class TestReaction:
         assert len(self.reaction4.pairs[0]) == 2
         assert len(self.reaction4.pairs[1]) == 2
         assert self.reaction4.pairs == self.reaction4_pairs
+
+    def test_generate_pairs(self):
+        """
+        This method tests that the correct reaction pairs are being generated for a reaction
+        """
+        
+        def pairs_equal(pair1, pair2):
+            if len(pair1) != len(pair2):
+                return False
+            if len(pair1) != 2:
+                return False
+            return pair1[0].is_isomorphic(pair2[0]) and pair1[1].is_isomorphic(pair2[1]) or \
+                     pair1[0].is_isomorphic(pair2[1]) and pair1[1].is_isomorphic(pair2[0])
+        def list_of_pairs_equal(list1, list2):
+            if len(list1) != len(list2):
+                return False
+            for pair1 in list1:
+                found = False
+                for pair2 in list2:
+                    if pairs_equal(pair1, pair2):
+                        found = True
+                        list2.remove(pair2)
+                        break
+                if not found:
+                    return False
+            return True
+
+        # Test Isomerization: A -> C
+        self.isomerization_reaction.generate_pairs()
+        assert len(self.isomerization_reaction.pairs) == 1
+        assert list_of_pairs_equal(self.isomerization_reaction.pairs, self.isomerization_reaction_pairs)
+
+        # Test Dissociation A -> C + D
+        self.dissociation_reaction.generate_pairs()
+        assert len(self.dissociation_reaction.pairs) == 2
+        assert list_of_pairs_equal(self.dissociation_reaction.pairs, self.dissociation_reaction_pairs)
+
+        # Test Association A + B -> C
+        self.association_reaction.generate_pairs()
+        assert len(self.association_reaction.pairs) == 2
+        assert list_of_pairs_equal(self.association_reaction.pairs, self.association_reaction_pairs)
+
+        # Test Bimolecular A + B -> C + D
+        self.bimolecular_reaction.generate_pairs()
+        assert len(self.bimolecular_reaction.pairs) == 2
+        assert list_of_pairs_equal(self.bimolecular_reaction.pairs, self.bimolecular_reaction_pairs)
+
+        # Test Dissociative Adsorption A + 2X -> CX + DX
+        self.surf_dissociation_reaction.generate_pairs()
+        assert len(self.surf_dissociation_reaction.pairs) == 4
+        assert list_of_pairs_equal(self.surf_dissociation_reaction.pairs, self.surf_dissociation_reaction_pairs)
 
 
 class TestReactionToCantera:
