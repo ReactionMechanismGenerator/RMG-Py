@@ -289,7 +289,7 @@ ATOMTYPES['Rx!H'] = AtomType(label='Rx!H', generic=['Rx'], specific=[
     'F','F1s','X','Xv','Xo','Pt','Ptv','Pto'])
 
 # Surface sites:
-ATOMTYPES['X'] = AtomType(label='X', generic=['Rx', 'Rx!H'], specific=['Xv', 'Xo', 'Pt'])
+ATOMTYPES['X'] = AtomType(label='X', generic=['Rx', 'Rx!H'], specific=['Xv', 'Xo', 'Pt', 'Ptv', 'Pto'],)
 
 # Vacant surface site:
 ATOMTYPES['Xv'] = AtomType('Xv', generic=['X','Rx', 'Rx!H'], specific=['Ptv'],
