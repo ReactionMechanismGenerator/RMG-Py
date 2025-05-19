@@ -1744,6 +1744,12 @@ multiplicity 2
         mol3 = Molecule().from_adjacency_list(mol2.to_adjacency_list().replace('Pt', 'X'))
         assert mol3.is_isomorphic(mol1)
 
+        mol4 = Molecule(smiles='[XH]')
+        assert mol4.is_isomorphic(mol1)
+
+        mol5 = Molecule(smiles='[PtH]')
+        assert mol5.is_isomorphic(mol2)
+
 
 
     def test_kekule_to_smiles(self):
