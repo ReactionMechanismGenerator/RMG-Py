@@ -828,6 +828,71 @@ class TestGetAtomType:
         self.electron = Molecule().from_adjacency_list('''1 e u1 p0 c-1''')
         self.proton = Molecule().from_adjacency_list('''1 H u0 p0 c+1''')
 
+        self.X = Molecule().from_adjacency_list("""1 X u0 p0 c0""")
+        self.mol100 = Molecule().from_adjacency_list(
+            """1 H u0 p0 c0 {2,S}
+               2 X u0 p0 c0 {1,S}"""
+        )
+        self.mol101 = Molecule().from_adjacency_list(
+            """1 O u0 p2 c0 {2,D}
+               2 X u0 p0 c0 {1,D}"""
+        )
+        self.mol102 = Molecule().from_adjacency_list(
+            """1 N u0 p1 c0 {2,T}
+               2 X u0 p0 c0 {1,T}"""
+        )
+        self.mol103 = Molecule().from_adjacency_list(
+            """1 C u0 p0 c0 {2,Q}
+               2 X u0 p0 c0 {1,Q}"""
+        )
+        self.mol104 = Molecule().from_adjacency_list(  # bidentate
+            """1 N u0 p1 c0 {2,S} {5,D}
+               2 C u0 p0 c0 {1,S} {3,S} {4,D}
+               3 H u0 p0 c0 {2,S}
+               4 X u0 p0 c0 {2,D}
+               5 X u0 p0 c0 {1,D}"""
+        )
+        self.mol105 = Molecule().from_adjacency_list(  # vdW
+            """1 O u0 p2 c0 {2,S} {3,S}
+               2 H u0 p0 c0 {1,S}
+               3 H u0 p0 c0 {1,S}
+               4 X u0 p0 c0"""
+        )
+
+
+        self.Pt = Molecule().from_adjacency_list("""1 Pt u0 p0 c0""")
+        self.mol110 = Molecule().from_adjacency_list(
+            """1 H  u0 p0 c0 {2,S}
+               2 Pt u0 p0 c0 {1,S}"""
+        )
+        self.mol111 = Molecule().from_adjacency_list(
+            """1 O  u0 p2 c0 {2,D}
+               2 Pt u0 p0 c0 {1,D}"""
+        )
+        self.mol112 = Molecule().from_adjacency_list(
+            """1 N  u0 p1 c0 {2,T}
+               2 Pt u0 p0 c0 {1,T}"""
+        )
+        self.mol113 = Molecule().from_adjacency_list(
+            """1 C  u0 p0 c0 {2,Q}
+               2 Pt u0 p0 c0 {1,Q}"""
+        )
+        self.mol114 = Molecule().from_adjacency_list(  # bidentate
+            """1 N  u0 p1 c0 {2,S} {5,D}
+               2 C  u0 p0 c0 {1,S} {3,S} {4,D}
+               3 H  u0 p0 c0 {2,S}
+               4 Pt u0 p0 c0 {2,D}
+               5 Pt u0 p0 c0 {1,D}"""
+        )
+        self.mol115 = Molecule().from_adjacency_list(  # vdW
+            """1 O  u0 p2 c0 {2,S} {3,S}
+               2 H  u0 p0 c0 {1,S}
+               3 H  u0 p0 c0 {1,S}
+               4 Pt u0 p0 c0"""
+        )
+
+
+
     def atom_type(self, mol, atom_id):
         atom = mol.atoms[atom_id]
         atom_type = get_atomtype(atom, mol.get_bonds(atom))
@@ -835,6 +900,25 @@ class TestGetAtomType:
             return atom_type
         else:
             return atom_type.label
+
+    def test_X_types(self):
+        assert self.atom_type(self.X, 0) == 'Xv'
+        assert self.atom_type(self.mol100, 1) == 'Xo'
+        assert self.atom_type(self.mol101, 1) == 'Xo'
+        assert self.atom_type(self.mol102, 1) == 'Xo'
+        assert self.atom_type(self.mol103, 1) == 'Xo'
+        assert self.atom_type(self.mol104, 3) == 'Xo'
+        assert self.atom_type(self.mol104, 4) == 'Xo'
+
+
+    def test_Pt_types(self):
+        assert self.atom_type(self.Pt, 0) == 'Ptv'
+        assert self.atom_type(self.mol110, 1) == 'Pto'
+        assert self.atom_type(self.mol111, 1) == 'Pto'
+        assert self.atom_type(self.mol112, 1) == 'Pto'
+        assert self.atom_type(self.mol113, 1) == 'Pto'
+        assert self.atom_type(self.mol114, 3) == 'Pto'
+        assert self.atom_type(self.mol114, 4) == 'Pto'
 
     def test_hydrogen_type(self):
         """

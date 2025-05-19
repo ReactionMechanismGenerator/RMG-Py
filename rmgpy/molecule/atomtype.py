@@ -293,7 +293,7 @@ ATOMTYPES['X'] = AtomType(label='X', generic=['Rx', 'Rx!H'], specific=['Xv', 'Xo
 
 # Vacant surface site:
 ATOMTYPES['Xv'] = AtomType('Xv', generic=['X','Rx', 'Rx!H'], specific=['Ptv'],
-                             single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                             single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0],
                              benzene=[0], lone_pairs=[0])
 # Occupied surface site:
 ATOMTYPES['Xo'] = AtomType('Xo', generic=['X','Rx', 'Rx!H'], specific=['Pto'],
@@ -304,7 +304,7 @@ ATOMTYPES['Pt'] = AtomType(label='Pt', generic=['Rx', 'Rx!H', 'X'], specific=['P
                             # single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
                             # benzene=[0], lone_pairs=[0])
 ATOMTYPES['Ptv'] = AtomType(label='Ptv', generic=['Rx', 'Rx!H', 'X', 'Pt', 'Xv'], specific=[],
-                            single=[0], all_double=[0], r_double=[], o_double=[], s_double=[], triple=[0], quadruple=[0],
+                            single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0],
                             benzene=[0], lone_pairs=[0])
 ATOMTYPES['Pto'] = AtomType(label='Pto', generic=['Rx', 'Rx!H', 'X', 'Pt', 'Xo'], specific=[],
                             single=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], all_double=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], r_double=[], o_double=[], s_double=[], triple=[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
