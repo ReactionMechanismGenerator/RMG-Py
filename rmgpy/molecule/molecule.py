@@ -1037,30 +1037,7 @@ class Molecule(Graph):
             self.from_inchi(inchi)
             self._inchi = inchi
         elif smiles:
-            for surface_site_symbol in ['X', 'Pt']:
-                if surface_site_symbol in smiles:
-                    assert 'Ar' not in smiles
-                    self.from_smiles(smiles.replace(surface_site_symbol, 'Ar'))
-                    lines = self.to_adjacency_list().split('\n')
-                    for i, line in enumerate(lines):
-                        if 'Ar' in line:  # The adjacency list needs to use the identified 'X' for a site
-                            lines[i] = lines[i].replace('Ar', surface_site_symbol)
-                            # remove any extra electron pairs
-                            m = re.search(r'p[0-9]+', lines[i])  # searches for p0, p1, p2, p3, etc
-                            lines[i] = lines[i].replace(m[0], 'p0')
-                            m = re.search(r'u[0-9]+', lines[i])  # searches for u0, u1, u2, u3, etc
-                            lines[i] = lines[i].replace(m[0], 'u0')
-
-                            # remove any extra charge
-                            m = re.search(r'c[0-9+-]+', lines[i])  # searches for c0, c+2, c-1 etc
-                            lines[i] = lines[i].replace(m[0], 'c0')
-                    adj_list = '\n'.join(lines)
-                    self = self.from_adjacency_list(adj_list)
-                    # but now we have to change the symbol back to 'Pt or 'X' for the smiles
-                    # self.smiles = self.smiles.replace('X', surface_site_symbol)
-                    break
-            else:
-                self.from_smiles(smiles)
+            self.from_smiles(smiles)
             self._smiles = smiles
 
         if multiplicity != -187:  # it was set explicitly, so re-set it (from_smiles etc may have changed it)
@@ -1888,6 +1865,29 @@ class Molecule(Graph):
         single backend or try different backends in sequence. The available options for the ``backend``
         argument: 'openbabel-first'(default), 'rdkit-first', 'rdkit', or 'openbabel'.
         """
+        for surface_site_symbol in ['X', 'Pt']:
+            if surface_site_symbol in smilesstr:
+                assert 'Ar' not in smilesstr
+                self.from_smiles(smilesstr.replace(surface_site_symbol, 'Ar'))
+                lines = self.to_adjacency_list().split('\n')
+                for i, line in enumerate(lines):
+                    if 'Ar' in line:  # The adjacency list needs to use the identified 'X' for a site
+                        lines[i] = lines[i].replace('Ar', surface_site_symbol)
+                        # remove any extra electron pairs
+                        m = re.search(r'p[0-9]+', lines[i])  # searches for p0, p1, p2, p3, etc
+                        lines[i] = lines[i].replace(m[0], 'p0')
+                        m = re.search(r'u[0-9]+', lines[i])  # searches for u0, u1, u2, u3, etc
+                        lines[i] = lines[i].replace(m[0], 'u0')
+
+                        # remove any extra charge
+                        m = re.search(r'c[0-9+-]+', lines[i])  # searches for c0, c+2, c-1 etc
+                        lines[i] = lines[i].replace(m[0], 'c0')
+                adj_list = '\n'.join(lines)
+                self = self.from_adjacency_list(adj_list)
+                # but now we have to change the symbol back to 'Pt or 'X' for the smiles
+                # self.smiles = self.smiles.replace('X', surface_site_symbol)
+                return self
+
         translator.from_smiles(self, smilesstr, backend, raise_atomtype_exception=raise_atomtype_exception)
         return self
 
