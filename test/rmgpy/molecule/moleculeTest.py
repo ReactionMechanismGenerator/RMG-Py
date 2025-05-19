@@ -1720,6 +1720,8 @@ multiplicity 2
         ]
         for s in test_strings:
             molecule = Molecule(smiles=s)
+            molecule2 = Molecule().from_smiles(s)
+            assert molecule.is_isomorphic(molecule2)
             assert s == molecule.to_smiles()
 
         # Adjacency list to smiles
