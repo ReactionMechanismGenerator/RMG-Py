@@ -1722,6 +1722,30 @@ multiplicity 2
             molecule = Molecule(smiles=s)
             assert s == molecule.to_smiles()
 
+        # Adjacency list to smiles
+        mol1 = Molecule().from_adjacency_list(
+            """
+1 H u0 p0 c0 {2,S}
+2 X u0 p0 c0 {1,S}
+"""
+        )
+        mol2 = Molecule().from_adjacency_list(
+            """
+1 H  u0 p0 c0 {2,S}
+2 Pt u0 p0 c0 {1,S}
+"""
+        )
+        assert mol1.to_smiles() in ['HX', '[H][X]', '[HX]', '[XH]']
+        assert mol2.to_smiles() in ['H[Pt]', '[H][Pt]', '[HPt]', '[PtH]']
+
+        assert mol1.contains_surface_site()
+        assert mol2.contains_surface_site()
+
+        mol3 = Molecule().from_adjacency_list(mol2.to_adjacency_list().replace('Pt', 'X'))
+        assert mol3.is_isomorphic(mol1)
+
+
+
     def test_kekule_to_smiles(self):
         """
         Test that we can print SMILES strings of Kekulized structures
@@ -2140,6 +2164,13 @@ multiplicity 2
         assert surface_site.is_surface_site()
         assert not (adsorbed.is_surface_site())
         assert not (gas.is_surface_site())
+
+        surface_Pt = Molecule().from_adjacency_list(
+            """
+                                                1 Pt u0 p0 c0
+                                                """
+        )
+        assert surface_Pt.is_surface_site()
 
         # Check the "number of surface sites" method
         bidentate = Molecule().from_adjacency_list(

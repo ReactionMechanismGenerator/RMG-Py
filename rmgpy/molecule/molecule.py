@@ -38,6 +38,7 @@ describe the corresponding atom or bond.
 import itertools
 import logging
 import os
+import re
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from urllib.parse import quote
@@ -1045,9 +1046,14 @@ class Molecule(Graph):
                         if 'Ar' in line:  # The adjacency list needs to use the identified 'X' for a site
                             lines[i] = lines[i].replace('Ar', surface_site_symbol)
                             # remove any extra electron pairs
-                            lines[i] = lines[i].replace('p3', 'p0')
-                            lines[i] = lines[i].replace('p2', 'p0')
-                            lines[i] = lines[i].replace('p1', 'p0')
+                            m = re.search(r'p[0-9]+', lines[i])  # searches for p0, p1, p2, p3, etc
+                            lines[i] = lines[i].replace(m[0], 'p0')
+                            m = re.search(r'u[0-9]+', lines[i])  # searches for u0, u1, u2, u3, etc
+                            lines[i] = lines[i].replace(m[0], 'u0')
+
+                            # remove any extra charge
+                            m = re.search(r'c[0-9+-]+', lines[i])  # searches for c0, c+2, c-1 etc
+                            lines[i] = lines[i].replace(m[0], 'c0')
                     adj_list = '\n'.join(lines)
                     self = self.from_adjacency_list(adj_list)
                     # but now we have to change the symbol back to 'Pt or 'X' for the smiles
