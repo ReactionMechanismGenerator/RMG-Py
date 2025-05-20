@@ -1884,6 +1884,7 @@ class Molecule(Graph):
                         lines[i] = lines[i].replace(m[0], 'c0')
                 adj_list = '\n'.join(lines)
                 self = self.from_adjacency_list(adj_list)
+                self._smiles = smilesstr
                 # but now we have to change the symbol back to 'Pt or 'X' for the smiles
                 # self.smiles = self.smiles.replace('X', surface_site_symbol)
                 return self

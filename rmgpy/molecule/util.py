@@ -54,11 +54,6 @@ def get_element_count(obj):
                 else:
                     element_count[element] = int(count)
 
-        # For surface species, replace Pt with X again
-        if 'Pt' in element_count:
-            element_count['X'] = element_count['Pt']
-            del element_count['Pt']
-
         return element_count
 
     elif isinstance(obj, Molecule) or isinstance(obj, Fragment):

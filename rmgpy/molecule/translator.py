@@ -139,7 +139,8 @@ MOLECULE_LOOKUPS = {
     'I2': '[I][I]',
     'HI': 'I',
     'H': 'H+',
-    'e': 'e'
+    'e': 'e',
+
 }
 
 RADICAL_LOOKUPS = {
@@ -383,11 +384,12 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
         output = from_rdkit_mol(mol, rdkitmol)
     elif isinstance(input_object, mm.Molecule):
         # We are converting from a molecule to a string identifier
-        generic_X = False # keep track of whether this is generic 'X' or specific 'Pt' because Rdkit overwrites X with Pt by default
-        for atom in input_object.vertices:
-            if atom.element.symbol == 'X':
-                generic_X = True
-                break
+
+        # The to_rdkit_mol function in converter overwrites 'X' with 'Pt', so we need to keep track
+        # of whether this is a generic 'X' or specific 'Pt'
+        symbols = set([atom.element.symbol for atom in input_object.vertices])
+        assert 'X' not in symbols or 'Pt' not in symbols, 'X and Pt cannot be present at the same time'
+        generic_X = True if 'X' in symbols else False
 
         if identifier_type == 'smi':
             rdkitmol = to_rdkit_mol(input_object, sanitize=False)
@@ -407,11 +409,13 @@ def _rdkit_translator(input_object, identifier_type, mol=None):
                 output = Chem.MolToSmiles(rdkitmol, kekuleSmiles=True)
         else:
             raise ValueError('Identifier type {0} is not supported for writing using RDKit.'.format(identifier_type))
+        
+        if generic_X:
+            output = output.replace('Pt', 'X')
+    
     else:
         raise ValueError('Unexpected input format. Should be a Molecule or a string.')
 
-    if generic_X:
-        output = output.replace('Pt', 'X')
     return output
 
 
@@ -447,6 +451,13 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
         output = from_ob_mol(mol, obmol)
     elif isinstance(input_object, mm.Molecule):
         # We are converting from a Molecule to a string identifier
+
+        # The to_ob_mol function in converter overwrites 'X' with 'Pt', so we need to keep track
+        # of whether this is a generic 'X' or specific 'Pt'
+        symbols = set([atom.element.symbol for atom in input_object.vertices])
+        assert 'X' not in symbols or 'Pt' not in symbols, 'X and Pt cannot be present at the same time'
+        generic_X = True if 'X' in symbols else False
+
         if identifier_type == 'inchi':
             ob_conversion.SetOutFormat('inchi')
             ob_conversion.AddOption('w')
@@ -462,6 +473,9 @@ def _openbabel_translator(input_object, identifier_type, mol=None):
             raise ValueError('Unexpected identifier type {0}.'.format(identifier_type))
         obmol = to_ob_mol(input_object)
         output = ob_conversion.WriteString(obmol).strip()
+
+        if generic_X:
+            output = output.replace('Pt', 'X')
     else:
         raise ValueError('Unexpected input format. Should be a Molecule or a string.')
 
