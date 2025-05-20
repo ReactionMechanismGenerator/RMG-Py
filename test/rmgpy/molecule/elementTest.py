@@ -44,6 +44,7 @@ class TestElement:
     def setup_class(self):
         self.element = rmgpy.molecule.element.C
         self.element_x = rmgpy.molecule.element.X
+        self.element_Pt = rmgpy.molecule.element.Pt
 
     def test_pickle(self):
         """
@@ -80,6 +81,7 @@ class TestElement:
         assert rmgpy.molecule.element.get_element("C") is self.element
         assert rmgpy.molecule.element.get_element(0) is self.element_x
         assert rmgpy.molecule.element.get_element("X") is self.element_x
+        assert rmgpy.molecule.element.get_element("Pt") is self.element_Pt
 
     def test_get_element_isotope(self):
         """

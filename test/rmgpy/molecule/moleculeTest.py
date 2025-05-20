@@ -287,7 +287,7 @@ class TestAtom:
         """
         for element in element_list:
             atom = Atom(element=element, radical_electrons=0, charge=0, label="*1", lone_pairs=0)
-            if element.symbol == "X":
+            if element.symbol in ["X", "Pt"]:
                 assert atom.is_surface_site()
             else:
                 assert not atom.is_surface_site()
@@ -1699,10 +1699,60 @@ multiplicity 2
             "CCCC",
             "O=C=O",
             "[C]#N",
+            "[X]",
+            "[X]C=C[X]",
+            "O[X]",
+            "CO[X]",
+            "[XH]",
+            "C=C[X]",
+            "CO.[X]",
+            "C#[X]",
+            "CCC(C)[X]",
+            "[Pt]",
+            "[Pt]C=C[Pt]",
+            "O[Pt]",
+            "CO[Pt]",
+            "[PtH]",
+            "C=C[Pt]",
+            "CO.[Pt]",
+            "C#[Pt]",
+            "CCC(C)[Pt]"
         ]
         for s in test_strings:
             molecule = Molecule(smiles=s)
+            molecule2 = Molecule().from_smiles(s)
+            assert molecule.is_isomorphic(molecule2)
             assert s == molecule.to_smiles()
+
+        # Adjacency list to smiles
+        mol1 = Molecule().from_adjacency_list(
+            """
+1 H u0 p0 c0 {2,S}
+2 X u0 p0 c0 {1,S}
+"""
+        )
+        mol2 = Molecule().from_adjacency_list(
+            """
+1 H  u0 p0 c0 {2,S}
+2 Pt u0 p0 c0 {1,S}
+"""
+        )
+        assert mol1.to_smiles() in ['HX', '[H][X]', '[HX]', '[XH]']
+        assert mol2.to_smiles() in ['H[Pt]', '[H][Pt]', '[HPt]', '[PtH]']
+
+        assert mol1.contains_surface_site()
+        assert mol2.contains_surface_site()
+
+        mol3 = Molecule().from_adjacency_list(mol2.to_adjacency_list().replace('Pt', 'X'))
+        assert mol3.is_isomorphic(mol1)
+
+        mol4 = Molecule(smiles='[XH]')
+        assert mol4.is_isomorphic(mol1)
+
+        mol5 = Molecule(smiles='[PtH]')
+        assert mol5.is_isomorphic(mol2)
+
+
 
     def test_kekule_to_smiles(self):
         """
@@ -2122,6 +2172,13 @@ multiplicity 2
         assert surface_site.is_surface_site()
         assert not (adsorbed.is_surface_site())
         assert not (gas.is_surface_site())
+
+        surface_Pt = Molecule().from_adjacency_list(
+            """
+                                                1 Pt u0 p0 c0
+                                                """
+        )
+        assert surface_Pt.is_surface_site()
 
         # Check the "number of surface sites" method
         bidentate = Molecule().from_adjacency_list(

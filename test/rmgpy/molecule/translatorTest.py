@@ -434,7 +434,7 @@ multiplicity 2
 
     def test_surface_molecule_rdkit(self):
         """Test InChI generation for a surface molecule using RDKit"""
-        mol = Molecule().from_adjacency_list(
+        mol_X = Molecule().from_adjacency_list(
             """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
@@ -443,13 +443,24 @@ multiplicity 2
 5 X u0 p0 c0 {1,S}
 """
         )
-        inchi = "InChI=1S/CH3.Pt/h1H3;"
+        mol_Pt = Molecule().from_adjacency_list(
+            """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 Pt u0 p0 c0 {1,S}
+"""
+        )
+        inchi_X = "InChI=1S/CH3.X/h1H3;"
+        inchi_Pt = "InChI=1S/CH3.Pt/h1H3;"
 
-        assert to_inchi(mol, backend="rdkit") == inchi
+        assert to_inchi(mol_X, backend="rdkit") == inchi_X
+        assert to_inchi(mol_Pt, backend="rdkit") == inchi_Pt
 
     def test_surface_molecule_ob(self):
         """Test InChI generation for a surface molecule using OpenBabel"""
-        mol = Molecule().from_adjacency_list(
+        mol_X = Molecule().from_adjacency_list(
             """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
@@ -458,9 +469,20 @@ multiplicity 2
 5 X u0 p0 c0 {1,S}
 """
         )
-        inchi = "InChI=1S/CH3.Pt/h1H3;"
+        mol_Pt = Molecule().from_adjacency_list(
+            """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 Pt u0 p0 c0 {1,S}
+"""
+        )
+        inchi_X = "InChI=1S/CH3.X/h1H3;"
+        inchi_Pt = "InChI=1S/CH3.Pt/h1H3;"
 
-        assert to_inchi(mol, backend="openbabel") == inchi
+        assert to_inchi(mol_X, backend="openbabel") == inchi_X
+        assert to_inchi(mol_Pt, backend="openbabel") == inchi_Pt
 
 
 class SMILESGenerationTest:
@@ -865,7 +887,7 @@ class SMILESGenerationTest:
 
     def test_surface_molecule_rdkit(self):
         """Test InChI generation for a surface molecule using RDKit"""
-        mol = Molecule().from_adjacency_list(
+        mol_X = Molecule().from_adjacency_list(
             """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
@@ -874,13 +896,24 @@ class SMILESGenerationTest:
 5 X u0 p0 c0 {1,S}
 """
         )
-        smiles = "C[Pt]"
+        mol_Pt = Molecule().from_adjacency_list(
+            """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 Pt u0 p0 c0 {1,S}
+"""
+        )
+        smiles_X = 'C[X]'
+        smiles_Pt = "C[Pt]"
 
-        assert to_smiles(mol, backend="rdkit") == smiles
+        assert to_smiles(mol_X, backend="rdkit") == smiles_X
+        assert to_smiles(mol_Pt, backend="rdkit") == smiles_Pt
 
     def test_surface_molecule_ob(self):
         """Test InChI generation for a surface molecule using OpenBabel"""
-        mol = Molecule().from_adjacency_list(
+        mol_X = Molecule().from_adjacency_list(
             """
 1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 H u0 p0 c0 {1,S}
@@ -889,9 +922,20 @@ class SMILESGenerationTest:
 5 X u0 p0 c0 {1,S}
 """
         )
-        smiles = "C[Pt]"
+        mol_Pt = Molecule().from_adjacency_list(
+            """
+1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+2 H u0 p0 c0 {1,S}
+3 H u0 p0 c0 {1,S}
+4 H u0 p0 c0 {1,S}
+5 Pt u0 p0 c0 {1,S}
+"""
+        )
+        smiles_X = "C[X]"
+        smiles_Pt = "C[Pt]"
 
-        assert to_smiles(mol, backend="openbabel") == smiles
+        assert to_smiles(mol_X, backend="openbabel") == smiles_X
+        assert to_smiles(mol_Pt, backend="openbabel") == smiles_Pt
 
 
 class ParsingTest:

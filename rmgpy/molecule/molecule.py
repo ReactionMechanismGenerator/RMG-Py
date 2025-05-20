@@ -38,6 +38,7 @@ describe the corresponding atom or bond.
 import itertools
 import logging
 import os
+import re
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from urllib.parse import quote
@@ -432,7 +433,7 @@ class Atom(Vertex):
         """
         Return ``True`` if the atom represents a surface site or ``False`` if not.
         """
-        return self.symbol == 'X'
+        return self.symbol == 'X' or self.symbol in [z.label for z in ATOMTYPES['X'].specific]
 
     def is_bonded_to_surface(self):
         """
@@ -1205,9 +1206,11 @@ class Molecule(Graph):
         Returns ``True`` iff the molecule contains an 'X' surface site.
         """
         cython.declare(atom=Atom)
+        cython.declare(z=AtomType)
         for atom in self.atoms:
-            if atom.symbol == 'X':
+            if atom.symbol == 'X' or atom.symbol in [z.label for z in ATOMTYPES['X'].specific]:
                 return True
+            # atom_type = get_atomtype(atom, atom.bonds)
         return False
 
     def number_of_surface_sites(self):
@@ -1862,6 +1865,30 @@ class Molecule(Graph):
         single backend or try different backends in sequence. The available options for the ``backend``
         argument: 'openbabel-first'(default), 'rdkit-first', 'rdkit', or 'openbabel'.
         """
+        for surface_site_symbol in ['X', 'Pt']:
+            if surface_site_symbol in smilesstr:
+                assert 'Ar' not in smilesstr
+                self.from_smiles(smilesstr.replace(surface_site_symbol, 'Ar'))
+                lines = self.to_adjacency_list().split('\n')
+                for i, line in enumerate(lines):
+                    if 'Ar' in line:  # The adjacency list needs to use the identified 'X' for a site
+                        lines[i] = lines[i].replace('Ar', surface_site_symbol)
+                        # remove any extra electron pairs
+                        m = re.search(r'p[0-9]+', lines[i])  # searches for p0, p1, p2, p3, etc
+                        lines[i] = lines[i].replace(m[0], 'p0')
+                        m = re.search(r'u[0-9]+', lines[i])  # searches for u0, u1, u2, u3, etc
+                        lines[i] = lines[i].replace(m[0], 'u0')
+
+                        # remove any extra charge
+                        m = re.search(r'c[0-9+-]+', lines[i])  # searches for c0, c+2, c-1 etc
+                        lines[i] = lines[i].replace(m[0], 'c0')
+                adj_list = '\n'.join(lines)
+                self = self.from_adjacency_list(adj_list)
+                self._smiles = smilesstr
+                # but now we have to change the symbol back to 'Pt or 'X' for the smiles
+                # self.smiles = self.smiles.replace('X', surface_site_symbol)
+                return self
+
         translator.from_smiles(self, smilesstr, backend, raise_atomtype_exception=raise_atomtype_exception)
         return self
 
