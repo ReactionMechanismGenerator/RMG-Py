@@ -139,7 +139,7 @@ class TestUncertainty:
         assert not self.uncertainty.all_thermo_sources["QM"]
 
         # Check kinetics sources
-        Dispoportionation_rr_expected = {
+        Disproportionation_rr_expected = {
             'Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C_N-1R!H-inRing_N-Sp-6C-4C',
             'Root_Ext-2R!H-R_2R!H->C_4R->C',
         }
@@ -154,7 +154,7 @@ class TestUncertainty:
         assert set(self.uncertainty.all_kinetic_sources) == {"Rate Rules", "Training", "Library", "PDep"}
         assert set(self.uncertainty.all_kinetic_sources["Rate Rules"].keys()) == {"Disproportionation", "H_Abstraction"}
         rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["Disproportionation"]])
-        assert rr == Dispoportionation_rr_expected
+        assert rr == Disproportionation_rr_expected
         rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["H_Abstraction"]])
         assert rr == H_Abstraction_rr_expected
         assert set(self.uncertainty.all_kinetic_sources["Training"].keys()) == {"Disproportionation", "H_Abstraction"}
