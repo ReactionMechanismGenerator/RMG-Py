@@ -472,7 +472,7 @@ class Reactor:
             model_settings.tol_rxn_to_core_deadend_radical,
             atol=simulator_settings.atol,
             rtol=simulator_settings.rtol,
-            solver=Main.Sundials.CVODE_BDF(),
+            solver=Main.Sundials.CVODE_BDF(linear_solver=Main.Symbol("GMRES")),
         )
 
         return (

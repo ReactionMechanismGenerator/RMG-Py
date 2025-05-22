@@ -2,7 +2,7 @@
 #
 #   Arkane input file for acetyl + O2 pressure-dependent reaction network
 #
-#  uses method = 'simulation least squares eigen' for PressureDependence
+#  uses method = 'simulation least squares' for PressureDependence
 #
 ################################################################################
 

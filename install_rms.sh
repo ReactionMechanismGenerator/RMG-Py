@@ -5,10 +5,11 @@
 # Note that you will have to manually install juliaup before running this script:
 # curl -fsSL https://install.julialang.org | sh
 # # restart shell
-# juliaup add 1.9
-# juliaup default 1.9
+# juliaup add 1.10
+# juliaup default 1.10
 # juliaup remove release
 
+#!/bin/bash
 
 conda install -y conda-forge::pyjuliacall
 

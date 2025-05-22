@@ -20,7 +20,7 @@
 # - August 4, 2024 Restricted pyrms to <2
 # - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
 # - March 15, 2024 - started migration to Python 3.9
-# - Mar 11, 2024 Removed Julia dependencies, now considered optional
+# - April 14, 2025 Removed Julia dependencies, now considered optional
 #
 name: rmg_env
 channels:
@@ -58,8 +58,9 @@ dependencies:
 
 # Python tools
   - conda-forge::python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
+  - conda-forge::setuptools <80
   - conda-forge::coverage
-  - conda-forge::cython >=0.25.2
+  - conda-forge::cython >=0.25.2,<3.1
   - conda-forge::scikit-learn
   - conda-forge::scipy >=1.9
   - conda-forge::numpy >=1.10.0,<2

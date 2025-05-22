@@ -48,6 +48,8 @@ env:
   # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
   # main with the name of the branch
   RMG_DATABASE_BRANCH: main
+  # julia parallel pre-compilation leads to race conditions and hangs, so we limit it to run in serial
+  JULIA_NUM_PRECOMPILE_TASKS: 1
 
 jobs:
   build-and-test:
@@ -102,7 +104,7 @@ jobs:
         if: matrix.include-rms == 'with RMS'
         uses: julia-actions/install-juliaup@v2
         with:
-          channel: '1.9'
+          channel: '1.10'
 
       - name: Set some env vars
         if: matrix.include-rms == 'with RMS'
@@ -173,14 +175,19 @@ jobs:
 
       # RMG build step
       - run: make install
+      
+      - name: Make separate RMS conda env
+        run: |
+          conda create --name rmg_env_with_rms --clone rmg_env
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
         with:
-          channel: '1.9'
+          channel: '1.10'
 
       - name: Set some env vars
         run: |
+          conda activate rmg_env_with_rms
           # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
           echo "JULIA_CONDAPKG_BACKEND=Null" >> $GITHUB_ENV
           echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
@@ -188,10 +195,13 @@ jobs:
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
-        run: . install_rms.sh
+        run: |
+          conda activate rmg_env_with_rms
+          . install_rms.sh
 
       - name: Set some other env vars
         run: |
+          conda activate rmg_env_with_rms
           # ensure that juliacall in Python uses the correct julia executable and packages: https://github.com/JuliaPy/PyJuliaPkg?tab=readme-ov-file#which-julia-gets-used
           echo "PYTHON_JULIAPKG_EXE=$(which julia)" >> $GITHUB_ENV
           echo "PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages" >> $GITHUB_ENV
@@ -202,8 +212,8 @@ jobs:
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
         id: regression-execution
-        timeout-minutes: 60
         run: |
+          conda activate rmg_env_with_rms
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
             if python rmg.py test/regression/"$regr_test"/input.py; then
@@ -278,7 +288,11 @@ jobs:
         env:
           REFERENCE: stable_regression_results
         run: |
+          # we _do not_ run in the with_rms env here
+          # conda activate rmg_env_with_rms
+          
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
+          touch checkModels.log
           mkdir -p "test/regression-diff"
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
@@ -301,7 +315,7 @@ jobs:
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_annotated.inp \
-                test/regression/"$regr_test"/chemkin/species_dictionary.txt
+                test/regression/"$regr_test"/chemkin/species_dictionary.txt &> checkModels.log
             then
               echo "<summary>$regr_test Passed Core Comparison ✅</summary>"
             else
@@ -318,7 +332,7 @@ jobs:
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
-                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
+                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt &> checkModels.log
             then
               echo "<summary>$regr_test Passed Edge Comparison ✅</summary>"
             else
@@ -337,7 +351,7 @@ jobs:
               if python rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
-                test/regression/"$regr_test"/chemkin
+                test/regression/"$regr_test"/chemkin &> checkModels.log
               then
                 echo "<summary>$regr_test Passed Observable Testing ✅</summary>"
               else
@@ -364,6 +378,11 @@ jobs:
           echo "<details>" >> summary.txt
           echo "<summary>Detailed regression test results.</summary>" >> summary.txt
           cat regression.stdout >> summary.txt
+          echo "</details>" >> summary.txt
+          echo "" >> summary.txt
+          echo "<details>" >> summary.txt
+          echo "<summary>Debugging info for `checkModels.py` (if any).</summary>" >> summary.txt
+          cat checkModels.log >> summary.txt
           echo "</details>" >> summary.txt
           echo "" >> summary.txt
           echo "_beep boop this comment was written by a bot_ :robot:" >> summary.txt

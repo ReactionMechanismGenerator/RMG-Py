@@ -47,7 +47,7 @@ from rmgpy.molecule.graph import Vertex, Edge, Graph
 from rmgpy.molecule.fragment import CuttingLabel
 
 # helper functions
-# these were originall nested inside the indicated parent function, but when we upgraded to
+# these were originally nested inside the indicated parent function, but when we upgraded to
 # Cython 3 this was no longer allowed - thus, they now live here.
 
 # add_implicit_benzene
