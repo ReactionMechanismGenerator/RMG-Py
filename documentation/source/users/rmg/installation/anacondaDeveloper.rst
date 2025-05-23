@@ -100,7 +100,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. **Optional (Recommended)**: Install and Link Julia dependencies using ``install_rms.sh``. Ensure that you have modified your environment variables as described above, and then run the following: ::
 
-     . install_rms.sh
+     source install_rms.sh
 
     Follow the final set of instructions from this installation script with regard to setting additional environment variables.
     Installing RMS will allow using ``method='ode'`` when solving the Master Equation with Arkane and using ``ReactionMechanismSimulator.jl``-based reactors in RMG.
