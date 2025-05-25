@@ -37,22 +37,15 @@ fi
 julia_path=$(which julia)
 echo "Julia 1.10 binary path: $julia_path"
 
+conda activate rmg_env
+# https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
+conda env config vars set JULIA_CONDAPKG_BACKEND=Null
+conda env config vars set JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
+conda env config vars set PYTHON_JULIAPKG_EXE=$(which julia)
+conda env config vars set PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages
+conda deactivate
+conda activate rmg_env
+
 conda install -y conda-forge::pyjuliacall
 
-export JULIA_CONDAPKG_BACKEND=Null
-export JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
-
 julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator; Pkg.instantiate()' || echo "RMS install error - continuing anyway ¯\_(ツ)_/¯"
-
-export PYTHON_JULIAPKG_EXE=$(which julia)
-export PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages
-
-echo "Copy the following text into your terminal profile (.bashrc, .zshrc, etc.):
-
-export JULIA_CONDAPKG_BACKEND=Null
-export JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
-export PYTHON_JULIAPKG_EXE=$(which julia)
-export PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages
-
-or otherwise run these 4 commands when first opening a terminal that will run RMG requiring RMS.
-"""

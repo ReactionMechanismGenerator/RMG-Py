@@ -106,25 +106,11 @@ jobs:
         with:
           channel: '1.10'
 
-      - name: Set some env vars
-        if: matrix.include-rms == 'with RMS'
-        run: |
-          # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
-          echo "JULIA_CONDAPKG_BACKEND=Null" >> $GITHUB_ENV
-          echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
-
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         if: matrix.include-rms == 'with RMS'
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: . install_rms.sh
-
-      - name: Set some other env vars
-        if: matrix.include-rms == 'with RMS'
-        run: |
-          # ensure that juliacall in Python uses the correct julia executable and packages: https://github.com/JuliaPy/PyJuliaPkg?tab=readme-ov-file#which-julia-gets-used
-          echo "PYTHON_JULIAPKG_EXE=$(which julia)" >> $GITHUB_ENV
-          echo "PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages" >> $GITHUB_ENV
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
@@ -176,21 +162,14 @@ jobs:
       # RMG build step
       - run: make install
       
-      - name: Make separate RMS conda env
+      - name: Make separate No-RMS conda env
         run: |
-          conda create --name rmg_env_with_rms --clone rmg_env
+          conda create --name rmg_env_without_rms --clone rmg_env
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
         with:
           channel: '1.10'
-
-      - name: Set some env vars
-        run: |
-          conda activate rmg_env_with_rms
-          # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
-          echo "JULIA_CONDAPKG_BACKEND=Null" >> $GITHUB_ENV
-          echo "JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python" >> $GITHUB_ENV
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
@@ -199,13 +178,6 @@ jobs:
           conda activate rmg_env_with_rms
           . install_rms.sh
 
-      - name: Set some other env vars
-        run: |
-          conda activate rmg_env_with_rms
-          # ensure that juliacall in Python uses the correct julia executable and packages: https://github.com/JuliaPy/PyJuliaPkg?tab=readme-ov-file#which-julia-gets-used
-          echo "PYTHON_JULIAPKG_EXE=$(which julia)" >> $GITHUB_ENV
-          echo "PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages" >> $GITHUB_ENV
-
       - name: Install Q2DTor
         run: echo "" | make q2dtor
 
@@ -213,7 +185,6 @@ jobs:
       - name: Regression Tests - Execution
         id: regression-execution
         run: |
-          conda activate rmg_env_with_rms
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
             if python rmg.py test/regression/"$regr_test"/input.py; then
@@ -288,8 +259,7 @@ jobs:
         env:
           REFERENCE: stable_regression_results
         run: |
-          # we _do not_ run in the with_rms env here
-          # conda activate rmg_env_with_rms
+          conda activate rmg_env_without_rms
           
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           touch checkModels.log
