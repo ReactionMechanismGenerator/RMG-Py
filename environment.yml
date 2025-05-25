@@ -84,7 +84,6 @@ dependencies:
   # bug in quantities, see:
   # https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2694#issuecomment-2489286263
   - conda-forge::quantities !=0.16.0,!=0.16.1
-  - conda-forge::ringdecomposerlib-python
 
 # packages we maintain
   - rmg::pydas >=1.0.3
