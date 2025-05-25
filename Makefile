@@ -21,7 +21,7 @@ documentation:
 
 clean:
 	@ python utilities.py clean
-	python -m pip uninstall --yes .
+	python -m pip uninstall --yes reactionmechanismgenerator || true  # can fail if RMG not installed at all
 
 clean-solver:
 	@ python utilities.py clean-solver
