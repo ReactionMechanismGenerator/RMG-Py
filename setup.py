@@ -145,8 +145,8 @@ setup(
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
-    url='https://reactionmechanismgenerator.github.io',
-    python_requires='>=3.9,<3.10',
+    url='http://reactionmechanismgenerator.github.io',
+    python_requires='>=3.9,<3.13',
     packages=find_packages(where='.', include=["rmgpy*"]) + find_packages(where='.', include=["arkane*"]),
     scripts=scripts,
     entry_points={
