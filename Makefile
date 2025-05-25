@@ -21,13 +21,14 @@ documentation:
 
 clean:
 	@ python utilities.py clean
+	python -m pip uninstall --yes .
 
 clean-solver:
 	@ python utilities.py clean-solver
 
 install:
 	@ python utilities.py check-pydas
-	python -m pip install -vv --no-cache-dir -e .
+	python -m pip install -vv -e .
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"
