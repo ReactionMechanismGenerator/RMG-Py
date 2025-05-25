@@ -175,7 +175,6 @@ jobs:
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
-          conda activate rmg_env_with_rms
           . install_rms.sh
 
       - name: Install Q2DTor
