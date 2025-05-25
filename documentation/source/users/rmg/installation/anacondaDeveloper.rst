@@ -104,6 +104,8 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     Follow the final set of instructions from this installation script with regard to setting additional environment variables.
     Installing RMS will allow using ``method='ode'`` when solving the Master Equation with Arkane and using ``ReactionMechanismSimulator.jl``-based reactors in RMG.
+    Note that installing RMS will cause errors when running Cantera simulations.
+    This should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate ``rmg_env`` without RMS in it.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
