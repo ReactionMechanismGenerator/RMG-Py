@@ -65,6 +65,13 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     conda env create -f environment.yml
 
+   To give it a different name (such as ``rmg_env2``), you can use the ``-n`` flag::
+
+    conda env create -f environment.yml -n rmg_env2
+
+   but be sure to edit the ``install_rms.sh`` script to use the new name, before 
+   using it in the steps below.
+
    If either of these commands return an error due to being unable to find the ``conda`` command,
    try to either close and reopen your terminal to refresh your environment variables
    or type the following command.
