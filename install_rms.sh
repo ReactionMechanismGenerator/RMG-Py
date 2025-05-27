@@ -37,14 +37,20 @@ fi
 julia_path=$(which julia)
 echo "Julia 1.10 binary path: $julia_path"
 
-conda activate rmg_env
+# Get current conda environment name
+current_env=$(conda info --envs | grep '\*' | awk '{print $1}')
+echo "Current conda environment: $current_env"
+
+# Set environment variables for the current environment
 # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
 conda env config vars set JULIA_CONDAPKG_BACKEND=Null
 conda env config vars set JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
 conda env config vars set PYTHON_JULIAPKG_EXE=$(which julia)
 conda env config vars set PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages
+
+# Reactivate the current environment to apply the new variables
 conda deactivate
-conda activate rmg_env
+conda activate $current_env
 
 conda install -y conda-forge::pyjuliacall
 
