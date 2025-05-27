@@ -39,6 +39,7 @@ from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
 
+from rdkit import Chem
 
 def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
     """
@@ -66,7 +67,32 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
     if solvent_data and not "Liquid thermo library" in thermo0.comment:
         solvation_database = get_db('solvation')
         solute_data = solvation_database.get_solute_data(spc)
-        solvation_correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
+
+        if False: # Need to add option variable "use_ml_solvation" to use ML solvation correction
+            if False: # Need to add option variable "use_ml_LSER_parameters" to use ML calculated parameters
+
+                # Case 1. Use LSER with parameters from database to predict solvation correction
+                solvation_correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
+            else:
+                # Case 2. Use LSER with parameters from ML model to predict solvation correction
+                solvent_species = solvation_database.get_solvent_structure(solvent_name)[0]
+                solvent_smiles = solvent_species.smiles
+                solvent_mol = Chem.MolFromSmiles(solvent_smiles)
+
+                solute_smiles = spc.smiles
+                solute_mol = Chem.MolFromSmiles(solute_smiles)
+                solvation_correction = solvation_database.get_solvation_correction_ml_LSER(solute_mol, solvent_mol)
+        else:
+            # Case 3. Use direct ML model to predict solvation correction
+            solvent_species = solvation_database.get_solvent_structure(solvent_name)[0]
+            solvent_smiles = solvent_species.smiles
+            solvent_mol = Chem.MolFromSmiles(solvent_smiles)
+
+            solute_smiles = spc.smiles
+            solute_mol = Chem.MolFromSmiles(solute_smiles)
+
+            solvation_correction = solvation_database.get_solvation_correction_ml(solute_mol, solvent_mol)
+
         # correction is added to the entropy and enthalpy
         wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
         wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)

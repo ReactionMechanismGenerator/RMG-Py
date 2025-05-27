@@ -2221,12 +2221,45 @@ class SolvationDatabase(object):
         """
         Given a solute_data and solvent_data object, calculates the enthalpy, entropy,
         and Gibbs free energy of solvation at 298 K. Returns a SolvationCorrection
-        object
+        object.
+        Note: This method utilizes the LSER method for solvation correction with parameters
+        from the RMG-database.
         """
         correction = SolvationCorrection(0.0, 0.0, 0.0)
         correction.enthalpy = self.calc_h(solute_data, solvent_data)
         correction.gibbs = self.calc_g(solute_data, solvent_data)
         correction.entropy = self.calc_s(correction.gibbs, correction.enthalpy)
+        return correction
+    
+    def get_solvation_correction_ml_LSER(self, solute_mol, solvent_mol):
+        """
+        Given a solute_mol and solvent_mol object, calculates the enthalpy, entropy,
+        and Gibbs free energy of solvation at 298 K. Returns a SolvationCorrection object.
+        Note: This method utilizes the LSER method for solvation correction with parameters
+        predicted from the ML model.
+        """
+        correction = SolvationCorrection(0.0, 0.0, 0.0)
+
+        ### ML MODEL HERE ###
+        
+        correction.enthalpy = 0
+        correction.gibbs = 0
+        correction.entropy = 0
+        return correction
+    
+    def get_solvation_correction_ml(self, solute_mol, solvent_mol):
+        """
+        Given a solute_mol and solvent_mol object, calculates the enthalpy, entropy,
+        and Gibbs free energy of solvation at 298 K using a machine learning model.
+        Returns a SolvationCorrection object.
+        """
+        correction = SolvationCorrection(0.0, 0.0, 0.0)
+
+        ### ML MODEL HERE ###
+        
+        correction.enthalpy = 0
+        correction.gibbs = 0
+        correction.entropy = 0
         return correction
 
     def get_Kfactor(self, delG298, delH298, delS298, solvent_name, T):
