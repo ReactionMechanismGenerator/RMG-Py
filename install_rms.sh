@@ -46,7 +46,6 @@ echo "Current conda environment: $current_env"
 conda env config vars set JULIA_CONDAPKG_BACKEND=Null
 conda env config vars set JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
 conda env config vars set PYTHON_JULIAPKG_EXE=$(which julia)
-conda env config vars set PYTHON_JULIAPKG_PROJECT=$HOME/.julia/packages
 
 # Reactivate the current environment to apply the new variables
 conda deactivate
