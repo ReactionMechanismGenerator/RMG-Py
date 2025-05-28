@@ -102,14 +102,19 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
-#. **Optional (Recommended)**: Install and Link Julia dependencies using ``install_rms.sh``. Ensure that you have modified your environment variables as described above, and then run the following: ::
+#. **Optional (Recommended)**: Install and Link Julia dependencies.
+
+    Installing Julia and ReactionMechanismSimulator.jl (RMS) will enable all the features in RMG that require RMS-based reactors,
+    as well as using ``method='ode'`` when solving the Master Equation with Arkane.
+    Note that installing RMS can cause errors when running Cantera simulations; this should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate conda environment without RMS in it.
+
+    Ensure that you have modified your environment variables as described above, and then run the following: ::
 
      source install_rms.sh
 
-    Follow the final set of instructions from this installation script with regard to setting additional environment variables.
-    Installing RMS will allow using ``method='ode'`` when solving the Master Equation with Arkane and using ``ReactionMechanismSimulator.jl``-based reactors in RMG.
-    Note that installing RMS will cause errors when running Cantera simulations.
-    This should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate ``rmg_env`` without RMS in it.
+    Follow the instructions that it provides for installing Julia and Juliaup,
+    which can involve several steps including restarting your terminal or shell.
+    Run the script again, until it finishes installing RMS and all of its dependencies, and reports that ReactionMechanismSimulator is installed.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
