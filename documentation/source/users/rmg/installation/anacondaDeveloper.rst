@@ -6,7 +6,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
-#. If your `conda` version is older than 23.10.0, manually switch the solver backend to `libmamba` ::
+#. If your `conda` version is older than 23.10.0, manually switch the solver backend to `libmamba`(or update your conda)::
 
     conda install -n base conda-libmamba-solver
     conda config --set solver libmamba
