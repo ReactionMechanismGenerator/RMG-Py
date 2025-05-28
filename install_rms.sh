@@ -11,7 +11,7 @@ if ! command -v juliaup &> /dev/null; then
     echo "juliaup add 1.10"
     echo "juliaup default 1.10"
     echo "juliaup remove release"
-    exit 1
+    return 1
 fi
 
 # Check if julia command is available
@@ -20,7 +20,7 @@ if ! command -v julia &> /dev/null; then
     echo "juliaup add 1.10"
     echo "juliaup default 1.10"
     echo "juliaup remove release"
-    exit 1
+    return 1
 fi
 
 # Check if Julia version is 1.10
@@ -30,7 +30,7 @@ if ! julia --version | grep -q "1.10"; then
     echo "juliaup add 1.10"
     echo "juliaup default 1.10"
     echo "juliaup remove release"
-    exit 1
+    return 1
 fi
 
 # Print the path of the Julia binary
