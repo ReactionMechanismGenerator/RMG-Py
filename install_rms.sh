@@ -24,7 +24,7 @@ if ! command -v julia &> /dev/null; then
 fi
 
 # Check if Julia version is 1.10
-if ! julia --version | grep -q "1.10"; then
+if ! julia --version | grep -q " 1\.10"; then
     echo "Julia 1.10 is not installed. Current version is $(julia --version)."
     echo "Please install Julia 1.10 by running:"
     echo "juliaup add 1.10"
