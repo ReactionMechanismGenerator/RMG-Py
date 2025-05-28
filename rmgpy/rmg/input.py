@@ -1312,7 +1312,7 @@ def ml_solvation(use_ml_solvation=True, name='solvation'):
 
     from rmgpy.data.solvation import MLSolvation
     if use_ml_solvation:
-        model_path = os.path.join(settings['database.directory'], 'thermo', 'ml', name) # Need to add ML model at RMG-database/thermo/ml/solvation
+        model_path = os.path.join(settings['database.directory'], 'thermo', 'ml', name) # Need to add ML model at RMG-database/input/thermo/ml/solvation
         if not os.path.exists(model_path):
             raise InputError('Cannot find ML models folder {}'.format(model_path))
         rmg.ml_solvation = MLSolvation(model_path)
