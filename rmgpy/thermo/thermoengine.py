@@ -68,22 +68,10 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
         solvation_database = get_db('solvation')
         solute_data = solvation_database.get_solute_data(spc)
 
-        if False: # Need to add option variable "use_ml_solvation" to use ML solvation correction
-            if False: # Need to add option variable "use_ml_LSER_parameters" to use ML calculated parameters
-
-                # Case 1. Use LSER with parameters from database to predict solvation correction
-                solvation_correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
-            else:
-                # Case 2. Use LSER with parameters from ML model to predict solvation correction
-                solvent_species = solvation_database.get_solvent_structure(solvent_name)[0]
-                solvent_smiles = solvent_species.smiles
-                solvent_mol = Chem.MolFromSmiles(solvent_smiles)
-
-                solute_smiles = spc.smiles
-                solute_mol = Chem.MolFromSmiles(solute_smiles)
-                solvation_correction = solvation_database.get_solvation_correction_ml_LSER(solute_mol, solvent_mol)
-        else:
-            # Case 3. Use direct ML model to predict solvation correction
+        try:
+            from rmgpy.rmg.input import get_input
+            
+            ml_solvation = get_input("ml_solvation")
             solvent_species = solvation_database.get_solvent_structure(solvent_name)[0]
             solvent_smiles = solvent_species.smiles
             solvent_mol = Chem.MolFromSmiles(solvent_smiles)
@@ -91,12 +79,24 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
             solute_smiles = spc.smiles
             solute_mol = Chem.MolFromSmiles(solute_smiles)
 
-            solvation_correction = solvation_database.get_solvation_correction_ml(solute_mol, solvent_mol)
+            solvation_correction = ml_solvation.get_solvation_correction(solute_mol, solvent_mol)
 
-        # correction is added to the entropy and enthalpy
-        wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
-        wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
-        wilhoit.comment += f' + Solvation correction (H={solvation_correction.enthalpy/1e3:+.0f}kJ/mol;S={solvation_correction.entropy:+.0f}J/mol/K) with {solvent_name} as solvent and solute estimated using {solute_data.comment}'
+            wilhoit.S0.value_si += solvation_correction.entropy
+            wilhoit.H0.value_si += solvation_correction.enthalpy
+            wilhoit.comment += (
+                f" + Solvation correction (H={solvation_correction.enthalpy / 1e3:+.0f} kJ/mol; "
+                f"S={solvation_correction.entropy:+.0f} J/mol/K) using ML model"
+            )
+        except Exception as e:
+            logging.warning("ML solvation correction not used: " + str(e))
+            # fallback to LSER (default)
+            solvation_correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
+            wilhoit.S0.value_si += solvation_correction.entropy
+            wilhoit.H0.value_si += solvation_correction.enthalpy
+            wilhoit.comment += (
+                f" + Solvation correction (H={solvation_correction.enthalpy / 1e3:+.0f} kJ/mol; "
+                f"S={solvation_correction.entropy:+.0f} J/mol/K) using LSER"
+            )
 
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:

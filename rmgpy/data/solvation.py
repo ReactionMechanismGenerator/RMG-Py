@@ -48,6 +48,7 @@ from rmgpy.data.thermo import is_aromatic_ring, is_bicyclic, find_aromatic_bonds
     convert_ring_to_sub_molecule, is_ring_partial_matched, bicyclic_decomposition_for_polyring, \
     split_bicyclic_into_single_rings, saturate_ring_bonds
 
+from rdkit import Chem
 
 ################################################################################
 
@@ -2231,37 +2232,6 @@ class SolvationDatabase(object):
         correction.entropy = self.calc_s(correction.gibbs, correction.enthalpy)
         return correction
     
-    def get_solvation_correction_ml_LSER(self, solute_mol, solvent_mol):
-        """
-        Given a solute_mol and solvent_mol object, calculates the enthalpy, entropy,
-        and Gibbs free energy of solvation at 298 K. Returns a SolvationCorrection object.
-        Note: This method utilizes the LSER method for solvation correction with parameters
-        predicted from the ML model.
-        """
-        correction = SolvationCorrection(0.0, 0.0, 0.0)
-
-        ### ML MODEL HERE ###
-        
-        correction.enthalpy = 0
-        correction.gibbs = 0
-        correction.entropy = 0
-        return correction
-    
-    def get_solvation_correction_ml(self, solute_mol, solvent_mol):
-        """
-        Given a solute_mol and solvent_mol object, calculates the enthalpy, entropy,
-        and Gibbs free energy of solvation at 298 K using a machine learning model.
-        Returns a SolvationCorrection object.
-        """
-        correction = SolvationCorrection(0.0, 0.0, 0.0)
-
-        ### ML MODEL HERE ###
-        
-        correction.enthalpy = 0
-        correction.gibbs = 0
-        correction.entropy = 0
-        return correction
-
     def get_Kfactor(self, delG298, delH298, delS298, solvent_name, T):
         """Returns a K-factor for the input temperature given the solvation properties of a solute in a solvent
         at 298 K.
@@ -2484,3 +2454,32 @@ class SolvationDatabase(object):
             else:
                 logging.info('One of the initial species must be the solvent with the same string name')
                 logging.warning("Solvent is not an initial species with the same string name")
+
+class MLSolvation:
+    """
+    A dummy class for machine learning-based solvation correction.
+    """
+    def __init__(self, model_path: str):
+        # ex) model_path = "RMG-database/input/thermo/ml/solvation"
+        self.model_path = model_path
+        self.model = self.load_model(model_path)
+
+    def load_model(self, model_path):
+        # Need to implement model loading code (e.g., joblib.load, torch.load, etc.)
+        print(f"[NOTICE] Dummy ML model loaded from: {model_path}")
+        return None  # Need to return something like "return joblib.load(os.path.join(model_path, "model.pkl"))"
+
+    def get_solvation_correction(self, solute_mol, solvent_mol):
+        """
+        Given a solute_mol and solvent_mol object, calculates the enthalpy, entropy,
+        and Gibbs free energy of solvation at 298 K using a machine learning model.
+        Returns a SolvationCorrection object.
+        """
+        # Need to implement: solute_mol, solvent_mol → feature vector → ML prediction
+        print(f"[NOTICE] Dummy ML model utilized")
+        enthalpy = 0.0  #self.model.predict([...])[0]
+        gibbs = 0.0
+        entropy = 0.0
+
+        from rmgpy.data.solvation import SolvationCorrection
+        return SolvationCorrection(enthalpy, gibbs, entropy)

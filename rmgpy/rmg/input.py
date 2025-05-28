@@ -1305,6 +1305,17 @@ def ml_estimator(thermo=True,
         logging.warning('"onlyCyclics" should be True when "onlyHeterocyclics" is True. '
                         'Machine learning estimator is restricted to only heterocyclic species thermo')
 
+def ml_solvation(use_ml_solvation=True, name='solvation'):
+    """
+    Enable the use of machine learning model for solvation correction
+    """
+
+    from rmgpy.data.solvation import MLSolvation
+    if use_ml_solvation:
+        model_path = os.path.join(settings['database.directory'], 'thermo', 'ml', name) # Need to add ML model at RMG-database/thermo/ml/solvation
+        if not os.path.exists(model_path):
+            raise InputError('Cannot find ML models folder {}'.format(model_path))
+        rmg.ml_solvation = MLSolvation(model_path)
 
 def pressure_dependence(
         method,
@@ -1565,6 +1576,7 @@ def read_input_file(path, rmg0):
         'model': model,
         'quantumMechanics': quantum_mechanics,
         'mlEstimator': ml_estimator,
+        'mlSolvation': ml_solvation,
         'pressureDependence': pressure_dependence,
         'options': options,
         'generatedSpeciesConstraints': generated_species_constraints,
@@ -1645,6 +1657,7 @@ def read_thermo_input_file(path, rmg0):
         'adjacencyList': adjacency_list,
         'quantumMechanics': quantum_mechanics,
         'mlEstimator': ml_estimator,
+        'mlSolvation': ml_solvation,
     }
 
     try:
@@ -1851,6 +1864,8 @@ def get_input(name):
             return rmg.quantum_mechanics
         elif name == 'ml_estimator':
             return rmg.ml_estimator, rmg.ml_settings
+        elif name == 'ml_solvation':
+            return rmg.ml_solvation
         elif name == 'thermo_central_database':
             return rmg.thermo_central_database
         else:
