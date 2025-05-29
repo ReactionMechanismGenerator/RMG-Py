@@ -161,7 +161,7 @@ this method cannot handle very general cases, so it is better to be conservative
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.classify_benzene_carbons">
-<span class="sig-name descname"><span class="pre">classify_benzene_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partners</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.classify_benzene_carbons" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">classify_benzene_carbons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">partners</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.classify_benzene_carbons" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -202,7 +202,7 @@ cb_atom_list, cbf_atom_list, cbf_atom_list1, cbf_atom_list2, connected_cbfs</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.copy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a copy of the current graph. If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, a deep copy
 is made: copies of the vertices and edges are used in the new graph.
 If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code> or not specified, a shallow copy is made: the
@@ -242,7 +242,7 @@ connects it to one atom of the group, ‘connecting_atom’. This is useful for 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.find_isomorphism">
-<span class="sig-name descname"><span class="pre">find_isomorphism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.find_isomorphism" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_isomorphism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.find_isomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is isomorphic and <code class="docutils literal notranslate"><span class="pre">False</span></code>
 otherwise, and the matching mapping. The <cite>initial_map</cite> attribute can be
 used to specify a required mapping from <cite>self</cite> to <cite>other</cite> (i.e. the
@@ -254,7 +254,7 @@ be a <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.mol
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.find_subgraph_isomorphisms">
-<span class="sig-name descname"><span class="pre">find_subgraph_isomorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_subgraph_isomorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. In other words, return <code class="docutils literal notranslate"><span class="pre">True</span></code> is self is more specific than other.
 Also returns the lists all of valid mappings. The
@@ -268,7 +268,7 @@ The <cite>other</cite> parameter must be a <a class="reference internal" href="#
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.from_adjacency_list">
-<span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_consistency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_consistency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a string adjacency list <cite>adjlist</cite> to a molecular structure.
 Skips the first line (assuming it’s a label) unless <cite>withLabel</cite> is
 <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
@@ -363,7 +363,7 @@ Takes the RC and recursively merges all cycles which share vertices.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.get_edges_in_cycle">
-<span class="sig-name descname"><span class="pre">get_edges_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.get_edges_in_cycle" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_edges_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.get_edges_in_cycle" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given list of atoms comprising a ring, return the set of bonds
 connecting them, in order around the ring.</p>
 <p>If <cite>sort=True</cite>, then sort the vertices to match their connectivity.
@@ -380,7 +380,7 @@ Wildcards are not counted as any particular element.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.get_extensions">
-<span class="sig-name descname"><span class="pre">get_extensions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_bonds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_un</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atm_ind</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atm_ind2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.get_extensions" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_extensions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_bonds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">r_un</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">basename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atm_ind</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atm_ind2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_splits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.get_extensions" title="Permalink to this definition">¶</a></dt>
 <dd><p>generate all allowed group extensions and their complements
 note all atomtypes except for elements and r/r!H’s must be removed</p>
 </dd></dl>
@@ -543,7 +543,7 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.is_identical">
-<span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_identical" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_identical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is identical and <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.
 The function <cite>is_isomorphic</cite> respects wildcards, while this function
 does not, make it more useful for checking groups to groups (as
@@ -552,7 +552,7 @@ opposed to molecules to groups)</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.is_isomorphic">
-<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if two graphs are isomorphic and <code class="docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. The <cite>initial_map</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
@@ -562,7 +562,7 @@ be a <a class="reference internal" href="#rmgpy.molecule.Group" title="rmgpy.mol
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.is_mapping_valid">
-<span class="sig-name descname"><span class="pre">is_mapping_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equivalent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_mapping_valid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_mapping_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equivalent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_mapping_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that a proposed <cite>mapping</cite> of vertices from <cite>self</cite> to <cite>other</cite>
 is valid by checking that the vertices and edges involved in the
 mapping are mutually equivalent.  If equivalent is <code class="docutils literal notranslate"><span class="pre">True</span></code> it checks
@@ -579,7 +579,7 @@ and bond orders are considered, and ignored if <code class="docutils literal not
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.is_subgraph_isomorphic">
-<span class="sig-name descname"><span class="pre">is_subgraph_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_subgraph_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. In other words, return <code class="docutils literal notranslate"><span class="pre">True</span></code> if self is more specific than other.
 The <cite>initial_map</cite> attribute can be used to specify a required
@@ -617,7 +617,7 @@ object is returned.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.merge_groups">
-<span class="sig-name descname"><span class="pre">merge_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_identical_labels</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.merge_groups" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">merge_groups</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_identical_labels</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.merge_groups" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function takes <cite>other</cite> :class:Group object and returns a merged :class:Group object based
 on overlapping labeled atoms between self and other</p>
 <p>Currently assumes <cite>other</cite> can be merged at the closest labelled atom
@@ -719,7 +719,7 @@ Warning: Assumes that the cycle is elementary, ie. no bridges.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.sort_vertices">
-<span class="sig-name descname"><span class="pre">sort_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.sort_vertices" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sort_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.sort_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the vertices in the graph. This can make certain operations, e.g.
 the isomorphism functions, much more efficient.</p>
 </dd></dl>
@@ -796,7 +796,7 @@ have explicit O2d/S2d ligands. Other functions can be added as necessary</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Group.to_adjacency_list">
-<span class="sig-name descname"><span class="pre">to_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Group.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the molecular structure to a string adjacency list.</p>
 </dd></dl>
 

@@ -143,7 +143,7 @@ always considered regardless of this variable</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.copy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a copy of the current species. If the
 kw argument ‘deep’ is True, then a deep copy will be made of the
 Molecule objects in self.molecule.</p>
@@ -158,7 +158,7 @@ Molecule objects in self.molecule.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.from_adjacency_list">
-<span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_charge_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_charge_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load the structure of a species as a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object from the
 given adjacency list <cite>adjlist</cite> and store it as the first entry of a
 list in the <cite>molecule</cite> attribute. Does not generate resonance isomers
@@ -183,7 +183,7 @@ species. This “algorithm” is <em>very</em> much in need of improvement.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.generate_resonance_structures">
-<span class="sig-name descname"><span class="pre">generate_resonance_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keep_isomorphic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_structures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_resonance_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keep_isomorphic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_structures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate all of the resonance structures of this species. The isomers are
 stored as a list in the <cite>molecule</cite> attribute. If the length of
 <cite>molecule</cite> is already greater than one, it is assumed that all of the
@@ -279,7 +279,7 @@ requires additional calculate_symmetry_number calls.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.get_thermo_data">
-<span class="sig-name descname"><span class="pre">get_thermo_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solvent_name</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_thermo_data" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_thermo_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">solvent_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.get_thermo_data" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a <cite>thermoData</cite> object of the current Species object.</p>
 <p>If the thermo object already exists, it is either of the (Wilhoit, ThermoData)
 type, or it is a Future.</p>
@@ -330,7 +330,7 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.is_identical">
-<span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.is_identical" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.is_identical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if at least one molecule of the species is identical to <cite>other</cite>,
 which can be either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or a <a class="reference internal" href="#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> object.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">strict=False</span></code>, performs the check ignoring electrons and resonance structures.</p>
@@ -338,7 +338,7 @@ which can be either a <code class="xref py py-class docutils literal notranslate
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.is_isomorphic">
-<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.is_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the species is isomorphic to <cite>other</cite>, which can be
 either a <code class="xref py py-class docutils literal notranslate"><span class="pre">Molecule</span></code> object or a <a class="reference internal" href="#rmgpy.species.Species" title="rmgpy.species.Species"><code class="xref py py-class docutils literal notranslate"><span class="pre">Species</span></code></a> object.</p>
 <dl class="field-list simple">
@@ -428,7 +428,7 @@ eg. 2 for bidentate.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.to_cantera">
-<span class="sig-name descname"><span class="pre">to_cantera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_chemkin_identifier</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_cantera" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_cantera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_chemkin_identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_cantera" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the RMG Species object to a Cantera Species object
 with the appropriate thermo data.</p>
 <p>If use_chemkin_identifier is set to False, the species label is used

@@ -74,14 +74,14 @@ this solver to complete very rapidly, even for large kinetic models.</p>
 and cannot be used for a standard RMG job.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.add_reactions_to_surface">
-<span class="sig-name descname"><span class="pre">add_reactions_to_surface</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.add_reactions_to_surface" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">add_reactions_to_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">new_surface_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">new_surface_reaction_inds</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.add_reactions_to_surface" title="Permalink to this definition">¶</a></dt>
 <dd><p>moves new surface reactions to the surface
 done after the while loop before the simulate call ends</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.advance">
-<span class="sig-name descname"><span class="pre">advance</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.advance" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">advance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.advance" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate from the current value of the independent variable to a
 specified value <cite>tout</cite>, taking as many steps as necessary. The resulting
 values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and
@@ -91,7 +91,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.calculate_effective_pressure">
-<span class="sig-name descname"><span class="pre">calculate_effective_pressure</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.calculate_effective_pressure" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_effective_pressure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rxn</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.calculate_effective_pressure" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the effective pressure for a reaction as:</p>
 <div class="math notranslate nohighlight">
 \[P_{eff} = P * \sum_i \frac{y_i * eff_i}{\sum_j y_j}\]</div>
@@ -110,7 +110,7 @@ and <cite>dydt</cite> attributes.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.compute_network_variables">
-<span class="sig-name descname"><span class="pre">compute_network_variables</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.compute_network_variables" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">compute_network_variables</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.compute_network_variables" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the arrays containing network information:</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -137,14 +137,14 @@ k_j is the rate parameter for the jth core reaction.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.convert_initial_keys_to_species_objects">
-<span class="sig-name descname"><span class="pre">convert_initial_keys_to_species_objects</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.convert_initial_keys_to_species_objects" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">convert_initial_keys_to_species_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.convert_initial_keys_to_species_objects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the initial_mole_fractions dictionary from species names into species objects,
 using the given dictionary of species.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.generate_rate_coefficients">
-<span class="sig-name descname"><span class="pre">generate_rate_coefficients</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_rate_coefficients" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_rate_coefficients</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_rate_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Populates the forward rate coefficients (kf), reverse rate coefficients (kb)
 and equilibrium constants (Keq) arrays with the values computed at the temperature
 and (effective) pressure of the reaction system.</p>
@@ -152,20 +152,20 @@ and (effective) pressure of the reaction system.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.generate_reactant_product_indices">
-<span class="sig-name descname"><span class="pre">generate_reactant_product_indices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_reactant_product_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_reactant_product_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a matrix for the reactants and products.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.generate_reaction_indices">
-<span class="sig-name descname"><span class="pre">generate_reaction_indices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_reaction_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_reaction_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign an index to each reaction (core first, then edge) and
 store the (reaction, index) pair in a dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.generate_species_indices">
-<span class="sig-name descname"><span class="pre">generate_species_indices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_species_indices" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_species_indices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.generate_species_indices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Assign an index to each species (core first, then edge) and
 store the (species, index) pair in a dictionary.</p>
 </dd></dl>
@@ -179,14 +179,14 @@ edge to surface based on the layering constraint</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.get_species_index">
-<span class="sig-name descname"><span class="pre">get_species_index</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.get_species_index" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_species_index</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spc</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.get_species_index" title="Permalink to this definition">¶</a></dt>
 <dd><p>Retrieves the index that is associated with the parameter species
 from the species index dictionary.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.initialize">
-<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dydt0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">senpar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DASPK solver by setting the initial values of the
 independent variable <cite>t0</cite>, dependent variables <cite>y0</cite>, and first
 derivatives <cite>dydt0</cite>. If provided, the derivatives must be consistent
@@ -199,7 +199,7 @@ individual values for each dependent variable.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.initialize_model">
-<span class="sig-name descname"><span class="pre">initialize_model</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize_model" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initialize_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_reactions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize_model" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize a simulation of the reaction system using the provided
 kinetic model. You will probably want to create your own version of this
 method in the derived class; don’t forget to also call the base class
@@ -208,7 +208,7 @@ version, too.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.initialize_surface">
-<span class="sig-name descname"><span class="pre">initialize_surface</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize_surface" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initialize_surface</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_reactions</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initialize_surface" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>removes surface_species and surface_reactions from  until they are self consistent:</dt><dd><ol class="arabic simple">
 <li><p>every reaction has one species in the surface</p></li>
@@ -220,19 +220,19 @@ version, too.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.initiate_tolerances">
-<span class="sig-name descname"><span class="pre">initiate_tolerances</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initiate_tolerances</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-16</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-08</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_atol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_rtol</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0001</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.initiate_tolerances" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the number of differential equations and initializes the tolerance arrays.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.log_conversions">
-<span class="sig-name descname"><span class="pre">log_conversions</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.log_conversions" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">log_conversions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.log_conversions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current conversion values.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.log_rates">
-<span class="sig-name descname"><span class="pre">log_rates</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.log_rates" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">log_rates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">char_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_rate</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_dif_ln_accum_num</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">network_rate</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.log_rates" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current maximum species and network rates.</p>
 </dd></dl>
 
@@ -246,14 +246,14 @@ every initialization</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.residual">
-<span class="sig-name descname"><span class="pre">residual</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.residual" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">residual</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dydt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">senpar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([0.])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.residual" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the residual function for the governing DAE system for the
 simple reaction system.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.set_colliders">
-<span class="sig-name descname"><span class="pre">set_colliders</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.set_colliders" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">set_colliders</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.set_colliders" title="Permalink to this definition">¶</a></dt>
 <dd><p>Store collider efficiencies and reaction indices for pdep reactions that have collider efficiencies,
 and store specific collider indices</p>
 </dd></dl>
@@ -280,7 +280,7 @@ equal to the residual.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.simulate">
-<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.simulate" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">simulate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">core_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">core_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">edge_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">surface_reactions</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pdep_networks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prune</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sensitivity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sens_worksheet</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">simulator_settings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.simulate" title="Permalink to this definition">¶</a></dt>
 <dd><p>Simulate the reaction system with the provided reaction model,
 consisting of lists of core species, core reactions, edge species, and
 edge reactions. As the simulation proceeds the system is monitored for
@@ -293,7 +293,7 @@ the desired termination criteria and the model remains valid throughout,
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.MBSampledReactor.step">
-<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.step" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">step</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">tout</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.MBSampledReactor.step" title="Permalink to this definition">¶</a></dt>
 <dd><p>Perform one simulation step from the current value of the independent
 variable toward (but not past) a specified value <cite>tout</cite>. The resulting
 values of <span class="math notranslate nohighlight">\(t\)</span>, <span class="math notranslate nohighlight">\(\mathbf{y}\)</span>, and

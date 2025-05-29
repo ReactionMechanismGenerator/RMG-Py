@@ -64,6 +64,16 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="anacondadeveloper"></span><h1><span class="section-number">3.3.1. </span>Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX<a class="headerlink" href="#installation-by-source-using-anaconda-environment-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this heading">¶</a></h1>
 <ol class="arabic">
 <li><p>Install the <cite>conda</cite> package manager via <cite>miniforge</cite>, if you do not already have it (or Anaconda), by following the <a class="reference external" href="https://github.com/conda-forge/miniforge?tab=readme-ov-file#install">Miniforge installation instructions</a>.</p></li>
+<li><p>If your <cite>conda</cite> version is older than 23.10.0, manually switch the solver backend to <a href="#id1"><span class="problematic" id="id2">`</span></a>libmamba`(or update your conda):</p>
+<aside class="system-message" id="id1">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/installation/anacondaDeveloper.rst</span>, line 9); <em><a href="#id2">backlink</a></em></p>
+<p>Inline interpreted text or phrase reference start-string without end-string.</p>
+</aside>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="n">conda</span><span class="o">-</span><span class="n">libmamba</span><span class="o">-</span><span class="n">solver</span>
+<span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">solver</span> <span class="n">libmamba</span>
+</pre></div>
+</div>
+</li>
 <li><p>There are a few system-level dependencies which are required and should not be installed via Conda. These include
 <a class="reference external" href="https://git-scm.com/">Git</a> for version control, <a class="reference external" href="https://www.gnu.org/software/make/">GNU Make</a>, and the C and C++ compilers from the <a class="reference external" href="https://gcc.gnu.org/">GNU Compiler Collection (GCC)</a> for compiling RMG.</p>
 <p>For Linux users, you can check whether these are already installed by simply calling them via the command line, which
@@ -113,30 +123,17 @@ unfamiliar with <code class="docutils literal notranslate"><span class="pre">ssh
 </div>
 <p>For information on using <code class="docutils literal notranslate"><span class="pre">ssh</span></code> with GitHub see the <a class="reference external" href="https://docs.github.com/en/authentication/connecting-to-github-with-ssh">Connecting to GitHub with SSH</a></p>
 </li>
-<li><p>Switch the conda solver backend to speed up creation of the RMG environment</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="n">conda</span><span class="o">-</span><span class="n">libmamba</span><span class="o">-</span><span class="n">solver</span>
-<span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">solver</span> <span class="n">libmamba</span>
-</pre></div>
-</div>
-</li>
 <li><p>Navigate to the RMG-Py directory</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 </pre></div>
 </div>
 </li>
-<li><p>Apple silicon (M1+) users only: execute the following commands
-<strong>instead of</strong> the following <cite>conda env create -f environment.yml</cite> step.
-(This will tell conda that we want to the environment to use x86
-architecture rather than the native ARM64 architecture)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">rmg_env</span>
-<span class="n">conda</span> <span class="n">activate</span> <span class="n">rmg_env</span>
-<span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="n">env</span> <span class="o">--</span><span class="nb">set</span> <span class="n">subdir</span> <span class="n">osx</span><span class="o">-</span><span class="mi">64</span>
-<span class="n">conda</span> <span class="n">env</span> <span class="n">update</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
-</pre></div>
-</div>
-</li>
 <li><p>Create the conda environment for RMG-Py:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
+</pre></div>
+</div>
+<p>To give it a different name (such as <code class="docutils literal notranslate"><span class="pre">rmg_env2</span></code>), you can use the <code class="docutils literal notranslate"><span class="pre">-n</span></code> flag:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span> <span class="o">-</span><span class="n">n</span> <span class="n">rmg_env2</span>
 </pre></div>
 </div>
 <p>If either of these commands return an error due to being unable to find the <code class="docutils literal notranslate"><span class="pre">conda</span></code> command,
@@ -156,39 +153,38 @@ or type the following command.</p>
 </pre></div>
 </div>
 </li>
-<li><p>Switch the conda solver to libmamba again, to accelerate any changes you might make to this conda environment in the future:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">solver</span> <span class="n">libmamba</span>
-</pre></div>
-</div>
-</li>
 <li><p>Compile RMG-Py after activating the conda environment</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">make</span>
 </pre></div>
 </div>
 </li>
-<li><p>Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
-<em>This is important before the next step in which julia dependencies are installed.</em>
-Also, add your RMG-Py folder to PATH to launch <code class="docutils literal notranslate"><span class="pre">rmg.py</span></code> from any folder.</p>
-<p>In general, these commands should be placed in the appropriate shell initialization file.
+<li><p><strong>Optional</strong>: add your RMG-Py folder to <code class="docutils literal notranslate"><span class="pre">PATH</span></code> to launch <code class="docutils literal notranslate"><span class="pre">rmg.py</span></code> from any folder.</p>
+<p>In general, this commands should be placed in the appropriate shell initialization file.
 For Linux users using bash (the default on distributions mentioned here), these should be placed in <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code>.
 For MacOS users using bash (default before MacOS Catalina), these should be placed in <code class="docutils literal notranslate"><span class="pre">~/.bash_profile</span></code>, which you should create if it doesn’t exist.
 For MacOS users using zsh (default beginning in MacOS Catalina), these should be placed in <code class="docutils literal notranslate"><span class="pre">~/.zshrc</span></code>.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PYTHONPATH=YourFolder/RMG-Py/:$PYTHONPATH
-export PATH=YourFolder/RMG-Py/:$PATH
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>export PATH=YourFolder/RMG-Py/:$PATH
 </pre></div>
 </div>
 <p>NOTE: Make sure to change <code class="docutils literal notranslate"><span class="pre">YourFolder</span></code> to the path leading to the <code class="docutils literal notranslate"><span class="pre">RMG-Py</span></code> code. Not doing so will lead to an error stating that python cannot find the module <code class="docutils literal notranslate"><span class="pre">rmgpy</span></code>.</p>
 <p>Be sure to either close and reopen your terminal to refresh your environment variables (<code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.bashrc</span></code> or <code class="docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.zshrc</span></code>).</p>
 </li>
-<li><p>Install and Link Julia dependencies:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">julia</span> <span class="o">-</span><span class="n">e</span> <span class="s1">&#39;using Pkg; Pkg.add(&quot;PyCall&quot;);Pkg.build(&quot;PyCall&quot;);Pkg.add(PackageSpec(name=&quot;ReactionMechanismSimulator&quot;,rev=&quot;for_rmg&quot;)); using ReactionMechanismSimulator;&#39;</span>
-
-<span class="n">python</span> <span class="o">-</span><span class="n">c</span> <span class="s2">&quot;import julia; julia.install(); import diffeqpy; diffeqpy.install()&quot;</span>
+<li><p><strong>Optional (Recommended)</strong>: Install and Link Julia dependencies.</p>
+<blockquote>
+<div><p>Installing Julia and ReactionMechanismSimulator.jl (RMS) will enable all the features in RMG that require RMS-based reactors,
+as well as using <code class="docutils literal notranslate"><span class="pre">method='ode'</span></code> when solving the Master Equation with Arkane.
+Note that installing RMS can cause errors when running Cantera simulations; this should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate conda environment without RMS in it.</p>
+<p>Ensure that you have modified your environment variables as described above, and then run the following:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">install_rms</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
 </div>
+<p>Follow the instructions that it provides for installing Julia and Juliaup,
+which can involve several steps including restarting your terminal or shell.
+Run the script again, until it finishes installing RMS and all of its dependencies, and reports that ReactionMechanismSimulator is installed.</p>
+</div></blockquote>
 </li>
 <li><p>Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as <code class="docutils literal notranslate"><span class="pre">input.py</span></code> in the current folder).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span><span class="o">-</span><span class="n">jl</span> <span class="n">replace</span><span class="o">/</span><span class="k">with</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">replace</span><span class="o">/</span><span class="k">with</span><span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">rmg</span><span class="o">.</span><span class="n">py</span> <span class="nb">input</span><span class="o">.</span><span class="n">py</span>
 </pre></div>
 </div>
 </li>
@@ -203,14 +199,14 @@ which can be found in the <code class="docutils literal notranslate"><span class
 You might have to edit them slightly to match your exact paths. Specifically,
 you will need <code class="docutils literal notranslate"><span class="pre">/opt/miniconda3/envs/rmg_env</span></code> to point to where your conda environment is located.</p>
 <p>This configuration will allow you to debug the rms_constant_V example, running through
-python-jl.</p>
+python.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
     <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="s2">&quot;Python: rmg.py rms_constant_V&quot;</span><span class="p">,</span>
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;cwd&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{workspaceFolder}</span><span class="s2">/&quot;</span><span class="p">,</span>
     <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;rmg.py&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python-jl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">&quot;examples/rmg/rms_constant_V/input.py&quot;</span><span class="p">,</span>
     <span class="p">],</span>
@@ -229,7 +225,7 @@ Open one of the many test files named <code class="docutils literal notranslate"
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/pytest&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python-jl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">&quot;--capture=no&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
@@ -249,7 +245,7 @@ Open one of the many test files named <code class="docutils literal notranslate"
     <span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/pytest&quot;</span><span class="p">,</span>
-    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python-jl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="p">[</span>
         <span class="s2">&quot;--capture=no&quot;</span><span class="p">,</span>
         <span class="s2">&quot;--verbose&quot;</span><span class="p">,</span>
@@ -270,7 +266,7 @@ Open one of the many test files named <code class="docutils literal notranslate"
     <span class="s2">&quot;request&quot;</span><span class="p">:</span> <span class="s2">&quot;launch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;program&quot;</span><span class="p">:</span> <span class="s2">&quot;$</span><span class="si">{file}</span><span class="s2">&quot;</span><span class="p">,</span>
     <span class="s2">&quot;purpose&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;debug-test&quot;</span><span class="p">],</span>
-    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python-jl&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;python&quot;</span><span class="p">:</span> <span class="s2">&quot;/opt/miniconda3/envs/rmg_env/bin/python&quot;</span><span class="p">,</span>
     <span class="s2">&quot;console&quot;</span><span class="p">:</span> <span class="s2">&quot;integratedTerminal&quot;</span><span class="p">,</span>
     <span class="s2">&quot;justMyCode&quot;</span><span class="p">:</span> <span class="n">false</span><span class="p">,</span>
     <span class="s2">&quot;env&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;PYTEST_ADDOPTS&quot;</span><span class="p">:</span> <span class="s2">&quot;--no-cov&quot;</span><span class="p">,}</span> <span class="o">//</span> <span class="n">without</span> <span class="n">disabling</span> <span class="n">coverage</span> <span class="n">VS</span> <span class="n">Code</span> <span class="n">doesn</span><span class="s1">&#39;t stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run</span>
@@ -317,7 +313,7 @@ and a folder containing the tests
 To configure the rest of the settings, find the <code class="docutils literal notranslate"><span class="pre">settings.json</span></code> file in your <code class="docutils literal notranslate"><span class="pre">.vscode</span></code> folder.
 You can use the following settings to configure the pytest framework:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="s2">&quot;python.testing.pytestEnabled&quot;</span><span class="p">:</span> <span class="n">true</span><span class="p">,</span>
-<span class="s2">&quot;python.testing.pytestPath&quot;</span><span class="p">:</span> <span class="s2">&quot;python-jl -m pytest&quot;</span><span class="p">,</span>
+<span class="s2">&quot;python.testing.pytestPath&quot;</span><span class="p">:</span> <span class="s2">&quot;python -m pytest&quot;</span><span class="p">,</span>
 <span class="s2">&quot;python.testing.pytestArgs&quot;</span><span class="p">:</span> <span class="p">[</span>
     <span class="s2">&quot;-p&quot;</span><span class="p">,</span> <span class="s2">&quot;julia.pytestplugin&quot;</span><span class="p">,</span>
     <span class="s2">&quot;--julia-compiled-modules=no&quot;</span><span class="p">,</span>

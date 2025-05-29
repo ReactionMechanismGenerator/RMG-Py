@@ -84,7 +84,7 @@ of the species before computing the collision frequency.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.calculate_density_of_states">
-<span class="sig-name descname"><span class="pre">calculate_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_j_rotor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_k_rotor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmgmode</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">calculate_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_j_rotor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">active_k_rotor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rmgmode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.calculate_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calculate the density (and sum) of states for the configuration at the
 given energies above the ground state <cite>e_list</cite> in J/mol. The
 <cite>active_j_rotor</cite> and <cite>active_k_rotor</cite> flags control whether the J-rotor
@@ -101,7 +101,7 @@ arrays are stored on the object for future use.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.generate_collision_matrix">
-<span class="sig-name descname"><span class="pre">generate_collision_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.generate_collision_matrix" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_collision_matrix</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">T</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dens_states</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.generate_collision_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the collisional energy transfer probabilities matrix for the
 configuration at the given temperature <cite>T</cite> in K using the given
 energies <cite>e_list</cite> in kJ/mol and total angular momentum quantum numbers
@@ -179,7 +179,7 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.map_density_of_states">
-<span class="sig-name descname"><span class="pre">map_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_density_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">map_density_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_density_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>e_list</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>j_list</cite>.</p>
@@ -187,7 +187,7 @@ total angular momentum quantum numbers <cite>j_list</cite>.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.pdep.Configuration.map_sum_of_states">
-<span class="sig-name descname"><span class="pre">map_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_sum_of_states" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">map_sum_of_states</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">e_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">j_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.pdep.Configuration.map_sum_of_states" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a mapping of the density of states for the configuration to the
 given energies <cite>e_list</cite> in J/mol and, if the J-rotor is not active, the
 total angular momentum quantum numbers <cite>j_list</cite>.</p>

@@ -156,7 +156,7 @@ attributes of the copy will not affect the original.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.count_bonds">
-<span class="sig-name descname"><span class="pre">count_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wildcards</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.count_bonds" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">count_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">wildcards</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.count_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns: list of the number of bonds currently on the :class:GroupAtom</p>
 <p>If the argument wildcards is turned off then any bonds with multiple
 options for bond orders will not be counted</p>
@@ -164,7 +164,7 @@ options for bond orders will not be counted</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.GroupAtom.equivalent">
-<span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.equivalent" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">equivalent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.GroupAtom.equivalent" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is equivalent to <cite>self</cite> or <code class="docutils literal notranslate"><span class="pre">False</span></code> if not,
 where <cite>other</cite> can be either an <a class="reference internal" href="atom.html#rmgpy.molecule.Atom" title="rmgpy.molecule.Atom"><code class="xref py py-class docutils literal notranslate"><span class="pre">Atom</span></code></a> or an <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupAtom</span></code></a>
 object. When comparing two <a class="reference internal" href="#rmgpy.molecule.GroupAtom" title="rmgpy.molecule.GroupAtom"><code class="xref py py-class docutils literal notranslate"><span class="pre">GroupAtom</span></code></a> objects, this function

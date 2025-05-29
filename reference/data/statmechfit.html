@@ -179,7 +179,7 @@ constrains: <span class="math notranslate nohighlight">\(J_{ij}^\prime = \frac{\
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.DirectFit.initialize">
-<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Neq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ncons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">told</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><p><cite>Neq</cite> - The number of algebraic equations.</p></li>
@@ -210,7 +210,7 @@ error.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.DirectFit.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.DirectFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
 set of nonlinear algebraic equations defined by the <a class="reference internal" href="#rmgpy.data.statmechfit.DirectFit.evaluate" title="rmgpy.data.statmechfit.DirectFit.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate()</span></code></a>
 method of the derived class. This is the method that actually conducts
@@ -279,7 +279,7 @@ constrains: <span class="math notranslate nohighlight">\(J_{ij}^\prime = \frac{\
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoRotorFit.initialize">
-<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Neq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ncons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">told</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><p><cite>Neq</cite> - The number of algebraic equations.</p></li>
@@ -310,7 +310,7 @@ error.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoRotorFit.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoRotorFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
 set of nonlinear algebraic equations defined by the <a class="reference internal" href="#rmgpy.data.statmechfit.PseudoRotorFit.evaluate" title="rmgpy.data.statmechfit.PseudoRotorFit.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate()</span></code></a>
 method of the derived class. This is the method that actually conducts
@@ -379,7 +379,7 @@ constrains: <span class="math notranslate nohighlight">\(J_{ij}^\prime = \frac{\
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoFit.initialize">
-<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">initialize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">Neq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Nvars</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Ncons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bounds</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">told</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolx</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">maxIter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Initialize the DQED solver. The required parameters are:</p>
 <ul class="simple">
 <li><p><cite>Neq</cite> - The number of algebraic equations.</p></li>
@@ -410,7 +410,7 @@ error.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.data.statmechfit.PseudoFit.solve">
-<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.solve" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">solve</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.data.statmechfit.PseudoFit.solve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Using the initial guess <cite>x0</cite>, return the least-squares solution to the
 set of nonlinear algebraic equations defined by the <a class="reference internal" href="#rmgpy.data.statmechfit.PseudoFit.evaluate" title="rmgpy.data.statmechfit.PseudoFit.evaluate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">evaluate()</span></code></a>
 method of the derived class. This is the method that actually conducts

@@ -196,7 +196,7 @@ includes both external and internal modes.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.connect_the_dots">
-<span class="sig-name descname"><span class="pre">connect_the_dots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">critical_distance_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.connect_the_dots" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">connect_the_dots</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">critical_distance_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.connect_the_dots" title="Permalink to this definition">¶</a></dt>
 <dd><p>Delete all bonds, and set them again based on the Atoms’ coords.
 Does not detect bond type.</p>
 </dd></dl>
@@ -216,7 +216,7 @@ Does not detect bond type.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.copy">
-<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.copy" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">deep</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.copy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create a copy of the current graph. If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">True</span></code>, a deep copy
 is made: copies of the vertices and edges are used in the new graph.
 If <cite>deep</cite> is <code class="docutils literal notranslate"><span class="pre">False</span></code> or not specified, a shallow copy is made: the
@@ -290,7 +290,7 @@ the following constraints:</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.find_isomorphism">
-<span class="sig-name descname"><span class="pre">find_isomorphism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.find_isomorphism" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_isomorphism</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.find_isomorphism" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise, and the matching mapping. The <cite>initialMap</cite> attribute can be
 used to specify a required mapping from <cite>self</cite> to <cite>other</cite> (i.e. the
@@ -311,7 +311,7 @@ be a <a class="reference internal" href="#rmgpy.molecule.Molecule" title="rmgpy.
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.find_subgraph_isomorphisms">
-<span class="sig-name descname"><span class="pre">find_subgraph_isomorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">find_subgraph_isomorphisms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.find_subgraph_isomorphisms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. Also returns the lists all of valid mappings. The
 <cite>initial_map</cite> attribute can be used to specify a required mapping from
@@ -335,7 +335,7 @@ the associated molecules to be isomorphic.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_adjacency_list">
-<span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturate_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_charge_exception</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_consistency</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">adjlist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">saturate_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_charge_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_consistency</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a string adjacency list <cite>adjlist</cite> to a molecular structure.
 Skips the first line (assuming it’s a label) unless <cite>withLabel</cite> is
 <code class="docutils literal notranslate"><span class="pre">False</span></code>.</p>
@@ -343,13 +343,13 @@ Skips the first line (assuming it’s a label) unless <cite>withLabel</cite> is
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_augmented_inchi">
-<span class="sig-name descname"><span class="pre">from_augmented_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aug_inchi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_augmented_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_augmented_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aug_inchi</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_augmented_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an Augmented InChI string <cite>aug_inchi</cite> to a molecular structure.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_inchi">
-<span class="sig-name descname"><span class="pre">from_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inchistr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inchistr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'openbabel-first'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert an InChI string <cite>inchistr</cite> to a molecular structure.</p>
 <p>RDKit and Open Babel are the two backends used in RMG. It is possible to use a
 single backend or try different backends in sequence. The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code>
@@ -358,7 +358,7 @@ argument: ‘openbabel-first’(default), ‘rdkit-first’, ‘rdkit’, or ‘
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_smarts">
-<span class="sig-name descname"><span class="pre">from_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smartsstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_smarts" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smartsstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_smarts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMARTS string <cite>smartsstr</cite> to a molecular structure. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
@@ -366,7 +366,7 @@ This Kekulizes everything, removing all aromatic atom types.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_smiles">
-<span class="sig-name descname"><span class="pre">from_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smilesstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_smiles" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smilesstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'openbabel-first'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_smiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMILES string <cite>smilesstr</cite> to a molecular structure.</p>
 <p>RDKit and Open Babel are the two backends used in RMG. It is possible to use a
 single backend or try different backends in sequence. The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code>
@@ -375,7 +375,7 @@ argument: ‘openbabel-first’(default), ‘rdkit-first’, ‘rdkit’, or ‘
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_xyz">
-<span class="sig-name descname"><span class="pre">from_xyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomic_nums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critical_distance_factor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_xyz" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">from_xyz</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">atomic_nums</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coordinates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">critical_distance_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.45</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_xyz" title="Permalink to this definition">¶</a></dt>
 <dd><p>Create an RMG molecule from a list of coordinates and a corresponding
 list of atomic numbers. These are typically received from CCLib and the
 molecule is sent to <cite>ConnectTheDots</cite> so will only contain single bonds.</p>
@@ -400,7 +400,7 @@ structures grows 2^n where n is the number of possible H-bonds</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.generate_resonance_structures">
-<span class="sig-name descname"><span class="pre">generate_resonance_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keep_isomorphic</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_structures</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">generate_resonance_structures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">keep_isomorphic</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filter_structures</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.generate_resonance_structures" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a list of resonance structures of the molecule.</p>
 </dd></dl>
 
@@ -469,7 +469,7 @@ same label, the value is converted to a list of these atoms.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_aromatic_rings">
-<span class="sig-name descname"><span class="pre">get_aromatic_rings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_aromatic_rings" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_aromatic_rings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_aromatic_rings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all aromatic rings as a list of atoms and a list of bonds.</p>
 <p>Identifies rings using <cite>Graph.get_smallest_set_of_smallest_rings()</cite>, then uses RDKit to perceive aromaticity.
 RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel’s Rule.
@@ -551,7 +551,7 @@ Takes the RC and recursively merges all cycles which share vertices.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_edges_in_cycle">
-<span class="sig-name descname"><span class="pre">get_edges_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_edges_in_cycle" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_edges_in_cycle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_edges_in_cycle" title="Permalink to this definition">¶</a></dt>
 <dd><p>For a given list of atoms comprising a ring, return the set of bonds
 connecting them, in order around the ring.</p>
 <p>If <cite>sort=True</cite>, then sort the vertices to match their connectivity.
@@ -618,7 +618,7 @@ on the overall molecule.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_nth_neighbor">
-<span class="sig-name descname"><span class="pre">get_nth_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starting_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_nth_neighbor" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_nth_neighbor</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">starting_atoms</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_list</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_nth_neighbor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Recursively get the Nth nonHydrogen neighbors of the starting_atoms, and return them in a list.
 <cite>starting_atoms</cite> is a list of :class:Atom for which we will get the nth neighbor.
 <cite>distance_list</cite> is a list of integers, corresponding to the desired neighbor distances.
@@ -628,7 +628,7 @@ on the overall molecule.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_num_atoms">
-<span class="sig-name descname"><span class="pre">get_num_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_num_atoms" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">get_num_atoms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">element</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_num_atoms" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the number of atoms in molecule.  If element is given, ie. “H” or “C”,
 the number of atoms of that element is returned.</p>
 </dd></dl>
@@ -783,7 +783,7 @@ will not fail for fused aromatic rings.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_aryl_radical">
-<span class="sig-name descname"><span class="pre">is_aryl_radical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aromatic_rings</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_aryl_radical" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_aryl_radical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">aromatic_rings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_aryl_radical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the molecule only contains aryl radicals,
 i.e., radical on an aromatic ring, or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.
 If no <code class="docutils literal notranslate"><span class="pre">aromatic_rings</span></code> provided, aromatic rings will be searched in-place,
@@ -833,7 +833,7 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_identical">
-<span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_identical" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_identical</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_identical" title="Permalink to this definition">¶</a></dt>
 <dd><p>Performs isomorphism checking, with the added constraint that atom IDs must match.</p>
 <p>Primary use case is tracking atoms in reactions for reaction degeneracy determination.</p>
 <p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two graphs are identical and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
@@ -842,7 +842,7 @@ is in one or more cycles in the graph, or <code class="xref py py-data docutils 
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_isomorphic">
-<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if two graphs are isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. The <cite>initialMap</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
@@ -870,7 +870,7 @@ otherwise.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_mapping_valid">
-<span class="sig-name descname"><span class="pre">is_mapping_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equivalent</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_mapping_valid" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_mapping_valid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mapping</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">equivalent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_mapping_valid" title="Permalink to this definition">¶</a></dt>
 <dd><p>Check that a proposed <cite>mapping</cite> of vertices from <cite>self</cite> to <cite>other</cite>
 is valid by checking that the vertices and edges involved in the
 mapping are mutually equivalent.  If equivalent is <code class="docutils literal notranslate"><span class="pre">True</span></code> it checks
@@ -901,7 +901,7 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.is_subgraph_isomorphic">
-<span class="sig-name descname"><span class="pre">is_subgraph_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">is_subgraph_isomorphic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">generate_initial_map</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.is_subgraph_isomorphic" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="xref py py-data docutils literal notranslate"><span class="pre">True</span></code> if <cite>other</cite> is subgraph isomorphic and <code class="xref py py-data docutils literal notranslate"><span class="pre">False</span></code>
 otherwise. The <cite>initial_map</cite> attribute can be used to specify a required
 mapping from <cite>self</cite> to <cite>other</cite> (i.e. the atoms of <cite>self</cite> are the keys,
@@ -988,7 +988,7 @@ removal.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.replace_halogen_with_hydrogen">
-<span class="sig-name descname"><span class="pre">replace_halogen_with_hydrogen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.replace_halogen_with_hydrogen" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">replace_halogen_with_hydrogen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.replace_halogen_with_hydrogen" title="Permalink to this definition">¶</a></dt>
 <dd><p>Replace all halogens in a molecule with hydrogen atoms. Changes self molecule object.</p>
 </dd></dl>
 
@@ -1008,13 +1008,13 @@ if you saved the order</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.saturate_radicals">
-<span class="sig-name descname"><span class="pre">saturate_radicals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.saturate_radicals" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">saturate_radicals</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.saturate_radicals" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saturate the molecule by replacing all radicals with bonds to hydrogen atoms.  Changes self molecule object.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.saturate_unfilled_valence">
-<span class="sig-name descname"><span class="pre">saturate_unfilled_valence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.saturate_unfilled_valence" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">saturate_unfilled_valence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">update</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.saturate_unfilled_valence" title="Permalink to this definition">¶</a></dt>
 <dd><p>Saturate the molecule by adding H atoms to any unfilled valence</p>
 </dd></dl>
 
@@ -1045,7 +1045,7 @@ Warning: Assumes that the cycle is elementary, ie. no bridges.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.sort_vertices">
-<span class="sig-name descname"><span class="pre">sort_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_order</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.sort_vertices" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">sort_vertices</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.sort_vertices" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sort the vertices in the graph. This can make certain operations, e.g.
 the isomorphism functions, much more efficient.</p>
 </dd></dl>
@@ -1065,13 +1065,13 @@ unconnected molecules into separate class:<cite>Molecule</cite> objects.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_adjacency_list">
-<span class="sig-name descname"><span class="pre">to_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_h</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_lone_pairs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_style</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_adjacency_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_h</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">remove_lone_pairs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">old_style</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_adjacency_list" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the molecular structure to a string adjacency list.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_augmented_inchi">
-<span class="sig-name descname"><span class="pre">to_augmented_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_augmented_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_augmented_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rdkit-first'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_augmented_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds an extra layer to the InChI denoting the multiplicity
 of the molecule.</p>
 <p>Separate layer with a forward slash character.</p>
@@ -1082,7 +1082,7 @@ argument: ‘rdkit-first’(default), ‘openbabel-first’, ‘rdkit’, or ‘
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_augmented_inchi_key">
-<span class="sig-name descname"><span class="pre">to_augmented_inchi_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_augmented_inchi_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rdkit-first'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_augmented_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Adds an extra layer to the InChIKey denoting the multiplicity
 of the molecule.</p>
 <p>Simply append the multiplicity string, do not separate by a
@@ -1100,7 +1100,7 @@ argument: ‘rdkit-first’(default), ‘openbabel-first’, ‘rdkit’, or ‘
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_inchi">
-<span class="sig-name descname"><span class="pre">to_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rdkit-first'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI string. Uses
 <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity.</p>
@@ -1114,7 +1114,7 @@ The available options for the <code class="docutils literal notranslate"><span c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_inchi_key">
-<span class="sig-name descname"><span class="pre">to_inchi_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi_key" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_inchi_key</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rdkit-first'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi_key" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI Key string. Uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 <p>or</p>
@@ -1133,7 +1133,7 @@ The available options for the <code class="docutils literal notranslate"><span c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_single_bonds">
-<span class="sig-name descname"><span class="pre">to_single_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_single_bonds" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_single_bonds</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_single_bonds" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a copy of the current molecule, consisting of only single bonds.</p>
 <p>This is useful for isomorphism comparison against something that was made
 via from_xyz, which does not attempt to perceive bond orders</p>
@@ -1162,7 +1162,7 @@ and removes Hydrogen atoms.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.update">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_atoms</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.update" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sort_atoms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.update" title="Permalink to this definition">¶</a></dt>
 <dd><p>Update the lone_pairs, charge, and atom types of atoms.
 Update multiplicity, and sort atoms (if <code class="docutils literal notranslate"><span class="pre">sort_atoms</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>)
 Does not necessarily update the connectivity values (which are used in isomorphism checks)
@@ -1171,7 +1171,7 @@ If you need that, call update_connectivity_values()</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.update_atomtypes">
-<span class="sig-name descname"><span class="pre">update_atomtypes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_species</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_exception</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.update_atomtypes" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">update_atomtypes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">log_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.update_atomtypes" title="Permalink to this definition">¶</a></dt>
 <dd><p>Iterate through the atoms in the structure, checking their atom types
 to ensure they are correct (i.e. accurately describe their local bond
 environment) and complete (i.e. are as detailed as possible).</p>
