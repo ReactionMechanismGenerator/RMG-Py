@@ -30,48 +30,69 @@
 """
 Contains classes for building RMS simulations
 """
-import numpy as np
-import sys
-import logging
 import itertools
-import rmgpy.constants as constants
+import logging
 
-if __debug__:
-    try:
-        from os.path import dirname, abspath, join, exists
+import numpy as np
 
-        path_rms = dirname(dirname(dirname(abspath(__file__))))
-        from julia.api import Julia
-
-        jl = Julia(sysimage=join(path_rms, "rms.so")) if exists(join(path_rms, "rms.so")) else Julia(compiled_modules=False)
-        from pyrms import rms
-        from diffeqpy import de
-        from julia import Main
-    except Exception as e:
-        import warnings
-
-        warnings.warn("Unable to import Julia dependencies, original error: " + str(e), RuntimeWarning)
-else:
-    from pyrms import rms
-    from diffeqpy import de
-    from julia import Main
-
-from rmgpy import constants
-from rmgpy.species import Species
+from rmgpy.data.solvation import SolventData
+from rmgpy.kinetics.arrhenius import (
+    Arrhenius,
+    ArrheniusChargeTransfer,
+    Marcus,
+    MultiArrhenius,
+    MultiPDepArrhenius,
+    PDepArrhenius,
+)
+from rmgpy.kinetics.chebyshev import Chebyshev
+from rmgpy.kinetics.falloff import Lindemann, ThirdBody, Troe
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceChargeTransfer
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.reaction import Reaction
-from rmgpy.thermo.nasa import NASAPolynomial, NASA
-from rmgpy.thermo.wilhoit import Wilhoit
+from rmgpy.solver.termination import (
+    TerminationConversion,
+    TerminationRateRatio,
+    TerminationTime,
+)
+from rmgpy.species import Species
+from rmgpy.thermo.nasa import NASA, NASAPolynomial
 from rmgpy.thermo.thermodata import ThermoData
-from rmgpy.kinetics.arrhenius import Arrhenius, ArrheniusEP, ArrheniusBM, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, ArrheniusChargeTransfer, Marcus
-from rmgpy.kinetics.kineticsdata import KineticsData
-from rmgpy.kinetics.falloff import Troe, ThirdBody, Lindemann
-from rmgpy.kinetics.chebyshev import Chebyshev
-from rmgpy.data.solvation import SolventData
-from rmgpy.kinetics.surface import StickingCoefficient, SurfaceChargeTransfer
-from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
-from rmgpy.data.kinetics.family import TemplateReaction
-from rmgpy.data.kinetics.depository import DepositoryReaction
+
+
+NO_JULIA = True
+try:
+    from juliacall import Main
+    Main.seval("using PythonCall")
+    Main.seval("using ReactionMechanismSimulator")
+    Main.seval("using ReactionMechanismSimulator.Sundials")
+    NO_JULIA = False
+except Exception as e:
+    logging.warning(f"Julia import failed, RMS reactors not available.\nException: {str(e)}\nStacktrace:\n{e.__traceback__}")
+
+
+def to_julia(obj):
+    """
+    Convert native Python object to julia object. If the object is a Python dict, it will be converted to a Julia Dict. If the object is a Python list, it will be converted to a Julia Vector. If the object is a 1-d numpy array, it will be converted to a Julia Array. If the object is a n-d (n > 1) numpy array, it will be converted to a Julia Matrix.
+    Otherwise, the object will be returned as is. Doesn't support RMG objects.
+
+    Parameters
+    ----------
+    obj : dict | list | np.ndarray | object
+        The native Python object to convert
+
+    Returns
+    -------
+    object : Main.Dict | Main.Vector | Main.Matrix | object
+        The Julia object
+    """
+    if isinstance(obj, dict):
+        return Main.PythonCall.pyconvert(Main.Dict, obj)
+    elif isinstance(obj, (list, np.ndarray)):
+        if getattr(obj, "shape", False) and len(obj.shape) > 1:
+            return Main.PythonCall.pyconvert(Main.Matrix, obj)
+        return Main.PythonCall.pyconvert(Main.Vector, obj)
+    else: # Other native Python project does not need special conversion.
+        return obj
 
 
 class PhaseSystem:
@@ -153,8 +174,11 @@ class PhaseSystem:
 
         rxnlist = []
         for i, rxn in enumerate(self.phases[phase_label].reactions):
-            if (spc.name in [spec.name for spec in rxn.reactants + rxn.products]) and all(
-                [spec.name in phasesys.species_dict for spec in rxn.reactants + rxn.products]
+            reactants = Main.pylist(rxn.reactants)
+            products = Main.pylist(rxn.products)
+            reacs_and_prods = reactants + products
+            if (spc.name in [spec.name for spec in reacs_and_prods]) and all(
+                [spec.name in phasesys.species_dict for spec in reacs_and_prods]
             ):
                 rxnlist.append(rxn)
 
@@ -168,8 +192,8 @@ class PhaseSystem:
             for i, rxn in enumerate(interface.reactions):
                 if (
                     (spc in rxn.reactants or spc in rxn.products)
-                    and all([spec in phasesys.interfaces[key].species for spec in rxn.reactants])
-                    and all([spec in phasesys.interfaces[key].species for spec in rxn.products])
+                    and all(spec.name in phasesys.species_dict for spec in rxn.reactants)
+                    and all(spec.name in phasesys.species_dict for spec in rxn.products)
                 ):
                     rxnlist.append(rxn)
 
@@ -422,7 +446,7 @@ class Reactor:
             max_edge_species_rate_ratios,
             t,
             x,
-        ) = rms.selectobjects(
+        ) = Main.selectobjects(
             core_react,
             edge_react,
             edge_domains,
@@ -448,7 +472,7 @@ class Reactor:
             model_settings.tol_rxn_to_core_deadend_radical,
             atol=simulator_settings.atol,
             rtol=simulator_settings.rtol,
-            solver=de.CVODE_BDF(),
+            solver=Main.Sundials.CVODE_BDF(linear_solver=Main.Symbol("GMRES")),
         )
 
         return (
@@ -473,9 +497,9 @@ class ConstantVIdealGasReactor(Reactor):
         Setup an RMS simulation for EdgeAnalysis
         """
         phase = phase_system.phases["Default"]
-        ig = rms.IdealGas(phase.species, phase.reactions)
-        domain, y0, p = rms.ConstantVDomain(phase=ig, initialconds=self.initial_conditions)
-        react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
+        ig = Main.IdealGas(phase.species, phase.reactions)
+        domain, y0, p = Main.ConstantVDomain(phase=ig, initialconds=to_julia(self.initial_conditions))
+        react = Main.Reactor(domain, y0, (0.0, self.tf), p=p)
         return react, domain, [], p
 
 
@@ -491,31 +515,33 @@ class ConstantTLiquidSurfaceReactor(Reactor):
         surf = phase_system.phases["Surface"]
         interface = list(phase_system.interfaces.values())[0]
         if "mu" in self.initial_conditions["liquid"].keys():
-            solv = rms.Solvent("solvent",rms.ConstantViscosity(self.initial_conditions["liquid"]["mu"]))
+            solv = Main.Solvent("solvent", Main.ConstantViscosity(self.initial_conditions["liquid"]["mu"]))
             liq_initial_cond = self.initial_conditions["liquid"].copy()
             del liq_initial_cond["mu"]
         else:
             solv = liq.solvent
             liq_initial_cond = self.initial_conditions["liquid"]
-        liq = rms.IdealDiluteSolution(liq.species, liq.reactions, solv, name="liquid",diffusionlimited=True)
-        surf = rms.IdealSurface(surf.species, surf.reactions, surf.site_density, name="surface")
+        liq = Main.IdealDiluteSolution(liq.species, liq.reactions, solv, name="liquid",diffusionlimited=True)
+        surf = Main.IdealSurface(surf.species, surf.reactions, surf.site_density, name="surface")
         liq_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in liq.species]]
         cat_constant_species = [cspc for cspc in self.const_spc_names if cspc in [spc.name for spc in surf.species]]
-        domainliq,y0liq,pliq = rms.ConstantTVDomain(phase=liq,initialconds=liq_initial_cond,constantspecies=liq_constant_species)
-        domaincat,y0cat,pcat  = rms.ConstantTAPhiDomain(phase=surf,initialconds=self.initial_conditions["surface"],constantspecies=cat_constant_species)
+        domainliq, y0liq, pliq = Main.ConstantTVDomain(phase=liq, initialconds=to_julia(liq_initial_cond), constantspecies=to_julia(liq_constant_species))
+        domaincat, y0cat, pcat = Main.ConstantTAPhiDomain(
+            phase=surf, initialconds=to_julia(self.initial_conditions["surface"]), constantspecies=to_julia(cat_constant_species),
+        )
         if interface.reactions == []:
-            inter, pinter = rms.ReactiveInternalInterfaceConstantTPhi(
+            inter, pinter = Main.ReactiveInternalInterfaceConstantTPhi(
                 domainliq,
                 domaincat,
-                Main.eval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),
+                Main.seval("using ReactionMechanismSimulator; Vector{ElementaryReaction}()"),
                 self.initial_conditions["liquid"]["T"],
                 self.initial_conditions["surface"]["A"],
             )
         else:
-            inter, pinter = rms.ReactiveInternalInterfaceConstantTPhi(
+            inter, pinter = Main.ReactiveInternalInterfaceConstantTPhi(
                 domainliq, domaincat, interface.reactions, self.initial_conditions["liquid"]["T"], self.initial_conditions["surface"]["A"]
             )
-        react, y0, p = rms.Reactor((domainliq, domaincat), (y0liq, y0cat), (0.0, self.tf), (inter,), (pliq, pcat, pinter))
+        react, y0, p = Main.Reactor((domainliq, domaincat), (y0liq, y0cat), (0.0, self.tf), (inter,), (pliq, pcat, pinter))
         return react, (domainliq, domaincat), (inter,), p
 
 
@@ -542,27 +568,27 @@ class ConstantTVLiquidReactor(Reactor):
         Setup an RMS simulation for EdgeAnalysis
         """
         phase = phase_system.phases["Default"]
-        liq = rms.IdealDiluteSolution(phase.species, phase.reactions, phase.solvent)
-        domain, y0, p = rms.ConstantTVDomain(phase=liq, initialconds=self.initial_conditions, constantspecies=self.const_spc_names)
+        liq = Main.IdealDiluteSolution(phase.species, phase.reactions, phase.solvent)
+        domain, y0, p = Main.ConstantTVDomain(phase=liq, initialconds=to_julia(self.initial_conditions), constantspecies=to_julia(self.const_spc_names))
 
         interfaces = []
 
         if self.inlet_conditions:
             inlet_conditions = {key: value for (key, value) in self.inlet_conditions.items() if key != "F"}
             total_molar_flow_rate = self.inlet_conditions["F"]
-            inlet = rms.Inlet(domain, inlet_conditions, Main.eval("x->" + str(total_molar_flow_rate)))
+            inlet = Main.Inlet(domain, to_julia(inlet_conditions), Main.seval("x->" + str(total_molar_flow_rate)))
             interfaces.append(inlet)
 
         if self.outlet_conditions:
             total_volumetric_flow_rate = self.outlet_conditions["Vout"]
-            outlet = rms.VolumetricFlowRateOutlet(domain, Main.eval("x->" + str(total_volumetric_flow_rate)))
+            outlet = Main.VolumetricFlowRateOutlet(domain, Main.seval("x->" + str(total_volumetric_flow_rate)))
             interfaces.append(outlet)
 
         if self.evap_cond_conditions:
-            kLA_kH_evap_cond = rms.kLAkHCondensationEvaporationWithReservoir(domain, self.evap_cond_conditions)
+            kLA_kH_evap_cond = Main.kLAkHCondensationEvaporationWithReservoir(domain, self.evap_cond_conditions)
             interfaces.append(kLA_kH_evap_cond)
 
-        react = rms.Reactor(domain, y0, (0.0, self.tf), interfaces, p=p)
+        react = Main.Reactor(domain, y0, (0.0, self.tf), interfaces, p=p)
         return react, domain, interfaces, p
 
 
@@ -577,9 +603,9 @@ class ConstantTPIdealGasReactor(Reactor):
         Setup an RMS simulation for EdgeAnalysis
         """
         phase = phase_system.phases["Default"]
-        ig = rms.IdealGas(phase.species, phase.reactions)
-        domain, y0, p = rms.ConstantTPDomain(phase=ig, initialconds=self.initial_conditions)
-        react = rms.Reactor(domain, y0, (0.0, self.tf), p=p)
+        ig = Main.IdealGas(phase.species, phase.reactions)
+        domain, y0, p = Main.ConstantTPDomain(phase=ig, initialconds=to_julia(self.initial_conditions))
+        react = Main.Reactor(domain, y0, (0.0, self.tf), p=p)
         return react, domain, [], p
 
 
@@ -596,7 +622,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
             A = obj._A.value_si
         n = obj._n.value_si
         Ea = obj._Ea.value_si
-        return rms.Arrhenius(A, n, Ea, rms.EmptyRateUncertainty())
+        return Main.Arrhenius(A, n, Ea, Main.EmptyRateUncertainty())
     elif isinstance(obj, ArrheniusChargeTransfer):
         A = obj._A.value_si
         if obj._T0.value_si != 1.0:
@@ -605,7 +631,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         Ea = obj._Ea.value_si
         q = obj._alpha.value_si*obj._electrons.value_si
         V0 = obj._V0.value_si
-        return rms.Arrheniusq(A, n, Ea, q, V0, rms.EmptyRateUncertainty())
+        return Main.Arrheniusq(A, n, Ea, q, V0, Main.EmptyRateUncertainty())
     elif isinstance(obj, SurfaceChargeTransfer):
         A = obj._A.value_si
         if obj._T0.value_si != 1.0:
@@ -614,28 +640,28 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         Ea = obj._Ea.value_si
         q = obj._alpha.value_si*obj._electrons.value_si
         V0 = obj._V0.value_si
-        return rms.Arrheniusq(A, n, Ea, q, V0, rms.EmptyRateUncertainty())
+        return Main.Arrheniusq(A, n, Ea, q, V0, Main.EmptyRateUncertainty())
     elif isinstance(obj, Marcus):
         A = obj._A.value_si
         n = obj._n.value_si
-        return rms.Marcus(A,n,obj._lmbd_i_coefs.value_si,obj._lmbd_o.value_si, obj._wr.value_si, obj._wp.value_si, obj._beta.value_si, rms.EmptyRateUncertainty())
+        return Main.Marcus(A,n,obj._lmbd_i_coefs.value_si,obj._lmbd_o.value_si, obj._wr.value_si, obj._wp.value_si, obj._beta.value_si, Main.EmptyRateUncertainty())
     elif isinstance(obj, PDepArrhenius):
-        Ps = obj._pressures.value_si
-        arrs = [to_rms(arr) for arr in obj.arrhenius]
-        return rms.PdepArrhenius(Ps, arrs, rms.EmptyRateUncertainty())
+        Ps = to_julia(obj._pressures.value_si)
+        arrs = to_julia([to_rms(arr) for arr in obj.arrhenius])
+        return Main.PdepArrhenius(Ps, arrs, Main.EmptyRateUncertainty())
     elif isinstance(obj, MultiArrhenius):
-        arrs = [to_rms(arr) for arr in obj.arrhenius]
-        return rms.MultiArrhenius(arrs, rms.EmptyRateUncertainty())
+        arrs = to_julia([to_rms(arr) for arr in obj.arrhenius])
+        return Main.MultiArrhenius(arrs, Main.EmptyRateUncertainty())
     elif isinstance(obj, MultiPDepArrhenius):
-        parrs = [to_rms(parr) for parr in obj.arrhenius]
-        return rms.MultiPdepArrhenius(parrs, rms.EmptyRateUncertainty())
+        parrs = to_julia([to_rms(parr) for parr in obj.arrhenius])
+        return Main.MultiPdepArrhenius(parrs, Main.EmptyRateUncertainty())
     elif isinstance(obj, Chebyshev):
         Tmin = obj.Tmin.value_si
         Tmax = obj.Tmax.value_si
         Pmin = obj.Pmin.value_si
         Pmax = obj.Pmax.value_si
-        coeffs = obj.coeffs.value_si.tolist()
-        return rms.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax)
+        coeffs = to_julia(obj.coeffs.value_si)
+        return Main.Chebyshev(coeffs, Tmin, Tmax, Pmin, Pmax)
     elif isinstance(obj, ThirdBody):
         arrstr = arrhenius_to_julia_string(obj.arrheniusLow)
         efficiencies = {rmg_species[i].label: float(val) for i, val in enumerate(obj.get_effective_collider_efficiencies(rmg_species)) if val != 1}
@@ -643,7 +669,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         for key, value in efficiencies.items():
             dstr += '"' + key + '"' "=>" + str(value) + ","
         dstr += "])"
-        return Main.eval(
+        return Main.seval(
             "using ReactionMechanismSimulator; ThirdBody(" + arrstr + ", Dict{Int64,Float64}([]), " + dstr + "," + "EmptyRateUncertainty())"
         )
     elif isinstance(obj, Lindemann):
@@ -654,7 +680,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         for key, value in efficiencies.items():
             dstr += '"' + key + '"' "=>" + str(value) + ","
         dstr += "])"
-        return Main.eval(
+        return Main.seval(
             "using ReactionMechanismSimulator; Lindemann("
             + arrhigh
             + ","
@@ -677,7 +703,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         for key, value in efficiencies.items():
             dstr += '"' + key + '"' "=>" + str(value) + ","
         dstr += "])"
-        return Main.eval(
+        return Main.seval(
             "using ReactionMechanismSimulator; Troe("
             + arrhigh
             + ","
@@ -703,11 +729,11 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
             A = obj._A.value_si
         n = obj._n.value_si
         Ea = obj._Ea.value_si
-        return rms.StickingCoefficient(A, n, Ea, rms.EmptyRateUncertainty())
+        return Main.StickingCoefficient(A, n, Ea, Main.EmptyRateUncertainty())
     elif isinstance(obj, NASAPolynomial):
-        return rms.NASApolynomial(obj.coeffs, obj.Tmin.value_si, obj.Tmax.value_si)
+        return Main.NASApolynomial(obj.coeffs, obj.Tmin.value_si, obj.Tmax.value_si)
     elif isinstance(obj, NASA):
-        return rms.NASA([to_rms(poly) for poly in obj.polynomials], rms.EmptyThermoUncertainty())
+        return Main.NASA([to_rms(poly) for poly in obj.polynomials], Main.EmptyThermoUncertainty())
     elif isinstance(obj, Species):
 
         if isinstance(obj.molecule[0], Fragment):
@@ -722,24 +748,25 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
                 atomnums[atm.element.symbol] += 1
             else:
                 atomnums[atm.element.symbol] = 1
+        atomnums = to_julia(atomnums)
         bondnum = len(mol.get_all_edges())
 
         if not obj.molecule[0].contains_surface_site():
-            rad = rms.getspeciesradius(atomnums, bondnum)
-            diff = rms.StokesDiffusivity(rad)
+            rad = Main.getspeciesradius(atomnums, bondnum)
+            diff = Main.StokesDiffusivity(rad)
             th = obj.get_thermo_data()
             thermo = to_rms(th)
             if obj.henry_law_constant_data:
-                kH = rms.TemperatureDependentHenryLawConstant(Ts=obj.henry_law_constant_data.Ts, kHs=obj.henry_law_constant_data.kHs)
+                kH = Main.TemperatureDependentHenryLawConstant(Ts=to_julia(obj.henry_law_constant_data.Ts), kHs=to_julia(obj.henry_law_constant_data.kHs))
             else:
-                kH = rms.EmptyHenryLawConstant()
+                kH = Main.EmptyHenryLawConstant()
             if obj.liquid_volumetric_mass_transfer_coefficient_data:
-                kLA = rms.TemperatureDependentLiquidVolumetricMassTransferCoefficient(
-                    Ts=obj.liquid_volumetric_mass_transfer_coefficient_data.Ts, kLAs=obj.liquid_volumetric_mass_transfer_coefficient_data.kLAs
+                kLA = Main.TemperatureDependentLiquidVolumetricMassTransferCoefficient(
+                    Ts=to_julia(obj.liquid_volumetric_mass_transfer_coefficient_data.Ts), kLAs=to_julia(obj.liquid_volumetric_mass_transfer_coefficient_data.kLAs)
                 )
             else:
-                kLA = rms.EmptyLiquidVolumetricMassTransferCoefficient()
-            return rms.Species(
+                kLA = Main.EmptyLiquidVolumetricMassTransferCoefficient()
+            return Main.Species(
                 name=obj.label,
                 index=obj.index,
                 inchi="",
@@ -759,7 +786,7 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
         else:
             th = obj.get_thermo_data()
             thermo = to_rms(th)
-            return rms.Species(
+            return Main.Species(
                 name=obj.label,
                 index=obj.index,
                 inchi="",
@@ -768,33 +795,33 @@ def to_rms(obj, species_names=None, rms_species_list=None, rmg_species=None):
                 thermo=thermo,
                 atomnums=atomnums,
                 bondnum=bondnum,
-                diffusion=rms.EmptyDiffusivity(),
+                diffusion=Main.EmptyDiffusivity(),
                 radius=0.0,
                 radicalelectrons=obj.molecule[0].multiplicity - 1,
                 molecularweight=0.0,
-                henrylawconstant=rms.EmptyHenryLawConstant(),
-                liquidvolumetricmasstransfercoefficient=rms.EmptyLiquidVolumetricMassTransferCoefficient(),
+                henrylawconstant=Main.EmptyHenryLawConstant(),
+                liquidvolumetricmasstransfercoefficient=Main.EmptyLiquidVolumetricMassTransferCoefficient(),
                 comment=obj.thermo.comment,
             )
     elif isinstance(obj, Reaction):
-        reactantinds = [species_names.index(spc.label) for spc in obj.reactants]
-        productinds = [species_names.index(spc.label) for spc in obj.products]
-        reactants = [rms_species_list[i] for i in reactantinds]
-        products = [rms_species_list[i] for i in productinds]
+        reactantinds = to_julia([species_names.index(spc.label) for spc in obj.reactants])
+        productinds = to_julia([species_names.index(spc.label) for spc in obj.products])
+        reactants = to_julia([rms_species_list[i] for i in reactantinds])
+        products = to_julia([rms_species_list[i] for i in productinds])
         if isinstance(obj.kinetics, SurfaceChargeTransfer):
             obj.set_reference_potential(300)
         kinetics = to_rms(obj.kinetics, species_names=species_names, rms_species_list=rms_species_list, rmg_species=rmg_species)
         radchange = sum([spc.molecule[0].multiplicity-1 for spc in obj.products]) - sum([spc.molecule[0].multiplicity-1 for spc in obj.reactants])
         electronchange = -sum([spc.molecule[0].get_net_charge() for spc in obj.products]) + sum([spc.molecule[0].get_net_charge() for spc in obj.reactants])
-        return rms.ElementaryReaction(index=obj.index, reactants=reactants, reactantinds=reactantinds, products=products, productinds=productinds, kinetics=kinetics, electronchange=electronchange, radicalchange=radchange, reversible=obj.reversible, pairs=[], comment=obj.kinetics.comment)
+        return Main.ElementaryReaction(index=obj.index, reactants=reactants, reactantinds=reactantinds, products=products, productinds=productinds, kinetics=kinetics, electronchange=electronchange, radicalchange=radchange, reversible=obj.reversible, pairs=to_julia([]), comment=obj.kinetics.comment)
     elif isinstance(obj, SolventData):
-        return rms.Solvent("solvent", rms.RiedelViscosity(float(obj.A), float(obj.B), float(obj.C), float(obj.D), float(obj.E)))
+        return Main.Solvent("solvent", Main.RiedelViscosity(float(obj.A), float(obj.B), float(obj.C), float(obj.D), float(obj.E)))
     elif isinstance(obj, TerminationTime):
-        return rms.TerminationTime(obj.time.value_si)
+        return Main.TerminationTime(obj.time.value_si)
     elif isinstance(obj, TerminationConversion):
-        return rms.TerminationConversion(to_rms(obj.species), obj.conversion)
+        return Main.TerminationConversion(to_rms(obj.species), obj.conversion)
     elif isinstance(obj, TerminationRateRatio):
-        return rms.TerminationRateRatio(obj.ratio)
+        return Main.TerminationRateRatio(obj.ratio)
     elif isinstance(obj, tuple):  # Handle TerminationConversion when the obj doesn't have thermo yet
         return obj
     else:

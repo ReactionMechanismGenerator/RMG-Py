@@ -41,6 +41,7 @@ import os
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from urllib.parse import quote
+from operator import attrgetter
 
 import cython
 import numpy as np
@@ -61,6 +62,10 @@ from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.molecule.fragment import CuttingLabel
 
 ################################################################################
+
+# helper function for sorting
+def _skip_first(in_tuple):
+    return in_tuple[1:]
 
 bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
 
@@ -2550,30 +2555,21 @@ class Molecule(Graph):
         if rings is None:
             rings = self.get_relevant_cycles()
 
-        def filter_fused_rings(_rings):
-            """
-            Given a list of rings, remove ones which share more than 2 atoms.
-            """
-            cython.declare(toRemove=set, i=cython.int, j=cython.int, toRemoveSorted=list)
-
-            if len(_rings) < 2:
-                return _rings
-
+        # Remove rings that share more than 3 atoms, since they cannot be planar
+        cython.declare(toRemove=set, j=cython.int, toRemoveSorted=list)
+        if len(rings) < 2:
+            pass
+        else:
             to_remove = set()
-            for i, j in itertools.combinations(range(len(_rings)), 2):
-                if len(set(_rings[i]) & set(_rings[j])) > 2:
+            for i, j in itertools.combinations(range(len(rings)), 2):
+                if len(set(rings[i]) & set(rings[j])) > 2:
                     to_remove.add(i)
                     to_remove.add(j)
 
             to_remove_sorted = sorted(to_remove, reverse=True)
 
             for i in to_remove_sorted:
-                del _rings[i]
-
-            return _rings
-
-        # Remove rings that share more than 3 atoms, since they cannot be planar
-        rings = filter_fused_rings(rings)
+                del rings[i]
 
         # Only keep rings with exactly 6 atoms, since RMG can only handle aromatic benzene
         rings = [ring for ring in rings if len(ring) == 6]
@@ -2709,7 +2705,7 @@ class Molecule(Graph):
                     tup = (vertex, get_vertex_connectivity_value(vertex), -origin_conn_dict[vertex])
                     root_candidates_tups.append(tup)
 
-                root_vertex = sorted(root_candidates_tups, key=lambda tup0: tup0[1:], reverse=True)[0][0]
+                root_vertex = sorted(root_candidates_tups, key=_skip_first, reverse=True)[0][0]
 
                 # Get all cycles involving the root vertex
                 cycles = graph0.get_all_cycles(root_vertex)
@@ -2726,7 +2722,7 @@ class Molecule(Graph):
                            -sum([v.get_total_bond_order() for v in cycle0]))
                     cycle_candidate_tups.append(tup)
 
-                cycle = sorted(cycle_candidate_tups, key=lambda tup0: tup0[1:])[0][0]
+                cycle = sorted(cycle_candidate_tups, key=_skip_first)[0][0]
 
                 cycle_list.append(cycle)
 
@@ -2810,8 +2806,8 @@ class Molecule(Graph):
         if atom_ids == other_ids:
             # If the two molecules have the same indices, then they might be identical
             # Sort the atoms by ID
-            atom_list = sorted(self.atoms, key=lambda x: x.id)
-            other_list = sorted(other.atoms, key=lambda x: x.id)
+            atom_list = sorted(self.atoms, key=attrgetter('id'))
+            other_list = sorted(other.atoms, key=attrgetter('id'))
 
             # If matching atom indices gives a valid mapping, then the molecules are fully identical
             mapping = {}

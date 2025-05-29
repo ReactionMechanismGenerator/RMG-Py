@@ -3535,8 +3535,8 @@ class KineticsFamily(Database):
         entries = list(self.groups.entries.values())
         rxnlists = [(template_rxn_map[entry.label], entry.label)
                     if entry.label in template_rxn_map.keys() else [] for entry in entries]
-        inputs = np.array([(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
-                           for rxns, label in rxnlists])
+        inputs = [(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
+                           for rxns, label in rxnlists]
 
         inds = np.arange(len(inputs))
         np.random.shuffle(inds)  # want to parallelize in random order
@@ -3545,9 +3545,9 @@ class KineticsFamily(Database):
 
         if nprocs > 1:
             pool = mp.Pool(nprocs)
-            kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
+            kinetics_list = np.array(pool.map(_make_rule, list(inputs[i] for i in inds)))
         else:
-            kinetics_list = np.array(list(map(_make_rule, inputs[inds])))
+            kinetics_list = np.array(list(map(_make_rule, list(inputs[i] for i in inds))))
 
         kinetics_list = kinetics_list[revinds]  # fix order
 

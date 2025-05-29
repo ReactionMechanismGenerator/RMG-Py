@@ -22,19 +22,21 @@ jobs:
           git config --global user.email "github-actions@github.com"
 
       - name: Clone RMG-Py
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Setup Mambaforge Python 3.7
+      - name: Setup Miniforge Python 3.9
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
-          python-version: 3.7
+          python-version: "3.9"
           activate-environment: rmg_env
-          use-mamba: true
+          auto-update-conda: true
+          show-channel-urls: true
+          conda-remove-defaults: "true"
 
       - name: Make libtiff Symlink to Avoid Runner Bug
         run: | # This action may need to be removed/adjusted in future runs.
@@ -42,12 +44,12 @@ jobs:
           find /usr/lib -name libtiff*
 
       - name: Install sphinx
-        run: mamba install -y sphinx
+        run: conda install -y sphinx~=5.0
 
-      - name: Mamba info
+      - name: conda info
         run: |
-          mamba info
-          mamba list
+          conda info
+          conda list
 
       - name: Clone RMG-database
         run: |
@@ -64,12 +66,6 @@ jobs:
         run: |
           make clean
           make
-
-      - name: Install and link Julia dependencies
-        timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
-        run: |
-          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator'
 
       - name: Checkout gh-pages Branch
         uses: actions/checkout@v2

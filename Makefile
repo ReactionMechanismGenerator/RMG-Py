@@ -7,28 +7,13 @@
 CC=gcc
 CXX=g++
 
-.PHONY : all minimal main solver check pycheck arkane clean install decython documentation test q2dtor
+.PHONY : all check clean install decython documentation test q2dtor
 
-all: pycheck main solver check
-
-minimal:
-	python setup.py build_ext minimal --inplace --build-temp .
-
-main:
-	python setup.py build_ext main --inplace --build-temp .
-
-solver:
-	@ python utilities.py check-pydas
-	python setup.py build_ext solver --inplace --build-temp .
-
-arkane:
-	python setup.py build_ext arkane --inplace --build-temp .
+all: check install check
 
 check:
 	@ python utilities.py check-dependencies
-
-pycheck:
-	@ python utilities.py check-python
+	@ python utilities.py check-pydas
 
 documentation:
 	$(MAKE) -C documentation html
@@ -36,13 +21,14 @@ documentation:
 
 clean:
 	@ python utilities.py clean
+	python -m pip uninstall --yes reactionmechanismgenerator || true  # can fail if RMG not installed at all
 
 clean-solver:
 	@ python utilities.py clean-solver
 
 install:
 	@ python utilities.py check-pydas
-	python setup.py install
+	python -m pip install -vv -e .
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"
@@ -62,16 +48,16 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-	python-jl -m pytest
+	python -m pytest
 
 test test-unittests:
-	python-jl -m pytest -m "not functional and not database"
+	python -m pytest -m "not functional and not database"
 
 test-functional:
-	python-jl -m pytest -m "functional"
+	python -m pytest -m "functional"
 
 test-database:
-	python-jl -m pytest -m "database"
+	python -m pytest -m "database"
 
 eg0: all
 	mkdir -p testing/eg0

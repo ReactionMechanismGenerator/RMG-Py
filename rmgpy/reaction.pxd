@@ -38,6 +38,8 @@ cimport numpy as np
 
 ################################################################################
 
+cdef tuple get_sorting_key(spc)
+
 cdef class Reaction:
     cdef public int index
     cdef public str label
