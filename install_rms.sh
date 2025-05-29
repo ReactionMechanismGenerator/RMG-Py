@@ -53,6 +53,6 @@ conda activate $current_env
 
 conda install -y conda-forge::pyjuliacall
 
-julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/hwpang/ReactionMechanismSimulator.jl.git", rev="fix_installation")); using ReactionMechanismSimulator; Pkg.instantiate()' || echo "RMS install error - continuing anyway ¯\_(ツ)_/¯"
+julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git", rev="for_rmg")); using ReactionMechanismSimulator; Pkg.instantiate()' || echo "RMS install error - continuing anyway ¯\_(ツ)_/¯"
 
 python -c "from juliacall import Main; import sys; sys.exit(0 if Main.seval('Base.identify_package(\"ReactionMechanismSimulator\") !== nothing') and print('ReactionMechanismSimulator is installed in $current_env') is None else 1)"
