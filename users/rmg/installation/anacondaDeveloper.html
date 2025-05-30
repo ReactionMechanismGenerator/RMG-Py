@@ -64,11 +64,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="anacondadeveloper"></span><h1><span class="section-number">3.3.1. </span>Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX<a class="headerlink" href="#installation-by-source-using-anaconda-environment-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this heading">¶</a></h1>
 <ol class="arabic">
 <li><p>Install the <cite>conda</cite> package manager via <cite>miniforge</cite>, if you do not already have it (or Anaconda), by following the <a class="reference external" href="https://github.com/conda-forge/miniforge?tab=readme-ov-file#install">Miniforge installation instructions</a>.</p></li>
-<li><p>If your <cite>conda</cite> version is older than 23.10.0, manually switch the solver backend to <a href="#id1"><span class="problematic" id="id2">`</span></a>libmamba`(or update your conda):</p>
-<aside class="system-message" id="id1">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/installation/anacondaDeveloper.rst</span>, line 9); <em><a href="#id2">backlink</a></em></p>
-<p>Inline interpreted text or phrase reference start-string without end-string.</p>
-</aside>
+<li><p>If your <cite>conda</cite> version is older than 23.10.0, manually switch the solver backend to <cite>libmamba</cite> (or update your conda):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="n">conda</span><span class="o">-</span><span class="n">libmamba</span><span class="o">-</span><span class="n">solver</span>
 <span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">solver</span> <span class="n">libmamba</span>
 </pre></div>
