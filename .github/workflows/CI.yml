@@ -261,7 +261,6 @@ jobs:
           conda activate rmg_env_without_rms
           
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
-          touch checkModels.log
           mkdir -p "test/regression-diff"
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
@@ -284,7 +283,7 @@ jobs:
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_annotated.inp \
-                test/regression/"$regr_test"/chemkin/species_dictionary.txt &> checkModels.log
+                test/regression/"$regr_test"/chemkin/species_dictionary.txt &> checkModels.err
             then
               echo "<summary>$regr_test Passed Core Comparison ✅</summary>"
             else
@@ -295,13 +294,19 @@ jobs:
             echo "" # blank line so next block is interpreted as markdown
             cat "$regr_test-core.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-core.log")
             echo "</details>"
+            if [ -s checkModels.err ]; then
+              echo "<details>"
+              echo "<summary>Errors occurred during core comparison ⚠️</summary>"
+              cat checkModels.err
+              echo "</details>"
+            fi
             echo "<details>"
             if python scripts/checkModels.py \
                 "$regr_test-edge" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
-                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt &> checkModels.log
+                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt &> checkModels.err
             then
               echo "<summary>$regr_test Passed Edge Comparison ✅</summary>"
             else
@@ -310,8 +315,14 @@ jobs:
               export FAILED=Yes
             fi
             echo "" # blank line so next block is interpreted as markdown
-            cat "$regr_test-edge.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-core.log")
+            cat "$regr_test-edge.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-edge.log")
             echo "</details>"
+            if [ -s checkModels.err ]; then
+              echo "<details>"
+              echo "<summary>Errors occurred during edge comparison ⚠️</summary>"
+              cat checkModels.err
+              echo "</details>"
+            fi
 
             # Check for Regression between Reference and Dynamic (skip superminimal)
             if [ -f test/regression/"$regr_test"/regression_input.py ];
@@ -320,7 +331,7 @@ jobs:
               if python rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
-                test/regression/"$regr_test"/chemkin &> checkModels.log
+                test/regression/"$regr_test"/chemkin 2> regression.py.err
               then
                 echo "<summary>$regr_test Passed Observable Testing ✅</summary>"
               else
@@ -328,6 +339,12 @@ jobs:
                 export FAILED=Yes
               fi
               echo "</details>"
+              if [ -s regression.py.err ]; then
+                echo "<details>"
+                echo "<summary>Errors occurred during observable testing ⚠️</summary>"
+                cat regression.py.err
+                echo "</details>"
+              fi
             fi
             echo ""
           done
@@ -349,18 +366,13 @@ jobs:
           cat regression.stdout >> summary.txt
           echo "</details>" >> summary.txt
           echo "" >> summary.txt
-          echo "<details>" >> summary.txt
-          echo "<summary>Debugging info for `checkModels.py` (if any).</summary>" >> summary.txt
-          cat checkModels.log >> summary.txt
-          echo "</details>" >> summary.txt
-          echo "" >> summary.txt
           echo "_beep boop this comment was written by a bot_ :robot:" >> summary.txt
           cat summary.txt > $GITHUB_STEP_SUMMARY
 
       - name: Upload regression summary artifact
-       # the annotate workflow uses this artifact to add a comment to the PR
+        # the annotate workflow uses this artifact to add a comment to the PR
         uses: actions/upload-artifact@v4
-        if : ${{ github.event_name == 'pull_request' }}
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           name: regression_summary
           path: summary.txt
