@@ -179,3 +179,42 @@ def swap(to_be_swapped, sample):
     new_partner = (to_be_swapped - sample).pop()
 
     return central, original, new_partner
+
+def generate_closed_shell_singlet(m: Molecule):Add commentMore actions
+    for i in range(len(m.atoms)):
+            m.atoms[i].id = i
+    assert m.multiplicity == 1 and m.get_radical_count()>0
+    radical_center_ids = [x.id for x in m.atoms if x.radical_electrons > 0]
+    # remove radicals from radical centers (2)
+    for radical_center_id in radical_center_ids:
+        m.atoms[radical_center_id].decrement_radical()
+    # add removed radicals (2) to one of the radical sites as a lone pair (1)
+    m.atoms[radical_center_ids[0]].increment_lone_pairs()
+    # pick the best resonance structure
+    print([x.smiles for x in m.generate_resonance_structures()])
+    return m.generate_resonance_structures()[0]
+
+def generate_singlet_diradicals(m: Molecule):
+    for i in range(len(m.atoms)):
+        m.atoms[i].id = i
+    
+    singlet_diradicals = [] 
+    for edge in m.get_all_edges():
+        
+        M = m.copy(deep=True) 
+        if edge.get_order_num() > 1: # find a pi bond
+            atom1_id = edge.atom1.id
+            atom2_id = edge.atom2.id
+            M.atoms[atom1_id].increment_radical()  # add a radical to each atom of the pi bond
+            M.atoms[atom2_id].increment_radical()
+            M.get_bond(M.atoms[atom1_id], M.atoms[atom2_id]).decrement_order() # remove 1 pi bond
+            potential_singlet_diradicals = M.generate_resonance_structures()  # generate resonance structures
+            
+            for potential_singlet_diradical in potential_singlet_diradicals: # find all resonance structures with non-neighboring radical sites
+                radical_center_ids = sorted([x.id for x in potential_singlet_diradical.atoms if x.radical_electrons==1]) 
+                potential_singlet_diradical_edges = potential_singlet_diradical.get_all_edges()
+                potential_singlet_diradical_edge_ids = [sorted([x.atom1.id, x.atom2.id]) for x in potential_singlet_diradical_edges]
+                if radical_center_ids not in potential_singlet_diradical_edge_ids:
+                    if potential_singlet_diradical not in singlet_diradicals:
+                        singlet_diradicals.append(potential_singlet_diradical)Add commentMore actions
+    return singlet_diradicals

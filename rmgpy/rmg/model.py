@@ -864,7 +864,9 @@ class CoreEdgeReactionModel:
                 pdep = rxn.generate_high_p_limit_kinetics()
             elif any([any([x.is_subgraph_isomorphic(q) for q in self.unrealgroups]) for y in rxn.reactants + rxn.products for x in y.molecule]):
                 pdep = False
-
+            elif not rxn.reversible:
+                pdep = False
+                
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
             if not pdep:

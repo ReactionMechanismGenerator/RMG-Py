@@ -214,6 +214,32 @@ class TemplateReaction(Reaction):
 
         return other
 
+    def check_if_spin_allowed(self):
+        # get the combined spin for reactants and products
+        reactants_combined_spin, products_combined_spin = self.calculate_combined_spin()
+        # check if there are any matches for combined spin between reactants and products
+        if reactants_combined_spin.intersection(products_combined_spin) != set([]):
+            return True
+        else:
+            logging.debug(f"Reactants combined spin is {reactants_combined_spin}, but the products combined spin is {products_combined_spin}")
+            return False
+        
+    def calculate_combined_spin(self):
+        if len(self.reactants) == 1:
+            reactant_combined_spin = {self.reactants[0].multiplicity}
+        elif len(self.reactants) == 2:
+            reactant_spin_string =  "+".join(sorted([str(reactant.multiplicity) for reactant in self.reactants]))
+            reactant_combined_spin = allowed_spin[reactant_spin_string]
+        else:
+            return None
+        if len(self.products) == 1:
+            product_combined_spin = {self.products[0].multiplicity}
+        elif len(self.products) == 2:
+            product_spin_string = "+".join(sorted([str(product.multiplicity) for product in self.products]))
+            product_combined_spin = allowed_spin[product_spin_string]
+        else:
+            return None
+        return reactant_combined_spin, product_combined_spin
     def apply_solvent_correction(self, solvent):
         """
         apply kinetic solvent correction in this case the parameters are dGTSsite instead of GTS
@@ -4902,3 +4928,20 @@ def get_site_solute_data(rxn):
         return site_data
     else:
         return None
+
+allowed_spin_violation_families =['1,4_Cyclic_birad_scission']
+
+allowed_spin = {
+    "1+1": set([1]),
+    "1+2": set([2]),
+    "1+3": set([3]),
+    "1+4": set([4]),
+    "1+5": set([5]),
+    "2+2": set([1,3]),
+    "2+3": set([2,4]),
+    "2+4": set([3,5]),
+    "2+5": set([4,6]),
+    "3+3": set([1,3,5]),
+    "3+4": set([2,4,6]),
+    "3+5": set([3,5,7]),
+}
