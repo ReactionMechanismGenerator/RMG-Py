@@ -912,6 +912,8 @@ class RMG(util.Subject):
                 self.reaction_model.iteration_num += 1
                 self.done = True
 
+                if self.reaction_model.iteration_num > 2:
+                    break
                 if self.generate_seed_each_iteration:
                     self.make_seed_mech()
 
