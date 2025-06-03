@@ -231,12 +231,16 @@ jobs:
         run: mkdir stable_regression_results
 
       # Retrieve Stable Results for reference
-      - name : Find ID of Reference Results
+      - name: Find ID of Reference Results
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # this will search for the last successful execution of CI on main
         run: |
           run_id=$(gh run list -R ReactionMechanismGenerator/RMG-Py --workflow="Continuous Integration" --branch main --limit 15 --json databaseId,conclusion --jq 'map(select(.conclusion == "success")) | .[0].databaseId')
+          if [ -z "$run_id" ] || [ "$run_id" = "null" ]; then
+            echo "::error::No successful reference run found"
+            exit 1
+          fi
           echo "CI_RUN_ID=$run_id" >> $GITHUB_ENV
 
       - name: Retrieve Stable Regression Results
