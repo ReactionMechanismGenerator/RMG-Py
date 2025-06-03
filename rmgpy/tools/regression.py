@@ -37,6 +37,9 @@ import logging
 import os.path
 import sys
 
+import rmgpy
+rmgpy.DISABLE_JULIA = True  # disable Julia to save time and warnings
+
 from rmgpy.molecule import Molecule
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species

@@ -154,6 +154,9 @@ class Settings(dict):
 # The global settings object
 settings = Settings(path=None)
 
+# Global flag to disable Julia imports (useful for scripts that don't need RMS)
+DISABLE_JULIA = False
+
 
 ################################################################################
 

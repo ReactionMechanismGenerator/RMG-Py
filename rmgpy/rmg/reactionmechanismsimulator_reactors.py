@@ -32,6 +32,7 @@ Contains classes for building RMS simulations
 """
 import itertools
 import logging
+import os
 
 import numpy as np
 
@@ -60,14 +61,23 @@ from rmgpy.thermo.thermodata import ThermoData
 
 
 NO_JULIA = True
-try:
-    from juliacall import Main
-    Main.seval("using PythonCall")
-    Main.seval("using ReactionMechanismSimulator")
-    Main.seval("using ReactionMechanismSimulator.Sundials")
-    NO_JULIA = False
-except Exception as e:
-    logging.warning(f"Julia import failed, RMS reactors not available.\nException: {str(e)}\nStacktrace:\n{e.__traceback__}")
+
+# Check if Julia should be disabled via module-level variable or environment variable
+import rmgpy
+if hasattr(rmgpy, 'DISABLE_JULIA') and rmgpy.DISABLE_JULIA:
+    logging.info("Julia imports disabled via rmgpy.DISABLE_JULIA flag")
+elif os.environ.get('RMG_DISABLE_JULIA', '').lower() in ('1', 'true', 'yes'):
+    logging.info("Julia imports disabled via RMG_DISABLE_JULIA environment variable")
+else:
+    try:
+        from juliacall import Main
+        Main.seval("using PythonCall")
+        Main.seval("using ReactionMechanismSimulator")
+        Main.seval("using ReactionMechanismSimulator.Sundials")
+        NO_JULIA = False
+    except ImportError as e:
+        logging.warning("Julia import failed, RMS reactors not available. "
+                       "Exception: %s", str(e))
 
 
 def to_julia(obj):
