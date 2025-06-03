@@ -276,25 +276,30 @@ Running Examples
 
 A number of basic examples can be run immediately.  Additional example input files can be found in the ``RMG-Py/examples`` folder.  Please read more on :ref:`Example Input Files <examples>` in the documentation.
     
-#. **Minimal Example**: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the ``RMG-Py/testing/minimal`` folder::
+#. **Minimal Example**: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the ``RMG-Py/testing/eg1`` folder::
 
     cd RMG-Py
     make eg1
     
-#. **Hexadiene Example**: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the ``RMG-Py/testing/hexadiene`` folder::
+#. **Hexadiene Example**: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the ``RMG-Py/testing/eg2`` folder::
 
     cd RMG-Py
     make eg2
     
-#. **Liquid Phase Example**: this will run a liquid phase RMG model.  The results will be in the ``RMG-Py/testing/liquid_phase`` folder ::
+#. **Liquid Phase Example**: this will run a liquid phase RMG model.  The results will be in the ``RMG-Py/testing/eg3`` folder ::
 
     cd RMG-Py
     make eg3
     
-#. **ThermoEstimator Example**: this will run the :ref:`Thermo Estimation Module <thermoModule>` on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the ``RMG-Py/testing/thermoEstimator`` folder ::
+#. **ThermoEstimator Example**: this will run the :ref:`Thermo Estimation Module <thermoModule>` on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the ``RMG-Py/testing/eg4`` folder ::
 
     cd RMG-Py
     make eg4
+
+#. **RMS Constant Volume Example**: this will run a constant volume reactor using the ReactionMechanismSimulator.jl package. Note that you must have Julia and ReactionMechanismSimulator.jl installed for this to run completely. The results will be in the ``RMG-Py/testing/eg8`` folder ::
+
+    cd RMG-Py
+    make eg8
 
 
 Building Documentation
