@@ -120,7 +120,6 @@ jobs:
         run: make test-all
 
   regression-test:
-    needs: build-and-test
     runs-on: ubuntu-latest
     name: Regression Test
     # skip scheduled runs from forks
@@ -393,12 +392,9 @@ jobs:
 
   build-and-push-docker:
     # after testing and on pushes to main, build and push docker image
-    # technically we could live without the 'needs' since _in theory_
-    # nothing will ever be merged into main that fails the tests, but
-    # who knows ¯\_(ツ)_/¯
     #
     # taken from https://github.com/docker/build-push-action
-    needs: regression-test
+    needs: [build-and-test, regression-test]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
     steps:
