@@ -333,27 +333,33 @@ please <a class="reference external" href="https://github.com/ReactionMechanismG
 <h2><span class="section-number">3.3.1.4. </span>Running Examples<a class="headerlink" href="#running-examples" title="Permalink to this heading">¶</a></h2>
 <p>A number of basic examples can be run immediately.  Additional example input files can be found in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/examples</span></code> folder.  Please read more on <a class="reference internal" href="../examples.html#examples"><span class="std std-ref">Example Input Files</span></a> in the documentation.</p>
 <ol class="arabic">
-<li><p><strong>Minimal Example</strong>: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/minimal</span></code> folder:</p>
+<li><p><strong>Minimal Example</strong>: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/eg1</span></code> folder:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 <span class="n">make</span> <span class="n">eg1</span>
 </pre></div>
 </div>
 </li>
-<li><p><strong>Hexadiene Example</strong>: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/hexadiene</span></code> folder:</p>
+<li><p><strong>Hexadiene Example</strong>: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/eg2</span></code> folder:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 <span class="n">make</span> <span class="n">eg2</span>
 </pre></div>
 </div>
 </li>
-<li><p><strong>Liquid Phase Example</strong>: this will run a liquid phase RMG model.  The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/liquid_phase</span></code> folder</p>
+<li><p><strong>Liquid Phase Example</strong>: this will run a liquid phase RMG model.  The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/eg3</span></code> folder</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 <span class="n">make</span> <span class="n">eg3</span>
 </pre></div>
 </div>
 </li>
-<li><p><strong>ThermoEstimator Example</strong>: this will run the <a class="reference internal" href="../modules/thermoEstimation.html#thermomodule"><span class="std std-ref">Thermo Estimation Module</span></a> on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/thermoEstimator</span></code> folder</p>
+<li><p><strong>ThermoEstimator Example</strong>: this will run the <a class="reference internal" href="../modules/thermoEstimation.html#thermomodule"><span class="std std-ref">Thermo Estimation Module</span></a> on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/eg4</span></code> folder</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
 <span class="n">make</span> <span class="n">eg4</span>
+</pre></div>
+</div>
+</li>
+<li><p><strong>RMS Constant Volume Example</strong>: this will run a constant volume reactor using the ReactionMechanismSimulator.jl package. Note that you must have Julia and ReactionMechanismSimulator.jl installed for this to run completely. The results will be in the <code class="docutils literal notranslate"><span class="pre">RMG-Py/testing/eg8</span></code> folder</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">RMG</span><span class="o">-</span><span class="n">Py</span>
+<span class="n">make</span> <span class="n">eg8</span>
 </pre></div>
 </div>
 </li>
