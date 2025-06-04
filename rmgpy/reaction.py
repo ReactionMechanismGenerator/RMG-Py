@@ -757,6 +757,11 @@ class Reaction:
         )
         # Use free energy of reaction to calculate Ka
         dGrxn = self.get_free_energy_of_reaction(T, potential)
+
+        if True: # NEED TO IMPLEMENT: if solvation correction is needed (if solvation module exists?)
+            ddGsolv = self.get_solvation_free_energy_of_reaction(T)
+            dGrxn += ddGsolv  # add solvation free energy if available
+
         K = np.exp(-dGrxn / constants.R / T)
         # Convert Ka to Kc or Kp if specified
         # Assume a pressure of 1e5 Pa for gas phase species
@@ -820,6 +825,27 @@ class Reaction:
         if K == 0:
             raise ReactionError('Got equilibrium constant of 0')
         return K
+
+    def get_solvation_free_energy_of_reaction(T):
+        """
+        Retrun the solvation free energy of reaction in J/mol evaluated at temperature T in K.
+        """
+        ddGsolv = 0.0
+        for reactant in self.reactants:
+            try:
+                ddGsolv -= reactant.get_free_energy_of_solvation(T)
+            except Exception as e:
+                print(f"Error in reactant {reactant.name}: {e}")
+                raise
+
+        for product in self.products:
+            try:
+                ddGsolv += product.get_free_energy_of_solvation(T)
+            except Exception as e:
+                print(f"Error in product {product.name}: {e}")
+                raise
+
+        return ddGsolv
 
     def get_enthalpies_of_reaction(self, Tlist):
         """

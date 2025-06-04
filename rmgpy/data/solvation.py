@@ -47,6 +47,7 @@ from rmgpy.exceptions import InputError
 from rmgpy.data.thermo import is_aromatic_ring, is_bicyclic, find_aromatic_bonds_from_sub_molecule, \
     convert_ring_to_sub_molecule, is_ring_partial_matched, bicyclic_decomposition_for_polyring, \
     split_bicyclic_into_single_rings, saturate_ring_bonds
+from rmgpy.data import get_db
 
 from rdkit import Chem
 
@@ -2222,7 +2223,7 @@ class SolvationDatabase(object):
         """
         Given a solute_data and solvent_data object, calculates the enthalpy, entropy,
         and Gibbs free energy of solvation at 298 K. Returns a SolvationCorrection
-        object.
+        object
         Note: This method utilizes the LSER method for solvation correction with parameters
         from the RMG-database.
         """
@@ -2433,6 +2434,20 @@ class SolvationDatabase(object):
 
         return kfactor_parameters
 
+    def generate_solvation_model(self, species, solvent_name, T_dep=False, method="SoluteGC"):
+        """
+        Returns a TDepModel or StaticModel depending on T_dep flag.
+        method: 'SoluteGC', 'SoluteML', or "DirectML'
+        """
+
+        # NEED TO IMPLEMENT: Extract T_dep and method option from the input file
+        if T_dep:
+            # A, B, C, D is calculated (Based on three methods)
+            return TDepModel(A, B, C, D, solvent_name)
+        else:
+            # dH298, dS298 is calculated (Based on three methods)
+            return StaticModel(dH298, dG298)
+
     def check_solvent_in_initial_species(self, rmg, solvent_structure):
         """
         Given the instance of RMG class and the solvent_structure, it checks whether the solvent is listed as one
@@ -2459,9 +2474,16 @@ class MLSolvation:
     """
     A dummy class for machine learning-based solvation correction.
     """
-    def __init__(self, model_path: str):
+    def __init__(self, model_path: str, T_dependent: bool = False, method: str = "SoluteGC"):
+        """
+        model path: path to the directory where the machine learning model is stored
         # ex) model_path = "RMG-database/input/thermo/ml/solvation"
+        T_dependent: whether T_dependent solvation correction is used
+        method: the method used for solvation correction, e.g., "SoluteGC", "SoluteML" or "DirectML"
+        """
         self.model_path = model_path
+        self.T_dependent = T_dependent
+        self.method = method
         self.model = self.load_model(model_path)
 
     def load_model(self, model_path):
@@ -2471,15 +2493,95 @@ class MLSolvation:
 
     def get_solvation_correction(self, solute_mol, solvent_mol):
         """
-        Given a solute_mol and solvent_mol object, calculates the enthalpy, entropy,
-        and Gibbs free energy of solvation at 298 K using a machine learning model.
-        Returns a SolvationCorrection object.
+        Based on T_dependent flag and method, returns solvation correction 
         """
-        # Need to implement: solute_mol, solvent_mol → feature vector → ML prediction
-        print(f"[NOTICE] Dummy ML model utilized")
-        enthalpy = 0.0  #self.model.predict([...])[0]
-        gibbs = 0.0
-        entropy = 0.0
+        if self.T_dependent:
+            solvation_database = get_db('solvation')
+            if self.method == "SoluteGC":
+                return solvation_database.get_T_dep_solvation_energy_from_soluteGC(solute_mol, solvent_mol, T)
+            elif self.method == "SoluteML":
+                return solvation_database.get_T_dep_solvation_energy_from_soluteML(solute_mol, solvent_mol, T, self.model)
+            elif self.method == "DirectML":
+                return solvation_database.get_T_dep_solvation_energy_from_directML(solute_mol, solvent_mol, T, self.model)
+        else:
+            return self.get_solvation_correction_at_298K(solute_mol, solvent_mol)
 
-        from rmgpy.data.solvation import SolvationCorrection
-        return SolvationCorrection(enthalpy, gibbs, entropy)
+
+class TDepModel:
+    def __init__(self, A, B, C, D, solvent_name, T_trans_factor=0.75):
+        """
+        solvent_name (str): name of the solvent that is used in CoolProp
+        A, B, C, D (float): coefficients for the K-factor piecewise function
+        T_trans_factor (float): fraction of Tc for transition between equations
+        """
+        self.A = A
+        self.B = B
+        self.C = C
+        self.D = D
+        self.T_trans_factor = T_trans_factor
+        self.solvent_name = solvent_name
+
+    def get_Kfactor(self, T):
+        """
+        Returns a K-factor for the input temperature given the solvation properties of a solute in a solvent
+        at 298 K.
+
+        Args:
+            T (float): input temperature in K.
+
+        Returns:
+            Kfactor (float): K-factor, which is a ratio of the mole fraction of a solute in a gas-phase to
+            the mole fraction of a solute in a liquid-phase at equilibrium.
+
+        Raises:
+            InputError: if the input temperature is above the critical temperature of the solvent.
+            DatabaseError: if the given solvent_name is not available in CoolProp.
+
+        """
+        solvent_name = self.solvent_name
+        if solvent_name is not None:
+            Tc = get_critical_temperature(solvent_name)
+            if T < Tc:
+                T_transition = self.T_trans_factor * Tc
+                rho_c = PropsSI('rhomolar_critical', solvent_name) # critical density of the solvent in mol/m^3
+                rho_l = get_liquid_saturation_density(solvent_name, T)  # saturated liquid phase density of the solvent, in mol/m^3
+                if T < T_transition:
+                    Kfactor = math.exp((self.A + self.B * (1 - T / Tc) ** 0.355 + self.C * math.exp(1 - T / Tc) * (T / Tc) ** 0.59) / (T / Tc))
+                else:
+                    Kfactor = math.exp(self.D * (rho_l / rho_c -1) / (T / Tc))
+            else:
+                raise InputError("The input temperature {0} K cannot be greater than "
+                                    "or equal to the critical temperature, {1} K".format(T, Tc))
+        else:
+            raise DatabaseError("K-factor calculation or temperature-dependent solvation free energy calculation "
+                                f"is not available for the given solvent name: {solvent_name}")
+        return Kfactor
+    
+
+    def get_free_energy_of_solvation(self, T):
+        """Returns solvation free energy for the input temperature based on the given solvation properties
+            values at 298 K.
+
+        Args:
+            T (float): input temperature in K.
+
+        Returns:
+            delG (float): solvation free energy at the input temperature in J/mol.
+        """
+        solvent_name = self.solvent_name
+        Kfactor = self.get_Kfactor(T)
+        rho_g = get_gas_saturation_density(solvent_name, T) # saturated gas phase density of the solvent, in mol/m^3
+        rho_l = get_liquid_saturation_density(solvent_name, T) # saturated liquid phase density of the solvent, in mol/m^3
+        # Psat_g = get_gas_saturation_pressure(solvent_name, T)
+        # kH = Kfactor * Psat_g / rho_l  # Henry's law constant as a fraction of the gas-phase partial pressure of solute to the liquid-phase concentration of solute
+        delG = constants.R * T * math.log(Kfactor * rho_g / (rho_l))  # in J/mol
+        return delG
+
+class StaticModel:
+    def __init__(self, dH298, dG298):
+        self.dH298 = dH298
+        self.dG298 = dG298
+
+    def get_free_energy_of_solvation(self, T):
+        delG = self.dG298 + (T - 298) * self.dS298
+        return delG
