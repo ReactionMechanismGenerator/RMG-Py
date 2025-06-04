@@ -75,7 +75,6 @@ from rmgpy.rmg.listener import SimulationProfilePlotter, SimulationProfileWriter
 from rmgpy.rmg.model import CoreEdgeReactionModel, Species
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
-from rmgpy.rmg.reactionmechanismsimulator_reactors import NO_JULIA
 from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
 from rmgpy.rmg.settings import ModelSettings
 from rmgpy.solver.base import TerminationConversion, TerminationTime
