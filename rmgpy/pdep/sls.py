@@ -33,13 +33,13 @@ and implementing the SLS master equation reduction method
 """
 
 import logging
-import sys
+import os
 
 import numpy as np
 import scipy.linalg
 import scipy.optimize as opt
-import scipy.sparse as sparse
 
+import rmgpy
 import rmgpy.constants as constants
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
 from rmgpy.rmg.reactionmechanismsimulator_reactors import to_julia
@@ -62,10 +62,11 @@ class MainProxy:
             Main.seval("using ReactionMechanismSimulator.SciMLBase")
             Main.seval("using ReactionMechanismSimulator.Sundials")
         except Exception as e:
-            logging.error("Failed to import Julia and load ReactionmechanismSimulator components needed.")
+            logging.error("Failed to import Julia and load ReactionMechanismSimulator components needed.")
             raise
         globals()['Main'] = JuliaMain  # Replace proxy with real thing, for next time it's called
         return getattr(JuliaMain, name) # Return the attribute for the first time it's called
+
 Main = MainProxy()
 
 
