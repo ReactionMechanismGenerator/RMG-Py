@@ -57,7 +57,6 @@ from rmgpy.rmg.decay import decay_species
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.rmg.react import react_all
 from rmgpy.rmg.reactionmechanismsimulator_reactors import (
-    NO_JULIA,
     Interface,
     Phase,
     PhaseSystem,
@@ -81,7 +80,7 @@ class ReactionModel:
         if phases is None:
             phases = {"Default": Phase(), "Surface": Phase()}
             interfaces = {frozenset({"Default", "Surface"}): Interface(list(phases.values()))}
-        self.phase_system = None if NO_JULIA else PhaseSystem(phases, interfaces)
+        self.phase_system = PhaseSystem(phases, interfaces)
 
     def __reduce__(self):
         """
@@ -355,7 +354,7 @@ class CoreEdgeReactionModel:
         orilabel = spec.label
         label = orilabel
         i = 2
-        if self.edge.phase_system:  # None when RMS not installed
+        if self.edge.phase_system:  # !!! Not maintained when operating with require_rms=False?
             while any([label in phase.names for phase in self.edge.phase_system.phases.values()]):
                 label = orilabel + "-" + str(i)
                 i += 1

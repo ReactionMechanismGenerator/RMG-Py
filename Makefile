@@ -64,7 +64,7 @@ eg0: all
 	rm -rf testing/eg0/*
 	cp examples/rmg/superminimal/input.py testing/eg0/input.py
 	@ echo "Running eg0: superminimal (H2 oxidation) example"
-	RMG_DISABLE_JULIA=1 python rmg.py testing/eg0/input.py
+	python rmg.py testing/eg0/input.py
 
 eg1: all
 	mkdir -p testing/eg1
@@ -72,7 +72,7 @@ eg1: all
 	cp examples/rmg/minimal/input.py testing/eg1/input.py
 	coverage erase
 	@ echo "Running eg1: minimal (ethane pyrolysis) example with coverage tracking AND profiling"
-	RMG_DISABLE_JULIA=1 coverage run rmg.py -p testing/eg1/input.py
+	coverage run rmg.py -p testing/eg1/input.py
 	coverage report
 	coverage html
 
@@ -82,7 +82,7 @@ eg2: all
 	cp examples/rmg/1,3-hexadiene/input.py testing/eg2/input.py
 	coverage erase
 	@ echo "Running eg2: 1,3-hexadiene example with profiling"
-	RMG_DISABLE_JULIA=1 python rmg.py -p testing/eg2/input.py
+	python rmg.py -p testing/eg2/input.py
 
 eg3: all
 	mkdir -p testing/eg3
@@ -90,28 +90,28 @@ eg3: all
 	cp examples/rmg/liquid_phase/input.py testing/eg3/input.py
 	coverage erase
 	@ echo "Running eg3: liquid_phase example with profiling"
-	RMG_DISABLE_JULIA=1 python rmg.py -p testing/eg3/input.py
+	python rmg.py -p testing/eg3/input.py
 
 eg5: all
 	mkdir -p testing/eg5
 	rm -rf testing/eg5/*
 	cp examples/rmg/heptane-eg5/input.py testing/eg5/input.py
 	@ echo "Running eg5: heptane example"
-	RMG_DISABLE_JULIA=1 python rmg.py testing/eg5/input.py
+	python rmg.py testing/eg5/input.py
 
 eg6: all
 	mkdir -p testing/eg6
 	rm -rf testing/eg6/*
 	cp examples/rmg/ethane-oxidation/input.py testing/eg6/input.py
 	@ echo "Running eg6: ethane-oxidation example"
-	RMG_DISABLE_JULIA=1 python rmg.py testing/eg6/input.py
+	python rmg.py testing/eg6/input.py
 
 eg7: all
 	mkdir -p testing/eg7
 	rm -rf testing/eg7/*
 	cp examples/rmg/gri_mech_rxn_lib/input.py testing/eg7/input.py
 	@ echo "Running eg7: gri_mech_rxn_lib example"
-	RMG_DISABLE_JULIA=1 python rmg.py testing/eg7/input.py
+	python rmg.py testing/eg7/input.py
 	
 scoop: all
 	mkdir -p testing/scoop
@@ -119,7 +119,7 @@ scoop: all
 	cp examples/rmg/minimal/input.py testing/scoop/input.py
 	coverage erase
 	@ echo "Running minimal example with SCOOP"
-	RMG_DISABLE_JULIA=1 python -m scoop -n 2 rmg.py -v testing/scoop/input.py
+	python -m scoop -n 2 rmg.py -v testing/scoop/input.py
 
 eg4: all
 	mkdir -p testing/eg4
