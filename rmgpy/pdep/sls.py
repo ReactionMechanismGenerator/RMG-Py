@@ -44,18 +44,30 @@ import rmgpy.constants as constants
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
 from rmgpy.rmg.reactionmechanismsimulator_reactors import to_julia
 
-NO_JULIA = False
-try:
-    from juliacall import Main
+class MainProxy:
+    """
+    A proxy for the juliacall Main module, that will replace itself
+    with the real thing the first time it's accessed.
+    This is to delay loading Julia until it's really needed.
+    """
+    def __getattr__(self, name):
+        if hasattr(rmgpy, 'DISABLE_JULIA') and rmgpy.DISABLE_JULIA:
+            raise ImportError("Julia imports disabled via rmgpy.DISABLE_JULIA flag")
+        elif os.environ.get('RMG_DISABLE_JULIA', '').lower() in ('1', 'true', 'yes'):
+            raise ImportError("Julia imports disabled via RMG_DISABLE_JULIA environment variable")
 
-    Main.seval("using ReactionMechanismSimulator.SciMLBase")
-    Main.seval("using ReactionMechanismSimulator.Sundials")
-except Exception as e:
-    logging.info(
-        f"Unable to import Julia dependencies, original error: {str(e)}"
-        ". Master equation method 'ode' will not be available on this execution."
-    )
-    NO_JULIA = True
+        try:
+            from juliacall import Main as JuliaMain
+            Main = JuliaMain
+            Main.seval("using ReactionMechanismSimulator.SciMLBase")
+            Main.seval("using ReactionMechanismSimulator.Sundials")
+        except Exception as e:
+            logging.error("Failed to import Julia and load ReactionmechanismSimulator components needed.")
+            raise
+        globals()['Main'] = JuliaMain  # Replace proxy with real thing, for next time it's called
+        return getattr(JuliaMain, name) # Return the attribute for the first time it's called
+Main = MainProxy()
+
 
 
 def get_initial_condition(network, x0, indices):
@@ -167,11 +179,6 @@ def get_rate_coefficients_SLS(network, T, P, method="mexp", neglect_high_energy_
     tau = np.abs(1.0 / fastest_reaction)
 
     if method == "ode":
-        if NO_JULIA:
-            raise RuntimeError(
-                "Required Julia dependencies for method 'ode' are not installed.\n"
-                "Please follow the steps to install Julia dependencies at https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/anacondaDeveloper.html."
-            )
         f = Main.seval(
             """
 function f(du, u, M, t)
