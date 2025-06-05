@@ -1548,6 +1548,16 @@ class ThermoDatabase(object):
                 comments.append(f'{bond:.2f}{element}')
         thermo.H298.value_si += change_in_binding_energy
         thermo.comment += f" Binding energy corrected by LSR ({'+'.join(comments)}) from {metal_to_scale_from} (H={change_in_binding_energy/1e3:+.0f}kJ/mol)"
+        
+        surface_sites = molecule.get_surface_sites()
+        try:
+            self._add_adsorption_correction(thermo, self.groups['adsorptionScaling'], molecule, surface_sites)
+        except (KeyError, DatabaseError):
+            logging.error("Couldn't find in adsorptionScaling thermo database:")
+            logging.error(molecule)
+            logging.error(molecule.to_adjacency_list())
+            raise
+        thermo.comment += f"Adsorption correction from adsorptionScaling."
         return thermo
 
     def get_thermo_data_for_surface_species(self, species):
