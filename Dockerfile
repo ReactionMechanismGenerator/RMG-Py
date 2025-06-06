@@ -58,6 +58,8 @@ WORKDIR /rmg/RMG-Py
 
 # build the conda environment
 RUN conda env create --file environment.yml
+# Remove conda package cache to reduce image size
+RUN rm -rf /miniconda/pkgs
 
 # This runs all subsequent commands inside the rmg_env conda environment
 #
