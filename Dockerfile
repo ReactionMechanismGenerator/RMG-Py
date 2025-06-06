@@ -18,7 +18,8 @@ RUN apt-get update && \
         wget \
         git \
         g++ \
-        libxrender1 && \
+        libxrender1 \
+        ca-certificates && \  # Added for HTTPS downloads
     apt-get autoremove -y && \
     apt-get clean -y
 
@@ -35,7 +36,7 @@ ENV PATH="/root/.juliaup/bin:$PATH"
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda && \
     rm Miniconda3-latest-Linux-x86_64.sh
-ENV PATH="$PATH:/miniconda/bin"
+ENV PATH="/miniconda/bin:$PATH"
 
 # Set Bash as the default shell for following commands
 SHELL ["/bin/bash", "-c"]
@@ -54,6 +55,7 @@ RUN git clone --single-branch --branch ${RMG_Py_Branch} --depth 1 https://github
     git clone --single-branch --branch ${RMG_Database_Branch} --depth 1 https://github.com/ReactionMechanismGenerator/RMG-database.git
 
 WORKDIR /rmg/RMG-Py
+
 # build the conda environment
 RUN conda env create --file environment.yml
 
@@ -84,5 +86,5 @@ RUN mv examples/rmg/minimal/input.py . && \
     mv input.py examples/rmg/minimal/
 
 # when running this image, open an interactive bash terminal inside the conda environment
-RUN echo "source activate rmg_env" >~/.bashrc
+RUN echo "conda activate rmg_env" >> ~/.bashrc
 ENTRYPOINT ["/bin/bash", "--login"]
