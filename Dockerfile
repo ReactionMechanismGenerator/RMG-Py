@@ -61,6 +61,14 @@ RUN conda clean --all --yes
 ENV RUNNER_CWD=/rmg
 ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 
+# Install Julia 1.10 using juliaup
+RUN curl -fsSL https://install.julialang.org | sh -s -- --yes && \
+    source ~/.bashrc && \
+    juliaup add 1.10 && \
+    juliaup default 1.10 && \
+    juliaup remove release
+ENV PATH="$HOME/.juliaup/bin:$PATH"
+
 # 1. Build RMG
 # 2. Install and link Julia dependencies for RMS
 # setting this env variable fixes an issue with Julia precompilation on Windows
