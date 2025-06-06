@@ -29,7 +29,6 @@ RUN apt-get update && \
 RUN wget -qO- https://install.julialang.org | sh -s -- --yes --default-channel 1.10 && \
     /root/.juliaup/bin/juliaup add 1.10 && \
     /root/.juliaup/bin/juliaup default 1.10 && \
-    /root/.juliaup/bin/juliaup remove release && \
     /root/.juliaup/bin/juliaup list && \
     rm -rf /root/.juliaup/downloads /root/.juliaup/tmp
 ENV PATH="/root/.juliaup/bin:$PATH"
