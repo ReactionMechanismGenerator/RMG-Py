@@ -420,6 +420,8 @@ jobs:
 
       - name: Build (and Push if on main)
         uses: docker/build-push-action@v6
+        env:
+          BUILDKIT_PROGRESS: plain
         with:
           push: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
           tags: reactionmechanismgenerator/rmg:latest
