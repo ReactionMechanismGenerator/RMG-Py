@@ -22,6 +22,14 @@ RUN apt-get update && \
     apt-get autoremove -y && \
     apt-get clean -y
 
+
+# Install Julia 1.10 using juliaup
+RUN wget -qO- https://install.julialang.org | sh -s -- --yes --default-channel 1.10 && \
+    /root/.juliaup/bin/juliaup add 1.10 && \
+    /root/.juliaup/bin/juliaup default 1.10 && \
+    /root/.juliaup/bin/juliaup list && \
+ENV PATH="/root/.juliaup/bin:$PATH"
+
 # Install conda
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda && \
