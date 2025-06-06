@@ -11,6 +11,7 @@ RUN ln -snf /bin/bash /bin/sh
 #  - git for downloading RMG respoitories
 #  - wget for downloading conda install script
 #  - libxrender1 required by RDKit
+#  - ca-certificates added for HTTPS downloads
 RUN apt-get update && \
     apt-get install -y \
         make \
@@ -19,7 +20,7 @@ RUN apt-get update && \
         git \
         g++ \
         libxrender1 \
-        ca-certificates && \  # Added for HTTPS downloads
+        ca-certificates && \
     apt-get autoremove -y && \
     apt-get clean -y
 
