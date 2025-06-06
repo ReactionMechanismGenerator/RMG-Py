@@ -29,14 +29,16 @@ RUN wget -qO- https://install.julialang.org | sh -s -- --yes --default-channel 1
     /root/.juliaup/bin/juliaup default 1.10 && \
     /root/.juliaup/bin/juliaup remove release && \
     /root/.juliaup/bin/juliaup list && \
+    rm -rf /root/.juliaup/downloads /root/.juliaup/tmp
 ENV PATH="/root/.juliaup/bin:$PATH"
 
 # Install conda
 RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
     bash Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda && \
-    rm Miniconda3-latest-Linux-x86_64.sh
 ENV PATH="$PATH:/miniconda/bin"
 
+    rm Miniconda3-latest-Linux-x86_64.sh && \
+    /miniconda/bin/conda clean --all --yes
 # Set Bash as the default shell for following commands
 SHELL ["/bin/bash", "-c"]
 
@@ -64,7 +66,9 @@ RUN conda env create --file environment.yml
 # in a Dockerfile build script)
 SHELL ["conda", "run", "--no-capture-output", "-n", "rmg_env", "/bin/bash", "-c"]
 
-RUN conda clean --all --yes
+RUN conda clean --all --yes && \
+    pip cache purge && \
+    rm -rf ~/.cache/pip
 
 # Set environment variables as directed in the RMG installation instructions
 ENV RUNNER_CWD=/rmg
