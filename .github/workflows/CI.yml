@@ -426,4 +426,5 @@ jobs:
           push: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
           tags: reactionmechanismgenerator/rmg:latest
           build-args: |
-            RMS_Branch=for_rmg
+            RMG_Py_Branch=${{ github.head_ref || github.ref_name }}
+            RMG_Database_Branch=${{ env.RMG_DATABASE_BRANCH }}

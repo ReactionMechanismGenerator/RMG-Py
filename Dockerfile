@@ -43,6 +43,8 @@ ENV PATH="/miniconda/bin:$PATH"
 SHELL ["/bin/bash", "-c"]
 
 # Add build arguments for RMG-Py, RMG-database, and RMS branches.
+# The defaults are set here, but they can be overridden at build time
+# using the --build-arg option, or in the continous integration CI.yml file.
 ARG RMG_Py_Branch=main
 ARG RMG_Database_Branch=main
 
