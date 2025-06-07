@@ -56,7 +56,11 @@ conda install -y conda-forge::pyjuliacall
 echo "Environment variables referencing JULIA:"
 env | grep JULIA
 
-julia -e 'using Pkg; Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git", rev="for_rmg")); using ReactionMechanismSimulator; Pkg.instantiate()' || echo "RMS install error - continuing anyway ¯\_(ツ)_/¯"
+# Use RMS_BRANCH environment variable if set, otherwise default to for_rmg
+RMS_BRANCH=${RMS_BRANCH:-for_rmg}
+echo "Installing ReactionMechanismSimulator from branch: $RMS_BRANCH"
+
+julia -e "using Pkg; Pkg.add(Pkg.PackageSpec(name=\"ReactionMechanismSimulator\", url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git\", rev=\"$RMS_BRANCH\")); using ReactionMechanismSimulator; Pkg.instantiate()" || echo "RMS install error - continuing anyway ¯\_(ツ)_/¯"
 
 echo "Checking if ReactionMechanismSimulator is installed in the current conda environment for Python usage..."
 python -c "from juliacall import Main; import sys; sys.exit(0 if Main.seval('Base.identify_package(\"ReactionMechanismSimulator\") !== nothing') and print('ReactionMechanismSimulator is installed in $current_env') is None else 1)"
