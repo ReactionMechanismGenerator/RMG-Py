@@ -46,10 +46,12 @@ echo "Current conda environment: $current_env"
 conda env config vars set JULIA_CONDAPKG_BACKEND=Null
 conda env config vars set JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
 conda env config vars set PYTHON_JULIAPKG_EXE=$(which julia)
+conda env config vars set PYTHON_JULIAPKG_PROJECT=$CONDA_PREFIX/julia_env
 # Also export for current shell/session (needed for Docker/non-interactive use)
 export JULIA_CONDAPKG_BACKEND=Null
 export JULIA_PYTHONCALL_EXE="$CONDA_PREFIX/bin/python"
 export PYTHON_JULIAPKG_EXE="$(which julia)"
+export PYTHON_JULIAPKG_PROJECT="$CONDA_PREFIX/julia_env"
 
 conda install -y conda-forge::pyjuliacall
 
