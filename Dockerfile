@@ -75,8 +75,10 @@ RUN conda clean --all --yes
 ENV RUNNER_CWD=/rmg
 ENV PATH="$RUNNER_CWD/RMG-Py:$PATH"
 
-# 1. Build RMG
-# 2. Install and link Julia dependencies for RMS
+# Build RMG
+RUN make
+
+# Install and link Julia dependencies for RMS
 # setting this env variable fixes an issue with Julia precompilation on Windows
 ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 RUN source install_rms.sh
