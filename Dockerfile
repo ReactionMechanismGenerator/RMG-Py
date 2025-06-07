@@ -45,8 +45,6 @@ SHELL ["/bin/bash", "-c"]
 # Add build arguments for RMG-Py, RMG-database, and RMS branches.
 ARG RMG_Py_Branch=main
 ARG RMG_Database_Branch=main
-ARG RMS_Branch=main
-ENV rmsbranch=${RMS_Branch}
 
 # cd
 WORKDIR /rmg
