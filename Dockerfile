@@ -47,6 +47,7 @@ SHELL ["/bin/bash", "-c"]
 # using the --build-arg option, or in the continous integration CI.yml file.
 ARG RMG_Py_Branch=main
 ARG RMG_Database_Branch=main
+ARG RMS_Branch=for_rmg
 
 # cd
 WORKDIR /rmg
@@ -81,6 +82,7 @@ RUN make
 # Install and link Julia dependencies for RMS
 # setting this env variable fixes an issue with Julia precompilation on Windows
 ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
+ENV RMS_BRANCH=${RMS_Branch}
 RUN source install_rms.sh
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
