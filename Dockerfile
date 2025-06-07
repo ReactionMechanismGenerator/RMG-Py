@@ -89,11 +89,10 @@ ENV PYTHON_JULIAPKG_PROJECT="/miniconda/envs/rmg_env/julia_env"
 RUN source install_rms.sh
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
-RUN python rmg.py examples/rmg/minimal/input.py
-# delete the results, preserve input.py
-RUN mv examples/rmg/minimal/input.py . && \
-    rm -rf examples/rmg/minimal/* && \
-    mv input.py examples/rmg/minimal/
+RUN python rmg.py examples/rmg/rms_constant_V/input.py
+# delete the results, restore input.py from git
+RUN rm -rf examples/rmg/rms_constant_V/* && \
+    git checkout -- examples/rmg/rms_constant_V/
 
 # when running this image, open an interactive bash terminal inside the conda environment
 RUN echo "conda activate rmg_env" >> ~/.bashrc
