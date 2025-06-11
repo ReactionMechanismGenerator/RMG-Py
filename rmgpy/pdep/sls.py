@@ -44,18 +44,20 @@ import rmgpy.constants as constants
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
 from rmgpy.rmg.reactionmechanismsimulator_reactors import to_julia
 
-class MainProxy:
+class LazyMain:
     """
-    A proxy for the juliacall Main module, that will replace itself
-    with the real thing the first time it's accessed.
+    A Lazy wrapper for the juliacall Main module, that will delay importing
+    the underlying Main module until it is first called.
     This is to delay loading Julia until it's really needed.
     """
+    # If you modify this class, please consider making similar changes to
+    # rmgpy/rmg/reactionmechanismsimulator_reactors.py, which has a similar LazyMain class
     def __getattr__(self, name):
-        if hasattr(rmgpy, 'DISABLE_JULIA') and rmgpy.DISABLE_JULIA:
+        if getattr(rmgpy, 'DISABLE_JULIA', False):
             raise ImportError("Julia imports disabled via rmgpy.DISABLE_JULIA flag")
-        elif os.environ.get('RMG_DISABLE_JULIA', '').lower() in ('1', 'true', 'yes'):
-            raise ImportError("Julia imports disabled via RMG_DISABLE_JULIA environment variable")
-
+        elif len(os.environ.get('RMG_DISABLE_JULIA', '')) > 0:
+            raise ImportError("Julia imports disabled via RMG_DISABLE_JULIA "
+                              "environment variable. Unset it to enable Julia imports.")
         try:
             from juliacall import Main as JuliaMain
             Main = JuliaMain
@@ -67,7 +69,7 @@ class MainProxy:
         globals()['Main'] = JuliaMain  # Replace proxy with real thing, for next time it's called
         return getattr(JuliaMain, name) # Return the attribute for the first time it's called
 
-Main = MainProxy()
+Main = LazyMain()
 
 
 
