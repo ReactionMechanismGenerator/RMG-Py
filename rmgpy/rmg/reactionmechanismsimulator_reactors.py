@@ -69,11 +69,6 @@ class LazyMain:
     # If you modify this class, please consider making similar changes to
     # rmgpy/pdep/sls.py, which has a similar LazyMain class.
     def __getattr__(self, name):
-        if getattr(rmgpy, 'DISABLE_JULIA', False):
-            raise ImportError("Julia imports disabled via rmgpy.DISABLE_JULIA flag")
-        elif len(os.environ.get('RMG_DISABLE_JULIA', '')) > 0:
-            raise ImportError("Julia imports disabled via RMG_DISABLE_JULIA "
-                              "environment variable. Unset it to enable Julia imports.")
         try:
             from juliacall import Main as JuliaMain
             Main = JuliaMain
