@@ -47,7 +47,6 @@ from rmgpy.molecule.group import Group
 from rmgpy.quantity import Energy, Quantity, RateCoefficient, SurfaceConcentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.reactionmechanismsimulator_reactors import (
-    NO_JULIA,
     ConstantTLiquidSurfaceReactor,
     ConstantTPIdealGasReactor,
     ConstantTVLiquidReactor,
@@ -1593,11 +1592,6 @@ def read_input_file(path, rmg0):
         exec(f.read(), global_context, local_context)
     except (NameError, TypeError, SyntaxError) as e:
         logging.error('The input file "{0}" was invalid:'.format(full_path))
-        if NO_JULIA:
-            logging.error(
-                "During runtime, import of Julia dependencies failed. To use phase systems and RMS reactors, install RMG-Py with RMS."
-                " (https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/anacondaDeveloper.html)"
-            )
         logging.exception(e)
         raise
     finally:

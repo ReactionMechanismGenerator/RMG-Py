@@ -32,10 +32,6 @@ import logging
 import math
 import sys
 
-# Disable Julia imports for checkModels.py since they're not needed
-import rmgpy
-rmgpy.DISABLE_JULIA = True
-
 from rmgpy.tools.diffmodels import execute
 
 logger = logging.getLogger('checkModels')
