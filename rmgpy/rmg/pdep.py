@@ -816,14 +816,6 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                     spec.conformer = Conformer(E0=spec.get_thermo_data().E0)
                 E0.append(spec.conformer.E0.value_si)
 
-        # Use the average E0 as the reference energy (`energy_correction`) for the network
-        # The `energy_correction` will be added to the free energies and enthalpies for each
-        # configuration in the network.
-        energy_correction = -np.array(E0).mean()
-        for spec in self.reactants + self.products + self.isomers:
-            spec.energy_correction = energy_correction
-        self.energy_correction = energy_correction
-
         # Determine transition state energies on potential energy surface
         # In the absence of any better information, we simply set it to
         # be the reactant ground-state energy + the activation energy
@@ -851,9 +843,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
                                 'type "{2!s}".'.format(rxn, self.index, rxn.kinetics.__class__))
             rxn.fix_barrier_height(force_positive=True)
             if rxn.network_kinetics is None:
-                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si + energy_correction
+                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.kinetics.Ea.value_si 
             else:
-                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si + energy_correction
+                E0 = sum([spec.conformer.E0.value_si for spec in rxn.reactants]) + rxn.network_kinetics.Ea.value_si
             rxn.transition_state = rmgpy.species.TransitionState(conformer=Conformer(E0=(E0 * 0.001, "kJ/mol")))
 
         # Set collision model
