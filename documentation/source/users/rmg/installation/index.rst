@@ -46,26 +46,15 @@ For users unfamiliar with bash or Linux, we recommend looking at
     Be sure to also change the version number in the docker run commands to match the version you pulled.
     A full list of available docker images can be found at `Docker Hub <https://hub.docker.com/r/reactionmechanismgenerator/rmg/tags>`_.
 
-Alternative Install: Binary Installation Using Anaconda
-===========================================================
-
-If you are accustomed to using the Anaconda package manager or cannot tolerate the storage overhead of Docker, installation from conda is also available.
-This is recommended for users who want to use RMG out of the box and are not interested in changing the RMG code or making many additions to RMG's thermodynamic and kinetics databases.
-If this does interest you, please see the Developer Install below.
-    
-.. toctree::
-    :maxdepth: 1
-    
-    anacondaUser
-
 
 Developer Install: Installation from Source
 ===========================================================
 
-RMG-Py can now be built by source using the Anaconda Python Platform to assist in installing
-all necessary dependencies. This is recommended for a developer who may be altering the RMG source code
-or someone who expects to manipulate the databases extensively.  You will also be able to access the latest
-source code updates and patches through Github.
+RMG-Py can be built from source using the Anaconda Python Platform to assist in installing all necessary dependencies. 
+This is recommended for a developer who may be altering the RMG source code or someone who expects to manipulate the databases extensively. 
+You will also be able to access the latest source code updates and patches through Github.
+It is also currently the only option to avoid the storage and memory overhead of Docker.
+Installation by Conda without compiling from source is limited to `older versions of RMG-Py <https://anaconda.org/RMG/rmg>`_ and is not currently recommended (but would follow instructions below if you needed).
 
 .. toctree::
     :maxdepth: 1
@@ -85,6 +74,7 @@ not recommended for use.
     
     linux
     macos
+    anacondaUser
     anacondaUserWindows
     anacondaDeveloperWindows
     windowsEnvironment
