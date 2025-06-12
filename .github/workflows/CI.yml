@@ -37,6 +37,10 @@ on:
   workflow_dispatch:
   # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
   pull_request:
+  # runs on pushes to main branch
+  push:
+    branches:
+      - main
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
