@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX &#8212; RMG-Py 3.2.0 Documentation</title>
+    <title>3.3.3. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX &#8212; RMG-Py 3.2.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
     
@@ -19,8 +19,8 @@
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX" href="anacondaDeveloper.html" />
-    <link rel="prev" title="3. Installation" href="index.html" />
+    <link rel="next" title="3.3.4. Binary Installation Using Anaconda for Windows" href="anacondaUserWindows.html" />
+    <link rel="prev" title="3.3.2. MacOS X Installation" href="macos.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   MathJax.Hub.Insert(MathJax.InputJax.TeX.Definitions.macros,{
@@ -40,10 +40,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="anacondaDeveloper.html" title="3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX"
+          <a href="anacondaUserWindows.html" title="3.3.4. Binary Installation Using Anaconda for Windows"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="3. Installation"
+          <a href="macos.html" title="3.3.2. MacOS X Installation"
              accesskey="P">previous</a> |</li>
   <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">3.2.0 Documentation</a> &raquo;</li>
@@ -51,7 +51,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" accesskey="U"><span class="section-number">3. </span>Installation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.2.1. </span>Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.3.3. </span>Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></li> 
       </ul>
     </div>  
 
@@ -61,7 +61,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="binary-installation-using-anaconda-for-unix-based-systems-linux-and-mac-osx">
-<span id="anacondauser"></span><h1><span class="section-number">3.2.1. </span>Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX<a class="headerlink" href="#binary-installation-using-anaconda-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this heading">¶</a></h1>
+<span id="anacondauser"></span><h1><span class="section-number">3.3.3. </span>Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX<a class="headerlink" href="#binary-installation-using-anaconda-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this heading">¶</a></h1>
 <ol class="arabic">
 <li><p>Install the <cite>conda</cite> package manager via <cite>miniforge</cite>, if you do not already have it (or Anaconda), by following the <a class="reference external" href="https://github.com/conda-forge/miniforge?tab=readme-ov-file#install">Miniforge installation instructions</a>.</p></li>
 <li><p>Install both RMG and the RMG-database binaries through the terminal.   Dependencies will be installed automatically. It is safest to make a new conda environment for RMG and its dependencies. Type the following command into the terminal to create the new environment named ‘rmg_env’ containing the latest stable version of the RMG program and its database.</p>
@@ -85,7 +85,7 @@ section below to fix the error and re-run the RMG test job.</p>
 </ol>
 <p>You may now use RMG-Py, Arkane, as well as any of the <a class="reference internal" href="../modules/index.html#modules"><span class="std std-ref">Standalone Modules</span></a> included in the RMG-Py package.</p>
 <section id="fixing-the-importerror-related-to-libmkl-rt-so-2">
-<span id="fiximporterror"></span><h2><span class="section-number">3.2.1.1. </span>Fixing the ImportError related to <code class="docutils literal notranslate"><span class="pre">libmkl_rt.so.2</span></code><a class="headerlink" href="#fixing-the-importerror-related-to-libmkl-rt-so-2" title="Permalink to this heading">¶</a></h2>
+<span id="fiximporterror"></span><h2><span class="section-number">3.3.3.1. </span>Fixing the ImportError related to <code class="docutils literal notranslate"><span class="pre">libmkl_rt.so.2</span></code><a class="headerlink" href="#fixing-the-importerror-related-to-libmkl-rt-so-2" title="Permalink to this heading">¶</a></h2>
 <p>You may encounter the following ImportError when you try to run a RMG test job</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">Traceback</span> <span class="p">(</span><span class="n">most</span> <span class="n">recent</span> <span class="n">call</span> <span class="n">last</span><span class="p">):</span>
   <span class="n">File</span> <span class="s2">&quot;/PATH-TO-YOUR-ANACONDA/envs/rmg_env/bin/rmg.py&quot;</span><span class="p">,</span> <span class="n">line</span> <span class="mi">48</span><span class="p">,</span> <span class="ow">in</span> <span class="o">&lt;</span><span class="n">module</span><span class="o">&gt;</span>
@@ -116,7 +116,7 @@ like <code class="docutils literal notranslate"><span class="pre">/home/&lt;your
 <p>You will see a line saying <code class="docutils literal notranslate"><span class="pre">MODEL</span> <span class="pre">GENERATION</span> <span class="pre">COMPLETED</span></code> on your terminal if your RMG test job ran successfully.</p>
 </section>
 <section id="updating-your-binary-installation-of-rmg-in-linux-or-mac-osx">
-<h2><span class="section-number">3.2.1.2. </span>Updating your binary installation of RMG in Linux or Mac OSX<a class="headerlink" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">3.3.3.2. </span>Updating your binary installation of RMG in Linux or Mac OSX<a class="headerlink" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx" title="Permalink to this heading">¶</a></h2>
 <p>If you had previously installed a binary version of the RMG package, you may
 check and update your installation to the latest stable version available on Anaconda by typing the following command on the terminal</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">rmg_env</span>
@@ -157,9 +157,9 @@ check and update your installation to the latest stable version available on Ana
   <div>
     <h3><a href="../../../contents.html">Table of Contents</a></h3>
     <ul>
-<li><a class="reference internal" href="#">3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a><ul>
-<li><a class="reference internal" href="#fixing-the-importerror-related-to-libmkl-rt-so-2">3.2.1.1. Fixing the ImportError related to <code class="docutils literal notranslate"><span class="pre">libmkl_rt.so.2</span></code></a></li>
-<li><a class="reference internal" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx">3.2.1.2. Updating your binary installation of RMG in Linux or Mac OSX</a></li>
+<li><a class="reference internal" href="#">3.3.3. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a><ul>
+<li><a class="reference internal" href="#fixing-the-importerror-related-to-libmkl-rt-so-2">3.3.3.1. Fixing the ImportError related to <code class="docutils literal notranslate"><span class="pre">libmkl_rt.so.2</span></code></a></li>
+<li><a class="reference internal" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx">3.3.3.2. Updating your binary installation of RMG in Linux or Mac OSX</a></li>
 </ul>
 </li>
 </ul>
@@ -169,13 +169,13 @@ check and update your installation to the latest stable version available on Ana
         <div class="menuitem">
   <div>
     <h4>Previous topic</h4>
-    <p class="topless"><a href="index.html"
-                          title="previous chapter"><span class="section-number">3. </span>Installation</a></p>
+    <p class="topless"><a href="macos.html"
+                          title="previous chapter"><span class="section-number">3.3.2. </span>MacOS X Installation</a></p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="anacondaDeveloper.html"
-                          title="next chapter"><span class="section-number">3.3.1. </span>Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</a></p>
+    <p class="topless"><a href="anacondaUserWindows.html"
+                          title="next chapter"><span class="section-number">3.3.4. </span>Binary Installation Using Anaconda for Windows</a></p>
   </div>
         </div>
         <div class="menuitem">
@@ -216,10 +216,10 @@ check and update your installation to the latest stable version available on Ana
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="anacondaDeveloper.html" title="3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX"
+          <a href="anacondaUserWindows.html" title="3.3.4. Binary Installation Using Anaconda for Windows"
              >next</a> |</li>
         <li class="right" >
-          <a href="index.html" title="3. Installation"
+          <a href="macos.html" title="3.3.2. MacOS X Installation"
              >previous</a> |</li>
   <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
   <li><a href="../../../index.html">3.2.0 Documentation</a> &raquo;</li>
@@ -227,7 +227,7 @@ check and update your installation to the latest stable version available on Ana
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-3"><a href="index.html" ><span class="section-number">3. </span>Installation</a> &#187;</li>
-        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.2.1. </span>Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></li> 
+        <li class="nav-item nav-item-this"><a href=""><span class="section-number">3.3.3. </span>Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></li> 
       </ul>
     </div>
 
