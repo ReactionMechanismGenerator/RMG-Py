@@ -40,9 +40,9 @@ For users unfamiliar with bash or Linux, we recommend looking at
 `Must Know Linux/Unix Commands <https://www.guru99.com/must-know-linux-commands.html>`_.
 
 .. NOTE::
-    The instructions above are for the release version 3.2.0 of RMG-Py (August 2023).
-    If you want to use the latest development version, you can replace the version number in the docker pull command with "latest" or omit it entirely.
-    For example, you can run ``docker pull reactionmechanismgenerator/rmg:latest`` or ``docker pull reactionmechanismgenerator/rmg`` to get the latest development version corresponding to `here <https://github.com/ReactionMechanismGenerator/RMG-Py/commits/main/>`_.
+    The docker instructions above which specify ``rmg:3.2.0`` are for the version 3.2.0 release of RMG-Py (August 2023), the user guide for which is archived in a `4mb PDF here <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/3.2.0/documentation/RMG-Py_and_Arkane_Documentation.pdf?raw=true>`_.
+    If you want to use the latest development version, which corresponds to the user guide you are reading online `on the RMG website <https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/>`_, you can replace the version number in the docker pull command with "latest" or omit it entirely.
+    For example, you can run ``docker pull reactionmechanismgenerator/rmg:latest`` or ``docker pull reactionmechanismgenerator/rmg`` to get the latest development version corresponding to `the main branch <https://github.com/ReactionMechanismGenerator/RMG-Py/commits/main/>`_.
     Be sure to also change the version number in the docker run commands to match the version you pulled.
     A full list of available docker images can be found at `Docker Hub <https://hub.docker.com/r/reactionmechanismgenerator/rmg/tags>`_.
 
