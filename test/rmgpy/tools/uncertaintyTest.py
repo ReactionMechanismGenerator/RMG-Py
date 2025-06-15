@@ -110,8 +110,22 @@ class TestUncertainty:
             "Cs-OsHHH",
             "Cs-CsHHH",
             "Cdd-CdsOd",
+            "Cds-CdsCsH",
+            "Cs-(Cds-Cds)HHH",
+            "Cs-CsCsHH",
         }
-        rad_expected = {"Acetyl", "HOOJ", "Cds_P", "CCJ", "CsJOH", "CJ3"}
+        rad_expected = {
+            "Acetyl",
+            "HOOJ",
+            "Cds_P",
+            "CCJ",
+            "CsJOH",
+            "CJ3",
+            "Allyl_P",
+            "CCJC",
+            "CH3",
+            "RCCJ",
+        }
         other_expected = {"ketene", "R"}
         assert set(self.uncertainty.all_thermo_sources) == {"GAV", "Library", "QM"}
         assert set(self.uncertainty.all_thermo_sources["GAV"]) == {"group", "radical", "other"}
@@ -121,36 +135,31 @@ class TestUncertainty:
         assert grp == grp_expected
         assert rad == rad_expected
         assert other == other_expected
-        assert sorted(self.uncertainty.all_thermo_sources["Library"]) == [0, 1, 5, 13, 14]
+        assert sorted(self.uncertainty.all_thermo_sources["Library"]) == [0, 1, 5, 13, 16]
         assert not self.uncertainty.all_thermo_sources["QM"]
 
         # Check kinetics sources
-        rr_expected = {
-            "O_rad/NonDeO;O_Csrad",
-            "Ct_rad/Ct;O_Csrad",
-            "O_atom_triplet;O_Csrad",
-            "C_rad/H2/Cd;O_Csrad",
-            "CH2_triplet;O_Csrad",
-            "H_rad;O_Csrad",
-            "O_rad/NonDeC;O_Csrad",
-            "C_rad/Cs3;O_Csrad",
-            "Cd_pri_rad;O_Csrad",
-            "O2b;O_Csrad",
-            "O_pri_rad;Cmethyl_Csrad",
-            "C_rad/H/NonDeC;O_Csrad",
-            "O_pri_rad;O_Csrad",
-            "C_methyl;O_Csrad",
-            "C_rad/H2/Cs;O_Csrad",
-            "C_rad/H2/O;O_Csrad",
-            "CO_pri_rad;O_Csrad",
+        Disproportionation_rr_expected = {
+            'Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C_N-1R!H-inRing_N-Sp-6C-4C',
+            'Root_Ext-2R!H-R_2R!H->C_4R->C',
+        }
+        H_Abstraction_rr_expected = {
+            'C/H3/Cs;C_methyl',
+            'C/H3/Cs\\H2\\Cs|O;Cd_Cd\\H2_rad/Cs',
+            'C/H3/Cs\\H2\\O;C_methyl',
+            'C/H3/Cs\\H3;C_rad/H2/Cs\\H3',
+            'C/H3/Cs\\H3;C_rad/H2/Cs\\H\\Cs\\Cs|O',
+            'C/H3/Cs\\H3;Cd_Cd\\H2_pri_rad',
         }
         assert set(self.uncertainty.all_kinetic_sources) == {"Rate Rules", "Training", "Library", "PDep"}
-        assert list(self.uncertainty.all_kinetic_sources["Rate Rules"].keys()) == ["Disproportionation"]
+        assert set(self.uncertainty.all_kinetic_sources["Rate Rules"].keys()) == {"Disproportionation", "H_Abstraction"}
         rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["Disproportionation"]])
-        assert rr == rr_expected
-        assert list(self.uncertainty.all_kinetic_sources["Training"].keys()) == ["Disproportionation"]
+        assert rr == Disproportionation_rr_expected
+        rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["H_Abstraction"]])
+        assert rr == H_Abstraction_rr_expected
+        assert set(self.uncertainty.all_kinetic_sources["Training"].keys()) == {"Disproportionation", "H_Abstraction"}
         assert self.uncertainty.all_kinetic_sources["Library"] == [0]
-        assert self.uncertainty.all_kinetic_sources["PDep"] == [4]
+        assert self.uncertainty.all_kinetic_sources["PDep"] == [6]
 
         # Step 3: assign and propagate uncertainties
         self.uncertainty.assign_parameter_uncertainties()
@@ -160,7 +169,11 @@ class TestUncertainty:
 
         np.testing.assert_allclose(
             thermo_unc,
-            [1.5, 1.5, 2.0, 1.9, 3.1, 1.5, 1.9, 2.0, 2.0, 1.9, 2.2, 1.9, 2.0, 1.5],
+            [1.5, 1.5, 2.0, 1.9, 3.1, 1.5, 1.9, 2.0, 2.0, 1.9, 2.2, 1.9, 2.0, 1.5, 3.1, 1.9, 1.5, 2.0, 1.7, 1.8, 1.8, 1.9, 1.8, 1.9, 1.9],
             rtol=1e-4,
         )
-        np.testing.assert_allclose(kinetic_unc, [0.5, 1.5, 5.806571, 0.5, 2.0], rtol=1e-4)
+        np.testing.assert_allclose(
+            kinetic_unc,
+            [0.5, 1.5, 3.169924, 3.169924, 2.553605, 0.5, 2.0, 2.553605, 2.553605, 0.5],
+            rtol=1e-4
+        )
