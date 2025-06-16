@@ -605,6 +605,21 @@ class Species(object):
             raise Exception('Unable to calculate free energy for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return G
+    
+    def get_free_energy_of_solvation(self, T):
+        """
+        Return the Gibbs free energy of solvation in J/mol for the species at the specified
+        temperature `T` in K.
+        """
+        Gsolv = 0.0
+        #if self.has_solvation_thermo():
+        #    Gsolv = self.get_solvation_thermo_data().get_free_energy_of_solvation(T)
+        #else:
+        #    raise Exception('Unable to calculate solvation free energy for species {0!r}: '
+        #                    'no solvationthermo data available.'.format(self.label))
+        
+        Gsolv = self.get_solvation_thermo_data().get_free_energy_of_solvation(T)
+        return Gsolv
 
     def get_sum_of_states(self, e_list):
         """
@@ -821,6 +836,39 @@ class Species(object):
 
         return self.thermo
 
+    def get_solvation_thermo_data(self, solvent_name=''):
+        """
+        Returns a solvationthermo object (TDepModel or StaticModel) of the current Species object.
+        """
+        if self.solvationthermo is not None:
+            return self.solvationthermo  # If already exists, return it
+        
+        solvation_database = get_db('solvation')
+        if solvation_database is None:
+            raise ValueError("Solvation database is not loaded")
+        
+        self.solvationthermo = solvation_database.generate_solvation_model(
+            species = self,
+            solvent_name = solvent_name or self.solvent,
+        )
+
+        return self.solvationthermo
+        
+        #if False: # Need to connect with T-dep option in the input file
+        #    # Need to calculate A~D (Based on three options)
+        #    self.solvationthermo = TDepModel(
+        #        A=1.1, B=2.2, C=3.3, D=4.4, solvent_name=solvent_name or self.solvent
+        #    )
+        #else:
+        #    # Need to calculate dH298, dG298  (Based on three options)
+        #    
+        #    
+        #    self.solvationthermo = StaticModel(
+        #        dH298=-20000.0, dG298=-10000.0 / 298.15
+        #    )
+
+        #return self.solvationthermo
+    
     def generate_transport_data(self):
         """
         Generate the transport_data parameters for the species.
