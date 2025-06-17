@@ -662,25 +662,29 @@ class Reaction:
         for product in self.products:
             dSrxn += product.get_entropy(T)
         return dSrxn
+    
+    def get_free_energy_of_non_charge_transfer_reaction(self, T):
 
-    def _get_free_energy_of_charge_transfer_reaction(self, T, potential=0.):
-
-        cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
-
-        dGrxn = 0
+        dGrxn = 0.0
         for reactant in self.reactants:
             try:
                 dGrxn -= reactant.get_free_energy(T)
             except Exception:
                 logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
                 raise
-
         for product in self.products:
             try:
                 dGrxn += product.get_free_energy(T)
             except Exception:
-                logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
+                logging.error("Problem with product {!r} in reaction {!s}".format(product, self))
                 raise
+        return dGrxn
+
+    def _get_free_energy_of_charge_transfer_reaction(self, T, potential=0.):
+
+        cython.declare(dGrxn=cython.double, reactant=Species, product=Species)
+
+        dGrxn = self.get_free_energy_of_non_charge_transfer_reaction(T)
 
         if potential != 0.:
             dGrxn -=  self.electrons * constants.F * potential
@@ -697,19 +701,8 @@ class Reaction:
         if self.is_charge_transfer_reaction():
             return self._get_free_energy_of_charge_transfer_reaction(T, potential=potential)
 
-        dGrxn = 0.0
-        for reactant in self.reactants:
-            try:
-                dGrxn -= reactant.get_free_energy(T)
-            except Exception:
-                logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
-                raise
-        for product in self.products:
-            try:
-                dGrxn += product.get_free_energy(T)
-            except Exception:
-                logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
-                raise
+        # For non charge transfer reactions, we can use the free energy of the species
+        dGrxn = self.get_enthalpy_of_reaction(T) - T * self.get_entropy_of_reaction(T)
 
         return dGrxn
 
@@ -721,7 +714,7 @@ class Reaction:
         if not self.is_charge_transfer_reaction():
             raise KineticsError("Cannot get reversible potential for non charge transfer reactions")
 
-        deltaG = self._get_free_energy_of_charge_transfer_reaction(T) #J/mol
+        deltaG = self.get_free_energy_of_non_charge_transfer_reaction(T) #J/mol
         V0 = deltaG / self.electrons / constants.F # V = deltaG / n / F
         return V0
 
