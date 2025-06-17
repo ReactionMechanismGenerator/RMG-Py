@@ -624,7 +624,7 @@ class Reaction:
 
         if self.electrons != self.protons:
             raise ReactionError("Number of electrons must equal number of protons! "
-                                f"{self} has {self.electrons} protons and {self.electrons} electrons")
+                                f"{self} has {self.protons} protons and {self.electrons} electrons")
 
 
         H2_thermo = ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'),
