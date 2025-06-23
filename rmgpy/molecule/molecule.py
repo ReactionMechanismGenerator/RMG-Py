@@ -60,7 +60,6 @@ from rmgpy.molecule.graph import Vertex, Edge, Graph, get_vertex_connectivity_va
 from rmgpy.molecule.kekulize import kekulize
 from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.molecule.fragment import CuttingLabel
-from rmgpy.molecule.util import generate_closed_shell_singlet, generate_singlet_diradicals
 
 ################################################################################
 
@@ -3002,20 +3001,6 @@ class Molecule(Graph):
                 logging.debug("After removing from surface:\n" + desorbed_molecule.to_adjacency_list())
 
         return desorbed_molecules
-
-    def update_to_closed_shell_singlet(self):Add commentMore actions
-        for i in range(len(self.atoms)):
-                self.atoms[i].id = i
-        assert self.multiplicity == 1 and self.get_radical_count()>0
-        radical_center_ids = [x.id for x in self.atoms if x.radical_electrons > 0]
-        # remove radicals from radical centers (2)
-        for radical_center_id in radical_center_ids:
-            self.atoms[radical_center_id].decrement_radical()
-        # add removed radicals (2) to one of the radical sites as a lone pair (1)
-        self.atoms[radical_center_ids[0]].increment_lone_pairs()
-        # pick the best resonance structure
-        self.generate_resonance_structures()
-        self.reactive = True
 
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects

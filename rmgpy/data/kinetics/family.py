@@ -1704,7 +1704,7 @@ class KineticsFamily(Database):
 
         return False
 
-    def _create_reaction(self, reactants, products, is_forward):
+    def _create_reaction(self, reactants, products, is_forward, check_spin = True):
         """
         Create and return a new :class:`Reaction` object containing the
         provided `reactants` and `products` as lists of :class:`Molecule`
@@ -1739,7 +1739,11 @@ class KineticsFamily(Database):
         for key, species_list in zip(['reactants', 'products'], [reaction.reactants, reaction.products]):
             for species in species_list:
                 reaction.labeled_atoms[key] = dict(reaction.labeled_atoms[key], **species.get_all_labeled_atoms())
-
+        if check_spin:
+            if not reaction.check_if_spin_allowed():
+                logging.info("Did not create the following reaction, which violates conservation of spin...")
+                logging.info(str(reaction))
+                return None
         return reaction
 
     def _match_reactant_to_template(self, reactant, template_reactant):
@@ -1802,6 +1806,7 @@ class KineticsFamily(Database):
             specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
+        check_spin = True
         reaction_list = []
 
         # Forward direction (the direction in which kinetics is defined)
@@ -1989,7 +1994,7 @@ class KineticsFamily(Database):
                 specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
-
+        check_spin = True
         rxn_list = []
 
         # Wrap each reactant in a list if not already done (this is done to
@@ -2045,7 +2050,9 @@ class KineticsFamily(Database):
                             pass
                         else:
                             if product_structures is not None:
-                                rxn = self._create_reaction(reactant_structures, product_structures, forward)
+                                if self.label in allowed_spin_violation_families:
+                                    check_spin = False
+                                rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                 if rxn:
                                     rxn_list.append(rxn)
         # Bimolecular reactants: A + B --> products
@@ -2088,7 +2095,9 @@ class KineticsFamily(Database):
                                     pass
                                 else:
                                     if product_structures is not None:
-                                        rxn = self._create_reaction(reactant_structures, product_structures, forward)
+                                        if self.label in allowed_spin_violation_families:
+                                            check_spin = False
+                                        rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                         if rxn:
                                             rxn_list.append(rxn)
 
@@ -2112,8 +2121,9 @@ class KineticsFamily(Database):
                                         pass
                                     else:
                                         if product_structures is not None:
-                                            rxn = self._create_reaction(reactant_structures, product_structures,
-                                                                        forward)
+                                            if self.label in allowed_spin_violation_families:
+                                                check_spin = False
+                                            rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                             if rxn:
                                                 rxn_list.append(rxn)
 
@@ -2166,7 +2176,9 @@ class KineticsFamily(Database):
                             pass
                         else:
                             if product_structures is not None:
-                                rxn = self._create_reaction(reactant_structures, product_structures, forward)
+                                if self.label in allowed_spin_violation_families:
+                                    check_spin = False
+                                rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                 if rxn:
                                     rxn_list.append(rxn)
             else:
@@ -2231,7 +2243,9 @@ class KineticsFamily(Database):
                             pass
                         else:
                             if product_structures is not None:
-                                rxn = self._create_reaction(reactant_structures, product_structures, forward)
+                                if self.label in allowed_spin_violation_families:
+                                    check_spin = False
+                                rxn = self._create_reaction(reactant_structures, product_structures, forward, check_spin = check_spin)
                                 if rxn:
                                     rxn_list.append(rxn)
 

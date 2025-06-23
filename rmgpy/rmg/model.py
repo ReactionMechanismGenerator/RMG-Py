@@ -311,7 +311,6 @@ class CoreEdgeReactionModel:
             try:
                 mols = molecule.cut_molecule(cut_through=False)
             except AttributeError:
-                # it's Molecule object, change it to Fragment and then cut
                 molecule = Fragment().from_adjacency_list(molecule.to_adjacency_list())
                 mols = molecule.cut_molecule(cut_through=False)
             if len(mols) == 1:
