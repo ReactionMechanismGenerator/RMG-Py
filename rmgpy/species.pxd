@@ -42,6 +42,7 @@ cdef class Species:
     cdef public int index
     cdef public str label
     cdef public object thermo
+    cdef public object solvationthermo
     cdef public Conformer conformer
     cdef public object transport_data
     cdef public list molecule

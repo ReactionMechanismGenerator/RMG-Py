@@ -68,35 +68,35 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
         solvation_database = get_db('solvation')
         solute_data = solvation_database.get_solute_data(spc)
 
-        try:
-            from rmgpy.rmg.input import get_input
+    #     try:
+    #         from rmgpy.rmg.input import get_input
             
-            ml_solvation = get_input("ml_solvation")
-            solvent_species = solvation_database.get_solvent_structure(solvent_name)[0]
-            solvent_smiles = solvent_species.smiles
-            solvent_mol = Chem.MolFromSmiles(solvent_smiles)
+    #         ml_solvation = get_input("ml_solvation")
+    #         solvent_species = solvation_database.get_solvent_structure(solvent_name)[0]
+    #         solvent_smiles = solvent_species.smiles
+    #         solvent_mol = Chem.MolFromSmiles(solvent_smiles)
 
-            solute_smiles = spc.smiles
-            solute_mol = Chem.MolFromSmiles(solute_smiles)
+    #         solute_smiles = spc.smiles
+    #         solute_mol = Chem.MolFromSmiles(solute_smiles)
 
-            solvation_correction = ml_solvation.get_solvation_correction(solute_mol, solvent_mol)
+    #         solvation_correction = ml_solvation.get_solvation_correction(solute_mol, solvent_mol)
 
-            wilhoit.S0.value_si += solvation_correction.entropy
-            wilhoit.H0.value_si += solvation_correction.enthalpy
-            wilhoit.comment += (
-                f" + Solvation correction (H={solvation_correction.enthalpy / 1e3:+.0f} kJ/mol; "
-                f"S={solvation_correction.entropy:+.0f} J/mol/K) using ML model"
-            )
-        except Exception as e:
-            logging.warning("ML solvation correction not used: " + str(e))
-            # fallback to LSER (default)
-            solvation_correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
-            wilhoit.S0.value_si += solvation_correction.entropy
-            wilhoit.H0.value_si += solvation_correction.enthalpy
-            wilhoit.comment += (
-                f" + Solvation correction (H={solvation_correction.enthalpy / 1e3:+.0f} kJ/mol; "
-                f"S={solvation_correction.entropy:+.0f} J/mol/K) using LSER"
-            )
+    #         wilhoit.S0.value_si += solvation_correction.entropy
+    #         wilhoit.H0.value_si += solvation_correction.enthalpy
+    #         wilhoit.comment += (
+    #             f" + Solvation correction (H={solvation_correction.enthalpy / 1e3:+.0f} kJ/mol; "
+    #             f"S={solvation_correction.entropy:+.0f} J/mol/K) using ML model"
+    #         )
+    #     except Exception as e:
+    #         logging.warning("ML solvation correction not used: " + str(e))
+    #         # fallback to LSER (default)
+    #         solvation_correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
+    #         wilhoit.S0.value_si += solvation_correction.entropy
+    #         wilhoit.H0.value_si += solvation_correction.enthalpy
+    #         wilhoit.comment += (
+    #             f" + Solvation correction (H={solvation_correction.enthalpy / 1e3:+.0f} kJ/mol; "
+    #             f"S={solvation_correction.entropy:+.0f} J/mol/K) using LSER"
+    #         )
 
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:
@@ -208,3 +208,18 @@ def submit(spc, solvent_name=''):
 
     """
     spc.thermo = evaluator(spc, solvent_name=solvent_name)
+
+    # generate solvationthermo if needed
+    if solvent_name and spc.thermo and "Liquid thermo library" not in spc.thermo.comment:
+        solvation_database = get_db('solvation')
+        if solvation_database:
+            try:
+                from rmgpy.rmg.input import get_input
+                ml_solvation = get_input("ml_solvation")
+                solvationthermo = ml_solvation.generate_solvation_model(
+                    spc = spc,
+                    solvent_name = solvent_name
+                )
+                spc.solvationthermo = solvationthermo
+            except Exception as e:
+                    logging.warning("Failed to generate solvation thermo for {}: {}".format(spc.label, e))

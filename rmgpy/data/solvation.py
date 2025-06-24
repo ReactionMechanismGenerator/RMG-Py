@@ -47,7 +47,6 @@ from rmgpy.exceptions import InputError
 from rmgpy.data.thermo import is_aromatic_ring, is_bicyclic, find_aromatic_bonds_from_sub_molecule, \
     convert_ring_to_sub_molecule, is_ring_partial_matched, bicyclic_decomposition_for_polyring, \
     split_bicyclic_into_single_rings, saturate_ring_bonds
-from rmgpy.data import get_db
 
 from rdkit import Chem
 
@@ -464,10 +463,11 @@ class KfactorParameters(object):
     y_solute = mole fraction of the solute in a gas phase at equilibrium in a binary dilute mixture
     x_solute = mole fraction of the solute in a liquid phase at equilibrium in a binary dilute mixture
     """
-    def __init__(self, A=None, B=None, C=None, D=None, T_transition=None):
+    def __init__(self, A=None, B=None, C=None, D=None, T_transition=None, solvent_name=None):
         self.lower_T = [A, B, C]
         self.higher_T = D
         self.T_transition = T_transition # in K
+        self.solvent_name = solvent_name # in coolprop format
 
 class SoluteData(object):
     """
@@ -2231,6 +2231,23 @@ class SolvationDatabase(object):
         correction.enthalpy = self.calc_h(solute_data, solvent_data)
         correction.gibbs = self.calc_g(solute_data, solvent_data)
         correction.entropy = self.calc_s(correction.gibbs, correction.enthalpy)
+
+        return correction
+    
+    def get_solvation_correction_from_soluteML(self, solute_mol, solvent_mol, model):
+        """
+        Dummy function to be replaced with soluteML model implementation.
+        """
+        correction = SolvationCorrection(0.0, 0.0, 0.0)
+
+        return correction
+    
+    def get_solvation_correction_from_directML(self, solute_mol, solvent_mol, model):
+        """
+        Dummy function to be replaced with directML model implementation.
+        """
+        correction = SolvationCorrection(0.0, 0.0, 0.0)
+
         return correction
     
     def get_Kfactor(self, delG298, delH298, delS298, solvent_name, T):
@@ -2434,20 +2451,6 @@ class SolvationDatabase(object):
 
         return kfactor_parameters
 
-    def generate_solvation_model(self, species, solvent_name, T_dep=False, method="SoluteGC"):
-        """
-        Returns a TDepModel or StaticModel depending on T_dep flag.
-        method: 'SoluteGC', 'SoluteML', or "DirectML'
-        """
-
-        # NEED TO IMPLEMENT: Extract T_dep and method option from the input file
-        if T_dep:
-            # A, B, C, D is calculated (Based on three methods)
-            return TDepModel(A, B, C, D, solvent_name)
-        else:
-            # dH298, dS298 is calculated (Based on three methods)
-            return StaticModel(dH298, dG298)
-
     def check_solvent_in_initial_species(self, rmg, solvent_structure):
         """
         Given the instance of RMG class and the solvent_structure, it checks whether the solvent is listed as one
@@ -2472,54 +2475,184 @@ class SolvationDatabase(object):
 
 class MLSolvation:
     """
-    A dummy class for machine learning-based solvation correction.
+    A class for solvation correction.
     """
-    def __init__(self, model_path: str, T_dependent: bool = False, method: str = "SoluteGC"):
+    def __init__(self, T_dep: bool = False, method: str = "SoluteGC", model_path: str = ""):
         """
         model path: path to the directory where the machine learning model is stored
         # ex) model_path = "RMG-database/input/thermo/ml/solvation"
-        T_dependent: whether T_dependent solvation correction is used
+        T_dep: whether T_dep solvation correction is used
         method: the method used for solvation correction, e.g., "SoluteGC", "SoluteML" or "DirectML"
         """
         self.model_path = model_path
-        self.T_dependent = T_dependent
+        self.T_dep = T_dep
         self.method = method
-        self.model = self.load_model(model_path)
+        self.model = self.load_model(model_path) if method != "SoluteGC" else None
 
     def load_model(self, model_path):
         # Need to implement model loading code (e.g., joblib.load, torch.load, etc.)
         print(f"[NOTICE] Dummy ML model loaded from: {model_path}")
         return None  # Need to return something like "return joblib.load(os.path.join(model_path, "model.pkl"))"
 
-    def get_solvation_correction(self, solute_mol, solvent_mol):
+    def generate_solvation_model(self, spc, solvent_name):
         """
-        Based on T_dependent flag and method, returns solvation correction 
+        Returns a TDepModel or StaticModel depending on T_dep flag.
         """
-        if self.T_dependent:
-            solvation_database = get_db('solvation')
-            if self.method == "SoluteGC":
-                return solvation_database.get_T_dep_solvation_energy_from_soluteGC(solute_mol, solvent_mol, T)
-            elif self.method == "SoluteML":
-                return solvation_database.get_T_dep_solvation_energy_from_soluteML(solute_mol, solvent_mol, T, self.model)
-            elif self.method == "DirectML":
-                return solvation_database.get_T_dep_solvation_energy_from_directML(solute_mol, solvent_mol, T, self.model)
+        correction = self.get_solvation_correction(spc, solvent_name)
+
+        dH298 = correction.enthalpy  # J/mol
+        dS298 = correction.entropy   # J/mol/K
+        dG298 = correction.gibbs  # J/mol   
+
+        if self.T_dep:
+            kfactor_parameters = self.get_Kfactor_parameters(dG298, dH298, dS298, solvent_name)
+            return TDepModel(kfactor_parameters, solvent_name)
         else:
-            return self.get_solvation_correction_at_298K(solute_mol, solvent_mol)
+            return StaticModel(dH298, dS298)
+        
+    def get_solvation_correction(self, spc, solvent_name):
+        """
+        Returns solvation correction at 298K based on 3 methods: SoluteGC, SoluteML, or DirectML.
+        """
+        # Get solute_data and solvent_data
+        from rmgpy.data.rmg import get_db # if we import get_db at the top, it will cause circular import error
+        solvation_database = get_db('solvation')
+        solute_data = solvation_database.get_solute_data(spc)
+        solvent_data = solvation_database.get_solvent_data(solvent_name)
+
+        if self.method == "SoluteGC":
+            return solvation_database.get_solvation_correction(solute_data, solvent_data)
+        
+        elif self.method in ["SoluteML", "DirectML"]:
+            
+            # Get solute_mol and solvent_mol
+            solvent_species = solvation_database.get_solvent_structure(solvent_name)[0]
+            solvent_smiles = solvent_species.smiles
+            solvent_mol = Chem.MolFromSmiles(solvent_smiles)
+
+            solute_smiles = spc.smiles
+            solute_mol = Chem.MolFromSmiles(solute_smiles)
+        
+            if self.method == "SoluteML":
+                return solvation_database.get_solvation_correction_from_soluteML(solute_mol, solvent_mol, self.model)
+            elif self.method == "DirectML":
+                return solvation_database.get_solvation_correction_from_directML(solute_mol, solvent_mol, self.model)
+        else:
+            raise ValueError(f"Unknown solvation method: {self.method}")
+        
+    def get_Kfactor_parameters(self, delG298, delH298, delS298, solvent_name, T_trans_factor=0.75):
+        """Returns fitted parameters for the K-factor piecewise functions given the solvation properties at 298 K.
+
+        Given delG298 (J/mol), delH298 (J/mol), delS298 (J/mol/K), and solvent_name,
+        it finds the fitted K-factor parameters for the solvent-solute pair.
+        The parameters (A, B, C, D) are determined by enforcing the smooth continuity of the piecewise
+        functions at transition temperature and by making K-factor match in value and temperature
+        gradient at 298 K with those estimated from Abraham and Mintz LSERs.
+        The four equations are listed here:
+            1) Match in value of K-factor with the estimate from the Abraham LSER at 298 K
+                A + B(1-Tr)^0.355 + Cexp(1-Tr)(Tr)^0.59 = Tr*ln(K-factor)
+            2) Match in temperature gradient of K-factor with the estimate from the Mintz LSER at 298 K
+                -0.355B / Tc (1-Tr)^-0.645 + Cexp(1-Tr) / Tc * (0.59(Tr)^-0.41 - (Tr)^0.59) = d(Tr*ln(K-factor))/dT
+            3) Continuity of the piecewise function at T_transition:
+                A + B(1-Tr)^0.355 + Cexp(1-Tr)(Tr)^0.59 = D(rho_l / rho_c - 1)
+            4) Continuous temperature gradient of the piecewise function at T_transition
+                -0.355B / Tc (1-Tr)^-0.645 + Cexp(1-Tr) / Tc * (0.59(Tr)^-0.41 - (Tr)^0.59) = D / rho_c * d(rho_l)/dT
+        The conversion between dGsolv estimate from the Abraham and K-factor is shown below:
+                dGsolv = RTln(K-factor * rho_g / rho_l)
+        where rho_g is the saturated gas phase density of the solvent.
+        See the RMG documentation "Liquid Phase Systems" section on a temperature-dependent model for more details.
+
+        Args:
+            delG298 (float): solvation free energy at 298 K in J/mol.
+            delH298 (float): solvation enthalpy at 298 K in J/mol.
+            delS298 (float): solvation entropy at 298 K in J/mol/K.
+            solvent_name (str): name of the solvent that is used in CoolProp.
+            T_trans_factor (float): a temperature [K] for transitioning from the first piecewise function to the
+            second piecewise function.
+
+        """
+        # Find solvent name in CoolProp database
+        from rmgpy.data.rmg import get_db # if we import get_db at the top, it will cause circular import error
+        solvation_database = get_db('solvation')
+        solvent_data = solvation_database.get_solvent_data(solvent_name)
+        solvent_name = solvent_data.name_in_coolprop
+        if solvent_name is None:
+            raise DatabaseError("Cannot find the solvent name in CoolProp database.")
+
+        Tc = get_critical_temperature(solvent_name)
+        T_transition = Tc * T_trans_factor  # T_trans_factor is empirically set to 0.75 by default
+        rho_c = PropsSI('rhomolar_critical', solvent_name)  # the critical density of the solvent, in mol/m^3
+
+        # Generate Amatrix and bvector for Ax = b
+        Amatrix = np.zeros((4, 4))
+        bvec = np.zeros((4, 1))
+        # 1. Tr*ln(K-factor) value at T = 298 K
+        rho_g_298 = get_gas_saturation_density(solvent_name, 298)
+        rho_l_298 = get_liquid_saturation_density(solvent_name, 298)
+        K298 = math.exp(delG298 / (298 * constants.R)) / rho_g_298 * rho_l_298  # K-factor
+        x298 = 298. / Tc * math.log(K298)  # Tr*ln(K-factor), in K
+        Amatrix[0][0] = 1
+        Amatrix[0][1] = (1 - 298 / Tc) ** 0.355
+        Amatrix[0][2] = math.exp(1 - 298 / Tc) * (298 / Tc) ** 0.59
+        Amatrix[0][3] = 0
+        bvec[0] = x298
+        # 2. d(Tr*ln(K-factor)) / dT at T = 298. Use finite difference method to get the temperature gradient from
+        # delG, delH, and delS at 298 K
+        T2 = 299
+        delG_T2 = delH298 - delS298 * T2
+        rho_g_T2 = get_gas_saturation_density(solvent_name, T2)
+        rho_l_T2 = get_liquid_saturation_density(solvent_name, T2)
+        K_T2 = math.exp(delG_T2 / (T2 * constants.R)) / rho_g_T2 * rho_l_T2
+        x_T2 = T2 / Tc * math.log(K_T2)  # Tln(K-factor) at 299 K, in K
+        slope298 = (x_T2 - x298) / (T2 - 298)
+        Amatrix[1][0] = 0
+        Amatrix[1][1] = -0.355 / Tc * ((1 - 298 / Tc) ** (-0.645))
+        Amatrix[1][2] = 1 / Tc * math.exp(1 - 298 / Tc) * (0.59 * (298 / Tc) ** (-0.41) - (298 / Tc) ** 0.59)
+        Amatrix[1][3] = 0
+        bvec[1] = slope298
+        # 3. Tln(K-factor) continuity at T = T_transition
+        rho_l_Ttran = get_liquid_saturation_density(solvent_name, T_transition)
+        Amatrix[2][0] = 1
+        Amatrix[2][1] = (1 - T_transition / Tc) ** 0.355
+        Amatrix[2][2] = math.exp(1 - T_transition / Tc) * (T_transition / Tc) ** 0.59
+        Amatrix[2][3] = -(rho_l_Ttran - rho_c) / rho_c
+        bvec[2] = 0
+        # 4. d(Tln(K-factor)) / dT smooth transition at T = T_transition
+        T3 = T_transition + 1
+        rho_l_T3 = get_liquid_saturation_density(solvent_name, T3)
+        Amatrix[3][0] = 0
+        Amatrix[3][1] = -0.355 / Tc * ((1 - T_transition / Tc) ** (-0.645))
+        Amatrix[3][2] = 1 / Tc * math.exp(1 - T_transition / Tc) * (
+                    0.59 * (T_transition / Tc) ** (-0.41) - (T_transition / Tc) ** 0.59)
+        Amatrix[3][3] = - ((rho_l_T3 - rho_l_Ttran) / rho_c / (T3 - T_transition))
+        bvec[3] = 0
+        # solve for the parameters
+        param, residues, ranks, s = np.linalg.lstsq(Amatrix, bvec, rcond=None)
+        # store the results in kfactor_parameters class
+        kfactor_parameters = KfactorParameters()
+        kfactor_parameters.lower_T = [float(param[0]), float(param[1]), float(param[2])]
+        kfactor_parameters.higher_T = float(param[3])
+        kfactor_parameters.T_transition = T_transition
+        kfactor_parameters.solvent_name = solvent_name # name in coolprop
+
+        return kfactor_parameters
 
 
 class TDepModel:
-    def __init__(self, A, B, C, D, solvent_name, T_trans_factor=0.75):
+    def __init__(self, kfactor_parameters, solvent_name, T_trans_factor=0.75):
         """
-        solvent_name (str): name of the solvent that is used in CoolProp
+        solvent_name (str): name of the solvent
+        solvent_name_in_coolprop (str): name of the solvent in CoolProp database
         A, B, C, D (float): coefficients for the K-factor piecewise function
         T_trans_factor (float): fraction of Tc for transition between equations
         """
-        self.A = A
-        self.B = B
-        self.C = C
-        self.D = D
+        self.A = kfactor_parameters.lower_T[0]
+        self.B = kfactor_parameters.lower_T[1]
+        self.C = kfactor_parameters.lower_T[2]
+        self.D = kfactor_parameters.higher_T
         self.T_trans_factor = T_trans_factor
         self.solvent_name = solvent_name
+        self.solvent_name_in_coolprop = kfactor_parameters.solvent_name # name in coolprop
 
     def get_Kfactor(self, T):
         """
@@ -2538,7 +2671,7 @@ class TDepModel:
             DatabaseError: if the given solvent_name is not available in CoolProp.
 
         """
-        solvent_name = self.solvent_name
+        solvent_name = self.solvent_name_in_coolprop
         if solvent_name is not None:
             Tc = get_critical_temperature(solvent_name)
             if T < Tc:
@@ -2557,8 +2690,7 @@ class TDepModel:
                                 f"is not available for the given solvent name: {solvent_name}")
         return Kfactor
     
-
-    def get_free_energy_of_solvation(self, T):
+    def get_T_dep_solvation_energy(self, T):
         """Returns solvation free energy for the input temperature based on the given solvation properties
             values at 298 K.
 
@@ -2567,21 +2699,30 @@ class TDepModel:
 
         Returns:
             delG (float): solvation free energy at the input temperature in J/mol.
+            Kfactor (float): K-factor at the input temperature. K-factor is defined as a ratio of the mole fraction
+            of a solute in a gas-phase to the mole fraction of a solute in a liquid-phase at equilibrium
+            kH (float): the Henry's law constant at the input temperature. kH is defined as the ratio of the pressure
+            of a solute in the gas-phase to the concentration of a solute in the liquid-phase at equilibrium.
         """
-        solvent_name = self.solvent_name
+        solvent_name = self.solvent_name_in_coolprop
         Kfactor = self.get_Kfactor(T)
         rho_g = get_gas_saturation_density(solvent_name, T) # saturated gas phase density of the solvent, in mol/m^3
         rho_l = get_liquid_saturation_density(solvent_name, T) # saturated liquid phase density of the solvent, in mol/m^3
-        # Psat_g = get_gas_saturation_pressure(solvent_name, T)
-        # kH = Kfactor * Psat_g / rho_l  # Henry's law constant as a fraction of the gas-phase partial pressure of solute to the liquid-phase concentration of solute
+        Psat_g = get_gas_saturation_pressure(solvent_name, T)
+        kH = Kfactor * Psat_g / rho_l  # Henry's law constant as a fraction of the gas-phase partial pressure of solute to the liquid-phase concentration of solute
         delG = constants.R * T * math.log(Kfactor * rho_g / (rho_l))  # in J/mol
+        return delG, Kfactor, kH
+    
+    def get_free_energy_of_solvation(self, T):
+        delG, Kfactor, kH = self.get_T_dep_solvation_energy(T)
         return delG
+        
 
 class StaticModel:
-    def __init__(self, dH298, dG298):
+    def __init__(self, dH298, dS298):
         self.dH298 = dH298
-        self.dG298 = dG298
+        self.dS298 = dS298
 
     def get_free_energy_of_solvation(self, T):
-        delG = self.dG298 + (T - 298) * self.dS298
+        delG = self.dH298 - T * self.dS298
         return delG

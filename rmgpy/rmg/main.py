@@ -1456,47 +1456,51 @@ class RMG(util.Subject):
 
         # Check all core reactions (in both directions) for collision limit violation
         violators = []
-        for rxn in self.reaction_model.core.reactions:
-            if rxn.is_surface_reaction():
-                # Don't check collision limits for surface reactions.
-                continue
-            violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
-            if violator_list:
-                violators.extend(violator_list)
-        # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
-        new_file = os.path.join(self.output_directory, "collision_rate_violators.log")
-        old_file = os.path.join(self.output_directory, "collision_rate_violators_OLD.log")
-        if os.path.isfile(new_file):
-            # If there are no violators, yet the violators log exists (probably from a previous run
-            # in the same folder), rename it.
-            if os.path.isfile(old_file):
-                os.remove(old_file)
-            os.rename(new_file, old_file)
-        if violators:
-            logging.info("\n")
-            logging.warning(
-                "{0} CORE reactions violate the collision rate limit!"
-                "\nSee the 'collision_rate_violators.log' for details.\n\n".format(len(violators))
-            )
-            with open(new_file, "w") as violators_f:
-                violators_f.write(
-                    "*** Collision rate limit violators report ***\n"
-                    '"Violation factor" is the ratio of the rate coefficient to the collision limit'
-                    " rate at the relevant conditions\n\n"
+
+        if not self.solvent:
+            for rxn in self.reaction_model.core.reactions:
+                if rxn.is_surface_reaction():
+                    # Don't check collision limits for surface reactions.
+                    continue
+                violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
+                if violator_list:
+                    violators.extend(violator_list)
+            # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
+            new_file = os.path.join(self.output_directory, "collision_rate_violators.log")
+            old_file = os.path.join(self.output_directory, "collision_rate_violators_OLD.log")
+            if os.path.isfile(new_file):
+                # If there are no violators, yet the violators log exists (probably from a previous run
+                # in the same folder), rename it.
+                if os.path.isfile(old_file):
+                    os.remove(old_file)
+                os.rename(new_file, old_file)
+            if violators:
+                logging.info("\n")
+                logging.warning(
+                    "{0} CORE reactions violate the collision rate limit!"
+                    "\nSee the 'collision_rate_violators.log' for details.\n\n".format(len(violators))
                 )
-                for violator in violators:
-                    if isinstance(violator[0].kinetics, (ThirdBody,Troe)):
-                        rxn_string = violator[0].to_chemkin(self.reaction_model.core.species)
-                    else:
-                        rxn_string = violator[0].to_chemkin()
-                    direction = violator[1]
-                    ratio = violator[2]
-                    condition = violator[3]
+                with open(new_file, "w") as violators_f:
                     violators_f.write(
-                        f"{rxn_string}\n" f"Direction: {direction}\n" f"Violation factor: {ratio:.2f}\n" f"Violation condition: {condition}\n\n\n"
+                        "*** Collision rate limit violators report ***\n"
+                        '"Violation factor" is the ratio of the rate coefficient to the collision limit'
+                        " rate at the relevant conditions\n\n"
                     )
+                    for violator in violators:
+                        if isinstance(violator[0].kinetics, (ThirdBody,Troe)):
+                            rxn_string = violator[0].to_chemkin(self.reaction_model.core.species)
+                        else:
+                            rxn_string = violator[0].to_chemkin()
+                        direction = violator[1]
+                        ratio = violator[2]
+                        condition = violator[3]
+                        violators_f.write(
+                            f"{rxn_string}\n" f"Direction: {direction}\n" f"Violation factor: {ratio:.2f}\n" f"Violation condition: {condition}\n\n\n"
+                        )
+            else:
+                logging.info("No collision rate violators found in the model's core.")
         else:
-            logging.info("No collision rate violators found in the model's core.")
+            logging.info("Skipping collision limit checks: liquid phase reactions.")
 
     def initialize_seed_mech(self):
         """
