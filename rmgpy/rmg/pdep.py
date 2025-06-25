@@ -596,96 +596,62 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         Merge the partial network `other` into this network.
         """
         # Make sure the two partial networks have the same source configuration
-        # assert self.source == other.source
-        # Use sets for merging to ensure uniqueness
-        self.isomers = list(set(self.isomers) | set(other.isomers))
-        self.explored = list(set(self.explored) | set(other.explored))
-        self.reactants = list(set(self.reactants) | set(other.reactants))
-        self.products = list(set(self.products) | set(other.products)) # <--- FIX FOR PRODUCTS
+        assert self.source == other.source
+
+        # Merge isomers
+        for isomer in other.isomers:
+            if isomer not in self.isomers:
+                self.isomers.append(isomer)
+        # Merge explored
+        for isomer in other.explored:
+            if isomer not in self.explored:
+                self.explored.append(isomer)
+        # Merge reactants
+        for reactants in other.reactants:
+            if reactants not in self.reactants:
+                self.reactants.append(reactants)
+        # Merge products
+        for products in other.products:
+            if products not in self.products:
+                self.products.append(products)
 
         # However, products that have been explored are actually isomers
+        # These should be removed from the list of products!
         products_to_remove = []
-        for products_set in self.products: # Iterate through the ProductSet objects
-            # Check if all species in the products_set are in the merged isomers list
-            all_species_in_isomer_list = True
-            for sp in products_set.species: # Assuming ProductSet has a 'species' attribute (list of Species)
-                if sp not in self.isomers:
-                    all_species_in_isomer_list = False
-                    break
-            if all_species_in_isomer_list and len(products_set.species) == 1: # Only remove if it's a single isomer
-                products_to_remove.append(products_set)
+        for products in self.products:
+            if len(products.species) == 1 and products.species[0] in self.isomers:
+                products_to_remove.append(products)
+        for products in products_to_remove:
+            self.products.remove(products)
 
-        for products_set in products_to_remove:
-            self.products.remove(products_set)
-
-        # Merge path reactions (needs careful __eq__ for Reaction objects)
-        # Use a temporary set for efficient uniqueness check
-        current_path_reactions_set = set(self.path_reactions)
+        # Merge path reactions
         for reaction in other.path_reactions:
-            current_path_reactions_set.add(reaction) # Set automatically handles duplicates if Reaction has __eq__/__hash__
-        self.path_reactions = list(current_path_reactions_set)
+            found = False
+            for rxn in self.path_reactions:
+                if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
+                    # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
+                    # I am not sure which is appropriate 
+                    found = True
+                    break
+            if not found:
+                self.path_reactions.append(reaction)
 
-        # Merge net reactions
-        current_net_reactions_set = set(self.net_reactions)
+        # Also merge net reactions (so that when we update the network in the
+        # future, we update the existing net reactions rather than making new ones)
+        # Q: What to do when a net reaction exists in both networks being merged?
         for reaction in other.net_reactions:
-            current_net_reactions_set.add(reaction)
-        self.net_reactions = list(current_net_reactions_set)
+            found = False
+            for rxn in self.net_reactions:
+                if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
+                    # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
+                    # I am not sure which is appropriate 
+                    found = True
+                    break
+            if not found:
+                self.net_reactions.append(reaction)
 
+        # Mark this network as invalid
         self.valid = False
-        # # Merge isomers
-        # for isomer in other.isomers:
-        #     if isomer not in self.isomers:
-        #         self.isomers.append(isomer)
-        # # Merge explored
-        # for isomer in other.explored:
-        #     if isomer not in self.explored:
-        #         self.explored.append(isomer)
-        # # Merge reactants
-        # for reactants in other.reactants:
-        #     if reactants not in self.reactants:
-        #         self.reactants.append(reactants)
-        # # Merge products
-        # for products in other.products:
-        #     if products not in self.products:
-        #         self.products.append(products)
-
-        # # However, products that have been explored are actually isomers
-        # # These should be removed from the list of products!
-        # products_to_remove = []
-        # for products in self.products:
-        #     if len(products.species) == 1 and products.species[0] in self.isomers:
-        #         products_to_remove.append(products)
-        # for products in products_to_remove:
-        #     self.products.remove(products)
-
-        # # Merge path reactions
-        # for reaction in other.path_reactions:
-        #     found = False
-        #     for rxn in self.path_reactions:
-        #         if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
-        #             # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
-        #             # I am not sure which is appropriate 
-        #             found = True
-        #             break
-        #     if not found:
-        #         self.path_reactions.append(reaction)
-
-        # # Also merge net reactions (so that when we update the network in the
-        # # future, we update the existing net reactions rather than making new ones)
-        # # Q: What to do when a net reaction exists in both networks being merged?
-        # for reaction in other.net_reactions:
-        #     found = False
-        #     for rxn in self.net_reactions:
-        #         if reaction.reactants == rxn.reactants and reaction.products == rxn.products:
-        #             # NB the isEquivalent() method that used to be on the previous line also checked reverse direction.
-        #             # I am not sure which is appropriate 
-        #             found = True
-        #             break
-        #     if not found:
-        #         self.net_reactions.append(reaction)
-
-        # # Mark this network as invalid
-        # self.valid = False
 
     def update_configurations(self, reaction_model):
         """
