@@ -1945,123 +1945,36 @@ class CoreEdgeReactionModel:
         # Two partial networks having the same source and containing one or
         # more explored isomers in common must be merged together to avoid
         # double-counting of rates
-        # --- REVISED MERGING LOGIC FOR ROBUSTNESS ---
+        for networks in self.network_dict.values():
+            network_count = len(networks)
+            for index0, network0 in enumerate(networks):
+                index = index0 + 1
+                while index < network_count:
+                    found = False
+                    network = networks[index]
+                    if network0.source == network.source:
+                        # The networks contain the same source, but do they contain any common included isomers (other than the source)?
+                        for isomer in network0.explored:
+                            if isomer != network.source and isomer in network.explored:
+                                # The networks contain an included isomer in common, so we need to merge them
+                                found = True
+                                break
+                    if found:
+                        # The networks contain the same source and one or more common included isomers
+                        # Therefore they need to be merged together
+                        logging.info("Merging PDepNetwork #{0:d} and PDepNetwork #{1:d}".format(network0.index, network.index))
+                        network0.merge(network)
+                        networks.remove(network)
+                        self.network_list.remove(network)
+                        network_count -= 1
+                    else:
+                        index += 1
 
-        # 1. Collect all networks into a single, mutable list to process
-        working_networks = list(self.network_list) 
-
-        # Keep track of the indices of networks that have been merged INTO another network.
-        networks_to_exclude = set()
-
-        # Iterate through the working list.
-        for i in range(len(working_networks)):
-            network0 = working_networks[i]
-            
-            # If this network0 has already been merged into another, skip it.
-            if network0.index in networks_to_exclude:
-                continue
-
-            # Inner loop: 'network' is the potential network to be merged INTO network0
-            for j in range(i + 1, len(working_networks)):
-                network = working_networks[j]
-                
-                # If 'network' has already been merged, skip it.
-                if network.index in networks_to_exclude:
-                    continue
-
-                # Check for shared isomers (excluding source if desired by current logic)
-                shared_isomers = []
-                for isomer in network0.explored:
-                    # If you want to merge if *any* isomer is shared, remove `isomer != network.source`
-                    if isomer != network.source and isomer in network.explored:
-                        shared_isomers.append(isomer)
-                        break 
-
-                if shared_isomers: # 'found' is true if shared_isomers is not empty
-                    # --- LOGGING BEFORE MERGE ---
-                    logging.info("-" * 80)
-                    # Safely get source label(s) for logging
-                    source0_label = [x.label for x in network0.source] if isinstance(network0.source, list) else network0.source.label
-                    source_label = [x.label for x in network.source] if isinstance(network.source, list) else network.source.label
-                    logging.info(f"Attempting to merge PDepNetwork #{network0.index} (source: {source0_label}) and PDepNetwork #{network.index} (source: {source_label})")
-                    logging.info(f"Shared isomers triggering merge: {[s.label for s in shared_isomers]}")
-
-                    def log_species_energies(prefix, network_obj):
-                        """Helper function to log species energies, avoiding duplicates in output."""
-                        # Use a set to collect unique species for logging
-                        species_for_logging = set(network_obj.explored)
-                        if hasattr(network_obj, 'source'):
-                            # Ensure source handling is robust (single species vs. list of species)
-                            if isinstance(network_obj.source, list):
-                                species_for_logging.update(network_obj.source)
-                            else:
-                                species_for_logging.add(network_obj.source)
-                        
-                        # Add products. Assuming 'products' contains ProductSet objects
-                        # and ProductSet has a 'species' attribute (a list/tuple of Species objects).
-                        # If 'products' can contain single Species objects directly, adjust as needed.
-                        for prod_item in network_obj.products:
-                            if hasattr(prod_item, 'species') and prod_item.species is not None:
-                                species_for_logging.update(prod_item.species)
-                            else: # Assume it's a single Species object itself
-                                species_for_logging.add(prod_item)
-
-                        logging.info(f"{prefix} PDepNetwork #{network_obj.index} species energies:")
-                        
-                        # Sort for consistent output
-                        for sp in sorted(list(species_for_logging), key=lambda x: x.label if hasattr(x, 'label') else str(x)):
-                            try:
-                                if isinstance(sp, Species):
-                                    if hasattr(sp, 'conformer') and sp.conformer is not None and \
-                                       hasattr(sp.conformer, 'E0') and sp.conformer.E0 is not None:
-                                        logging.info(f"  {sp.label}: {sp.conformer.E0.value:.2f} {sp.conformer.E0.units}")
-                                    else:
-                                        logging.info(f"  {sp.label}: Conformer E0 not available")
-                                # This `else` block catches objects that are not `Species`
-                                # but might have an `E0` attribute (e.g., your ProductSet if it has one)
-                                else:
-                                    if hasattr(sp, 'label') and hasattr(sp, 'E0') and sp.E0 is not None:
-                                        logging.info(f"  {sp.label}: {sp.E0:.2f}")
-                                    elif hasattr(sp, 'E0') and sp.E0 is not None:
-                                        logging.info(f"  {str(sp)}: {sp.E0:.2f}") # Fallback for non-labeled E0 objects
-                                    else:
-                                        logging.info(f"  {sp.label if hasattr(sp, 'label') else str(sp)}: E0 not available")
-                            except Exception as e:
-                                logging.warning(f"  Error logging energy for {sp.label if hasattr(sp, 'label') else str(sp)}: {e}")
-
-                    log_species_energies("Before merge,", network0)
-                    log_species_energies("Before merge,", network)
-                    # --- END LOGGING BEFORE MERGE ---
-
-                    # Perform the merge. network is absorbed into network0.
-                    network0.merge(network) 
-                    
-                    # Mark 'network' for exclusion from the final list.
-                    networks_to_exclude.add(network.index) 
-
-                    # --- LOGGING AFTER MERGE ---
-                    logging.info(f"After merge, PDepNetwork #{network0.index} (merged network) species energies:")
-                    log_species_energies("After merge,", network0) # Log network0 *after* it has absorbed 'network'
-                    logging.info("-" * 80)
-                    # --- END LOGGING AFTER MERGE ---
-
-        # 2. Build the new self.network_list by excluding merged networks
-        self.network_list = [net for net in working_networks if net.index not in networks_to_exclude]
-
-        # 3. Rebuild self.network_dict from the updated self.network_list
-        self.network_dict.clear()
-        for network in self.network_list:
-            source_key = tuple(network.source) if isinstance(network.source, list) else network.source
-            if source_key not in self.network_dict:
-                self.network_dict[source_key] = []
-            self.network_dict[source_key].append(network)
-
-        # The rest of the method for updating invalid networks
-        # (This part of the count check needs adjustment if network.source can be a list)
-        count = sum([1 for network in self.network_list if not network.valid and not (len(network.explored) == 0 and (isinstance(network.source, list) and len(network.source) > 1 or not isinstance(network.source, list) and network.source is not None and network.source.label is not None))])
-
+        count = sum([1 for network in self.network_list if not network.valid and not (len(network.explored) == 0 and len(network.source) > 1)])
         logging.info("Updating {0:d} modified unimolecular reaction networks (out of {1:d})...".format(count, len(self.network_list)))
 
+        # Iterate over all the networks, updating the invalid ones as necessary
+        # self = reaction_model object
         updated_networks = []
         for network in self.network_list:
             if not network.valid:
@@ -2117,6 +2030,7 @@ class CoreEdgeReactionModel:
                     reaction.reversible = True
             # Move to the next core reaction
             index += 1
+
 
     def mark_chemkin_duplicates(self):
         """
