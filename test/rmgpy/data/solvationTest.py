@@ -35,6 +35,8 @@ from rmgpy.data.solvation import (
     SoluteData,
     SolvationDatabase,
     SolventLibrary,
+    MLSolvation,
+    TDepModel,
     get_critical_temperature,
     get_liquid_saturation_density,
     get_gas_saturation_density,
@@ -45,12 +47,20 @@ from rmgpy.rmg.main import Species
 from rmgpy.exceptions import InputError
 import pytest
 
+class DummyRMGDatabase:
+    """
+    Dummy class used in testing to satisfy the get_db('solvation') call within MLSolvation.
+    """
+    def __init__(self, solvation_database):
+        self.solvation = solvation_database
 
 class TestSoluteDatabase:
     @classmethod
     def setup_class(cls):
         cls.database = SolvationDatabase()
         cls.database.load(os.path.join(settings["database.directory"], "solvation"))
+        import rmgpy.data.rmg
+        rmgpy.data.rmg.database = DummyRMGDatabase(cls.database)
 
     @classmethod
     def teardown_class(cls):
@@ -377,71 +387,79 @@ class TestSoluteDatabase:
         species = Species().from_smiles("CCC(C)=O")  # 2-Butanone for a solute
         solute_data = self.database.get_solute_data(species)
         solvent_data = self.database.get_solvent_data("water")
-        correction = self.database.get_solvation_correction(solute_data, solvent_data)
-        delG298 = correction.gibbs  # in J/mol
-        delH298 = correction.enthalpy  # in J/mol
-        delS298 = correction.entropy  # in J/mol/K
+
         solvent_name = solvent_data.name_in_coolprop
-        kfactor_parameters = self.database.get_Kfactor_parameters(delG298, delH298, delS298, solvent_name)
-        assert round(abs(kfactor_parameters.lower_T[0] - -9.780), 3) == 0  # check up to 3 decimal places
-        assert round(abs(kfactor_parameters.lower_T[1] - 0.492), 3) == 0
-        assert round(abs(kfactor_parameters.lower_T[2] - 10.485), 3) == 0
-        assert round(abs(kfactor_parameters.higher_T - 1.147), 3) == 0
-        assert round(abs(kfactor_parameters.T_transition - 485.3), 1) == 0
+        solvation = MLSolvation(T_dep=True, method="SoluteGC")
+        solvation_model = solvation.generate_solvation_model(species, solvent_name)
+
+        # Confirm that we get the expected model type
+        assert isinstance(solvation_model, TDepModel)
+
+        # Extract fitted parameters and check against expected values
+        assert round(abs(solvation_model.A - -9.780), 3) == 0  # check up to 3 decimal places
+        assert round(abs(solvation_model.B - 0.492), 3) == 0
+        assert round(abs(solvation_model.C - 10.485), 3) == 0
+        assert round(abs(solvation_model.D - 1.147), 3) == 0
+
+        Tc = get_critical_temperature(solvation_model.solvent_name_in_coolprop)
+        calculated_Tc = solvation_model.T_trans_factor * Tc
+        assert round(abs(calculated_Tc - 485.3), 1) == 0
+
         # check that DatabaseError is raised when the solvent's name_in_coolprop is None
-        solvent_data = self.database.get_solvent_data("chloroform")
-        solvent_name = solvent_data.name_in_coolprop
         with pytest.raises(DatabaseError):
-            self.database.get_Kfactor_parameters(
-                delG298,
-                delH298,
-                delS298,
-                solvent_name,
-            )
+            solvation.generate_solvation_model(species, "chloroform")
 
     def test_Tdep_solvation_calculation(self):
         """
         Test we can calculate the temperature dependent solvation free energy and K-factor
         using both `get_T_dep_solvation_energy_from_LSER_298` and `get_T_dep_solvation_energy_from_input_298` methods.
         """
-        # First, test `get_T_dep_solvation_energy_from_LSER_298` method.
         species = Species().from_smiles("CCC1=CC=CC=C1")  # ethylbenzene
         species.generate_resonance_structures()
-        solute_data = self.database.get_solute_data(species)
-        solvent_data = self.database.get_solvent_data("benzene")
+        solvent_name = "benzene"
+
+        solvation = MLSolvation(T_dep=True, method="SoluteGC")
+        solvation_model = solvation.generate_solvation_model(species, solvent_name)
+
+        # Confirm that we get the expected model type
+        assert isinstance(solvation_model, TDepModel)
+
+        # Evaluate at T = 500 K
         T = 500  # in K
-        delG, Kfactor, kH = self.database.get_T_dep_solvation_energy_from_LSER_298(solute_data, solvent_data, T)
+        delG, Kfactor, kH = solvation_model.get_T_dep_solvation_energy(T)
         assert round(abs(Kfactor - 0.403), 3) == 0
         assert round(abs(delG / 1000 - -13.59), 2) == 0  # delG is in J/mol
+
         # For temperature greater than or equal to the critical temperature of the solvent,
         # it should raise InputError
         T = 1000
         with pytest.raises(InputError):
-            self.database.get_T_dep_solvation_energy_from_LSER_298(
-                solute_data,
-                solvent_data,
-                T,
-            )
+            solvation_model.get_free_energy_of_solvation(T)
 
-        # Now test `get_T_dep_solvation_energy_from_input_298` method.
+    def test_TDepModel(self):
         delG298 = -23570  # in J/mol
         delH298 = -40612  # in J/mol
         delS298 = (delH298 - delG298) / 298  # in J/mol/K
         solvent_name = "benzene"
+
+        solvation = MLSolvation(T_dep=True, method="SoluteGC")
+        kfactor_parameters = solvation.get_Kfactor_parameters(delG298, delH298, delS298, solvent_name)
+        solvation_model = TDepModel(
+            kfactor_parameters=kfactor_parameters,
+            solvent_name=solvent_name
+            )    
+        
+        # Test at T = 500 K
         T = 500  # in K
-        delG, Kfactor, kH = self.database.get_T_dep_solvation_energy_from_input_298(delG298, delH298, delS298, solvent_name, T)
+        delG, Kfactor, kH = solvation_model.get_T_dep_solvation_energy(T)
         assert round(abs(Kfactor - 0.567), 3) == 0
         assert round(abs(delG / 1000 - -12.18), 2) == 0  # delG is in J/mol
+
         # test that it raises InputError for T above the critical temperature
         T = 1000
         with pytest.raises(InputError):
-            self.database.get_T_dep_solvation_energy_from_input_298(
-                delG298,
-                delH298,
-                delS298,
-                solvent_name,
-                T,
-            )
+            solvation_model.get_free_energy_of_solvation(T)
+
 
     @pytest.mark.skip(reason="Skip for Electrochem PR.")
     def test_initial_species(self):
