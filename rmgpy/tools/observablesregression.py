@@ -131,12 +131,14 @@ class ObservablesTestCase(object):
         old_species_list, old_reaction_list = load_chemkin_file(
             old_chemkin_path,
             old_species_dict_path,
-            old_transport_path
+            old_transport_path,
+            use_chemkin_names = True
         )
         new_species_list, new_reaction_list = load_chemkin_file(
             new_chemkin_path,
             new_species_dict_path,
-            new_transport_path
+            new_transport_path,
+            use_chemkin_names = True
         )
 
         old_surface_species_list = None
