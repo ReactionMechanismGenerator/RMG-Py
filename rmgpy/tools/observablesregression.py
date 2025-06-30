@@ -179,8 +179,8 @@ class ObservablesTestCase(object):
                 surface_args_old["surface_file"] = old_surface_chemkin_path
                 surface_args_new["surface_file"] = new_surface_chemkin_path
 
-            self.old_sim.load_chemkin_model(old_chemkin_path, old_transport_path, quiet=True, **common_args_old)
-            self.new_sim.load_chemkin_model(new_chemkin_path, new_transport_path, quiet=True, **common_args_new)
+            self.old_sim.load_chemkin_model(old_chemkin_path, old_transport_path, quiet=True, **surface_args_old)
+            self.new_sim.load_chemkin_model(new_chemkin_path, new_transport_path, quiet=True, **surface_args_new)
 
     def __str__(self):
         """
