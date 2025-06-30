@@ -33,7 +33,12 @@ import math
 import numpy as np
 
 import rmgpy.constants as constants
+from rmgpy.molecule.fragment import Fragment
+from rmgpy.species import Species
 
+def _to_molecule(obj):
+    """Return plain Molecule; accept Molecule or (Molecule, mapping) tuple."""
+    return obj[0] if isinstance(obj, tuple) else obj
 
 class DiffusionLimited(object):
 
@@ -119,7 +124,19 @@ class DiffusionLimited(object):
         radii = 0.0
         diffusivities = []
         for spec in reacting:
-            solute_data = self.database.get_solute_data(spec)
+            # --- ① Fragment (AFM) → representative Molecule ---------------
+            if isinstance(spec, Fragment):
+                # Replace R/L dummy atoms with hydrogen
+                rep_mol = _to_molecule(spec.get_representative_molecule())
+                spec_for_solv = Species(molecule=[rep_mol])
+            elif isinstance(spec, Species) and isinstance(spec.molecule[0], Fragment):
+                rep_mol = _to_molecule(spec.molecule[0].get_representative_molecule())
+                spec_for_solv = Species(molecule=[rep_mol])
+            else:
+                spec_for_solv = spec
+
+            # --- ② look-up solvation / diffusivity -------------------------
+            solute_data = self.database.get_solute_data(spec_for_solv)
             # calculate radius with the McGowan volume and assuming sphere
             radius = ((75 * solute_data.V / constants.pi / constants.Na) ** (1. / 3)) / 100  # m
             diff = solute_data.get_stokes_diffusivity(T, self.get_solvent_viscosity(T))
