@@ -173,14 +173,14 @@ class ObservablesTestCase(object):
             self.old_sim.load_model()
             self.new_sim.load_model()
         else:
-            self.old_sim.load_chemkin_model(old_chemkin_path,
-                                            transport_file=old_transport_path,
-                                            surface_file=old_surface_chemkin_path,
-                                            quiet=True)
-            self.new_sim.load_chemkin_model(new_chemkin_path,
-                                            transport_file=new_transport_path,
-                                            surface_file=new_surface_chemkin_path,
-                                            quiet=True)
+            surface_args_old = {}
+            surface_args_new = {}
+            if surface:
+                surface_args_old["surface_file"] = old_surface_chemkin_path
+                surface_args_new["surface_file"] = new_surface_chemkin_path
+
+            self.old_sim.load_chemkin_model(old_chemkin_path, old_transport_path, quiet=True, **common_args_old)
+            self.new_sim.load_chemkin_model(new_chemkin_path, new_transport_path, quiet=True, **common_args_new)
 
     def __str__(self):
         """
