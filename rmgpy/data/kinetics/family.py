@@ -4471,7 +4471,7 @@ class KineticsFamily(Database):
             elif line.startswith('Exact match'):
                 exact = True
             elif line.startswith('Estimated'):
-                pass
+                return False, [self.label]
             elif line.startswith('Multiplied by'):
                 degeneracy = float(line.split()[-1])
 
