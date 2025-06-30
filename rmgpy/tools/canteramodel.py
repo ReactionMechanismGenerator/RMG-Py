@@ -175,54 +175,66 @@ def generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_
     This saves all the reaction conditions into the Cantera class.
     """
 
-    # Create individual ScalarQuantity objects for Tlist, Plist, Vlist, and reaction_time_list
-    if Tlist:
-        Tlist = Quantity(Tlist)  # Be able to create a Quantity object from it first
-        Tlist = [(Tlist.value[i], Tlist.units) for i in range(len(Tlist.value))]
-    if Plist:
-        Plist = Quantity(Plist)
-        Plist = [(Plist.value[i], Plist.units) for i in range(len(Plist.value))]
-    if Vlist:
-        Vlist = Quantity(Vlist)
-        Vlist = [(Vlist.value[i], Vlist.units) for i in range(len(Vlist.value))]
-    if reaction_time_list:
-        reaction_time_list = Quantity(reaction_time_list)
-        reaction_time_list = [(reaction_time_list.value[i], reaction_time_list.units)
-                            for i in range(len(reaction_time_list.value))]
+    def convert_to_quantity_list(input_list):
+        """
+        Convert an input list to a list of (value, unit) tuples using Quantity.
+        """
+        if not input_list:
+            return None
+        quantity = Quantity(input_list)
+        return [(quantity.value[i], quantity.units) for i in range(len(quantity.value))]
+
+    # Convert input lists to quantity lists
+    Tlist = convert_to_quantity_list(Tlist)
+    Plist = convert_to_quantity_list(Plist) 
+    Vlist = convert_to_quantity_list(Vlist)
+    reaction_time_list = convert_to_quantity_list(reaction_time_list)
 
     conditions = []
     if surface_mol_frac_list is None:
-        surface_mol_frac_list = []  # initialize here to avoid mutable default argument
-
-    if Tlist is None:
-        for reactor_type in reactor_type_list:
-            for reaction_time in reaction_time_list:
-                for mol_frac in mol_frac_list:
-                    for surface_mol_frac in surface_mol_frac_list:
+        surface_mol_frac_list = [None] 
+    
+    for reactor_type in reactor_type_list:
+        for reaction_time in reaction_time_list:
+            for mol_frac in mol_frac_list:
+                for surface_mol_frac in surface_mol_frac_list:
+                    # Handle the three possible cases where one of T,P,V must be None
+                    if Tlist is None:
                         for P in Plist:
                             for V in Vlist:
-                                conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, surface_mol_frac=surface_mol_frac, P0=P, V0=V))
-
-    elif Plist is None:
-        for reactor_type in reactor_type_list:
-            for reaction_time in reaction_time_list:
-                for mol_frac in mol_frac_list:
-                    for surface_mol_frac in surface_mol_frac_list:
+                                conditions.append(CanteraCondition(
+                                    reactor_type=reactor_type,
+                                    reaction_time=reaction_time,
+                                    mol_frac=mol_frac,
+                                    surface_mol_frac=surface_mol_frac,
+                                    P0=P,
+                                    V0=V
+                                ))
+                    elif Plist is None:
                         for T in Tlist:
                             for V in Vlist:
-                                conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, surface_mol_frac=surface_mol_frac, T0=T, V0=V))
-
-    elif Vlist is None:
-        for reactor_type in reactor_type_list:
-            for reaction_time in reaction_time_list:
-                for mol_frac in mol_frac_list:
-                    for surface_mol_frac in surface_mol_frac_list:
+                                conditions.append(CanteraCondition(
+                                    reactor_type=reactor_type,
+                                    reaction_time=reaction_time,
+                                    mol_frac=mol_frac,
+                                    surface_mol_frac=surface_mol_frac,
+                                    T0=T,
+                                    V0=V
+                                ))
+                    elif Vlist is None:
                         for T in Tlist:
                             for P in Plist:
-                                conditions.append(CanteraCondition(reactor_type, reaction_time, mol_frac, surface_mol_frac=surface_mol_frac, T0=T, P0=P))
+                                conditions.append(CanteraCondition(
+                                    reactor_type=reactor_type,
+                                    reaction_time=reaction_time,
+                                    mol_frac=mol_frac,
+                                    surface_mol_frac=surface_mol_frac,
+                                    T0=T,
+                                    P0=P
+                                ))
 
-    else:
-        raise Exception("Cantera conditions must leave one of T0, P0, and V0 state variables unspecified")
+                    else:
+                        raise Exception("Cantera conditions must leave one of T0, P0, and V0 state variables unspecified")
     return conditions
 
 
