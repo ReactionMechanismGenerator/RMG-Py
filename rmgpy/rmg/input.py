@@ -134,7 +134,7 @@ def catalyst_properties(bindingEnergies=None,
     metal_db.load(os.path.join(settings['database.directory'], 'surface'))
 
     if metal and (bindingEnergies or surfaceSiteDensity):
-        raise InputError("In catalyst_properties section you should only specify a 'metal' shortcut " 
+        raise InputError("In catalyst_properties section you should only specify a 'metal' shortcut "
                          "or the surfaceSiteDensity and bindingEnergies, but not both.")
 
     if metal:
@@ -151,7 +151,7 @@ def catalyst_properties(bindingEnergies=None,
             logging.info("Using default binding energies, Pt(111)")
         else:
             rmg.binding_energies = convert_binding_energies(bindingEnergies)
-    
+
 
         if surfaceSiteDensity is None:
             rmg.surface_site_density = metal_db.get_surface_site_density("Pt111")
@@ -171,8 +171,8 @@ def catalyst_properties(bindingEnergies=None,
 def convert_binding_energies(binding_energies):
     """
     Process binding_energies dictionary from the input file
-    
-    It converts the values into Energy quantities, and checks that 
+
+    It converts the values into Energy quantities, and checks that
     all elements C,H,O, and N are present.
 
     :param binding_energies: a dictionary of element symbol: binding energy pairs
@@ -406,7 +406,7 @@ def simple_reactor(temperature,
             logging.debug("  {0}".format(const_spc))
             if const_spc not in species_dict:
                 raise InputError('Species {0} not found in the input file'.format(const_spc))
-    
+
     if not isinstance(T, list):
         sensitivityTemperature = T
     if not isinstance(P, list):
@@ -512,9 +512,9 @@ def constant_V_ideal_gas_reactor(temperature,
         termination.append(TerminationRateRatio(terminationRateRatio))
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
-    
+
     initial_cond = initialMoleFractions
-    initial_cond["T"] = T 
+    initial_cond["T"] = T
     initial_cond["P"] = P
     system = ConstantVIdealGasReactor(rmg.reaction_model.core.phase_system,rmg.reaction_model.edge.phase_system,initial_cond,termination)
     system.T = Quantity(T)
@@ -805,7 +805,7 @@ def constant_T_V_liquid_reactor(temperature,
         if outlet_volumetric_flow_rate:
             if outlet_volumetric_flow_rate != outletVolumetricFlowRate:
                 raise InputError('  Inconsistent residence time and inlet volumetric flow rate')
-            
+
         outlet_volumetric_flow_rate = Quantity(outletVolumetricFlowRate).value_si
 
     if inletConcentrations:
@@ -907,7 +907,7 @@ def constant_T_V_liquid_reactor(temperature,
             evap_cond_conditions[key] = item
         evap_cond_conditions["P"] = vapor_pressure
         evap_cond_conditions["T"] = initial_conditions["T"]
-    
+
     system = ConstantTVLiquidReactor(rmg.reaction_model.core.phase_system,
                                            rmg.reaction_model.edge.phase_system,
                                            initial_conditions,
@@ -1162,19 +1162,30 @@ def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.simulator_settings_list.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
 
 
-def solvation(solvent,solventData=None):
+def solvation(solvent, solventData=None, excludedSpecies=None, excludedLibraries=None):
     # If solvation module in input file, set the RMG solvent variable
-    #either a string corresponding to the solvent database or a olvent object
-    if isinstance(solvent, str):
-        rmg.solvent = solvent
-    else:
-        raise InputError("Solvent not specified properly, solvent must be string")
+    # either a string corresponding to the solvent database or a solvent object
+    # The user can define a list of species labels or thermo library names
+    # to skip solvation correction. This will be useful when explicit solvation
+    # effects of a library species are already accounted for.
+    if not isinstance(solvent, str):
+        raise InputError("Solvent must be a string corresponding to a solvent in the database.")
 
-    if isinstance(solventData, SolventData) or solventData is None:
-        rmg.solvent_data = solventData
-    else:
-        raise InputError("Solvent not specified properly, solventData must be None or SolventData object")
+    if not (isinstance(solventData, SolventData) or solventData is None):
+        raise InputError("solventData must be a SolventData object or None.")
 
+    if excludedSpecies is not None:
+        if not (isinstance(excludedSpecies, list) and all(isinstance(s, str) for s in excludedSpecies)):
+            raise InputError("excludedSpecies must be a list of strings or None.")
+
+    if excludedLibraries is not None:
+        if not (isinstance(excludedLibraries, list) and all(isinstance(l, str) for l in excludedLibraries)):
+            raise InputError("excludedLibraries must be a list of strings or None.")
+
+    rmg.solvent = solvent
+    rmg.solvent_data = solventData
+    rmg.solvation_excluded_species = excludedSpecies if excludedSpecies is not None else []
+    rmg.solvation_excluded_libraries = excludedLibraries if excludedLibraries is not None else []
 
 def model(toleranceMoveToCore=None, toleranceRadMoveToCore=np.inf,
           toleranceMoveEdgeReactionToCore=np.inf, toleranceKeepInEdge=0.0,
@@ -1191,7 +1202,7 @@ def model(toleranceMoveToCore=None, toleranceRadMoveToCore=np.inf,
           toleranceTransitoryDict={}, transitoryStepPeriod=20,
           toleranceReactionToCoreDeadendRadical=0.0):
     """
-    How to generate the model. `toleranceMoveToCore` must be specified. 
+    How to generate the model. `toleranceMoveToCore` must be specified.
     toleranceMoveReactionToCore and toleranceReactionInterruptSimulation refers to an additional criterion for forcing an edge reaction to be included in the core
     by default this criterion is turned off
     Other parameters are optional and control the pruning.
@@ -1521,7 +1532,7 @@ def set_global_rmg(rmg0):
 
 def read_input_file(path, rmg0):
     """
-    Read an RMG input file at `path` on disk into the :class:`RMG` object 
+    Read an RMG input file at `path` on disk into the :class:`RMG` object
     `rmg`.
     """
     global rmg, species_dict, mol_to_frag
@@ -1620,7 +1631,7 @@ def read_input_file(path, rmg0):
 
 def read_thermo_input_file(path, rmg0):
     """
-    Read an thermo estimation input file at `path` on disk into the :class:`RMG` object 
+    Read an thermo estimation input file at `path` on disk into the :class:`RMG` object
     `rmg`.
     """
 
@@ -1679,7 +1690,7 @@ def read_thermo_input_file(path, rmg0):
 
 def save_input_file(path, rmg):
     """
-    Save an RMG input file at `path` on disk from the :class:`RMG` object 
+    Save an RMG input file at `path` on disk from the :class:`RMG` object
     `rmg`.
     """
 
