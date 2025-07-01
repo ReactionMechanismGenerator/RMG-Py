@@ -336,6 +336,7 @@ class MolproLog(ESSAdapter):
                         f12b = True  # MRCI could also have a v(4+)z basis, so don't break yet
                 elif 'ccsd' in line.lower() and 'f12' in line.lower():
                     f12 = True
+                    f12a_section, f12b_section = False, False
                 elif 'mrci' in line.lower():
                     mrci = True
                     f12a, f12b = False, False
@@ -350,11 +351,15 @@ class MolproLog(ESSAdapter):
             # Search for e_elect
             for line in lines:
                 if f12 and f12a:
-                    if ('CCSD(T)-F12a' in line or 'CCSD(T)-F12/' in line and '!' not in line) and 'energy' in line:
+                    if 'F12a energy' in line:
+                        f12a_section, f12b_section = True, False
+                    if 'CCSD(T)-F12' in line and 'energy' in line and f12a_section:
                         e_elect = float(line.split()[-1])
                         break
                 elif f12 and f12b:
-                    if 'CCSD(T)-F12b' in line and 'energy' in line:
+                    if 'F12b energy' in line:
+                        f12a_section, f12b_section = False, True
+                    if 'CCSD(T)-F12' in line and 'energy' in line and f12b_section:
                         e_elect = float(line.split()[-1])
                         break
                 elif mrci:
