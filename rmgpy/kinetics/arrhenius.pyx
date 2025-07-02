@@ -661,8 +661,9 @@ cdef class ArrheniusBM(KineticsModel):
             for rxn in rxns:
                 # approximately correct the overall uncertainties to std deviations
                 s = rank_accuracy_map[rxn.rank].value_si/2.0
+                dHrxn = rxn.get_enthalpy_of_reaction(298.0)
                 for T in Ts:
-                    xdata.append([T, rxn.get_enthalpy_of_reaction(298.0)])
+                    xdata.append([T, dHrxn])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
                     sigmas.append(s / (8.314 * T))
 
