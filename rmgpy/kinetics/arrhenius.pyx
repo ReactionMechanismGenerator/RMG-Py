@@ -652,7 +652,7 @@ cdef class ArrheniusBM(KineticsModel):
                 Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
                 Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
                 Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
-                return lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T)))
+                return lnA + np.log(T) * n + (-Ea / (8.314472 * T))
 
             # get (T,dHrxn(T)) -> (Ln(k) mappings
             xdata = []
