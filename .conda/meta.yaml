@@ -67,7 +67,7 @@ requirements:
     - rmg::pydas >=1.0.3
     - rmg::pydqed >=1.0.3
     - rmg::symmetry
-    - jacksonburns::rmgdatabase ==3.3.0
+    - jacksonburns::rmgdatabase
     - blas=*=openblas
   run:
     - conda-forge::cairo
@@ -117,7 +117,7 @@ requirements:
     - rmg::pydas >=1.0.3
     - rmg::pydqed >=1.0.3
     - rmg::symmetry
-    - jacksonburns::rmgdatabase ==3.3.0
+    - jacksonburns::rmgdatabase
     - blas=*=openblas
 test:
   requires:
@@ -168,7 +168,7 @@ test:
     - rmg::pydas >=1.0.3
     - rmg::pydqed >=1.0.3
     - rmg::symmetry
-    - jacksonburns::rmgdatabase ==3.3.0
+    - jacksonburns::rmgdatabase
     - blas=*=openblas
   source_files:
     - 'examples/rmg/superminimal'
