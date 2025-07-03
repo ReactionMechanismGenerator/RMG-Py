@@ -4596,15 +4596,16 @@ def _make_rule(rr):
     for i, rxn in enumerate(rxns):
         rxn.rank = ranks[i]
     rxns = np.array(rxns)
-    rs = np.array([r for r in rxns if type(r.kinetics) != KineticsModel]) # KineticsModel is the base class with no data.
+    rs = np.array([r for r in rxns if type(r.kinetics) is not KineticsModel]) # KineticsModel is the base class with no data.
     n = len(rs)
-    if n > 0 and isinstance(rs[0].kinetics, Marcus):
-        kin = average_kinetics([r.kinetics for r in rs])
-        return kin
-    data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rs]))
-
     if n == 0:
         return None
+
+    if isinstance(rs[0].kinetics, Marcus):
+        kin = average_kinetics([r.kinetics for r in rs])
+        return kin
+
+    data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rs]))
 
     if isinstance(rs[0].kinetics, Arrhenius):
         arr = ArrheniusBM
@@ -4771,7 +4772,7 @@ def average_kinetics(kinetics_list):
             beta=(beta,"1/m"),
             wr=(wr * 0.001, "kJ/mol"),
             wp=(wp * 0.001, "kJ/mol"),
-            comment="Averaged from {} reactions.".format(len(kinetics_list)),
+            comment=f"Averaged from {len(kinetics_list)} rate expressions.",
             )
     elif isinstance(kinetics, SurfaceChargeTransfer):
         averaged_kinetics = SurfaceChargeTransfer(
@@ -4781,6 +4782,7 @@ def average_kinetics(kinetics_list):
             alpha=alpha,
             V0=(V0,'V'),
             Ea=(Ea * 0.001, "kJ/mol"),
+            comment=f"Averaged from {len(kinetics_list)} rate expressions.",
             )
     elif isinstance(kinetics, ArrheniusChargeTransfer):
         averaged_kinetics = ArrheniusChargeTransfer(
@@ -4790,6 +4792,7 @@ def average_kinetics(kinetics_list):
             alpha=alpha,
             V0=(V0,'V'),
             Ea=(Ea * 0.001, "kJ/mol"),
+            comment=f"Averaged from {len(kinetics_list)} rate expressions.",
             )
     else:
         averaged_kinetics = Arrhenius(
