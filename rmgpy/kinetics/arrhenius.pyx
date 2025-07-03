@@ -1625,11 +1625,12 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                 rxn.kinetics.change_v0(0.0)
 
         if Ts is None:
-            Ts = [300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0]
+            Ts = np.array[300.0, 500.0, 600.0, 700.0, 800.0, 900.0, 1000.0, 1100.0, 1200.0, 1500.0]
         if w0 is None:
             #estimate w0
             w0s = get_w0s(recipe, rxns)
             w0 = sum(w0s) / len(w0s)
+        self.w0 = (w0 * 0.001, 'kJ/mol')
 
         if len(rxns) == 1:
             rxn = rxns[0]
@@ -1657,19 +1658,36 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                 Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
                 Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
                 Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
-                return lnA + np.log(T ** n * np.exp(-Ea / (8.314 * T)))
+                return lnA + np.log(T) * n + (-Ea / (8.314 * T))
 
             # get (T,dHrxn(T)) -> (Ln(k) mappings
             xdata = []
             ydata = []
             sigmas = []
+            E0 = 0.0
+            lnA = 0.0
+            n = 0.0
             for rxn in rxns:
                 # approximately correct the overall uncertainties to std deviations
                 s = rank_accuracy_map[rxn.rank].value_si/2.0
+                dHrxn = rxn.get_enthalpy_of_reaction(298.0)
                 for T in Ts:
-                    xdata.append([T, rxn.get_enthalpy_of_reaction(298.0)])
+                    xdata.append([T, dHrxn])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
                     sigmas.append(s / (8.314 * T))
+                # Use BEP with alpha = 0.25 for initial guess of E0
+                E0 += rxn.kinetics._Ea.value_si - 0.25 * dHrxn
+                lnA += np.log(rxn.kinetics.A.value_si)
+                n += rxn.kinetics.n.value_si
+            # average E0, lnA, n over all reactions
+            E0 /= len(rxns)
+            lnA /= len(rxns)
+            n /= len(rxns)
+            E0 = min(E0, w0)
+            w0 = max(2 * E0, w0) # ensure w0 is at least 2*E0
+            self.w0 = (w0 * 0.001, 'kJ/mol')
+            if E0 < 0:
+                E0 = w0 / 100.0
 
             xdata = np.array(xdata)
             ydata = np.array(ydata)
@@ -1678,10 +1696,18 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
             keep_trying = True
             xtol = 1e-8
             ftol = 1e-8
+            attempts = 0
             while keep_trying:
                 keep_trying = False
                 try:
-                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[1.0, 1.0, w0 / 10.0], xtol=xtol, ftol=ftol)
+                    params = curve_fit(kfcn, xdata, ydata, sigma=sigmas, p0=[lnA, n, E0], xtol=xtol, ftol=ftol)
+                    lnA, n, E0 = params[0].tolist()
+                    if abs(E0/self.w0.value_si) > 1.0 and attempts < 5:
+                        keep_trying = True
+                        if attempts > 0:
+                            self.w0.value_si *= 1.25
+                        attempts += 1
+                        E0 = self.w0.value_si / 10.0
                 except RuntimeError:
                     if xtol < 1.0:
                         keep_trying = True
@@ -1690,7 +1716,6 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                     else:
                         raise ValueError("Could not fit BM arrhenius to reactions with xtol<1.0")
 
-            lnA, n, E0 = params[0].tolist()
             A = np.exp(lnA)
 
             self.Tmin = (np.min(Ts), "K")
@@ -1705,8 +1730,7 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
         self.A = (A, A_units[order])
 
         self.n = n
-        self.w0 = (w0, 'J/mol')
-        self.E0 = (E0, 'J/mol')
+        self.E0 = (E0 * 0.001, 'kJ/mol')
         self._V0.value_si = 0.0
         self.electrons = rxns[0].electrons
 
