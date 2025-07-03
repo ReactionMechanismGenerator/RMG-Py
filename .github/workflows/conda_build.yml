@@ -53,6 +53,7 @@ jobs:
           echo "CONDA_TOKEN=$CONDA_TOKEN" >> $GITHUB_ENV
           conda config --add channels rmg
           conda config --add channels conda-forge
+          conda config --add channels jacksonburns
           CONDA_NPY=${{ matrix.numpy-version }} CONDA_PY=${{ matrix.python-version }} conda build --token $CONDA_TOKEN --user rmg .
 
   result:
