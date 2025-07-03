@@ -50,19 +50,23 @@ import logging
 
 from arkane.main import Arkane
 
-arkane = Arkane()
+def main():
+    arkane = Arkane()
 
-# Parse and validate the command-line arguments
-arkane.parse_command_line_arguments()
+    # Parse and validate the command-line arguments
+    arkane.parse_command_line_arguments()
 
-# Execute the job
-arkane.execute()
+    # Execute the job
+    arkane.execute()
 
-try:
-    import psutil
+    try:
+        import psutil
 
-    process = psutil.Process(os.getpid())
-    memory_info = process.memory_info()
-    logging.info('Memory used: %.2f MB' % (memory_info.rss / 1024.0 / 1024.0))
-except ImportError:
-    logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
+        process = psutil.Process(os.getpid())
+        memory_info = process.memory_info()
+        logging.info('Memory used: %.2f MB' % (memory_info.rss / 1024.0 / 1024.0))
+    except ImportError:
+        logging.info('Optional package dependency "psutil" not found; memory profiling information will not be saved.')
+
+if __name__ == "__main__":
+    main()
