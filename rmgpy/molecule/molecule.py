@@ -2751,7 +2751,7 @@ class Molecule(Graph):
 
     def get_smallest_set_of_smallest_rings(self):
         """
-        Returns the smallest set of smallest rings (SSSR) as a list of lists of atom indices.
+        Returns the smallest set of smallest rings (SSSR) as a list of lists of Atom objects.
         Uses RDKit's built-in ring perception (GetSymmSSSR).
 
         References:
@@ -2771,14 +2771,14 @@ class Molecule(Graph):
         # Get the symmetric SSSR using RDKit
         ring_info = Chem.GetSymmSSSR(self)
         for ring in ring_info:
-            # Convert ring (tuple of atom indices) to sorted list
-            sorted_ring = self.sort_cyclic_vertices(list(ring))
+            atom_ring = [self.atoms[idx] for idx in ring]
+            sorted_ring = self.sort_cyclic_vertices(atom_ring)
             sssr.append(sorted_ring)
         return sssr
 
     def get_relevant_cycles(self):
         """
-        Returns the set of relevant cycles as a list of lists of atom indices.
+        Returns the set of relevant cycles as a list of lists of Atom objects.
         Uses RDKit's RingInfo to approximate relevant cycles.
 
         References:
@@ -2792,14 +2792,13 @@ class Molecule(Graph):
             Unique Ring Families and Other Cycle Bases.
             J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
-        
         rc = []
         mol = self.to_rdkit_mol()
         ring_info = mol.GetRingInfo()
         atom_rings = ring_info.AtomRings()
         for ring in atom_rings:
-            # Convert ring (tuple of atom indices) to sorted list
-            sorted_ring = self.sort_cyclic_vertices(list(ring))
+            atom_ring = [self.atoms[idx] for idx in ring]
+            sorted_ring = self.sort_cyclic_vertices(atom_ring)
             # Filter for "relevant" cycles (e.g., rings up to size 7)
             if len(sorted_ring) <= 7:
                 rc.append(sorted_ring)
