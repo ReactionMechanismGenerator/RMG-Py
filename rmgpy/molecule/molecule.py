@@ -2792,10 +2792,9 @@ class Molecule(Graph):
             Unique Ring Families and Other Cycle Bases.
             J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
-        from rdkit import Chem
         
         rc = []
-        mol = self
+        mol = self.to_rdkit_mol()
         ring_info = mol.GetRingInfo()
         atom_rings = ring_info.AtomRings()
         for ring in atom_rings:
