@@ -2414,7 +2414,7 @@ multiplicity 2
     def test_get_smallest_set_of_smallest_rings(self):
         """
         Test that SSSR within a molecule are returned properly in the function
-        `Graph().get_smallest_set_of_smallest_rings()`
+        `Molecule().get_smallest_set_of_smallest_rings()`
         """
 
         m1 = Molecule(smiles="C12CCC1C3CC2CC3")
@@ -3043,3 +3043,110 @@ multiplicity 2
         assert len(mol.get_all_edges()) == 2
         mol.remove_van_der_waals_bonds()
         assert len(mol.get_all_edges()) == 1
+
+    def test_get_relevant_cycles(self):
+        """
+        Test the Molecule.get_relevant_cycles() method.
+        """
+        mol = Molecule(smiles="CCCC")
+        cycle_list = mol.get_relevant_cycles()
+        assert len(cycle_list) == 0
+        
+        # Create a cycle of length 4
+        mol = Molecule(smiles="C1CCC1")
+        cycle_list = mol.get_relevant_cycles()
+        assert len(cycle_list) == 1
+        assert len(cycle_list[0]) == 4
+
+        # TODO: test bridged bicycle
+
+    def test_cycle_list_order_sssr(self):
+        """
+        Test that get_smallest_set_of_smallest_rings return vertices in the proper order.
+
+        There are methods such as symmetry and molecule drawing which rely
+        on the fact that subsequent list entries are connected.
+        """
+        # Create a cycle of length 5
+        mol = Molecule(smiles="C1CCCC1")
+        # Test SSSR
+        sssr = mol.get_smallest_set_of_smallest_rings()
+        assert len(sssr) == 1
+        assert len(sssr[0]) == 5
+        for i in range(5):
+            assert mol.has_bond(sssr[0][i], sssr[0][i - 1])
+
+    def test_cycle_list_order_relevant_cycles(self):
+        """
+        Test that get_relevant_cycles return vertices in the proper order.
+
+        There are methods such as symmetry and molecule drawing which rely
+        on the fact that subsequent list entries are connected.
+        """
+        # Create a cycle of length 5
+        mol = Molecule(smiles="C1CCCC1")
+        # Test RC
+        rc = mol.get_relevant_cycles()
+        assert len(rc) == 1
+        assert len(rc[0]) == 5
+        for i in range(5):
+            assert mol.has_bond(rc[0][i], rc[0][i - 1])
+
+    def test_get_max_cycle_overlap(self):
+        """
+        Test that get_max_cycle_overlap returns the correct overlap numbers
+        for different molecules.
+        """
+        # Linear molecule
+        linear = Molecule(smiles="CCC")
+        assert linear.get_max_cycle_overlap() == 0
+        
+        # Monocyclic molecule
+        mono = Molecule(smiles="C1CCCC1")
+        assert mono.get_max_cycle_overlap() == 0
+        
+        # Spirocyclic molecule
+        spiro = Molecule(smiles="C1CCC2(CC1)CC2")
+        assert spiro.get_max_cycle_overlap() == 1
+        
+        # Fused bicyclic molecule
+        fused = Molecule(smiles="C1C2C(CCC1)CCCC2")
+        assert fused.get_max_cycle_overlap() == 2
+        
+        # Bridged bicyclic molecule
+        bridged = Molecule(smiles="C1CC2CCC1C2")
+        assert bridged.get_max_cycle_overlap() == 3
+        
+        # Cube-like molecule (cubane)
+        cube = Molecule(smiles="C12C3C4C1C5C2C3C45")
+        # With the current algorithm for maximum overlap determination, a cube
+        # only has an overlap of 2, because the set of relevant cycles
+        # contains the six four-membered faces. This could be changed in the
+        # future.
+        assert cube.get_max_cycle_overlap() == 2
+
+    def test_get_all_polycyclic_vertices(self):
+        """
+        Test that get_all_polycyclic_vertices returns the correct vertices.
+        """
+        # Simple linear molecule
+        mol = Molecule(smiles="CCC")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) == 0
+        
+        # Monocyclic molecule
+        mol = Molecule(smiles="C1CCCC1")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) == 0
+        
+        # Fused bicyclic molecule
+        # TODO: don't just test length, test the actual vertices
+        fused = Molecule(smiles="C1C2C(CCC1)CCCC2")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) > 0
+        
+        # Spirocyclic molecule
+        # TODO: don't just test length, test the actual vertices
+        mol = Molecule(smiles="C1CCC2(CC1)CC2")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) > 0
