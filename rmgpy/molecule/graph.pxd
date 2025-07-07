@@ -146,9 +146,7 @@ cdef class Graph(object):
 
     cpdef list _explore_cycles_recursively(self, list chain, list cycles)
 
-    cpdef list get_smallest_set_of_smallest_rings(self)
 
-    cpdef list get_relevant_cycles(self)
 
     cpdef list sort_cyclic_vertices(self, list vertices)
 

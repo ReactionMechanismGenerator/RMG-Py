@@ -35,8 +35,6 @@ are the components of a graph.
 
 import itertools
 
-from rdkit import Chem
-
 from rmgpy.molecule.vf2 cimport VF2
 
 ################################################################################
@@ -969,60 +967,6 @@ cdef class Graph(object):
         # At this point we should have discovered all of the cycles involving the current chain
         return cycles
 
-    cpdef list get_smallest_set_of_smallest_rings(self):
-        """
-        Returns the smallest set of smallest rings (SSSR) as a list of lists of atom indices.
-        Uses RDKit's built-in ring perception (GetSymmSSSR).
-
-        References:
-            Kolodzik, A.; Urbaczek, S.; Rarey, M.
-            Unique Ring Families: A Chemically Meaningful Description
-            of Molecular Ring Topologies.
-            J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
-
-            Flachsenberg, F.; Andresen, N.; Rarey, M.
-            RingDecomposerLib: An Open-Source Implementation of
-            Unique Ring Families and Other Cycle Bases.
-            J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
-        """
-        cdef list sssr = []
-        cdef object ring_info, ring
-        # Get the symmetric SSSR using RDKit
-        ring_info = Chem.GetSymmSSSR(self)
-        for ring in ring_info:
-            # Convert ring (tuple of atom indices) to sorted list
-            sorted_ring = self.sort_cyclic_vertices(list(ring))
-            sssr.append(sorted_ring)
-        return sssr
-
-    cpdef list get_relevant_cycles(self):
-        """
-        Returns the set of relevant cycles as a list of lists of atom indices.
-        Uses RDKit's RingInfo to approximate relevant cycles.
-
-        References:
-            Kolodzik, A.; Urbaczek, S.; Rarey, M.
-            Unique Ring Families: A Chemically Meaningful Description
-            of Molecular Ring Topologies.
-            J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
-
-            Flachsenberg, F.; Andresen, N.; Rarey, M.
-            RingDecomposerLib: An Open-Source Implementation of
-            Unique Ring Families and Other Cycle Bases.
-            J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
-        """
-        cdef list rc = []
-        cdef object mol = self
-        cdef object ring_info = mol.GetRingInfo()
-        cdef object atom_rings = ring_info.AtomRings()
-        cdef object ring
-        for ring in atom_rings:
-            # Convert ring (tuple of atom indices) to sorted list
-            sorted_ring = self.sort_cyclic_vertices(list(ring))
-            # Filter for "relevant" cycles (e.g., rings up to size 7)
-            if len(sorted_ring) <= 7:
-                rc.append(sorted_ring)
-        return rc
 
     cpdef list sort_cyclic_vertices(self, list vertices):
         """
