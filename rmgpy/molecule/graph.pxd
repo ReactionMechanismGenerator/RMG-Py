@@ -127,16 +127,6 @@ cdef class Graph(object):
     cpdef bint _is_chain_in_cycle(self, list chain) except -2
 
     cpdef list get_all_cyclic_vertices(self)
-    
-    cpdef list get_all_polycyclic_vertices(self)
-    
-    cpdef list get_polycycles(self)
-    
-    cpdef list get_monocycles(self)
-    
-    cpdef tuple get_disparate_cycles(self)
-
-    cpdef tuple _merge_cycles(self, list cycle_sets)
 
     cpdef list get_all_cycles(self, Vertex starting_vertex)
 
@@ -145,8 +135,6 @@ cdef class Graph(object):
     cpdef list get_all_simple_cycles_of_size(self, int size)
 
     cpdef list _explore_cycles_recursively(self, list chain, list cycles)
-
-
 
     cpdef list sort_cyclic_vertices(self, list vertices)
 
