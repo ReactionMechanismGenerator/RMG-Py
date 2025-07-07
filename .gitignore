@@ -111,7 +111,6 @@ test_log.txt
 rmgpy/tools/data/flux/flux/1/*.dot
 
 # example directory - save the inputs but not the outputs
-# cantera input files
 examples/**/chem.inp
 # log files from the runs
 examples/**/arkane.log
@@ -124,3 +123,12 @@ examples/**/reactions.py
 examples/**/RMG_libraries
 examples/**/species
 examples/**/plots
+examples/**/chemkin/*.inp
+examples/**/chemkin/tran.dat
+examples/**/chemkin/*dictionary.txt
+examples/**/chem*.yaml
+examples/**/rms/*.rms
+examples/**/output*.html
+examples/**/restart_from_seed.py
+examples/**/seed/filters
+examples/**/statistics.xls
