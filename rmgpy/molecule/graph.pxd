@@ -137,8 +137,6 @@ cdef class Graph(object):
     cpdef list _explore_cycles_recursively(self, list chain, list cycles)
 
     cpdef list sort_cyclic_vertices(self, list vertices)
-
-    cpdef int get_max_cycle_overlap(self)
     
     cpdef list get_largest_ring(self, Vertex vertex)
     
