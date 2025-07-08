@@ -7,15 +7,21 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 
 #. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
-#. Install both RMG and the RMG-database binaries through the terminal.   Dependencies will be installed automatically. It is safest to make a new conda environment for RMG and its dependencies. Type the following command into the terminal to create the new environment named 'rmg_env' containing the latest stable version of the RMG program and its database. ::
+#. Install both RMG and the RMG-database binaries through the terminal. Dependencies will be installed automatically. It is safest to make a new conda environment for RMG and its dependencies. Type the following command into the terminal to create the new environment named 'rmg_env' containing the latest stable version of the RMG program and its database. ::
 
-    conda create -c defaults -c rmg -c rdkit -c cantera -c pytorch -c conda-forge --name rmg_env rmg rmgdatabase
+    conda create --name rmg_env 'rmg::rmg'
 
    Whenever you wish to use it you must first activate the environment::
 
     conda activate rmg_env
 
    For more information about using conda, please check out the `conda user guide <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
+  
+   To install a specific version of RMG, add the version to the install command::
+
+    conda create --name rmg_33_env 'rmg::rmg==3.3.0'
+  
+   Not all versions of RMG are available via conda for all platforms. Check the `official RMG conda channel <https://anaconda.org/RMG/rmg/files>`_ to see which are available for download.
 
 #. You may now run an RMG test job. Save the `Minimal Example Input File <https://raw.githubusercontent.com/ReactionMechanismGenerator/RMG-Py/master/examples/rmg/minimal/input.py>`_
    to a local directory.  Use the terminal to run your RMG job inside that folder using the following command ::
@@ -70,4 +76,4 @@ If you had previously installed a binary version of the RMG package, you may
 check and update your installation to the latest stable version available on Anaconda by typing the following command on the terminal ::
 
     source activate rmg_env
-    conda update rmg rmgdatabase -c rmg
+    conda update 'rmg::rmg'
