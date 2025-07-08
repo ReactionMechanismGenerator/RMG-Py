@@ -1673,14 +1673,15 @@ class CoreEdgeReactionModel:
                         "found in a seed mechanism or reaction "
                         "library.".format(spec.label, seed_mechanism.label)
                     )
-            if fails_species_constraints(spec):
+            failed, reason = fails_species_constraints(spec)
+            if failed:
                 if "allowed" in rmg.species_constraints and "seed mechanisms" in rmg.species_constraints["allowed"]:
                     rmg.species_constraints["explicitlyAllowedMolecules"].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException(
                         "Species constraints forbids species {0} from seed mechanism {1}."
                         " Please reformulate constraints, remove the species, or"
-                        " explicitly allow it.".format(spec.label, seed_mechanism.label)
+                        " explicitly allow it. Reason: {2}".format(spec.label, seed_mechanism.label, reason)
                     )
 
         for spec in edge_species_to_move+self.new_species_list:
@@ -1800,14 +1801,15 @@ class CoreEdgeReactionModel:
                             "inert unless found in a seed mechanism or reaction "
                             "library.".format(spec.label, reaction_library.label)
                         )
-            if fails_species_constraints(spec):
+            failed, reason = fails_species_constraints(spec)
+            if failed:
                 if "allowed" in rmg.species_constraints and "reaction libraries" in rmg.species_constraints["allowed"]:
                     rmg.species_constraints["explicitlyAllowedMolecules"].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException(
                         "Species constraints forbids species {0} from reaction library "
                         "{1}. Please reformulate constraints, remove the species, or "
-                        "explicitly allow it.".format(spec.label, reaction_library.label)
+                        "explicitly allow it. Reason: {2}".format(spec.label, reaction_library.label, reason)
                     )
 
         for spec in self.new_species_list:
