@@ -1659,7 +1659,7 @@ class KineticsFamily(Database):
                 raise ForbiddenStructureException(
                     "Species constraints forbids product species {0}. Please "
                     "reformulate constraints, or explicitly "
-                    "allow it. Reason: {1}".format(struct.label, reason)
+                    "allow it. Reason: {1}".format(struct, reason)
                 )
 
         return product_structures
