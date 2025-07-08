@@ -237,6 +237,8 @@ class CoreEdgeReactionModel:
         self.new_surface_spcs_loss = set()
         self.new_surface_rxns_loss = set()
         self.solvent_name = ""
+        self.solvation_excluded_species = []
+        self.solvation_excluded_libraries = []
         self.surface_site_density = None
         self.unrealgroups = [
             Group().from_adjacency_list(
@@ -557,7 +559,7 @@ class CoreEdgeReactionModel:
             elif isinstance(forward, LibraryReaction) and forward.is_surface_reaction():
                 # do fix the library reaction barrier if this is scaled from another metal
                 if any(['Binding energy corrected by LSR' in x.thermo.comment for x in forward.reactants + forward.products]):
-                    forward.fix_barrier_height(solvent=self.solvent_name)            
+                    forward.fix_barrier_height(solvent=self.solvent_name)
             elif forward.kinetics.solute:
                 forward.apply_solvent_correction(solvent=self.solvent_name)
             if self.pressure_dependence and forward.is_unimolecular():
@@ -1601,7 +1603,7 @@ class CoreEdgeReactionModel:
         self.new_reaction_list = []
         self.new_species_list = []
         edge_species_to_move = []
-        
+
         num_old_core_species = len(self.core.species)
         num_old_core_reactions = len(self.core.reactions)
 

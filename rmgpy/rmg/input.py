@@ -1187,6 +1187,19 @@ def solvation(solvent, solventData=None, excludedSpecies=None, excludedLibraries
     rmg.solvation_excluded_species = excludedSpecies if excludedSpecies is not None else []
     rmg.solvation_excluded_libraries = excludedLibraries if excludedLibraries is not None else []
 
+    # Log species and libraries excluded from solvation corrections
+    if rmg.solvation_excluded_species:
+        logging.info(
+            f"Solvation corrections will be skipped for the following species: "
+            f"{', '.join(rmg.solvation_excluded_species)}"
+        )
+    if rmg.solvation_excluded_libraries:
+        logging.info(
+            f"Solvation corrections will be skipped for species from the following thermo libraries: "
+            f"{', '.join(rmg.solvation_excluded_libraries)}"
+        )
+
+
 def model(toleranceMoveToCore=None, toleranceRadMoveToCore=np.inf,
           toleranceMoveEdgeReactionToCore=np.inf, toleranceKeepInEdge=0.0,
           toleranceInterruptSimulation=1.0,
@@ -1769,7 +1782,16 @@ def save_input_file(path, rmg):
         f.write(')\n\n')
 
     if rmg.solvent:
-        f.write("solvation(\n    solvent = '{0!s}'\n)\n\n".format(rmg.solvent))
+        f.write("solvation(\n")
+        f.write("    solvent = '{0!s}',\n".format(rmg.solvent))
+
+        if rmg.solvation_excluded_species:
+            f.write("    excludedSpecies = {0},\n".format(repr(rmg.solvation_excluded_species)))
+
+        if rmg.solvation_excluded_libraries:
+            f.write("    excludedLibraries = {0},\n".format(repr(rmg.solvation_excluded_libraries)))
+
+        f.write(")\n\n")
 
     # Simulator tolerances
     f.write('simulator(\n')
