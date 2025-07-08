@@ -2794,7 +2794,7 @@ class Molecule(Graph):
             J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
         rc = []
-        mol = self.to_rdkit_mol()
+        mol = converter.to_rdkit_mol(self, remove_h=False)
         ring_info = mol.GetRingInfo()
         atom_rings = ring_info.AtomRings()
         for ring in atom_rings:
