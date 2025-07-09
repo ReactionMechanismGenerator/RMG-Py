@@ -250,8 +250,8 @@ pressureDependence(
     minimumNumberOfGrains=250,
     # the conditions for the rate to be output over
     # parameter order is: low_value, high_value, units, internal points
-    temperatures=(300, 2200, 'K', 2),
-    pressures=(0.01, 100, 'bar', 3),
+    temperatures=(300, 2200, 'K', 10),
+    pressures=(0.01, 100, 'bar', 10),
     # The two options for interpolation are 'PDepArrhenius' (no extra arguments) and
     # 'Chebyshev' which is followed by the number of basis sets in
     # Temperature and Pressure. These values must be less than the number of
