@@ -587,9 +587,9 @@ class RMG(util.Subject):
             shutil.copyfile(self.species_map_path, os.path.join(filters_restart, "species_map.yml"))
 
             # Load the seed mechanism to get the core and edge species
-            self.database.kinetics.load_libraries(restart_dir, libraries=["restart", "restart_edge"])
+            self.database.kinetics.load_libraries(restart_dir)#, libraries=["restart", "restart_edge"])
             self.seed_mechanisms.append("restart")
-            self.reaction_libraries.append(("restart_edge", False))
+#            self.reaction_libraries.append(("restart_edge", False))
 
         # Set trimolecular reactant flags of reaction systems
         if self.trimolecular:
