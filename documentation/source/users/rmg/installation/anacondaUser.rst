@@ -72,8 +72,13 @@ You will see a line saying ``MODEL GENERATION COMPLETED`` on your terminal if yo
 Updating your binary installation of RMG in Linux or Mac OSX
 ============================================================
 
-If you had previously installed a binary version of the RMG package, you may
-check and update your installation to the latest stable version available on Anaconda by typing the following command on the terminal ::
+If you had previously installed a binary version of the RMG package and wish to update to a newer version, we suggest creating a new conda environment and installing the updated version there :: 
+
+    conda create --name rmg_xyz_env 'rmg::rmg==x.y.z'
+    
+It is also possible, though not advisable, to update your existing installation to the latest stable version available on Anaconda by typing the following command on the terminal ::
 
     source activate rmg_env
     conda update 'rmg::rmg'
+
+Doing this may break any other code present in the conda environment and RMG may not function correctly. If you attempt this update method and face issues, please attempt to install the new version of RMG in a new conda environment before reaching out for assistance.
