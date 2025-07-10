@@ -119,8 +119,8 @@ ext_modules = [
 ]
 
 scripts = [
-    'Arkane.py',
     'rmg.py',
+    'Arkane.py',
     'scripts/checkModels.py',
     'scripts/diffModels.py',
     'scripts/generateChemkinHTML.py',
@@ -149,6 +149,12 @@ setup(
     python_requires='>=3.9,<3.10',
     packages=find_packages(where='.', include=["rmgpy*"]) + find_packages(where='.', include=["arkane*"]),
     scripts=scripts,
+    entry_points={
+        'console_scripts': [
+            'rmg.py = rmgpy.__main__:main',
+            'Arkane.py = arkane.__main__:main',
+        ],
+    },
     include_package_data=True,
     package_data={
         "": ["*.pxd"],
