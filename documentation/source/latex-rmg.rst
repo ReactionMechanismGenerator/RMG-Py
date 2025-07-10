@@ -20,7 +20,7 @@ steps using a general understanding of how molecules react. This documentation i
 | post an issue with RMG                      | `GitHub issues page <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`__                          |
 +---------------------------------------------+---------------------------------------------------------------------------------------------------------------+
 | contribute to the RMG project               | `Contributor guidelines <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CONTRIBUTING.md>`__   |
-+---------------------------------------------+----------------------------------------------------------------------------------------+
++---------------------------------------------+---------------------------------------------------------------------------------------------------------------+
 
 Arkane is developed and distributed as part of RMG-Py, but can be used as a stand-alone
 application for Thermochemistry, Transition State Theory, and Master Equation chemical kinetics
