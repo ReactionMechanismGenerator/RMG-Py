@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>3. Installation &#8212; RMG-Py 3.2.0 Documentation</title>
+    <title>3. Installation &#8212; RMG-Py 3.3.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../../_static/custom.css" />
     
@@ -19,7 +19,7 @@
     
     <link rel="index" title="Index" href="../../../genindex.html" />
     <link rel="search" title="Search" href="../../../search.html" />
-    <link rel="next" title="3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX" href="anacondaDeveloper.html" />
+    <link rel="next" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX" href="anacondaUser.html" />
     <link rel="prev" title="2. Overview of Features" href="../features.html" />
 <script type="text/x-mathjax-config">
 MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
@@ -40,13 +40,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="anacondaDeveloper.html" title="3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX"
+          <a href="anacondaUser.html" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX"
              accesskey="N">next</a> |</li>
         <li class="right" >
           <a href="../features.html" title="2. Overview of Features"
              accesskey="P">previous</a> |</li>
   <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">3.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">3.3.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" accesskey="U">RMG User’s Guide</a> &#187;</li>
@@ -100,8 +100,19 @@ Be sure to also change the version number in the docker run commands to match th
 A full list of available docker images can be found at <a class="reference external" href="https://hub.docker.com/r/reactionmechanismgenerator/rmg/tags">Docker Hub</a>.</p>
 </div>
 </section>
+<section id="alternative-install-binary-installation-using-anaconda">
+<h2><span class="section-number">3.2. </span>Alternative Install: Binary Installation Using Anaconda<a class="headerlink" href="#alternative-install-binary-installation-using-anaconda" title="Permalink to this heading">¶</a></h2>
+<p>If you are accustomed to using the Anaconda package manager or cannot tolerate the storage overhead of Docker, installation from conda is also available.
+This is recommended for users who want to use RMG out of the box and are not interested in changing the RMG code or making many additions to RMG’s thermodynamic and kinetics databases.
+If this does interest you, please see the Developer Install below.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="anacondaUser.html">3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></li>
+</ul>
+</div>
+</section>
 <section id="developer-install-installation-from-source">
-<h2><span class="section-number">3.2. </span>Developer Install: Installation from Source<a class="headerlink" href="#developer-install-installation-from-source" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">3.3. </span>Developer Install: Installation from Source<a class="headerlink" href="#developer-install-installation-from-source" title="Permalink to this heading">¶</a></h2>
 <p>RMG-Py can be built from source using the Anaconda Python Platform to assist in installing all necessary dependencies.
 This is recommended for a developer who may be altering the RMG source code or someone who expects to manipulate the databases extensively.
 You will also be able to access the latest source code updates and patches through Github.
@@ -109,35 +120,34 @@ It is also currently the only option to avoid the storage and memory overhead of
 Installation by Conda without compiling from source is limited to <a class="reference external" href="https://anaconda.org/RMG/rmg">older versions of RMG-Py</a> and is not currently recommended (but would follow instructions below if you needed).</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="anacondaDeveloper.html">3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</a></li>
-<li class="toctree-l1"><a class="reference internal" href="updatingSourceCode.html">3.2.2. Updating the RMG-Py Source Code</a></li>
+<li class="toctree-l1"><a class="reference internal" href="anacondaDeveloper.html">3.3.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</a></li>
+<li class="toctree-l1"><a class="reference internal" href="updatingSourceCode.html">3.3.2. Updating the RMG-Py Source Code</a></li>
 </ul>
 </div>
 </section>
 <section id="archive-of-unsupported-installation-methods">
-<h2><span class="section-number">3.3. </span>Archive of Unsupported Installation Methods<a class="headerlink" href="#archive-of-unsupported-installation-methods" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">3.4. </span>Archive of Unsupported Installation Methods<a class="headerlink" href="#archive-of-unsupported-installation-methods" title="Permalink to this heading">¶</a></h2>
 <p>Below are old installation techniques that are no longer supported, including instructions for installation without
 using Anaconda and the old installation instructions for Windows. These instructions are no longer maintained, and are
 not recommended for use.</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="linux.html">3.3.1. Linux Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="macos.html">3.3.2. MacOS X Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="anacondaUser.html">3.3.3. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></li>
-<li class="toctree-l1"><a class="reference internal" href="anacondaUserWindows.html">3.3.4. Binary Installation Using Anaconda for Windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="anacondaDeveloperWindows.html">3.3.5. Installation by Source Using Anaconda Environment for Windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="windowsEnvironment.html">3.3.6. Setting up Windows Environment Variables for RMG</a></li>
-<li class="toctree-l1"><a class="reference internal" href="virtualMachineSetup.html">3.3.7. Setting up a Linux Virtual Machine from Windows</a></li>
-<li class="toctree-l1"><a class="reference internal" href="linuxSubsystem.html">3.3.8. Installing RMG in the Linux Subsystem on Windows 10</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linux.html">3.4.1. Linux Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="macos.html">3.4.2. MacOS X Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="anacondaUserWindows.html">3.4.3. Binary Installation Using Anaconda for Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="anacondaDeveloperWindows.html">3.4.4. Installation by Source Using Anaconda Environment for Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="windowsEnvironment.html">3.4.5. Setting up Windows Environment Variables for RMG</a></li>
+<li class="toctree-l1"><a class="reference internal" href="virtualMachineSetup.html">3.4.6. Setting up a Linux Virtual Machine from Windows</a></li>
+<li class="toctree-l1"><a class="reference internal" href="linuxSubsystem.html">3.4.7. Installing RMG in the Linux Subsystem on Windows 10</a></li>
 </ul>
 </div>
 </section>
 <section id="dependencies">
-<h2><span class="section-number">3.4. </span>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h2>
+<h2><span class="section-number">3.5. </span>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this heading">¶</a></h2>
 <p>Please visit the page below for detailed information on all of RMG’s dependencies and their license restrictions</p>
 <div class="toctree-wrapper compound">
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="dependencies.html">3.4.1. Dependencies</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dependencies.html">3.5.1. Dependencies</a></li>
 </ul>
 </div>
 </section>
@@ -176,9 +186,10 @@ not recommended for use.</p>
     <ul>
 <li><a class="reference internal" href="#">3. Installation</a><ul>
 <li><a class="reference internal" href="#recommended-install-docker">3.1. Recommended Install: Docker</a></li>
-<li><a class="reference internal" href="#developer-install-installation-from-source">3.2. Developer Install: Installation from Source</a></li>
-<li><a class="reference internal" href="#archive-of-unsupported-installation-methods">3.3. Archive of Unsupported Installation Methods</a></li>
-<li><a class="reference internal" href="#dependencies">3.4. Dependencies</a></li>
+<li><a class="reference internal" href="#alternative-install-binary-installation-using-anaconda">3.2. Alternative Install: Binary Installation Using Anaconda</a></li>
+<li><a class="reference internal" href="#developer-install-installation-from-source">3.3. Developer Install: Installation from Source</a></li>
+<li><a class="reference internal" href="#archive-of-unsupported-installation-methods">3.4. Archive of Unsupported Installation Methods</a></li>
+<li><a class="reference internal" href="#dependencies">3.5. Dependencies</a></li>
 </ul>
 </li>
 </ul>
@@ -193,8 +204,8 @@ not recommended for use.</p>
   </div>
   <div>
     <h4>Next topic</h4>
-    <p class="topless"><a href="anacondaDeveloper.html"
-                          title="next chapter"><span class="section-number">3.2.1. </span>Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX</a></p>
+    <p class="topless"><a href="anacondaUser.html"
+                          title="next chapter"><span class="section-number">3.2.1. </span>Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX</a></p>
   </div>
         </div>
         <div class="menuitem">
@@ -235,13 +246,13 @@ not recommended for use.</p>
           <a href="../../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
         <li class="right" >
-          <a href="anacondaDeveloper.html" title="3.2.1. Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX"
+          <a href="anacondaUser.html" title="3.2.1. Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX"
              >next</a> |</li>
         <li class="right" >
           <a href="../features.html" title="2. Overview of Features"
              >previous</a> |</li>
   <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../../index.html">3.2.0 Documentation</a> &raquo;</li>
+  <li><a href="../../../index.html">3.3.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="../index.html" >RMG User’s Guide</a> &#187;</li>
