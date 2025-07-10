@@ -4,6 +4,53 @@
 Release Notes
 *************
 
+RMG-Py Version 3.3.0
+====================
+Date: July 10, 2025
+
+- RMG-Py
+    - 
+
+- Auto Generated Trees
+    - 
+
+- RMS
+    - 
+
+- Arkane
+    - 
+
+- Bugfixes
+    - 
+
+- Testing
+    - 
+
+- Miscellaneous
+    - 
+
+RMG-Database Version 3.3.0
+==========================
+Date: July 10, 2025
+
+- Thermochemistry
+    - 
+
+- Kinetics
+    - 
+
+- Transport
+    - 
+
+- QM Corrections
+    - 
+
+- Bugfixes
+    - 
+
+- Miscellaneous
+    - 
+
 RMG-Py Version 3.2.0
 ====================
 Date: August 2, 2023
