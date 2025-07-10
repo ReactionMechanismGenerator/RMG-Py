@@ -1873,7 +1873,7 @@ class Molecule(Graph):
     def from_smarts(self, smartsstr, raise_atomtype_exception=True):
         """
         Convert a SMARTS string `smartsstr` to a molecular structure. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        `RDKit <https://rdkit.org/>`_ to perform the conversion.
         This Kekulizes everything, removing all aromatic atom types.
         """
         translator.from_smarts(self, smartsstr, raise_atomtype_exception=raise_atomtype_exception)
@@ -1947,7 +1947,7 @@ class Molecule(Graph):
     def to_inchi(self, backend='rdkit-first'):
         """
         Convert a molecular structure to an InChI string. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        `RDKit <https://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity.
 
         or
@@ -1990,7 +1990,7 @@ class Molecule(Graph):
         or
 
         Convert a molecular structure to an InChI Key string. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        `RDKit <https://rdkit.org/>`_ to perform the conversion.
 
         It is possible to use a single backend or try different backends in sequence.
         The available options for the ``backend`` argument: 'rdkit-first'(default),
@@ -2023,7 +2023,7 @@ class Molecule(Graph):
     def to_smarts(self):
         """
         Convert a molecular structure to an SMARTS string. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        `RDKit <https://rdkit.org/>`_ to perform the conversion.
         Perceives aromaticity and removes Hydrogen atoms.
         """
         return translator.to_smarts(self)
@@ -2036,7 +2036,7 @@ class Molecule(Graph):
         `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
         and the SMILES may or may not be canonical.
         
-        Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the 
+        Otherwise, it uses `RDKit <https://rdkit.org/>`_ to perform the 
         conversion, so it will be canonical SMILES.
         While converting to an RDMolecule it will perceive aromaticity
         and removes Hydrogen atoms.

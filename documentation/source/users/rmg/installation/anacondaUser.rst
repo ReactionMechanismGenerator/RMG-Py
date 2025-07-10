@@ -15,7 +15,7 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 
     conda activate rmg_env
 
-   For more information about using conda, please check out the `conda user guide <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
+   For more information about using conda, please check out the `conda user guide <https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
   
    To install a specific version of RMG, add the version to the install command::
 

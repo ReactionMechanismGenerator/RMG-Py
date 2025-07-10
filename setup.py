@@ -33,13 +33,13 @@ try:
     from Cython.Build import cythonize
     from Cython.Compiler import Options
 except ImportError:
-    print('Cython (http://www.cython.org/) is required to build or install RMG Py.')
+    print('Cython (https://cython.org/) is required to build or install RMG Py.')
     raise
     
 try:
     import numpy
 except ImportError:
-    print('NumPy (http://numpy.scipy.org/) is required to build or install RMG Py.')
+    print('NumPy (https://numpy.scipy.org/) is required to build or install RMG Py.')
     raise
 
 from setuptools import find_packages
@@ -145,7 +145,7 @@ setup(
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
-    url='http://reactionmechanismgenerator.github.io',
+    url='https://reactionmechanismgenerator.github.io',
     python_requires='>=3.9,<3.10',
     packages=find_packages(where='.', include=["rmgpy*"]) + find_packages(where='.', include=["arkane*"]),
     scripts=scripts,

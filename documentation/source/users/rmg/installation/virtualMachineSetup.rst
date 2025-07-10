@@ -16,10 +16,7 @@ Windows 8/10. Click on the ``Performance`` tab--from here you can see if virtual
 
 .. image:: images/Virtualization_Enabled.png
     :align: center
-
-For Windows 7 or earlier you can download and run
-`Microsoft's Virtualization Detection Tool <http://www.microsoft.com/en-us/download/details.aspx?id=592>`_.
-
+|
 If enabled, you can continue on with installing a virtual machine on your PC. If virtualization is currently disabled,
 though, you will have to enable this from the BIOS setting on your computer. How to do this varies from PC to PC (we
 recommend doing a quick google search for your make/model, as there are many instructions for this online), but the
@@ -50,7 +47,7 @@ popular Linux distributions out there, with plenty of support available online. 
 any other Linux distribution you like (see `Linux DistroWatch`_).
 
 .. _Linux DistroWatch: https://distrowatch.com/
-.. _Ubuntu: https://ubuntu.com/#download
+.. _Ubuntu: https://ubuntu.com/#download-ubuntu
 
 1. Go to the Ubuntu_ website and click on the download link for 18.04 LTS (Desktop, not Server). Note that newer
    versions of Ubuntu might be available, but we recommend downloading only the LTS (long term support) versions. Note that
@@ -71,7 +68,7 @@ and `Oracle VirtualBox`_. VMware Workstation Pro is the recommended choice, thou
 access to it (since it is not free). If not, VirtualBox (which is free) runs well and will work just as fine. Use the
 hyperlinks below to jump ahead to the setup instructions for the virtual machine software of your choice.
 
-.. _VMware Workstation Pro: https://my.vmware.com/en/web/vmware/info/slug/desktop_end_user_computing/vmware_workstation_pro/15_0
+.. _VMware Workstation Pro: https://knowledge.broadcom.com/external/article/315638/download-and-install-vmware-fusion.html
 .. _Oracle VirtualBox: https://www.virtualbox.org/wiki/Downloads
 
 

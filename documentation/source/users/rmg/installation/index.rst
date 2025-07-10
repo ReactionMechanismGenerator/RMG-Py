@@ -14,7 +14,7 @@ Recommended Install: Docker
 
 RMG is primarily distributed using Docker, a software package for delivering applications.
 
-#. Download and install `Docker <https://docs.docker.com/get-docker/>`_.
+#. Download and install `Docker <https://docs.docker.com/get-started/get-docker/>`_.
 
 #. Open a terminal, powershell, or command prompt and run ``docker pull reactionmechanismgenerator/rmg:3.3.0``.
 
