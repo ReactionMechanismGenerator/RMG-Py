@@ -60,7 +60,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <div class="body" role="main">
             
   <section id="rmgpy-molecule-molecule">
-<h1>rmgpy.molecule.Molecule<a class="headerlink" href="#rmgpy-molecule-molecule" title="Permalink to this heading">¶</a></h1>
+<span id="id1"></span><h1>rmgpy.molecule.Molecule<a class="headerlink" href="#rmgpy-molecule-molecule" title="Permalink to this heading">¶</a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.</span></span><span class="sig-name descname"><span class="pre">Molecule</span></span><a class="headerlink" href="#rmgpy.molecule.Molecule" title="Permalink to this definition">¶</a></dt>
@@ -360,7 +360,7 @@ argument: ‘openbabel-first’(default), ‘rdkit-first’, ‘rdkit’, or ‘
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.from_smarts">
 <span class="sig-name descname"><span class="pre">from_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">smartsstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.from_smarts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMARTS string <cite>smartsstr</cite> to a molecular structure. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+<a class="reference external" href="https://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
 </dd></dl>
 
@@ -1102,7 +1102,7 @@ argument: ‘rdkit-first’(default), ‘openbabel-first’, ‘rdkit’, or ‘
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_inchi">
 <span class="sig-name descname"><span class="pre">to_inchi</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rdkit-first'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_inchi" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an InChI string. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+<a class="reference external" href="https://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity.</p>
 <p>or</p>
 <p>Convert a molecular structure to an InChI string. Uses
@@ -1119,7 +1119,7 @@ The available options for the <code class="docutils literal notranslate"><span c
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion.</p>
 <p>or</p>
 <p>Convert a molecular structure to an InChI Key string. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.</p>
+<a class="reference external" href="https://rdkit.org/">RDKit</a> to perform the conversion.</p>
 <p>It is possible to use a single backend or try different backends in sequence.
 The available options for the <code class="docutils literal notranslate"><span class="pre">backend</span></code> argument: ‘rdkit-first’(default),
 ‘openbabel-first’, ‘rdkit’, or ‘openbabel’.</p>
@@ -1143,7 +1143,7 @@ via from_xyz, which does not attempt to perceive bond orders</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_smarts">
 <span class="sig-name descname"><span class="pre">to_smarts</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_smarts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an SMARTS string. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+<a class="reference external" href="https://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity and removes Hydrogen atoms.</p>
 </dd></dl>
 
@@ -1154,7 +1154,7 @@ Perceives aromaticity and removes Hydrogen atoms.</p>
 <p>If there is a Nitrogen atom present it uses
 <a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion,
 and the SMILES may or may not be canonical.</p>
-<p>Otherwise, it uses <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the
+<p>Otherwise, it uses <a class="reference external" href="https://rdkit.org/">RDKit</a> to perform the
 conversion, so it will be canonical SMILES.
 While converting to an RDMolecule it will perceive aromaticity
 and removes Hydrogen atoms.</p>

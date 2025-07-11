@@ -87,7 +87,7 @@ rdkit, and openbabel.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.from_smarts">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">from_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">smartsstr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rdkit'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_atomtype_exception</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.translator.from_smarts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a SMARTS string <cite>smartsstr</cite> to a molecular structure. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+<a class="reference external" href="https://rdkit.org/">RDKit</a> to perform the conversion.
 This Kekulizes everything, removing all aromatic atom types.</p>
 </dd></dl>
 
@@ -147,7 +147,7 @@ For aug_level=2, appends positions of unpaired and paired electrons.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.translator.to_smarts">
 <span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_smarts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'rdkit'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.translator.to_smarts" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an SMARTS string. Uses
-<a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the conversion.
+<a class="reference external" href="https://rdkit.org/">RDKit</a> to perform the conversion.
 Perceives aromaticity and removes Hydrogen atoms.</p>
 </dd></dl>
 
@@ -156,9 +156,9 @@ Perceives aromaticity and removes Hydrogen atoms.</p>
 <span class="sig-prename descclassname"><span class="pre">rmgpy.molecule.translator.</span></span><span class="sig-name descname"><span class="pre">to_smiles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mol</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.translator.to_smiles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to an SMILES string.</p>
 <p>If there is a Nitrogen/Sulfur atom present it uses
-<a class="reference external" href="http://openbabel.org/">OpenBabel</a> to perform the conversion,
+<a class="reference external" href="https://openbabel.org/">OpenBabel</a> to perform the conversion,
 and the SMILES may or may not be canonical.</p>
-<p>Otherwise, it uses <a class="reference external" href="http://rdkit.org/">RDKit</a> to perform the
+<p>Otherwise, it uses <a class="reference external" href="https://rdkit.org/">RDKit</a> to perform the
 conversion, so it will be canonical SMILES.
 While converting to an RDMolecule it will perceive aromaticity
 and removes Hydrogen atoms.</p>
