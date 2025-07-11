@@ -94,6 +94,8 @@ class Psi4LogTest:
         assert abs(log.load_energy() - -200640009.37231186) < 1e-2
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
         assert abs(log.load_energy() - -397841662.56434655) < 1e-2
+        log = Psi4Log(os.path.join(self.data_path, "CCSD(T)_L.out"))
+        assert abs(log.load_energy() - -696320709.493777) < 1e-2
 
     def test_zero_point_energy_from_psi4_log(self):
         """
