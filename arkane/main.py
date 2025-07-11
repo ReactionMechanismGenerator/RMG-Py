@@ -222,7 +222,7 @@ class Arkane(object):
                 job.execute(output_directory=self.output_directory, plot=self.plot, jobnum=bacjob_num)
                 bacjob_num += 1
             if isinstance(job, AEJob):
-                job.execute(output_file=output_file)
+                job.execute(output_directory=self.output_directory, plot=self.plot)
 
         with open(chemkin_file, 'a') as f:
             f.write('\n')
@@ -465,7 +465,7 @@ def log_header(level=logging.INFO):
     logging.log(level, '#   Authors: RMG Developers (rmg_dev@mit.edu)                  #')
     logging.log(level, '#   P.I.s:   William H. Green (whgreen@mit.edu)                #')
     logging.log(level, '#            Richard H. West (r.west@neu.edu)                  #')
-    logging.log(level, '#   Website: http://reactionmechanismgenerator.github.io/      #')
+    logging.log(level, '#   Website: https://reactionmechanismgenerator.github.io/      #')
     logging.log(level, '#                                                              #')
     logging.log(level, '################################################################')
     logging.log(level, '')

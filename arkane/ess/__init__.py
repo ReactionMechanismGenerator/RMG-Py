@@ -36,6 +36,6 @@ from arkane.ess.factory import ess_factory, _registered_ess_adapters
 from arkane.ess.gaussian import GaussianLog
 from arkane.ess.molpro import MolproLog
 from arkane.ess.orca import OrcaLog
-from arkane.ess.psi4 import Psi4Log
+from arkane.ess.psi4_parser import Psi4Log
 from arkane.ess.qchem import QChemLog
 from arkane.ess.terachem import TeraChemLog

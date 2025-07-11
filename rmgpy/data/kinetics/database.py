@@ -37,18 +37,22 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.data.base import LogicNode
 from rmgpy.data.kinetics.common import ensure_species, generate_molecule_combos, \
-                                       find_degenerate_reactions, ensure_independent_atom_ids
+                                       find_degenerate_reactions, ensure_independent_atom_ids, \
+                                       check_for_same_reactants
 from rmgpy.data.kinetics.family import KineticsFamily
 from rmgpy.data.kinetics.library import LibraryReaction, KineticsLibrary
 from rmgpy.exceptions import DatabaseError
 from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, StickingCoefficient, \
-                           StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, ArrheniusBM
+                           StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, \
+                           ArrheniusBM, SurfaceChargeTransfer, KineticsModel, Marcus, \
+                           ArrheniusChargeTransfer, ArrheniusChargeTransferBM
+from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.molecule import Molecule, Group
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
-
+from rmgpy.data.solvation import SoluteData, SoluteTSData, SoluteTSDiffData
 
 ################################################################################
 
@@ -61,12 +65,14 @@ class KineticsDatabase(object):
         self.recommended_families = {}
         self.families = {}
         self.libraries = {}
+        self.external_library_labels = {}
         self.library_order = []  # a list of tuples in the format ('library_label', LibraryType),
                                  # where LibraryType is set to either 'Reaction Library' or 'Seed'.
         self.local_context = {
             'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
             'ArrheniusEP': ArrheniusEP,
+            'ArrheniusChargeTransfer': ArrheniusChargeTransfer,
             'MultiArrhenius': MultiArrhenius,
             'MultiPDepArrhenius': MultiPDepArrhenius,
             'PDepArrhenius': PDepArrhenius,
@@ -78,8 +84,16 @@ class KineticsDatabase(object):
             'StickingCoefficientBEP': StickingCoefficientBEP,
             'SurfaceArrhenius': SurfaceArrhenius,
             'SurfaceArrheniusBEP': SurfaceArrheniusBEP,
+            'SurfaceChargeTransfer': SurfaceChargeTransfer,
             'R': constants.R,
-            'ArrheniusBM': ArrheniusBM
+            'ArrheniusBM': ArrheniusBM,
+            'ArrheniusChargeTransferBM': ArrheniusChargeTransferBM,
+            'SoluteData': SoluteData,
+            'SoluteTSData': SoluteTSData,
+            'SoluteTSDiffData': SoluteTSDiffData,
+            'KineticsModel': KineticsModel,
+            'Marcus': Marcus,
+            'RateUncertainty': RateUncertainty,
         }
         self.global_context = {}
 
@@ -226,17 +240,18 @@ class KineticsDatabase(object):
         The `path` points to the folder of kinetics libraries in the database,
         and the libraries should be in files like :file:`<path>/<library>.py`.
         """
-
+        self.external_library_labels = dict()
         if libraries is not None:
             for library_name in libraries:
                 library_file = os.path.join(path, library_name, 'reactions.py')
                 if os.path.exists(library_name):
                     library_file = os.path.join(library_name, 'reactions.py')
-                    short_library_name = os.path.split(library_name)[-1]
+                    short_library_name = os.path.basename(library_name.rstrip(os.path.sep))
                     logging.info(f'Loading kinetics library {short_library_name} from {library_name}...')
                     library = KineticsLibrary(label=short_library_name)
                     library.load(library_file, self.local_context, self.global_context)
                     self.libraries[library.label] = library
+                    self.external_library_labels[library_name] = library.label
                 elif os.path.exists(library_file):
                     logging.info(f'Loading kinetics library {library_name} from {library_file}...')
                     library = KineticsLibrary(label=library_name)
@@ -251,10 +266,18 @@ class KineticsDatabase(object):
             self.library_order = []
             for (root, dirs, files) in os.walk(os.path.join(path)):
                 for f in files:
-                    name, ext = os.path.splitext(f)
-                    if ext.lower() == '.py':
+                    if f.lower() == 'reactions.py':
                         library_file = os.path.join(root, f)
-                        label = os.path.dirname(library_file)[len(path) + 1:]
+                        dirname = os.path.dirname(library_file)
+                        if dirname == path:
+                            label = os.path.basename(dirname)
+                        else:
+                            label = os.path.relpath(dirname, path)
+
+                        if not label:
+                            logging.warning(f"Empty label for {library_file}. Using 'default'.")
+                            label = "default"
+                        
                         logging.info(f'Loading kinetics library {label} from {library_file}...')
                         library = KineticsLibrary(label=label)
                         try:
@@ -428,7 +451,7 @@ and immediately used in input files without any additional changes.
         if only_families is None:
             reaction_list.extend(self.generate_reactions_from_libraries(reactants, products))
         reaction_list.extend(self.generate_reactions_from_families(reactants, products,
-                                                                   only_families=None, resonance=resonance))
+                                                                   only_families=only_families, resonance=resonance))
         return reaction_list
 
     def generate_reactions_from_libraries(self, reactants, products=None):
@@ -488,43 +511,10 @@ and immediately used in input files without any additional changes.
         Returns:
             List of reactions containing Species objects with the specified reactants and products.
         """
-        # Check if the reactants are the same
-        # If they refer to the same memory address, then make a deep copy so
-        # they can be manipulated independently
         if isinstance(reactants, tuple):
             reactants = list(reactants)
-        same_reactants = 0
-        if len(reactants) == 2:
-            if reactants[0] is reactants[1]:
-                reactants[1] = reactants[1].copy(deep=True)
-                same_reactants = 2
-            elif reactants[0].is_isomorphic(reactants[1]):
-                same_reactants = 2
-        elif len(reactants) == 3:
-            same_01 = reactants[0] is reactants[1]
-            same_02 = reactants[0] is reactants[2]
-            if same_01 and same_02:
-                same_reactants = 3
-                reactants[1] = reactants[1].copy(deep=True)
-                reactants[2] = reactants[2].copy(deep=True)
-            elif same_01:
-                same_reactants = 2
-                reactants[1] = reactants[1].copy(deep=True)
-            elif same_02:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            elif reactants[1] is reactants[2]:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            else:
-                same_01 = reactants[0].is_isomorphic(reactants[1])
-                same_02 = reactants[0].is_isomorphic(reactants[2])
-                if same_01 and same_02:
-                    same_reactants = 3
-                elif same_01 or same_02:
-                    same_reactants = 2
-                elif reactants[1].is_isomorphic(reactants[2]):
-                    same_reactants = 2
+
+        reactants, same_reactants = check_for_same_reactants(reactants)
 
         # Label reactant atoms for proper degeneracy calculation (cannot be in tuple)
         ensure_independent_atom_ids(reactants, resonance=resonance)
@@ -537,7 +527,8 @@ and immediately used in input files without any additional changes.
                                                       prod_resonance=resonance))
 
         # Calculate reaction degeneracy
-        reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self)
+        reaction_list = find_degenerate_reactions(reaction_list, same_reactants, kinetics_database=self,
+                                                  resonance=resonance)
         # Add reverse attribute to families with ownReverse
         to_delete = []
         for i, rxn in enumerate(reaction_list):
@@ -658,7 +649,7 @@ and immediately used in input files without any additional changes.
             elif len(reverse) == 1 and len(forward) == 0:
                 # The reaction is in the reverse direction
                 # First fit Arrhenius kinetics in that direction
-                T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, np.float64)
+                T_data = 1000.0 / np.arange(0.5, 3.301, 0.1, float)
                 k_data = np.zeros_like(T_data)
                 for i in range(T_data.shape[0]):
                     k_data[i] = entry.data.get_rate_coefficient(T_data[i]) / reaction.get_equilibrium_constant(T_data[i])
@@ -761,42 +752,52 @@ and immediately used in input files without any additional changes.
                 else:
                     kinetics = training_entry.data
             elif 'Rate Rules' in source:
-
                 source_dict = source['Rate Rules'][1]
                 rules = source_dict['rules']
                 training = source_dict['training']
                 degeneracy = source_dict['degeneracy']
 
-                log_a = 0
-                n = 0
-                alpha = 0
-                E0 = 0
-                for rule_entry, weight in rules:
-                    log_a += np.log10(rule_entry.data.A.value_si) * weight
-                    n += rule_entry.data.n.value_si * weight
-                    alpha += rule_entry.data.alpha.value_si * weight
-                    E0 += rule_entry.data.E0.value_si * weight
-                for rule_entry, training_entry, weight in training:
-                    log_a += np.log10(rule_entry.data.A.value_si) * weight
-                    n += rule_entry.data.n.value_si * weight
-                    alpha += rule_entry.data.alpha.value_si * weight
-                    E0 += rule_entry.data.E0.value_si * weight
-
-                a_units = rule_entry.data.A.units
-                if a_units == 'cm^3/(mol*s)' or a_units == 'cm^3/(molecule*s)' or a_units == 'm^3/(molecule*s)':
-                    a_units = 'm^3/(mol*s)'
-                elif a_units == 'cm^6/(mol^2*s)' or a_units == 'cm^6/(molecule^2*s)' or a_units == 'm^6/(molecule^2*s)':
-                    a_units = 'm^6/(mol^2*s)'
-                elif a_units == 's^-1' or a_units == 'm^3/(mol*s)' or a_units == 'm^6/(mol^2*s)':
-                    pass
-                else:
-                    raise ValueError('Invalid units {0} for averaging kinetics.'.format(a_units))
-                kinetics = ArrheniusEP(
-                    A=(degeneracy * 10 ** log_a, a_units),
-                    n=n,
-                    alpha=alpha,
-                    E0=(E0 * 0.001, "kJ/mol"),
-                )
+                if rules and isinstance(rules[0][0].data, ArrheniusBM):
+                    # This is a rate rule with ArrheniusBM kinetics
+                    assert len(rules) == 1, "There should only be one rate rule for ArrheniusBM kinetics in the autogenerated trees"
+                    kinetics = ArrheniusBM(  # have to create a new object to avoid modifying the original when we multiply by degeneracy
+                        A=rules[0][0].data.A,
+                        n=rules[0][0].data.n,
+                        w0=rules[0][0].data.w0,
+                        E0=rules[0][0].data.E0,
+                    )
+                    kinetics.A.value_si *= degeneracy
+                else:  # ArrheniusEP kinetics
+                    log_a = 0
+                    n = 0
+                    alpha = 0
+                    E0 = 0
+                    for rule_entry, weight in rules:
+                        log_a += np.log10(rule_entry.data.A.value_si) * weight
+                        n += rule_entry.data.n.value_si * weight
+                        alpha += rule_entry.data.alpha.value_si * weight
+                        E0 += rule_entry.data.E0.value_si * weight
+                    for rule_entry, training_entry, weight in training:
+                        log_a += np.log10(rule_entry.data.A.value_si) * weight
+                        n += rule_entry.data.n.value_si * weight
+                        alpha += rule_entry.data.alpha.value_si * weight
+                        E0 += rule_entry.data.E0.value_si * weight
+                    a_units = rule_entry.data.A.units
+                    if a_units == 'cm^3/(mol*s)' or a_units == 'cm^3/(molecule*s)' or a_units == 'm^3/(molecule*s)':
+                        a_units = 'm^3/(mol*s)'
+                    elif a_units == 'cm^6/(mol^2*s)' or a_units == 'cm^6/(molecule^2*s)' or a_units == 'm^6/(molecule^2*s)':
+                        a_units = 'm^6/(mol^2*s)'
+                    elif a_units == 's^-1' or a_units == 'm^3/(mol*s)' or a_units == 'm^6/(mol^2*s)':
+                        pass
+                    else:
+                        raise ValueError('Invalid units {0} for averaging kinetics.'.format(a_units))
+                    
+                    kinetics = ArrheniusEP(
+                        A=(degeneracy * 10 ** log_a, a_units),
+                        n=n,
+                        alpha=alpha,
+                        E0=(E0 * 0.001, "kJ/mol"),
+                    )
             else:
                 raise ValueError("Source data must be either 'Library', 'PDep','Training', or 'Rate Rules'.")
 

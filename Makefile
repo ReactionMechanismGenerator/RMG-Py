@@ -4,28 +4,16 @@
 #
 ################################################################################
 
-.PHONY : all minimal main solver check pycheck arkane clean install decython documentation mopac_travis test
+CC=gcc
+CXX=g++
 
-all: pycheck main solver check
+.PHONY : all check clean install decython documentation test q2dtor
 
-minimal:
-	python setup.py build_ext minimal --inplace --build-temp .
-
-main:
-	python setup.py build_ext main --inplace --build-temp .
-
-solver:
-	@ python utilities.py check-pydas
-	python setup.py build_ext solver --inplace --build-temp .
-
-arkane:
-	python setup.py build_ext arkane --inplace --build-temp .
+all: check install check
 
 check:
 	@ python utilities.py check-dependencies
-
-pycheck:
-	@ python utilities.py check-python
+	@ python utilities.py check-pydas
 
 documentation:
 	$(MAKE) -C documentation html
@@ -33,13 +21,14 @@ documentation:
 
 clean:
 	@ python utilities.py clean
+	python -m pip uninstall --yes reactionmechanismgenerator || true  # can fail if RMG not installed at all
 
 clean-solver:
 	@ python utilities.py clean-solver
 
 install:
 	@ python utilities.py check-pydas
-	python setup.py install
+	python -m pip install -vv -e .
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"
@@ -50,24 +39,25 @@ q2dtor:
  and HinderedRotor2D within Arkane please cite:  \n\nD. Ferro-Costas, M. N. D. S.Cordeiro, D. G. Truhlar, A.\
 		  Fernández-Ramos, Comput. Phys. Commun. 232, 190-205, 2018.\n"
 	@ read -p "Press ENTER to continue" dummy
-	@ git clone https://github.com/mjohnson541/Q2DTor.git external/Q2DTor --branch arkanepy3
-	
+	@ mkdir -p external
+	@ git clone https://github.com/cathedralpkg/Q2DTor external/Q2DTor
+
 decython:
 	# de-cythonize all but the 'minimal'. Helpful for debugging in "pure python" mode.
 	find . -name *.so ! \( -name _statmech.so -o -name quantity.so -o -regex '.*rmgpy/solver/.*' \) -exec rm -f '{}' \;
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-	nosetests --nocapture --nologcapture --all-modules --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	python -m pytest
 
 test test-unittests:
-	nosetests --nocapture --nologcapture --all-modules -A 'not functional' --verbose --with-coverage --cover-inclusive --cover-erase --cover-html --cover-html-dir=testing/coverage --exe rmgpy arkane
+	python -m pytest -m "not functional and not database"
 
 test-functional:
-	nosetests --nologcapture --all-modules -A 'functional' --verbose --exe rmgpy arkane
+	python -m pytest -m "functional"
 
 test-database:
-	nosetests --nocapture --nologcapture --verbose --detailed-errors testing/databaseTest.py
+	python -m pytest -m "database"
 
 eg0: all
 	mkdir -p testing/eg0
@@ -85,25 +75,22 @@ eg1: all
 	coverage run rmg.py -p testing/eg1/input.py
 	coverage report
 	coverage html
+
 eg2: all
 	mkdir -p testing/eg2
 	rm -rf testing/eg2/*
 	cp examples/rmg/1,3-hexadiene/input.py testing/eg2/input.py
 	coverage erase
-	@ echo "Running eg2: 1,3-hexadiene example with coverage tracking AND profiling"
-	coverage run rmg.py -p testing/eg2/input.py
-	coverage report
-	coverage html
+	@ echo "Running eg2: 1,3-hexadiene example with profiling"
+	python rmg.py -p testing/eg2/input.py
 
 eg3: all
 	mkdir -p testing/eg3
 	rm -rf testing/eg3/*
 	cp examples/rmg/liquid_phase/input.py testing/eg3/input.py
 	coverage erase
-	@ echo "Running eg3: liquid_phase example with coverage tracking AND profiling"
-	coverage run rmg.py -p testing/eg3/input.py
-	coverage report
-	coverage html
+	@ echo "Running eg3: liquid_phase example with profiling"
+	python rmg.py -p testing/eg3/input.py
 
 eg5: all
 	mkdir -p testing/eg5
@@ -140,3 +127,25 @@ eg4: all
 	cp examples/thermoEstimator/input.py testing/eg4/input.py
 	@ echo "Running thermo data estimator example. This tests QM."
 	python scripts/thermoEstimator.py testing/eg4/input.py
+
+# RMS reactor examples (require Julia)
+eg8: all
+	mkdir -p testing/eg8
+	rm -rf testing/eg8/*
+	cp examples/rmg/rms_constant_V/input.py testing/eg8/input.py
+	@ echo "Running RMS constantVIdealGasReactor example (requires Julia)"
+	python rmg.py testing/eg8/input.py
+
+eg9: all
+	mkdir -p testing/eg9
+	rm -rf testing/eg9/*
+	cp examples/rmg/nox_transitory_edge/input.py testing/eg9/input.py
+	@ echo "Running RMS constantTPIdealGasReactor example (requires Julia)"
+	python rmg.py testing/eg9/input.py
+
+eg10: all
+	mkdir -p testing/eg10
+	rm -rf testing/eg10/*
+	cp examples/rmg/liquid_cat/input.py testing/eg10/input.py
+	@ echo "Running RMS liquidSurfaceReactor example (requires Julia)"
+	python rmg.py testing/eg10/input.py

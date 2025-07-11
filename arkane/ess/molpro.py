@@ -138,7 +138,7 @@ class MolproLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if 'Force Constants (Second Derivatives of the Energy) in [a.u.]' in line:
-                    fc = np.zeros((n_rows, n_rows), np.float64)
+                    fc = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -202,9 +202,9 @@ class MolproLog(ESSAdapter):
             mass1, num1 = get_element_mass(atom1)
             mass.append(mass1)
             number.append(num1)
-        number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
-        coord = np.array(coord, np.float64)
+        number = np.array(number, int)
+        mass = np.array(mass, float)
+        coord = np.array(coord, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from Molpro geometry output file {0}'.format(self.path))
 
@@ -336,6 +336,7 @@ class MolproLog(ESSAdapter):
                         f12b = True  # MRCI could also have a v(4+)z basis, so don't break yet
                 elif 'ccsd' in line.lower() and 'f12' in line.lower():
                     f12 = True
+                    f12a_section, f12b_section = False, False
                 elif 'mrci' in line.lower():
                     mrci = True
                     f12a, f12b = False, False
@@ -350,11 +351,15 @@ class MolproLog(ESSAdapter):
             # Search for e_elect
             for line in lines:
                 if f12 and f12a:
-                    if 'CCSD(T)-F12a' in line and 'energy' in line:
+                    if 'F12a energy' in line:
+                        f12a_section, f12b_section = True, False
+                    if 'CCSD(T)-F12' in line and 'energy' in line and f12a_section:
                         e_elect = float(line.split()[-1])
                         break
                 elif f12 and f12b:
-                    if 'CCSD(T)-F12b' in line and 'energy' in line:
+                    if 'F12b energy' in line:
+                        f12a_section, f12b_section = False, True
+                    if 'CCSD(T)-F12' in line and 'energy' in line and f12b_section:
                         e_elect = float(line.split()[-1])
                         break
                 elif mrci:
@@ -369,6 +374,9 @@ class MolproLog(ESSAdapter):
                         e_elect = float(line.split()[-2])
                         break
                     if 'CCSD' in line and 'energy=' in line:
+                        e_elect = float(line.split()[-1])
+                        break
+                    if 'RS2C' in line and 'energy' in line:
                         e_elect = float(line.split()[-1])
                         break
             if e_elect is None and mrci:
@@ -435,10 +443,10 @@ class MolproLog(ESSAdapter):
         if len(freqs) == 1:
             return -float(freqs[0])
         elif len(freqs) > 1:
-            logging.info('More than one imaginary frequency in Molpro output file {0}.'.format(self.path))
+            logging.info(f'More than one imaginary frequency in Molpro output file {self.path}.')
             return -float(freqs[0])
         else:
-            raise LogError('Unable to find imaginary frequency in Molpro output file {0}'.format(self.path))
+            raise LogError(f'Unable to find imaginary frequency in Molpro output file {self.path}')
 
     def load_scan_energies(self):
         """
@@ -458,7 +466,8 @@ class MolproLog(ESSAdapter):
             if 'T1 diagnostic:  ' in line:
                 items = line.split()
                 return float(items[-1])
-        raise LogError('Unable to find T1 diagnostic in energy file: {0}'.format(self.path))
+        logging.warning(f'Unable to find T1 diagnostic in energy file: {self.path}')
+        return None
 
     def get_D1_diagnostic(self):
         """
@@ -472,7 +481,8 @@ class MolproLog(ESSAdapter):
             if 'D1 diagnostic:  ' in line:
                 items = line.split()
                 return float(items[-1])
-        raise LogError('Unable to find D1 diagnostic in energy file: {0}'.format(self.path))
+        logging.warning(f'Unable to find D1 diagnostic in energy file: {self.path}')
+        return None
 
     def load_scan_pivot_atoms(self):
         """Not implemented for Molpro"""

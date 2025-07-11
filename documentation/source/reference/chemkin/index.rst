@@ -41,8 +41,6 @@ Function                           Description
 :func:`save_chemkin_file`          Save a reaction mechanism to a Chemkin file
 :func:`save_species_dictionary`    Save a species dictionary to a file
 :func:`save_transport_file`        Save a Chemkin transport properties file
-:func:`save_html_file`             Save an HTML file representing a Chemkin mechanism
-:func:`save_java_kinetics_library` Save a mechanism to a (Chemkin-like) kinetics library for RMG-Java
 ---------------------------------- ------------------------------------------------
 :func:`get_species_identifier`     Return the Chemkin-valid identifier for a given species
 :func:`mark_duplicate_reactions`   Find and mark all duplicate reactions in a mechanism

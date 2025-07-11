@@ -296,10 +296,12 @@ alongside normal group entries. The starred atoms in the forbidden group
 ban the specified reaction recipe from occurring in matched products and reactants.
 
 In addition for forbidding groups, there is the option of forbidding specific
-molecules or species. Forbidding a molecule will prevent that exact structure
-from being generated, while forbidding a species will prevent any of its resonance
-structures from being generated. To specify a forbidden molecule or species, simply
-replace the ``group`` keyword with ``molecule`` or ``species``: ::
+molecules or species in ``RMG-database/input/forbiddenStructures.py``. 
+Forbidding a molecule will prevent that exact structure from being generated, 
+while forbidding a species will prevent any of its resonance structures from being
+generated. Note that specific molecules or species can only be forbidden globally
+and should not be specified in the groups.py file. To specify a forbidden molecule
+or species, simply replace the ``group`` keyword with ``molecule`` or ``species``: ::
 
     # This forbids a molecule
     forbidden(

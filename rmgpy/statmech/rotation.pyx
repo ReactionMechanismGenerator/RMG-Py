@@ -616,7 +616,7 @@ cdef class KRotor(Rotation):
             dens_states = schrodinger.get_density_of_states(e_list, self.get_level_energy, self.get_level_degeneracy, 0,
                                                          dens_states_0) / self.symmetry
         else:
-            dens_states = np.zeros(e_list.shape[0], dtype=np.float)
+            dens_states = np.zeros(e_list.shape[0], dtype=float)
             B = get_rotational_constant_energy(self._inertia.value_si)
             dE = e_list[1] - e_list[0]
             for r in range(e_list.shape[0]):

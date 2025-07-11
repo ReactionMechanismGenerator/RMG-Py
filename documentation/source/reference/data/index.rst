@@ -50,7 +50,7 @@ Class                       Description
 =========================== ====================================================
 :class:`DepositoryReaction` A reaction with kinetics determined from querying a kinetics depository
 :class:`LibraryReaction`    A reaction with kinetics determined from querying a kinetics library
-:class:`TemplateReaction`   A reaction with kinetics determined from querying a kinetics group additivity or rate rules method
+:class:`TemplateReaction`   A reaction with kinetics determined from querying a rate rules method
 :class:`ReactionRecipe`     A sequence of actions that represent the process of a chemical reaction
 --------------------------- ----------------------------------------------------
 :class:`KineticsDepository` A depository of all kinetics parameters for one or more reactions

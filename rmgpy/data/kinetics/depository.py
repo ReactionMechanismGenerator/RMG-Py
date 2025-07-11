@@ -35,6 +35,7 @@ import re
 
 from rmgpy.data.base import Database, Entry, DatabaseError
 from rmgpy.data.kinetics.common import save_entry
+from rmgpy.kinetics import SurfaceChargeTransfer, SurfaceArrheniusBEP
 from rmgpy.reaction import Reaction
 
 
@@ -60,7 +61,8 @@ class DepositoryReaction(Reaction):
                  pairs=None,
                  depository=None,
                  family=None,
-                 entry=None
+                 entry=None,
+                 electrons=0,
                  ):
         Reaction.__init__(self,
                           index=index,
@@ -72,7 +74,8 @@ class DepositoryReaction(Reaction):
                           transition_state=transition_state,
                           duplicate=duplicate,
                           degeneracy=degeneracy,
-                          pairs=pairs
+                          pairs=pairs,
+                          electrons=electrons,
                           )
         self.depository = depository
         self.family = family
@@ -104,12 +107,34 @@ class DepositoryReaction(Reaction):
         """
         return self.depository.label
 
+    def apply_solvent_correction(self, solvent):
+        """
+        apply kinetic solvent correction
+        """
+        from rmgpy.data.rmg import get_db
+        solvation_database = get_db('solvation')
+        solvent_data = solvation_database.get_solvent_data(solvent)
+        solute_data = self.kinetics.solute
+        correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
+        dHR = 0.0
+        dSR = 0.0
+        for spc in self.reactants:
+            spc_solute_data = solvation_database.get_solute_data(spc)
+            spc_correction = solvation_database.get_solvation_correction(spc_solute_data, solvent_data)
+            dHR += spc_correction.enthalpy
+            dSR += spc_correction.entropy
+
+        dH = correction.enthalpy-dHR
+        dA = np.exp((correction.entropy-dSR)/constants.R)
+        self.kinetics.Ea.value_si += dH
+        self.kinetics.A.value_si *= dA
+        self.kinetics.comment += "\nsolvation correction raised barrier by {0} kcal/mol and prefactor by factor of {1}".format(dH/4184.0,dA)
 
 ################################################################################
 
 class KineticsDepository(Database):
     """
-    A class for working with an RMG kinetics depository. Each depository 
+    A class for working with an RMG kinetics depository. Each depository
     corresponds to a reaction family (a :class:`KineticsFamily` object). Each
     entry in a kinetics depository involves a reaction defined either by a
     real reactant and product species (as in a kinetics library).
@@ -187,6 +212,9 @@ class KineticsDepository(Database):
                                         ''.format(product, self.label))
                 # Same comment about molecule vs species objects as above.
                 rxn.products.append(species_dict[product])
+            
+            if isinstance(entry.data, (SurfaceChargeTransfer, SurfaceArrheniusBEP)):
+                rxn.electrons = entry.data.electrons.value
 
             if not rxn.is_balanced():
                 raise DatabaseError('Reaction {0} in kinetics depository {1} was not balanced! Please reformulate.'

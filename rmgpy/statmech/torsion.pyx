@@ -285,7 +285,7 @@ cdef class HinderedRotor(Torsion):
             coeffs = self._fourier.value_si
             V0 = -np.sum(coeffs[0, :])
         else:
-            coeffs = np.zeros((2, self.symmetry), np.float64)
+            coeffs = np.zeros((2, self.symmetry), float)
             V0 = 0.5 * self._barrier.value_si
             coeffs[0, self.symmetry - 1] = -V0
 
@@ -532,7 +532,7 @@ cdef class HinderedRotor(Torsion):
             # Fit Fourier series potential
             N = V.shape[0]
             # A: [1, cos(phi), ..., cos(M * phi), sin(phi), ..., sin(M * phi)]
-            A = np.zeros((N + 1, 2 * numterms - 1), np.float64)
+            A = np.zeros((N + 1, 2 * numterms - 1), float)
             A[:-1, 0] = 1
             for m in range(1, numterms):
                 A[:-1, m] = np.cos(m * angle)

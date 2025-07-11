@@ -44,7 +44,8 @@ import numpy as np
 from rmgpy.data.base import Database, Entry, get_all_combinations
 from rmgpy.data.kinetics.common import save_entry
 from rmgpy.exceptions import KineticsError, DatabaseError
-from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP
+from rmgpy.kinetics import ArrheniusEP, Arrhenius, StickingCoefficientBEP, SurfaceArrheniusBEP, \
+                            SurfaceChargeTransfer, SurfaceChargeTransferBEP, Marcus
 from rmgpy.quantity import Quantity, ScalarQuantity
 from rmgpy.reaction import Reaction
 
@@ -108,289 +109,6 @@ class KineticsRules(Database):
         Write the given `entry` in the thermo database to the file object `f`.
         """
         return save_entry(f, entry)
-
-    def process_old_library_entry(self, data):
-        """
-        Process a list of parameters `data` as read from an old-style RMG
-        thermo database, returning the corresponding kinetics object.
-        """
-        warnings.warn("The old kinetics databases are no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        # The names of all of the RMG reaction families that are bimolecular
-        BIMOLECULAR_KINETICS_FAMILIES = [
-            'H_Abstraction',
-            'R_Addition_MultipleBond',
-            'R_Recombination',
-            'Disproportionation',
-            '1+2_Cycloaddition',
-            '2+2_cycloaddition_Cd',
-            '2+2_cycloaddition_CO',
-            '2+2_cycloaddition_CCO',
-            'Diels_alder_addition',
-            '1,2_Insertion',
-            '1,3_Insertion_CO2',
-            '1,3_Insertion_ROR',
-            'R_Addition_COm',
-            'Oa_R_Recombination',
-            'Substitution_O',
-            'SubstitutionS',
-            'R_Addition_CSm',
-            '1,3_Insertion_RSR',
-            'lone_electron_pair_bond',
-        ]
-
-        # The names of all of the RMG reaction families that are unimolecular
-        UNIMOLECULAR_KINETICS_FAMILIES = [
-            'intra_H_migration',
-            'Birad_recombination',
-            'intra_OH_migration',
-            'HO2_Elimination_from_PeroxyRadical',
-            'H_shift_cyclopentadiene',
-            'Cyclic_Ether_Formation',
-            'Intra_R_Add_Exocyclic',
-            'Intra_R_Add_Endocyclic',
-            '1,2-Birad_to_alkene',
-            'Intra_Disproportionation',
-            'Korcek_step1',
-            'Korcek_step2',
-            '1,2_shiftS',
-            'intra_substitutionCS_cyclization',
-            'intra_substitutionCS_isomerization',
-            'intra_substitutionS_cyclization',
-            'intra_substitutionS_isomerization',
-            'intra_NO2_ONO_conversion',
-            '1,4_Cyclic_birad_scission',
-            '1,4_Linear_birad_scission',
-            'Intra_Diels_alder',
-            'ketoenol',
-            'Retroen'
-        ]
-        # This is hardcoding of reaction families!
-        label = os.path.split(self.label)[-2]
-        if label in BIMOLECULAR_KINETICS_FAMILIES:
-            Aunits = 'cm^3/(mol*s)'
-        elif label in UNIMOLECULAR_KINETICS_FAMILIES:
-            Aunits = 's^-1'
-        else:
-            raise Exception('Unable to determine preexponential units for old reaction family '
-                            '"{0}".'.format(self.label))
-
-        try:
-            Tmin, Tmax = data[0].split('-')
-            Tmin = (float(Tmin), "K")
-            Tmax = (float(Tmax), "K")
-        except ValueError:
-            Tmin = (float(data[0]), "K")
-            Tmax = None
-
-        A, n, alpha, E0, dA, dn, dalpha, dE0 = data[1:9]
-
-        A = float(A)
-        if dA[0] == '*':
-            A = Quantity(A, Aunits, '*|/', float(dA[1:]))
-        else:
-            dA = float(dA)
-            if dA:
-                A = Quantity(A, Aunits, '+|-', dA)
-            else:
-                A = Quantity(A, Aunits)
-
-        n = float(n)
-        dn = float(dn)
-        if dn:
-            n = Quantity(n, '', '+|-', dn)
-        else:
-            n = Quantity(n, '')
-
-        alpha = float(alpha)
-        dalpha = float(dalpha)
-        if dalpha:
-            alpha = Quantity(alpha, '', '+|-', dalpha)
-        else:
-            alpha = Quantity(alpha, '')
-
-        E0 = float(E0)
-        dE0 = float(dE0)
-        if dE0:
-            E0 = Quantity(E0, 'kcal/mol', '+|-', dE0)
-        else:
-            E0 = Quantity(E0, 'kcal/mol')
-
-        rank = int(data[9])
-
-        return ArrheniusEP(A=A, n=n, alpha=alpha, E0=E0, Tmin=Tmin, Tmax=Tmax), rank
-
-    def load_old(self, path, groups, num_labels):
-        """
-        Load a set of old rate rules for kinetics groups into this depository.
-        """
-        warnings.warn("The old kinetics databases are no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        # Parse the old library
-        entries = self.parse_old_library(os.path.join(path, 'rateLibrary.txt'), num_parameters=10, num_labels=num_labels)
-
-        self.entries = {}
-        for entry in entries:
-            index, label, data, shortDesc = entry
-            if isinstance(data, str):
-                kinetics = data
-                rank = 0
-            elif isinstance(data, tuple) and len(data) == 2:
-                kinetics, rank = data
-            else:
-                raise DatabaseError('Unexpected data {0!r} for entry {1!s}.'.format(data, entry))
-            reactants = [groups.entries[l].item for l in label.split(';')]
-            item = Reaction(reactants=reactants, products=[])
-            entry = Entry(
-                index=index,
-                label=label,
-                item=item,
-                data=kinetics,
-                rank=rank,
-                short_desc=shortDesc
-            )
-            try:
-                self.entries[label].append(entry)
-            except KeyError:
-                self.entries[label] = [entry]
-        self._load_old_comments(path)
-
-    def _load_old_comments(self, path):
-        """
-        Load a set of old comments from the ``comments.txt`` file for the old
-        kinetics groups. This function assumes that the groups have already
-        been loaded.
-        """
-        warnings.warn("The old kinetics databases are no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        index = 'General'  # mops up comments before the first rate ID
-
-        re_underline = re.compile(r'^\-+')
-
-        comments = {}
-        comments[index] = ''
-
-        # Load the comments into a temporary dictionary for now
-        # If no comments file then do nothing
-        try:
-            f = codecs.open(os.path.join(path, 'comments.rst'), 'r', 'utf-8')
-        except IOError:
-            return
-        for line in f:
-            match = re_underline.match(line)
-            if match:
-                index = f.next().strip()
-                assert line.rstrip() == f.next().rstrip(), "Overline didn't match underline"
-                if index not in comments:
-                    comments[index] = ''
-                line = next(f)
-            comments[index] += line
-        f.close()
-
-        # Transfer the comments to the long_desc attribute of the associated entry
-        entries = self.get_entries()
-        unused = []
-        for index, longDesc in comments.items():
-            try:
-                index = int(index)
-            except ValueError:
-                unused.append(index)
-
-            if isinstance(index, int):
-                for entry in entries:
-                    if entry.index == index:
-                        entry.long_desc = longDesc
-                        break
-                # else:
-                #    unused.append(str(index))
-
-        # Any unused comments are placed in the long_desc attribute of the depository
-        self.long_desc = comments['General'] + '\n'
-        unused.remove('General')
-        for index in unused:
-            try:
-                self.long_desc += comments[index] + '\n'
-            except KeyError:
-                import pdb
-                pdb.set_trace()
-
-    def save_old(self, path, groups):
-        """
-        Save a set of old rate rules for kinetics groups from this depository.
-        """
-        warnings.warn("The old kinetics databases are no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        # This is hardcoding of reaction families!
-        label = os.path.split(self.label)[-2]
-        reaction_order = groups.groups.reactant_num
-        if reaction_order == 2:
-            factor = 1.0e6
-        elif reaction_order == 1:
-            factor = 1.0
-        else:
-            raise ValueError('Unable to determine preexponential units for old reaction family '
-                             '"{0}".'.format(self.label))
-
-        entries = self.get_entries()
-
-        flib = codecs.open(os.path.join(path, 'rateLibrary.txt'), 'w', 'utf-8')
-        flib.write('// The format for the data in this rate library\n')
-        flib.write('Arrhenius_EP\n\n')
-
-        fcom = codecs.open(os.path.join(path, 'comments.rst'), 'w', 'utf-8')
-        fcom.write('-------\n')
-        fcom.write('General\n')
-        fcom.write('-------\n')
-        fcom.write(self.long_desc.strip() + '\n\n')
-
-        for entry in entries:
-            flib.write('{0:<5d} '.format(entry.index))
-            line = ''
-            for label in entry.label.split(';'):
-                line = line + '{0:<23} '.format(label)
-            flib.write(line)
-            if len(line) > 48:  # make long lines line up in 10-space columns
-                flib.write(' ' * (10 - len(line) % 10))
-            if entry.data.Tmax is None:
-                if re.match(r'\d+\-\d+', str(entry.data.Tmin).strip()):
-                    # Tmin contains string of Trange
-                    Trange = '{0} '.format(entry.data.Tmin)
-                elif isinstance(entry.data.Tmin, ScalarQuantity):
-                    # Tmin is a temperature. Make range 1 degree either side!
-                    Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si - 1, entry.data.Tmin.value_si + 1)
-                else:
-                    # Range is missing, but we have to put something:
-                    Trange = '   1-9999 '
-            else:
-                Trange = '{0:4g}-{1:g} '.format(entry.data.Tmin.value_si, entry.data.Tmax.value_si)
-            flib.write('{0:<12}'.format(Trange))
-            flib.write('{0:11.2e} {1:9.2f} {2:9.2f} {3:11.2f} '.format(
-                entry.data.A.value_si * factor,
-                entry.data.n.value_si,
-                entry.data.alpha.value_si,
-                entry.data.E0.value_si / 4184.
-            ))
-            if entry.data.A.is_uncertainty_multiplicative():
-                flib.write('*{0:<6g} '.format(entry.data.A.uncertainty_si))
-            else:
-                flib.write('{0:<7g} '.format(entry.data.A.uncertainty_si * factor))
-            flib.write('{0:6g} {1:6g} {2:6g} '.format(
-                entry.data.n.uncertainty_si,
-                entry.data.alpha.uncertainty_si,
-                entry.data.E0.uncertainty_si / 4184.
-            ))
-
-            if not entry.rank:
-                entry.rank = 0
-            flib.write(u'    {0:<4d}     {1}\n'.format(entry.rank, entry.short_desc))
-
-            fcom.write('------\n')
-            fcom.write('{0}\n'.format(entry.index))
-            fcom.write('------\n')
-            fcom.write(entry.long_desc.strip() + '\n\n')
-
-        flib.close()
-        fcom.close()
 
     def get_entries(self):
         """
@@ -565,12 +283,23 @@ class KineticsRules(Database):
         n = 0.0
         E0 = 0.0
         alpha = 0.0
-        count = len(kinetics_list)
+        electrons = None
+        V0 = None
+        count = 0
         for kinetics in kinetics_list:
+            if isinstance(kinetics, SurfaceChargeTransfer):
+                continue
+            count += 1
             logA += math.log10(kinetics.A.value_si)
             n += kinetics.n.value_si
             alpha += kinetics.alpha.value_si
             E0 += kinetics.E0.value_si
+            if isinstance(kinetics, SurfaceChargeTransferBEP):
+                if electrons is None:
+                    electrons = kinetics.electrons.value_si
+                if V0 is None:
+                    V0 = kinetics.V0.value_si
+
         logA /= count
         n /= count
         alpha /= count
@@ -595,15 +324,25 @@ class KineticsRules(Database):
         else:
             raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
 
-        if type(kinetics) not in [ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP]:
+        if type(kinetics) not in [ArrheniusEP, SurfaceArrheniusBEP, StickingCoefficientBEP, SurfaceChargeTransferBEP]:
             raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
 
-        averaged_kinetics = type(kinetics)(
-            A=(10 ** logA, Aunits),
-            n=n,
-            alpha=alpha,
-            E0=(E0 * 0.001, "kJ/mol"),
-        )
+        if isinstance(kinetics, SurfaceChargeTransferBEP):
+            averaged_kinetics = SurfaceChargeTransferBEP(
+                A=(10 ** logA, Aunits),
+                n=n,
+                electrons=electrons,
+                alpha=alpha,
+                V0=(V0,'V'),
+                E0=(E0 * 0.001, "kJ/mol"),
+                )
+        else:
+            averaged_kinetics = type(kinetics)(
+                A=(10 ** logA, Aunits),
+                n=n,
+                alpha=alpha,
+                E0=(E0 * 0.001, "kJ/mol"),
+            )
         return averaged_kinetics
 
     def estimate_kinetics(self, template, degeneracy=1):

@@ -45,8 +45,6 @@ cpdef bint _has_unexpected_lone_pairs(Molecule mol)
 
 cpdef list _get_unpaired_electrons(Molecule mol)
 
-cpdef Molecule _generate_minimum_resonance_isomer(Molecule mol)
-
 cpdef list _compute_agglomerate_distance(list agglomerates, Molecule mol)
 
 cpdef bint _is_valid_combo(list combo, Molecule mol, list distances)

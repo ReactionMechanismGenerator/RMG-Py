@@ -36,6 +36,7 @@ import logging
 import multiprocessing as mp
 import os.path
 import random
+import math
 import re
 import warnings
 from collections import OrderedDict
@@ -48,14 +49,15 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.base import Database, Entry, LogicNode, LogicOr, ForbiddenStructures, get_all_combinations
 from rmgpy.data.kinetics.common import save_entry, find_degenerate_reactions, generate_molecule_combos, \
-                                       ensure_independent_atom_ids
+                                       ensure_independent_atom_ids, check_for_same_reactants
 from rmgpy.data.kinetics.depository import KineticsDepository
 from rmgpy.data.kinetics.groups import KineticsGroups
 from rmgpy.data.kinetics.rules import KineticsRules
 from rmgpy.exceptions import ActionError, DatabaseError, InvalidActionError, KekulizationError, KineticsError, \
                              ForbiddenStructureException, UndeterminableKineticsError
 from rmgpy.kinetics import Arrhenius, SurfaceArrhenius, SurfaceArrheniusBEP, StickingCoefficient, \
-                           StickingCoefficientBEP, ArrheniusBM
+                           StickingCoefficientBEP, ArrheniusBM, SurfaceChargeTransfer, ArrheniusChargeTransfer, \
+                           ArrheniusChargeTransferBM, KineticsModel, Marcus
 from rmgpy.kinetics.uncertainties import RateUncertainty, rank_accuracy_map
 from rmgpy.molecule import Bond, GroupBond, Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
@@ -63,6 +65,8 @@ from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
 from rmgpy.tools.uncertainty import KineticParameterUncertainty
 from rmgpy.molecule.fragment import Fragment
+import rmgpy.constants as constants
+from rmgpy.data.solvation import SoluteData, add_solute_data, SoluteTSData, to_soluteTSdata
 
 ################################################################################
 
@@ -77,7 +81,7 @@ class TemplateReaction(Reaction):
     Attribute       Type                      Description
     =============== ========================= =====================================
     `family`        ``str``                   The kinetics family that the reaction was created from.
-    `estimator`     ``str``                   Whether the kinetics came from rate rules or group additivity.
+    `estimator`     ``str``                   The name of the kinetic estimator; currently only rate rules is supported.
     `reverse`       :class:`TemplateReaction` The reverse reaction, for families that are their own reverse.
     `is_forward`    ``bool``                  Whether the reaction was generated in the forward direction of the family.
     `labeled_atoms` ``dict``                  Keys are 'reactants' or 'products', values are dictionaries.
@@ -102,6 +106,7 @@ class TemplateReaction(Reaction):
                  estimator=None,
                  reverse=None,
                  is_forward=None,
+                 electrons=0,
                  ):
         Reaction.__init__(self,
                           index=index,
@@ -115,6 +120,7 @@ class TemplateReaction(Reaction):
                           degeneracy=degeneracy,
                           pairs=pairs,
                           is_forward=is_forward,
+                          electrons=electrons
                           )
         self.family = family
         self.template = template
@@ -140,7 +146,8 @@ class TemplateReaction(Reaction):
                                    self.template,
                                    self.estimator,
                                    self.reverse,
-                                   self.is_forward
+                                   self.is_forward,
+                                   self.electrons
                                    ))
 
     def __repr__(self):
@@ -162,6 +169,7 @@ class TemplateReaction(Reaction):
         if self.pairs is not None: string += 'pairs={0}, '.format(self.pairs)
         if self.family: string += "family='{}', ".format(self.family)
         if self.template: string += "template={}, ".format(self.template)
+        if self.electrons: string += "electrons={}, ".format(self.electrons)
         if self.comment != '': string += 'comment={0!r}, '.format(self.comment)
         string = string[:-2] + ')'
         return string
@@ -195,6 +203,7 @@ class TemplateReaction(Reaction):
         other.transition_state = deepcopy(self.transition_state)
         other.duplicate = self.duplicate
         other.pairs = deepcopy(self.pairs)
+        other.electrons = self.electrons
 
         # added for TemplateReaction information
         other.family = self.family
@@ -205,6 +214,86 @@ class TemplateReaction(Reaction):
 
         return other
 
+    def apply_solvent_correction(self, solvent):
+        """
+        apply kinetic solvent correction in this case the parameters are dGTSsite instead of GTS
+        """
+        from rmgpy.data.rmg import get_db
+        solvation_database = get_db('solvation')
+        solvent_data = solvation_database.get_solvent_data(solvent)
+        
+        
+        if isinstance(self.kinetics, Marcus):
+            solvent_struct = solvation_database.get_solvent_structure(solvent)[0]
+            solv_solute_data = solvation_database.get_solute_data(solvent_struct.copy(deep=True))
+            Rsolv = math.pow((75 * solv_solute_data.V / constants.pi / constants.Na),
+                          (1.0 / 3.0)) / 100
+            Rtot = 0.0
+            Ner = 0
+            Nep = 0
+            for spc in self.reactants:
+                spc_solute_data = solvation_database.get_solute_data(spc.copy(deep=True))
+                spc_solute_data.set_mcgowan_volume(spc)
+                R = math.pow((75 * spc_solute_data.V / constants.pi / constants.Na),
+                            (1.0 / 3.0)) / 100
+                Rtot += R 
+                Ner += spc.get_net_charge()
+            for spc in self.products:
+                Nep += spc.get_net_charge()
+            
+            Rtot += Rsolv #radius of reactants plus first solvation shell
+            self.lmbd_o = constants.Na*(constants.e*(Nep-Ner))**2/(8.0*constants.pi*constants.epsilon_0*Rtot)*(1.0/solvent_data.n**2 - 1.0/solvent_data.eps)
+            return
+        
+        site_data = to_soluteTSdata(self.kinetics.solute)
+
+        #compute x from gas phase
+        GR = 0.0
+        GP = 0.0
+        for reactant in self.reactants:
+            try:
+                GR += reactant.get_free_energy(298.0)
+            except Exception:
+                logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, self))
+                raise
+        for product in self.products:
+            try:
+                GP += product.get_free_energy(298.0)
+            except Exception:
+                logging.error("Problem with product {!r} in reaction {!s}".format(reactant, self))
+                raise
+        
+        GTS = self.kinetics.Ea.value_si + GR
+
+        #x = abs(GTS - GR) / (abs(GP - GTS) + abs(GR - GTS))
+        dGrxn = GP-GR
+        if dGrxn > 0:
+            x = 1.0
+        else:
+            x = 0.0
+
+        dHR = 0.0
+        dSR = 0.0
+        for spc in self.reactants:
+            spc_solute_data = solvation_database.get_solute_data(spc.copy(deep=True))
+            spc_soluteTS_data = to_soluteTSdata(spc_solute_data)
+            site_data += spc_soluteTS_data*(1.0-x)
+            spc_correction = solvation_database.get_solvation_correction(spc_solute_data, solvent_data)
+            dHR += spc_correction.enthalpy
+            dSR += spc_correction.entropy
+
+        for spc in self.products:
+            spc_solute_data = to_soluteTSdata(solvation_database.get_solute_data(spc.copy(deep=True)))
+            site_data += spc_solute_data*x
+
+        dGTS,dHTS = site_data.calculate_corrections(solvent_data)
+        dSTS = (dHTS - dGTS)/298.0
+
+        dH = dHTS-dHR
+        dA = np.exp((dSTS-dSR)/constants.R)
+        self.kinetics.Ea.value_si += dH
+        self.kinetics.A.value_si *= dA
+        self.kinetics.comment += "\nsolvation correction raised barrier by {0} kcal/mol and prefactor by factor of {1}".format(dH/4184.0,dA)
 
 ################################################################################
 
@@ -260,6 +349,10 @@ class ReactionRecipe(object):
                 other.add_action(['GAIN_RADICAL', action[1], action[2]])
             elif action[0] == 'GAIN_RADICAL':
                 other.add_action(['LOSE_RADICAL', action[1], action[2]])
+            elif action[0] == 'GAIN_CHARGE':
+                other.add_action(['LOSE_CHARGE', action[1], action[2]])
+            elif action[0] == 'LOSE_CHARGE':
+                other.add_action(['GAIN_CHARGE', action[1], action[2]])
             elif action[0] == 'LOSE_PAIR':
                 other.add_action(['GAIN_PAIR', action[1], action[2]])
             elif action[0] == 'GAIN_PAIR':
@@ -309,7 +402,7 @@ class ReactionRecipe(object):
                         if info < 1:
                             raise InvalidActionError('Attempted to change a nonexistent bond.')
                         # If we do not have a bond, it might be because we are trying to change a vdW bond
-                        # Lets see if one of that atoms is a surface site, 
+                        # Lets see if one of that atoms is a surface site,
                         # If we have a surface site, we will make a single bond, then change it by info - 1
                         is_vdW_bond = False
                         for atom in (atom1, atom2):
@@ -383,7 +476,7 @@ class ReactionRecipe(object):
                     atom1.apply_action(['BREAK_BOND', label1, info, label2])
                     atom2.apply_action(['BREAK_BOND', label1, info, label2])
 
-            elif action[0] in ['LOSE_RADICAL', 'GAIN_RADICAL']:
+            elif action[0] in ['LOSE_RADICAL', 'GAIN_RADICAL', 'LOSE_CHARGE', 'GAIN_CHARGE']:
 
                 label, change = action[1:]
                 change = int(change)
@@ -401,6 +494,10 @@ class ReactionRecipe(object):
                             atom.apply_action(['GAIN_RADICAL', label, 1])
                         elif (action[0] == 'LOSE_RADICAL' and forward) or (action[0] == 'GAIN_RADICAL' and not forward):
                             atom.apply_action(['LOSE_RADICAL', label, 1])
+                        elif (action[0] == 'LOSE_CHARGE' and forward) or (action[0] == 'GAIN_CHARGE' and not forward):
+                            atom.apply_action(['LOSE_CHARGE', label, 1])
+                        elif (action[0] == 'GAIN_CHARGE' and forward) or (action[0] == 'LOSE_CHARGE' and not forward):
+                            atom.apply_action(['GAIN_CHARGE', label, 1])
 
             elif action[0] in ['LOSE_PAIR', 'GAIN_PAIR']:
 
@@ -445,8 +542,8 @@ class ReactionRecipe(object):
 
 class KineticsFamily(Database):
     """
-    A class for working with an RMG kinetics family: a set of reactions with 
-    similar chemistry, and therefore similar reaction rates. The attributes 
+    A class for working with an RMG kinetics family: a set of reactions with
+    similar chemistry, and therefore similar reaction rates. The attributes
     are:
 
     =================== =============================== ========================
@@ -513,172 +610,9 @@ class KineticsFamily(Database):
     def __repr__(self):
         return '<ReactionFamily "{0}">'.format(self.label)
 
-    def load_old(self, path):
-        """
-        Load an old-style RMG kinetics group additivity database from the
-        location `path`.
-        """
-        warnings.warn("The old kinetics databases are no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        self.label = os.path.basename(path)
-        self.name = self.label
-
-        self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
-        self.groups.name = self.groups.label
-        try:
-            self.groups.load_old_dictionary(os.path.join(path, 'dictionary.txt'), pattern=True)
-        except Exception:
-            logging.error('Error while reading old kinetics family dictionary from {0!r}.'.format(path))
-            raise
-        try:
-            self.groups.load_old_tree(os.path.join(path, 'tree.txt'))
-        except Exception:
-            logging.error('Error while reading old kinetics family tree from {0!r}.'.format(path))
-            raise
-
-        # The old kinetics groups use rate rules (not group additivity values),
-        # so we can't load the old rateLibrary.txt
-
-        # Load the reaction recipe
-        try:
-            self.load_old_template(os.path.join(path, 'reactionAdjList.txt'))
-        except Exception:
-            logging.error('Error while reading old kinetics family template/recipe from {0!r}.'.format(path))
-            raise
-        # Construct the forward and reverse templates
-        reactants = [self.groups.entries[label] for label in self.forward_template.reactants]
-        if self.own_reverse:
-            self.forward_template = Reaction(reactants=reactants, products=reactants)
-            self.reverse_template = None
-        else:
-            products = self.generate_product_template(reactants)
-            self.forward_template = Reaction(reactants=reactants, products=products)
-            self.reverse_template = Reaction(reactants=reactants, products=products)
-
-        self.groups.reactant_num = len(self.forward_template.reactants)
-
-        # Load forbidden structures if present
-        try:
-            if os.path.exists(os.path.join(path, 'forbiddenGroups.txt')):
-                self.forbidden = ForbiddenStructures().load_old(os.path.join(path, 'forbiddenGroups.txt'))
-        except Exception:
-            logging.error('Error while reading old kinetics family forbidden groups from {0!r}.'.format(path))
-            raise
-
-        entries = self.groups.top[:]
-        for entry in self.groups.top:
-            entries.extend(self.groups.descendants(entry))
-        for index, entry in enumerate(entries):
-            entry.index = index + 1
-
-        self.rules = KineticsRules(label='{0}/rules'.format(self.label))
-        self.rules.name = self.rules.label
-        try:
-            self.rules.load_old(path, self.groups,
-                                num_labels=max(len(self.forward_template.reactants), len(self.groups.top)))
-        except Exception:
-            logging.error('Error while reading old kinetics family rules from {0!r}.'.format(path))
-            raise
-        self.depositories = {}
-
-        return self
-
-    def load_old_template(self, path):
-        """
-        Load an old-style RMG reaction family template from the location `path`.
-        """
-        warnings.warn("The old kinetics databases are no longer supported and"
-                      " may be removed in version 2.3.", DeprecationWarning)
-        self.forward_template = Reaction(reactants=[], products=[])
-        self.forward_recipe = ReactionRecipe()
-        self.own_reverse = False
-
-        ftemp = None
-        # Process the template file
-        try:
-            ftemp = open(path, 'r')
-            for line in ftemp:
-                line = line.strip()
-                if len(line) > 0 and line[0] == '(':
-                    # This is a recipe action line
-                    tokens = line.split()
-                    action = [tokens[1]]
-                    action.extend(tokens[2][1:-1].split(','))
-                    self.forward_recipe.add_action(action)
-                elif 'thermo_consistence' in line:
-                    self.own_reverse = True
-                elif 'reverse' in line:
-                    self.reverse = line.split(':')[1].strip()
-                elif '->' in line:
-                    # This is the template line
-                    tokens = line.split()
-                    at_arrow = False
-                    for token in tokens:
-                        if token == '->':
-                            at_arrow = True
-                        elif token != '+' and not at_arrow:
-                            self.forward_template.reactants.append(token)
-                        elif token != '+' and at_arrow:
-                            self.forward_template.products.append(token)
-        except IOError as e:
-            logging.exception('Database template file "' + e.filename + '" not found.')
-            raise
-        finally:
-            if ftemp: ftemp.close()
-
-    def save_old(self, path):
-        """
-        Save the old RMG kinetics groups to the given `path` on disk.
-        """
-        warnings.warn("The old kinetics databases are no longer supported and"
-                      " may be removed in version 2.3.", DeprecationWarning)
-        if not os.path.exists(path): os.mkdir(path)
-
-        self.groups.save_old_dictionary(os.path.join(path, 'dictionary.txt'))
-        self.groups.save_old_tree(os.path.join(path, 'tree.txt'))
-        # The old kinetics groups use rate rules (not group additivity values),
-        # so we can't save the old rateLibrary.txt
-        self.save_old_template(os.path.join(path, 'reactionAdjList.txt'))
-        # Save forbidden structures if present
-        if self.forbidden is not None:
-            self.forbidden.save_old(os.path.join(path, 'forbiddenGroups.txt'))
-
-        self.rules.save_old(path, self)
-
-    def save_old_template(self, path):
-        """
-        Save an old-style RMG reaction family template from the location `path`.
-        """
-        warnings.warn("The old kinetics databases are no longer supported and"
-                      " may be removed in version 2.3.", DeprecationWarning)
-        f_temp = open(path, 'w')
-
-        # Write the template
-        f_temp.write('{0} -> {1}\n'.format(
-            ' + '.join([entry.label for entry in self.forward_template.reactants]),
-            ' + '.join([entry.label for entry in self.forward_template.products]),
-        ))
-        f_temp.write('\n')
-
-        # Write the reaction type and reverse name
-        if self.own_reverse:
-            f_temp.write('thermo_consistence\n')
-        else:
-            f_temp.write('forward\n')
-            f_temp.write('reverse: {0}\n'.format(self.reverse))
-        f_temp.write('\n')
-
-        # Write the reaction recipe
-        f_temp.write('Actions 1\n')
-        for index, action in enumerate(self.forward_recipe.actions):
-            f_temp.write('({0}) {1:<15} {{{2}}}\n'.format(index + 1, action[0], ','.join(action[1:])))
-        f_temp.write('\n')
-
-        f_temp.close()
-
     def distribute_tree_distances(self):
         """
-        fills in nodal_distance (the distance between an entry and its parent)
+        Fills in nodal_distance (the distance between an entry and its parent)
         if not already entered with the value from tree_distances associated
         with the tree the entry comes from
         """
@@ -700,11 +634,11 @@ class KineticsFamily(Database):
     def load(self, path, local_context=None, global_context=None, depository_labels=None):
         """
         Load a kinetics database from a file located at `path` on disk.
-        
+
         If `depository_labels` is a list, eg. ['training','PrIMe'], then only those
         depositories are loaded, and they are searched in that order when
         generating kinetics.
-        
+
         If depository_labels is None then load 'training' first then everything else.
         If depository_labels is not None then load in the order specified in depository_labels.
         """
@@ -721,6 +655,8 @@ class KineticsFamily(Database):
         local_context['reactantNum'] = None
         local_context['productNum'] = None
         local_context['autoGenerated'] = False
+        local_context['allowChargedSpecies'] = False
+        local_context['electrons'] = 0
         self.groups = KineticsGroups(label='{0}/groups'.format(self.label))
         logging.debug("Loading kinetics family groups from {0}".format(os.path.join(path, 'groups.py')))
         Database.load(self.groups, os.path.join(path, 'groups.py'), local_context, global_context)
@@ -733,6 +669,8 @@ class KineticsFamily(Database):
         self.product_num = local_context.get('productNum', None)
 
         self.auto_generated = local_context.get('autoGenerated', False)
+        self.allow_charged_species = local_context.get('allowChargedSpecies', False)
+        self.electrons = local_context.get('electrons', 0)
 
         if self.reactant_num:
             self.groups.reactant_num = self.reactant_num
@@ -749,6 +687,9 @@ class KineticsFamily(Database):
             self.reverse = local_context.get('reverse', None)
             self.reversible = True if local_context.get('reversible', None) is None else local_context.get('reversible', None)
             self.forward_template.products = self.generate_product_template(self.forward_template.reactants)
+            for entry in self.forward_template.products:
+                if isinstance(entry.item,Group):
+                    entry.item.update()
             if self.reversible:
                 self.reverse_template = Reaction(reactants=self.forward_template.products,
                                                  products=self.forward_template.reactants)
@@ -797,7 +738,7 @@ class KineticsFamily(Database):
             # depository and add them to the RMG rate rules by default:
             depository_labels = ['training']
         if depository_labels:
-            # If there are depository labels, load them in the order specified, but 
+            # If there are depository labels, load them in the order specified, but
             # append the training reactions unless the user specifically declares it not
             # to be included with a '!training' flag
             if '!training' not in depository_labels:
@@ -836,7 +777,8 @@ class KineticsFamily(Database):
         for action in actions:
             action[0] = action[0].upper()
             valid_actions = [
-                'CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND', 'GAIN_RADICAL', 'LOSE_RADICAL', 'GAIN_PAIR', 'LOSE_PAIR'
+                'CHANGE_BOND', 'FORM_BOND', 'BREAK_BOND', 'GAIN_RADICAL', 'LOSE_RADICAL',
+                'GAIN_CHARGE', 'LOSE_CHARGE', 'GAIN_PAIR', 'LOSE_PAIR'
             ]
             if action[0] not in valid_actions:
                 raise InvalidActionError('Action {0} is not a recognized action. '
@@ -863,12 +805,12 @@ class KineticsFamily(Database):
                                 rank=3):
         """
         This function takes a list of reactions appends it to the training reactions file.  It ignores the existence of
-        duplicate reactions.  
-        
-        The rank for each new reaction's kinetics is set to a default value of 3 unless the user specifies differently 
+        duplicate reactions.
+
+        The rank for each new reaction's kinetics is set to a default value of 3 unless the user specifies differently
         for those reactions.
-        
-        For each entry, the long description is imported from the kinetics comment. 
+
+        For each entry, the long description is imported from the kinetics comment.
         """
 
         if not isinstance(reference, list):
@@ -971,7 +913,7 @@ class KineticsFamily(Database):
 
     def save(self, path):
         """
-        Save the current database to the file at location `path` on disk. 
+        Save the current database to the file at location `path` on disk.
         """
         self.save_groups(os.path.join(path, 'groups.py'))
         self.rules.save(os.path.join(path, 'rules.py'))
@@ -988,7 +930,7 @@ class KineticsFamily(Database):
 
     def save_groups(self, path):
         """
-        Save the current database to the file at location `path` on disk. 
+        Save the current database to the file at location `path` on disk.
         """
         entries = self.groups.get_entries_to_save()
 
@@ -1024,9 +966,15 @@ class KineticsFamily(Database):
             f.write('reactantNum = {0}\n\n'.format(self.reactant_num))
         if self.product_num is not None:
             f.write('productNum = {0}\n\n'.format(self.product_num))
-            
+
         if self.auto_generated is not None:
             f.write('autoGenerated = {0}\n\n'.format(self.auto_generated))
+
+        if self.allow_charged_species:
+            f.write('allowChargedSpecies = {0}\n\n'.format(self.allow_charged_species))
+
+        if self.electrons != 0:
+            f.write('electrons = {0}\n\n'.format(self.electrons))
 
         # Write the recipe
         f.write('recipe(actions=[\n')
@@ -1148,14 +1096,14 @@ class KineticsFamily(Database):
 
     def has_rate_rule(self, template):
         """
-        Return ``True`` if a rate rule with the given `template` currently 
+        Return ``True`` if a rate rule with the given `template` currently
         exists, or ``False`` otherwise.
         """
         return self.rules.has_rule(template)
 
     def get_rate_rule(self, template):
         """
-        Return the rate rule with the given `template`. Raises a 
+        Return the rate rule with the given `template`. Raises a
         :class:`ValueError` if no corresponding entry exists.
         """
         entry = self.rules.get_rule(template)
@@ -1239,6 +1187,21 @@ class KineticsFamily(Database):
                     Tmax=deepcopy(data.Tmax),
                     coverage_dependence=deepcopy(data.coverage_dependence),
                 )
+            elif isinstance(data, SurfaceChargeTransfer):
+                for reactant in entry.item.reactants:
+                    # Clear atom labels to avoid effects on thermo generation, ok because this is a deepcopy
+                    reactant_copy = reactant.copy(deep=True)
+                    reactant_copy.molecule[0].clear_labeled_atoms()
+                    reactant_copy.generate_resonance_structures()
+                    reactant.thermo = thermo_database.get_thermo_data(reactant_copy, training_set=True)
+                for product in entry.item.products:
+                    product_copy = product.copy(deep=True)
+                    product_copy.molecule[0].clear_labeled_atoms()
+                    product_copy.generate_resonance_structures()
+                    product.thermo = thermo_database.get_thermo_data(product_copy, training_set=True)
+                V = data.V0.value_si
+                dGrxn = entry.item._get_free_energy_of_charge_transfer_reaction(298,V)
+                data = data.to_surface_charge_transfer_bep(dGrxn,0.0)
             else:
                 raise NotImplementedError("Unexpected training kinetics type {} for {}".format(type(data), entry))
 
@@ -1267,7 +1230,9 @@ class KineticsFamily(Database):
         for entry in reverse_entries:
             tentries[entry.index].item.is_forward = False
 
-            assert isinstance(entry.data, Arrhenius)
+            if not isinstance(entry.data, Arrhenius):
+                print(self.label)
+                assert False
             data = deepcopy(entry.data)
             data.change_t0(1)
             # Estimate the thermo for the reactants and products
@@ -1348,7 +1313,7 @@ class KineticsFamily(Database):
     def get_root_template(self):
         """
         Return the root template for the reaction family. Most of the time this
-        is the top-level nodes of the tree (as stored in the 
+        is the top-level nodes of the tree (as stored in the
         :class:`KineticsGroups` object), but there are a few exceptions (e.g.
         R_Recombination).
         """
@@ -1513,22 +1478,23 @@ class KineticsFamily(Database):
             product_num = self.product_num or len(template.products)
 
         # Split product structure into multiple species if necessary
-        if (isinstance(product_structure, Group) and self.auto_generated and self.label in ["Intra_R_Add_Endocyclic","Intra_R_Add_Exocyclic"]):
+        if self.auto_generated and isinstance(reactant_structures[0],Group) and self.product_num == 1:
             product_structures = [product_structure]
         else:
             product_structures = product_structure.split()
-            # Make sure we've made the expected number of products
-            if product_num != len(product_structures):
-                # We have a different number of products than expected by the template.
-                # By definition this means that the template is not a match, so
-                # we return None to indicate that we could not generate the product
-                # structures
-                # We need to think this way in order to distinguish between
-                # intermolecular and intramolecular versions of reaction families,
-                # which will have very different kinetics
-                # Unfortunately this may also squash actual errors with malformed
-                # reaction templates
-                return None
+
+        # Make sure we've made the expected number of products
+        if product_num != len(product_structures):
+            # We have a different number of products than expected by the template.
+            # By definition this means that the template is not a match, so
+            # we return None to indicate that we could not generate the product
+            # structures
+            # We need to think this way in order to distinguish between
+            # intermolecular and intramolecular versions of reaction families,
+            # which will have very different kinetics
+            # Unfortunately this may also squash actual errors with malformed
+            # reaction templates
+            return None
 
         # Remove vdW bonds
         for struct in product_structures:
@@ -1546,15 +1512,20 @@ class KineticsFamily(Database):
                 struc.update()
             reactant_net_charge += struc.get_net_charge()
 
+
+        is_molecule = True
         for struct in product_structures:
             # If product structures are Molecule objects, update their atom types
             # If product structures are Group objects and the reaction is in certain families
             # (families with charged substances), the charge of structures will be updated
             if isinstance(struct, Molecule):
-                struct.update(sort_atoms=not self.save_order)
-            elif isinstance(struct, Fragment):
-                struct.update()
+                struct.update_charge()
+                if isinstance(struct, Fragment):
+                    struct.update()
+                else:
+                    struct.update(sort_atoms=not self.save_order)
             elif isinstance(struct, Group):
+                is_molecule = False
                 struct.reset_ring_membership()
                 if label in ['1,2_insertion_co', 'r_addition_com', 'co_disproportionation',
                              'intra_no2_ono_conversion', 'lone_electron_pair_bond',
@@ -1562,19 +1533,24 @@ class KineticsFamily(Database):
                     struct.update_charge()
             else:
                 raise TypeError('Expecting Molecule or Group object, not {0}'.format(struct.__class__.__name__))
-            product_net_charge += struc.get_net_charge()
-        if reactant_net_charge != product_net_charge:
+            product_net_charge += struct.get_net_charge()
+
+
+        if self.electrons < 0:
+            if forward:
+                reactant_net_charge += self.electrons
+            else:
+                product_net_charge += self.electrons
+        elif self.electrons > 0:
+            if forward:
+                product_net_charge -= self.electrons
+            else:
+                reactant_net_charge -= self.electrons
+
+        if reactant_net_charge != product_net_charge and is_molecule:
             logging.debug(
                 'The net charge of the reactants {0} differs from the net charge of the products {1} in reaction '
                 'family {2}. Not generating this reaction.'.format(reactant_net_charge, product_net_charge, self.label))
-            return None
-        # The following check should be removed once RMG can process charged species
-        # This is applied only for :class:Molecule (not for :class:Group which is allowed to have a nonzero net charge)
-        if any([structure.get_net_charge() for structure in reactant_structures + product_structures]) \
-                and isinstance(struc, Molecule):
-            logging.debug(
-                'A net charged species was formed when reacting {0} to form {1} in reaction family {2}. Not generating '
-                'this reaction.'.format(reactant_net_charge, product_net_charge, self.label))
             return None
 
         # If there are two product structures, place the one containing '*1' first
@@ -1686,10 +1662,10 @@ class KineticsFamily(Database):
     def is_molecule_forbidden(self, molecule):
         """
         Return ``True`` if the molecule is forbidden in this family, or
-        ``False`` otherwise. 
+        ``False`` otherwise.
         """
 
-        # check family-specific forbidden structures 
+        # check family-specific forbidden structures
         if self.forbidden is not None and self.forbidden.is_molecule_forbidden(molecule):
             return True
 
@@ -1721,7 +1697,16 @@ class KineticsFamily(Database):
             reversible=self.reversible,
             family=self.label,
             is_forward=is_forward,
+            electrons = self.electrons
         )
+
+        if not self.allow_charged_species:
+            for spc in (reaction.reactants + reaction.products):
+                if spc.get_net_charge() != 0:
+                    return None
+
+        if not reaction.is_balanced():
+            return None
 
         # Store the labeled atoms so we can recover them later
         # (e.g. for generating reaction pairs and templates)
@@ -1733,7 +1718,7 @@ class KineticsFamily(Database):
 
     def _match_reactant_to_template(self, reactant, template_reactant):
         """
-        Return a complete list of the mappings if the provided reactant 
+        Return a complete list of the mappings if the provided reactant
         matches the provided template reactant, or an empty list if not.
         """
 
@@ -1904,65 +1889,37 @@ class KineticsFamily(Database):
                 rxn.reverse = reactions[0]
                 return True
 
-    def calculate_degeneracy(self, reaction):
+    def calculate_degeneracy(self, reaction, resonance=True):
         """
         For a `reaction`  with `Molecule` or `Species` objects given in the direction in which
-        the kinetics are defined, compute the reaction-path degeneracy.
+        the kinetics are defined, compute the reaction-path degeneracy. Can specify whether to consider resonance.
 
-        This method by default adjusts for double counting of identical reactants. 
-        This should only be adjusted once per reaction. To not adjust for 
+        This method by default adjusts for double counting of identical reactants.
+        This should only be adjusted once per reaction. To not adjust for
         identical reactants (since you will be reducing them later in the algorithm), add
         `ignoreSameReactants= True` to this method.
         """
         # Check if the reactants are the same
         # If they refer to the same memory address, then make a deep copy so
         # they can be manipulated independently
+        if reaction.is_charge_transfer_reaction():
+            # Not implemented yet for charge transfer reactions
+            return 1
         reactants = reaction.reactants
-        same_reactants = 0
-        if len(reactants) == 2:
-            if reactants[0] is reactants[1]:
-                reactants[1] = reactants[1].copy(deep=True)
-                same_reactants = 2
-            elif reactants[0].is_isomorphic(reactants[1]):
-                same_reactants = 2
-        elif len(reactants) == 3:
-            same_01 = reactants[0] is reactants[1]
-            same_02 = reactants[0] is reactants[2]
-            if same_01 and same_02:
-                same_reactants = 3
-                reactants[1] = reactants[1].copy(deep=True)
-                reactants[2] = reactants[2].copy(deep=True)
-            elif same_01:
-                same_reactants = 2
-                reactants[1] = reactants[1].copy(deep=True)
-            elif same_02:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            elif reactants[1] is reactants[2]:
-                same_reactants = 2
-                reactants[2] = reactants[2].copy(deep=True)
-            else:
-                same_01 = reactants[0].is_isomorphic(reactants[1])
-                same_02 = reactants[0].is_isomorphic(reactants[2])
-                if same_01 and same_02:
-                    same_reactants = 3
-                elif same_01 or same_02:
-                    same_reactants = 2
-                elif reactants[1].is_isomorphic(reactants[2]):
-                    same_reactants = 2
+        reactants, same_reactants = check_for_same_reactants(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
-        ensure_independent_atom_ids(reactants, resonance=True)
+        ensure_independent_atom_ids(reactants, resonance=resonance)
         molecule_combos = generate_molecule_combos(reactants)
 
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self._generate_reactions(combo, products=reaction.products, forward=True,
-                                                      react_non_reactive=True))
+                                                      prod_resonance=resonance, react_non_reactive=True))
 
         # remove degenerate reactions
         reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template,
-                                              kinetics_family=self)
+                                              kinetics_family=self, resonance=resonance)
 
         # log issues
         if len(reactions) != 1:
@@ -2009,7 +1966,7 @@ class KineticsFamily(Database):
 
         rxn_list = []
 
-        # Wrap each reactant in a list if not already done (this is done to 
+        # Wrap each reactant in a list if not already done (this is done to
         # allow for passing multiple resonance structures for each molecule)
         # This also makes a copy of the reactants list so we don't modify the
         # original
@@ -2323,7 +2280,7 @@ class KineticsFamily(Database):
         if not forward and ('adsorption' in self.label.lower() or 'eleyrideal' in self.label.lower()):
             # Desorption should have desorbed something (else it was probably bidentate)
             # so delete reactions that don't make a gas-phase desorbed product
-            # Eley-Rideal reactions should have one gas-phase product in the reverse direction 
+            # Eley-Rideal reactions should have one gas-phase product in the reverse direction
 
             # Determine how many surf reactants we expect based on the template
             n_surf_expected = len([r for r in self.forward_template.reactants if r.item.contains_surface_site()])
@@ -2393,7 +2350,7 @@ class KineticsFamily(Database):
         """
         pairs = []
         if len(reaction.reactants) == 1 or len(reaction.products) == 1:
-            # When there is only one reactant (or one product), it is paired 
+            # When there is only one reactant (or one product), it is paired
             # with each of the products (reactants)
             for reactant in reaction.reactants:
                 for product in reaction.products:
@@ -2559,28 +2516,25 @@ class KineticsFamily(Database):
     def get_kinetics_for_template(self, template, degeneracy=1, method='rate rules'):
         """
         Return an estimate of the kinetics for a reaction with the given
-        `template` and reaction-path `degeneracy`. There are two possible methods
-        to use: 'group additivity' (new possible RMG-Py behavior) and 'rate rules' (old
-        RMG-Java behavior, and default RMG-Py behavior).
+        `template` and reaction-path `degeneracy`. There is currently only one method to use:
+        'rate rules' (old RMG-Java behavior, and default RMG-Py behavior). Group additivity was removed in August 2023.
         
         Returns a tuple (kinetics, entry):
         If it's estimated via 'rate rules' and an exact match is found in the tree,
         then the entry is returned as the second element of the tuple.
-        But if an average is used, or the 'group additivity' method, then the tuple
-        returned is (kinetics, None).
+        But if an average is used, then the tuple returned is (kinetics, None).
+
         """
-        if method.lower() == 'group additivity':
-            return self.estimate_kinetics_using_group_additivity(template, degeneracy), None
-        elif method.lower() == 'rate rules':
+        if method.lower() == 'rate rules':
             return self.estimate_kinetics_using_rate_rules(template, degeneracy)  # This returns kinetics and entry data
         else:
             raise ValueError('Invalid value "{0}" for method parameter; '
-                             'should be "group additivity" or "rate rules".'.format(method))
+                             'currently only "rate rules" is supported.'.format(method))
 
     def get_kinetics_from_depository(self, depository, reaction, template, degeneracy):
         """
         Search the given `depository` in this kinetics family for kinetics
-        for the given `reaction`. Returns a list of all of the matching 
+        for the given `reaction`. Returns a list of all of the matching
         kinetics, the corresponding entries, and ``True`` if the kinetics
         match the forward direction or ``False`` if they match the reverse
         direction.
@@ -2621,8 +2575,8 @@ class KineticsFamily(Database):
     def get_kinetics(self, reaction, template_labels, degeneracy=1, estimator='', return_all_kinetics=True):
         """
         Return the kinetics for the given `reaction` by searching the various
-        depositories as well as generating a result using the user-specified `estimator`
-        of either 'group additivity' or 'rate rules'.  Unlike
+        depositories as well as generating a result using the user-specified `estimator`.
+        Currently, only 'rate rules' is a supported estimator.  Unlike
         the regular :meth:`get_kinetics()` method, this returns a list of
         results, with each result comprising of
 
@@ -2631,7 +2585,7 @@ class KineticsFamily(Database):
         3. the entry  - this will be `None` if from a template estimate
         4. is_forward a boolean denoting whether the matched entry is in the same
            direction as the inputted reaction. This will always be True if using
-           rates rules or group additivity. This can be `True` or `False` if using
+           rates rules. This can be `True` or `False` if using
            a depository
 
         If return_all_kinetics==False, only the first (best?) matching kinetics is returned.
@@ -2652,7 +2606,9 @@ class KineticsFamily(Database):
                 for kinetics, entry, is_forward in kinetics_list0:
                     kinetics_list.append([kinetics, depository, entry, is_forward])
 
-        # If estimator type of rate rules or group additivity is given, retrieve the kinetics. 
+        # If estimator type of rate rules is given, retrieve the kinetics. 
+        # TODO: Since group additivity was removed, this logic can be condensed into just 1 branch.
+
         if estimator:
             try:
                 kinetics, entry = self.get_kinetics_for_template(template, degeneracy, method=estimator)
@@ -2665,7 +2621,6 @@ class KineticsFamily(Database):
                     return kinetics, estimator, entry, True
                 kinetics_list.append([kinetics, estimator, entry, True])
         # If no estimation method was given, prioritize rate rule estimation. 
-        # If returning all kinetics, add estimations from both rate rules and group additivity.
         else:
             try:
                 kinetics, entry = self.get_kinetics_for_template(template, degeneracy, method='rate rules')
@@ -2676,49 +2631,16 @@ class KineticsFamily(Database):
                 # If kinetics were undeterminable for rate rules estimation, do nothing.
                 pass
 
-            try:
-                kinetics2, entry2 = self.get_kinetics_for_template(template, degeneracy, method='group additivity')
-                if not return_all_kinetics:
-                    return kinetics2, 'group additivity', entry2, True
-                kinetics_list.append([kinetics2, 'group additivity', entry2, True])
-            except KineticsError:
-                # If kinetics were undeterminable for group additivity estimation, do nothing.
-                pass
-
         if not return_all_kinetics:
             raise UndeterminableKineticsError(reaction)
 
         return kinetics_list
 
-    def estimate_kinetics_using_group_additivity(self, template, degeneracy=1):
-        """
-        Determine the appropriate kinetics for a reaction with the given
-        `template` using group additivity.
-        
-        Returns just the kinetics, or None.
-        """
-        warnings.warn("Group additivity is no longer supported and may be"
-                      " removed in version 2.3.", DeprecationWarning)
-        # Start with the generic kinetics of the top-level nodes
-        kinetics = None
-        root = self.get_root_template()
-        kinetics = self.get_kinetics_for_template(root)
-
-        if kinetics is None:
-            # raise UndeterminableKineticsError('Cannot determine group additivity kinetics estimate for '
-            #                                   'template "{0}".'.format(','.join([e.label for e in template])))
-            return None
-        else:
-            kinetics = kinetics[0]
-
-        # Now add in more specific corrections if possible
-        return self.groups.estimate_kinetics_using_group_additivity(template, kinetics, degeneracy)
-
     def estimate_kinetics_using_rate_rules(self, template, degeneracy=1):
         """
         Determine the appropriate kinetics for a reaction with the given
         `template` using rate rules.
-        
+
         Returns a tuple (kinetics, entry) where `entry` is the database
         entry used to determine the kinetics only if it is an exact match,
         and is None if some averaging or use of a parent node took place.
@@ -2729,8 +2651,8 @@ class KineticsFamily(Database):
 
     def get_reaction_template_labels(self, reaction):
         """
-        Retrieve the template for the reaction and 
-        return the corresponding labels for each of the 
+        Retrieve the template for the reaction and
+        return the corresponding labels for each of the
         groups in the template.
         """
         template = self.get_reaction_template(reaction)
@@ -2743,8 +2665,8 @@ class KineticsFamily(Database):
 
     def retrieve_template(self, template_labels):
         """
-        Reconstruct the groups associated with the 
-        labels of the reaction template and 
+        Reconstruct the groups associated with the
+        labels of the reaction template and
         return a list.
         """
         template = []
@@ -2755,9 +2677,9 @@ class KineticsFamily(Database):
 
     def get_labeled_reactants_and_products(self, reactants, products, relabel_atoms=True):
         """
-        Given `reactants`, a list of :class:`Molecule` objects, and products, a list of 
-        :class:`Molecule` objects, return two new lists of :class:`Molecule` objects with 
-        atoms labeled: one for reactants, one for products. Returned molecules are totally 
+        Given `reactants`, a list of :class:`Molecule` objects, and products, a list of
+        :class:`Molecule` objects, return two new lists of :class:`Molecule` objects with
+        atoms labeled: one for reactants, one for products. Returned molecules are totally
         new entities in memory so input molecules `reactants` and `products` won't be affected.
         If RMG cannot find appropriate labels, (None, None) will be returned.
         If ``relabel_atoms`` is ``True``, product atom labels of reversible families
@@ -2936,7 +2858,7 @@ class KineticsFamily(Database):
     def _split_reactions(self, rxns, newgrp):
         """
         divides the reactions in rxns between the new
-        group structure newgrp and the old structure with 
+        group structure newgrp and the old structure with
         label oldlabel
         returns a list of reactions associated with the new group
         the list of reactions associated with the old group
@@ -2961,14 +2883,14 @@ class KineticsFamily(Database):
                 comp.append(rxn)
 
         return new, comp, new_inds
-    
+
     def reaction_matches(self, rxn, grp):
         rmol = rxn.reactants[0].molecule[0]
         for r in rxn.reactants[1:]:
             rmol = rmol.merge(r.molecule[0])
         rmol.identify_ring_membership()
         return rmol.is_subgraph_isomorphic(grp, generate_initial_map=True, save_order=True)
-    
+
     def eval_ext(self, parent, ext, extname, template_rxn_map, obj=None, T=1000.0):
         """
         evaluates the objective function obj
@@ -2992,15 +2914,15 @@ class KineticsFamily(Database):
         finds the set of all extension groups to parent such that
         1) the extension group divides the set of reactions under parent
         2) No generalization of the extension group divides the set of reactions under parent
-                    
+
         We find this by generating all possible extensions of the initial group.  Extensions that split reactions are added
-        to the list.  All extensions that do not split reactions and do not create bonds are ignored 
+        to the list.  All extensions that do not split reactions and do not create bonds are ignored
         (although those that match every reaction are labeled so we don't search them twice).  Those that match
-        all reactions and involve bond creation undergo this process again.  
-        
-        Principle:  Say you have two elementary changes to a group ext1 and ext2 if applying ext1 and ext2 results in a 
+        all reactions and involve bond creation undergo this process again.
+
+        Principle:  Say you have two elementary changes to a group ext1 and ext2 if applying ext1 and ext2 results in a
         split at least one of ext1 and ext2 must result in a split
-        
+
         Speed of this algorithm relies heavily on searching non bond creation dimensions once.
         """
         out_exts = [[]]
@@ -3011,7 +2933,7 @@ class KineticsFamily(Database):
 
         n_splits = len(template_rxn_map[parent.label][0].reactants)
         iter = 0
-        
+
         while grps[iter] != []:
             grp = grps[iter][-1]
 
@@ -3130,7 +3052,7 @@ class KineticsFamily(Database):
             out_exts.append([])
             grps[iter].pop()
             names.pop()
-            
+
             for ind in ext_inds:  # collect the groups to be expanded
                 grpr, grpcr, namer, typr, indcr = exts[ind]
                 if len(grps) == iter+1:
@@ -3140,17 +3062,17 @@ class KineticsFamily(Database):
 
             if first_time:
                 first_time = False
-                
+
             if grps[iter] == [] and len(grps) != iter+1 and (not (any([len(x)>0 for x in out_exts]) and iter+1 > iter_max)):
                 iter += 1
                 if len(grps[iter]) > iter_item_cap:
                     logging.error("Recursion item cap hit not splitting {0} reactions at iter {1} with {2} items".format(len(template_rxn_map[parent.label]),iter,len(grps[iter])))
                     iter -= 1
                     gave_up_split = True
-                        
+
             elif grps[iter] == [] and len(grps) != iter+1 and (any([len(x)>0 for x in out_exts]) and iter+1 > iter_max):
                 logging.error("iter_max achieved terminating early")
-                
+
         out = []
         # compile all of the valid extensions together
         # may be some duplicates here, but I don't think it's currently worth identifying them
@@ -3161,7 +3083,7 @@ class KineticsFamily(Database):
 
     def extend_node(self, parent, template_rxn_map, obj=None, T=1000.0, iter_max=np.inf, iter_item_cap=np.inf):
         """
-        Constructs an extension to the group parent based on evaluation 
+        Constructs an extension to the group parent based on evaluation
         of the objective function obj
         """
         exts, gave_up_split = self.get_extension_edge(parent, template_rxn_map, obj=obj, T=T, iter_max=iter_max, iter_item_cap=iter_item_cap)
@@ -3217,10 +3139,10 @@ class KineticsFamily(Database):
                         parent.item.clear_reg_dims()  # this almost always solves the problem
                         return True
             return False
-        
+
         if gave_up_split:
             return False
-        
+
         vals = []
         for grp, grpc, name, typ, einds in exts:
             val, boo = self.eval_ext(parent, grp, name, template_rxn_map, obj, T)
@@ -3316,7 +3238,7 @@ class KineticsFamily(Database):
                         logging.error(prod.label)
                         logging.error(prod.to_adjacency_list())
                 raise ValueError
-        
+
         template_rxn_map[extname] = new_entries
 
         if complement:
@@ -3332,21 +3254,21 @@ class KineticsFamily(Database):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
-        more than one training reaction associated with it a set of potential more specific extensions 
-        are generated and the extension that optimizing the objective function combination is chosen 
+        more than one training reaction associated with it a set of potential more specific extensions
+        are generated and the extension that optimizing the objective function combination is chosen
         and the iteration starts over at the beginning
-        
+
         additionally the tree structure is simplified on the fly by removing groups that have no kinetics data
         associated if their parent has no kinetics data associated and they either have only one child or
         have two children one of which has no kinetics data and no children
         (its parent becomes the parent of its only relevant child node)
-        
+
         Args:
             rxns: List of reactions to generate tree from (if None pull the whole training set)
             obj: Object to expand tree from (if None uses top node)
             thermo_database: Thermodynamic database used for reversing training reactions
             T: Temperature the tree is optimized for
-            nprocs: Number of process for parallel tree generation 
+            nprocs: Number of process for parallel tree generation
             min_splitable_entry_num: the minimum number of splitable reactions at a node in order to spawn
                 a new process solving that node
             min_rxns_to_spawn: the minimum number of reactions at a node to spawn a new process solving that node
@@ -3359,7 +3281,7 @@ class KineticsFamily(Database):
         """
         if rxns is None:
             rxns = self.get_training_set(thermo_database=thermo_database, remove_degeneracy=True, estimate_thermo=True,
-                                         fix_labels=True, get_reverse=True)
+                                         fix_labels=True, get_reverse=True, rxns_with_kinetics_only=True)
 
         if len(rxns) <= max_batch_size:
             template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database, remove_degeneracy=True,
@@ -3390,9 +3312,9 @@ class KineticsFamily(Database):
                                      min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn, extension_iter_max=extension_iter_max,
                                      extension_iter_item_cap=extension_iter_item_cap)
                 logging.error("built tree with {} nodes".format(len(list(self.groups.entries))))
-            
+
             self.auto_generated = True
-                
+
     def get_rxn_batches(self, rxns, T=1000.0, max_batch_size=800, outlier_fraction=0.02, stratum_num=8):
         """
         Breaks reactions into batches based on a modified stratified sampling scheme
@@ -3495,7 +3417,7 @@ class KineticsFamily(Database):
                     entries.remove(entry)
         else:
             psize = float(len(template_rxn_map[root.label]))
-            
+
         logging.error(psize)
         mult_completed_nodes = []  # nodes containing multiple identical training reactions
         boo = True  # if the for loop doesn't break becomes false and the while loop terminates
@@ -3613,8 +3535,8 @@ class KineticsFamily(Database):
         entries = list(self.groups.entries.values())
         rxnlists = [(template_rxn_map[entry.label], entry.label)
                     if entry.label in template_rxn_map.keys() else [] for entry in entries]
-        inputs = np.array([(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
-                           for rxns, label in rxnlists])
+        inputs = [(self.forward_recipe.actions, rxns, Tref, fmax, label, [r.rank for r in rxns])
+                           for rxns, label in rxnlists]
 
         inds = np.arange(len(inputs))
         np.random.shuffle(inds)  # want to parallelize in random order
@@ -3623,14 +3545,32 @@ class KineticsFamily(Database):
 
         if nprocs > 1:
             pool = mp.Pool(nprocs)
-            kinetics_list = np.array(pool.map(_make_rule, inputs[inds]))
+            kinetics_list = np.array(pool.map(_make_rule, list(inputs[i] for i in inds)))
         else:
-            kinetics_list = np.array(list(map(_make_rule, inputs[inds])))
+            kinetics_list = np.array(list(map(_make_rule, list(inputs[i] for i in inds))))
 
         kinetics_list = kinetics_list[revinds]  # fix order
 
         for i, kinetics in enumerate(kinetics_list):
-            if kinetics is not None:
+            if isinstance(kinetics, Marcus):
+                entry = entries[i]
+                st = "Marcus rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i][0]), entry.label)
+                new_entry = Entry(
+                    index=index,
+                    label=entry.label,
+                    item=self.forward_template,
+                    data=kinetics,
+                    rank=11,
+                    reference=None,
+                    short_desc=st,
+                    long_desc=st,
+                )
+                new_entry.data.comment = st
+
+                self.rules.entries[entry.label].append(new_entry)
+
+                index += 1
+            elif kinetics is not None:
                 entry = entries[i]
                 std = kinetics.uncertainty.get_expected_log_uncertainty() / 0.398  # expected uncertainty is std * 0.398
                 st = "BM rule fitted to {0} training reactions at node {1}".format(len(rxnlists[i][0]), entry.label)
@@ -3651,11 +3591,21 @@ class KineticsFamily(Database):
 
                 index += 1
 
-    def cross_validate(self, folds=5, template_rxn_map=None, test_rxn_inds=None, T=1000.0, iters=0, random_state=1, ascend=False):
+        for label,entry in self.rules.entries.items(): #pull solute data from further up the tree as needed
+            if len(entry) == 0:
+                continue
+            entry = entry[0]
+            if not entry.data.solute:
+                ent = self.groups.entries[label]
+                while not self.rules.entries[ent.label][0].data.solute and ent.parent:
+                    ent = ent.parent
+                entry.data.solute = self.rules.entries[ent.label][0].data.solute
+
+    def cross_validate(self, folds=5, template_rxn_map=None, test_rxn_inds=None, T=1000.0, iters=0, random_state=1):
         """
         Perform K-fold cross validation on an automatically generated tree at temperature T
         after finding an appropriate node for kinetics estimation it will move up the tree
-        iters times.  
+        iters times.
         Returns a dictionary mapping {rxn:Ln(k_Est/k_Train)}
         """
 
@@ -3707,44 +3657,44 @@ class KineticsFamily(Database):
                     if entry.parent:
                         entry = entry.parent
 
-                uncertainties[rxn] = self.rules.entries[entry.label][0].data.uncertainty
-                
-                if not ascend:
-                    L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
+                boo = True
 
-                    if L != []:
-                        kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
-                        kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
-                        k = kinetics.get_rate_coefficient(T)
-                        errors[rxn] = np.log(k / krxn)
+                while boo:
+                    if entry.parent is None:
+                        break
+                    kin = self.rules.entries[entry.label][0].data
+                    kinparent = self.rules.entries[entry.parent.label][0].data
+                    err_parent = abs(kinparent.uncertainty.data_mean + kinparent.uncertainty.mu - kin.uncertainty.data_mean) + np.sqrt(2.0*kinparent.uncertainty.var/np.pi)
+                    err_entry = abs(kin.uncertainty.mu) + np.sqrt(2.0*kin.uncertainty.var/np.pi)
+                    if err_entry <= err_parent:
+                        break
                     else:
-                        raise ValueError('only one piece of kinetics information in the tree?')
-                else:
-                    boo = True
-                    rlist = list(set(template_rxn_map[entry.label]) - set(rxns_test))
-                    kinetics = _make_rule((self.forward_recipe.actions,rlist,T,1.0e3,"",[rxn.rank for rxn in rlist]))
-                    logging.error("determining fold rate")
-                    c = 1
-                    while boo:
-                        parent = entry.parent 
-                        if parent is None:
-                            break
-                        rlistparent = list(set(template_rxn_map[parent.label]) - set(rxns_test))
-                        kineticsparent = _make_rule((self.forward_recipe.actions,rlistparent,T,1.0e3,"",[rxn.rank for rxn in rlistparent]))
-                        err_parent = abs(kineticsparent.uncertainty.data_mean + kineticsparent.uncertainty.mu - kinetics.uncertainty.data_mean) + np.sqrt(2.0*kineticsparent.uncertainty.var/np.pi)
-                        err_entry = abs(kinetics.uncertainty.mu) + np.sqrt(2.0*kinetics.uncertainty.var/np.pi)
-                        if err_entry > err_parent:
-                            entry = entry.parent
-                            kinetics = kineticsparent
-                            logging.error("recursing {}".format(c))
-                            c += 1
+                        entry = entry.parent
+
+                uncertainties[rxn] = self.rules.entries[entry.label][0].data.uncertainty
+
+
+                L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
+
+                if L != []:
+                    if isinstance(L[0].kinetics, Arrhenius):
+                        kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                        if kinetics.E0.value_si < 0.0 or len(L) == 1:
+                            kinetics = average_kinetics([r.kinetics for r in L])
                         else:
-                            boo = False
-                            
-                    kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(T))
+                            kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(298.))
+                    else:
+                        kinetics = ArrheniusChargeTransferBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
+                        if kinetics.E0.value_si < 0.0 or len(L) == 1:
+                            kinetics = average_kinetics([r.kinetics for r in L])
+                        else:
+                            kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.))
+
                     k = kinetics.get_rate_coefficient(T)
                     errors[rxn] = np.log(k / krxn)
-                    
+                else:
+                    raise ValueError('only one piece of kinetics information in the tree?')
+
         return errors, uncertainties
 
     def cross_validate_old(self, folds=5, T=1000.0, random_state=1, estimator='rate rules', thermo_database=None, get_reverse=False, uncertainties=True):
@@ -3754,7 +3704,7 @@ class KineticsFamily(Database):
         """
         errors = {}
         uncs = {}
-        
+
         kpu = KineticParameterUncertainty()
         rxns = np.array(self.get_training_set(remove_degeneracy=True,get_reverse=get_reverse))
 
@@ -3786,8 +3736,6 @@ class KineticsFamily(Database):
                 template = self.retrieve_template(template_labels)
                 if estimator == 'rate rules':
                     kinetics, entry = self.estimate_kinetics_using_rate_rules(template, degeneracy=1)
-                elif estimator == 'group additivity':
-                    kinetics = self.estimate_kinetics_using_group_additivity(template, degeneracy=1)
                 else:
                     raise ValueError('{0} is not a valid value for input `estimator`'.format(estimator))
 
@@ -3800,7 +3748,7 @@ class KineticsFamily(Database):
                     boo,source = self.extract_source_from_comments(testrxn)
                     sdict = {"Rate Rules":source}
                     uncs[rxn] = kpu.get_uncertainty_value(sdict)
-                    
+
         if uncertainties:
             return errors, uncs
         else:
@@ -3810,19 +3758,19 @@ class KineticsFamily(Database):
         """
         Simplest regularization algorithm
         All nodes are made as specific as their descendant reactions
-        Training reactions are assumed to not generalize 
+        Training reactions are assumed to not generalize
         For example if an particular atom at a node is Oxygen for all of its
         descendent reactions a reaction where it is Sulfur will never hit that node
-        unless it is the top node even if the tree did not split on the identity 
+        unless it is the top node even if the tree did not split on the identity
         of that atom
-        
-        The test option to this function determines whether or not the reactions 
-        under a node match the extended group before adding an extension. 
-        If the test fails the extension is skipped. 
-        
-        In general test=True is needed if the cascade algorithm was used 
+
+        The test option to this function determines whether or not the reactions
+        under a node match the extended group before adding an extension.
+        If the test fails the extension is skipped.
+
+        In general test=True is needed if the cascade algorithm was used
         to generate the tree and test=False is ok if the cascade algorithm
-        wasn't used. 
+        wasn't used.
         """
 
         for child in node.children:
@@ -3939,7 +3887,7 @@ class KineticsFamily(Database):
         if template_rxn_map is None:
             if rxns is None:
                 template_rxn_map = self.get_reaction_matches(thermo_database=thermo_database, remove_degeneracy=True,
-                                                             get_reverse=True, exact_matches_only=False, fix_labels=True)
+                                                             get_reverse=True, exact_matches_only=False, fix_labels=True, rxns_with_kinetics_only=False)
             else:
                 template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database,
                                                              remove_degeneracy=True, get_reverse=True, exact_matches_only=False,
@@ -4028,7 +3976,7 @@ class KineticsFamily(Database):
 
     def save_generated_tree(self, path=None):
         """
-        clears the rules and saves the family to its 
+        clears the rules and saves the family to its
         current location in database
         """
         if path is None:
@@ -4038,11 +3986,11 @@ class KineticsFamily(Database):
         self.save(path)
 
     def get_training_set(self, thermo_database=None, remove_degeneracy=False, estimate_thermo=True, fix_labels=False,
-                         get_reverse=False):
+                         get_reverse=False, rxns_with_kinetics_only=False):
         """
         retrieves all reactions in the training set, assigns thermo to the species objects
         reverses reactions as necessary so that all reactions are in the forward direction
-        and returns the resulting list of reactions in the forward direction with thermo 
+        and returns the resulting list of reactions in the forward direction with thermo
         assigned
         """
 
@@ -4099,8 +4047,8 @@ class KineticsFamily(Database):
             logging.info('Must be because you turned off the training depository.')
             return
 
-        rxns = deepcopy([i.item for i in dep.entries.values()])
-        entries = deepcopy([i for i in dep.entries.values()])
+        rxns = deepcopy([i.item for i in dep.entries.values() if (not rxns_with_kinetics_only) or type(i.data) != KineticsModel])
+        entries = deepcopy([i for i in dep.entries.values() if (not rxns_with_kinetics_only) or type(i.data) != KineticsModel])
 
         roots = [x.item for x in self.get_root_template()]
         root = None
@@ -4112,7 +4060,7 @@ class KineticsFamily(Database):
 
         root_labels = [x.label for x in root.atoms if x.label != '']
         root_label_set = set(root_labels)
-        
+
         for i, entry in enumerate(entries):
             if estimate_thermo:
                 # parse out the metal to scale to
@@ -4130,7 +4078,7 @@ class KineticsFamily(Database):
             rxns[i].kinetics = entry.data
             rxns[i].rank = entry.rank
 
-            if remove_degeneracy:  # adjust for degeneracy
+            if remove_degeneracy and type(rxns[i].kinetics) != KineticsModel:  # adjust for degeneracy
                 rxns[i].kinetics.A.value_si /= rxns[i].degeneracy
 
             mol = None
@@ -4141,6 +4089,8 @@ class KineticsFamily(Database):
                     mol = mol.merge(react.molecule[0])
                 else:
                     mol = deepcopy(react.molecule[0])
+
+            mol.update_atomtypes()
 
             if fix_labels:
                 for prod in rxns[i].products:
@@ -4160,12 +4110,12 @@ class KineticsFamily(Database):
                             mol = mol.merge(react.molecule[0])
                         else:
                             mol = deepcopy(react.molecule[0])
-                    
+
                     if fix_labels:
                         mol_label_set = set([x.label for x in get_label_fixed_mol(mol, root_labels).atoms if x.label != ''])
                     else:
                         mol_label_set = set([x.label for x in mol.atoms if x.label != ''])
-                    
+
                     if mol_label_set == root_label_set and ((mol.is_subgraph_isomorphic(root, generate_initial_map=True) or
                             (not fix_labels and
                              get_label_fixed_mol(mol, root_labels).is_subgraph_isomorphic(root, generate_initial_map=True)))):
@@ -4198,7 +4148,10 @@ class KineticsFamily(Database):
 
                     reacts = [Species(molecule=[get_label_fixed_mol(x.molecule[0], root_labels)], thermo=x.thermo)
                               for x in rxns[i].reactants]
-                    rrev = Reaction(reactants=products, products=reacts,
+                    if type(rxns[i].kinetics) != KineticsModel:
+                        if rxns[i].kinetics.solute:
+                            rxns[i].kinetics.solute = to_soluteTSdata(rxns[i].kinetics.solute,reactants=rxns[i].reactants)
+                        rrev = Reaction(reactants=products, products=reacts,
                                     kinetics=rxns[i].generate_reverse_rate_coefficient(), rank=rxns[i].rank)
                     rrev.is_forward = False
 
@@ -4227,6 +4180,8 @@ class KineticsFamily(Database):
                     else:
                         mol = deepcopy(react.molecule[0])
 
+                mol.update_atomtypes()
+
                 if (mol.is_subgraph_isomorphic(root, generate_initial_map=True) or
                         (not fix_labels and
                          get_label_fixed_mol(mol, root_labels).is_subgraph_isomorphic(root, generate_initial_map=True))):  # try product structures
@@ -4253,15 +4208,15 @@ class KineticsFamily(Database):
             return rxns
 
     def get_reaction_matches(self, rxns=None, thermo_database=None, remove_degeneracy=False, estimate_thermo=True,
-                             fix_labels=False, exact_matches_only=False, get_reverse=False):
+                             fix_labels=False, exact_matches_only=False, get_reverse=False, rxns_with_kinetics_only=False):
         """
-        returns a dictionary mapping for each entry in the tree:  
+        returns a dictionary mapping for each entry in the tree:
         (entry.label,entry.item) : list of all training reactions (or the list given) that match that entry
         """
         if rxns is None:
             rxns = self.get_training_set(thermo_database=thermo_database, remove_degeneracy=remove_degeneracy,
                                          estimate_thermo=estimate_thermo, fix_labels=fix_labels,
-                                         get_reverse=get_reverse)
+                                         get_reverse=get_reverse,rxns_with_kinetics_only=rxns_with_kinetics_only)
 
         entries = self.groups.entries
 
@@ -4348,10 +4303,10 @@ class KineticsFamily(Database):
         """
         Retrieves the original entry, be it a rule or training reaction, given
         the template label in the form 'group1;group2' or 'group1;group2;group3'
-        
+
         Returns tuple in the form
         (RateRuleEntry, TrainingReactionEntry)
-        
+
         Where the TrainingReactionEntry is only present if it comes from a training reaction
         """
         template_labels = template_label.split()[-1].split(';')
@@ -4368,13 +4323,13 @@ class KineticsFamily(Database):
         """
         Returns the set of rate rules and training reactions used to average this `template`.  Note that the tree must be
         averaged with verbose=True for this to work.
-        
+
         Returns a tuple of
         rules, training
-        
-        where rules are a list of tuples containing 
+
+        where rules are a list of tuples containing
         the [(original_entry, weight_used_in_average), ... ]
-        
+
         and training is a list of tuples containing
         the [(rate_rule_entry, training_reaction_entry, weight_used_in_average),...]
         """
@@ -4382,7 +4337,7 @@ class KineticsFamily(Database):
         def assign_weights_to_entries(entry_nested_list, weighted_entries, n=1):
             """
             Assign weights to an average of average nested list. Where n is the
-            number of values being averaged recursively.  
+            number of values being averaged recursively.
             """
             n = len(entry_nested_list) * n
             for entry in entry_nested_list:
@@ -4456,7 +4411,7 @@ class KineticsFamily(Database):
                             rules[rule_entry] += weight
                         else:
                             rules[rule_entry] = weight
-                # Each entry should now only appear once    
+                # Each entry should now only appear once
                 training = [(k[0], k[1], v) for k, v in training.items()]
                 rules = list(rules.items())
 
@@ -4467,11 +4422,11 @@ class KineticsFamily(Database):
         Returns the rate rule associated with the kinetics of a reaction by parsing the comments.
         Will return the template associated with the matched rate rule.
         Returns a tuple containing (Boolean_Is_Kinetics_From_Training_reaction, Source_Data)
-        
+
         For a training reaction, the Source_Data returns::
 
             [Family_Label, Training_Reaction_Entry, Kinetics_In_Reverse?]
-        
+
         For a reaction from rate rules, the Source_Data is a tuple containing::
 
             [Family_Label, {'template': originalTemplate,
@@ -4487,60 +4442,65 @@ class KineticsFamily(Database):
         """
         lines = reaction.kinetics.comment.split('\n')
 
-        exact = False
+        exact_rule = False
         template = None
         rules = None
         training_entries = None
         degeneracy = 1
 
-        regex = r"\[(.*)\]"  # only hit outermost brackets
+        training_reaction_pattern = r'Matched reaction\s*(\d+).*in.*training'
+        degeneracy_pattern = r'Multiplied by reaction path degeneracy\s*(\d+)'
+
         for line in lines:
-            if line.startswith('Matched'):
+            training_matches = re.search(training_reaction_pattern, line)
+            degeneracy_matches = re.search(degeneracy_pattern, line)
+
+            if training_matches is not None:
                 # Source of the kinetics is from training reaction
-                training_reaction_index = int(line.split()[2])
+                training_reaction_index = int(training_matches.group(1))
                 depository = self.get_training_depository()
                 training_entry = depository.entries[training_reaction_index]
                 # Perform sanity check that the training reaction's label matches that of the comments
                 if training_entry.label not in line:
-                    raise AssertionError('Reaction {0} uses kinetics from training reaction {1} '
-                                         'but does not match the training reaction {1} from the '
-                                         '{2} family.'.format(reaction, training_reaction_index, self.label))
+                    raise AssertionError(f'Reaction {reaction} uses kinetics from training reaction {training_reaction_index} '
+                                         f'but does not match the training reaction {training_reaction_index} from the '
+                                         f'{self.label} family.')
 
-                # Sometimes the matched kinetics could be in the reverse direction..... 
+                # Sometimes the matched kinetics could be in the reverse direction.....
                 if reaction.is_isomorphic(training_entry.item, either_direction=False, save_order=self.save_order):
                     reverse = False
                 else:
                     reverse = True
                 return True, [self.label, training_entry, reverse]
 
-            elif line.startswith('Exact match'):
-                exact = True
-            elif line.startswith('Estimated'):
-                pass
-            elif line.startswith('Multiplied by'):
-                degeneracy = float(line.split()[-1])
+            if 'Exact match found for rate rule' in line:
+                exact_rule = True
+            if degeneracy_matches is not None:
+                degeneracy = float(degeneracy_matches.group(1))
 
-        # Extract the rate rule information 
+        # Extract the rate rule information
         full_comment_string = reaction.kinetics.comment.replace('\n', ' ')
-
+        autogen_node_search_pattern = r'Estimated from node (.*)'
         # The rate rule string is right after the phrase 'for rate rule'
-        rate_rule_string = full_comment_string.split("for rate rule", 1)[1].strip()
-
-        if rate_rule_string[0] == '[':
-            # Get the contents of the capture group in the regex
-            # Remove any spaces which may be left over as a result of a line break
-            template_label = re.split(regex, rate_rule_string)[1].replace(' ', '')
+        template_pattern = r"for rate rule \[(.*)\]"  # only hit outermost brackets
+        autogen_node_matches = re.search(autogen_node_search_pattern, full_comment_string)
+        template_matches = re.search(template_pattern, full_comment_string)
+        if autogen_node_matches is not None:  # autogenerated trees
+            template_str = autogen_node_matches.group(1).split('Multiplied by reaction path degeneracy')[0].strip()
+            tokens = template_str.split()
+            if len(tokens) == 2:  # The node was probably split because wordwrap was turned off
+                assert len(template_str) > 115, 'The node name is too short to have been broken up by the chemkin writer'
+                template_str = ''.join(tokens)
+            elif len(tokens) > 2:  # warn the user the node is probably wrong
+                raise ValueError(f'The node name {template_str} has multiple spaces and cannot be parsed for reaction {reaction}.')
+            template = self.retrieve_template([template_str])
+        elif template_matches is not None:  # hand-built trees
+            template_label = template_matches.group(1)
+            template = self.retrieve_template(template_label.split(';'))
         else:
-            # If this has the line 'From training reaction # for rate rule node1;node2'
-            template_label = rate_rule_string.split()[0]
-
-        template = self.retrieve_template(template_label.split(';'))
+            raise ValueError(f'Could not find rate rule in comments for reaction {reaction}.')
         rules, training_entries = self.get_sources_for_template(template)
-
-        if not template:
-            raise ValueError('Could not extract kinetics source from comments for reaction {}.'.format(reaction))
-
-        source_dict = {'template': template, 'degeneracy': degeneracy, 'exact': exact,
+        source_dict = {'template': template, 'degeneracy': degeneracy, 'exact': exact_rule,
                        'rules': rules, 'training': training_entries}
 
         # Source of the kinetics is from rate rules
@@ -4602,8 +4562,12 @@ def get_objective_function(kinetics1, kinetics2, obj=information_gain, T=1000.0)
     Error using mean: Err_1 + Err_2
     Split: abs(N1-N2)
     """
-    ks1 = np.array([np.log(k.get_rate_coefficient(T)) for k in kinetics1])
-    ks2 = np.array([np.log(k.get_rate_coefficient(T)) for k in kinetics2])
+    if not isinstance(kinetics1[0], Marcus):
+        ks1 = np.array([np.log(k.get_rate_coefficient(T)) for k in kinetics1])
+        ks2 = np.array([np.log(k.get_rate_coefficient(T)) for k in kinetics2])
+    else:
+        ks1 = np.array([k.get_lmbd_i(T) for k in kinetics1])
+        ks2 = np.array([k.get_lmbd_i(T) for k in kinetics2])
     N1 = len(ks1)
 
     return obj(ks1, ks2), N1 == 0
@@ -4611,29 +4575,115 @@ def get_objective_function(kinetics1, kinetics2, obj=information_gain, T=1000.0)
 
 def _make_rule(rr):
     """
-    function for parallelization of rule and uncertainty calculation
+    Function for parallelization of rule and uncertainty calculation
+
+    Input: rr - tuple of (recipe, rxns, Tref, fmax, label, ranks)
+           rxns and ranks are lists of equal length.
+    Output: kinetics object, with uncertainty and comment attached.
+    If Blowers-Masel fitting is successful it will be ArrheniusBM or ArrheniusChargeTransferBM,
+    else Arrhenius, SurfaceChargeTransfer, or ArrheniusChargeTransfer.
+
     Errors in Ln(k) at each reaction are treated as samples from a weighted normal distribution
     weights are inverse variance weights based on estimates of the error in Ln(k) for each individual reaction
     """
     recipe, rxns, Tref, fmax, label, ranks = rr
-    n = len(rxns)
     for i, rxn in enumerate(rxns):
         rxn.rank = ranks[i]
     rxns = np.array(rxns)
-    data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rxns]))
+    rs = np.array([r for r in rxns if type(r.kinetics) != KineticsModel])
+    n = len(rs)
+    if n > 0 and isinstance(rs[0].kinetics, Marcus):
+        kin = average_kinetics([r.kinetics for r in rs])
+        return kin
+    data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rs]))
     if n > 0:
-        kin = ArrheniusBM().fit_to_reactions(rxns, recipe=recipe)
-        if n == 1:
-            kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+        if isinstance(rs[0].kinetics, Arrhenius):
+            arr = ArrheniusBM
         else:
-            dlnks = np.array([
-                np.log(
-                    ArrheniusBM().fit_to_reactions(rxns[list(set(range(len(rxns))) - {i})], recipe=recipe)
+            arr = ArrheniusChargeTransferBM
+        if n > 1:
+            kin = arr().fit_to_reactions(rs, recipe=recipe)
+        if n == 1 or kin.E0.value_si < 0.0:
+            kin = average_kinetics([r.kinetics for r in rs])
+            #kin.comment = "Only one reaction or Arrhenius BM fit bad. Instead averaged from {} reactions.".format(n)
+            if n == 1:
+                kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+            else:
+                dlnks = np.array([
+                    np.log(
+                            average_kinetics([r.kinetics for r in rs[list(set(range(len(rs))) - {i})]]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                        ) for i, rxn in enumerate(rs)
+                    ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+                varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
+                # weighted average calculations
+                ws = 1.0 / varis
+                V1 = ws.sum()
+                V2 = (ws ** 2).sum()
+                mu = np.dot(ws, dlnks) / V1
+                s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
+                kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
+        else:
+            if n == 1:
+                kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+            else:
+                if isinstance(rs[0].kinetics, Arrhenius):
+                    dlnks = np.array([
+                        np.log(
+                            arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
                     .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
                     .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-                ) for i, rxn in enumerate(rxns)
+                ) for i, rxn in enumerate(rs)
             ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rxns]) / (2.0 * 8.314 * Tref)) ** 2
+                else:
+                    dlnks = np.array([
+                        np.log(
+                            arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
+                            .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(Tref))
+                            .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                        ) for i, rxn in enumerate(rs)
+                    ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+                varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
+                # weighted average calculations
+                ws = 1.0 / varis
+                V1 = ws.sum()
+                V2 = (ws ** 2).sum()
+                mu = np.dot(ws, dlnks) / V1
+                s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
+                kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
+        
+        #site solute parameters
+        site_datas = [get_site_solute_data(rxn) for rxn in rxns]
+        site_datas = [sdata for sdata in site_datas if sdata is not None]
+        if len(site_datas) > 0:
+            site_data = SoluteTSData()
+            for sdata in site_datas:
+                site_data += sdata
+            site_data = site_data * (1.0/len(site_datas))
+            kin.solute = site_data
+        return kin
+    else:
+        return None
+
+    if isinstance(rs[0].kinetics, Arrhenius):
+        arr = ArrheniusBM
+    else:
+        arr = ArrheniusChargeTransferBM
+    if n > 1:
+        kin = arr().fit_to_reactions(rs, recipe=recipe)
+    if n == 1 or kin.E0.value_si < 0.0:
+        # still run it through the averaging function when n=1 to standardize the units and run checks
+        kin = average_kinetics([r.kinetics for r in rs])
+        if n == 1:
+            kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+            kin.comment = f"Only one reaction rate: {rs[0]!s}"
+        else:
+            kin.comment = f"Blowers-Masel fit was bad (E0<0) so instead averaged from {n} reactions."
+            dlnks = np.array([
+                np.log(
+                        average_kinetics([r.kinetics for r in rs[list(set(range(len(rs))) - {i})]]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                    ) for i, rxn in enumerate(rs)
+                ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
             # weighted average calculations
             ws = 1.0 / varis
             V1 = ws.sum()
@@ -4641,10 +4691,42 @@ def _make_rule(rr):
             mu = np.dot(ws, dlnks) / V1
             s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
             kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
-        return kin
-    else:
-        return None
+    else: # Blowers-Masel fit was good
+        if isinstance(rs[0].kinetics, Arrhenius):
+            dlnks = np.array([
+                np.log(
+                    arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
+                    .to_arrhenius(rxn.get_enthalpy_of_reaction(298.))
+                    .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                ) for i, rxn in enumerate(rs)
+            ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+        else: # SurfaceChargeTransfer or ArrheniusChargeTransfer
+            dlnks = np.array([
+                np.log(
+                    arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
+                    .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.))
+                    .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                ) for i, rxn in enumerate(rs)
+            ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+        varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
+        # weighted average calculations
+        ws = 1.0 / varis
+        V1 = ws.sum()
+        V2 = (ws ** 2).sum()
+        mu = np.dot(ws, dlnks) / V1
+        s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
+        kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
 
+    #site solute parameters
+    site_datas = [get_site_solute_data(rxn) for rxn in rxns]
+    site_datas = [sdata for sdata in site_datas if sdata is not None]
+    if len(site_datas) > 0:
+        site_data = SoluteTSData()
+        for sdata in site_datas:
+            site_data += sdata
+        site_data = site_data * (1.0/len(site_datas))
+        kin.solute = site_data
+    return kin
 
 def _spawn_tree_process(family, template_rxn_map, obj, T, nprocs, depth, min_splitable_entry_num, min_rxns_to_spawn, extension_iter_max, extension_iter_item_cap):
     parent_conn, child_conn = mp.Pipe()
@@ -4669,7 +4751,7 @@ def _child_make_tree_nodes(family, child_conn, template_rxn_map, obj, T, nprocs,
     family.groups.entries[root_label].parent = None
 
     family.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs, depth=depth + 1,
-                           min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn, 
+                           min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,
                            extension_iter_max=extension_iter_max, extension_iter_item_cap=extension_iter_item_cap)
 
     child_conn.send(list(family.groups.entries.values()))
@@ -4680,25 +4762,9 @@ def average_kinetics(kinetics_list):
     Hence we average n, Ea, arithmetically, but we
     average log A (geometric average)
     """
-    logA = 0.0
-    n = 0.0
-    Ea = 0.0
-    count = 0
-    for kinetics in kinetics_list:
-        count += 1
-        logA += np.log10(kinetics.A.value_si)
-        n += kinetics.n.value_si
-        Ea += kinetics.Ea.value_si
-
-    logA /= count
-    n /= count
-    Ea /= count
-
-    ## The above could be replaced with something like:
-    # logA, n, Ea = np.mean([[np.log10(k.A.value_si),
-    #                   k.n.value_si,
-    #                   k.Ea.value_si] for k in kinetics_list], axis=1)
-
+    if type(kinetics_list[0]) not in [Arrhenius,SurfaceChargeTransfer,ArrheniusChargeTransfer,Marcus]:
+        raise Exception('Invalid kinetics type {0!r} for {1!r}.'.format(type(kinetics), self))
+    
     Aunits = kinetics_list[0].A.units
     if Aunits in {'cm^3/(mol*s)', 'cm^3/(molecule*s)', 'm^3/(molecule*s)'}:
         Aunits = 'm^3/(mol*s)'
@@ -4717,17 +4783,122 @@ def average_kinetics(kinetics_list):
         # surface: sticking coefficient
         pass
     else:
-        raise Exception(f'Invalid units {Aunits} for averaging kinetics.')
+        raise Exception('Invalid units {0} for averaging kinetics.'.format(Aunits))
+    
+    logA = 0.0
+    n = 0.0
+    Ea = 0.0
+    alpha = 0.5
+    lmbd_i_coefs = np.zeros(4)
+    beta = 0.0
+    wr = 0.0
+    wp = 0.0
+    electrons = None
+    if isinstance(kinetics_list[0], SurfaceChargeTransfer) or isinstance(kinetics_list[0], ArrheniusChargeTransfer):
+        if electrons is None:
+            electrons = kinetics_list[0].electrons.value_si
+        assert all(np.abs(k.V0.value_si) < 0.0001 for k in kinetics_list), [k.V0.value_si for k in kinetics_list]
+        assert all(np.abs(k.alpha.value_si - 0.5) < 0.001 for k in kinetics_list), [k.alpha for k in kinetics_list]
+    V0 = 0.0
+    count = 0
+    for kinetics in kinetics_list:
+        count += 1
+        logA += np.log10(kinetics.A.value_si)
+        n += kinetics.n.value_si
+        if hasattr(kinetics,"Ea"):
+            Ea += kinetics.Ea.value_si
+        if hasattr(kinetics,"lmbd_i_coefs"):
+            lmbd_i_coefs += kinetics.lmbd_i_coefs.value_si
+            beta += kinetics.beta.value_si
+            wr += kinetics.wr.value_si
+            wp += kinetics.wp.value_si
 
-    if type(kinetics) not in [Arrhenius,]:
-        raise Exception(f'Invalid kinetics type {type(kinetics)!r} for {self!r}.')
+    logA /= count
+    n /= count
+    Ea /= count
+    lmbd_i_coefs /= count
+    beta /= count 
+    wr /= count 
+    wp /= count
 
-    if False:
-        pass
+    if isinstance(kinetics, Marcus):
+        averaged_kinetics = Marcus(
+            A=(10 ** logA, Aunits),
+            n=n,
+            lmbd_i_coefs=lmbd_i_coefs,
+            beta=(beta,"1/m"),
+            wr=(wr * 0.001, "kJ/mol"),
+            wp=(wp * 0.001, "kJ/mol"),
+            comment="Averaged from {} reactions.".format(len(kinetics_list)),
+            )
+    elif isinstance(kinetics, SurfaceChargeTransfer):
+        averaged_kinetics = SurfaceChargeTransfer(
+            A=(10 ** logA, Aunits),
+            n=n,
+            electrons=electrons,
+            alpha=alpha,
+            V0=(V0,'V'),
+            Ea=(Ea * 0.001, "kJ/mol"),
+            )
+    elif isinstance(kinetics, ArrheniusChargeTransfer):
+        averaged_kinetics = ArrheniusChargeTransfer(
+            A=(10 ** logA, Aunits),
+            n=n,
+            electrons=electrons,
+            alpha=alpha,
+            V0=(V0,'V'),
+            Ea=(Ea * 0.001, "kJ/mol"),
+            )
     else:
         averaged_kinetics = Arrhenius(
             A=(10 ** logA, Aunits),
             n=n,
             Ea=(Ea * 0.001, "kJ/mol"),
+            comment=f"Averaged from {len(kinetics_list)} rate expressions.",
         )
     return averaged_kinetics
+
+def get_site_solute_data(rxn):
+    """
+    apply kinetic solvent correction in this case the parameters are dGTSsite instead of GTS
+    """
+    from rmgpy.data.rmg import get_db
+    solvation_database = get_db('solvation')
+    ts_data = rxn.kinetics.solute
+    if ts_data:
+        site_data = to_soluteTSdata(ts_data,reactants=rxn.reactants)
+
+        #compute x from gas phase
+        GR = 0.0
+        GP = 0.0
+
+        for reactant in rxn.reactants:
+            try:
+                GR += reactant.thermo.get_free_energy(298.0)
+            except Exception:
+                logging.error("Problem with reactant {!r} in reaction {!s}".format(reactant, rxn))
+                raise
+        for product in rxn.products:
+            try:
+                GP += product.thermo.get_free_energy(298.0)
+            except Exception:
+                logging.error("Problem with product {!r} in reaction {!s}".format(reactant, rxn))
+                raise
+
+        dGrxn = GP-GR
+        if dGrxn > 0:
+            x = 1.0
+        else:
+            x = 0.0
+
+        for spc in rxn.reactants:
+            spc_solute_data = to_soluteTSdata(solvation_database.get_solute_data(spc.copy(deep=True)))
+            site_data -= spc_solute_data*(1.0-x)
+
+        for spc in rxn.products:
+            spc_solute_data = to_soluteTSdata(solvation_database.get_solute_data(spc.copy(deep=True)))
+            site_data -= spc_solute_data*x
+
+        return site_data
+    else:
+        return None

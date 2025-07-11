@@ -103,7 +103,17 @@ SMILES_LOOKUPS = {
         """
         multiplicity 1
         1 X u0
+        """,
+    'e':
         """
+        multiplicity 1
+        1 e u0 p0 c-1
+        """,
+    '[H+]':
+        """
+        multiplicity 1
+        1 H u0 p0 c+1
+        """,
 }
 
 #: This dictionary is used to shortcut lookups of a molecule's SMILES string from its chemical formula.
@@ -128,6 +138,8 @@ MOLECULE_LOOKUPS = {
     'ClH': 'Cl',
     'I2': '[I][I]',
     'HI': 'I',
+    'H': 'H+',
+    'e': 'e'
 }
 
 RADICAL_LOOKUPS = {
@@ -155,7 +167,8 @@ RADICAL_LOOKUPS = {
     'I': '[I]',
     'CF': '[C]F',
     'CCl': '[C]Cl',
-    'CBr': '[C]Br'
+    'CBr': '[C]Br',
+    'e': 'e'
 }
 
 
@@ -169,7 +182,7 @@ def to_inchi(mol, backend='rdkit-first', aug_level=0):
     Uses RDKit or OpenBabel for conversion.
 
     Args:
-        backend     choice of backend, 'try-all', 'rdkit', or 'openbabel'
+        backend     choice of backend, 'rdkit-first' (default), 'openbabel-first', 'rdkit', or 'openbabel'
         aug_level   level of augmentation, 0, 1, or 2
     """
     cython.declare(inchi=str, ulayer=str, player=str, mlayer=str)
@@ -205,7 +218,7 @@ def to_inchi_key(mol, backend='rdkit-first', aug_level=0):
     Uses RDKit or OpenBabel for conversion.
 
     Args:
-        backend     choice of backend, 'try-all', 'rdkit', or 'openbabel'
+        backend     choice of backend, 'rdkit-first' (default), 'openbabel-first', 'rdkit', or 'openbabel'
         aug_level   level of augmentation, 0, 1, or 2
     """
     cython.declare(key=str, ulayer=str, player=str, mlayer=str)
@@ -234,7 +247,7 @@ def to_inchi_key(mol, backend='rdkit-first', aug_level=0):
 def to_smarts(mol, backend='rdkit'):
     """
     Convert a molecular structure to an SMARTS string. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
+    `RDKit <https://rdkit.org/>`_ to perform the conversion.
     Perceives aromaticity and removes Hydrogen atoms.
     """
     return _write(mol, 'sma', backend)
@@ -245,10 +258,10 @@ def to_smiles(mol, backend='default'):
     Convert a molecular structure to an SMILES string.
 
     If there is a Nitrogen/Sulfur atom present it uses
-    `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
+    `OpenBabel <https://openbabel.org/>`_ to perform the conversion,
     and the SMILES may or may not be canonical.
 
-    Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the
+    Otherwise, it uses `RDKit <https://rdkit.org/>`_ to perform the
     conversion, so it will be canonical SMILES.
     While converting to an RDMolecule it will perceive aromaticity
     and removes Hydrogen atoms.
@@ -274,11 +287,11 @@ def to_smiles(mol, backend='default'):
         return output
 
 
-def from_inchi(mol, inchistr, backend='try-all', raise_atomtype_exception=True):
+def from_inchi(mol, inchistr, backend='openbabel-first', raise_atomtype_exception=True):
     """
     Convert an InChI string `inchistr` to a molecular structure. Uses
-    a user-specified backend for conversion, currently supporting
-    rdkit (default) and openbabel.
+    a user-specified backend for conversion, currently supporting 'openbabel-first' (default), rdkit-first,
+    rdkit, and openbabel.
     """
     if inchiutil.INCHI_PREFIX in inchistr:
         return _read(mol, inchistr, 'inchi', backend, raise_atomtype_exception=raise_atomtype_exception)
@@ -319,17 +332,17 @@ def from_augmented_inchi(mol, aug_inchi, raise_atomtype_exception=True):
 def from_smarts(mol, smartsstr, backend='rdkit', raise_atomtype_exception=True):
     """
     Convert a SMARTS string `smartsstr` to a molecular structure. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
+    `RDKit <https://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
     return _read(mol, smartsstr, 'sma', backend, raise_atomtype_exception=raise_atomtype_exception)
 
 
-def from_smiles(mol, smilesstr, backend='try-all', raise_atomtype_exception=True):
+def from_smiles(mol, smilesstr, backend='openbabel-first', raise_atomtype_exception=True):
     """
     Convert a SMILES string `smilesstr` to a molecular structure. Uses
-    a user-specified backend for conversion, currently supporting
-    rdkit (default) and openbabel.
+    a user-specified backend for conversion, currently supporting openbabel-first (default), rdkit-first,
+    rdkit and openbabel.
     """
     return _read(mol, smilesstr, 'smi', backend, raise_atomtype_exception=raise_atomtype_exception)
 
@@ -506,7 +519,7 @@ def _read(mol, identifier, identifier_type, backend, raise_atomtype_exception=Tr
 
     if _lookup(mol, identifier, identifier_type) is not None:
         if _check_output(mol, identifier):
-            mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
+            mol.update(log_species=True, raise_atomtype_exception=raise_atomtype_exception, sort_atoms=False)
             return mol
 
     for option in _get_backend_list(backend):
@@ -518,7 +531,7 @@ def _read(mol, identifier, identifier_type, backend, raise_atomtype_exception=Tr
             raise NotImplementedError("Unrecognized backend {0}".format(option))
 
         if _check_output(mol, identifier):
-            mol.update_atomtypes(log_species=True, raise_exception=raise_atomtype_exception)
+            mol.update(log_species=True, raise_atomtype_exception=raise_atomtype_exception, sort_atoms=False)
             return mol
         else:
             logging.debug('Backend {0} is not able to parse identifier {1}'.format(option, identifier))
@@ -569,9 +582,9 @@ def _get_backend_list(backend):
     """
     if not isinstance(backend, str):
         raise ValueError("The backend argument should be a string. "
-                         "Accepted values are 'try-all', 'rdkit-first', 'rdkit', and 'openbabel'")
+                         "Accepted values are 'openbabel-first', 'rdkit-first', 'rdkit', and 'openbabel'")
     backend = backend.strip().lower()
-    if backend == 'try-all':
+    if backend == 'openbabel-first':
         return BACKENDS
     elif backend == 'rdkit-first':
         return reversed(BACKENDS)
@@ -579,4 +592,4 @@ def _get_backend_list(backend):
         return [backend]
     else:
         raise ValueError("Unrecognized value for backend argument. "
-                         "Accepted values are 'try-all', 'rdkit-first', 'rdkit', and 'openbabel'")
+                         "Accepted values are 'openbabel-first', 'rdkit-first', 'rdkit', and 'openbabel'")

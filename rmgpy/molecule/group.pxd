@@ -31,6 +31,12 @@ cimport rmgpy.molecule.molecule as mol
 from cpython cimport bool
 ################################################################################
 
+cdef bool check_set(super_list, sub_list)
+
+cdef list add_cb_atom_to_ring(ring, cb_atom)
+
+cdef list merge_overlapping_benzene_rings(ring1, ring2, od)
+
 cdef class GroupAtom(Vertex):
 
     cdef public list atomtype
@@ -73,6 +79,10 @@ cdef class GroupAtom(Vertex):
     cpdef bint is_surface_site(self) except -2
 
     cpdef bint is_bonded_to_surface(self) except -2
+
+    cpdef bint is_proton(self)
+
+    cpdef bint is_electron(self)
 
     cpdef bint is_oxygen(self)
 
@@ -190,6 +200,10 @@ cdef class Group(Graph):
 
     cpdef bint is_surface_site(self) except -2
 
+    cpdef bint is_proton(self)
+
+    cpdef bint is_electron(self)
+    
     cpdef bint contains_surface_site(self) except -2
 
     cpdef list get_surface_sites(self)

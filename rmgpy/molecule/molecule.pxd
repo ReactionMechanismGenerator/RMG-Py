@@ -36,6 +36,8 @@ from rmgpy.molecule.graph cimport Vertex, Edge, Graph
 ################################################################################
 cdef dict bond_orders 
 
+cdef tuple _skip_first(in_tuple)
+
 cdef class Atom(Vertex):
 
     cdef public Element element
@@ -55,6 +57,10 @@ cdef class Atom(Vertex):
     cpdef bint is_specific_case_of(self, Vertex other) except -2
 
     cpdef Vertex copy(self)
+
+    cpdef bint is_electron(self)
+
+    cpdef bint is_proton(self)
 
     cpdef bint is_hydrogen(self)
 
@@ -89,7 +95,11 @@ cdef class Atom(Vertex):
     cpdef increment_radical(self)
 
     cpdef decrement_radical(self)
-    
+
+    cpdef increment_charge(self)
+
+    cpdef decrement_charge(self)
+
     cpdef set_lone_pairs(self, int lone_pairs)
     
     cpdef increment_lone_pairs(self)
@@ -166,6 +176,10 @@ cdef class Molecule(Graph):
 
     cpdef bint has_bond(self, Atom atom1, Atom atom2)
 
+    cpdef bint is_electron(self)
+
+    cpdef bint is_proton(self)
+
     cpdef bint contains_surface_site(self)
     
     cpdef bint is_surface_site(self)
@@ -224,14 +238,14 @@ cdef class Molecule(Graph):
                               bint raise_charge_exception=?, bint check_consistency=?)
 
     cpdef from_xyz(self, np.ndarray atomic_nums, np.ndarray coordinates, float critical_distance_factor=?, bint raise_atomtype_exception=?)
-    
-    cpdef str to_inchi(self)
 
-    cpdef str to_augmented_inchi(self)
+    cpdef str to_inchi(self, str backend=?)
 
-    cpdef str to_inchi_key(self)
+    cpdef str to_augmented_inchi(self, str backend=?)
 
-    cpdef str to_augmented_inchi_key(self)
+    cpdef str to_inchi_key(self, str backend=?)
+
+    cpdef str to_augmented_inchi_key(self, str backend=?)
 
     cpdef str to_smiles(self)
 
@@ -288,6 +302,8 @@ cdef class Molecule(Graph):
     cpdef list get_surface_sites(self)
 
     cpdef list get_adatoms(self)
+
+    cpdef bint is_multidentate(self)
 
     cpdef list get_desorbed_molecules(self)
 

@@ -29,14 +29,14 @@
 
 """
 This module provides functionality for automatic two-dimensional drawing of the
-`skeletal formulae <http://en.wikipedia.org/wiki/Skeletal_formula>`_ of a wide
+`skeletal formulae <https://en.wikipedia.org/wiki/Skeletal_formula>`_ of a wide
 variety of organic and inorganic molecules. The general method for creating
 these drawings is to utilize the :meth:`draw()` method of the :class:`Molecule`
 you wish to draw; this wraps a call to :meth:`MoleculeDrawer.draw()`, where the
 molecule drawing algorithm begins. Advanced use may require use of the
 :class:`MoleculeDrawer` class directly.
 
-The `Cairo <http://cairographics.org/>`_ 2D graphics library is used to create
+The `Cairo <https://cairographics.org/>`_ 2D graphics library is used to create
 the drawings. The :class:`MoleculeDrawer` class module will fail gracefully if
 Cairo is not installed.
 
@@ -49,6 +49,7 @@ import logging
 import math
 import os.path
 import re
+import itertools
 
 try:
     import cairocffi as cairo
@@ -60,7 +61,8 @@ except ImportError:
 import numpy as np
 from rdkit.Chem import AllChem
 
-from rmgpy.molecule.molecule import Atom, Molecule
+from rmgpy.molecule.molecule import Atom, Molecule, Bond
+from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.qm.molecule import Geometry
 
 
@@ -96,14 +98,20 @@ def create_new_surface(file_format, target=None, width=1024, height=768):
 
 ################################################################################
 
+class AdsorbateDrawingError(Exception):
+    """
+    When something goes wrong trying to draw an adsorbate.
+    """
+    pass
+
 class MoleculeDrawer(object):
     """
     This class provides functionality for drawing the skeletal formula of
     molecules using the Cairo 2D graphics engine. The most common use case is
     simply::
-    
+
         MoleculeDrawer().draw(molecule, file_format='png', path='molecule.png')
-    
+
     where ``molecule`` is the :class:`Molecule` object to draw. You can also
     pass a dict of options to the constructor to affect how the molecules are
     drawn.
@@ -176,7 +184,8 @@ class MoleculeDrawer(object):
         surface_sites = []
         for atom in self.molecule.atoms:
             if isinstance(atom, Atom) and atom.is_hydrogen() and atom.label == '':
-                atoms_to_remove.append(atom)
+                if not any(bond.is_hydrogen_bond() for bond in atom.bonds.values()):
+                    atoms_to_remove.append(atom)
             elif atom.is_surface_site():
                 surface_sites.append(atom)
         if len(atoms_to_remove) < len(self.molecule.atoms) - len(surface_sites):
@@ -199,7 +208,7 @@ class MoleculeDrawer(object):
                     self.molecule.remove_atom(atom)
             self.symbols = ['CO']
             self.molecule.atoms[0].charge = 0  # don't label the C as - if you're not drawing the O with a +
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], float)
         else:
             # Generate the coordinates to use to draw the molecule
             try:
@@ -207,7 +216,16 @@ class MoleculeDrawer(object):
                 # replace the bonds after generating coordinates. This avoids
                 # bugs with RDKit
                 old_bond_dictionary = self._make_single_bonds()
-                self._generate_coordinates()
+                if molecule.contains_surface_site():
+                    try:
+                        self._connect_surface_sites()
+                        self._generate_coordinates()
+                        self._disconnect_surface_sites()
+                    except AdsorbateDrawingError as e:
+                        self._disconnect_surface_sites()
+                        self._generate_coordinates(fix_surface_sites=False)
+                else:
+                    self._generate_coordinates()
                 self._replace_bonds(old_bond_dictionary)
 
                 # Generate labels to use
@@ -234,34 +252,34 @@ class MoleculeDrawer(object):
             # Render as H2 instead of H-H
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['H2']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], float)
         elif molecule.is_isomorphic(Molecule(smiles='[O][O]')):
             # Render as O2 instead of O-O
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.molecule.atoms[0].radical_electrons = 0
             self.symbols = ['O2']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], float)
         elif self.symbols == ['OH', 'O'] or self.symbols == ['O', 'OH']:
             # Render as HO2 instead of HO-O or O-OH
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['O2H']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], float)
         elif self.symbols == ['OH', 'OH']:
             # Render as H2O2 instead of HO-OH or O-OH
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['O2H2']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], float)
         elif self.symbols == ['O', 'C', 'O']:
             # Render as CO2 instead of O=C=O
             self.molecule.remove_atom(self.molecule.atoms[0])
             self.molecule.remove_atom(self.molecule.atoms[-1])
             self.symbols = ['CO2']
-            self.coordinates = np.array([[0, 0]], np.float64)
+            self.coordinates = np.array([[0, 0]], float)
         elif self.symbols == ['H', 'H', 'X']:
             # Render as H2::X instead of crashing on H-H::X (vdW bond)
             self.molecule.remove_atom(self.molecule.atoms[0])
             self.symbols = ['H2', 'X']
-            self.coordinates = np.array([[0, -0.5], [0, 0.5]], np.float64) * self.options['bondLength']
+            self.coordinates = np.array([[0, -0.5], [0, 0.5]], float) * self.options['bondLength']
 
         # Create a dummy surface to draw to, since we don't know the bounding rect
         # We will copy this to another surface with the correct bounding rect
@@ -323,11 +341,13 @@ class MoleculeDrawer(object):
                 if not found:
                     self.ringSystems.append([cycle])
 
-    def _generate_coordinates(self):
+    def _generate_coordinates(self, fix_surface_sites=True):
         """
-        Generate the 2D coordinates to be used when drawing the current 
+        Generate the 2D coordinates to be used when drawing the current
         molecule. The function uses rdKits 2D coordinate generation.
         Updates the self.coordinates Array in place.
+        If `fix_surface_sites` is True, then the surface sites are placed
+        at the bottom of the molecule.
         """
         atoms = self.molecule.atoms
         natoms = len(atoms)
@@ -383,26 +403,13 @@ class MoleculeDrawer(object):
                 else:
                     angle = math.atan2(vector0[0], vector0[1]) - math.pi / 2
                     rot = np.array([[math.cos(angle), math.sin(angle)],
-                                    [-math.sin(angle), math.cos(angle)]], np.float64)
+                                    [-math.sin(angle), math.cos(angle)]], float)
                     # need to keep self.coordinates and coordinates referring to the same object
                     self.coordinates = coordinates = np.dot(coordinates, rot)
-            
-            # If two atoms lie on top of each other, push them apart a bit
-            # This is ugly, but at least the mess you end up with isn't as misleading
-            # as leaving everything piled on top of each other at the origin
-            import itertools
-            for atom1, atom2 in itertools.combinations(backbone, 2):
-                i1, i2 = atoms.index(atom1), atoms.index(atom2)
-                if np.linalg.norm(coordinates[i1, :] - coordinates[i2, :]) < 0.5:
-                    coordinates[i1, 0] -= 0.3
-                    coordinates[i2, 0] += 0.3
-                    coordinates[i1, 1] -= 0.2
-                    coordinates[i2, 1] += 0.2
 
             # If two atoms lie on top of each other, push them apart a bit
             # This is ugly, but at least the mess you end up with isn't as misleading
             # as leaving everything piled on top of each other at the origin
-            import itertools
             for atom1, atom2 in itertools.combinations(backbone, 2):
                 i1, i2 = atoms.index(atom1), atoms.index(atom2)
                 if np.linalg.norm(coordinates[i1, :] - coordinates[i2, :]) < 0.5:
@@ -457,26 +464,59 @@ class MoleculeDrawer(object):
                 coordinates[:, 0] = temp[:, 1]
                 coordinates[:, 1] = temp[:, 0]
 
-        # For surface species, rotate them so the site is at the bottom.
-        if self.molecule.contains_surface_site():
+        # For surface species
+        if fix_surface_sites and self.molecule.contains_surface_site():
             if len(self.molecule.atoms) == 1:
                 return coordinates
-            for site in self.molecule.atoms:
-                if site.is_surface_site():
-                    break
-            else:
-                raise Exception("Can't find surface site")
-            if site.bonds:
-                adsorbate = next(iter(site.bonds))
-                vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adsorbate), :]
-                angle = math.atan2(vector0[0], vector0[1]) - math.pi
-                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float64)
+            sites = [atom for atom in self.molecule.atoms if atom.is_surface_site()]
+            if len(sites) == 1:
+                # rotate them so the site is at the bottom.
+                site = sites[0]
+                if site.bonds:
+                    adatom = next(iter(site.bonds))
+                    vector0 = coordinates[atoms.index(site), :] - coordinates[atoms.index(adatom), :]
+                    angle = math.atan2(vector0[0], vector0[1]) - math.pi
+                    rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
+                    self.coordinates = coordinates = np.dot(coordinates, rot)
+                else:
+                    # van der Waals
+                    index = atoms.index(site)
+                    coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
+                    coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
+            elif len(sites) <= 4:
+                # Rotate so the line of best fit through the adatoms is horizontal.
+                # find atoms bonded to sites
+                adatoms = [next(iter(site.bonds)) for site in sites]
+                adatom_indices = [atoms.index(a) for a in adatoms]
+                # find the best fit line through the bonded atoms
+                x = coordinates[adatom_indices, 0]
+                y = coordinates[adatom_indices, 1]
+                A = np.vstack([x, np.ones(len(x))]).T
+                m, c = np.linalg.lstsq(A, y, rcond=None)[0]
+                # rotate so the line is horizontal
+                angle = -math.atan(m)
+                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
                 self.coordinates = coordinates = np.dot(coordinates, rot)
+                # if the line is above the middle, flip it
+                not_site_indices = [atoms.index(a) for a in atoms if not a.is_surface_site()]
+                if coordinates[adatom_indices, 1].mean() > coordinates[not_site_indices, 1].mean():
+                    coordinates[:, 1] *= -1
+                x = coordinates[adatom_indices, 0]
+                y = coordinates[adatom_indices, 1]
+                site_y_pos = min(min(y) - 0.8, min(coordinates[not_site_indices, 1]) - 0.5)
+                if max(y) - site_y_pos > 1.5:
+                    raise AdsorbateDrawingError("Adsorbate bond too long")
+                for x1, x2 in itertools.combinations(x, 2):
+                    if abs(x1 - x2) < 0.2:
+                        raise AdsorbateDrawingError("Sites overlapping")
+                for site, x_pos in zip(sites, x):
+                    index = atoms.index(site)
+                    coordinates[index, 1] = site_y_pos
+                    coordinates[index, 0] = x_pos
+                
             else:
-                # van der waals
-                index = atoms.index(site)
-                coordinates[index, 1] = min(coordinates[:, 1]) - 0.8  # just move the site down a bit
-                coordinates[index, 0] = coordinates[:, 0].mean()  # and center it
+                # more than 4 surface sites? leave them alone
+                pass
 
     def _find_cyclic_backbone(self):
         """
@@ -593,7 +633,7 @@ class MoleculeDrawer(object):
             found = False
             common_atoms = []
             count = 0
-            center0 = np.zeros(2, np.float64)
+            center0 = np.zeros(2, float)
             for cycle1 in processed:
                 found = False
                 for atom in cycle1:
@@ -601,7 +641,7 @@ class MoleculeDrawer(object):
                         common_atoms.append(atom)
                         found = True
                 if found:
-                    center1 = np.zeros(2, np.float64)
+                    center1 = np.zeros(2, float)
                     for atom in cycle1:
                         center1 += coordinates[cycle1.index(atom), :]
                     center1 /= len(cycle1)
@@ -624,7 +664,7 @@ class MoleculeDrawer(object):
             if len(common_atoms) == 1 or len(common_atoms) == 2:
                 # Center of new cycle is reflection of center of adjacent cycle
                 # across common atom or bond
-                center = np.zeros(2, np.float64)
+                center = np.zeros(2, float)
                 for atom in common_atoms:
                     center += coordinates[self.molecule.atoms.index(atom), :]
                 center /= len(common_atoms)
@@ -638,8 +678,8 @@ class MoleculeDrawer(object):
                 index0 = self.molecule.atoms.index(common_atoms[0])
                 index1 = self.molecule.atoms.index(common_atoms[1])
                 index2 = self.molecule.atoms.index(common_atoms[2])
-                A = np.zeros((2, 2), np.float64)
-                b = np.zeros((2), np.float64)
+                A = np.zeros((2, 2), float)
+                b = np.zeros((2), float)
                 A[0, :] = 2 * (coordinates[index1, :] - coordinates[index0, :])
                 A[1, :] = 2 * (coordinates[index2, :] - coordinates[index0, :])
                 b[0] = coordinates[index1, 0] ** 2 + coordinates[index1, 1] ** 2 - coordinates[index0, 0] ** 2 - coordinates[index0, 1] ** 2
@@ -676,7 +716,7 @@ class MoleculeDrawer(object):
                 # This version assumes that no atoms belong at the origin, which is
                 # usually fine because the first ring is centered at the origin
                 if np.linalg.norm(coordinates[index, :]) < 1e-4:
-                    vector = np.array([math.cos(angle), math.sin(angle)], np.float64)
+                    vector = np.array([math.cos(angle), math.sin(angle)], float)
                     coordinates[index, :] = center + radius * vector
                 count += 1
 
@@ -686,7 +726,7 @@ class MoleculeDrawer(object):
     def _generate_straight_chain_coordinates(self, atoms):
         """
         Update the coordinates for the linear straight chain of `atoms` in
-        the current molecule. 
+        the current molecule.
         """
         coordinates = self.coordinates
 
@@ -696,14 +736,14 @@ class MoleculeDrawer(object):
 
         # Second atom goes on x-axis (for now; this could be improved!)
         index1 = self.molecule.atoms.index(atoms[1])
-        vector = np.array([1.0, 0.0], np.float64)
+        vector = np.array([1.0, 0.0], float)
         if atoms[0].bonds[atoms[1]].is_triple():
             rotate_positive = False
         else:
             rotate_positive = True
             rot = np.array([[math.cos(-math.pi / 6), math.sin(-math.pi / 6)],
-                            [-math.sin(-math.pi / 6), math.cos(-math.pi / 6)]], np.float64)
-            vector = np.array([1.0, 0.0], np.float64)
+                            [-math.sin(-math.pi / 6), math.cos(-math.pi / 6)]], float)
+            vector = np.array([1.0, 0.0], float)
             vector = np.dot(rot, vector)
         coordinates[index1, :] = coordinates[index0, :] + vector
 
@@ -740,7 +780,7 @@ class MoleculeDrawer(object):
             # Determine coordinates for atom
             if angle != 0:
                 if not rotate_positive: angle = -angle
-                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float64)
+                rot = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
                 vector = np.dot(rot, vector)
                 rotate_positive = not rotate_positive
             coordinates[index2, :] = coordinates[index1, :] + vector
@@ -780,7 +820,7 @@ class MoleculeDrawer(object):
 
                 # Determine rotation angle and matrix
                 rot = np.array([[math.cos(best_angle), -math.sin(best_angle)],
-                                [math.sin(best_angle), math.cos(best_angle)]], np.float64)
+                                [math.sin(best_angle), math.cos(best_angle)]], float)
                 # Determine the vector of any currently-existing bond from this atom
                 vector = None
                 for atom1 in atom0.bonds:
@@ -824,7 +864,7 @@ class MoleculeDrawer(object):
                     if atom1 not in backbone and np.linalg.norm(coordinates[atoms.index(atom1), :]) < 1e-4:
                         angle = start_angle + index * d_angle
                         index += 1
-                        vector = np.array([math.cos(angle), math.sin(angle)], np.float64)
+                        vector = np.array([math.cos(angle), math.sin(angle)], float)
                         vector /= np.linalg.norm(vector)
                         coordinates[atoms.index(atom1), :] = coordinates[index0, :] + vector
                         self._generate_functional_group_coordinates(atom0, atom1)
@@ -854,7 +894,7 @@ class MoleculeDrawer(object):
         # Check to see if atom1 is in any cycles in the molecule
         ring_system = None
         for ring_sys in self.ringSystems:
-            if any([atom1 in ring for ring in ring_sys]):
+            if any(atom1 in ring for ring in ring_sys):
                 ring_system = ring_sys
 
         if ring_system is not None:
@@ -873,13 +913,13 @@ class MoleculeDrawer(object):
             # Rotate the ring system coordinates so that the line connecting atom1
             # and the center of mass of the ring is parallel to that between
             # atom0 and atom1
-            center = np.zeros(2, np.float64)
+            center = np.zeros(2, float)
             for atom in cycle_atoms:
                 center += coordinates_cycle[atoms.index(atom), :]
             center /= len(cycle_atoms)
             vector0 = center - coordinates_cycle[atoms.index(atom1), :]
             angle = math.atan2(vector[1] - vector0[1], vector[0] - vector0[0])
-            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float64)
+            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], float)
             coordinates_cycle = np.dot(coordinates_cycle, rot)
 
             # Translate the ring system coordinates to the position of atom1
@@ -905,8 +945,8 @@ class MoleculeDrawer(object):
                     angle = 2 * math.pi / 3
                     # Make sure we're rotating such that we move away from the origin,
                     # to discourage overlap of functional groups
-                    rot1 = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float64)
-                    rot2 = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], np.float64)
+                    rot1 = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], float)
+                    rot2 = np.array([[math.cos(angle), math.sin(angle)], [-math.sin(angle), math.cos(angle)]], float)
                     vector1 = coordinates[index1, :] + np.dot(rot1, vector)
                     vector2 = coordinates[index1, :] + np.dot(rot2, vector)
                     if bond_angle < -0.5 * math.pi or bond_angle > 0.5 * math.pi:
@@ -915,7 +955,7 @@ class MoleculeDrawer(object):
                         angle = -abs(angle)
             else:
                 angle = 2 * math.pi / num_bonds
-            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], np.float64)
+            rot = np.array([[math.cos(angle), -math.sin(angle)], [math.sin(angle), math.cos(angle)]], float)
 
             # Iterate through each neighboring atom to this backbone atom
             # If the neighbor is not in the backbone, then we need to determine
@@ -1024,7 +1064,7 @@ class MoleculeDrawer(object):
             cycle_bonds.append(cycle[0].bonds[cycle[-1]])
             if all([bond.is_benzene() for bond in cycle_bonds]):
                 # We've found an aromatic ring, so draw a circle in the center to represent the benzene bonds
-                center = np.zeros(2, np.float64)
+                center = np.zeros(2, float)
                 for atom in cycle:
                     index = atoms.index(atom)
                     center += coordinates[index, :]
@@ -1046,7 +1086,7 @@ class MoleculeDrawer(object):
             symbol = symbols[i]
             index = atoms.index(atom)
             x0, y0 = coordinates[index, :]
-            vector = np.zeros(2, np.float64)
+            vector = np.zeros(2, float)
             for atom2 in atom.bonds:
                 vector += coordinates[atoms.index(atom2), :] - coordinates[index, :]
             heavy_first = vector[0] <= 0
@@ -1334,6 +1374,8 @@ class MoleculeDrawer(object):
                 cr.set_source_rgba(0.5, 0.0, 0.5, 1.0)
             elif heavy_atom == 'X':
                 cr.set_source_rgba(0.5, 0.25, 0.5, 1.0)
+            elif heavy_atom == 'e':
+                cr.set_source_rgba(1.0, 0.0, 1.0, 1.0)
             else:
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
 
@@ -1386,7 +1428,7 @@ class MoleculeDrawer(object):
             # Internal atom
             # First try to see if there is a "preferred" side on which to place the
             # radical/charge data, i.e. if the bonds are unbalanced
-            vector = np.zeros(2, np.float64)
+            vector = np.zeros(2, float)
             for atom1 in atom.bonds:
                 vector += self.coordinates[atoms.index(atom), :] - self.coordinates[atoms.index(atom1), :]
             if np.linalg.norm(vector) < 1e-4:
@@ -1527,7 +1569,7 @@ class MoleculeDrawer(object):
                 cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
                 cr.show_text(text)
 
-            # Draw lone electron pairs            
+            # Draw lone electron pairs
             # Draw them for nitrogen containing molecules only
             if draw_lone_pairs:
                 for i in range(atom.lone_pairs):
@@ -1624,6 +1666,40 @@ class MoleculeDrawer(object):
         for bond, order in bond_order_dictionary.items():
             bond.set_order_num(order)
 
+    def _connect_surface_sites(self):
+        """
+        Creates single bonds between atoms that are surface sites.
+        This is to help make multidentate adsorbates look better.
+        """
+        sites = [a for a in self.molecule.atoms if a.is_surface_site()]
+        if len(sites) > 4:
+            return
+        for site1 in sites:
+            other_sites = [a for a in sites if a != site1]
+            if not other_sites: break
+            # connect to the nearest site
+            site2 = min(other_sites, key=lambda a: len(find_shortest_path(site1, a)))
+            if len(find_shortest_path(site1, site2)) > 2 and len(sites) > 3:
+                # if there are more than 3 sites, don't connect sites that aren't neighbors
+                continue
+
+            bond = site1.bonds.get(site2)
+            if bond is None:
+                bond = Bond(site1, site2, 1)
+                site1.bonds[site2] = bond
+                site2.bonds[site1] = bond
+
+    def _disconnect_surface_sites(self):
+        """
+        Removes all bonds between atoms that are surface sites.
+        """
+        for site1 in self.molecule.atoms:
+            if site1.is_surface_site():
+                for site2 in list(site1.bonds.keys()): # make a list copy so we can delete from the dict
+                    if site2.is_surface_site():
+                        del site1.bonds[site2]
+                        del site2.bonds[site1]
+
 
 ################################################################################
 
@@ -1632,9 +1708,9 @@ class ReactionDrawer(object):
     This class provides functionality for drawing chemical reactions using the
     skeletal formula of each reactant and product molecule via the Cairo 2D
     graphics engine. The most common use case is simply::
-    
+
         ReactionDrawer().draw(reaction, file_format='png', path='reaction.png')
-    
+
     where ``reaction`` is the :class:`Reaction` object to draw. You can also
     pass a dict of options to the constructor to affect how the molecules are
     drawn.
@@ -1644,6 +1720,7 @@ class ReactionDrawer(object):
         self.options = MoleculeDrawer().options.copy()
         self.options.update({
             'arrowLength': 36,
+            'drawReversibleArrow': True
         })
         if options:
             self.options.update(options)
@@ -1653,7 +1730,7 @@ class ReactionDrawer(object):
         Draw the given `reaction` using the given image `file_format` - pdf, svg,
         ps, or png. If `path` is given, the drawing is saved to that location
         on disk.
-        
+
         This function returns the Cairo surface and context used to create the
         drawing, as well as a bounding box for the molecule being drawn as the
         tuple (`left`, `top`, `width`, `height`).
@@ -1744,11 +1821,30 @@ class ReactionDrawer(object):
         rxn_cr.save()
         rxn_cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
         rxn_cr.set_line_width(1.0)
-        rxn_cr.move_to(rxn_x + 8, rxn_top + 0.5 * rxn_height)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
-        rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height - 3.0)
-        rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
-        rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height + 3.0)
+        if self.options['drawReversibleArrow'] and reaction.reversible:  # draw double harpoons
+            TOP_HARPOON_Y = rxn_top + (0.5 * rxn_height - 1.75)
+            BOTTOM_HARPOON_Y = rxn_top + (0.5 * rxn_height + 1.75)
+
+            # Draw top harpoon
+            rxn_cr.move_to(rxn_x + 8, TOP_HARPOON_Y)
+            rxn_cr.line_to(rxn_x + arrow_width - 8, TOP_HARPOON_Y)
+            rxn_cr.move_to(rxn_x + arrow_width - 14, TOP_HARPOON_Y - 3.0)
+            rxn_cr.line_to(rxn_x + arrow_width - 8, TOP_HARPOON_Y)
+
+            # Draw bottom harpoon
+            rxn_cr.move_to(rxn_x + arrow_width - 8, BOTTOM_HARPOON_Y)
+            rxn_cr.line_to(rxn_x + 8, BOTTOM_HARPOON_Y)
+            rxn_cr.move_to(rxn_x + 14, BOTTOM_HARPOON_Y + 3.0)
+            rxn_cr.line_to(rxn_x + 8, BOTTOM_HARPOON_Y)
+
+            
+        else:  # draw forward arrow
+            rxn_cr.move_to(rxn_x + 8, rxn_top + 0.5 * rxn_height)
+            rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
+            rxn_cr.move_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height - 3.0)
+            rxn_cr.line_to(rxn_x + arrow_width - 8, rxn_top + 0.5 * rxn_height)
+            rxn_cr.line_to(rxn_x + arrow_width - 14, rxn_top + 0.5 * rxn_height + 3.0)
+
         rxn_cr.stroke()
         rxn_cr.restore()
         rxn_x += arrow_width

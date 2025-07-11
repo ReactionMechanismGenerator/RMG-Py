@@ -42,7 +42,7 @@ import pydot
 
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.rmg.settings import SimulatorSettings
-from rmgpy.solver.base import TerminationTime, TerminationConversion
+from rmgpy.solver.base import TerminationConversion, TerminationTime
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.tools.loader import load_rmg_job
 
@@ -115,7 +115,7 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                 raise Exception("Central species '{}' could not be found in species list.".format(centralSpecies))
 
     # Compute the rates between each pair of species (big matrix warning!)
-    species_rates = np.zeros((len(times), num_species, num_species), np.float64)
+    species_rates = np.zeros((len(times), num_species, num_species), float)
     for index, reaction in enumerate(reaction_list):
         rate = reaction_rates[:, index]
         if not reaction.pairs: reaction.generate_pairs()
@@ -308,7 +308,10 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                '-pix_fmt', 'yuv420p',  # Pixel format
                'flux_diagram.avi']  # Output filename
 
-    subprocess.check_call(command, cwd=output_directory)
+    try:
+        subprocess.run(command, check=True, capture_output=True, cwd=output_directory)
+    except subprocess.CalledProcessError as err:
+        raise RuntimeError(f"{err} {err.stderr.decode('utf8')} {err.stdout.decode('utf8')}") from err
 
 
 ################################################################################
@@ -538,10 +541,6 @@ def create_flux_diagram(input_file, chemkin_file, species_dict, save_path=None, 
     Generates the flux diagram based on a condition 'input_file', chemkin.inp chemkin_file,
     a species_dict txt file, plus an optional chemkin_output file.
     """
-
-    if java == True:
-        warnings.warn("RMG-Java loading is no longer supported and may be" \
-                      "removed in version 2.3.", DeprecationWarning)
     if species_path is None:
         species_path = os.path.join(os.path.dirname(input_file), 'species')
         generate_images = True

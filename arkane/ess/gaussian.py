@@ -35,7 +35,7 @@ Used to parse Gaussian output files
 import logging
 import math
 import os.path
-
+import re
 import numpy as np
 
 import rmgpy.constants as constants
@@ -143,7 +143,7 @@ class GaussianLog(ESSAdapter):
             while line != '':
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
-                    force = np.zeros((n_rows, n_rows), np.float64)
+                    force = np.zeros((n_rows, n_rows), float)
                     for i in range(int(math.ceil(n_rows / 5.0))):
                         # Header row
                         line = f.readline()
@@ -187,9 +187,9 @@ class GaussianLog(ESSAdapter):
         for num in number:
             mass1, _ = get_element_mass(num)
             mass.append(mass1)
-        coord = np.array(coord, np.float64)
-        number = np.array(number, np.int)
-        mass = np.array(mass, np.float64)
+        coord = np.array(coord, float)
+        number = np.array(number, int)
+        mass = np.array(mass, float)
         if len(number) == 0 or len(coord) == 0 or len(mass) == 0:
             raise LogError('Unable to read atoms from Gaussian geometry output file {0}. '
                            'Make sure the output file is not corrupt.\nNote: if your species has '
@@ -227,6 +227,10 @@ class GaussianLog(ESSAdapter):
                     logging.debug('Conformer {0} is assigned a spin multiplicity of {1}'
                                   .format(label, spin_multiplicity))
 
+                # Keep track of rotational constants as we go in case Gaussian prints ****** instead of the value
+                if 'Rotational constants (GHZ):' in line and '*****' not in line:
+                    rot_const = [float(d) for d in line.split()[-3:]]
+
                 # The data we want is in the Thermochemistry section of the output
                 if '- Thermochemistry -' in line:
                     modes = []
@@ -246,9 +250,15 @@ class GaussianLog(ESSAdapter):
 
                         # Read moments of inertia for external rotational modes
                         elif 'Rotational constants (GHZ):' in line:
-                            inertia = [float(d) for d in line.split()[-3:]]
+                            inertia = [d for d in line.split()[-3:]]
+                            for i in range(len(inertia)):
+                                if '*******' in inertia[i]:
+                                    try:  # set rotational constant to the last known value
+                                        inertia[i] = rot_const[i]
+                                    except NameError:
+                                        raise LogError('Rotational constant listed as ***** and no previous value given')
                             for i in range(3):
-                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
+                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * float(inertia[i]) * 1e9) \
                                              * constants.Na * 1e23
                             rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
@@ -309,9 +319,8 @@ class GaussianLog(ESSAdapter):
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
-
                 if 'SCF Done:' in line:
-                    e_elect = float(line.split()[4]) * constants.E_h * constants.Na
+                    e_elect = float(re.findall(r"SCF Done:  E\(.+\) \=\s+[^\s]+", line)[0].split()[-1]) * constants.E_h * constants.Na
                     elect_energy_source = 'SCF'
                 elif ' E2(' in line and ' E(' in line:
                     e_elect = float(line.split()[-1].replace('D', 'E')) * constants.E_h * constants.Na
@@ -351,7 +360,6 @@ class GaussianLog(ESSAdapter):
                     # G4MP2 calculation without opt and freq calculation
                     # Keyword in Gaussian G4MP2(SP), No zero-point or thermal energies are included.
                     e_elect = float(line.split()[2]) * constants.E_h * constants.Na
-
                 # Read the ZPE from the "E(ZPE)=" line, as this is the scaled version.
                 # Gaussian defines the following as
                 # E (0 K) = Elec + E(ZPE),
@@ -365,6 +373,17 @@ class GaussianLog(ESSAdapter):
                     start = line.find('\\ZeroPoint=') + 11
                     end = line.find('\\', start)
                     scaled_zpe = float(line[start:end]) * constants.E_h * constants.Na * zpe_scale_factor
+                
+                elif 'HF=' in line:
+                    line = line.strip() + f.readline().strip()
+                    start = line.find('HF=') + 3
+                    end = line.find('\\', start)
+                    try:
+                        if e_elect is None:
+                            e_elect = float(line[start:end]) * constants.E_h * constants.Na
+                            elect_energy_source = 'HF'
+                    except ValueError:
+                        pass
                 # Read the next line in the file
                 line = f.readline()
 
@@ -460,9 +479,9 @@ class GaussianLog(ESSAdapter):
             print(f'   Assuming {os.path.basename(self.path)} is the output from a rigid scan...')
             # For rigid scans, all of the angles are evenly spaced with a constant step size
             scan_res = math.pi / 180 * self._load_scan_angle()
-            angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, np.float64)
+            angle = np.arange(0.0, scan_res * (len(vlist) - 1) + 0.00001, scan_res, float)
         else:
-            angle = np.array(angle, np.float64)
+            angle = np.array(angle, float)
             # Convert -180 ~ 180 degrees to 0 ~ 2pi rads
             angle = (angle - angle[0])
             angle[angle < 0] += 360.0
@@ -470,7 +489,7 @@ class GaussianLog(ESSAdapter):
             angle[-1] = angle[-1] if angle[-1] > 2 * self._load_scan_angle() else angle[-1] + 360.0
             angle = angle * math.pi / 180
 
-        vlist = np.array(vlist, np.float64)
+        vlist = np.array(vlist, float)
         # check to see if the scanlog indicates that a one of your reacting species may not be
         # the lowest energy conformer
         check_conformer_energy(vlist, self.path)
@@ -505,7 +524,7 @@ class GaussianLog(ESSAdapter):
         parameters after letter_spec is found. If not specified or False, it will
         return the preceeding letters, which are typically the atom numbers.
 
-        More information about the syntax can be found http://gaussian.com/opt/
+        More information about the syntax can be found https://gaussian.com/opt/
         """
         output = []
         reached_input_spec_section = False

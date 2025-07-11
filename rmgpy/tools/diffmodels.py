@@ -344,6 +344,23 @@ def execute(chemkin1, species_dict1, thermo1, chemkin2, species_dict2, thermo2, 
     model1 = ReactionModel()
     model2 = ReactionModel()
 
+    # check if this is supposed to be comparing surface mechanisms
+    chemkin_gas1 = chemkin1.replace('.inp', '-gas.inp')
+    chemkin_surface1 = chemkin1.replace('.inp', '-surface.inp')
+    if not os.path.exists(chemkin1) and \
+            os.path.exists(chemkin_surface1) and \
+            os.path.exists(chemkin_gas1):
+        chemkin1 = chemkin_gas1
+        kwargs['surface_path1'] = chemkin_surface1
+
+    chemkin_gas2 = chemkin2.replace('.inp', '-gas.inp')
+    chemkin_surface2 = chemkin2.replace('.inp', '-surface.inp')
+    if not os.path.exists(chemkin2) and \
+            os.path.exists(chemkin_surface2) and \
+            os.path.exists(chemkin_gas2):
+        chemkin2 = chemkin_gas2
+        kwargs['surface_path2'] = chemkin_surface2
+
     try:
         surface_path1 = kwargs['surface_path1']
         surface_path2 = kwargs['surface_path2']

@@ -58,7 +58,8 @@ class Saturator(object):
         """
         new_atoms = []
         for atom in atoms:
-            if not isinstance(atom, Atom): continue
+            if isinstance(atom, CuttingLabel):
+                continue
             try:
                 max_number_of_valence_electrons = PeriodicSystem.valence_electrons[atom.symbol]
             except KeyError:
@@ -91,7 +92,7 @@ class ConsistencyChecker(object):
         the theoretical one:
 
         """
-        if atom.symbol == 'X':
+        if atom.symbol in {'X','L','R','e','H+','Li'}:
             return  # because we can't check it.
 
         valence = PeriodicSystem.valence_electrons[atom.symbol]
@@ -889,11 +890,10 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
     Convert a chemical graph defined by a list of `atoms` into a string
     adjacency list.
     """
+    if old_style:
+        warnings.warn("Support for writing old style adjacency lists has been removed in RMG-Py v3.", RuntimeWarning)
     if not atoms:
         return ''
-
-    if old_style:
-        return to_old_adjacency_list(atoms, multiplicity, label, group, remove_h)
 
     adjlist = ''
 
@@ -1139,101 +1139,3 @@ def get_old_electron_state(atom):
     else:
         raise InvalidAdjacencyListError("Cannot find electron state of atom {0}".format(atom))
     return electron_state
-
-
-def to_old_adjacency_list(atoms, multiplicity=None, label=None, group=False, remove_h=False):
-    """
-    Convert a chemical graph defined by a list of `atoms` into a string old-style 
-    adjacency list that can be used in RMG-Java.  Currently not working for groups.
-    """
-    warnings.warn("The old adjacency lists are no longer supported and may be"
-                  " removed in version 2.3.", DeprecationWarning)
-    adjlist = ''
-
-    if group:
-        raise InvalidAdjacencyListError("Not yet implemented.")
-    # Filter out all non-valid atoms
-    if not group:
-        for atom in atoms:
-            if atom.element.symbol in ['He', 'Ne', 'Ar', 'N']:
-                raise InvalidAdjacencyListError("Old-style adjacency list does not accept He, Ne, Ar, N elements.")
-
-    # Don't remove hydrogen atoms if the molecule consists only of hydrogen atoms
-    try:
-        if remove_h and all([atom.element.symbol == 'H' for atom in atoms]):
-            remove_h = False
-    except AttributeError:
-        pass
-
-    if label:
-        adjlist += label + '\n'
-
-    # Determine the numbers to use for each atom
-    atom_numbers = {}
-    index = 0
-    for atom in atoms:
-        if remove_h and atom.element.symbol == 'H' and atom.label == '': continue
-        atom_numbers[atom] = '{0:d}'.format(index + 1)
-        index += 1
-
-    atom_labels = dict([(atom, '{0}'.format(atom.label)) for atom in atom_numbers])
-
-    atom_types = {}
-    atom_electron_states = {}
-    if group:
-        raise InvalidAdjacencyListError("Not yet implemented.")
-    else:
-        for atom in atom_numbers:
-            # Atom type
-            atom_types[atom] = '{0}'.format(atom.element.symbol)
-            # Electron state(s)
-            atom_electron_states[atom] = '{0}'.format(get_old_electron_state(atom))
-
-    # Determine field widths
-    atom_number_width = max([len(s) for s in atom_numbers.values()]) + 1
-    atom_label_width = max([len(s) for s in atom_labels.values()])
-    if atom_label_width > 0:
-        atom_label_width += 1
-    atom_type_width = max([len(s) for s in atom_types.values()]) + 1
-    atom_electron_state_width = max([len(s) for s in atom_electron_states.values()])
-
-    # Assemble the adjacency list
-    for atom in atoms:
-        if atom not in atom_numbers:
-            continue
-
-        # Atom number
-        adjlist += '{0:<{1:d}}'.format(atom_numbers[atom], atom_number_width)
-        # Atom label
-        adjlist += '{0:<{1:d}}'.format(atom_labels[atom], atom_label_width)
-        # Atom type(s)
-        adjlist += '{0:<{1:d}}'.format(atom_types[atom], atom_type_width)
-        # Electron state(s)
-        adjlist += '{0:<{1:d}}'.format(atom_electron_states[atom], atom_electron_state_width)
-
-        # Bonds list
-        atoms2 = list(atom.bonds.keys())
-        # sort them the same way as the atoms
-        atoms2.sort(key=atoms.index)
-
-        for atom2 in atoms2:
-            if atom2 not in atom_numbers:
-                continue
-
-            bond = atom.bonds[atom2]
-            adjlist += ' {{{0},'.format(atom_numbers[atom2])
-
-            # Bond type(s)
-            if group:
-                if len(bond.order) == 1:
-                    adjlist += bond.get_order_str()[0]
-                else:
-                    adjlist += '{{{0}}}'.format(','.join(bond.get_order_str()))
-            else:
-                adjlist += bond.get_order_str()
-            adjlist += '}'
-
-        # Each atom begins on a new line
-        adjlist += '\n'
-
-    return adjlist

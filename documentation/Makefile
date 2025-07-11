@@ -3,7 +3,7 @@
 
 # You can set these variables from the command line.
 SPHINXOPTS    =
-SPHINXBUILD   = python-jl $$(which sphinx-build)
+SPHINXBUILD   = python $$(which sphinx-build)
 PAPER         =
 BUILDDIR      = build
 
@@ -40,20 +40,6 @@ setup_github_pages:
 # Should only need to be run once.
 	rm -rf $(BUILDDIR)/html
 	git clone --single-branch --branch gh-pages --origin official git@github.com:ReactionMechanismGenerator/RMG-Py.git build/html
-
-publish: $(BUILDDIR)/html/.git
-# Commit changes to gh-pages and push to github, to publish the results!
-	touch $(BUILDDIR)/html/.nojekyll
-ifdef COMMITMESSAGE # Use the provided COMMITMESSAGE variable for noninteractive use.
-	cd $(BUILDDIR)/html; git add -A .; git commit -m "$(COMMITMESSAGE)"; git push official gh-pages
-else # Prompt for a commit message
-	cd $(BUILDDIR)/html; git add -A .; git commit; git push official gh-pages
-endif
-
-continous_integration_setup:
-# This target is intended to be used when automatically compiling documentation with Continous Integration
-	@rm -rf $(BUILDDIR)/html
-	@git clone --single-branch --branch gh-pages --origin official https://${GH_TOKEN}@github.com/ReactionMechanismGenerator/RMG-Py.git $(BUILDDIR)/html
 
 clean:
 # set aside the git repository info used to push pages to github

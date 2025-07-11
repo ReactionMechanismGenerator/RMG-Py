@@ -408,19 +408,28 @@ class QMMolecule(object):
         parser = self.get_parser(self.output_file_path)
         parser.logger.setLevel(
             logging.ERROR
-        )  # cf. http://cclib.sourceforge.net/wiki/index.php/Using_cclib#Additional_information
-        parser.rotcons = (
+        )  # cf. https://cclib.github.io/index.html#how-to-use-cclib
+        parser.molmass = None # give it an attribute and it won't delete it, leaving it on the parser object
+        parser.rotcons = (  # for cclib < 1.8.0
             []
-        )  # give it an attribute and it won't delete it, leaving it on the parser object
-        parser.molmass = None  # give it an attribute and it won't delete it, leaving it on the parser object
-        cclib_data = parser.parse()
+        )
+        parser.rotconsts = (  # for cclib >= 1.8.0
+            []
+        )
+        cclib_data = parser.parse()  # fills in either parser.rotcons or parser.rotconsts but not both
+        assert bool(parser.rotconsts) != bool(parser.rotcons)
+        if parser.rotcons:  # for cclib < 1.8.0
+            cclib_data.rotcons = (
+                parser.rotcons
+            )
+        else:  # for cclib >= 1.8.0
+            cclib_data.rotconsts = (
+                parser.rotconsts
+            )
         radical_number = self.molecule.get_radical_count()
-        cclib_data.rotcons = (
-            parser.rotcons
-        )  # this hack required because rotcons not part of a default cclib data object
         cclib_data.molmass = (
             parser.molmass
-        )  # this hack required because rotcons not part of a default cclib data object
+        )  # this hack required because molmass is not part of a default cclib data object
         qm_data = parse_cclib_data(
             cclib_data, radical_number + 1
         )  # Should `radical_number+1` be `self.molecule.multiplicity` in the next line of code? It's the electronic ground state degeneracy.
@@ -520,11 +529,11 @@ class QMMolecule(object):
         self.qm_data = local_context["qmData"]
         return thermo
 
-    def get_augmented_inchi_key(self):
+    def get_augmented_inchi_key(self, backend='rdkit-first'):
         """
         Returns the augmented InChI from self.molecule
         """
-        return self.molecule.to_augmented_inchi_key()
+        return self.molecule.to_augmented_inchi_key(backend=backend)
 
     def get_mol_file_path_for_calculation(self, attempt):
         """

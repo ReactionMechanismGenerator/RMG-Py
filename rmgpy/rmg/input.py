@@ -35,22 +35,35 @@ import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.base import Entry
+from rmgpy.data.solvation import SolventData
+from rmgpy.data.surface import MetalDatabase
+from rmgpy.data.vaporLiquidMassTransfer import (
+    liquidVolumetricMassTransferCoefficientPowerLaw,
+)
 from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
+from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
-from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
+from rmgpy.quantity import Energy, Quantity, RateCoefficient, SurfaceConcentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.rmg.reactionmechanismsimulator_reactors import (
+    ConstantTLiquidSurfaceReactor,
+    ConstantTPIdealGasReactor,
+    ConstantTVLiquidReactor,
+    ConstantVIdealGasReactor,
+    Reactor,
+)
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
-from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.termination import (
+    TerminationConversion,
+    TerminationRateRatio,
+    TerminationTime,
+)
 from rmgpy.util import as_list
-from rmgpy.data.surface import MetalDatabase
-from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
-from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
-from rmgpy.molecule.fragment import Fragment
 
 ################################################################################
 
@@ -67,6 +80,7 @@ def database(
         kineticsFamilies='default',
         kineticsDepositories='default',
         kineticsEstimator='rate rules',
+        adsorptionGroups='adsorptionPt111'
 ):
     # This function just stores the information about the database to be loaded
     # We don't actually load the database until after we're finished reading
@@ -101,6 +115,7 @@ def database(
                              "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kinetics_families = kineticsFamilies
 
+    rmg.adsorption_groups = adsorptionGroups
 
 def catalyst_properties(bindingEnergies=None,
                         surfaceSiteDensity=None,
@@ -631,7 +646,10 @@ def liquid_cat_reactor(temperature,
                    initialConcentrations,
                    initialSurfaceCoverages,
                    surfaceVolumeRatio,
-                   potential=None,
+                   distance=None,
+                   viscosity=None,
+                   surfPotential=None,
+                   liqPotential=None,
                    terminationConversion=None,
                    terminationTime=None,
                    terminationRateRatio=None,
@@ -707,11 +725,19 @@ def liquid_cat_reactor(temperature,
         initialCondSurf[key] = item*rmg.surface_site_density.value_si*A
     initialCondSurf["T"] = T
     initialCondSurf["A"] = A
-    if potential:
-        initialCondSurf["phi"] = Quantity(potential).value_si
+    initialCondSurf["d"] = 0.0
+    if surfPotential:
+        initialCondSurf["Phi"] = Quantity(surfPotential).value_si
+    if liqPotential:
+        initialCondLiq["Phi"] = Quantity(liqPotential).value_si
+    if distance:
+        initialCondLiq["d"] = Quantity(distance).value_si
+    if viscosity:
+        initialCondLiq["mu"] = Quantity(distance).value_si
     system = ConstantTLiquidSurfaceReactor(rmg.reaction_model.core.phase_system,
                                            rmg.reaction_model.edge.phase_system,
-                                           {"liquid":initialCondLiq,"surface":initialCondSurf},termination,constantSpecies)
+                                           {"liquid":initialCondLiq,"surface":initialCondSurf},
+                                           termination,constantSpecies)
     system.T = Quantity(T)
     system.Trange = None
     system.sensitive_species = []
@@ -1136,11 +1162,18 @@ def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.simulator_settings_list.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
 
 
-def solvation(solvent):
+def solvation(solvent,solventData=None):
     # If solvation module in input file, set the RMG solvent variable
-    if not isinstance(solvent, str):
-        raise InputError("solvent should be a string like 'water'")
-    rmg.solvent = solvent
+    #either a string corresponding to the solvent database or a olvent object
+    if isinstance(solvent, str):
+        rmg.solvent = solvent
+    else:
+        raise InputError("Solvent not specified properly, solvent must be string")
+
+    if isinstance(solventData, SolventData) or solventData is None:
+        rmg.solvent_data = solventData
+    else:
+        raise InputError("Solvent not specified properly, solventData must be None or SolventData object")
 
 
 def model(toleranceMoveToCore=None, toleranceRadMoveToCore=np.inf,
@@ -1343,7 +1376,7 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
                         "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
                         "restarting an RMG job see the documentation for restarting from a seed mechanism at "
-                        "http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
+                        "https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
 
     rmg.name = name
     rmg.generate_seed_each_iteration = generateSeedEachIteration
@@ -1427,7 +1460,7 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
 def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None):
     parent_dir = os.path.dirname(rmg.input_file)
     rmg.restart = True
-    doc_link = 'http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
+    doc_link = 'https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
 
     if path:
         if any((coreSeed, edgeSeed, filters, speciesMap)):
@@ -1539,6 +1572,7 @@ def read_input_file(path, rmg0):
         'mbsampledReactor': mb_sampled_reactor,
         'simulator': simulator,
         'solvation': solvation,
+        'SolventData' : SolventData,
         'liquidVolumetricMassTransferCoefficientPowerLaw': liquid_volumetric_mass_transfer_coefficient_power_law,
         'model': model,
         'quantumMechanics': quantum_mechanics,

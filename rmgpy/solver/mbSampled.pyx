@@ -262,9 +262,9 @@ cdef class MBSampledReactor(ReactionSystem):
                     self.pdep_specific_collider_kinetics.append(rxn.kinetics)
                     self.specific_collider_species.append(rxn.specific_collider)
 
-        self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, np.int)
-        self.collider_efficiencies = np.array(collider_efficiencies, np.float64)
-        self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, np.int)
+        self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, int)
+        self.collider_efficiencies = np.array(collider_efficiencies, float)
+        self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, int)
 
     def set_initial_conditions(self):
         """
@@ -295,7 +295,7 @@ cdef class MBSampledReactor(ReactionSystem):
 
     @cython.boundscheck(False)
     def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
-                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, np.float64)):
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
         """
         Return the residual function for the governing DAE system for the
         simple reaction system.
@@ -357,7 +357,7 @@ cdef class MBSampledReactor(ReactionSystem):
         inet = self.network_indices
         knet = self.network_leak_coefficients
 
-        res = np.zeros(num_core_species, np.float64)
+        res = np.zeros(num_core_species, float)
 
         core_species_concentrations = np.zeros_like(self.core_species_concentrations)
         core_species_rates = np.zeros_like(self.core_species_rates)

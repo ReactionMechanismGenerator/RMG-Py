@@ -45,10 +45,11 @@ class ESSAdapter(ABC):
     An abstract ESS Adapter class
     """
 
-    def __init__(self, path, check_for_errors=True):
+    def __init__(self, path, check_for_errors=True, scratch_directory=None):
         self.path = path
         if check_for_errors:
             self.check_for_errors()
+        self.scratch_directory = scratch_directory if scratch_directory is not None else os.path.join(os.path.abspath('.'), str('scratch'))
 
     @abstractmethod
     def check_for_errors(self):
@@ -174,7 +175,7 @@ class ESSAdapter(ABC):
         coordinates, atom_numbers, _ = self.load_geometry()
         unique_id = '0'  # Just some name that the SYMMETRY code gives to one of its jobs
         # Scratch directory that the SYMMETRY code writes its files in:
-        scr_dir = os.path.join(os.path.abspath('.'), str('scratch'))
+        scr_dir = self.scratch_directory
         if not os.path.exists(scr_dir):
             os.makedirs(scr_dir)
         try:

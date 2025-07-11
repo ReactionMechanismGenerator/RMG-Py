@@ -254,7 +254,6 @@ GLOBALS1 = {
     # rmgpy.tools.loader
     'loadRMGJob': 'load_rmg_job',
     'loadRMGPyJob': 'load_rmg_py_job',
-    'loadRMGJavaJob': 'load_rmg_java_job',
     # rmgpy.tools.plot
     'parseCSVData': 'parse_csv_data',
     'findNearest': 'find_nearest',

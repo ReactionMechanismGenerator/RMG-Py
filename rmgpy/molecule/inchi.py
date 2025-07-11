@@ -30,6 +30,7 @@
 import itertools
 import re
 import warnings
+from operator import itemgetter
 
 import cython
 from rdkit import Chem
@@ -367,44 +368,6 @@ def _get_unpaired_electrons(mol):
     return sorted(locations)
 
 
-def _generate_minimum_resonance_isomer(mol):
-    """
-    Select the resonance isomer that is isomorphic to the parameter isomer, with the lowest unpaired
-    electrons descriptor.
-
-    First, we generate all isomorphic resonance isomers.
-    Next, we return the candidate with the lowest unpaired electrons metric.
-
-    The metric is a sorted list with indices of the atoms that bear an unpaired electron
-
-    This function is currently deprecated since InChI effectively eliminates resonance,
-    see InChI, the IUPAC International Chemical Identifier, J. Cheminform 2015, 7, 23, doi: 10.1186/s13321-015-0068-4
-    """
-
-    cython.declare(
-        candidates=list,
-        sel=Molecule,
-        cand=Molecule,
-        metric_sel=list,
-        metric_cand=list,
-    )
-
-    warnings.warn("The _generate_minimum_resonance_isomer method is no longer used"
-                    " and may be removed in RMG version 2.3.", DeprecationWarning)
-
-    candidates = resonance.generate_isomorphic_resonance_structures(mol, saturate_h=True)
-
-    sel = candidates[0]
-    metric_sel = _get_unpaired_electrons(sel)
-    for cand in candidates[1:]:
-        metric_cand = _get_unpaired_electrons(cand)
-        if metric_cand < metric_sel:
-            sel = cand
-            metric_sel = metric_cand
-
-    return sel
-
-
 def _compute_agglomerate_distance(agglomerates, mol):
     """
     Iterates over a list of lists containing atom indices.
@@ -640,19 +603,19 @@ def create_augmented_layers(mol):
     else:
         molcopy = mol.copy(deep=True)
 
+        rdkitmol = to_rdkit_mol(molcopy, remove_h=True)
+        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
+
         hydrogens = [at for at in molcopy.atoms if at.number == 1]
         for h in hydrogens:
             molcopy.remove_atom(h)
-
-        rdkitmol = to_rdkit_mol(molcopy)
-        _, auxinfo = Chem.MolToInchiAndAuxInfo(rdkitmol, options='-SNon')  # suppress stereo warnings
 
         # extract the atom numbers from N-layer of auxiliary info:
         atom_indices = _parse_n_layer(auxinfo)
         atom_indices = [atom_indices.index(i + 1) for i, atom in enumerate(molcopy.atoms)]
 
         # sort the atoms based on the order of the atom indices
-        molcopy.atoms = [x for (y, x) in sorted(zip(atom_indices, molcopy.atoms), key=lambda pair: pair[0])]
+        molcopy.atoms = [x for (y, x) in sorted(zip(atom_indices, molcopy.atoms), key=itemgetter(0))]
 
         ulayer = _create_u_layer(molcopy, auxinfo)
 
@@ -742,17 +705,15 @@ def _convert_3_atom_2_bond_path(start, mol):
     """
     from rmgpy.data.kinetics.family import ReactionRecipe
 
-    def is_valid(mol):
-        """Check if total bond order of oxygen atoms is smaller than 4."""
-
-        for at in mol.atoms:
-            if at.number == 8:
-                order = at.get_total_bond_order()
-                not_correct = order >= 4
-                if not_correct:
-                    return False
-
-        return True
+    # Check if total bond order of oxygen atoms is smaller than 4
+    is_mol_valid = True
+    for at in mol.atoms:
+        if at.number == 8:
+            order = at.get_total_bond_order()
+            not_correct = order >= 4
+            if not_correct:
+                is_mol_valid = False
+                break
 
     paths = pathfinder.find_allyl_end_with_charge(start)
 
@@ -777,7 +738,7 @@ def _convert_3_atom_2_bond_path(start, mol):
         end.charge += 1 if end.charge < 0 else -1
         recipe.apply_forward(mol)
 
-        if is_valid(mol):
+        if is_mol_valid:
             # unlabel atoms so that they never cause trouble downstream
             for i, at in enumerate(path[::2]):
                 at.label = ''

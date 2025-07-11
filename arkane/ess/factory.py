@@ -61,6 +61,7 @@ def register_ess_adapter(ess: str,
 
 def ess_factory(fullpath: str,
                 check_for_errors: bool = True,
+                scratch_directory: str = None,
                 ) -> Type[ESSAdapter]:
     """
     A factory generating the ESS adapter corresponding to ``ess_adapter``.
@@ -106,4 +107,4 @@ def ess_factory(fullpath: str,
         raise InputError(f'The file at {fullpath} could not be identified as a '
                          f'Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem log file.')
 
-    return _registered_ess_adapters[ess_name](path=fullpath, check_for_errors=check_for_errors)
+    return _registered_ess_adapters[ess_name](path=fullpath, check_for_errors=check_for_errors, scratch_directory=scratch_directory)

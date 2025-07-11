@@ -19,7 +19,7 @@ database(
     thermoLibraries=['BurkeH2O2', 'primaryThermoLibrary', 'DFT_QCI_thermo', 'CBS_QB3_1dHR'],
     # overrides RMG transport calculations with these values.
     # if species exist in multiple libraries, the earlier libraries overwrite the previous values
-    transportLibraries=['PrimaryTransportLibrary.py'],
+    transportLibraries=['PrimaryTransportLibrary'],
     # overrides RMG kinetics estimation if needed in the core of RMG.
     # list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/
     # libraries can be input as either a string or tuple of form ('library_name',True/False)

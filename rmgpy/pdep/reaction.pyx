@@ -308,13 +308,13 @@ def apply_inverse_laplace_transform_method(transition_state,
                                 and abs(dens_states[r - m, s]) > 1e-12 \
                                 and abs(dens_states[r - m - 1, s]) > 1e-12:
                             num = dens_states[r - m, s] * (dens_states[r - m - 1, s] / dens_states[r - m, s]) \
-                                  ** (-rem / (e_list[r - m - 1] - e_list[r - m]))
+                                  ** (-rem / (e_list[r - m - 1] - e_list[r - m])).real
                             k[r, s] = freq_factor * num / dens_states[r, s]
 
         elif n >= n_crit:
             import scipy.special
             # Evaluate the inverse Laplace transform of the T**n exp(-Ea/RT) piece, which only exists for n >= 0
-            phi0 = np.zeros(n_grains, np.float64)
+            phi0 = np.zeros(n_grains, float)
             for r in range(n_grains):
                 energy = e_list[r] - e_list[0] - e_a
                 if energy > 1:

@@ -49,16 +49,24 @@ Currently supported resonance types:
     - ``generate_kekule_structure``: generate a single Kekule structure for an aromatic compound (single/double bond form)
     - ``generate_opposite_kekule_structure``: for monocyclic aromatic species, rotate the double bond assignment
     - ``generate_clar_structures``: generate all structures with the maximum number of pi-sextet assignments
+- Multidentate adsorbates only
+    - ``generate_adsorbate_shift_down_resonance_structures``: shift 2 electrons from a C=/#C bond to the X-C bond
+    - ``generate_adsorbate_shift_up_resonance_structures``: shift 2 electrons from a X=/#C bond to a C-C bond
+    - ``generate_adsorbate_conjugate_resonance_structures``: shift 2 electrons in a conjugate pi system for bridged X-C-C-C-X adsorbates
 """
 
 import logging
+from operator import attrgetter
 
 import cython
+import numpy as np
+from scipy.optimize import Bounds, LinearConstraint, milp
 
 import rmgpy.molecule.filtration as filtration
 import rmgpy.molecule.pathfinder as pathfinder
-from rmgpy.exceptions import ILPSolutionError, KekulizationError, AtomTypeError, ResonanceError
+from rmgpy.exceptions import AtomTypeError, KekulizationError, ResonanceError
 from rmgpy.molecule.adjlist import Saturator
+from rmgpy.molecule.fragment import CuttingLabel
 from rmgpy.molecule.graph import Vertex
 from rmgpy.molecule.kekulize import kekulize
 from rmgpy.molecule.molecule import Atom, Bond, Molecule
@@ -86,6 +94,9 @@ def populate_resonance_algorithms(features=None):
             generate_aryne_resonance_structures,
             generate_kekule_structure,
             generate_clar_structures,
+            generate_adsorbate_shift_down_resonance_structures,
+            generate_adsorbate_shift_up_resonance_structures,
+            generate_adsorbate_conjugate_resonance_structures
         ]
     else:
         # If the molecule is aromatic, then radical resonance has already been considered
@@ -109,7 +120,10 @@ def populate_resonance_algorithms(features=None):
                 # solution. A more holistic approach would be to identify these cases in generate_resonance_structures,
                 # and pass a list of forbidden atom ID's to find_lone_pair_multiple_bond_paths.
                 method_list.append(generate_lone_pair_multiple_bond_resonance_structures)
-
+        if features['is_multidentate']:
+            method_list.append(generate_adsorbate_shift_down_resonance_structures)
+            method_list.append(generate_adsorbate_shift_up_resonance_structures)
+            method_list.append(generate_adsorbate_conjugate_resonance_structures)
     return method_list
 
 
@@ -129,6 +143,7 @@ def analyze_molecule(mol, save_order=False):
                 'is_aryl_radical': False,
                 'hasNitrogenVal5': False,
                 'hasLonePairs': False,
+                'is_multidentate': mol.is_multidentate(),
                 }
 
     if features['is_cyclic']:
@@ -827,7 +842,7 @@ def generate_kekule_structure(mol):
     cython.declare(atom=Vertex, molecule=Graph)
 
     for atom in mol.atoms:
-        if not isinstance(atom, Atom):
+        if isinstance(atom,CuttingLabel):
             continue
         if atom.atomtype.label == 'Cb' or atom.atomtype.label == 'Cbf':
             break
@@ -904,8 +919,7 @@ def generate_clar_structures(mol, save_order=False):
 
     Returns a list of :class:`Molecule` objects corresponding to the Clar structures.
     """
-    cython.declare(output=list, mol_list=list, new_mol=Graph, aromatic_rings=list, bonds=list, solution=list,
-                   y=list, x=list, index=cython.int, bond=Edge, ring=list)
+    cython.declare(output=list, mol_list=list, new_mol=Graph, aromatic_rings=list, bonds=list, index=cython.int, bond=Edge, ring=list)
 
     if not mol.is_cyclic():
         return []
@@ -915,19 +929,18 @@ def generate_clar_structures(mol, save_order=False):
         mol.assign_atom_ids()
 
     try:
-        output = _clar_optimization(mol, save_order=save_order)
-    except ILPSolutionError:
+        solutions = _clar_optimization(mol, save_order=save_order)
+    except (RuntimeError, ValueError):  # either a crash during optimization or the result was an empty tuple
         # The optimization algorithm did not work on the first iteration
         return []
 
     mol_list = []
 
-    for new_mol, aromatic_rings, bonds, solution in output:
-
+    for new_mol, aromatic_rings, bonds, solution in solutions:
         # The solution includes a part corresponding to rings, y, and a part corresponding to bonds, x, using
         # nomenclature from the paper. In y, 1 means the ring as a sextet, 0 means it does not.
         # In x, 1 corresponds to a double bond, 0 either means a single bond or the bond is part of a sextet.
-        y = solution[0:len(aromatic_rings)]
+        y = solution[:len(aromatic_rings)]
         x = solution[len(aromatic_rings):]
 
         # Apply results to molecule - double bond locations first
@@ -937,182 +950,310 @@ def generate_clar_structures(mol, save_order=False):
             elif x[index] == 1:
                 bond.order = 2  # double
             else:
-                raise ValueError('Unaccepted bond value {0} obtained from optimization.'.format(x[index]))
+                raise ValueError(f'Unaccepted bond value {x[index]} obtained from optimization.')
 
         # Then apply locations of aromatic sextets by converting to benzene bonds
         for index, ring in enumerate(aromatic_rings):
             if y[index] == 1:
-                _clar_transformation(new_mol, ring)
+                for i, atom_1 in enumerate(ring):
+                    for j, atom_2 in enumerate(ring):
+                        if new_mol.has_bond(atom_1, atom_2):
+                            new_mol.get_bond(atom_1, atom_2).order = 1.5
 
         try:
             new_mol.update_atomtypes()
         except AtomTypeError:
             pass
-        else:
+        finally:
             mol_list.append(new_mol)
 
     return mol_list
 
+# helper functions for sorting
+def _sum_atom_ids(atom_list):
+    return sum(atom.id for atom in atom_list)
 
-def _clar_optimization(mol, constraints=None, max_num=None, save_order=False):
+def _tuplize_bond(bond):
+    return (bond.atom1.id, bond.atom2.id)
+
+
+def _clar_optimization(mol, recursion_constraints=None, clar_number=-1, save_order=False):
     """
-    Implements linear programming algorithm for finding Clar structures. This algorithm maximizes the number
-    of Clar sextets within the constraints of molecular geometry and atom valency.
+    Implements Mixed Integer Linear Programming for finding Clar structures.
+
+    First finds the Clar number (and an arbitrary structure with that number), then recursively
+    calls itself to enumerate more structures with that Clar number. No guarantees about
+    which structures will be found, or how many (we stop solving once solution would require
+    branching, which typically happens after at least a couple have already been found).
 
     Returns a list of valid Clar solutions in the form of a tuple, with the following entries:
-        [0] Molecule object
+        [0] Copy of mol
         [1] List of aromatic rings
         [2] List of bonds
-        [3] Optimization solution
+        [3] Solution vector
 
-    The optimization solution is a list of boolean values with sextet assignments followed by double bond assignments,
-    with indices corresponding to the list of aromatic rings and list of bonds, respectively.
+    The solution vector is a binary integer list of length (# aromatic rings + # bonds) indicating
+    if each ring is aromatic and if each bond is double.
 
-    Method adapted from:
-        Hansen, P.; Zheng, M. The Clar Number of a Benzenoid Hydrocarbon and Linear Programming.
-            J. Math. Chem. 1994, 15 (1), 93–107.
+    This implementation follows the original implementation very closely (Hansen, P.; Zheng, M. The
+    Clar Number of a Benzenoid Hydrocarbon and Linear Programming. J. Math. Chem. 1994, 15 (1), 93–107.)
+    with only slight modifications to prevent changing bond orders for exocyclic atoms.
     """
-    cython.declare(molecule=Graph, aromatic_rings=list, exo=list, l=cython.int, m=cython.int, n=cython.int,
-                   a=list, objective=list, status=cython.int, solution=list, innerSolutions=list)
+    cython.declare(
+        molecule=Graph,
+        aromatic_rings=list,
+        exo_info=list,
+        n_ring=cython.int,
+        n_atom=cython.int,
+        n_bond=cython.int,
+        A=list,
+        solutions=list,
+    )
 
-    from lpsolve55 import lpsolve
-
-    # Make a copy of the molecule so we don't destroy the original
+    # after we find all the Clar structures we will modify the molecule bond orders to be aromatic,
+    # so we make explicit copies to avoid overwrites.
     molecule = mol.copy(deep=True)
 
     aromatic_rings = molecule.get_aromatic_rings(save_order=save_order)[0]
-    aromatic_rings.sort(key=lambda x: sum([atom.id for atom in x]))
 
-    if not aromatic_rings:
+    # doesn't work for system without aromatic rings, just exit
+    if len(aromatic_rings) == 0:
         return []
 
-    # Get list of atoms that are in rings
+    # stability between multiple runs
+    aromatic_rings.sort(key=_sum_atom_ids)
+
+    # Cython doesn't allow mutable defaults, so we just set it here instead
+    if recursion_constraints is None:
+        recursion_constraints = []
+
+    # Get set of atoms that are in rings
     atoms = set()
     for ring in aromatic_rings:
         atoms.update(ring)
-    atoms = sorted(atoms, key=lambda x: x.id)
+    atoms = sorted(atoms, key=attrgetter('id'))
 
-    # Get list of bonds involving the ring atoms, ignoring bonds to hydrogen
+    # Get set of bonds involving the ring atoms, ignoring bonds to hydrogen
     bonds = set()
     for atom in atoms:
         bonds.update([atom.bonds[key] for key in atom.bonds.keys() if key.is_non_hydrogen()])
-    bonds = sorted(bonds, key=lambda x: (x.atom1.id, x.atom2.id))
+    bonds = sorted(bonds, key=_tuplize_bond)
 
-    # Identify exocyclic bonds, and save their bond orders
-    exo = []
+    # identify exocyclic bonds, and save their order if exocyclic
+    exo_info = []
     for bond in bonds:
         if bond.atom1 not in atoms or bond.atom2 not in atoms:
+            # save order for exocyclic
             if bond.is_double():
-                exo.append(1)
+                exo_info.append(1)
             else:
-                exo.append(0)
-        else:
-            exo.append(None)
+                exo_info.append(0)
+        else:  # not exocyclic
+            exo_info.append(None)
 
     # Dimensions
-    l = len(aromatic_rings)
-    m = len(atoms)
-    n = l + len(bonds)
+    n_ring = len(aromatic_rings)
+    n_atom = len(atoms)
+    n_bond = len(bonds)
+
+    # The aromaticity assignment problem is formulated as an MILP problem
+    # minimize:
+    #       c @ x
+    # such that
+    #       b_l <= A @ x <= b_u
+    #       l <= x <= u
+    #       x are integers
 
     # Connectivity matrix which indicates which rings and bonds each atom is in
-    # Part of equality constraint Ax=b
-    a = []
+    # Part of equality constraint A_eq @ x = b_eq
+    A = []
     for atom in atoms:
         in_ring = [1 if atom in ring else 0 for ring in aromatic_rings]
         in_bond = [1 if atom in [bond.atom1, bond.atom2] else 0 for bond in bonds]
-        a.append(in_ring + in_bond)
+        A.append(in_ring + in_bond)
+    initial_constraint = [LinearConstraint(  # i.e. an equality constraint
+        A=np.array(A, dtype=int), lb=np.ones(n_atom, dtype=int), ub=np.ones(n_atom, dtype=int)
+    )]
+
+    # on recursive calls we already know the Clar number, so we can additionally constrain the system
+    # to only find structures with this number. Allows detecting when all formulae have been found and,
+    # in theory, should solve faster
+    if clar_number != -1:
+        initial_constraint += [
+            LinearConstraint(
+                A=np.array([1] * n_ring + [0] * n_bond),
+                ub=clar_number,
+                lb=clar_number,
+            ),
+        ]
 
     # Objective vector for optimization: sextets have a weight of 1, double bonds have a weight of 0
-    objective = [1] * l + [0] * len(bonds)
+    # we negate because the original problem is formulated as maximization, whereas SciPy only does min
+    c = -np.array([1] * n_ring + [0] * n_bond, dtype=int)
 
-    # Solve LP problem using lpsolve
-    lp = lpsolve('make_lp', m, n)               # initialize lp with constraint matrix with m rows and n columns
-    lpsolve('set_verbose', lp, 2)               # reduce messages from lpsolve
-    lpsolve('set_obj_fn', lp, objective)        # set objective function
-    lpsolve('set_maxim', lp)                    # set solver to maximize objective
-    lpsolve('set_mat', lp, a)                   # set left hand side to constraint matrix
-    lpsolve('set_rh_vec', lp, [1] * m)          # set right hand side to 1 for all constraints
-    for i in range(m):                          # set all constraints as equality constraints
-        lpsolve('set_constr_type', lp, i + 1, '=')
-    lpsolve('set_binary', lp, [True] * n)       # set all variables to be binary
+    # variable bounds
+    # - binary problem, so everything must be either zero or one
+    # - rings are simply 0 or 1
+    # - bonds are also 0 or 1, except exocyclic bonds which must remain unchanged
+    bounds = Bounds(
+        lb=np.array([0] * n_ring + [0 if b is None else b for b in exo_info], dtype=int),
+        ub=np.array([1] * n_ring + [1 if b is None else b for b in exo_info], dtype=int),
+    )
 
-    # Constrain values of exocyclic bonds, since we don't want to modify them
-    for i in range(l, n):
-        if exo[i - l] is not None:
-            # NOTE: lpsolve indexes from 1, so the variable we're changing should be i + 1
-            lpsolve('set_bounds', lp, i + 1, exo[i - l], exo[i - l])
+    result = milp(
+        c=c,
+        integrality=1,
+        bounds=bounds,
+        constraints=initial_constraint + recursion_constraints,
+        options={'time_limit': 10},
+    )
 
-    # Add constraints to problem if provided
-    if constraints is not None:
-        for constraint in constraints:
-            try:
-                lpsolve('add_constraint', lp, constraint[0], '<=', constraint[1])
-            except Exception as e:
-                logging.debug('Unable to add constraint: {0} <= {1}'.format(constraint[0], constraint[1]))
-                logging.debug(mol.to_adjacency_list())
-                if str(e) == 'invalid vector.':
-                    raise ILPSolutionError('Unable to add constraint, likely due to '
-                                           'inconsistent aromatic ring perception.')
-                else:
-                    raise
+    if (status := result.status) != 0:
+        if status == 2:  # infeasible
+            raise RuntimeError("All valid Clar formulae have been enumerated!")
+        else:
+            raise RuntimeError(f"Optimization failed (Exit Code {status}) for an unexpected reason '{result.message}'")
 
-    status = lpsolve('solve', lp)
-    obj_val, solution = lpsolve('get_solution', lp)[0:2]
-    lpsolve('delete_lp', lp)  # Delete the LP problem to clear up memory
+    _clar_number, solution = -result.fun, result.x
 
-    # Check that optimization was successful
-    if status != 0:
-        raise ILPSolutionError('Optimization could not find a valid solution.')
-
-    # Check that we the result contains at least one aromatic sextet
-    if obj_val == 0:
+    # optimization may have reached a bad local minimum - this case is rare
+    if _clar_number == 0:
         return []
 
-    # Check that the solution contains the maximum number of sextets possible
-    if max_num is None:
-        max_num = obj_val  # This is the first solution, so the result should be an upper limit
-    elif obj_val < max_num:
-        raise ILPSolutionError('Optimization obtained a sub-optimal solution.')
-
+    # on later runs, non-integer solutions occur - branching might be able to find actual solutions,
+    # but we just call it good enough here
     if any([x != 1 and x != 0 for x in solution]):
-        raise ILPSolutionError('Optimization obtained a non-integer solution.')
+        raise RuntimeError("Optimization obtained a non-integer solution - no more formulae will be enumerated.")
 
-    # Generate constraints based on the solution obtained
-    y = solution[0:l]
-    new_a = y + [0] * len(bonds)
-    new_b = sum(y) - 1
-    if constraints is not None:
-        constraints.append((new_a, new_b))
-    else:
-        constraints = [(new_a, new_b)]
+    # first solution, so the result should be an upper limit
+    if clar_number == -1:
+        clar_number = _clar_number
+
+    selected_sextets = list(solution[:n_ring])
+    # restrict those rings which were selected for the current clar structure
+    # from forming it again by requiring that their sum is 1 less than it used
+    # to be
+    recursion_constraints += [
+        LinearConstraint(
+            A=np.array(selected_sextets + [0] * n_bond),
+            ub=clar_number - 1,
+            lb=0,
+        ),
+    ]
 
     # Run optimization with additional constraints
     try:
-        inner_solutions = _clar_optimization(mol, constraints=constraints, max_num=max_num, save_order=save_order)
-    except ILPSolutionError:
+        inner_solutions = _clar_optimization(mol, recursion_constraints=recursion_constraints, clar_number=clar_number, save_order=save_order)
+    except RuntimeError as e:
+        logging.debug(f"Clar Optimization stopped: {e}")
         inner_solutions = []
 
     return inner_solutions + [(molecule, aromatic_rings, bonds, solution)]
 
 
-def _clar_transformation(mol, aromatic_ring):
+def generate_adsorbate_shift_down_resonance_structures(mol):
     """
-    Performs Clar transformation for given ring in a molecule, ie. conversion to aromatic sextet.
-
-    Args:
-        mol             a :class:`Molecule` object
-        aromaticRing    a list of :class:`Atom` objects corresponding to an aromatic ring in mol
-
-    This function directly modifies the input molecule and does not return anything.
+    Generate all of the resonance structures formed by the shift a pi bond between two C-C atoms to both X-C bonds.
+    Example XCHXCH: [X]C=C[X] <=> [X]=CC=[X]
+    (where '=' denotes a double bond)
     """
-    cython.declare(bondList=list, i=cython.int, atom1=Vertex, atom2=Vertex, bond=Edge)
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, atom4=Vertex, bond12=Edge, bond23=Edge, bond34=Edge)
+    cython.declare(v1=Vertex, v2=Vertex)
 
-    bond_list = []
+    structures = []
+    if mol.is_multidentate():
+        for atom in mol.vertices:
+            paths = pathfinder.find_adsorbate_delocalization_paths(atom)
+            for atom1, atom2, atom3, atom4, bond12, bond23, bond34 in paths:
+                if bond23.is_single():
+                    continue
+                else:
+                    bond12.increment_order()
+                    bond23.decrement_order()
+                    bond34.increment_order()
+                    structure = mol.copy(deep=True)
+                    bond12.decrement_order()
+                    bond23.increment_order()
+                    bond34.decrement_order()
+                    try:
+                        structure.update_atomtypes(log_species=False)
+                    except AtomTypeError:
+                        pass
+                    else:
+                        structures.append(structure)
+    return structures
 
-    for i, atom1 in enumerate(aromatic_ring):
-        for atom2 in aromatic_ring[i + 1:]:
-            if mol.has_bond(atom1, atom2):
-                bond_list.append(mol.get_bond(atom1, atom2))
 
-    for bond in bond_list:
-        bond.order = 1.5
+def generate_adsorbate_shift_up_resonance_structures(mol):
+    """
+    Generate all of the resonance structures formed by the shift of two electrons from X-C bonds to increase the bond
+    order between two C-C atoms by 1.
+    Example XCHXCH: [X]=CC=[X] <=> [X]C=C[X]
+    (where '=' denotes a double bond, '#' denotes a triple bond)
+    """
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, atom4=Vertex, bond12=Edge, bond23=Edge, bond34=Edge)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    structures = []
+    if mol.is_multidentate():
+        for atom in mol.vertices:
+            paths = pathfinder.find_adsorbate_delocalization_paths(atom)
+            for atom1, atom2, atom3, atom4, bond12, bond23, bond34 in paths:
+                if ((bond12.is_double_or_triple() and bond23.is_single() and bond34.is_double_or_triple()) or
+                    (bond12.is_double() and bond23.is_double() and bond34.is_double())):
+                        bond12.decrement_order()
+                        bond23.increment_order()
+                        bond34.decrement_order()
+                        structure = mol.copy(deep=True)
+                        bond12.increment_order()
+                        bond23.decrement_order()
+                        bond34.increment_order()
+                        try:
+                            structure.update_atomtypes(log_species=False)
+                        except AtomTypeError:
+                            pass
+                        else:
+                            structures.append(structure)
+    return structures
+
+
+def generate_adsorbate_conjugate_resonance_structures(mol):
+    """
+    Generate all of the resonance structures formed by the shift of two
+    electrons in a conjugated pi bond system of a bidentate adsorbate
+    with a bridging atom in between.
+
+    Example XCHCHXC: [X]#CC=C[X] <=> [X]=C=CC=[X]
+    (where '#' denotes a triple bond, '=' denotes a double bond)
+    """
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, atom4=Vertex, atom5=Vertex, bond12=Edge, bond23=Edge, bond34=Edge, bond45=Edge)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    structures = []
+    if mol.is_multidentate():
+        for atom in mol.vertices:
+            paths = pathfinder.find_adsorbate_conjugate_delocalization_paths(atom)
+            for atom1, atom2, atom3, atom4, atom45, bond12, bond23, bond34, bond45 in paths:
+                    if (bond12.is_double_or_triple() and
+                        (bond23.is_single() or bond23.is_double()) and
+                        bond34.is_double_or_triple() and
+                        (bond45.is_single() or bond45.is_double())):
+                                bond12.decrement_order()
+                                bond23.increment_order()
+                                bond34.decrement_order()
+                                bond45.increment_order()
+                                structure = mol.copy(deep=True)
+                                bond12.increment_order()
+                                bond23.decrement_order()
+                                bond34.increment_order()
+                                bond45.decrement_order()
+                                try:
+                                    structure.update_atomtypes(log_species=False)
+                                except AtomTypeError:
+                                    pass
+                                else:
+                                    structures.append(structure)
+    return structures

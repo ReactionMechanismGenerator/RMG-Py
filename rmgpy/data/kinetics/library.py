@@ -43,12 +43,13 @@ from rmgpy.data.base import DatabaseError, Database, Entry
 from rmgpy.data.kinetics.common import save_entry
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.kinetics import Arrhenius, ThirdBody, Lindemann, Troe, \
-                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev 
+                           PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, Chebyshev, KineticsModel, Marcus
 from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
-
+from rmgpy.data.solvation import to_soluteTSdata
+import rmgpy.constants as constants
 
 ################################################################################
 
@@ -219,6 +220,52 @@ class LibraryReaction(Reaction):
             
         return False
 
+    def apply_solvent_correction(self, solvent):
+        """
+        apply kinetic solvent correction
+        """
+        from rmgpy.data.rmg import get_db
+        solvation_database = get_db('solvation')
+        solvent_data = solvation_database.get_solvent_data(solvent)
+
+        if isinstance(self.kinetics, Marcus):
+            solvent_struct = solvation_database.get_solvent_structure(solvent)
+            solv_solute_data = solvation_database.get_solute_data(solvent_struct.copy(deep=True))
+            Rsolv = math.pow((75 * solv_solute_data.V / constants.pi / constants.Na) * (1.0 / 3.0)) / 100
+            Rtot = 0.0
+            Ner = 0
+            Nep = 0
+            for spc in self.reactants:
+                spc_solute_data = solvation_database.get_solute_data(spc.copy(deep=True))
+                spc_solute_data.set_mcgowan_volume(spc)
+                R = math.pow((75 * spc_solute_data.V / constants.pi / constants.Na),
+                          (1.0 / 3.0)) / 100
+                Rtot += R 
+                Ner += spc.get_net_charge()
+            for spc in self.products:
+                Nep += spc.get_net_charge()
+            
+            Rtot += Rsolv #radius of reactants plus first solvation shell
+            self.lmbd_o = constants.Na*(constants.e*(Nep-Ner))**2/(8.0*constants.pi*constants.epsilon_0*Rtot)*(1.0/solvent_data.n**2 - 1.0/solvent_data.eps)
+            return
+        
+        solute_data = to_soluteTSdata(self.kinetics.solute,reactants=self.reactants)
+        dGTS,dHTS = solute_data.calculate_corrections(solvent_data)
+        dSTS = (dHTS - dGTS)/298.0
+
+        dHR = 0.0
+        dSR = 0.0
+        for spc in self.reactants:
+            spc_solute_data = solvation_database.get_solute_data(spc)
+            spc_correction = solvation_database.get_solvation_correction(spc_solute_data, solvent_data)
+            dHR += spc_correction.enthalpy
+            dSR += spc_correction.entropy
+
+        dH = dHTS-dHR
+        dA = np.exp((dSTS-dSR)/constants.R)
+        self.kinetics.Ea.value_si += dH
+        self.kinetics.A.value_si *= dA
+        self.kinetics.comment += "solvation correction raised barrier by {0} kcal/mol and prefactor by factor of {1}".format(dH/4184.0,dA)
 
 ################################################################################
 
@@ -417,11 +464,16 @@ class KineticsLibrary(Database):
             local_context[key] = value
 
         # Process the file
-        f = open(path, 'r')
+        with open(path, 'r') as f:
+            content = f.read()
         try:
-            exec(f.read(), global_context, local_context)
-        except Exception:
-            logging.error('Error while reading database {0!r}.'.format(path))
+            exec(content, global_context, local_context)
+        except Exception as e:
+            logging.exception(f'Error while reading database file {path}.')
+            line_number = e.__traceback__.tb_next.tb_lineno
+            logging.error(f'Error occurred at or near line {line_number} of {path}.')
+            lines = content.splitlines()
+            logging.error(f'Line: {lines[line_number - 1]}')
             raise
         f.close()
 

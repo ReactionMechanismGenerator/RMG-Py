@@ -303,7 +303,7 @@ class NetworkDrawer(object):
                 break
 
         # Determine naive position of each well (one per column)
-        coordinates = np.zeros((len(wells), 2), np.float64)
+        coordinates = np.zeros((len(wells), 2), float)
         x = padding
         for i in range(len(wells)):
             well = wells[i]

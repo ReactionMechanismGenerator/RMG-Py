@@ -9,51 +9,18 @@ We have compiled some common questions about installing and using RMG below.
 For any other questions related to RMG and its usage and installation, please
 post an issue on our `GitHub issues page <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`_,
 where you can also search for any previous reports of your issue.
-Alternatively, you can also ask questions via the `RMG-Py chat room <https://gitter.im/ReactionMechanismGenerator/RMG-Py>`_
-or by contacting us directly at rmg_dev@mit.edu.
+Alternatively, you can contact us directly at rmg_dev@mit.edu.
 
 
 Installing RMG
 ==============
 
-#. **How can I install RMG-Py without Anaconda?**
-
-   Usually we don't recommend installing RMG-Py without Anaconda because it takes longer and is easier to get trouble
-   with package management. But one still can try direct installation on Linux or MacOS by following
-   :ref:`Linux instruction<linux>` or :ref:`MacOS instruction<macos>`. The RMG team does not use this install approach
-   internally any more, so these instructions are not actively maintained.
-
-#. **Why does RMG-Py not work natively on Windows?**
+#. **Why does RMG-Py not work natively from source on Windows?**
 
    One major challenge with supporting Windows is ensuring that all of our dependencies support Windows. This becomes
    non-trivial as we add more dependencies to support increasing RMG functionality. Ensuring that code within RMG is
    platform-agnostic is also challenging, since it is rarely the first priority for new development because our main
    focus is on research.
-
-#. **What is the recommended way to run RMG-Py on Windows?**
-
-   The currently recommended way to run RMG on Windows is to set up a Linux environment. There are multiple ways you
-   can approach this. Windows 10 supports a Linux subsystem which allows one to set up a Linux environment within
-   Windows without using virtualization. You can find instructions on setting up RMG within the Linux subsystem
-   :ref:`here<linuxSubsystem>`.
-
-   Another option would be to set up a full Linux virtual machine using something like VirtualBox or VMWare Workstation.
-   The benefit of this option is being able to run in a full Linux environment. However, running two operating systems
-   simultaneously does result in excess resource overhead, so it may not be suitable for running extended RMG jobs.
-   Instructions for setting up a virtual machine can be found :ref:`here<virtualMachineSetup>`.
-
-   A third option that we are currently beginning to explore using `Docker <https://www.docker.com/>`_, which is a
-   container-based infrastructure which shares the same benefits as a virtual machine but with less overhead. There
-   are some test images of RMG-Py which can be found on `Docker Hub <https://hub.docker.com/>`_ if you would like to
-   give this a try. More detailed instructions will be made available once we officially support this approach.
-
-#. **Windows binary installation gives ``WindowsError: [Error 5]``?**
-
-   Error 5 is access is denied, so this is either a permissions error, or an issue with the Windows file lock.
-   `These posts <https://github.com/conda/conda/issues/708>`_ suggest rebooting the computer (in case it's a file lock),
-   and running the anaconda prompt, from which you run ``conda create -c rmg --name rmg_env rmg rmgdatabase``,
-   as an administrator (in case it's a permissions error). Please checkout one example from a user having
-   `Windows binary installation issue <https://github.com/ReactionMechanismGenerator/RMG-Py/issues/779>`_.
 
 
 Running RMG
@@ -61,8 +28,7 @@ Running RMG
 
 #. **How do I run a basic RMG job?**
 
-   Please see step-by-step instructions in the either the :ref:`binary<anacondaUser>` or :ref:`source <anacondaDeveloper>`
-   installation instructions. In general, the syntax is ::
+   Please see step-by-step instructions in the installation instructions. In general, the syntax is ::
 
     rmg.py input.py
 
@@ -97,24 +63,6 @@ Running RMG
    to converge the microcanonical rate calculation for a pressure dependent network. It can be due to a variety of
    factors, such as poor thermochemistry or rate constants. Unfortunately, there is currently no good way to debug and
    fix these types of errors.
-
-#. **Why did I get** ``Segmentation fault:11`` **after installing RMG on my machine?**
-
-   **Segmentation fault** is a typical error in C code, caused by a program trying to read or write an illegal memory
-   location, i.e. one it is not allowed to access. The most common cause in RMG is a conflict between two different
-   versions of a shared library. RMG has some dependencies which are written in C++, e.g. rdkit, openbabel. If you
-   compile one of these with a different version of some compiler library, or you compile RMG using one version and
-   run it with another, you will often get a Segmentation fault. Chances are those packages are not up to date, or
-   maybe your environmental variable ``PATH`` is messed up so that the wrong version of something is being found.
-   Please see one example from a user having same
-   `Segmentation fault issue <https://github.com/ReactionMechanismGenerator/RMG-website/issues/125>`_.
-
-#. **Why did I get** ``IOError: [Errno 13] Permission denied: 'C:\\RMG.log'``
-
-   You do not have permission to write to the log file. Try running the RMG from a different folder that you do have
-   write permission to, such as within your user's documents directory, or else try running the command prompt as an
-   Administrator (so that you have write permission everywhere). See for example
-   `issue #817 <https://github.com/ReactionMechanismGenerator/RMG-Py/issues/817>`_.
 
 
 Miscellaneous

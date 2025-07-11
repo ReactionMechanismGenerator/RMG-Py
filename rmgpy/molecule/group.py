@@ -44,9 +44,93 @@ from rmgpy.exceptions import ActionError, ImplicitBenzeneError, UnexpectedCharge
 from rmgpy.molecule.atomtype import ATOMTYPES, allElements, nonSpecifics, get_features, AtomType
 from rmgpy.molecule.element import PeriodicSystem
 from rmgpy.molecule.graph import Vertex, Edge, Graph
+from rmgpy.molecule.fragment import CuttingLabel
 
+# helper functions
+# these were originally nested inside the indicated parent function, but when we upgraded to
+# Cython 3 this was no longer allowed - thus, they now live here.
 
-################################################################################
+# add_implicit_benzene
+def check_set(super_list, sub_list):
+    """
+    Args:
+        super_list: list to check if superset of partList
+        sub_list:  list to check if subset of superList
+
+    Returns: Boolean to see if super_list is a superset of sub_list
+
+    """
+    super_set = set(super_list)
+    sub_set = set(sub_list)
+    return super_set.issuperset(sub_set)
+
+def add_cb_atom_to_ring(ring, cb_atom):
+    """
+    Every 'Cb' atom belongs in exactly one benzene ring. This function checks
+    adds the cb_atom to the ring (in connectivity order) if the cb_atom is connected
+    to any the last or first atom in the partial ring.
+
+    Args:
+        ring: list of :class:GroupAtoms representing a partial ring to merge
+        cb_atom: :class:GroupAtom with atomtype 'Cb'
+
+    Returns: If cb_atom connects to the beginning or end of ring, returns a
+    new list of the merged ring, otherwise an empty list
+
+    """
+
+    merged_ring = []
+    # ring already complete
+    if len(ring) == 6: return merged_ring
+    for atom2, bond12 in cb_atom.bonds.items():
+        if bond12.is_benzene():
+            if atom2 is ring[-1]:
+                merged_ring = ring + [cb_atom]
+            elif atom2 is ring[0]:
+                merged_ring = [cb_atom] + ring
+
+    return merged_ring
+
+def merge_overlapping_benzene_rings(ring1, ring2, od):
+    """
+    The input arguments of rings are always in the order that the atoms appear
+    inside the ring. That is, each atom is connected to the ones adjacent on the
+    list.
+
+    Args:
+        ring1: list of :class:GroupAtoms representing first partial ring to merge
+        ring2: list :class:GroupAtoms representing second partial ring to merge
+        od: in for overlap distance
+
+    This function tries to see if the beginning or ends of each list have the
+    same atom objects, i.e the two part rings should be merged together.
+
+    Returns: If rings are mergable, returns a new list of the merged ring, otherwise
+    an empty list
+
+    """
+    new_ring = []
+    # ring already complete
+    if len(ring1) == 6 or len(ring2) == 6: return new_ring
+
+    # start of ring1 matches end of ring2
+    match_list1 = [x1 is x2 for x1, x2 in zip(ring1[-od:], ring2[:od])]
+    # end of ring1 matches end of ring2
+    match_list2 = [x1 is x2 for x1, x2 in zip(ring1[-od:], ring2[:od - 1:-1])]
+    # start of ring1 matches end of ring2
+    match_list3 = [x1 is x2 for x1, x2 in zip(ring1[:od], ring2[-od:])]
+    # start of ring1 matches start of ring2
+    match_list4 = [x1 is x2 for x1, x2 in zip(ring1[:od], ring2[od::-1])]
+    if False not in match_list1:
+        new_ring = ring1 + ring2[od:]
+    elif False not in match_list2:
+        new_ring = ring1 + ring2[-od - 1::-1]
+    elif False not in match_list3:
+        new_ring = ring2[:-od] + ring1
+    elif False not in match_list4:
+        new_ring = ring2[:od - 1:-1] + ring1
+
+    return new_ring
 
 class GroupAtom(Vertex):
     """
@@ -80,7 +164,7 @@ class GroupAtom(Vertex):
     order to match.
     """
 
-    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, site=None, morphology=None, 
+    def __init__(self, atomtype=None, radical_electrons=None, charge=None, label='', lone_pairs=None, site=None, morphology=None,
                  props=None):
         Vertex.__init__(self)
         self.atomtype = atomtype or []
@@ -115,7 +199,7 @@ class GroupAtom(Vertex):
         atomtype = self.atomtype
         if atomtype is not None:
             atomtype = [a.label for a in atomtype]
-        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.site, 
+        return (GroupAtom, (atomtype, self.radical_electrons, self.charge, self.label, self.lone_pairs, self.site,
                             self.morphology, self.props), d)
 
     def __setstate__(self, d):
@@ -271,6 +355,54 @@ class GroupAtom(Vertex):
         # Set the new radical electron counts
         self.radical_electrons = radical_electrons
 
+    def _gain_charge(self, charge):
+        """
+        Update the atom group as a result of applying a GAIN_CHARGE action,
+        where `charge` specifies the charge gained.
+        """
+        atomtype = []
+
+        for atom in self.atomtype:
+            atomtype.extend(atom.increment_charge)
+
+        if any([len(atom.increment_charge) == 0 for atom in self.atomtype]):
+            raise ActionError('Unable to update GroupAtom due to GAIN_CHARGE action: '
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
+
+        if isinstance(self.charge,list):
+            charges = []
+            for c in self.charge:
+                charges.append(c+charge)
+            self.charge = charges
+        else:
+            self.charge += 1
+
+        self.atomtype = list(set(atomtype))
+
+    def _lose_charge(self, charge):
+        """
+        Update the atom group as a result of applying a LOSE_CHARGE action,
+        where `charge` specifies lost charge.
+        """
+        atomtype = []
+
+        for atom in self.atomtype:
+            atomtype.extend(atom.decrement_charge)
+
+        if any([len(atomtype.decrement_charge) == 0 for atomtype in self.atomtype]):
+            raise ActionError('Unable to update GroupAtom due to LOSE_CHARGE action: '
+                              'Unknown atom type produced from set "{0}".'.format(self.atomtype))
+
+        if isinstance(self.charge,list):
+            charges = []
+            for c in self.charge:
+                charges.append(c-charge)
+            self.charge = charges
+        else:
+            self.charge -= 1
+
+        self.atomtype = list(set(atomtype))
+
     def _gain_pair(self, pair):
         """
         Update the atom group as a result of applying a GAIN_PAIR action,
@@ -342,8 +474,12 @@ class GroupAtom(Vertex):
             self._break_bond(action[2])
         elif act == 'GAIN_RADICAL':
             self._gain_radical(action[2])
+        elif act == 'GAIN_CHARGE':
+            self._gain_charge(action[2])
         elif act == 'LOSE_RADICAL':
             self._lose_radical(action[2])
+        elif act == 'LOSE_CHARGE':
+            self._lose_charge(action[2])
         elif action[0].upper() == 'GAIN_PAIR':
             self._gain_pair(action[2])
         elif action[0].upper() == 'LOSE_PAIR':
@@ -357,7 +493,7 @@ class GroupAtom(Vertex):
         where `other` can be either an :class:`Atom` or an :class:`GroupAtom`
         object. When comparing two :class:`GroupAtom` objects, this function
         respects wildcards, e.g. ``R!H`` is equivalent to ``C``.
-        
+
         """
         cython.declare(group=GroupAtom)
         if not strict:
@@ -453,7 +589,7 @@ class GroupAtom(Vertex):
         """
         Returns ``True`` if `self` is the same as `other` or is a more
         specific case of `other`. Returns ``False`` if some of `self` is not
-        included in `other` or they are mutually exclusive. 
+        included in `other` or they are mutually exclusive.
         """
         cython.declare(group=GroupAtom)
         if not isinstance(other, GroupAtom):
@@ -550,6 +686,18 @@ class GroupAtom(Vertex):
                 return True
         return False
 
+    def is_electron(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.atomtype[0] == ATOMTYPES['e']
+
+    def is_proton(self):
+        """
+        Return ``True`` if the atom represents a surface site or ``False`` if not.
+        """
+        return self.atomtype[0] == ATOMTYPES['H+']
+
     def is_oxygen(self):
         """
         Return ``True`` if the atom represents an oxygen atom or ``False`` if not.
@@ -604,6 +752,14 @@ class GroupAtom(Vertex):
         """
         all_bromine = [ATOMTYPES['Br']] + ATOMTYPES['Br'].specific
         check_list = [x in all_bromine for x in self.atomtype]
+        return all(check_list)
+
+    def is_lithium(self):
+        """
+        Return ``True`` if the atom represents a bromine atom or ``False`` if not.
+        """
+        all_lithium = [ATOMTYPES['Li']] + ATOMTYPES['Li'].specific
+        check_list = [x in all_lithium for x in self.atomtype]
         return all(check_list)
 
     def has_wildcards(self):
@@ -686,6 +842,7 @@ class GroupAtom(Vertex):
                               'I': 3,
                               'Ar': 4,
                               'X': 0,
+                              'e': 0
                               }
 
         for element_label in allElements:
@@ -806,9 +963,9 @@ class GroupBond(Edge):
                 values.append('B')
             elif value == 0:
                 values.append('vdW')
-            elif value == 0.1:
+            elif abs(value - 0.1) < 1e-4:
                 values.append('H')
-            elif value == 0.05:
+            elif abs(value - 0.05) < 1e-4:
                 values.append('R')
             else:
                 raise TypeError('Bond order number {} is not hardcoded as a string'.format(value))
@@ -863,7 +1020,7 @@ class GroupBond(Edge):
         not. If `wildcards` is ``False`` we return False anytime there is more
         than one bond order, otherwise we return ``True`` if any of the options
         are single.
-        
+
         NOTE: we can replace the absolute value relation with math.isclose when
         we swtich to python 3.5+
         """
@@ -940,6 +1097,23 @@ class GroupBond(Edge):
         else:
             return abs(self.order[0]) <= 1e-9 and len(self.order) == 1
 
+
+    def is_reaction_bond(self, wildcards=False):
+        """
+        Return ``True`` if the bond represents a van der Waals bond or ``False`` if
+        not. If `wildcards` is ``False`` we return False anytime there is more
+        than one bond order, otherwise we return ``True`` if any of the options
+        are van der Waals.
+        """
+        if wildcards:
+            for order in self.order:
+                if abs(order[0] - 0.05) <= 1e-9:
+                    return True
+            else:
+                return False
+        else:
+            return abs(self.order[0]-0.05) <= 1e-9 and len(self.order) == 1
+
     def is_benzene(self, wildcards=False):
         """
         Return ``True`` if the bond represents a benzene bond or ``False`` if
@@ -971,7 +1145,7 @@ class GroupBond(Edge):
                 return False
         else:
             return abs(self.order[0] - 0.1) <= 1e-9 and len(self.order) == 1
-        
+
     def is_reaction_bond(self, wildcards=False):
         """
         Return ``True`` if the bond represents a reaction bond or ``False`` if
@@ -1097,13 +1271,13 @@ class Group(Graph):
     """
     A representation of a molecular substructure group using a graph data
     type, extending the :class:`Graph` class. The attributes are:
-    
+
     =================== =================== ====================================
     Attribute           Type                Description
     =================== =================== ====================================
     `atoms`             ``list``            Aliases for the `vertices` storing :class:`GroupAtom`
     `multiplicity`      ``list``            Range of multiplicities accepted for the group
-    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object 
+    `props`             ``dict``            Dictionary of arbitrary properties/flags classifying state of Group object
     `metal`             ``list``            List of metals accepted for the group
     `facet`             ``list``            List of facets accepted for the group
     =================== =================== ====================================
@@ -1238,6 +1412,14 @@ class Group(Graph):
         cython.declare(atom=GroupAtom)
         return [atom for atom in self.atoms if atom.is_surface_site()]
 
+    def is_proton(self):
+        """Returns ``True`` iff the group is a proton"""
+        return len(self.atoms) == 1 and self.atoms[0].is_proton()
+
+    def is_electron(self):
+        """Returns ``True`` iff the group is an electron"""
+        return len(self.atoms) == 1 and self.atoms[0].is_electron()
+
     def remove_atom(self, atom):
         """
         Remove `atom` and all bonds associated with it from the graph. Does
@@ -1320,6 +1502,8 @@ class Group(Graph):
         and radical electrons. This method is used for products of specific families with recipes that modify charges.
         """
         for atom in self.atoms:
+            if isinstance(atom, CuttingLabel):
+                continue
             if (len(atom.charge) == 1) and (len(atom.lone_pairs) == 1) and (len(atom.radical_electrons) == 1):
                 # if the charge of the group is not labeled, then no charge update will be
                 # performed. If there multiple charges are assigned, no update either.
@@ -1375,10 +1559,12 @@ class Group(Graph):
             atm.reg_dim_atm = [[], []]
             atm.reg_dim_u = [[], []]
             atm.reg_dim_r = [[], []]
+            atm.reg_dim_site = [[],[]]
+            atm.reg_dim_morphology = [[],[]]
         for bd in self.get_all_edges():
             bd.reg_dim = [[], []]
 
-    def get_extensions(self, r=None, basename='', atm_ind=None, atm_ind2=None, n_splits=None):
+    def get_extensions(self, r=None, r_bonds=None, r_un=None, basename='', atm_ind=None, atm_ind2=None, n_splits=None):
         """
         generate all allowed group extensions and their complements
         note all atomtypes except for elements and r/r!H's must be removed
@@ -1387,7 +1573,10 @@ class Group(Graph):
                        extents=list, RnH=list, typ=list)
 
         extents = []
-
+        if r_bonds is None:
+            r_bonds = [1, 1.5, 2, 3, 4]
+        if r_un is None:
+            r_un = [0, 1, 2, 3]
         if n_splits is None:
             n_splits = len(self.split())
 
@@ -1396,11 +1585,12 @@ class Group(Graph):
             r = elements.bde_elements  # set of possible r elements/atoms
             r = [ATOMTYPES[x] for x in r]
 
-        r_bonds = [1, 2, 3, 1.5, 4]
-        r_un = [0, 1, 2, 3]
-
-        RnH = r[:]
-        RnH.remove(ATOMTYPES['H'])
+        R = r[:]
+        if ATOMTYPES['X'] in R:
+            R.remove(ATOMTYPES['X'])
+        RnH = R[:]
+        if ATOMTYPES['H'] in RnH:
+            RnH.remove(ATOMTYPES['H'])
 
         atoms = self.atoms
         if atm_ind is None:
@@ -1409,9 +1599,12 @@ class Group(Graph):
                 if atm.reg_dim_atm[0] == []:
                     if len(typ) == 1:
                         if typ[0].label == 'R':
-                            extents.extend(self.specify_atom_extensions(i, basename, r))  # specify types of atoms
+                            extents.extend(self.specify_atom_extensions(i, basename, R))  # specify types of atoms
                         elif typ[0].label == 'R!H':
                             extents.extend(self.specify_atom_extensions(i, basename, RnH))
+                        elif typ[0].label == 'Rx':
+                            extents.extend(self.specify_atom_extensions(i, basename, r))
+
                     else:
                         extents.extend(self.specify_atom_extensions(i, basename, typ))
                 else:
@@ -1420,6 +1613,9 @@ class Group(Graph):
                             extents.extend(
                                 self.specify_atom_extensions(i, basename, atm.reg_dim_atm[0]))  # specify types of atoms
                         elif typ[0].label == 'R!H':
+                            extents.extend(
+                                self.specify_atom_extensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(R))))
+                        elif typ[0].label == 'Rx':
                             extents.extend(
                                 self.specify_atom_extensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(r))))
                     else:
@@ -1473,9 +1669,11 @@ class Group(Graph):
             if atm.reg_dim_atm[0] == []:
                 if len(typ) == 1:
                     if typ[0].label == 'R':
-                        extents.extend(self.specify_atom_extensions(i, basename, r))  # specify types of atoms
+                        extents.extend(self.specify_atom_extensions(i, basename, R))  # specify types of atoms
                     elif typ[0].label == 'R!H':
                         extents.extend(self.specify_atom_extensions(i, basename, RnH))
+                    elif typ[0].label == 'Rx':
+                        extents.extend(self.specify_atom_extensions(i, basename, r))
                 else:
                     extents.extend(self.specify_atom_extensions(i, basename, typ))
             else:
@@ -1534,10 +1732,10 @@ class Group(Graph):
             old_atom_type = grp.atoms[i].atomtype
             grp.atoms[i].atomtype = [item]
             grpc.atoms[i].atomtype = list(Rset - {item})
-            
+
             if len(grpc.atoms[i].atomtype) == 0:
                 grpc = None
-            
+
             if len(old_atom_type) > 1:
                 labelList = []
                 old_atom_type_str = ''
@@ -1601,10 +1799,10 @@ class Group(Graph):
             grpc = deepcopy(self)
             grp.atoms[i].radical_electrons = [item]
             grpc.atoms[i].radical_electrons = list(Rset - {item})
-            
+
             if len(grpc.atoms[i].radical_electrons) == 0:
                 grpc = None
-                
+
             atom_type = grp.atoms[i].atomtype
 
             if len(atom_type) > 1:
@@ -1702,7 +1900,8 @@ class Group(Graph):
         grps = []
         label_list = []
         Rbset = set(r_bonds)
-        bdict = {1: '-', 2: '=', 3: '#', 1.5: '-=', 4: '$'}
+        bdict = {1: '-', 2: '=', 3: '#', 1.5: '-=', 4: '$', 0.05: '..', 0: '--'}
+
         for bd in r_bonds:
             grp = deepcopy(self)
             grpc = deepcopy(self)
@@ -1710,10 +1909,10 @@ class Group(Graph):
             grp.atoms[j].bonds[grp.atoms[i]].order = [bd]
             grpc.atoms[i].bonds[grpc.atoms[j]].order = list(Rbset - {bd})
             grpc.atoms[j].bonds[grpc.atoms[i]].order = list(Rbset - {bd})
-            
+
             if len(list(Rbset - {bd})) == 0:
                 grpc = None
-                
+
             atom_type_i = grp.atoms[i].atomtype
             atom_type_j = grp.atoms[j].atomtype
 
@@ -1738,8 +1937,14 @@ class Group(Graph):
             else:
                 atom_type_j_str = atom_type_j[0].label
 
+            b = None
+            for v in bdict.keys():
+                if abs(v - bd) < 1e-4:
+                    b = bdict[v]
+
+
             grps.append((grp, grpc,
-                         basename + '_Sp-' + str(i + 1) + atom_type_i_str + bdict[bd] + str(j + 1) + atom_type_j_str,
+                        basename + '_Sp-' + str(i + 1) + atom_type_i_str + b + str(j + 1) + atom_type_j_str,
                          'bondExt', (i, j)))
 
         return grps
@@ -2029,7 +2234,7 @@ class Group(Graph):
         else:
             if group.facet:
                 return []
-            
+
         # Do the isomorphism comparison
         return Graph.find_subgraph_isomorphisms(self, other, initial_map, save_order=save_order)
 
@@ -2045,7 +2250,7 @@ class Group(Graph):
         if not isinstance(other, Group):
             raise TypeError(
                 'Got a {0} object for parameter "other", when a Group object is required.'.format(other.__class__))
-        # An identical group is always a child of itself and 
+        # An identical group is always a child of itself and
         # is the only case where that is true. Therefore
         # if we do both directions of isSubgraphIsmorphic, we need
         # to get True twice for it to be identical
@@ -2409,89 +2614,6 @@ class Group(Graph):
         # Note that atomtypes like N5bd are mostly referred to as Cb in this code,
         # which was first written for just carbon.
 
-        # First define some helper functions
-        def check_set(super_list, sub_list):
-            """
-            Args:
-                super_list: list to check if superset of partList
-                sub_list:  list to check if subset of superList
-
-            Returns: Boolean to see if super_list is a superset of sub_list
-
-            """
-            super_set = set(super_list)
-            sub_set = set(sub_list)
-            return super_set.issuperset(sub_set)
-
-        def add_cb_atom_to_ring(ring, cb_atom):
-            """
-            Every 'Cb' atom belongs in exactly one benzene ring. This function checks
-            adds the cb_atom to the ring (in connectivity order) if the cb_atom is connected
-            to any the last or first atom in the partial ring.
-
-            Args:
-                ring: list of :class:GroupAtoms representing a partial ring to merge
-                cb_atom: :class:GroupAtom with atomtype 'Cb'
-
-            Returns: If cb_atom connects to the beginning or end of ring, returns a
-            new list of the merged ring, otherwise an empty list
-
-            """
-
-            merged_ring = []
-            # ring already complete
-            if len(ring) == 6: return merged_ring
-            for atom2, bond12 in cb_atom.bonds.items():
-                if bond12.is_benzene():
-                    if atom2 is ring[-1]:
-                        merged_ring = ring + [cb_atom]
-                    elif atom2 is ring[0]:
-                        merged_ring = [cb_atom] + ring
-
-            return merged_ring
-
-        def merge_overlapping_benzene_rings(ring1, ring2, od):
-            """
-            The input arguments of rings are always in the order that the atoms appear
-            inside the ring. That is, each atom is connected to the ones adjacent on the
-            list.
-
-            Args:
-                ring1: list of :class:GroupAtoms representing first partial ring to merge
-                ring2: list :class:GroupAtoms representing second partial ring to merge
-                od: in for overlap distance
-
-            This function tries to see if the beginning or ends of each list have the
-            same atom objects, i.e the two part rings should be merged together.
-
-            Returns: If rings are mergable, returns a new list of the merged ring, otherwise
-            an empty list
-
-            """
-            new_ring = []
-            # ring already complete
-            if len(ring1) == 6 or len(ring2) == 6: return new_ring
-
-            # start of ring1 matches end of ring2
-            match_list1 = [x1 is x2 for x1, x2 in zip(ring1[-od:], ring2[:od])]
-            # end of ring1 matches end of ring2
-            match_list2 = [x1 is x2 for x1, x2 in zip(ring1[-od:], ring2[:od - 1:-1])]
-            # start of ring1 matches end of ring2
-            match_list3 = [x1 is x2 for x1, x2 in zip(ring1[:od], ring2[-od:])]
-            # start of ring1 matches start of ring2
-            match_list4 = [x1 is x2 for x1, x2 in zip(ring1[:od], ring2[od::-1])]
-            if False not in match_list1:
-                new_ring = ring1 + ring2[od:]
-            elif False not in match_list2:
-                new_ring = ring1 + ring2[-od - 1::-1]
-            elif False not in match_list3:
-                new_ring = ring2[:-od] + ring1
-            elif False not in match_list4:
-                new_ring = ring2[:od - 1:-1] + ring1
-
-            return new_ring
-
-        #######################################################################################
         # start of main algorithm
         copy_group = deepcopy(self)
         """
@@ -2861,10 +2983,24 @@ class Group(Graph):
                     group_atom = mol_to_group[atom]
                 else:
                     raise UnexpectedChargeError(graph=new_molecule)
-                if atom.charge in group_atom.atomtype[0].charge:
-                    # declared charge in atomtype is same as new charge
+                # check hardcoded atomtypes
+                positive_charged = ['H+',
+                                    'Csc', 'Cdc',
+                                    'N3sc', 'N5sc', 'N5dc', 'N5ddc', 'N5tc', 'N5b',
+                                    'O2sc', 'O4sc', 'O4dc', 'O4tc',
+                                    'P5sc', 'P5dc', 'P5ddc', 'P5tc', 'P5b',
+                                    'S2sc', 'S4sc', 'S4dc', 'S4tdc', 'S6sc', 'S6dc', 'S6tdc']
+                negative_charged = ['e',
+                                    'C2sc', 'C2dc', 'C2tc',
+                                    'N0sc', 'N1sc', 'N1dc', 'N5dddc',
+                                    'O0sc',
+                                    'P0sc', 'P1sc', 'P1dc', 'P5sc',
+                                    'S0sc', 'S2sc', 'S2dc', 'S2tc', 'S4sc', 'S4dc', 'S4tdc', 'S6sc', 'S6dc', 'S6tdc']
+                if atom.charge > 0 and any([group_atom.atomtype[0] is ATOMTYPES[x] or ATOMTYPES[x].is_specific_case_of(group_atom.atomtype[0]) for x in positive_charged]):
                     pass
-                elif atom.charge in group_atom.charge:
+                elif atom.charge < 0 and any([group_atom.atomtype[0] is ATOMTYPES[x] or ATOMTYPES[x].is_specific_case_of(group_atom.atomtype[0]) for x in negative_charged]):
+                    pass
+                elif atom.charge in group_atom.atomtype[0].charge:
                     # declared charge in original group is same as new charge
                     pass
                 else:

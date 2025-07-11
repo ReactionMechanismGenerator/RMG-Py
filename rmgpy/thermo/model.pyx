@@ -163,13 +163,18 @@ cdef class HeatCapacityModel(RMGObject):
         
         Tdata = [300,400,500,600,800,1000,1500,2000]
         for T in Tdata:
-            if not (0.8 < self.get_heat_capacity(T) / other.get_heat_capacity(T) < 1.25):
+            # Do exact comparison in addition to relative in case both are zero (surface site)
+            if self.get_heat_capacity(T) != other.get_heat_capacity(T) and \
+                not (0.8 < self.get_heat_capacity(T) / other.get_heat_capacity(T) < 1.25):
                 return False
-            elif not (0.8 < self.get_enthalpy(T) / other.get_enthalpy(T) < 1.25):
+            elif self.get_enthalpy(T) != other.get_enthalpy(T) and \
+                not (0.8 < self.get_enthalpy(T) / other.get_enthalpy(T) < 1.25):
                 return False
-            elif not (0.8 < self.get_entropy(T) / other.get_entropy(T) < 1.25):
+            elif self.get_entropy(T) != other.get_entropy(T) and \
+                not (0.8 < self.get_entropy(T) / other.get_entropy(T) < 1.25):
                 return False
-            elif not (0.8 < self.get_free_energy(T) / other.get_free_energy(T) < 1.25):
+            elif self.get_free_energy(T) != other.get_free_energy(T) and \
+                not (0.8 < self.get_free_energy(T) / other.get_free_energy(T) < 1.25):
                 return False
 
         return True
@@ -185,13 +190,18 @@ cdef class HeatCapacityModel(RMGObject):
         
         Tdata = [300,400,500,600,800,1000,1500,2000]
         for T in Tdata:
-            if not (0.95 < self.get_heat_capacity(T) / other.get_heat_capacity(T) < 1.05):
+            # Do exact comparison in addition to relative in case both are zero (surface site)
+            if self.get_heat_capacity(T) != other.get_heat_capacity(T) and \
+                not (0.95 < self.get_heat_capacity(T) / other.get_heat_capacity(T) < 1.05):
                 return False
-            elif not (0.95 < self.get_enthalpy(T) / other.get_enthalpy(T) < 1.05):
+            elif self.get_enthalpy(T) != other.get_enthalpy(T) and \
+                not (0.95 < self.get_enthalpy(T) / other.get_enthalpy(T) < 1.05):
                 return False
-            elif not (0.95 < self.get_entropy(T) / other.get_entropy(T) < 1.05):
+            elif self.get_entropy(T) != other.get_entropy(T) and \
+                not (0.95 < self.get_entropy(T) / other.get_entropy(T) < 1.05):
                 return False
-            elif not (0.95 < self.get_free_energy(T) / other.get_free_energy(T) < 1.05):
+            elif self.get_free_energy(T) != other.get_free_energy(T) and \
+                not (0.95 < self.get_free_energy(T) / other.get_free_energy(T) < 1.05):
                 return False
 
         return True

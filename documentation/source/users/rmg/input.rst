@@ -49,7 +49,7 @@ by Benson's method.
 
 For example, if you wish to use the GRI-Mech 3.0 mechanism [GRIMech3.0]_ as a ThermoLibrary in your model, the syntax will be::
 
-	thermoLibraries = ['primaryThermoLibrary','GRI-Mech3.0']
+	thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0']
 
 .. [GRIMech3.0] Gregory P. Smith, David M. Golden, Michael Frenklach, Nigel W. Moriarty, Boris Eiteneer, Mikhail Goldenberg, C. Thomas Bowman, Ronald K. Hanson, Soonho Song, William C. Gardiner, Jr., Vitali V. Lissianski, and Zhiwei Qin http://combustion.berkeley.edu/gri-mech/
 
@@ -59,8 +59,8 @@ ThermoLibrary field must be with respect to the :file:`$RMG/RMG-database/input/t
 directory.
 
 .. note::
-	Checks during the initialization are maid to avoid users to use "liquid thermo librairies" in gas phase simulations or to use
-	"liquid phase libraries" obtained in another solvent that the one defined in the input file in liquid phase simulations.
+	Checks during the initialization are made to avoid users using "liquid thermo libraries" in gas phase simulations or using
+	"liquid phase libraries" obtained in another solvent than the one defined in the input file in liquid phase simulations.
 
 .. _reactionlibraries:
 
@@ -78,7 +78,7 @@ In the following example, the user has created
 a reaction library with a few additional reactions specific to n-butane, and these reactions
 are to be used in addition to the Glarborg C3 library::
 
-	reactionLibraries = [('Glarborg/C3',False)],
+	reactionLibraries = [('Glarborg/C3', False)],
 
 The keyword False/True permits user to append all unused reactions (= kept in the edge) from this library to the chemkin file.
 True means those reactions will be appended. Using just the string inputs would lead to
@@ -103,6 +103,23 @@ given in each mechanism, the different mechanisms can have different units.
 	RMG will not handle irreversible reactions correctly, if supplied in a Reaction
 	Library.
 
+
+.. _externallib:
+
+External Libraries
+------------------
+Users may direct RMG to use thermo and/or kinetic libraries which are not included in the RMG database,
+e.g., a library a user created that was intentionally saved to a path different than the conventional
+RMG-database location. In such cases, the user can specify the full path to the library in the input file::
+
+    thermoLibraries = ['path/to/your/thermo/library/file.py']
+
+or::
+
+    reactionLibraries = [(path/to/your/kinetic/library/folder/']
+
+Combinations in any order of RMG's legacy libraries and users' external libraries are allowed,
+and the order in which the libraries are specified is the order in which they are loaded and given priority.
 
 .. _seedmechanism:
 
@@ -630,9 +647,9 @@ this is more likely to kick out species RMG might otherwise have added to core.
 
 Advanced Setting: Taking Multiple Species At A Time
 ----------------------------------------------------
-Taking multiple objects (species, reactions or pdepNetworks) during a given simulation can often decrease your overall model generation time
+Taking multiple objects (``Species``, ``Reaction`` or ``PDepNetwork``) during a given simulation can often decrease your overall model generation time
 over only taking one.  For this purpose there is a ``maxNumObjsPerIter`` parameter that allows RMG to take
-that many species, reactions or pdepNetworks from a given simulation. This is done in the order they trigger their respective criteria.
+that many ``Species``, ``Reaction`` or ``PDepNetwork`` from a given simulation. This is done in the order they trigger their respective criteria.
 
 You can also set ``terminateAtMaxObjects=True`` to cause it to terminate when it has the maximum
 number of objects allowed rather than waiting around until it hits an interrupt tolerance.  This
@@ -651,6 +668,14 @@ For example ::
 
 Note that this can also result in larger models, however, sometimes these larger models (from taking more than one
 object at a time) pick up chemistry that would otherwise have been missed.
+
+
+Advanced Settings: Other 
+----------------------------------------------------
+- ``dynamicsTimeScale``: The time before which the dynamics criterion cannot be used to bring reactions into the model. This is useful because the math behind the dynamics criterion breaks down as ``t`` approaches 0, thus restricting the use of the dynamics criterion until later times may reduce the number of junk species/reactions added to the model.
+
+- ``ignoreOverallFluxCriterion``: Causes RMG to use the given flux criterion only for determining if a ``PDepNetwork`` should be explored and not whether species should enter the model. Lets you run pressure dependence alongside the dynamics criterion without the flux criterion.
+
 
 .. _ontheflyquantumcalculations:
 
@@ -995,6 +1020,7 @@ all of RMG's reaction families. ::
         maximumCarbeneRadicals=0,
         maximumIsotopicAtoms=2,
         allowSingletO2 = False,
+        speciesCuttingThreshold=20,
     )
 
 An additional flag ``allowed`` can be set to allow species
@@ -1004,6 +1030,9 @@ products that form.
 
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.
 
+Note that ``speciesCuttingThreshold`` is set by default to 20 heavy atoms. This means that if a species containing 
+20 or more heavy atoms is generated, it will be automatically split into fragments to save computational resources. 
+If fragments are not desired, the ``speciesCuttingThreshold`` may be set to an arbitrarily large number.
 
 Staging
 ========
@@ -1012,7 +1041,7 @@ It is now possible to concatenate different model and simulator blocks into the 
 
 There must be the same number of each of these blocks (although only having one simulator block and many model blocks is enabled as well) and RMG will enter each stage these define in the order they were put in the input file.
 
-To enable easier manipulation of staging a new parameter in the model block was developed maxNumSpecies that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.
+To enable easier manipulation of staging a new parameter in the model block was developed ``maxNumSpecies`` that is the number of core species at which that stage (or if it is the last stage the entire model generation process) will terminate.
 
 For example ::
 

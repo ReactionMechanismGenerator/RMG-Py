@@ -154,7 +154,7 @@ On-the-fly Quantum-chemical calculation of Thermochemical Properties (QMTP)
 ===========================================================================
 An interface for performing on-the-fly quantum and force field calculations 
 has been developed and integrated into RMG to complement the species thermochemistry databases and
-group contribution methods [Magoon and Green]_. This interface is particularly interesting for the estimation of
+group contribution methods [MagoonAndGreen]_. This interface is particularly interesting for the estimation of
 thermochemistry of molecules that are not present in one of the species thermochemistry databases,
 and which cannot be estimated with sufficient accuracy using the Benson group additivity framework. This
 pertains specifically to polycyclic fused ring containing species, whose ring strain cannot be modeled using
@@ -283,11 +283,11 @@ References
 
 .. [Lay1995] Lay, T.; Bozzelli, J.; Dean, A.; Ritter, E. J. Phys. Chem. 1995, 99,14514-14527
 
-.. [Magoon and Green] Magoon, Gregory R., and William H. Green. "Design and implementation of a next-generation software interface for on-the-fly quantum and force field calculations in automated reaction mechanism generation." Computers & Chemical Engineering 52 (2013): 35-45.
+.. [MagoonAndGreen] Magoon, Gregory R., and William H. Green. "Design and implementation of a next-generation software interface for on-the-fly quantum and force field calculations in automated reaction mechanism generation." Computers & Chemical Engineering 52 (2013): 35-45.
 
 .. [Allinger] Allinger, N. L., & Lii, J.-H. (2008). MM4(2008) and MM4(2003).
 
-.. [Patchkovskii] Patchkovskii, S. (2003). SYMMETRY, originally from ``http://www.cobalt.chem.ucalgary.ca/ps/symmetry/`` now mirrored at https://github.com/nquesada/symmetry.
+.. [Patchkovskii] Patchkovskii, S. (2003). SYMMETRY, originally from ``https://www.cobalt.chem.ucalgary.ca/ps/symmetry/`` now mirrored at https://github.com/nquesada/symmetry.
 
 .. [Yu] "Estimation method for the thermochemical properties of polycyclic aromatic molecules" (Ph.D), Joanna Yu, M.I.T (2005)
 

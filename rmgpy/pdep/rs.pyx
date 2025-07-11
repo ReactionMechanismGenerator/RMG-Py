@@ -72,12 +72,12 @@ cpdef apply_reservoir_state_method(network):
 
     beta = 1. / (constants.R * temperature)  # [=] mol/kJ
 
-    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), np.float64)
-    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), np.float64)
+    k = np.zeros((n_isom + n_reac + n_prod, n_isom + n_reac + n_prod), float)
+    pa = np.zeros((n_isom, n_isom + n_reac, n_grains, n_j), float)
 
     # Determine the reservoir cutoff grain for each isomer
     # Start by simply placing it at the lowest reactive grain
-    n_res = np.zeros((n_isom, n_j), np.int)
+    n_res = np.zeros((n_isom, n_j), int)
     for i in range(n_isom):
         for s in range(n_j):
             for r in range(n_grains):
@@ -91,14 +91,14 @@ cpdef apply_reservoir_state_method(network):
     n_act = n_grains - n_res
 
     # Determine equilibrium distributions
-    eq_dist = np.zeros((n_isom + n_reac, n_grains, n_j), np.float64)
+    eq_dist = np.zeros((n_isom + n_reac, n_grains, n_j), float)
     for i in range(n_isom + n_reac):
         for s in range(n_j):
             eq_dist[i, :, s] = dens_states[i, :, s] * (2 * j_list[s] + 1) * np.exp(-e_list * beta)
 
     # Determine pseudo-steady state populations of active state
     row = 0
-    indices = -np.ones((n_isom, n_grains, n_j), np.int)
+    indices = -np.ones((n_isom, n_grains, n_j), int)
     for r in range(n_grains):
         for s in range(n_j):
             for i in range(n_isom):
@@ -126,8 +126,8 @@ cpdef apply_reservoir_state_method(network):
     bandwidth = 2 * halfbandwidth + 1
 
     # Populate active-state matrix and source vectors
-    active_state_mat = np.zeros((bandwidth, np.sum(n_act)), np.float64)
-    source_vectors = np.zeros((np.sum(n_act), n_isom + n_reac), np.float64)
+    active_state_mat = np.zeros((bandwidth, np.sum(n_act)), float)
+    source_vectors = np.zeros((np.sum(n_act), n_isom + n_reac), float)
     # Collisional terms
     for i in range(n_isom):
         for u in range(n_j):
@@ -188,7 +188,7 @@ cpdef apply_reservoir_state_method(network):
     # k = computeRateCoefficients(m_coll, k_ij, f_im, g_nj, pa, n_isom, n_reac, n_prod)
 
     # Determine the phenomenological rate coefficients
-    k = np.zeros((n_isom+n_reac+n_prod, n_isom+n_reac+n_prod), np.float64)
+    k = np.zeros((n_isom+n_reac+n_prod, n_isom+n_reac+n_prod), float)
     # Rows relating to isomers
     for i in range(n_isom):
         for u in range(n_j):

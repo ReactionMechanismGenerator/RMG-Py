@@ -65,7 +65,7 @@ def get_rop_from_ckcsv(ckcsv_file):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col = np.array([float(r) for r in row[2:]], float)
                 content_col *= {'sec': 1.0, 'min': 60., 'hr': 3600., 'msec': 1e-3, 'microsec': 1e-6}[units]
                 first_col_dict[header] = content_col
                 continue
@@ -77,7 +77,7 @@ def get_rop_from_ckcsv(ckcsv_file):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col = np.array([float(r) for r in row[2:]], float)
                 content_col *= {'cm': 1.0, 'mm': 0.1, 'm': 100.}[units]
                 first_col_dict[header] = content_col
                 continue
@@ -88,7 +88,7 @@ def get_rop_from_ckcsv(ckcsv_file):
                 species_string = label.split('_ROP_')[0]
                 units = row[1].strip()[1:-1].lower()
                 header = ''
-                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col = np.array([float(r) for r in row[2:]], float)
                 if tokens[-1] == 'Total':
                     header += species_string + ' ROP ' + tokens[2] \
                               + ' ' + tokens[-1] + '_(' + units + ')'
@@ -126,7 +126,7 @@ def get_concentration_dict_from_ckcsv(ckcsv_file):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col = np.array([float(r) for r in row[2:]], float)
                 content_col *= {'sec': 1.0, 'min': 60., 'hr': 3600., 'msec': 1e-3, 'microsec': 1e-6}[units]
                 first_col_dict[header] = content_col
                 continue
@@ -138,7 +138,7 @@ def get_concentration_dict_from_ckcsv(ckcsv_file):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col = np.array([float(r) for r in row[2:]], float)
                 content_col *= {'cm': 1.0, 'mm': 0.1, 'm': 100.}[units]
                 first_col_dict[header] = content_col
                 continue
@@ -162,7 +162,7 @@ def get_concentration_dict_from_ckcsv(ckcsv_file):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col = np.array([float(r) for r in row[2:]], float)
                 first_col_dict[header] = content_col
                 continue
 
@@ -173,7 +173,7 @@ def get_concentration_dict_from_ckcsv(ckcsv_file):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col = np.array([float(r) for r in row[2:]], float)
                 content_col *= {'bar': 1.0, 'atm': 1.01325}[units]
                 first_col_dict[header] = content_col
                 continue
@@ -184,7 +184,7 @@ def get_concentration_dict_from_ckcsv(ckcsv_file):
                     if 'Soln' in tokens[-1]:
                         raise Exception("This function only supports ckcsv with one Soln!")
                     species_string = label.split('Mole_fraction_')[1]
-                    content_col = np.array([float(r) for r in row[2:]], np.float)
+                    content_col = np.array([float(r) for r in row[2:]], float)
                     header = species_string + ' Mole_fraction'
                     if species_string not in spc_conc_dict:
                         spc_conc_dict[species_string] = content_col

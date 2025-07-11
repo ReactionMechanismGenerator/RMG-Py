@@ -5,76 +5,93 @@ on:
     branches:
       - main
   pull_request:
+  schedule:
+    # * is a special character in YAML so you have to quote this string
+    - cron: "0 8 * * 1"
 
 jobs:
   build-documentation:
     runs-on: ubuntu-latest
-    strategy:
-      max-parallel: 5
     defaults:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v2
-      - name: Patch the environment file
+      - name: Sign into GitHub Actions Bot
         run: |
-          echo -e "\n  - libstdcxx-ng < 13\n" >> environment.yml
-          cat environment.yml
-      - name: Setup Mambaforge Python 3.7
-        uses: conda-incubator/setup-miniconda@v2
+          git config --global user.name "github-actions"
+          git config --global user.email "github-actions@github.com"
+
+      - name: Clone RMG-Py
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Miniforge Python 3.9
+        uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
-          miniforge-variant: Mambaforge
+          miniforge-variant: Miniforge3
           miniforge-version: latest
-          python-version: 3.7
+          python-version: "3.9"
           activate-environment: rmg_env
-          use-mamba: true
+          auto-update-conda: true
+          show-channel-urls: true
+          conda-remove-defaults: "true"
+
+      - name: Make libtiff Symlink to Avoid Runner Bug
+        run: | # This action may need to be removed/adjusted in future runs.
+          if [ ! -f /usr/lib/x86_64-linux-gnu/libtiff.so.5 ] && [ -f /usr/lib/x86_64-linux-gnu/libtiff.so.6 ]; then sudo ln -s /usr/lib/x86_64-linux-gnu/libtiff.so.6 /usr/lib/x86_64-linux-gnu/libtiff.so.5; fi
+          find /usr/lib -name libtiff*
+
       - name: Install sphinx
-        run: mamba install -y sphinx
-      - name: Mamba info
+        run: conda install -y sphinx~=5.0
+
+      - name: conda info
         run: |
-          mamba info
-          mamba list
-      - name: Install and link Julia dependencies 
-        run: |
-          julia -e "using Pkg; Pkg.add(PackageSpec(url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl\", rev=\"main\"))"
-          julia -e "using Pkg; Pkg.add(\"PyCall\"); Pkg.add(\"DifferentialEquations\")"
-          python -c "import julia; julia.install()"
-      - name: Install and compile RMG
+          conda info
+          conda list
+
+      - name: Clone RMG-database
         run: |
           cd ..
           git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
-          cd RMG-Py
-          sed -i '/embedsignature/s/# //g' setup.py
+
+      - name: Set Environment Variables
+        run: |
+          RUNNER_CWD=$(pwd)
+          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
+          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
+
+      - name: make RMG
+        run: |
+          make clean
           make
-      - name: Make documentation - for testing
-        if: ${{  github.event_name != 'push' || github.repository != 'ReactionMechanismGenerator/RMG-Py' }}
+
+      - name: Checkout gh-pages Branch
+        uses: actions/checkout@v2
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+          path: documentation/build/html
+          clean: false
+
+      - name: Build Documentation
         run: |
           cd documentation
-          sphinx-build -b html -d build/doctrees/ source/ build/html -w errors.log -W --keep-going
-      - name: Report documentation errors
-        if: ${{ failure() }}
-        run: |
-          cat documentation/errors.log
-      - name: Make documentation - to publish
-        if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
-        env:
-            GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
-        run: |
-          make -C documentation continous_integration_setup clean html
+          make html
+          cd build/html
+          touch .nojekyll
+          git add -A --force .
+          git diff --staged --exit-code --quiet || git commit -m "Automated documentation rebuild"  # only commit if changes were made
+
       - name: Check documentation links
         continue-on-error: true
         run: |
           cd documentation
           sphinx-build -b linkcheck -d build/doctrees/ source/ build/linkcheck | grep -e broken -e redirect | grep -v -e 'redirect  https://doi.org/' -e 'broken    https://doi.org/.* 403 Client Error: Forbidden'
-      - name: Publish documentation
+
+      - name: Publish Updated Documentation
         if: ${{  github.event_name == 'push' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
-        env:
-            GH_TOKEN: ${{ secrets.RMG_DEV_TOKEN }}
-            COMMITMESSAGE: "Automatic documentation rebuild"
-            GIT_AUTHOR_NAME: "RMG Bot"
-            GIT_AUTHOR_EMAIL: "rmg_dev@mit.edu"
-            GIT_COMMITTER_NAME: "RMG Bot"
-            GIT_COMMITTER_EMAIL: "rmg_dev@mit.edu"
         run: |
-          make -C documentation publish
+          cd documentation/build/html
+          git push origin gh-pages

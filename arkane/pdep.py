@@ -317,7 +317,7 @@ class PressureDependenceJob(object):
         if self.Tlist is None:
             if self.interpolation_model[0].lower() == 'chebyshev':
                 # Distribute temperatures on a Gauss-Chebyshev grid
-                Tlist = np.zeros(Tcount, np.float64)
+                Tlist = np.zeros(Tcount, float)
                 for i in range(Tcount):
                     T = -math.cos((2 * i + 1) * math.pi / (2 * self.Tcount))
                     T = 2.0 / ((1.0 / Tmax - 1.0 / Tmin) * T + 1.0 / Tmax + 1.0 / Tmin)
@@ -389,7 +389,7 @@ class PressureDependenceJob(object):
             pass
         elif self.interpolation_model[0].lower() == 'chebyshev':
             # Distribute pressures on a Gauss-Chebyshev grid
-            Plist = np.zeros(Pcount, np.float64)
+            Plist = np.zeros(Pcount, float)
             for i in range(Pcount):
                 P = -math.cos((2 * i + 1) * math.pi / (2 * self.Pcount))
                 P = 10 ** (0.5 * ((math.log10(Pmax) - math.log10(Pmin)) * P + math.log10(Pmax) + math.log10(Pmin)))

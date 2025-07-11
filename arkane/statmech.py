@@ -37,6 +37,7 @@ import logging
 import math
 import os
 import pathlib
+import warnings
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -252,9 +253,9 @@ def hinderedRotor2D(scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2,
     return [scandir, pivots1, top1, symmetry1, pivots2, top2, symmetry2, symmetry]
 
 
-def hinderedRotorClassicalND(calcPath, pivots, tops, sigmas, semiclassical):
+def hinderedRotorClassicalND(calc_path, pivots, tops, sigmas, semiclassical):
     """Read an N dimensional hindered rotor directive, and return the attributes in a list"""
-    return [calcPath, pivots, tops, sigmas, semiclassical]
+    return [calc_path, pivots, tops, sigmas, semiclassical]
 
 
 class StatMechJob(object):
@@ -575,6 +576,8 @@ class StatMechJob(object):
         # and the zero point energy scaling factor, see https://pubs.acs.org/doi/10.1021/ct100326h Section 3.1.3.
         zpe_scale_factor = self.frequencyScaleFactor / 1.014
 
+        e_electronic_with_corrections, zpe = 0, 0
+
         logging.debug('    Reading energy...')
         if e0 is None:
             if e_electronic is None:
@@ -686,7 +689,7 @@ class StatMechJob(object):
             # Set the difference as the isodesmic EO correction
             e_electronic_with_corrections += isodesmic_thermo.value_si - uncorrected_thermo
 
-        e0 = e_electronic_with_corrections + zpe
+        e0 = e_electronic_with_corrections + zpe if e0 is None else e0
         logging.debug('         E0 (0 K) = {0:g} kcal/mol'.format(e0 / 4184.))
         conformer.E0 = (e0 * 0.001, "kJ/mol")
 
@@ -711,7 +714,7 @@ class StatMechJob(object):
         else:
             self.supporting_info.append(None)
         self.supporting_info.append(e_electronic)
-        self.supporting_info.append(e_electronic + zpe)
+        self.supporting_info.append(e_electronic + zpe if e_electronic is not None and zpe is not None else None)
         self.supporting_info.append(e0)
         self.supporting_info.append(list([symbol_by_number[x] for x in number]))  # atom symbols
         self.supporting_info.append(coordinates)
@@ -923,7 +926,7 @@ class StatMechJob(object):
         Plot the potential for the rotor, along with its cosine and Fourier
         series potential fits, and save it in the `hindered_rotor_plots` attribute.
         """
-        phi = np.arange(0, 6.3, 0.02, np.float64)
+        phi = np.arange(0, 6.3, 0.02, float)
         Vlist_cosine = np.zeros_like(phi)
         Vlist_fourier = np.zeros_like(phi)
         for i in range(phi.shape[0]):
@@ -999,7 +1002,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     constant matrix and use this to determine the vibrational frequencies. The
     list of vibrational frequencies is returned in cm^-1.
 
-    Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate
+    Refer to Gaussian whitepaper (https://gaussian.com/vib/) for procedure to calculate
     harmonic oscillator vibrational frequencies using the force constant matrix.
     """
     n_rotors = 0
@@ -1050,7 +1053,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     if linear:
         external = 5
 
-    d = np.zeros((n_atoms * 3, external), np.float64)
+    d = np.zeros((n_atoms * 3, external), float)
 
     # Transform the coordinates to the principal axes
     p = np.dot(coordinates, inertia_xyz)
@@ -1076,9 +1079,9 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     # Make sure projection matrix is orthonormal
 
-    inertia = np.identity(n_atoms * 3, np.float64)
+    inertia = np.identity(n_atoms * 3, float)
 
-    p = np.zeros((n_atoms * 3, 3 * n_atoms + external), np.float64)
+    p = np.zeros((n_atoms * 3, 3 * n_atoms + external), float)
 
     p[:, 0:external] = d[:, 0:external]
     p[:, external:external + 3 * n_atoms] = inertia[:, 0:3 * n_atoms]
@@ -1111,7 +1114,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             i += 1
 
     # T is the transformation vector from cartesian to internal coordinates
-    T = np.zeros((n_atoms * 3, 3 * n_atoms - external), np.float64)
+    T = np.zeros((n_atoms * 3, 3 * n_atoms - external), float)
 
     T[:, 0:3 * n_atoms - external] = p[:, external:3 * n_atoms]
 
@@ -1132,12 +1135,12 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     logging.debug('Frequencies from internal Hessian')
     for i in range(3 * n_atoms - external):
-        with np.warnings.catch_warnings():
-            np.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
             logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
     # Now we can start thinking about projecting out the internal rotations
-    d_int = np.zeros((3 * n_atoms, n_rotors), np.float64)
+    d_int = np.zeros((3 * n_atoms, n_rotors), float)
 
     counter = 0
     for i, rotor in enumerate(rotors):
@@ -1188,7 +1191,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     # Normal modes in mass weighted cartesian coordinates
     vmw = np.dot(T, v)
-    eigm = np.zeros((3 * n_atoms - external, 3 * n_atoms - external), np.float64)
+    eigm = np.zeros((3 * n_atoms - external, 3 * n_atoms - external), float)
 
     for i in range(3 * n_atoms - external):
         eigm[i, i] = eig[i]
@@ -1231,7 +1234,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     # Do the projection
     d_int_proj = np.dot(vmw.T, d_int)
     proj = np.dot(d_int, d_int.T)
-    inertia = np.identity(n_atoms * 3, np.float64)
+    inertia = np.identity(n_atoms * 3, float)
     proj = inertia - proj
     fm = np.dot(proj, np.dot(fm, proj))
     # Get eigenvalues of mass-weighted force constant matrix
@@ -1243,8 +1246,8 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
 
     logging.debug('Frequencies from projected Hessian')
     for i in range(3 * n_atoms):
-        with np.warnings.catch_warnings():
-            np.warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
+        with warnings.catch_warnings():
+            warnings.filterwarnings('ignore', r'invalid value encountered in sqrt')
             logging.debug(np.sqrt(eig[i]) / (2 * math.pi * constants.c * 100))
 
     return np.sqrt(eig[-n_vib:]) / (2 * math.pi * constants.c * 100)

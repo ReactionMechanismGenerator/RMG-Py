@@ -73,7 +73,7 @@ cpdef generate_full_me_matrix(network, bint products=True, bint exclude_associat
     beta = 1. / (constants.R * temperature)
 
     # Construct accounting matrix
-    indices = -np.ones((n_isom, n_grains, n_j), np.int)
+    indices = -np.ones((n_isom, n_grains, n_j), int)
     n_rows = 0
     for r in range(n_grains):
         for s in range(n_j):
@@ -86,7 +86,7 @@ cpdef generate_full_me_matrix(network, bint products=True, bint exclude_associat
         n_rows += n_prod
 
     # Construct full ME matrix
-    me_mat = np.zeros([n_rows, n_rows], np.float64)
+    me_mat = np.zeros([n_rows, n_rows], float)
 
     # Collision terms
     for i in range(n_isom):
@@ -172,7 +172,7 @@ def states_to_configurations(network, indices, state, exclude_association=False)
     else:
         xs = np.zeros(network.n_isom+network.n_reac+network.n_prod)
     for i in range(network.n_isom):
-        cum = np.float64(0.0)
+        cum = float(0.0)
         for r in range(network.n_grains):
             for s in range(network.n_j):
                 index = indices[i,r,s]

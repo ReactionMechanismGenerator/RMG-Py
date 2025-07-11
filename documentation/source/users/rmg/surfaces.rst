@@ -30,7 +30,7 @@ The full database of available metals can be found in ``input/surface/libraries/
 Here is an example catalyst properties block for Pt(111)::
 
     catalystProperties(
-        metal = Pt111
+        metal = "Pt111"
     )
 
 Here is an example custom catalyst properties block for Pt(111)::
@@ -340,7 +340,7 @@ input file specifications
 Coverage dependent parameters are applied if the "coverage_dependence" attribute is set to "True" in the catalyst properties block::
 
     catalystProperties(
-        metal = Pt111
+        metal = "Pt111"
         coverageDependence=True,
     )
 
