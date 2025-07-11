@@ -1,3 +1,5 @@
+.. _rmgpy.molecule.Group:
+
 ********************
 rmgpy.molecule.Group
 ********************

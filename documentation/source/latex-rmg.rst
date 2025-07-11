@@ -8,19 +8,19 @@ RMG is an automatic chemical reaction mechanism generator
 that constructs kinetic models composed of elementary chemical reaction 
 steps using a general understanding of how molecules react. This documentation is for the newer Python version of RMG that we call RMG-Py.
 
-+---------------------------------------------+----------------------------------------------------------------------------------------+
-| I want to...                                | Resource                                                                               |
-+=============================================+========================================================================================+
-| analyze models & search databases           | `RMG website resources <https://rmg.mit.edu/>`__  (no download needed)                 |
-+---------------------------------------------+----------------------------------------------------------------------------------------+
-| create mechanisms automatically             | Download RMG with the RMG User's Guide                                                 |
-+---------------------------------------------+----------------------------------------------------------------------------------------+
-| make transition state theory calculations   | Run Arkane after downloading RMG. See the Arkane User's Guide                          |
-+---------------------------------------------+----------------------------------------------------------------------------------------+
-| post an issue with RMG                      | `GitHub issues page <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`__   |
-+---------------------------------------------+----------------------------------------------------------------------------------------+
-| contribute to the RMG project               | `RMG developer's wiki <https://github.com/ReactionMechanismGenerator/RMG-Py/wiki>`__   |
-+---------------------------------------------+----------------------------------------------------------------------------------------+
++---------------------------------------------+---------------------------------------------------------------------------------------------------------------+
+| I want to...                                | Resource                                                                                                      |
++=============================================+===============================================================================================================+
+| analyze models & search databases           | `RMG website resources <https://rmg.mit.edu/>`__  (no download needed)                                        |
++---------------------------------------------+---------------------------------------------------------------------------------------------------------------+
+| create mechanisms automatically             | Download RMG with the RMG User's Guide                                                                        |
++---------------------------------------------+---------------------------------------------------------------------------------------------------------------+
+| make transition state theory calculations   | Run Arkane after downloading RMG. See the Arkane User's Guide                                                 |
++---------------------------------------------+---------------------------------------------------------------------------------------------------------------+
+| post an issue with RMG                      | `GitHub issues page <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`__                          |
++---------------------------------------------+---------------------------------------------------------------------------------------------------------------+
+| contribute to the RMG project               | `Contributor guidelines <https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CONTRIBUTING.md>`__   |
++---------------------------------------------+---------------------------------------------------------------------------------------------------------------+
 
 Arkane is developed and distributed as part of RMG-Py, but can be used as a stand-alone
 application for Thermochemistry, Transition State Theory, and Master Equation chemical kinetics

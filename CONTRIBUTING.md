@@ -29,7 +29,7 @@ Thank you for contributing to RMG-Py! Please take a moment to review our guideli
 
 ### **Do you want to contribute to the documentation?**
 
-* Documentation is [hosted here](http://reactionmechanismgenerator.github.io/RMG-Py/) using [Sphinx](https://www.sphinx-doc.org/en/master/). 
+* Documentation is [hosted here](https://reactionmechanismgenerator.github.io/RMG-Py/) using [Sphinx](https://www.sphinx-doc.org/en/master/). 
 
 * The live version of the documentation is hosted on the `gh-pages` branch which is updated upon pushes to the `main` branch of RMG-Py.
 

@@ -1376,7 +1376,7 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
                         "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
                         "restarting an RMG job see the documentation for restarting from a seed mechanism at "
-                        "http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
+                        "https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
 
     rmg.name = name
     rmg.generate_seed_each_iteration = generateSeedEachIteration
@@ -1460,7 +1460,7 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
 def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None):
     parent_dir = os.path.dirname(rmg.input_file)
     rmg.restart = True
-    doc_link = 'http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
+    doc_link = 'https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
 
     if path:
         if any((coreSeed, edgeSeed, filters, speciesMap)):
