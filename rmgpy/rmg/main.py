@@ -768,8 +768,8 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        if requires_rms:
-            self.attach(RMSWriter(self.output_directory))
+        
+        self.attach(RMSWriter(self.output_directory))
 
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
