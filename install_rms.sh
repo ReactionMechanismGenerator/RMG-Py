@@ -59,7 +59,7 @@ echo "Environment variables referencing JULIA:"
 env | grep JULIA
 
 # Use RMS_BRANCH environment variable if set, otherwise default to for_rmg
-RMS_BRANCH=${RMS_BRANCH:-for_rmg}
+RMS_BRANCH=${RMS_BRANCH:-rmg_new}
 echo "Installing ReactionMechanismSimulator from branch: $RMS_BRANCH"
 
 julia -e "using Pkg; Pkg.add(Pkg.PackageSpec(name=\"ReactionMechanismSimulator\", url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git\", rev=\"$RMS_BRANCH\")); using ReactionMechanismSimulator; Pkg.instantiate()" || echo "RMS install error - continuing anyway ¯\_(ツ)_/¯"
