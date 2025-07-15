@@ -77,7 +77,7 @@ cdef class Configuration(object):
         return string
 
     property E0:
-        """The ground-state energy of the configuration in J/mol."""
+        """The ground-state energy of the configuration in J/mol. Applies the energy_correction."""
         def __get__(self):
             return sum([float(spec.conformer.E0.value_si) for spec in self.species]) + self.energy_correction 
 
