@@ -73,6 +73,7 @@ cdef class Configuration(object):
         if self.sum_states is not None: string += 'sum_states={0}, '.format(self.sum_states)
         string += 'active_k_rotor={0}, '.format(self.active_k_rotor)
         string += 'active_j_rotor={0}, '.format(self.active_j_rotor)
+        if self.energy_correction != 0.0: string += 'energy_correction={0}, '.format(self.energy_correction)
         string += ')'
         return string
 
