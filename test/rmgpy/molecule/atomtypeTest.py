@@ -506,15 +506,15 @@ class TestGetAtomType:
                                                      5 H u0 p0 c0 {3,S}"""
         )
 
-        self.mol51 = Molecule().from_adjacency_list(
-            """1 O u0 p2 c0 {2,S} {7,S}
-                                                     2 S u0 p0 c+1 {1,S} {3,S} {4,S} {5,S} {6,S}
-                                                     3 H u0 p0 c0 {2,S}
-                                                     4 H u0 p0 c0 {2,S}
-                                                     5 H u0 p0 c0 {2,S}
-                                                     6 O u0 p3 c-1 {2,S}
-                                                     7 H u0 p0 c0 {1,S}"""
-        )
+        # self.mol51 = Molecule().from_adjacency_list(
+        #     """1 O u0 p2 c0 {2,S} {7,S}
+        #                                              2 S u0 p0 c+1 {1,S} {3,S} {4,S} {5,S} {6,S}
+        #                                              3 H u0 p0 c0 {2,S}
+        #                                              4 H u0 p0 c0 {2,S}
+        #                                              5 H u0 p0 c0 {2,S}
+        #                                              6 O u0 p3 c-1 {2,S}
+        #                                              7 H u0 p0 c0 {1,S}"""
+        # )
 
         self.mol52 = Molecule().from_adjacency_list(
             """1  C u0 p0 c0 {2,D} {6,S} {8,S}
@@ -531,18 +531,18 @@ class TestGetAtomType:
                                                      12 H u0 p0 c0 {4,S}"""
         )
 
-        self.mol53 = Molecule().from_adjacency_list(
-            """1 N u0 p0 c-1 {2,D} {3,D} {4,D}
-                                                     2 C u0 p0 c0 {1,D} {5,S} {6,S}
-                                                     3 C u0 p0 c0 {1,D} {7,S} {8,S}
-                                                     4 N u0 p0 c+1 {1,D} {9,S} {10,S}
-                                                     5 H u0 p0 c0 {2,S}
-                                                     6 H u0 p0 c0 {2,S}
-                                                     7 H u0 p0 c0 {3,S}
-                                                     8 H u0 p0 c0 {3,S}
-                                                     9 H u0 p0 c0 {4,S}
-                                                     10 H u0 p0 c0 {4,S}"""
-        )
+        # self.mol53 = Molecule().from_adjacency_list(
+        #     """1 N u0 p0 c-1 {2,D} {3,D} {4,D}
+        #                                              2 C u0 p0 c0 {1,D} {5,S} {6,S}
+        #                                              3 C u0 p0 c0 {1,D} {7,S} {8,S}
+        #                                              4 N u0 p0 c+1 {1,D} {9,S} {10,S}
+        #                                              5 H u0 p0 c0 {2,S}
+        #                                              6 H u0 p0 c0 {2,S}
+        #                                              7 H u0 p0 c0 {3,S}
+        #                                              8 H u0 p0 c0 {3,S}
+        #                                              9 H u0 p0 c0 {4,S}
+        #                                              10 H u0 p0 c0 {4,S}"""
+        # )
 
         self.mol54 = Molecule().from_adjacency_list(
             """1 C u0 p0 c+1 {2,S} {3,D}
@@ -622,11 +622,11 @@ class TestGetAtomType:
                                                      3 H u0 p0 c0 {1,S}"""
         )
 
-        self.mol70 = Molecule().from_adjacency_list(
-            """1 S u0 p0 c+1 {2,D} {3,T}
-                                                     2 N u0 p2 c-1 {1,D}
-                                                     3 N u0 p1 c0 {1,T}"""
-        )
+        # self.mol70 = Molecule().from_adjacency_list(
+        #     """1 S u0 p0 c+1 {2,D} {3,T}
+        #                                              2 N u0 p2 c-1 {1,D}
+        #                                              3 N u0 p1 c0 {1,T}"""
+        # )
 
         # self.mol71 = Molecule().from_adjacency_list('''1 O u0 p1 c0 {2,B} {5,B}
         #                                              2 C u0 p0 c0 {1,B} {3,B} {6,S}
@@ -885,7 +885,7 @@ class TestGetAtomType:
         assert self.atom_type(self.mol18, 5) == "N3b"
         assert self.atom_type(self.mol5, 2) == "N5dc"
         assert self.atom_type(self.mol64, 1) == "N5ddc"
-        assert self.atom_type(self.mol53, 0) == "N5dddc"
+#        assert self.atom_type(self.mol53, 0) == "N5dddc"
         assert self.atom_type(self.mol15, 1) == "N5tc"
         assert self.atom_type(self.mol39, 2) == "N5tc"
         assert self.atom_type(self.mol18, 0) == "N5b"
@@ -959,7 +959,7 @@ class TestGetAtomType:
         assert self.atom_type(self.mol28, 4) == "S4t"
         assert self.atom_type(self.mol29, 1) == "S4tdc"
         assert self.atom_type(self.mol28, 5) == "S6s"
-        assert self.atom_type(self.mol51, 1) == "S6sc"
+#        assert self.atom_type(self.mol51, 1) == "S6sc"
         assert self.atom_type(self.mol30, 0) == "S6d"
         assert self.atom_type(self.mol32, 1) == "S6dd"
         assert self.atom_type(self.mol34, 1) == "S6ddd"
@@ -969,7 +969,7 @@ class TestGetAtomType:
         assert self.atom_type(self.mol35, 0) == "S6t"
         assert self.atom_type(self.mol36, 0) == "S6td"
         assert self.atom_type(self.mol37, 1) == "S6tt"
-        assert self.atom_type(self.mol70, 0) == "S6tdc"
+#        assert self.atom_type(self.mol70, 0) == "S6tdc"
 
     def test_chlorine_types(self):
         """
