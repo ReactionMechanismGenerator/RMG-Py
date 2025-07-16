@@ -143,6 +143,7 @@ class RMG(util.Subject):
     `units`                                                    The unit system to use to save output files (currently must be 'si')
     `generate_output_html`                                     ``True`` to draw pictures of the species and reactions, saving a visualized model in an output HTML file.  ``False`` otherwise
     `generate_plots`                                           ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
+    `generate_PES_diagrams`                                    ``True`` to generate potential energy surface diagrams for pressure dependent networks in the model, ``False`` otherwise
     `verbose_comments`                                         ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
     `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
     `keep_irreversible`                                        ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
@@ -222,6 +223,7 @@ class RMG(util.Subject):
         self.units = "si"
         self.generate_output_html = None
         self.generate_plots = None
+        self.generate_PES_diagrams = None
         self.save_simulation_profiles = None
         self.verbose_comments = None
         self.save_edge_species = None
@@ -271,6 +273,7 @@ class RMG(util.Subject):
         if self.pressure_dependence:
             self.pressure_dependence.output_file = self.output_directory
             self.reaction_model.pressure_dependence = self.pressure_dependence
+            self.pressure_dependence.generate_PES_diagrams = self.generate_PES_diagrams
         if self.solvent:
             self.reaction_model.solvent_name = self.solvent
 

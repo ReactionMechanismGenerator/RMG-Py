@@ -217,6 +217,8 @@ options(
     generateOutputHTML=True,
     # generates plots of the RMG's performance statistics. Not helpful if you just want a model.
     generatePlots=False,
+    # generates potential energy surface diagrams for pressure dependent networks in the model.
+    generatePESDiagrams=False,
     # saves mole fraction of species in 'solver/' to help you create plots
     saveSimulationProfiles=False,
     # gets RMG to output comments on where kinetics were obtained in the chemkin file.

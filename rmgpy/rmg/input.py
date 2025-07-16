@@ -1369,7 +1369,7 @@ def pressure_dependence(
 
 
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
-            generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False,
+            generateOutputHTML=False, generatePlots=False, generatePESDiagrams=False, saveSimulationProfiles=False, verboseComments=False,
             saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00',
             saveSeedModulus=-1):
     if saveRestartPeriod:
@@ -1386,6 +1386,9 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
         logging.warning('Generate Output HTML option was turned on. Note that this will slow down model generation.')
     rmg.generate_output_html = generateOutputHTML
     rmg.generate_plots = generatePlots
+    rmg.generate_PES_diagrams = generatePESDiagrams
+    if generatePESDiagrams:
+        logging.info('Potential Energy Surface diagrams will be generated in the "pdep" folder.')
     rmg.save_simulation_profiles = saveSimulationProfiles
     rmg.verbose_comments = verboseComments
     if saveEdgeSpecies:
@@ -1835,6 +1838,7 @@ def save_input_file(path, rmg):
     f.write('    units = "{0}",\n'.format(rmg.units))
     f.write('    generateOutputHTML = {0},\n'.format(rmg.generate_output_html))
     f.write('    generatePlots = {0},\n'.format(rmg.generate_plots))
+    f.write('    generatePESDiagrams = {0},\n'.format(rmg.generate_PES_diagrams))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.save_simulation_profiles))
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.save_edge_species))
     f.write('    keepIrreversible = {0},\n'.format(rmg.keep_irreversible))

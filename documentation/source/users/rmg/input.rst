@@ -965,6 +965,7 @@ Miscellaneous options::
         units='si',
         generateOutputHTML=True,
         generatePlots=False,
+		generatePESDiagrams=False,
         saveSimulationProfiles=True,
         verboseComments=False,
         saveEdgeSpecies=True,
@@ -985,6 +986,8 @@ Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to sa
 HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs.
 
 Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
+
+Setting ``generatePESDiagrams`` to ``True`` will generate potential energy surface diagrams for each pressure dependent network in the model.  These diagrams will be saved in the ``pdep/`` folder in the output directory. Only applicable if pressure dependence is enabled.
 
 Setting ``saveSimulationProfiles`` to ``True`` will make RMG save csv files of the simulation in .csv files in the ``solver/`` folder.  The filename will be ``simulation_1_26.csv`` where the first number corresponds to the reaciton system, and the second number corresponds to the total number of species at the point of the simulation.  Therefore, the highest second number will indicate the latest simulation that RMG has complete while enlarging the core model.  The information inside the csv file will provide the time, reactor volume in m^3, as well as mole fractions of the individual species.
 
