@@ -788,25 +788,21 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Log the network being updated
         logging.info("Updating {0!s}".format(self))
 
-        E0 = []
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:
             spec = isomer.species[0]
             if not spec.has_statmech():
                 spec.generate_statmech()
-            E0.append(spec.conformer.E0.value_si)
         for reactants in self.reactants:
             for spec in reactants.species:
                 if not spec.has_statmech():
                     spec.generate_statmech()
-                E0.append(spec.conformer.E0.value_si)
         # Also generate states data for any path reaction reactants, so we can
         # always apply the ILT method in the direction the kinetics are known
         for reaction in self.path_reactions:
             for spec in reaction.reactants:
                 if not spec.has_statmech():
                     spec.generate_statmech()
-                E0.append(spec.conformer.E0.value_si)
         # While we don't need the frequencies for product channels, we do need
         # the E0, so create a conformer object with the E0 for the product
         # channel species if necessary
@@ -814,12 +810,12 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             for spec in products.species:
                 if spec.conformer is None:
                     spec.conformer = Conformer(E0=spec.get_thermo_data().E0)
-                E0.append(spec.conformer.E0.value_si)
 
-        # Use the average E0 as the reference energy (`energy_correction`) for the network
+        # Use the lowest E0 as the reference energy (`energy_correction`) for the network
         # The `energy_correction` will be added to the free energies and enthalpies for each
         # configuration in the network.
-        energy_correction = -np.array(E0).mean()
+        energy_correction = -min(sum(spec.conformer.E0.value_si for spec in stationary_point.species)
+                                 for stationary_point in self.reactants + self.isomers + self.products)
         for spec in self.reactants + self.products + self.isomers:
             spec.energy_correction = energy_correction
         self.energy_correction = energy_correction
