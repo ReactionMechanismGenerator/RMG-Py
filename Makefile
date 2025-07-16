@@ -127,3 +127,25 @@ eg4: all
 	cp examples/thermoEstimator/input.py testing/eg4/input.py
 	@ echo "Running thermo data estimator example. This tests QM."
 	python scripts/thermoEstimator.py testing/eg4/input.py
+
+# RMS reactor examples (require Julia)
+eg8: all
+	mkdir -p testing/eg8
+	rm -rf testing/eg8/*
+	cp examples/rmg/rms_constant_V/input.py testing/eg8/input.py
+	@ echo "Running RMS constantVIdealGasReactor example (requires Julia)"
+	python rmg.py testing/eg8/input.py
+
+eg9: all
+	mkdir -p testing/eg9
+	rm -rf testing/eg9/*
+	cp examples/rmg/nox_transitory_edge/input.py testing/eg9/input.py
+	@ echo "Running RMS constantTPIdealGasReactor example (requires Julia)"
+	python rmg.py testing/eg9/input.py
+
+eg10: all
+	mkdir -p testing/eg10
+	rm -rf testing/eg10/*
+	cp examples/rmg/liquid_cat/input.py testing/eg10/input.py
+	@ echo "Running RMS liquidSurfaceReactor example (requires Julia)"
+	python rmg.py testing/eg10/input.py

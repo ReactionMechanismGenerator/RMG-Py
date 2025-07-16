@@ -465,7 +465,7 @@ def log_header(level=logging.INFO):
     logging.log(level, '#   Authors: RMG Developers (rmg_dev@mit.edu)                  #')
     logging.log(level, '#   P.I.s:   William H. Green (whgreen@mit.edu)                #')
     logging.log(level, '#            Richard H. West (r.west@neu.edu)                  #')
-    logging.log(level, '#   Website: http://reactionmechanismgenerator.github.io/      #')
+    logging.log(level, '#   Website: https://reactionmechanismgenerator.github.io/      #')
     logging.log(level, '#                                                              #')
     logging.log(level, '################################################################')
     logging.log(level, '')

@@ -28,8 +28,7 @@ Running RMG
 
 #. **How do I run a basic RMG job?**
 
-   Please see step-by-step instructions in the either the :ref:`binary<anacondaUser>` or :ref:`source <anacondaDeveloper>`
-   installation instructions. In general, the syntax is ::
+   Please see step-by-step instructions in the installation instructions. In general, the syntax is ::
 
     rmg.py input.py
 

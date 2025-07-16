@@ -1002,7 +1002,7 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     constant matrix and use this to determine the vibrational frequencies. The
     list of vibrational frequencies is returned in cm^-1.
 
-    Refer to Gaussian whitepaper (http://gaussian.com/vib/) for procedure to calculate
+    Refer to Gaussian whitepaper (https://gaussian.com/vib/) for procedure to calculate
     harmonic oscillator vibrational frequencies using the force constant matrix.
     """
     n_rotors = 0

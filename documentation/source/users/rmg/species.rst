@@ -4,7 +4,7 @@
 Species Representation
 **********************
 
-The base class for chemical structures in RMG is ``Graph`` (see :ref:`rmgpy.molecule.Graph`), 
+The base class for chemical structures in RMG is ``Graph`` (see :ref:`rmgpy.molecule.graph.Graph`), 
 which is a basic implementation of a 2D mathematical graph. 
 A graph is comprised of a set of vertices connected by a set of edges. 
 In RMG, the Graph class does not store any chemical information on its own, 

@@ -52,7 +52,7 @@ from rmgpy.exceptions import DependencyError
 def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_order=False):
     """
     Convert a molecular structure to a RDKit rdmol object. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
+    `RDKit <https://rdkit.org/>`_ to perform the conversion.
     Perceives aromaticity and, unless remove_h==False, removes Hydrogen atoms.
 
     If return_mapping==True then it also returns a dictionary mapping the
@@ -131,7 +131,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
 def from_rdkit_mol(mol, rdkitmol, raise_atomtype_exception=True):
     """
     Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
+    `RDKit <https://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
     cython.declare(i=cython.int,
@@ -234,7 +234,7 @@ def debug_rdkit_mol(rdmol, level=logging.INFO):
 def to_ob_mol(mol, return_mapping=False, save_order=False):
     """
     Convert a molecular structure to an OpenBabel OBMol object. Uses
-    `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+    `OpenBabel <https://openbabel.org/>`_ to perform the conversion.
     """
     if openbabel is None:
         raise DependencyError('OpenBabel is not installed. Please install or use RDKit.')
@@ -279,7 +279,7 @@ def to_ob_mol(mol, return_mapping=False, save_order=False):
 def from_ob_mol(mol, obmol, raise_atomtype_exception=True):
     """
     Convert a OpenBabel Mol object `obmol` to a molecular structure. Uses
-    `OpenBabel <http://openbabel.org/>`_ to perform the conversion.
+    `OpenBabel <https://openbabel.org/>`_ to perform the conversion.
 
     It estimates radical placement based on undervalence of atoms,
     and assumes overall spin multiplicity is radical count + 1

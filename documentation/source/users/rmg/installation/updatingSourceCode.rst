@@ -32,8 +32,8 @@ We also recommend that the RMS julia package is updated::
     julia -e 'using Pkg; Pkg.update("ReactionMechanismSimulator")'
 
 For more information about how to use the Git workflow to make changes to the source code, please
-refer to the handy `Git Tutorial <http://git-scm.com/docs/gittutorial>`_
+refer to the handy `Git Tutorial <https://git-scm.com/docs/gittutorial>`_
 
 For information on updating your local repository from ``https`` to ``ssh``,
 please see `Managing remote repositories
-<https://docs.github.com/en/get-started/getting-started-with-git/managing-remote-repositories>`_
+<https://docs.github.com/en/get-started/git-basics/managing-remote-repositories>`_

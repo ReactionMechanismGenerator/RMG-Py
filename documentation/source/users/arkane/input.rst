@@ -170,7 +170,7 @@ Frequency Scale Factor
 ======================
 
 Frequency scale factors are empirically fit to experiment for different ``modelChemistry``.
-Refer to NIST website for values (http://cccbdb.nist.gov/vibscalejust.asp).
+Refer to NIST website for values (https://cccbdb.nist.gov/vibscalejustx.asp).
 For CBS-QB3, which is not included in the link above, ``frequencyScaleFactor = 0.99`` according to Montgomery et al.
 (*J. Chem. Phys. 1999, 110, 2822–2827*).
 The frequency scale factor is automatically assigned according to the supplied ``modelChemistry``, if available
@@ -617,7 +617,7 @@ systems in literature. For example, if the user is interested in a pressure-depe
 formula C7H8, the single exponential down parameters for toluene in helium availabe from literature could be used for
 all unimolecular isomers in the network (assuming helium is the bath gas). One helpful literature source for calculated
 exponential down parameters is the following paper:
-http://www.sciencedirect.com/science/article/pii/S1540748914001084#s0060
+http://www.sciencedirect.com/science/article/pii/S1540748914001084
 
 
 Option #2: Directly Enter Molecular Properties
@@ -1056,7 +1056,7 @@ An example of the ``network`` function is given below along with a scheme of the
 
 .. image:: acetyl+O2.jpg
 
-Image source: `J.W. Allen, PhD dissertation, MIT 2013 <http://hdl.handle.net/1721.1/81677>`_,
+Image source: `J.W. Allen, PhD dissertation, MIT 2013 <https://dspace.mit.edu/handle/1721.1/81677>`_,
 calculated at the RQCISD(T)/CBS//B3LYP/6-311++G(d,p) level of theory
 
 Pressure Dependent Rate Calculation

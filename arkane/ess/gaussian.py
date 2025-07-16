@@ -524,7 +524,7 @@ class GaussianLog(ESSAdapter):
         parameters after letter_spec is found. If not specified or False, it will
         return the preceeding letters, which are typically the atom numbers.
 
-        More information about the syntax can be found http://gaussian.com/opt/
+        More information about the syntax can be found https://gaussian.com/opt/
         """
         output = []
         reached_input_spec_section = False

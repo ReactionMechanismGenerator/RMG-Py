@@ -32,8 +32,10 @@ Contains classes for building RMS simulations
 """
 import itertools
 import logging
+import os
 
 import numpy as np
+import rmgpy
 
 from rmgpy.data.solvation import SolventData
 from rmgpy.kinetics.arrhenius import (
@@ -58,16 +60,29 @@ from rmgpy.species import Species
 from rmgpy.thermo.nasa import NASA, NASAPolynomial
 from rmgpy.thermo.thermodata import ThermoData
 
-
-NO_JULIA = True
-try:
-    from juliacall import Main
-    Main.seval("using PythonCall")
-    Main.seval("using ReactionMechanismSimulator")
-    Main.seval("using ReactionMechanismSimulator.Sundials")
-    NO_JULIA = False
-except Exception as e:
-    logging.warning(f"Julia import failed, RMS reactors not available.\nException: {str(e)}\nStacktrace:\n{e.__traceback__}")
+class LazyMain:
+    """
+    A Lazy wrapper for the juliacall Main module, that will delay importing
+    the underlying Main module until it is first called.
+    This is to delay loading Julia until it's really needed.
+    """
+    # If you modify this class, please consider making similar changes to
+    # rmgpy/pdep/sls.py, which has a similar LazyMain class.
+    def __getattr__(self, name):
+        try:
+            from juliacall import Main as JuliaMain
+            Main = JuliaMain
+            Main.seval("using PythonCall")
+            Main.seval("using ReactionMechanismSimulator")
+            Main.seval("using ReactionMechanismSimulator.Sundials")
+        except Exception as e:
+            logging.error("Failed to import Julia and load ReactionmechanismSimulator. "
+                          "To use phase systems and RMS reactors, install RMG-Py with RMS.")
+            logging.exception(e)
+            raise
+        globals()['Main'] = JuliaMain  # Replace proxy with real thing, for next time it's called
+        return getattr(JuliaMain, name) # Return the attribute for the first time it's called
+Main = LazyMain()
 
 
 def to_julia(obj):
@@ -85,6 +100,7 @@ def to_julia(obj):
     object : Main.Dict | Main.Vector | Main.Matrix | object
         The Julia object
     """
+    
     if isinstance(obj, dict):
         return Main.PythonCall.pyconvert(Main.Dict, obj)
     elif isinstance(obj, (list, np.ndarray)):

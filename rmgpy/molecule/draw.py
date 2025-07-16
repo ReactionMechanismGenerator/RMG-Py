@@ -29,14 +29,14 @@
 
 """
 This module provides functionality for automatic two-dimensional drawing of the
-`skeletal formulae <http://en.wikipedia.org/wiki/Skeletal_formula>`_ of a wide
+`skeletal formulae <https://en.wikipedia.org/wiki/Skeletal_formula>`_ of a wide
 variety of organic and inorganic molecules. The general method for creating
 these drawings is to utilize the :meth:`draw()` method of the :class:`Molecule`
 you wish to draw; this wraps a call to :meth:`MoleculeDrawer.draw()`, where the
 molecule drawing algorithm begins. Advanced use may require use of the
 :class:`MoleculeDrawer` class directly.
 
-The `Cairo <http://cairographics.org/>`_ 2D graphics library is used to create
+The `Cairo <https://cairographics.org/>`_ 2D graphics library is used to create
 the drawings. The :class:`MoleculeDrawer` class module will fail gracefully if
 Cairo is not installed.
 

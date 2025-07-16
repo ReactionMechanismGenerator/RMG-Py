@@ -154,7 +154,6 @@ class Settings(dict):
 # The global settings object
 settings = Settings(path=None)
 
-
 ################################################################################
 
 

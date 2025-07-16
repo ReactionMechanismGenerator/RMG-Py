@@ -6,7 +6,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
-#. If your `conda` version is older than 23.10.0, manually switch the solver backend to `libmamba` ::
+#. If your `conda` version is older than 23.10.0, manually switch the solver backend to `libmamba` (or update your conda)::
 
     conda install -n base conda-libmamba-solver
     conda config --set solver libmamba
@@ -65,6 +65,10 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     conda env create -f environment.yml
 
+   To give it a different name (such as ``rmg_env2``), you can use the ``-n`` flag::
+
+    conda env create -f environment.yml -n rmg_env2
+
    If either of these commands return an error due to being unable to find the ``conda`` command,
    try to either close and reopen your terminal to refresh your environment variables
    or type the following command.
@@ -98,21 +102,26 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
-#. **Optional (Recommended)**: Install and Link Julia dependencies using ``install_rms.sh``. Ensure that you have modified your environment variables as described above, and then run the following: ::
+#. **Optional (Recommended)**: Install and Link Julia dependencies.
+
+    Installing Julia and ReactionMechanismSimulator.jl (RMS) will enable all the features in RMG that require RMS-based reactors,
+    as well as using ``method='ode'`` when solving the Master Equation with Arkane.
+    Note that installing RMS can cause errors when running Cantera simulations; this should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate conda environment without RMS in it.
+
+    Ensure that you have modified your environment variables as described above, and then run the following: ::
 
      source install_rms.sh
 
-    Follow the final set of instructions from this installation script with regard to setting additional environment variables.
-    Installing RMS will allow using ``method='ode'`` when solving the Master Equation with Arkane and using ``ReactionMechanismSimulator.jl``-based reactors in RMG.
-    Note that installing RMS will cause errors when running Cantera simulations.
-    This should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate ``rmg_env`` without RMS in it.
+    Follow the instructions that it provides for installing Julia and Juliaup,
+    which can involve several steps including restarting your terminal or shell.
+    Run the script again, until it finishes installing RMS and all of its dependencies, and reports that ReactionMechanismSimulator is installed.
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
     python replace/with/path/to/rmg.py input.py
 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
-For more information about using conda, please check out the `conda user guide <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
+For more information about using conda, please check out the `conda user guide <https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
 
 
 Debugging
@@ -267,25 +276,30 @@ Running Examples
 
 A number of basic examples can be run immediately.  Additional example input files can be found in the ``RMG-Py/examples`` folder.  Please read more on :ref:`Example Input Files <examples>` in the documentation.
     
-#. **Minimal Example**: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the ``RMG-Py/testing/minimal`` folder::
+#. **Minimal Example**: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the ``RMG-Py/testing/eg1`` folder::
 
     cd RMG-Py
     make eg1
     
-#. **Hexadiene Example**: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the ``RMG-Py/testing/hexadiene`` folder::
+#. **Hexadiene Example**: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the ``RMG-Py/testing/eg2`` folder::
 
     cd RMG-Py
     make eg2
     
-#. **Liquid Phase Example**: this will run a liquid phase RMG model.  The results will be in the ``RMG-Py/testing/liquid_phase`` folder ::
+#. **Liquid Phase Example**: this will run a liquid phase RMG model.  The results will be in the ``RMG-Py/testing/eg3`` folder ::
 
     cd RMG-Py
     make eg3
     
-#. **ThermoEstimator Example**: this will run the :ref:`Thermo Estimation Module <thermoModule>` on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the ``RMG-Py/testing/thermoEstimator`` folder ::
+#. **ThermoEstimator Example**: this will run the :ref:`Thermo Estimation Module <thermoModule>` on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the ``RMG-Py/testing/eg4`` folder ::
 
     cd RMG-Py
     make eg4
+
+#. **RMS Constant Volume Example**: this will run a constant volume reactor using the ReactionMechanismSimulator.jl package. Note that you must have Julia and ReactionMechanismSimulator.jl installed for this to run completely. The results will be in the ``RMG-Py/testing/eg8`` folder ::
+
+    cd RMG-Py
+    make eg8
 
 
 Building Documentation
