@@ -2048,6 +2048,10 @@ class Molecule(Graph):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
+        # RDKit doesn't support electron
+        if self.is_electron():
+            raise ValueError("Cannot convert electron molecule to RDKit Mol object")
+        
         return converter.to_rdkit_mol(self, *args, **kwargs)
 
     def to_adjacency_list(self, label='', remove_h=False, remove_lone_pairs=False, old_style=False):
@@ -2328,6 +2332,10 @@ class Molecule(Graph):
         and this process may involve atom order change by default. Set ``save_order`` to
         ``True`` to force the atom order unchanged.
         """
+        # RDKit does not support electron
+        if self.is_electron():
+            return False
+        
         cython.declare(atom=Atom, total=int, aromatic_atoms=set, aryl=int)
         if aromatic_rings is None:
             aromatic_rings = self.get_aromatic_rings(save_order=save_order)[0]
@@ -2518,6 +2526,10 @@ class Molecule(Graph):
 
         Returns an integer corresponding to the number or aromatic rings.
         """
+        # RDKit does not support electron
+        if self.is_electron():
+            return 0
+        
         cython.declare(rings=list, count=int, ring=list, bonds=list, bond=Bond)
         rings = self.get_relevant_cycles()
         count = 0
@@ -2546,6 +2558,10 @@ class Molecule(Graph):
         By default, the atom order will be sorted to get consistent results from different runs. The atom order can
         be saved when dealing with problems that are sensitive to the atom map.
         """
+        # RDKit does not support electron
+        if self.is_electron():
+            return [], []
+        
         cython.declare(rd_atom_indices=dict, ob_atom_ids=dict, aromatic_rings=list, aromatic_bonds=list)
         cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
 
@@ -2765,6 +2781,10 @@ class Molecule(Graph):
             Unique Ring Families and Other Cycle Bases.
             J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
+        # RDKit does not support electron
+        if self.is_electron():
+            return []
+        
         from rdkit import Chem
         
         sssr = []
@@ -2793,7 +2813,11 @@ class Molecule(Graph):
             Unique Ring Families and Other Cycle Bases.
             J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
-        rc = []
+        # RDKit does not support electron
+        if self.is_electron():
+            return []
+        
+        rc = []        
         mol = converter.to_rdkit_mol(self, remove_h=False)
         ring_info = mol.GetRingInfo()
         atom_rings = ring_info.AtomRings()
