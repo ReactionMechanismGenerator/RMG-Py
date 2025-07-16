@@ -880,7 +880,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             K = self.calculate_rate_coefficients(Tlist, Plist, method)
         except InvalidMicrocanonicalRateError:
             if output_directory:
-                job.draw(output_directory, file_format='pdf')
+                job.draw(output_directory, filename_stem=f'network{self.index:d}_{len(self.isomers)}', file_format='pdf')
                 logging.info(f"Network {self.index} has been drawn and saved as a pdf in {output_directory}.")
             raise
 
