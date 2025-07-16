@@ -699,7 +699,10 @@ class PressureDependenceJob(object):
                 f.write('    label = {0!r},\n'.format(ts.label))
                 if ts.conformer is not None:
                     if ts.conformer.E0 is not None:
-                        f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
+                        if self.network.energy_correction:
+                            f.write(f'    E0 = ({ts.conformer.E0.value_si * 0.001:.3f} - {self.network.energy_correction * 0.001:.3f}, "kJ/mol"), # removing the applied energy_correction\n')
+                        else:
+                            f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
                     if len(ts.conformer.modes) > 0:
                         f.write('    modes = [\n')
                         for mode in ts.conformer.modes:
