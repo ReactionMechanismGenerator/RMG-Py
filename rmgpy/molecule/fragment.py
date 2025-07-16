@@ -587,7 +587,7 @@ class Fragment(Molecule):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
-        Identifies rings using `Graph.get_smallest_set_of_smallest_rings()`, then uses RDKit to perceive aromaticity.
+        Identifies rings, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
         Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
 

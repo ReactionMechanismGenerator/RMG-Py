@@ -2536,7 +2536,7 @@ class Molecule(Graph):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
-        Identifies rings using `Graph.get_smallest_set_of_smallest_rings()`, then uses RDKit to perceive aromaticity.
+        Identifies rings, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
         Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
 
@@ -2635,12 +2635,11 @@ class Molecule(Graph):
 
     def get_deterministic_sssr(self):
         """
-        Modified `Graph` method `get_smallest_set_of_smallest_rings` by sorting calculated cycles
-        by short length and then high atomic number instead of just short length (for cases where
-        multiple cycles with same length are found, `get_smallest_set_of_smallest_rings` outputs
-        non-determinstically).
-        
-        For instance, molecule with this smiles: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
+        Sorts calculated cycles by short length and then high atomic number instead of just short length.
+        Originally created as an alternative to `get_smallest_set_of_smallest_rings` before it was converted
+        to use only RDKit Functions.
+
+        For instance, previously molecule with this smiles: C1CC2C3CSC(CO3)C2C1, would have non-deterministic
         output from `get_smallest_set_of_smallest_rings`, which leads to non-deterministic bicyclic decomposition.
         Using this new method can effectively prevent this situation.
 
