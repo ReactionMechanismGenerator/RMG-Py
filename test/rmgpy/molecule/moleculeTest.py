@@ -2310,7 +2310,7 @@ multiplicity 2
     def test_get_polycyclic_rings(self):
         """
         Test that polycyclic rings within a molecule are returned properly in the function
-        `Graph().get_polycycles()`
+        `Molecule.get_polycycles()`
         """
         # norbornane
         m1 = Molecule(smiles="C1CC2CCC1C2")
@@ -3150,3 +3150,26 @@ multiplicity 2
         mol = Molecule(smiles="C1CCC2(CC1)CC2")
         polycyclic_vertices = mol.get_all_polycyclic_vertices()
         assert len(polycyclic_vertices) > 0
+
+    def test_get_largest_ring(self):
+        """
+        Test that Molecule.get_largest_ring() method returns the largest ring.
+        """
+        # Create a complex polycyclic molecule
+        mol = Molecule(smiles="C14CCCCCC(C(CCC12CCCC2)CC3CCC3)C4")
+
+        # Get polycyclic rings
+        rings = mol.get_polycycles()
+        assert len(rings) == 1
+
+        long_ring = mol.get_largest_ring(rings[0][0])
+        long_ring2 = mol.get_largest_ring(rings[0][1])
+
+        # get the longer of the two rings
+        if len(long_ring) > len(long_ring2):
+            longest_ring = long_ring
+        else:
+            longest_ring = long_ring2
+
+        # longest ring should be one atom shorter than the full polycyclic ring
+        assert len(longest_ring) == len(rings[0]) - 1
