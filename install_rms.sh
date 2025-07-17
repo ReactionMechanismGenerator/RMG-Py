@@ -43,13 +43,13 @@ echo "Current conda environment: $current_env"
 
 # Set environment variables for the current environment, for future uses
 # https://juliapy.github.io/PythonCall.jl/stable/pythoncall/#If-you-already-have-Python-and-required-Python-packages-installed
-conda env config vars set JULIA_CONDAPKG_BACKEND=Current
+conda env config vars set JULIA_CONDAPKG_BACKEND=Null
 conda env config vars set JULIA_CONDAPKG_EXE=$(which conda)
 conda env config vars set JULIA_PYTHONCALL_EXE=$CONDA_PREFIX/bin/python
 conda env config vars set PYTHON_JULIAPKG_EXE=$(which julia)
 conda env config vars set PYTHON_JULIAPKG_PROJECT=$CONDA_PREFIX/julia_env
 # Also export for current shell/session (needed for Docker/non-interactive use)
-export JULIA_CONDAPKG_BACKEND=Current
+export JULIA_CONDAPKG_BACKEND=Null
 export JULIA_CONDAPKG_EXE="$(which conda)"
 export JULIA_PYTHONCALL_EXE="$CONDA_PREFIX/bin/python"
 export PYTHON_JULIAPKG_EXE="$(which julia)"
