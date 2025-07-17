@@ -55,7 +55,7 @@ env:
   # RMS branch to use for ReactionMechanismSimulator installation
   RMS_BRANCH: for_rmg
   # Use standard RMS installation mode for install_rms.sh
-  RMS_MODE: standard
+  RMS_MODE: CI
   # julia parallel pre-compilation leads to race conditions and hangs, so we limit it to run in serial
   JULIA_NUM_PRECOMPILE_TASKS: 1
 
