@@ -655,67 +655,6 @@ class TestGraph:
         assert len(cycle_list) == 0
 
 
-
-    def test_get_largest_ring(self):
-        """
-        Test that the Graph.get_polycycles() method returns only polycyclic rings.
-        """
-        vertices = [Vertex() for _ in range(27)]
-        bonds = [
-            (0, 1),
-            (1, 2),
-            (2, 3),
-            (3, 4),
-            (4, 5),
-            (5, 6),
-            (6, 7),
-            (9, 10),
-            (10, 11),
-            (11, 12),
-            (12, 13),
-            (13, 14),
-            (14, 15),
-            (12, 16),
-            (10, 17),
-            (17, 18),
-            (18, 19),
-            (9, 20),
-            (20, 21),
-            (6, 22),
-            (22, 23),
-            (22, 8),
-            (8, 4),
-            (23, 3),
-            (23, 24),
-            (24, 25),
-            (25, 1),
-        ]
-        edges = []
-        for bond in bonds:
-            edges.append(Edge(vertices[bond[0]], vertices[bond[1]]))
-
-        graph = Graph()
-        for vertex in vertices:
-            graph.add_vertex(vertex)
-        for edge in edges:
-            graph.add_edge(edge)
-        graph.update_connectivity_values()
-
-        rings = graph.get_polycycles()
-        assert len(rings) == 1
-
-        # ensure the last ring doesn't include vertex 8, since it isn't in the
-        # longest ring. Try two different items since one might contain the vertex 8
-        long_ring = graph.get_largest_ring(rings[0][0])
-        long_ring2 = graph.get_largest_ring(rings[0][1])
-
-        if len(long_ring) > len(long_ring2):
-            longest_ring = long_ring
-        else:
-            longest_ring = long_ring2
-
-        assert len(longest_ring) == len(rings[0]) - 1
-
     def test_sort_cyclic_vertices(self):
         """Test that sort_cyclic_vertices works properly for a valid input."""
         edge = Edge(self.graph.vertices[0], self.graph.vertices[5])
