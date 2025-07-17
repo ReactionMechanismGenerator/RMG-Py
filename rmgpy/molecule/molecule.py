@@ -1891,7 +1891,10 @@ class Molecule(Graph):
         self.vertices, self.multiplicity, self.metal, self.facet = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h,
                                                                check_consistency=check_consistency)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
-        self.identify_ring_membership()
+
+        # identify ring membership iff it's not a suspicious molecule
+        if not self.is_electron():
+            self.identify_ring_membership()
 
         # Check if multiplicity is possible
         n_rad = self.get_radical_count()
