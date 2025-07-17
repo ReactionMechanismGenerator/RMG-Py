@@ -2821,7 +2821,7 @@ class Molecule(Graph):
             return []
         
         rc = []        
-        mol = converter.to_rdkit_mol(self, remove_h=False, sanitize=False)
+        mol = converter.to_rdkit_mol(self, remove_h=False, sanitize=False, save_order=True)
         ring_info = mol.GetRingInfo()
         atom_rings = ring_info.AtomRings()
         for ring in atom_rings:
