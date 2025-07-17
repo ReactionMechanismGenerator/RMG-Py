@@ -132,9 +132,11 @@ class PressureDependenceJob(object):
 
         if Tlist is not None:
             self.Tlist = Tlist
-            self.Tmin = (np.min(self.Tlist.value_si), "K")
-            self.Tmax = (np.max(self.Tlist.value_si), "K")
             self.Tcount = len(self.Tlist.value_si)
+            if self.Tmin is None:
+                self.Tmin = (np.min(self.Tlist.value_si), "K")
+            if self.Tmax is None:
+                self.Tmax = (np.max(self.Tlist.value_si), "K")
         else:
             self.Tlist = None
 
@@ -143,9 +145,11 @@ class PressureDependenceJob(object):
         self.Pcount = Pcount
         if Plist is not None:
             self.Plist = Plist
-            self.Pmin = (np.min(self.Plist.value_si) * 1e-5, "bar")
-            self.Pmax = (np.max(self.Plist.value_si) * 1e-5, "bar")
             self.Pcount = len(self.Plist.value_si)
+            if self.Pmin is None:
+                self.Pmin = (np.min(self.Plist.value_si) * 1e-5, "bar")
+            if self.Pmax is None:
+                self.Pmax = (np.max(self.Plist.value_si) * 1e-5, "bar")
         else:
             self.Plist = None
 
