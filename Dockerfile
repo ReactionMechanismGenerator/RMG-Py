@@ -77,9 +77,11 @@ RUN make
 # setting this env variable fixes an issue with Julia precompilation on Windows
 ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 ENV RMS_BRANCH=${RMS_Branch}
+ENV RMS_MODE=CI
 # Usually this is set automatically, but we're not actually running
 # in an active conda environment when building the Docker so we need to set it manually
 ENV PYTHON_JULIAPKG_PROJECT="/miniconda/envs/rmg_env/julia_env"
+ENV JULIA_PYTHONCALL_EXE="/miniconda/envs/rmg_env/bin/python"
 RUN source install_rms.sh
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
