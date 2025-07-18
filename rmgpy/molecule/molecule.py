@@ -2791,7 +2791,7 @@ class Molecule(Graph):
         
         sssr = []
         # Get the symmetric SSSR using RDKit
-        rdkit_mol = self.to_rdkit_mol(remove_h=False, sanitize=False) 
+        rdkit_mol = self.to_rdkit_mol(remove_h=False, sanitize=False, save_order=True) 
         ring_info = Chem.GetSymmSSSR(rdkit_mol)
         for ring in ring_info:
             atom_ring = [self.atoms[idx] for idx in ring]
