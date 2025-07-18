@@ -467,7 +467,7 @@ def is_ring_partial_matched(ring, matched_group):
     else:
         submol_ring, _ = convert_ring_to_sub_molecule(ring)
         sssr = submol_ring.get_smallest_set_of_smallest_rings()
-        sssr_grp = matched_group.get_smallest_set_of_smallest_rings()
+        sssr_grp = matched_group.make_sample_molecule().get_smallest_set_of_smallest_rings()
         if sorted([len(sr) for sr in sssr]) == sorted([len(sr_grp) for sr_grp in sssr_grp]):
             return False
         else:
