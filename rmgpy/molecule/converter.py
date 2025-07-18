@@ -124,7 +124,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     elif sanitize == "partial":
         Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES)
     if remove_h:
-        rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize == True)
+        rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
     if return_mapping:
         return rdkitmol, rd_atom_indices
     return rdkitmol
