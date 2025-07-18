@@ -165,7 +165,7 @@ class TestAtomType:
             except:
                 logging.exception(f"Couldn't make sample molecule for atomType {name}")
                 failed.append(name)
-        assert not failed, f"Couldn't make sample molecules for types {', '.join(failed)}"
+        assert len(failed) == 0, f"Couldn't make sample molecules for types {', '.join(failed)}"
 
     @pytest.mark.skip(reason="WIP")
     def test_make_sample_molecule_wip(self):
