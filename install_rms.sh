@@ -78,27 +78,15 @@ conda install -y conda-forge::pyjuliacall
 echo "Environment variables referencing JULIA:"
 env | grep JULIA
 
-# Ask user whether to do a standard or developer install
-if [ -z "$RMS_MODE" ]; then
-    echo "Choose installation mode:"
-    echo "  1) Standard install (download from GitHub)"
-    echo "  2) Developer install (install from local path)"
-    read -p "Enter 1 or 2 [default: 1]: " installation_choice
-
-    if [ "$installation_choice" = "2" ]; then
-        RMS_MODE="dev"
-    else
-        RMS_MODE="standard"
-    fi
-fi
-
-echo "Selected RMS installation mode: $RMS_MODE"
+# Defaults to "standard" if no arg provided
+RMS_MODE=${1:-standard}
 
 # Default RMS branch for standard install
 RMS_BRANCH=${RMS_BRANCH:-for_rmg}
 
 # Ask for local RMS path
-if [ "$RMS_MODE" = "dev" ]; then
+if [ "$RMS_MODE" = "developer" ]; then
+    echo "Using developer mode for RMS installation"
     read -e -p "Please enter full path to your local RMS source code: " RMS_PATH
     if [ ! -d "$RMS_PATH" ]; then
         echo "ERROR: '$RMS_PATH' is not a valid directory."
@@ -141,7 +129,7 @@ if [ "$RMS_MODE" = "standard" ] || [ "$RMS_MODE" = "CI" ]; then
         exit(1)
     end
 EOF
-elif [ "$RMS_MODE" = "dev" ]; then
+elif [ "$RMS_MODE" = "developer" ]; then
     echo "Installing RMS in developer mode from path: $RMS_PATH"
     julia << EOF || echo "RMS developer install error - continuing anyway ¯\\_(ツ)_/¯"
     using Pkg
@@ -160,7 +148,7 @@ elif [ "$RMS_MODE" = "dev" ]; then
     end
 EOF
 else
-    echo "Unknown RMS_MODE: $RMS_MODE. Must be either 'standard' or 'dev'."
+    echo "Unknown RMS_MODE: $RMS_MODE. Must be either 'CI', 'standard' or 'developer'."
     exit 1
 fi
 
