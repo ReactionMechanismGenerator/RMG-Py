@@ -110,9 +110,11 @@ class TestArkaneJob:
         arkane = Arkane()
         job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "methoxy.py"))
         pdepjob = job_list[-1]
+        cls.pdepjob = pdepjob
         cls.kineticsjob = job_list[0]
         pdepjob.active_j_rotor = True
         network = pdepjob.network
+        cls.network = network
         cls.Nisom = len(network.isomers)
         cls.Nreac = len(network.reactants)
         cls.Nprod = len(network.products)
@@ -169,11 +171,12 @@ class TestArkaneJob:
         """
         assert str(self.TmaxUnits) == "K"
 
-    def test_temperatures_value(self):
+    def test_temperatures_limits(self):
         """
-        Test the temperature value.
+        Test the temperature limits.
         """
-        assert self.TminValue == 450.0
+        assert self.pdepjob.Tmin.value_si == 450.0
+        assert self.pdepjob.Tmax.value_si == 1200.0
 
     def test_temperatures_list(self):
         """
@@ -181,11 +184,12 @@ class TestArkaneJob:
         """
         assert np.array_equal(self.TlistValue, np.array([450, 500, 678, 700]))
 
-    def test_min_pressure_value(self):
+    def test_pressure_limits(self):
         """
-        Test the minimum pressure value.
+        Test the pressure limits.
         """
-        assert "%0.7f" % self.PminValue == str(0.0101325)
+        assert self.pdepjob.Pmin.value_si == 1013.25  # Pa
+        assert self.pdepjob.Pmax.value_si == 101325000.0  # Pa
 
     def test_pressure_count(self):
         """
@@ -234,8 +238,8 @@ class TestArkaneJob:
         """
         Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax.
         """
-        assert "%0.7f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.TminValue) == str(46608.5904933)
-        assert "%0.5f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.Tmaxvalue) == str(498796.64535)
+        assert "%0.7f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(450.0) == str(46608.5904933)
+        assert "%0.5f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(700.0) == str(498796.64535)
 
     def test_tunneling(self):
         """
