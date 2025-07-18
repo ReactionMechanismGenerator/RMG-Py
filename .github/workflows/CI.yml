@@ -53,7 +53,7 @@ env:
   # main with the name of the branch
   RMG_DATABASE_BRANCH: main
   # RMS branch to use for ReactionMechanismSimulator installation
-  RMS_BRANCH: for_rmg
+  RMS_BRANCH: echem
   # julia parallel pre-compilation leads to race conditions and hangs, so we limit it to run in serial
   JULIA_NUM_PRECOMPILE_TASKS: 1
 
