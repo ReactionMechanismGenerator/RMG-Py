@@ -88,8 +88,7 @@ RUN python rmg.py examples/rmg/rms_constant_V/input.py
 RUN rm -rf examples/rmg/rms_constant_V/* && \
     git checkout -- examples/rmg/rms_constant_V/
 
-# when running this image, open an interactive bash terminal inside the conda environment
-RUN conda init
-RUN echo "conda activate rmg_env" >> ~/.bashrc
+# when running this image, open an interactive bash terminal inside the rmg_env conda environment
+RUN sed -i '/\. \/opt\/conda\/etc\/profile.d\/conda.sh && conda activate base/c\. /opt/conda/etc/profile.d/conda.sh && conda activate rmg_env' ~/.bashrc
 ENTRYPOINT ["/bin/bash", "--login"]
 
