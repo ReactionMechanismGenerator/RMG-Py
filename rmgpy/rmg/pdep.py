@@ -872,7 +872,7 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         if output_directory:
             job.save_input_file(
                 os.path.join(output_directory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
-            if pdep_settings.generate_PES_diagrams:
+            if getattr(pdep_settings, 'generate_PES_diagrams', False):
                 job.draw(os.path.join(output_directory, 'pdep'), filename_stem=f'network{self.index:d}_{len(self.isomers):d}', file_format='pdf')
 
         # Calculate the rate coefficients
