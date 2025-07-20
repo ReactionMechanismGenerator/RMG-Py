@@ -244,16 +244,25 @@ class Psi4Log(ESSAdapter):
         PSi4 computes the Hessian numerically, therefore many total energy values are reported.
         With large basis sets and higher levels of theory there is a high probability that
         the smallest values is the correct value.
+        If a CCSD(T)_L energy is found, it is returned.
         """
-        a = list()
+        lambda_e_elect = None
+        energies = list()
         with open(self.path, 'r') as f:
             for line in f:
-                if 'Total Energy =' in line:
-                    a.append(float(line.split()[3]) * constants.E_h * constants.Na)
-        if not len(a):
+                if 'CCSD(T)_L energy' in line:
+                    lambda_e_elect = float(line.split()[-1]) * constants.E_h * constants.Na
+                    break
+                elif 'Total Energy =' in line:
+                    try:
+                        energies.append(float(line.split()[3]) * constants.E_h * constants.Na)
+                    except (IndexError, ValueError):
+                        continue
+        if lambda_e_elect is not None:
+            return lambda_e_elect
+        if not energies:
             raise LogError(f'Unable to find energy in Psi4 output file {self.path}.')
-        e_elect = min(a)
-        return e_elect
+        return min(energies)
 
     def load_zero_point_energy(self):
         """
