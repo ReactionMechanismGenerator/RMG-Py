@@ -70,7 +70,9 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
             rd_atom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
-        else:
+        elif atom.element.symbol in ['R', 'L']:
+            rd_atom = Chem.rdchem.Atom(0)
+        else:   
             rd_atom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
             rd_atom.SetIsotope(atom.element.isotope)
