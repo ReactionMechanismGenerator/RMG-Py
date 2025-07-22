@@ -60,6 +60,7 @@ from rmgpy.thermo.thermodata import ThermoData
 from rmgpy.thermo.wilhoit import Wilhoit
 from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.transport import TransportData
+from rmgpy.data.solvation import SoluteTSData
 from rmgpy.util import as_list
 
 from arkane.common import is_pdep
@@ -635,6 +636,7 @@ def load_input_file(path):
         'database': database,
         # Jobs
         'kinetics': kinetics,
+        'SoluteTSData': SoluteTSData,
         'statmech': statmech,
         'thermo': thermo,
         'pressureDependence': pressureDependence,
@@ -652,10 +654,15 @@ def load_input_file(path):
     load_necessary_databases()
 
     with open(path, 'r') as f:
+        content = f.read()
         try:
-            exec(f.read(), global_context, local_context)
-        except (NameError, TypeError, SyntaxError):
+            exec(content, global_context, local_context)
+        except (NameError, TypeError, SyntaxError) as e:
             logging.error('The input file {0!r} was invalid:'.format(path))
+            line_number = e.__traceback__.tb_next.tb_lineno
+            logging.error(f'Error occurred at or near line {line_number} of {path}.')
+            lines = content.splitlines()
+            logging.error(f'Line: {lines[line_number - 1]}')
             raise
 
     model_chemistry = local_context.get('modelChemistry', None)
