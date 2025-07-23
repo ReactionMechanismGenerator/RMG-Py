@@ -98,8 +98,9 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
             else:
                 label_dict[label] = [saved_index]
     rd_bonds = Chem.rdchem.BondType
+    # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
-              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO} # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
+              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO, 'H': rd_bonds.HYDROGEN, 'R': rd_bonds.OTHER} 
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.items():
@@ -109,7 +110,10 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
             index2 = atoms.index(atom2)
             if index1 < index2:
                 order_string = bond.get_order_str()
-                order = orders[order_string]
+                if order_string is None and 1.0 < bond.get_order_num() < 2.0:
+                    order = rd_bonds.UNSPECIFIED
+                else:
+                    order = orders[order_string]
                 rdkitmol.AddBond(index1, index2, order)
 
     # Make editable mol into a mol and rectify the molecule
