@@ -3156,7 +3156,7 @@ multiplicity 2
         Test that Molecule.get_largest_ring() method returns the largest ring.
         """
         # Create a complex polycyclic molecule
-        mol = Molecule(smiles="C14CCCCCC(C(CCC12CCCC2)CC3CCC3)C4")
+        mol = Molecule(smiles="C14CCCCCC(C(CCC1CC2CCCCCCC2)CC3CCC3)C4")
 
         # Get polycyclic rings
         rings = mol.get_polycycles()
