@@ -3141,7 +3141,7 @@ multiplicity 2
         
         # Fused bicyclic molecule
         # TODO: don't just test length, test the actual vertices
-        fused = Molecule(smiles="C1C2C(CCC1)CCCC2")
+        mol = Molecule(smiles="C1C2C(CCC1)CCCC2")
         polycyclic_vertices = mol.get_all_polycyclic_vertices()
         assert len(polycyclic_vertices) > 0
         
