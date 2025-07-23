@@ -768,7 +768,7 @@ class Bond(Edge):
 
     def get_order_str(self):
         """
-        returns a string representing the bond order
+        Returns a string representing the bond order. Returns None if bond order does not have a string representation.
         """
         if self.is_single():
             return 'S'
@@ -787,7 +787,8 @@ class Bond(Edge):
         elif self.is_reaction_bond():
             return 'R'
         else:
-            raise ValueError("Bond order {} does not have string representation.".format(self.order))
+            logging.warning("Bond order {} does not have string representation.".format(self.order))
+            return None
 
     def set_order_str(self, new_order):
         """
