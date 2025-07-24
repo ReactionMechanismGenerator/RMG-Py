@@ -298,3 +298,20 @@ class TestMoleculeDrawer:
             assert os.path.exists(path), "File doesn't exist"
             os.unlink(path)
             assert isinstance(surface, ImageSurface)
+
+    def test_draw_bidentate_with_charge_separation(self):
+        molecule = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {4,D}
+3 O u0 p2 c0 {1,S} {4,S}
+4 N u0 p0 c+1 {3,S} {2,D} {5,S}
+5 O u0 p3 c-1 {4,S}
+        """
+        )
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
+        surface, _cr, (_xoff, _yoff, _width, _height) = self.drawer.draw(molecule, file_format="pdf")
+        assert isinstance(surface, PDFSurface)
