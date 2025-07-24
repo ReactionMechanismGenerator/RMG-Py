@@ -100,6 +100,7 @@ class Species(object):
         self.index = index
         self.label = label
         self.thermo = thermo
+        self.solvationthermo = None
         self.conformer = conformer
         self.molecule = molecule or []
         self.transport_data = transport_data
@@ -495,6 +496,13 @@ class Species(object):
         ``False`` otherwise.
         """
         return self.thermo is not None
+    
+    def has_solvation_thermo(self):
+        """
+        Return ``True`` if the species has solvationthermo, or 
+        ``False`` otherwise.
+        """
+        return self.solvationthermo is not None
 
     def contains_surface_site(self):
         """
@@ -605,7 +613,13 @@ class Species(object):
             raise Exception('Unable to calculate free energy for species {0!r}: '
                             'no thermo or statmech data available.'.format(self.label))
         return G
-
+    
+    def get_free_energy_of_solvation(self, T):
+        """
+        Return the Gibbs free energy of solvation in J/mol for the species at temperature T [K].
+        """
+        return self.get_solvation_thermo_data().get_free_energy_of_solvation(T)
+    
     def get_sum_of_states(self, e_list):
         """
         Return the sum of states :math:`N(E)` at the specified energies `e_list`
@@ -821,6 +835,14 @@ class Species(object):
 
         return self.thermo
 
+    def get_solvation_thermo_data(self):
+        """
+        Returns a solvationthermo object (TDepModel or StaticModel) of the current Species object.
+        """
+        if self.has_solvation_thermo():
+            return self.solvationthermo
+        raise Exception("No solvationthermo available for species {}".format(self.label))
+    
     def generate_transport_data(self):
         """
         Generate the transport_data parameters for the species.
