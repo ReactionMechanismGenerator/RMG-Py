@@ -38,6 +38,7 @@ import sys
 import cython
 # Assume that rdkit is installed
 from rdkit import Chem
+from rdkit.Chem.rdchem import KekulizeException, AtomKekulizeException
 # Test if openbabel is installed
 try:
     from openbabel import openbabel
@@ -100,7 +101,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     rd_bonds = Chem.rdchem.BondType
     # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
-              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO, 'H': rd_bonds.HYDROGEN, 'R': rd_bonds.OTHER} 
+              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO, 'H': rd_bonds.HYDROGEN, 'R': rd_bonds.UNSPECIFIED} 
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.items():
@@ -110,7 +111,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
             index2 = atoms.index(atom2)
             if index1 < index2:
                 order_string = bond.get_order_str()
-                if order_string is None and 1.0 < bond.get_order_num() < 2.0:
+                if order_string is None:
                     order = rd_bonds.UNSPECIFIED
                 else:
                     order = orders[order_string]
@@ -128,7 +129,11 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     if sanitize == True:
         Chem.SanitizeMol(rdkitmol)
     elif sanitize == "partial":
-        Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES)
+        try:
+            Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES)
+        except (KekulizeException, AtomKekulizeException):
+            logging.warning("Kekulization failed; sanitizing without Kekulize")
+            Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES ^ Chem.SANITIZE_KEKULIZE)
     if remove_h:
         rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
     if return_mapping:
