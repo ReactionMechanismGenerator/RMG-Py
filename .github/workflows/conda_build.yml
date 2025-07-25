@@ -52,7 +52,9 @@ jobs:
           CONDA_NPY=${{ matrix.numpy-version }} CONDA_PY=${{ matrix.python-version }} conda build .
 
       - name: Upload Built Binaries
-        if: github.event_name == 'push' && github.ref == 'refs/heads/stable'
+        if: >
+          (github.event_name == 'push' && github.ref == 'refs/heads/stable') ||
+          (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/stable')
         run: |
           conda --token ${{ secrets.ANACONDA_TOKEN }} upload $(conda build --output)
 
