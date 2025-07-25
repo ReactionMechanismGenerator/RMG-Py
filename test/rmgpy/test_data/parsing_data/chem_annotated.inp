@@ -259,7 +259,7 @@ HCCO(23)(+M)=O(2)+C2H(21)(+M)                       1.000e+00 0.000     0.000
 ! Reaction index: Chemkin #25; RMG #97
 ! Template reaction: Disproportionation
 ! Flux pairs: CH3CHCH3, C3H6(28); C2H5(27), C2H6; 
-! Estimated from node Root_Ext-2R!H-R_2R!H->C_4R->C
+! Estimated from node Root_Ext-2R!H-R_2R!H->C_4R->C in family Disproportionation.
 ! Multiplied by reaction path degeneracy 6.0
 C2H5(27)+CH3CHCH3<=>C2H6+C3H6(28)                   3.000e+11 0.000     0.000    
 
