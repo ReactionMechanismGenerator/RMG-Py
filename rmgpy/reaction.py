@@ -1500,14 +1500,15 @@ class Reaction:
         performing flux analysis. The exact procedure for doing so depends on
         the reaction type:
 
-        =================== =============== ========================================
-        Reaction type       Template        Resulting pairs
-        =================== =============== ========================================
-        Isomerization       A     -> C      (A,C)
-        Dissociation        A     -> C + D  (A,C), (A,D)
-        Association         A + B -> C      (A,C), (B,C)
-        Bimolecular         A + B -> C + D  (A,C), (B,D) *or* (A,D), (B,C)
-        =================== =============== ========================================
+        ======================= ==================== ========================================
+        Reaction type           Template             Resulting pairs
+        ======================= ==================== ========================================
+        Isomerization             A      -> C          (A,C)
+        Dissociation              A      -> C + D      (A,C), (A,D)
+        Association               A + B  -> C          (A,C), (B,C)
+        Bimolecular               A + B  -> C + D      (A,C), (B,D) *or* (A,D), (B,C)
+        Dissociative Adsorption   A + 2X -> CX + DX    (A,CX), (A,DX), (X,CX), (X,DX)
+        ======================= ==================== ========================================
 
         There are a number of ways of determining the correct pairing for
         bimolecular reactions. Here we try a simple similarity analysis by comparing
@@ -1521,6 +1522,29 @@ class Reaction:
             for reactant in self.reactants:
                 for product in self.products:
                     self.pairs.append((reactant, product))
+        elif (len(self.reactants) == 3 and len(self.products) == 2 and \
+              len([r for r in self.reactants if r.is_surface_site()]) == 2 and \
+              len([r for r in self.reactants if not r.contains_surface_site()]) == 1) or \
+             (len(self.products) == 3 and len(self.reactants) == 2 and \
+              len([p for p in self.products if p.is_surface_site()]) == 2 and \
+              len([p for p in self.products if not p.contains_surface_site()]) == 1):
+            # Dissociative adsorption case
+            if len(self.reactants) == 3:
+                gas_reactant = [r for r in self.reactants if not r.is_surface_site()][0]
+                for product in self.products:   
+                    self.pairs.append((gas_reactant, product))
+                site1 = [r for r in self.reactants if r.is_surface_site()][0]
+                site2 = [r for r in self.reactants if r.is_surface_site()][1]
+                self.pairs.append((site1, self.products[0]))
+                self.pairs.append((site2, self.products[1]))
+            else:
+                gas_product = [p for p in self.products if not p.is_surface_site()][0]
+                for reactant in self.reactants:   
+                    self.pairs.append((reactant, gas_product))
+                site1 = [p for p in self.products if p.is_surface_site()][0]
+                site2 = [p for p in self.products if p.is_surface_site()][1]
+                self.pairs.append((self.reactants[0], site1))
+                self.pairs.append((self.reactants[1], site2))
 
         else:  # this is the bimolecular case
             reactants = self.reactants[:]
