@@ -618,7 +618,7 @@ class PressureDependenceJob(object):
                 plt.savefig(os.path.join(output_directory, 'plots', 'kinetics_{0:d}.pdf'.format(count)))
                 plt.close()
 
-    def draw(self, output_directory, file_format='pdf'):
+    def draw(self, output_directory, file_format='pdf', filename_stem='network'):
         """
         Generate a PDF drawing of the pressure-dependent reaction network.
         This requires that Cairo and its Python wrapper be available; if not,
@@ -626,6 +626,10 @@ class PressureDependenceJob(object):
 
         You may also generate different formats of drawings, by changing format to
         one of the following: `pdf`, `svg`, `png`.
+
+        The default filename stem is 'network', which will result in a file
+        named 'network.pdf' in the specified output directory. You can change
+        this by passing a different `filename_stem` argument.
         """
 
         # Skip this step if cairo is not installed
@@ -639,7 +643,7 @@ class PressureDependenceJob(object):
 
         from rmgpy.pdep.draw import NetworkDrawer
 
-        path = os.path.join(output_directory, 'network.' + file_format)
+        path = os.path.join(output_directory, f'{filename_stem}.{file_format}')
 
         NetworkDrawer().draw(self.network, file_format=file_format, path=path)
 
