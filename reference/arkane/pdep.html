@@ -192,12 +192,15 @@ from the forward k(E) for each path reaction</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="arkane.PressureDependenceJob.draw">
-<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.draw" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">output_directory</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'pdf'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename_stem</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'network'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.PressureDependenceJob.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Generate a PDF drawing of the pressure-dependent reaction network.
 This requires that Cairo and its Python wrapper be available; if not,
 the drawing is not generated.</p>
 <p>You may also generate different formats of drawings, by changing format to
 one of the following: <cite>pdf</cite>, <cite>svg</cite>, <cite>png</cite>.</p>
+<p>The default filename stem is ‘network’, which will result in a file
+named ‘network.pdf’ in the specified output directory. You can change
+this by passing a different <cite>filename_stem</cite> argument.</p>
 </dd></dl>
 
 <dl class="py method">

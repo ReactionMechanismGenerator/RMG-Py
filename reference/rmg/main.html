@@ -172,43 +172,46 @@ attributes are:</p>
 <tr class="row-even"><td><p><cite>generate_plots</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to generate plots of the job execution statistics after each iteration, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
 </tr>
-<tr class="row-odd"><td><p><cite>verbose_comments</cite></p></td>
+<tr class="row-odd"><td><p><cite>generate_PES_diagrams</cite></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to generate potential energy surface diagrams for pressure dependent networks in the model, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>verbose_comments</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to keep the verbose comments for database estimates, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>save_edge_species</cite></p></td>
+<tr class="row-odd"><td><p><cite>save_edge_species</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to save chemkin and HTML files of the edge species, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
 </tr>
-<tr class="row-odd"><td><p><cite>keep_irreversible</cite></p></td>
+<tr class="row-even"><td><p><cite>keep_irreversible</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to keep ireversibility of library reactions as is (‘&lt;=&gt;’ or ‘=&gt;’). <code class="docutils literal notranslate"><span class="pre">False</span></code> (default) to force all library reactions to be reversible (‘&lt;=&gt;’)</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>trimolecular_product_reversible</cite></p></td>
+<tr class="row-odd"><td><p><cite>trimolecular_product_reversible</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> (default) to allow families with trimolecular products to react in the reverse direction, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
 </tr>
-<tr class="row-odd"><td><p><cite>pressure_dependence</cite></p></td>
+<tr class="row-even"><td><p><cite>pressure_dependence</cite></p></td>
 <td><p>Whether to process unimolecular (pressure-dependent) reaction networks</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>quantum_mechanics</cite></p></td>
+<tr class="row-odd"><td><p><cite>quantum_mechanics</cite></p></td>
 <td><p>Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.</p></td>
 </tr>
-<tr class="row-odd"><td><p><cite>ml_estimator</cite></p></td>
+<tr class="row-even"><td><p><cite>ml_estimator</cite></p></td>
 <td><p>To use thermo estimation with machine learning</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>ml_settings</cite></p></td>
+<tr class="row-odd"><td><p><cite>ml_settings</cite></p></td>
 <td><p>Settings for ML estimation</p></td>
 </tr>
-<tr class="row-odd"><td><p><cite>walltime</cite></p></td>
+<tr class="row-even"><td><p><cite>walltime</cite></p></td>
 <td><p>The maximum amount of CPU time in the form DD:HH:MM:SS to expend on this job; used to stop gracefully so we can still get profiling information</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>max_iterations</cite></p></td>
+<tr class="row-odd"><td><p><cite>max_iterations</cite></p></td>
 <td><p>The maximum number of RMG iterations allowed, after which the job will terminate</p></td>
 </tr>
-<tr class="row-odd"><td><p><cite>kinetics_datastore</cite></p></td>
+<tr class="row-even"><td><p><cite>kinetics_datastore</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> if storing details of each kinetic database entry in text file, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>initialization_time</cite></p></td>
+<tr class="row-odd"><td><p><cite>initialization_time</cite></p></td>
 <td><p>The time at which the job was initiated, in seconds since the epoch (i.e. from time.time())</p></td>
 </tr>
-<tr class="row-odd"><td><p><cite>done</cite></p></td>
+<tr class="row-even"><td><p><cite>done</cite></p></td>
 <td><p>Whether the job has completed (there is nothing new to add)</p></td>
 </tr>
 </tbody>
