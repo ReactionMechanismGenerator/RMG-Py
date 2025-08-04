@@ -490,11 +490,13 @@ class Fragment(Molecule):
 
         return formula
 
-    def to_rdkit_mol(self, remove_h=False, return_mapping=True, save_order=False):
+    def to_rdkit_mol(self, *args, **kwargs):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
-        if remove_h:
+        remove_h = kwargs.get('remove_h', False)
+
+        if remove_h == True:
             # because we're replacing
             # cutting labels with hydrogens
             # so do not allow removeHs to be True
@@ -504,10 +506,8 @@ class Fragment(Molecule):
 
         rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(
             mol0,
-            remove_h=remove_h,
-            return_mapping=return_mapping,
-            sanitize=True,
-            save_order=save_order,
+            *args,
+            **kwargs
         )
 
         rdAtomIdx_frag = {}
