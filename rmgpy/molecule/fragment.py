@@ -911,7 +911,7 @@ class Fragment(Molecule):
         _, cutting_label_list = self.detect_cutting_label(molecule_smiles)
         # transfer to rdkit molecule for substruct matching
         f = self.from_smiles_like_string(molecule_smiles)
-        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol(return_mapping=True)
+        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol(remove_h=False, return_mapping=True)
 
         # replace CuttingLabel to special Atom (metal) in rdkit
         for atom, idx in rdAtomIdx_frag.items():
@@ -1037,7 +1037,7 @@ class Fragment(Molecule):
         _, cutting_label_list = self.detect_cutting_label(molecule_smiles)
         # transfer to rdkit molecule for substruct matching
         f = self.from_smiles_like_string(molecule_smiles)
-        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol(return_mapping=True)
+        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol(remove_h=False, return_mapping=True)
 
         # replace CuttingLabel to special Atom (metal) in rdkit
         for atom, idx in rdAtomIdx_frag.items():
