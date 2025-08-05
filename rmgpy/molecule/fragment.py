@@ -504,6 +504,7 @@ class Fragment(Molecule):
 
         mol0, mapping = self.get_representative_molecule("minimal", update=False)
 
+        kwargs["return_mapping"] = True
         rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(
             mol0,
             *args,
