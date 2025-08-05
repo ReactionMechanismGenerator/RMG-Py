@@ -504,7 +504,12 @@ class Fragment(Molecule):
 
         mol0, mapping = self.get_representative_molecule("minimal", update=False)
 
-        kwargs["return_mapping"] = True
+        return_mapping = kwargs.get("return_mapping", False)
+        if return_mapping == False:
+            kwargs["return_mapping"] = True
+            logging.warning("Fragment to_rdkit_mol expects to return a tuple. "
+                            "Setting return_mapping = True; please double-check your code to ensure this is what you want.")
+
         rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(
             mol0,
             *args,

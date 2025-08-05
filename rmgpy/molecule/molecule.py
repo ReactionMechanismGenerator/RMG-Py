@@ -2792,7 +2792,13 @@ class Molecule(Graph):
         
         sssr = []
         # Get the symmetric SSSR using RDKit
-        rdkit_mol = self.to_rdkit_mol(remove_h=False, sanitize="partial", save_order=True) 
+        rdkit_result = self.to_rdkit_mol(remove_h=False, sanitize="partial", save_order=True) 
+        
+        if isinstance(rdkit_result, tuple): # can be a tuple if Fragment version of to_rdkit_mol is used
+            rdkit_mol = rdkit_result[0]
+        else:
+            rdkit_mol = rdkit_result
+
         ring_info = Chem.GetSymmSSSR(rdkit_mol)
         for ring in ring_info:
             atom_ring = [self.atoms[idx] for idx in ring]
