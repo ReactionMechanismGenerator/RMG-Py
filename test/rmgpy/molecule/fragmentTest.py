@@ -747,7 +747,7 @@ class TestFragment:
 
     def test_to_rdkit_mol(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCR")
-        rdmol, _ = fragment.to_rdkit_mol(remove_h=False, return_mapping=True)
+        rdmol = fragment.to_rdkit_mol(remove_h=False, return_mapping=True)
 
         assert rdmol.GetNumAtoms() == 8
 
