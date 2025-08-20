@@ -40,19 +40,19 @@ class YAMLInputReader:
         read and parse YAML input file
         """
         logging.info(f'Reading YAML input file  "{self.path}"...')
-        # let user know in termal that file is being read
-
-        with open(self.path, 'r') as file:
-            #store content to log onto terminal
-            content = file.read()
-
-            self.data = yaml.safe_load(file)
-
-        # check if input file is empty
-        if not isinstance(self.data, dict):
-            raise ValueError("Yo ur missing a dictionary bro YAML file needs a dictionary")
         
-        # log contents of file into terminal
+        with open(self.path, 'r') as file:
+            # Read file content once
+            content = file.read()
+            
+        # Parse YAML from the content string
+        self.data = yaml.safe_load(content)
+        
+        # Check if input file is valid
+        if not isinstance(self.data, dict):
+            raise ValueError("YAML file must contain a dictionary at the top level")
+        
+        # Log contents of file into terminal
         logging.info(content)
 
     def process(self):
@@ -103,7 +103,7 @@ class YAMLInputReader:
         if 'simulator' in self.data:
             self._process_simulator(self.data['simulator'])
         if 'model' in self.data:
-            self._process_simulator(self.data['model'])
+            self._process_model(self.data['model'])
         if 'quantumMechanics' in self.data:
             self._process_quantum_mechanics(self.data['quantumMechanics'])
         if 'mlEstimator' in self.data:
@@ -142,7 +142,7 @@ class YAMLInputReader:
         database(
             thermoLibraries = db_data.get('thermoLibraries'),
             transportLibraries = db_data.get('transportLibraries'),
-            reactionLibraries = db_data.get('reactionLibraries'),
+            reactionLibraries = reaction_libraries,  # FIXED: Use the converted list
             frequenciesLibraries = db_data.get('frequenciesLibraries'),
             seedMechanisms = db_data.get('seedMechanisms'),
             kineticsFamilies = db_data.get('kineticsFamilies', 'default'),
@@ -449,7 +449,8 @@ class YAMLInputReader:
         """
         # Handle SolventData if provided
         
-        # (FINISH THIS IDK HOW TO DO IT RN)
+        raise NotImplementedError("I HAVENT FIGURED THIS OUT LET I WILL DO IT SOON LOL")
+
         
     def _process_liquid_mass_transfer(self, lmt_data):
         """
@@ -467,10 +468,10 @@ class YAMLInputReader:
         process simulator settings
         """
         simulator(
-            atol=sim_data.get('atol', 1e-16),
-            rtol=sim_data.get('rtol', 1e-8),
-            sens_atol=sim_data.get('sens_atol', 1e-6),
-            sens_rtol=sim_data.get('sens_rtol', 1e-4)
+            atol=float(sim_data.get('atol', 1e-16)),
+            rtol=float(sim_data.get('rtol', 1e-8)),
+            sens_atol=float(sim_data.get('sens_atol', 1e-6)),
+            sens_rtol=float(sim_data.get('sens_rtol', 1e-4))
         )
     
     def _process_model(self, model_data):

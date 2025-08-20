@@ -169,9 +169,9 @@ simulator(
 # used to add species to the model and to reduce memory usage by removing unimportant additional species.
 # all relative values are normalized by a characteristic flux at that time point
 model(
+    # when running a new model, it is recommended to start with higher values and then decrease to converge on the model
     # determines the relative flux to put a species into the core.
     # A smaller value will result in a larger, more complex model
-    # when running a new model, it is recommended to start with higher values and then decrease to converge on the model
     toleranceMoveToCore=0.1,
     # comment out the next three terms to disable pruning
     # determines the relative flux needed to not remove species from the model.
@@ -217,8 +217,6 @@ options(
     generateOutputHTML=True,
     # generates plots of the RMG's performance statistics. Not helpful if you just want a model.
     generatePlots=False,
-    # generates potential energy surface diagrams for pressure dependent networks in the model.
-    generatePESDiagrams=False,
     # saves mole fraction of species in 'solver/' to help you create plots
     saveSimulationProfiles=False,
     # gets RMG to output comments on where kinetics were obtained in the chemkin file.

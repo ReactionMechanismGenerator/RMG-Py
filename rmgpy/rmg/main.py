@@ -260,11 +260,14 @@ class RMG(util.Subject):
         Load an RMG job from the input file located at `input_file`, or
         from the `input_file` attribute if not given as a parameter.
         """
-        from rmgpy.rmg.input import read_input_file
+        from rmgpy.rmg.input import read_input_file, read_input_file_auto, read_thermo_input_file, save_input_file
+
+        self.input_file = path
+        read_input_file_auto(path, self)  # Changed to use auto-detection
 
         if path is None:
             path = self.input_file
-        read_input_file(path, self)
+        read_input_file_auto(path, self)
         self.reaction_model.kinetics_estimator = self.kinetics_estimator
         # If the output directory is not yet set, then set it to the same
         # directory as the input file by default

@@ -1,0 +1,3358 @@
+Global RMG Settings:
+   database.directory   = /home/pvinc/RMG-database/input (Default, relative to RMG-Py source code)
+   test_data.directory  = /home/pvinc/RMG-Py/test/rmgpy/test_data (Default, relative to RMG-Py source code)
+RMG execution initiated at Wed Aug 20 17:45:36 2025
+
+#########################################################
+# RMG-Py - Reaction Mechanism Generator in Python       #
+# Version: 3.3.0                                        #
+# Authors: RMG Developers (rmg_dev@mit.edu)             #
+# P.I.s:   William H. Green (whgreen@mit.edu)           #
+#          Richard H. West (r.west@neu.edu)             #
+# Website: http://reactionmechanismgenerator.github.io/ #
+#########################################################
+
+The current git HEAD for RMG-Py is:
+	b'85ada0cfb6bf1ee347e8657d0a3732ca34167693'
+	b'Wed Aug 20 17:08:27 2025 -0400'
+
+The current git HEAD for RMG-database is:
+	b'908f7f067595270522af59a8357e78f5cba2a23c'
+	b'Wed Jul 9 15:17:08 2025 -0400'
+
+Detected YAML input file format (.yaml)
+Reading YAML input file  "input.yaml"...
+# sample test yaml input file, info taken from commented input file in examples
+
+# Data sources
+database:
+  # overrides RMG thermo calculation of RMG with these values.
+  # libraries found at http://rmg.mit.edu/database/thermo/libraries/
+  # if species exist in multiple libraries, the earlier libraries overwrite the
+  # previous values
+  thermoLibraries:
+    - BurkeH2O2
+    - primaryThermoLibrary
+    - DFT_QCI_thermo
+    - CBS_QB3_1dHR
+  
+  # overrides RMG transport calculations with these values.
+  # if species exist in multiple libraries, the earlier libraries overwrite the previous values
+  transportLibraries:
+    - PrimaryTransportLibrary
+  
+  # overrides RMG kinetics estimation if needed in the core of RMG.
+  # list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/
+  # libraries can be input as either a string or tuple of form ('library_name',True/False)
+  # where a `True` indicates that all unused reactions will be automatically added
+  # to the chemkin file at the end of the simulation. Placing just string values
+  # defaults the tuple to `False`. The string input is sufficient in almost
+  # all situations
+  reactionLibraries:
+    - name: C3
+      seed: false
+  
+  # seed mechanisms are reactionLibraries that are forced into the initial mechanism
+  # in addition to species listed in this input file.
+  # This is helpful for reducing run time for species you know will appear in
+  # the mechanism.
+  seedMechanisms:
+    - primaryH2O2
+    - ERC-FoundationFuelv0.9
+  
+  # lists specific families used to generate the model. 'default' uses a list of
+  # families from RMG-Database/input/kinetics/families/recommended.py
+  # a visual list of families is available in PDF form at RMG-database/families
+  kineticsFamilies: default
+  
+  # this is normally not changed in general RMG runs. Usually used for testing with
+  # outside kinetics databases
+  kineticsDepositories: default
+  
+  # specifies how RMG calculates rates. currently, the only option is 'rate rules'
+  kineticsEstimator: rate rules
+
+# List of species
+# list initial and expected species below to automatically put them into the core mechanism.
+# 'structure' can utilize method of SMILES("put_SMILES_here"),
+# adjacencyList("""put_adj_list_here"""), or InChI("put_InChI_here")
+# for molecular oxygen, use the smiles string [O][O] so the triplet form is used
+species:
+  - label: butane
+    reactive: true  # this parameter is optional if true
+    structure:
+      SMILES: CCCC
+  
+  - label: O2
+    structure:
+      SMILES: "[O][O]"
+  
+  - label: N2
+    reactive: false # necessary if false
+    structure:
+      adjacencyList: |
+        1 N u0 p1 c0 {2,T}
+        2 N u0 p1 c0 {1,T}
+      # for adjacencyLists and adjacencyListGroups, use '|' for a multi-line string like how 
+      # we used """ in python
+  
+  # You can list species not initially in reactor to make sure RMG includes them in the mechanism
+  - label: QOOH
+    reactive: true
+    structure:
+      SMILES: OOCC[CH]C
+  
+  - label: CO2
+    reactive: true
+    structure:
+      SMILES: O=C=O
+
+# You can also list forbidden structures to forbid a certain molecule or set of molecules from your model
+# To prevent a single molecule from your model, use SMILES or adjacencyList to define the structure
+# For example, if you do not want cyclopropyne in your model, you can forbid it using SMILES
+# forbidden:
+#   - label: cyclopropyne
+#     structure:
+#       SMILES: C1#CC1
+#
+# or (optional: explicit) adjacencyList
+#   - label: cyclopropyne
+#     structure: |
+#       1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+#       2 C u0 p0 c0 {1,S} {3,T}
+#       3 C u0 p0 c0 {1,S} {2,T}
+#       4 H u0 p0 c0 {1,S}
+#       5 H u0 p0 c0 {1,S}
+#
+# If you want to exclude not just cyclopropyne but all three member rings, use `adjacencyListGroup`
+# to define the forbidden group structure
+#   - label: Three-member Ring
+#     structure:
+#       adjacencyListGroup: |
+#         1 R ux {2,[S,D,T]} {3,[S,D,T]}
+#         2 R ux {1,[S,D,T]} {3,[S,D,T]}
+#         3 R ux {1,[S,D,T]} {2,[S,D,T]}
+
+# Reaction systems
+# currently RMG models only constant temperature and pressure as homogeneous batch reactors.
+# two options are: simpleReactor for gas phase or liquidReactor for liquid phase
+# use can use multiple reactors in an input file for each condition you want to test.
+simpleReactor:
+  # specifies reaction temperature with units
+  temperature:
+    value: 700
+    units: K
+  
+  # specifies reaction pressure with units
+  pressure:
+    value: 10.0
+    units: bar
+  
+  # list initial mole fractions of compounds using the label from the 'species' label.
+  # RMG will normalize if sum/=1
+  initialMoleFractions:
+    N2: 4
+    O2: 1
+    butane: 0.1538461538  # 1/6.5
+  
+  # number of simulations used to explore variable temperature and pressure reactors
+  nSims: 6
+  
+  # the following two values specify when to determine the final output model
+  # only one must be specified
+  # the first condition to be satisfied will terminate the process
+  terminationConversion:
+    butane: 0.99
+  
+  terminationTime:
+    value: 40
+    units: s
+  
+  # the next two optional values specify how RMG computes sensitivities of
+  # rate coefficients with respect to species concentrations.
+  # sensitivity contains a list of species' labels to conduct sensitivity analysis on.
+  # sensitivityThreshold is the required sensitivity to be recorded in the csv output file
+  # sensitivity:
+  #   - CH4
+  # sensitivityThreshold: 0.0001
+
+# liquidReactor:
+#   temperature:
+#     value: 500
+#     units: K
+#   initialConcentrations:
+#     N2: 4
+#     O2: 1
+#     CO: 1
+#   terminationConversion: null
+#   terminationTime:
+#     value: 3600
+#     units: s
+#   sensitivity: null
+#   sensitivityThreshold: 0.001
+
+# liquid reactors also have solvents, you can specify one solvent
+# list of solvents available at : http://rmg.mit.edu/database/solvation/libraries/solvent/
+# solvation:
+#   solvent: water
+
+# determines absolute and relative tolerances for ODE solver and sensitivities.
+# normally this doesn't cause many issues and is modified after other issues are
+# ruled out
+simulator:
+  atol: 1e-16
+  rtol: 1e-8
+  # sensAtol: 1e-6
+  # sensRtol: 1e-4
+
+# used to add species to the model and to reduce memory usage by removing unimportant additional species.
+# all relative values are normalized by a characteristic flux at that time point
+model:
+  # when running a new model, it is recommended to start with higher values and then decrease to converge on the model
+  # determines the relative flux to put a species into the core.
+  # A smaller value will result in a larger, more complex model
+  toleranceMoveToCore: 0.1
+  
+  # comment out the next three terms to disable pruning
+  # determines the relative flux needed to not remove species from the model.
+  # Lower values will keep more species and utilize more memory
+  toleranceKeepInEdge: 0.01
+  
+  # determines when to stop a ODE run to add a species.
+  # Lower values will improve speed.
+  # if it is too low, may never get to the end simulation to prune species.
+  toleranceInterruptSimulation: 1
+  
+  # number of edge species needed to accumulate before pruning occurs
+  # larger values require more memory and will prune less often
+  maximumEdgeSpecies: 100000
+  
+  # minimum number of core species needed before pruning occurs.
+  # this prevents pruning when kinetic model is far away from completeness
+  minCoreSizeForPrune: 50
+  
+  # make sure that the pruned edge species have existed for a set number of RMG iterations.
+  # the user can specify to increase it from the default value of 2
+  minSpeciesExistIterationsForPrune: 2
+  
+  # filter the reactions during the enlarge step to omit species from reacting if their
+  # concentration are deemed to be too low
+  filterReactions: false
+  
+  # for bimolecular reactions, will only allow them to react if
+  # filterThreshold*C_A*C_B > toleranceMoveToCore*characteristic_rate
+  # and if filterReactions=True
+  filterThreshold: 1e8
+
+options:
+  # provides a name for the seed mechanism produced at the end of an rmg run default is 'Seed'
+  name: SeedName
+  
+  # if True (default) every iteration it saves the current model as libraries/seeds
+  # (and deletes the old one)
+  # Unlike HTML this is inexpensive time-wise
+  # note a seed mechanism will be generated at the end of a completed run and some incomplete
+  # runs even if this is set as False
+  generateSeedEachIteration: true
+  
+  # If True the mechanism will also be saved directly as kinetics and thermo libraries in the database
+  saveSeedToDatabase: false
+  
+  # only option is 'si'
+  units: si
+  
+  # Draws images of species and reactions and saves the model output to HTML.
+  # May consume extra memory when running large models.
+  generateOutputHTML: true
+  
+  # generates plots of the RMG's performance statistics. Not helpful if you just want a model.
+  generatePlots: false
+  
+  # saves mole fraction of species in 'solver/' to help you create plots
+  saveSimulationProfiles: false
+  
+  # gets RMG to output comments on where kinetics were obtained in the chemkin file.
+  # useful for debugging kinetics but increases memory usage of the chemkin output file
+  verboseComments: false
+  
+  # gets RMG to generate edge species chemkin files. Uses lots of memory in output.
+  # Helpful for seeing why some reaction are not appearing in core model.
+  saveEdgeSpecies: false
+  
+  # Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
+  # do not converge.
+  # wallTime: "00:00:00"
+  
+  # Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
+  # reactions while keeping the reversibility as is.
+  keepIrreversible: false
+  
+  # Allows families with three products to react in the diverse direction (default).
+  trimolecularProductReversible: true
+  
+  # Allows a seed to be saved every n iterations.
+  # The default of -1 causes the iteration to only be saved at the end of the RMG job
+  saveSeedModulus: -1
+
+# optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.
+pressureDependence:
+  # two methods available: 'modified strong collision' is faster and less accurate than 'reservoir state'
+  method: modified strong collision
+  
+  # these two categories determine how fine energy is discretized.
+  # more grains increases accuracy but takes longer
+  maximumGrainSize:
+    value: 0.5
+    units: kcal/mol
+  minimumNumberOfGrains: 250
+  
+  # the conditions for the rate to be output over
+  # parameter order is: low_value, high_value, units, internal points
+  temperatures:
+    min: 300
+    max: 2200
+    units: K
+    count: 8
+  
+  pressures:
+    min: 0.01
+    max: 100
+    units: bar
+    count: 5
+  
+  # The two options for interpolation are 'PDepArrhenius' (no extra arguments) and
+  # 'Chebyshev' which is followed by the number of basis sets in
+  # Temperature and Pressure. These values must be less than the number of
+  # internal points specified above
+  interpolation:
+    - Chebyshev
+    - 6  # Temperature basis sets
+    - 4  # Pressure basis sets
+  
+  # turns off pressure dependence for molecules with number of atoms greater than the number specified below
+  # this is due to faster internal rate of energy transfer for larger molecules
+  maximumAtoms: 15
+
+# optional block adds constraints on what RMG can output.
+# This is helpful for improving the efficiency of RMG, but wrong inputs can lead to many errors.
+generatedSpeciesConstraints:
+  # allows exceptions to the following restrictions
+  allowed:
+    - input species
+    - seed mechanisms
+    - reaction libraries
+  
+  # maximum number of each atom in a molecule
+  maximumCarbonAtoms: 4
+  maximumOxygenAtoms: 7
+  maximumNitrogenAtoms: 0
+  maximumSiliconAtoms: 0
+  maximumSulfurAtoms: 0
+  maximumSurfaceSites: 2  # maximum number of surface sites (for heterogeneous catalysis)
+  maximumSurfaceBondOrder: 2  # maximum bond order of each surface sites (for heterogeneous catalysis)
+  
+  # max number of non-hydrogen atoms
+  # maximumHeavyAtoms: 20
+  
+  # maximum radicals on a molecule
+  maximumRadicalElectrons: 1
+  
+  # maximum number of singlet carbenes (lone pair on a carbon atom) in a molecule
+  maximumSingletCarbenes: 1
+  
+  # maximum number of radicals on a molecule with a singlet carbene
+  # should be lower than maximumRadicalElectrons in order to have an effect
+  maximumCarbeneRadicals: 0
+  
+  # If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered
+  # which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
+  # allowSingletO2: false
+  
+  # maximum allowed number of non-normal isotope atoms:
+  # maximumIsotopicAtoms: 2
+
+# optional block allows thermo to be estimated through quantum calculations
+# quantumMechanics:
+#   # the software package for calculations...can use 'mopac' or 'gaussian' if installed
+#   software: mopac
+#   # methods available for calculations. 'pm2' 'pm3' or 'pm7' (last for mopac only)
+#   method: pm3
+#   # where to store calculations
+#   fileStore: QMfiles
+#   # where to store temporary run files
+#   scratchDirectory: null
+#   # onlyCyclics allows linear molecules to be calculated using bensen group additivity....need to verify
+#   onlyCyclics: true
+#   # how many radicals should be utilized in the calculation.
+#   # If the amount of radicals is more than this, RMG will use hydrogen bond incrementation method
+#   maxRadicalNumber: 0
+
+# optional block allows thermo to be estimated through ML estimator
+# mlEstimator:
+#   thermo: true
+#   # Name of folder containing ML architecture and parameters in database
+#   name: main
+#   # Limits on atom numbers
+#   minHeavyAtoms: 1
+#   maxHeavyAtoms: null
+#   minCarbonAtoms: 0
+#   maxCarbonAtoms: null
+#   minOxygenAtoms: 0
+#   maxOxygenAtoms: null
+#   minNitrogenAtoms: 0
+#   maxNitrogenAtoms: null
+#   # Limits on cycles
+#   onlyCyclics: false
+#   onlyHeterocyclics: false  # If onlyHeterocyclics is True, the machine learning estimator is restricted to only
+#                              # heterocyclics species regardless of onlyCyclics setting.
+#                              # But onlyCyclics should also be True if onlyHeterocyclics is True.
+#   minCycleOverlap: 0  # specifies the minimum number of atoms that must be shared between any two cycles.
+#                       # If minCycleOverlap is greater than zero, the machine learning estimator is restricted to
+#                       # only cyclic species with the specified minimum cyclic overlap regardless of onlyCyclics
+#                       # setting.
+#   # If the estimated uncertainty of the thermo prediction is greater than
+#   # any of these values, then don't use the ML estimate
+#   H298UncertaintyCutoff:
+#     value: 3.0
+#     units: kcal/mol
+#   S298UncertaintyCutoff:
+#     value: 2.0
+#     units: cal/(mol*K)
+#   CpUncertaintyCutoff:
+#     value: 2.0
+#     units: cal/(mol*K)
+Warning: Initial mole fractions do not sum to one; normalizing.
+
+Original composition:
+N2 = 4.0
+O2 = 1.0
+butane = 0.1538461538
+
+Normalized mole fractions:
+N2 = 0.776119402992025
+O2 = 0.19402985074800624
+butane = 0.02985074625996881
+
+Warning: Generate Output HTML option was turned on. Note that this will slow down model generation.
+
+Detected YAML input file format (.yaml)
+Reading YAML input file  "input.yaml"...
+# sample test yaml input file, info taken from commented input file in examples
+
+# Data sources
+database:
+  # overrides RMG thermo calculation of RMG with these values.
+  # libraries found at http://rmg.mit.edu/database/thermo/libraries/
+  # if species exist in multiple libraries, the earlier libraries overwrite the
+  # previous values
+  thermoLibraries:
+    - BurkeH2O2
+    - primaryThermoLibrary
+    - DFT_QCI_thermo
+    - CBS_QB3_1dHR
+  
+  # overrides RMG transport calculations with these values.
+  # if species exist in multiple libraries, the earlier libraries overwrite the previous values
+  transportLibraries:
+    - PrimaryTransportLibrary
+  
+  # overrides RMG kinetics estimation if needed in the core of RMG.
+  # list of libraries found at http://rmg.mit.edu/database/kinetics/libraries/
+  # libraries can be input as either a string or tuple of form ('library_name',True/False)
+  # where a `True` indicates that all unused reactions will be automatically added
+  # to the chemkin file at the end of the simulation. Placing just string values
+  # defaults the tuple to `False`. The string input is sufficient in almost
+  # all situations
+  reactionLibraries:
+    - name: C3
+      seed: false
+  
+  # seed mechanisms are reactionLibraries that are forced into the initial mechanism
+  # in addition to species listed in this input file.
+  # This is helpful for reducing run time for species you know will appear in
+  # the mechanism.
+  seedMechanisms:
+    - primaryH2O2
+    - ERC-FoundationFuelv0.9
+  
+  # lists specific families used to generate the model. 'default' uses a list of
+  # families from RMG-Database/input/kinetics/families/recommended.py
+  # a visual list of families is available in PDF form at RMG-database/families
+  kineticsFamilies: default
+  
+  # this is normally not changed in general RMG runs. Usually used for testing with
+  # outside kinetics databases
+  kineticsDepositories: default
+  
+  # specifies how RMG calculates rates. currently, the only option is 'rate rules'
+  kineticsEstimator: rate rules
+
+# List of species
+# list initial and expected species below to automatically put them into the core mechanism.
+# 'structure' can utilize method of SMILES("put_SMILES_here"),
+# adjacencyList("""put_adj_list_here"""), or InChI("put_InChI_here")
+# for molecular oxygen, use the smiles string [O][O] so the triplet form is used
+species:
+  - label: butane
+    reactive: true  # this parameter is optional if true
+    structure:
+      SMILES: CCCC
+  
+  - label: O2
+    structure:
+      SMILES: "[O][O]"
+  
+  - label: N2
+    reactive: false # necessary if false
+    structure:
+      adjacencyList: |
+        1 N u0 p1 c0 {2,T}
+        2 N u0 p1 c0 {1,T}
+      # for adjacencyLists and adjacencyListGroups, use '|' for a multi-line string like how 
+      # we used """ in python
+  
+  # You can list species not initially in reactor to make sure RMG includes them in the mechanism
+  - label: QOOH
+    reactive: true
+    structure:
+      SMILES: OOCC[CH]C
+  
+  - label: CO2
+    reactive: true
+    structure:
+      SMILES: O=C=O
+
+# You can also list forbidden structures to forbid a certain molecule or set of molecules from your model
+# To prevent a single molecule from your model, use SMILES or adjacencyList to define the structure
+# For example, if you do not want cyclopropyne in your model, you can forbid it using SMILES
+# forbidden:
+#   - label: cyclopropyne
+#     structure:
+#       SMILES: C1#CC1
+#
+# or (optional: explicit) adjacencyList
+#   - label: cyclopropyne
+#     structure: |
+#       1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+#       2 C u0 p0 c0 {1,S} {3,T}
+#       3 C u0 p0 c0 {1,S} {2,T}
+#       4 H u0 p0 c0 {1,S}
+#       5 H u0 p0 c0 {1,S}
+#
+# If you want to exclude not just cyclopropyne but all three member rings, use `adjacencyListGroup`
+# to define the forbidden group structure
+#   - label: Three-member Ring
+#     structure:
+#       adjacencyListGroup: |
+#         1 R ux {2,[S,D,T]} {3,[S,D,T]}
+#         2 R ux {1,[S,D,T]} {3,[S,D,T]}
+#         3 R ux {1,[S,D,T]} {2,[S,D,T]}
+
+# Reaction systems
+# currently RMG models only constant temperature and pressure as homogeneous batch reactors.
+# two options are: simpleReactor for gas phase or liquidReactor for liquid phase
+# use can use multiple reactors in an input file for each condition you want to test.
+simpleReactor:
+  # specifies reaction temperature with units
+  temperature:
+    value: 700
+    units: K
+  
+  # specifies reaction pressure with units
+  pressure:
+    value: 10.0
+    units: bar
+  
+  # list initial mole fractions of compounds using the label from the 'species' label.
+  # RMG will normalize if sum/=1
+  initialMoleFractions:
+    N2: 4
+    O2: 1
+    butane: 0.1538461538  # 1/6.5
+  
+  # number of simulations used to explore variable temperature and pressure reactors
+  nSims: 6
+  
+  # the following two values specify when to determine the final output model
+  # only one must be specified
+  # the first condition to be satisfied will terminate the process
+  terminationConversion:
+    butane: 0.99
+  
+  terminationTime:
+    value: 40
+    units: s
+  
+  # the next two optional values specify how RMG computes sensitivities of
+  # rate coefficients with respect to species concentrations.
+  # sensitivity contains a list of species' labels to conduct sensitivity analysis on.
+  # sensitivityThreshold is the required sensitivity to be recorded in the csv output file
+  # sensitivity:
+  #   - CH4
+  # sensitivityThreshold: 0.0001
+
+# liquidReactor:
+#   temperature:
+#     value: 500
+#     units: K
+#   initialConcentrations:
+#     N2: 4
+#     O2: 1
+#     CO: 1
+#   terminationConversion: null
+#   terminationTime:
+#     value: 3600
+#     units: s
+#   sensitivity: null
+#   sensitivityThreshold: 0.001
+
+# liquid reactors also have solvents, you can specify one solvent
+# list of solvents available at : http://rmg.mit.edu/database/solvation/libraries/solvent/
+# solvation:
+#   solvent: water
+
+# determines absolute and relative tolerances for ODE solver and sensitivities.
+# normally this doesn't cause many issues and is modified after other issues are
+# ruled out
+simulator:
+  atol: 1e-16
+  rtol: 1e-8
+  # sensAtol: 1e-6
+  # sensRtol: 1e-4
+
+# used to add species to the model and to reduce memory usage by removing unimportant additional species.
+# all relative values are normalized by a characteristic flux at that time point
+model:
+  # when running a new model, it is recommended to start with higher values and then decrease to converge on the model
+  # determines the relative flux to put a species into the core.
+  # A smaller value will result in a larger, more complex model
+  toleranceMoveToCore: 0.1
+  
+  # comment out the next three terms to disable pruning
+  # determines the relative flux needed to not remove species from the model.
+  # Lower values will keep more species and utilize more memory
+  toleranceKeepInEdge: 0.01
+  
+  # determines when to stop a ODE run to add a species.
+  # Lower values will improve speed.
+  # if it is too low, may never get to the end simulation to prune species.
+  toleranceInterruptSimulation: 1
+  
+  # number of edge species needed to accumulate before pruning occurs
+  # larger values require more memory and will prune less often
+  maximumEdgeSpecies: 100000
+  
+  # minimum number of core species needed before pruning occurs.
+  # this prevents pruning when kinetic model is far away from completeness
+  minCoreSizeForPrune: 50
+  
+  # make sure that the pruned edge species have existed for a set number of RMG iterations.
+  # the user can specify to increase it from the default value of 2
+  minSpeciesExistIterationsForPrune: 2
+  
+  # filter the reactions during the enlarge step to omit species from reacting if their
+  # concentration are deemed to be too low
+  filterReactions: false
+  
+  # for bimolecular reactions, will only allow them to react if
+  # filterThreshold*C_A*C_B > toleranceMoveToCore*characteristic_rate
+  # and if filterReactions=True
+  filterThreshold: 1e8
+
+options:
+  # provides a name for the seed mechanism produced at the end of an rmg run default is 'Seed'
+  name: SeedName
+  
+  # if True (default) every iteration it saves the current model as libraries/seeds
+  # (and deletes the old one)
+  # Unlike HTML this is inexpensive time-wise
+  # note a seed mechanism will be generated at the end of a completed run and some incomplete
+  # runs even if this is set as False
+  generateSeedEachIteration: true
+  
+  # If True the mechanism will also be saved directly as kinetics and thermo libraries in the database
+  saveSeedToDatabase: false
+  
+  # only option is 'si'
+  units: si
+  
+  # Draws images of species and reactions and saves the model output to HTML.
+  # May consume extra memory when running large models.
+  generateOutputHTML: true
+  
+  # generates plots of the RMG's performance statistics. Not helpful if you just want a model.
+  generatePlots: false
+  
+  # saves mole fraction of species in 'solver/' to help you create plots
+  saveSimulationProfiles: false
+  
+  # gets RMG to output comments on where kinetics were obtained in the chemkin file.
+  # useful for debugging kinetics but increases memory usage of the chemkin output file
+  verboseComments: false
+  
+  # gets RMG to generate edge species chemkin files. Uses lots of memory in output.
+  # Helpful for seeing why some reaction are not appearing in core model.
+  saveEdgeSpecies: false
+  
+  # Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
+  # do not converge.
+  # wallTime: "00:00:00"
+  
+  # Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
+  # reactions while keeping the reversibility as is.
+  keepIrreversible: false
+  
+  # Allows families with three products to react in the diverse direction (default).
+  trimolecularProductReversible: true
+  
+  # Allows a seed to be saved every n iterations.
+  # The default of -1 causes the iteration to only be saved at the end of the RMG job
+  saveSeedModulus: -1
+
+# optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.
+pressureDependence:
+  # two methods available: 'modified strong collision' is faster and less accurate than 'reservoir state'
+  method: modified strong collision
+  
+  # these two categories determine how fine energy is discretized.
+  # more grains increases accuracy but takes longer
+  maximumGrainSize:
+    value: 0.5
+    units: kcal/mol
+  minimumNumberOfGrains: 250
+  
+  # the conditions for the rate to be output over
+  # parameter order is: low_value, high_value, units, internal points
+  temperatures:
+    min: 300
+    max: 2200
+    units: K
+    count: 8
+  
+  pressures:
+    min: 0.01
+    max: 100
+    units: bar
+    count: 5
+  
+  # The two options for interpolation are 'PDepArrhenius' (no extra arguments) and
+  # 'Chebyshev' which is followed by the number of basis sets in
+  # Temperature and Pressure. These values must be less than the number of
+  # internal points specified above
+  interpolation:
+    - Chebyshev
+    - 6  # Temperature basis sets
+    - 4  # Pressure basis sets
+  
+  # turns off pressure dependence for molecules with number of atoms greater than the number specified below
+  # this is due to faster internal rate of energy transfer for larger molecules
+  maximumAtoms: 15
+
+# optional block adds constraints on what RMG can output.
+# This is helpful for improving the efficiency of RMG, but wrong inputs can lead to many errors.
+generatedSpeciesConstraints:
+  # allows exceptions to the following restrictions
+  allowed:
+    - input species
+    - seed mechanisms
+    - reaction libraries
+  
+  # maximum number of each atom in a molecule
+  maximumCarbonAtoms: 4
+  maximumOxygenAtoms: 7
+  maximumNitrogenAtoms: 0
+  maximumSiliconAtoms: 0
+  maximumSulfurAtoms: 0
+  maximumSurfaceSites: 2  # maximum number of surface sites (for heterogeneous catalysis)
+  maximumSurfaceBondOrder: 2  # maximum bond order of each surface sites (for heterogeneous catalysis)
+  
+  # max number of non-hydrogen atoms
+  # maximumHeavyAtoms: 20
+  
+  # maximum radicals on a molecule
+  maximumRadicalElectrons: 1
+  
+  # maximum number of singlet carbenes (lone pair on a carbon atom) in a molecule
+  maximumSingletCarbenes: 1
+  
+  # maximum number of radicals on a molecule with a singlet carbene
+  # should be lower than maximumRadicalElectrons in order to have an effect
+  maximumCarbeneRadicals: 0
+  
+  # If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered
+  # which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
+  # allowSingletO2: false
+  
+  # maximum allowed number of non-normal isotope atoms:
+  # maximumIsotopicAtoms: 2
+
+# optional block allows thermo to be estimated through quantum calculations
+# quantumMechanics:
+#   # the software package for calculations...can use 'mopac' or 'gaussian' if installed
+#   software: mopac
+#   # methods available for calculations. 'pm2' 'pm3' or 'pm7' (last for mopac only)
+#   method: pm3
+#   # where to store calculations
+#   fileStore: QMfiles
+#   # where to store temporary run files
+#   scratchDirectory: null
+#   # onlyCyclics allows linear molecules to be calculated using bensen group additivity....need to verify
+#   onlyCyclics: true
+#   # how many radicals should be utilized in the calculation.
+#   # If the amount of radicals is more than this, RMG will use hydrogen bond incrementation method
+#   maxRadicalNumber: 0
+
+# optional block allows thermo to be estimated through ML estimator
+# mlEstimator:
+#   thermo: true
+#   # Name of folder containing ML architecture and parameters in database
+#   name: main
+#   # Limits on atom numbers
+#   minHeavyAtoms: 1
+#   maxHeavyAtoms: null
+#   minCarbonAtoms: 0
+#   maxCarbonAtoms: null
+#   minOxygenAtoms: 0
+#   maxOxygenAtoms: null
+#   minNitrogenAtoms: 0
+#   maxNitrogenAtoms: null
+#   # Limits on cycles
+#   onlyCyclics: false
+#   onlyHeterocyclics: false  # If onlyHeterocyclics is True, the machine learning estimator is restricted to only
+#                              # heterocyclics species regardless of onlyCyclics setting.
+#                              # But onlyCyclics should also be True if onlyHeterocyclics is True.
+#   minCycleOverlap: 0  # specifies the minimum number of atoms that must be shared between any two cycles.
+#                       # If minCycleOverlap is greater than zero, the machine learning estimator is restricted to
+#                       # only cyclic species with the specified minimum cyclic overlap regardless of onlyCyclics
+#                       # setting.
+#   # If the estimated uncertainty of the thermo prediction is greater than
+#   # any of these values, then don't use the ML estimate
+#   H298UncertaintyCutoff:
+#     value: 3.0
+#     units: kcal/mol
+#   S298UncertaintyCutoff:
+#     value: 2.0
+#     units: cal/(mol*K)
+#   CpUncertaintyCutoff:
+#     value: 2.0
+#     units: cal/(mol*K)
+Warning: Initial mole fractions do not sum to one; normalizing.
+
+Original composition:
+N2 = 4.0
+O2 = 1.0
+butane = 0.1538461538
+
+Normalized mole fractions:
+N2 = 0.776119402992025
+O2 = 0.19402985074800624
+butane = 0.02985074625996881
+
+Warning: Generate Output HTML option was turned on. Note that this will slow down model generation.
+
+700 K
+Loading transport library from PrimaryTransportLibrary.py in /home/pvinc/RMG-database/input/transport/libraries...
+Loading transport group database from /home/pvinc/RMG-database/input/transport/groups...
+Loading kinetics library primaryH2O2 from /home/pvinc/RMG-database/input/kinetics/libraries/primaryH2O2/reactions.py...
+Loading kinetics library ERC-FoundationFuelv0.9 from /home/pvinc/RMG-database/input/kinetics/libraries/ERC-FoundationFuelv0.9/reactions.py...
+Loading kinetics library C3 from /home/pvinc/RMG-database/input/kinetics/libraries/C3/reactions.py...
+Loading frequencies group database from /home/pvinc/RMG-database/input/statmech/groups...
+Loading solvation thermodynamics group database from /home/pvinc/RMG-database/input/solvation/groups...
+Loading thermodynamics library from BurkeH2O2.py in /home/pvinc/RMG-database/input/thermo/libraries...
+Loading thermodynamics library from primaryThermoLibrary.py in /home/pvinc/RMG-database/input/thermo/libraries...
+Loading thermodynamics library from DFT_QCI_thermo.py in /home/pvinc/RMG-database/input/thermo/libraries...
+Loading thermodynamics library from CBS_QB3_1dHR.py in /home/pvinc/RMG-database/input/thermo/libraries...
+Loading thermodynamics group database from /home/pvinc/RMG-database/input/thermo/groups...
+Adding rate rules from training set in kinetics families...
+Warning: Cphigh is above the theoretical CpInf value for ThermoData object
+ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([60.2599,68.0494,74.7775,80.9311,90.8846,97.4337,105.393],'J/(mol*K)'), H298=(-477.191,'kJ/mol'), S298=(269.551,'J/(mol*K)'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(103.931,'J/(mol*K)'), comment="""Thermo group additivity estimation: group(O2s-(Cds-Cd)(Cds-Cd)) + group(O2s-(Cds-O2d)H) + group(Cds-OdOsOs) + group(Li-OCOdO) + radical(OC=OOJ)""").
+The thermo for this species is probably wrong! Setting CpInf = Cphigh for Entropy calculationat T = 2000.0 K...
+Warning: Cphigh is above the theoretical CpInf value for ThermoData object
+ThermoData(Tdata=([300,400,500,600,800,1000,1500],'K'), Cpdata=([60.2599,68.0494,74.7775,80.9311,90.8846,97.4337,105.393],'J/(mol*K)'), H298=(-477.191,'kJ/mol'), S298=(269.551,'J/(mol*K)'), Cp0=(33.2579,'J/(mol*K)'), CpInf=(103.931,'J/(mol*K)'), comment="""Thermo group additivity estimation: group(O2s-(Cds-Cd)(Cds-Cd)) + group(O2s-(Cds-O2d)H) + group(Cds-OdOsOs) + group(Li-OCOdO) + radical(OC=OOJ)""").
+The thermo for this species is probably wrong! Setting CpInf = Cphigh for Entropy calculationat T = 1666.6666666666665 K...
+Filling in rate rules in kinetics families by averaging...
+Adding seed mechanism primaryH2O2 to model core...
+
+Summary of Model Enlargement
+---------------------------------
+Added 12 new core species
+    O2(2)
+    N2
+    H(5)
+    H2(6)
+    Ar(7)
+    He(8)
+    OH(9)
+    O(10)
+    H2O(11)
+    HO2(12)
+    H2O2(13)
+    O3(14)
+Created 0 new edge species
+Added 50 new core reactions
+    H(5) + H(5) <=> H2(6)
+    O2(2) + H(5) + H(5) <=> O2(2) + H2(6)
+    Ar(7) + H2(6) <=> Ar(7) + H(5) + H(5)
+    He(8) + H2(6) <=> He(8) + H(5) + H(5)
+    H(5) + H(5) + H2(6) <=> H2(6) + H2(6)
+    N2 + H(5) + H(5) <=> N2 + H2(6)
+    H(5) + H(5) + H(5) <=> H(5) + H2(6)
+    O2(2) + H(5) + H(5) <=> OH(9) + OH(9)
+    O(10) + H(5) <=> OH(9)
+    O(10) + O2(2) + H(5) <=> O2(2) + OH(9)
+    H2O(11) <=> H(5) + OH(9)
+    H2O(11) + H2O(11) <=> H(5) + OH(9) + H2O(11)
+    O2(2) + H(5) + OH(9) <=> O2(2) + H2O(11)
+    O2(2) + H(5) <=> HO2(12)
+    O2(2) + H(5) <=> O(10) + OH(9)
+    OH(9) + OH(9) <=> O(10) + H2O(11)
+    OH(9) + HO2(12) <=> O2(2) + H2O(11)
+    O(10) + O(10) <=> O2(2)
+    Ar(7) + O(10) + O(10) <=> Ar(7) + O2(2)
+    He(8) + O(10) + O(10) <=> He(8) + O2(2)
+    O(10) + H2O(11) <=> H(5) + HO2(12)
+    OH(9) + H2O(11) <=> HO2(12) + H2(6)
+    H2O2(13) <=> OH(9) + OH(9)
+    H(5) + H2O2(13) <=> HO2(12) + H2(6)
+    H(5) + H2O2(13) <=> OH(9) + H2O(11)
+    O(10) + H2O2(13) <=> OH(9) + HO2(12)
+    OH(9) + H2O2(13) <=> HO2(12) + H2O(11)
+    O(10) + H2(6) <=> H(5) + OH(9)
+    OH(9) + H2(6) <=> H(5) + H2O(11)
+    O(10) + HO2(12) <=> O2(2) + OH(9)
+    H(5) + HO2(12) <=> OH(9) + OH(9)
+    O2(2) + H2(6) <=> H(5) + HO2(12)
+    HO2(12) + HO2(12) <=> O2(2) + H2O2(13)
+    HO2(12) + HO2(12) <=> O3(14) + H2O(11)
+    O(10) + O2(2) <=> O3(14)
+    Ar(7) + O(10) + O2(2) <=> Ar(7) + O3(14)
+    He(8) + O(10) + O2(2) <=> He(8) + O3(14)
+    O(10) + O3(14) <=> O2(2) + O2(2)
+    O3(14) + H(5) <=> O2(2) + OH(9)
+    O3(14) + H(5) <=> O(10) + HO2(12)
+    O3(14) + OH(9) <=> O2(2) + HO2(12)
+    O3(14) + HO2(12) <=> O2(2) + O2(2) + OH(9)
+    O3(14) + H2(6) <=> OH(9) + HO2(12)
+    O2(2) + H2(6) <=> OH(9) + OH(9)
+    O2(2) + H2(6) => O(10) + H2O(11)
+    O2(2) + O2(2) + H2(6) => HO2(12) + HO2(12)
+    O(10) + OH(9) <=> HO2(12)
+    H(5) + HO2(12) <=> H2O2(13)
+    O(10) + H2O2(13) <=> O2(2) + H2O(11)
+    HO2(12) + HO2(12) <=> O2(2) + OH(9) + OH(9)
+Created 0 new edge reactions
+
+After model enlargement:
+    The model core has 12 species and 50 reactions
+    The model edge has 3 species and 0 reactions
+
+Adding seed mechanism ERC-FoundationFuelv0.9 to model core...
+This library reaction was not new: O2(2) + H(5) <=> O(10) + OH(9)
+This library reaction was not new: O(10) + H2(6) <=> H(5) + OH(9)
+This library reaction was not new: OH(9) + H2(6) <=> H(5) + H2O(11)
+This library reaction was not new: OH(9) + OH(9) <=> O(10) + H2O(11)
+This library reaction was not new: H2O(11) + H2O(11) <=> H(5) + OH(9) + H2O(11)
+This library reaction was not new: H(5) + HO2(12) <=> O2(2) + H2(6)
+This library reaction was not new: H(5) + HO2(12) <=> OH(9) + OH(9)
+This library reaction was not new: H(5) + HO2(12) <=> O(10) + H2O(11)
+This library reaction was not new: O(10) + HO2(12) <=> O2(2) + OH(9)
+This library reaction was not new: OH(9) + HO2(12) <=> O2(2) + H2O(11)
+This library reaction was not new: HO2(12) + HO2(12) <=> O2(2) + H2O2(13)
+This library reaction was not new: H(5) + H2O2(13) <=> OH(9) + H2O(11)
+This library reaction was not new: H(5) + H2O2(13) <=> HO2(12) + H2(6)
+This library reaction was not new: O(10) + H2O2(13) <=> OH(9) + HO2(12)
+This library reaction was not new: OH(9) + H2O2(13) <=> HO2(12) + H2O(11)
+This library reaction was not new: H2(6) <=> H(5) + H(5)
+This library reaction was not new: O(10) + O(10) <=> O2(2)
+This library reaction was not new: O(10) + H(5) <=> OH(9)
+This library reaction was not new: H2O(11) <=> H(5) + OH(9)
+This library reaction was not new: O2(2) + H(5) <=> HO2(12)
+This library reaction was not new: H2O2(13) <=> OH(9) + OH(9)
+
+Summary of Model Enlargement
+---------------------------------
+Added 25 new core species
+    CO2(4)
+    CO(15)
+    HCO(16)
+    C(T)(17)
+    CH(18)
+    CH2(19)
+    CH2O(20)
+    CH3(21)
+    C2H(22)
+    C2H2(23)
+    H2CC(24)
+    CH2(S)(25)
+    CH3O(26)
+    CH2CO(27)
+    C2H3(28)
+    C2H4(29)
+    CH4(30)
+    C2H5(31)
+    CH2OH(32)
+    CH3OH(33)
+    HCCO(34)
+    CH3CO(35)
+    CH2CHO(36)
+    CH3CHO(37)
+    C2H6(38)
+Created 0 new edge species
+Added 224 new core reactions
+    O2(2) + CO(15) <=> O(10) + CO2(4)
+    OH(9) + CO(15) <=> H(5) + CO2(4)
+    HO2(12) + CO(15) <=> OH(9) + CO2(4)
+    H(5) + HCO(16) <=> H2(6) + CO(15)
+    O(10) + HCO(16) <=> OH(9) + CO(15)
+    O(10) + HCO(16) <=> H(5) + CO2(4)
+    OH(9) + HCO(16) <=> H2O(11) + CO(15)
+    O2(2) + HCO(16) <=> HO2(12) + CO(15)
+    OH(9) + C(T)(17) <=> H(5) + CO(15)
+    O2(2) + C(T)(17) <=> O(10) + CO(15)
+    H(5) + CH(18) <=> H2(6) + C(T)(17)
+    O(10) + CH(18) <=> H(5) + CO(15)
+    OH(9) + CH(18) <=> H(5) + HCO(16)
+    H2(6) + CH(18) <=> H(5) + CH2(19)
+    H2O(11) + CH(18) <=> H(5) + CH2O(20)
+    O2(2) + CH(18) <=> O(10) + HCO(16)
+    O2(2) + CH(18) <=> H(5) + CO2(4)
+    O2(2) + CH(18) <=> OH(9) + CO(15)
+    O2(2) + CH(18) => O(10) + H(5) + CO(15)
+    CO2(4) + CH(18) <=> CO(15) + HCO(16)
+    O(10) + CH2(19) => H(5) + H(5) + CO(15)
+    OH(9) + CH2(19) <=> H(5) + CH2O(20)
+    OH(9) + CH2(19) <=> H2O(11) + CH(18)
+    HO2(12) + CH2(19) <=> OH(9) + CH2O(20)
+    H2(6) + CH2(19) <=> H(5) + CH3(21)
+    O2(2) + CH2(19) => H(5) + OH(9) + CO(15)
+    O2(2) + CH2(19) => H(5) + H(5) + CO2(4)
+    O2(2) + CH2(19) => O(10) + CH2O(20)
+    C(T)(17) + CH2(19) <=> H(5) + C2H(22)
+    CH(18) + CH2(19) <=> H(5) + C2H2(23)
+    CH2(19) + CH2(19) => H(5) + H(5) + C2H2(23)
+    CH2(19) + CH2(19) <=> H2(6) + H2CC(24)
+    H(5) + CH2(S)(25) <=> H2(6) + CH(18)
+    O(10) + CH2(S)(25) => H(5) + H(5) + CO(15)
+    OH(9) + CH2(S)(25) <=> H(5) + CH2O(20)
+    H2(6) + CH2(S)(25) <=> H(5) + CH3(21)
+    O2(2) + CH2(S)(25) <=> O2(2) + CH2(19)
+    H2O(11) + CH2(S)(25) <=> H2O(11) + CH2(19)
+    H2O(11) + CH2(S)(25) <=> H2(6) + CH2O(20)
+    H2O2(13) + CH2(S)(25) <=> OH(9) + CH3O(26)
+    CO(15) + CH2(S)(25) <=> CO(15) + CH2(19)
+    CO2(4) + CH2(S)(25) <=> CO2(4) + CH2(19)
+    CO2(4) + CH2(S)(25) <=> CO(15) + CH2O(20)
+    H(5) + CH2O(20) <=> H2(6) + HCO(16)
+    O(10) + CH2O(20) <=> OH(9) + HCO(16)
+    OH(9) + CH2O(20) <=> H2O(11) + HCO(16)
+    O2(2) + CH2O(20) <=> HO2(12) + HCO(16)
+    HO2(12) + CH2O(20) <=> H2O2(13) + HCO(16)
+    CH(18) + CH2O(20) <=> H(5) + CH2CO(27)
+    CH2(19) + CH2O(20) <=> HCO(16) + CH3(21)
+    CH2(S)(25) + CH2O(20) <=> HCO(16) + CH3(21)
+    CH2O(20) + C2H(22) <=> HCO(16) + C2H2(23)
+    CH2O(20) + C2H3(28) <=> HCO(16) + C2H4(29)
+    O(10) + CH3(21) <=> H(5) + CH2O(20)
+    O(10) + CH3(21) => H(5) + H2(6) + CO(15)
+    OH(9) + CH3(21) <=> H2O(11) + CH2(19)
+    OH(9) + CH3(21) <=> H2O(11) + CH2(S)(25)
+    OH(9) + CH3(21) <=> H2(6) + CH2O(20)
+    HO2(12) + CH3(21) <=> O2(2) + CH4(30)
+    HO2(12) + CH3(21) <=> OH(9) + CH3O(26)
+    O2(2) + CH3(21) <=> O(10) + CH3O(26)
+    O2(2) + CH3(21) <=> OH(9) + CH2O(20)
+    C(T)(17) + CH3(21) <=> H(5) + C2H2(23)
+    CH(18) + CH3(21) <=> H(5) + C2H3(28)
+    CH2(19) + CH3(21) <=> H(5) + C2H4(29)
+    CH2(S)(25) + CH3(21) <=> H(5) + C2H4(29)
+    CH3(21) + CH3(21) <=> H(5) + C2H5(31)
+    HCO(16) + CH3(21) <=> CO(15) + CH4(30)
+    CH2O(20) + CH3(21) <=> HCO(16) + CH4(30)
+    H(5) + CH3O(26) <=> H(5) + CH2OH(32)
+    H(5) + CH3O(26) <=> H2(6) + CH2O(20)
+    H(5) + CH3O(26) <=> OH(9) + CH3(21)
+    H(5) + CH3O(26) <=> H2O(11) + CH2(S)(25)
+    O(10) + CH3O(26) <=> OH(9) + CH2O(20)
+    OH(9) + CH3O(26) <=> H2O(11) + CH2O(20)
+    O2(2) + CH3O(26) <=> HO2(12) + CH2O(20)
+    CH3(21) + CH3O(26) <=> CH2O(20) + CH4(30)
+    CO(15) + CH3O(26) <=> CO2(4) + CH3(21)
+    H(5) + CH2OH(32) <=> H2(6) + CH2O(20)
+    H(5) + CH2OH(32) <=> OH(9) + CH3(21)
+    H(5) + CH2OH(32) <=> H2O(11) + CH2(S)(25)
+    O(10) + CH2OH(32) <=> OH(9) + CH2O(20)
+    OH(9) + CH2OH(32) <=> H2O(11) + CH2O(20)
+    O2(2) + CH2OH(32) <=> HO2(12) + CH2O(20)
+    CH3(21) + CH2OH(32) <=> CH2O(20) + CH4(30)
+    H(5) + CH4(30) <=> H2(6) + CH3(21)
+    O(10) + CH4(30) <=> OH(9) + CH3(21)
+    OH(9) + CH4(30) <=> H2O(11) + CH3(21)
+    HO2(12) + CH4(30) <=> H2O2(13) + CH3(21)
+    CH(18) + CH4(30) <=> H(5) + C2H4(29)
+    CH2(19) + CH4(30) <=> CH3(21) + CH3(21)
+    CH2(S)(25) + CH4(30) <=> CH3(21) + CH3(21)
+    CH4(30) + C2H(22) <=> CH3(21) + C2H2(23)
+    H(5) + CH3OH(33) <=> H2(6) + CH2OH(32)
+    H(5) + CH3OH(33) <=> H2(6) + CH3O(26)
+    O(10) + CH3OH(33) <=> OH(9) + CH2OH(32)
+    O(10) + CH3OH(33) <=> OH(9) + CH3O(26)
+    OH(9) + CH3OH(33) <=> H2O(11) + CH2OH(32)
+    OH(9) + CH3OH(33) <=> H2O(11) + CH3O(26)
+    O2(2) + CH3OH(33) <=> HO2(12) + CH2OH(32)
+    HO2(12) + CH3OH(33) <=> H2O2(13) + CH2OH(32)
+    HO2(12) + CH3OH(33) <=> H2O2(13) + CH3O(26)
+    CH(18) + CH3OH(33) <=> CH2O(20) + CH3(21)
+    CH2(19) + CH3OH(33) <=> CH3(21) + CH2OH(32)
+    CH2(19) + CH3OH(33) <=> CH3(21) + CH3O(26)
+    CH2(S)(25) + CH3OH(33) <=> CH3(21) + CH3O(26)
+    CH2(S)(25) + CH3OH(33) <=> CH3(21) + CH2OH(32)
+    CH3(21) + CH3OH(33) <=> CH2OH(32) + CH4(30)
+    CH3(21) + CH3OH(33) <=> CH3O(26) + CH4(30)
+    CH3OH(33) + C2H(22) <=> CH2OH(32) + C2H2(23)
+    CH3OH(33) + C2H(22) <=> CH3O(26) + C2H2(23)
+    CH3OH(33) + C2H3(28) <=> CH2OH(32) + C2H4(29)
+    CH3OH(33) + C2H3(28) <=> CH3O(26) + C2H4(29)
+    O(10) + C2H(22) <=> CO(15) + CH(18)
+    OH(9) + C2H(22) <=> H(5) + HCCO(34)
+    H2(6) + C2H(22) <=> H(5) + C2H2(23)
+    O2(2) + C2H(22) <=> CO(15) + HCO(16)
+    H(5) + HCCO(34) <=> CO(15) + CH2(S)(25)
+    O(10) + HCCO(34) <=> H(5) + CO(15) + CO(15)
+    O(10) + HCCO(34) <=> CO2(4) + CH(18)
+    O2(2) + HCCO(34) <=> OH(9) + CO(15) + CO(15)
+    CH(18) + HCCO(34) <=> CO(15) + C2H2(23)
+    CH2(19) + HCCO(34) <=> CO(15) + C2H3(28)
+    HCCO(34) + HCCO(34) <=> CO(15) + CO(15) + C2H2(23)
+    O(10) + C2H2(23) <=> H(5) + HCCO(34)
+    O(10) + C2H2(23) <=> CO(15) + CH2(19)
+    OH(9) + C2H2(23) <=> H(5) + CH2CO(27)
+    OH(9) + C2H2(23) <=> H2O(11) + C2H(22)
+    OH(9) + C2H2(23) <=> CO(15) + CH3(21)
+    H(5) + H2CC(24) <=> H(5) + C2H2(23)
+    OH(9) + H2CC(24) <=> H(5) + CH2CO(27)
+    O2(2) + H2CC(24) <=> HCO(16) + HCO(16)
+    H(5) + CH2CO(27) <=> H2(6) + HCCO(34)
+    H(5) + CH2CO(27) <=> CO(15) + CH3(21)
+    O(10) + CH2CO(27) <=> OH(9) + HCCO(34)
+    O(10) + CH2CO(27) <=> CO2(4) + CH2(19)
+    O(10) + CH2CO(27) <=> HCO(16) + HCO(16)
+    O(10) + CH2CO(27) <=> CO(15) + CH2O(20)
+    OH(9) + CH2CO(27) <=> H2O(11) + HCCO(34)
+    OH(9) + CH2CO(27) <=> CO2(4) + CH3(21)
+    OH(9) + CH2CO(27) <=> CO(15) + CH2OH(32)
+    CH(18) + CH2CO(27) <=> CO(15) + C2H3(28)
+    H(5) + C2H3(28) <=> H2(6) + C2H2(23)
+    H(5) + C2H3(28) <=> H2(6) + H2CC(24)
+    O(10) + C2H3(28) <=> H(5) + CH2CO(27)
+    OH(9) + C2H3(28) <=> H2O(11) + C2H2(23)
+    OH(9) + C2H3(28) <=> HCO(16) + CH3(21)
+    OH(9) + C2H3(28) <=> H(5) + CH3CO(35)
+    O2(2) + C2H3(28) <=> HCO(16) + CH2O(20)
+    O2(2) + C2H3(28) <=> O(10) + CH2CHO(36)
+    O2(2) + C2H3(28) <=> HO2(12) + C2H2(23)
+    CH3(21) + C2H3(28) <=> CH4(30) + C2H2(23)
+    H(5) + CH2CHO(36) <=> HCO(16) + CH3(21)
+    H(5) + CH2CHO(36) <=> H2(6) + CH2CO(27)
+    H(5) + CH2CHO(36) <=> H(5) + CH3CO(35)
+    O(10) + CH2CHO(36) => H(5) + CO2(4) + CH2(19)
+    OH(9) + CH2CHO(36) <=> H2O(11) + CH2CO(27)
+    OH(9) + CH2CHO(36) <=> HCO(16) + CH2OH(32)
+    O2(2) + CH2CHO(36) => OH(9) + CO(15) + CH2O(20)
+    H(5) + CH3CO(35) <=> HCO(16) + CH3(21)
+    O(10) + CH3CO(35) <=> OH(9) + CH2CO(27)
+    O(10) + CH3CO(35) <=> CO2(4) + CH3(21)
+    OH(9) + CH3CO(35) <=> H2O(11) + CH2CO(27)
+    OH(9) + CH3CO(35) <=> OH(9) + CO(15) + CH3(21)
+    HO2(12) + CH3CO(35) <=> OH(9) + CO2(4) + CH3(21)
+    O2(2) + CH3CO(35) <=> HO2(12) + CH2CO(27)
+    CH3(21) + CH3CO(35) <=> CH4(30) + CH2CO(27)
+    H(5) + CH3CHO(37) <=> H2(6) + CH2CHO(36)
+    H(5) + CH3CHO(37) <=> H2(6) + CH3CO(35)
+    O(10) + CH3CHO(37) <=> OH(9) + CH2CHO(36)
+    O(10) + CH3CHO(37) <=> OH(9) + CH3CO(35)
+    OH(9) + CH3CHO(37) <=> H2O(11) + CH3CO(35)
+    O2(2) + CH3CHO(37) <=> HO2(12) + CH3CO(35)
+    HO2(12) + CH3CHO(37) <=> H2O2(13) + CH3CO(35)
+    CH3(21) + CH3CHO(37) <=> CH4(30) + CH3CO(35)
+    H(5) + C2H4(29) <=> H2(6) + C2H3(28)
+    O(10) + C2H4(29) <=> HCO(16) + CH3(21)
+    O(10) + C2H4(29) <=> H(5) + CH2CHO(36)
+    O(10) + C2H4(29) <=> CH2(19) + CH2O(20)
+    OH(9) + C2H4(29) <=> H2O(11) + C2H3(28)
+    CH3(21) + C2H4(29) <=> CH4(30) + C2H3(28)
+    H(5) + C2H5(31) <=> H2(6) + C2H4(29)
+    O(10) + C2H5(31) <=> CH2O(20) + CH3(21)
+    O(10) + C2H5(31) <=> H(5) + CH3CHO(37)
+    O(10) + C2H5(31) <=> OH(9) + C2H4(29)
+    O2(2) + C2H5(31) <=> HO2(12) + C2H4(29)
+    CH3(21) + C2H5(31) <=> CH4(30) + C2H4(29)
+    CH2O(20) + C2H5(31) <=> HCO(16) + C2H6(38)
+    CH3OH(33) + C2H5(31) <=> CH2OH(32) + C2H6(38)
+    H(5) + C2H6(38) <=> H2(6) + C2H5(31)
+    O(10) + C2H6(38) <=> OH(9) + C2H5(31)
+    OH(9) + C2H6(38) <=> H2O(11) + C2H5(31)
+    CH(18) + C2H6(38) <=> CH3(21) + C2H4(29)
+    CH2(S)(25) + C2H6(38) <=> CH3(21) + C2H5(31)
+    CH3(21) + C2H6(38) <=> CH4(30) + C2H5(31)
+    O(10) + CO(15) <=> CO2(4)
+    HCO(16) <=> H(5) + CO(15)
+    H2(6) + CH(18) <=> CH3(21)
+    CO(15) + CH(18) <=> HCCO(34)
+    H(5) + CH2(19) <=> CH3(21)
+    H2O(11) + CH2(S)(25) <=> CH3OH(33)
+    H(5) + HCO(16) <=> CH2O(20)
+    CH2O(20) <=> H2(6) + CO(15)
+    H(5) + CH3(21) <=> CH4(30)
+    OH(9) + CH3(21) <=> CH3OH(33)
+    CH3(21) + CH3(21) <=> C2H6(38)
+    CH3O(26) <=> H(5) + CH2O(20)
+    H(5) + CH3O(26) <=> CH3OH(33)
+    CH2OH(32) <=> H(5) + CH2O(20)
+    H(5) + CH2OH(32) <=> CH3OH(33)
+    H(5) + C2H(22) <=> C2H2(23)
+    C2H2(23) <=> H2CC(24)
+    H(5) + C2H2(23) <=> C2H3(28)
+    CO(15) + CH2(19) <=> CH2CO(27)
+    H(5) + C2H3(28) <=> C2H4(29)
+    CH2CHO(36) <=> H(5) + CH2CO(27)
+    CH2CHO(36) <=> CO(15) + CH3(21)
+    CH3CO(35) <=> CO(15) + CH3(21)
+    H(5) + CH3CO(35) <=> CH3CHO(37)
+    CH3CHO(37) <=> CO(15) + CH4(30)
+    CH3CHO(37) <=> HCO(16) + CH3(21)
+    C2H4(29) <=> H2(6) + H2CC(24)
+    H(5) + C2H4(29) <=> C2H5(31)
+    H(5) + C2H5(31) <=> C2H6(38)
+Created 0 new edge reactions
+
+After model enlargement:
+    The model core has 37 species and 274 reactions
+    The model edge has 2 species and 0 reactions
+
+Adding reaction library C3 to model edge...
+For reaction prod_2(42) <=> H(5) + prod_3(43), Ea raised from 129.7 to 129.7 kJ/mol to match endothermicity of reaction.
+For reaction prod_4(46) <=> H(5) + prod_5(47), Ea raised from 123.4 to 124.0 kJ/mol to match endothermicity of reaction.
+For reaction prod_14(57) <=> H(5) + prod_15(58), Ea raised from 187.0 to 195.8 kJ/mol to match endothermicity of reaction.
+
+Summary of Model Enlargement
+---------------------------------
+Added 0 new core species
+Created 40 new edge species
+    aC3H5(39)
+    C3H4a(40)
+    prod_1(41)
+    prod_2(42)
+    prod_3(43)
+    iC4H7(44)
+    prod_6(45)
+    prod_4(46)
+    prod_5(47)
+    C3H4p(48)
+    prod_7(49)
+    prod_8(50)
+    prod_9(51)
+    prod_10(52)
+    prod_11(53)
+    prod_12(54)
+    BD2YL(55)
+    prod_13(56)
+    prod_14(57)
+    prod_15(58)
+    prod_16(59)
+    prod_17(60)
+    prod_18(61)
+    prod_19(62)
+    prod_20(63)
+    prod_21(64)
+    prod_22(65)
+    CPD(66)
+    C3H3(67)
+    prod_23(68)
+    prod_24(69)
+    CPDyl(70)
+    prod_25(71)
+    prod_26(72)
+    meCPDyl(73)
+    prod_27(74)
+    prod_28(75)
+    prod_29(76)
+    prod_30(77)
+    prod_33(78)
+Added 0 new core reactions
+Created 37 new edge reactions
+    C3H4a(40) + aC3H5(39) <=> prod_1(41)
+    prod_1(41) <=> prod_2(42)
+    prod_2(42) <=> H(5) + prod_3(43)
+    C3H4a(40) + iC4H7(44) <=> prod_6(45)
+    prod_6(45) <=> prod_4(46)
+    prod_4(46) <=> H(5) + prod_5(47)
+    C3H4p(48) + aC3H5(39) <=> prod_7(49)
+    prod_7(49) <=> prod_8(50)
+    prod_8(50) <=> H(5) + prod_9(51)
+    C3H4p(48) + iC4H7(44) <=> prod_10(52)
+    prod_10(52) <=> prod_11(53)
+    prod_11(53) <=> H(5) + prod_12(54)
+    C3H4a(40) + BD2YL(55) <=> prod_13(56)
+    prod_13(56) <=> prod_14(57)
+    prod_14(57) <=> H(5) + prod_15(58)
+    C3H4p(48) + BD2YL(55) <=> prod_16(59)
+    prod_16(59) <=> prod_17(60)
+    prod_17(60) <=> H(5) + prod_18(61)
+    C3H4a(40) + aC3H5(39) <=> prod_19(62)
+    prod_19(62) <=> prod_2(42)
+    C3H4a(40) + iC4H7(44) <=> prod_20(63)
+    prod_20(63) <=> prod_4(46)
+    C2H2(23) + aC3H5(39) <=> prod_21(64)
+    prod_21(64) <=> prod_22(65)
+    prod_22(65) <=> H(5) + CPD(66)
+    C2H2(23) + C3H3(67) <=> prod_23(68)
+    prod_23(68) <=> prod_24(69)
+    prod_24(69) <=> CPDyl(70)
+    C3H3(67) + C3H4p(48) <=> prod_25(71)
+    prod_25(71) <=> prod_26(72)
+    prod_26(72) <=> meCPDyl(73)
+    C3H3(67) + C3H4p(48) <=> prod_27(74)
+    prod_27(74) <=> prod_28(75)
+    prod_28(75) <=> meCPDyl(73)
+    C3H3(67) + C3H4a(40) <=> prod_29(76)
+    prod_29(76) <=> prod_30(77)
+    prod_30(77) <=> prod_33(78)
+
+After model enlargement:
+    The model core has 37 species and 274 reactions
+    The model edge has 42 species and 37 reactions
+
+NOT generating reactions for unreactive species N2
+Updating 0 modified unimolecular reaction networks (out of 0)...
+
+
+Summary of Model Enlargement
+---------------------------------
+Added 0 new core species
+Created 0 new edge species
+Added 0 new core reactions
+Created 0 new edge reactions
+
+After model enlargement:
+    The model core has 37 species and 274 reactions
+    The model edge has 42 species and 37 reactions
+
+
+NOT generating reactions for unreactive species Ne
+Updating 0 modified unimolecular reaction networks (out of 0)...
+
+
+Summary of Model Enlargement
+---------------------------------
+Added 1 new core species
+    Ne
+Created 0 new edge species
+Added 0 new core reactions
+Created 0 new edge reactions
+
+After model enlargement:
+    The model core has 38 species and 274 reactions
+    The model edge has 42 species and 37 reactions
+
+
+Adding species butane(1) to model core
+Updating 0 modified unimolecular reaction networks (out of 0)...
+
+
+Summary of Model Enlargement
+---------------------------------
+Added 1 new core species
+    butane(1)
+Created 0 new edge species
+Added 0 new core reactions
+Created 0 new edge reactions
+
+After model enlargement:
+    The model core has 39 species and 274 reactions
+    The model edge has 41 species and 37 reactions
+
+
+Adding species O2(2) to model core
+Updating 0 modified unimolecular reaction networks (out of 0)...
+
+
+Summary of Model Enlargement
+---------------------------------
+Added 0 new core species
+Created 0 new edge species
+Added 0 new core reactions
+Created 0 new edge reactions
+
+After model enlargement:
+    The model core has 39 species and 274 reactions
+    The model edge has 41 species and 37 reactions
+
+
+Adding species QOOH(3) to model core
+Updating 0 modified unimolecular reaction networks (out of 0)...
+
+
+Summary of Model Enlargement
+---------------------------------
+Added 1 new core species
+    QOOH(3)
+Created 0 new edge species
+Added 0 new core reactions
+Created 0 new edge reactions
+
+After model enlargement:
+    The model core has 40 species and 274 reactions
+    The model edge has 40 species and 37 reactions
+
+
+Adding species CO2(4) to model core
+Updating 0 modified unimolecular reaction networks (out of 0)...
+
+
+Summary of Model Enlargement
+---------------------------------
+Added 0 new core species
+Created 0 new edge species
+Added 0 new core reactions
+Created 0 new edge reactions
+
+After model enlargement:
+    The model core has 40 species and 274 reactions
+    The model edge has 40 species and 37 reactions
+
+
+Initialization complete. Starting model generation.
+
+Generating initial reactions...
+For reaction generation 1 process is used.
+For reaction O(10) + CH3(21) <=> CH3O(26) Ea raised from -8.3 to 0 kJ/mol.
+For reaction H2(6) + CH2(S)(25) <=> CH4(30) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH2(19) + CH3(21) <=> C2H5(31) Ea raised from -1.5 to 0 kJ/mol.
+For reaction OH(9) + CH2(19) <=> CH2OH(32) Ea raised from -2.0 to 0 kJ/mol.
+For reaction O(10) + C2H(22) <=> HCCO(34) Ea raised from -8.3 to 0 kJ/mol.
+For reaction HCO(16) + CH2(19) <=> CH2CHO(36) Ea raised from -1.5 to 0 kJ/mol.
+For reaction O(10) + C2H3(28) <=> CH2CHO(36) Ea raised from -8.3 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH4(30) <=> C2H6(38) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(S)(25) + CCC(87) <=> butane(1) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(S)(25) + CCC(87) <=> butane(1) Ea raised from -5.1 to 0 kJ/mol.
+For reaction C2H5(31) + C2H5(31) <=> butane(1) Ea raised from -0.0 to 0 kJ/mol.
+For reaction O2(2) + HO2(12) <=> [O]OOO(103), Ea raised from 76.1 to 82.5 kJ/mol to match endothermicity of reaction.
+For reaction O2(2) + C2H2(23) <=> HO2(12) + C2H(22), Ea raised from 311.8 to 349.8 kJ/mol to match endothermicity of reaction.
+For reaction O2(2) + CH3O(26) <=> COO[O](107), Ea raised from 33.9 to 39.0 kJ/mol to match endothermicity of reaction.
+For reaction O2(2) + C2H4(29) <=> HO2(12) + C2H3(28), Ea raised from 251.1 to 256.4 kJ/mol to match endothermicity of reaction.
+For reaction O2(2) + HCCO(34) <=> C#COO[O](112), Ea raised from 215.8 to 220.8 kJ/mol to match endothermicity of reaction.
+For reaction O2(2) + CH2CHO(36) <=> C=COO[O](115), Ea raised from 142.9 to 147.9 kJ/mol to match endothermicity of reaction.
+For reaction O2(2) + C2H6(38) <=> HO2(12) + C2H5(31), Ea raised from 207.3 to 216.2 kJ/mol to match endothermicity of reaction.
+For reaction H(5) + CO2(4) <=> [O]C=O(118), Ea raised from 49.2 to 52.6 kJ/mol to match endothermicity of reaction.
+For reaction OH(9) + CO2(4) <=> [O]C(=O)O(125) Ea raised from -7.0 to 0 kJ/mol.
+For reaction OH(9) + CH2O(20) <=> [CH2]OO(96), Ea raised from 139.5 to 144.7 kJ/mol to match endothermicity of reaction.
+For reaction O(10) + HCO(16) <=> [O]C=O(118) Ea raised from -8.3 to 0 kJ/mol.
+For reaction O(10) + CH3O(26) <=> CO[O](105) Ea raised from -2.0 to 0 kJ/mol.
+For reaction O(10) + C2H5(31) <=> CC[O](121) Ea raised from -8.3 to 0 kJ/mol.
+For reaction O(10) + CH2OH(32) <=> [O]CO(127) Ea raised from -8.3 to 0 kJ/mol.
+For reaction O(10) + HCCO(34) <=> O=[C]C=O(141) Ea raised from -8.3 to 0 kJ/mol.
+For reaction O(10) + HCCO(34) <=> C#CO[O](106) Ea raised from -2.0 to 0 kJ/mol.
+For reaction O(10) + CH3CO(35) <=> CC([O])=O(142) Ea raised from -8.3 to 0 kJ/mol.
+For reaction O(10) + CH2CHO(36) <=> [O]CC=O(143) Ea raised from -8.3 to 0 kJ/mol.
+For reaction O(10) + CH2CHO(36) <=> C=CO[O](108) Ea raised from -2.0 to 0 kJ/mol.
+For reaction O(10) + QOOH(3) <=> CC([O])CCOO(144) Ea raised from -8.3 to 0 kJ/mol.
+For reaction HO2(12) + CO2(4) <=> O=[C]OOO(147), Ea raised from 250.6 to 255.5 kJ/mol to match endothermicity of reaction.
+For reaction HO2(12) + CO2(4) <=> [O]C(=O)OO(148), Ea raised from 92.7 to 95.2 kJ/mol to match endothermicity of reaction.
+For reaction HO2(12) + CH2(19) <=> [CH2]OO(96) Ea raised from -2.0 to 0 kJ/mol.
+For reaction HO2(12) + CH2O(20) <=> [CH2]OOO(151), Ea raised from 194.4 to 199.2 kJ/mol to match endothermicity of reaction.
+For reaction HO2(12) + CH2(S)(25) <=> CO[O](105) Ea raised from -5.1 to 0 kJ/mol.
+For reaction HO2(12) + CH2CO(27) <=> C=[C]OOO(156), Ea raised from 286.1 to 291.9 kJ/mol to match endothermicity of reaction.
+For reaction HO2(12) + HCCO(34) <=> C#COOO(163), Ea raised from 52.2 to 57.5 kJ/mol to match endothermicity of reaction.
+For reaction HO2(12) + CH3CHO(37) <=> C[CH]OOO(168), Ea raised from 209.8 to 213.5 kJ/mol to match endothermicity of reaction.
+For reaction H2O2(13) + CH2(S)(25) <=> COO(128) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CO2(4) + CO2(4) <=> O=C1OOC1=O(175), Ea raised from 335.1 to 342.6 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + HCO(16) <=> [O]C(=O)C=O(177), Ea raised from 146.3 to 150.3 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH2O(20) <=> O=C1COO1(178), Ea raised from 264.5 to 271.9 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH3(21) <=> CC([O])=O(142), Ea raised from 58.6 to 65.7 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH3O(26) <=> COO[C]=O(187), Ea raised from 208.4 to 212.1 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH2CO(27) <=> C=C1OOC1=O(192), Ea raised from 387.6 to 395.0 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + C2H3(28) <=> C=CC([O])=O(199), Ea raised from 15.2 to 20.4 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH2OH(32) <=> [O]C(=O)CO(209), Ea raised from 61.3 to 66.6 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + HCCO(34) <=> [CH]=C1OOC1=O(212), Ea raised from 408.6 to 416.0 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + HCCO(34) <=> [O]C(=O)C=C=O(214), Ea raised from 123.9 to 128.6 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + HCCO(34) <=> C#COO[C]=O(215), Ea raised from 390.3 to 393.9 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + HCCO(34) <=> C#COC([O])=O(216), Ea raised from 174.4 to 179.1 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH3CO(35) <=> CC(=O)C([O])=O(220), Ea raised from 138.2 to 141.0 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH2CHO(36) <=> [CH2]C1OOC1=O(221), Ea raised from 301.7 to 310.0 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH2CHO(36) <=> O=[C]OCC=O(222), Ea raised from 116.1 to 120.1 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH2CHO(36) <=> [O]C(=O)CC=O(223), Ea raised from 79.3 to 83.8 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH2CHO(36) <=> C=COO[C]=O(230), Ea raised from 317.4 to 321.0 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH2CHO(36) <=> C=COC([O])=O(231), Ea raised from 105.4 to 108.8 kJ/mol to match endothermicity of reaction.
+For reaction CO2(4) + CH3CHO(37) <=> CC1OOC1=O(234), Ea raised from 272.4 to 280.4 kJ/mol to match endothermicity of reaction.
+For reaction CO(15) + HCCO(34) <=> C#CO[C]=O(180), Ea raised from 80.5 to 85.2 kJ/mol to match endothermicity of reaction.
+For reaction CO(15) + CH2CHO(36) <=> C=CO[C]=O(198), Ea raised from 12.6 to 14.9 kJ/mol to match endothermicity of reaction.
+For reaction CH2(19) + C2H(22) <=> C3H3(67) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(19) + CH3O(26) <=> [CH2]OC(280) Ea raised from -2.0 to 0 kJ/mol.
+For reaction CH2(19) + C2H3(28) <=> aC3H5(39) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(19) + C2H5(31) <=> [CH2]CC(88) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(19) + CH2OH(32) <=> [CH2]CO(131) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(19) + HCCO(34) <=> C=C[C]=O(249) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(19) + HCCO(34) <=> C#CO[CH2](281) Ea raised from -2.0 to 0 kJ/mol.
+For reaction CH2(19) + CH3CO(35) <=> C=C(C)[O](282) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(19) + CH2CHO(36) <=> [CH2]CC=O(251) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(19) + CH2CHO(36) <=> [CH2]OC=C(283) Ea raised from -2.0 to 0 kJ/mol.
+For reaction CH2O(20) + CH2O(20) <=> C1COO1(284), Ea raised from 221.8 to 222.8 kJ/mol to match endothermicity of reaction.
+For reaction CH2O(20) + CH3O(26) <=> [CH2]OOC(287), Ea raised from 160.5 to 164.7 kJ/mol to match endothermicity of reaction.
+For reaction CH2O(20) + CH2CO(27) <=> C=C1COO1(289), Ea raised from 263.8 to 271.1 kJ/mol to match endothermicity of reaction.
+For reaction CH2O(20) + HCCO(34) <=> [CH]=C1COO1(299), Ea raised from 283.8 to 292.0 kJ/mol to match endothermicity of reaction.
+For reaction CH2O(20) + HCCO(34) <=> C#COO[CH2](302), Ea raised from 333.3 to 337.0 kJ/mol to match endothermicity of reaction.
+For reaction CH2O(20) + CH2CHO(36) <=> [CH2]OOC=C(311), Ea raised from 260.4 to 264.1 kJ/mol to match endothermicity of reaction.
+For reaction CH2O(20) + CH3CHO(37) <=> CC1COO1(313), Ea raised from 242.4 to 245.0 kJ/mol to match endothermicity of reaction.
+For reaction CH2(S)(25) + C2H(22) <=> [C]#CC(326) Ea raised from -9.3 to 0 kJ/mol.
+For reaction CH2(S)(25) + C2H2(23) <=> C3H4p(48) Ea raised from -6.9 to 0 kJ/mol.
+For reaction HCCO(34) + C2H2(23) <=> [CH]=COC#C(347), Ea raised from 37.9 to 42.7 kJ/mol to match endothermicity of reaction.
+For reaction CH2(S)(25) + H2CC(24) <=> [C]=CC(352) Ea raised from -3.9 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH3O(26) <=> CC[O](121) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH2CO(27) <=> CC=C=O(319) Ea raised from -3.9 to 0 kJ/mol.
+For reaction CH2(S)(25) + C2H3(28) <=> [CH]=CC(316) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH2(S)(25) + C2H4(29) <=> C=CC(95) Ea raised from -4.4 to 0 kJ/mol.
+For reaction CH2(S)(25) + C2H5(31) <=> [CH2]CC(88) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH2OH(32) <=> [CH2]OC(280) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH3OH(33) <=> COC(317) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH3OH(33) <=> CCO(132) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(S)(25) + HCCO(34) <=> C[C]=C=O(362) Ea raised from -9.3 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH3CO(35) <=> CC[C]=O(252) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH2CHO(36) <=> C[CH]C=O(365) Ea raised from -3.9 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH2CHO(36) <=> C=C(C)[O](282) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH2(S)(25) + CH3CHO(37) <=> CCC=O(264) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(S)(25) + C2H6(38) <=> CCC(87) Ea raised from -1.5 to 0 kJ/mol.
+For reaction CH2(S)(25) + C2H6(38) <=> CCC(87) Ea raised from -5.1 to 0 kJ/mol.
+For reaction CH3O(26) + CH2CO(27) <=> C=[C]OOC(368), Ea raised from 243.9 to 248.5 kJ/mol to match endothermicity of reaction.
+For reaction CH3O(26) + HCCO(34) <=> C#COOC(291), Ea raised from 13.0 to 14.1 kJ/mol to match endothermicity of reaction.
+For reaction CH3O(26) + CH3CHO(37) <=> C[CH]OOC(376), Ea raised from 166.5 to 169.1 kJ/mol to match endothermicity of reaction.
+For reaction CH2CO(27) + CH2CO(27) <=> C=C1OOC1=C(379), Ea raised from 293.7 to 300.5 kJ/mol to match endothermicity of reaction.
+For reaction HCCO(34) + CH2CO(27) <=> [CH]=C1OOC1=C(397), Ea raised from 314.7 to 321.4 kJ/mol to match endothermicity of reaction.
+For reaction HCCO(34) + CH2CO(27) <=> C#COO[C]=C(405), Ea raised from 425.7 to 430.2 kJ/mol to match endothermicity of reaction.
+For reaction CH2CO(27) + CH2CHO(36) <=> [CH2]C1OOC1=C(412), Ea raised from 309.4 to 317.0 kJ/mol to match endothermicity of reaction.
+For reaction CH2CO(27) + CH2CHO(36) <=> C=[C]OCC=O(415), Ea raised from 37.3 to 42.1 kJ/mol to match endothermicity of reaction.
+For reaction CH2CO(27) + CH2CHO(36) <=> C=[C]OOC=C(422), Ea raised from 352.8 to 357.3 kJ/mol to match endothermicity of reaction.
+For reaction CH2CO(27) + CH3CHO(37) <=> C=C1OOC1C(427), Ea raised from 279.5 to 287.4 kJ/mol to match endothermicity of reaction.
+For reaction HCCO(34) + C2H4(29) <=> C#COC[CH2](449) Ea raised from -0.8 to -0.8 kJ/mol.
+For reaction HCCO(34) + C2H4(29) <=> C#COC[CH2](449), Ea raised from -0.8 to 28.3 kJ/mol to match endothermicity of reaction.
+For reaction CH2CHO(36) + C2H4(29) <=> [CH2]COC=C(453) Ea raised from -0.8 to -0.8 kJ/mol.
+For reaction CH2CHO(36) + C2H4(29) <=> [CH2]COC=C(453) Ea raised from -0.8 to 0 kJ/mol.
+For reaction HCCO(34) + HCCO(34) <=> C#COOC#C(466), Ea raised from 191.8 to 195.8 kJ/mol to match endothermicity of reaction.
+For reaction HCCO(34) + CH2CHO(36) <=> C#COOC=C(381), Ea raised from 118.9 to 122.9 kJ/mol to match endothermicity of reaction.
+For reaction HCCO(34) + CH3CHO(37) <=> [CH]=C1OOC1C(470), Ea raised from 300.5 to 308.3 kJ/mol to match endothermicity of reaction.
+For reaction HCCO(34) + CH3CHO(37) <=> C#COO[CH]C(475), Ea raised from 348.3 to 350.8 kJ/mol to match endothermicity of reaction.
+For reaction CH2CHO(36) + CH2CHO(36) <=> C=COOC=C(432), Ea raised from 46.0 to 50.1 kJ/mol to match endothermicity of reaction.
+For reaction CH2CHO(36) + CH3CHO(37) <=> [CH2]C1OOC1C(482), Ea raised from 292.7 to 296.7 kJ/mol to match endothermicity of reaction.
+For reaction CH2CHO(36) + CH3CHO(37) <=> C=COO[CH]C(489), Ea raised from 275.4 to 278.0 kJ/mol to match endothermicity of reaction.
+For reaction CH3CHO(37) + CH3CHO(37) <=> CC1OOC1C(492), Ea raised from 263.7 to 267.1 kJ/mol to match endothermicity of reaction.
+Generating thermo for new species...
+Updating 15 modified unimolecular reaction networks (out of 540)...
+Updating PDepNetwork #1
+Warning: Statmech node 'C_R1' and all its parents have data = None
+Calculating densities of states for PDepNetwork #1 network...
+Using 613 grains from 100.41 to 1170.78 kJ/mol in steps of 1.75 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for H(5) + C(T)(17) <=> CH(18)...
+Using 250 grains from 100.41 to 536.74 kJ/mol in steps of 1.75 kJ/mol to compute the k(T,P) values at 302.51 K
+Using 250 grains from 100.41 to 543.74 kJ/mol in steps of 1.78 kJ/mol to compute the k(T,P) values at 323.546 K
+Using 250 grains from 100.41 to 559.60 kJ/mol in steps of 1.84 kJ/mol to compute the k(T,P) values at 371.247 K
+Using 250 grains from 100.41 to 589.06 kJ/mol in steps of 1.96 kJ/mol to compute the k(T,P) values at 459.823 K
+Using 261 grains from 100.41 to 644.33 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 307 grains from 100.41 to 740.57 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 390 grains from 100.41 to 914.20 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 492 grains from 100.41 to 1127.59 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #1 network information
+----------------------------------
+Isomers:
+    CH(18)                                                100.413 kJ/mol
+Reactant channels:
+    H(5) + C(T)(17)                                       436.131 kJ/mol
+Product channels:
+Path reactions:
+    H(5) + C(T)(17) <=> CH(18)                            436.131 kJ/mol
+Net reactions:
+    CH(18) => H(5) + C(T)(17)                       
+========================================================================
+
+Updating PDepNetwork #2
+Warning: Statmech node 'C_R0' and all its parents have data = None
+Calculating densities of states for PDepNetwork #2 network...
+Using 580 grains from 15.86 to 1130.20 kJ/mol in steps of 1.92 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for H(5) + CH(18) <=> CH2(S)(25)...
+Using 250 grains from 15.86 to 495.92 kJ/mol in steps of 1.93 kJ/mol to compute the k(T,P) values at 302.51 K
+Using 250 grains from 15.86 to 502.91 kJ/mol in steps of 1.96 kJ/mol to compute the k(T,P) values at 323.546 K
+Using 250 grains from 15.86 to 518.78 kJ/mol in steps of 2.02 kJ/mol to compute the k(T,P) values at 371.247 K
+Using 256 grains from 15.86 to 549.32 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Using 281 grains from 15.86 to 601.62 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 328 grains from 15.86 to 699.94 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 411 grains from 15.86 to 873.58 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 513 grains from 15.86 to 1086.96 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #2 network information
+----------------------------------
+Isomers:
+    CH2(S)(25)                                            15.8558 kJ/mol
+Reactant channels:
+    H(5) + CH(18)                                         395.307 kJ/mol
+Product channels:
+Path reactions:
+    H(5) + CH(18) <=> CH2(S)(25)                          395.307 kJ/mol
+Net reactions:
+    CH2(S)(25) => H(5) + CH(18)                     
+========================================================================
+
+Updating PDepNetwork #3
+Warning: Statmech node 'Oxy' and all its parents have data = None
+Warning: Statmech node 'C_R1' and all its parents have data = None
+Warning: For [CH2]O, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (3 frequencies) to compensate.
+Calculating densities of states for PDepNetwork #3 network...
+Using 562 grains from -128.89 to 1011.01 kJ/mol in steps of 2.03 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for CH2OH(32) <=> CH3O(26)...
+Using 250 grains from -128.89 to 377.89 kJ/mol in steps of 2.04 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "O(10) + CH3(21) <=> CH3O(26)".
+Using 250 grains from -128.89 to 384.88 kJ/mol in steps of 2.06 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "O(10) + CH3(21) <=> CH3O(26)".
+Using 255 grains from -128.89 to 402.47 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "O(10) + CH3(21) <=> CH3O(26)".
+Using 269 grains from -128.89 to 431.76 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "O(10) + CH3(21) <=> CH3O(26)".
+Using 294 grains from -128.89 to 484.06 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 341 grains from -128.89 to 582.39 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 424 grains from -128.89 to 756.02 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 525 grains from -128.89 to 967.31 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #3 network information
+----------------------------------
+Isomers:
+    CH3O(26)                                             -92.2244 kJ/mol
+Reactant channels:
+    O(10) + CH3(21)                                        277.28 kJ/mol
+Product channels:
+    CH2OH(32)                                            -128.893 kJ/mol
+Path reactions:
+    O(10) + CH3(21) <=> CH3O(26)                           277.28 kJ/mol
+    CH2OH(32) <=> CH3O(26)                                9.59668 kJ/mol
+Net reactions:
+    CH3O(26) => O(10) + CH3(21)                     
+    CH3O(26) => CH2OH(32)                           
+========================================================================
+
+Updating PDepNetwork #4
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: For [CH]=C=O, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (4 frequencies) to compensate.
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: Statmech node 'C_R0' and all its parents have data = None
+Calculating densities of states for PDepNetwork #4 network...
+Using 561 grains from -238.08 to 933.44 kJ/mol in steps of 2.09 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for [CH]C=O(79) <=> CH2CO(27)...
+Using 259 grains from -238.08 to 301.65 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(302.51 K) = 6.64983e+07
+Warning:       Actual kf(302.51 K) = 1.32853e+07
+Warning:     Expected Keq(302.51 K) = 7.39169e+68
+Warning:       Actual Keq(302.51 K) = 3.89619e+69
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.7)
+Using 516 grains from -238.08 to 300.61 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(302.51 K) = 6.64983e+07
+Warning:       Actual kf(302.51 K) = 2.16407e+07
+Warning:     Expected Keq(302.51 K) = 7.39169e+68
+Warning:       Actual Keq(302.51 K) = 4.17424e+69
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 1031 grains from -238.08 to 300.61 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(302.51 K) = 6.64983e+07
+Warning:       Actual kf(302.51 K) = 2.9479e+07
+Warning:     Expected Keq(302.51 K) = 7.39169e+68
+Warning:       Actual Keq(302.51 K) = 4.3175e+69
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 2061 grains from -238.08 to 300.61 kJ/mol in steps of 0.26 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H(5) + HCCO(34) <=> CH2CO(27)".
+Using 262 grains from -238.08 to 307.93 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(323.546 K) = 6.78939e+07
+Warning:       Actual kf(323.546 K) = 1.4384e+07
+Warning:     Expected Keq(323.546 K) = 8.07754e+63
+Warning:       Actual Keq(323.546 K) = 4.4944e+64
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.7)
+Using 523 grains from -238.08 to 307.93 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(323.546 K) = 6.78939e+07
+Warning:       Actual kf(323.546 K) = 2.29078e+07
+Warning:     Expected Keq(323.546 K) = 8.07754e+63
+Warning:       Actual Keq(323.546 K) = 4.77781e+64
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 1045 grains from -238.08 to 307.93 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(323.546 K) = 6.78939e+07
+Warning:       Actual kf(323.546 K) = 3.0821e+07
+Warning:     Expected Keq(323.546 K) = 8.07754e+63
+Warning:       Actual Keq(323.546 K) = 4.91997e+64
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 2088 grains from -238.08 to 307.67 kJ/mol in steps of 0.26 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H(5) + HCCO(34) <=> CH2CO(27)".
+Using 270 grains from -238.08 to 324.67 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(371.247 K) = 7.08409e+07
+Warning:       Actual kf(371.247 K) = 1.67748e+07
+Warning:     Expected Keq(371.247 K) = 5.40241e+54
+Warning:       Actual Keq(371.247 K) = 3.30941e+55
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 538 grains from -238.08 to 323.62 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(371.247 K) = 7.08409e+07
+Warning:       Actual kf(371.247 K) = 2.5616e+07
+Warning:     Expected Keq(371.247 K) = 5.40241e+54
+Warning:       Actual Keq(371.247 K) = 3.46849e+55
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 1075 grains from -238.08 to 323.62 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(371.247 K) = 7.08409e+07
+Warning:       Actual kf(371.247 K) = 3.36688e+07
+Warning:     Expected Keq(371.247 K) = 5.40241e+54
+Warning:       Actual Keq(371.247 K) = 3.54474e+55
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 2148 grains from -238.08 to 323.36 kJ/mol in steps of 0.26 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H(5) + HCCO(34) <=> CH2CO(27)".
+Using 284 grains from -238.08 to 353.95 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(459.823 K) = 7.56823e+07
+Warning:       Actual kf(459.823 K) = 2.08748e+07
+Warning:     Expected Keq(459.823 K) = 5.36198e+42
+Warning:       Actual Keq(459.823 K) = 3.69161e+43
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 566 grains from -238.08 to 352.91 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(459.823 K) = 7.56823e+07
+Warning:       Actual kf(459.823 K) = 3.01425e+07
+Warning:     Expected Keq(459.823 K) = 5.36198e+42
+Warning:       Actual Keq(459.823 K) = 3.80145e+43
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 1131 grains from -238.08 to 352.91 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H(5) + HCCO(34) <=> CH2CO(27)".
+Using 309 grains from -238.08 to 406.25 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(619.914 K) = 8.30001e+07
+Warning:       Actual kf(619.914 K) = 2.73712e+07
+Warning:     Expected Keq(619.914 K) = 5.18325e+29
+Warning:       Actual Keq(619.914 K) = 3.99584e+30
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 617 grains from -238.08 to 406.25 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(619.914 K) = 8.30001e+07
+Warning:       Actual kf(619.914 K) = 3.71157e+07
+Warning:     Expected Keq(619.914 K) = 5.18325e+29
+Warning:       Actual Keq(619.914 K) = 4.04845e+30
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 1233 grains from -238.08 to 406.25 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H(5) + HCCO(34) <=> CH2CO(27)".
+Using 356 grains from -238.08 to 504.58 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(913.864 K) = 9.35736e+07
+Warning:       Actual kf(913.864 K) = 3.71687e+07
+Warning:     Expected Keq(913.864 K) = 4.7394e+17
+Warning:       Actual Keq(913.864 K) = 4.02562e+18
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 711 grains from -238.08 to 504.58 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 913.864 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H(5) + HCCO(34) <=> CH2CO(27)".
+Using 439 grains from -238.08 to 678.21 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Warning: For path reaction H(5) + HCCO(34) <=> CH2CO(27):
+Warning:     Expected kf(1434.46 K) = 1.0756e+08
+Warning:       Actual kf(1434.46 K) = 5.05497e+07
+Warning:     Expected Keq(1434.46 K) = 2.98332e+08
+Warning:       Actual Keq(1434.46 K) = 2.82197e+09
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.0)
+Using 876 grains from -238.08 to 677.17 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 1434.46 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H(5) + HCCO(34) <=> CH2CO(27)".
+Using 541 grains from -238.08 to 891.60 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H(5) + HCCO(34) <=> CH2CO(27)".
+========================================================================
+PDepNetwork #4 network information
+----------------------------------
+Isomers:
+    CH2CO(27)                                            -238.082 kJ/mol
+Reactant channels:
+    H(5) + HCCO(34)                                       199.886 kJ/mol
+Product channels:
+    [CH]C=O(79)                                            96.251 kJ/mol
+Path reactions:
+    H(5) + HCCO(34) <=> CH2CO(27)                         199.886 kJ/mol
+    [CH]C=O(79) <=> CH2CO(27)                             108.464 kJ/mol
+Net reactions:
+    CH2CO(27) => H(5) + HCCO(34)                    
+    CH2CO(27) => [CH]C=O(79)                        
+========================================================================
+
+Updating PDepNetwork #5
+Warning: Statmech node 'C_R0' and all its parents have data = None
+Calculating densities of states for PDepNetwork #5 network...
+Using 620 grains from -208.41 to 853.92 kJ/mol in steps of 1.72 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for [CH]C(80) <=> C2H4(29)...
+Using 250 grains from -208.41 to 219.76 kJ/mol in steps of 1.72 kJ/mol to compute the k(T,P) values at 302.51 K
+Using 250 grains from -208.41 to 226.76 kJ/mol in steps of 1.75 kJ/mol to compute the k(T,P) values at 323.546 K
+Using 250 grains from -208.41 to 242.62 kJ/mol in steps of 1.81 kJ/mol to compute the k(T,P) values at 371.247 K
+Using 250 grains from -208.41 to 272.08 kJ/mol in steps of 1.93 kJ/mol to compute the k(T,P) values at 459.823 K
+Using 257 grains from -208.41 to 327.14 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 303 grains from -208.41 to 423.38 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 386 grains from -208.41 to 597.01 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 488 grains from -208.41 to 810.40 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #5 network information
+----------------------------------
+Isomers:
+    C2H4(29)                                             -208.407 kJ/mol
+Reactant channels:
+Product channels:
+    [CH]C(80)                                             104.203 kJ/mol
+Path reactions:
+    [CH]C(80) <=> C2H4(29)                                119.153 kJ/mol
+Net reactions:
+    C2H4(29) => [CH]C(80)                           
+========================================================================
+
+Updating PDepNetwork #6
+Warning: Statmech node 'C_R0' and all its parents have data = None
+Warning: Maximum number of iterations reached when fitting spectral data for C.
+Calculating densities of states for PDepNetwork #6 network...
+Using 588 grains from -231.75 to 996.26 kJ/mol in steps of 2.09 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for H2(6) + CH2(S)(25) <=> CH4(30)...
+Using 286 grains from -231.75 to 364.47 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction H2(6) + CH2(S)(25) <=> CH4(30):
+Warning:     Expected kf(302.51 K) = 907963
+Warning:       Actual kf(302.51 K) = 266796
+Warning:     Expected Keq(302.51 K) = 2.34756e+78
+Warning:       Actual Keq(302.51 K) = 2.69704e+79
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.1)
+Using 571 grains from -231.75 to 364.47 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction H2(6) + CH2(S)(25) <=> CH4(30):
+Warning:     Expected kf(302.51 K) = 907963
+Warning:       Actual kf(302.51 K) = 409852
+Warning:     Expected Keq(302.51 K) = 2.34756e+78
+Warning:       Actual Keq(302.51 K) = 3.09556e+79
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.1)
+Using 1140 grains from -231.75 to 363.95 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H2(6) + CH2(S)(25) <=> CH4(30)".
+Using 290 grains from -231.75 to 372.84 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction H2(6) + CH2(S)(25) <=> CH4(30):
+Warning:     Expected kf(323.546 K) = 935473
+Warning:       Actual kf(323.546 K) = 289707
+Warning:     Expected Keq(323.546 K) = 5.52392e+72
+Warning:       Actual Keq(323.546 K) = 7.32449e+73
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.1)
+Using 578 grains from -231.75 to 371.80 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction H2(6) + CH2(S)(25) <=> CH4(30):
+Warning:     Expected kf(323.546 K) = 935473
+Warning:       Actual kf(323.546 K) = 435558
+Warning:     Expected Keq(323.546 K) = 5.52392e+72
+Warning:       Actual Keq(323.546 K) = 8.28957e+73
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.2)
+Using 1154 grains from -231.75 to 371.27 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H2(6) + CH2(S)(25) <=> CH4(30)".
+Using 297 grains from -231.75 to 387.49 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction H2(6) + CH2(S)(25) <=> CH4(30):
+Warning:     Expected kf(371.247 K) = 994374
+Warning:       Actual kf(371.247 K) = 339998
+Warning:     Expected Keq(371.247 K) = 2.13903e+62
+Warning:       Actual Keq(371.247 K) = 3.75803e+63
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.2)
+Using 593 grains from -231.75 to 387.49 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction H2(6) + CH2(S)(25) <=> CH4(30):
+Warning:     Expected kf(371.247 K) = 994374
+Warning:       Actual kf(371.247 K) = 491107
+Warning:     Expected Keq(371.247 K) = 2.13903e+62
+Warning:       Actual Keq(371.247 K) = 4.14958e+63
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.3)
+Using 1184 grains from -231.75 to 386.96 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H2(6) + CH2(S)(25) <=> CH4(30)".
+Using 311 grains from -231.75 to 416.77 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: For path reaction H2(6) + CH2(S)(25) <=> CH4(30):
+Warning:     Expected kf(459.823 K) = 1.09348e+06
+Warning:       Actual kf(459.823 K) = 427636
+Warning:     Expected Keq(459.823 K) = 4.98976e+48
+Warning:       Actual Keq(459.823 K) = 1.32119e+50
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.4)
+Using 621 grains from -231.75 to 416.77 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H2(6) + CH2(S)(25) <=> CH4(30)".
+Using 337 grains from -231.75 to 471.17 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: For path reaction H2(6) + CH2(S)(25) <=> CH4(30):
+Warning:     Expected kf(619.914 K) = 1.24857e+06
+Warning:       Actual kf(619.914 K) = 570054
+Warning:     Expected Keq(619.914 K) = 7.95225e+33
+Warning:       Actual Keq(619.914 K) = 3.57134e+35
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.7)
+Using 672 grains from -231.75 to 470.12 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H2(6) + CH2(S)(25) <=> CH4(30)".
+Using 383 grains from -231.75 to 567.40 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H2(6) + CH2(S)(25) <=> CH4(30)".
+Using 466 grains from -231.75 to 741.03 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H2(6) + CH2(S)(25) <=> CH4(30)".
+Using 568 grains from -231.75 to 954.42 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "H2(6) + CH2(S)(25) <=> CH4(30)".
+========================================================================
+PDepNetwork #6 network information
+----------------------------------
+Isomers:
+    CH4(30)                                              -231.746 kJ/mol
+Reactant channels:
+    H2(6) + CH2(S)(25)                                    263.184 kJ/mol
+Product channels:
+Path reactions:
+    H2(6) + CH2(S)(25) <=> CH4(30)                        263.184 kJ/mol
+Net reactions:
+    CH4(30) => H2(6) + CH2(S)(25)                   
+========================================================================
+
+Updating PDepNetwork #7
+Warning: For C[CH2], more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (6 frequencies) to compensate.
+Warning: Maximum number of iterations reached when fitting spectral data for C[CH2].
+Warning: Statmech node 'C_R2' and all its parents have data = None
+Calculating densities of states for PDepNetwork #7 network...
+Using 561 grains from -119.68 to 1023.56 kJ/mol in steps of 2.04 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for CH2(19) + CH3(21) <=> C2H5(31)...
+Using 250 grains from -119.68 to 389.49 kJ/mol in steps of 2.04 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(302.51 K) = 1.50113e+07
+Warning:       Actual kf(302.51 K) = 3.78927e+06
+Warning:     Expected Keq(302.51 K) = 1.17993e+63
+Warning:       Actual Keq(302.51 K) = 1.26972e+62
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.0)
+Using 500 grains from -119.68 to 389.49 kJ/mol in steps of 1.02 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(302.51 K) = 1.50113e+07
+Warning:       Actual kf(302.51 K) = 5.94862e+06
+Warning:     Expected Keq(302.51 K) = 1.17993e+63
+Warning:       Actual Keq(302.51 K) = 1.33784e+62
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 1000 grains from -119.68 to 389.49 kJ/mol in steps of 0.51 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "CH2(19) + CH3(21) <=> C2H5(31)".
+Using 250 grains from -119.68 to 396.48 kJ/mol in steps of 2.07 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(323.546 K) = 1.53974e+07
+Warning:       Actual kf(323.546 K) = 4.06033e+06
+Warning:     Expected Keq(323.546 K) = 2.57171e+58
+Warning:       Actual Keq(323.546 K) = 3.34795e+57
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 500 grains from -119.68 to 396.48 kJ/mol in steps of 1.03 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(323.546 K) = 1.53974e+07
+Warning:       Actual kf(323.546 K) = 6.26447e+06
+Warning:     Expected Keq(323.546 K) = 2.57171e+58
+Warning:       Actual Keq(323.546 K) = 3.37946e+57
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 1000 grains from -119.68 to 396.48 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "CH2(19) + CH3(21) <=> C2H5(31)".
+Using 256 grains from -119.68 to 413.78 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(371.247 K) = 1.62184e+07
+Warning:       Actual kf(371.247 K) = 4.71538e+06
+Warning:     Expected Keq(371.247 K) = 6.13609e+49
+Warning:       Actual Keq(371.247 K) = 1.1019e+49
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.7)
+Using 510 grains from -119.68 to 412.73 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(371.247 K) = 1.62184e+07
+Warning:       Actual kf(371.247 K) = 6.99602e+06
+Warning:     Expected Keq(371.247 K) = 6.13609e+49
+Warning:       Actual Keq(371.247 K) = 1.11925e+49
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.7)
+Using 1019 grains from -119.68 to 412.73 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "CH2(19) + CH3(21) <=> C2H5(31)".
+Using 270 grains from -119.68 to 443.07 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(459.823 K) = 1.75837e+07
+Warning:       Actual kf(459.823 K) = 5.89903e+06
+Warning:     Expected Keq(459.823 K) = 3.20048e+38
+Warning:       Actual Keq(459.823 K) = 9.44679e+37
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.5)
+Using 538 grains from -119.68 to 442.02 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(459.823 K) = 1.75837e+07
+Warning:       Actual kf(459.823 K) = 8.28787e+06
+Warning:     Expected Keq(459.823 K) = 3.20048e+38
+Warning:       Actual Keq(459.823 K) = 9.52318e+37
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.5)
+Using 1075 grains from -119.68 to 442.02 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "CH2(19) + CH3(21) <=> C2H5(31)".
+Using 295 grains from -119.68 to 495.37 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(619.914 K) = 1.96841e+07
+Warning:       Actual kf(619.914 K) = 7.79848e+06
+Warning:     Expected Keq(619.914 K) = 1.90013e+26
+Warning:       Actual Keq(619.914 K) = 1.09583e+26
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.4)
+Using 589 grains from -119.68 to 495.37 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "CH2(19) + CH3(21) <=> C2H5(31)".
+Using 342 grains from -119.68 to 593.69 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Warning: For path reaction CH2(19) + CH3(21) <=> C2H5(31):
+Warning:     Expected kf(913.864 K) = 2.2792e+07
+Warning:       Actual kf(913.864 K) = 1.07166e+07
+Warning:     Expected Keq(913.864 K) = 1.0148e+15
+Warning:       Actual Keq(913.864 K) = 1.33311e+15
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.3)
+Using 683 grains from -119.68 to 593.69 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 913.864 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "CH2(19) + CH3(21) <=> C2H5(31)".
+Using 425 grains from -119.68 to 767.33 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "CH2(19) + CH3(21) <=> C2H5(31)".
+Using 526 grains from -119.68 to 978.62 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "CH2(19) + CH3(21) <=> C2H5(31)".
+========================================================================
+PDepNetwork #7 network information
+----------------------------------
+Isomers:
+    C2H5(31)                                              -119.68 kJ/mol
+Reactant channels:
+    CH2(19) + CH3(21)                                      288.88 kJ/mol
+Product channels:
+Path reactions:
+    CH2(19) + CH3(21) <=> C2H5(31)                         288.88 kJ/mol
+Net reactions:
+    C2H5(31) => CH2(19) + CH3(21)                   
+========================================================================
+
+Updating PDepNetwork #8
+Warning: Statmech node 'O_R1' and all its parents have data = None
+Calculating densities of states for PDepNetwork #8 network...
+Using 560 grains from -137.52 to 1031.91 kJ/mol in steps of 2.09 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for CH2OH(32) <=> CH3O(26)...
+Using 258 grains from -137.52 to 400.12 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "OH(9) + CH2(19) <=> CH2OH(32)".
+Using 262 grains from -137.52 to 408.49 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "OH(9) + CH2(19) <=> CH2OH(32)".
+Using 269 grains from -137.52 to 423.14 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "OH(9) + CH2(19) <=> CH2OH(32)".
+Using 283 grains from -137.52 to 452.43 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "OH(9) + CH2(19) <=> CH2OH(32)".
+Using 309 grains from -137.52 to 506.82 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "OH(9) + CH2(19) <=> CH2OH(32)".
+Using 355 grains from -137.52 to 603.05 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 438 grains from -137.52 to 776.69 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 540 grains from -137.52 to 990.07 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #8 network information
+----------------------------------
+Isomers:
+    CH2OH(32)                                            -137.518 kJ/mol
+Reactant channels:
+    OH(9) + CH2(19)                                       298.842 kJ/mol
+Product channels:
+    CH3O(26)                                             -100.849 kJ/mol
+Path reactions:
+    OH(9) + CH2(19) <=> CH2OH(32)                         298.842 kJ/mol
+    CH2OH(32) <=> CH3O(26)                               0.971767 kJ/mol
+Net reactions:
+    CH2OH(32) => OH(9) + CH2(19)                    
+    CH2OH(32) => CH3O(26)                           
+========================================================================
+
+Updating PDepNetwork #9
+Warning: Statmech node 'CtCr' and all its parents have data = None
+Warning: Statmech node 'CtCr' and all its parents have data = None
+Calculating densities of states for PDepNetwork #9 network...
+Using 655 grains from -197.27 to 1170.90 kJ/mol in steps of 2.09 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for [C]#CO(82) <=> HCCO(34)...
+Using 353 grains from -197.27 to 539.12 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "O(10) + C2H(22) <=> HCCO(34)".
+Using 356 grains from -197.27 to 545.39 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "O(10) + C2H(22) <=> HCCO(34)".
+Using 364 grains from -197.27 to 562.13 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "O(10) + C2H(22) <=> HCCO(34)".
+Using 378 grains from -197.27 to 591.41 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "O(10) + C2H(22) <=> HCCO(34)".
+Using 403 grains from -197.27 to 643.72 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 450 grains from -197.27 to 742.04 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 533 grains from -197.27 to 915.68 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 635 grains from -197.27 to 1129.06 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #9 network information
+----------------------------------
+Isomers:
+    HCCO(34)                                             -197.269 kJ/mol
+Reactant channels:
+    O(10) + C2H(22)                                       437.354 kJ/mol
+Product channels:
+    [C]1=CO1(81)                                          136.943 kJ/mol
+    [C]#CO(82)                                             53.902 kJ/mol
+Path reactions:
+    HCCO(34) <=> [C]1=CO1(81)                             171.931 kJ/mol
+    O(10) + C2H(22) <=> HCCO(34)                          437.354 kJ/mol
+    [C]#CO(82) <=> HCCO(34)                               238.075 kJ/mol
+Net reactions:
+    HCCO(34) => O(10) + C2H(22)                     
+    HCCO(34) => [C]1=CO1(81)                        
+    HCCO(34) => [C]#CO(82)                          
+========================================================================
+
+Updating PDepNetwork #10
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: For C[C]=O, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (3 frequencies) to compensate.
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: For [CH2]C=O, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (6 frequencies) to compensate.
+Calculating densities of states for PDepNetwork #10 network...
+Using 808 grains from -63.21 to 853.55 kJ/mol in steps of 1.14 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for CH2CHO(36) <=> CH3CO(35)...
+Using 250 grains from -63.21 to 220.49 kJ/mol in steps of 1.14 kJ/mol to compute the k(T,P) values at 302.51 K
+Using 250 grains from -63.21 to 227.49 kJ/mol in steps of 1.17 kJ/mol to compute the k(T,P) values at 323.546 K
+Using 250 grains from -63.21 to 243.36 kJ/mol in steps of 1.23 kJ/mol to compute the k(T,P) values at 371.247 K
+Using 250 grains from -63.21 to 272.81 kJ/mol in steps of 1.35 kJ/mol to compute the k(T,P) values at 459.823 K
+Using 250 grains from -63.21 to 326.06 kJ/mol in steps of 1.56 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 250 grains from -63.21 to 423.82 kJ/mol in steps of 1.96 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 317 grains from -63.21 to 597.87 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 419 grains from -63.21 to 811.25 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #10 network information
+-----------------------------------
+Isomers:
+    CH3CO(35)                                             -63.206 kJ/mol
+Reactant channels:
+    H(5) + CH2CO(27)                                      108.894 kJ/mol
+Product channels:
+    CH2CHO(36)                                           -35.3791 kJ/mol
+Path reactions:
+    H(5) + CH2CO(27) <=> CH3CO(35)                        119.886 kJ/mol
+    CH2CHO(36) <=> CH3CO(35)                              106.109 kJ/mol
+Net reactions:
+    CH3CO(35) => H(5) + CH2CO(27)                   
+    CH3CO(35) => CH2CHO(36)                         
+========================================================================
+
+Updating PDepNetwork #11
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: For [CH]=O, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (4 frequencies) to compensate.
+Warning: For [CH]=C, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (4 frequencies) to compensate.
+Warning: For [CH]=CO, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (3 frequencies) to compensate.
+Calculating densities of states for PDepNetwork #11 network...
+Using 615 grains from -167.56 to 1116.93 kJ/mol in steps of 2.09 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for [CH]=CO(85) <=> CH2CHO(36)...
+Using 313 grains from -167.56 to 485.15 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(302.51 K) = 1.50113e+07
+Warning:       Actual kf(302.51 K) = 3.71739e+06
+Warning:     Expected Keq(302.51 K) = 5.85686e+61
+Warning:       Actual Keq(302.51 K) = 3.26635e+62
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.7)
+Using 625 grains from -167.56 to 485.15 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(302.51 K) = 1.50113e+07
+Warning:       Actual kf(302.51 K) = 5.8746e+06
+Warning:     Expected Keq(302.51 K) = 5.85686e+61
+Warning:       Actual Keq(302.51 K) = 3.27635e+62
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.7)
+Using 1248 grains from -167.56 to 484.62 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 302.51 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "HCO(16) + CH2(19) <=> CH2CHO(36)".
+Using 316 grains from -167.56 to 491.42 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(323.546 K) = 1.53974e+07
+Warning:       Actual kf(323.546 K) = 4.03068e+06
+Warning:     Expected Keq(323.546 K) = 1.34948e+57
+Warning:       Actual Keq(323.546 K) = 8.45418e+57
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 631 grains from -167.56 to 491.42 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(323.546 K) = 1.53974e+07
+Warning:       Actual kf(323.546 K) = 6.23071e+06
+Warning:     Expected Keq(323.546 K) = 1.34948e+57
+Warning:       Actual Keq(323.546 K) = 8.48125e+57
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.8)
+Using 1261 grains from -167.56 to 491.42 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 323.546 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "HCO(16) + CH2(19) <=> CH2CHO(36)".
+Using 324 grains from -167.56 to 508.16 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(371.247 K) = 1.62184e+07
+Warning:       Actual kf(371.247 K) = 4.71538e+06
+Warning:     Expected Keq(371.247 K) = 3.60894e+48
+Warning:       Actual Keq(371.247 K) = 2.84874e+49
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 647 grains from -167.56 to 508.16 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(371.247 K) = 1.62184e+07
+Warning:       Actual kf(371.247 K) = 6.99602e+06
+Warning:     Expected Keq(371.247 K) = 3.60894e+48
+Warning:       Actual Keq(371.247 K) = 2.85699e+49
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 0.9)
+Using 1292 grains from -167.56 to 507.63 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "HCO(16) + CH2(19) <=> CH2CHO(36)".
+Using 338 grains from -167.56 to 537.45 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(459.823 K) = 1.75837e+07
+Warning:       Actual kf(459.823 K) = 5.89903e+06
+Warning:     Expected Keq(459.823 K) = 2.25521e+37
+Warning:       Actual Keq(459.823 K) = 2.51396e+38
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.0)
+Using 675 grains from -167.56 to 537.45 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(459.823 K) = 1.75837e+07
+Warning:       Actual kf(459.823 K) = 8.28787e+06
+Warning:     Expected Keq(459.823 K) = 2.25521e+37
+Warning:       Actual Keq(459.823 K) = 2.51864e+38
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.0)
+Using 1348 grains from -167.56 to 536.92 kJ/mol in steps of 0.52 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "HCO(16) + CH2(19) <=> CH2CHO(36)".
+Using 364 grains from -167.56 to 591.84 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(619.914 K) = 1.96841e+07
+Warning:       Actual kf(619.914 K) = 7.79848e+06
+Warning:     Expected Keq(619.914 K) = 1.73927e+25
+Warning:       Actual Keq(619.914 K) = 3.07011e+26
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.2)
+Using 726 grains from -167.56 to 590.79 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 619.914 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "HCO(16) + CH2(19) <=> CH2CHO(36)".
+Using 410 grains from -167.56 to 688.07 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Warning: For path reaction HCO(16) + CH2(19) <=> CH2CHO(36):
+Warning:     Expected kf(913.864 K) = 2.2792e+07
+Warning:       Actual kf(913.864 K) = 1.07166e+07
+Warning:     Expected Keq(913.864 K) = 1.31131e+14
+Warning:       Actual Keq(913.864 K) = 4.08583e+15
+Warning: Increasing number of grains, decreasing grain size and trying again. (Current badness: 1.5)
+Using 819 grains from -167.56 to 688.07 kJ/mol in steps of 1.05 kJ/mol to compute the k(T,P) values at 913.864 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "HCO(16) + CH2(19) <=> CH2CHO(36)".
+Using 493 grains from -167.56 to 861.71 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "HCO(16) + CH2(19) <=> CH2CHO(36)".
+Using 595 grains from -167.56 to 1075.09 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "HCO(16) + CH2(19) <=> CH2CHO(36)".
+========================================================================
+PDepNetwork #11 network information
+-----------------------------------
+Isomers:
+    CH2CHO(36)                                           -139.731 kJ/mol
+Reactant channels:
+    HCO(16) + CH2(19)                                     267.703 kJ/mol
+    O(10) + C2H3(28)                                      383.702 kJ/mol
+Product channels:
+    [CH]1CO1(83)                                          10.2408 kJ/mol
+    CH3CO(35)                                            -167.558 kJ/mol
+    C=[C]O(84)                                           -42.9944 kJ/mol
+    [CH]=CO(85)                                          -27.6282 kJ/mol
+Path reactions:
+    HCO(16) + CH2(19) <=> CH2CHO(36)                      267.703 kJ/mol
+    CH2CHO(36) <=> [CH]1CO1(83)                           59.3789 kJ/mol
+    CH2CHO(36) <=> CH3CO(35)                               1.7572 kJ/mol
+    O(10) + C2H3(28) <=> CH2CHO(36)                       383.702 kJ/mol
+    C=[C]O(84) <=> CH2CHO(36)                             119.785 kJ/mol
+    [CH]=CO(85) <=> CH2CHO(36)                            164.501 kJ/mol
+Net reactions:
+    CH2CHO(36) => HCO(16) + CH2(19)                 
+    CH2CHO(36) => O(10) + C2H3(28)                  
+    CH2CHO(36) => [CH]1CO1(83)                      
+    CH2CHO(36) => CH3CO(35)                         
+    CH2CHO(36) => C=[C]O(84)                        
+    CH2CHO(36) => [CH]=CO(85)                       
+========================================================================
+
+Updating PDepNetwork #12
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: For CC=O, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (6 frequencies) to compensate.
+Calculating densities of states for PDepNetwork #12 network...
+Using 569 grains from -175.30 to 955.99 kJ/mol in steps of 1.99 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for H(5) + CH2CHO(36) <=> CH3CHO(37)...
+Using 250 grains from -175.30 to 321.47 kJ/mol in steps of 2.00 kJ/mol to compute the k(T,P) values at 302.51 K
+Using 250 grains from -175.30 to 328.47 kJ/mol in steps of 2.02 kJ/mol to compute the k(T,P) values at 323.546 K
+Using 250 grains from -175.30 to 344.33 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Using 264 grains from -175.30 to 374.90 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Using 289 grains from -175.30 to 427.20 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 336 grains from -175.30 to 525.52 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 419 grains from -175.30 to 699.16 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 521 grains from -175.30 to 912.54 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #12 network information
+-----------------------------------
+Isomers:
+    CH3CHO(37)                                           -175.297 kJ/mol
+Reactant channels:
+    H(5) + CH2CHO(36)                                     220.861 kJ/mol
+Product channels:
+    C=CO(86)                                             -135.749 kJ/mol
+Path reactions:
+    C=CO(86) <=> CH3CHO(37)                               -16.723 kJ/mol
+    H(5) + CH2CHO(36) <=> CH3CHO(37)                      220.861 kJ/mol
+Net reactions:
+    CH3CHO(37) => H(5) + CH2CHO(36)                 
+    CH3CHO(37) => C=CO(86)                          
+========================================================================
+
+Updating PDepNetwork #13
+Warning: For CC, more characteristic frequencies were generated than vibrational modes allowed. Removed 1 groups (9 frequencies) to compensate.
+Calculating densities of states for PDepNetwork #13 network...
+Using 557 grains from -210.28 to 952.88 kJ/mol in steps of 2.09 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for CH2(S)(25) + CH4(30) <=> C2H6(38)...
+Using 255 grains from -210.28 to 321.09 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 302.51 K
+Using 259 grains from -210.28 to 329.46 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 323.546 K
+Using 266 grains from -210.28 to 344.10 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Using 280 grains from -210.28 to 373.39 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Using 306 grains from -210.28 to 427.78 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 352 grains from -210.28 to 524.01 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 435 grains from -210.28 to 697.65 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 537 grains from -210.28 to 911.03 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #13 network information
+-----------------------------------
+Isomers:
+    C2H6(38)                                             -210.276 kJ/mol
+Reactant channels:
+    CH2(S)(25) + CH4(30)                                  219.897 kJ/mol
+Product channels:
+Path reactions:
+    CH2(S)(25) + CH4(30) <=> C2H6(38)                     219.897 kJ/mol
+Net reactions:
+    C2H6(38) => CH2(S)(25) + CH4(30)                
+========================================================================
+
+Updating PDepNetwork #14
+Warning: Maximum number of iterations reached when fitting spectral data for CCC.
+Warning: Maximum number of iterations reached when fitting spectral data for [CH2]CC.
+Calculating densities of states for PDepNetwork #14 network...
+Using 563 grains from -259.12 to 916.59 kJ/mol in steps of 2.09 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for H(5) + [CH2]CCC(90) <=> butane(1)...
+Using 261 grains from -259.12 to 284.81 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 302.51 K
+Using 265 grains from -259.12 to 293.17 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 323.546 K
+Using 272 grains from -259.12 to 307.82 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 371.247 K
+Using 286 grains from -259.12 to 337.11 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Using 312 grains from -259.12 to 391.50 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 359 grains from -259.12 to 489.82 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 441 grains from -259.12 to 661.37 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 543 grains from -259.12 to 874.75 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #14 network information
+-----------------------------------
+Isomers:
+    butane(1)                                            -259.115 kJ/mol
+Reactant channels:
+    C2H5(31) + C2H5(31)                                   103.621 kJ/mol
+Product channels:
+    CH2(S)(25) + CCC(87)                                  184.006 kJ/mol
+    CH3(21) + [CH2]CC(88)                                 108.514 kJ/mol
+    H(5) + C[CH]CC(89)                                    149.156 kJ/mol
+    H(5) + [CH2]CCC(90)                                   159.751 kJ/mol
+Path reactions:
+    CH2(S)(25) + CCC(87) <=> butane(1)                    184.006 kJ/mol
+    C2H5(31) + C2H5(31) <=> butane(1)                     103.621 kJ/mol
+    CH3(21) + [CH2]CC(88) <=> butane(1)                   108.514 kJ/mol
+    H(5) + C[CH]CC(89) <=> butane(1)                      149.156 kJ/mol
+    H(5) + [CH2]CCC(90) <=> butane(1)                     159.751 kJ/mol
+Net reactions:
+    butane(1) => C2H5(31) + C2H5(31)                
+    butane(1) => CH2(S)(25) + CCC(87)               
+    butane(1) => CH3(21) + [CH2]CC(88)              
+    butane(1) => H(5) + C[CH]CC(89)                 
+    butane(1) => H(5) + [CH2]CCC(90)                
+========================================================================
+
+Updating PDepNetwork #15
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: Maximum number of iterations reached when fitting spectral data for CC=CCOO.
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: Maximum number of iterations reached when fitting spectral data for CC[CH]COO.
+Warning: Statmech node 'O_R0' and all its parents have data = None
+Warning: Statmech node 'O_R1' and all its parents have data = None
+Calculating densities of states for PDepNetwork #15 network...
+Using 581 grains from -225.06 to 887.07 kJ/mol in steps of 1.92 kJ/mol to compute densities of states
+Calculating phenomenological rate coefficients for QOOH(3) <=> CC(O)CC[O](101)...
+Using 250 grains from -225.06 to 253.23 kJ/mol in steps of 1.92 kJ/mol to compute the k(T,P) values at 302.51 K
+Using 250 grains from -225.06 to 260.22 kJ/mol in steps of 1.95 kJ/mol to compute the k(T,P) values at 323.546 K
+Using 250 grains from -225.06 to 276.09 kJ/mol in steps of 2.01 kJ/mol to compute the k(T,P) values at 371.247 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "QOOH(3) <=> OH(9) + CCCC=O(99)".
+Using 255 grains from -225.06 to 306.31 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 459.823 K
+Warning: Significant corrections to k(E) to be consistent with high-pressure limit for path reaction "QOOH(3) <=> OH(9) + CCCC=O(99)".
+Using 281 grains from -225.06 to 360.70 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 619.914 K
+Using 327 grains from -225.06 to 456.93 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 913.864 K
+Using 410 grains from -225.06 to 630.57 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 1434.46 K
+Using 512 grains from -225.06 to 843.95 kJ/mol in steps of 2.09 kJ/mol to compute the k(T,P) values at 2073.82 K
+========================================================================
+PDepNetwork #15 network information
+-----------------------------------
+Isomers:
+    QOOH(3)                                              -12.3441 kJ/mol
+Reactant channels:
+Product channels:
+    [CH2]C(C)COO(91)                                     -10.7495 kJ/mol
+    OH(9) + CC1CCO1(92)                                  -78.5345 kJ/mol
+    H(5) + CC=CCOO(93)                                    126.096 kJ/mol
+    H(5) + C=CCCOO(94)                                    132.784 kJ/mol
+    CC[CH]COO(97)                                        -6.37542 kJ/mol
+    [CH2]CCCOO(98)                                       -1.54401 kJ/mol
+    OH(9) + CCCC=O(99)                                   -172.895 kJ/mol
+    CCCCO[O](100)                                        -54.7857 kJ/mol
+    CC(O)CC[O](101)                                      -225.061 kJ/mol
+Path reactions:
+    [CH2]C(C)COO(91) <=> QOOH(3)                          149.186 kJ/mol
+    QOOH(3) <=> OH(9) + CC1CCO1(92)                       63.5118 kJ/mol
+    H(5) + CC=CCOO(93) <=> QOOH(3)                        135.196 kJ/mol
+    H(5) + C=CCCOO(94) <=> QOOH(3)                        135.294 kJ/mol
+    CC[CH]COO(97) <=> QOOH(3)                             152.617 kJ/mol
+    [CH2]CCCOO(98) <=> QOOH(3)                            146.151 kJ/mol
+    QOOH(3) <=> OH(9) + CCCC=O(99)                        136.397 kJ/mol
+    CCCCO[O](100) <=> QOOH(3)                             21.2376 kJ/mol
+    QOOH(3) <=> CC(O)CC[O](101)                           98.9499 kJ/mol
+Net reactions:
+    QOOH(3) => [CH2]C(C)COO(91)                     
+    QOOH(3) => OH(9) + CC1CCO1(92)                  
+    QOOH(3) => H(5) + CC=CCOO(93)                   
+    QOOH(3) => H(5) + C=CCCOO(94)                   
+    QOOH(3) => CC[CH]COO(97)                        
+    QOOH(3) => [CH2]CCCOO(98)                       
+    QOOH(3) => OH(9) + CCCC=O(99)                   
+    QOOH(3) => CCCCO[O](100)                        
+    QOOH(3) => CC(O)CC[O](101)                      
+========================================================================
+
+Warning: Forward and reverse PDepReactions for reaction CH3O(26) => CH2OH(32) generated from networks 3 and 8 do not satisfy thermodynamic consistency.
+Warning: CH3O(26) => CH2OH(32):
+Warning: 1.40e+06 6.50e+06:
+Warning: CH2OH(32) => CH3O(26):
+Warning: 2.26e+03 1.05e+04:
+
+
+Summary of Secondary Model Edge Enlargement
+---------------------------------
+Added 0 new core species
+Created 416 new edge species
+    [CH]C=O(79)
+    [CH]C(80)
+    [C]1=CO1(81)
+    [C]#CO(82)
+    [CH]1CO1(83)
+    C=[C]O(84)
+    [CH]=CO(85)
+    C=CO(86)
+    CCC(87)
+    [CH2]CC(88)
+    C[CH]CC(89)
+    [CH2]CCC(90)
+    [CH2]C(C)COO(91)
+    CC1CCO1(92)
+    CC=CCOO(93)
+    C=CCCOO(94)
+    [CH2]OO(96)
+    C=CC(95)
+    CC[CH]COO(97)
+    [CH2]CCCOO(98)
+    CCCC=O(99)
+    CCCCO[O](100)
+    CC(O)CC[O](101)
+    O=O(102)
+    [O]OOO(103)
+    [O]OC=O(104)
+    CO[O](105)
+    C#CO[O](106)
+    COO[O](107)
+    C=CO[O](108)
+    CCO[O](109)
+    [O]OCO(110)
+    [O]OC=C=O(111)
+    C#COO[O](112)
+    CC(=O)O[O](113)
+    [O]OCC=O(114)
+    C=COO[O](115)
+    CC(CCOO)O[O](116)
+    O=[C]O(117)
+    [O]C=O(118)
+    C#CO(119)
+    C[CH]O(120)
+    CC[O](121)
+    CCCCOO(122)
+    O=CO(123)
+    OOO(124)
+    [O]C(=O)O(125)
+    [CH-]=[OH+](126)
+    [O]CO(127)
+    COO(128)
+    O=[C]CO(129)
+    [CH2]C(=O)O(130)
+    [CH2]CO(131)
+    CCO(132)
+    OCO(133)
+    O=C=CO(134)
+    C#COO(135)
+    CC(=O)O(136)
+    O=CCO(137)
+    C=COO(138)
+    CC([O])O(139)
+    CC(O)CCOO(140)
+    O=[C]C=O(141)
+    CC([O])=O(142)
+    [O]CC=O(143)
+    CC([O])CCOO(144)
+    OOOO(145)
+    [O]OC(=O)O(146)
+    O=[C]OOO(147)
+    [O]C(=O)OO(148)
+    O=COO(149)
+    [CH-]=[O+]O(150)
+    [CH2]OOO(151)
+    [O]COO(152)
+    [CH]=COO(153)
+    COOO(154)
+    C=C(O)O[O](155)
+    C=[C]OOO(156)
+    O=[C]COO(157)
+    [CH2]C(=O)OO(158)
+    [CH2]COO(159)
+    CCOO(160)
+    OCOO(161)
+    O=C=COO(162)
+    C#COOO(163)
+    CC(=O)OO(164)
+    O=CCOO(165)
+    C=COOO(166)
+    CC(O)O[O](167)
+    C[CH]OOO(168)
+    CC([O])OO(169)
+    CC(CCOO)OO(170)
+    C#CO[O+]([O-])O(171)
+    C#COO[OH+][O-](172)
+    C=CO[O+]([O-])O(173)
+    C=COO[OH+][O-](174)
+    O=C1OOC1=O(175)
+    O=[C]OC=O(176)
+    [O]C(=O)C=O(177)
+    O=C1COO1(178)
+    CO[C]=O(179)
+    C#CO[C]=O(180)
+    C#CC([O])=O(181)
+    [C]=COC=O(182)
+    [C]=CC(=O)O(183)
+    O=C1CO1(184)
+    [O]COC=O(185)
+    [O]CC(=O)O(186)
+    COO[C]=O(187)
+    COC([O])=O(188)
+    O=C=COC=O(189)
+    O=C=CC(=O)O(190)
+    O=C1CC(=O)O1(191)
+    C=C1OOC1=O(192)
+    O=C1COC1=O(193)
+    C#COOC=O(194)
+    C#COC(=O)O(195)
+    [CH]=COC=O(196)
+    [CH]=CC(=O)O(197)
+    C=CO[C]=O(198)
+    C=CC([O])=O(199)
+    C=COC=O(200)
+    C=CC(=O)O(201)
+    O=C1CCO1(202)
+    COC=O(203)
+    [CH2]COC=O(204)
+    [CH2]CC(=O)O(205)
+    CCO[C]=O(206)
+    CCC([O])=O(207)
+    O=[C]OCO(208)
+    [O]C(=O)CO(209)
+    O=COCO(210)
+    O=C(O)CO(211)
+    [CH]=C1OOC1=O(212)
+    O=[C]OC=C=O(213)
+    [O]C(=O)C=C=O(214)
+    C#COO[C]=O(215)
+    C#COC([O])=O(216)
+    O=[C]COC=O(217)
+    O=[C]CC(=O)O(218)
+    CC(=O)O[C]=O(219)
+    CC(=O)C([O])=O(220)
+    [CH2]C1OOC1=O(221)
+    O=[C]OCC=O(222)
+    [O]C(=O)CC=O(223)
+    [O]C=COC=O(224)
+    [CH2]C(=O)OC=O(225)
+    [O]C=CC(=O)O(226)
+    [CH2]C(=O)C(=O)O(227)
+    [O]C1CC(=O)O1(228)
+    [O]C1COC1=O(229)
+    C=COO[C]=O(230)
+    C=COC([O])=O(231)
+    O=CCOC=O(232)
+    O=CCC(=O)O(233)
+    CC1OOC1=O(234)
+    C=COOC=O(235)
+    C=COC(=O)O(236)
+    COC(C)=O(237)
+    CCOC=O(238)
+    CCC(=O)O(239)
+    O=CC=O(240)
+    [C]#CC=O(241)
+    C#C[C]=O(242)
+    C#CC=O(243)
+    [C]=CC=O(244)
+    O=C=CC=O(245)
+    C#CO[O+]=[CH-](246)
+    C#C[O+]=[C-]O(247)
+    [CH]=CC=O(248)
+    C=C[C]=O(249)
+    C=CC=O(250)
+    [CH2]CC=O(251)
+    CC[C]=O(252)
+    [CH2]OC=O(253)
+    O=[C]C=C=O(254)
+    [O]C=C=C=O(255)
+    O=[C]CC=O(256)
+    CC(=O)[C]=O(257)
+    [CH2]C(=O)C=O(258)
+    [O]C=CC=O(259)
+    O=CCC=O(260)
+    CC(=O)C=O(261)
+    [CH-]=[O+]OC=C(262)
+    C=C[O+]=[C-]O(263)
+    CCC=O(264)
+    CC(C)=O(265)
+    C=[C]OC=O(266)
+    C#COC=O(267)
+    C[CH]OC=O(268)
+    CC([O])C=O(269)
+    [CH]C#C(270)
+    [CH-]=[O+]C(271)
+    [CH]C=C(272)
+    [CH]CC(273)
+    [CH]CO(274)
+    [CH]C=C=O(275)
+    C#C[O+]=[CH-](276)
+    [CH]C(C)=O(277)
+    [CH]CC=O(278)
+    [CH-]=[O+]C=C(279)
+    [CH2]OC(280)
+    C#CO[CH2](281)
+    C=C(C)[O](282)
+    [CH2]OC=C(283)
+    C1COO1(284)
+    C#CC[O](285)
+    C1CO1(286)
+    [CH2]OOC(287)
+    COC[O](288)
+    C=C1COO1(289)
+    O=C1COC1(290)
+    C#COOC(291)
+    C#COCO(292)
+    C=CC[O](293)
+    C1COC1(294)
+    [CH2]OCC(295)
+    CCC[O](296)
+    [CH2]OCO(297)
+    [O]CCO(298)
+    [CH]=C1COO1(299)
+    [CH2]OC=C=O(300)
+    [O]CC=C=O(301)
+    C#COO[CH2](302)
+    C#COC[O](303)
+    [CH2]OC(C)=O(304)
+    CC(=O)C[O](305)
+    [CH2]C1COO1(306)
+    [CH2]OCC=O(307)
+    [O]CCC=O(308)
+    [O]C1CCO1(309)
+    [O]C1COC1(310)
+    [CH2]OOC=C(311)
+    C=COC[O](312)
+    CC1COO1(313)
+    C=COOC(314)
+    C=COCO(315)
+    [CH]=CC(316)
+    COC(317)
+    C=[C]OC(318)
+    CC=C=O(319)
+    C#COC(320)
+    C=COC(321)
+    C[CH]OC(322)
+    CC(C)[O](323)
+    C#CC#C(324)
+    [CH]=CC#C(325)
+    [C]#CC(326)
+    C#CO[C]=C(327)
+    C#CC[C]=O(328)
+    C#CC(=C)[O](329)
+    C#CC=C(330)
+    C#CC[CH2](331)
+    C#CCC(332)
+    C#CCO(333)
+    C#CC=C=O(334)
+    C#COC#C(335)
+    C#CC(C)=O(336)
+    C#CCC=O(337)
+    C#COC=C(338)
+    C#CO[CH]C(339)
+    C#CC(C)[O](340)
+    C1=CC1(341)
+    [CH]=COC(342)
+    [CH]=CC=C(343)
+    [CH]=CCC(344)
+    [CH]=CCO(345)
+    [CH]=CC=C=O(346)
+    [CH]=COC#C(347)
+    [CH]=CC(C)=O(348)
+    [CH]=CCC=O(349)
+    [CH]=COC=C(350)
+    C=COC=C(351)
+    [C]=CC(352)
+    [CH]COC#C(353)
+    C#C[O+]=[C-]C(354)
+    [CH]COC=C(355)
+    C=C[O+]=[C-]C(356)
+    C=C1CO1(357)
+    O=C1CC1(358)
+    C1CC1(359)
+    [CH]=C1CO1(360)
+    O=C1[CH]C1(361)
+    C[C]=C=O(362)
+    [CH2]C1CO1(363)
+    [O]C1CC1(364)
+    C[CH]C=O(365)
+    CC1CO1(366)
+    COOC(367)
+    C=[C]OOC(368)
+    COC[C]=O(369)
+    [CH2]C(=O)OC(370)
+    [CH2]COC(371)
+    CCOC(372)
+    COCO(373)
+    COC=C=O(374)
+    COCC=O(375)
+    C[CH]OOC(376)
+    COC(C)[O](377)
+    C=C1CC(=O)O1(378)
+    C=C1OOC1=C(379)
+    C=C1OCC1=O(380)
+    C#COOC=C(381)
+    C#COCC=O(382)
+    C#COC(=C)O(383)
+    C#COC(C)=O(384)
+    C=[C]OC=C(385)
+    C=CC[C]=O(386)
+    C=CC(=C)[O](387)
+    C=C1CCO1(388)
+    C#COCC(389)
+    C=[C]OCC(390)
+    CCC[C]=O(391)
+    C=C([O])CC(392)
+    C=[C]OCO(393)
+    O=[C]CCO(394)
+    C=C([O])CO(395)
+    CC(=O)CO(396)
+    [CH]=C1OOC1=C(397)
+    [CH]=C1OCC1=O(398)
+    [CH]=C1CC(=O)O1(399)
+    C=[C]OC=C=O(400)
+    O=[C]CC=C=O(401)
+    C=C([O])C=C=O(402)
+    [CH]=COOC#C(403)
+    [CH]=C(O)OC#C(404)
+    C#COO[C]=C(405)
+    C#COC[C]=O(406)
+    C#COC([CH2])=O(407)
+    C#COC=C[O](408)
+    C=[C]OC(C)=O(409)
+    CC(=O)C[C]=O(410)
+    [CH2]C(=O)C(C)=O(411)
+    [CH2]C1OOC1=C(412)
+    [CH2]C1OCC1=O(413)
+    [CH2]C1CC(=O)O1(414)
+    C=[C]OCC=O(415)
+    O=[C]CCC=O(416)
+    C=C([O])CC=O(417)
+    C#COOC[CH2](418)
+    C#COC([CH2])O(419)
+    C=C1CC([O])O1(420)
+    C=C1OCC1[O](421)
+    C=[C]OOC=C(422)
+    C=COC[C]=O(423)
+    [CH2]C(=O)OC=C(424)
+    C#COCC[O](425)
+    C#COC(C)[O](426)
+    C=C1OOC1C(427)
+    CC1OCC1=O(428)
+    CC1CC(=O)O1(429)
+    C#COOCC(430)
+    C#COC(C)O(431)
+    C=COOC=C(432)
+    C=COCC=O(433)
+    C=COC(=C)O(434)
+    C=COC(C)=O(435)
+    C=CC=C(436)
+    [CH2]CC=C(437)
+    C=CCC(438)
+    C=CCO(439)
+    C=CC=C=O(440)
+    C=CC(C)=O(441)
+    C=CCC=O(442)
+    C=CO[CH]C(443)
+    C=CC(C)[O](444)
+    [CH2]CCO(445)
+    CCCO(446)
+    [CH]=C1CCO1(447)
+    [CH2]CC=C=O(448)
+    C#COC[CH2](449)
+    [CH2]CC(C)=O(450)
+    [CH2]C1CCO1(451)
+    [CH2]CCC=O(452)
+    [CH2]COC=C(453)
+    C=COCC(454)
+    CCC=C=O(455)
+    CCC(C)=O(456)
+    C[CH]OCC(457)
+    CCC(C)[O](458)
+    OCCO(459)
+    O=C=CCO(460)
+    O=CCCO(461)
+    C[CH]OCO(462)
+    CC([O])CO(463)
+    O=C=CC=C=O(464)
+    C#COC=C=O(465)
+    C#COOC#C(466)
+    CC(=O)C=C=O(467)
+    O=C=CCC=O(468)
+    C=COC=C=O(469)
+    [CH]=C1OOC1C(470)
+    C[CH]OC=C=O(471)
+    CC([O])C=C=O(472)
+    [CH]=COOC=C(473)
+    [CH]=C(O)OC=C(474)
+    C#COO[CH]C(475)
+    C=COC=C[O](476)
+    CC(=O)C(C)=O(477)
+    CC(=O)CC=O(478)
+    C[CH]OC(C)=O(479)
+    CC(=O)C(C)[O](480)
+    O=CCCC=O(481)
+    [CH2]C1OOC1C(482)
+    C[CH]OCC=O(483)
+    CC([O])CC=O(484)
+    [CH2]COOC=C(485)
+    [CH2]C(O)OC=C(486)
+    CC1OCC1[O](487)
+    CC1CC([O])O1(488)
+    C=COO[CH]C(489)
+    C=COC(C)[O](490)
+    C=COCC[O](491)
+    CC1OOC1C(492)
+    C=COOCC(493)
+    C=COC(C)O(494)
+Added 201 new core reactions
+    HO2(12) + C(T)(17) <=> O2(2) + CH(18)
+    HO2(12) + CH2(19) <=> O2(2) + CH3(21)
+    O2(2) + C2H2(23) <=> HO2(12) + C2H(22)
+    HO2(12) + CH(18) <=> O2(2) + CH2(S)(25)
+    HO2(12) + HCCO(34) <=> O2(2) + CH2CO(27)
+    O2(2) + C2H4(29) <=> HO2(12) + C2H3(28)
+    HO2(12) + CH3O(26) <=> O2(2) + CH3OH(33)
+    O2(2) + CH2CHO(36) <=> HO2(12) + CH2CO(27)
+    HO2(12) + CH2CHO(36) <=> O2(2) + CH3CHO(37)
+    O2(2) + C2H6(38) <=> HO2(12) + C2H5(31)
+    H(5) + CH3CO(35) <=> H2(6) + CH2CO(27)
+    O(10) + CH(18) <=> OH(9) + C(T)(17)
+    O(10) + CH2(S)(25) <=> OH(9) + CH(18)
+    OH(9) + CH(18) <=> H2O(11) + C(T)(17)
+    OH(9) + CH2(19) <=> O(10) + CH3(21)
+    OH(9) + C2H(22) <=> O(10) + C2H2(23)
+    O(10) + C2H3(28) <=> OH(9) + C2H2(23)
+    OH(9) + CH2(S)(25) <=> H2O(11) + CH(18)
+    O(10) + CH2CHO(36) <=> OH(9) + CH2CO(27)
+    O(10) + C2H4(29) <=> OH(9) + C2H3(28)
+    OH(9) + C2H5(31) <=> H2O(11) + C2H4(29)
+    OH(9) + CH3CHO(37) <=> H2O(11) + CH2CHO(36)
+    HO2(12) + HCO(16) <=> H2O2(13) + CO(15)
+    HO2(12) + CH(18) <=> H2O2(13) + C(T)(17)
+    H2O2(13) + CH2(19) <=> HO2(12) + CH3(21)
+    H2O2(13) + C2H(22) <=> HO2(12) + C2H2(23)
+    H2O2(13) + CH(18) <=> HO2(12) + CH2(S)(25)
+    HO2(12) + CH3O(26) <=> H2O2(13) + CH2O(20)
+    H2O2(13) + HCCO(34) <=> HO2(12) + CH2CO(27)
+    HO2(12) + C2H3(28) <=> H2O2(13) + C2H2(23)
+    H2O2(13) + C2H3(28) <=> HO2(12) + C2H4(29)
+    HO2(12) + C2H5(31) <=> H2O2(13) + C2H4(29)
+    HO2(12) + CH2OH(32) <=> H2O2(13) + CH2O(20)
+    HO2(12) + CH3CO(35) <=> H2O2(13) + CH2CO(27)
+    HO2(12) + CH2CHO(36) <=> H2O2(13) + CH2CO(27)
+    HO2(12) + CH3CHO(37) <=> H2O2(13) + CH2CHO(36)
+    HO2(12) + C2H6(38) <=> H2O2(13) + C2H5(31)
+    C(T)(17) + HCO(16) <=> CO(15) + CH(18)
+    HCO(16) + HCO(16) <=> CO(15) + CH2O(20)
+    HCO(16) + CH2(19) <=> CO(15) + CH3(21)
+    HCO(16) + C2H(22) <=> CO(15) + C2H2(23)
+    CH(18) + HCO(16) <=> CO(15) + CH2(S)(25)
+    HCO(16) + HCCO(34) <=> CO(15) + CH2CO(27)
+    HCO(16) + C2H3(28) <=> CO(15) + C2H4(29)
+    HCO(16) + CH3O(26) <=> CO(15) + CH3OH(33)
+    HCO(16) + CH2OH(32) <=> CO(15) + CH3OH(33)
+    HCO(16) + CH2CHO(36) <=> CO(15) + CH3CHO(37)
+    HCO(16) + CH3CO(35) <=> CO(15) + CH3CHO(37)
+    HCO(16) + C2H5(31) <=> CO(15) + C2H6(38)
+    CH(18) + HCO(16) <=> C(T)(17) + CH2O(20)
+    CH(18) + CH2O(20) <=> HCO(16) + CH2(S)(25)
+    HCO(16) + CH3O(26) <=> CH2O(20) + CH2O(20)
+    CH2O(20) + HCCO(34) <=> HCO(16) + CH2CO(27)
+    HCO(16) + C2H3(28) <=> CH2O(20) + C2H2(23)
+    HCO(16) + C2H5(31) <=> CH2O(20) + C2H4(29)
+    HCO(16) + CH2OH(32) <=> CH2O(20) + CH2O(20)
+    CH2O(20) + CH3O(26) <=> HCO(16) + CH3OH(33)
+    CH2O(20) + CH2OH(32) <=> HCO(16) + CH3OH(33)
+    HCO(16) + CH3CO(35) <=> CH2O(20) + CH2CO(27)
+    HCO(16) + CH2CHO(36) <=> CH2O(20) + CH2CO(27)
+    CH2O(20) + CH2CHO(36) <=> HCO(16) + CH3CHO(37)
+    CH2O(20) + CH3CO(35) <=> HCO(16) + CH3CHO(37)
+    CH(18) + CH2(19) <=> C(T)(17) + CH3(21)
+    CH(18) + C2H(22) <=> C(T)(17) + C2H2(23)
+    CH(18) + CH(18) <=> C(T)(17) + CH2(S)(25)
+    C(T)(17) + CH3O(26) <=> CH(18) + CH2O(20)
+    CH(18) + HCCO(34) <=> C(T)(17) + CH2CO(27)
+    C(T)(17) + C2H3(28) <=> CH(18) + C2H2(23)
+    CH(18) + C2H3(28) <=> C(T)(17) + C2H4(29)
+    CH(18) + CH3(21) <=> C(T)(17) + CH4(30)
+    C(T)(17) + C2H5(31) <=> CH(18) + C2H4(29)
+    C(T)(17) + CH2OH(32) <=> CH(18) + CH2O(20)
+    CH(18) + CH3O(26) <=> C(T)(17) + CH3OH(33)
+    CH(18) + CH2OH(32) <=> C(T)(17) + CH3OH(33)
+    C(T)(17) + CH3CO(35) <=> CH(18) + CH2CO(27)
+    C(T)(17) + CH2CHO(36) <=> CH(18) + CH2CO(27)
+    CH(18) + CH2CHO(36) <=> C(T)(17) + CH3CHO(37)
+    CH(18) + CH3CO(35) <=> C(T)(17) + CH3CHO(37)
+    CH(18) + C2H5(31) <=> C(T)(17) + C2H6(38)
+    CH2(19) + CH2(S)(25) <=> CH(18) + CH3(21)
+    CH2(S)(25) + C2H(22) <=> CH(18) + C2H2(23)
+    CH(18) + CH3O(26) <=> CH2(S)(25) + CH2O(20)
+    CH2(S)(25) + HCCO(34) <=> CH(18) + CH2CO(27)
+    CH(18) + C2H3(28) <=> CH2(S)(25) + C2H2(23)
+    CH2(S)(25) + C2H3(28) <=> CH(18) + C2H4(29)
+    CH2(S)(25) + CH3(21) <=> CH(18) + CH4(30)
+    CH(18) + C2H5(31) <=> CH2(S)(25) + C2H4(29)
+    CH(18) + CH2OH(32) <=> CH2(S)(25) + CH2O(20)
+    CH2(S)(25) + CH3O(26) <=> CH(18) + CH3OH(33)
+    CH2(S)(25) + CH2OH(32) <=> CH(18) + CH3OH(33)
+    CH(18) + CH3CO(35) <=> CH2(S)(25) + CH2CO(27)
+    CH(18) + CH2CHO(36) <=> CH2(S)(25) + CH2CO(27)
+    CH2(S)(25) + CH2CHO(36) <=> CH(18) + CH3CHO(37)
+    CH(18) + CH3CHO(37) <=> CH2(S)(25) + CH3CO(35)
+    CH2(S)(25) + C2H5(31) <=> CH(18) + C2H6(38)
+    CH3(21) + C2H(22) <=> CH2(19) + C2H2(23)
+    CH2(19) + CH3O(26) <=> CH2O(20) + CH3(21)
+    CH2(19) + CH2CO(27) <=> CH3(21) + HCCO(34)
+    CH2(19) + C2H3(28) <=> CH3(21) + C2H2(23)
+    CH2(19) + C2H4(29) <=> CH3(21) + C2H3(28)
+    CH2(19) + C2H5(31) <=> CH3(21) + C2H4(29)
+    CH2(19) + CH2OH(32) <=> CH2O(20) + CH3(21)
+    CH2(19) + CH3CO(35) <=> CH3(21) + CH2CO(27)
+    CH2(19) + CH2CHO(36) <=> CH3(21) + CH2CO(27)
+    CH2(19) + CH3CHO(37) <=> CH3(21) + CH2CHO(36)
+    CH2(19) + CH3CHO(37) <=> CH3(21) + CH3CO(35)
+    CH2(19) + C2H6(38) <=> CH3(21) + C2H5(31)
+    CH2OH(32) + C2H(22) <=> CH2O(20) + C2H2(23)
+    CH3O(26) + C2H(22) <=> CH2O(20) + C2H2(23)
+    CH2OH(32) + HCCO(34) <=> CH2O(20) + CH2CO(27)
+    CH3O(26) + HCCO(34) <=> CH2O(20) + CH2CO(27)
+    CH2OH(32) + C2H3(28) <=> CH2O(20) + C2H4(29)
+    CH3O(26) + C2H3(28) <=> CH2O(20) + C2H4(29)
+    CH2OH(32) + CH3O(26) <=> CH2O(20) + CH3OH(33)
+    CH2OH(32) + CH2OH(32) <=> CH2O(20) + CH3OH(33)
+    CH3O(26) + CH3O(26) <=> CH2O(20) + CH3OH(33)
+    CH2OH(32) + CH3O(26) <=> CH2O(20) + CH3OH(33)
+    CH2OH(32) + CH2CHO(36) <=> CH2O(20) + CH3CHO(37)
+    CH2OH(32) + CH3CO(35) <=> CH2O(20) + CH3CHO(37)
+    CH3O(26) + CH2CHO(36) <=> CH2O(20) + CH3CHO(37)
+    CH3O(26) + CH3CO(35) <=> CH2O(20) + CH3CHO(37)
+    CH2OH(32) + C2H5(31) <=> CH2O(20) + C2H6(38)
+    CH3O(26) + C2H5(31) <=> CH2O(20) + C2H6(38)
+    CH3(21) + CH2CO(27) <=> CH4(30) + HCCO(34)
+    CH3(21) + CH2CHO(36) <=> CH4(30) + CH2CO(27)
+    CH3(21) + CH3CHO(37) <=> CH4(30) + CH2CHO(36)
+    C2H(22) + CH2CO(27) <=> HCCO(34) + C2H2(23)
+    C2H(22) + C2H3(28) <=> C2H2(23) + C2H2(23)
+    C2H(22) + C2H4(29) <=> C2H2(23) + C2H3(28)
+    C2H(22) + C2H5(31) <=> C2H2(23) + C2H4(29)
+    C2H(22) + CH3CO(35) <=> C2H2(23) + CH2CO(27)
+    C2H(22) + CH2CHO(36) <=> C2H2(23) + CH2CO(27)
+    C2H(22) + CH3CHO(37) <=> C2H2(23) + CH2CHO(36)
+    C2H(22) + CH3CHO(37) <=> C2H2(23) + CH3CO(35)
+    C2H(22) + C2H6(38) <=> C2H2(23) + C2H5(31)
+    HCCO(34) + C2H3(28) <=> C2H2(23) + CH2CO(27)
+    C2H3(28) + C2H3(28) <=> C2H2(23) + C2H4(29)
+    CH3O(26) + C2H3(28) <=> CH3OH(33) + C2H2(23)
+    CH2OH(32) + C2H3(28) <=> CH3OH(33) + C2H2(23)
+    C2H3(28) + CH2CHO(36) <=> C2H2(23) + CH3CHO(37)
+    C2H3(28) + CH3CO(35) <=> C2H2(23) + CH3CHO(37)
+    C2H3(28) + C2H5(31) <=> C2H2(23) + C2H6(38)
+    CH3O(26) + CH2CO(27) <=> CH3OH(33) + HCCO(34)
+    CH3O(26) + C2H5(31) <=> CH3OH(33) + C2H4(29)
+    CH2OH(32) + CH3O(26) <=> CH2O(20) + CH3OH(33)
+    CH2OH(32) + CH3O(26) <=> CH2O(20) + CH3OH(33)
+    CH3O(26) + CH3OH(33) <=> CH2OH(32) + CH3OH(33)
+    CH3O(26) + CH3CO(35) <=> CH3OH(33) + CH2CO(27)
+    CH3O(26) + CH2CHO(36) <=> CH3OH(33) + CH2CO(27)
+    CH3O(26) + CH3CHO(37) <=> CH3OH(33) + CH2CHO(36)
+    CH3O(26) + CH3CHO(37) <=> CH3OH(33) + CH3CO(35)
+    CH3OH(33) + C2H5(31) <=> CH3O(26) + C2H6(38)
+    HCCO(34) + CH3CO(35) <=> CH2CO(27) + CH2CO(27)
+    HCCO(34) + CH2CHO(36) <=> CH2CO(27) + CH2CO(27)
+    CH2CO(27) + C2H3(28) <=> HCCO(34) + C2H4(29)
+    HCCO(34) + C2H5(31) <=> CH2CO(27) + C2H4(29)
+    C2H3(28) + CH3CO(35) <=> CH2CO(27) + C2H4(29)
+    C2H3(28) + CH2CHO(36) <=> CH2CO(27) + C2H4(29)
+    HCCO(34) + C2H6(38) <=> CH2CO(27) + C2H5(31)
+    CH3OH(33) + HCCO(34) <=> CH2OH(32) + CH2CO(27)
+    CH2OH(32) + CH3CO(35) <=> CH3OH(33) + CH2CO(27)
+    CH2OH(32) + CH2CHO(36) <=> CH3OH(33) + CH2CO(27)
+    HCCO(34) + CH3CHO(37) <=> CH2CO(27) + CH3CO(35)
+    HCCO(34) + CH3CHO(37) <=> CH2CO(27) + CH2CHO(36)
+    CH2CHO(36) + CH3CO(35) <=> CH2CO(27) + CH3CHO(37)
+    CH3CO(35) + CH3CO(35) <=> CH2CO(27) + CH3CHO(37)
+    CH2CHO(36) + CH2CHO(36) <=> CH2CO(27) + CH3CHO(37)
+    CH2CHO(36) + CH3CO(35) <=> CH2CO(27) + CH3CHO(37)
+    CH3CO(35) + C2H5(31) <=> CH2CO(27) + C2H6(38)
+    CH2CHO(36) + C2H5(31) <=> CH2CO(27) + C2H6(38)
+    C2H3(28) + C2H5(31) <=> C2H4(29) + C2H4(29)
+    C2H3(28) + CH3CHO(37) <=> CH2CHO(36) + C2H4(29)
+    C2H3(28) + CH3CHO(37) <=> CH3CO(35) + C2H4(29)
+    C2H3(28) + C2H6(38) <=> C2H4(29) + C2H5(31)
+    CH2OH(32) + C2H5(31) <=> CH3OH(33) + C2H4(29)
+    CH2CHO(36) + C2H5(31) <=> C2H4(29) + CH3CHO(37)
+    CH3CO(35) + C2H5(31) <=> C2H4(29) + CH3CHO(37)
+    C2H5(31) + C2H5(31) <=> C2H4(29) + C2H6(38)
+    CH3CHO(37) + C2H5(31) <=> CH2CHO(36) + C2H6(38)
+    CH3CO(35) + C2H6(38) <=> CH3CHO(37) + C2H5(31)
+    CH3OH(33) + CH2CHO(36) <=> CH2OH(32) + CH3CHO(37)
+    CH2OH(32) + CH3CHO(37) <=> CH3OH(33) + CH3CO(35)
+    CH2CHO(36) + CH3CO(35) <=> CH2CO(27) + CH3CHO(37)
+    CH2CHO(36) + CH3CO(35) <=> CH2CO(27) + CH3CHO(37)
+    CH2CHO(36) + CH3CHO(37) <=> CH3CO(35) + CH3CHO(37)
+    CH(18) <=> H(5) + C(T)(17)
+    CH2(S)(25) <=> H(5) + CH(18)
+    CH3O(26) <=> O(10) + CH3(21)
+    CH3O(26) <=> CH2OH(32)
+    CH2CO(27) <=> H(5) + HCCO(34)
+    CH4(30) <=> H2(6) + CH2(S)(25)
+    C2H5(31) <=> CH2(19) + CH3(21)
+    CH2OH(32) <=> OH(9) + CH2(19)
+    HCCO(34) <=> O(10) + C2H(22)
+    CH3CO(35) <=> H(5) + CH2CO(27)
+    CH2CHO(36) <=> CH3CO(35)
+    CH2CHO(36) <=> HCO(16) + CH2(19)
+    CH2CHO(36) <=> O(10) + C2H3(28)
+    CH3CHO(37) <=> H(5) + CH2CHO(36)
+    C2H6(38) <=> CH2(S)(25) + CH4(30)
+    butane(1) <=> C2H5(31) + C2H5(31)
+Created 304 new edge reactions
+    [CH2]OO(96) + C=CC(95) <=> QOOH(3)
+    O2(2) + OH(9) <=> O=O(102) + OH(9)
+    HO2(12) + C[CH]CC(89) <=> O2(2) + butane(1)
+    HO2(12) + [CH2]CCC(90) <=> O2(2) + butane(1)
+    O2(2) + QOOH(3) <=> HO2(12) + CC=CCOO(93)
+    O2(2) + QOOH(3) <=> HO2(12) + C=CCCOO(94)
+    O2(2) + QOOH(3) <=> CC(CCOO)O[O](116)
+    H(5) + butane(1) <=> H2(6) + C[CH]CC(89)
+    H(5) + butane(1) <=> H2(6) + [CH2]CCC(90)
+    H(5) + QOOH(3) <=> H2(6) + CC=CCOO(93)
+    H(5) + QOOH(3) <=> H2(6) + C=CCCOO(94)
+    H(5) + QOOH(3) <=> CCCCOO(122)
+    H(5) + O=[C]O(117) <=> H2(6) + CO2(4)
+    H(5) + [O]C=O(118) <=> H2(6) + CO2(4)
+    H(5) + C=[C]O(84) <=> H2(6) + CH2CO(27)
+    H(5) + C#CO(119) <=> H2(6) + HCCO(34)
+    H(5) + C=CO(86) <=> H2(6) + CH2CHO(36)
+    H(5) + C[CH]O(120) <=> H2(6) + CH3CHO(37)
+    H(5) + CC[O](121) <=> H2(6) + CH3CHO(37)
+    H(5) + CCCCOO(122) <=> H2(6) + QOOH(3)
+    O(10) + O=[C]O(117) <=> OH(9) + CO2(4)
+    O(10) + [O]C=O(118) <=> OH(9) + CO2(4)
+    OH(9) + CH2O(20) <=> [CH2]OO(96)
+    O(10) + C=[C]O(84) <=> OH(9) + CH2CO(27)
+    O(10) + C#CO(119) <=> OH(9) + HCCO(34)
+    O(10) + C=CO(86) <=> OH(9) + CH2CHO(36)
+    O(10) + C[CH]O(120) <=> OH(9) + CH3CHO(37)
+    O(10) + CC[O](121) <=> OH(9) + CH3CHO(37)
+    OH(9) + butane(1) <=> H2O(11) + C[CH]CC(89)
+    OH(9) + butane(1) <=> H2O(11) + [CH2]CCC(90)
+    OH(9) + QOOH(3) <=> H2O(11) + CC=CCOO(93)
+    OH(9) + QOOH(3) <=> H2O(11) + C=CCCOO(94)
+    O(10) + CCCCOO(122) <=> OH(9) + QOOH(3)
+    OH(9) + QOOH(3) <=> CC(O)CCOO(140)
+    O(10) + HO2(12) <=> O=O(102) + OH(9)
+    O(10) + butane(1) <=> OH(9) + C[CH]CC(89)
+    O(10) + butane(1) <=> OH(9) + [CH2]CCC(90)
+    O(10) + QOOH(3) <=> CC([O])CCOO(144)
+    O(10) + QOOH(3) <=> OH(9) + CC=CCOO(93)
+    O(10) + QOOH(3) <=> OH(9) + C=CCCOO(94)
+    OH(9) + O=[C]O(117) <=> H2O(11) + CO2(4)
+    OH(9) + [O]C=O(118) <=> H2O(11) + CO2(4)
+    OH(9) + C=[C]O(84) <=> H2O(11) + CH2CO(27)
+    OH(9) + C#CO(119) <=> H2O(11) + HCCO(34)
+    OH(9) + C=CO(86) <=> H2O(11) + CH2CHO(36)
+    OH(9) + C[CH]O(120) <=> H2O(11) + CH3CHO(37)
+    OH(9) + CC[O](121) <=> H2O(11) + CH3CHO(37)
+    OH(9) + CCCCOO(122) <=> H2O(11) + QOOH(3)
+    O2(2) + O=[C]O(117) <=> HO2(12) + CO2(4)
+    O2(2) + [O]C=O(118) <=> HO2(12) + CO2(4)
+    HO2(12) + CH2(19) <=> [CH2]OO(96)
+    O2(2) + C=[C]O(84) <=> HO2(12) + CH2CO(27)
+    HO2(12) + HCCO(34) <=> O2(2) + C#CO(119)
+    HO2(12) + CH2CHO(36) <=> O2(2) + C=CO(86)
+    O2(2) + C[CH]O(120) <=> HO2(12) + CH3CHO(37)
+    O2(2) + CC[O](121) <=> HO2(12) + CH3CHO(37)
+    H2O2(13) + C[CH]CC(89) <=> HO2(12) + butane(1)
+    H2O2(13) + [CH2]CCC(90) <=> HO2(12) + butane(1)
+    HO2(12) + QOOH(3) <=> H2O2(13) + CC=CCOO(93)
+    HO2(12) + QOOH(3) <=> H2O2(13) + C=CCCOO(94)
+    HO2(12) + QOOH(3) <=> O2(2) + CCCCOO(122)
+    HO2(12) + QOOH(3) <=> CC(CCOO)OO(170)
+    HO2(12) + O=[C]O(117) <=> H2O2(13) + CO2(4)
+    HO2(12) + [O]C=O(118) <=> H2O2(13) + CO2(4)
+    HO2(12) + C=[C]O(84) <=> H2O2(13) + CH2CO(27)
+    HO2(12) + C#CO(119) <=> H2O2(13) + HCCO(34)
+    H2O2(13) + CH2CHO(36) <=> HO2(12) + C=CO(86)
+    HO2(12) + C[CH]O(120) <=> H2O2(13) + CH3CHO(37)
+    HO2(12) + CC[O](121) <=> H2O2(13) + CH3CHO(37)
+    H2O2(13) + QOOH(3) <=> HO2(12) + CCCCOO(122)
+    C(T)(17) + O=[C]O(117) <=> CO2(4) + CH(18)
+    C(T)(17) + [O]C=O(118) <=> CO2(4) + CH(18)
+    HCO(16) + O=[C]O(117) <=> CO2(4) + CH2O(20)
+    HCO(16) + [O]C=O(118) <=> CO2(4) + CH2O(20)
+    O=[C]O(117) + CH2(19) <=> CO2(4) + CH3(21)
+    [O]C=O(118) + CH2(19) <=> CO2(4) + CH3(21)
+    O=[C]O(117) + C2H(22) <=> CO2(4) + C2H2(23)
+    [O]C=O(118) + C2H(22) <=> CO2(4) + C2H2(23)
+    CH(18) + O=[C]O(117) <=> CO2(4) + CH2(S)(25)
+    CH(18) + [O]C=O(118) <=> CO2(4) + CH2(S)(25)
+    O=[C]O(117) + HCCO(34) <=> CO2(4) + CH2CO(27)
+    [O]C=O(118) + HCCO(34) <=> CO2(4) + CH2CO(27)
+    O=[C]O(117) + C2H3(28) <=> CO2(4) + C2H4(29)
+    [O]C=O(118) + C2H3(28) <=> CO2(4) + C2H4(29)
+    O=[C]O(117) + CH3(21) <=> CO2(4) + CH4(30)
+    [O]C=O(118) + CH3(21) <=> CO2(4) + CH4(30)
+    O=[C]O(117) + CH3O(26) <=> CO2(4) + CH3OH(33)
+    O=[C]O(117) + CH2OH(32) <=> CO2(4) + CH3OH(33)
+    [O]C=O(118) + CH3O(26) <=> CO2(4) + CH3OH(33)
+    [O]C=O(118) + CH2OH(32) <=> CO2(4) + CH3OH(33)
+    O=[C]O(117) + CH2CHO(36) <=> CO2(4) + CH3CHO(37)
+    O=[C]O(117) + CH3CO(35) <=> CO2(4) + CH3CHO(37)
+    [O]C=O(118) + CH2CHO(36) <=> CO2(4) + CH3CHO(37)
+    [O]C=O(118) + CH3CO(35) <=> CO2(4) + CH3CHO(37)
+    O=[C]O(117) + C2H5(31) <=> CO2(4) + C2H6(38)
+    [O]C=O(118) + C2H5(31) <=> CO2(4) + C2H6(38)
+    O=[C]O(117) + C[CH]CC(89) <=> CO2(4) + butane(1)
+    O=[C]O(117) + [CH2]CCC(90) <=> CO2(4) + butane(1)
+    [O]C=O(118) + C[CH]CC(89) <=> CO2(4) + butane(1)
+    [O]C=O(118) + [CH2]CCC(90) <=> CO2(4) + butane(1)
+    HCO(16) + C[CH]CC(89) <=> CO(15) + butane(1)
+    HCO(16) + [CH2]CCC(90) <=> CO(15) + butane(1)
+    HCO(16) + HCCO(34) <=> CO(15) + C#CO(119)
+    HCO(16) + CH2CHO(36) <=> CO(15) + C=CO(86)
+    CH2O(20) + C[CH]CC(89) <=> HCO(16) + butane(1)
+    CH2O(20) + [CH2]CCC(90) <=> HCO(16) + butane(1)
+    HCO(16) + QOOH(3) <=> CO(15) + CCCCOO(122)
+    HCO(16) + QOOH(3) <=> CH2O(20) + CC=CCOO(93)
+    HCO(16) + QOOH(3) <=> CH2O(20) + C=CCCOO(94)
+    CH(18) + C[CH]CC(89) <=> C(T)(17) + butane(1)
+    CH(18) + [CH2]CCC(90) <=> C(T)(17) + butane(1)
+    C(T)(17) + QOOH(3) <=> CH(18) + CC=CCOO(93)
+    C(T)(17) + QOOH(3) <=> CH(18) + C=CCCOO(94)
+    C(T)(17) + C=[C]O(84) <=> CH(18) + CH2CO(27)
+    C(T)(17) + C#CO(119) <=> CH(18) + HCCO(34)
+    CH(18) + CH2CHO(36) <=> C(T)(17) + C=CO(86)
+    C(T)(17) + C[CH]O(120) <=> CH(18) + CH3CHO(37)
+    C(T)(17) + CC[O](121) <=> CH(18) + CH3CHO(37)
+    CH2(S)(25) + C[CH]CC(89) <=> CH(18) + butane(1)
+    CH2(S)(25) + [CH2]CCC(90) <=> CH(18) + butane(1)
+    CH(18) + QOOH(3) <=> CH2(S)(25) + CC=CCOO(93)
+    CH(18) + QOOH(3) <=> CH2(S)(25) + C=CCCOO(94)
+    CH(18) + QOOH(3) <=> C(T)(17) + CCCCOO(122)
+    CH2(19) + butane(1) <=> CH3(21) + C[CH]CC(89)
+    CH2(19) + butane(1) <=> CH3(21) + [CH2]CCC(90)
+    CH2(19) + QOOH(3) <=> CH3(21) + CC=CCOO(93)
+    CH2(19) + QOOH(3) <=> CH3(21) + C=CCCOO(94)
+    HCO(16) + C=[C]O(84) <=> CH2O(20) + CH2CO(27)
+    HCO(16) + C#CO(119) <=> CH2O(20) + HCCO(34)
+    HCO(16) + C=CO(86) <=> CH2O(20) + CH2CHO(36)
+    HCO(16) + C[CH]O(120) <=> CH2O(20) + CH3CHO(37)
+    HCO(16) + CC[O](121) <=> CH2O(20) + CH3CHO(37)
+    CH2OH(32) + C[CH]CC(89) <=> CH2O(20) + butane(1)
+    CH2OH(32) + [CH2]CCC(90) <=> CH2O(20) + butane(1)
+    CH3O(26) + C[CH]CC(89) <=> CH2O(20) + butane(1)
+    CH3O(26) + [CH2]CCC(90) <=> CH2O(20) + butane(1)
+    CH2O(20) + QOOH(3) <=> HCO(16) + CCCCOO(122)
+    CH2(19) + C=[C]O(84) <=> CH3(21) + CH2CO(27)
+    CH2(19) + C#CO(119) <=> CH3(21) + HCCO(34)
+    CH2(19) + C=CO(86) <=> CH3(21) + CH2CHO(36)
+    CH2(19) + C[CH]O(120) <=> CH3(21) + CH3CHO(37)
+    CH2(19) + CC[O](121) <=> CH3(21) + CH3CHO(37)
+    CH3(21) + butane(1) <=> CH4(30) + C[CH]CC(89)
+    CH3(21) + butane(1) <=> CH4(30) + [CH2]CCC(90)
+    CH3(21) + QOOH(3) <=> CH4(30) + CC=CCOO(93)
+    CH3(21) + QOOH(3) <=> CH4(30) + C=CCCOO(94)
+    CH2(19) + CCCCOO(122) <=> CH3(21) + QOOH(3)
+    C2H(22) + butane(1) <=> C2H2(23) + C[CH]CC(89)
+    C2H(22) + butane(1) <=> C2H2(23) + [CH2]CCC(90)
+    C2H(22) + QOOH(3) <=> C2H2(23) + CC=CCOO(93)
+    C2H(22) + QOOH(3) <=> C2H2(23) + C=CCCOO(94)
+    C2H(22) + C=[C]O(84) <=> C2H2(23) + CH2CO(27)
+    C2H(22) + C#CO(119) <=> HCCO(34) + C2H2(23)
+    C2H(22) + C=CO(86) <=> C2H2(23) + CH2CHO(36)
+    C2H(22) + C[CH]O(120) <=> C2H2(23) + CH3CHO(37)
+    C2H(22) + CC[O](121) <=> C2H2(23) + CH3CHO(37)
+    C2H3(28) + C[CH]CC(89) <=> C2H2(23) + butane(1)
+    C2H3(28) + [CH2]CCC(90) <=> C2H2(23) + butane(1)
+    C2H(22) + CCCCOO(122) <=> C2H2(23) + QOOH(3)
+    CH(18) + C=[C]O(84) <=> CH2(S)(25) + CH2CO(27)
+    CH(18) + C#CO(119) <=> CH2(S)(25) + HCCO(34)
+    CH(18) + C=CO(86) <=> CH2(S)(25) + CH2CHO(36)
+    CH(18) + C[CH]O(120) <=> CH2(S)(25) + CH3CHO(37)
+    CH(18) + CC[O](121) <=> CH2(S)(25) + CH3CHO(37)
+    CH2(S)(25) + QOOH(3) <=> CH(18) + CCCCOO(122)
+    CH3O(26) + HCCO(34) <=> CH2O(20) + C#CO(119)
+    CH3O(26) + CH2CHO(36) <=> CH2O(20) + C=CO(86)
+    CH3O(26) + butane(1) <=> CH3OH(33) + C[CH]CC(89)
+    CH3O(26) + butane(1) <=> CH3OH(33) + [CH2]CCC(90)
+    CH3O(26) + QOOH(3) <=> CH3OH(33) + CC=CCOO(93)
+    CH3O(26) + QOOH(3) <=> CH3OH(33) + C=CCCOO(94)
+    CH3O(26) + QOOH(3) <=> CH2O(20) + CCCCOO(122)
+    HCCO(34) + C=[C]O(84) <=> CH2CO(27) + CH2CO(27)
+    C2H3(28) + C=[C]O(84) <=> CH2CO(27) + C2H4(29)
+    CH3(21) + C=[C]O(84) <=> CH4(30) + CH2CO(27)
+    CH3O(26) + C=[C]O(84) <=> CH3OH(33) + CH2CO(27)
+    CH2OH(32) + C=[C]O(84) <=> CH3OH(33) + CH2CO(27)
+    HCCO(34) + C#CO(119) <=> HCCO(34) + CH2CO(27)
+    CH2CO(27) + CH2CHO(36) <=> HCCO(34) + C=CO(86)
+    HCCO(34) + C[CH]O(120) <=> CH2CO(27) + CH3CHO(37)
+    HCCO(34) + CC[O](121) <=> CH2CO(27) + CH3CHO(37)
+    C=[C]O(84) + CH2CHO(36) <=> CH2CO(27) + CH3CHO(37)
+    C=[C]O(84) + CH3CO(35) <=> CH2CO(27) + CH3CHO(37)
+    C=[C]O(84) + C2H5(31) <=> CH2CO(27) + C2H6(38)
+    C=[C]O(84) + C[CH]CC(89) <=> CH2CO(27) + butane(1)
+    C=[C]O(84) + [CH2]CCC(90) <=> CH2CO(27) + butane(1)
+    CH3CO(35) + C[CH]CC(89) <=> CH2CO(27) + butane(1)
+    CH3CO(35) + [CH2]CCC(90) <=> CH2CO(27) + butane(1)
+    CH2CHO(36) + C[CH]CC(89) <=> CH2CO(27) + butane(1)
+    CH2CHO(36) + [CH2]CCC(90) <=> CH2CO(27) + butane(1)
+    HCCO(34) + CCCCOO(122) <=> CH2CO(27) + QOOH(3)
+    HCCO(34) + C2H3(28) <=> C2H2(23) + C#CO(119)
+    C2H3(28) + CH2CHO(36) <=> C2H2(23) + C=CO(86)
+    C2H3(28) + butane(1) <=> C2H4(29) + C[CH]CC(89)
+    C2H3(28) + butane(1) <=> C2H4(29) + [CH2]CCC(90)
+    C2H3(28) + QOOH(3) <=> C2H4(29) + CC=CCOO(93)
+    C2H3(28) + QOOH(3) <=> C2H4(29) + C=CCCOO(94)
+    C2H3(28) + QOOH(3) <=> C2H2(23) + CCCCOO(122)
+    C#CO(119) + C2H3(28) <=> HCCO(34) + C2H4(29)
+    C2H3(28) + C=CO(86) <=> CH2CHO(36) + C2H4(29)
+    C2H3(28) + C[CH]O(120) <=> C2H4(29) + CH3CHO(37)
+    C2H3(28) + CC[O](121) <=> C2H4(29) + CH3CHO(37)
+    C2H5(31) + C[CH]CC(89) <=> C2H4(29) + butane(1)
+    C2H5(31) + [CH2]CCC(90) <=> C2H4(29) + butane(1)
+    C2H3(28) + CCCCOO(122) <=> C2H4(29) + QOOH(3)
+    CH3(21) + C#CO(119) <=> CH4(30) + HCCO(34)
+    CH3(21) + C=CO(86) <=> CH4(30) + CH2CHO(36)
+    CH3(21) + C[CH]O(120) <=> CH4(30) + CH3CHO(37)
+    CH3(21) + CC[O](121) <=> CH4(30) + CH3CHO(37)
+    CH3(21) + CCCCOO(122) <=> CH4(30) + QOOH(3)
+    HCCO(34) + C2H5(31) <=> C#CO(119) + C2H4(29)
+    CH2CHO(36) + C2H5(31) <=> C2H4(29) + C=CO(86)
+    C2H5(31) + butane(1) <=> C2H6(38) + C[CH]CC(89)
+    C2H6(38) + [CH2]CCC(90) <=> C2H5(31) + butane(1)
+    C2H5(31) + QOOH(3) <=> C2H6(38) + CC=CCOO(93)
+    C2H5(31) + QOOH(3) <=> C2H6(38) + C=CCCOO(94)
+    C2H5(31) + QOOH(3) <=> C2H4(29) + CCCCOO(122)
+    CH2OH(32) + HCCO(34) <=> CH2O(20) + C#CO(119)
+    CH2OH(32) + CH2CHO(36) <=> CH2O(20) + C=CO(86)
+    CH3OH(33) + C[CH]CC(89) <=> CH2OH(32) + butane(1)
+    CH3OH(33) + [CH2]CCC(90) <=> CH2OH(32) + butane(1)
+    CH2OH(32) + QOOH(3) <=> CH3OH(33) + CC=CCOO(93)
+    CH2OH(32) + QOOH(3) <=> CH3OH(33) + C=CCCOO(94)
+    CH2OH(32) + QOOH(3) <=> CH2O(20) + CCCCOO(122)
+    CH3O(26) + C#CO(119) <=> CH3OH(33) + HCCO(34)
+    CH2OH(32) + C#CO(119) <=> CH3OH(33) + HCCO(34)
+    CH3O(26) + C=CO(86) <=> CH3OH(33) + CH2CHO(36)
+    CH2OH(32) + C=CO(86) <=> CH3OH(33) + CH2CHO(36)
+    CH3O(26) + C[CH]O(120) <=> CH3OH(33) + CH3CHO(37)
+    CH3O(26) + CC[O](121) <=> CH3OH(33) + CH3CHO(37)
+    CH2OH(32) + C[CH]O(120) <=> CH3OH(33) + CH3CHO(37)
+    CH2OH(32) + CC[O](121) <=> CH3OH(33) + CH3CHO(37)
+    CH3O(26) + CCCCOO(122) <=> CH3OH(33) + QOOH(3)
+    CH3OH(33) + QOOH(3) <=> CH2OH(32) + CCCCOO(122)
+    HCCO(34) + CH3CO(35) <=> C#CO(119) + CH2CO(27)
+    HCCO(34) + CH2CHO(36) <=> C#CO(119) + CH2CO(27)
+    C#CO(119) + CH2CHO(36) <=> HCCO(34) + CH3CHO(37)
+    C#CO(119) + CH3CO(35) <=> HCCO(34) + CH3CHO(37)
+    C#CO(119) + C2H5(31) <=> HCCO(34) + C2H6(38)
+    HCCO(34) + butane(1) <=> CH2CO(27) + C[CH]CC(89)
+    HCCO(34) + butane(1) <=> CH2CO(27) + [CH2]CCC(90)
+    C#CO(119) + C[CH]CC(89) <=> HCCO(34) + butane(1)
+    C#CO(119) + [CH2]CCC(90) <=> HCCO(34) + butane(1)
+    HCCO(34) + QOOH(3) <=> CH2CO(27) + CC=CCOO(93)
+    HCCO(34) + QOOH(3) <=> CH2CO(27) + C=CCCOO(94)
+    HCCO(34) + QOOH(3) <=> C#CO(119) + CC=CCOO(93)
+    HCCO(34) + QOOH(3) <=> C#CO(119) + C=CCCOO(94)
+    CH2CHO(36) + CH3CO(35) <=> CH2CO(27) + C=CO(86)
+    CH3CHO(37) + C[CH]CC(89) <=> CH3CO(35) + butane(1)
+    CH3CHO(37) + [CH2]CCC(90) <=> CH3CO(35) + butane(1)
+    CH3CO(35) + QOOH(3) <=> CH3CHO(37) + CC=CCOO(93)
+    CH3CO(35) + QOOH(3) <=> CH3CHO(37) + C=CCCOO(94)
+    CH3CO(35) + QOOH(3) <=> CH2CO(27) + CCCCOO(122)
+    CH2CHO(36) + CH2CHO(36) <=> CH2CO(27) + C=CO(86)
+    CH2CHO(36) + C=CO(86) <=> CH2CHO(36) + CH3CHO(37)
+    CH3CO(35) + C=CO(86) <=> CH2CHO(36) + CH3CHO(37)
+    C=CO(86) + C2H5(31) <=> CH2CHO(36) + C2H6(38)
+    CH3CHO(37) + C[CH]CC(89) <=> CH2CHO(36) + butane(1)
+    CH3CHO(37) + [CH2]CCC(90) <=> CH2CHO(36) + butane(1)
+    C=CO(86) + C[CH]CC(89) <=> CH2CHO(36) + butane(1)
+    C=CO(86) + [CH2]CCC(90) <=> CH2CHO(36) + butane(1)
+    CH2CHO(36) + QOOH(3) <=> CH3CHO(37) + CC=CCOO(93)
+    CH2CHO(36) + QOOH(3) <=> CH3CHO(37) + C=CCCOO(94)
+    CH2CHO(36) + QOOH(3) <=> CH2CO(27) + CCCCOO(122)
+    CH2CHO(36) + QOOH(3) <=> C=CO(86) + CC=CCOO(93)
+    CH2CHO(36) + QOOH(3) <=> C=CO(86) + C=CCCOO(94)
+    CH2CHO(36) + C[CH]O(120) <=> CH3CHO(37) + CH3CHO(37)
+    CH2CHO(36) + CC[O](121) <=> CH3CHO(37) + CH3CHO(37)
+    CH3CO(35) + C[CH]O(120) <=> CH3CHO(37) + CH3CHO(37)
+    CH3CO(35) + CC[O](121) <=> CH3CHO(37) + CH3CHO(37)
+    C2H5(31) + C[CH]O(120) <=> CH3CHO(37) + C2H6(38)
+    C2H5(31) + CC[O](121) <=> CH3CHO(37) + C2H6(38)
+    C[CH]O(120) + C[CH]CC(89) <=> CH3CHO(37) + butane(1)
+    C[CH]O(120) + [CH2]CCC(90) <=> CH3CHO(37) + butane(1)
+    CC[O](121) + C[CH]CC(89) <=> CH3CHO(37) + butane(1)
+    CC[O](121) + [CH2]CCC(90) <=> CH3CHO(37) + butane(1)
+    CH3CHO(37) + QOOH(3) <=> CH2CHO(36) + CCCCOO(122)
+    CH3CHO(37) + QOOH(3) <=> CH3CO(35) + CCCCOO(122)
+    C2H5(31) + CCCCOO(122) <=> C2H6(38) + QOOH(3)
+    C[CH]CC(89) + CCCCOO(122) <=> QOOH(3) + butane(1)
+    [CH2]CCC(90) + CCCCOO(122) <=> QOOH(3) + butane(1)
+    QOOH(3) + QOOH(3) <=> CC=CCOO(93) + CCCCOO(122)
+    QOOH(3) + QOOH(3) <=> C=CCCOO(94) + CCCCOO(122)
+    CH2CO(27) => [CH]C=O(79)
+    C2H4(29) => [CH]C(80)
+    HCCO(34) => [C]1=CO1(81)
+    HCCO(34) => [C]#CO(82)
+    CH2CHO(36) => [CH]1CO1(83)
+    CH2CHO(36) => C=[C]O(84)
+    CH2CHO(36) => [CH]=CO(85)
+    CH3CHO(37) => C=CO(86)
+    butane(1) => CH2(S)(25) + CCC(87)
+    butane(1) => CH3(21) + [CH2]CC(88)
+    butane(1) => H(5) + C[CH]CC(89)
+    butane(1) => H(5) + [CH2]CCC(90)
+    QOOH(3) => [CH2]C(C)COO(91)
+    QOOH(3) => OH(9) + CC1CCO1(92)
+    QOOH(3) => H(5) + CC=CCOO(93)
+    QOOH(3) => H(5) + C=CCCOO(94)
+    QOOH(3) => CC[CH]COO(97)
+    QOOH(3) => [CH2]CCCOO(98)
+    QOOH(3) => OH(9) + CCCC=O(99)
+    QOOH(3) => CCCCO[O](100)
+    QOOH(3) => CC(O)CC[O](101)
+
+After model enlargement:
+    The model core has 40 species and 475 reactions
+    The model edge has 456 species and 341 reactions
+
+
+Completed initial enlarge edge step.
+
+Saving current model core to Chemkin file...
+Chemkin file contains 480 reactions.
+Saving annotated version of Chemkin file...
+Chemkin file contains 480 reactions.
+Warning: Group-based structure index and is_linear() function disagree about linearity of Molecule(smiles="[H]")
+Saving current model core to HTML file...
+Updating RMG execution statistics...
+    Execution time (DD:HH:MM:SS): 00:00:00:42
+    Memory used: 860.64 MB
+
+Making seed mechanism...
+Beginning model generation stage 1...
+
+Making seed mechanism...
+Conducting simulation of reaction system 1...
+Error: Model core reactions:
+Error: Too many to print in detail
