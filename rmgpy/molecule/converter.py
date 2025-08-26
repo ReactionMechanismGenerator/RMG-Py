@@ -132,7 +132,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
         try:
             Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES)
         except (KekulizeException, AtomKekulizeException):
-            logging.warning("Kekulization failed; sanitizing without Kekulize")
+            logging.debug("Kekulization failed; sanitizing without Kekulize")
             Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES ^ Chem.SANITIZE_KEKULIZE)
     if remove_h:
         rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
