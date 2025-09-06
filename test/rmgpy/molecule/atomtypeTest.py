@@ -824,7 +824,10 @@ class TestGetAtomType:
             """1 C u0 p0 c+1 {2,T}
                                                        2 C u0 p1 c-1 {1,T}"""
         )
-        
+
+        self.mol96 = Molecule().from_adjacency_list('''1 Li u0 p0 c+1''')
+        self.mol97 = Molecule().from_adjacency_list('''1 Li u1 p0 c0''')
+
         self.electron = Molecule().from_adjacency_list('''1 e u1 p0 c-1''')
         self.proton = Molecule().from_adjacency_list('''1 H u0 p0 c+1''')
 
@@ -991,6 +994,13 @@ class TestGetAtomType:
         Test that get_atomtype() returns appropriate fluorine atom types.
         """
         assert self.atom_type(self.mol75, 1) == "F1s"
+
+    def test_lithium_types(self):
+        """
+        Test that get_atomtype() returns appropriate lithium atom types.
+        """
+        assert self.atom_type(self.mol96, 0) == "Li+"
+        assert self.atom_type(self.mol97, 0) == "Li0"
 
     def test_other_types(self):
         """
