@@ -911,7 +911,7 @@ def get_atomtype(atom, bonds):
 
     # Use element and counts to determine proper atom type
     atom_symbol = atom.symbol
-    # These elements do not do not have a more specific atomtype
+    # These elements do not have a more specific atomtype
     if atom_symbol in nonSpecifics:
         return ATOMTYPES[atom_symbol]
 
