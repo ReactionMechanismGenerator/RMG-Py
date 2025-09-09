@@ -1163,7 +1163,7 @@ class CoreEdgeReactionModel:
                 for product in rxn.products:
                     if product not in self.core.species:
                         all_core = False
-                if all_core:
+                if all_core and all(s.reactive for s in rxn.reactants + rxn.products):
                     rxn_list.append(rxn)
 
             # Move any identified reactions to the core
