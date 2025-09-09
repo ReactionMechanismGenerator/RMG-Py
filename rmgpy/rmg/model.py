@@ -1122,7 +1122,7 @@ class CoreEdgeReactionModel:
         Add a species `spec` to the reaction model core (and remove from edge if
         necessary). This function also moves any reactions in the edge that gain
         core status as a result of this change in status to the core.
-        If this are any such reactions, they are returned in a list.
+        If there are any such reactions, they are returned in a list.
         """
 
         assert spec not in self.core.species, "Tried to add species {0} to core, but it's already there".format(spec.label)
