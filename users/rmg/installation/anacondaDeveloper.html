@@ -143,6 +143,19 @@ or type the following command.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/.</span><span class="n">zshrc</span>
 </pre></div>
 </div>
+<p>NOTE: You may wish to forbid <code class="docutils literal notranslate"><span class="pre">conda</span></code> from installing from the Anaconda channels due to licensing restrictions.
+The <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file already forbids using default channels, but you may further add the file <code class="docutils literal notranslate"><span class="pre">.condarc</span></code> to your RMG-Py directory (or modify the <code class="docutils literal notranslate"><span class="pre">.condarc</span></code> in your home directory) with the following contents before running the <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span></code> command:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">channels</span><span class="p">:</span>
+  <span class="o">-</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span>
+  <span class="o">-</span> <span class="n">nodefaults</span>
+<span class="n">channel_priority</span><span class="p">:</span> <span class="n">strict</span>
+<span class="n">custom_channels</span><span class="p">:</span>
+  <span class="n">main</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">r</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">anaconda</span><span class="p">:</span> <span class="n">null</span>
+  <span class="n">msys2</span><span class="p">:</span> <span class="n">null</span>
+</pre></div>
+</div>
 </li>
 <li><p>Activate conda environment</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">activate</span> <span class="n">rmg_env</span>
