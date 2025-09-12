@@ -490,11 +490,13 @@ class Fragment(Molecule):
 
         return formula
 
-    def to_rdkit_mol(self, remove_h=False, return_mapping=True, save_order=False):
+    def to_rdkit_mol(self, *args, **kwargs):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
-        if remove_h:
+        remove_h = kwargs.get('remove_h', False)
+
+        if remove_h == True:
             # because we're replacing
             # cutting labels with hydrogens
             # so do not allow removeHs to be True
@@ -502,12 +504,16 @@ class Fragment(Molecule):
 
         mol0, mapping = self.get_representative_molecule("minimal", update=False)
 
+        return_mapping = kwargs.get("return_mapping", False)
+        if return_mapping == False:
+            kwargs["return_mapping"] = True
+            logging.warning("Fragment to_rdkit_mol expects to return a tuple. "
+                            "Setting return_mapping = True; please double-check your code to ensure this is what you want.")
+
         rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(
             mol0,
-            remove_h=remove_h,
-            return_mapping=return_mapping,
-            sanitize=True,
-            save_order=save_order,
+            *args,
+            **kwargs
         )
 
         rdAtomIdx_frag = {}
@@ -587,7 +593,7 @@ class Fragment(Molecule):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
-        Identifies rings using `Graph.get_smallest_set_of_smallest_rings()`, then uses RDKit to perceive aromaticity.
+        Identifies rings, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
         Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
 
@@ -911,7 +917,7 @@ class Fragment(Molecule):
         _, cutting_label_list = self.detect_cutting_label(molecule_smiles)
         # transfer to rdkit molecule for substruct matching
         f = self.from_smiles_like_string(molecule_smiles)
-        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol()
+        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol(remove_h=False, return_mapping=True)
 
         # replace CuttingLabel to special Atom (metal) in rdkit
         for atom, idx in rdAtomIdx_frag.items():
@@ -1037,7 +1043,7 @@ class Fragment(Molecule):
         _, cutting_label_list = self.detect_cutting_label(molecule_smiles)
         # transfer to rdkit molecule for substruct matching
         f = self.from_smiles_like_string(molecule_smiles)
-        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol()
+        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol(remove_h=False, return_mapping=True)
 
         # replace CuttingLabel to special Atom (metal) in rdkit
         for atom, idx in rdAtomIdx_frag.items():

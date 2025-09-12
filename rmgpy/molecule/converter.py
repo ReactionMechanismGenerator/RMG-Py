@@ -38,6 +38,7 @@ import sys
 import cython
 # Assume that rdkit is installed
 from rdkit import Chem
+from rdkit.Chem.rdchem import KekulizeException, AtomKekulizeException
 # Test if openbabel is installed
 try:
     from openbabel import openbabel
@@ -70,7 +71,9 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
             rd_atom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
-        else:
+        elif atom.element.symbol in ['R', 'L']:
+            rd_atom = Chem.rdchem.Atom(0)
+        else:   
             rd_atom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
             rd_atom.SetIsotope(atom.element.isotope)
@@ -96,8 +99,9 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
             else:
                 label_dict[label] = [saved_index]
     rd_bonds = Chem.rdchem.BondType
+    # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
-              'Q': rd_bonds.QUADRUPLE}
+              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO, 'H': rd_bonds.HYDROGEN, 'R': rd_bonds.UNSPECIFIED} 
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.items():
@@ -107,7 +111,10 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
             index2 = atoms.index(atom2)
             if index1 < index2:
                 order_string = bond.get_order_str()
-                order = orders[order_string]
+                if order_string is None:
+                    order = rd_bonds.UNSPECIFIED
+                else:
+                    order = orders[order_string]
                 rdkitmol.AddBond(index1, index2, order)
 
     # Make editable mol into a mol and rectify the molecule
@@ -119,8 +126,14 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     for atom in rdkitmol.GetAtoms():
         if atom.GetAtomicNum() > 1:
             atom.SetNoImplicit(True)
-    if sanitize:
+    if sanitize == True:
         Chem.SanitizeMol(rdkitmol)
+    elif sanitize == "partial":
+        try:
+            Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES)
+        except (KekulizeException, AtomKekulizeException):
+            logging.debug("Kekulization failed; sanitizing without Kekulize")
+            Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES ^ Chem.SANITIZE_KEKULIZE)
     if remove_h:
         rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
     if return_mapping:
