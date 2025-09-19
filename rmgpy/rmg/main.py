@@ -587,9 +587,9 @@ class RMG(util.Subject):
             shutil.copyfile(self.species_map_path, os.path.join(filters_restart, "species_map.yml"))
 
             # Load the seed mechanism to get the core and edge species
-            self.database.kinetics.load_libraries(restart_dir, libraries=["restart", "restart_edge"])
+            self.database.kinetics.load_libraries(restart_dir)#, libraries=["restart", "restart_edge"])
             self.seed_mechanisms.append("restart")
-            self.reaction_libraries.append(("restart_edge", False))
+#            self.reaction_libraries.append(("restart_edge", False))
 
         # Set trimolecular reactant flags of reaction systems
         if self.trimolecular:
@@ -689,14 +689,15 @@ class RMG(util.Subject):
                         "Input species {0} is globally forbidden. You may explicitly "
                         "allow it by adding 'input species' to the `generatedSpeciesConstraints` `allowed` list.".format(spec.label)
                     )
-            if fails_species_constraints(spec):
+            failed, reason = fails_species_constraints(spec)
+            if failed:
                 if "allowed" in self.species_constraints and "input species" in self.species_constraints["allowed"]:
                     self.species_constraints["explicitlyAllowedMolecules"].append(spec.molecule[0])
                 else:
                     raise ForbiddenStructureException(
                         "Species constraints forbids input species {0}. Please "
                         "reformulate constraints, remove the species, or explicitly "
-                        "allow it.".format(spec.label)
+                        "allow it. Reason: {1}".format(spec.label, reason)
                     )
 
         # For liquidReactor, checks whether the solvent is listed as one of the initial species.
