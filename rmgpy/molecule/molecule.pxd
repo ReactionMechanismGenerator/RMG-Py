@@ -307,4 +307,20 @@ cdef class Molecule(Graph):
 
     cpdef list get_desorbed_molecules(self)
 
+    cpdef list get_smallest_set_of_smallest_rings(self)
+
+    cpdef list get_relevant_cycles(self)
+
+    cpdef list get_all_polycyclic_vertices(self)
+
+    cpdef list get_polycycles(self)
+
+    cpdef list get_monocycles(self)
+
+    cpdef tuple get_disparate_cycles(self)
+
+    cpdef tuple _merge_cycles(self, list cycle_sets)
+
+    cpdef int get_max_cycle_overlap(self)
+
 cdef atom_id_counter

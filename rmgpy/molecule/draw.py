@@ -155,7 +155,7 @@ class MoleculeDrawer(object):
         self.surface = None
         self.cr = None
 
-    def draw(self, molecule, file_format, target=None):
+    def draw(self, molecule, file_format, target=None, use_rdkit=True):
         """
         Draw the given `molecule` using the given image `file_format` - pdf, svg, ps, or
         png. If `path` is given, the drawing is saved to that location on disk. The
@@ -165,6 +165,9 @@ class MoleculeDrawer(object):
         This function returns the Cairo surface and context used to create the
         drawing, as well as a bounding box for the molecule being drawn as the
         tuple (`left`, `top`, `width`, `height`).
+
+        If `use_rdkit` is True, then the RDKit 2D coordinate generation is used to generate the coordinates.
+        If `use_rdkit` is False, then the molecule is drawn using our (deprecated) original algorithm.
         """
 
         # The Cairo 2D graphics library (and its Python wrapper) is required for
@@ -219,13 +222,13 @@ class MoleculeDrawer(object):
                 if molecule.contains_surface_site():
                     try:
                         self._connect_surface_sites()
-                        self._generate_coordinates()
+                        self._generate_coordinates(use_rdkit=use_rdkit)
                         self._disconnect_surface_sites()
                     except AdsorbateDrawingError as e:
                         self._disconnect_surface_sites()
-                        self._generate_coordinates(fix_surface_sites=False)
+                        self._generate_coordinates(fix_surface_sites=False, use_rdkit=use_rdkit)
                 else:
-                    self._generate_coordinates()
+                    self._generate_coordinates(use_rdkit=use_rdkit)
                 self._replace_bonds(old_bond_dictionary)
 
                 # Generate labels to use
@@ -341,7 +344,7 @@ class MoleculeDrawer(object):
                 if not found:
                     self.ringSystems.append([cycle])
 
-    def _generate_coordinates(self, fix_surface_sites=True):
+    def _generate_coordinates(self, fix_surface_sites=True, use_rdkit=True):
         """
         Generate the 2D coordinates to be used when drawing the current
         molecule. The function uses rdKits 2D coordinate generation.
@@ -372,15 +375,34 @@ class MoleculeDrawer(object):
                 self.coordinates[1, :] = [0.5, 0.0]
             return self.coordinates
 
-        # Decide whether we can use RDKit or have to generate coordinates ourselves
-        for atom in self.molecule.atoms:
-            if atom.charge != 0:
-                use_rdkit = False
-                break
-        else:  # didn't break
-            use_rdkit = True
+        if use_rdkit == True:
+            # Use RDKit 2D coordinate generation:
 
-        if not use_rdkit:
+            # Generate the RDkit molecule from the RDkit molecule, use geometry
+            # in order to match the atoms in the rdmol with the atoms in the
+            # RMG molecule (which is required to extract coordinates).
+            self.geometry = Geometry(None, None, self.molecule, None)
+
+            rdmol, rd_atom_idx = self.geometry.rd_build()
+            AllChem.Compute2DCoords(rdmol)
+
+            # Extract the coordinates from each atom.
+            for atom in atoms:
+                index = rd_atom_idx[atom]
+                point = rdmol.GetConformer(0).GetAtomPosition(index)
+                coordinates[index, :] = [point.x * 0.6, point.y * 0.6]
+
+            # RDKit generates some molecules more vertically than horizontally,
+            # Especially linear ones. This will reflect any molecule taller than
+            # it is wide across the line y=x
+            ranges = np.ptp(coordinates, axis=0)
+            if ranges[1] > ranges[0]:
+                temp = np.copy(coordinates)
+                coordinates[:, 0] = temp[:, 1]
+                coordinates[:, 1] = temp[:, 0]
+
+        else:
+            logging.warning("Using deprecated molecule drawing algorithm; undesired behavior may occur. Consider using use_rdkit=True.")
             if len(self.cycles) > 0:
                 # Cyclic molecule
                 backbone = self._find_cyclic_backbone()
@@ -437,32 +459,6 @@ class MoleculeDrawer(object):
             # In general substituents should try to grow away from the origin to
             # minimize likelihood of overlap
             self._generate_neighbor_coordinates(backbone)
-
-        else:
-            # Use RDKit 2D coordinate generation:
-
-            # Generate the RDkit molecule from the RDkit molecule, use geometry
-            # in order to match the atoms in the rdmol with the atoms in the
-            # RMG molecule (which is required to extract coordinates).
-            self.geometry = Geometry(None, None, self.molecule, None)
-
-            rdmol, rd_atom_idx = self.geometry.rd_build()
-            AllChem.Compute2DCoords(rdmol)
-
-            # Extract the coordinates from each atom.
-            for atom in atoms:
-                index = rd_atom_idx[atom]
-                point = rdmol.GetConformer(0).GetAtomPosition(index)
-                coordinates[index, :] = [point.x * 0.6, point.y * 0.6]
-
-            # RDKit generates some molecules more vertically than horizontally,
-            # Especially linear ones. This will reflect any molecule taller than
-            # it is wide across the line y=x
-            ranges = np.ptp(coordinates, axis=0)
-            if ranges[1] > ranges[0]:
-                temp = np.copy(coordinates)
-                coordinates[:, 0] = temp[:, 1]
-                coordinates[:, 1] = temp[:, 0]
 
         # For surface species
         if fix_surface_sites and self.molecule.contains_surface_site():
