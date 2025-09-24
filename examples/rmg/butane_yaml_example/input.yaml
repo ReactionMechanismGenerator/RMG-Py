@@ -127,8 +127,8 @@ simpleReactor:
   # list initial mole fractions of compounds using the label from the 'species' label.
   # RMG will normalize if sum/=1
   initialMoleFractions:
-    N2: 4
-    O2: 1
+    N2: 4.0
+    O2: 1.0
     butane: 0.1538461538  # 1/6.5
   
   # number of simulations used to explore variable temperature and pressure reactors
@@ -138,10 +138,10 @@ simpleReactor:
   # only one must be specified
   # the first condition to be satisfied will terminate the process
   terminationConversion:
-    butane: 0.99
+    butane: 0.9  # Changed from 0.99 to 0.9 for faster convergence
   
   terminationTime:
-    value: 40
+    value: 100  # Increased from 40 to 100 seconds as safety fallback
     units: s
   
   # the next two optional values specify how RMG computes sensitivities of
@@ -176,10 +176,10 @@ simpleReactor:
 # normally this doesn't cause many issues and is modified after other issues are
 # ruled out
 simulator:
-  atol: 1e-16
-  rtol: 1e-8
-  # sensAtol: 1e-6
-  # sensRtol: 1e-4
+  atol: 1.0e-16
+  rtol: 1.0e-8
+  sens_atol: 1.0e-6
+  sens_rtol: 1.0e-4
 
 # used to add species to the model and to reduce memory usage by removing unimportant additional species.
 # all relative values are normalized by a characteristic flux at that time point
@@ -197,7 +197,7 @@ model:
   # determines when to stop a ODE run to add a species.
   # Lower values will improve speed.
   # if it is too low, may never get to the end simulation to prune species.
-  toleranceInterruptSimulation: 1
+  toleranceInterruptSimulation: 1.0
   
   # number of edge species needed to accumulate before pruning occurs
   # larger values require more memory and will prune less often
@@ -218,11 +218,11 @@ model:
   # for bimolecular reactions, will only allow them to react if
   # filterThreshold*C_A*C_B > toleranceMoveToCore*characteristic_rate
   # and if filterReactions=True
-  filterThreshold: 1e8
+  filterThreshold: 1.0e8
 
 options:
   # provides a name for the seed mechanism produced at the end of an rmg run default is 'Seed'
-  name: SeedName
+  name: butane_oxidation  # Changed from generic 'SeedName' to be more descriptive
   
   # if True (default) every iteration it saves the current model as libraries/seeds
   # (and deletes the old one)
@@ -288,13 +288,13 @@ pressureDependence:
     min: 300
     max: 2200
     units: K
-    count: 2
+    count: 8  # Increased from 2 for better coverage
   
   pressures:
     min: 0.01
     max: 100
     units: bar
-    count: 3
+    count: 5  # Increased from 3 for better coverage
   
   # The two options for interpolation are 'PDepArrhenius' (no extra arguments) and
   # 'Chebyshev' which is followed by the number of basis sets in
@@ -331,7 +331,7 @@ generatedSpeciesConstraints:
   # maximumHeavyAtoms: 20
   
   # maximum radicals on a molecule
-  maximumRadicalElectrons: 1
+  maximumRadicalElectrons: 2  # Increased from 1 to allow peroxy radicals (ROO•)
   
   # maximum number of singlet carbenes (lone pair on a carbon atom) in a molecule
   maximumSingletCarbenes: 1

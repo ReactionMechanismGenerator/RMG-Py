@@ -1940,28 +1940,51 @@ def read_input_file_auto(path, rmg0):
     this function automatically detects the file format based on the extension
     and calls the appropriate reader
     
-    :param path: Path to the input file (.py or .yaml/.yml)
-    :param rmg0: RMG object to populate
+    Parameters
+    ----------
+    path : Union[str, Path]
+        Path to the input file (.py or .yaml/.yml)
+    rmg0 : RMG
+        RMG object to populate with input data
+    
+    Raises
+    ------
+    IOError
+        If the input file cannot be found
+    ValueError
+        If the file format is unsupported
+    ImportError
+        If the file is in YAML format but PyYAML is not installed in the 
+        current Python environment.
     """
     from pathlib import Path
     
-    # Get the file extension
+    # get the file extension
     file_path = Path(path)
     extension = file_path.suffix.lower()
     
-    # Check if file exists
+    # check if file exists
     if not file_path.exists():
         raise IOError(f'The input file "{path}" could not be found.')
     
-    # Route to appropriate reader based on extension
+    # route to appropriate reader based on extension
     if extension == '.py':
-        # Use the original Python input file reader
+        # use the original Python input file reader
         logging.info(f'Detected Python input file format (.py)')
         read_input_file(path, rmg0)
     elif extension in ['.yaml', '.yml']:
-        # Use the YAML input file reader
+        # use the YAML input file reader
         try:
-            from rmgpy.rmg.yaml_input_reader import read_yaml_input_file
+            #iImport the YAML reader functions directly
+            import sys
+            import os
+            
+            # add the directory containing yaml_input_reader.py to the Python path
+            yaml_reader_dir = os.path.dirname(__file__)
+            if yaml_reader_dir not in sys.path:
+                sys.path.insert(0, yaml_reader_dir)
+            
+            from yaml_input_reader import read_yaml_input_file
             logging.info(f'Detected YAML input file format ({extension})')
             read_yaml_input_file(path, rmg0)
         except ImportError:
