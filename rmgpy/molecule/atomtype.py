@@ -374,7 +374,7 @@ ATOMTYPES['H+'] = AtomType('H+', generic=['R','H'], specific=[], single=[0], all
 
 ATOMTYPES['Li'] = AtomType('Li', generic=['R', 'R!H', 'R!H!Val7'], specific=['Li0','Li+'],
                             single=[0,1], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[0], charge=[0,1])
-ATOMTYPES['Li0'] = AtomType('Li', generic=['Li','R', 'R!H', 'R!H!Val7'], specific=[],
+ATOMTYPES['Li0'] = AtomType('Li0', generic=['Li','R', 'R!H', 'R!H!Val7'], specific=[],
                             single=[0,1], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[0], charge=[0])
 ATOMTYPES['Li+'] = AtomType('Li+', generic=['Li','R', 'R!H', 'R!H!Val7'], specific=[],
                             single=[0], all_double=[0], r_double=[0], o_double=[0], s_double=[0], triple=[0], quadruple=[0], benzene=[0], lone_pairs=[0], charge=[1])
@@ -720,7 +720,7 @@ ATOMTYPES['H0'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['H0
 ATOMTYPES['H+'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=['H0'])
 
 ATOMTYPES['Li'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Li'], break_bond=['Li'], increment_radical=['Li'], decrement_radical=['Li'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=['Li'], decrement_charge=['Li'])
-ATOMTYPES['Li0'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Li0'], break_bond=['Li0'], increment_radical=['Li0'], decrement_radical=['H0'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=['Li+'], decrement_charge=[])
+ATOMTYPES['Li0'].set_actions(increment_bond=[], decrement_bond=[], form_bond=['Li0'], break_bond=['Li0'], increment_radical=['Li0'], decrement_radical=['Li0'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=['Li+'], decrement_charge=[])
 ATOMTYPES['Li+'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=[], decrement_radical=[], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=['Li0'])
 
 ATOMTYPES['He'].set_actions(increment_bond=[], decrement_bond=[], form_bond=[], break_bond=[], increment_radical=['He'], decrement_radical=['He'], increment_lone_pair=[], decrement_lone_pair=[], increment_charge=[], decrement_charge=[])
@@ -911,7 +911,7 @@ def get_atomtype(atom, bonds):
 
     # Use element and counts to determine proper atom type
     atom_symbol = atom.symbol
-    # These elements do not do not have a more specific atomtype
+    # These elements do not have a more specific atomtype
     if atom_symbol in nonSpecifics:
         return ATOMTYPES[atom_symbol]
 
