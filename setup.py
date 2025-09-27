@@ -33,13 +33,13 @@ try:
     from Cython.Build import cythonize
     from Cython.Compiler import Options
 except ImportError:
-    print('Cython (http://www.cython.org/) is required to build or install RMG Py.')
+    print('Cython (https://cython.org/) is required to build or install RMG Py.')
     raise
     
 try:
     import numpy
 except ImportError:
-    print('NumPy (http://numpy.scipy.org/) is required to build or install RMG Py.')
+    print('NumPy (https://numpy.scipy.org/) is required to build or install RMG Py.')
     raise
 
 from setuptools import find_packages
@@ -119,8 +119,8 @@ ext_modules = [
 ]
 
 scripts = [
-    'Arkane.py',
     'rmg.py',
+    'Arkane.py',
     'scripts/checkModels.py',
     'scripts/diffModels.py',
     'scripts/generateChemkinHTML.py',
@@ -145,10 +145,16 @@ setup(
     description='Reaction Mechanism Generator',
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
-    url='http://reactionmechanismgenerator.github.io',
+    url='https://reactionmechanismgenerator.github.io',
     python_requires='>=3.9,<3.10',
     packages=find_packages(where='.', include=["rmgpy*"]) + find_packages(where='.', include=["arkane*"]),
     scripts=scripts,
+    entry_points={
+        'console_scripts': [
+            'rmg.py = rmgpy.__main__:main',
+            'Arkane.py = arkane.__main__:main',
+        ],
+    },
     include_package_data=True,
     package_data={
         "": ["*.pxd"],

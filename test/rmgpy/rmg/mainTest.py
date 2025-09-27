@@ -119,6 +119,11 @@ class TestMain:
         """Test that edge seed mechanisms are created in the correct database locations."""
         assert os.path.exists(self.seedKinetics)
 
+    def test_rmg_rms_mechanism_files_creation(self):
+        """Test that rms mechanisms are created in the correct location."""
+        assert os.path.exists(os.path.join(self.rmg.output_directory,"rms"))
+        assert len(os.listdir(os.path.join(self.rmg.output_directory,"rms"))) != 0
+        
     def test_rmg_seed_works(self):
         """Test that the created seed libraries work.
 

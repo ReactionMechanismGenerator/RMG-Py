@@ -1,5 +1,5 @@
 # Parent Image
-FROM ubuntu:latest
+FROM condaforge/miniforge3:latest
 
 # Install Bash shell
 RUN ln -snf /bin/bash /bin/sh
@@ -32,12 +32,6 @@ RUN wget -qO- https://install.julialang.org | sh -s -- --yes --default-channel 1
     /root/.juliaup/bin/juliaup list && \
     rm -rf /root/.juliaup/downloads /root/.juliaup/tmp
 ENV PATH="/root/.juliaup/bin:$PATH"
-
-# Install conda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda && \
-    rm Miniconda3-latest-Linux-x86_64.sh
-ENV PATH="/miniconda/bin:$PATH"
 
 # Set Bash as the default shell for following commands
 SHELL ["/bin/bash", "-c"]
@@ -94,7 +88,7 @@ RUN python rmg.py examples/rmg/rms_constant_V/input.py
 RUN rm -rf examples/rmg/rms_constant_V/* && \
     git checkout -- examples/rmg/rms_constant_V/
 
-# when running this image, open an interactive bash terminal inside the conda environment
-RUN conda init
-RUN echo "conda activate rmg_env" >> ~/.bashrc
+# when running this image, open an interactive bash terminal inside the rmg_env conda environment
+RUN sed -i 's/conda activate base/conda activate rmg_env/' ~/.bashrc
 ENTRYPOINT ["/bin/bash", "--login"]
+

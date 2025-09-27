@@ -81,6 +81,19 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     source ~/.zshrc
 
+   NOTE: You may wish to forbid ``conda`` from installing from the Anaconda channels due to licensing restrictions.
+   The ``environment.yml`` file already forbids using default channels, but you may further add the file ``.condarc`` to your RMG-Py directory (or modify the ``.condarc`` in your home directory) with the following contents before running the ``conda env create`` command: ::
+
+     channels:
+       - conda-forge
+       - nodefaults
+     channel_priority: strict
+     custom_channels:
+       main: null
+       r: null
+       anaconda: null
+       msys2: null
+
 #. Activate conda environment ::
 
     conda activate rmg_env
@@ -121,7 +134,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     python replace/with/path/to/rmg.py input.py
 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
-For more information about using conda, please check out the `conda user guide <https://conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
+For more information about using conda, please check out the `conda user guide <https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
 
 
 Debugging

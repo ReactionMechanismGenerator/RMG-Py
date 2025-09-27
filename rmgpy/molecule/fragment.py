@@ -771,7 +771,7 @@ class Fragment(Molecule):
     def from_rdkit_mol(self, rdkitmol, atom_replace_dict=None):
         """
         Convert a RDKit Mol object `rdkitmol` to a molecular structure. Uses
-        `RDKit <http://rdkit.org/>`_ to perform the conversion.
+        `RDKit <https://rdkit.org/>`_ to perform the conversion.
         This Kekulizes everything, removing all aromatic atom types.
         """
 

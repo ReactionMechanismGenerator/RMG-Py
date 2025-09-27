@@ -247,7 +247,7 @@ def to_inchi_key(mol, backend='rdkit-first', aug_level=0):
 def to_smarts(mol, backend='rdkit'):
     """
     Convert a molecular structure to an SMARTS string. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
+    `RDKit <https://rdkit.org/>`_ to perform the conversion.
     Perceives aromaticity and removes Hydrogen atoms.
     """
     return _write(mol, 'sma', backend)
@@ -258,10 +258,10 @@ def to_smiles(mol, backend='default'):
     Convert a molecular structure to an SMILES string.
 
     If there is a Nitrogen/Sulfur atom present it uses
-    `OpenBabel <http://openbabel.org/>`_ to perform the conversion,
+    `OpenBabel <https://openbabel.org/>`_ to perform the conversion,
     and the SMILES may or may not be canonical.
 
-    Otherwise, it uses `RDKit <http://rdkit.org/>`_ to perform the
+    Otherwise, it uses `RDKit <https://rdkit.org/>`_ to perform the
     conversion, so it will be canonical SMILES.
     While converting to an RDMolecule it will perceive aromaticity
     and removes Hydrogen atoms.
@@ -332,7 +332,7 @@ def from_augmented_inchi(mol, aug_inchi, raise_atomtype_exception=True):
 def from_smarts(mol, smartsstr, backend='rdkit', raise_atomtype_exception=True):
     """
     Convert a SMARTS string `smartsstr` to a molecular structure. Uses
-    `RDKit <http://rdkit.org/>`_ to perform the conversion.
+    `RDKit <https://rdkit.org/>`_ to perform the conversion.
     This Kekulizes everything, removing all aromatic atom types.
     """
     return _read(mol, smartsstr, 'sma', backend, raise_atomtype_exception=raise_atomtype_exception)

@@ -408,6 +408,7 @@ class Network(object):
                             logging.error("Increasing number of grains did not decrease error enough "
                                           "(Current badness: {0:.1f}, previous {1:.1f}). Something must be wrong with "
                                           "network {2}".format(badness, previous_error.badness(), self.label))
+                            self.log_summary()
                             raise error
                     previous_error = error
                     success = False

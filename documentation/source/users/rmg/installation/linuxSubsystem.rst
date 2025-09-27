@@ -14,13 +14,13 @@ Installing the Linux Subsystem
 ===================================
 
 1. Follow the instructions provided by Microsoft to install the Linux subsystem, available `here
-   <https://docs.microsoft.com/en-us/windows/wsl/install-win10>`_. The basic steps include enabling the Windows Linux
+   <https://learn.microsoft.com/en-us/windows/wsl/install>`_. The basic steps include enabling the Windows Linux
    subsystem from a powershell **run as an administrator**, and downloading the latest LTS version of Ubuntu
    *from the Windows store*. We recommend Ubuntu (for which these instructions were made) over the other Linux
    distributions.
 
 2. Once the Linux subsystem is installed, open a web browser in Windows and go to the
-   `Anaconda Python Platform Downloads Page <https://www.anaconda.com/products/individual#Downloads>`_. Go to the tab for the
+   `Anaconda Python Platform Downloads Page <https://www.anaconda.com/download#Downloads>`_. Go to the tab for the
    **Linux Installer**, and **right click** on the download icon for Python to copy the link location. Open an Ubuntu
    terminal (type in ``Ubuntu`` into the Windows search bar if you are unsure where to find it) and paste the link
    into the terminal immediately after typing the ``wget`` command, so that your terminal looks like the following: ::
