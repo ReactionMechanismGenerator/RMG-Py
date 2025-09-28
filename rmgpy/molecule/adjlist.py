@@ -100,19 +100,16 @@ class ConsistencyChecker(object):
 
         theoretical = valence - order - atom.radical_electrons - 2 * atom.lone_pairs
 
-        if not (-0.301 < atom.charge - theoretical < 0.301):
-            # It should be 0, but -0.1 is caused by a Hydrogen bond
-            raise InvalidAdjacencyListError(
-                'Invalid valency for atom {symbol} ({type}) with {radicals} unpaired electrons, '
-                '{lone_pairs} pairs of electrons, {charge} charge, and bonds [{bonds}].'.format(
-                    symbol=atom.symbol,
-                    type=get_atomtype(atom, atom.edges).label,
-                    radicals=atom.radical_electrons,
-                    lone_pairs=atom.lone_pairs,
-                    charge=atom.charge,
-                    bonds=','.join([str(bond.order) for bond in atom.bonds.values()])
-                )
-            )
+            if atom.charge != theoretical:
+                raise InvalidAdjacencyListError(
+                    ('Invalid valency for atom {symbol} with {radicals} unpaired electrons, '
+                    '{lonePairs} pairs of electrons, {charge} charge, and bonds [{bonds}].'
+                    ).format(symbol=atom.symbol,
+                             radicals=atom.radicalElectrons,
+                             lonePairs=atom.lonePairs,
+                             charge=atom.charge,
+                             bonds=','.join([bond.order for bond in atom.bonds.values()])
+                            ))
 
     @staticmethod
     def check_multiplicity(n_rad, multiplicity):
