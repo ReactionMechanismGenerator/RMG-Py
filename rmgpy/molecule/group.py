@@ -838,6 +838,7 @@ class GroupAtom(Vertex):
                               'Ne': 4,
                               'Cl': 3,
                               'F': 3,
+                          'Br': 3,
                               'Br': 3,
                               'I': 3,
                               'Ar': 4,

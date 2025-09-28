@@ -257,8 +257,24 @@ ATOMTYPES['Rx'] = AtomType(label='Rx', generic=[], specific=[
     'H',
     'R',
     'R!H',
+<<<<<<< HEAD
     'Rx!H',
     'R!H!Val7',
+=======
+    'Val4','Val5','Val6','Val7',    
+    'He','Ne','Ar',
+    'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
+    'N','N0sc','N1s','N1sc','N1dc','N3s','N3sc','N3d','N3t','N3b','N5sc','N5dc','N5ddc','N5dddc','N5tc','N5b','N5bd',
+    'O','Oa','O0sc','O2s','O2sc','O2d','O4sc','O4dc','O4tc','O4b',
+    'Si','Sis','Sid','Sidd','Sit','SiO','Sib','Sibf','Siq',
+    'S','Sa','S0sc','S2s','S2sc','S2d','S2dc','S2tc','S4s','S4sc','S4d','S4dd','S4dc','S4b','S4t','S4tdc','S6s','S6sc','S6d','S6dd','S6ddd','S6dc','S6t','S6td','S6tt','S6tdc',
+    'Cl','Cl1s',
+    'I','I1s',
+    'F','F1s',
+    'Br','Br1s'])
+
+atomTypes['R!H']  = AtomType(label='R!H', generic=['R'], specific=[
+>>>>>>> 569798cb4 (added Br to group.py and atomtype.py)
     'Val4','Val5','Val6','Val7',
     'He','Ne','Ar',
     'C','Ca','Cs','Csc','Cd','CO','CS','Cdd','Cdc','Ctc','Ct','Cb','Cbf','Cq','C2s','C2sc','C2d','C2dc','C2tc',
