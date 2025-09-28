@@ -61,6 +61,11 @@ from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
 from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
 from rmgpy.species import Species
+from rmgpy.kinetics.arrhenius import Arrhenius #PyDev: @UnresolvedImport
+from rmgpy.kinetics import KineticsData, ArrheniusEP, ThirdBody, Lindemann, Troe, Chebyshev, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, getRateCoefficientUnitsFromReactionOrder  #PyDev: @UnresolvedImport
+from rmgpy.pdep.reaction import calculateMicrocanonicalRateCoefficient
+
+from rmgpy.kinetics.diffusionLimited import diffusionLimiter
 from rmgpy.thermo import ThermoData
 
 ################################################################################
@@ -1086,7 +1091,29 @@ class Reaction:
                                 " kJ/mol.".format(self.kinetics.Ea.value_si / 1000., self))
                     self.kinetics.Ea.value_si = 0
 
-    def apply_solvent_correction(self, solvent):
+
+    def reverseThisArrheniusRate(self, kForward, reverseUnits):
+        """
+        Reverses the given kForward, which must be an Arrhenius type.
+        You must supply the correct units for the reverse rate.
+        The equilibrium constant is evaluated from the current reaction instance (self).
+        """
+        cython.declare(kf=Arrhenius, kr=Arrhenius)
+        cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
+        kf = kForward
+        assert isinstance(kf, Arrhenius), "Only reverses Arrhenius rates"
+        if kf.Tmin is not None and kf.Tmax is not None:
+            Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value_si, 1.0/kf.Tmin.value_si, 50)
+        else:
+            Tlist = 1.0 / numpy.arange(0.0005, 0.0034, 0.0001)  # 294 K to 2000 K
+        # Determine the values of the reverse rate coefficient k_r(T) at each temperature
+        klist = numpy.zeros_like(Tlist)
+        for i in range(len(Tlist)):
+            klist[i] = kf.getRateCoefficient(Tlist[i]) / self.getEquilibriumConstant(Tlist[i])
+        kr = Arrhenius()
+        kr.fitToData(Tlist, klist, reverseUnits, kf.T0.value_si)
+        return kr
+            def apply_solvent_correction(self, solvent):
         """
         apply kinetic solvent correction
         """
@@ -1218,6 +1245,9 @@ class Reaction:
 
     def generate_reverse_rate_coefficient(self, network_kinetics=False, Tmin=None, Tmax=None, surface_site_density=0):
         """
+        Generate and return a rate coefficient model for the reverse reaction. 
+        Currently this only works if the `kinetics` attribute is one of several
+        (but not necessarily all) kinetics types.
         Generate and return a rate coefficient model for the reverse reaction.
         Currently this only works if the `kinetics` attribute is one of several
         (but not necessarily all) kinetics types.
@@ -1225,6 +1255,8 @@ class Reaction:
         If the reaction kinetics model is Sticking Coefficient, please provide a nonzero
         surface site density in `mol/m^2` which is required to evaluate the rate coefficient.
         """
+        cython.declare(Tlist=numpy.ndarray, klist=numpy.ndarray, i=cython.int)
+
         cython.declare(n_gas=cython.int, n_surf=cython.int, prod=Species, k_units=str,
                        Tlist=np.ndarray, Plist=np.ndarray, K=np.ndarray,
                        rxn=Reaction, klist=np.ndarray, i=cython.size_t,
@@ -1247,6 +1279,8 @@ class Reaction:
         )
 
         # Get the units for the reverse rate coefficient
+        kunits = getRateCoefficientUnitsFromReactionOrder(len(self.products))
+            
         try:
             surf_prods = [spcs for spcs in self.products if spcs.contains_surface_site()]
         except IndexError:
@@ -1278,6 +1312,12 @@ class Reaction:
             return kr
 
         elif isinstance(kf, Arrhenius):
+            return self.reverseThisArrheniusRate(kf, kunits)
+                    
+        elif isinstance (kf, Chebyshev):
+            Tlist = 1.0/numpy.linspace(1.0/kf.Tmax.value, 1.0/kf.Tmin.value, 50)
+            Plist = numpy.linspace(kf.Pmin.value, kf.Pmax.value, 20)
+            K = numpy.zeros((len(Tlist), len(Plist)), numpy.float64)
             if isinstance(kf, SurfaceArrhenius):
                 return self.reverse_surface_arrhenius_rate(kf, kunits, Tmin, Tmax)
             else:
@@ -1335,6 +1375,29 @@ class Reaction:
             return kr
 
         elif isinstance(kf, ThirdBody):
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = ThirdBody(krLow, *parameters[1:])
+            return kr
+
+        elif isinstance(kf, Lindemann):
+            krHigh = self.reverseThisArrheniusRate(kf.arrheniusHigh, kunits)
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = Lindemann(krHigh, krLow, *parameters[2:])
+            return kr
+
+        elif isinstance(kf, Troe):
+            krHigh = self.reverseThisArrheniusRate(kf.arrheniusHigh, kunits)
+            lowPkunits = getRateCoefficientUnitsFromReactionOrder(len(self.products) + 1)
+            krLow = self.reverseThisArrheniusRate(kf.arrheniusLow, lowPkunits)
+            parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
+            kr = Troe(krHigh, krLow, *parameters[2:])
+            return kr
+
+        elif isinstance(kf, ThirdBody):
             lowPkunits = get_rate_coefficient_units_from_reaction_order(n_gas + 1, n_surf)
             krLow = self.reverse_arrhenius_rate(kf.arrheniusLow, lowPkunits)
             parameters = kf.__reduce__()[1]  # use the pickle helper to get all the other things needed
@@ -1357,8 +1420,9 @@ class Reaction:
             kr = Troe(krHigh, krLow, *parameters[2:])
             return kr
         else:
-            raise ReactionError("Unexpected kinetics type {0}; "
-                                "should be one of {1}".format(self.kinetics.__class__, supported_types))
+            raise ReactionError(("Unexpected kinetics type {0}; should be KineticsData, Arrhenius, "
+                                 "MultiArrhenius, PDepArrhenius, MultiPDepArrhenius, Chebyshev, "
+                                 "ThirdBody, Lindemann, or Troe!").format(self.kinetics.__class__))
 
     def calculate_tst_rate_coefficients(self, Tlist):
         return np.array([self.calculate_tst_rate_coefficient(T) for T in Tlist], float)

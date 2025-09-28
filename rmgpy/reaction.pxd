@@ -115,9 +115,9 @@ cdef class Reaction:
 
     cpdef double get_rate_coefficient(self, double T, double P=?, double surface_site_density=?, double potential=?)
 
-    cpdef double get_surface_rate_coefficient(self, double T, double surface_site_density, double potential=?) except -2
+    cpdef fixBarrierHeight(self, bint forcePositive=?)
 
-    cpdef fix_barrier_height(self, bint force_positive=?, str solvent=?, bint apply_solvation_correction=?)
+    cpdef reverseThisArrheniusRate(self, Arrhenius kForward, str reverseUnits)
 
     cpdef reverse_arrhenius_rate(self, Arrhenius k_forward, str reverse_units, Tmin=?, Tmax=?)
 
