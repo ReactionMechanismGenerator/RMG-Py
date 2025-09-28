@@ -2288,117 +2288,36 @@ class KineticsFamily(Database):
             # Hardcoding for Substitution_O: pair the reactant containing
             # *2 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2
-            if reaction.reactants[0].contains_labeled_atom('*2'):
-                if reaction.products[0].contains_labeled_atom('*3'):
-                    pairs.append([reaction.reactants[0], reaction.products[0]])
-                    pairs.append([reaction.reactants[1], reaction.products[1]])
-                elif reaction.products[1].contains_labeled_atom('*3'):
-                    pairs.append([reaction.reactants[0], reaction.products[1]])
-                    pairs.append([reaction.reactants[1], reaction.products[0]])
-            elif reaction.reactants[1].contains_labeled_atom('*2'):
-                if reaction.products[1].contains_labeled_atom('*3'):
-                    pairs.append([reaction.reactants[0], reaction.products[0]])
-                    pairs.append([reaction.reactants[1], reaction.products[1]])
-                elif reaction.products[0].contains_labeled_atom('*3'):
-                    pairs.append([reaction.reactants[0], reaction.products[1]])
-                    pairs.append([reaction.reactants[1], reaction.products[0]])
-        elif self.label.lower() == 'baeyer-villiger_step1_cat':
-            # Hardcoding for Baeyer-Villiger_step1_cat: pair the two reactants
-            # with the Criegee intermediate and pair the catalyst with itself
-            assert len(reaction.reactants) == 3 and len(reaction.products) == 2
-            if reaction.reactants[0].contains_labeled_atom('*5'):
-                if reaction.products[0].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[1], reaction.products[0]])
-                    pairs.append([reaction.reactants[2], reaction.products[0]])
-                    pairs.append([reaction.reactants[0], reaction.products[1]])
-                elif reaction.products[1].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[1], reaction.products[1]])
-                    pairs.append([reaction.reactants[2], reaction.products[1]])
-                    pairs.append([reaction.reactants[0], reaction.products[0]])
-            elif reaction.reactants[1].contains_labeled_atom('*5'):
-                if reaction.products[0].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[0], reaction.products[0]])
-                    pairs.append([reaction.reactants[2], reaction.products[0]])
-                    pairs.append([reaction.reactants[1], reaction.products[1]])
-                elif reaction.products[1].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[0], reaction.products[1]])
-                    pairs.append([reaction.reactants[2], reaction.products[1]])
-                    pairs.append([reaction.reactants[1], reaction.products[0]])
-            elif reaction.reactants[2].contains_labeled_atom('*5'):
-                if reaction.products[0].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[0], reaction.products[0]])
-                    pairs.append([reaction.reactants[1], reaction.products[0]])
-                    pairs.append([reaction.reactants[2], reaction.products[1]])
-                elif reaction.products[1].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[0], reaction.products[1]])
-                    pairs.append([reaction.reactants[1], reaction.products[1]])
-                    pairs.append([reaction.reactants[2], reaction.products[0]])
-        elif self.label.lower() == 'baeyer-villiger_step2_cat':
-            # Hardcoding for Baeyer-Villiger_step2_cat: pair the Criegee
-            # intermediate with the two products and the catalyst with itself
-            assert len(reaction.reactants) == 2 and len(reaction.products) == 3
-            if reaction.products[0].contains_labeled_atom('*7'):
-                if reaction.reactants[0].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[0], reaction.products[1]])
-                    pairs.append([reaction.reactants[0], reaction.products[2]])
-                    pairs.append([reaction.reactants[1], reaction.products[0]])
-                elif reaction.reactants[1].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[1], reaction.products[1]])
-                    pairs.append([reaction.reactants[1], reaction.products[2]])
-                    pairs.append([reaction.reactants[0], reaction.products[0]])
-            elif reaction.products[1].contains_labeled_atom('*7'):
-                if reaction.reactants[0].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[0], reaction.products[0]])
-                    pairs.append([reaction.reactants[0], reaction.products[2]])
-                    pairs.append([reaction.reactants[1], reaction.products[1]])
-                elif reaction.reactants[1].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[1], reaction.products[0]])
-                    pairs.append([reaction.reactants[1], reaction.products[2]])
-                    pairs.append([reaction.reactants[0], reaction.products[1]])
-            elif reaction.products[2].contains_labeled_atom('*7'):
-                if reaction.reactants[0].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[0], reaction.products[0]])
-                    pairs.append([reaction.reactants[0], reaction.products[1]])
-                    pairs.append([reaction.reactants[1], reaction.products[2]])
-                elif reaction.reactants[1].contains_labeled_atom('*1'):
-                    pairs.append([reaction.reactants[1], reaction.products[0]])
-                    pairs.append([reaction.reactants[1], reaction.products[1]])
-                    pairs.append([reaction.reactants[0], reaction.products[2]])
-        elif reaction.is_surface_reaction():
-            # remove vacant active sites from consideration
-            reactants = [sp for sp in reaction.reactants if not sp.is_surface_site()]
-            products = [sp for sp in reaction.products if not sp.is_surface_site()]
-            if len(reactants) == 1 or len(products) == 1:
-                # When there is only one reactant (or one product), it is paired
-                # with each of the products (reactants)
-                for reactant in reactants:
-                    for product in products:
-                        pairs.append([reactant, product])
-            elif self.label.lower() == 'surface_abstraction':
-                # Hardcoding for surface abstraction: pair the reactant containing
-                # *1 with the product containing *3 and vice versa
-                assert len(reaction.reactants) == len(reaction.products) == 2
-                if reaction.reactants[0].contains_labeled_atom('*1'):
-                    if reaction.products[0].contains_labeled_atom('*3'):
-                        pairs.append([reaction.reactants[0], reaction.products[0]])
-                        pairs.append([reaction.reactants[1], reaction.products[1]])
-                    elif reaction.products[1].contains_labeled_atom('*3'):
-                        pairs.append([reaction.reactants[0], reaction.products[1]])
-                        pairs.append([reaction.reactants[1], reaction.products[0]])
-                elif reaction.reactants[1].contains_labeled_atom('*1'):
-                    if reaction.products[1].contains_labeled_atom('*3'):
-                        pairs.append([reaction.reactants[0], reaction.products[0]])
-                        pairs.append([reaction.reactants[1], reaction.products[1]])
-                    elif reaction.products[0].contains_labeled_atom('*3'):
-                        pairs.append([reaction.reactants[0], reaction.products[1]])
-                        pairs.append([reaction.reactants[1], reaction.products[0]])
-        if not pairs:
-            logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, '
-                          'falling back to Reaction.generate_pairs'.format(self.label))
-
-        return pairs
-
-    def get_reaction_template(self, reaction):
+            if reaction.reactants[0].containsLabeledAtom('*2'):
+                if reaction.products[0].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[1].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+            elif reaction.reactants[1].containsLabeledAtom('*2'):
+                if reaction.products[1].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[0]])
+                    pairs.append([reaction.reactants[1],reaction.products[1]])
+                elif reaction.products[0].containsLabeledAtom('*3'):
+                    pairs.append([reaction.reactants[0],reaction.products[1]])
+                    pairs.append([reaction.reactants[1],reaction.products[0]])
+                else:
+                    error = True
+        elif self.label.lower() in ('fake_o2_elimination'):
+            # Shouldn't matter, this reaction family shouldn't be used for actual mechanism generation.
+            return pairs
+        else:
+            error = True
+            
+        if error:
+            raise ReactionPairsError('Unable to determine reaction pairs for {0!s} reaction {1!s}.'.format(self.label, reaction))
+        else:
+            return pairs
+        
+    def getReactionTemplate(self, reaction):
         """
         For a given `reaction` with properly-labeled :class:`Molecule` objects
         as the reactants, determine the most specific nodes in the tree that
