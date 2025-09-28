@@ -1519,9 +1519,12 @@ def get_species_identifier(species):
     if species.index == -1:
         # No index present -- probably not in RMG job
         # In this case just return the label (if the right size)
-        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#.:\[\]]+', label):
-            if len(label) <= 16:
+        if len(label) > 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#.]+', label):
+            if len(label) <= 10:
                 return label
+            elif len(label) <= 15:
+                #logging.warning('Species label {0} is longer than 10 characters and may exceed chemkin string limit'.format(label))
+                return label            
             else:
                 logging.warning('Species label is longer than 16 characters and will break CHEMKIN 2.0')
                 return label
@@ -1536,8 +1539,8 @@ def get_species_identifier(species):
         # (at the expense of the current label or formula if need be)
 
         # First try to use the label and index
-        # The label can only contain alphanumeric characters, and -()*#_,.:[]
-        if len(label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#.:\[\]]+', label):
+        # The label can only contain alphanumeric characters, and -()*#_,
+        if len(label) > 0 and species.index >= 0 and not re.search(r'[^A-Za-z0-9\-_,\(\)\*#.]+', label):
             name = '{0}({1:d})'.format(label, species.index)
             if len(name) <= 16:
                 return name
