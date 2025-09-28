@@ -1,0 +1,175 @@
+ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /17.999/
+	N
+	Ne
+	Ar
+	He
+	Si
+	S
+	F
+	Cl
+	Br
+	I
+	X /195.083/
+END
+
+SPECIES
+    N2                  ! N2
+    Ne                  ! Ne
+    H2(2)               ! H2(2)
+    CO(3)               ! CO(3)
+    CO2(4)              ! CO2(4)
+    H2O(5)              ! H2O(5)
+    CH2O(6)             ! CH2O(6)
+    HCOOH(7)            ! HCOOH(7)
+    CH3OH(8)            ! CH3OH(8)
+    HCOOCH3(9)          ! HCOOCH3(9)
+    CH4(24)             ! CH4(24)
+END
+
+
+
+THERM ALL
+   300.000  1000.000  5000.000
+
+! Thermo library: primaryThermoLibrary
+N2                      N   2               G   200.000  6000.000 1000.00      1
+ 2.95258000E+00 1.39690000E-03-4.92632000E-07 7.86010000E-11-4.60755000E-15    2
+-9.23949000E+02 5.87189000E+00 3.53101000E+00-1.23661000E-04-5.02999000E-07    3
+ 2.43531000E-09-1.40881000E-12-1.04698000E+03 2.96747000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+Ne                      Ne  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 3.35532000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 3.35532000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H2(2)                   H   2               G   100.000  5000.000 1959.08      1
+ 2.78816619E+00 5.87640475E-04 1.59010635E-07-5.52739465E-11 4.34311304E-15    2
+-5.96144481E+02 1.12730527E-01 3.43536411E+00 2.12710383E-04-2.78625110E-07    3
+ 3.40267219E-10-7.76032129E-14-1.03135984E+03-3.90841731E+00                   4
+
+! Thermo library: primaryThermoLibrary
+CO(3)                   C   1O   1          G   100.000  5000.000 1571.64      1
+ 2.91306987E+00 1.64657389E-03-6.88612820E-07 1.21036930E-10-7.84014743E-15    2
+-1.41808862E+04 6.71043900E+00 3.56837982E+00-8.52124063E-04 2.48917390E-06    3
+-1.56330672E-09 3.13594213E-13-1.42842549E+04 3.57912239E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+CO2(4)                  C   1O   2          G   100.000  5000.000  978.22      1
+ 4.67429780E+00 2.60958835E-03-9.85659769E-07 1.95706729E-10-1.49830320E-14    2
+-4.89512267E+04-2.11090702E+00 3.28083821E+00 2.50193291E-03 8.08164577E-06    3
+-1.20506695E-08 4.66526645E-12-4.84008301E+04 6.00083693E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H2O(5)                  H   2O   1          G   100.000  5000.000 1130.25      1
+ 2.84324104E+00 2.75110073E-03-7.81040007E-07 1.07245603E-10-5.79408217E-15    2
+-2.99586086E+04 5.91047337E+00 4.05763720E+00-7.87951343E-04 2.90882564E-06    3
+-1.47524910E-09 2.12866372E-13-3.02815867E+04-3.11369025E-01                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+CH2O(6)                 C   1H   2O   1     G   100.000  5000.000 1070.44      1
+ 2.21172293E+00 7.94265924E-03-3.34193191E-06 6.28471724E-10-4.40431711E-14    2
+-1.42974450E+04 1.13049069E+01 4.12927829E+00-4.08401633E-03 2.03229448E-05    3
+-1.83524377E-08 5.37976060E-12-1.44294640E+04 3.22418365E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+HCOOH(7)                C   1H   2O   2     G   100.000  5000.000  993.73      1
+ 5.64500305E+00 7.55181966E-03-3.20851348E-06 6.58918818E-10-5.05055029E-14    2
+-4.79890024E+04-5.43104436E+00 3.76240519E+00-9.43849897E-04 3.38778464E-05    3
+-4.04983181E-08 1.43986430E-11-4.68212102E+04 7.63276247E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+CH3OH(8)                C   1H   4O   1     G   100.000  5000.000 1035.75      1
+ 2.79184262E+00 1.15827858E-02-4.51551962E-06 8.21206786E-10-5.67063316E-14    2
+-2.57211672E+04 9.41061788E+00 3.84006221E+00 1.38241909E-03 1.91667221E-05    3
+-2.01568699E-08 6.39102422E-12-2.56083087E+04 5.90978110E+00                   4
+
+! Thermo library: DFT_QCI_thermo
+HCOOCH3(9)              C   2H   4O   2     G   100.000  5000.000 1141.76      1
+ 4.90974332E+00 1.87532115E-02-8.58341907E-06 1.66850390E-09-1.18614557E-13    2
+-4.59009381E+04 2.13041707E-01 3.28125302E+00 1.13178286E-02 1.84485081E-05    3
+-2.41954066E-08 7.75170459E-12-4.46725574E+04 1.20362991E+01                   4
+
+! Thermo library: primaryThermoLibrary
+CH4(24)                 C   1H   4          G   100.000  5000.000 1084.15      1
+ 9.08349401E-01 1.14539479E-02-4.57166053E-06 8.29173612E-10-5.66300105E-14    2
+-9.72001110E+03 1.39926204E+01 4.20540072E+00-5.35540640E-03 2.51117636E-05    3
+-2.13755910E-08 5.97496145E-12-1.01619427E+04-9.21226951E-01                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Reaction index: Chemkin #1; RMG #53
+! Template reaction: 1,2_Insertion_CO
+! Flux pairs: CO(3), CH2O(6); H2(2), CH2O(6); 
+! Matched reaction 2 H2 + CO <=> CH2O in 1,2_Insertion_CO/training
+! This reaction matched rate rule [CO;H2]
+! family: 1,2_Insertion_CO
+H2(2)+CO(3)=CH2O(6)                                 2.890000e+09 1.160     82.100   
+
+! Reaction index: Chemkin #2; RMG #55
+! Template reaction: 1,2_Insertion_CO
+! Flux pairs: CO(3), HCOOH(7); H2O(5), HCOOH(7); 
+! Estimated using an average for rate rule [CO;RO_H]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: 1,2_Insertion_CO
+H2O(5)+CO(3)=HCOOH(7)                               2.540000e-01 3.700     53.360   
+
+! Reaction index: Chemkin #3; RMG #56
+! Template reaction: 1,3_Insertion_CO2
+! Flux pairs: CO2(4), HCOOH(7); H2(2), HCOOH(7); 
+! Matched reaction 1 H2 + CO2 <=> CH2O2 in 1,3_Insertion_CO2/training
+! This reaction matched rate rule [CO2_Od;H2]
+! family: 1,3_Insertion_CO2
+H2(2)+CO2(4)=HCOOH(7)                               1.510000e+09 1.230     73.900   
+DUPLICATE
+
+! Reaction index: Chemkin #4; RMG #65
+! Template reaction: 1,2_Insertion_CO
+! Flux pairs: CO(3), HCOOCH3(9); CH3OH(8), HCOOCH3(9); 
+! Matched reaction 7 CH4O + CO <=> C2H4O2 in 1,2_Insertion_CO/training
+! This reaction matched rate rule [CO;CsO_H]
+! family: 1,2_Insertion_CO
+CO(3)+CH3OH(8)=HCOOCH3(9)                           1.270000e-01 3.700     53.360   
+
+! Reaction index: Chemkin #5; RMG #67
+! Template reaction: 1,3_Insertion_CO2
+! Flux pairs: CO2(4), HCOOCH3(9); CH4(24), HCOOCH3(9); 
+! Estimated using template [CO2;C_methane] for rate rule [CO2_Od;C_methane]
+! Euclidian distance = 1.0
+! Multiplied by reaction path degeneracy 8.0
+! family: 1,3_Insertion_CO2
+CO2(4)+CH4(24)=HCOOCH3(9)                           3.624000e+04 2.830     79.200   
+
+! Reaction index: Chemkin #6; RMG #134
+! Template reaction: 1,3_Insertion_CO2
+! Flux pairs: H2(2), HCOOH(7); CO2(4), HCOOH(7); 
+! Matched reaction 1 H2 + CO2 <=> CH2O2 in 1,3_Insertion_CO2/training
+! This reaction matched rate rule [CO2_Od;H2]
+! family: 1,3_Insertion_CO2
+H2(2)+CO2(4)=HCOOH(7)                               1.510000e+09 1.230     73.900   
+DUPLICATE
+
+! Reaction index: Chemkin #7; RMG #135
+! Template reaction: 1,3_Insertion_CO2
+! Flux pairs: H2(2), HCOOH(7); CO2(4), HCOOH(7); 
+! Matched reaction 1 H2 + CO2 <=> CH2O2 in 1,3_Insertion_CO2/training
+! This reaction matched rate rule [CO2_Cdd;H2]
+! family: 1,3_Insertion_CO2
+H2(2)+CO2(4)=HCOOH(7)                               1.510000e+09 1.230     73.900   
+DUPLICATE
+
+END
+

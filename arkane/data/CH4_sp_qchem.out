@@ -1,0 +1,300 @@
+
+Running Job 1 of 1 input.in
+qchem input.in_4684.0 /scratch/alongd/qlscratch/qchem4684/ 1
+/opt/qchem/bin/mpi/mpirun_qchem -machinefile /tmp/561037.1.long2/hostfile -np 1 /opt/qchem/exe/qcprog.exe input.in_4684.0 /scratch/alongd/qlscratch/qchem4684/
+
+Process 0 of 1 is on node37.cluster - thread support 0
+initial socket setup ...start
+initial socket setup ...done 
+now start server 0 ... 
+
+cmd = /usr/bin/ssh node96 /opt/qchem/bin/get_hostid 749997546 > /scratch/alongd/qlscratch/qchem4684/lic.dat
+                  Welcome to Q-Chem
+     A Quantum Leap Into The Future Of Chemistry
+
+
+ Q-Chem 4.4, Q-Chem, Inc., Pleasanton, CA (2016)
+
+ Y. Shao,  Z. Gan,  E. Epifanovsky,  A. T. B. Gilbert,  M. Wormit,  
+ J. Kussmann,  A. W. Lange,  A. Behn,  J. Deng,  X. Feng,  D. Ghosh,  
+ M. Goldey,  P. R. Horn,  L. D. Jacobson,  I. Kaliman,  R. Z. Khaliullin,  
+ T. Kus,  A. Landau,  J. Liu,  E. I. Proynov,  Y. M. Rhee,  R. M. Richard,  
+ M. A. Rohrdanz,  R. P. Steele,  E. J. Sundstrom,  H. L. Woodcock III,  
+ P. M. Zimmerman,  D. Zuev,  B. Albrecht,  E. Alguire,  B. Austin,  
+ S. A. Baeppler,  G. J. O. Beran,  Y. A. Bernard,  E. Berquist,  
+ K. Brandhorst,  K. B. Bravaya,  S. T. Brown,  D. Casanova,  C.-M. Chang,  
+ Y. Chen,  S. H. Chien,  K. D. Closser,  M. P. Coons,  D. L. Crittenden,  
+ S. Dasgupta,  M. Diedenhofen,  R. A. DiStasio Jr.,  H. Do,  A. D. Dutoi,  
+ R. G. Edgar,  P.-T. Fang,  S. Fatehi,  Q. Feng,  L. Fusti-Molnar,  
+ A. Ghysels,  A. Golubeva-Zadorozhnaya,  J. Gomes,  A. Gunina,  
+ M. W. D. Hanson-Heine,  P. H. P. Harbach,  A. W. Hauser,  E. G. Hohenstein,  
+ Z. C. Holden,  K. Hui,  T.-C. Jagau,  H. Ji,  B. Kaduk,  K. Khistyaev,  
+ Jaehoon Kim,  Jihan Kim,  R. A. King,  P. Klunzinger,  D. Kosenkov,  
+ T. Kowalczyk,  C. M. Krauter,  A. Kunitsa,  K. U. Lao,  A. Laurent,  
+ K. V. Lawler,  D. Lefrancois,  S. Lehtola,  S. V. Levchenko,  C. Y. Lin,  
+ Y.-S. Lin,  F. Liu,  E. Livshits,  R. C. Lochan,  A. Luenser,  P. Manohar,  
+ S. F. Manzer,  S.-P. Mao,  Y. Mao,  N. Mardirossian,  A. V. Marenich,  
+ L. A. Martinez-Martinez,  S. A. Maurer,  N. J. Mayhall,  J.-M. Mewes,  
+ A. F. Morrison,  K. Nanda,  C. M. Oana,  R. Olivares-Amaya,  D. P. O'Neill,  
+ J. A. Parkhill,  T. M. Perrine,  R. Peverati,  P. A. Pieniazek,  F. Plasser,  
+ A. Prociuk,  D. R. Rehn,  E. Rosta,  N. J. Russ,  N. Sergueev,  
+ S. M. Sharada,  S. Sharma,  D. W. Small,  A. Sodt,  T. Stauch,  T. Stein,  
+ D. Stuck,  Y.-C. Su,  A. J. W. Thom,  T. Tsuchimochi,  L. Vogt,  O. Vydrov,  
+ T. Wang,  M. A. Watson,  J. Wenzel,  A. White,  C. F. Williams,  
+ V. Vanovschi,  S. Yeganeh,  S. R. Yost,  Z.-Q. You,  I. Y. Zhang,  X. Zhang,  
+ Y. Zhao,  B. R. Brooks,  G. K. L. Chan,  D. M. Chipman,  C. J. Cramer,  
+ W. A. Goddard III,  M. S. Gordon,  W. J. Hehre,  A. Klamt,  
+ H. F. Schaefer III,  M. W. Schmidt,  C. D. Sherrill,  D. G. Truhlar,  
+ A. Warshel,  X. Xu,  A. Aspuru-Guzik,  R. Baer,  A. T. Bell,  N. A. Besley,  
+ J.-D. Chai,  A. Dreuw,  B. D. Dunietz,  T. R. Furlani,  S. R. Gwaltney,  
+ C.-P. Hsu,  Y. Jung,  J. Kong,  D. S. Lambrecht,  W. Liang,  C. Ochsenfeld,  
+ V. A. Rassolov,  L. V. Slipchenko,  J. E. Subotnik,  T. Van Voorhis,  
+ J. M. Herbert,  A. I. Krylov,  P. M. W. Gill,  M. Head-Gordon
+
+ Contributors to earlier versions of Q-Chem not listed above: 
+ R. D. Adamson,  J. Baker,  E. F. C. Byrd,  A. K. Chakraborty,  C.-L. Cheng,  
+ H. Dachsel,  R. J. Doerksen,  G. Hawkins,  A. Heyden,  S. Hirata,  
+ G. Kedziora,  F. J. Keil,  C. Kelley,  P. P. Korambath,  W. Kurlancheek,  
+ A. M. Lee,  M. S. Lee,  D. Liotard,  I. Lotan,  P. E. Maslen,  N. Nair,  
+ D. Neuhauser,  R. Olson,  B. Peters,  J. Ritchie,  N. E. Schultz,  
+ N. Shenvi,  A. C. Simmonett,  K. S. Thanthiriwatte,  Q. Wu,  W. Zhang
+
+ Please cite Q-Chem as follows:
+ Y. Shao et al., Mol. Phys. 113, 184-215 (2015)
+ DOI: 10.1080/00268976.2014.952696
+
+ Q-Chem 4.4.0 for Intel X86 Linux
+
+ Parts of Q-Chem use Armadillo 5.200.1 (Boston Tea Smuggler).
+ http://arma.sourceforge.net/
+
+ Q-Chem begins on Fri Mar  1 09:42:19 2019  
+
+Host: 
+0
+
+     Scratch files written to /scratch/alongd/qlscratch/qchem4684//
+ Apr2716 1281_ 20995  20993 4150   
+ Parallel job on  1  processors
+Processing $rem in /opt/qchem/config/preferences.
+ MEM_TOTAL  2000 
+
+Checking the input file for inconsistencies... 	...done.
+
+--------------------------------------------------------------
+User input:
+--------------------------------------------------------------
+$molecule
+0 1
+C       0.00000000    0.00000000    0.00000000
+H       0.63003260    0.63003260    0.63003260
+H      -0.63003260   -0.63003260    0.63003260
+H      -0.63003260    0.63003260   -0.63003260
+H       0.63003260   -0.63003260   -0.63003260
+
+$end
+
+$rem
+JOBTYPE       sp
+METHOD        wb97x-d3
+UNRESTRICTED  False
+BASIS         6-31+g(d,p)
+$end
+
+--------------------------------------------------------------
+ ----------------------------------------------------------------
+             Standard Nuclear Orientation (Angstroms)
+    I     Atom           X                Y                Z
+ ----------------------------------------------------------------
+    1      C       0.0000000000     0.0000000000     0.0000000000
+    2      H       0.6300326000     0.6300326000     0.6300326000
+    3      H      -0.6300326000    -0.6300326000     0.6300326000
+    4      H      -0.6300326000     0.6300326000    -0.6300326000
+    5      H       0.6300326000    -0.6300326000    -0.6300326000
+ ----------------------------------------------------------------
+ Molecular Point Group                 Td    NOp = 24
+ Largest Abelian Subgroup              D2    NOp =  4
+ Nuclear Repulsion Energy =    13.4199930913 hartrees
+ There are        5 alpha and        5 beta electrons
+ Requested basis set is 6-31+G(d,p)
+ There are 17 shells and 39 basis functions
+
+ Total QAlloc Memory Limit   2000 MB
+ Mega-Array Size        61 MB
+ MEM_STATIC part        62 MB
+
+                       Distance Matrix (Angstroms)
+             C (  1)   H (  2)   H (  3)   H (  4)
+   H (  2)  1.091248
+   H (  3)  1.091248  1.782001
+   H (  4)  1.091248  1.782001  1.782001
+   H (  5)  1.091248  1.782001  1.782001  1.782001
+ 
+ A cutoff of  1.0D-08 yielded    153 shell pairs
+ There are       825 function pairs
+ 
+ -------------------------------------------------------
+ OpenMP Integral Computing Module                       
+ Release: version 1.0, May 2013, Q-Chem Inc. Pittsburgh 
+ -------------------------------------------------------
+ Integral Job Info:
+ Integral job number is                      11
+ Integral operator is                         1
+ short-range coefficients              19572800
+ long-range coefficients              100000000
+ Omega coefficients                         250
+ if combine SR and LR in K                    1
+ Integral screening is                        0
+ Integral computing path is                   2
+ max size of driver memory is            800000
+ size of driver memory is                593474
+ size of scratch memory is              2260544
+ max col of scratch BK array               1296
+ max len of scratch array in speh3          155
+ max len of scratch index in speh4           18
+ max int batch size is                      520
+ min int batch size is                       52
+ fixed nKL is                                52
+ max L of basis functions is                  2
+ order of int derivative is                   0
+ number of shells is                         17
+ number of basis is                          39
+ number of cartesian basis is                39
+ number of contracted shell pairs           153
+ number of primitive shell pairs            516
+ maxK2 (contraction) of shell pair           36
+ max number of K2 of shell pair               1
+ max number of CS2 of shell pair             16
+ max number of PS2 of shell pair             60
+ mem total for path MDJ                    9380
+ -------------------------------------------------------
+ Smallest overlap matrix eigenvalue = 1.21E-02
+
+ Scale SEOQF with 1.000000e-01/1.000000e-01/1.000000e-01
+
+ Standard Electronic Orientation quadrupole field applied
+ Guess from superposition of atomic densities
+ Warning:  Energy on first SCF cycle will be non-variational
+ Long-range K will be added via erf
+ Coulomb attenuation parameter = 0.25 bohr**(-1)
+ A restricted hybrid HF-DFT SCF calculation will be
+ performed using Pulay DIIS extrapolation
+ Exchange:     0.1957 Hartree-Fock + 1.0000 wB97X-D3 + LR-HF
+ Correlation:  1.0000 wB97X-D3
+ Using SG-1 standard quadrature grid
+ Dispersion:   Grimme D3
+ SCF converges when DIIS error is below 1.0E-05
+ using 6 threads for integral computing 
+ using 6 threads for integral computing 
+ K construction time:  CPU 0.28 s  wall 0.05 s
+ -------------------------------------------------------
+ OpenMP BLAS3 based DFT computing Module                
+ Release: version 1.0, May 2013, Q-Chem Inc. Pittsburgh 
+ -------------------------------------------------------
+ ---------------------------------------
+  Cycle       Energy         DIIS Error
+ ---------------------------------------
+    1     -40.4774978171      8.52E-02
+ K construction time:  CPU 0.30 s  wall 0.05 s
+    2     -40.4929364135      9.22E-03
+ K construction time:  CPU 0.29 s  wall 0.05 s
+    3     -40.5021343283      6.22E-03
+ K construction time:  CPU 0.17 s  wall 0.05 s
+    4     -40.5091295871      1.47E-04
+ K construction time:  CPU 0.30 s  wall 0.06 s
+    5     -40.5091375427      2.36E-05
+ K construction time:  CPU 0.30 s  wall 0.05 s
+    6     -40.5091377925      4.00E-06 Convergence criterion met
+ ---------------------------------------
+ SCF time:  CPU 4.37 s  wall 0.85 s
+ SCF   energy in the final basis set = -40.5091377925
+ Total energy in the final basis set = -40.5091377925
+ 
+ --------------------------------------------------------------
+             Orbital Energies (a.u.) and Symmetries
+ --------------------------------------------------------------
+ 
+ Alpha MOs, Restricted
+ -- Occupied --                  
+-10.272  -0.808  -0.488  -0.488  -0.488
+  1 A1    2 A1    1 T2    1 T2    1 T2                                         
+ -- Virtual --                   
+  0.089   0.124   0.124   0.124   0.273   0.273   0.273   0.359
+  3 A1    2 T2    2 T2    2 T2    3 T2    3 T2    3 T2    4 A1                 
+  0.736   0.736   0.736   1.021   1.021   1.021   1.160   1.217
+  4 T2    4 T2    4 T2    5 T2    5 T2    5 T2    5 A1    6 A1                 
+  1.454   1.454   2.149   2.149   2.149   2.192   2.192   2.192
+  1 E     1 E     1 T1    1 T1    1 T1    6 T2    6 T2    6 T2                 
+  2.732   2.732   2.732   3.012   3.012   3.280   3.530   3.530
+  7 T2    7 T2    7 T2    2 E     2 E     7 A1    8 T2    8 T2                 
+  3.530   4.537
+  8 T2    8 A1                                                                 
+ 
+ Beta MOs, Restricted
+ -- Occupied --                  
+-10.272  -0.808  -0.488  -0.488  -0.488
+  1 A1    2 A1    1 T2    1 T2    1 T2                                         
+ -- Virtual --                   
+  0.089   0.124   0.124   0.124   0.273   0.273   0.273   0.359
+  3 A1    2 T2    2 T2    2 T2    3 T2    3 T2    3 T2    4 A1                 
+  0.736   0.736   0.736   1.021   1.021   1.021   1.160   1.217
+  4 T2    4 T2    4 T2    5 T2    5 T2    5 T2    5 A1    6 A1                 
+  1.454   1.454   2.149   2.149   2.149   2.192   2.192   2.192
+  1 E     1 E     1 T1    1 T1    1 T1    6 T2    6 T2    6 T2                 
+  2.732   2.732   2.732   3.012   3.012   3.280   3.530   3.530
+  7 T2    7 T2    7 T2    2 E     2 E     7 A1    8 T2    8 T2                 
+  3.530   4.537
+  8 T2    8 A1                                                                 
+ --------------------------------------------------------------
+ 
+          Ground-State Mulliken Net Atomic Charges
+
+     Atom                 Charge (a.u.)
+  ----------------------------------------
+      1 C                    -0.637081
+      2 H                     0.159270
+      3 H                     0.159270
+      4 H                     0.159270
+      5 H                     0.159270
+  ----------------------------------------
+  Sum of atomic charges =     0.000000
+
+ -----------------------------------------------------------------
+                    Cartesian Multipole Moments
+ -----------------------------------------------------------------
+    Charge (ESU x 10^10)
+                 0.0000
+    Dipole Moment (Debye)
+         X       0.0000      Y       0.0000      Z       0.0000
+       Tot       0.0000
+    Quadrupole Moments (Debye-Ang)
+        XX      -8.4074     XY       0.0000     YY      -8.4074
+        XZ       0.0000     YZ       0.0000     ZZ      -8.4074
+    Octopole Moments (Debye-Ang^2)
+       XXX       0.0000    XXY       0.0000    XYY       0.0000
+       YYY       0.0000    XXZ       0.0000    XYZ       0.7653
+       YYZ       0.0000    XZZ       0.0000    YZZ       0.0000
+       ZZZ       0.0000
+    Hexadecapole Moments (Debye-Ang^3)
+      XXXX     -16.9315   XXXY       0.0000   XXYY      -5.1453
+      XYYY       0.0000   YYYY     -16.9315   XXXZ       0.0000
+      XXYZ       0.0000   XYYZ       0.0000   YYYZ       0.0000
+      XXZZ      -5.1453   XYZZ       0.0000   YYZZ      -5.1453
+      XZZZ       0.0000   YZZZ       0.0000   ZZZZ     -16.9315
+ -----------------------------------------------------------------
+Archival summary:
+1\1\node37\SP\ProcedureUnspecified\6-31+G**\14\alongd\FriMar109:42:202019FriMar109:42:202019\0\\#,ProcedureUnspecified,6-31+G**,\\0,1\C\H,1,1.09125\H,1,1.09125,2,109.471\H,1,1.09125,2,109.471,3,-120,0\H,1,1.09125,2,109.471,3,120,0\\\@
+
+ Total job time:  1.15s(wall), 5.49s(cpu) 
+ Fri Mar  1 09:42:20 2019
+
+        *************************************************************
+        *                                                           *
+        *  Thank you very much for using Q-Chem.  Have a nice day.  *
+        *                                                           *
+        *************************************************************
+
+
+0 sent ACK to 0 
+now end server 0 ... 
+cleanup process ... done

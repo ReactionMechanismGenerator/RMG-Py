@@ -2354,8 +2354,8 @@ class KineticsFamily(Database):
             # with each of the products (reactants)
             for reactant in reaction.reactants:
                 for product in reaction.products:
-                    pairs.append([reactant, product])
-        elif self.label.lower() in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
+                    pairs.append([reactant,product])
+        elif self.label.lower() in ('h_abstraction', 'fake_o_abstraction'):
             # Hardcoding for hydrogen abstraction: pair the reactant containing
             # *1 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2

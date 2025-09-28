@@ -1,0 +1,8 @@
+python:
+  - 2.7
+numpy:
+  - 1.15
+
+# Specifically for Travis build. Should change if building locally.
+CONDA_BUILD_SYSROOT:
+  - /Applications/Xcode-9.4.1.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk  # [osx]
