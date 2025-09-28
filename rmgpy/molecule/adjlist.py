@@ -899,15 +899,19 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
             
         ConsistencyChecker.check_multiplicity(nRad, multiplicity)
         for atom in atoms: ConsistencyChecker.check_hund_rule(atom, multiplicity)
-        return atoms, multiplicity, molecularTermSymbol
+        return atoms, multiplicity
     else:
         # Currently no group consistency check
+<<<<<<< HEAD
         if not group:
             if multiplicity is None:
                 n_rad = sum([atom.radical_electrons for atom in atoms])
                 multiplicity = n_rad + 1, molecularTermSymbol
 
         return atoms, multiplicity, metal, facet
+=======
+        return atoms, multiplicity
+>>>>>>> ea01d9194 (Fixed adjlist error)
 
 
 

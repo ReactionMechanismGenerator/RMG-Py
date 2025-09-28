@@ -1021,8 +1021,8 @@ class Molecule(Graph):
     `inchi` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, molecularTermSymbol='', reactive=True, props=None, inchi='', smiles='', 
-                 metal='', facet=''):
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, reactive=True, props=None, inchi='', smiles='', 
+                 metal='', facet='', molecularTermSymbol=''):
         Graph.__init__(self, atoms)
         self.symmetry_number = symmetry
         self.multiplicity = multiplicity
@@ -1894,13 +1894,20 @@ class Molecule(Graph):
         Skips the first line (assuming it's a label) unless `withLabel` is
         ``False``.
         """
-        from rmgpy.molecule.adjlist import from_adjacency_list
+        from .adjlist import fromAdjacencyList
 
-        self.vertices, self.multiplicity, self.molecularTermSymbol, self.metal, self.facet = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h,
-                                                               check_consistency=check_consistency)
-        self.update_atomtypes(raise_exception=raise_atomtype_exception)
-        self.identify_ring_membership()
-
+        molecularTermSymbol = ''
+        if "molecularTermSymbol" in adjlist:
+            adjlist = adjlist.strip()
+            lines = adjlist.splitlines()
+            for line in lines:
+                if "molecularTermSymbol" in line:
+                    molecularTermSymbol = line.split()[-1]
+        self.molecularTermSymbol = molecularTermSymbol
+        self.vertices, self.multiplicity = fromAdjacencyList(adjlist, group=False, saturateH=saturateH)
+        self.updateAtomTypes()
+        self.identifyRingMembership()
+        
         # Check if multiplicity is possible
         n_rad = self.get_radical_count()
         multiplicity = self.multiplicity
