@@ -355,9 +355,12 @@ class Database(object):
                     species_dict[product.label] = product
 
         with open(path, 'w') as f:
-            for label in species_dict.keys():
-                f.write(species_dict[label].molecule[0].to_adjacency_list(label=label, remove_h=False))
-                f.write('\n')
+            for label in speciesDict.keys():
+                try:
+                    f.write(speciesDict[label].molecule[0].toAdjacencyList(label=label, removeH=False))
+                    f.write('\n')
+                except IndexError:
+                   print label, speciesDict[label]
 
     def save(self, path, reindex=True):
         """

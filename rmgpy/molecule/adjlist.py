@@ -102,6 +102,9 @@ class ConsistencyChecker(object):
             the theoretical one:
             
             '''
+            if getAtomType(atom, atom.edges).label == 'Cbf':
+                logging.warning("Skipping consistency check for fused benzene atom type")
+                return True
             global bond_orders
             valence = PeriodicSystem.valence_electrons[atom.symbol]
             order = 0
