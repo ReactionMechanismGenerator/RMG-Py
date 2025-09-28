@@ -1,0 +1,47 @@
+This folder ('external') is for external programs that RMG depends on but are 
+not part of the RMG code itself. In most cases you can get them elsewhere. 
+Nevertheless, they are stored here because
+ (1) they may be hard to find elsewhere
+ (2) we know that that these versions work (but ones from elsewhere may not)
+
+ctml_writer.py 
+comes from Cantera 1.7 (https://sourceforge.net/projects/cantera/)
+which we think uses the New BSD License
+http://www.opensource.org/licenses/bsd-license.php
+
+pydot.py 
+comes from Pydot (http://www.dkbza.org/pydot.html)
+which uses the MIT license
+http://opensource.org/licenses/mit-license.html
+the version here is based on 1.0.2 but contains a bug fix patch
+
+
+cinfony/webel.py
+from http://cinfony.googlecode.com/svn/trunk/cinfony/webel.py
+
+jquery.min.js
+from http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js
+Used by the HTML output of RMG. Useful to have it locally if you do not have
+internet access when you want to look at your results.
+
+
+symmetry
+Brute force symmetry determination program and the associated test set.
+(C) 1996, 2003 S. Patchkovskii, Serguei.Patchkovskii@sympatico.ca
+Published under GNU General Public License
+http://www.cobalt.chem.ucalgary.ca/ps/symmetry/
+This is based on Revision 1.16  2003/04/04
+This program is no longer stored in the external programs folder but is instead found on the anaconda platform.
+
+
+cclib
+An open source library, written in Python, for parsing and interpreting
+the results of computational chemistry packages.
+N. M. O'Boyle, A. L. Tenderholt, K. M. Langner,
+"cclib: a library for package-independent computational chemistry algorithms",
+J. Comp. Chem. 29 (5), pp. 839-845, 2008
+cclib is licensed under the LGPL
+http://cclib.sourceforge.net
+This is based on version 1.0 but with some modifications,
+probably made in the RMG-Java project.
+We should endeavor to get the modifications merged upstream and use the main cclib.
