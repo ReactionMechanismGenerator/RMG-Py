@@ -1562,28 +1562,28 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
     string += '{0!s:<51} '.format(reaction_string)
 
     if isinstance(kinetics, _kinetics.Arrhenius):
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             kinetics.A.value_si/ (kinetics.T0.value_si ** kinetics.n.value_si) * 1.0e6 ** (numReactants - 1),
             kinetics.n.value_si,
             kinetics.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
         arrhenius = kinetics.arrheniusHigh
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
     elif isinstance(kinetics, _kinetics.ThirdBody):
         arrhenius = kinetics.arrheniusLow
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
         )
     elif hasattr(kinetics,'highPlimit') and kinetics.highPlimit is not None:
         arrhenius = kinetics.highPlimit
-        string += '{0:<9.3e} {1:<9.3f} {2:<9.3f}'.format(
+        string += '{0:<9.3e} {1:<9.3f} {2:<9.4f}'.format(
             arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
             arrhenius.n.value_si,
             arrhenius.Ea.value_si / 4184.
@@ -1611,7 +1611,7 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
         if isinstance(kinetics, (_kinetics.Lindemann, _kinetics.Troe)):
             # Write low-P kinetics
             arrhenius = kinetics.arrheniusLow
-            string += '    LOW/ {0:<9.3e} {1:<9.3f} {2:<9.3f}/\n'.format(
+            string += '    LOW/ {0:<9e} {1:<9.3f} {2:<9.4f}/\n'.format(
                 arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants),
                 arrhenius.n.value_si,
                 arrhenius.Ea.value_si / 4184.
@@ -1619,20 +1619,20 @@ def writeKineticsEntry(reaction, speciesList, verbose = True, javaLibrary = Fals
             if isinstance(kinetics, _kinetics.Troe):
                 # Write Troe parameters
                 if kinetics.T2 is None:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si)
+                    string += '    TROE/ {0:<9e} {1:<9g} {2:<9g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si)
                 else:
-                    string += '    TROE/ {0:<9.3e} {1:<9.3g} {2:<9.3g} {3:<9.3g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
+                    string += '    TROE/ {0:<9e} {1:<9g} {2:<9g} {3:<9g}/\n'.format(kinetics.alpha, kinetics.T3.value_si, kinetics.T1.value_si, kinetics.T2.value_si)
     elif isinstance(kinetics, _kinetics.PDepArrhenius):
         for P, arrhenius in zip(kinetics.pressures.value_si, kinetics.arrhenius):
             if isinstance(arrhenius, _kinetics.MultiArrhenius):
                 for arrh in arrhenius.arrhenius:
-                    string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
+                    string += '    PLOG/ {0:<9.4f} {1:<9.3e} {2:<9.3f} {3:<9.4f}/\n'.format(P / 101325.,
                     arrh.A.value_si / (arrh.T0.value_si ** arrh.n.value_si) * 1.0e6 ** (numReactants - 1),
                     arrh.n.value_si,
                     arrh.Ea.value_si / 4184.
                     )
             else:
-                string += '    PLOG/ {0:<9.3f} {1:<9.3e} {2:<9.3f} {3:<9.3f}/\n'.format(P / 101325.,
+                string += '    PLOG/ {0:<9.4f} {1:<9.3e} {2:<9.3f} {3:<9.4f}/\n'.format(P / 101325.,
                     arrhenius.A.value_si / (arrhenius.T0.value_si ** arrhenius.n.value_si) * 1.0e6 ** (numReactants - 1),
                     arrhenius.n.value_si,
                     arrhenius.Ea.value_si / 4184.
@@ -1883,3 +1883,92 @@ def saveJavaKineticsLibrary(path, species, reactions):
     f2.close()
     
     saveSpeciesDictionary(os.path.join(os.path.dirname(path), 'species.txt'), species, oldStyle=True)
+
+def saveChemkin(reactionModel, path, verbose_path, dictionaryPath=None, transportPath=None, saveEdgeSpecies=False):
+    """
+    Save a Chemkin file for the current model as well as any desired output
+    species and reactions to `path`. If `saveEdgeSpecies` is True, then 
+    a chemkin file and dictionary file for the core and edge species and reactions
+    will be saved.  
+    """
+    
+    if saveEdgeSpecies == False:
+        speciesList = reactionModel.core.species + reactionModel.outputSpeciesList
+        rxnList = reactionModel.core.reactions + reactionModel.outputReactionList
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False) # We should already have marked everything as duplicates by now        
+        logging.info('Saving current model to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
+        if dictionaryPath:
+            saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
+        
+    else:
+        speciesList = reactionModel.core.species + reactionModel.edge.species
+        rxnList = reactionModel.core.reactions + reactionModel.edge.reactions
+        saveChemkinFile(path, speciesList, rxnList, verbose = False, checkForDuplicates=False)        
+        logging.info('Saving current core and edge to verbose Chemkin file...')
+        saveChemkinFile(verbose_path, speciesList, rxnList, verbose = True, checkForDuplicates=False)
+        if dictionaryPath:
+            saveSpeciesDictionary(dictionaryPath, speciesList)
+        if transportPath:
+            saveTransportFile(transportPath, speciesList)
+
+def saveChemkinFiles(rmg):
+    """
+    Save the current reaction model to a set of Chemkin files.
+    """        
+    logging.info('Saving current model core to Chemkin file...')
+    this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem{0:04d}.inp'.format(len(rmg.reactionModel.core.species)))
+    latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem.inp')
+    latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_annotated.inp')
+    latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_dictionary.txt')
+    latest_transport_path = os.path.join(rmg.outputDirectory, 'chemkin', 'tran.dat')
+    saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, False)
+    if os.path.exists(latest_chemkin_path):
+        os.unlink(latest_chemkin_path)
+    shutil.copy2(this_chemkin_path,latest_chemkin_path)
+    
+    if rmg.saveEdgeSpecies == True:
+        logging.info('Saving current model core and edge to Chemkin file...')
+        this_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge%04i.inp' % len(rmg.reactionModel.core.species)) # len() needs to be core to have unambiguous index
+        latest_chemkin_path = os.path.join(rmg.outputDirectory, 'chemkin','chem_edge.inp')
+        latest_chemkin_verbose_path = os.path.join(rmg.outputDirectory, 'chemkin', 'chem_edge_annotated.inp')
+        latest_dictionary_path = os.path.join(rmg.outputDirectory, 'chemkin','species_edge_dictionary.txt')
+        latest_transport_path = None
+        saveChemkin(rmg.reactionModel, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path, latest_transport_path, rmg.saveEdgeSpecies)
+        if os.path.exists(latest_chemkin_path):
+            os.unlink(latest_chemkin_path)
+        shutil.copy2(this_chemkin_path,latest_chemkin_path)
+
+class ChemkinWriter(object):
+    """
+    This class listens to a RMG subject
+    and writes a chemkin file with the current state of the RMG model,
+    to a chemkin subfolder.
+
+
+    A new instance of the class can be appended to a subject as follows:
+    
+    rmg = ...
+    listener = ChemkinWriter(outputDirectory)
+    rmg.attach(listener)
+
+    Whenever the subject calls the .notify() method, the
+    .update() method of the listener will be called.
+
+    To stop listening to the subject, the class can be detached
+    from its subject:
+
+    rmg.detach(listener)
+    
+    """
+    def __init__(self, outputDirectory=''):
+        super(ChemkinWriter, self).__init__()
+        makeOutputSubdirectory(outputDirectory, 'chemkin')
+    
+    def update(self, rmg):
+        saveChemkinFiles(rmg)
+
+        
+    
