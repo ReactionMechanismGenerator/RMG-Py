@@ -1219,8 +1219,14 @@ def readThermoBlock(f, speciesDict):
     """
     # List of thermodynamics (hopefully one per species!)
     formula_dict = {}
-    line = f.readline()
-    assert line.upper().strip().startswith('THER'), "'{0}' doesn't begin with THERM statement.".format(line)
+    got_one = False
+    while not got_one:
+        line = f.readline()
+        if line.upper().strip().startswith("THER"):
+            got_one = True
+        elif line is None: # We reached the end of the file without finding a "THERM" statement
+            assert False, "File doesn't contain THERM statement.".format(line)
+
     line = f.readline()
 
 
