@@ -832,6 +832,25 @@ class TestMoleculeAdjLists(unittest.TestCase):
 	                        """)
 	        OH_excited = Molecule().fromAdjacencyList("""
 	                        multiplicity 2
+	                        MolecularTermSymbol A^2S+
+	                        1 O u1 p2 c0 {2,S}
+	                        2 H u0 p0 c0 {1,S}
+	                        """)
+	
+	        self.assertEqual(OH_ground.molecularTermSymbol,'')
+	        self.assertEqual(OH_excited.molecularTermSymbol,'A^2S+')
+        
+    def testMolecularTermSymbol(self):
+	        """
+	        adjlist: Test that the MolecularTermSymbol attribute is generated correctly.
+	        """
+	        OH_ground = Molecule().fromAdjacencyList("""
+	                        multiplicity 2
+	                        1 O u1 p2 c0 {2,S}
+	                        2 H u0 p0 c0 {1,S}
+	                        """)
+	        OH_excited = Molecule().fromAdjacencyList("""
+	                        multiplicity 2
 	                        molecularTermSymbol A^2S+
 	                        1 O u1 p2 c0 {2,S}
 	                        2 H u0 p0 c0 {1,S}

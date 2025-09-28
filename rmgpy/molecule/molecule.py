@@ -1021,16 +1021,18 @@ class Molecule(Graph):
     `inchi` string representing the molecular structure.
     """
 
-    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, reactive=True, props=None, inchi='', smiles='', 
+    def __init__(self, atoms=None, symmetry=-1, multiplicity=-187, molecularTermSymbol='', reactive=True, props=None, inchi='', smiles='', 
                  metal='', facet=''):
         Graph.__init__(self, atoms)
         self.symmetry_number = symmetry
         self.multiplicity = multiplicity
+        self.molecularTermSymbol = molecularTermSymbol
         self.reactive = reactive
         self._fingerprint = None
         self._inchi = None
         self._smiles = None
         self.props = props or {}
+        
         self.metal = metal
         self.facet = facet
 
@@ -1609,7 +1611,7 @@ class Molecule(Graph):
         mapping from `self` to `other` (i.e. the atoms of `self` are the keys,
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Molecule` object, or a :class:`TypeError` is raised.
-        Also ensures multiplicities are also equal.
+        Also ensures multiplicities and molecularTermSymbol are also equal.
 
         Args:
             initial_map (dict, optional):          initial atom mapping to use
@@ -1630,15 +1632,21 @@ class Molecule(Graph):
         # check multiplicity
         if self.multiplicity != other.multiplicity:
             return False
-        #check metal
-        if self.metal != other.metal:
-            return False 
-        #check facet
-        if self.facet != other.facet:
+        # check molecularTermSymbol
+        if self.molecularTermSymbol != other.molecularTermSymbol:
             return False
-        # if given an initial map, ensure that it's valid.
-        if initial_map:
-            if not self.is_mapping_valid(other, initial_map, equivalent=True):
+        
+        if generateInitialMap:
+            initialMap = dict()
+            for atom in self.atoms:
+                if atom.label and atom.label != '':
+                    for a in other.atoms:
+                        if a.label == atom.label:
+                            initialMap[atom] = a
+                            break
+                    else:
+                        return False
+            if not self.isMappingValid(other,initialMap,equivalent=True):
                 return False
 
         # Do the full isomorphism comparison
@@ -1888,7 +1896,7 @@ class Molecule(Graph):
         """
         from rmgpy.molecule.adjlist import from_adjacency_list
 
-        self.vertices, self.multiplicity, self.metal, self.facet = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h,
+        self.vertices, self.multiplicity, self.molecularTermSymbol, self.metal, self.facet = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h,
                                                                check_consistency=check_consistency)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
         self.identify_ring_membership()
@@ -2055,7 +2063,7 @@ class Molecule(Graph):
         Convert the molecular structure to a string adjacency list.
         """
         from rmgpy.molecule.adjlist import to_adjacency_list
-        result = to_adjacency_list(self.vertices, self.multiplicity, metal=self.metal, facet=self.facet, 
+        result = to_adjacency_list(self.vertices, self.multiplicity, molecularTermSymbol=self.molecularTermSymbol,metal=self.metal, facet=self.facet, 
                                    label=label, group=False, remove_h=remove_h,
                                    remove_lone_pairs=remove_lone_pairs, old_style=old_style)
         return result

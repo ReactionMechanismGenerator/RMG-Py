@@ -156,6 +156,7 @@ cdef class Molecule(Graph):
 
     cdef public float symmetry_number
     cdef public int multiplicity
+    cdef public str molecularTermSymbol
     cdef public bint reactive
     cdef public dict props
     cdef public str metal
@@ -163,7 +164,7 @@ cdef class Molecule(Graph):
     cdef str _fingerprint
     cdef str _inchi
     cdef str _smiles
-
+    
     cpdef add_atom(self, Atom atom)
 
     cpdef add_bond(self, Bond bond)

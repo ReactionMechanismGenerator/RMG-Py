@@ -484,10 +484,20 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
     bonds = {}
     multiplicity = None
 
+    molecularTermSymbol = ''
+    
     adjlist = adjlist.strip()
     lines = adjlist.splitlines()
     if adjlist == '' or len(lines) == 0:
         raise InvalidAdjacencyListError('Empty adjacency list.')
+
+    if lines[0].split()[0] == 'molecularTermSymbol':
+        line = lines.pop(0)
+        match = re.match('\s*molecularTermSymbol\s+\S+\s*$', line)
+        assert match, "Invalid molecularTermSymbol line '{0}'. Should be a string like 'molecularTermSymbol A^2S+'".format(line)
+        molecularTermSymbol = line.split()[1]
+        if len(lines) == 0:
+            raise InvalidAdjacencyListError('No atoms specified in adjacency list: \n{0}'.format(adjlist))
 
     # Detect old-style adjacency lists by looking at the last line's syntax
     last_line = lines[-1].strip()
@@ -608,9 +618,17 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
             
             continue
         
+        if len(data) == 0: continue
+
+        # The first like is the if molecularTermSymbol, reading in it's info
+        if "molecularTermSymbol" == data[0]:
+            molecularTermSymbol = data[1]
+            continue
+
         # First item is index for atom
         # Sometimes these have a trailing period (as if in a numbered list),
         # so remove it just in case
+        
         aid = int(data[0].strip('.'))
 
         # If second item starts with '*', then atom is labeled
@@ -875,27 +893,25 @@ def from_adjacency_list(adjlist, group=False, saturate_h=False, check_consistenc
             if isinstance(atom, Atom):
                 ConsistencyChecker.check_partial_charge(atom)
 
-        n_rad = sum([atom.radical_electrons for atom in atoms])
-        absolute_spin_per_electron = 1 / 2.
-        if multiplicity is None:
-            multiplicity = 2 * (n_rad * absolute_spin_per_electron) + 1
-
-        ConsistencyChecker.check_multiplicity(n_rad, multiplicity)
-        for atom in atoms:
-            ConsistencyChecker.check_hund_rule(atom, multiplicity)
-        return atoms, multiplicity, metal, facet
+        nRad = sum([atom.radicalElectrons for atom in atoms])
+        absolute_spin_per_electron = 1/2.
+        if multiplicity == None: multiplicity = 2* (nRad * absolute_spin_per_electron) + 1
+            
+        ConsistencyChecker.check_multiplicity(nRad, multiplicity)
+        for atom in atoms: ConsistencyChecker.check_hund_rule(atom, multiplicity)
+        return atoms, multiplicity, molecularTermSymbol
     else:
         # Currently no group consistency check
         if not group:
             if multiplicity is None:
                 n_rad = sum([atom.radical_electrons for atom in atoms])
-                multiplicity = n_rad + 1
+                multiplicity = n_rad + 1, molecularTermSymbol
 
         return atoms, multiplicity, metal, facet
 
 
 
-def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group=False, remove_h=False, remove_lone_pairs=False,
+def to_adjacency_list(atoms, multiplicity, metal='', facet='', molecularTermSymbol= '', label=None, group=False, remove_h=False, remove_lone_pairs=False,
                       old_style=False):
     """
     Convert a chemical graph defined by a list of `atoms` into a string
@@ -926,6 +942,8 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
             adjlist += 'metal [{0!s}]\n'.format(','.join(i for i in metal))
         if facet:
             adjlist += 'facet [{0!s}]\n'.format(','.join(i for i in facet))
+        if molecularTermSymbol:
+            adjlist += 'molecularTermSymbol [{0!s}]\n'.format(','.join(str(i) for i in molecularTermSymbol))
     else:
         assert isinstance(multiplicity, int), "Molecule should have an integer multiplicity"
         if multiplicity != 1 or any(atom.radical_electrons for atom in atoms):
@@ -934,6 +952,8 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
             adjlist += f"metal {metal}\n"
         if facet:
             adjlist += f"facet {facet}\n"
+        if molecularTermSymbol and (molecularTermSymbol != ''):
+            adjlist += 'molecularTermSymbol {0!s}\n'.format(molecularTermSymbol)
 
     # Determine the numbers to use for each atom
     atom_numbers = {}
