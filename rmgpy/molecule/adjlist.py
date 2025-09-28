@@ -33,16 +33,26 @@ adjacency list format used by Reaction Mechanism Generator (RMG).
 """
 import logging
 import re
-import warnings
+from .molecule import Atom, Bond, getAtomType
+from .group import GroupAtom, GroupBond
+#import chempy.molecule.atomtype as atomtypes
 
-from rmgpy.exceptions import InvalidAdjacencyListError
-from rmgpy.molecule.atomtype import get_atomtype
-from rmgpy.molecule.element import get_element, PeriodicSystem
-from rmgpy.molecule.group import GroupAtom, GroupBond
-from rmgpy.molecule.molecule import Atom, Bond
-from rmgpy.molecule.fragment import Fragment, CuttingLabel
+bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
 
-
+class PeriodicSystem(object):
+    valence_electrons_first_period_elements  = {'H':1, 'He':2}
+        
+    valence_electrons_second_period_elements = {'C':4, 'N':5, 'O':6, 'Ne':8}
+        
+    valence_electrons_third_period_elements  = {'Si':4, 'S':6, 'Cl':7, 'Ar':8}
+        
+    valence_electrons = {}
+    valence_electrons.update(valence_electrons_first_period_elements)
+    valence_electrons.update(valence_electrons_second_period_elements)
+    valence_electrons.update(valence_electrons_third_period_elements)
+    
+    lone_pairs         = {'H': 0, 'C': 0, 'N': 1, 'O': 2, 'Si':0, 'S': 2, 'Cl':3 }
+    
 class Saturator(object):
     @staticmethod
     def saturate(atoms):
@@ -87,24 +97,25 @@ class ConsistencyChecker(object):
 
     @staticmethod
     def check_partial_charge(atom):
-        """
-        Checks whether the partial charge attribute of the atom checks out with
-        the theoretical one:
-
-        """
-        if atom.symbol in {'X','L','R','e','H+','Li'}:
-            return  # because we can't check it.
-
-        valence = PeriodicSystem.valence_electrons[atom.symbol]
-        order = atom.get_total_bond_order()
-
-        theoretical = valence - order - atom.radical_electrons - 2 * atom.lone_pairs
+            '''
+            Checks whether the partial charge attribute of the atom checks out with 
+            the theoretical one:
+            
+            '''
+            global bond_orders
+            valence = PeriodicSystem.valence_electrons[atom.symbol]
+            order = 0
+            for _, bond in atom.bonds.items():
+                order += bond_orders[bond.order]
+                
+            theoretical = valence - order - atom.radicalElectrons - 2*atom.lonePairs
 
             if atom.charge != theoretical:
                 raise InvalidAdjacencyListError(
-                    ('Invalid valency for atom {symbol} with {radicals} unpaired electrons, '
+                    ('Invalid valency for atom {symbol} ({type}) with {radicals} unpaired electrons, '
                     '{lonePairs} pairs of electrons, {charge} charge, and bonds [{bonds}].'
                     ).format(symbol=atom.symbol,
+                             type=getAtomType(atom, atom.edges).label,
                              radicals=atom.radicalElectrons,
                              lonePairs=atom.lonePairs,
                              charge=atom.charge,
