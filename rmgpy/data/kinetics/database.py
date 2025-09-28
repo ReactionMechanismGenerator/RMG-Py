@@ -226,9 +226,15 @@ class KineticsDatabase(object):
             family_path = os.path.join(path, label)
             family = KineticsFamily(label=label)
             try:
+<<<<<<< HEAD
                 family.load(family_path, self.local_context, self.global_context, depository_labels=depositories)
             except:
                 logging.error("Error when loading reaction family {!r}".format(family_path))
+=======
+                family.load(familyPath, self.local_context, self.global_context, depositoryLabels=depositories)
+            except Exception as e:
+                logging.error("Error when loading family {}".format(familyPath))
+>>>>>>> 2fa651041 (Log which family causes a problem when loading kinetics db)
                 raise
             self.families[label] = family
 
