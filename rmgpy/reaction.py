@@ -48,6 +48,7 @@ from urllib.parse import quote
 
 import cython
 import numpy as np
+import itertools
 
 import rmgpy.constants as constants
 from rmgpy.exceptions import ReactionError, KineticsError
@@ -572,23 +573,103 @@ class Reaction:
             return False
 
         # Compare reactants to reactants
-        forward_reactants_match = same_species_lists(self.reactants, other.reactants,
-                                                     check_identical=check_identical,
-                                                     only_check_label=check_only_label,
-                                                     generate_initial_map=generate_initial_map,
-                                                     strict=strict,
-                                                     save_order=save_order)
-
+        forwardReactantsMatch = False
+        if len(self.reactants) == len(other.reactants) == 1:
+            if self.reactants[0].isIsomorphic(other.reactants[0]):
+                forwardReactantsMatch = True
+        elif len(self.reactants) == len(other.reactants) == 2:
+            if self.reactants[0].isIsomorphic(other.reactants[0]) and self.reactants[1].isIsomorphic(other.reactants[1]):
+                forwardReactantsMatch = True
+            elif self.reactants[0].isIsomorphic(other.reactants[1]) and self.reactants[1].isIsomorphic(other.reactants[0]):
+                forwardReactantsMatch = True
+        elif len(self.reactants) == len(other.reactants) == 3:
+            if   self.reactants[0].isIsomorphic(other.reactants[0]):
+                if (
+                    self.reactants[1].isIsomorphic(other.reactants[1]) and
+                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
+                    forwardReactantsMatch = True
+                elif ( 
+                    self.reactants[1].isIsomorphic(other.reactants[2]) and
+                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
+                    forwardReactantsMatch = True
+            elif self.reactants[0].isIsomorphic(other.reactants[1]):
+                if (
+                    self.reactants[1].isIsomorphic(other.reactants[0]) and
+                    self.reactants[2].isIsomorphic(other.reactants[2]) ):
+                    forwardReactantsMatch = True
+                elif (
+                    self.reactants[1].isIsomorphic(other.reactants[2]) and
+                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
+                    forwardReactantsMatch = True
+            elif self.reactants[0].isIsomorphic(other.reactants[2]):
+                if (
+                    self.reactants[1].isIsomorphic(other.reactants[0]) and
+                    self.reactants[2].isIsomorphic(other.reactants[1]) ):
+                    forwardReactantsMatch = True
+                elif (
+                    self.reactants[1].isIsomorphic(other.reactants[1]) and
+                    self.reactants[2].isIsomorphic(other.reactants[0]) ):
+                    forwardReactantsMatch = True
+        elif len(self.reactants) == len(other.reactants):
+            # General case for N reactants
+            numReactants = len(self.reactants)
+            for permutation in itertools.permutations(range(numReactants), numReactants):
+                for i,j in enumerate(permutation):
+                    if not self.reactants[i].isIsomorphic(other.reactants[j]):
+                        break
+                else:  # didn't break, so all N match in this order
+                    forwardReactantsMatch = True
+                    break  # no need to check any more permutations
+            #raise NotImplementedError("Can't check isomorphism of reactions with {0} reactants".format(len(self.reactants)))
+        
         # Compare products to products
-        forward_products_match = same_species_lists(self.products, other.products,
-                                                    check_identical=check_identical,
-                                                    only_check_label=check_only_label,
-                                                    generate_initial_map=generate_initial_map,
-                                                    strict=strict,
-                                                    save_order=save_order)
-
-        # Compare specific_collider to specific_collider
-        collider_match = (self.specific_collider == other.specific_collider)
+        forwardProductsMatch = False
+        if len(self.products) == len(other.products) == 1:
+            if self.products[0].isIsomorphic(other.products[0]):
+                forwardProductsMatch = True
+        elif len(self.products) == len(other.products) == 2:
+            if self.products[0].isIsomorphic(other.products[0]) and self.products[1].isIsomorphic(other.products[1]):
+                forwardProductsMatch = True
+            elif self.products[0].isIsomorphic(other.products[1]) and self.products[1].isIsomorphic(other.products[0]):
+                forwardProductsMatch = True
+        elif len(self.products) == len(other.products) == 3:
+            if  self.products[0].isIsomorphic(other.products[0]):
+                if (
+                    self.products[1].isIsomorphic(other.products[1]) and
+                    self.products[2].isIsomorphic(other.products[2]) ):
+                    forwardProductsMatch = True
+                elif (
+                    self.products[1].isIsomorphic(other.products[2]) and
+                    self.products[2].isIsomorphic(other.products[1]) ):
+                    forwardProductsMatch = True
+            elif self.products[0].isIsomorphic(other.products[1]):
+                if (
+                    self.products[1].isIsomorphic(other.products[0]) and
+                    self.products[2].isIsomorphic(other.products[2]) ):
+                    forwardProductsMatch = True
+                elif (
+                    self.products[1].isIsomorphic(other.products[2]) and
+                    self.products[2].isIsomorphic(other.products[0])):
+                    forwardProductsMatch = True
+            elif self.products[0].isIsomorphic(other.products[2]):
+                if (
+                    self.products[1].isIsomorphic(other.products[0]) and
+                    self.products[2].isIsomorphic(other.products[1]) ):
+                    forwardProductsMatch = True
+                elif (
+                    self.products[1].isIsomorphic(other.products[1]) and
+                    self.products[2].isIsomorphic(other.products[0]) ):
+                    forwardProductsMatch = True
+        elif len(self.products) == len(other.products):
+            # General case for N products
+            numProducts = len(self.products)
+            for permutation in itertools.permutations(range(numProducts), numProducts):
+                for i, j in enumerate(permutation):
+                    if not self.products[i].isIsomorphic(other.products[j]):
+                        break
+                else:  # didn't break, so all N match in this order
+                    forwardProductsMatch = True
+                    break  # no need to check any more permutations
 
         # Return now, if we can
         if forward_reactants_match and forward_products_match and collider_match:
