@@ -552,59 +552,36 @@ class KineticsLibrary(Database):
                 rxn.reactants.append(species_dict[reactant])
             for product in products.split('+'):
                 product = product.strip()
-                if product not in species_dict:
-                    raise DatabaseError('Species {0} in kinetics library {1} is missing from its '
-                                        'dictionary.'.format(product, self.label))
-                rxn.products.append(species_dict[product])
-
-            if not rxn.is_balanced():
-                raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! '
-                                    'Please reformulate.'.format(rxn, self.label))
-
-            if len(rxn.reactants) > 3:
-                raise DatabaseError('RMG does not accept reactions with more than 3 reactants in its solver. '
-                                    'Reaction {0} in kinetics library {1} has {2} reactants.'
-                                    .format(rxn, self.label, len(rxn.reactants)))
-            if len(rxn.products) > 3:
-                raise DatabaseError('RMG does not accept reactions with more than 3 products in its solver. '
-                                    'Reaction {0} in kinetics library {1} has {2} reactants.'
-                                    .format(rxn, self.label, len(rxn.products)))
-
-        if not self.auto_generated:
-            self.check_for_duplicates()
-            self.convert_duplicates_to_multi()
-
-    def load_entry(self,
-                   index,
-                   label,
-                   kinetics,
-                   degeneracy=1,
-                   duplicate=False,
-                   reversible=True,
-                   reference=None,
-                   referenceType='',
-                   shortDesc='',
-                   longDesc='',
-                   allow_pdep_route=False,
-                   elementary_high_p=False,
-                   allow_max_rate_violation=False,
-                   metal=None,
-                   site=None,
-                   facet=None,
-                   ):
-        """
-        Method for parsing entries in database files.
-        Note that these argument names are retained for backward compatibility.
-        """
-
-        # reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant1)])]
-        # if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant2)]))
-        # if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(reactant3)]))
-        #
-        # products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product1)])]
-        # if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product2)]))
-        # if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().from_adjacency_list(product3)]))
-
+                if product not in speciesDict:
+                    raise DatabaseError('Species {0} in kinetics library {1} is missing from its dictionary.'.format(product, self.label))
+                rxn.products.append(speciesDict[product])
+                
+            if not rxn.isBalanced():
+                raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! Please reformulate.'.format(rxn, self.label))    
+            
+        #self.checkForDuplicates()
+        
+    def loadEntry(self,
+                  index,
+                  label,
+                  kinetics,
+                  degeneracy=1,
+                  duplicate=False,
+                  reversible=True,
+                  reference=None,
+                  referenceType='',
+                  shortDesc='',
+                  longDesc='',
+                  ):
+        
+#        reactants = [Species(label=reactant1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant1)])]
+#        if reactant2 is not None: reactants.append(Species(label=reactant2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant2)]))
+#        if reactant3 is not None: reactants.append(Species(label=reactant3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(reactant3)]))
+#
+#        products = [Species(label=product1.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product1)])]
+#        if product2 is not None: products.append(Species(label=product2.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product2)]))
+#        if product3 is not None: products.append(Species(label=product3.strip().splitlines()[0].strip(), molecule=[Molecule().fromAdjacencyList(product3)]))
+#        
         # Make a blank reaction
         rxn = Reaction(reactants=[], products=[], degeneracy=degeneracy, duplicate=duplicate, reversible=reversible,
                        allow_pdep_route=allow_pdep_route, elementary_high_p=elementary_high_p,
