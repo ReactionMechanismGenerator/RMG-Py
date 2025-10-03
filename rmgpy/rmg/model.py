@@ -501,7 +501,7 @@ class CoreEdgeReactionModel:
                 reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
                 products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
             except:
-                logging.error(f"Error when making species in reaction {forward:s} from {forward.family:s}")
+                logging.error(f"Error when making species in reaction {forward} from {forward.family}")
                 raise
 
         if forward.specific_collider is not None:
