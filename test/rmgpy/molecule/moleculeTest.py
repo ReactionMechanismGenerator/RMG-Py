@@ -2980,9 +2980,9 @@ multiplicity 2
         mol = Molecule(smiles="c12ccccc1cccc2")
         mol.identify_ring_membership()
         for atom in mol.atoms:
-            if atom.element == "C":
+            if atom.is_carbon():
                 assert atom.props["inRing"]
-            elif atom.element == "H":
+            elif atom.is_hydrogen():
                 assert not atom.props["inRing"]
 
     def test_enumerate_bonds(self):
