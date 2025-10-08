@@ -2984,6 +2984,13 @@ multiplicity 2
                 assert atom.props["inRing"]
             elif atom.is_hydrogen():
                 assert not atom.props["inRing"]
+        mol = Molecule(smiles="C1CCCCCCCCCCC1")
+        mol.identify_ring_membership()
+        for atom in mol.atoms:
+            if atom.is_carbon():
+                assert atom.props["inRing"]
+            elif atom.is_hydrogen():
+                assert not atom.props["inRing"]
 
     def test_enumerate_bonds(self):
         """Test that generating a count of bond labels works properly."""
