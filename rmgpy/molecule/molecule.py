@@ -2762,19 +2762,25 @@ class Molecule(Graph):
 
     def get_smallest_set_of_smallest_rings(self):
         """
-        Returns the smallest set of smallest rings (SSSR) as a list of lists of Atom objects.
+        Returned the strictly smallest set of smallest rings (SSSR).
+
+        Removed in favor of RDKit's Symmetrized SSSR perception, which 
+        is less arbitrary, more chemically meaningful, and more consistent.
+        Use get_symmetrized_smallest_set_of_smallest_rings instead.
+        """
+        raise NotImplementedError("Smallest Set of Smallest Rings is not implemented. "
+                                  "Use get_symmetrized_smallest_set_of_smallest_rings instead.")
+
+    def get_symmetrized_smallest_set_of_smallest_rings(self):
+        """
+        Returns the symmetrized smallest set of smallest rings (SSSR) as a list of lists of Atom objects.
+
         Uses RDKit's built-in ring perception (GetSymmSSSR).
-
-        References:
-            Kolodzik, A.; Urbaczek, S.; Rarey, M.
-            Unique Ring Families: A Chemically Meaningful Description
-            of Molecular Ring Topologies.
-            J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
-
-            Flachsenberg, F.; Andresen, N.; Rarey, M.
-            RingDecomposerLib: An Open-Source Implementation of
-            Unique Ring Families and Other Cycle Bases.
-            J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
+        The symmetrized SSSR is at least as large as the SSSR for a molecule. 
+        In certain highly-symmetric cases (e.g. cubane), the symmetrized SSSR 
+        can be a bit larger (i.e. the number of symmetrized rings is >= NumBonds-NumAtoms+1).
+        It is usually more chemically meaningful, and is less random/arbitrary than the SSSR,
+        which is non-deterministic in certain cases.
         """
         # RDKit does not support electron
         if self.is_electron():
@@ -2782,11 +2788,11 @@ class Molecule(Graph):
         
         from rdkit import Chem
         
-        sssr = []
+        symm_sssr = []
         # Get the symmetric SSSR using RDKit
-        rdkit_result = self.to_rdkit_mol(remove_h=False, sanitize="partial", save_order=True) 
+        rdkit_result = self.to_rdkit_mol(remove_h=False, sanitize="partial", save_order=True)
         
-        if isinstance(rdkit_result, tuple): # can be a tuple if Fragment version of to_rdkit_mol is used
+        if isinstance(rdkit_result, tuple):  # can be a tuple if Fragment version of to_rdkit_mol is used
             rdkit_mol = rdkit_result[0]
         else:
             rdkit_mol = rdkit_result
@@ -2795,13 +2801,17 @@ class Molecule(Graph):
         for ring in ring_info:
             atom_ring = [self.atoms[idx] for idx in ring]
             sorted_ring = self.sort_cyclic_vertices(atom_ring)
-            sssr.append(sorted_ring)
-        return sssr
+            symm_sssr.append(sorted_ring)
+        return symm_sssr
+
 
     def get_relevant_cycles(self):
         """
-        Returns the set of relevant cycles as a list of lists of Atom objects.
-        Uses RDKit's RingInfo to approximate relevant cycles.
+        Returned the "relevant cycles" (RC), as implemented in RingDecomposerLib.
+
+        Deprecated when RingDecomposerLib was removed.
+        Now we are using methods that use RDKit, in the Molecule class.
+        Namely get_symmetrized_smallest_set_of_smallest_rings.
 
         References:
             Kolodzik, A.; Urbaczek, S.; Rarey, M.
@@ -2814,21 +2824,8 @@ class Molecule(Graph):
             Unique Ring Families and Other Cycle Bases.
             J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
-        # RDKit does not support electron
-        if self.is_electron():
-            return []
-        
-        rc = []        
-        mol = converter.to_rdkit_mol(self, remove_h=False, sanitize="partial", save_order=True)
-        ring_info = mol.GetRingInfo()
-        atom_rings = ring_info.AtomRings()
-        for ring in atom_rings:
-            atom_ring = [self.atoms[idx] for idx in ring]
-            sorted_ring = self.sort_cyclic_vertices(atom_ring)
-            # Filter for "relevant" cycles (e.g., rings up to size 7)
-            if len(sorted_ring) <= 7:
-                rc.append(sorted_ring)
-        return rc
+        raise NotImplementedError("'Relevant Cycles' are not implemented. "
+                                  "Use get_symmetrized_smallest_set_of_smallest_rings instead.")
 
     def get_all_polycyclic_vertices(self):
         """
