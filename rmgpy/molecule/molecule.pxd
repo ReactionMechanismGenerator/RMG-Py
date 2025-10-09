@@ -307,9 +307,11 @@ cdef class Molecule(Graph):
 
     cpdef list get_desorbed_molecules(self)
 
-    cpdef list get_smallest_set_of_smallest_rings(self)
+    cpdef list get_smallest_set_of_smallest_rings(self)  # deprecated
 
-    cpdef list get_relevant_cycles(self)
+    cpdef list get_symmetrized_smallest_set_of_smallest_rings(self)
+
+    cpdef list get_relevant_cycles(self)  # deprecated
 
     cpdef list get_all_polycyclic_vertices(self)
 
