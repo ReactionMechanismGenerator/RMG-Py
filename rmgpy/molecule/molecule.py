@@ -2768,8 +2768,12 @@ class Molecule(Graph):
         is less arbitrary, more chemically meaningful, and more consistent.
         Use get_symmetrized_smallest_set_of_smallest_rings instead.
         """
-        raise NotImplementedError("Smallest Set of Smallest Rings is not implemented. "
-                                  "Use get_symmetrized_smallest_set_of_smallest_rings instead.")
+        import logging
+        logging.warning("Molecule.get_smallest_set_of_smallest_rings() is deprecated. "
+                        "Use get_symmetrized_smallest_set_of_smallest_rings() instead.")
+        return self.get_symmetrized_smallest_set_of_smallest_rings()
+        #raise NotImplementedError("Smallest Set of Smallest Rings is not implemented. "
+        #                          "Use get_symmetrized_smallest_set_of_smallest_rings instead.")
 
     def get_symmetrized_smallest_set_of_smallest_rings(self):
         """
@@ -2824,8 +2828,12 @@ class Molecule(Graph):
             Unique Ring Families and Other Cycle Bases.
             J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
         """
-        raise NotImplementedError("'Relevant Cycles' are not implemented. "
-                                  "Use get_symmetrized_smallest_set_of_smallest_rings instead.")
+        import logging
+        logging.warning("Molecule.get_relevant_cycles() is deprecated. "
+                        "Use get_symmetrized_smallest_set_of_smallest_rings() instead.")
+        return self.get_symmetrized_smallest_set_of_smallest_rings()
+        #raise NotImplementedError("'Relevant Cycles' are not implemented. "
+        #                          "Use get_symmetrized_smallest_set_of_smallest_rings instead.")
 
     def get_all_polycyclic_vertices(self):
         """
