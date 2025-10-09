@@ -496,11 +496,11 @@ class Fragment(Molecule):
         """
         remove_h = kwargs.get('remove_h', False)
 
-        if remove_h == True:
+        if remove_h:
             # because we're replacing
             # cutting labels with hydrogens
             # so do not allow removeHs to be True
-            raise "Currently fragment to_rdkit_mol only allows keeping all the hydrogens."
+            raise ValueError("Currently fragment to_rdkit_mol only allows keeping all the hydrogens.")
 
         mol0, mapping = self.get_representative_molecule("minimal", update=False)
 
