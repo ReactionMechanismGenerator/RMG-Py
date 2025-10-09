@@ -2509,22 +2509,10 @@ class Molecule(Graph):
     def identify_ring_membership(self):
         """
         Performs ring perception and saves ring membership information to the Atom.props attribute.
-
-        Uses the RDKit FastFindRings algorithm.
         """
-        from rdkit.Chem.rdmolops import FastFindRings
-        cython.declare(rd_atom_indices=dict, i=int, atom=Atom)
-        rdmol, rd_atom_indices = converter.to_rdkit_mol(self,
-                                                        remove_h=False,
-                                                        return_mapping=True,
-                                                        sanitize=False,
-                                                        save_order=True)
-        # https://rdkit.blogspot.com/2016/09/avoiding-unnecessary-work-and.html
-        # suggests avoid sanitization and just call FastFindRings
-        FastFindRings(rdmol)
-        for atom, i in rd_atom_indices.items():
-            atom.props['inRing'] = rdmol.GetAtomWithIdx(i).IsInRing()
-
+        cython.declare(atom=Atom)
+        for atom in self.atoms:
+            atom.props["inRing"] = self.is_vertex_in_cycle(atom)
 
     def count_aromatic_rings(self):
         """
