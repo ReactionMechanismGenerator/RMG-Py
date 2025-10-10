@@ -2197,9 +2197,9 @@ class Molecule(Graph):
         will not fail for fused aromatic rings.
         """
         cython.declare(rc=list, cycle=list, atom=Atom)
-        rc = self.get_relevant_cycles()
-        if rc:
-            for cycle in rc:
+        rings = self.get_symmetrized_smallest_set_of_smallest_rings()
+        if rings:
+            for cycle in rings:
                 if len(cycle) == 6:
                     for atom in cycle:
                         # print atom.atomtype.label
@@ -2526,7 +2526,7 @@ class Molecule(Graph):
             return 0
         
         cython.declare(rings=list, count=int, ring=list, bonds=list, bond=Bond)
-        rings = self.get_relevant_cycles()
+        rings = self.get_symmetrized_smallest_set_of_smallest_rings()
         count = 0
         for ring in rings:
             if len(ring) != 6:
@@ -2914,17 +2914,17 @@ class Molecule(Graph):
     def get_disparate_cycles(self):
         """
         Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
-        Takes the RC and recursively merges all cycles which share vertices.
+        Takes the set of rings and recursively merges all cycles which share vertices.
         
         Returns: monocyclic_cycles, polycyclic_cycles
         """
-        rc = self.get_relevant_cycles()
+        rings = self.get_symmetrized_smallest_set_of_smallest_rings()
 
-        if not rc:
+        if not rings:
             return [], []
 
         # Convert cycles to sets
-        cycle_sets = [set(cycle_list) for cycle_list in rc]
+        cycle_sets = [set(cycle_list) for cycle_list in rings]
 
         # Merge connected cycles
         monocyclic_cycles, polycyclic_cycles = self._merge_cycles(cycle_sets)
