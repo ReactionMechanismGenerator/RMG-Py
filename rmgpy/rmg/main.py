@@ -528,6 +528,7 @@ class RMG(util.Subject):
                 self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
                 self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
         self.reaction_model.coverage_dependence = self.coverage_dependence
+        self.reaction_model.thermo_coverage_dependence = self.thermo_coverage_dependence
 
         if kwargs.get("restart", ""):
             import rmgpy.rmg.input
