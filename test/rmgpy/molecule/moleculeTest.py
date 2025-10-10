@@ -3057,6 +3057,33 @@ multiplicity 2
         mol.remove_van_der_waals_bonds()
         assert len(mol.get_all_edges()) == 1
 
+    def test_get_symmetrized_smallest_set_of_smallest_rings(self):
+        """
+        Test the Molecule.get_symmetrized_smallest_set_of_smallest_rings() method.
+        """
+        mol = Molecule(smiles="CCCC")
+        cycle_list = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 0
+        
+        # Create a cycle of length 4
+        mol = Molecule(smiles="C1CCC1")
+        cycle_list = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 1
+        assert len(cycle_list[0]) == 4
+
+        # Create a bridged tricyclic
+        mol = Molecule(smiles="C1C(C)CC2CC1C=C3C2CCC3")
+        cycle_list = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 3
+        assert len(cycle_list[0]) == 5
+
+        # Test cubane
+        mol = Molecule(smiles="C12C3C4C1C5C2C3C45")
+        cycle_list = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 6
+        for cycle in cycle_list:
+            assert len(cycle) == 4
+
     def test_get_relevant_cycles(self):
         """
         Test the Molecule.get_relevant_cycles() method.
