@@ -2564,7 +2564,7 @@ class Molecule(Graph):
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
-            rings = self.get_relevant_cycles()
+            rings = self.get_symmetrized_smallest_set_of_smallest_rings()
 
         # Remove rings that share more than 3 atoms, since they cannot be planar
         cython.declare(toRemove=set, j=cython.int, toRemoveSorted=list)
@@ -2851,7 +2851,10 @@ class Molecule(Graph):
         a single polycyclic cycle, and return only those cycles. 
         Cycles which are not polycyclic are not returned.
         """
-        sssr = self.get_smallest_set_of_smallest_rings()
+        # Todo: if we're now using RDKit for ring detection anyway, we might be able to use it to do more of this method.
+
+        # Now using symmetrized SSSR not strictly smallest SSSR. Hopefully this works the same?
+        sssr = self.get_symmetrized_smallest_set_of_smallest_rings()
         if not sssr:
             return []
 
