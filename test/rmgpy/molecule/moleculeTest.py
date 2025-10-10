@@ -3086,19 +3086,11 @@ multiplicity 2
 
     def test_get_relevant_cycles(self):
         """
-        Test the Molecule.get_relevant_cycles() method.
+        Test the Molecule.get_relevant_cycles() raises correct error after deprecation.
         """
         mol = Molecule(smiles="CCCC")
-        cycle_list = mol.get_relevant_cycles()
-        assert len(cycle_list) == 0
-        
-        # Create a cycle of length 4
-        mol = Molecule(smiles="C1CCC1")
-        cycle_list = mol.get_relevant_cycles()
-        assert len(cycle_list) == 1
-        assert len(cycle_list[0]) == 4
-
-        # TODO: test bridged bicycle
+        with pytest.raises(NotImplementedError):
+            mol.get_relevant_cycles()
 
     def test_cycle_list_order_sssr(self):
         """
