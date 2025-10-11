@@ -126,7 +126,7 @@ class Species(object):
             self._inchi = inchi
         elif smiles:
             # check it is fragment or molecule
-            _ , cutting_label_list = Fragment().detect_cutting_label(smiles)
+            _ , cutting_label_list = Fragment.detect_cutting_label(smiles)
             if cutting_label_list != []: # Fragment
                 self.molecule = [Fragment(smiles=smiles)]
             else: # Molecule
@@ -382,7 +382,7 @@ class Species(object):
             adjlist_no_label = adjlist
 
         # detect if it contains cutting label
-        _ , cutting_label_list = Fragment().detect_cutting_label(adjlist_no_label)
+        _ , cutting_label_list = Fragment.detect_cutting_label(adjlist_no_label)
         
         if cutting_label_list == []:
             self.molecule = [Molecule().from_adjacency_list(adjlist, saturate_h=False,

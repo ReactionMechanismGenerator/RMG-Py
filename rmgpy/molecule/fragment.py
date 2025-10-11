@@ -1303,8 +1303,9 @@ class Fragment(Molecule):
         self.from_rdkit_mol(rdkitmol, atom_replace_dict)
 
         return self
-
-    def detect_cutting_label(self, smiles):
+    
+    @staticmethod
+    def detect_cutting_label(smiles):
         import re
         from rmgpy.molecule.element import element_list
 
