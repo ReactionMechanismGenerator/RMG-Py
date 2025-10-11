@@ -73,7 +73,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
         mol.sort_atoms()
     atoms = mol.vertices
     rd_atom_indices = {}  # dictionary of RDKit atom indices
-    label_dict = {} # store label of atom for Framgent
+    label_dict = {}  # For fragment cutting labels. Key is rdkit atom index, value is label string
     rdkitmol = Chem.rdchem.EditableMol(Chem.rdchem.Mol())
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
@@ -86,35 +86,18 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
             rd_atom.SetIsotope(atom.element.isotope)
         rd_atom.SetNumRadicalElectrons(atom.radical_electrons)
         rd_atom.SetFormalCharge(atom.charge)
-        if atom.element.symbol == 'C' and atom.lone_pairs == 1 and mol.multiplicity == 1: rd_atom.SetNumRadicalElectrons(
-            2)
+        if atom.element.symbol == 'C' and atom.lone_pairs == 1 and mol.multiplicity == 1:
+            rd_atom.SetNumRadicalElectrons(2)
         rdkitmol.AddAtom(rd_atom)
         if remove_h and atom.symbol == 'H':
             pass
         else:
             rd_atom_indices[atom] = index
 
-        # Check if a cutting label is present. If preserve this so that it is added to the SMILES string
-        # Fragment's representative species is Molecule (with CuttingLabel replaced by Si but label as CuttingLabel)
-        # so we use detect_cutting_label to check atom.label
-        # Todo: could we use atom.label in ('R', 'L') instead?
-        _, cutting_label_list = Fragment.detect_cutting_label(atom.label)
-        if cutting_label_list != []:  # there is a cutting label detected
-            if not atom.label in ('R', 'L'):
-                print("Using atom.label in ('R', 'L') in place of detect_cutting_label(atom.label) would have given a false negative."
-                      f" atom.label = {atom.label}, cutting_label_list = {cutting_label_list}")
+        # Save cutting labels to add to the SMILES string
+        if atom.label and atom.label in ('R', 'L'):
+            label_dict[index] = atom.label
 
-            saved_index = index
-            label = atom.label
-            if label in label_dict:
-                label_dict[label].append(saved_index)
-            else:
-                label_dict[label] = [saved_index]
-        else:
-            # cutting_label_list == []
-            if atom.label in ('R', 'L'):
-                print("Using atom.label in ('R', 'L') in place of detect_cutting_label(atom.label) would have given a false positive."
-                      f" atom.label = {atom.label}, cutting_label_list = {cutting_label_list}")
     rd_bonds = Chem.rdchem.BondType
     # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE,
@@ -139,10 +122,8 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
 
     # Make editable mol into a mol and rectify the molecule
     rdkitmol = rdkitmol.GetMol()
-    if label_dict:
-        for label, ind_list in label_dict.items():
-            for ind in ind_list:
-                Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(ind), label)
+    for index, label in label_dict.items():
+        Chem.SetSupplementalSmilesLabel(rdkitmol.GetAtomWithIdx(index), label)
     for atom in rdkitmol.GetAtoms():
         if atom.GetAtomicNum() > 1:
             atom.SetNoImplicit(True)
