@@ -787,7 +787,7 @@ class Bond(Edge):
         elif self.is_reaction_bond():
             return 'R'
         else:
-            logging.debug("Bond order {} does not have string representation; treating as unspecified.".format(self.order))
+            logging.warning("Bond order {} does not have string representation.".format(self.order))
             return None
 
     def set_order_str(self, new_order):
