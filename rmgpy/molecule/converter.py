@@ -38,6 +38,7 @@ import sys
 import cython
 # Assume that rdkit is installed
 from rdkit import Chem
+from rdkit.Chem.rdchem import KekulizeException, AtomKekulizeException
 # Test if openbabel is installed
 try:
     from openbabel import openbabel
@@ -46,10 +47,12 @@ except ImportError:
 
 import rmgpy.molecule.element as elements
 import rmgpy.molecule.molecule as mm
+from rmgpy.molecule.fragment import CuttingLabel
 from rmgpy.exceptions import DependencyError
 
 
-def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_order=False):
+def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
+                 save_order=False, ignore_bond_orders=False):
     """
     Convert a molecular structure to a RDKit rdmol object. Uses
     `RDKit <https://rdkit.org/>`_ to perform the conversion.
@@ -57,7 +60,13 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
 
     If return_mapping==True then it also returns a dictionary mapping the
     atoms to RDKit's atom indices.
+
+    If ignore_bond_orders==True, all bonds are converted to unknown bonds, and 
+    sanitization is skipped. This is helpful when all you want is ring perception,
+    for example. Must also set sanitize=False.
     """
+    if ignore_bond_orders and sanitize:
+        raise ValueError("If ignore_bond_orders is True, sanitize must be False")
     from rmgpy.molecule.fragment import Fragment
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
@@ -70,6 +79,8 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     for index, atom in enumerate(mol.vertices):
         if atom.element.symbol == 'X':
             rd_atom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
+        elif atom.element.symbol in ['R', 'L']:
+            rd_atom = Chem.rdchem.Atom(0)
         else:
             rd_atom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
@@ -87,17 +98,26 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
         # Check if a cutting label is present. If preserve this so that it is added to the SMILES string
         # Fragment's representative species is Molecule (with CuttingLabel replaced by Si but label as CuttingLabel)
         # so we use detect_cutting_label to check atom.label
-        _, cutting_label_list = Fragment().detect_cutting_label(atom.label)
+        # Todo: could we use isinstance(atom, CuttingLabel) instead?
+        _, cutting_label_list = Fragment.detect_cutting_label(atom.label)
         if cutting_label_list != []:
+            assert isinstance(atom, CuttingLabel), "Using isinstance(atom, CuttingLabel) in place of detect_cutting_label(atom.label) would have given a false negative."
             saved_index = index
             label = atom.label
             if label in label_dict:
                 label_dict[label].append(saved_index)
             else:
                 label_dict[label] = [saved_index]
+        else:
+            # cutting_label_list == []
+            assert not isinstance(atom, CuttingLabel), "Using isinstance(atom, CuttingLabel) in place of detect_cutting_label(atom.label) would have given a false positive."
     rd_bonds = Chem.rdchem.BondType
-    orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
-              'Q': rd_bonds.QUADRUPLE}
+    # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
+    orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE,
+              'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
+              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO,
+              'H': rd_bonds.HYDROGEN, 'R': rd_bonds.UNSPECIFIED,
+              None: rd_bonds.UNSPECIFIED}
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.items():
@@ -106,8 +126,11 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
-                order_string = bond.get_order_str()
-                order = orders[order_string]
+                if ignore_bond_orders:
+                    order = rd_bonds.UNSPECIFIED
+                else:
+                    order_string = bond.get_order_str()
+                    order = orders[order_string]
                 rdkitmol.AddBond(index1, index2, order)
 
     # Make editable mol into a mol and rectify the molecule
@@ -119,10 +142,17 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     for atom in rdkitmol.GetAtoms():
         if atom.GetAtomicNum() > 1:
             atom.SetNoImplicit(True)
-    if sanitize:
-        Chem.SanitizeMol(rdkitmol)
     if remove_h:
-        rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
+        rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=False) # skip sanitization here, do it later if requested
+    if sanitize == True:
+        Chem.SanitizeMol(rdkitmol)
+    elif sanitize == "partial":
+        try:
+            Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES)
+        except (KekulizeException, AtomKekulizeException):
+            logging.debug("Kekulization failed; sanitizing without Kekulize")
+            Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES ^ Chem.SANITIZE_KEKULIZE)
+
     if return_mapping:
         return rdkitmol, rd_atom_indices
     return rdkitmol

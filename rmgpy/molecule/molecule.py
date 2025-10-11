@@ -768,7 +768,7 @@ class Bond(Edge):
 
     def get_order_str(self):
         """
-        returns a string representing the bond order
+        Returns a string representing the bond order. Returns None if bond order does not have a string representation.
         """
         if self.is_single():
             return 'S'
@@ -787,7 +787,8 @@ class Bond(Edge):
         elif self.is_reaction_bond():
             return 'R'
         else:
-            raise ValueError("Bond order {} does not have string representation.".format(self.order))
+            logging.debug("Bond order {} does not have string representation; treating as unspecified.".format(self.order))
+            return None
 
     def set_order_str(self, new_order):
         """
@@ -1891,7 +1892,10 @@ class Molecule(Graph):
         self.vertices, self.multiplicity, self.metal, self.facet = from_adjacency_list(adjlist, group=False, saturate_h=saturate_h,
                                                                check_consistency=check_consistency)
         self.update_atomtypes(raise_exception=raise_atomtype_exception)
-        self.identify_ring_membership()
+
+        # identify ring membership iff it's not a suspicious molecule
+        if not self.is_electron():
+            self.identify_ring_membership()
 
         # Check if multiplicity is possible
         n_rad = self.get_radical_count()
@@ -2048,6 +2052,10 @@ class Molecule(Graph):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
+        # RDKit doesn't support electron
+        if self.is_electron():
+            raise ValueError("Cannot convert electron molecule to RDKit Mol object")
+        
         return converter.to_rdkit_mol(self, *args, **kwargs)
 
     def to_adjacency_list(self, label='', remove_h=False, remove_lone_pairs=False, old_style=False):
@@ -2190,9 +2198,9 @@ class Molecule(Graph):
         will not fail for fused aromatic rings.
         """
         cython.declare(rc=list, cycle=list, atom=Atom)
-        rc = self.get_relevant_cycles()
-        if rc:
-            for cycle in rc:
+        rings = self.get_symmetrized_smallest_set_of_smallest_rings()
+        if rings:
+            for cycle in rings:
                 if len(cycle) == 6:
                     for atom in cycle:
                         # print atom.atomtype.label
@@ -2328,6 +2336,10 @@ class Molecule(Graph):
         and this process may involve atom order change by default. Set ``save_order`` to
         ``True`` to force the atom order unchanged.
         """
+        # RDKit does not support electron
+        if self.is_electron():
+            return False
+        
         cython.declare(atom=Atom, total=int, aromatic_atoms=set, aryl=int)
         if aromatic_rings is None:
             aromatic_rings = self.get_aromatic_rings(save_order=save_order)[0]
@@ -2499,17 +2511,9 @@ class Molecule(Graph):
         """
         Performs ring perception and saves ring membership information to the Atom.props attribute.
         """
-        cython.declare(rc=list, atom=Atom, ring=list)
-
-        # Get the set of relevant cycles
-        rc = self.get_relevant_cycles()
-        # Identify whether each atom is in a ring
+        cython.declare(atom=Atom)
         for atom in self.atoms:
-            atom.props['inRing'] = False
-            for ring in rc:
-                if atom in ring:
-                    atom.props['inRing'] = True
-                    break
+            atom.props["inRing"] = self.is_vertex_in_cycle(atom)
 
     def count_aromatic_rings(self):
         """
@@ -2518,8 +2522,12 @@ class Molecule(Graph):
 
         Returns an integer corresponding to the number or aromatic rings.
         """
+        # RDKit does not support electron
+        if self.is_electron():
+            return 0
+        
         cython.declare(rings=list, count=int, ring=list, bonds=list, bond=Bond)
-        rings = self.get_relevant_cycles()
+        rings = self.get_symmetrized_smallest_set_of_smallest_rings()
         count = 0
         for ring in rings:
             if len(ring) != 6:
@@ -2536,7 +2544,7 @@ class Molecule(Graph):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
-        Identifies rings using `Graph.get_smallest_set_of_smallest_rings()`, then uses RDKit to perceive aromaticity.
+        Identifies rings, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
         Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
 
@@ -2546,6 +2554,10 @@ class Molecule(Graph):
         By default, the atom order will be sorted to get consistent results from different runs. The atom order can
         be saved when dealing with problems that are sensitive to the atom map.
         """
+        # RDKit does not support electron
+        if self.is_electron():
+            return [], []
+        
         cython.declare(rd_atom_indices=dict, ob_atom_ids=dict, aromatic_rings=list, aromatic_bonds=list)
         cython.declare(ring0=list, i=cython.int, atom1=Atom, atom2=Atom)
 
@@ -2553,7 +2565,7 @@ class Molecule(Graph):
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
-            rings = self.get_relevant_cycles()
+            rings = self.get_symmetrized_smallest_set_of_smallest_rings()
 
         # Remove rings that share more than 3 atoms, since they cannot be planar
         cython.declare(toRemove=set, j=cython.int, toRemoveSorted=list)
@@ -2635,18 +2647,17 @@ class Molecule(Graph):
 
     def get_deterministic_sssr(self):
         """
-        Modified `Graph` method `get_smallest_set_of_smallest_rings` by sorting calculated cycles
-        by short length and then high atomic number instead of just short length (for cases where
-        multiple cycles with same length are found, `get_smallest_set_of_smallest_rings` outputs
-        non-determinstically).
-        
-        For instance, molecule with this smiles: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
+        Sorts calculated cycles by short length and then high atomic number instead of just short length.
+        Originally created as an alternative to `get_smallest_set_of_smallest_rings` before it was converted
+        to use only RDKit Functions.
+
+        For instance, previously molecule with this smiles: C1CC2C3CSC(CO3)C2C1, would have non-deterministic
         output from `get_smallest_set_of_smallest_rings`, which leads to non-deterministic bicyclic decomposition.
         Using this new method can effectively prevent this situation.
 
         Important Note: This method returns an incorrect set of SSSR in certain molecules (such as cubane).
-        It is recommended to use the main `Graph.get_smallest_set_of_smallest_rings` method in new applications.
-        Alternatively, consider using `Graph.get_relevant_cycles` for deterministic output.
+        It is recommended to use the main `Molecule.get_smallest_set_of_smallest_rings` method in new applications.
+        Alternatively, consider using `Molecule.get_relevant_cycles` for deterministic output.
 
         In future development, this method should ideally be replaced by some method to select a deterministic
         set of SSSR from the set of Relevant Cycles, as that would be a more robust solution.
@@ -2749,6 +2760,251 @@ class Molecule(Graph):
             cycle_list[i] = [self.vertices[vertices.index(v)] for v in cycle_list[i]]
 
         return cycle_list
+
+    def get_smallest_set_of_smallest_rings(self):
+        """
+        Returned the strictly smallest set of smallest rings (SSSR).
+
+        Removed in favor of RDKit's Symmetrized SSSR perception, which 
+        is less arbitrary, more chemically meaningful, and more consistent.
+        Use get_symmetrized_smallest_set_of_smallest_rings instead.
+        """
+        raise NotImplementedError("Smallest Set of Smallest Rings is not implemented. "
+                                  "Use get_symmetrized_smallest_set_of_smallest_rings instead.")
+
+    def get_symmetrized_smallest_set_of_smallest_rings(self):
+        """
+        Returns the symmetrized smallest set of smallest rings (SSSR) as a list of lists of Atom objects.
+
+        Uses RDKit's built-in ring perception (GetSymmSSSR).
+        The symmetrized SSSR is at least as large as the SSSR for a molecule. 
+        In certain highly-symmetric cases (e.g. cubane), the symmetrized SSSR 
+        can be a bit larger (i.e. the number of symmetrized rings is >= NumBonds-NumAtoms+1).
+        It is usually more chemically meaningful, and is less random/arbitrary than the SSSR,
+        which is non-deterministic in certain cases.
+        """
+        # RDKit does not support electron
+        if self.is_electron():
+            return []
+        
+        from rdkit import Chem
+        
+        symm_sssr = []
+        # Get the symmetric SSSR using RDKit
+        rdkit_result = self.to_rdkit_mol(remove_h=False, sanitize=False,
+                                         save_order=True, ignore_bond_orders=True)
+        
+        if isinstance(rdkit_result, tuple):  # can be a tuple if Fragment version of to_rdkit_mol is used
+            rdkit_mol = rdkit_result[0]
+        else:
+            rdkit_mol = rdkit_result
+
+        ring_info = Chem.GetSymmSSSR(rdkit_mol)
+        for ring in ring_info:
+            atom_ring = [self.atoms[idx] for idx in ring]
+            sorted_ring = self.sort_cyclic_vertices(atom_ring)
+            symm_sssr.append(sorted_ring)
+        return symm_sssr
+
+
+    def get_relevant_cycles(self):
+        """
+        Returned the "relevant cycles" (RC), as implemented in RingDecomposerLib.
+
+        Deprecated when RingDecomposerLib was removed.
+        Now we are using methods that use RDKit, in the Molecule class.
+        Namely get_symmetrized_smallest_set_of_smallest_rings.
+
+        References:
+            Kolodzik, A.; Urbaczek, S.; Rarey, M.
+            Unique Ring Families: A Chemically Meaningful Description
+            of Molecular Ring Topologies.
+            J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021
+
+            Flachsenberg, F.; Andresen, N.; Rarey, M.
+            RingDecomposerLib: An Open-Source Implementation of
+            Unique Ring Families and Other Cycle Bases.
+            J. Chem. Inf. Model., 2017, 57 (2), pp 122-126
+        """
+        raise NotImplementedError("'Relevant Cycles' are not implemented. "
+                                  "Use get_symmetrized_smallest_set_of_smallest_rings instead.")
+
+    def get_all_polycyclic_vertices(self):
+        """
+        Return all vertices belonging to two or more cycles, fused or spirocyclic.
+        """
+        sssr = self.get_symmetrized_smallest_set_of_smallest_rings()
+        # Todo: could get RDKit to do this directly, since we're going via RDKit.
+        polycyclic_vertices = []
+        if sssr:
+            vertices = []
+            for cycle in sssr:
+                for vertex in cycle:
+                    if vertex not in vertices:
+                        vertices.append(vertex)
+                    else:
+                        if vertex not in polycyclic_vertices:
+                            polycyclic_vertices.append(vertex)
+        return polycyclic_vertices
+
+    def get_polycycles(self):
+        """
+        Return a list of cycles that are polycyclic.
+        In other words, merge the cycles which are fused or spirocyclic into 
+        a single polycyclic cycle, and return only those cycles. 
+        Cycles which are not polycyclic are not returned.
+        """
+        # Todo: if we're now using RDKit for ring detection anyway, we might be able to use it to do more of this method.
+
+        # Now using symmetrized SSSR not strictly smallest SSSR. Hopefully this works the same?
+        sssr = self.get_symmetrized_smallest_set_of_smallest_rings()
+        if not sssr:
+            return []
+
+        polycyclic_vertices = self.get_all_polycyclic_vertices()
+
+        if not polycyclic_vertices:
+            # no polycyclic vertices detected
+            return []
+        else:
+            # polycyclic vertices found, merge cycles together
+            # that have common polycyclic vertices            
+            continuous_cycles = []
+            for vertex in polycyclic_vertices:
+                # First check if it is in any existing continuous cycles
+                for cycle in continuous_cycles:
+                    if vertex in cycle:
+                        polycyclic_cycle = cycle
+                        break
+                else:
+                    # Otherwise create a new cycle
+                    polycyclic_cycle = set()
+                    continuous_cycles.append(polycyclic_cycle)
+
+                for cycle in sssr:
+                    if vertex in cycle:
+                        polycyclic_cycle.update(cycle)
+
+            # convert each set to a list
+            continuous_cycles = [list(cycle) for cycle in continuous_cycles]
+            return continuous_cycles
+
+    def get_monocycles(self):
+        """
+        Return a list of cycles that are monocyclic.
+        """
+        sssr = self.get_symmetrized_smallest_set_of_smallest_rings()
+        if not sssr:
+            return []
+
+        polycyclic_vertices = self.get_all_polycyclic_vertices()
+
+        if not polycyclic_vertices:
+            # No polycyclic_vertices detected, all the rings from get_symmetrized_smallest_set_of_smallest_rings
+            # are monocyclic
+            return sssr
+
+        polycyclic_sssr = []
+        for vertex in polycyclic_vertices:
+            for cycle in sssr:
+                if vertex in cycle:
+                    if cycle not in polycyclic_sssr:
+                        polycyclic_sssr.append(cycle)
+
+        # remove the polycyclic cycles from the list of SSSR, leaving behind just the monocyclics
+        monocyclic_cycles = sssr
+        for cycle in polycyclic_sssr:
+            monocyclic_cycles.remove(cycle)
+        return monocyclic_cycles
+
+    def get_disparate_cycles(self):
+        """
+        Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
+        Takes the set of rings and recursively merges all cycles which share vertices.
+        
+        Returns: monocyclic_cycles, polycyclic_cycles
+        """
+        rings = self.get_symmetrized_smallest_set_of_smallest_rings()
+
+        if not rings:
+            return [], []
+
+        # Convert cycles to sets
+        cycle_sets = [set(cycle_list) for cycle_list in rings]
+
+        # Merge connected cycles
+        monocyclic_cycles, polycyclic_cycles = self._merge_cycles(cycle_sets)
+
+        # Convert cycles back to lists
+        monocyclic_cycles = [list(cycle_set) for cycle_set in monocyclic_cycles]
+        polycyclic_cycles = [list(cycle_set) for cycle_set in polycyclic_cycles]
+
+        return monocyclic_cycles, polycyclic_cycles
+
+    def _merge_cycles(self, cycle_sets):
+        """
+        Recursively merges cycles that share common atoms.
+        
+        Returns one list with unmerged cycles and one list with merged cycles.
+        """
+        unmerged_cycles = []
+        merged_cycles = []
+
+        # Loop through each cycle
+        for cycle in cycle_sets:
+            merged = False
+            new = False
+
+            # Check if it's attached to an existing merged cycle
+            for m_cycle in merged_cycles:
+                if not m_cycle.isdisjoint(cycle):
+                    m_cycle.update(cycle)
+                    merged = True
+                    # It should only match one merged cycle, so we can break here
+                    break
+            else:
+                # If it doesn't match any existing merged cycles, initiate a new one
+                m_cycle = cycle.copy()
+                new = True
+
+            # Check if the new merged cycle is attached to any of the unmerged cycles
+            matched = []
+            for i, u_cycle in enumerate(unmerged_cycles):
+                if not m_cycle.isdisjoint(u_cycle):
+                    m_cycle.update(u_cycle)
+                    matched.append(i)
+                    merged = True
+            # Remove matched cycles from list of unmerged cycles
+            for i in reversed(matched):
+                del unmerged_cycles[i]
+
+            if merged and new:
+                merged_cycles.append(m_cycle)
+            elif not merged:
+                unmerged_cycles.append(cycle)
+
+        # If any rings were successfully merged, try to merge further
+        if len(merged_cycles) > 1:
+            u, m = self._merge_cycles(merged_cycles)
+            merged_cycles = u + m
+
+        return unmerged_cycles, merged_cycles
+
+    def get_max_cycle_overlap(self):
+        """
+        Return the maximum number of vertices that are shared between
+        any two cycles in the graph. For example, if there are only
+        disparate monocycles or no cycles, the maximum overlap is zero;
+        if there are "spiro" cycles, it is one; if there are "fused"
+        cycles, it is two; and if there are "bridged" cycles, it is
+        three.
+        """
+        cycles = self.get_symmetrized_smallest_set_of_smallest_rings()
+        max_overlap = 0
+        for i, j in itertools.combinations(range(len(cycles)), 2):
+            overlap = len(set(cycles[i]) & set(cycles[j]))
+            max_overlap = max(overlap, max_overlap)
+        return max_overlap
 
     def kekulize(self):
         """

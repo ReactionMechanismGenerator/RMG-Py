@@ -298,3 +298,101 @@ class TestMoleculeDrawer:
             assert os.path.exists(path), "File doesn't exist"
             os.unlink(path)
             assert isinstance(surface, ImageSurface)
+
+    def test_draw_bidentate_with_charge_separation(self):
+        molecule = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {4,D}
+3 O u0 p2 c0 {1,S} {4,S}
+4 N u0 p0 c+1 {3,S} {2,D} {5,S}
+5 O u0 p3 c-1 {4,S}
+        """
+        )
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
+        surface, _cr, (_xoff, _yoff, _width, _height) = self.drawer.draw(molecule, file_format="pdf")
+        assert isinstance(surface, PDFSurface)
+
+    def test_draw_cation(self):
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
+        path = "test_molecule.pdf"
+        if os.path.exists(path):
+            os.unlink(path)
+        polycycle = Molecule(smiles="C1=NC2=C(N1)C(=O)[NH2+]C(=N2)N")
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(polycycle, file_format="pdf", target=path)
+        assert isinstance(surface, PDFSurface)
+        assert width > height
+        os.unlink(path)
+
+    def test_draw_anion(self):
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
+        path = "test_molecule.pdf"
+        if os.path.exists(path):
+            os.unlink(path)
+        polycycle = Molecule(smiles="c1ccc2c3ccccc3[CH-]c2c1")
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(polycycle, file_format="pdf", target=path)
+        assert isinstance(surface, PDFSurface)
+        assert width > height
+        os.unlink(path)
+
+    def test_draw_zwitterion(self):
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
+        path = "test_molecule.pdf"
+        if os.path.exists(path):
+            os.unlink(path)
+        polycycle = Molecule(smiles="[NH3+]CC(=O)[O-]")
+        surface, _cr, (_xoff, _yoff, width, height) = self.drawer.draw(polycycle, file_format="pdf", target=path)
+        assert isinstance(surface, PDFSurface)
+        assert width > height
+        os.unlink(path)
+
+    def test_draw_cation_on_surface(self):
+        molecule = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {3,S}
+3 O u0 p1 c+1 {1,S} {2,S} {4,S}
+4 H u0 p0 c0 {3,S}
+        """
+        )
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
+        path = "test_molecule.pdf"
+        if os.path.exists(path):
+            os.unlink(path)
+        surface, _cr, (_xoff, _yoff, _width, _height) = self.drawer.draw(molecule, file_format="pdf", target=path)
+        assert isinstance(surface, PDFSurface)
+        os.unlink(path)
+
+
+    def test_draw_anion_on_surface(self):
+        molecule = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0 {2,S}
+2 O u0 p3 c-1 {1,S}
+        """
+        )
+        try:
+            from cairocffi import PDFSurface
+        except ImportError:
+            from cairo import PDFSurface
+        path = "test_molecule.pdf"
+        if os.path.exists(path):
+            os.unlink(path)
+        surface, _cr, (_xoff, _yoff, _width, _height) = self.drawer.draw(molecule, file_format="pdf", target=path)
+        assert isinstance(surface, PDFSurface)
+        os.unlink(path)

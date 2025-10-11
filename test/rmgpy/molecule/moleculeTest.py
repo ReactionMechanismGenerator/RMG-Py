@@ -1544,13 +1544,13 @@ multiplicity 2
 
     def test_sssr(self):
         """
-        Test the Molecule.get_smallest_set_of_smallest_rings() method with a complex
+        Test the Molecule.get_symmetrized_smallest_set_of_smallest_rings() method with a complex
         polycyclic molecule.
         """
         molecule = Molecule()
         molecule.from_smiles("C(CC1C(C(CCCCCCCC)C1c1ccccc1)c1ccccc1)CCCCCC")
         # http://cactus.nci.nih.gov/chemical/structure/C(CC1C(C(CCCCCCCC)C1c1ccccc1)c1ccccc1)CCCCCC/image
-        sssr = molecule.get_smallest_set_of_smallest_rings()
+        sssr = molecule.get_symmetrized_smallest_set_of_smallest_rings()
         assert len(sssr) == 3
 
     def test_is_in_cycle_ethane(self):
@@ -2310,7 +2310,7 @@ multiplicity 2
     def test_get_polycyclic_rings(self):
         """
         Test that polycyclic rings within a molecule are returned properly in the function
-        `Graph().get_polycycles()`
+        `Molecule.get_polycycles()`
         """
         # norbornane
         m1 = Molecule(smiles="C1CC2CCC1C2")
@@ -2411,38 +2411,38 @@ multiplicity 2
         assert len(polyrings) == 1
         assert len(polyrings[0]) == 10
 
-    def test_get_smallest_set_of_smallest_rings(self):
+    def test_get_symmetrized_smallest_set_of_smallest_rings(self):
         """
         Test that SSSR within a molecule are returned properly in the function
-        `Graph().get_smallest_set_of_smallest_rings()`
+        `Molecule().get_symmetrized_smallest_set_of_smallest_rings()`
         """
 
         m1 = Molecule(smiles="C12CCC1C3CC2CC3")
-        sssr1 = m1.get_smallest_set_of_smallest_rings()
+        sssr1 = m1.get_symmetrized_smallest_set_of_smallest_rings()
         sssr1_sizes = sorted([len(ring) for ring in sssr1])
         sssr1_sizes_expected = [4, 5, 5]
         assert sssr1_sizes == sssr1_sizes_expected
 
         m2 = Molecule(smiles="C1(CC2)C(CC3)CC3C2C1")
-        sssr2 = m2.get_smallest_set_of_smallest_rings()
+        sssr2 = m2.get_symmetrized_smallest_set_of_smallest_rings()
         sssr2_sizes = sorted([len(ring) for ring in sssr2])
         sssr2_sizes_expected = [5, 5, 6]
         assert sssr2_sizes == sssr2_sizes_expected
 
         m3 = Molecule(smiles="C1(CC2)C2C(CCCC3)C3C1")
-        sssr3 = m3.get_smallest_set_of_smallest_rings()
+        sssr3 = m3.get_symmetrized_smallest_set_of_smallest_rings()
         sssr3_sizes = sorted([len(ring) for ring in sssr3])
         sssr3_sizes_expected = [4, 5, 6]
         assert sssr3_sizes == sssr3_sizes_expected
 
         m4 = Molecule(smiles="C12=CC=CC=C1C3=C2C=CC=C3")
-        sssr4 = m4.get_smallest_set_of_smallest_rings()
+        sssr4 = m4.get_symmetrized_smallest_set_of_smallest_rings()
         sssr4_sizes = sorted([len(ring) for ring in sssr4])
         sssr4_sizes_expected = [4, 6, 6]
         assert sssr4_sizes == sssr4_sizes_expected
 
         m5 = Molecule(smiles="C12=CC=CC=C1CC3=C(C=CC=C3)C2")
-        sssr5 = m5.get_smallest_set_of_smallest_rings()
+        sssr5 = m5.get_symmetrized_smallest_set_of_smallest_rings()
         sssr5_sizes = sorted([len(ring) for ring in sssr5])
         sssr5_sizes_expected = [6, 6, 6]
         assert sssr5_sizes == sssr5_sizes_expected
@@ -2980,10 +2980,23 @@ multiplicity 2
         mol = Molecule(smiles="c12ccccc1cccc2")
         mol.identify_ring_membership()
         for atom in mol.atoms:
-            if atom.element == "C":
+            if atom.is_carbon():
                 assert atom.props["inRing"]
-            elif atom.element == "H":
+            elif atom.is_hydrogen():
                 assert not atom.props["inRing"]
+            else:
+                raise ValueError("Unexpected atom type")
+        mol = Molecule(smiles="C1CCCC(O)CCCCCCC1")
+        mol.identify_ring_membership()
+        for atom in mol.atoms:
+            if atom.is_carbon():
+                assert atom.props["inRing"]
+            elif atom.is_hydrogen():
+                assert not atom.props["inRing"]
+            elif atom.is_oxygen():
+                assert not atom.props["inRing"]
+            else:
+                raise ValueError("Unexpected atom type")
 
     def test_enumerate_bonds(self):
         """Test that generating a count of bond labels works properly."""
@@ -3043,3 +3056,136 @@ multiplicity 2
         assert len(mol.get_all_edges()) == 2
         mol.remove_van_der_waals_bonds()
         assert len(mol.get_all_edges()) == 1
+
+    def test_get_symmetrized_smallest_set_of_smallest_rings(self):
+        """
+        Test the Molecule.get_symmetrized_smallest_set_of_smallest_rings() method.
+        """
+        mol = Molecule(smiles="CCCC")
+        cycle_list = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 0
+        
+        # Create a cycle of length 4
+        mol = Molecule(smiles="C1CCC1")
+        cycle_list = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 1
+        assert len(cycle_list[0]) == 4
+
+        # Create a bridged tricyclic
+        mol = Molecule(smiles="C1C(C)CC2CC1C=C3C2CCC3")
+        cycle_list = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 3
+        assert len(cycle_list[0]) == 5
+
+        # Test cubane
+        mol = Molecule(smiles="C12C3C4C1C5C2C3C45")
+        cycle_list = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 6
+        for cycle in cycle_list:
+            assert len(cycle) == 4
+
+    def test_get_relevant_cycles(self):
+        """
+        Test the Molecule.get_relevant_cycles() raises correct error after deprecation.
+        """
+        mol = Molecule(smiles="CCCC")
+        with pytest.raises(NotImplementedError):
+            mol.get_relevant_cycles()
+
+    def test_cycle_list_order_sssr(self):
+        """
+        Test that get_symmetrized_smallest_set_of_smallest_rings return vertices in the proper order.
+
+        There are methods such as symmetry and molecule drawing which rely
+        on the fact that subsequent list entries are connected.
+        """
+        # Create a cycle of length 5
+        mol = Molecule(smiles="C1CCCC1")
+        # Test SSSR
+        sssr = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        assert len(sssr) == 1
+        assert len(sssr[0]) == 5
+        for i in range(5):
+            assert mol.has_bond(sssr[0][i], sssr[0][i - 1])
+
+    def test_get_max_cycle_overlap(self):
+        """
+        Test that get_max_cycle_overlap returns the correct overlap numbers
+        for different molecules.
+        """
+        # Linear molecule
+        linear = Molecule(smiles="CCC")
+        assert linear.get_max_cycle_overlap() == 0
+        
+        # Monocyclic molecule
+        mono = Molecule(smiles="C1CCCC1")
+        assert mono.get_max_cycle_overlap() == 0
+        
+        # Spirocyclic molecule
+        spiro = Molecule(smiles="C1CCC2(CC1)CC2")
+        assert spiro.get_max_cycle_overlap() == 1
+        
+        # Fused bicyclic molecule
+        fused = Molecule(smiles="C1C2C(CCC1)CCCC2")
+        assert fused.get_max_cycle_overlap() == 2
+        
+        # Bridged bicyclic molecule
+        bridged = Molecule(smiles="C1CC2CCC1C2")
+        assert bridged.get_max_cycle_overlap() == 3
+        
+        # Cube-like molecule (cubane)
+        cube = Molecule(smiles="C12C3C4C1C5C2C3C45")
+        # With the current algorithm for maximum overlap determination, a cube
+        # only has an overlap of 2, because the set of relevant cycles
+        # contains the six four-membered faces. This could be changed in the
+        # future.
+        assert cube.get_max_cycle_overlap() == 2
+
+    def test_get_all_polycyclic_vertices(self):
+        """
+        Test that get_all_polycyclic_vertices returns the correct vertices.
+        """
+        # Simple linear molecule
+        mol = Molecule(smiles="CCC")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) == 0
+        
+        # Monocyclic molecule
+        mol = Molecule(smiles="C1CCCC1")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) == 0
+        
+        # Fused bicyclic molecule
+        # TODO: don't just test length, test the actual vertices
+        mol = Molecule(smiles="C1C2C(CCC1)CCCC2")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) > 0
+        
+        # Spirocyclic molecule
+        # TODO: don't just test length, test the actual vertices
+        mol = Molecule(smiles="C1CCC2(CC1)CC2")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) > 0
+
+    def test_get_largest_ring(self):
+        """
+        Test that Molecule.get_largest_ring() method returns the largest ring.
+        """
+        # Create a complex polycyclic molecule
+        mol = Molecule(smiles="C14CCCCCC(C(CCC1CC2CCCCCCC2)CC3CCC3)C4")
+
+        # Get polycyclic rings
+        rings = mol.get_polycycles()
+        assert len(rings) == 1
+
+        long_ring = mol.get_largest_ring(rings[0][0])
+        long_ring2 = mol.get_largest_ring(rings[0][1])
+
+        # get the longer of the two rings
+        if len(long_ring) > len(long_ring2):
+            longest_ring = long_ring
+        else:
+            longest_ring = long_ring2
+
+        # longest ring should be one atom shorter than the full polycyclic ring
+        assert len(longest_ring) == len(rings[0]) - 1
