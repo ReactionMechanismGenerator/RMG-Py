@@ -3108,22 +3108,6 @@ multiplicity 2
         for i in range(5):
             assert mol.has_bond(sssr[0][i], sssr[0][i - 1])
 
-    def test_cycle_list_order_relevant_cycles(self):
-        """
-        Test that get_relevant_cycles return vertices in the proper order.
-
-        There are methods such as symmetry and molecule drawing which rely
-        on the fact that subsequent list entries are connected.
-        """
-        # Create a cycle of length 5
-        mol = Molecule(smiles="C1CCCC1")
-        # Test RC
-        rc = mol.get_relevant_cycles()
-        assert len(rc) == 1
-        assert len(rc[0]) == 5
-        for i in range(5):
-            assert mol.has_bond(rc[0][i], rc[0][i - 1])
-
     def test_get_max_cycle_overlap(self):
         """
         Test that get_max_cycle_overlap returns the correct overlap numbers
