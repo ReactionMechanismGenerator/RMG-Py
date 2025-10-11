@@ -327,7 +327,7 @@ class MoleculeDrawer(object):
         """
 
         # Find all of the cycles in the molecule
-        self.cycles = self.molecule.get_smallest_set_of_smallest_rings()
+        self.cycles = self.molecule.get_symmetrized_smallest_set_of_smallest_rings()
         self.ringSystems = []
 
         # If the molecule contains cycles, find them and group them

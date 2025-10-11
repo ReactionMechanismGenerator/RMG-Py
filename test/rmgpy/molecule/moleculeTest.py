@@ -1544,13 +1544,13 @@ multiplicity 2
 
     def test_sssr(self):
         """
-        Test the Molecule.get_smallest_set_of_smallest_rings() method with a complex
+        Test the Molecule.get_symmetrized_smallest_set_of_smallest_rings() method with a complex
         polycyclic molecule.
         """
         molecule = Molecule()
         molecule.from_smiles("C(CC1C(C(CCCCCCCC)C1c1ccccc1)c1ccccc1)CCCCCC")
         # http://cactus.nci.nih.gov/chemical/structure/C(CC1C(C(CCCCCCCC)C1c1ccccc1)c1ccccc1)CCCCCC/image
-        sssr = molecule.get_smallest_set_of_smallest_rings()
+        sssr = molecule.get_symmetrized_smallest_set_of_smallest_rings()
         assert len(sssr) == 3
 
     def test_is_in_cycle_ethane(self):
@@ -2411,38 +2411,38 @@ multiplicity 2
         assert len(polyrings) == 1
         assert len(polyrings[0]) == 10
 
-    def test_get_smallest_set_of_smallest_rings(self):
+    def test_get_symmetrized_smallest_set_of_smallest_rings(self):
         """
         Test that SSSR within a molecule are returned properly in the function
-        `Molecule().get_smallest_set_of_smallest_rings()`
+        `Molecule().get_symmetrized_smallest_set_of_smallest_rings()`
         """
 
         m1 = Molecule(smiles="C12CCC1C3CC2CC3")
-        sssr1 = m1.get_smallest_set_of_smallest_rings()
+        sssr1 = m1.get_symmetrized_smallest_set_of_smallest_rings()
         sssr1_sizes = sorted([len(ring) for ring in sssr1])
         sssr1_sizes_expected = [4, 5, 5]
         assert sssr1_sizes == sssr1_sizes_expected
 
         m2 = Molecule(smiles="C1(CC2)C(CC3)CC3C2C1")
-        sssr2 = m2.get_smallest_set_of_smallest_rings()
+        sssr2 = m2.get_symmetrized_smallest_set_of_smallest_rings()
         sssr2_sizes = sorted([len(ring) for ring in sssr2])
         sssr2_sizes_expected = [5, 5, 6]
         assert sssr2_sizes == sssr2_sizes_expected
 
         m3 = Molecule(smiles="C1(CC2)C2C(CCCC3)C3C1")
-        sssr3 = m3.get_smallest_set_of_smallest_rings()
+        sssr3 = m3.get_symmetrized_smallest_set_of_smallest_rings()
         sssr3_sizes = sorted([len(ring) for ring in sssr3])
         sssr3_sizes_expected = [4, 5, 6]
         assert sssr3_sizes == sssr3_sizes_expected
 
         m4 = Molecule(smiles="C12=CC=CC=C1C3=C2C=CC=C3")
-        sssr4 = m4.get_smallest_set_of_smallest_rings()
+        sssr4 = m4.get_symmetrized_smallest_set_of_smallest_rings()
         sssr4_sizes = sorted([len(ring) for ring in sssr4])
         sssr4_sizes_expected = [4, 6, 6]
         assert sssr4_sizes == sssr4_sizes_expected
 
         m5 = Molecule(smiles="C12=CC=CC=C1CC3=C(C=CC=C3)C2")
-        sssr5 = m5.get_smallest_set_of_smallest_rings()
+        sssr5 = m5.get_symmetrized_smallest_set_of_smallest_rings()
         sssr5_sizes = sorted([len(ring) for ring in sssr5])
         sssr5_sizes_expected = [6, 6, 6]
         assert sssr5_sizes == sssr5_sizes_expected
@@ -3094,7 +3094,7 @@ multiplicity 2
 
     def test_cycle_list_order_sssr(self):
         """
-        Test that get_smallest_set_of_smallest_rings return vertices in the proper order.
+        Test that get_symmetrized_smallest_set_of_smallest_rings return vertices in the proper order.
 
         There are methods such as symmetry and molecule drawing which rely
         on the fact that subsequent list entries are connected.
@@ -3102,7 +3102,7 @@ multiplicity 2
         # Create a cycle of length 5
         mol = Molecule(smiles="C1CCCC1")
         # Test SSSR
-        sssr = mol.get_smallest_set_of_smallest_rings()
+        sssr = mol.get_symmetrized_smallest_set_of_smallest_rings()
         assert len(sssr) == 1
         assert len(sssr[0]) == 5
         for i in range(5):
