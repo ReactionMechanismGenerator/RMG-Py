@@ -134,6 +134,20 @@ class RDKitTest:
         assert [atom.number for atom in mol.atoms] == [1, 6, 7]
         assert [rdkitmol.GetAtomWithIdx(idx).GetAtomicNum() for idx in range(3)] == [1, 6, 7]
 
+    def test_ignoring_bonds(self):
+        """Test that to_rdkit_mol returns correct indices and atom mappings, when ignoring bond orders."""
+
+        mol = Molecule().from_smiles("CC1CCC=C1C=O")
+        rdkitmol, rd_atom_indices = to_rdkit_mol(mol, remove_h=False,
+                                                 sanitize=False, return_mapping=True,
+                                                 ignore_bond_orders=True)
+        for atom in mol.atoms:
+            # Check that all atoms are found in mapping
+            assert atom in rd_atom_indices
+            # Check that all bonds are in rdkitmol with correct mapping and no order
+            for connected_atom, bond in atom.bonds.items():
+                bond_type = str(rdkitmol.GetBondBetweenAtoms(rd_atom_indices[atom], rd_atom_indices[connected_atom]).GetBondType())
+                assert bond_type == "UNSPECIFIED"
 
 class ConverterTest:
     def setup_class(self):

@@ -50,7 +50,8 @@ import rmgpy.molecule.molecule as mm
 from rmgpy.exceptions import DependencyError
 
 
-def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_order=False):
+def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
+                 save_order=False, ignore_bond_orders=False):
     """
     Convert a molecular structure to a RDKit rdmol object. Uses
     `RDKit <https://rdkit.org/>`_ to perform the conversion.
@@ -58,7 +59,13 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
 
     If return_mapping==True then it also returns a dictionary mapping the
     atoms to RDKit's atom indices.
+
+    If ignore_bond_orders==True, all bonds are converted to unknown bonds, and 
+    sanitization is skipped. This is helpful when all you want is ring perception,
+    for example. Must also set sanitize=False.
     """
+    if ignore_bond_orders and sanitize:
+        raise ValueError("If ignore_bond_orders is True, sanitize must be False")
     from rmgpy.molecule.fragment import Fragment
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
@@ -73,7 +80,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
             rd_atom = Chem.rdchem.Atom('Pt')  # not sure how to do this with linear scaling when this might not be Pt
         elif atom.element.symbol in ['R', 'L']:
             rd_atom = Chem.rdchem.Atom(0)
-        else:   
+        else:
             rd_atom = Chem.rdchem.Atom(atom.element.symbol)
         if atom.element.isotope != -1:
             rd_atom.SetIsotope(atom.element.isotope)
@@ -100,8 +107,11 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
                 label_dict[label] = [saved_index]
     rd_bonds = Chem.rdchem.BondType
     # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
-    orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE, 'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
-              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO, 'H': rd_bonds.HYDROGEN, 'R': rd_bonds.UNSPECIFIED} 
+    orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE,
+              'T': rd_bonds.TRIPLE, 'B': rd_bonds.AROMATIC,
+              'Q': rd_bonds.QUADRUPLE, 'vdW': rd_bonds.ZERO,
+              'H': rd_bonds.HYDROGEN, 'R': rd_bonds.UNSPECIFIED,
+              None: rd_bonds.UNSPECIFIED}
     # Add the bonds
     for atom1 in mol.vertices:
         for atom2, bond in atom1.edges.items():
@@ -110,10 +120,10 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
             index1 = atoms.index(atom1)
             index2 = atoms.index(atom2)
             if index1 < index2:
-                order_string = bond.get_order_str()
-                if order_string is None:
+                if ignore_bond_orders:
                     order = rd_bonds.UNSPECIFIED
                 else:
+                    order_string = bond.get_order_str()
                     order = orders[order_string]
                 rdkitmol.AddBond(index1, index2, order)
 
