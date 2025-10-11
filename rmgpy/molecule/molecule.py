@@ -2831,7 +2831,8 @@ class Molecule(Graph):
         """
         Return all vertices belonging to two or more cycles, fused or spirocyclic.
         """
-        sssr = self.get_smallest_set_of_smallest_rings()
+        sssr = self.get_symmetrized_smallest_set_of_smallest_rings()
+        # Todo: could get RDKit to do this directly, since we're going via RDKit.
         polycyclic_vertices = []
         if sssr:
             vertices = []
@@ -2890,14 +2891,14 @@ class Molecule(Graph):
         """
         Return a list of cycles that are monocyclic.
         """
-        sssr = self.get_smallest_set_of_smallest_rings()
+        sssr = self.get_symmetrized_smallest_set_of_smallest_rings()
         if not sssr:
             return []
 
         polycyclic_vertices = self.get_all_polycyclic_vertices()
 
         if not polycyclic_vertices:
-            # No polycyclic_vertices detected, all the rings from get_smallest_set_of_smallest_rings
+            # No polycyclic_vertices detected, all the rings from get_symmetrized_smallest_set_of_smallest_rings
             # are monocyclic
             return sssr
 
@@ -2996,7 +2997,7 @@ class Molecule(Graph):
         cycles, it is two; and if there are "bridged" cycles, it is
         three.
         """
-        cycles = self.get_smallest_set_of_smallest_rings()
+        cycles = self.get_symmetrized_smallest_set_of_smallest_rings()
         max_overlap = 0
         for i, j in itertools.combinations(range(len(cycles)), 2):
             overlap = len(set(cycles[i]) & set(cycles[j]))
