@@ -1623,7 +1623,7 @@ class SolvationDatabase(object):
         # Take C1=CC=C([O])C(O)=C1 as an example, we need to remove the interation of OH-OH, then add the interaction of Oj-OH.
         # For now, we only apply this part to cyclic structure because we only have radical interaction data for aromatic radical.
         if saturated_struct.is_cyclic():
-            sssr = saturated_struct.get_smallest_set_of_smallest_rings()
+            sssr = saturated_struct.get_symmetrized_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -1631,7 +1631,7 @@ class SolvationDatabase(object):
                                                        saturated_struct, {'*1': atomPair[0], '*2': atomPair[1]})
                     except KeyError:
                         pass
-            sssr = molecule.get_smallest_set_of_smallest_rings()
+            sssr = molecule.get_symmetrized_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -1707,7 +1707,7 @@ class SolvationDatabase(object):
 
         # Remove all of the long distance interactions of the replaced structure. Then add the long interactions of the halogenated molecule.
         if replaced_struct.is_cyclic():
-            sssr = replaced_struct.get_smallest_set_of_smallest_rings()
+            sssr = replaced_struct.get_symmetrized_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -1715,7 +1715,7 @@ class SolvationDatabase(object):
                                                        replaced_struct, {'*1': atomPair[0], '*2': atomPair[1]})
                     except KeyError:
                         pass
-            sssr = molecule.get_smallest_set_of_smallest_rings()
+            sssr = molecule.get_symmetrized_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -1799,7 +1799,7 @@ class SolvationDatabase(object):
         # In my opinion, it's cleaner to do it in the current way.
         # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
         if cyclic:
-            sssr = molecule.get_smallest_set_of_smallest_rings()
+            sssr = molecule.get_symmetrized_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
