@@ -90,7 +90,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
         # Check if a cutting label is present. If preserve this so that it is added to the SMILES string
         # Fragment's representative species is Molecule (with CuttingLabel replaced by Si but label as CuttingLabel)
         # so we use detect_cutting_label to check atom.label
-        _, cutting_label_list = Fragment().detect_cutting_label(atom.label)
+        _, cutting_label_list = Fragment.detect_cutting_label(atom.label)
         if cutting_label_list != []:
             saved_index = index
             label = atom.label
