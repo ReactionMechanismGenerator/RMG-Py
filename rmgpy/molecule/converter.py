@@ -47,6 +47,7 @@ except ImportError:
 
 import rmgpy.molecule.element as elements
 import rmgpy.molecule.molecule as mm
+from rmgpy.molecule.fragment import CuttingLabel
 from rmgpy.exceptions import DependencyError
 
 
@@ -97,14 +98,19 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
         # Check if a cutting label is present. If preserve this so that it is added to the SMILES string
         # Fragment's representative species is Molecule (with CuttingLabel replaced by Si but label as CuttingLabel)
         # so we use detect_cutting_label to check atom.label
+        # Todo: could we use isinstance(atom, CuttingLabel) instead?
         _, cutting_label_list = Fragment.detect_cutting_label(atom.label)
         if cutting_label_list != []:
+            assert isinstance(atom, CuttingLabel), "Using isinstance(atom, CuttingLabel) in place of detect_cutting_label(atom.label) would have given a false negative."
             saved_index = index
             label = atom.label
             if label in label_dict:
                 label_dict[label].append(saved_index)
             else:
                 label_dict[label] = [saved_index]
+        else:
+            # cutting_label_list == []
+            assert not isinstance(atom, CuttingLabel), "Using isinstance(atom, CuttingLabel) in place of detect_cutting_label(atom.label) would have given a false positive."
     rd_bonds = Chem.rdchem.BondType
     # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE,
