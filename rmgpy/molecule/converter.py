@@ -126,6 +126,8 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
     for atom in rdkitmol.GetAtoms():
         if atom.GetAtomicNum() > 1:
             atom.SetNoImplicit(True)
+    if remove_h:
+        rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=False) # skip sanitization here, do it later if requested
     if sanitize == True:
         Chem.SanitizeMol(rdkitmol)
     elif sanitize == "partial":
@@ -134,8 +136,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True, save_o
         except (KekulizeException, AtomKekulizeException):
             logging.debug("Kekulization failed; sanitizing without Kekulize")
             Chem.SanitizeMol(rdkitmol, sanitizeOps=Chem.SANITIZE_ALL ^ Chem.SANITIZE_PROPERTIES ^ Chem.SANITIZE_KEKULIZE)
-    if remove_h:
-        rdkitmol = Chem.RemoveHs(rdkitmol, sanitize=sanitize)
+
     if return_mapping:
         return rdkitmol, rd_atom_indices
     return rdkitmol
