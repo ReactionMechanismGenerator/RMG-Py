@@ -2790,7 +2790,8 @@ class Molecule(Graph):
         
         symm_sssr = []
         # Get the symmetric SSSR using RDKit
-        rdkit_result = self.to_rdkit_mol(remove_h=False, sanitize="partial", save_order=True)
+        rdkit_result = self.to_rdkit_mol(remove_h=False, sanitize=False,
+                                         save_order=True, ignore_bond_orders=True)
         
         if isinstance(rdkit_result, tuple):  # can be a tuple if Fragment version of to_rdkit_mol is used
             rdkit_mol = rdkit_result[0]
