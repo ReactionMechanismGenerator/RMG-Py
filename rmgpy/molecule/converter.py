@@ -66,7 +66,7 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
     """
     if ignore_bond_orders and sanitize:
         raise ValueError("If ignore_bond_orders is True, sanitize must be False")
-    from rmgpy.molecule.fragment import Fragment
+    from rmgpy.molecule.fragment import Fragment, CuttingLabel
     # Sort the atoms before converting to ensure output is consistent
     # between different runs
     if not save_order:
@@ -97,14 +97,24 @@ def to_rdkit_mol(mol, remove_h=True, return_mapping=False, sanitize=True,
         # Check if a cutting label is present. If preserve this so that it is added to the SMILES string
         # Fragment's representative species is Molecule (with CuttingLabel replaced by Si but label as CuttingLabel)
         # so we use detect_cutting_label to check atom.label
+        # Todo: could we use atom.label in ('R', 'L') instead?
         _, cutting_label_list = Fragment.detect_cutting_label(atom.label)
-        if cutting_label_list != []:
+        if cutting_label_list != []:  # there is a cutting label detected
+            if not atom.label in ('R', 'L'):
+                print("Using atom.label in ('R', 'L') in place of detect_cutting_label(atom.label) would have given a false negative."
+                      f" atom.label = {atom.label}, cutting_label_list = {cutting_label_list}")
+
             saved_index = index
             label = atom.label
             if label in label_dict:
                 label_dict[label].append(saved_index)
             else:
                 label_dict[label] = [saved_index]
+        else:
+            # cutting_label_list == []
+            if atom.label in ('R', 'L'):
+                print("Using atom.label in ('R', 'L') in place of detect_cutting_label(atom.label) would have given a false positive."
+                      f" atom.label = {atom.label}, cutting_label_list = {cutting_label_list}")
     rd_bonds = Chem.rdchem.BondType
     # no vdW bond in RDKit, so "ZERO" or "OTHER" might be OK
     orders = {'S': rd_bonds.SINGLE, 'D': rd_bonds.DOUBLE,
