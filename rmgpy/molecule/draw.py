@@ -377,19 +377,20 @@ class MoleculeDrawer(object):
 
         if use_rdkit == True:
             # Use RDKit 2D coordinate generation:
-
-            # Generate the RDkit molecule from the RDkit molecule, use geometry
+            # Generate the RDkit molecule from the RDkit molecule, saving mapping
             # in order to match the atoms in the rdmol with the atoms in the
             # RMG molecule (which is required to extract coordinates).
-            self.geometry = Geometry(None, None, self.molecule, None)
+            rdmol, rd_atom_idx = self.molecule.to_rdkit_mol(remove_h=False,
+                                                            return_mapping=True,
+                                                            sanitize="partial")
 
-            rdmol, rd_atom_idx = self.geometry.rd_build()
             AllChem.Compute2DCoords(rdmol)
 
             # Extract the coordinates from each atom.
+            rd_conformer = rdmol.GetConformer(0)
             for atom in atoms:
                 index = rd_atom_idx[atom]
-                point = rdmol.GetConformer(0).GetAtomPosition(index)
+                point = rd_conformer.GetAtomPosition(index)
                 coordinates[index, :] = [point.x * 0.6, point.y * 0.6]
 
             # RDKit generates some molecules more vertically than horizontally,
