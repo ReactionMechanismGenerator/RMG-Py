@@ -378,10 +378,10 @@ class TestNASA:
         assert nasa_dict["thermo_coverage_dependence"].keys() == self.thermo_coverage_dependence.keys()
         sp_name = list(self.thermo_coverage_dependence.keys())[0]
         assert nasa_dict['thermo_coverage_dependence'][sp_name]['model'] == self.thermo_coverage_dependence[sp_name]['model']
-        enthalpy_list = nasa_dict['thermo_coverage_dependence'][sp_name]['enthalpy-coefficients']['object'] 
-        # return [(str(coeff.value), str(coeff.units))for coeff in enthalpy_list], self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
-        assert [(int(coeff.value), str(coeff.units))for coeff in enthalpy_list] == self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
-        assert nasa_dict['thermo_coverage_dependence'][sp_name]['entropy-coefficients']['object'] == self.thermo_coverage_dependence[sp_name]['entropy-coefficients']
+        enthalpy_list = nasa_dict['thermo_coverage_dependence'][sp_name]['enthalpy-coefficients']['object']
+        assert [(int(coeff.value), str(coeff.units)) for coeff in enthalpy_list] == self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
+        entropy_list = nasa_dict['thermo_coverage_dependence'][sp_name]['entropy-coefficients']['object']
+        assert [(int(coeff.value), str(coeff.units)) for coeff in entropy_list] == self.thermo_coverage_dependence[sp_name]['entropy-coefficients']
         assert nasa_dict["comment"] == self.comment
         assert tuple(nasa_dict["polynomials"]["polynomial1"]["coeffs"]["object"]) == tuple(self.coeffs_low)
         assert tuple(nasa_dict["polynomials"]["polynomial2"]["coeffs"]["object"]) == tuple(self.coeffs_high)
