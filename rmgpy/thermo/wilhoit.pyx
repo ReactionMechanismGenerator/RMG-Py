@@ -59,7 +59,7 @@ cdef class Wilhoit(HeatCapacityModel):
     `B`                           The Wilhoit scaled temperature coefficient in K
     `Tmin`                        The minimum temperature in K at which the model is valid, or zero if unknown or undefined
     `Tmax`                        The maximum temperature in K at which the model is valid, or zero if unknown or undefined
-    `thermo_covreage_dependence`  The coverage dependence of the thermo
+    `thermo_coverage_dependence`  The coverage dependence of the thermo
     `comment`                     Information about the model (e.g. its source)
     ============================= =========================================================================================
     """
