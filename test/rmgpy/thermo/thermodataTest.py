@@ -36,7 +36,7 @@ import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.thermo.thermodata import ThermoData
-
+import rmgpy.quantity as quantity
 
 class TestThermoData:
     """
@@ -53,7 +53,7 @@ class TestThermoData:
         self.Tmin = 100.0
         self.Tmax = 3000.0
         self.E0 = -782292.0
-        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}}
+        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[quantity.Enthalpy(1,'J/mol'),quantity.Enthalpy(2,'J/mol'),quantity.Enthalpy(3,'J/mol')], "entropy-coefficients":[quantity.Entropy(1,'J/(mol*K)'),quantity.Entropy(2,'J/(mol*K)'),quantity.Entropy(3,'J/(mol*K)')]}}
         self.comment = "C2H6"
         self.thermodata = ThermoData(
             Tdata=(self.Tdata, "K"),
