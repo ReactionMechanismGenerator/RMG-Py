@@ -31,7 +31,7 @@
 This script contains unit tests of the :mod:`rmgpy.thermo.wilhoit` module.
 """
 
-import os.path
+import os.path, ast
 
 
 import numpy as np
@@ -58,7 +58,7 @@ class TestWilhoit:
         self.Tmin = 300.0
         self.Tmax = 3000.0
         self.comment = "C2H6"
-        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[quantity.Enthalpy(1,'J/mol'),quantity.Enthalpy(2,'J/mol'),quantity.Enthalpy(3,'J/mol')], "entropy-coefficients":[quantity.Entropy(1,'J/(mol*K)'),quantity.Entropy(2,'J/(mol*K)'),quantity.Entropy(3,'J/(mol*K)')]}}
+        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}}
         self.wilhoit = Wilhoit(
             Cp0=(self.Cp0 * constants.R, "J/(mol*K)"),
             CpInf=(self.CpInf * constants.R, "J/(mol*K)"),
@@ -165,7 +165,7 @@ class TestWilhoit:
         """
         Test that the Wilhoit thermo_coverage_dependence property was properly set.
         """
-        assert repr(self.wilhoit.thermo_coverage_dependence) == repr(self.thermo_coverage_dependence)
+        assert ast.literal_eval(repr(self.wilhoit.thermo_coverage_dependence)) == ast.literal_eval(repr(self.thermo_coverage_dependence))
 
     def test_is_temperature_valid(self):
         """
@@ -428,6 +428,16 @@ class TestWilhoit:
         Test that a Wilhoit object can be converted to a dictionary representation properly
         """
         wilhoit_dict = self.wilhoit.as_dict()
+
+        assert wilhoit_dict["thermo_coverage_dependence"].keys() == self.thermo_coverage_dependence.keys()
+        sp_name = list(self.thermo_coverage_dependence.keys())[0]
+        assert wilhoit_dict['thermo_coverage_dependence'][sp_name]['model'] == self.thermo_coverage_dependence[sp_name]['model']
+        enthalpy_list = wilhoit_dict['thermo_coverage_dependence'][sp_name]['enthalpy-coefficients']['object']
+        assert [(int(coeff.value), str(coeff.units)) for coeff in enthalpy_list] == self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
+        entropy_list = wilhoit_dict['thermo_coverage_dependence'][sp_name]['entropy-coefficients']['object']
+        assert [(int(coeff.value), str(coeff.units)) for coeff in entropy_list] == self.thermo_coverage_dependence[sp_name]['entropy-coefficients']
+
+        wilhoit_dict = {k: wilhoit_dict[k] for k in wilhoit_dict.keys() - {'thermo_coverage_dependence'}}
         assert wilhoit_dict == {
             "comment": "C2H6",
             "B": {"units": "K", "class": "ScalarQuantity", "value": 1068.68},
@@ -458,11 +468,11 @@ class TestWilhoit:
                 "value": 178.76114800000002,
             },
             "class": "Wilhoit",
-            'thermo_coverage_dependence': {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}': {
-                                                                                        'model': 'polynomial', 
-                                                                                        'enthalpy-coefficients': {'class': 'np_array', 'object': [(1,'J/mol'), (2,'J/mol'), (3,'J/mol')]},
-                                                                                        'entropy-coefficients': {'class': 'np_array', 'object': [(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}}
-                                          }
+            # 'thermo_coverage_dependence': {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}': {
+            #                                                                             'model': 'polynomial',
+            #                                                                             'enthalpy-coefficients': {'class': 'np_array', 'object': [(1,'J/mol'), (2,'J/mol'), (3,'J/mol')]},
+            #                                                                             'entropy-coefficients': {'class': 'np_array', 'object': [(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}}
+            #                               }
         }
 
     def test_make_wilhoit(self):
