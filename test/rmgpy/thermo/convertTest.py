@@ -38,7 +38,6 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.thermo import Wilhoit, NASA, NASAPolynomial, ThermoData
 
-
 class TestConverter:
     """
     Contains unit tests of the thermodynamics model conversion functions.
@@ -57,7 +56,7 @@ class TestConverter:
             S0=(-118.46 * constants.R, "J/(mol*K)"),
             Tmin=(10, "K"),
             Tmax=(3000, "K"),
-            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}},
+            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}},
             comment="C2H6",
         )
         self.nasa = NASA(
@@ -94,7 +93,7 @@ class TestConverter:
             E0=(-93.6077, "kJ/mol"),
             Cp0=(4.0 * constants.R, "J/(mol*K)"),
             CpInf=(21.5 * constants.R, "J/(mol*K)"),
-            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}},
+            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}},
             comment="C2H6",
         )
         self.thermodata = ThermoData(
@@ -110,7 +109,7 @@ class TestConverter:
             Tmin=(10, "K"),
             Tmax=(3000, "K"),
             E0=(-93.6077, "kJ/mol"),
-            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,2,3]}},
+            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}},
             comment="C2H6",
         )
 
