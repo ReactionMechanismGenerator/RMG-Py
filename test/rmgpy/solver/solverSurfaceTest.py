@@ -802,7 +802,7 @@ class SurfaceReactorTest:
                 Cpdata=([1.50, 2.58, 3.40, 4.00, 4.73, 5.13, 5.57], "cal/(mol*K)"),
                 H298=(-11.26, "kcal/mol"),
                 S298=(0.44, "cal/(mol*K)"),
-                thermo_coverage_dependence={"1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}":{'model':'polynomial', 'enthalpy-coefficients':[1,2,3], "entropy-coefficients":[1,5,3]},}
+                thermo_coverage_dependence={"1 H u0 p0 {2,S} \n 2 X u0 p0 {1,S}":{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(5,'J/(mol*K)'),(3,'J/(mol*K)')]},}
             ),
         )
         
@@ -1008,7 +1008,7 @@ class SurfaceReactorTest:
                 Tmax=(2000, "K"),
                 E0=(-39.1285, "kJ/mol"),
                 thermo_coverage_dependence={"1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S} \n 2 H u0 p0 c0 {1,S} \n 3 H u0 p0 c0 {1,S} \n 4 H u0 p0 c0 {1,S} \n 5 X u0 p0 c0 {1,S}":
-                                            {'model':'polynomial', 'enthalpy-coefficients':[1e5,2,3], "entropy-coefficients":[1,5,3]},},
+                                            {'model':'polynomial', 'enthalpy-coefficients':[(1e5,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(5,'J/(mol*K)'),(3,'J/(mol*K)')]},},
                 comment="""Thermo library: surfaceThermoNi111""",
             ),
         )
