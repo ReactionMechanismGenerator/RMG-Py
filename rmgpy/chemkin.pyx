@@ -1865,7 +1865,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         for species, cov_params in kinetics.coverage_dependence.items():
             label = get_species_identifier(species)
             string += f'    COV / {label:<41} '
-            string += f"{cov_params['a'].value_si:<9.3g} {cov_params['m'].value_si:<9.3g} {cov_params['E'].value_si/4184.:<9.3f} /\n"
+            string += f"{cov_params['a']:<9.3g} {cov_params['m']:<9.3g} {cov_params['E'].value_si/4184.:<9.3f} /\n"
 
     if isinstance(kinetics, (_kinetics.ThirdBody, _kinetics.Lindemann, _kinetics.Troe)):
         # Write collider efficiencies
