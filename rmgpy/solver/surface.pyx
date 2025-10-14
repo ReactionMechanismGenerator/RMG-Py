@@ -489,7 +489,7 @@ cdef class SurfaceReactor(ReactionSystem):
             for matrix in self.thermo_coeff_matrix:
                 sp_free_energy_correction = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
                 free_energy_coverage_corrections.append(sp_free_energy_correction)
-            rxns_free_energy_change = np.diag(np.dot(self.stoi_matrix, np.transpose(np.array([free_energy_coverage_corrections]))))
+            rxns_free_energy_change = np.matmul(self.stoi_matrix,free_energy_coverage_corrections)
             corrected_K_eq = copy.deepcopy(self.Keq)
             corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
             kr = kf / corrected_K_eq
