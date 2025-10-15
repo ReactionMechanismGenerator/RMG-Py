@@ -2102,11 +2102,11 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
         The test molecule is bicyclic, we expect is_bicyclic()
         returns True.
         """
-        smiles = "C1=CCC2C1=C2"
-        mol = Molecule().from_smiles(smiles)
-        polyring = mol.get_disparate_cycles()[1][0]
-
-        assert is_bicyclic(polyring)
+        for smiles in ["C1=CCC2C1=C2", "C1=CC2C=CC1=CC2", "C1=CC2C=CC=1C=C2"]:
+            mol = Molecule().from_smiles(smiles)
+            polyrings = mol.get_disparate_cycles()[1]
+            assert len(polyrings) == 1
+            assert is_bicyclic(polyrings[0])
 
     def test_is_bicyclic2(self):
         """
