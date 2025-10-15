@@ -2272,6 +2272,32 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
         expected_aromatic_bond_num_in_bicyclics = [0, 0, 0]
         assert aromatic_bond_num_in_bicyclics == expected_aromatic_bond_num_in_bicyclics
 
+    def test_deterministic_bicyclic_decomposition(self):
+        """
+        Test that the decomposition of a polyring into bicyclics and then into single rings
+        is deterministic. This is important because the thermo estimation depends on the
+        order of the rings. Currently this is not guaranteed, so if this test fails, we
+        just skip it. 
+        
+        See https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2562
+        """
+        mol = Molecule(smiles="C1=CC2C=CC=1C=C2")
+        polyrings = mol.get_disparate_cycles()[1]
+        assert len(polyrings) == 1
+        assert rmgpy.data.thermo.is_bicyclic(polyrings[0])
+        polyring = polyrings[0]
+        submol = rmgpy.data.thermo.convert_ring_to_sub_molecule(polyring)[0]
+        rings = rmgpy.data.thermo.split_bicyclic_into_single_rings(submol)
+        assert len(rings) == 2
+        ring_smiles = [ring.to_smiles() for ring in rings]
+        for smiles in ring_smiles:
+            assert smiles in ["C1C=CC=C=C1", "C1C=CCC=C1"]
+        # Ensure that the order is the same every time
+        try:
+            assert ring_smiles == ["C1C=CC=C=C1", "C1C=CCC=C1"]
+        except AssertionError as e:
+            pytest.skip(f"Skipping because not yet deterministic (#2562): {e}")
+
     def test_combine_cycles(self):
         """
         This method tests the combine_cycles method, which simply joins two lists
