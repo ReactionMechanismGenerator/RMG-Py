@@ -1326,6 +1326,7 @@ def pressure_dependence(
         minimumNumberOfGrains=0,
         interpolation=None,
         maximumAtoms=None,
+        completedNetworks=None,
 ):
     from arkane.pdep import PressureDependenceJob
 
@@ -1366,6 +1367,10 @@ def pressure_dependence(
     rmg.pressure_dependence.active_j_rotor = True
     rmg.pressure_dependence.active_k_rotor = True
     rmg.pressure_dependence.rmgmode = True
+
+    if completedNetworks:
+        for formula in completedNetworks:
+            rmg.reaction_model.add_completed_pdep_network(formula)
 
 
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
@@ -1804,6 +1809,11 @@ def save_input_file(path, rmg):
         ))
         f.write('    interpolation = {0},\n'.format(rmg.pressure_dependence.interpolation_model))
         f.write('    maximumAtoms = {0}, \n'.format(rmg.pressure_dependence.maximum_atoms))
+        if rmg.reaction_model.completed_pdep_networks:
+            def formula(elements):
+                return ''.join(f'{el}{count}' if count > 1 else f'{el}' for el, count in elements)
+            f.write('    completedNetworks = {0},\n'.format(
+                [formula(net) for net in rmg.reaction_model.completed_pdep_networks]))
         f.write(')\n\n')
 
     # Quantum Mechanics
