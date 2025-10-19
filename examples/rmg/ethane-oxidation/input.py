@@ -61,6 +61,7 @@ pressureDependence(
     temperatures=(300,3000,'K',8),
     pressures=(0.001,100,'bar',5),
     interpolation=('Chebyshev', 6, 4),
+    completedNetworks=['C2H6'],
 )
 
 options(
