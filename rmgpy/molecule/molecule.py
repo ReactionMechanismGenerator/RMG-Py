@@ -1590,15 +1590,14 @@ class Molecule(Graph):
         """
         Returns the element count for the molecule as a dictionary.
         """
+        cython.declare(atom=Atom, element_count=dict, symbol=str, key=str)
         element_count = {}
         for atom in self.atoms:
             symbol = atom.element.symbol
-            isotope = atom.element.isotope
-            key = symbol
-            if key in element_count:
-                element_count[key] += 1
+            if symbol in element_count:
+                element_count[symbol] += 1
             else:
-                element_count[key] = 1
+                element_count[symbol] = 1
 
         return element_count
 
