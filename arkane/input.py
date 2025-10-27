@@ -186,6 +186,8 @@ def species(label, *args, **kwargs):
                 raise TypeError('species() got an unexpected keyword argument {0!r}.'.format(key))
 
         if structure:
+            if spin_multiplicity:
+                structure.multiplicity = spin_multiplicity
             spec.molecule = [structure]
         spec.conformer = Conformer(E0=E0, modes=modes, spin_multiplicity=spin_multiplicity,
                                    optical_isomers=optical_isomers)
