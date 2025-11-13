@@ -2953,16 +2953,10 @@ class KineticsFamily(Database):
                     out_exts[-1].append(exts[i])  # this extension splits reactions (optimization dim)
                     if typ == 'atomExt':
                         reg_dict[(typ, indc)][0].extend(grp2.atoms[indc[0]].atomtype)
-                        #still pass in the regularization data to the grp2. However, this doesn't take care of the grpc
-                        #reg_dict[(typ, indc)][1].extend(grp2.atoms[indc[0]].atomtype)
-                        #now take care of the compliment: 
-
                     elif typ == 'elExt':
                         reg_dict[(typ, indc)][0].extend(grp2.atoms[indc[0]].radical_electrons)
-                        #reg_dict[(typ, indc)][1].extend(grp2.atoms[indc[0]].radical_electrons)
                     elif typ == 'bondExt':
                         reg_dict[(typ, indc)][0].extend(grp2.get_bond(grp2.atoms[indc[0]], grp2.atoms[indc[1]]).order)
-                        #reg_dict[(typ, indc)][1].extend(grp2.get_bond(grp2.atoms[indc[0]], grp2.atoms[indc[1]]).order)
 
 
                 elif boo:  # this extension matches all reactions (regularization dim)
