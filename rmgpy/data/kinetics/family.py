@@ -2953,10 +2953,17 @@ class KineticsFamily(Database):
                     out_exts[-1].append(exts[i])  # this extension splits reactions (optimization dim)
                     if typ == 'atomExt':
                         reg_dict[(typ, indc)][0].extend(grp2.atoms[indc[0]].atomtype)
+                        #still pass in the regularization data to the grp2. However, this doesn't take care of the grpc
+                        #reg_dict[(typ, indc)][1].extend(grp2.atoms[indc[0]].atomtype)
+                        #now take care of the compliment: 
+
                     elif typ == 'elExt':
                         reg_dict[(typ, indc)][0].extend(grp2.atoms[indc[0]].radical_electrons)
+                        #reg_dict[(typ, indc)][1].extend(grp2.atoms[indc[0]].radical_electrons)
                     elif typ == 'bondExt':
                         reg_dict[(typ, indc)][0].extend(grp2.get_bond(grp2.atoms[indc[0]], grp2.atoms[indc[1]]).order)
+                        #reg_dict[(typ, indc)][1].extend(grp2.get_bond(grp2.atoms[indc[0]], grp2.atoms[indc[1]]).order)
+
 
                 elif boo:  # this extension matches all reactions (regularization dim)
                     if typ == 'intNewBondExt' or typ == 'extNewBondExt':
@@ -2983,10 +2990,12 @@ class KineticsFamily(Database):
                 reg_val = reg_dict[(typr, indcr)]
 
                 if first_time and parent.children == []:
-                    # parent
+                    
+                    #parent
                     if typr != 'intNewBondExt' and typr != 'extNewBondExt':  # these dimensions should be regularized
                         if typr == 'atomExt':
-                            grp.atoms[indcr[0]].reg_dim_atm = list(reg_val)
+                            pass 
+                            #grp.atoms[indcr[0]].reg_dim_atm = list(reg_val)
                         elif typr == 'elExt':
                             grp.atoms[indcr[0]].reg_dim_u = list(reg_val)
                         elif typr == 'ringExt':
@@ -3080,6 +3089,32 @@ class KineticsFamily(Database):
             out.extend(x)
 
         return out, gave_up_split
+    
+    def get_compliment_reg_dim(self, parent, template_rxn_map, new_ext, comp_ext):
+        rxns_from_parent = template_rxn_map[parent.label]
+        new_ext_rxns, comp_ext_rxns, _ = self._split_reactions(rxns_from_parent, new_ext)
+        atom_labeling_in_comp_rxns = dict()
+        unlabeled_atoms_in_comp_rxns = []
+        for rxn_c in comp_ext_rxns: 
+            for reactant in rxn_c.reactants: 
+                for mol in reactant.molecule:
+                    for atm in mol.atoms:
+                        if atm.label == '':
+                            #this atom was unlabeled 
+                            unlabeled_atmtype = ATOMTYPES[atm.symbol]
+                            if unlabeled_atmtype not in unlabeled_atoms_in_comp_rxns:
+                                unlabeled_atoms_in_comp_rxns.append(unlabeled_atmtype)
+                        else: 
+                            atm_label = int(atm.label.replace('*',''))
+                            if atm_label not in atom_labeling_in_comp_rxns.keys():
+                                atom_labeling_in_comp_rxns[atm_label] = [ATOMTYPES[atm.symbol]]
+                            else: 
+                                existing_atomtypes = atom_labeling_in_comp_rxns[atm_label]
+                                existing_atomtypes.append(ATOMTYPES[atm.symbol])
+                    #print(f'count of missing * is {count}')
+        atom_labeling_in_comp_rxns_set = {k: set(v) for k, v in atom_labeling_in_comp_rxns.items()}
+
+        return atom_labeling_in_comp_rxns_set, unlabeled_atoms_in_comp_rxns
 
     def extend_node(self, parent, template_rxn_map, obj=None, T=1000.0, iter_max=np.inf, iter_item_cap=np.inf):
         """
@@ -3156,9 +3191,46 @@ class KineticsFamily(Database):
 
         extname = ext[2]
 
+        print(extname, ext[3])
         if ext[3] == 'atomExt':
-            ext[0].atoms[ext[4][0]].reg_dim_atm = [ext[0].atoms[ext[4][0]].atomtype, ext[0].atoms[ext[4][0]].atomtype]
-        elif ext[3] == 'elExt':
+            ext[0].atoms[ext[4][0]].reg_dim_atm = [ext[0].atoms[ext[4][0]].atomtype, ext[0].atoms[ext[4][0]].atomtype] #passing regularization information to the selected extension node
+            
+            #handling regularization in complement below
+            atom_labeling_in_comp_rxns_set, unlabeled_atoms_in_comp_rxns = self.get_compliment_reg_dim(parent, template_rxn_map, ext[0], ext[1])
+            #print(ext[0].atoms[ext[4][0]], ext[0].atoms[ext[4][0]].label, ext[1].atoms[ext[4][0]], ext[1].atoms[ext[4][0]].label)
+            
+            #regularize the atom in which the extension was performed on
+            if ext[1] is not None: 
+                if ext[1].atoms[ext[4][0]].label=='':
+                    #extension was performed on an unlabeled atom
+                    limited_atomtypes_comp = set(ext[1].atoms[ext[4][0]].atomtype).intersection(set(unlabeled_atoms_in_comp_rxns))
+                    #print(ext[1].atoms[ext[4][0]].atomtype, list(limited_atomtypes_comp))
+                    ext[1].atoms[ext[4][0]].reg_dim_atm = [ext[1].atoms[ext[4][0]].atomtype, list(limited_atomtypes_comp)]
+                else: 
+                    adjusted_index = int(ext[1].atoms[ext[4][0]].label.replace('*','')) #i.e. ext[4]= (3,), ext[4][0] = 3, ext[0].atoms[3]=<GroupAtom [*5 'N', 'C']>, ext[0].atoms[3].label = '*5'
+                    ext[1].atoms[ext[4][0]].reg_dim_atm = [ext[1].atoms[ext[4][0]].atomtype, list(atom_labeling_in_comp_rxns_set[adjusted_index])]
+            
+        #make sure the rest of the atoms in the extension take on the same regularization dimensions as the parent. 
+        for i, parent_atm in enumerate(parent.item.atoms): 
+            if i == ext[4][0]: 
+                print('extension atom')
+                continue #this is the atom that the extension is focused on, handled above
+            elif parent_atm.reg_dim_atm[1]==[]:
+                print('parent atm reg_dim is empty')
+                continue #only take on regularization dimensions of parent if there is some
+            else: 
+                ext[0].atoms[i].reg_dim_atm[1] = parent_atm.reg_dim_atm[1] #passing regularization info from parent to the extension
+                if ext[1] is not None: 
+                    ext[1].atoms[i].reg_dim_atm[1] = parent_atm.reg_dim_atm[1] #passing regularization info from parent to the complimentary extension
+
+                
+                #print(ext[1].atoms[i].atomtype,'   ', ext[1].atoms[i].reg_dim_atm[1])
+                
+
+
+            # print(ext[1].atoms[ext[4][0]].atomtype, )
+            # ext[1].atoms[ext[4][0]].reg_dim_atm = [ext[1].atoms[ext[4][0]].atomtype, ext[1].atoms[ext[4][0]].atomtype] #must also pass regularization information to the compliment
+        if ext[3] == 'elExt':
             ext[0].atoms[ext[4][0]].reg_dim_u = [ext[0].atoms[ext[4][0]].radical_electrons,
                                                  ext[0].atoms[ext[4][0]].radical_electrons]
 
@@ -3244,8 +3316,11 @@ class KineticsFamily(Database):
         if complement:
             template_rxn_map[parent.label] = []
             template_rxn_map[cextname] = comp_entries
+            if cextname=="Root_N-4R!H->O":
+                print(f'end of extend_node: {self.groups.entries["Root_N-4R!H->O"].item.atoms[3].reg_dim_atm}')
         else:
             template_rxn_map[parent.label] = comp_entries
+
         return True
 
     def generate_tree(self, rxns=None, obj=None, thermo_database=None, T=1000.0, nprocs=1, min_splitable_entry_num=2,
@@ -3314,6 +3389,8 @@ class KineticsFamily(Database):
                 logging.error("built tree with {} nodes".format(len(list(self.groups.entries))))
 
             self.auto_generated = True
+        print(f'end of generate_tree: {self.groups.entries["Root_N-4R!H->O"].item.atoms[3].reg_dim_atm}')
+
 
     def get_rxn_batches(self, rxns, T=1000.0, max_batch_size=800, outlier_fraction=0.02, stratum_num=8):
         """
@@ -3481,6 +3558,8 @@ class KineticsFamily(Database):
                         continue
                     boo2 = self.extend_node(entry, template_rxn_map, obj, T, iter_max=extension_iter_max, iter_item_cap=extension_iter_item_cap)
                     if boo2:  # extended node so restart while loop
+                        # if "Root_N-4R!H->O" in template_rxn_map.keys(): 
+                        #     print(f'at boo2: {self.groups.entries["Root_N-4R!H->O"].item.atoms[3].reg_dim_atm}')
                         break
                     else:  # no extensions could be generated since all reactions were identical
                         mult_completed_nodes.append(entry)
@@ -3511,6 +3590,8 @@ class KineticsFamily(Database):
                     pname = "_".join(label.split('_')[:-1])
                 entry.parent = self.groups.entries[pname]
                 entry.parent.children.append(entry)
+
+        print(f'end of make_tree_nodes: {self.groups.entries["Root_N-4R!H->O"].item.atoms[3].reg_dim_atm}')
 
         return
 
@@ -3777,9 +3858,10 @@ class KineticsFamily(Database):
             self.simple_regularization(child, template_rxn_map)
 
         grp = node.item
+        parent = node.parent.item
         rxns = template_rxn_map[node.label]
 
-        R = ['H', 'C', 'N', 'O', 'Si', 'S', 'Cl', 'F', 'Br']  # set of possible R elements/atoms
+        R = ['H', 'C', 'N', 'O', 'Si', 'S', 'Cl', 'F', 'Br', 'Li']  # set of possible R elements/atoms
         R = [ATOMTYPES[x] for x in R]
 
         RnH = R[:]
@@ -3794,14 +3876,15 @@ class KineticsFamily(Database):
             for i, atm1 in enumerate(grp.atoms):
 
                 skip = False
-                if node.children == []:  # if the atoms or bonds are graphically indistinguishable don't regularize
-                    bdpairs = {(atm, tuple(bd.order)) for atm, bd in atm1.bonds.items()}
-                    for atm2 in grp.atoms:
-                        if atm1 is not atm2 and atm1.atomtype == atm2.atomtype and len(atm1.bonds) == len(atm2.bonds):
-                            bdpairs2 = {(atm, tuple(bd.order)) for atm, bd in atm2.bonds.items()}
-                            if bdpairs == bdpairs2:
-                                skip = True
-                                indistinguishable.append(i)
+                if i <= len(parent.atoms)-1: #if we aren't at an atom definition that the parent node doesn't have (due to this child being an extNewBondExt type)
+                    if node.children == [] and parent.atoms[i].reg_dim_atm[1]==[]:  # if the atoms or bonds are graphically indistinguishable don't regularize
+                        bdpairs = {(atm, tuple(bd.order)) for atm, bd in atm1.bonds.items()}
+                        for atm2 in grp.atoms:
+                            if atm1 is not atm2 and atm1.atomtype == atm2.atomtype and len(atm1.bonds) == len(atm2.bonds):
+                                bdpairs2 = {(atm, tuple(bd.order)) for atm, bd in atm2.bonds.items()}
+                                if bdpairs == bdpairs2:
+                                    skip = True
+                                    indistinguishable.append(i)
 
                 if not skip and atm1.reg_dim_atm[1] != [] and set(atm1.reg_dim_atm[1]) != set(atm1.atomtype):
                     atyp = atm1.atomtype
@@ -3813,14 +3896,14 @@ class KineticsFamily(Database):
 
                         vals = list(set(atyp) & set(atm1.reg_dim_atm[1]))
                         assert vals != [], 'cannot regularize to empty'
-                        if all([set(child.item.atoms[i].atomtype) <= set(vals) for child in node.children]):
-                            if not test:
-                                atm1.atomtype = vals
-                            else:
-                                oldvals = atm1.atomtype
-                                atm1.atomtype = vals
-                                if not self.rxns_match_node(node, rxns):
-                                    atm1.atomtype = oldvals
+                        #if all([set(child.item.atoms[i].atomtype) <= set(vals) for child in node.children]):
+                        if not test:
+                            atm1.atomtype = vals
+                        else:
+                            oldvals = atm1.atomtype
+                            atm1.atomtype = vals
+                            if not self.rxns_match_node(node, rxns):
+                                atm1.atomtype = oldvals
 
                 if not skip and atm1.reg_dim_u[1] != [] and set(atm1.reg_dim_u[1]) != set(atm1.radical_electrons):
                     if len(atm1.radical_electrons) == 1:
