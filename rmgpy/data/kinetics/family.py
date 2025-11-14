@@ -3111,17 +3111,17 @@ class KineticsFamily(Database):
                     for atm in mol.atoms:
                         if atm.label == '':
                             #this atom was unlabeled 
-                            unlabeled_atmtype = ATOMTYPES[atm.symbol]
-                            if unlabeled_atmtype not in unlabeled_atoms_in_comp_rxns:
+                            unlabeled_atmtype = atm.atomtype 
+                            if unlabeled_atmtype not in unlabeled_atoms_in_comp_rxns: 
                                 unlabeled_atoms_in_comp_rxns.append(unlabeled_atmtype)
                         else: 
                             #this is a labeled atom
                             atm_label = int(atm.label.replace('*',''))
                             if atm_label not in atom_labeling_in_comp_rxns.keys():
-                                atom_labeling_in_comp_rxns[atm_label] = [ATOMTYPES[atm.symbol]]
+                                atom_labeling_in_comp_rxns[atm_label] = [atm.atomtype]
                             else: 
                                 existing_atomtypes = atom_labeling_in_comp_rxns[atm_label]
-                                existing_atomtypes.append(ATOMTYPES[atm.symbol])
+                                existing_atomtypes.append(atm.atomtype)
         atom_labeling_in_comp_rxns_set = {k: set(v) for k, v in atom_labeling_in_comp_rxns.items()}
 
         return atom_labeling_in_comp_rxns_set, unlabeled_atoms_in_comp_rxns
