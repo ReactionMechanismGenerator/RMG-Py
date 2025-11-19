@@ -1571,7 +1571,7 @@ class Group(Graph):
         """
         cython.declare(atoms=list, atm=GroupAtom, atm2=GroupAtom, bd=GroupBond, i=int, j=int,
                        extents=list, RnH=list, typ=list)
-
+        print('im in')
         extents = []
         if r_bonds is None:
             r_bonds = [1, 1.5, 2, 3, 4]
@@ -1684,6 +1684,7 @@ class Group(Graph):
                     elif typ[0].label == 'R!H':
                         extents.extend(self.specify_atom_extensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(r))))
                 else:
+                    print(set(typ), set(atm.reg_dim_atm[0]), list(set(typ) & set(atm.reg_dim_atm[0])))
                     extents.extend(self.specify_atom_extensions(i, basename, list(set(typ) & set(atm.reg_dim_atm[0]))))
             if atm.reg_dim_u == []:
                 if len(atm.radical_electrons) != 1:
@@ -1726,6 +1727,8 @@ class Group(Graph):
 
         grps = []
         Rset = set(r)
+
+        #consider node splitting        
         for item in r:
             grp = deepcopy(self)
             grpc = deepcopy(self)
@@ -1751,6 +1754,31 @@ class Group(Graph):
             grps.append(
                 (grp, grpc, basename + '_' + str(i + 1) + old_atom_type_str + '->' + item.label, 'atomExt', (i,)))
 
+        #generate an extension without node splitting
+        if len(self.atoms[i].atomtype)>len(Rset):
+            if all(r in self.atoms[i].atomtype for r in Rset): 
+                #that means even if we update the atomtype of the atom to the Rset, it will still be a specification
+                grp = deepcopy(self)
+                grp.atoms[i].atomtype = list(Rset)
+                
+                #rename
+                old_atom_type = grp.atoms[i].atomtype
+
+                if len(old_atom_type) > 1:
+                    labelList = []
+                    old_atom_type_str = ''
+                    for k in old_atom_type:
+                        labelList.append(k.label)
+                    for p in sorted(labelList):
+                        old_atom_type_str += p
+                elif len(old_atom_type) == 0:
+                    old_atom_type_str = ""
+                else:
+                    old_atom_type_str = old_atom_type[0].label
+
+                grps.append(
+                (grp, None, basename + '_' + str(i + 1) + old_atom_type_str + '->' + ''.join(r.label for r in Rset), 'atomExt', (i,)))
+       
         return grps
 
     def specify_ring_extensions(self, i, basename):
