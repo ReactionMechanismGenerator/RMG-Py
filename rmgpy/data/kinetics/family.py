@@ -3791,10 +3791,17 @@ class KineticsFamily(Database):
 
         if isinstance(node.item, Group):
             indistinguishable = []
+
+            if node.children==[]: #if this is a leaf node, run it through get_extension_edge so that the regularization info is passed to leaf node
+                print('extending leaf nodes to get regularization info')
+                _, _ = self.get_extension_edge(node, template_rxn_map, obj=None, T=1000.0, iter_max=1, iter_item_cap=1)
+
             for i, atm1 in enumerate(grp.atoms):
 
                 skip = False
-                if node.children == []:  # if the atoms or bonds are graphically indistinguishable don't regularize
+                if node.children == []:  
+            
+                    # if the atoms or bonds are graphically indistinguishable don't regularize
                     bdpairs = {(atm, tuple(bd.order)) for atm, bd in atm1.bonds.items()}
                     for atm2 in grp.atoms:
                         if atm1 is not atm2 and atm1.atomtype == atm2.atomtype and len(atm1.bonds) == len(atm2.bonds):
