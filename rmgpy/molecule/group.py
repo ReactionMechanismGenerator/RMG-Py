@@ -1571,7 +1571,7 @@ class Group(Graph):
         """
         cython.declare(atoms=list, atm=GroupAtom, atm2=GroupAtom, bd=GroupBond, i=int, j=int,
                        extents=list, RnH=list, typ=list)
-        print('im in')
+        
         extents = []
         if r_bonds is None:
             r_bonds = [1, 1.5, 2, 3, 4]
@@ -1684,7 +1684,6 @@ class Group(Graph):
                     elif typ[0].label == 'R!H':
                         extents.extend(self.specify_atom_extensions(i, basename, list(set(atm.reg_dim_atm[0]) & set(r))))
                 else:
-                    print(set(typ), set(atm.reg_dim_atm[0]), list(set(typ) & set(atm.reg_dim_atm[0])))
                     extents.extend(self.specify_atom_extensions(i, basename, list(set(typ) & set(atm.reg_dim_atm[0]))))
             if atm.reg_dim_u == []:
                 if len(atm.radical_electrons) != 1:
@@ -1756,6 +1755,7 @@ class Group(Graph):
 
         #generate an extension without node splitting
         if len(self.atoms[i].atomtype)>len(Rset):
+            print('generating a non-splitting extension')
             if all(r in self.atoms[i].atomtype for r in Rset): 
                 #that means even if we update the atomtype of the atom to the Rset, it will still be a specification
                 grp = deepcopy(self)
