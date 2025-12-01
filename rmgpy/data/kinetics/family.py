@@ -3388,7 +3388,14 @@ class KineticsFamily(Database):
                     parent.children.remove(entry)
                     del self.groups.entries[key]
                 else:
-                    entry.item.clear_reg_dims()
+                    for atm in entry.item.atoms:
+                        atm.reg_dim_atm[0] = [] #only clear the optimization dimension, preserve the regularization dimension
+                        atm.reg_dim_u[0] = []
+                        atm.reg_dim_r[0] = []
+                        atm.reg_dim_site[0] = []
+                        atm.reg_dim_morphology[0] = []
+                    for bd in self.get_all_edges():
+                        bd.reg_dim[0] = []
 
     def make_tree_nodes(self, template_rxn_map=None, obj=None, T=1000.0, nprocs=0, depth=0, min_splitable_entry_num=2,
                         min_rxns_to_spawn=20, extension_iter_max=np.inf, extension_iter_item_cap=np.inf):
