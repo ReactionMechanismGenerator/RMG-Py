@@ -62,7 +62,7 @@ env | grep JULIA
 RMS_BRANCH=${RMS_BRANCH:-for_rmg}
 echo "Installing ReactionMechanismSimulator from branch: $RMS_BRANCH"
 
-julia -e "using Pkg; Pkg.add(Pkg.PackageSpec(name=\"ReactionMechanismSimulator\", url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git\", rev=\"$RMS_BRANCH\")); using ReactionMechanismSimulator; Pkg.instantiate()" || echo "RMS install error - continuing anyway ¯\_(ツ)_/¯"
+julia -e "using Pkg; Pkg.add(Pkg.PackageSpec(name=\"ReactionMechanismSimulator\", url=\"https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git\", rev=\"$RMS_BRANCH\")); using ReactionMechanismSimulator; println(read(joinpath(dirname(pathof(ReactionMechanismSimulator)), \"..\", \"Project.toml\"), String)); Pkg.instantiate()" || echo "RMS install error - continuing anyway."
 
 echo "Checking if ReactionMechanismSimulator is installed in the current conda environment for Python usage..."
 python -c "from juliacall import Main; import sys; sys.exit(0 if Main.seval('Base.identify_package(\"ReactionMechanismSimulator\") !== nothing') and print('ReactionMechanismSimulator is installed in $current_env') is None else 1)"
