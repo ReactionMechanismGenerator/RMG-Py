@@ -38,7 +38,7 @@ julia_path=$(which julia)
 echo "Julia 1.10 binary path: $julia_path"
 
 # Get current conda environment name
-current_env=$(conda info --envs | grep '\*' | awk '{print $1}')
+current_env=$(conda info --envs | grep -v '^#' | awk '/\*/{print $1}')
 echo "Current conda environment: $current_env"
 
 # Set environment variables for the current environment, for future uses
