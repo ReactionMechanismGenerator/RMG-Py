@@ -2,6 +2,20 @@
 #
 # Convenience script to install ReactionMechanismSimulator into an rmg_env conda environment
 #
+# Usage:
+#   source install_rms.sh
+# Options:
+#   RMS_INSTALLER environment variable can be set to "continuous", "standard", or "developer"
+#     "continuous": non-interactive install for CI environments
+#     "standard": interactive install with user confirmation (default)
+#     "developer": install from local RMS source code (requires RMS_PATH to be set)
+#   RMS_PATH environment variable (required if RMS_INSTALLER="developer")
+#     Path to local ReactionMechanismSimulator.jl source code for developer mode
+#   RMS_BRANCH environment variable (optional), for "standard" or "continuous" modes
+#     Git branch of ReactionMechanismSimulator.jl to install (default: for_rmg)
+# Example:
+#   RMS_INSTALLER=developer RMS_PATH=/path/to/ReactionMechanismSimulator.jl source install_rms.sh
+
 
 # Defaults to "standard" if not already set via RMS_INSTALLER env variable
 RMS_INSTALLER=${RMS_INSTALLER:-standard}
