@@ -132,11 +132,11 @@ EOF
 # Install RMS
 if [ "$RMS_INSTALLER" = "standard" ] || [ "$RMS_INSTALLER" = "continuous" ]; then
     echo "Installing RMS from branch: $RMS_BRANCH"
-    julia << EOF || echo "RMS standard install error - continuing anyway ¯\\_(ツ)_/¯"
+    julia << 'EOF' || echo "RMS standard install error - continuing anyway ¯\\_(ツ)_/¯"
     using Pkg
     Pkg.activate(ENV["PYTHON_JULIAPKG_PROJECT"])
-    Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git", rev="$RMS_BRANCH"))
-    println(read(joinpath(dirname(pathof(ReactionMechanismSimulator)), \"..\", \"Project.toml\"), String))
+    Pkg.add(Pkg.PackageSpec(name="ReactionMechanismSimulator", url="https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl.git", rev=ENV["RMS_BRANCH"]))
+    println(read(joinpath(dirname(pathof(ReactionMechanismSimulator)), "..", "Project.toml"), String))
     Pkg.instantiate()
     try
         @info "Loading RMS"
@@ -150,11 +150,11 @@ if [ "$RMS_INSTALLER" = "standard" ] || [ "$RMS_INSTALLER" = "continuous" ]; the
 EOF
 elif [ "$RMS_INSTALLER" = "developer" ]; then
     echo "Installing RMS in developer mode from path: $RMS_PATH"
-    julia << EOF || echo "RMS developer install error - continuing anyway ¯\\_(ツ)_/¯"
+    julia << 'EOF' || echo "RMS developer install error - continuing anyway ¯\\_(ツ)_/¯"
     using Pkg
     println(ENV["PYTHON_JULIAPKG_PROJECT"])
     Pkg.activate(ENV["PYTHON_JULIAPKG_PROJECT"])
-    Pkg.develop(path="$RMS_PATH")
+    Pkg.develop(path=ENV["RMS_PATH"])
     Pkg.instantiate()
     try
         @info "Loading RMS"
