@@ -6,7 +6,6 @@
 # Defaults to "standard" if not already set via RMS_INSTALLER env variable
 RMS_INSTALLER=${RMS_INSTALLER:-standard}
 
-
 # Check if juliaup is installed
 if ! command -v juliaup &> /dev/null; then
     echo "Could not find julia via juliaup. Please install it by running:"
@@ -82,6 +81,20 @@ conda install -y conda-forge::pyjuliacall
 echo "Environment variables referencing JULIA:"
 env | grep JULIA
 
+# Initialize the Julia environment from Python using juliacall
+python << EOF || return 1
+import sys
+try:
+    from juliacall import Main
+    Main.seval('println("Active Julia environment: ", Base.active_project())')
+    Main.seval('println("Julia load path: ", Base.load_path())')
+    Main.seval('using Pkg')
+    Main.seval('Pkg.status()')
+except Exception as e:
+    print("❌ Error while initializing Julia environment:")
+    print(e)
+    sys.exit(1)
+EOF
 
 # Default RMS branch for standard install
 RMS_BRANCH=${RMS_BRANCH:-for_rmg}
@@ -102,20 +115,6 @@ if [ "$RMS_INSTALLER" = "developer" ]; then
     echo "Using local RMS path: $RMS_PATH"
 fi
 
-# Initialize the Julia environment from Python using juliacall
-python << EOF
-import sys
-try:
-    from juliacall import Main
-    Main.seval('println("Active Julia environment: ", Base.active_project())')
-    Main.seval('println("Julia load path: ", Base.load_path())')
-    Main.seval('using Pkg')
-    Main.seval('Pkg.status()')
-except Exception as e:
-    print("❌ Error while initialize Julia environment:")
-    print(e)
-    sys.exit(1)
-EOF
 
 # Install RMS
 if [ "$RMS_INSTALLER" = "standard" ] || [ "$RMS_INSTALLER" = "continuous" ]; then
