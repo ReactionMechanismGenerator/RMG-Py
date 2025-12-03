@@ -3,6 +3,10 @@
 # Convenience script to install ReactionMechanismSimulator into an rmg_env conda environment
 #
 
+# Defaults to "standard" if not already set via RMS_INSTALLER env variable
+RMS_INSTALLER=${RMS_INSTALLER:-standard}
+
+
 # Check if juliaup is installed
 if ! command -v juliaup &> /dev/null; then
     echo "Could not find julia via juliaup. Please install it by running:"
@@ -40,9 +44,9 @@ echo "Julia 1.10 binary path: $julia_path"
 # Get current conda environment name
 current_env=$(conda info --envs | grep -v '^#' | awk '/\*/{print $1}')
 
-# Ask the user to confirm RMS is being installed in the correct
-# conda environemnt. Skip if this is run under CI.
-if [ "$RMS_MODE" != "CI" ]; then
+# Ask the user to confirm RMS is being installed in the correct conda environemnt.
+# Skip confirmation if this is run under continuous mode.
+if [ "$RMS_INSTALLER" != "continuous" ]; then
     echo "    Please confirm that you want to install RMS into the current conda environment: '$current_env'"
     echo "    If this is not correct, abort and activate the correct environment before rerunning."
     read -p "Proceed with installation in '$current_env'? (y/N): " confirm
@@ -78,14 +82,12 @@ conda install -y conda-forge::pyjuliacall
 echo "Environment variables referencing JULIA:"
 env | grep JULIA
 
-# Defaults to "standard" if no arg provided
-RMS_MODE=${1:-standard}
 
 # Default RMS branch for standard install
 RMS_BRANCH=${RMS_BRANCH:-for_rmg}
 
 # Ask for local RMS path
-if [ "$RMS_MODE" = "developer" ]; then
+if [ "$RMS_INSTALLER" = "developer" ]; then
     echo "Using developer mode for RMS installation"
     read -e -p "Please enter full path to your local RMS source code: " RMS_PATH
     if [ ! -d "$RMS_PATH" ]; then
@@ -111,7 +113,7 @@ except Exception as e:
 EOF
 
 # Install RMS
-if [ "$RMS_MODE" = "standard" ] || [ "$RMS_MODE" = "CI" ]; then
+if [ "$RMS_INSTALLER" = "standard" ] || [ "$RMS_INSTALLER" = "continuous" ]; then
     echo "Installing RMS from branch: $RMS_BRANCH"
     julia << EOF || echo "RMS standard install error - continuing anyway ¯\\_(ツ)_/¯"
     using Pkg
@@ -129,7 +131,7 @@ if [ "$RMS_MODE" = "standard" ] || [ "$RMS_MODE" = "CI" ]; then
         exit(1)
     end
 EOF
-elif [ "$RMS_MODE" = "developer" ]; then
+elif [ "$RMS_INSTALLER" = "developer" ]; then
     echo "Installing RMS in developer mode from path: $RMS_PATH"
     julia << EOF || echo "RMS developer install error - continuing anyway ¯\\_(ツ)_/¯"
     using Pkg
@@ -148,7 +150,7 @@ elif [ "$RMS_MODE" = "developer" ]; then
     end
 EOF
 else
-    echo "Unknown RMS_MODE: $RMS_MODE. Must be either 'CI', 'standard' or 'developer'."
+    echo "Unknown RMS_INSTALLER mode: $RMS_INSTALLER. Must be either 'continuous', 'standard' or 'developer'."
     return 1
 fi
 
