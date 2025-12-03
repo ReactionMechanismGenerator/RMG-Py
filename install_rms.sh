@@ -86,12 +86,17 @@ env | grep JULIA
 # Default RMS branch for standard install
 RMS_BRANCH=${RMS_BRANCH:-for_rmg}
 
-# Ask for local RMS path
+# Get local RMS path if in developer mode
 if [ "$RMS_INSTALLER" = "developer" ]; then
     echo "Using developer mode for RMS installation"
-    read -e -p "Please enter full path to your local RMS source code: " RMS_PATH
-    if [ ! -d "$RMS_PATH" ]; then
-        echo "ERROR: '$RMS_PATH' is not a valid directory."
+    # Check if RMS_PATH is set
+    if [ -z "$RMS_PATH" ]; then
+        read -e -p "Please enter full path to your local RMS source code: " RMS_PATH
+    fi
+    # Validate Project.toml exists
+    if [ ! -f "$RMS_PATH/Project.toml" ]; then
+        echo "ERROR: '$RMS_PATH' does not contain a Project.toml file."
+        echo "Please set RMS_PATH to a valid ReactionMechanismSimulator.jl directory."
         return 1
     fi
     echo "Using local RMS path: $RMS_PATH"
