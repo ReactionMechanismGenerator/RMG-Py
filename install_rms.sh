@@ -28,7 +28,8 @@ if [ "$RMS_INSTALLER" = "developer" ]; then
     echo "Using developer mode for RMS installation"
     # Check if RMS_PATH is set
     if [ -z "$RMS_PATH" ]; then
-        read -e -p "Please enter full path to your local RMS source code: " RMS_PATH
+        printf "Please enter full path to your local RMS source code: "
+        read -r RMS_PATH
     fi
     # Validate Project.toml exists
     if [ ! -f "$RMS_PATH/Project.toml" ]; then
@@ -83,7 +84,8 @@ if [ "$RMS_INSTALLER" = "continuous" ]; then
 else
     echo "    Please confirm that you want to install RMS into the current conda environment: '$current_env'"
     echo "    If this is not correct, abort and activate the correct environment before rerunning."
-    read -p "Proceed with installation in '$current_env'? (y/N): " confirm
+    printf "Proceed with installation in '%s'? (y/N): " "$current_env"
+    read confirm
     case "$confirm" in
     [yY][eE][sS]|[yY])
         echo "✅ Proceeding with installation in '$current_env'"
