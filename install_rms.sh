@@ -78,7 +78,9 @@ current_env=$(conda info --envs | grep -v '^#' | awk '/\*/{print $1}')
 
 # Ask the user to confirm RMS is being installed in the correct conda environemnt.
 # Skip confirmation if this is run under continuous mode.
-if [ "$RMS_INSTALLER" != "continuous" ]; then
+if [ "$RMS_INSTALLER" = "continuous" ]; then
+    echo "Current conda environment: $current_env"
+else
     echo "    Please confirm that you want to install RMS into the current conda environment: '$current_env'"
     echo "    If this is not correct, abort and activate the correct environment before rerunning."
     read -p "Proceed with installation in '$current_env'? (y/N): " confirm
@@ -91,8 +93,6 @@ if [ "$RMS_INSTALLER" != "continuous" ]; then
         return 1
         ;;
     esac
-else
-    echo "Current conda environment: $current_env"
 fi
 
 # Set environment variables for the current environment, for future uses
