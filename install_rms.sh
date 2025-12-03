@@ -11,7 +11,7 @@ if ! command -v juliaup &> /dev/null; then
     echo "juliaup add 1.10"
     echo "juliaup default 1.10"
     echo "juliaup remove release"
-    exit 1
+    return 1
 fi
 
 # Check if julia command is available
@@ -20,7 +20,7 @@ if ! command -v julia &> /dev/null; then
     echo "juliaup add 1.10"
     echo "juliaup default 1.10"
     echo "juliaup remove release"
-    exit 1
+    return 1
 fi
 
 # Check if Julia version is 1.10
@@ -30,7 +30,7 @@ if ! julia --version | grep -q " 1\.10"; then
     echo "juliaup add 1.10"
     echo "juliaup default 1.10"
     echo "juliaup remove release"
-    exit 1
+    return 1
 fi
 
 # Print the path of the Julia binary
@@ -52,7 +52,7 @@ if [ "$RMS_MODE" != "CI" ]; then
         ;;
     *)
         echo "❌ Aborted. Please activate the correct conda environment and try again."
-        exit 1
+        return 1
         ;;
     esac
 else
@@ -90,7 +90,7 @@ if [ "$RMS_MODE" = "developer" ]; then
     read -e -p "Please enter full path to your local RMS source code: " RMS_PATH
     if [ ! -d "$RMS_PATH" ]; then
         echo "ERROR: '$RMS_PATH' is not a valid directory."
-        exit 1
+        return 1
     fi
     echo "Using local RMS path: $RMS_PATH"
 fi
@@ -149,13 +149,13 @@ elif [ "$RMS_MODE" = "developer" ]; then
 EOF
 else
     echo "Unknown RMS_MODE: $RMS_MODE. Must be either 'CI', 'standard' or 'developer'."
-    exit 1
+    return 1
 fi
 
 julia_status=$?
 if [ $julia_status -ne 0 ]; then
     echo "RMS installation failed!"
-    exit $julia_status
+    return $julia_status
 fi
 
 echo "Checking if ReactionMechanismSimulator is installed in the current conda environment for Python usage..."
