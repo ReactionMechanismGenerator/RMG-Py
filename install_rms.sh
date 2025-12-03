@@ -20,6 +20,25 @@
 # Defaults to "standard" if not already set via RMS_INSTALLER env variable
 RMS_INSTALLER=${RMS_INSTALLER:-standard}
 
+# RMS branch for standard or continuous installs. Set to "for_rmg" by default.
+RMS_BRANCH=${RMS_BRANCH:-for_rmg}
+
+# Get local RMS path if in developer mode
+if [ "$RMS_INSTALLER" = "developer" ]; then
+    echo "Using developer mode for RMS installation"
+    # Check if RMS_PATH is set
+    if [ -z "$RMS_PATH" ]; then
+        read -e -p "Please enter full path to your local RMS source code: " RMS_PATH
+    fi
+    # Validate Project.toml exists
+    if [ ! -f "$RMS_PATH/Project.toml" ]; then
+        echo "ERROR: '$RMS_PATH' does not contain a Project.toml file."
+        echo "Please set RMS_PATH to a valid ReactionMechanismSimulator.jl directory."
+        return 1
+    fi
+    echo "Using local RMS path: $RMS_PATH"
+fi
+
 # Check if juliaup is installed
 if ! command -v juliaup &> /dev/null; then
     echo "Could not find julia via juliaup. Please install it by running:"
@@ -109,26 +128,6 @@ except Exception as e:
     print(e)
     sys.exit(1)
 EOF
-
-# Default RMS branch for standard install
-RMS_BRANCH=${RMS_BRANCH:-for_rmg}
-
-# Get local RMS path if in developer mode
-if [ "$RMS_INSTALLER" = "developer" ]; then
-    echo "Using developer mode for RMS installation"
-    # Check if RMS_PATH is set
-    if [ -z "$RMS_PATH" ]; then
-        read -e -p "Please enter full path to your local RMS source code: " RMS_PATH
-    fi
-    # Validate Project.toml exists
-    if [ ! -f "$RMS_PATH/Project.toml" ]; then
-        echo "ERROR: '$RMS_PATH' does not contain a Project.toml file."
-        echo "Please set RMS_PATH to a valid ReactionMechanismSimulator.jl directory."
-        return 1
-    fi
-    echo "Using local RMS path: $RMS_PATH"
-fi
-
 
 # Install RMS
 if [ "$RMS_INSTALLER" = "standard" ] || [ "$RMS_INSTALLER" = "continuous" ]; then
