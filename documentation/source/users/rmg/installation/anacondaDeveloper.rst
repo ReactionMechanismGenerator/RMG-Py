@@ -129,6 +129,25 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
     which can involve several steps including restarting your terminal or shell.
     Run the script again, until it finishes installing RMS and all of its dependencies, and reports that ReactionMechanismSimulator is installed.
 
+    **Advanced Usage**:
+    The ``install_rms.sh`` script has options, that can be set as environment variables or variables to the script.
+    By default, it installs the latest release of the ``for_rmg`` branch of RMS, from https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl/branches, which is recommended for most users.
+    To install a different branch (from the same github repository) specify ``RMS_BRANCH``.
+    The default installation mode is ``standard``, which prompts the user to confirm their conda environment.
+    In an automated workflow (eg. CI/CD), you may wish to set ``RMS_INSTALLER`` to ``continuous`` to skip the prompt.
+    If you set ``RMS_INSTALLER`` to ``developer`` then it will link to a local version of RMS,
+    so you must also specify ``RMS_PATH`` to point to your local clone of the ReactionMechanismSimulator.jl repository.
+    Exmaple usage: ::
+
+     export RMS_BRANCH=for_rmg
+     export RMS_INSTALLER=continuous
+     source install_rms.sh
+
+    or ::
+
+     RMS_INSTALLER=developer RMS_PATH=$HOME/Code/ReactionMechanismSimulator.jl source install_rms.sh
+
+
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
     python replace/with/path/to/rmg.py input.py
