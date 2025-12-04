@@ -126,7 +126,7 @@ class CanteraCondition(object):
         string += 'mol_frac={0}, '.format(self.mol_frac.__repr__())
         if self.T0: string += 'T0={}, '.format(self.T0.__repr__())
         if self.P0: string += 'P0={}, '.format(self.P0.__repr__())
-        if self.V0: string += 'V0={}, '.format(self.V0__repr__())
+        if self.V0: string += 'V0={}, '.format(self.V0.__repr__())
         string = string[:-2] + ')'
         return string
 
