@@ -96,7 +96,7 @@ class TestElement:
         assert d.chemkin_name == "D"
 
         c13 = rmgpy.molecule.element.get_element("C", isotope=13)
-        assert c13.chemkin_name == "CI"
+        assert c13.chemkin_name == "C13"
 
         o18 = rmgpy.molecule.element.get_element("O", isotope=18)
-        assert o18.chemkin_name == "OI"
+        assert o18.chemkin_name == "O18"

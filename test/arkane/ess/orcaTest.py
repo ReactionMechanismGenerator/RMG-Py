@@ -90,11 +90,11 @@ class OrcaTest:
         molecular energies can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, "Orca_opt_freq_test.log"))
-        assert abs(log.load_energy() - -200656222.56292167) < 1e-3
+        assert abs(log.load_energy() - -200656205.83430383) < 1e-3
         log = OrcaLog(os.path.join(self.data_path, "Orca_TS_test.log"))
-        assert abs(log.load_energy() - -88913623.10592663) < 1e-3
+        assert abs(log.load_energy() - -88913615.69323839) < 1e-3
         log = OrcaLog(os.path.join(self.data_path, "Orca_dlpno_test.log"))
-        assert abs(log.load_energy() - -1816470909.1153) < 1e-3
+        assert abs(log.load_energy() - -1816470757.6769478) < 1e-3
 
     def test_load_zero_point_energy_from_orca_log(self):
         """
@@ -102,9 +102,9 @@ class OrcaTest:
         molecular zero point_energy can be properly read.
         """
         log = OrcaLog(os.path.join(self.data_path, "Orca_opt_freq_test.log"))
-        assert abs(log.load_zero_point_energy() - 55502.673180815) < 1e-3
+        assert abs(log.load_zero_point_energy() - 55502.66855358243) < 1e-3
         log = OrcaLog(os.path.join(self.data_path, "Orca_TS_test.log"))
-        assert abs(log.load_zero_point_energy() - 93500.08860598055) < 1e-3
+        assert abs(log.load_zero_point_energy() - 93500.08081092076) < 1e-3
 
     def test_load_negative_frequency_from_orca_log(self):
         """

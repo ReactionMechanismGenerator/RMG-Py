@@ -153,8 +153,8 @@ class ArkaneGaussianLogTest:
         rot = [mode for mode in conformer.modes if isinstance(mode, LinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
         t_list = np.array([298.15], float)
-        assert abs(trans.get_partition_function(t_list) - 7.11169e6) < 1e1
-        assert abs(rot.get_partition_function(t_list) - 7.13316e1) < 1e-4
+        assert abs(trans.get_partition_function(t_list) - 7111672.939157387) < 1.0e-3
+        assert abs(rot.get_partition_function(t_list) - 71.33147184209874) < 1e-4
         assert abs(vib.get_partition_function(t_list) - 1.00037e0) < 1e-4
 
         assert round(abs(e0 / constants.Na / constants.E_h - -150.3784877), 4) == 0

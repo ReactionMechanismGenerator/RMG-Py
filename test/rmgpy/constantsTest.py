@@ -48,42 +48,42 @@ class TestConstants:
         """
         Test the value of the Avogadro constant.
         """
-        Na = 6.02214179e23
+        Na = 6.02214076e23
         assert round(abs(constants.Na / Na - 1.0), 6) == 0, "{0} != {1}".format(constants.Na, Na)
 
     def test_boltzmann_constant(self):
         """
         Test the value of the Boltzmann constant.
         """
-        kB = 1.3806504e-23
+        kB = 1.380649e-23
         assert round(abs(constants.kB / kB - 1.0), 6) == 0, "{0} != {1}".format(constants.kB, kB)
 
     def test_elementary_charge(self):
         """
         Test the value of the elementary charge constant.
         """
-        e = 1.602176565e-19
+        e = 1.602176634e-19
         assert round(abs(constants.e / e - 1.0), 6) == 0, "{0} != {1}".format(constants.e, e)
 
     def test_gas_law_constant(self):
         """
         Test the value of the gas law constant.
         """
-        R = 8.314472
+        R = 8.314462618
         assert round(abs(constants.R / R - 1.0), 6) == 0, "{0} != {1}".format(constants.R, R)
 
     def test_planck_constant(self):
         """
         Test the value of the Planck constant.
         """
-        h = 6.62606896e-34
+        h = 6.62607015e-34
         assert round(abs(constants.h / h - 1.0), 6) == 0, "{0} != {1}".format(constants.h, h)
 
     def test_reduced_planck_constant(self):
         """
         Test the value of the reduced Planck constant.
         """
-        hbar = 1.054571726e-34
+        hbar = 1.054571817e-34
         assert round(abs(constants.hbar / hbar - 1.0), 6) == 0, "{0} != {1}".format(constants.hbar, hbar)
 
     def test_pi(self):
@@ -103,21 +103,21 @@ class TestConstants:
         """
         Test the value of the electron rest mass.
         """
-        m_e = 9.10938291e-31
+        m_e = 9.1093837139e-31
         assert round(abs(constants.m_e / m_e - 1.0), 6) == 0, "{0} != {1}".format(constants.m_e, m_e)
 
     def test_proton_mass(self):
         """
         Test the value of the proton rest mass.
         """
-        m_p = 1.672621777e-27
+        m_p = 1.67262192595e-27
         assert round(abs(constants.m_p / m_p - 1.0), 6) == 0, "{0} != {1}".format(constants.m_p, m_p)
 
     def test_neutron_mass(self):
         """
         Test the value of the neutron rest mass.
         """
-        m_n = 1.674927351e-27
+        m_n = 1.67492750056e-27
         assert round(abs(constants.m_n / m_n - 1.0), 6) == 0, "{0} != {1}".format(constants.m_n, m_n)
 
     def test_atomic_mass_unit(self):
@@ -131,12 +131,12 @@ class TestConstants:
         """
         Test the value of the Bohr radius.
         """
-        a0 = 5.2917721092e-11
+        a0 = 5.29177210544e-11
         assert round(abs(constants.a0 / a0 - 1.0), 6) == 0, "{0} != {1}".format(constants.a0, a0)
 
     def test_hartree_energy(self):
         """
         Test the value of the Hartree energy.
         """
-        E_h = 4.35974434e-18
+        E_h = 4.3597447222060e-18
         assert round(abs(constants.E_h / E_h - 1.0), 6) == 0, "{0} != {1}".format(constants.E_h, E_h)

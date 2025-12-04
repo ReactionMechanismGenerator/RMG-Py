@@ -87,13 +87,13 @@ class Psi4LogTest:
         molecular energies can be properly read.
         """
         log = Psi4Log(os.path.join(self.data_path, "opt_freq.out"))
-        assert abs(log.load_energy() - -199599899.9822719) < 1e-2
+        assert abs(log.load_energy() - -199599883.34171918) < 1e-2
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_ts.out"))
-        assert abs(log.load_energy() - -395828407.5987777) < 1e-2
+        assert abs(log.load_energy() - -395828374.5987437) < 1e-2
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft.out"))
-        assert abs(log.load_energy() - -200640009.37231186) < 1e-2
+        assert abs(log.load_energy() - -200639992.64504567) < 1e-2
         log = Psi4Log(os.path.join(self.data_path, "opt_freq_dft_ts.out"))
-        assert abs(log.load_energy() - -397841662.56434655) < 1e-2
+        assert abs(log.load_energy() - -397841629.3964684) < 1e-2
 
     def test_zero_point_energy_from_psi4_log(self):
         """

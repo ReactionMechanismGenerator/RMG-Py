@@ -207,7 +207,7 @@ class TestEnergy:
         Test the creation of an energy quantity with units of K (not really an energy!).
         """
         q = quantity.Energy(10.0, "K")
-        assert abs(q.value - 10 * 8.314472) < 1e-6
+        assert abs(q.value - 10 * 8.314462618) < 1e-6
         assert q.units == "J/mol"
 
 

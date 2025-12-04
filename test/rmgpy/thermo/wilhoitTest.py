@@ -54,8 +54,8 @@ class TestWilhoit:
         self.a2 = 26.2524
         self.a3 = -12.6785
         self.B = 1068.68
-        self.H0 = -94088.0  # -782.292 kJ/mol / constants.R
-        self.S0 = -118.46  # -984.932 J/mol*K / constants.R
+        self.H0 = -94088.1011728  # -782.292 kJ/mol / constants.R
+        self.S0 = -118.460091199  # -984.932 J/mol*K / constants.R
         self.Tmin = 300.0
         self.Tmax = 3000.0
         self.comment = "C2H6"
@@ -425,13 +425,13 @@ class TestWilhoit:
             "H0": {
                 "units": "kJ/mol",
                 "class": "ScalarQuantity",
-                "value": -782.292041536,
+                "value": -782.2920000142657,
             },
             "Tmax": {"units": "K", "class": "ScalarQuantity", "value": 3000.0},
             "S0": {
                 "units": "J/(mol*K)",
                 "class": "ScalarQuantity",
-                "value": -984.93235312,
+                "value": -984.9320000171091,
             },
             "a1": -16.3067,
             "a0": 0.0977518,
@@ -440,12 +440,12 @@ class TestWilhoit:
             "Cp0": {
                 "units": "J/(mol*K)",
                 "class": "ScalarQuantity",
-                "value": 33.257888,
+                "value": 33.25785047261296,
             },
             "CpInf": {
                 "units": "J/(mol*K)",
                 "class": "ScalarQuantity",
-                "value": 178.76114800000002,
+                "value": 178.76094629029464,
             },
             "class": "Wilhoit",
         }
