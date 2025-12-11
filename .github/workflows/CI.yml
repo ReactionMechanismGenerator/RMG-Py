@@ -68,9 +68,6 @@ jobs:
         python-version: ["3.9", "3.10", "3.11"]
         os: [macos-15-intel, macos-latest, ubuntu-latest]
         include-rms: ["", "with RMS"]
-        exclude:
-          - os: macos-15-intel  # GitHub's runners just aren't up to the task of installing Julia
-            include-rms: 'with RMS'
     runs-on: ${{ matrix.os }}
     name: Python ${{ matrix.python-version }} ${{ matrix.os }} Build and Test ${{ matrix.include-rms }}
     # skip scheduled runs from forks
