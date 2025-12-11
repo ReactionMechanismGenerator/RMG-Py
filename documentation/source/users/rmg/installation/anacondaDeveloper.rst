@@ -131,7 +131,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     **Advanced Usage**:
     The ``install_rms.sh`` script has options, that can be set as environment variables or variables to the script.
-    By default, it installs the latest release of the ``for_rmg`` branch of RMS, from https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl/branches, which is recommended for most users.
+    By default, it installs the latest release of the ``for_rmg`` branch of RMS, from `the official GitHub fork <https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl/branches>`_, which is recommended for most users.
     To install a different branch (from the same github repository) specify ``RMS_BRANCH``.
     The default installation mode is ``standard``, which prompts the user to confirm their conda environment.
     In an automated workflow (eg. CI/CD), you may wish to set ``RMS_INSTALLER`` to ``continuous`` to skip the prompt.
