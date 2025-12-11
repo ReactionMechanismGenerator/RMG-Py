@@ -759,3 +759,29 @@ class SimpleReactorTest:
         # order: Ar, N2, O2, H, CH3, CH4
         for i in range(len(simulated_mole_fracs)):
             assert round(abs(simulated_mole_fracs[i] - expected_mole_fracs[i]), 6) == 0
+
+    def test_get_const_spc_indices(self):
+        """
+        Test that const_spc_names are correctly mapped to core species indices.
+        """
+        # Dummy species with labels that should match const_spc_names
+        a = Species(smiles='C', label="CH4")
+        b = Species(smiles='[OH]', label="OH")
+        core_species = [a, b]
+
+        T = 1000.0  # K
+        P = 1.0e5   # Pa
+
+        rxn_system = SimpleReactor(
+            T,
+            P,
+            initial_mole_fractions={a: 0.5, b: 0.5},
+            n_sims=1,
+            termination=[],
+            const_spc_names=["CH4"])
+
+        # Populate const_spc_indices from labels
+        rxn_system.get_const_spc_indices(core_species)
+
+        # Only "CH4" should be marked constant
+        assert rxn_system.const_spc_indices == [core_species.index(a)]
