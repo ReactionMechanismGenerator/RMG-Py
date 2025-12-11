@@ -58,7 +58,7 @@ dependencies:
   - conda-forge::rdkit >=2022.09.1
 
 # Python tools
-  - conda-forge::python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
+  - conda-forge::python >=3.9,<3.12  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
   - conda-forge::setuptools <80
   - conda-forge::coverage
   - conda-forge::cython >=0.25.2,<3.1
