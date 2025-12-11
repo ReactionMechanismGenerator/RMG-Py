@@ -2775,12 +2775,13 @@ class Molecule(Graph):
         """
         Returns the symmetrized smallest set of smallest rings (SSSR) as a list of lists of Atom objects.
 
-        Uses RDKit's built-in ring perception (GetSymmSSSR).
+        Uses RDKit's built-in ring perception (GetSSSR).
+        Note that this is not the same as the Symmetrized SSSR (GetSymmSSSR).
         The symmetrized SSSR is at least as large as the SSSR for a molecule. 
         In certain highly-symmetric cases (e.g. cubane), the symmetrized SSSR 
         can be a bit larger (i.e. the number of symmetrized rings is >= NumBonds-NumAtoms+1).
         It is usually more chemically meaningful, and is less random/arbitrary than the SSSR,
-        which is non-deterministic in certain cases.
+        though RMG uses SSSR for historical reasons.
         """
         # RDKit does not support electron
         if self.is_electron():
@@ -2788,7 +2789,7 @@ class Molecule(Graph):
         
         from rdkit import Chem
         
-        symm_sssr = []
+        sssr = []
         # Get the symmetric SSSR using RDKit
         rdkit_mol = self.to_rdkit_mol(remove_h=False,
                                       sanitize=False,
@@ -2796,12 +2797,12 @@ class Molecule(Graph):
                                       save_order=True,
                                       ignore_bond_orders=True)
 
-        ring_info = Chem.GetSymmSSSR(rdkit_mol)
+        ring_info = Chem.GetSSSR(rdkit_mol)
         for ring in ring_info:
             atom_ring = [self.atoms[idx] for idx in ring]
             sorted_ring = self.sort_cyclic_vertices(atom_ring)
-            symm_sssr.append(sorted_ring)
-        return symm_sssr
+            sssr.append(sorted_ring)
+        return sssr
 
     def get_relevant_cycles(self):
         """
