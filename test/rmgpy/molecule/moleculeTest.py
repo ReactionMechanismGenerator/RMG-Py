@@ -2475,7 +2475,7 @@ multiplicity 2
         cycle_list = mol.get_smallest_set_of_smallest_rings(symmetrized=True)
         assert len(cycle_list) == 6  # satisfying, but no longer the 'true' SSSR
 
-    @pytest.skip("get_deterministic_sssr is deprecated")
+    @pytest.mark.skip("get_deterministic_sssr is deprecated")
     def test_get_deterministic_smallest_set_of_smallest_rings_case1(self):
         """
         Test fused tricyclic can be decomposed into single rings more
@@ -2505,7 +2505,7 @@ multiplicity 2
             assert num_shared_atoms_list == previous_num_shared_atoms_list
             previous_num_shared_atoms_list = num_shared_atoms_list
 
-    @pytest.skip("get_deterministic_sssr is deprecated")
+    @pytest.mark.skip("get_deterministic_sssr is deprecated")
     def test_get_deterministic_smallest_set_of_smallest_rings_case2(self):
         """
         Test if two possible smallest rings can join the smallest set
@@ -2536,7 +2536,7 @@ multiplicity 2
             assert atom_symbols_list == previous_atom_symbols_list
             previous_atom_symbols_list = atom_symbols_list
 
-    @pytest.skip("get_deterministic_sssr is deprecated")
+    @pytest.mark.skip("get_deterministic_sssr is deprecated")
     def test_get_deterministic_smallest_set_of_smallest_rings_case3(self):
         """
         Test if two possible smallest rings can join the smallest set
