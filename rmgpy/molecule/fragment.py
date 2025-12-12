@@ -596,7 +596,7 @@ class Fragment(Molecule):
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
-            rings = self.get_symmetrized_smallest_set_of_smallest_rings()
+            rings = self.get_smallest_set_of_smallest_rings()
             rings = [ring for ring in rings if len(ring) == 6]
         if not rings:
             return [], []

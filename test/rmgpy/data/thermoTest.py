@@ -1723,7 +1723,7 @@ class TestCyclicThermo:
         spe.generate_resonance_structures()
         mols = []
         for mol in spe.molecule:
-            sssr0 = mol.get_symmetrized_smallest_set_of_smallest_rings()
+            sssr0 = mol.get_smallest_set_of_smallest_rings()
             aromatic_ring_num = 0
             for sr0 in sssr0:
                 sr0mol = Molecule(atoms=sr0)
@@ -1772,7 +1772,7 @@ class TestCyclicThermo:
         spe = Species().from_smiles(smiles)
         spe.generate_resonance_structures()
         for mol in spe.molecule:
-            sssr0 = mol.get_symmetrized_smallest_set_of_smallest_rings()
+            sssr0 = mol.get_smallest_set_of_smallest_rings()
             aromatic_ring_num = 0
             for sr0 in sssr0:
                 sr0mol = Molecule(atoms=sr0)
@@ -2050,7 +2050,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
         mol1 = Molecule().from_smiles(smiles1)
 
         # get two SSSRs
-        sssr = mol1.get_symmetrized_smallest_set_of_smallest_rings()
+        sssr = mol1.get_smallest_set_of_smallest_rings()
         ring1 = sssr[0]
         ring2 = sssr[1]
 
@@ -2127,7 +2127,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
         mol = spe.molecule[0]
 
         # get two SSSRs
-        sssr = mol.get_symmetrized_smallest_set_of_smallest_rings()
+        sssr = mol.get_smallest_set_of_smallest_rings()
         ring1 = sssr[0]
         ring2 = sssr[1]
 
@@ -2151,7 +2151,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
         spe = Species().from_smiles(smiles)
         spe.generate_resonance_structures()
         for mol in spe.molecule:
-            sssr0 = mol.get_symmetrized_smallest_set_of_smallest_rings()
+            sssr0 = mol.get_smallest_set_of_smallest_rings()
             aromatic_ring_num = 0
             for sr0 in sssr0:
                 sr0mol = Molecule(atoms=sr0)
@@ -2200,7 +2200,7 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
         spe = Species().from_smiles(smiles)
         spe.generate_resonance_structures()
         for mol in spe.molecule:
-            sssr0 = mol.get_symmetrized_smallest_set_of_smallest_rings()
+            sssr0 = mol.get_smallest_set_of_smallest_rings()
             aromatic_ring_num = 0
             for sr0 in sssr0:
                 sr0mol = Molecule(atoms=sr0)

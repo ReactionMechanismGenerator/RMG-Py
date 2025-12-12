@@ -413,7 +413,7 @@ class SpeciesConstraints:
         self, species: ErrorCancelingSpecies
     ) -> List[GenericConstraint]:
         ring_features = []
-        rings = species.molecule.get_symmetrized_smallest_set_of_smallest_rings()
+        rings = species.molecule.get_smallest_set_of_smallest_rings()
         for ring in rings:
             ring_features.append(GenericConstraint(constraint_str=f"{len(ring)}_ring"))
 
