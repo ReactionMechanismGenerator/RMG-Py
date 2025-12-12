@@ -346,7 +346,7 @@ def is_bicyclic(polyring):
     returns True if it's a bicyclic, False otherwise
     """
     submol, _ = convert_ring_to_sub_molecule(polyring)
-    sssr = submol.get_symmetrized_smallest_set_of_smallest_rings()
+    sssr = submol.get_smallest_set_of_smallest_rings()
 
     return len(sssr) == 2
 
@@ -466,8 +466,8 @@ def is_ring_partial_matched(ring, matched_group):
         return True
     else:
         submol_ring, _ = convert_ring_to_sub_molecule(ring)
-        sssr = submol_ring.get_symmetrized_smallest_set_of_smallest_rings()
-        sssr_grp = matched_group.make_sample_molecule().get_symmetrized_smallest_set_of_smallest_rings()
+        sssr = submol_ring.get_smallest_set_of_smallest_rings()
+        sssr_grp = matched_group.make_sample_molecule().get_smallest_set_of_smallest_rings()
         if sorted([len(sr) for sr in sssr]) == sorted([len(sr_grp) for sr_grp in sssr_grp]):
             return False
         else:
@@ -483,7 +483,7 @@ def bicyclic_decomposition_for_polyring(polyring):
     """
 
     submol, _ = convert_ring_to_sub_molecule(polyring)
-    sssr = submol.get_deterministic_sssr()
+    sssr = submol.get_smallest_set_of_smallest_rings()
 
     ring_pair_with_common_atoms_list = []
     ring_occurances_dict = {}
@@ -555,7 +555,7 @@ def split_bicyclic_into_single_rings(bicyclic_submol):
     Splits a given bicyclic submolecule into two individual single 
     ring submolecules (a list of `Molecule`s ).
     """
-    sssr = bicyclic_submol.get_deterministic_sssr()
+    sssr = bicyclic_submol.get_smallest_set_of_smallest_rings()
 
     return [convert_ring_to_sub_molecule(sssr[0])[0],
             convert_ring_to_sub_molecule(sssr[1])[0]]
@@ -2141,7 +2141,7 @@ class ThermoDatabase(object):
         # Take C1=CC=C([O])C(O)=C1 as an example, we need to remove the interation of OH-OH, then add the interaction of Oj-OH.
         # For now, we only apply this part to cyclic structure because we only have radical interaction data for aromatic radical.
         if saturated_struct.is_cyclic():
-            sssr = saturated_struct.get_symmetrized_smallest_set_of_smallest_rings()
+            sssr = saturated_struct.get_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -2149,7 +2149,7 @@ class ThermoDatabase(object):
                                                        saturated_struct, {'*1': atomPair[0], '*2': atomPair[1]})
                     except KeyError:
                         pass
-            sssr = molecule.get_symmetrized_smallest_set_of_smallest_rings()
+            sssr = molecule.get_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
@@ -2272,7 +2272,7 @@ class ThermoDatabase(object):
         # In my opinion, it's cleaner to do it in the current way.
         # WIPWIPWIPWIPWIPWIPWIP         #########################################         WIPWIPWIPWIPWIPWIPWIP
         if cyclic:
-            sssr = molecule.get_symmetrized_smallest_set_of_smallest_rings()
+            sssr = molecule.get_smallest_set_of_smallest_rings()
             for ring in sssr:
                 for atomPair in itertools.permutations(ring, 2):
                     try:
