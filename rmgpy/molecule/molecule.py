@@ -1034,6 +1034,8 @@ class Molecule(Graph):
         self.props = props or {}
         self.metal = metal
         self.facet = facet
+        self._sssr = None
+        self._symm_sssr = None
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Molecule instantiation, '
@@ -2660,10 +2662,10 @@ class Molecule(Graph):
         though RMG uses SSSR for historical reasons.
         """
         if symmetrized:
-            if hasattr(self, "_symm_sssr"):
+            if self._symm_sssr is not None:
                 return self._symm_sssr
         else:
-            if hasattr(self, "_sssr"):
+            if self._sssr is not None:
                 return self._sssr
 
         # RDKit does not support electron
@@ -2689,9 +2691,9 @@ class Molecule(Graph):
             sorted_ring = self.sort_cyclic_vertices(atom_ring)
             sssr.append(sorted_ring)
         if symmetrized:
-            setattr(self, "_symm_sssr", sssr)
+            self._symm_sssr = sssr
         else:
-            setattr(self, "_sssr", sssr)
+            self._sssr = sssr
         return sssr
 
     def get_relevant_cycles(self):
