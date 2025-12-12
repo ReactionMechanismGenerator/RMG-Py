@@ -120,8 +120,6 @@ class Atom(Vertex):
         self.coords = coords
         self.id = id
         self.props = props or {}
-        self._sssr = None
-        self._symm_sssr = None
 
     def __str__(self):
         """
@@ -1036,6 +1034,8 @@ class Molecule(Graph):
         self.props = props or {}
         self.metal = metal
         self.facet = facet
+        self._sssr = None
+        self._symm_sssr = None
 
         if inchi and smiles:
             logging.warning('Both InChI and SMILES provided for Molecule instantiation, '
