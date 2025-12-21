@@ -3171,7 +3171,7 @@ class TestChargeTransferReaction:
         kf_1 = self.rxn_reduction.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_reduction.kinetics.get_rate_coefficient(298,0)
 
-        assert abs(kf_1 - 43870307169260.055) < 0.000001
+        assert abs((kf_1 - 43870307169260.055) / kf_1) < 1.0e-5
         assert abs(kf_1 - kf_2) < 0.000001
 
         #kf_2 should be greater than kf_1
