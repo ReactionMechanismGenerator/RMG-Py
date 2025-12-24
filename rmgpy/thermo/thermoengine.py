@@ -39,6 +39,7 @@ from rmgpy.thermo import Wilhoit, NASA, ThermoData
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
 
+from rdkit import Chem
 
 def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
     """
@@ -66,11 +67,6 @@ def process_thermo_data(spc, thermo0, thermo_class=NASA, solvent_name=''):
     if solvent_data and not "Liquid thermo library" in thermo0.comment:
         solvation_database = get_db('solvation')
         solute_data = solvation_database.get_solute_data(spc)
-        solvation_correction = solvation_database.get_solvation_correction(solute_data, solvent_data)
-        # correction is added to the entropy and enthalpy
-        wilhoit.S0.value_si = (wilhoit.S0.value_si + solvation_correction.entropy)
-        wilhoit.H0.value_si = (wilhoit.H0.value_si + solvation_correction.enthalpy)
-        wilhoit.comment += f' + Solvation correction (H={solvation_correction.enthalpy/1e3:+.0f}kJ/mol;S={solvation_correction.entropy:+.0f}J/mol/K) with {solvent_name} as solvent and solute estimated using {solute_data.comment}'
 
     # Compute E0 by extrapolation to 0 K
     if spc.conformer is None:
@@ -182,3 +178,18 @@ def submit(spc, solvent_name=''):
 
     """
     spc.thermo = evaluator(spc, solvent_name=solvent_name)
+
+    # generate solvationthermo if needed
+    if solvent_name and spc.thermo and "Liquid thermo library" not in spc.thermo.comment:
+        solvation_database = get_db('solvation')
+        if solvation_database:
+            try:
+                from rmgpy.rmg.input import get_input
+                ml_solvation = get_input("ml_solvation")
+                solvationthermo = ml_solvation.generate_solvation_model(
+                    spc = spc,
+                    solvent_name = solvent_name
+                )
+                spc.solvationthermo = solvationthermo
+            except Exception as e:
+                    logging.warning("Failed to generate solvation thermo for {}: {}".format(spc.label, e))
