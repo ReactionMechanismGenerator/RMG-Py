@@ -83,8 +83,7 @@ class TestFailsSpeciesConstraints:
         rmgpy.rmg.input.rmg = None
 
         mol = Molecule(smiles="C")
-        failed, _ = fails_species_constraints(mol)
-        assert not failed
+        assert not fails_species_constraints(mol)
 
         mock_logging.debug.assert_called_with("Species constraints could not be found.")
 
@@ -97,80 +96,67 @@ class TestFailsSpeciesConstraints:
         """
         spc = Species().from_smiles("C")
 
-        failed, _ = fails_species_constraints(spc)
-        assert not failed
+        assert not fails_species_constraints(spc)
 
     def test_explicitly_allowed_molecules(self):
         """
         Test that we can explicitly allow molecules in species constraints.
         """
         mol = Molecule(smiles="CCCC")
-        failed, _ = fails_species_constraints(mol)
-        assert failed
+        assert fails_species_constraints(mol)
 
         self.rmg.species_constraints["explicitlyAllowedMolecules"] = [Molecule(smiles="CCCC")]
-        failed, _ = fails_species_constraints(mol)
-        assert not failed
+        assert not fails_species_constraints(mol)
 
     def test_carbon_constraint(self):
         """
         Test that we can constrain the max number of carbon atoms.
         """
         mol1 = Molecule(smiles="CC")
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule(smiles="CCC")
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
 
     def test_oxygen_constraint(self):
         """
         Test that we can constrain the max number of oxygen atoms.
         """
         mol1 = Molecule(smiles="C=O")
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule(smiles="OC=O")
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
 
     def test_nitrogen_constraint(self):
         """
         Test that we can constrain the max number of nitrogen atoms.
         """
         mol1 = Molecule(smiles="CN")
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule(smiles="NCN")
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
 
     def test_silicon_constraint(self):
         """
         Test that we can constrain the max number of silicon atoms.
         """
         mol1 = Molecule(smiles="[SiH4]")
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule(smiles="[SiH3][SiH3]")
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
 
     def test_sulfur_constraint(self):
         """
         Test that we can constrain the max number of sulfur atoms.
         """
         mol1 = Molecule(smiles="CS")
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule(smiles="SCS")
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
 
     def test_surface_site_constraint(self):
         """
@@ -222,17 +208,13 @@ class TestFailsSpeciesConstraints:
         self.rmg.species_constraints["maximumCarbonAtoms"] = 3
         self.rmg.species_constraints["maximumHeavyAtoms"] = 6
 
-        failed, _ = fails_species_constraints(mol_1site)
-        assert not failed
+        assert not fails_species_constraints(mol_1site)
 
-        failed, _ = fails_species_constraints(mol_2site)
-        assert not failed
+        assert not fails_species_constraints(mol_2site)
 
-        failed, _ = fails_species_constraints(mol_3site_vdW)
-        assert failed
+        assert fails_species_constraints(mol_3site_vdW)
 
-        failed, _ = fails_species_constraints(mol_3site)
-        assert failed
+        assert fails_species_constraints(mol_3site)
 
         self.rmg.species_constraints["maximumCarbonAtoms"] = max_carbon
         self.rmg.species_constraints["maximumHeavyAtoms"] = max_heavy_atoms
@@ -247,32 +229,27 @@ class TestFailsSpeciesConstraints:
 2 X u0 p0 c0 {1,Q}
 """
         )
-        failed, _ = fails_species_constraints(mol_1site)
-        assert failed
+        assert fails_species_constraints(mol_1site)
 
     def test_heavy_constraint(self):
         """
         Test that we can constrain the max number of heavy atoms.
         """
         mol1 = Molecule(smiles="CCO")
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule(smiles="CCN=O")
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
 
     def test_radical_constraint(self):
         """
         Test that we can constrain the max number of radical electrons.
         """
         mol1 = Molecule(smiles="[CH2][CH2]")
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule(smiles="[CH2][CH][CH2]")
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
 
     def test_carbene_constraint(self):
         """
@@ -285,8 +262,7 @@ class TestFailsSpeciesConstraints:
 3 H u0 p0 c0 {1,S}
 """
         )
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule().from_adjacency_list(
             """
@@ -296,8 +272,7 @@ class TestFailsSpeciesConstraints:
 4 H u0 p0 c0 {3,S}
 """
         )
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
 
     def test_carbene_radical_constraint(self):
         """
@@ -310,8 +285,7 @@ class TestFailsSpeciesConstraints:
 3 H u0 p0 c0 {1,S}
 """
         )
-        failed, _ = fails_species_constraints(mol1)
-        assert not failed
+        assert not fails_species_constraints(mol1)
 
         mol2 = Molecule().from_adjacency_list(
             """
@@ -322,5 +296,4 @@ class TestFailsSpeciesConstraints:
 5 H u0 p0 c0 {3,S}
 """
         )
-        failed, _ = fails_species_constraints(mol2)
-        assert failed
+        assert fails_species_constraints(mol2)
