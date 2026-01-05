@@ -8,7 +8,7 @@ RMG-Py Version 3.3.0
 ====================
 Date: July 10, 2025
 
-The below list is a summary. For a complete list of all changes, see the `Official Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0>`_.
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Py Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0>`_.
 
 - Software Improvements
     - RMG-Py now uses Python 3.9
@@ -33,7 +33,7 @@ RMG-Database Version 3.3.0
 ==========================
 Date: July 10, 2025
 
-The below list is a summary. For a complete list of all changes, see the `Official Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0>`_.
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Database Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0>`_.
 
 - Features
     - Electrochemistry with Lithium
