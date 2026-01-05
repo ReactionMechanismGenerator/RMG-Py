@@ -35,6 +35,7 @@ import gc
 import itertools
 import logging
 import os
+import re
 
 import numpy as np
 
@@ -248,6 +249,27 @@ class CoreEdgeReactionModel:
             """
             )
         ]
+        self.completed_pdep_networks = set()
+
+    def add_completed_pdep_network(self, formula):
+        """
+        Add a completed pressure-dependent network formula to the set.
+        """
+        # turn C2H4 into {'C':2,'H':4}
+        if not isinstance(formula, str):
+            raise TypeError("Expected string for formula, got {0}".format(formula.__class__))
+        pattern = r'([A-Z][a-z]?)(\d*)'
+        element_count = {}
+
+        for match in re.finditer(pattern, formula):
+            element = match.group(1)
+            count = int(match.group(2)) if match.group(2) else 1
+            element_count[element] = count
+        # must be hashable and match what is done in add_reaction_to_unimolecular_networks
+        key = tuple(sorted(element_count.items()))
+        self.completed_pdep_networks.add(key)
+        logging.info(f"Added {formula} to list of completed PDep networks that will not be further explored.")
+
 
     def check_for_existing_species(self, molecule):
         """
@@ -1892,6 +1914,20 @@ class CoreEdgeReactionModel:
         products.sort()
 
         source = tuple(reactants)
+
+        if len(reactants) == 1:
+            elements = reactants[0].molecule[0].get_element_count()
+        elif len(products) == 1:
+            elements = products[0].molecule[0].get_element_count()
+        else:
+            raise ValueError("Unimolecular reaction networks can only be formed for unimolecular reactions or isomerizations.")
+        # make a hashable key from the elements dict
+        elements_key = tuple(sorted(elements.items()))
+        if elements_key in self.completed_pdep_networks:
+            formula = ''.join(f'{el}{count}' if count>1 else el for el, count in elements_key)
+            logging.info(f"Not adding reaction {newReaction} to unimolecular networks because the network for {formula} is marked as completed.")
+            return
+
 
         # Only search for a network if we don't specify it as a parameter
         if network is None:
