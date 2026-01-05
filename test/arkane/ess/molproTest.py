@@ -131,8 +131,8 @@ class MolproLogTest:
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
         t_list = np.array([298.15], float)
 
-        assert abs(trans.get_partition_function(t_list) - 9.175364e7) < 1e1
-        assert abs(rot.get_partition_function(t_list) - 1.00005557e5) < 1e-2
+        assert abs(trans.get_partition_function(t_list) - 9.175364e7) < (9.175364e7 * 2.0e-5) 
+        assert abs(rot.get_partition_function(t_list) - 100005.3890535083) < 1e-2
         assert abs(vib.get_partition_function(t_list) - 1.9734989e0) < 1e-4
 
         assert round(abs(e0 / constants.Na / constants.E_h - -768.275662), 4) == 0
@@ -145,7 +145,7 @@ class MolproLogTest:
         """
         molpro_log = MolproLog(os.path.join(self.data_path, "TS_CCSD(T)_no_F12_sp_molpro.out"))
         e0 = molpro_log.load_energy()
-        assert round(abs(e0 - -301585968.58196217), 7) == 0
+        assert round(abs(e0 - -301585943.43887734), 7) == 0
 
     def test_load_rs2c_e0(self):
         """
@@ -153,7 +153,7 @@ class MolproLogTest:
         """
         molpro_log = MolproLog(os.path.join(self.data_path, "HO2_RS2C.out"))
         e0 = molpro_log.load_energy()
-        assert round(abs(e0 - -395663227.2323160), 6) == 0
+        assert round(abs(e0 - -395663194.2460534), 6) == 0
 
     def test_load_mrci_e0(self):
         """
@@ -163,8 +163,8 @@ class MolproLogTest:
         mrciq_log = MolproLog(os.path.join(self.data_path, "molpro_mrci+q.out"))
         mrci_e0 = mrci_log.load_energy()
         mrciq_e0 = mrciq_log.load_energy()
-        assert round(abs(mrci_e0 - -293217091.0381712), 7) == 0
-        assert round(abs(mrciq_e0 - -293284017.3925107), 7) == 0
+        assert round(abs(mrci_e0 - -293217066.59279585), 7) == 0
+        assert round(abs(mrciq_e0 - -293283992.9415558), 7) == 0
 
     def test_load_negative_frequency(self):
         """

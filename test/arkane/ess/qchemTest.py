@@ -83,11 +83,11 @@ class QChemLogTest:
         molecular energies can be properly read.
         """
         log = QChemLog(os.path.join(self.data_path, "npropyl.out"))
-        assert abs(log.load_energy() - -310896203.5432524) < 1e-7
+        assert abs(log.load_energy() - -310896177.62397754) < 1e-7
         log = QChemLog(os.path.join(self.data_path, "co.out"))
-        assert abs(log.load_energy() - -297402545.0217114) < 1e-7
+        assert abs(log.load_energy() - -297402520.2273967) < 1e-7
         log = QChemLog(os.path.join(self.data_path, "CH4_sp.out"))
-        assert abs(log.load_energy() - -106356735.53661588) < 1e-7
+        assert abs(log.load_energy() - -106356726.66970329) < 1e-7
 
     def test_zero_point_energy_from_qchem_log(self):
         """

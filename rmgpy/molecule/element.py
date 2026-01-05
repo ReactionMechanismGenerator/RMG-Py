@@ -168,161 +168,134 @@ def get_element(value, isotope=-1):
 
 ################################################################################
 
-# Declare an instance of each element (1 to 112)
 # The variable names correspond to each element's symbol
 # The elements are sorted by increasing atomic number and grouped by period
+#Taken from https://iupac.qmul.ac.uk/AtWt/ (IUPAC 2023, accessed November 2025)
+#The molar mass constant Mu = 1.0000000010531e-3 kg/mol was used to convert from dimensionaless atomic weights to kg/mol. 
 # Recommended IUPAC nomenclature is used throughout (including 'aluminium' and
 # 'caesium')
 
 # electron
-e = Element(-1,   'e', 'electron'      , 5.486e-7)
+e = Element(-1,   'e', 'electron'      , 5.485799090441e-7)
 
 # Surface site
 X = Element(0,    'X', 'surface_site'   , 0.0)
 
 # Period 1
-# Hydrogen
-H  = Element(1,   'H' , 'hydrogen'      , 0.001007971)  # assuming 99.9855% 1_H, 0.0145% 2_H; see https://applets.kcvs.ca/IPTEI/pdf-elements/hydrogen.pdf
-D  = Element(1,   'H' , 'deuterium'     , 0.0020141017781, 2, 'D')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/hydrogen.pdf
-T  = Element(1,   'H' , 'tritium'       , 0.003016049, 3, 'T')
-He = Element(2,   'He', 'helium'        , 0.004002601)  # see  https://applets.kcvs.ca/IPTEI/pdf-elements/helium.pdf
+H  = Element(1,   'H' , 'hydrogen'	, 0.00100802000106)
+D  = Element(1,   'H' , 'deuterium'     , 0.00201410177818, 2, 'D')  
+T  = Element(1,   'H' , 'tritium'       , 0.00301604928, 3, 'T')
+He = Element(2,   'He', 'helium'	, 0.00400260220422)
 
 # Period 2
-Li = Element(3,   'Li', 'lithium'       , 0.006941)
-Be = Element(4,   'Be', 'beryllium'     , 0.009012182)
-B  = Element(5,   'B',  'boron'         , 0.010811)
-C  = Element(6,   'C' , 'carbon'        , 0.01201064)  # assuming 1.06% 13_C, 98.94% 12_C; see https://applets.kcvs.ca/IPTEI/pdf-elements/carbon.pdf
-C13= Element(6,   'C' , 'carbon-13'     , 0.013003354, 13, 'CI')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/carbon.pdf
-N  = Element(7,   'N' , 'nitrogen'      , 0.01400686)  # assuming 0.3795% 15_N, 99.9855% 14_N; see https://applets.kcvs.ca/IPTEI/pdf-elements/nitrogen.pdf
-O  = Element(8,   'O' , 'oxygen'        , 0.0159994)  # assuming 99.7572% 16_O2, 0.2045% 18_O2, 0.0384% 17_O2; see https://applets.kcvs.ca/IPTEI/pdf-elements/oxygen.pdf
-O18= Element(8,   'O' , 'oxygen-18'     , 0.017999159613, 18, 'OI')  # see https://applets.kcvs.ca/IPTEI/pdf-elements/oxygen.pdf
-F  = Element(9,   'F' , 'fluorine'      , 0.018998403163)  # see https://applets.kcvs.ca/IPTEI/pdf-elements/fluorine.pdf
-Ne = Element(10,  'Ne', 'neon'          , 0.02018005)   # see https://applets.kcvs.ca/IPTEI/pdf-elements/neon.pdf
+Li = Element(3,   'Li', 'lithium'	, 0.00694600000731)
+Be = Element(4,   'Be', 'beryllium'	, 0.00901218315949)
+B  = Element(5,   'B' , 'boron'		, 0.01081200001139)
+C  = Element(6,   'C' , 'carbon'	, 0.01201120001265)
+C13= Element(6,   'C' , 'carbon-13'     , 0.0130033548352, 13, 'C13') 
+N  = Element(7,   'N' , 'nitrogen'	, 0.01400710001475)
+N15= Element(7,   'N' , 'nitrogen-15'	, 0.0150001088994, 15, 'N15')
+O  = Element(8,   'O' , 'oxygen'	, 0.01599910001685)
+O17= Element(8,   'O' , 'oxygen-17'     , 0.0169991317575, 17, 'O17')
+O18= Element(8,   'O' , 'oxygen-18'     , 0.0179991596135, 18, 'O18')
+F  = Element(9,   'F' , 'fluorine'	, 0.01899840318251)
+Ne = Element(10,  'Ne', 'neon'		, 0.02017976002125)
 
 # Period 3
-Na = Element(11,  'Na', 'sodium'        , 0.022989770)
-Mg = Element(12,  'Mg', 'magnesium'     , 0.0243050)
-Al = Element(13,  'Al', 'aluminium'     , 0.026981538)
-Si = Element(14,  'Si', 'silicon'       , 0.0280855)
-P  = Element(15,  'P' , 'phosphorus'    , 0.030973761998)  # see https://applets.kcvs.ca/IPTEI/pdf-elements/phosphorus.pdf
-S  = Element(16,  'S' , 'sulfur'        , 0.0320725)  # assuming 0.7630% 33_S, 4.3650% 34_S, 0.0158% 36_S, 94.8562% 32_S; see https://applets.kcvs.ca/IPTEI/pdf-elements/sulfur.pdf
-Cl = Element(17,  'Cl', 'chlorine'      , 0.03545214)  # assuming 24.2% 37_Cl, 75.8% 35_Cl; see https://applets.kcvs.ca/IPTEI/pdf-elements/chlorine.pdf
-Ar = Element(18,  'Ar', 'argon'         , 0.0398775)  # assuming 1.04% 36_Ar, 2.165% 38_Ar, 96.795% 40_Ar; see https://applets.kcvs.ca/IPTEI/pdf-elements/argon.pdf
+Na = Element(11,  'Na', 'sodium'	, 0.02298976930621)
+Mg = Element(12,  'Mg', 'magnesium'	, 0.0243052000256)
+Al = Element(13,  'Al', 'aluminium'	, 0.02698153845841)
+Si = Element(14,  'Si', 'silicon'	, 0.02808510002958)
+P  = Element(15,  'P' , 'phosphorus'	, 0.03097376203112)
+S  = Element(16,  'S' , 'sulfur'	, 0.03206200003376)
+Cl = Element(17,  'Cl', 'chlorine'	, 0.03545100003733)
+Ar = Element(18,  'Ar', 'argon'		, 0.03995160004207)
 
 # Period 4
-K  = Element(19,  'K' , 'potassium'     , 0.0390983)
-Ca = Element(20,  'Ca', 'calcium'       , 0.040078)
-Sc = Element(21,  'Sc', 'scandium'      , 0.044955910)
-Ti = Element(22,  'Ti', 'titanium'      , 0.047867)
-V  = Element(23,  'V' , 'vanadium'      , 0.0509415)
-Cr = Element(24,  'Cr', 'chromium'      , 0.0519961)
-Mn = Element(25,  'Mn', 'manganese'     , 0.054938049)
-Fe = Element(26,  'Fe', 'iron'          , 0.055845)
-Co = Element(27,  'Co', 'cobalt'        , 0.058933200)
-Ni = Element(28,  'Ni', 'nickel'        , 0.0586934)
-Cu = Element(29,  'Cu', 'copper'        , 0.063546)
-Zn = Element(30,  'Zn', 'zinc'          , 0.065409)
-Ga = Element(31,  'Ga', 'gallium'       , 0.069723)
-Ge = Element(32,  'Ge', 'germanium'     , 0.07264)
-As = Element(33,  'As', 'arsenic'       , 0.07492160)
-Se = Element(34,  'Se', 'selenium'      , 0.07896)
-Br = Element(35,  'Br', 'bromine'       , 0.079904)
-Kr = Element(36,  'Kr', 'krypton'       , 0.083798)
+K  = Element(19,  'K' , 'potassium'	, 0.03909831004117)
+Ca = Element(20,  'Ca', 'calcium'	, 0.04007840004221)
+Sc = Element(21,  'Sc', 'scandium'	, 0.04495590744734)
+Ti = Element(22,  'Ti', 'titanium'	, 0.04786710005041)
+V  = Element(23,  'V' , 'vanadium'	, 0.05094151005365)
+Cr = Element(24,  'Cr', 'chromium'	, 0.05199616005476)
+Mn = Element(25,  'Mn', 'manganese'	, 0.05493804325786)
+Fe = Element(26,  'Fe', 'iron'		, 0.05584520005881)
+Co = Element(27,  'Co', 'cobalt'	, 0.05893319436206)
+Ni = Element(28,  'Ni', 'nickel'	, 0.05869344006181)
+Cu = Element(29,  'Cu', 'copper'	, 0.06354630006692)
+Zn = Element(30,  'Zn', 'zinc'		, 0.06538200006885)
+Ga = Element(31,  'Ga', 'gallium'	, 0.06972310007343)
+Ge = Element(32,  'Ge', 'germanium'	, 0.07263080007649)
+As = Element(33,  'As', 'arsenic'	, 0.0749215956789)
+Se = Element(34,  'Se', 'selenium'	, 0.07897180008317)
+Br = Element(35,  'Br', 'bromine'	, 0.07990430008415)
+Kr = Element(36,  'Kr', 'krypton'	, 0.08379820008825)
 
 # Period 5
-Rb = Element(37,  'Rb', 'rubidium'      , 0.0854678)
-Sr = Element(38,  'Sr', 'strontium'     , 0.08762)
-Y  = Element(39,  'Y' , 'yttrium'       , 0.08890585)
-Zr = Element(40,  'Zr', 'zirconium'     , 0.091224)
-Nb = Element(41,  'Nb', 'niobium'       , 0.09290638)
-Mo = Element(42,  'Mo', 'molybdenum'    , 0.09594)
-Tc = Element(43,  'Tc', 'technetium'    , 0.098)
-Ru = Element(44,  'Ru', 'ruthenium'     , 0.10107)
-Rh = Element(45,  'Rh', 'rhodium'       , 0.10290550)
-Pd = Element(46,  'Pd', 'palladium'     , 0.10642)
-Ag = Element(47,  'Ag', 'silver'        , 0.1078682)
-Cd = Element(48,  'Cd', 'cadmium'       , 0.112411)
-In = Element(49,  'In', 'indium'        , 0.114818)
-Sn = Element(50,  'Sn', 'tin'           , 0.118710)
-Sb = Element(51,  'Sb', 'antimony'      , 0.121760)
-Te = Element(52,  'Te', 'tellurium'     , 0.12760)
-I  = Element(53,  'I' , 'iodine'        , 0.12690447)
-Xe = Element(54,  'Xe', 'xenon'         , 0.131293)
+Rb = Element(37,  'Rb', 'rubidium'	, 0.08546783009001)
+Sr = Element(38,  'Sr', 'strontium'	, 0.08762100009227)
+Y  = Element(39,  'Y' , 'yttrium'	, 0.08890583829363)
+Zr = Element(40,  'Zr', 'zirconium'	, 0.09122230009607)
+Nb = Element(41,  'Nb', 'niobium'	, 0.09290637109784)
+Mo = Element(42,  'Mo', 'molybdenum'	, 0.09595100010105)
+Ru = Element(44,  'Ru', 'ruthenium'	, 0.10107200010644)
+Rh = Element(45,  'Rh', 'rhodium'	, 0.10290549210837)
+Pd = Element(46,  'Pd', 'palladium'	, 0.10642100011207)
+Ag = Element(47,  'Ag', 'silver'	, 0.1078682201136)
+Cd = Element(48,  'Cd', 'cadmium'	, 0.11241440011838)
+In = Element(49,  'In', 'indium'	, 0.11481810012091)
+Sn = Element(50,  'Sn', 'tin'		, 0.11871070012501)
+Sb = Element(51,  'Sb', 'antimony'	, 0.12176010012823)
+Te = Element(52,  'Te', 'tellurium'	, 0.12760300013438)
+I  = Element(53,  'I' , 'iodine'	, 0.12690447313364)
+Xe = Element(54,  'Xe', 'xenon'		, 0.13129360013827)
 
 # Period 6
-Cs = Element(55,  'Cs', 'caesium'       , 0.13290545)
-Ba = Element(56,  'Ba', 'barium'        , 0.137327)
-La = Element(57,  'La', 'lanthanum'     , 0.1389055)
-Ce = Element(58,  'Ce', 'cerium'        , 0.140116)
-Pr = Element(59,  'Pr', 'praesodymium'  , 0.14090765)
-Nd = Element(60,  'Nd', 'neodymium'     , 0.14424)
-Pm = Element(61,  'Pm', 'promethium'    , 0.145)
-Sm = Element(62,  'Sm', 'samarium'      , 0.15036)
-Eu = Element(63,  'Eu', 'europium'      , 0.151964)
-Gd = Element(64,  'Gd', 'gadolinium'    , 0.15725)
-Tb = Element(65,  'Tb', 'terbium'       , 0.15892534)
-Dy = Element(66,  'Dy', 'dysprosium'    , 0.162500)
-Ho = Element(67,  'Ho', 'holmium'       , 0.16493032)
-Er = Element(68,  'Er', 'erbium'        , 0.167259)
-Tm = Element(69,  'Tm', 'thulium'       , 0.16893421)
-Yb = Element(70,  'Yb', 'ytterbium'     , 0.17304)
-Lu = Element(71,  'Lu', 'lutetium'      , 0.174967)
-Hf = Element(72,  'Hf', 'hafnium'       , 0.17849)
-Ta = Element(73,  'Ta', 'tantalum'      , 0.1809479)
-W  = Element(74,  'W' , 'tungsten'      , 0.18384)
-Re = Element(75,  'Re', 'rhenium'       , 0.186207)
-Os = Element(76,  'Os', 'osmium'        , 0.19023)
-Ir = Element(77,  'Ir', 'iridium'       , 0.192217)
-Pt = Element(78,  'Pt', 'platinum'      , 0.195078)
-Au = Element(79,  'Au', 'gold'          , 0.19696655)
-Hg = Element(80,  'Hg', 'mercury'       , 0.20059)
-Tl = Element(81,  'Tl', 'thallium'      , 0.2043833)
-Pb = Element(82,  'Pb', 'lead'          , 0.2072)
-Bi = Element(83,  'Bi', 'bismuth'       , 0.20898038)
-Po = Element(84,  'Po', 'polonium'      , 0.209)
-At = Element(85,  'At', 'astatine'      , 0.210)
-Rn = Element(86,  'Rn', 'radon'         , 0.222)
+Cs = Element(55,  'Cs', 'caesium'	, 0.13290545210596)
+Ba = Element(56,  'Ba', 'barium'	, 0.13732770014462)
+La = Element(57,  'La', 'lanthanum'	, 0.13890547714628)
+Ce = Element(58,  'Ce', 'cerium'	, 0.14011610014756)
+Pr = Element(59,  'Pr', 'praseodymium'	, 0.14090766114839)
+Nd = Element(60,  'Nd', 'neodymium'	, 0.1442423001519)
+Sm = Element(62,  'Sm', 'samarium'	, 0.15036200015835)
+Eu = Element(63,  'Eu', 'europium'	, 0.15196410016003)
+Gd = Element(64,  'Gd', 'gadolinium'	, 0.1572492001656)
+Tb = Element(65,  'Tb', 'terbium'	, 0.15892535486736)
+Dy = Element(66,  'Dy', 'dysprosium'	, 0.16250010017113)
+Ho = Element(67,  'Ho', 'holmium'	, 0.16493032967369)
+Er = Element(68,  'Er', 'erbium'	, 0.16725930017614)
+Tm = Element(69,  'Tm', 'thulium'	, 0.1689342196779)
+Yb = Element(70,  'Yb', 'ytterbium'	, 0.17304510018223)
+Lu = Element(71,  'Lu', 'lutetium'	, 0.17496669518426)
+Hf = Element(72,  'Hf', 'hafnium'	, 0.17848660018796)
+Ta = Element(73,  'Ta', 'tantalum'	, 0.18094788219056)
+W  = Element(74,  'W' , 'tungsten'	, 0.1838410001936)
+Re = Element(75,  'Re', 'rhenium'	, 0.18620710019609)
+Os = Element(76,  'Os', 'osmium'	, 0.19023300020033)
+Ir = Element(77,  'Ir', 'iridium'	, 0.19221720020242)
+Pt = Element(78,  'Pt', 'platinum'	, 0.19508490020544)
+Au = Element(79,  'Au', 'gold'		, 0.19696657060743)
+Hg = Element(80,  'Hg', 'mercury'	, 0.20059230021124)
+Tl = Element(81,  'Tl', 'thallium'	, 0.20438100021523)
+Pb = Element(82,  'Pb', 'lead'		, 0.2072000002182)
+Bi = Element(83,  'Bi', 'bismuth'	, 0.20898040122008)
 
 # Period 7
-Fr = Element(87,  'Fr', 'francium'      , 0.223)
-Ra = Element(88,  'Ra', 'radium'        , 0.226)
-Ac = Element(89,  'Ac', 'actinum'       , 0.227)
-Th = Element(90,  'Th', 'thorium'       , 0.2320381)
-Pa = Element(91,  'Pa', 'protactinum'   , 0.23103588)
-U  = Element(92,  'U' , 'uranium'       , 0.23802891)
-Np = Element(93,  'Np', 'neptunium'     , 0.237)
-Pu = Element(94,  'Pu', 'plutonium'     , 0.244)
-Am = Element(95,  'Am', 'americium'     , 0.243)
-Cm = Element(96,  'Cm', 'curium'        , 0.247)
-Bk = Element(97,  'Bk', 'berkelium'     , 0.247)
-Cf = Element(98,  'Cf', 'californium'   , 0.251)
-Es = Element(99,  'Es', 'einsteinium'   , 0.252)
-Fm = Element(100, 'Fm', 'fermium'       , 0.257)
-Md = Element(101, 'Md', 'mendelevium'   , 0.258)
-No = Element(102, 'No', 'nobelium'      , 0.259)
-Lr = Element(103, 'Lr', 'lawrencium'    , 0.262)
-Rf = Element(104, 'Rf', 'rutherfordium' , 0.261)
-Db = Element(105, 'Db', 'dubnium'       , 0.262)
-Sg = Element(106, 'Sg', 'seaborgium'    , 0.266)
-Bh = Element(107, 'Bh', 'bohrium'       , 0.264)
-Hs = Element(108, 'Hs', 'hassium'       , 0.277)
-Mt = Element(109, 'Mt', 'meitnerium'    , 0.268)
-Ds = Element(110, 'Ds', 'darmstadtium'  , 0.281)
-Rg = Element(111, 'Rg', 'roentgenium'   , 0.272)
-Cn = Element(112, 'Cn', 'copernicum'    , 0.285)
+Th = Element(90,  'Th', 'thorium'	, 0.23203774024436)
+Pa = Element(91,  'Pa', 'protactinium'	, 0.2310358812433)
+U  = Element(92,  'U' , 'uranium'	, 0.23802891325067)
 
 # A list of the elements, sorted by increasing atomic number
 element_list = [
     e,
     X,
     H, D, T, He,
-    Li, Be, B, C, C13, N, O, O18, F, Ne,
+    Li, Be, B, C, C13, N, N15, O, O17, O18, F, Ne,
     Na, Mg, Al, Si, P, S, Cl, Ar,
     K, Ca, Sc, Ti, V, Cr, Mn, Fe, Co, Ni, Cu, Zn, Ga, Ge, As, Se, Br, Kr,
-    Rb, Sr, Y, Zr, Nb, Mo, Tc, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe,
-    Cs, Ba, La, Ce, Pr, Nd, Pm, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi,
-    Po, At, Rn,
-    Fr, Ra, Ac, Th, Pa, U, Np, Pu, Am, Cm, Bk, Cf, Es, Fm, Md, No, Lr, Rf, Db, Sg, Bh, Hs, Mt, Ds, Rg, Cn
+    Rb, Sr, Y, Zr, Nb, Mo, Ru, Rh, Pd, Ag, Cd, In, Sn, Sb, Te, I, Xe,
+    Cs, Ba, La, Ce, Pr, Nd, Sm, Eu, Gd, Tb, Dy, Ho, Er, Tm, Yb, Lu, Hf, Ta, W, Re, Os, Ir, Pt, Au, Hg, Tl, Pb, Bi,
+    Th, Pa, U
 ]
 
 # Bond Dissociation Energies
