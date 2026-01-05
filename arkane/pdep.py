@@ -132,9 +132,11 @@ class PressureDependenceJob(object):
 
         if Tlist is not None:
             self.Tlist = Tlist
-            self.Tmin = (np.min(self.Tlist.value_si), "K")
-            self.Tmax = (np.max(self.Tlist.value_si), "K")
             self.Tcount = len(self.Tlist.value_si)
+            if self.Tmin is None:
+                self.Tmin = (np.min(self.Tlist.value_si), "K")
+            if self.Tmax is None:
+                self.Tmax = (np.max(self.Tlist.value_si), "K")
         else:
             self.Tlist = None
 
@@ -143,9 +145,11 @@ class PressureDependenceJob(object):
         self.Pcount = Pcount
         if Plist is not None:
             self.Plist = Plist
-            self.Pmin = (np.min(self.Plist.value_si) * 1e-5, "bar")
-            self.Pmax = (np.max(self.Plist.value_si) * 1e-5, "bar")
             self.Pcount = len(self.Plist.value_si)
+            if self.Pmin is None:
+                self.Pmin = (np.min(self.Plist.value_si) * 1e-5, "bar")
+            if self.Pmax is None:
+                self.Pmax = (np.max(self.Plist.value_si) * 1e-5, "bar")
         else:
             self.Plist = None
 
@@ -699,7 +703,10 @@ class PressureDependenceJob(object):
                 f.write('    label = {0!r},\n'.format(ts.label))
                 if ts.conformer is not None:
                     if ts.conformer.E0 is not None:
-                        f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
+                        if self.network.energy_correction:
+                            f.write(f'    E0 = ({ts.conformer.E0.value_si * 0.001:.3f} - {self.network.energy_correction * 0.001:.3f}, "kJ/mol"), # removing the applied energy_correction\n')
+                        else:
+                            f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
                     if len(ts.conformer.modes) > 0:
                         f.write('    modes = [\n')
                         for mode in ts.conformer.modes:

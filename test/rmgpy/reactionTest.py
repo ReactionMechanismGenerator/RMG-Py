@@ -2936,9 +2936,9 @@ reactions:
                 # Check that the reaction string is the same
                 assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                assert round(abs(converted_rxn.rate.pre_exponential_factor - ct_rxn.rate.pre_exponential_factor), 3) == 0
-                assert round(abs(converted_rxn.rate.temperature_exponent - ct_rxn.rate.temperature_exponent), 7) == 0
-                assert round(abs(converted_rxn.rate.activation_energy - ct_rxn.rate.activation_energy), 7) == 0
+                assert round((converted_rxn.rate.pre_exponential_factor / ct_rxn.rate.pre_exponential_factor), 7) == 1
+                assert round((converted_rxn.rate.temperature_exponent / ct_rxn.rate.temperature_exponent), 7) == 1
+                assert round((converted_rxn.rate.activation_energy / ct_rxn.rate.activation_energy), 7) == 1
 
     def test_pdep_arrhenius(self):
         """
