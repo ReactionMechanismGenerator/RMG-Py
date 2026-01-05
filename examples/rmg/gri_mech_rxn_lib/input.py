@@ -40,6 +40,10 @@ model(
     maximumEdgeSpecies=100000
 )
 
+generatedSpeciesConstraints(
+    maximumCarbeneRadicals=2,
+)
+
 options(
     units='si',
     generateOutputHTML=False,
