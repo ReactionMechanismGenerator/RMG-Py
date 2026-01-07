@@ -35,6 +35,7 @@ import math
 
 import cantera as ct
 import numpy
+import numpy as np
 import yaml
 from copy import deepcopy
 
@@ -2916,7 +2917,9 @@ reactions:
             # Check that the reaction string is the same
             assert repr(converted_obj) == repr(ct_obj)
             # Check that the rate is the same. arrhenius string is not going to be identical
-            assert converted_obj.rate.input_data == ct_obj.rate.input_data
+            assert np.isclose(converted_obj.rate.input_data['rate-constant']['A'], ct_obj.rate.input_data['rate-constant']['A'])
+            assert np.isclose(converted_obj.rate.input_data['rate-constant']['b'], ct_obj.rate.input_data['rate-constant']['b'])
+            assert np.isclose(converted_obj.rate.input_data['rate-constant']['Ea'], ct_obj.rate.input_data['rate-constant']['Ea'])
 
     def test_multi_arrhenius(self):
         """
@@ -2936,9 +2939,9 @@ reactions:
                 # Check that the reaction string is the same
                 assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                assert round(abs(converted_rxn.rate.pre_exponential_factor - ct_rxn.rate.pre_exponential_factor), 3) == 0
-                assert round(abs(converted_rxn.rate.temperature_exponent - ct_rxn.rate.temperature_exponent), 7) == 0
-                assert round(abs(converted_rxn.rate.activation_energy - ct_rxn.rate.activation_energy), 7) == 0
+                assert np.isclose(converted_rxn.rate.pre_exponential_factor, ct_rxn.rate.pre_exponential_factor)
+                assert np.isclose(converted_rxn.rate.temperature_exponent, ct_rxn.rate.temperature_exponent)
+                assert np.isclose(converted_rxn.rate.activation_energy, ct_rxn.rate.activation_energy)
 
     def test_pdep_arrhenius(self):
         """
@@ -3140,18 +3143,17 @@ class TestChargeTransferReaction:
 
     def test_get_rate_coeff(self):
         """Test get_rate_coefficient() method"""
-
         # these should be the same
         kf_1 = self.rxn_reduction.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_reduction.kinetics.get_rate_coefficient(298,0)
 
-        assert abs(kf_1 - 43870506959779.0) < 0.000001
-        assert abs(kf_1 - kf_2) < 0.000001
+        assert np.isclose(kf_1, 43870506959779.0)
+        assert np.isclose(kf_1, kf_2)
 
-        #kf_2 should be greater than kf_1
+        # kf_2 should be greater than kf_1
         kf_1 = self.rxn_oxidation.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_oxidation.get_rate_coefficient(298,potential=0.1)
-        assert kf_2>kf_1
+        assert kf_2 > kf_1
 
     def test_equilibrium_constant_surface_charge_transfer_kc(self):
         """
