@@ -161,15 +161,19 @@ class TestTransportData:
         rmg_ct_transport = transport.to_cantera()
         import cantera as ct
 
-        ct_species = ct.Species.fromCti(
-            """species(name=u'Ar',
-        atoms='Ar:1',
-        transport=gas_transport(geom='atom',
-                                diam=3.33,
-                                well_depth=136.501,
-                                dipole=2.0,
-                                polar=1.0,
-                                rot_relax=15.0))"""
+        ct_species = ct.Species.from_yaml(
+            """
+            name: Ar
+            composition: {Ar: 1}
+            transport:
+              model: gas
+              geometry: atom
+              diameter: 3.33
+              well-depth: 136.501
+              dipole: 2.0
+              polarizability: 1.0
+              rotational-relaxation: 15.0
+            """
         )
 
         ct_transport = ct_species.transport
