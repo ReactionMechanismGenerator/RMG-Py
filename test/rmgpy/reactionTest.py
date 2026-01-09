@@ -35,8 +35,6 @@ import math
 
 import cantera as ct
 import numpy
-import numpy as np
-import yaml
 from copy import deepcopy
 
 import pytest
@@ -2917,9 +2915,9 @@ reactions:
             # Check that the reaction string is the same
             assert repr(converted_obj) == repr(ct_obj)
             # Check that the rate is the same. arrhenius string is not going to be identical
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['A'], ct_obj.rate.input_data['rate-constant']['A'])
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['b'], ct_obj.rate.input_data['rate-constant']['b'])
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['Ea'], ct_obj.rate.input_data['rate-constant']['Ea'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['A'], ct_obj.rate.input_data['rate-constant']['A'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['b'], ct_obj.rate.input_data['rate-constant']['b'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['Ea'], ct_obj.rate.input_data['rate-constant']['Ea'])
 
     def test_multi_arrhenius(self):
         """
@@ -2939,9 +2937,9 @@ reactions:
                 # Check that the reaction string is the same
                 assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                assert np.isclose(converted_rxn.rate.pre_exponential_factor, ct_rxn.rate.pre_exponential_factor)
-                assert np.isclose(converted_rxn.rate.temperature_exponent, ct_rxn.rate.temperature_exponent)
-                assert np.isclose(converted_rxn.rate.activation_energy, ct_rxn.rate.activation_energy)
+                assert numpy.isclose(converted_rxn.rate.pre_exponential_factor, ct_rxn.rate.pre_exponential_factor)
+                assert numpy.isclose(converted_rxn.rate.temperature_exponent, ct_rxn.rate.temperature_exponent)
+                assert numpy.isclose(converted_rxn.rate.activation_energy, ct_rxn.rate.activation_energy)
 
     def test_pdep_arrhenius(self):
         """
@@ -2951,34 +2949,58 @@ reactions:
         ct_objects = [self.ct_pdepArrhenius]
         converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
+        def assert_plog_rates_equal(rates1, rates2, rtol=1e-9, atol=0.0):
+            assert len(rates1) == len(rates2)
+            # Sort by pressure to avoid ordering differences (Plog stores a multimap internally)
+            rates1 = sorted(rates1, key=lambda x: x[0])
+            rates2 = sorted(rates2, key=lambda x: x[0])
+            for (p1, r1), (p2, r2) in zip(rates1, rates2):
+                assert math.isclose(float(p1), float(p2), rel_tol=rtol, abs_tol=atol)
+                A1, b1, Ea1 = r1.pre_exponential_factor, r1.temperature_exponent, r1.activation_energy
+                A2, b2, Ea2 = r2.pre_exponential_factor, r2.temperature_exponent, r2.activation_energy
+                assert math.isclose(A1, A2, rel_tol=rtol, abs_tol=atol)
+                assert math.isclose(b1, b2, rel_tol=rtol, abs_tol=atol)
+                assert math.isclose(Ea1, Ea2, rel_tol=rtol, abs_tol=atol)
+
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the reaction class is the same
             assert type(converted_obj) == type(ct_obj)
             # Check that the reaction string is the same
             assert repr(converted_obj) == repr(ct_obj)
             # Check that the Arrhenius rates are identical
-            assert str(converted_obj.rates) == str(ct_obj.rates)
+            assert_plog_rates_equal(converted_obj.rate.rates, ct_obj.rate.rates)
 
     def test_multi_pdep_arrhenius(self):
         """
         Tests formation of cantera reactions with MultiPDepArrhenius kinetics.
         """
-
         rmg_objects = [self.multiPdepArrhenius]
         ct_objects = [self.ct_multiPdepArrhenius]
         converted_ct_objects = [obj.to_cantera(self.species_list, use_chemkin_identifier=True) for obj in rmg_objects]
 
+        def assert_plog_rates_equal(rates1, rates2, rtol=1e-9, atol=0.0):
+            assert len(rates1) == len(rates2)
+            # Sort by pressure to avoid ordering differences (Plog stores a multimap internally)
+            rates1 = sorted(rates1, key=lambda x: x[0])
+            rates2 = sorted(rates2, key=lambda x: x[0])
+            for (p1, r1), (p2, r2) in zip(rates1, rates2):
+                assert math.isclose(float(p1), float(p2), rel_tol=rtol, abs_tol=atol)
+                A1, b1, Ea1 = r1.pre_exponential_factor, r1.temperature_exponent, r1.activation_energy
+                A2, b2, Ea2 = r2.pre_exponential_factor, r2.temperature_exponent, r2.activation_energy
+                assert math.isclose(A1, A2, rel_tol=rtol, abs_tol=atol)
+                assert math.isclose(b1, b2, rel_tol=rtol, abs_tol=atol)
+                assert math.isclose(Ea1, Ea2, rel_tol=rtol, abs_tol=atol)
+
         for converted_obj, ct_obj in zip(converted_ct_objects, ct_objects):
             # Check that the same number of reactions are produced
             assert len(converted_obj) == len(ct_obj)
-
             for converted_rxn, ct_rxn in zip(converted_obj, ct_obj):
                 # Check that the reaction has the same type
                 assert type(converted_rxn) == type(ct_rxn)
                 # Check that the reaction string is the same
                 assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                assert str(converted_rxn.rates) == str(ct_rxn.rates)
+                assert_plog_rates_equal(converted_rxn.rate.rates, ct_rxn.rate.rates)
 
     def test_chebyshev(self):
         """
@@ -2999,18 +3021,18 @@ reactions:
         assert round(abs(ct_troe.rate.low_rate.pre_exponential_factor - self.ct_troe.rate.low_rate.pre_exponential_factor), 3) == 0
         assert ct_troe.rate.low_rate.temperature_exponent == self.ct_troe.rate.low_rate.temperature_exponent
         assert ct_troe.rate.low_rate.activation_energy == self.ct_troe.rate.low_rate.activation_energy
-        assert ct_troe.efficiencies == self.ct_troe.efficiencies
+        assert ct_troe.third_body.efficiencies == self.ct_troe.third_body.efficiencies
 
         ct_third_body = self.thirdBody.to_cantera(self.species_list, use_chemkin_identifier=True)
         assert type(ct_third_body.rate) == type(self.ct_thirdBody.rate)
         assert round(abs(ct_third_body.rate.pre_exponential_factor - self.ct_thirdBody.rate.pre_exponential_factor), 3) == 0
         assert ct_third_body.rate.temperature_exponent == self.ct_thirdBody.rate.temperature_exponent
         assert ct_third_body.rate.activation_energy == self.ct_thirdBody.rate.activation_energy
-        assert ct_third_body.efficiencies == self.ct_thirdBody.efficiencies
+        assert ct_third_body.third_body.efficiencies == self.ct_thirdBody.third_body.efficiencies
 
         ct_lindemann = self.lindemann.to_cantera(self.species_list, use_chemkin_identifier=True)
         assert type(ct_lindemann.rate) == type(self.ct_lindemann.rate)
-        assert ct_lindemann.efficiencies == self.ct_lindemann.efficiencies
+        assert ct_lindemann.third_body.efficiencies == self.ct_lindemann.third_body.efficiencies
         assert str(ct_lindemann.rate.low_rate) == str(self.ct_lindemann.rate.low_rate)
         assert str(ct_lindemann.rate.high_rate) == str(self.ct_lindemann.rate.high_rate)
 
@@ -3147,8 +3169,8 @@ class TestChargeTransferReaction:
         kf_1 = self.rxn_reduction.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_reduction.kinetics.get_rate_coefficient(298,0)
 
-        assert np.isclose(kf_1, 43870506959779.0)
-        assert np.isclose(kf_1, kf_2)
+        assert numpy.isclose(kf_1, 43870506959779.0)
+        assert numpy.isclose(kf_1, kf_2)
 
         # kf_2 should be greater than kf_1
         kf_1 = self.rxn_oxidation.get_rate_coefficient(298,potential=0)
