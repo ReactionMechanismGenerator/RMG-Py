@@ -41,7 +41,6 @@ import resource
 import shutil
 import sys
 import time
-import warnings
 from copy import deepcopy
 
 import h5py
@@ -56,8 +55,7 @@ from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.base import Entry
-from rmgpy.data.kinetics.family import TemplateReaction
-from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.exceptions import (
@@ -74,11 +72,10 @@ from rmgpy.reaction import Reaction
 from rmgpy.rmg.listener import SimulationProfilePlotter, SimulationProfileWriter
 from rmgpy.rmg.model import CoreEdgeReactionModel, Species
 from rmgpy.rmg.output import OutputHTMLWriter
-from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
+from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
 from rmgpy.rmg.settings import ModelSettings
-from rmgpy.solver.base import TerminationConversion, TerminationTime
-from rmgpy.solver.simple import SimpleReactor
+from rmgpy.solver.base import TerminationTime
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
