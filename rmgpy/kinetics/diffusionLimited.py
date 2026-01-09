@@ -109,7 +109,7 @@ class DiffusionLimited(object):
         Return the diffusive limit on the rate coefficient, k_diff.
 
         This is the upper limit on the rate, in the specified direction.
-        (ie. forward direction if forward=True [default] or reverse if forward=False)
+        (i.e. forward direction if forward=True [default] or reverse if forward=False)
         Returns the rate coefficient k_diff in m3/mol/s.
         """
         from rmgpy.species import Species
