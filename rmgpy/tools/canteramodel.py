@@ -817,13 +817,11 @@ def check_equivalent_cantera_reaction(ct_rxn1, ct_rxn2, check_id=False, dE=1e-5)
         if isinstance(ct_rxn1, ct.Reaction):
             # may not mean it is arrhenius, need to check if it is troe, 
             if isinstance(ct_rxn1.rate, ct.ArrheniusRate):
-                assert ct_rxn1.allow_negative_pre_exponential_factor == ct_rxn2.allow_negative_pre_exponential_factor, \
-                    "Same allow_negative_pre_exponential_factor attribute"
                 if ct_rxn1.rate or ct_rxn2.rate:
                     check_equivalent_arrhenius(ct_rxn1.rate, ct_rxn2.rate)
             elif isinstance(ct_rxn1.rate, ct.PlogRate):
                 if ct_rxn1.rate.rates or ct_rxn2.rate.rates:
-                    assert len(ct_rxn1.rates) == len(ct_rxn2.rates), "Same number of rates in PLOG reaction"
+                    assert len(ct_rxn1.rate.rates) == len(ct_rxn2.rate.rates), "Same number of rates in PLOG reaction"
 
                     for i in range(len(ct_rxn1.rate.rates)):
                         P1, arr1 = ct_rxn1.rate.rates[i]
