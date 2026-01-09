@@ -35,8 +35,6 @@ import math
 
 import cantera as ct
 import numpy
-import numpy as np
-import yaml
 from copy import deepcopy
 
 import pytest
@@ -2917,9 +2915,9 @@ reactions:
             # Check that the reaction string is the same
             assert repr(converted_obj) == repr(ct_obj)
             # Check that the rate is the same. arrhenius string is not going to be identical
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['A'], ct_obj.rate.input_data['rate-constant']['A'])
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['b'], ct_obj.rate.input_data['rate-constant']['b'])
-            assert np.isclose(converted_obj.rate.input_data['rate-constant']['Ea'], ct_obj.rate.input_data['rate-constant']['Ea'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['A'], ct_obj.rate.input_data['rate-constant']['A'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['b'], ct_obj.rate.input_data['rate-constant']['b'])
+            assert numpy.isclose(converted_obj.rate.input_data['rate-constant']['Ea'], ct_obj.rate.input_data['rate-constant']['Ea'])
 
     def test_multi_arrhenius(self):
         """
@@ -2939,9 +2937,9 @@ reactions:
                 # Check that the reaction string is the same
                 assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                assert np.isclose(converted_rxn.rate.pre_exponential_factor, ct_rxn.rate.pre_exponential_factor)
-                assert np.isclose(converted_rxn.rate.temperature_exponent, ct_rxn.rate.temperature_exponent)
-                assert np.isclose(converted_rxn.rate.activation_energy, ct_rxn.rate.activation_energy)
+                assert numpy.isclose(converted_rxn.rate.pre_exponential_factor, ct_rxn.rate.pre_exponential_factor)
+                assert numpy.isclose(converted_rxn.rate.temperature_exponent, ct_rxn.rate.temperature_exponent)
+                assert numpy.isclose(converted_rxn.rate.activation_energy, ct_rxn.rate.activation_energy)
 
     def test_pdep_arrhenius(self):
         """
@@ -3175,8 +3173,8 @@ class TestChargeTransferReaction:
         kf_1 = self.rxn_reduction.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_reduction.kinetics.get_rate_coefficient(298,0)
 
-        assert np.isclose(kf_1, 43870506959779.0)
-        assert np.isclose(kf_1, kf_2)
+        assert numpy.isclose(kf_1, 43870506959779.0)
+        assert numpy.isclose(kf_1, kf_2)
 
         # kf_2 should be greater than kf_1
         kf_1 = self.rxn_oxidation.get_rate_coefficient(298,potential=0)
