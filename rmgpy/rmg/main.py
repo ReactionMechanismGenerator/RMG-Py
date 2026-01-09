@@ -47,11 +47,11 @@ import h5py
 import numpy as np
 import psutil
 import yaml
-from cantera import ck2yaml
 from scipy.optimize import brute
 
 import rmgpy.util as util
 from rmgpy import settings
+from rmgpy.cantera import CanteraWriter
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.base import Entry
@@ -769,8 +769,8 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        
         self.attach(RMSWriter(self.output_directory))
+        self.attach(CanteraWriter(self.output_directory))
 
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
@@ -1218,25 +1218,6 @@ class RMG(util.Subject):
         self.make_seed_mech()
 
         self.run_model_analysis()
-
-        # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
-        try:
-            if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
-                )
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
-                )
-            else:  # gas phase only
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
-        except EnvironmentError:
-            logging.exception("Could not generate Cantera files due to EnvironmentError. Check read\\write privileges in output directory.")
-        except Exception:
-            logging.exception("Could not generate Cantera files for some reason.")
 
         self.check_model()
         # Write output file
@@ -1802,32 +1783,6 @@ class RMG(util.Subject):
         else:
             raise TypeError("improper call, obj input was incorrect")
         return potential_spcs
-
-    def generate_cantera_files(self, chemkin_file, **kwargs):
-        """
-        Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
-        and save it in the cantera directory
-        """
-        transport_file = os.path.join(os.path.dirname(chemkin_file), "tran.dat")
-        file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + ".yaml"
-        out_name = os.path.join(self.output_directory, "cantera", file_name)
-        if "surface_file" in kwargs:
-            out_name = out_name.replace("-gas.", ".")
-        cantera_dir = os.path.dirname(out_name)
-        try:
-            os.makedirs(cantera_dir)
-        except OSError:
-            if not os.path.isdir(cantera_dir):
-                raise
-        if os.path.exists(out_name):
-            os.remove(out_name)
-        parser = ck2yaml.Parser()
-        try:
-            parser.convert_mech(chemkin_file, transport_file=transport_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
-        except ck2yaml.InputError:
-            logging.exception("Error converting to Cantera format.")
-            logging.info("Trying again without transport data file.")
-            parser.convert_mech(chemkin_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
 
     def initialize_reaction_threshold_and_react_flags(self):
         num_core_species = len(self.reaction_model.core.species)
