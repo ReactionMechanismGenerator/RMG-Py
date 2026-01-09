@@ -28,9 +28,8 @@
 ###############################################################################
 
 import os
-
-
 import numpy as np
+import tempfile
 
 import rmgpy
 from rmgpy.quantity import Quantity
@@ -42,7 +41,6 @@ class CanteraTest:
         """
         Test that find_ignition_delay() works.
         """
-
         t = np.arange(0, 5, 0.5)
         P = np.array([0, 0.33, 0.5, 0.9, 2, 4, 15, 16, 16.1, 16.2])
         OH = np.array([0, 0.33, 0.5, 0.9, 2, 4, 15, 16, 7, 2])
@@ -82,7 +80,6 @@ class RMGToCanteraTest:
 
     def setup_class(self):
         from rmgpy.chemkin import load_chemkin_file
-
         folder = os.path.join(os.path.dirname(rmgpy.__file__), "tools/data/various_kinetics")
 
         chemkin_path = os.path.join(folder, "chem_annotated.inp")
@@ -118,19 +115,32 @@ class RMGToCanteraTest:
                 self.rmg_surface_ct_reactions.extend(converted_reactions)
             else:
                 self.rmg_surface_ct_reactions.append(converted_reactions)
+
+        with open(chemkin_surface_path, 'r') as f:
+            surface_content = f.read()
+        if "SITE   SDEN" in surface_content:
+            # Inject a dummy phase name 'SURF'
+            surface_content = surface_content.replace("SITE   SDEN", "SITE SURF SDEN")
+
+            # Write to a temporary file to avoid modifying the repo's test data
+            tf = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.inp')
+            tf.write(surface_content)
+            tf.close()
+            # Use the temp file for Cantera loading
+            chemkin_surface_path = tf.name
+
+
         job = Cantera()
         job.surface = True
-        job.load_chemkin_model(chemkin_path, surface_file=chemkin_surface_path, quiet=True)
+        job.load_chemkin_model(chemkin_path, surface_file=chemkin_surface_path, quiet=True, permissive=True)
         self.ct_surface_species = job.surface.species()
         self.ct_surface_reactions = job.surface.reactions()
-
 
     def test_species_conversion(self):
         """
         Test that species objects convert properly
         """
         from rmgpy.tools.canteramodel import check_equivalent_cantera_species
-
         for i in range(len(self.ctSpecies)):
             assert check_equivalent_cantera_species(self.ctSpecies[i], self.rmg_ctSpecies[i])
 
@@ -139,7 +149,6 @@ class RMGToCanteraTest:
         Test that reaction objects convert properly
         """
         from rmgpy.tools.canteramodel import check_equivalent_cantera_reaction
-
         for i in range(len(self.ctReactions)):
             assert check_equivalent_cantera_reaction(self.ctReactions[i], self.rmg_ctReactions[i])
 
@@ -148,7 +157,6 @@ class RMGToCanteraTest:
         Test that surface species objects convert properly
         """
         from rmgpy.tools.canteramodel import check_equivalent_cantera_species
-
         for i in range(len(self.ct_surface_species)):
             #print("Chemkin-to-Cantera:", self.ct_surfaceSpecies[i].input_data)
             #print("Chemkin-to-RMG-to-Cantera:", self.rmg_surface_ctSpecies[i].input_data)
@@ -159,7 +167,6 @@ class RMGToCanteraTest:
         Test that surface reaction objects convert properly
         """
         from rmgpy.tools.canteramodel import check_equivalent_cantera_reaction
-
         for i in range(len(self.ct_surface_reactions)):
             #print("Chemkin-to-Cantera:", self.ct_surfaceReactions[i].input_data)
             #print("Chemkin-to-RMG-to-Cantera:", self.rmg_surface_ctReactions[i].input_data)
