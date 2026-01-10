@@ -41,6 +41,7 @@ from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.kinetics import (
     Arrhenius, PDepArrhenius, MultiArrhenius, MultiPDepArrhenius,
     Chebyshev, Troe, Lindemann, ThirdBody,
+    StickingCoefficient, SurfaceArrhenius,
 )
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepReaction
@@ -51,19 +52,18 @@ if TYPE_CHECKING:
     from rmgpy.species import Species
     from rmgpy.molecule.molecule import Molecule
 
-
-SYMBOL_BY_NUMBER = {0: 'e', 1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 10: 'Ne', 11: 'Na',
-                    12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 18: 'Ar', 19: 'K', 20: 'Ca', 21: 'Sc',
-                    22: 'Ti', 23: 'V', 24: 'Cr', 25: 'Mn', 26: 'Fe', 27: 'Co', 28: 'Ni', 29: 'Cu', 30: 'Zn', 31: 'Ga',
-                    32: 'Ge', 33: 'As', 34: 'Se', 35: 'Br', 36: 'Kr', 37: 'Rb', 38: 'Sr', 39: 'Y', 40: 'Zr', 41: 'Nb',
-                    42: 'Mo', 43: 'Tc', 44: 'Ru', 45: 'Rh', 46: 'Pd', 47: 'Ag', 48: 'Cd', 49: 'In', 50: 'Sn', 51: 'Sb',
-                    52: 'Te', 53: 'I', 54: 'Xe', 55: 'Cs', 56: 'Ba', 57: 'La', 58: 'Ce', 59: 'Pr', 60: 'Nd', 61: 'Pm',
-                    62: 'Sm', 63: 'Eu', 64: 'Gd', 65: 'Tb', 66: 'Dy', 67: 'Ho', 68: 'Er', 69: 'Tm', 70: 'Yb', 71: 'Lu',
-                    72: 'Hf', 73: 'Ta', 74: 'W', 75: 'Re', 76: 'Os', 77: 'Ir', 78: 'Pt', 79: 'Au', 80: 'Hg', 81: 'Tl',
-                    82: 'Pb', 83: 'Bi', 84: 'Po', 85: 'At', 86: 'Rn', 87: 'Fr', 88: 'Ra', 89: 'Ac', 90: 'Th', 91: 'Pa',
-                    92: 'U', 93: 'Np', 94: 'Pu', 95: 'Am', 96: 'Cm', 97: 'Bk', 98: 'Cf', 99: 'Es', 100: 'Fm', 101: 'Md',
-                    102: 'No', 103: 'Lr', 104: 'Rf', 105: 'Db', 106: 'Sg', 107: 'Bh', 108: 'Hs', 109: 'Mt', 110: 'Ds',
-                    111: 'Rg', 112: 'Cn', 113: 'Nh', 114: 'Fl', 115: 'Mc', 116: 'Lv', 117: 'Ts', 118: 'Og'}
+SYMBOL_BY_NUMBER = {0: 'e', 1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 10: 'Ne',
+                    11: 'Na', 12: 'Mg', 13: 'Al', 14: 'Si', 15: 'P', 16: 'S', 17: 'Cl', 18: 'Ar', 19: 'K', 20: 'Ca',
+                    21: 'Sc', 22: 'Ti', 23: 'V', 24: 'Cr', 25: 'Mn', 26: 'Fe', 27: 'Co', 28: 'Ni', 29: 'Cu', 30: 'Zn',
+                    31: 'Ga', 32: 'Ge', 33: 'As', 34: 'Se', 35: 'Br', 36: 'Kr', 37: 'Rb', 38: 'Sr', 39: 'Y', 40: 'Zr',
+                    41: 'Nb', 42: 'Mo', 43: 'Tc', 44: 'Ru', 45: 'Rh', 46: 'Pd', 47: 'Ag', 48: 'Cd', 49: 'In', 50: 'Sn',
+                    51: 'Sb', 52: 'Te', 53: 'I', 54: 'Xe', 55: 'Cs', 56: 'Ba', 57: 'La', 58: 'Ce', 59: 'Pr', 60: 'Nd',
+                    61: 'Pm', 62: 'Sm', 63: 'Eu', 64: 'Gd', 65: 'Tb', 66: 'Dy', 67: 'Ho', 68: 'Er', 69: 'Tm', 70: 'Yb',
+                    71: 'Lu', 72: 'Hf', 73: 'Ta', 74: 'W', 75: 'Re', 76: 'Os', 77: 'Ir', 78: 'Pt', 79: 'Au', 80: 'Hg',
+                    81: 'Tl', 82: 'Pb', 83: 'Bi', 84: 'Po', 85: 'At', 86: 'Rn', 87: 'Fr', 88: 'Ra', 89: 'Ac', 90: 'Th',
+                    91: 'Pa', 92: 'U', 93: 'Np', 94: 'Pu', 95: 'Am', 96: 'Cm', 97: 'Bk', 98: 'Cf', 99: 'Es', 100: 'Fm',
+                    101: 'Md', 102: 'No', 103: 'Lr', 104: 'Rf', 105: 'Db', 106: 'Sg', 107: 'Bh', 108: 'Hs', 109: 'Mt',
+                    110: 'Ds', 111: 'Rg', 112: 'Cn', 113: 'Nh', 114: 'Fl', 115: 'Mc', 116: 'Lv', 117: 'Ts', 118: 'Og'}
 NUMBER_BY_SYMBOL = {value: key for key, value in SYMBOL_BY_NUMBER.items()}
 
 
@@ -96,6 +96,12 @@ def save_cantera_files(rmg):
     cantera_dir = os.path.join(rmg.output_directory, 'cantera')
     if not os.path.exists(cantera_dir):
         os.mkdir(cantera_dir)
+
+    try:
+        site_density = rmg.surface_site_density.value_si
+    except (AttributeError, KeyError, TypeError):
+        site_density = None
+
     # -------------------------------------------------------------------------
     # 1. Save Core Model
     # -------------------------------------------------------------------------
@@ -109,7 +115,7 @@ def save_cantera_files(rmg):
     logging.info(f"Saving current model core to Cantera file: {this_cantera_path}")
 
     # Write the YAML file
-    save_cantera_model(rmg.reaction_model.core, this_cantera_path)
+    save_cantera_model(rmg.reaction_model.core, this_cantera_path, site_density=site_density)
 
     # Copy to 'chem.yaml' (The latest file)
     if os.path.exists(latest_cantera_path):
@@ -126,9 +132,7 @@ def save_cantera_files(rmg):
                                       'chem_edge{0:04d}.yaml'.format(num_species))
         latest_edge_path = os.path.join(rmg.output_directory, 'cantera', 'chem_edge.yaml')
 
-        # Combine core and edge
-        # Note: We create a temporary object or just pass list concatenations
-        # Creating a simple container object to pass to save_cantera_model
+        # Create a simple container object to pass to save_cantera_model
         class MixedModel:
             def __init__(self, species, reactions):
                 self.species = species
@@ -139,14 +143,14 @@ def save_cantera_files(rmg):
             rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions
         )
 
-        save_cantera_model(edge_model, this_edge_path)
+        save_cantera_model(edge_model, this_edge_path, site_density=site_density)
 
         if os.path.exists(latest_edge_path):
             os.unlink(latest_edge_path)
         shutil.copy2(this_edge_path, latest_edge_path)
 
 
-def save_cantera_model(model_container, path):
+def save_cantera_model(model_container, path, site_density=None):
     """
     Internal helper to generate the dictionary and write the YAML file.
     model_container must have .species and .reactions attributes (lists).
@@ -161,7 +165,7 @@ def save_cantera_model(model_container, path):
             break
 
     # Generate Data
-    yaml_data = generate_cantera_data(species_list, reaction_list, is_plasma=is_plasma)
+    yaml_data = generate_cantera_data(species_list, reaction_list, is_plasma=is_plasma, site_density=site_density)
 
     # Write
     with open(path, 'w') as f:
@@ -169,7 +173,12 @@ def save_cantera_model(model_container, path):
         yaml.dump(yaml_data, f, sort_keys=False, default_flow_style=None)
 
 
-def generate_cantera_data(species_list, reaction_list, is_plasma=False, search_for_additional_elements=False):
+def generate_cantera_data(species_list,
+                          reaction_list,
+                          is_plasma=False,
+                          site_density=None,
+                          search_for_additional_elements=False,
+                          ):
     """
     Converts RMG objects into a dictionary structure compatible with Cantera YAML.
     """
@@ -187,53 +196,89 @@ def generate_cantera_data(species_list, reaction_list, is_plasma=False, search_f
         }
     }
 
-    # --- 2. Phase Definition ---
-    base_elements = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'F', 'Cl', 'Br', 'I', 'E', 'Li', 'Na', 'K', 'Mg', 'Ca']
+    # --- 2. Phase Segregation (Gas vs Surface) ---
+    gas_species, surface_species, gas_reactions, surface_reactions = list(), list(), list(), list()
+
+    for spc in species_list:
+        if spc.contains_surface_site():
+            surface_species.append(spc)
+        else:
+            gas_species.append(spc)
+
+    for rxn in reaction_list:
+        if rxn.is_surface_reaction():
+            surface_reactions.append(rxn)
+        else:
+            gas_reactions.append(rxn)
+
+    # --- 3. Phase Definitions ---
+    base_elements = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'F', 'Cl', 'Br', 'I', 'E']
     elements_set = set(base_elements)
 
     if search_for_additional_elements:
-        for sp in species_list:
-            if sp.molecule and len(sp.molecule) > 0:
-                if sp.is_electron:
+        for spc in species_list:
+            if spc.molecule and len(spc.molecule) > 0:
+                if spc.is_electron():
                     elements_set.add('E')
                     is_plasma = True
                 else:
-                    for elem in sp.molecule[0].get_element_count().keys():
-                        elements_set.add(elem)
+                    for elem in spc.molecule[0].get_element_count().keys():
+                        if elem != 'X':
+                            elements_set.add(elem)
 
-    phase_def = {
+    phases = list()
+
+    gas_phase_def = {
         'name': 'gas',
         'thermo': 'plasma' if is_plasma else 'ideal-gas',
         'elements': sorted(list(elements_set)),
-        'species': [get_label(sp, species_list) for sp in species_list],
+        'species': [get_label(spc, species_list) for spc in gas_species],
         'kinetics': 'gas',
-        'reactions': 'all'
+        'reactions': 'declared-species',
     }
 
     if is_plasma:
-        # Plasma specific phase settings
-        phase_def['transport'] = 'ionized-gas'
-        phase_def['electron-energy-distribution'] = {
+        gas_phase_def['transport'] = 'ionized-gas'
+        # Plasma specific defaults
+        gas_phase_def['electron-energy-distribution'] = {
             'type': 'isotropic',
-            'shape-factor': 2.0,  # Maxwellian default
-            'mean-electron-energy': 1.0  # Placeholder eV
+            'shape-factor': 2.0,
+            'mean-electron-energy': 1.0
         }
     else:
-        phase_def['transport'] = 'mixture-averaged'
+        gas_phase_def['transport'] = 'mixture-averaged'
 
-    data['phases'] = [phase_def]
+    phases.append(gas_phase_def)
 
-    # --- 3. Species Definitions ---
-    species_data = []
+    if surface_species:
+        default_site_density = 2.5e-5  # mol/m^2
+
+        surface_phase_def = {
+            'name': 'surface',
+            'thermo': 'ideal-surface',
+            'adjacent-phases': ['gas'],
+            'elements': sorted(list(elements_set)),
+            'species': [get_label(sp, species_list) for sp in surface_species],
+            'kinetics': 'surface',
+            'reactions': 'declared-species',
+            'site-density': site_density or default_site_density
+        }
+        phases.append(surface_phase_def)
+
+    data['phases'] = phases
+
+    species_data = list()
     for sp in species_list:
         species_data.append(species_to_dict(sp, species_list))
     data['species'] = species_data
 
-    # --- 4. Reaction Definitions ---
-    # Note: Flatten list to handle MultiKinetics (duplicates) which return lists
-    reaction_data = []
-    for rxn in reaction_list:
-        entries = reaction_to_dict_list(rxn, species_list)  # Returns a LIST of dicts
+    reaction_data = list()
+    for rxn in gas_reactions:
+        entries = reaction_to_dict_list(rxn, species_list)
+        if entries:
+            reaction_data.extend(entries)
+    for rxn in surface_reactions:
+        entries = reaction_to_dict_list(rxn, species_list)
         if entries:
             reaction_data.extend(entries)
     data['reactions'] = reaction_data
@@ -254,10 +299,20 @@ def species_to_dict(species, species_list):
     mol = species.molecule[0]
     atom_dict = dict(mol.get_element_count())
 
+    # --- FIX: Remove surface site marker 'X' ---
+    if 'X' in atom_dict:
+        del atom_dict['X']
+
     # Calculate 'E' based on net charge: E = Z - charge
-    Z_mol = sum(NUMBER_BY_SYMBOL[atom] * count for atom, count in mol.get_element_count().items())
+    # --- FIX: Use .get() to avoid KeyError if 'X' or other unknown symbols are processed
+    Z_mol = sum(NUMBER_BY_SYMBOL.get(atom, 0) * count for atom, count in atom_dict.items())
     charge = mol.get_net_charge()
-    atom_dict['E'] = Z_mol - charge
+    if 'E' not in atom_dict:  # Don't double count if E is explicit
+        atom_dict['E'] = Z_mol - charge
+
+    # Remove E if 0 to keep it clean
+    if atom_dict.get('E') == 0:
+        del atom_dict['E']
 
     # Sort composition by atomic number
     atom_dict = {k: atom_dict[k] for k in sorted(atom_dict.keys(), key=lambda x: NUMBER_BY_SYMBOL.get(x, 999))}
@@ -287,11 +342,10 @@ def species_to_dict(species, species_list):
         },
     }
 
-    # Transport (if available)
-    if species.transport_data:
+    # Transport (if available) - Only relevant for gas phase usually
+    if species.transport_data and not species.contains_surface_site():
         td = species.transport_data
 
-        # Robustly handle optional parameters
         dipole = 0.0
         if td.dipoleMoment is not None:
             dipole = td.dipoleMoment.value_si * 1e21 / constants.c  # Debye
@@ -314,7 +368,6 @@ def species_to_dict(species, species_list):
         }
 
     if species.thermo and species.thermo.comment:
-        # Clean up newlines for cleaner YAML appearance
         clean_comment = species.thermo.comment.replace('\n', '; ').strip()
         notes.append(f"Thermo Source: {clean_comment}")
 
@@ -330,59 +383,47 @@ def species_to_dict(species, species_list):
 def reaction_to_dict_list(reaction, species_list=None):
     """
     Convert an RMG Reaction object to a LIST of Cantera YAML dictionaries.
-    Returns a list because MultiKinetics (duplicates) map to multiple YAML entries.
     """
     # Check for MultiKinetics (duplicates grouped in one RMG object)
     if isinstance(reaction.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
         entries = []
-        # kin.arrhenius is a list of sub-kinetics
         sub_kinetics_list = reaction.kinetics.arrhenius
 
         for sub_kin in sub_kinetics_list:
-            # Create a temporary reaction wrapper for the sub-kinetic
             sub_rxn = Reaction(
                 reactants=reaction.reactants,
                 products=reaction.products,
                 reversible=reaction.reversible,
                 kinetics=sub_kin,
-                duplicate=reaction.duplicate  # Propagate duplicate flag
+                duplicate=True
             )
-            # Recursively call (should return a list of 1)
             sub_result = reaction_to_dict_list(sub_rxn, species_list)
             if sub_result:
                 entries.extend(sub_result)
         return entries
 
-    # --- Single Kinetics Logic ---
-
     kin = reaction.kinetics
 
-    # 1. Determine Equation String Components
-    reactants_str = " + ".join([get_label(r, species_list) for r in reaction.reactants])
-    products_str = " + ".join([get_label(p, species_list) for p in reaction.products])
-
-    # Handle Third Body suffixes (Required by Cantera for these types)
-    suffix = ""
-    if isinstance(kin, (ThirdBody, Lindemann, Troe)):
-        if hasattr(reaction, 'specific_collider') and reaction.specific_collider:
-            suffix = " + " + get_label(reaction.specific_collider, species_list)
-        else:
-            suffix = " (+ M)"
-
-    arrow = " <=> "
-
-    # Assemble Equation
-    equation = reactants_str + suffix + arrow + products_str + suffix
-
+    # Generate equation string
+    equation = get_reaction_equation(reaction, species_list)
     entry = {'equation': equation}
 
-    # Write duplicate flag if present
     if reaction.duplicate:
         entry['duplicate'] = True
 
     # --- Kinetics Serialization ---
 
-    if isinstance(kin, Arrhenius):
+    # 1. Surface Kinetics
+    if isinstance(kin, StickingCoefficient):
+        entry['type'] = 'sticking-Arrhenius'
+        entry['sticking-coefficient'] = {'A': kin.A.value_si, 'b': kin.n.value_si, 'Ea': kin.Ea.value_si}
+
+    elif isinstance(kin, SurfaceArrhenius):
+        entry['type'] = 'interface-Arrhenius'
+        entry['rate-constant'] = {'A': kin.A.value_si, 'b': kin.n.value_si, 'Ea': kin.Ea.value_si}
+
+    # 2. Gas Kinetics
+    elif isinstance(kin, Arrhenius):
         entry['rate-constant'] = {'A': kin.A.value_si, 'b': kin.n.value_si, 'Ea': kin.Ea.value_si}
 
     elif isinstance(kin, Chebyshev):
@@ -435,28 +476,11 @@ def reaction_to_dict_list(reaction, species_list=None):
         entry['efficiencies'] = {lbl: v for m, v in kin.efficiencies.items() if
                                  (lbl := get_label(m, species_list)) is not None}
 
-    elif isinstance(kin, MultiArrhenius):
-        entries = []
-        for sub_kin in kin.arrhenius:
-            # Create a temporary wrapper reaction for the sub-kinetic
-            sub_rxn = Reaction(
-                reactants=reaction.reactants,
-                products=reaction.products,
-                reversible=reaction.reversible,
-                kinetics=sub_kin,
-                duplicate=True  # MultiArrhenius always implies duplicates
-            )
-            # Recursively handle the sub-reaction
-            entries.extend(reaction_to_dict_list(sub_rxn, species_list))
-        return entries
-
     elif isinstance(kin, PDepArrhenius):
         # Check if any pressure point uses MultiArrhenius (sum of rates)
         has_multi = any(isinstance(arr, MultiArrhenius) for arr in kin.arrhenius)
 
         if has_multi:
-            # We must split this complex PDep into multiple "duplicate" Cantera entries.
-            # 1. Determine the maximum "depth" (max number of Arrhenius terms at any pressure)
             max_terms = 0
             for arr in kin.arrhenius:
                 if isinstance(arr, MultiArrhenius):
@@ -465,8 +489,6 @@ def reaction_to_dict_list(reaction, species_list=None):
                     max_terms = max(max_terms, 1)
 
             entries = []
-
-            # 2. Create one YAML entry per "channel" (i = 0, 1, 2...)
             for i in range(max_terms):
                 sub_entry = entry.copy()
                 sub_entry['type'] = 'pressure-dependent-Arrhenius'
@@ -475,8 +497,6 @@ def reaction_to_dict_list(reaction, species_list=None):
                 rates = []
                 for P, arr in zip(kin.pressures.value_si, kin.arrhenius):
                     current_arr = None
-
-                    # Logic to extract the i-th Arrhenius term at this pressure
                     if isinstance(arr, MultiArrhenius):
                         if i < len(arr.arrhenius):
                             current_arr = arr.arrhenius[i]
@@ -492,17 +512,13 @@ def reaction_to_dict_list(reaction, species_list=None):
                             'Ea': current_arr.Ea.value_si
                         })
                     else:
-                        # If this channel has no rate at this pressure (e.g. P1 has 2 terms, P2 has 1),
-                        # Cantera requires a value for interpolation. Use a negligible rate (A=0).
                         rates.append({'P': P, 'A': 0.0, 'b': 0.0, 'Ea': 0.0})
 
                 sub_entry['rate-constants'] = rates
                 entries.append(sub_entry)
-
             return entries
 
         else:
-            # Standard Case: Simple Arrhenius at every pressure
             entry['type'] = 'pressure-dependent-Arrhenius'
             rates = []
             for P, arr in zip(kin.pressures.value_si, kin.arrhenius):
@@ -518,8 +534,23 @@ def reaction_to_dict_list(reaction, species_list=None):
         logging.warning(f"Skipping reaction {equation}: Unknown kinetics type {type(kin)}")
         return []
 
+    # --- Coverage Dependencies ---
+    if hasattr(kin, 'coverage_dependence') and kin.coverage_dependence:
+        cov_deps = {}
+        for sp, cov_params in kin.coverage_dependence.items():
+            sp_label = get_label(sp, species_list)
+            if sp_label:
+                # Cantera YAML expects { a: ..., m: ..., E: ... }
+                cov_deps[sp_label] = {
+                    'a': cov_params.a.value_si,
+                    'm': cov_params.m.value_si,
+                    'E': cov_params.E.value_si
+                }
+        if cov_deps:
+            entry['coverage-dependencies'] = cov_deps
+
+    # --- Metadata / Notes ---
     note_parts = list()
-    # A. Reaction Source (Provenance)
     if isinstance(reaction, TemplateReaction):
         note_parts.append(f"Source: Template family {reaction.family}")
     elif isinstance(reaction, LibraryReaction):
@@ -529,14 +560,11 @@ def reaction_to_dict_list(reaction, species_list=None):
     elif isinstance(reaction, Reaction):
         note_parts.append(f"Source: P{reaction.kinetics.comment}")
 
-    # B. Kinetics Comments (e.g. "Matched node 1234", "Flux pairs...", etc)
     if hasattr(kin, 'comment') and kin.comment:
-        # Clean up newlines to keep the YAML one-line note clean
         clean_comment = kin.comment.replace('\n', '; ').strip()
         if clean_comment:
             note_parts.append(clean_comment)
 
-    # C. Specific Collider info (if not obvious in equation)
     if reaction.specific_collider:
         note_parts.append(f"Specific collider: {reaction.specific_collider.label}")
 
@@ -544,6 +572,22 @@ def reaction_to_dict_list(reaction, species_list=None):
         entry['note'] = " | ".join(note_parts)
 
     return [entry]
+
+
+def get_reaction_equation(reaction, species_list):
+    """Helper to build reaction string"""
+    reactants_str = " + ".join([get_label(r, species_list) for r in reaction.reactants])
+    products_str = " + ".join([get_label(p, species_list) for p in reaction.products])
+
+    suffix = ""
+    kin = reaction.kinetics
+    if isinstance(kin, (ThirdBody, Lindemann, Troe)):
+        if hasattr(reaction, 'specific_collider') and reaction.specific_collider:
+            suffix = " + " + get_label(reaction.specific_collider, species_list)
+        else:
+            suffix = " (+ M)"
+
+    return reactants_str + suffix + " <=> " + products_str + suffix
 
 
 def get_label(obj: Union['Species', 'Molecule'], species_list: list['Species']):
