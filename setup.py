@@ -115,6 +115,7 @@ ext_modules = [
     'rmgpy/solver/simple.pyx',
     'rmgpy/solver/liquid.pyx',
     'rmgpy/solver/mbSampled.pyx',
+    'rmgpy/solver/polymer.pyx',
     'rmgpy/solver/surface.pyx',
 ]
 
