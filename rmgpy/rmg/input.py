@@ -30,6 +30,7 @@
 import logging
 import os
 from copy import deepcopy
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 
@@ -45,7 +46,16 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
 from rmgpy.quantity import Energy, Quantity, RateCoefficient, SurfaceConcentration, Concentration
+from rmgpy.polymer import Polymer
 from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.rmg.polymer_input import (
+    HybridPolymerReactor,
+    MassTransfer,
+    PolymerPhase,
+    PolymerPool,
+    compile_polymer_phase,
+    polymer_phase,
+)
 from rmgpy.rmg.reactionmechanismsimulator_reactors import (
     ConstantTLiquidSurfaceReactor,
     ConstantTPIdealGasReactor,
@@ -63,7 +73,9 @@ from rmgpy.solver.termination import (
     TerminationRateRatio,
     TerminationTime,
 )
+from rmgpy.species import Species
 from rmgpy.util import as_list
+
 
 ################################################################################
 
@@ -231,6 +243,78 @@ def species(label, structure, reactive=True, cut=False, size_threshold=None):
 
         rmg.initial_species.append(spec)
         species_dict[label] = spec
+
+
+def polymer(label: str,
+            monomer: Union[Molecule, str],
+            end_groups: Optional[List[Union[str, Molecule]]],
+            cutoff: int = 4,
+            Mn: Optional[float] = None,
+            Mw: Optional[float] = None,
+            moments: Optional[List[float]] = None,
+            initial_mass: float = 1.0,
+            ):
+    """
+    Helper function exposed in the input file to define a Polymer Pool.
+
+    Args:
+        label (str): Unique identifier.
+        monomer (str): SMILES of the open repeating unit with labeled ends.
+                       Must have [*:1] (Head) and [*:2] (Tail).
+        end_groups (list): List of 2 SMILES strings for the terminals.
+        cutoff (int): The hybrid threshold (x_s).
+        Mn (float): Number average molecular weight (g/mol).
+        Mw (float): Weight average molecular weight (g/mol).
+        moments (list): Optional list of raw moments [mu0, mu1, mu2].
+        initial_mass (float): Initial mass in the reactor (kg).
+    """
+    poly_obj = Polymer(
+        label=label,
+        monomer=monomer,
+        end_groups=end_groups,
+        cutoff=cutoff,
+        Mn=Mn,
+        Mw=Mw,
+        initial_mass=initial_mass,
+        moments=moments
+    )
+
+    poly_obj.creation_iteration = rmg.reaction_model.iteration_num
+
+    # 2. Handle Label Collision (Ensures unique labeling in species_dict)
+    i = 1
+    original_label = label
+    while label in species_dict:
+        label = f"{original_label}-{i}"
+        i += 1
+    poly_obj.label = label
+
+    # 3. Register the main Polymer species
+    rmg.reaction_model.species_dict[poly_obj.label] = poly_obj
+    rmg.reaction_model.new_species_list.append(poly_obj)
+    rmg.initial_species.append(poly_obj)
+    species_dict[label] = poly_obj
+
+    # 4. INJECT MOMENT DUMMIES IMMEDIATELY
+    # These become 'Real' species in the eyes of RMG,
+    # ensuring they get a unique index in the solver's 'y' vector.
+    for suffix in ['_mu0', '_mu1', '_mu2']:
+        m_label = f"{poly_obj.label}{suffix}"
+
+        # Create non-reactive species placeholders
+        m_spc = Species(label=m_label, reactive=False)
+        m_spc.molecule = [Molecule().from_smiles("[He]")]
+
+        # Identity Lock: Register in all core registries
+        rmg.reaction_model.species_dict[m_label] = m_spc
+        rmg.initial_species.append(m_spc)
+        species_dict[m_label] = m_spc
+
+    # 5. Generate Thermo for the Polymer (Delegates to the trimer proxy)
+    rmg.reaction_model.generate_thermo(poly_obj)
+
+    return poly_obj
+
 
 def forbidden(label, structure):
 
@@ -1158,6 +1242,171 @@ def mb_sampled_reactor(temperature,
     rmg.reaction_systems.append(system)
 
 
+# Reaction systems
+def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
+                           pressure: Union[float, List[float], Quantity],
+                           initialMoles: Dict[Union[Species, str], float],
+                           polymerPhase: PolymerPhase,
+                           terminationConversion: Optional[Dict[Union[Species, str], float]] = None,
+                           terminationTime: Optional[Union[float, Quantity]] = None,
+                           terminationRateRatio: Optional[float] = None,
+                           sensitivity: Optional[Union[List[str], str, List[Species]]] = None,
+                           sensitivityThreshold: float = 1e-3,
+                           constant_gas_volume: bool = False,
+                           sensitivityTemperature: Optional[Union[float, Quantity]] = None,
+                           sensitivityPressure: Optional[Union[float, Quantity]] = None,
+                           ):
+    """
+    Defines a Hybrid Polymer Reactor system in the input file.
+
+    This function validates the user inputs and creates a configuration wrapper.
+    The actual solver engine (indices, masks) is created later via to_solver_object()
+    once the core species list is finalized.
+
+    Args:
+        temperature (Union[float, Quantity]): The initial temperature of the reactor.
+                                              Can be a number (implies 'K') or (value, units).
+        pressure (Union[float, Quantity]): The initial pressure of the reactor.
+                                           Can be a number (implies 'Pa') or (value, units).
+        initialMoles (Dict[Union[Species, str], float]): A dictionary {Species/Label: moles} representing
+                                                         the initial composition. Values are explicitly
+                                                         MOLES (extensive), not mole fractions.
+        polymerPhase (PolymerPhase): Configuration object for the polymer phase properties,
+                                     containing density, moments, and pools.
+        terminationConversion (Optional[Dict[Union[Species, str], float]]): A dictionary
+                                                {Species/Label: conversion} specifying the fractional
+                                                conversion at which to terminate (0.0 to 1.0).
+        terminationTime (Optional[Union[float, Quantity]]): The maximum time to simulate.
+                                                            Can be a number (implies 's') or (value, units).
+        terminationRateRatio (float, optional): The characteristic rate ratio at which to
+                                                terminate the simulation.
+        sensitivity (Optional[Union[List[str], str]]): A list of species labels or 'all' to perform
+                                                       sensitivity analysis on.
+        sensitivityThreshold (float): The cutoff threshold for sensitivity analysis. Default is 1e-3.
+        constant_gas_volume (bool): If True, the gas phase volume remains fixed at its initial value.
+                                    If False (default), the gas volume expands/contracts isobarically.
+        sensitivityTemperature (Optional[Union[float, Quantity]]): Temperature at which to perform
+                                                                   sensitivity analysis. If None, uses reactor T.
+        sensitivityPressure (Optional[Union[float, Quantity]]): Pressure at which to perform
+                                                                sensitivity analysis. If None, uses reactor P.
+    """
+    logging.debug('Found HybridPolymerReactor reaction system')
+
+    # 1. Process Initial Moles: {label/species: moles} -> {Species: float}
+    processed_initial_moles = dict()
+    for key, value in initialMoles.items():
+        if isinstance(key, str):
+            if species_dict is None:
+                raise InputError("Internal RMG Error: species_dict is None.")
+            spc = species_dict.get(key)
+            if spc is None:
+                raise InputError(f"Species '{key}' used in reactor was never defined.")
+        else:
+            spc = key
+
+        if isinstance(value, (list, tuple)):
+            moles_si = Quantity(value).value_si
+        else:
+            moles_si = float(value)
+
+        if moles_si < 0.0:
+            raise InputError(f"Initial moles for species '{spc.label}' cannot be negative.")
+
+        processed_initial_moles[spc] = moles_si
+
+    # 2. Process Conditions (Units)
+    if not isinstance(temperature, list):
+        T = Quantity(temperature)
+    else:
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(pressure, list):
+        P = Quantity(pressure)
+    else:
+        P = [Quantity(p) for p in pressure]
+
+    real_polymer_phase = compile_polymer_phase(
+        blueprint=polymerPhase,
+        initial_moles=processed_initial_moles,
+        species_dict=species_dict
+    )
+
+    # 3. Process Termination
+    # We validate here but pass raw arguments to the Input Object,
+    # which constructs the Termination objects in to_solver_object().
+    if terminationConversion is not None:
+        for spec, conv in terminationConversion.items():
+            # Validate Species existence
+            if isinstance(spec, str) and spec not in species_dict:
+                raise InputError(f"Unknown species label in terminationConversion: '{spec}'")
+
+            # Validate Bounds
+            conv_val = float(conv)
+            if not (0.0 <= conv_val <= 1.0):
+                label = spec if isinstance(spec, str) else spec.label
+                raise InputError(f"TerminationConversion for '{label}' must be between 0 and 1, got {conv_val}")
+
+    if terminationTime is not None:
+        try:
+            Quantity(terminationTime)
+        except (TypeError, ValueError) as e:
+            raise InputError(f"Invalid terminationTime: {terminationTime!r}. Expected quantity like '10 s'.") from e
+
+    if terminationRateRatio is not None:
+        if terminationRateRatio <= 0.0:
+            raise InputError(f"terminationRateRatio must be positive, got {terminationRateRatio}")
+
+    if not (terminationConversion or terminationTime or terminationRateRatio):
+        raise InputError('No termination conditions specified for HybridPolymerReactor.')
+
+    # 4. Process Sensitivity
+    sensitive_species = []
+    if sensitivity:
+        if sensitivity != 'all':
+            if isinstance(sensitivity, str):
+                sensitivity = [sensitivity]
+            for spec in sensitivity:
+                if isinstance(spec, str):
+                    sensitive_species.append(species_dict[spec])
+                else:
+                    sensitive_species.append(spec)
+        else:
+            sensitive_species.append('all')
+
+    if not isinstance(T, list):
+        sensitivityTemperature = T
+    if not isinstance(P, list):
+        sensitivityPressure = P
+
+    if sensitivityTemperature is None or sensitivityPressure is None:
+        sens_conditions = None
+    else:
+        # sens_conditions stores the state at which sensitivity is calculated
+        sens_conditions = {spc.label: mol for spc, mol in processed_initial_moles.items()}
+        sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
+        sens_conditions['P'] = Quantity(sensitivityPressure).value_si
+
+    # 5. Instantiate Input Wrapper
+    # We append the configuration object (HybridPolymerReactor) to the system list.
+    # The Model Generator must call .to_solver_object(core_species) on this object
+    # to create the runnable HybridPolymerSystem engine.
+    system = HybridPolymerReactor(
+        temperature=T,
+        pressure=P,
+        initialMoles=processed_initial_moles,
+        polymerPhase=real_polymer_phase,
+        terminationConversion=terminationConversion,
+        terminationTime=terminationTime,
+        terminationRateRatio=terminationRateRatio,
+        sensitivity=sensitive_species,
+        sensitivityThreshold=sensitivityThreshold,
+        constant_gas_volume=constant_gas_volume,
+        sens_conditions=sens_conditions,
+    )
+
+    rmg.reaction_systems.append(system)
+
+
 def simulator(atol, rtol, sens_atol=1e-6, sens_rtol=1e-4):
     rmg.simulator_settings_list.append(SimulatorSettings(atol, rtol, sens_atol, sens_rtol))
 
@@ -1561,6 +1810,7 @@ def read_input_file(path, rmg0):
         'database': database,
         'catalystProperties': catalyst_properties,
         'species': species,
+        'polymer': polymer,
         'forbidden': forbidden,
         'SMARTS': smarts,
         'fragment_adj': fragment_adj,
@@ -1578,6 +1828,10 @@ def read_input_file(path, rmg0):
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor,
         'mbsampledReactor': mb_sampled_reactor,
+        'hybridPolymerReactor': hybrid_polymer_reactor,
+        'polymer_phase': polymer_phase,
+        'PolymerPool': PolymerPool,
+        'MassTransfer': MassTransfer,
         'simulator': simulator,
         'solvation': solvation,
         'SolventData' : SolventData,
