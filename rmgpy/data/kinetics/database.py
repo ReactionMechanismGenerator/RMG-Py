@@ -142,6 +142,7 @@ class KineticsDatabase(object):
 
         # Load the recommended.py file as a module
         try:
+            # https://docs.python.org/3/whatsnew/3.12.html#imp
             loader = importlib.machinery.SourceFileLoader('rec', filepath)
             spec = importlib.util.spec_from_file_location('rec', filepath, loader=loader)
             rec = importlib.util.module_from_spec(spec)
