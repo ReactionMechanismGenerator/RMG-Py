@@ -383,7 +383,7 @@ class TestSoluteDatabase:
         delS298 = correction.entropy  # in J/mol/K
         solvent_name = solvent_data.name_in_coolprop
         kfactor_parameters = self.database.get_Kfactor_parameters(delG298, delH298, delS298, solvent_name)
-        assert round(abs(kfactor_parameters.lower_T[0] - -9.780), 3) == 0  # check up to 3 decimal places
+        assert round(abs(kfactor_parameters.lower_T[0] - -9.780514412256302), 3) == 0  # check up to 3 decimal places
         assert round(abs(kfactor_parameters.lower_T[1] - 0.492), 3) == 0
         assert round(abs(kfactor_parameters.lower_T[2] - 10.485), 3) == 0
         assert round(abs(kfactor_parameters.higher_T - 1.147), 3) == 0

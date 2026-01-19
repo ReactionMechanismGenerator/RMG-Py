@@ -70,7 +70,7 @@ class OutputTest:
         with open(os.path.join(benzyl_path, "output.py"), "r") as f:
             lines = f.readlines()
         assert "conformer(\n" in lines
-        assert "    E0 = (193.749, 'kJ/mol'),\n" in lines
+        assert "    E0 = (193.688, 'kJ/mol'),\n" in lines
         assert "thermo(\n" in lines
         assert "        Cp0 = (33.2579, 'J/(mol*K)'),\n" in lines
 

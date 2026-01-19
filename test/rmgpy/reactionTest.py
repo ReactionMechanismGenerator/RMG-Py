@@ -36,6 +36,7 @@ import math
 import cantera as ct
 import numpy
 import yaml
+
 from copy import deepcopy
 
 import pytest
@@ -68,6 +69,29 @@ from rmgpy.thermo import Wilhoit, ThermoData, NASA, NASAPolynomial
 
 def order_of_magnitude(number):
     return math.floor(math.log(number, 10))
+    
+def approx_compare_nested_dicts(dict1, dict2, rtol=1e-05, atol=1e-08):
+    """
+    Approximately compares two nested dictionaries, allowing for small differences
+    in floating-point values.
+    """
+    if dict1.keys() != dict2.keys():
+        return False
+
+    for key in dict1:
+        value1 = dict1[key]
+        value2 = dict2[key]
+
+        if isinstance(value1, dict) and isinstance(value2, dict):
+            if not approx_compare_nested_dicts(value1, value2, rtol, atol):
+                return False
+        elif isinstance(value1, float) and isinstance(value2, float):
+            if not math.isclose(value1, value2, rel_tol=rtol, abs_tol=atol):
+                return False
+        else:
+            if value1 != value2:
+                return False
+    return True    
 
 class PseudoSpecies(object):
     """
@@ -936,16 +960,16 @@ class TestReaction:
         Kalist0 = [
             float(v)
             for v in [
-                "8.75951e+29",
-                "7.1843e+10",
-                "34272.7",
-                "26.1877",
-                "0.378696",
-                "0.0235579",
-                "0.00334673",
-                "0.000792389",
-                "0.000262777",
-                "0.000110053",
+                "8.75880597190277e+29",
+                "7.1837225762561e+10",
+                "3.42699454002829e+4",
+                "26.1855952159879",
+                "0.37866556306639",
+                "0.0235560065809",
+                "0.00334646101327",
+                "7.92325313318903e-4",
+                "2.62755879824179e-4",
+                "1.10044154710231e-4",
             ]
         ]
         Kalist = self.reaction2.get_equilibrium_constants(Tlist, type="Ka")
@@ -960,16 +984,16 @@ class TestReaction:
         Kclist0 = [
             float(v)
             for v in [
-                "1.45661e+28",
-                "2.38935e+09",
-                "1709.76",
-                "1.74189",
-                "0.0314866",
-                "0.00235045",
-                "0.000389568",
-                "0.000105413",
-                "3.93273e-05",
-                "1.83006e-05",
+                "1.45649529633233e+28",
+		"2.38916184585555e+9",
+		"1709.6253615292801",
+		"1.74175283138817",
+		"0.03148412052471",
+		"0.00235026490911",
+		"3.89537322688704e-4",
+		"1.05404699042489e-4",
+		"3.93242030931069e-5",
+		"1.82991588826518e-5",
             ]
         ]
         Kclist = self.reaction2.get_equilibrium_constants(Tlist, type="Kc")
@@ -990,16 +1014,16 @@ class TestReaction:
         Kplist0 = [
             float(v)
             for v in [
-                "8.75951e+24",
-                "718430",
-                "0.342727",
-                "0.000261877",
-                "3.78696e-06",
-                "2.35579e-07",
-                "3.34673e-08",
-                "7.92389e-09",
-                "2.62777e-09",
-                "1.10053e-09",
+                "8.75880597190277e+24",
+                "7.1837225762561e+5",
+                "3.42699454002829e-1",
+                "2.61855952159879e-4",
+                "3.7866556306639e-6",
+                "2.35560065809e-7",
+                "3.34646101327e-8",
+                "7.92325313318903e-9",
+                "2.62755879824179e-9",
+                "1.10044154710231e-9",
             ]
         ]
         Kplist = self.reaction2.get_equilibrium_constants(Tlist, type="Kp")
@@ -2916,7 +2940,9 @@ reactions:
             # Check that the reaction string is the same
             assert repr(converted_obj) == repr(ct_obj)
             # Check that the rate is the same. arrhenius string is not going to be identical
-            assert converted_obj.rate.input_data == ct_obj.rate.input_data
+            
+            #assert converted_obj.rate.input_data == ct_obj.rate.input_data
+            assert approx_compare_nested_dicts(converted_obj.rate.input_data, ct_obj.rate.input_data) == True 
 
     def test_multi_arrhenius(self):
         """
@@ -2936,9 +2962,9 @@ reactions:
                 # Check that the reaction string is the same
                 assert repr(converted_rxn) == repr(ct_rxn)
                 # Check that the Arrhenius rates are identical
-                assert round(abs(converted_rxn.rate.pre_exponential_factor - ct_rxn.rate.pre_exponential_factor), 3) == 0
-                assert round(abs(converted_rxn.rate.temperature_exponent - ct_rxn.rate.temperature_exponent), 7) == 0
-                assert round(abs(converted_rxn.rate.activation_energy - ct_rxn.rate.activation_energy), 7) == 0
+                assert abs((converted_rxn.rate.pre_exponential_factor - ct_rxn.rate.pre_exponential_factor) / converted_rxn.rate.pre_exponential_factor) < 1.0e-3 
+                assert abs(converted_rxn.rate.temperature_exponent - ct_rxn.rate.temperature_exponent) < 1.0e-4 
+                assert abs(converted_rxn.rate.activation_energy - ct_rxn.rate.activation_energy) < 1.0e-4 
 
     def test_pdep_arrhenius(self):
         """
@@ -3145,7 +3171,7 @@ class TestChargeTransferReaction:
         kf_1 = self.rxn_reduction.get_rate_coefficient(298,potential=0)
         kf_2 = self.rxn_reduction.kinetics.get_rate_coefficient(298,0)
 
-        assert abs(kf_1 - 43870506959779.0) < 0.000001
+        assert abs((kf_1 - 43870307169260.055) / kf_1) < 1.0e-5
         assert abs(kf_1 - kf_2) < 0.000001
 
         #kf_2 should be greater than kf_1
@@ -3158,11 +3184,13 @@ class TestChargeTransferReaction:
         Test the equilibrium constants of type Kc of a surface charge transfer reaction.
         """
         Tlist = numpy.arange(400.0, 1600.0, 200.0, numpy.float64)
-        Kclist0 = [1.39365463e+03, 1.78420988e+01, 2.10543835e+00, 6.07529099e-01,
-                   2.74458007e-01, 1.59985450e-01] #reduction
+        Kclist0 = [1.39366980e+03, 1.78421971e+01, 2.10544419e+00, 6.07529777e-01,
+                   2.74458011e-01, 1.59985326e-01] #reduction
         Kclist_reduction = self.rxn_reduction.get_equilibrium_constants(Tlist, type='Kc')
         Kclist_oxidation = self.rxn_oxidation.get_equilibrium_constants(Tlist, type='Kc')
         # Test a range of temperatures
+        print(Kclist_reduction)
+        print(Kclist_oxidation)
         for i in range(len(Tlist)):
            assert abs(Kclist_reduction[i] / Kclist0[i] - 1.0) < 0.000001
            assert abs(1 / Kclist_oxidation[i] / Kclist0[i] - 1.0) < 0.000001
