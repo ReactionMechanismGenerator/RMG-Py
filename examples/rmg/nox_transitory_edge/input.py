@@ -12,10 +12,12 @@ species(
     reactive=True,	
     structure=SMILES("CC"),
 )
+
 species(
     label='O2',
     structure=SMILES("[O][O]"),
 )
+
 species(
     label='N2',
     reactive=False,
@@ -76,6 +78,7 @@ options(
 
 generatedSpeciesConstraints(
     allowed=['input species','seed mechanisms','reaction libraries'],
+    allowSingletO2=True,
     #maximumCarbonAtoms=5,
     #maximumOxygenAtoms=8,
     #maximumNitrogenAtoms=0,
