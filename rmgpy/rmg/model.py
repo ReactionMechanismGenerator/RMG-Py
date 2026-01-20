@@ -311,7 +311,6 @@ class CoreEdgeReactionModel:
             try:
                 mols = molecule.cut_molecule(cut_through=False)
             except AttributeError:
-                # it's Molecule object, change it to Fragment and then cut
                 molecule = Fragment().from_adjacency_list(molecule.to_adjacency_list())
                 mols = molecule.cut_molecule(cut_through=False)
             if len(mols) == 1:
@@ -864,7 +863,9 @@ class CoreEdgeReactionModel:
                 pdep = rxn.generate_high_p_limit_kinetics()
             elif any([any([x.is_subgraph_isomorphic(q) for q in self.unrealgroups]) for y in rxn.reactants + rxn.products for x in y.molecule]):
                 pdep = False
-
+            elif not rxn.reversible:
+                pdep = False
+                
             # If pressure dependence is on, we only add reactions that are not unimolecular;
             # unimolecular reactions will be added after processing the associated networks
             if not pdep:
@@ -2031,6 +2032,7 @@ class CoreEdgeReactionModel:
                     reaction.reversible = True
             # Move to the next core reaction
             index += 1
+
 
     def mark_chemkin_duplicates(self):
         """
