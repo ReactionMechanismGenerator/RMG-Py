@@ -43,6 +43,7 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.thermo import ThermoDatabase
 from rmgpy.molecule import Molecule
+from rmgpy.polymer import Polymer
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import Arrhenius
@@ -1204,6 +1205,97 @@ multiplicity 2
         reaction_list = self.database.kinetics.families["Surface_Dissociation_vdW"].generate_reactions(reactants)
         assert len(reaction_list) == 0
 
+    def test_generate_reactions_retains_polymer_identity(self):
+        """
+        Test that generate_reactions() correctly handles Polymer inputs:
+        1. "Unwraps" them to Proxy molecules for the core engine.
+        2. "Rewraps" the resulting product graph back into a Polymer object.
+        """
+        family = self.database.kinetics.families['H_Abstraction']
+
+        pe_adj = """
+        multiplicity 3
+        1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+        2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}
+        3    H u0 p0 c0 {1,S}
+        4    H u0 p0 c0 {1,S}
+        5    H u0 p0 c0 {2,S}
+        6    H u0 p0 c0 {2,S}
+        """
+        polymer = Polymer(label='PE',
+                          monomer=pe_adj,
+                          end_groups=['[CH3]', '[CH3]'],
+                          cutoff=4,
+                          Mn=1000.0,
+                          Mw=2000.0)
+        oh = Species(label='OH', molecule=[Molecule(smiles='[OH]')])
+
+        reaction_list = family.generate_reactions(reactants=[polymer, oh])
+        assert len(reaction_list) > 0, "Should find H-abstraction reactions."
+
+        valid_handshake_found = False
+        for rxn in reaction_list:
+            poly_products = [p for p in rxn.products if isinstance(p, Polymer)]
+            non_poly_products = [p for p in rxn.products if not isinstance(p, Polymer)]
+            if poly_products:
+                p = poly_products[0]
+                if p.label.endswith("_mod"):
+                    valid_handshake_found = True
+                    print(f"Handshake Success on Reaction: {rxn}")
+                    assert not p.is_identical(polymer)
+                    assert len(non_poly_products) == 1
+                    h2o = non_poly_products[0]
+                    n_o = sum(1 for a in h2o.atoms if a.symbol == 'O')
+                    n_h = sum(1 for a in h2o.atoms if a.symbol == 'H')
+                    assert n_o == 1 and n_h == 2, f"Expected H2O, got {h2o.to_smiles()}"
+                    break
+
+        assert valid_handshake_found, \
+            "RMG generated reactions, but none were successfully mapped back to a Polymer Backbone Modification."
+
+    def test_beta_scission_generates_polymer_fragments(self):
+        """
+        Test that Beta Scission of a Polymer Radical results in a new Polymer object
+        (identifying at least one fragment as a valid Polymer).
+        """
+        if 'R_Addition_MultipleBond' not in self.database.kinetics.families:
+            pytest.skip("R_Addition_MultipleBond family not loaded")
+
+        family = self.database.kinetics.families['R_Addition_MultipleBond']
+
+        polymer = Polymer(label='PE_Radical',
+                          monomer='[CH2][CH2]',
+                          end_groups=['[CH3]', '[CH3]'],
+                          cutoff=4,
+                          Mn=5000.0,
+                          Mw=10000.0)
+
+        proxy_mol = Molecule(smiles='CCCCCCCC[CH]CCCCCCCC')
+        proxy_mol.update()
+        polymer._baseline_proxy = Species(label='PE_Massive_Radical', molecule=[proxy_mol])
+
+        reaction_list = family.generate_reactions(reactants=[polymer])
+
+        scission_polymer_found = False
+
+        print(f"\n--- Found {len(reaction_list)} reactions ---")
+        for i, rxn in enumerate(reaction_list):
+            print(f"Rxn {i + 1}: {rxn}")
+
+            all_polymers = [p for p in rxn.reactants + rxn.products if isinstance(p, Polymer)]
+
+            for p in all_polymers:
+                if "scission" in p.label and not p.is_identical(polymer):
+                    scission_polymer_found = True
+                    print(f"  -> SUCCESS! Found Scission Polymer: {p.label}")
+                    break
+
+            if scission_polymer_found:
+                break
+
+        assert scission_polymer_found, \
+            "Failed to find any Polymer fragment with a 'scission' label. The Handshake logic may be broken."
+
     def test_apply_recipe_multiplicity_check(self):
         """
         Test that the multiplicity check is working correctly in the apply_recipe function
@@ -1261,3 +1353,50 @@ multiplicity 2
             )
             == 0
         )
+
+    def test_h_abs_reaction_generation_with_polymer_input(self):
+        """
+        Integration Test: Verify that we can generate a reaction on a Polymer's proxy
+        and successfully map the resulting product graph back to a new Polymer species
+        using the create_reacted_copy logic.
+        """
+        if 'H_Abstraction' not in self.database.kinetics.families:
+            pytest.skip("H_Abstraction family not loaded")
+        family = self.database.kinetics.families['H_Abstraction']
+
+        pe_adj = """
+        multiplicity 3
+        1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}
+        2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}
+        3    H u0 p0 c0 {1,S}
+        4    H u0 p0 c0 {1,S}
+        5    H u0 p0 c0 {2,S}
+        6    H u0 p0 c0 {2,S}
+        """
+        polymer = Polymer(label='PE_Chain',
+                          monomer=pe_adj,
+                          end_groups=['[CH3]', '[CH3]'],
+                          cutoff=4,
+                          Mn=5000.0,
+                          Mw=10000.0)
+        polymer_proxy_mol = polymer.molecule[0]
+        oh_mol = Molecule(smiles='[OH]')
+        reactants = [polymer_proxy_mol, oh_mol]
+        rxns = family.generate_reactions(reactants)
+
+        assert len(rxns) > 0, "RMG failed to find H-Abstraction sites on the Polymer proxy."
+
+        valid_polymer_product_found = False
+        for rxn in rxns:
+            product_mol = next(p for p in rxn.products if any(atom.is_carbon() for atom in p.atoms))
+            new_polymer = polymer.create_reacted_copy(product_mol)
+
+            if new_polymer:
+                valid_polymer_product_found = True
+                assert new_polymer.label.endswith("_mod")
+                assert new_polymer.feature_monomer is not None
+                assert not new_polymer.is_identical(polymer)
+                break
+
+        assert valid_polymer_product_found, \
+            "Failed to map any generated reaction product back to a valid Polymer object."
