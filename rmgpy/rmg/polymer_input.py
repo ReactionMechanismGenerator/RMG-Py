@@ -228,6 +228,7 @@ class HybridPolymerReactor(ReactionSystem):
         """
         Convert this Input settings object into a runnable Solver engine.
         """
+
         # 0. Create efficient lookup map (Performance: O(1) vs O(N))
         spc_map = {spc: i for i, spc in enumerate(core_species)}
 
@@ -353,6 +354,18 @@ class HybridPolymerReactor(ReactionSystem):
         )
 
         solver.V = (V_gas0 if V_gas0 is not None else 0.0) + V_poly
+
+        species_to_pool = np.full(len(core_species), -1, dtype=np.int32)
+
+        for p_idx, pool in enumerate(self.polymerPhase.pools):
+            # Find the RMG Species object that acts as the proxy for this pool
+            try:
+                s_idx = core_species.index(pool.proxy_species)
+                species_to_pool[s_idx] = p_idx
+            except ValueError:
+                continue
+
+        solver.species_to_pool_indices = species_to_pool
 
         return solver
 
