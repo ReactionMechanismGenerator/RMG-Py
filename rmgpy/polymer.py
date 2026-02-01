@@ -188,6 +188,8 @@ class Polymer(Species):
         initial_mass_g (float): Initial mass in the reactor (gr).
         monomer_mw_g_mol (float): Molecular weight of the monomer in g/mol.
         moments (np.array): [μ0, μ1, μ2] representing the distribution (in Moles).
+        k_unzip (float): Rate constant for unzipping reactions (1/s).
+        k_scission (float): Rate constant for random scission reactions (1/s).
     """
 
     def __init__(self,
@@ -212,6 +214,9 @@ class Polymer(Species):
         self._validate_end_groups(end_groups, label)
         self.cutoff = self._validate_cutoff(cutoff, label)
         self.Mn, self.Mw, self.moments = None, None, None
+
+        self.k_unzip = kwargs.get('k_unzip', 0.0)
+        self.k_scission = kwargs.get('k_scission', 0.0)
 
         self.initial_mass_g = initial_mass * 1000.0  # convert to grams
         self.monomer_mw_g_mol = self.monomer.get_molecular_weight() * 1000.0
@@ -377,6 +382,12 @@ class Polymer(Species):
         i_1, i_2 = find_labeled_atom(mol, LABELS_1), find_labeled_atom(mol, LABELS_2)
         if i_1 is None or i_2 is None or i_1 == i_2:
             raise InputError(f"Polymer '{label}': failed to define distinct '*1' and '*2' sites on monomer.")
+        # Ensure the reactive sites are actually radicals
+        for idx in [i_1, i_2]:
+            atom = mol.atoms[idx]
+            if atom.radical_electrons == 0:
+                atom.increment_radical()
+        mol.update_multiplicity()
         return mol
 
     def _validate_end_groups(self,
@@ -737,6 +748,7 @@ class Polymer(Species):
                 return None
             new_Mn = self.Mn / 2.0 if self.Mn else None
             new_Mw = self.Mw / 2.0 if self.Mw else None
+            new_moments = self.moments.copy() if self.moments is not None else None
             return Polymer(label=f"{self.label}_scission_tail",
                            monomer=self.monomer,
                            feature_monomer=None,
@@ -745,7 +757,8 @@ class Polymer(Species):
                            Mn=new_Mn,
                            Mw=new_Mw,
                            initial_mass=0.0,
-                           moments=None)
+                           moments=new_moments,
+                           )
 
         elif tail_atoms:
             try:
@@ -1225,6 +1238,7 @@ class Polymer(Species):
             proxy.generate_statmech()
         self.conformer = proxy.conformer
         return self.conformer
+
 
 def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
                                       mol_2: Optional[Molecule],
