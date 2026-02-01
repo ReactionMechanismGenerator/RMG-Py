@@ -265,6 +265,7 @@ class HybridPolymerSystem(ReactionSystem):
         super().__init__(termination=termination,
                          sensitive_species=sensitive_species,
                          sensitivity_threshold=sensitivity_threshold)
+        cdef np.ndarray species_to_pool_indices
 
         self.T = Quantity(T)
         self.P = Quantity(P)
@@ -546,6 +547,11 @@ class HybridPolymerSystem(ReactionSystem):
         """
         Compute the residual (dn/dt - dydt) at time t for state y.
         """
+        cdef int n_core = len(self.core_species_rates)
+        cdef int n_rxn = len(self.core_reaction_rates)
+        cdef int p0_idx, p1_idx, p2_idx, prod_p_idx, p_slot, p_idx_tmp
+        cdef double mu1_0, mu1_1, rf_hijack
+
         # Disable caching
         self.jacobian_matrix = None
 
@@ -701,6 +707,29 @@ class HybridPolymerSystem(ReactionSystem):
                 if p2 != -1: rr *= _C(p2)
 
             rate = rf - rr
+
+            # Assign values (removed 'cdef' from here)
+            p0_idx = self.species_to_pool_indices[r0]
+            p1_idx = -1
+            if r1 != -1:
+                p1_idx = self.species_to_pool_indices[r1]
+
+            # Hijack logic
+            if p0_idx != -1 or p1_idx != -1:
+                if p0_idx != -1:
+                    pool0 = self.polymer_pools[p0_idx]
+                    mu1_0 = max(0.0, y[pool0.mu_indices[1]]) / V_poly
+                    rf_hijack = kf * mu1_0
+                    if r1 != -1: rf_hijack *= _C(r1)
+                    if r2 != -1: rf_hijack *= _C(r2)
+                else:
+                    pool1 = self.polymer_pools[p1_idx]
+                    mu1_1 = max(0.0, y[pool1.mu_indices[1]]) / V_poly
+                    rf_hijack = kf * _C(r0) * mu1_1
+                    if r2 != -1: rf_hijack *= _C(r2)
+
+                rate = rf_hijack
+
             r_mol_s = rate * V_rxn
 
             if r_idx < n_rxn:
@@ -710,7 +739,18 @@ class HybridPolymerSystem(ReactionSystem):
 
             # Apply Stoichiometry
             # Assumption: RMG uses repeated indices for non-unity stoichiometry
-            dn_dt[r0] -= r_mol_s
+            if r0 == self.proxy_species_idx:
+                # Deplete the actual Polymer Units moment (mu1)
+                # mu1 represents the number of repeat units in the system.
+                pool = self.polymer_pools[0]
+                idx_mu1 = pool.mu_indices[1]
+                dn_dt[idx_mu1] -= r_mol_s
+
+                # Optional: If it's a random scission, d(mu0)/dt increases
+                # because one chain becomes two.
+                # dn_dt[pool.mu_indices[0]] += r_mol_s
+            else:
+                dn_dt[r0] -= r_mol_s
             self.core_species_consumption_rates[r0] += rf
             self.core_species_production_rates[r0] += rr
             if r1 != -1:
@@ -746,6 +786,34 @@ class HybridPolymerSystem(ReactionSystem):
                     self.core_species_consumption_rates[p2] += rr
                 elif 0 <= (p2 - n_core) < n_edge:
                     self.edge_species_rates[p2 - n_core] += rate
+
+        # --- STEP 5.2: REDIRECTED STOICHIOMETRY ---
+
+                # Reactants
+                if p0_idx != -1:
+                    dn_dt[self.polymer_pools[p0_idx].mu_indices[1]] -= r_mol_s
+                else:
+                    dn_dt[r0] -= r_mol_s
+
+                if r1 != -1:
+                    if p1_idx != -1:
+                        dn_dt[self.polymer_pools[p1_idx].mu_indices[1]] -= r_mol_s
+                    else:
+                        dn_dt[r1] -= r_mol_s
+
+                # Products loop
+                for p_slot in range(3):
+                    p_idx_tmp = ip[r_idx, p_slot]
+                    if p_idx_tmp == -1: continue
+
+                    if p_idx_tmp < n_core:
+                        prod_p_idx = self.species_to_pool_indices[p_idx_tmp]
+                        if prod_p_idx != -1:
+                            dn_dt[self.polymer_pools[prod_p_idx].mu_indices[1]] += r_mol_s
+                        else:
+                            dn_dt[p_idx_tmp] += r_mol_s
+                    else:
+                        self.edge_species_rates[p_idx_tmp - n_core] += rate
 
         # 6. Network Leaks
         for j in range(inet.shape[0]):
