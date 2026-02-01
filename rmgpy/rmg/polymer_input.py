@@ -27,19 +27,20 @@
 #                                                                             #
 ###############################################################################
 
+import itertools
 import numpy as np
 from typing import Dict, List, Optional, Union, TYPE_CHECKING
 
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
-from rmgpy.solver.base import TerminationConversion, TerminationRateRatio, TerminationTime
+from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
 from rmgpy.solver.polymer import HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig
 
 if TYPE_CHECKING:
     from rmgpy.species import Species
 
 
-class HybridPolymerReactor(object):
+class HybridPolymerReactor(ReactionSystem):
     """
     A biphasic reactor input specification for polymer pyrolysis and degradation simulations.
 
@@ -64,6 +65,8 @@ class HybridPolymerReactor(object):
                                       sensitivities for.
         sensitivityThreshold (float, optional): The cutoff threshold for sensitivity analysis.
                                                 Default is 1e-3.
+        sens_conditions (dict, optional): A dictionary specifying conditions for sensitivity
+                                            analysis (e.g. {'T': 800, 'P': 1e5}).
         constant_gas_volume (bool, optional): If True, the gas phase volume remains fixed at its
                                               initial value calculated from T, P, and initial gas moles.
                                               If False (default), the gas volume expands/contracts
@@ -79,18 +82,84 @@ class HybridPolymerReactor(object):
                  terminationRateRatio=None,
                  sensitivity: Optional[List[Union['Species', str]]] = None,
                  sensitivityThreshold: float = 1e-3,
+                 sens_conditions: Optional[Dict[str, Union[float, Quantity]]] = None,
                  constant_gas_volume: bool = False,
+                 n_sims=1,
                  ):
-        self.temperature = temperature
-        self.pressure = pressure
+        ReactionSystem.__init__(self)
+
+        if not hasattr(self, 'listeners'):
+            self.listeners = []
+
+        if type(temperature) != list:
+            self.T = Quantity(temperature)
+            self.Trange = [self.T, self.T]
+            self.temperature = Quantity(temperature)
+        else:
+            self.Trange = [Quantity(t) for t in temperature]
+            self.temperature = [Quantity(t) for t in temperature]
+
+        if type(pressure) != list:
+            self.P = Quantity(pressure)
+            self.Prange = [self.P, self.P]
+            self.pressure = Quantity(pressure)
+        else:
+            self.Prange = [Quantity(p) for p in pressure]
+            self.pressure = [Quantity(p) for p in pressure]
+
         self.initialMoles = initialMoles
+        self.initial_mole_fractions = initialMoles
         self.polymerPhase = polymerPhase
         self.terminationConversion = terminationConversion
         self.terminationTime = terminationTime
         self.terminationRateRatio = terminationRateRatio
         self.sensitivity = sensitivity
+        self.sensitive_species = list()
         self.sensitivityThreshold = sensitivityThreshold
+        self.sens_conditions = sens_conditions
         self.constant_gas_volume = constant_gas_volume
+        self.n_sims = n_sims
+        self.const_spc_names = []
+        self.solver = None
+
+    def initialize_model(self, core_species, core_reactions, edge_species, edge_reactions,
+                          surface_species=None, surface_reactions=None, pdep_networks=None,
+                          atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
+                          filter_reactions=False, conditions=None, **kwargs):
+        """
+        Standard RMG hook:
+        1. Update conditions (T, P) on the blueprint.
+        2. Create the fast Cython solver.
+        3. Delegate numerical setup to the solver.
+        """
+        # 1. Update the Blueprint (Reactor) settings based on RMG 'conditions'
+        ReactionSystem.initialize_model(self, core_species=core_species, core_reactions=core_reactions,
+                                        edge_species=edge_species, edge_reactions=edge_reactions,
+                                        surface_species=surface_species, surface_reactions=surface_reactions,
+                                        pdep_networks=pdep_networks, atol=atol, rtol=rtol, sensitivity=sensitivity,
+                                        sens_atol=sens_atol, sens_rtol=sens_rtol, filter_reactions=filter_reactions,
+                                        conditions=conditions)
+
+        # 2. Build the Solver Engine (using the updated T/P from step 1)
+        self.solver = self.to_solver_object(core_species, core_reactions, edge_species, edge_reactions)
+        self.solver.listeners = self.listeners
+
+        # 3. Delegate ALL numerical initialization to the Solver Engine
+        return self.solver.initialize_model(core_species=core_species, core_reactions=core_reactions,
+                                            edge_species=edge_species, edge_reactions=edge_reactions,
+                                            surface_species=surface_species, surface_reactions=surface_reactions,
+                                            pdep_networks=pdep_networks, atol=atol, rtol=rtol, sensitivity=sensitivity,
+                                            sens_atol=sens_atol, sens_rtol=sens_rtol, filter_reactions=filter_reactions,
+                                            conditions=conditions)
+
+    def simulate(self, core_species, core_reactions, edge_species, edge_reactions, **kwargs):
+        """
+        Run the simulation using the underlying solver.
+        pass the command to the numerical solver created in initialize()
+        """
+        if self.solver is None:
+            self.initialize_model(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
+        return self.solver.simulate(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
 
     def convert_initial_keys_to_species_objects(self, species_dict):
         """
@@ -153,7 +222,7 @@ class HybridPolymerReactor(object):
                     new_sens.append(species_dict[spec])
                 else:
                     new_sens.append(spec)
-            self.sensitivity = new_sens
+            self.sensitive_species = new_sens
 
     def to_solver_object(self, core_species, core_reactions, edge_species, edge_reactions):
         """
@@ -174,6 +243,11 @@ class HybridPolymerReactor(object):
         # 2. Identify Phases (Robust Masking)
         # Determines which core species are Gas vs Polymer
         gas_mask = self.polymerPhase.get_gas_mask(core_species)
+        if len(gas_mask) != len(core_species):
+            # Emergency resize if get_gas_mask returns a shorter list
+            new_mask = np.zeros(len(core_species), dtype=bool)
+            new_mask[:len(gas_mask)] = gas_mask
+            gas_mask = new_mask
 
         # 3. Calculate Initial Gas Volume (Headspace)
         # Logic: Sum MOLES of species that are actually in the gas phase.
@@ -237,6 +311,22 @@ class HybridPolymerReactor(object):
             if gas_mask[pi]:
                 raise ValueError("MassTransfer error: poly_species mapped to gas by get_gas_mask().")
 
+        # 5.5. Extract Pressure-Dependent Collider Data
+        # We mirror SimpleReactor logic to ensure gas-phase P-dep reactions
+        # use efficiency-weighted effective pressure.
+        pdep_indices, pdep_kinetics, efficiencies = [], [], []
+
+        for i, rxn in enumerate(core_reactions):
+            if rxn.kinetics is not None and rxn.kinetics.is_pressure_dependent():
+                if hasattr(rxn.kinetics, 'efficiencies') and rxn.kinetics.efficiencies:
+                    pdep_indices.append(i)
+                    pdep_kinetics.append(rxn.kinetics)
+                    # Calculate efficiencies for all core species
+                    efficiencies.append(rxn.kinetics.get_effective_collider_efficiencies(core_species))
+
+        pdep_collision_indices = np.array(pdep_indices, int)
+        collider_eff = np.array(efficiencies, float)
+
         # 6. Instantiate the Numerical Engine
         # Note: We pass 'initialMoles' to the solver's 'initial_mole_fractions' argument
         # to satisfy the base class signature, but the solver correctly interprets them as moles.
@@ -253,13 +343,95 @@ class HybridPolymerReactor(object):
             initial_polymer_moments=self.polymerPhase.initial_moments,
             initial_explicit_species=self.polymerPhase.initial_explicit,
             termination=termination,
-            sensitive_species=self.sensitivity,
+            sensitive_species=self.sensitive_species,
             sensitivity_threshold=self.sensitivityThreshold,
-            sens_conditions=None,
-            const_spc_names=None,
+            sens_conditions=self.sens_conditions,
+            const_spc_names=self.const_spc_names,
+            pdep_collision_reaction_indices=pdep_collision_indices,
+            pdep_collider_kinetics=pdep_kinetics,
+            collider_efficiencies=collider_eff,
         )
 
+        solver.V = (V_gas0 if V_gas0 is not None else 0.0) + V_poly
+
         return solver
+
+    def set_colliders(self, core_reactions, edge_reactions, core_species):
+        """
+        Store collider efficiencies and reaction indices for pdep reactions that have collider efficiencies,
+        and store specific collider indices
+        """
+        pdep_collider_reaction_indices = []
+        self.pdep_collider_kinetics = []
+        collider_efficiencies = []
+        pdep_specific_collider_reaction_indices = []
+        self.pdep_specific_collider_kinetics = []
+        self.specific_collider_species = []
+
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            if rxn.kinetics.is_pressure_dependent():
+                if rxn.kinetics.efficiencies:
+                    j = self.reaction_index[rxn]
+                    pdep_collider_reaction_indices.append(j)
+                    self.pdep_collider_kinetics.append(rxn.kinetics)
+                    collider_efficiencies.append(rxn.kinetics.get_effective_collider_efficiencies(core_species))
+                if rxn.specific_collider:
+                    pdep_specific_collider_reaction_indices.append(self.reaction_index[rxn])
+                    self.pdep_specific_collider_kinetics.append(rxn.kinetics)
+                    self.specific_collider_species.append(rxn.specific_collider)
+
+        self.pdep_collision_reaction_indices = np.array(pdep_collider_reaction_indices, int)
+        self.collider_efficiencies = np.array(collider_efficiencies, float)
+        self.pdep_specific_collider_reaction_indices = np.array(pdep_specific_collider_reaction_indices, int)
+
+    def generate_rate_coefficients(self, core_reactions, edge_reactions):
+        """
+        Populates the forward rate coefficients (kf), reverse rate coefficients (kb)
+        and equilibrium constants (Keq) arrays with the values computed at the temperature
+        and (effective) pressure of the reaction system.
+        """
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            j = self.reaction_index[rxn]
+            Peff = self.calculate_effective_pressure(rxn)
+            self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, Peff)
+
+            if rxn.reversible:
+                self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
+                self.kb[j] = self.kf[j] / self.Keq[j]
+            else:
+                self.kb[j] = 0.0
+                self.Keq[j] = np.inf
+
+    def calculate_effective_pressure(self, rxn):
+        """
+        Computes the effective pressure for a reaction as:
+
+        .. math:: P_{eff} = P * \\sum_i \\frac{y_i * eff_i}{\\sum_j y_j}
+
+        with:
+            - P the pressure of the reactor,
+            - y the array of initial moles of the core species
+
+        or as:
+
+        .. math:: P_{eff} = \\frac{P * y_{specific_collider}}{\\sum_j y_j}
+
+        if a specific_collider is mentioned.
+        """
+
+        y0_core_species = self.y0[:self.num_core_species]
+        sum_core_species = np.sum(y0_core_species)
+
+        j = self.reaction_index[rxn]
+        for i in range(self.pdep_collision_reaction_indices.shape[0]):
+            if j == self.pdep_collision_reaction_indices[i]:
+                # Calculate effective pressure
+                if rxn.specific_collider is None:
+                    Peff = self.P.value_si * np.sum(self.collider_efficiencies[i] * y0_core_species / sum_core_species)
+                else:
+                    Peff = self.P.value_si * self.y0[self.species_index[rxn.specific_collider]] / sum_core_species
+                return Peff
+        return self.P.value_si
 
 
 class PolymerPhase(object):
@@ -295,7 +467,8 @@ class PolymerPhase(object):
 
         # 1. Add Mass of Explicit Species (Directly)
         for species, moles in self.initial_explicit.items():
-            total_mass_kg += float(moles) * species.molecular_weight.value_si
+            # species.molecular_weight.value_si is in kg/molecule
+            total_mass_kg += float(moles) * species.molecular_weight.value_si * constants.Na
 
         # 2. Add Mass of Tails
         for pool in self.pools:
@@ -315,7 +488,7 @@ class PolymerPhase(object):
                     raise ValueError(f"Pool '{label}' has moments but no monomer defined.")
                 continue
 
-            monomer_mw = pool.monomer.molecular_weight.value_si
+            monomer_mw = pool.monomer.get_molecular_weight()  # kg/mol
 
             # Calculate explicit contribution to Mu1
             explicit_mu1 = 0.0
