@@ -29,15 +29,13 @@
 
 import itertools
 import numpy as np
-from typing import Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Dict, List, Optional, Union
 
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
 from rmgpy.solver.polymer import HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig
-
-if TYPE_CHECKING:
-    from rmgpy.species import Species
+from rmgpy.species import Species
 
 
 class HybridPolymerReactor(ReactionSystem):
@@ -75,12 +73,12 @@ class HybridPolymerReactor(ReactionSystem):
     def __init__(self,
                  temperature,
                  pressure,
-                 initialMoles: Dict['Species', float],
+                 initialMoles: Dict[Species, float],
                  polymerPhase: 'PolymerPhase',
-                 terminationConversion: Optional[Dict[Union['Species', str], float]] = None,
+                 terminationConversion: Optional[Dict[Union[Species, str], float]] = None,
                  terminationTime: Optional[Union[Quantity, float]] = None,
                  terminationRateRatio=None,
-                 sensitivity: Optional[List[Union['Species', str]]] = None,
+                 sensitivity: Optional[List[Union[Species, str]]] = None,
                  sensitivityThreshold: float = 1e-3,
                  sens_conditions: Optional[Dict[str, Union[float, Quantity]]] = None,
                  constant_gas_volume: bool = False,
@@ -157,7 +155,11 @@ class HybridPolymerReactor(ReactionSystem):
         Run the simulation using the underlying solver.
         pass the command to the numerical solver created in initialize()
         """
-        if self.solver is None:
+        n_core = len(core_species)
+        n_rxn = len(core_reactions)
+        if (self.solver is None or
+                self.solver.num_core_species != n_core or
+                self.solver.num_core_reactions != n_rxn):
             self.initialize_model(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
         return self.solver.simulate(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
 
@@ -328,6 +330,19 @@ class HybridPolymerReactor(ReactionSystem):
         pdep_collision_indices = np.array(pdep_indices, int)
         collider_eff = np.array(efficiencies, float)
 
+        poly_labels = set()
+        for spc in self.polymerPhase.initial_explicit.keys():
+            poly_labels.add(spc.label)
+        for pool in self.polymerPhase.pools:
+            poly_labels.add(pool.proxy_species.label)
+            for mu in pool.mu_species:
+                poly_labels.add(mu.label)
+            if pool.explicit_map:
+                for dp, spc in pool.explicit_map.items():
+                    poly_labels.add(spc.label)
+        for mt in self.polymerPhase.mass_transfer:
+            poly_labels.add(mt.poly_species.label)
+
         # 6. Instantiate the Numerical Engine
         # Note: We pass 'initialMoles' to the solver's 'initial_mole_fractions' argument
         # to satisfy the base class signature, but the solver correctly interprets them as moles.
@@ -338,6 +353,7 @@ class HybridPolymerReactor(ReactionSystem):
             V_poly=V_poly,
             polymer_pools=pool_configs,
             mass_transfer=mt_configs,
+            polymer_species_labels=poly_labels,
             gas_species_mask=gas_mask,
             constant_gas_volume=self.constant_gas_volume,
             V_gas0=V_gas0,
@@ -358,9 +374,12 @@ class HybridPolymerReactor(ReactionSystem):
         species_to_pool = np.full(len(core_species), -1, dtype=np.int32)
 
         for p_idx, pool in enumerate(self.polymerPhase.pools):
+            proxy = getattr(pool, "proxy_species", None)
+            if proxy is None:
+                continue
             # Find the RMG Species object that acts as the proxy for this pool
             try:
-                s_idx = core_species.index(pool.proxy_species)
+                s_idx = core_species.index(proxy)
                 species_to_pool[s_idx] = p_idx
             except ValueError:
                 continue
@@ -602,8 +621,8 @@ def polymer_phase(label: str,
 
 
 def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
-                          initial_moles: Dict['Species', float],
-                          species_dict: Dict[str, 'Species']) -> PolymerPhase:
+                          initial_moles: Dict[Species, float],
+                          species_dict: Dict[str, Species]) -> PolymerPhase:
     """
     Converts a Blueprint + Initial Conditions into a fully realized PolymerPhase object.
     Calculates moments, generates pools, and maps species.
@@ -642,6 +661,14 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
                 # Fallback: Calculate from graph
                 monomer_mw = spc.monomer.get_molecular_weight().value_si
 
+            # Create distinct dummy species for moments
+            mu0_spc = species_dict[f"{spc.label}_mu0"]
+            mu1_spc = species_dict[f"{spc.label}_mu1"]
+            mu2_spc = species_dict[f"{spc.label}_mu2"]
+            for m_spc in [mu0_spc, mu1_spc, mu2_spc]:
+                if m_spc.label not in species_dict:
+                    species_dict[m_spc.label] = m_spc
+
             mu0 = moles
             mn_kg = spc.Mn / 1000.0
             mw_kg = spc.Mw / 1000.0
@@ -662,8 +689,10 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
                 xs=spc.cutoff,
                 monomer=spc.monomer,
                 explicit_map={},
-                mu_species=[spc, spc, spc],
-                k_scission=0.0
+                mu_species=[mu0_spc, mu1_spc, mu2_spc],
+                k_scission=spc.k_scission,
+                k_unzip=spc.k_unzip,
+                proxy_species=spc,
             )
             pools.append(pool)
         else:
@@ -712,11 +741,12 @@ class PolymerPool(object):
     def __init__(self,
                  label: str,
                  xs: int,
-                 monomer: 'Species',
-                 explicit_map: Dict[int, 'Species'],
-                 mu_species: List['Species'],
+                 monomer: Species,
+                 explicit_map: Dict[int, Species],
+                 mu_species: List[Species],
                  k_scission: float = 0.0,
                  k_unzip: float = 0.0,
+                 proxy_species: Optional[Species] = None,
                  ):
         self.label = label
         self.xs = xs
@@ -725,6 +755,7 @@ class PolymerPool(object):
         self.mu_species = mu_species
         self.k_scission = k_scission
         self.k_unzip = k_unzip
+        self.proxy_species = proxy_species
 
     def to_config(self, spc_map):
         """
@@ -782,8 +813,8 @@ class MassTransfer(object):
     """
 
     def __init__(self,
-                 gas_species: 'Species',
-                 poly_species: 'Species',
+                 gas_species: Species,
+                 poly_species: Species,
                  K: Union[float, Quantity],
                  kLa: Union[float, Quantity],
                  ):
