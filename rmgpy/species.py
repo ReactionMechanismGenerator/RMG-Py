@@ -110,6 +110,7 @@ class Species(object):
         self.aug_inchi = aug_inchi
         self.symmetry_number = symmetry_number
         self.is_solvent = False
+        self.is_polymer = False
         self.creation_iteration = creation_iteration
         self.explicitly_allowed = explicitly_allowed
         self._fingerprint = None
