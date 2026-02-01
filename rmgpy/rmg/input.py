@@ -1236,6 +1236,8 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
                            sensitivity: Optional[Union[List[str], str, List['Species']]] = None,
                            sensitivityThreshold: float = 1e-3,
                            constant_gas_volume: bool = False,
+                           sensitivityTemperature: Optional[Union[float, Quantity]] = None,
+                           sensitivityPressure: Optional[Union[float, Quantity]] = None,
                            ):
     """
     Defines a Hybrid Polymer Reactor system in the input file.
@@ -1266,6 +1268,10 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         sensitivityThreshold (float): The cutoff threshold for sensitivity analysis. Default is 1e-3.
         constant_gas_volume (bool): If True, the gas phase volume remains fixed at its initial value.
                                     If False (default), the gas volume expands/contracts isobarically.
+        sensitivityTemperature (Optional[Union[float, Quantity]]): Temperature at which to perform
+                                                                   sensitivity analysis. If None, uses reactor T.
+        sensitivityPressure (Optional[Union[float, Quantity]]): Pressure at which to perform
+                                                                sensitivity analysis. If None, uses reactor P.
     """
     logging.debug('Found HybridPolymerReactor reaction system')
 
@@ -1292,8 +1298,15 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         processed_initial_moles[spc] = moles_si
 
     # 2. Process Conditions (Units)
-    T = Quantity(temperature)
-    P = Quantity(pressure)
+    if not isinstance(temperature, list):
+        T = Quantity(temperature)
+    else:
+        T = [Quantity(t) for t in temperature]
+
+    if not isinstance(pressure, list):
+        P = Quantity(pressure)
+    else:
+        P = [Quantity(p) for p in pressure]
 
     real_polymer_phase = compile_polymer_phase(
         blueprint=polymerPhase,
@@ -1330,14 +1343,31 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         raise InputError('No termination conditions specified for HybridPolymerReactor.')
 
     # 4. Process Sensitivity
+    sensitive_species = []
     if sensitivity:
-        if isinstance(sensitivity, str):
-            if sensitivity != "all" and sensitivity not in species_dict:
-                raise InputError(f"Unknown species label in sensitivity: '{sensitivity}'")
-        else:
+        if sensitivity != 'all':
+            if isinstance(sensitivity, str):
+                sensitivity = [sensitivity]
             for spec in sensitivity:
-                if isinstance(spec, str) and spec not in species_dict:
-                    raise InputError(f"Unknown species label in sensitivity: '{spec}'")
+                if isinstance(spec, str):
+                    sensitive_species.append(species_dict[spec])
+                else:
+                    sensitive_species.append(spec)
+        else:
+            sensitive_species.append('all')
+
+    if not isinstance(T, list):
+        sensitivityTemperature = T
+    if not isinstance(P, list):
+        sensitivityPressure = P
+
+    if sensitivityTemperature is None or sensitivityPressure is None:
+        sens_conditions = None
+    else:
+        # sens_conditions stores the state at which sensitivity is calculated
+        sens_conditions = {spc.label: mol for spc, mol in processed_initial_moles.items()}
+        sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
+        sens_conditions['P'] = Quantity(sensitivityPressure).value_si
 
     # 5. Instantiate Input Wrapper
     # We append the configuration object (HybridPolymerReactor) to the system list.
@@ -1351,9 +1381,10 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         terminationConversion=terminationConversion,
         terminationTime=terminationTime,
         terminationRateRatio=terminationRateRatio,
-        sensitivity=sensitivity,
+        sensitivity=sensitive_species,
         sensitivityThreshold=sensitivityThreshold,
-        constant_gas_volume=constant_gas_volume
+        constant_gas_volume=constant_gas_volume,
+        sens_conditions=sens_conditions,
     )
 
     rmg.reaction_systems.append(system)
