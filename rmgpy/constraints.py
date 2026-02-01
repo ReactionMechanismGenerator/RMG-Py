@@ -31,6 +31,7 @@ import logging
 
 from rmgpy.species import Species
 
+
 def pass_cutting_threshold(species):
     """
     Pass in either a `Species` or `Molecule` object and checks whether it passes 
@@ -72,6 +73,9 @@ def fails_species_constraints(species):
     except Exception:
         logging.debug('Species constraints could not be found.')
         species_constraints = {}
+
+    if species.is_polymer_proxy:
+        return False
 
     if isinstance(species, Species):
         struct = species.molecule[0]
