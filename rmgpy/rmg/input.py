@@ -48,7 +48,14 @@ from rmgpy.molecule.group import Group
 from rmgpy.quantity import Energy, Quantity, RateCoefficient, SurfaceConcentration
 from rmgpy.polymer import Polymer
 from rmgpy.rmg.model import CoreEdgeReactionModel
-from rmgpy.rmg.polymer_input import HybridPolymerReactor, MassTransfer, PolymerPhase, PolymerPool
+from rmgpy.rmg.polymer_input import (
+    HybridPolymerReactor,
+    MassTransfer,
+    PolymerPhase,
+    PolymerPool,
+    compile_polymer_phase,
+    polymer_phase,
+)
 from rmgpy.rmg.reactionmechanismsimulator_reactors import (
     ConstantTLiquidSurfaceReactor,
     ConstantTPIdealGasReactor,
@@ -275,15 +282,15 @@ def polymer(label: str,
 
     poly_obj.creation_iteration = rmg.reaction_model.iteration_num
 
-    rmg.reaction_model.generate_thermo(poly_obj)  # todo: thermo for polymers
+    i = 1
+    original_label = label
+    while label in species_dict:
+        label = f"{original_label}-{i}"
+        i += 1
+    if label != original_label:
+        poly_obj.label = label
 
-    label = poly_obj.label.copy()
-    i = 2
-    if rmg.reaction_model.edge.phase_system:
-        while any([label in phase.names for phase in rmg.reaction_model.edge.phase_system.phases.values()]):
-            label = poly_obj.label + "-" + str(i)
-            i += 1
-    poly_obj.label = label
+    rmg.reaction_model.generate_thermo(poly_obj)
 
     rmg.reaction_model.species_dict[poly_obj.label] = poly_obj
     rmg.reaction_model.new_species_list.append(poly_obj)
@@ -1222,7 +1229,7 @@ def mb_sampled_reactor(temperature,
 def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
                            pressure: Union[float, List[float], Quantity],
                            initialMoles: Dict[Union['Species', str], float],
-                           polymerPhase: 'PolymerPhase',
+                           polymerPhase: PolymerPhase,
                            terminationConversion: Optional[Dict[Union['Species', str], float]] = None,
                            terminationTime: Optional[Union[float, Quantity]] = None,
                            terminationRateRatio: Optional[float] = None,
@@ -1290,6 +1297,12 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
     T = Quantity(temperature)
     P = Quantity(pressure)
 
+    real_polymer_phase = compile_polymer_phase(
+        blueprint=polymerPhase,
+        initial_moles=processed_initial_moles,
+        species_dict=species_dict
+    )
+
     # 3. Process Termination
     # We validate here but pass raw arguments to the Input Object,
     # which constructs the Termination objects in to_solver_object().
@@ -1336,7 +1349,7 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         temperature=T,
         pressure=P,
         initialMoles=processed_initial_moles,
-        polymerPhase=polymerPhase,
+        polymerPhase=real_polymer_phase,
         terminationConversion=terminationConversion,
         terminationTime=terminationTime,
         terminationRateRatio=terminationRateRatio,
@@ -1765,7 +1778,7 @@ def read_input_file(path, rmg0):
         'surfaceReactor': surface_reactor,
         'mbsampledReactor': mb_sampled_reactor,
         'hybridPolymerReactor': hybrid_polymer_reactor,
-        'PolymerPhase': PolymerPhase,
+        'polymer_phase': polymer_phase,
         'PolymerPool': PolymerPool,
         'MassTransfer': MassTransfer,
         'simulator': simulator,
