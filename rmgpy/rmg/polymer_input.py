@@ -31,12 +31,12 @@ import numpy as np
 from typing import Dict, List, Optional, Union, TYPE_CHECKING
 
 import rmgpy.constants as constants
+from rmgpy.quantity import Quantity
 from rmgpy.solver.base import TerminationConversion, TerminationRateRatio, TerminationTime
 from rmgpy.solver.polymer import HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig
 
 if TYPE_CHECKING:
     from rmgpy.species import Species
-    from rmgpy.quantity import Quantity
 
 
 class HybridPolymerReactor(object):
@@ -75,7 +75,7 @@ class HybridPolymerReactor(object):
                  initialMoles: Dict['Species', float],
                  polymerPhase: 'PolymerPhase',
                  terminationConversion: Optional[Dict[Union['Species', str], float]] = None,
-                 terminationTime: Optional[Union['Quantity', float]] = None,
+                 terminationTime: Optional[Union[Quantity, float]] = None,
                  terminationRateRatio=None,
                  sensitivity: Optional[List[Union['Species', str]]] = None,
                  sensitivityThreshold: float = 1e-3,
@@ -91,6 +91,69 @@ class HybridPolymerReactor(object):
         self.sensitivity = sensitivity
         self.sensitivityThreshold = sensitivityThreshold
         self.constant_gas_volume = constant_gas_volume
+
+    def convert_initial_keys_to_species_objects(self, species_dict):
+        """
+        Convert species labels into species objects across the reactor
+        and the associated polymer phase.
+        """
+        # 1. Convert Reactor-level initialMoles
+        # Matches your signature: initialMoles = {Species/str: float}
+        new_initial_moles = {}
+        for key, value in self.initialMoles.items():
+            if isinstance(key, str):
+                new_initial_moles[species_dict[key]] = value
+            else:
+                new_initial_moles[key] = value
+        self.initialMoles = new_initial_moles
+
+        # 2. Convert Phase-level initial_explicit
+        # The polymerPhase was initialized with labels; swap them for objects now.
+        if hasattr(self.polymerPhase, 'initial_explicit'):
+            new_explicit = {}
+            for key, value in self.polymerPhase.initial_explicit.items():
+                if isinstance(key, str):
+                    new_explicit[species_dict[key]] = value
+                else:
+                    new_explicit[key] = value
+            self.polymerPhase.initial_explicit = new_explicit
+
+        # 3. Convert Pool-level species (Monomers and Mu_species)
+        if hasattr(self.polymerPhase, 'pools'):
+            for pool in self.polymerPhase.pools:
+                # Resolve Monomer
+                if isinstance(pool.monomer, str):
+                    pool.monomer = species_dict[pool.monomer]
+
+                # Resolve Mu_species (the 3 placeholder species for moments)
+                if pool.mu_species:
+                    new_mu = []
+                    for spc in pool.mu_species:
+                        if isinstance(spc, str):
+                            new_mu.append(species_dict[spc])
+                        else:
+                            new_mu.append(spc)
+                    pool.mu_species = new_mu
+
+                # Resolve Explicit Map (Oligomers)
+                if pool.explicit_map:
+                    new_map = {}
+                    for dp, spc in pool.explicit_map.items():
+                        if isinstance(spc, str):
+                            new_map[dp] = species_dict[spc]
+                        else:
+                            new_map[dp] = spc
+                    pool.explicit_map = new_map
+
+        # 4. Handle Sensitivity (if applicable)
+        if self.sensitivity:
+            new_sens = []
+            for spec in self.sensitivity:
+                if isinstance(spec, str):
+                    new_sens.append(species_dict[spec])
+                else:
+                    new_sens.append(spec)
+            self.sensitivity = new_sens
 
     def to_solver_object(self, core_species, core_reactions, edge_species, edge_reactions):
         """
@@ -535,8 +598,8 @@ class MassTransfer(object):
     def __init__(self,
                  gas_species: 'Species',
                  poly_species: 'Species',
-                 K: Union[float, 'Quantity'],
-                 kLa: Union[float, 'Quantity'],
+                 K: Union[float, Quantity],
+                 kLa: Union[float, Quantity],
                  ):
         self.gas_species = gas_species
         self.poly_species = poly_species
