@@ -30,7 +30,7 @@
 import logging
 import os
 from copy import deepcopy
-from typing import Dict, List, Optional, Union, TYPE_CHECKING
+from typing import Dict, List, Optional, Union
 
 import numpy as np
 
@@ -73,10 +73,9 @@ from rmgpy.solver.termination import (
     TerminationRateRatio,
     TerminationTime,
 )
+from rmgpy.species import Species
 from rmgpy.util import as_list
 
-if TYPE_CHECKING:
-    from rmgpy.species import Species
 
 ################################################################################
 
@@ -282,21 +281,39 @@ def polymer(label: str,
 
     poly_obj.creation_iteration = rmg.reaction_model.iteration_num
 
+    # 2. Handle Label Collision (Ensures unique labeling in species_dict)
     i = 1
     original_label = label
     while label in species_dict:
         label = f"{original_label}-{i}"
         i += 1
-    if label != original_label:
-        poly_obj.label = label
+    poly_obj.label = label
 
-    rmg.reaction_model.generate_thermo(poly_obj)
-
+    # 3. Register the main Polymer species
     rmg.reaction_model.species_dict[poly_obj.label] = poly_obj
     rmg.reaction_model.new_species_list.append(poly_obj)
-    rmg.reaction_model.index_species_dict[poly_obj.index] = poly_obj
     rmg.initial_species.append(poly_obj)
     species_dict[label] = poly_obj
+
+    # 4. INJECT MOMENT DUMMIES IMMEDIATELY
+    # These become 'Real' species in the eyes of RMG,
+    # ensuring they get a unique index in the solver's 'y' vector.
+    for suffix in ['_mu0', '_mu1', '_mu2']:
+        m_label = f"{poly_obj.label}{suffix}"
+
+        # Create non-reactive species placeholders
+        m_spc = Species(label=m_label, reactive=False)
+        m_spc.molecule = [Molecule().from_smiles("[He]")]
+
+        # Identity Lock: Register in all core registries
+        rmg.reaction_model.species_dict[m_label] = m_spc
+        rmg.initial_species.append(m_spc)
+        species_dict[m_label] = m_spc
+
+    # 5. Generate Thermo for the Polymer (Delegates to the trimer proxy)
+    rmg.reaction_model.generate_thermo(poly_obj)
+
+    return poly_obj
 
 
 def forbidden(label, structure):
@@ -1228,12 +1245,12 @@ def mb_sampled_reactor(temperature,
 # Reaction systems
 def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
                            pressure: Union[float, List[float], Quantity],
-                           initialMoles: Dict[Union['Species', str], float],
+                           initialMoles: Dict[Union[Species, str], float],
                            polymerPhase: PolymerPhase,
-                           terminationConversion: Optional[Dict[Union['Species', str], float]] = None,
+                           terminationConversion: Optional[Dict[Union[Species, str], float]] = None,
                            terminationTime: Optional[Union[float, Quantity]] = None,
                            terminationRateRatio: Optional[float] = None,
-                           sensitivity: Optional[Union[List[str], str, List['Species']]] = None,
+                           sensitivity: Optional[Union[List[str], str, List[Species]]] = None,
                            sensitivityThreshold: float = 1e-3,
                            constant_gas_volume: bool = False,
                            sensitivityTemperature: Optional[Union[float, Quantity]] = None,
