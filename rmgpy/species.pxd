@@ -52,6 +52,7 @@ cdef class Species:
     cdef public str aug_inchi
     cdef public float symmetry_number
     cdef public bint is_solvent
+    cdef public bint is_polymer
     cdef public int creation_iteration
     cdef public bint explicitly_allowed
     cdef public object liquid_volumetric_mass_transfer_coefficient_data
