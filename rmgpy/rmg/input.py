@@ -1272,18 +1272,16 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
     # 1. Process Initial Moles: {label/species: moles} -> {Species: float}
     processed_initial_moles = dict()
     for key, value in initialMoles.items():
-        # Resolve Label -> Species
         if isinstance(key, str):
-            try:
-                spc = species_dict[key]
-            except KeyError:
-                raise InputError(f"Unknown species label in initialMoles: '{key}'")
+            if species_dict is None:
+                raise InputError("Internal RMG Error: species_dict is None.")
+            spc = species_dict.get(key)
+            if spc is None:
+                raise InputError(f"Species '{key}' used in reactor was never defined.")
         else:
             spc = key
 
-        # Resolve Value -> Float (SI Moles)
         if isinstance(value, (list, tuple)):
-            # Handle (value, units) e.g. (1.0, 'mol')
             moles_si = Quantity(value).value_si
         else:
             moles_si = float(value)
