@@ -1765,6 +1765,8 @@ class KineticsFamily(Database):
         using :class:`Molecule` objects for both reactants and products
         The reactions are constructed such that the forward direction is
         consistent with the template of this reaction family.
+        This method unwraps Polymer objects into Molecules for the core logic,
+        and re-wraps the resulting product Molecules back into Polymer objects where applicable.
 
         Args:
             reactants (list):                List of Molecules to react.
@@ -1781,11 +1783,25 @@ class KineticsFamily(Database):
             specified reactants and products within this family.
             Degenerate reactions are returned as separate reactions.
         """
-        reaction_list = []
+        processed_reactants, reaction_list = [], []
+        reactant_map = {}
+
+        for reactant in reactants:
+            if hasattr(reactant, 'is_polymer') and reactant.is_polymer:
+                proxy_mols = reactant.get_proxy_species().molecule
+                processed_reactants.append(proxy_mols)
+                for mol in proxy_mols:
+                    reactant_map[mol] = reactant
+            elif hasattr(reactant, 'molecule') and isinstance(reactant.molecule, list):
+                processed_reactants.append(reactant.molecule)
+                for mol in reactant.molecule:
+                    reactant_map[mol] = reactant
+            else:
+                processed_reactants.append(reactant)
 
         # Forward direction (the direction in which kinetics is defined)
         reaction_list.extend(
-            self._generate_reactions(reactants=reactants,
+            self._generate_reactions(reactants=processed_reactants,
                                      products=products,
                                      forward=True,
                                      prod_resonance=prod_resonance,
@@ -1796,13 +1812,32 @@ class KineticsFamily(Database):
         if not self.own_reverse and self.reversible:
             # Reverse direction (the direction in which kinetics is not defined)
             reaction_list.extend(
-                self._generate_reactions(reactants=reactants,
+                self._generate_reactions(reactants=processed_reactants,
                                          products=products,
                                          forward=False,
                                          prod_resonance=prod_resonance,
                                          delete_labels=delete_labels,
                                          relabel_atoms=relabel_atoms,
                                          ))
+
+        for rxn in reaction_list:
+            final_reactants = []
+            for mol in rxn.reactants:
+                final_reactants.append(reactant_map.get(mol, mol))
+            rxn.reactants = final_reactants
+
+            final_products = []
+            for mol in rxn.products:
+                final_products.append(reactant_map.get(mol, mol))
+            rxn.products = final_products
+
+            all_participants = rxn.reactants + rxn.products
+            poly_participants = [p for p in all_participants if hasattr(p, 'is_polymer') and p.is_polymer]
+
+            if poly_participants:
+                _handshake_structures(rxn.products, poly_participants)
+                _handshake_structures(rxn.reactants, poly_participants)
+
         return reaction_list
 
     def add_reverse_attribute(self, rxn, react_non_reactive=True):
@@ -4908,3 +4943,25 @@ def get_site_solute_data(rxn):
         return site_data
     else:
         return None
+
+
+def _handshake_structures(structure_list, polymer_reactants):
+    """
+    Helper to scan a list of Molecules (reactants or products) and
+    convert them to Polymer objects if they match an input polymer structure.
+    It mutates species_list in-place: if a molecule in the list can be interpreted
+    as a polymer-derived fragment/modification, it replaces that molecule with the
+    corresponding Polymer returned by create_reacted_copy().
+    """
+    for i, mol in enumerate(structure_list):
+        if not isinstance(mol, Molecule):
+            continue
+        for polymer_obj in polymer_reactants:
+            try:
+                new_polymer = polymer_obj.create_reacted_copy(mol)
+
+                if new_polymer:
+                    structure_list[i] = new_polymer
+                    break
+            except (RuntimeError, ValueError):
+                pass
