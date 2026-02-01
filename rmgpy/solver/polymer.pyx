@@ -58,7 +58,9 @@ import math
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Tuple
 
+cimport cython
 import numpy as np
+cimport numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
@@ -139,12 +141,10 @@ def _safe_mu3_from_mu012(mu0: float, mu1: float, mu2: float) -> float:
         except (FloatingPointError, ValueError):
             return 0.0
 
-
-def _explicit_moment_contributions(
-    V_poly: float,
-    y: np.ndarray,
-    explicit_dp_to_species_index: Dict[int, int],
-) -> Tuple[float, float, float]:
+def _explicit_moment_contributions(V_poly: float,
+                                   y: np.ndarray,
+                                   explicit_dp_to_species_index: Dict[int, int],
+                                   ) -> Tuple[float, float, float]:
     """Calculate explicit oligomer contributions to moments."""
     if V_poly <= 0: return 0.0, 0.0, 0.0
     mu0, mu1, mu2 = 0.0, 0.0, 0.0
@@ -258,8 +258,13 @@ class HybridPolymerSystem(ReactionSystem):
         sensitivity_threshold: float = 1e-3,
         sens_conditions=None,
         const_spc_names: Optional[List[str]] = None,
+        pdep_collision_reaction_indices: Optional[np.ndarray] = None,
+        pdep_collider_kinetics: Optional[List] = None,
+        collider_efficiencies: Optional[np.ndarray] = None,
     ):
-        super().__init__(termination, sensitive_species, sensitivity_threshold)
+        super().__init__(termination=termination,
+                         sensitive_species=sensitive_species,
+                         sensitivity_threshold=sensitivity_threshold)
 
         self.T = Quantity(T)
         self.P = Quantity(P)
@@ -272,6 +277,7 @@ class HybridPolymerSystem(ReactionSystem):
         self.constant_gas_volume = bool(constant_gas_volume)
         self.V_gas0 = float(V_gas0) if V_gas0 is not None else None
         self.V_gas = 0.0
+        self.V = 0.0
 
         self.polymer_pools = list(polymer_pools)
         self.mass_transfer = list(mass_transfer) if mass_transfer else []
@@ -280,7 +286,10 @@ class HybridPolymerSystem(ReactionSystem):
         self.const_spc_indices = None
         self.sens_conditions = sens_conditions
 
-        self.initial_polymer_moments = initial_polymer_moments or {}  # moles
+        self.pdep_collision_reaction_indices = pdep_collision_reaction_indices if pdep_collision_reaction_indices is not None else np.array([], int)
+        self.pdep_collider_kinetics = pdep_collider_kinetics if pdep_collider_kinetics is not None else []
+        self.collider_efficiencies = collider_efficiencies if collider_efficiencies is not None else np.array([[]], float)
+        self.initial_polymer_moments = initial_polymer_moments or {}
         self.initial_explicit_species = initial_explicit_species or {}
 
         self.jacobian_matrix = None
@@ -368,57 +377,50 @@ class HybridPolymerSystem(ReactionSystem):
                     conditions[species_dict[label]] = value
         self.sens_conditions = conditions
 
-    def initialize_model(
-        self,
-        core_species,
-        core_reactions,
-        edge_species,
-        edge_reactions,
-        surface_species=None,
-        surface_reactions=None,
-        pdep_networks=None,
-        atol=1e-16,
-        rtol=1e-8,
-        sensitivity=False,
-        sens_atol=1e-6,
-        sens_rtol=1e-4,
-        filter_reactions=False,
-        conditions=None,
-    ):
-        if surface_species is None:
-            surface_species = list()
-        if surface_reactions is None:
-            surface_reactions = list()
+    def initialize_model(self, core_species, core_reactions, edge_species, edge_reactions,
+                      surface_species=None, surface_reactions=None, pdep_networks=None,
+                      atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
+                      filter_reactions=False, conditions=None, **kwargs):
+        """
+        Initialize the polymer hybrid reactor model.
+        """
+        # Phase 1: Base Memory Allocation (Explicit Keywords)
+        ReactionSystem.initialize_model(self,
+                                        core_species=core_species,
+                                        core_reactions=core_reactions,
+                                        edge_species=edge_species,
+                                        edge_reactions=edge_reactions,
+                                        surface_species=surface_species,
+                                        surface_reactions=surface_reactions,
+                                        pdep_networks=pdep_networks,
+                                        atol=atol, rtol=rtol,
+                                        sensitivity=sensitivity,
+                                        sens_atol=sens_atol, sens_rtol=sens_rtol,
+                                        filter_reactions=filter_reactions,
+                                        conditions=conditions)
 
-        super().initialize_model(
-            core_species, core_reactions, edge_species, edge_reactions,
-            surface_species, surface_reactions, pdep_networks,
-            atol, rtol, sensitivity, sens_atol, sens_rtol,
-            filter_reactions, conditions)
-
-        if self.gas_species_mask is None:
-            self.gas_species_mask = np.ones(self.num_core_species, dtype=bool)
-
-        # Enforce ndarray type for vectorization safety.
-        # This replaces the object reference, ensuring subsequent vector ops work.
-        self.core_species_concentrations = np.asarray(self.core_species_concentrations, dtype=float)
-
-        self.validate_configuration()
+        # Phase 2: Hybrid State Mapping
         self.get_const_spc_indices(core_species)
         self.set_initial_conditions()
 
-        # Pre-allocate scratch arrays
+        # Phase 3: Performance (Pre-allocation)
+        # Using self.num_core_species which was set by ReactionSystem.initialize_model
         self._scratch_C_gas = np.zeros(self.num_core_species, float)
         self._scratch_C_poly = np.zeros(self.num_core_species, float)
         self._scratch_dn_dt = np.zeros(self.num_core_species, float)
 
+        # Phase 4: Rate Constants & Networks
         if filter_reactions:
             ReactionSystem.set_initial_reaction_thresholds(self)
 
         self.generate_rate_coefficients(core_reactions, edge_reactions)
         ReactionSystem.compute_network_variables(self, pdep_networks)
+
+        # Phase 5: DASSL Handshake
+        # Uses the residual(self, t, y, dydt, senpar) defined in this module
         ReactionSystem.set_initial_derivative(self)
         ReactionSystem.initialize_solver(self)
+
 
     def set_initial_conditions(self):
         """
@@ -429,6 +431,15 @@ class HybridPolymerSystem(ReactionSystem):
         If `constant_gas_volume=False`, `V_gas` is inferred from the total gas moles via the
         ideal gas law at (T, P).
         """
+        cdef int n_core = self.num_core_species
+        if self.gas_species_mask.shape[0] != n_core:
+            logging.warning(f"Resizing gas_species_mask from {self.gas_species_mask.shape[0]} to {n_core}")
+            new_mask = np.zeros(n_core, dtype=bool)
+            # Copy old mask, new species default to False (Polymer phase)
+            n_copy = min(self.gas_species_mask.shape[0], n_core)
+            new_mask[:n_copy] = self.gas_species_mask[:n_copy]
+            self.gas_species_mask = new_mask
+
         ReactionSystem.set_initial_conditions(self)
 
         # 1. Gas Species (Interpret values as MOLES)
@@ -463,11 +474,12 @@ class HybridPolymerSystem(ReactionSystem):
             self.V_gas = self.V_gas0
         else:
             # Sum moles of gas species only
-            n_gas0 = float(np.sum(self.y0[:self.num_core_species][mask]))
+            n_gas0 = float(np.sum(self.y0[:n_core][mask]))
             self.V_gas = constants.R * self.T.value_si * n_gas0 / self.P.value_si if n_gas0 > 0 else 1.0
+        self.V = self.V_gas + self.V_poly
 
         # 5. Set Concentrations
-        for j in range(self.num_core_species):
+        for j in range(n_core):
             if mask[j]:
                 self.core_species_concentrations[j] = self.y0[j] / self.V_gas
             else:
@@ -509,7 +521,31 @@ class HybridPolymerSystem(ReactionSystem):
                 self.kb[j] = 0.0
                 self.Keq[j] = np.inf
 
-    def residual(self, t, y, dydt, senpar=np.zeros(1, float)):
+    def get_threshold_rate_constants(self, model_settings):
+        """
+        Get the theoretical maximum rate constants for reaction filtering.
+        These are used to normalize edge reaction fluxes.
+        """
+        # Unimolecular limit: kB * T / h (Transition State Theory limit)
+        unimolecular_threshold_rate_constant = (constants.kB / constants.h) * self.T.value_si
+
+        # Bimolecular limit: User-defined (usually 1e8 - 1e12 m^3/mol/s)
+        bimolecular_threshold_rate_constant = model_settings.filter_threshold
+
+        # Trimolecular limit: Adjusted for volume units
+        trimolecular_threshold_rate_constant = model_settings.filter_threshold / 1e3
+
+        return (unimolecular_threshold_rate_constant,
+                bimolecular_threshold_rate_constant,
+                trimolecular_threshold_rate_constant)
+
+    @cython.boundscheck(False)
+    def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y,
+                 np.ndarray[np.float64_t, ndim=1] dydt,
+                 np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
+        """
+        Compute the residual (dn/dt - dydt) at time t for state y.
+        """
         # Disable caching
         self.jacobian_matrix = None
 
@@ -536,6 +572,7 @@ class HybridPolymerSystem(ReactionSystem):
             V_gas = constants.R * self.T.value_si * n_gas / self.P.value_si if n_gas > 0 else 1.0
         self.V_gas = V_gas
         V_poly = self.V_poly
+        self.V = self.V_gas + self.V_poly
 
         # 3. Concentrations (Vectorized)
         C_gas = self._scratch_C_gas
@@ -561,6 +598,26 @@ class HybridPolymerSystem(ReactionSystem):
         self.core_species_consumption_rates[:] = 0.0
         self.core_species_production_rates[:] = 0.0
         self.network_leak_rates[:] = 0.0
+
+        # 4.5 Recalculate P-dependent rates in the GAS phase
+        if self.pdep_collision_reaction_indices.shape[0] != 0:
+            T_val = self.T.value_si
+            P_val = self.P.value_si
+
+            y_gas = y[:n_core] * mask
+            sum_y_gas = np.sum(y_gas)
+
+            if sum_y_gas > 1e-20:
+                for i in range(self.pdep_collision_reaction_indices.shape[0]):
+                    j = self.pdep_collision_reaction_indices[i]
+
+                    Peff = P_val * np.sum(self.collider_efficiencies[i] * y_gas / sum_y_gas)
+
+                    self.kf[j] = self.pdep_collider_kinetics[i].get_rate_coefficient(T_val, Peff)
+                    if self.Keq[j] != np.inf:
+                        self.kb[j] = self.kf[j] / self.Keq[j]
+            else:
+                pass
 
         # 5. Standard Kinetics (Optimized Loop)
         for r_idx in range(ir.shape[0]):
@@ -806,7 +863,7 @@ class HybridPolymerSystem(ReactionSystem):
             dn_dt[ipoly] -= dn
 
         # 9. Constants
-        if self.const_spc_indices:
+        if self.const_spc_indices is not None:
             for i in self.const_spc_indices:
                 dn_dt[i] = 0.0
 
