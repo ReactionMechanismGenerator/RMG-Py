@@ -248,6 +248,7 @@ class HybridPolymerSystem(ReactionSystem):
         V_poly: float,
         polymer_pools: List[PolymerPoolConfig],
         mass_transfer: Optional[List[MassTransferConfig]] = None,
+        polymer_species_labels=None,
         gas_species_mask: Optional[np.ndarray] = None,
         constant_gas_volume: bool = False,
         V_gas0: Optional[float] = None,
@@ -292,6 +293,7 @@ class HybridPolymerSystem(ReactionSystem):
         self.collider_efficiencies = collider_efficiencies if collider_efficiencies is not None else np.array([[]], float)
         self.initial_polymer_moments = initial_polymer_moments or {}
         self.initial_explicit_species = initial_explicit_species or {}
+        self.polymer_species_labels = set(polymer_species_labels) if polymer_species_labels else set()
 
         self.jacobian_matrix = None
 
@@ -385,40 +387,49 @@ class HybridPolymerSystem(ReactionSystem):
         """
         Initialize the polymer hybrid reactor model.
         """
-        # Phase 1: Base Memory Allocation (Explicit Keywords)
-        ReactionSystem.initialize_model(self,
-                                        core_species=core_species,
-                                        core_reactions=core_reactions,
-                                        edge_species=edge_species,
-                                        edge_reactions=edge_reactions,
-                                        surface_species=surface_species,
-                                        surface_reactions=surface_reactions,
-                                        pdep_networks=pdep_networks,
-                                        atol=atol, rtol=rtol,
-                                        sensitivity=sensitivity,
-                                        sens_atol=sens_atol, sens_rtol=sens_rtol,
-                                        filter_reactions=filter_reactions,
-                                        conditions=conditions)
+        ReactionSystem.initialize_model(
+            self, core_species, core_reactions, edge_species, edge_reactions,
+            surface_species, surface_reactions, pdep_networks,
+            atol, rtol, sensitivity, sens_atol, sens_rtol, filter_reactions, conditions
+        )
 
-        # Phase 2: Hybrid State Mapping
+        cdef int n_core = self.num_core_species
+        if n_core <= 0:
+            raise ValueError(f"Solver received an empty core species list (n_core={n_core}).")
+
+        if len(core_species) != n_core:
+            raise ValueError(
+                f"Core species length mismatch: len(core_species)={len(core_species)} != num_core_species={n_core}. "
+                "Refusing to proceed with inconsistent allocations."
+            )
+
+        if self.gas_species_mask is None:
+            mask = np.ones(n_core, dtype=bool)
+            poly_labels = getattr(self, "polymer_species_labels", set())
+            for i in range(n_core):
+                if core_species[i].label in poly_labels:
+                    mask[i] = False
+            self.gas_species_mask = mask
+        else:
+            if len(self.gas_species_mask) != n_core:
+                raise ValueError(
+                    f"Provided gas_species_mask length {len(self.gas_species_mask)} != n_core {n_core}. "
+                    "Mask must match core size exactly."
+                )
+            self.gas_species_mask = np.asarray(self.gas_species_mask, dtype=bool)
+
         self.get_const_spc_indices(core_species)
         self.set_initial_conditions()
 
-        # Phase 3: Performance (Pre-allocation)
-        # Using self.num_core_species which was set by ReactionSystem.initialize_model
-        self._scratch_C_gas = np.zeros(self.num_core_species, float)
-        self._scratch_C_poly = np.zeros(self.num_core_species, float)
-        self._scratch_dn_dt = np.zeros(self.num_core_species, float)
+        self._scratch_C_gas = np.zeros(n_core, float)
+        self._scratch_C_poly = np.zeros(n_core, float)
+        self._scratch_dn_dt = np.zeros(n_core, float)
 
-        # Phase 4: Rate Constants & Networks
         if filter_reactions:
             ReactionSystem.set_initial_reaction_thresholds(self)
-
         self.generate_rate_coefficients(core_reactions, edge_reactions)
         ReactionSystem.compute_network_variables(self, pdep_networks)
 
-        # Phase 5: DASSL Handshake
-        # Uses the residual(self, t, y, dydt, senpar) defined in this module
         ReactionSystem.set_initial_derivative(self)
         ReactionSystem.initialize_solver(self)
 
@@ -433,15 +444,13 @@ class HybridPolymerSystem(ReactionSystem):
         ideal gas law at (T, P).
         """
         cdef int n_core = self.num_core_species
-        if self.gas_species_mask.shape[0] != n_core:
-            logging.warning(f"Resizing gas_species_mask from {self.gas_species_mask.shape[0]} to {n_core}")
-            new_mask = np.zeros(n_core, dtype=bool)
-            # Copy old mask, new species default to False (Polymer phase)
-            n_copy = min(self.gas_species_mask.shape[0], n_core)
-            new_mask[:n_copy] = self.gas_species_mask[:n_copy]
-            self.gas_species_mask = new_mask
 
         ReactionSystem.set_initial_conditions(self)
+
+        if self.gas_species_mask is None or self.gas_species_mask.shape[0] != n_core:
+            raise ValueError(f"CRITICAL DIMENSION MISMATCH: gas_species_mask size "
+                             f"({None if self.gas_species_mask is None else self.gas_species_mask.shape[0]}) "
+                             f"does not match num_core_species ({n_core}).")
 
         # 1. Gas Species (Interpret values as MOLES)
         for spec, val_moles in self.initial_mole_fractions.items():
@@ -551,6 +560,9 @@ class HybridPolymerSystem(ReactionSystem):
         cdef int n_rxn = len(self.core_reaction_rates)
         cdef int p0_idx, p1_idx, p2_idx, prod_p_idx, p_slot, p_idx_tmp
         cdef double mu1_0, mu1_1, rf_hijack
+
+        if self.gas_species_mask.shape[0] != n_core:
+            raise ValueError(f"State/Mask mismatch: y={n_core}, mask={self.gas_species_mask.shape[0]}")
 
         # Disable caching
         self.jacobian_matrix = None
@@ -708,112 +720,61 @@ class HybridPolymerSystem(ReactionSystem):
 
             rate = rf - rr
 
-            # Assign values (removed 'cdef' from here)
-            p0_idx = self.species_to_pool_indices[r0]
-            p1_idx = -1
-            if r1 != -1:
-                p1_idx = self.species_to_pool_indices[r1]
+            # 1. Map Reactants to Polymer Pools
+            p0_pool_idx = self.species_to_pool_indices[r0]
+            p1_pool_idx = -1 if r1 == -1 else self.species_to_pool_indices[r1]
 
-            # Hijack logic
-            if p0_idx != -1 or p1_idx != -1:
-                if p0_idx != -1:
-                    pool0 = self.polymer_pools[p0_idx]
-                    mu1_0 = max(0.0, y[pool0.mu_indices[1]]) / V_poly
-                    rf_hijack = kf * mu1_0
-                    if r1 != -1: rf_hijack *= _C(r1)
-                    if r2 != -1: rf_hijack *= _C(r2)
+            # 2. Kinetic Hijack: Scale Rate by Polymer Site Density (mu1)
+            if p0_pool_idx != -1 or p1_pool_idx != -1:
+                if p0_pool_idx != -1:
+                    # Reactant 0 is the polymer
+                    conc_factor = max(0.0, y[self.polymer_pools[p0_pool_idx].mu_indices[1]]) / V_poly
+                    rate = kf * conc_factor
+                    if r1 != -1: rate *= _C(r1)
+                    if r2 != -1: rate *= _C(r2)
                 else:
-                    pool1 = self.polymer_pools[p1_idx]
-                    mu1_1 = max(0.0, y[pool1.mu_indices[1]]) / V_poly
-                    rf_hijack = kf * _C(r0) * mu1_1
-                    if r2 != -1: rf_hijack *= _C(r2)
-
-                rate = rf_hijack
+                    # Reactant 1 is the polymer
+                    conc_factor = max(0.0, y[self.polymer_pools[p1_pool_idx].mu_indices[1]]) / V_poly
+                    rate = kf * _C(r0) * conc_factor
+                    if r2 != -1: rate *= _C(r2)
 
             r_mol_s = rate * V_rxn
 
+            # Update diagnostic rates for RMG's pruning logic
             if r_idx < n_rxn:
                 self.core_reaction_rates[r_idx] = rate
             else:
                 self.edge_reaction_rates[r_idx - n_rxn] = rate
 
-            # Apply Stoichiometry
-            # Assumption: RMG uses repeated indices for non-unity stoichiometry
-            if r0 == self.proxy_species_idx:
-                # Deplete the actual Polymer Units moment (mu1)
-                # mu1 represents the number of repeat units in the system.
-                pool = self.polymer_pools[0]
-                idx_mu1 = pool.mu_indices[1]
-                dn_dt[idx_mu1] -= r_mol_s
-
-                # Optional: If it's a random scission, d(mu0)/dt increases
-                # because one chain becomes two.
-                # dn_dt[pool.mu_indices[0]] += r_mol_s
+            # 3. Apply Fluxes to Reactants (Redirect to Moments if needed)
+            if p0_pool_idx != -1:
+                dn_dt[self.polymer_pools[p0_pool_idx].mu_indices[1]] -= r_mol_s
             else:
                 dn_dt[r0] -= r_mol_s
-            self.core_species_consumption_rates[r0] += rf
-            self.core_species_production_rates[r0] += rr
+
             if r1 != -1:
-                dn_dt[r1] -= r_mol_s
-                self.core_species_consumption_rates[r1] += rf
-                self.core_species_production_rates[r1] += rr
-                if r2 != -1:
-                    dn_dt[r2] -= r_mol_s
-                    self.core_species_consumption_rates[r2] += rf
-                    self.core_species_production_rates[r2] += rr
-
-            # Products
-            if p0 != -1:
-                if p0 < n_core:
-                    dn_dt[p0] += r_mol_s
-                    self.core_species_production_rates[p0] += rf
-                    self.core_species_consumption_rates[p0] += rr
-                elif 0 <= (p0 - n_core) < n_edge:
-                    self.edge_species_rates[p0 - n_core] += rate
-
-            if p1 != -1:
-                if p1 < n_core:
-                    dn_dt[p1] += r_mol_s
-                    self.core_species_production_rates[p1] += rf
-                    self.core_species_consumption_rates[p1] += rr
-                elif 0 <= (p1 - n_core) < n_edge:
-                    self.edge_species_rates[p1 - n_core] += rate
-
-            if p2 != -1:
-                if p2 < n_core:
-                    dn_dt[p2] += r_mol_s
-                    self.core_species_production_rates[p2] += rf
-                    self.core_species_consumption_rates[p2] += rr
-                elif 0 <= (p2 - n_core) < n_edge:
-                    self.edge_species_rates[p2 - n_core] += rate
-
-        # --- STEP 5.2: REDIRECTED STOICHIOMETRY ---
-
-                # Reactants
-                if p0_idx != -1:
-                    dn_dt[self.polymer_pools[p0_idx].mu_indices[1]] -= r_mol_s
+                if p1_pool_idx != -1:
+                    dn_dt[self.polymer_pools[p1_pool_idx].mu_indices[1]] -= r_mol_s
                 else:
-                    dn_dt[r0] -= r_mol_s
+                    dn_dt[r1] -= r_mol_s
+            if r2 != -1:
+                dn_dt[r2] -= r_mol_s
 
-                if r1 != -1:
-                    if p1_idx != -1:
-                        dn_dt[self.polymer_pools[p1_idx].mu_indices[1]] -= r_mol_s
+            # 4. Apply Fluxes to Products (Redirect to Moments if needed)
+            for p_slot in range(3):
+                p_idx_tmp = ip[r_idx, p_slot]
+                if p_idx_tmp == -1: continue
+
+                if p_idx_tmp < n_core:
+                    prod_p_idx = self.species_to_pool_indices[p_idx_tmp]
+                    if prod_p_idx != -1:
+                        # Increment Monomer Units moment for the product pool
+                        dn_dt[self.polymer_pools[prod_p_idx].mu_indices[1]] += r_mol_s
                     else:
-                        dn_dt[r1] -= r_mol_s
-
-                # Products loop
-                for p_slot in range(3):
-                    p_idx_tmp = ip[r_idx, p_slot]
-                    if p_idx_tmp == -1: continue
-
-                    if p_idx_tmp < n_core:
-                        prod_p_idx = self.species_to_pool_indices[p_idx_tmp]
-                        if prod_p_idx != -1:
-                            dn_dt[self.polymer_pools[prod_p_idx].mu_indices[1]] += r_mol_s
-                        else:
-                            dn_dt[p_idx_tmp] += r_mol_s
-                    else:
-                        self.edge_species_rates[p_idx_tmp - n_core] += rate
+                        dn_dt[p_idx_tmp] += r_mol_s
+                else:
+                    # Track edge species for model enlargement
+                    self.edge_species_rates[p_idx_tmp - n_core] += rate
 
         # 6. Network Leaks
         for j in range(inet.shape[0]):
