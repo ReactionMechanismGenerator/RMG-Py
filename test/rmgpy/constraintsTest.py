@@ -83,7 +83,6 @@ class TestFailsSpeciesConstraints:
         rmgpy.rmg.input.rmg = None
 
         mol = Molecule(smiles="C")
-
         assert not fails_species_constraints(mol)
 
         mock_logging.debug.assert_called_with("Species constraints could not be found.")
@@ -210,9 +209,11 @@ class TestFailsSpeciesConstraints:
         self.rmg.species_constraints["maximumHeavyAtoms"] = 6
 
         assert not fails_species_constraints(mol_1site)
+
         assert not fails_species_constraints(mol_2site)
 
         assert fails_species_constraints(mol_3site_vdW)
+
         assert fails_species_constraints(mol_3site)
 
         self.rmg.species_constraints["maximumCarbonAtoms"] = max_carbon
