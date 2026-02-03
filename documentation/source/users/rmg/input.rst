@@ -889,14 +889,24 @@ RMG's estimates to a thoroughly studied network will likely make your model
 worse, as the original authors would have included any important reactions.
 
 You can specify that certain networks should not be expanded further using the
-``completedNetworks`` parameter. This takes a list of chemical formulas identifying
-the networks that should be considered complete::
+``completedNetworks`` parameter within the ``pressureDependence()`` block. This 
+parameter takes a list of chemical formulas identifying the networks that should 
+be considered complete. For example::
 
-    completedNetworks = ['CH2O2'],
+    pressureDependence(
+        method='modified strong collision',
+        maximumGrainSize=(0.5,'kcal/mol'),
+        minimumNumberOfGrains=250,
+        temperatures=(300,2000,'K',8),
+        pressures=(0.01,100,'bar',5),
+        interpolation=('Chebyshev', 6, 4),
+        maximumAtoms=16,
+        completedNetworks=['CH2O2'],
+    )
 
-Multiple networks can be specified as a list::
+Multiple networks can be specified in the list::
 
-    completedNetworks = ['CH2O2', 'C2H6'],
+    completedNetworks=['CH2O2', 'C2H6'],
 
 When a network is marked as completed, RMG will not add any new reactions to it,
 though reactions already present in seed mechanisms will still be used.
