@@ -260,6 +260,11 @@ pressureDependence(
     # turns off pressure dependence for molecules with number of atoms greater than the number specified below
     # this is due to faster internal rate of energy transfer for larger molecules
     maximumAtoms=15,
+    # (optional) list of networks that have been thoroughly studied and should not be expanded
+    # by RMG. This is useful when you have a detailed mechanism for a specific network (e.g., from
+    # a seed mechanism or reaction library) and don't want RMG to add its own estimates which may
+    # make the model worse. Specify networks by their chemical formula, e.g., ['CH2O2', 'C2H6']
+    # completedNetworks=['CH2O2'],
 )
 
 # optional block adds constraints on what RMG can output.
