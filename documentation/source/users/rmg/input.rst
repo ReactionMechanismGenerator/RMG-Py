@@ -879,6 +879,29 @@ to turn off pressure dependence for all molecules larger than the given number
 of atoms (16 in the above example).
 
 
+Completed Pressure-Dependent Networks
+--------------------------------------
+
+Sometimes you have a pressure-dependent network that has been studied in great 
+detail and included in a seed mechanism or reaction library (such as CH2O2), 
+and you don't want RMG to add additional reactions to that network. Adding 
+RMG's estimates to a thoroughly studied network will likely make your model 
+worse, as the original authors would have included any important reactions.
+
+You can specify that certain networks should not be expanded further using the
+``completedNetworks`` parameter. This takes a list of chemical formulas identifying
+the networks that should be considered complete::
+
+    completedNetworks = ['CH2O2'],
+
+Multiple networks can be specified as a list::
+
+    completedNetworks = ['CH2O2', 'C2H6'],
+
+When a network is marked as completed, RMG will not add any new reactions to it,
+though reactions already present in seed mechanisms will still be used.
+
+
 .. _uncertaintyanalysis:
 
 Uncertainty Analysis

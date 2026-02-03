@@ -157,6 +157,7 @@ pressureDependence(
     pressures=(0.02,100,'bar',5),
     interpolation=('Chebyshev', 6, 4),
     maximumAtoms=16,
+    completedNetworks=['CH2O2'],
 )
 
 options(
