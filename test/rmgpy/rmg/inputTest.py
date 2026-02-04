@@ -31,6 +31,7 @@ from unittest.mock import patch
 
 import rmgpy.rmg.input as inp
 from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.ml.estimator import ADMONITION
 
 import pytest
@@ -384,6 +385,7 @@ class TestInputPressureDependence:
         """This method is run before every test in this class"""
         global rmg
         # Reset the completed networks set before each test
+        rmg.reaction_model = CoreEdgeReactionModel()
         rmg.reaction_model.completed_pdep_networks = set()
 
     def test_completed_networks_single(self):
