@@ -2328,7 +2328,7 @@ class RMG_Memory(object):
         Jout /= tot  # normalize Jout
         n = self.rand_state.uniform(0, 1, 1)[0]  # draw a random number between 0 and 1
         s = 0.0
-        for indexes in np.ndenumerate(Jout):  # choose a coordinate such that grid[indexes] is choosen with probability Jout[indexes]
+        for indexes in np.ndenumerate(Jout):  # choose a coordinate such that grid[indexes] is chosen with probability Jout[indexes]
             s += Jout[indexes[0]]
             if s > n:
                 break
@@ -2402,7 +2402,7 @@ def log_conditions(rmg_memories, index):
     log newly generated reactor conditions
     """
     if rmg_memories[index].get_cond() is not None:
-        s = "conditions choosen for reactor {0} were: ".format(index)
+        s = f"conditions chosen for reactor {index} were: "
         for key, item in rmg_memories[index].get_cond().items():
             if key == "T":
                 s += "T = {0} K, ".format(item)
