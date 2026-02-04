@@ -190,6 +190,24 @@ Note that installing RMS can cause errors when running Cantera simulations; this
 <p>Follow the instructions that it provides for installing Julia and Juliaup,
 which can involve several steps including restarting your terminal or shell.
 Run the script again, until it finishes installing RMS and all of its dependencies, and reports that ReactionMechanismSimulator is installed.</p>
+<p><strong>Advanced Usage</strong>:
+The <code class="docutils literal notranslate"><span class="pre">install_rms.sh</span></code> script has options, that can be set as environment variables or variables to the script.
+By default, it installs the latest release of the <code class="docutils literal notranslate"><span class="pre">for_rmg</span></code> branch of RMS, from <a class="reference external" href="https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl/branches">the official GitHub fork</a>, which is recommended for most users.
+To install a different branch (from the same github repository) specify <code class="docutils literal notranslate"><span class="pre">RMS_BRANCH</span></code>.
+The default installation mode is <code class="docutils literal notranslate"><span class="pre">standard</span></code>, which prompts the user to confirm their conda environment.
+In an automated workflow (eg. CI/CD), you may wish to set <code class="docutils literal notranslate"><span class="pre">RMS_INSTALLER</span></code> to <code class="docutils literal notranslate"><span class="pre">continuous</span></code> to skip the prompt.
+If you set <code class="docutils literal notranslate"><span class="pre">RMS_INSTALLER</span></code> to <code class="docutils literal notranslate"><span class="pre">developer</span></code> then it will link to a local version of RMS,
+so you must also specify <code class="docutils literal notranslate"><span class="pre">RMS_PATH</span></code> to point to your local clone of the ReactionMechanismSimulator.jl repository.
+Exmaple usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">export</span> <span class="n">RMS_BRANCH</span><span class="o">=</span><span class="n">for_rmg</span>
+<span class="n">export</span> <span class="n">RMS_INSTALLER</span><span class="o">=</span><span class="n">continuous</span>
+<span class="n">source</span> <span class="n">install_rms</span><span class="o">.</span><span class="n">sh</span>
+</pre></div>
+</div>
+<p>or</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>RMS_INSTALLER=developer RMS_PATH=$HOME/Code/ReactionMechanismSimulator.jl source install_rms.sh
+</pre></div>
+</div>
 </div></blockquote>
 </li>
 <li><p>Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as <code class="docutils literal notranslate"><span class="pre">input.py</span></code> in the current folder).</p>
