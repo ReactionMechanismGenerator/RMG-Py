@@ -1237,11 +1237,11 @@ class RMG(util.Subject):
         try:
             if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
                 # Surface (catalytic) chemistry
-                self.generate_cantera_files(
+                self.generate_cantera_files_from_chemkin(
                     os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
                 )
-                self.generate_cantera_files(
+                self.generate_cantera_files_from_chemkin(
                     os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
                 )
@@ -1274,8 +1274,8 @@ class RMG(util.Subject):
                         _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
 
             else:  # gas phase only
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
+                self.generate_cantera_files_from_chemkin(os.path.join(self.output_directory, "chemkin", "chem.inp"))
+                self.generate_cantera_files_from_chemkin(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
         except EnvironmentError:
             logging.exception("Could not generate Cantera files due to EnvironmentError. Check read\\write privileges in output directory.")
         except Exception:
@@ -1846,7 +1846,7 @@ class RMG(util.Subject):
             raise TypeError("improper call, obj input was incorrect")
         return potential_spcs
 
-    def generate_cantera_files(self, chemkin_file, **kwargs):
+    def generate_cantera_files_from_chemkin(self, chemkin_file, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
         and save it in the cantera directory
