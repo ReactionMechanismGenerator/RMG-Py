@@ -361,7 +361,11 @@ class TestProfiling:
             os.remove(os.path.join(cls.test_dir, "RMG.profile.dot.ps2"))
 
 
-class TestCanteraOutput:
+class TestCanteraOutputConversion:
+    """
+    Tests if we can convert Chemkin files to Cantera files without crashing.
+    (Or raising an exception for bad files.)
+    """
     def setup_class(self):
         self.chemkin_files = {
             """ELEMENTS
@@ -517,10 +521,10 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
             f.close()
 
             if works:
-                self.rmg.generate_cantera_files(os.path.join(os.getcwd(), "chem001.inp"))
+                self.rmg.generate_cantera_files_from_chemkin(os.path.join(os.getcwd(), "chem001.inp"))
             else:
                 with pytest.raises(InputError):
-                    self.rmg.generate_cantera_files(os.path.join(os.getcwd(), "chem001.inp"))
+                    self.rmg.generate_cantera_files_from_chemkin(os.path.join(os.getcwd(), "chem001.inp"))
 
             # clean up
             os.chdir(originalPath)
