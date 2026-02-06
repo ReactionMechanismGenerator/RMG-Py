@@ -138,17 +138,38 @@ class CompareYaml:
         reactions2 = self.yaml2.get_reaction_df()
         comparison_results = {}
 
+        # Check if reaction counts match
+        count1 = sum(len(df) for df in reactions1.values())
+        count2 = sum(len(df) for df in reactions2.values())
+        if count1 != count2:
+            return False
+
         for key1, df1 in reactions1.items():
+            df1 = df1.copy()
             df1['normalized_equation'] = df1['equation'].apply(self.normalize_equation)
             for key2, df2 in reactions2.items():
+                df2 = df2.copy()
                 df2['normalized_equation'] = df2['equation'].apply(self.normalize_equation)
                 merged_df = pd.merge(df1, df2, on='normalized_equation', suffixes=('_1', '_2'), how='inner')
                 if not merged_df.empty:
-                    merged_df['A_diff'] = merged_df['A_1'].round(2) - merged_df['A_2'].round(2)
-                    merged_df['b_diff'] = merged_df['b_1'].round(2) - merged_df['b_2'].round(2)
-                    merged_df['Ea_diff'] = merged_df['Ea_1'].round(2) - merged_df['Ea_2'].round(2)
-                    comparison_results[f'{key1}_{key2}'] = merged_df[['normalized_equation', 'A_diff', 'b_diff', 'Ea_diff']]
+                    # Only compare A, b, Ea if they exist in both dataframes
+                    has_arrhenius = all(
+                        col in merged_df.columns 
+                        for col in ['A_1', 'A_2', 'b_1', 'b_2', 'Ea_1', 'Ea_2']
+                    )
+                    if has_arrhenius:
+                        merged_df['A_diff'] = merged_df['A_1'].round(2) - merged_df['A_2'].round(2)
+                        merged_df['b_diff'] = merged_df['b_1'].round(2) - merged_df['b_2'].round(2)
+                        merged_df['Ea_diff'] = merged_df['Ea_1'].round(2) - merged_df['Ea_2'].round(2)
+                        comparison_results[f'{key1}_{key2}'] = merged_df[['normalized_equation', 'A_diff', 'b_diff', 'Ea_diff']]
+        
+        if not comparison_results:
+            return False
+            
         for key, df in comparison_results.items():
-            if not (df['A_diff'].eq(0).all() and df['b_diff'].eq(0).all() and df['Ea_diff'].eq(0).all()):
+            a_match = df['A_diff'].eq(0).all()
+            b_match = df['b_diff'].eq(0).all()
+            ea_match = df['Ea_diff'].eq(0).all()
+            if not (a_match and b_match and ea_match):
                 return False
         return True
