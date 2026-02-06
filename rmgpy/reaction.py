@@ -1753,20 +1753,21 @@ class Reaction:
         collision_limit_f = []
         collision_limit_r = []
         for condition in conditions:
+            temp, pressure = condition
             if len(self.reactants) >= 2:
                 try:
-                    collision_limit_f.append(self.calculate_coll_limit(temp=condition[0], reverse=False))
+                    collision_limit_f.append(self.calculate_coll_limit(temp=temp, reverse=False))
                 except ValueError:
                     continue
                 else:
-                    kf_list.append(self.get_rate_coefficient(condition[0], condition[1]))
+                    kf_list.append(self.get_rate_coefficient(temp, pressure))
             if len(self.products) >= 2:
                 try:
-                    collision_limit_r.append(self.calculate_coll_limit(temp=condition[0], reverse=True))
+                    collision_limit_r.append(self.calculate_coll_limit(temp=temp, reverse=True))
                 except ValueError:
                     continue
                 else:
-                    kr_list.append(self.generate_reverse_rate_coefficient().get_rate_coefficient(condition[0], condition[1]))
+                    kr_list.append(self.generate_reverse_rate_coefficient().get_rate_coefficient(temp, pressure))
         if len(self.reactants) >= 2:
             for i, k in enumerate(kf_list):
                 if k > collision_limit_f[i]:
