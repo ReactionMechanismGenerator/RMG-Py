@@ -229,11 +229,9 @@ class TestMain:
             f"Chemkin-converted YAML file {ck_yaml_file} not found"
 
         # Compare the two yaml files
-        yaml_files = {
-            'yaml1': [cantera_dir, rmg_yaml_file],
-            'yaml2': [cantera_from_ck_dir, ck_yaml_file]
-        }
-        compare = CompareYaml(yaml_files)
+        yaml_path_1 = os.path.join(cantera_dir, rmg_yaml_file)
+        yaml_path_2 = os.path.join(cantera_from_ck_dir, ck_yaml_file)
+        compare = CompareYaml(yaml_path_1, yaml_path_2)
 
         # Check species count matches
         assert compare.compare_species_count(), (
