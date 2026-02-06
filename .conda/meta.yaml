@@ -64,7 +64,6 @@ requirements:
     - conda-forge::gprof2dot
     - conda-forge::numdifftools
     - conda-forge::quantities !=0.16.0,!=0.16.1
-    - conda-forge::ringdecomposerlib-python
     - rmg::pydas >=1.0.3
     - rmg::pydqed >=1.0.3
     - rmg::symmetry
@@ -114,7 +113,6 @@ requirements:
     - conda-forge::gprof2dot
     - conda-forge::numdifftools
     - conda-forge::quantities !=0.16.0,!=0.16.1
-    - conda-forge::ringdecomposerlib-python
     - rmg::pydas >=1.0.3
     - rmg::pydqed >=1.0.3
     - rmg::symmetry
@@ -165,7 +163,6 @@ test:
     - conda-forge::gprof2dot
     - conda-forge::numdifftools
     - conda-forge::quantities !=0.16.0,!=0.16.1
-    - conda-forge::ringdecomposerlib-python
     - rmg::pydas >=1.0.3
     - rmg::pydqed >=1.0.3
     - rmg::symmetry

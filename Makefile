@@ -28,7 +28,7 @@ clean-solver:
 
 install:
 	@ python utilities.py check-pydas
-	python -m pip install -vv -e .
+	python -m pip install --no-build-isolation -vv -e .
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"
