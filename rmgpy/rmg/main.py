@@ -1647,7 +1647,17 @@ class RMG(util.Subject):
             if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
                 continue
-            violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
+            violator_list = []
+            try:
+                violator_list = rxn.check_collision_limit_violation(
+                    t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax
+                )
+            except Exception as err:
+                logging.warning(
+                    "Skipping collision limit check for reaction %s because evaluation failed: %s",
+                    rxn, err,
+                )
+                continue
             if violator_list:
                 violators.extend(violator_list)
         # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
