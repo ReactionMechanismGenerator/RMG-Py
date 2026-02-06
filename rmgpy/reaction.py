@@ -1752,6 +1752,8 @@ class Reaction:
         kr_list = []
         collision_limit_f = []
         collision_limit_r = []
+        kf_conditions = []
+        kr_conditions = []
         for condition in conditions:
             temp, pressure = condition
             if temp <= 0:
@@ -1766,25 +1768,43 @@ class Reaction:
                 except ValueError:
                     continue
                 else:
-                    kf_list.append(self.get_rate_coefficient(temp, pressure))
+                    try:
+                        kf_list.append(self.get_rate_coefficient(temp, pressure))
+                    except (TypeError, ValueError, ZeroDivisionError) as err:
+                        logging.warning(
+                            "Skipping forward collision limit check for reaction %s at %.1f K, %.3g Pa "
+                            "because rate evaluation failed: %s",
+                            self, temp, pressure, err,
+                        )
+                    else:
+                        kf_conditions.append(condition)
             if len(self.products) >= 2:
                 try:
                     collision_limit_r.append(self.calculate_coll_limit(temp=temp, reverse=True))
                 except ValueError:
                     continue
                 else:
-                    kr_list.append(self.generate_reverse_rate_coefficient().get_rate_coefficient(temp, pressure))
+                    try:
+                        kr_list.append(self.generate_reverse_rate_coefficient().get_rate_coefficient(temp, pressure))
+                    except (TypeError, ValueError, ZeroDivisionError) as err:
+                        logging.warning(
+                            "Skipping reverse collision limit check for reaction %s at %.1f K, %.3g Pa "
+                            "because reverse rate evaluation failed: %s",
+                            self, temp, pressure, err,
+                        )
+                    else:
+                        kr_conditions.append(condition)
         if len(self.reactants) >= 2:
             for i, k in enumerate(kf_list):
                 if k > collision_limit_f[i]:
                     ratio = k / collision_limit_f[i]
-                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1] / 1e5)
+                    condition = '{0} K, {1:.1f} bar'.format(kf_conditions[i][0], kf_conditions[i][1] / 1e5)
                     violator_list.append([self, 'forward', ratio, condition])
         if len(self.products) >= 2:
             for i, k in enumerate(kr_list):
                 if k > collision_limit_r[i]:
                     ratio = k / collision_limit_r[i]
-                    condition = '{0} K, {1:.1f} bar'.format(conditions[i][0], conditions[i][1] / 1e5)
+                    condition = '{0} K, {1:.1f} bar'.format(kr_conditions[i][0], kr_conditions[i][1] / 1e5)
                     violator_list.append([self, 'reverse', ratio, condition])
         return violator_list
 
