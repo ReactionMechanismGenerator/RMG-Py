@@ -38,7 +38,6 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.thermo import Wilhoit, NASA, NASAPolynomial, ThermoData
 
-
 class TestConverter:
     """
     Contains unit tests of the thermodynamics model conversion functions.
@@ -57,6 +56,7 @@ class TestConverter:
             S0=(-118.46 * constants.R, "J/(mol*K)"),
             Tmin=(10, "K"),
             Tmax=(3000, "K"),
+            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}},
             comment="C2H6",
         )
         self.nasa = NASA(
@@ -93,6 +93,7 @@ class TestConverter:
             E0=(-93.6077, "kJ/mol"),
             Cp0=(4.0 * constants.R, "J/(mol*K)"),
             CpInf=(21.5 * constants.R, "J/(mol*K)"),
+            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}},
             comment="C2H6",
         )
         self.thermodata = ThermoData(
@@ -108,6 +109,7 @@ class TestConverter:
             Tmin=(10, "K"),
             Tmax=(3000, "K"),
             E0=(-93.6077, "kJ/mol"),
+            thermo_coverage_dependence = {'OX':{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}},
             comment="C2H6",
         )
 
@@ -129,6 +131,8 @@ class TestConverter:
             s_nasa = nasa.get_entropy(T)
             assert abs(s_nasa - s_wilhoit) < 1e0
         assert abs(wilhoit.E0.value_si - nasa.E0.value_si) < 1e1
+        assert repr(nasa.thermo_coverage_dependence) != {}
+        assert repr(nasa.thermo_coverage_dependence) == repr(wilhoit.thermo_coverage_dependence)
 
     def test_convert_wilhoit_to_thermo_data(self):
         """
@@ -149,6 +153,8 @@ class TestConverter:
         s_thermodata = thermodata.get_entropy(T)
         assert round(abs(s_thermodata - s_wilhoit), 4) == 0
         assert abs(wilhoit.E0.value_si - thermodata.E0.value_si) < 1e1
+        assert repr(thermodata.thermo_coverage_dependence) != {}
+        assert repr(thermodata.thermo_coverage_dependence) == repr(wilhoit.thermo_coverage_dependence)
 
     def test_convert_nasa_to_wilhoit(self):
         """
@@ -168,6 +174,8 @@ class TestConverter:
             s_nasa = nasa.get_entropy(T)
             assert abs(s_nasa - s_wilhoit) < 1e0
         assert abs(nasa.E0.value_si - wilhoit.E0.value_si) < 2e1
+        assert repr(wilhoit.thermo_coverage_dependence) != {}
+        assert repr(wilhoit.thermo_coverage_dependence) == repr(nasa.thermo_coverage_dependence)
 
     def test_convert_nasa_to_thermo_data(self):
         """
@@ -188,6 +196,8 @@ class TestConverter:
         s_nasa = nasa.get_entropy(T)
         assert round(abs(s_nasa - s_thermodata), 4) == 0
         assert abs(nasa.E0.value_si - thermodata.E0.value_si) < 1e1
+        assert repr(thermodata.thermo_coverage_dependence) != {}
+        assert repr(thermodata.thermo_coverage_dependence) == repr(nasa.thermo_coverage_dependence)
 
     def test_convert_thermo_data_to_wilhoit(self):
         """
@@ -208,6 +218,8 @@ class TestConverter:
         s_thermodata = thermodata.get_entropy(T)
         assert round(abs(s_thermodata - s_wilhoit), 3) == 0
         assert abs(thermodata.E0.value_si - wilhoit.E0.value_si) < 1e1
+        assert repr(wilhoit.thermo_coverage_dependence) != {}
+        assert repr(wilhoit.thermo_coverage_dependence) == repr(thermodata.thermo_coverage_dependence)
 
     def test_convert_thermo_data_to_nasa(self):
         """
@@ -228,6 +240,8 @@ class TestConverter:
         s_nasa = nasa.get_entropy(T)
         assert abs(s_nasa - s_thermodata) < 1e0
         assert abs(thermodata.E0.value_si - nasa.E0.value_si) < 1e1
+        assert repr(nasa.thermo_coverage_dependence) != {} 
+        assert repr(nasa.thermo_coverage_dependence) == repr(thermodata.thermo_coverage_dependence)
 
     def test_wilhoit_nasa_wilhoit(self):
         """
@@ -248,6 +262,8 @@ class TestConverter:
             s_2 = wilhoit2.get_entropy(T)
             assert abs(s_1 - s_2) < 1e0
         assert abs(wilhoit1.E0.value_si - wilhoit2.E0.value_si) < 1e1
+        assert repr(wilhoit1.thermo_coverage_dependence) != {}
+        assert repr(wilhoit1.thermo_coverage_dependence) == repr(wilhoit2.thermo_coverage_dependence)
 
     def test_wilhoit_thermo_data_wilhoit(self):
         """
@@ -268,3 +284,5 @@ class TestConverter:
             s_2 = wilhoit2.get_entropy(T)
             assert abs(s_1 - s_2) < 1e0
         assert abs(wilhoit1.E0.value_si - wilhoit2.E0.value_si) < 1e1
+        assert repr(wilhoit1.thermo_coverage_dependence) != {}
+        assert repr(wilhoit1.thermo_coverage_dependence) == repr(wilhoit2.thermo_coverage_dependence)
