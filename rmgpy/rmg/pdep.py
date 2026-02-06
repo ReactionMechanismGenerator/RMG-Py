@@ -310,18 +310,9 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         Add a path reaction to the network. If the path reaction already exists,
         no action is taken.
         """
-        # Add this reaction to that network if not already present
-        found = False
-        for rxn in self.path_reactions:
-            if newReaction.reactants == rxn.reactants and newReaction.products == rxn.products:
-                found = True
-                break
-            elif newReaction.products == rxn.reactants and newReaction.reactants == rxn.products:
-                found = True
-                break
-        if not found:
-            self.path_reactions.append(newReaction)
-            self.invalidate()
+        # Add this reaction to that network without checking if it's already added. Just add it in regardless. 
+        self.path_reactions.append(newReaction)
+        self.invalidate()
 
     def get_energy_filtered_reactions(self, T, tol):
         """
