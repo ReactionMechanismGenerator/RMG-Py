@@ -4,16 +4,14 @@ import pandas as pd
 import re
 
 class YamlAnalyst:
-    def __init__(self, path_to_yaml, yaml_file):
-        self.path_to_yaml = path_to_yaml
-        self.yaml_file = yaml_file
+    def __init__(self, path_to_yaml_file):
+        self.path_to_yaml_file = path_to_yaml_file
 
     def get_absolute_path(self):
-        path = os.path.join(self.path_to_yaml, self.yaml_file)
         # If path is already absolute, use it; otherwise join with cwd
-        if os.path.isabs(path):
-            return path
-        return os.path.join(os.getcwd(), path)
+        if os.path.isabs(self.path_to_yaml_file):
+            return self.path_to_yaml_file
+        return os.path.join(os.getcwd(), self.path_to_yaml_file)
 
     def load_yaml_file(self):
         with open(self.get_absolute_path(), 'r') as file:
@@ -65,19 +63,15 @@ class YamlAnalyst:
 
 class CompareYaml:
     '''
-    Takes a dictionary with keys yaml1 and yaml2, and values a 
-    list of the directory and file name of the yaml files.
+    Compare two YAML files.
 
-    e.g.
-
-    yaml_files = {
-        'yaml1': [yaml1_file_directory, file1.yaml],
-        'yaml2': [yaml2_file_directory, file2.yaml]
-    }
+    Args:
+        yaml_path_1: Path to the first YAML file.
+        yaml_path_2: Path to the second YAML file.
     '''
-    def __init__(self, yaml_files):
-        self.yaml1 = YamlAnalyst(yaml_files['yaml1'][0], yaml_files['yaml1'][1])
-        self.yaml2 = YamlAnalyst(yaml_files['yaml2'][0], yaml_files['yaml2'][1])
+    def __init__(self, yaml_path_1, yaml_path_2):
+        self.yaml1 = YamlAnalyst(yaml_path_1)
+        self.yaml2 = YamlAnalyst(yaml_path_2)
 
     def compare_species_count(self):
         count1 = self.yaml1.get_species_count()
