@@ -91,6 +91,8 @@ def react_species(species_tuple, only_families=None):
     Returns:
         list of generated reactions
     """
+    if not all([spc.reactive for spc in species_tuple]):
+        return []
     reactions = get_db('kinetics').generate_reactions_from_families(species_tuple, only_families=only_families)
 
     return reactions
