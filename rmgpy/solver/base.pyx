@@ -1354,7 +1354,10 @@ cdef class ReactionSystem(DASx):
             else:  # three reactants
                 fderiv = C[ir[j, 0]] * C[ir[j, 1]] * C[ir[j, 2]]
 
-            if ip[j, 1] == -1:  # only one reactant
+            if kf[j] == 0.0:
+                # Avoid division by zero when the forward rate underflows to zero
+                rderiv = 0.0
+            elif ip[j, 1] == -1:  # only one reactant
                 rderiv = kr[j] / kf[j] * C[ip[j, 0]]
             elif ip[j, 2] == -1:  # only two reactants
                 rderiv = kr[j] / kf[j] * C[ip[j, 0]] * C[ip[j, 1]]

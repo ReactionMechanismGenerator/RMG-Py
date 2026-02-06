@@ -651,7 +651,9 @@ class RMG(util.Subject):
         # Initialize reaction model
 
         for spec in self.initial_species:
-            if spec.reactive:
+            # Non-reactive species defined in the input before the database is loaded
+            # may not have thermo yet; ensure thermo exists for any such species.
+            if spec.thermo is None or spec.reactive:
                 submit(spec, self.solvent)
             if vapor_liquid_mass_transfer.enabled:
                 spec.get_liquid_volumetric_mass_transfer_coefficient_data()
@@ -1485,7 +1487,16 @@ class RMG(util.Subject):
             if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
                 continue
-            violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
+            try:
+                violator_list = rxn.check_collision_limit_violation(
+                    t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax
+                )
+            except Exception as err:
+                logging.warning(
+                    "Skipping collision limit check for reaction %s because evaluation failed: %s",
+                    rxn, err,
+                )
+                continue
             if violator_list:
                 violators.extend(violator_list)
         # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
