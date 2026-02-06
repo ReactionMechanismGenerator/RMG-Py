@@ -119,10 +119,19 @@ class CompareYaml:
                 normalized_components.append(normalized_component)
             return ' + '.join(sorted(set(normalized_components)))
 
-        reactants, products = equation.split('<=>')
+        # Handle both reversible (<=>) and irreversible (=>) reactions
+        if '<=>' in equation:
+            reactants, products = equation.split('<=>')
+            separator = '<=>'
+        elif '=>' in equation:
+            reactants, products = equation.split('=>')
+            separator = '=>'
+        else:
+            raise ValueError(f"Unknown reaction format: {equation}")
+        
         normalized_reactants = process_side(reactants)
         normalized_products = process_side(products)
-        return f"{normalized_reactants} <=> {normalized_products}"
+        return f"{normalized_reactants} {separator} {normalized_products}"
 
     def compare_reactions(self):
         reactions1 = self.yaml1.get_reaction_df()
