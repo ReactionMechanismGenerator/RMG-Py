@@ -4,12 +4,16 @@ import pandas as pd
 import re
 
 class YamlAnalyst:
-    def __init__(self, path_to_chemkin_yaml, chemkin_yaml_file):
-        self.path_to_chemkin_yaml = path_to_chemkin_yaml
-        self.chemkin_yaml_file = chemkin_yaml_file
+    def __init__(self, path_to_yaml, yaml_file):
+        self.path_to_yaml = path_to_yaml
+        self.yaml_file = yaml_file
 
     def get_absolute_path(self):
-        return os.path.join(os.getcwd(), self.path_to_chemkin_yaml, self.chemkin_yaml_file)
+        path = os.path.join(self.path_to_yaml, self.yaml_file)
+        # If path is already absolute, use it; otherwise join with cwd
+        if os.path.isabs(path):
+            return path
+        return os.path.join(os.getcwd(), path)
 
     def load_yaml_file(self):
         with open(self.get_absolute_path(), 'r') as file:
@@ -29,13 +33,17 @@ class YamlAnalyst:
 
     def get_reactions_dict(self):
         reactions_dict = {}
-        for key, values in self.load_yaml_file().items():
-            if key in [f"{phase['name']}-reactions" for phase in self.load_yaml_file()['phases']]:
-                reactions_dict[key] = self.load_yaml_file()[key]
+        data = self.load_yaml_file()
+        for key, values in data.items():
+            if key in [f"{phase['name']}-reactions" for phase in data['phases']]:
+                reactions_dict[key] = data[key]
             elif key == 'gas_reactions':
-                reactions_dict['gas_reactions'] = self.load_yaml_file()['gas_reactions']
+                reactions_dict['gas_reactions'] = data['gas_reactions']
             elif key == 'surface_reactions':
-                reactions_dict['surface_reactions'] = self.load_yaml_file()['surface_reactions']
+                reactions_dict['surface_reactions'] = data['surface_reactions']
+            elif key == 'reactions':
+                # Gas-only mechanisms use plain 'reactions' key
+                reactions_dict['reactions'] = data['reactions']
         return reactions_dict
 
     def create_reaction_df(self, reactions):
