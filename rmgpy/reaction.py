@@ -1754,6 +1754,12 @@ class Reaction:
         collision_limit_r = []
         for condition in conditions:
             temp, pressure = condition
+            if temp <= 0:
+                logging.warning(
+                    "Skipping collision limit check for reaction %s at non-physical temperature %.2f K.",
+                    self, temp,
+                )
+                continue
             if len(self.reactants) >= 2:
                 try:
                     collision_limit_f.append(self.calculate_coll_limit(temp=temp, reverse=False))
