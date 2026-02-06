@@ -1,14 +1,13 @@
 from compare_yaml_outputs import *
+import os
 import pytest
 
 @pytest.fixture
 def compare_manager():
     '''Create instance of a Compare Yaml before each test'''
-    yaml_files = {
-        'yaml1': ['RMG_yaml_writer_addition/RMG-Py/test/rmgpy/test_data/yaml_writer_data/chemkin/', 'chem0047-gas.yaml'],
-        'yaml2': ['RMG_yaml_writer_addition/RMG-Py/test/rmgpy/test_data/yaml_writer_data/cantera/', 'chem47.yaml']
-    }
-    return CompareYaml(yaml_files)
+    yaml_path_1 = os.path.join('test/rmgpy/test_data/yaml_writer_data/chemkin/', 'chem0047-gas.yaml')
+    yaml_path_2 = os.path.join('test/rmgpy/test_data/yaml_writer_data/cantera/', 'chem47.yaml')
+    return CompareYaml(yaml_path_1, yaml_path_2)
 
 def test_compare_number_of_species(compare_manager):
     assert compare_manager.compare_species_count() == True
