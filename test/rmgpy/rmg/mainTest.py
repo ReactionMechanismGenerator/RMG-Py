@@ -55,7 +55,10 @@ class TestMain:
         cls.seedKinetics = os.path.join(cls.databaseDirectory, "kinetics", "libraries", "testSeed")
         cls.seedKineticsEdge = os.path.join(cls.databaseDirectory, "kinetics", "libraries", "testSeed_edge")
 
-        os.mkdir(os.path.join(cls.testDir, cls.outputDir))
+        output_path = os.path.join(cls.testDir, cls.outputDir)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.mkdir(output_path)
 
         cls.rmg = RMG(
             input_file=os.path.join(cls.testDir, "input.py"),
@@ -186,6 +189,66 @@ class TestMain:
                     ct.Solution(os.path.join(outName, f))
                 except:
                     assert False, "The output Cantera file is not loadable in Cantera."
+    
+    def test_cantera_input_files_match_chemkin(self):
+        """
+        Test that the Cantera YAML files generated directly by RMG match
+        those converted from Chemkin files in species count and names.
+        
+        Note: Reaction rate parameters are not compared as they may have
+        different units/formats between the two generation methods.
+        """
+        import sys
+        # Add the yaml_writer test directory to path for importing CompareYaml
+        yaml_writer_test_dir = os.path.join(
+            originalPath, "..", "test", "rmgpy", "yaml_writer"
+        )
+        sys.path.insert(0, yaml_writer_test_dir)
+        from compare_yaml_outputs import CompareYaml
+        sys.path.pop(0)
+
+        # Find the RMG-generated cantera yaml file (named chem{N}.yaml)
+        cantera_dir = os.path.join(self.rmg.output_directory, "cantera")
+        cantera_from_ck_dir = os.path.join(
+            self.rmg.output_directory, "cantera_from_ck"
+        )
+
+        # Get the yaml files generated directly by RMG
+        cantera_files = [
+            f for f in os.listdir(cantera_dir) if f.endswith('.yaml')
+        ]
+        assert len(cantera_files) > 0, \
+            "No Cantera YAML files found in cantera directory"
+        # Sort by the number in the filename to get the final mechanism
+        cantera_files.sort(
+            key=lambda x: int(''.join(filter(str.isdigit, x)) or 0),
+            reverse=True
+        )
+        rmg_yaml_file = cantera_files[0]
+
+        # Get the yaml file converted from chemkin
+        ck_yaml_file = "chem.yaml"
+        assert os.path.exists(os.path.join(cantera_from_ck_dir, ck_yaml_file)),\
+            f"Chemkin-converted YAML file {ck_yaml_file} not found"
+
+        # Compare the two yaml files
+        yaml_files = {
+            'yaml1': [cantera_dir, rmg_yaml_file],
+            'yaml2': [cantera_from_ck_dir, ck_yaml_file]
+        }
+        compare = CompareYaml(yaml_files)
+
+        # Check species count matches
+        assert compare.compare_species_count(), (
+            f"Species count mismatch between RMG yaml ({rmg_yaml_file}) "
+            f"and chemkin yaml ({ck_yaml_file})"
+        )
+
+        # Check species names match
+        assert compare.compare_species_names(), (
+            f"Species names mismatch between RMG yaml ({rmg_yaml_file}) "
+            f"and chemkin yaml ({ck_yaml_file})"
+        )
 
 
 @pytest.mark.functional
@@ -361,7 +424,11 @@ class TestProfiling:
             os.remove(os.path.join(cls.test_dir, "RMG.profile.dot.ps2"))
 
 
-class TestCanteraOutput:
+class TestCanteraOutputConversion:
+    """
+    Tests if we can convert Chemkin files to Cantera files without crashing.
+    (Or raising an exception for bad files.)
+    """
     def setup_class(self):
         self.chemkin_files = {
             """ELEMENTS
@@ -517,10 +584,10 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
             f.close()
 
             if works:
-                self.rmg.generate_cantera_files(os.path.join(os.getcwd(), "chem001.inp"))
+                self.rmg.generate_cantera_files_from_chemkin(os.path.join(os.getcwd(), "chem001.inp"))
             else:
                 with pytest.raises(InputError):
-                    self.rmg.generate_cantera_files(os.path.join(os.getcwd(), "chem001.inp"))
+                    self.rmg.generate_cantera_files_from_chemkin(os.path.join(os.getcwd(), "chem001.inp"))
 
             # clean up
             os.chdir(originalPath)
