@@ -1,7 +1,7 @@
 generator: ck2yaml
 input-files: [chem.inp, tran.dat]
 cantera-version: 2.6.0
-date: Fri, 06 Feb 2026 13:36:11 -0500
+date: Sat, 07 Feb 2026 23:36:06 -0500
 
 units: {length: cm, time: s, quantity: mol, activation-energy: kcal/mol}
 
@@ -1015,12 +1015,12 @@ reactions:
 - equation: O2(7) + H(4) + M <=> HO2(6) + M  # Reaction 175
   type: three-body
   rate-constant: {A: 2.8e+18, b: -0.86, Ea: 0.0}
-  efficiencies: {H2O(28): 0.0, O2(7): 0.0, N2: 0.0, Ar: 0.0, CO2(17): 1.5,
-    ethane(1): 1.5}
+  efficiencies: {CO2(17): 1.5, N2: 0.0, ethane(1): 1.5, O2(7): 0.0, H2O(28): 0.0,
+    Ar: 0.0}
 - equation: H(4) + H(4) + M <=> H2(3) + M  # Reaction 176
   type: three-body
   rate-constant: {A: 1.0e+18, b: -1.0, Ea: 0.0}
-  efficiencies: {CH4(16): 2.0, H2(3): 0.0, CO2(17): 0.0, H2O(28): 0.0, ethane(1): 3.0,
+  efficiencies: {H2(3): 0.0, CH4(16): 2.0, CO2(17): 0.0, H2O(28): 0.0, ethane(1): 3.0,
     Ar: 0.63}
 - equation: H(4) + OH(5) + M <=> H2O(28) + M  # Reaction 177
   type: three-body
@@ -1036,8 +1036,8 @@ reactions:
   type: falloff
   low-P-rate-constant: {A: 6.02e+14, b: 0.0, Ea: 3.0}
   high-P-rate-constant: {A: 1.8e+10, b: 0.0, Ea: 2.385}
-  efficiencies: {CH4(16): 2.0, H2(3): 2.0, CO2(17): 3.5, H2O(28): 6.0, ethane(1): 3.0,
-    O2(7): 6.0, Ar: 0.5}
+  efficiencies: {Ar: 0.5, CH4(16): 2.0, H2(3): 2.0, CO2(17): 3.5, H2O(28): 6.0,
+    ethane(1): 3.0, O2(7): 6.0}
 - equation: H(4) + CH2(11) (+M) <=> CH3(14) (+M)  # Reaction 180
   type: falloff
   low-P-rate-constant: {A: 1.04e+26, b: -2.76, Ea: 1.6}
@@ -1057,15 +1057,15 @@ reactions:
   low-P-rate-constant: {A: 2.47e+24, b: -2.57, Ea: 0.425}
   high-P-rate-constant: {A: 1.09e+12, b: 0.48, Ea: -0.26}
   Troe: {A: 0.7824, T3: 271.0, T1: 2760.0, T2: 6570.0}
-  efficiencies: {H2O(28): 6.0, H2(3): 2.0, Ar: 0.7, CO2(17): 2.0, ethane(1): 3.0,
-    CH4(16): 2.0}
+  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
+    H2O(28): 6.0, Ar: 0.7}
 - equation: H(4) + CH2O(15) (+M) <=> CH2OH(18) (+M)  # Reaction 183
   type: falloff
   low-P-rate-constant: {A: 1.27e+32, b: -4.82, Ea: 6.53}
   high-P-rate-constant: {A: 5.4e+11, b: 0.454, Ea: 3.6}
   Troe: {A: 0.7187, T3: 103.0, T1: 1290.0, T2: 4160.0}
-  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
-    H2O(28): 6.0}
+  efficiencies: {CO2(17): 2.0, ethane(1): 3.0, H2O(28): 6.0, H2(3): 2.0,
+    CH4(16): 2.0}
 - equation: H(4) + CH2O(15) (+M) <=> CH3O(19) (+M)  # Reaction 184
   type: falloff
   low-P-rate-constant: {A: 2.2e+30, b: -4.8, Ea: 5.56}
@@ -1085,15 +1085,15 @@ reactions:
   low-P-rate-constant: {A: 4.66e+41, b: -7.44, Ea: 14.08}
   high-P-rate-constant: {A: 2.43e+12, b: 0.515, Ea: 0.05}
   Troe: {A: 0.7, T3: 100.0, T1: 9.0e+04, T2: 1.0e+04}
-  efficiencies: {CH4(16): 2.0, CO2(17): 2.0, ethane(1): 3.0, H2(3): 2.0,
+  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
     H2O(28): 6.0}
 - equation: H(4) + C2H(21) (+M) <=> C2H2(22) (+M)  # Reaction 187
   type: falloff
   low-P-rate-constant: {A: 3.75e+33, b: -4.8, Ea: 1.9}
   high-P-rate-constant: {A: 1.0e+17, b: -1.0, Ea: 0.0}
   Troe: {A: 0.6464, T3: 132.0, T1: 1320.0, T2: 5570.0}
-  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
-    H2O(28): 6.0, Ar: 0.7}
+  efficiencies: {CH4(16): 2.0, CO2(17): 2.0, ethane(1): 3.0, H2O(28): 6.0,
+    H2(3): 2.0, Ar: 0.7}
 - equation: H(4) + C2H2(22) (+M) <=> C2H3(24) (+M)  # Reaction 188
   type: falloff
   low-P-rate-constant: {A: 3.8e+40, b: -7.27, Ea: 7.22}
@@ -1106,15 +1106,15 @@ reactions:
   low-P-rate-constant: {A: 1.4e+30, b: -3.86, Ea: 3.32}
   high-P-rate-constant: {A: 6.08e+12, b: 0.27, Ea: 0.28}
   Troe: {A: 0.782, T3: 208.0, T1: 2660.0, T2: 6100.0}
-  efficiencies: {Ar: 0.7, CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
-    H2O(28): 6.0}
+  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
+    H2O(28): 6.0, Ar: 0.7}
 - equation: H(4) + C2H4(26) (+M) <=> C2H5(27) (+M)  # Reaction 190
   type: falloff
   low-P-rate-constant: {A: 6.0e+41, b: -7.62, Ea: 6.97}
   high-P-rate-constant: {A: 5.4e+11, b: 0.454, Ea: 1.82}
   Troe: {A: 0.9753, T3: 210.0, T1: 984.0, T2: 4370.0}
-  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
-    H2O(28): 6.0, Ar: 0.7}
+  efficiencies: {CO2(17): 2.0, ethane(1): 3.0, H2O(28): 6.0, CH4(16): 2.0,
+    H2(3): 2.0, Ar: 0.7}
 - equation: H(4) + C2H5(27) (+M) <=> ethane(1) (+M)  # Reaction 191
   type: falloff
   low-P-rate-constant: {A: 1.99e+41, b: -7.08, Ea: 6.685}
@@ -1134,8 +1134,8 @@ reactions:
   low-P-rate-constant: {A: 2.3e+18, b: -0.9, Ea: -1.7}
   high-P-rate-constant: {A: 7.4e+13, b: -0.37, Ea: 0.0}
   Troe: {A: 0.7346, T3: 94.0, T1: 1760.0, T2: 5180.0}
-  efficiencies: {CO2(17): 2.0, ethane(1): 3.0, H2(3): 2.0, H2O(28): 6.0,
-    Ar: 0.7, CH4(16): 2.0}
+  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
+    H2O(28): 6.0, Ar: 0.7}
 - equation: OH(5) + CH3(14) (+M) <=> CH3OH(20) (+M)  # Reaction 194
   type: falloff
   low-P-rate-constant: {A: 4.0e+36, b: -5.92, Ea: 3.14}
@@ -1162,8 +1162,8 @@ reactions:
   low-P-rate-constant: {A: 1.88e+38, b: -6.36, Ea: 5.04}
   high-P-rate-constant: {A: 4.82e+17, b: -1.16, Ea: 1.145}
   Troe: {A: 0.6027, T3: 208.0, T1: 3920.0, T2: 1.02e+04}
-  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
-    H2O(28): 6.0}
+  efficiencies: {H2(3): 2.0, CO2(17): 2.0, ethane(1): 3.0, H2O(28): 6.0,
+    CH4(16): 2.0}
 - equation: CH3(14) + CH3(14) (+M) <=> ethane(1) (+M)  # Reaction 198
   type: falloff
   low-P-rate-constant: {A: 3.4e+41, b: -7.03, Ea: 2.762}
@@ -1183,8 +1183,8 @@ reactions:
   low-P-rate-constant: {A: 4.82e+25, b: -2.8, Ea: 0.59}
   high-P-rate-constant: {A: 1.97e+12, b: 0.43, Ea: -0.37}
   Troe: {A: 0.578, T3: 122.0, T1: 2540.0, T2: 9360.0}
-  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, H2O(28): 6.0, ethane(1): 3.0,
-    H2(3): 2.0, Ar: 0.7}
+  efficiencies: {CO2(17): 2.0, CH4(16): 2.0, ethane(1): 3.0, H2(3): 2.0,
+    H2O(28): 6.0, Ar: 0.7}
 - equation: H(4) + CH2CO(25) (+M) <=> CH2CHO(31) (+M)  # Reaction 201
   type: falloff
   low-P-rate-constant: {A: 1.012e+42, b: -7.63, Ea: 3.854}
