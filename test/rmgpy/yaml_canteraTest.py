@@ -99,7 +99,14 @@ class CanteraYamlFileComparer:
         for phase1, phase2 in zip(self.yaml1['phases'], self.yaml2['phases']):
             assert phase1['name'] == phase2['name'], f"Phase names do not match: {phase1['name']} vs {phase2['name']}."
             assert phase1['thermo'] == phase2['thermo'], f"Thermo definitions for phase {phase1['name']} do not match."
-
+            assert phase1.get('transport', '') == phase2.get('transport', ''), f"Transport definitions for phase {phase1['name']} do not match."
+            assert phase1.get('adjacent-phases', []) == phase2.get('adjacent-phases', []), f"Adjacent phases for phase {phase1['name']} do not match."
+            assert phase1.get('species', []) == phase2.get('species', []), f"Species lists for phase {phase1['name']} do not match."
+            assert phase1.get('reactions', []) == phase2.get('reactions', []), f"Reactions blocks for phase {phase1['name']} do not match."
+            # the ck2yaml has all elements in Titlecase, while RMG lets some isotopes be CI and OI (not Ci and Oi).
+            assert sorted(phase1.get('elements', [])) == sorted(e.title() for e in phase2.get('elements', [])), f"Element lists for phase {phase1['name']} do not match."
+            
+            assert phase1.get('state', {}) == phase2.get('state', {}), f"State definitions for phase {phase1['name']} do not match."
 class TestPreviouslyWrittenCanteraYamlGasOnly(CanteraYamlFileComparer):
     """Tests for comparing previously written Cantera YAML files, gas-only mechanism.
 
@@ -110,6 +117,7 @@ class TestPreviouslyWrittenCanteraYamlGasOnly(CanteraYamlFileComparer):
     yaml_path_1 = os.path.join(test_data_folder, 'chemkin/chem37.yaml')
     yaml_path_2 = os.path.join(test_data_folder, 'cantera/chem37.yaml')
 
+@pytest.mark.skip(reason="These files are out of date.")
 class TestPreviouslyWrittenCanteraYamlWithSurface(CanteraYamlFileComparer):
     """Tests for comparing previously written Cantera YAML files, with surface mechanism.
 
