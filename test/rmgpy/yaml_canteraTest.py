@@ -105,8 +105,22 @@ class CanteraYamlFileComparer:
             assert phase1.get('reactions', []) == phase2.get('reactions', []), f"Reactions blocks for phase {phase1['name']} do not match."
             # the ck2yaml has all elements in Titlecase, while RMG lets some isotopes be CI and OI (not Ci and Oi).
             assert sorted(phase1.get('elements', [])) == sorted(e.title() for e in phase2.get('elements', [])), f"Element lists for phase {phase1['name']} do not match."
-            
             assert phase1.get('state', {}) == phase2.get('state', {}), f"State definitions for phase {phase1['name']} do not match."
+
+    def testElementsMatch(self):
+        """Test that the element definitions in both YAML files match."""
+        ck2yaml_elements = sorted(self.yaml1['elements'], key=lambda e: e['symbol'])
+        # Put symbol into Titlecase to match ck2yaml's formatting
+        rmg_elements = [{'symbol': e['symbol'].title(), 'atomic-weight': e['atomic-weight']} for e in self.yaml2['elements']]
+        # Sort by the 'symbol' key.
+        rmg_elements = sorted(rmg_elements, key=lambda e: e['symbol'])
+        # Compare symbols exactly, and atomic weights approximately
+        assert [e['symbol'] for e in ck2yaml_elements] == [e['symbol'] for e in rmg_elements], \
+            "YAML files have different element symbols."
+        assert [e['atomic-weight'] for e in ck2yaml_elements] == pytest.approx(
+            [e['atomic-weight'] for e in rmg_elements], abs=1e-3
+        ), "YAML files have different element atomic weights."
+
 class TestPreviouslyWrittenCanteraYamlGasOnly(CanteraYamlFileComparer):
     """Tests for comparing previously written Cantera YAML files, gas-only mechanism.
 
