@@ -85,6 +85,11 @@ class CanteraYamlFileComparer:
         # Remove keys from ck2yaml output that are not present in RMG output
         self.yaml1.pop('input-files', None)
         self.yaml1.pop('cantera-version', None)
+        for model in [self.yaml1, self.yaml2]:
+            for phase in model['phases']:
+                for reactions_block in phase.get('reactions', []): # for multi-phase mechanisms, reactions are under each phase
+                    assert reactions_block in model, f"Expected reactions block '{reactions_block}' not found in YAML file."
+                    model.pop(reactions_block, None)  # Remove reactions block to allow keys to match
         assert self.yaml1.keys() == self.yaml2.keys(), "YAML files have different top-level keys."
     
     def testPhasesMatch(self):
@@ -94,15 +99,6 @@ class CanteraYamlFileComparer:
         for phase1, phase2 in zip(self.yaml1['phases'], self.yaml2['phases']):
             assert phase1['name'] == phase2['name'], f"Phase names do not match: {phase1['name']} vs {phase2['name']}."
             assert phase1['thermo'] == phase2['thermo'], f"Thermo definitions for phase {phase1['name']} do not match."
-class TestPreviouslyWrittenCanteraYamlWithSurface(CanteraYamlFileComparer):
-    """Tests for comparing previously written Cantera YAML files, with surface mechanism.
-
-    These are stored in the testing data directory.
-    """
-    test_data_folder='test/rmgpy/test_data/yaml_writer_data/'
-    # saved by Prosper in earlier commit
-    yaml_path_1 = os.path.join(test_data_folder, 'chemkin/chem0047-gas.yaml')
-    yaml_path_2 = os.path.join(test_data_folder, 'cantera/chem47.yaml')
 
 class TestPreviouslyWrittenCanteraYamlGasOnly(CanteraYamlFileComparer):
     """Tests for comparing previously written Cantera YAML files, gas-only mechanism.
@@ -113,3 +109,13 @@ class TestPreviouslyWrittenCanteraYamlGasOnly(CanteraYamlFileComparer):
     # generated on the fly in recent functional test
     yaml_path_1 = os.path.join(test_data_folder, 'chemkin/chem37.yaml')
     yaml_path_2 = os.path.join(test_data_folder, 'cantera/chem37.yaml')
+
+class TestPreviouslyWrittenCanteraYamlWithSurface(CanteraYamlFileComparer):
+    """Tests for comparing previously written Cantera YAML files, with surface mechanism.
+
+    These are stored in the testing data directory.
+    """
+    test_data_folder='test/rmgpy/test_data/yaml_writer_data/'
+    # saved by Prosper in earlier commit
+    yaml_path_1 = os.path.join(test_data_folder, 'chemkin/chem0047-gas.yaml')
+    yaml_path_2 = os.path.join(test_data_folder, 'cantera/chem47.yaml')
