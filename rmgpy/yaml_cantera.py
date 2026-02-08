@@ -193,17 +193,17 @@ phases:
   {ELEMENTS_LINE}
   species: [{', '.join(gas_species_to_write)}]
   kinetics: gas
-  reactions: [gas_reactions]
+  reactions: [gas-reactions]
   transport: mixture-averaged
   state: {{T: 300.0, P: 1 atm}}
 
-- name: {surface_species[0].smiles.replace("[","").replace("]","")}_surface
+- name: surface
   thermo: ideal-surface
   adjacent-phases: [gas]
   {ELEMENTS_LINE}
   species: [{', '.join(surface_species_to_write)}]
   kinetics: surface
-  reactions: [surface_reactions]
+  reactions: [site0-reactions]
   site-density: {surface_site_density * 1e-4 }
 """
     # surface_site_density * 1e-4 #in units of mol/cm^2
@@ -214,7 +214,7 @@ phases:
 def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
     """
     For systems with surface species/reactions.
-    Adds 'species', 'gas-reactions', and 'surface-reactions' to result_dict.
+    Adds 'species', 'gas-reactions', and 'site0-reactions' to result_dict.
     """
     gas_rxns = []
     surface_rxns = []
@@ -237,12 +237,12 @@ def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
     gas_reactions = []
     for rmg_rxn in gas_rxns:
         gas_reactions.extend(reaction_to_dicts(rmg_rxn, spcs))
-    result_dict["gas_reactions"] = gas_reactions
+    result_dict["gas-reactions"] = gas_reactions
 
     surface_reactions = []
     for rmg_rxn in surface_rxns:
         surface_reactions.extend(reaction_to_dicts(rmg_rxn, spcs))
-    result_dict["surface_reactions"] = surface_reactions
+    result_dict["site0-reactions"] = surface_reactions
 
     return result_dict
 
