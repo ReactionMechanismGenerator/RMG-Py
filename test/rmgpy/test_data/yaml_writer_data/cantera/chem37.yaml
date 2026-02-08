@@ -1,5 +1,5 @@
 generator: RMG
-date: Fri, 06 Feb 2026 13:36:08
+date: Sat, 07 Feb 2026 22:16:09
 
 units: {length: cm, time: s, quantity: mol, activation-energy: kcal/mol}
 
@@ -58,7 +58,7 @@ species:
     diameter: 4.3020000000000005
     well-depth: 252.30104810022812
     rotational-relaxation: 1.5
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: O(2)
   composition:
     O: 1.0
@@ -89,7 +89,7 @@ species:
     geometry: atom
     diameter: 2.7500000000000004
     well-depth: 80.00026940977129
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: H2(3)
   composition:
     H: 2.0
@@ -122,7 +122,7 @@ species:
     well-depth: 38.00012796964137
     polarizability: 0.7900000000000005
     rotational-relaxation: 280.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: H(4)
   composition:
     H: 1.0
@@ -153,7 +153,7 @@ species:
     geometry: atom
     diameter: 2.0500000000000003
     well-depth: 145.00018762466215
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: OH(5)
   composition:
     H: 1.0
@@ -185,7 +185,7 @@ species:
     geometry: linear
     diameter: 2.7500000000000004
     well-depth: 80.00026940977129
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: HO2(6)
   composition:
     H: 1.0
@@ -218,7 +218,7 @@ species:
     diameter: 3.4580000000000015
     well-depth: 107.40032560095216
     rotational-relaxation: 1.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: O2(7)
   composition:
     O: 2.0
@@ -251,7 +251,7 @@ species:
     well-depth: 107.40032560095216
     polarizability: 1.6000000000000008
     rotational-relaxation: 3.8
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: H2O2(8)
   composition:
     H: 2.0
@@ -284,7 +284,7 @@ species:
     diameter: 3.4580000000000015
     well-depth: 107.40032560095216
     rotational-relaxation: 3.8
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH(9)
   composition:
     C: 1.0
@@ -316,7 +316,7 @@ species:
     geometry: linear
     diameter: 2.7500000000000004
     well-depth: 80.00026940977129
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CO(10)
   composition:
     C: 1.0
@@ -350,7 +350,7 @@ species:
     well-depth: 98.10027624123336
     polarizability: 1.9500000000000008
     rotational-relaxation: 1.8
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH2(11)
   composition:
     C: 1.0
@@ -382,7 +382,7 @@ species:
     geometry: nonlinear
     diameter: 3.8
     well-depth: 144.00072548202698
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: HCO(12)
   composition:
     C: 1.0
@@ -415,7 +415,7 @@ species:
     geometry: nonlinear
     diameter: 3.590000000000001
     well-depth: 498.001556803607
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH2(S)(13)
   composition:
     C: 1.0
@@ -447,7 +447,7 @@ species:
     geometry: nonlinear
     diameter: 3.8
     well-depth: 144.00072548202698
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH3(14)
   composition:
     C: 1.0
@@ -479,7 +479,7 @@ species:
     geometry: nonlinear
     diameter: 3.8
     well-depth: 144.00072548202698
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH2O(15)
   composition:
     C: 1.0
@@ -513,7 +513,7 @@ species:
     diameter: 3.590000000000001
     well-depth: 498.001556803607
     rotational-relaxation: 2.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH4(16)
   composition:
     C: 1.0
@@ -547,7 +547,7 @@ species:
     well-depth: 141.400440100105
     polarizability: 2.600000000000002
     rotational-relaxation: 13.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CO2(17)
   composition:
     C: 1.0
@@ -581,7 +581,7 @@ species:
     well-depth: 244.00106224424113
     polarizability: 2.650000000000001
     rotational-relaxation: 2.1
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH2OH(18)
   composition:
     C: 1.0
@@ -616,7 +616,7 @@ species:
     well-depth: 417.00182525120056
     dipole: 1.7000000000000002
     rotational-relaxation: 2.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH3O(19)
   composition:
     C: 1.0
@@ -651,7 +651,7 @@ species:
     well-depth: 417.00182525120056
     dipole: 1.7000000000000002
     rotational-relaxation: 2.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH3OH(20)
   composition:
     C: 1.0
@@ -685,7 +685,7 @@ species:
     diameter: 3.626000000000001
     well-depth: 481.802091582003
     rotational-relaxation: 1.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: C2H(21)
   composition:
     C: 2.0
@@ -718,7 +718,7 @@ species:
     diameter: 4.1000000000000005
     well-depth: 209.00064369691785
     rotational-relaxation: 2.5
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: C2H2(22)
   composition:
     C: 2.0
@@ -751,7 +751,7 @@ species:
     diameter: 4.1000000000000005
     well-depth: 209.00064369691785
     rotational-relaxation: 2.5
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: HCCO(23)
   composition:
     C: 2.0
@@ -785,7 +785,7 @@ species:
     diameter: 2.5000000000000013
     well-depth: 150.00110650441783
     rotational-relaxation: 1.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: C2H3(24)
   composition:
     C: 2.0
@@ -818,7 +818,7 @@ species:
     diameter: 4.1000000000000005
     well-depth: 209.00064369691785
     rotational-relaxation: 1.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH2CO(25)
   composition:
     C: 2.0
@@ -852,7 +852,7 @@ species:
     diameter: 3.9700000000000006
     well-depth: 436.0012277388149
     rotational-relaxation: 2.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: C2H4(26)
   composition:
     C: 2.0
@@ -885,7 +885,7 @@ species:
     diameter: 3.9710000000000005
     well-depth: 280.80075319274636
     rotational-relaxation: 1.5
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: C2H5(27)
   composition:
     C: 2.0
@@ -918,7 +918,7 @@ species:
     diameter: 4.3020000000000005
     well-depth: 252.30104810022812
     rotational-relaxation: 1.5
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: H2O(28)
   composition:
     H: 2.0
@@ -952,7 +952,7 @@ species:
     well-depth: 572.4019516813576
     dipole: 1.8439999999999999
     rotational-relaxation: 4.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: C(29)
   composition:
     C: 1.0
@@ -983,7 +983,7 @@ species:
     geometry: atom
     diameter: 3.2980000000000005
     well-depth: 71.40020436655509
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: HCCOH(30)
   composition:
     C: 2.0
@@ -1017,7 +1017,7 @@ species:
     diameter: 3.9700000000000006
     well-depth: 436.0012277388149
     rotational-relaxation: 2.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH2CHO(31)
   composition:
     C: 2.0
@@ -1051,7 +1051,7 @@ species:
     diameter: 3.9700000000000006
     well-depth: 436.0012277388149
     rotational-relaxation: 2.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: CH3CHO(32)
   composition:
     C: 2.0
@@ -1085,7 +1085,7 @@ species:
     diameter: 3.9700000000000006
     well-depth: 436.0012277388149
     rotational-relaxation: 2.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: C3H8(33)
   composition:
     C: 3.0
@@ -1118,7 +1118,7 @@ species:
     diameter: 4.982000000000001
     well-depth: 266.8010668626943
     rotational-relaxation: 1.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: N2
   composition:
     N: 2.0
@@ -1151,7 +1151,7 @@ species:
     well-depth: 97.53030619382686
     polarizability: 1.7600000000000011
     rotational-relaxation: 4.0
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: Ar
   composition:
     Ar: 1.0
@@ -1182,7 +1182,7 @@ species:
     geometry: atom
     diameter: 3.3300000000000005
     well-depth: 136.50054988458677
-  note: 'Transport data: GRI-Mech'
+    note: GRI-Mech
 - name: He
   composition:
     He: 1.0
@@ -1213,7 +1213,7 @@ species:
     geometry: atom
     diameter: 2.5760000000000005
     well-depth: 10.2
-  note: 'Transport data: NOx2018'
+    note: NOx2018
 - name: Ne
   composition:
     Ne: 1.0
@@ -1244,8 +1244,8 @@ species:
     geometry: atom
     diameter: 3.7580000000000005
     well-depth: 148.6
-  note: 'Transport data: Epsilon & sigma estimated with fixed Lennard Jones Parameters.
-    This is the fallback method! Try improving transport databases!'
+    note: Epsilon & sigma estimated with fixed Lennard Jones Parameters. This is the
+      fallback method! Try improving transport databases!
 reactions:
 - equation: H2(3) + O(2) <=> H(4) + OH(5)
   rate-constant:
