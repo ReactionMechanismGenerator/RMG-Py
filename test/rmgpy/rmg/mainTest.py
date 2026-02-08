@@ -237,11 +237,21 @@ class TestMain:
             reverse=True
         )
         rmg_yaml_file = cantera_files[0]
+        rmg_yaml_path = os.path.join(cantera_dir, rmg_yaml_file)
+        # copy it to test/rmgpy/test_data/yaml_writer_data/cantera/
+        # so that it can be used in the yaml_writer tests as well
+        test_data_cantera_dir = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera')
+        shutil.copy(rmg_yaml_path, test_data_cantera_dir)
 
         # Get the yaml file converted from chemkin
         ck_yaml_file = "chem.yaml"
-        assert os.path.exists(os.path.join(cantera_from_ck_dir, ck_yaml_file)),\
-            f"Chemkin-converted YAML file {ck_yaml_file} not found"
+        ck_yaml_path = os.path.join(cantera_from_ck_dir, ck_yaml_file)
+        assert os.path.exists(ck_yaml_path), f"Chemkin-converted YAML file {ck_yaml_file} not found"
+        # copy it to test/rmgpy/test_data/yaml_writer_data/chemkin/
+        # so that it can be used in the yaml_writer tests as well
+        test_data_chemkin_dir = os.path.join(self.testDir, '..', 'yaml_writer_data', 'chemkin')
+        shutil.copy(ck_yaml_path, os.path.join(test_data_chemkin_dir, rmg_yaml_file)) # rename it to match the RMG-generated file for easier comparison in yaml_writer tests
+
 
         # Compare the two yaml files
         yaml_path_1 = os.path.join(cantera_dir, rmg_yaml_file)
