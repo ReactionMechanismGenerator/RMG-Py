@@ -311,14 +311,10 @@ def species_to_dict(species):
     cantera_species = species.to_cantera(use_chemkin_identifier=True)
     species_data = cantera_species.input_data
 
-    # if species.transport_data.comment exists, add it to species_data["note"]
     try:
         transport_comment = species.transport_data.comment
         if transport_comment:
-            if "note" in species_data:
-                species_data["note"] += f" Transport data: {transport_comment}"
-            else:
-                species_data["note"] = f"Transport data: {transport_comment}"
+            species_data["transport"]["note"] = transport_comment
     except AttributeError:
         pass
 
