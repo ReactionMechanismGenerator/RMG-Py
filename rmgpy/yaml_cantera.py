@@ -95,7 +95,7 @@ def write_cantera(
 
         f.write(ELEMENTS_BLOCK)
 
-        yaml.dump(result_dict, stream=f, sort_keys=False)
+        yaml.dump(result_dict, stream=f, sort_keys=False, default_flow_style=None, width=80)
 
 def get_elements_block():
     """
