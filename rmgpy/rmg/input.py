@@ -659,7 +659,7 @@ def liquid_cat_reactor(temperature,
             concentration = Quantity(conc)
             # check the dimensions are ok
             # convert to mol/m^3 (or something numerically nice? or must it be SI)
-            initialConcentrations[spec] = concentration.value_si  # is this a mistake? shouldn't this also be quantity?
+            initialConcentrations[spec] = concentration.value_si
         else:
             if len(conc) != 2:
                 raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
