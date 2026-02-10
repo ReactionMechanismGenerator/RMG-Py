@@ -486,6 +486,11 @@ for new users to better understand the options of rmg input files</p>
     <span class="c1"># turns off pressure dependence for molecules with number of atoms greater than the number specified below</span>
     <span class="c1"># this is due to faster internal rate of energy transfer for larger molecules</span>
     <span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">15</span><span class="p">,</span>
+    <span class="c1"># (optional) list of networks that have been thoroughly studied and should not be expanded</span>
+    <span class="c1"># by RMG. This is useful when you have a detailed mechanism for a specific network (e.g., from</span>
+    <span class="c1"># a seed mechanism or reaction library) and don&#39;t want RMG to add its own estimates which may</span>
+    <span class="c1"># make the model worse. Specify networks by their chemical formula, e.g., [&#39;CH2O2&#39;, &#39;C2H6&#39;]</span>
+    <span class="c1"># completedNetworks=[&#39;CH2O2&#39;],</span>
 <span class="p">)</span>
 
 <span class="c1"># optional block adds constraints on what RMG can output.</span>

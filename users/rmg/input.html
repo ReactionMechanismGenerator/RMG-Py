@@ -846,6 +846,36 @@ the line</p>
 <p>to turn off pressure dependence for all molecules larger than the given number
 of atoms (16 in the above example).</p>
 </section>
+<section id="completed-pressure-dependent-networks">
+<h3><span class="section-number">4.10.6. </span>Completed Pressure-Dependent Networks<a class="headerlink" href="#completed-pressure-dependent-networks" title="Permalink to this heading">¶</a></h3>
+<p>Sometimes you have a pressure-dependent network that has been studied in great
+detail and included in a seed mechanism or reaction library (such as CH2O2),
+and you don’t want RMG to add additional reactions to that network. Adding
+RMG’s estimates to a thoroughly studied network will likely make your model
+worse, as the original authors would have included any important reactions.</p>
+<p>You can specify that certain networks should not be expanded further using the
+<code class="docutils literal notranslate"><span class="pre">completedNetworks</span></code> parameter within the <code class="docutils literal notranslate"><span class="pre">pressureDependence()</span></code> block. This
+parameter takes a list of chemical formulas identifying the networks that should
+be considered complete. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pressureDependence</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;modified strong collision&#39;</span><span class="p">,</span>
+    <span class="n">maximumGrainSize</span><span class="o">=</span><span class="p">(</span><span class="mf">0.5</span><span class="p">,</span><span class="s1">&#39;kcal/mol&#39;</span><span class="p">),</span>
+    <span class="n">minimumNumberOfGrains</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
+    <span class="n">temperatures</span><span class="o">=</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span><span class="mi">2000</span><span class="p">,</span><span class="s1">&#39;K&#39;</span><span class="p">,</span><span class="mi">8</span><span class="p">),</span>
+    <span class="n">pressures</span><span class="o">=</span><span class="p">(</span><span class="mf">0.01</span><span class="p">,</span><span class="mi">100</span><span class="p">,</span><span class="s1">&#39;bar&#39;</span><span class="p">,</span><span class="mi">5</span><span class="p">),</span>
+    <span class="n">interpolation</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;Chebyshev&#39;</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span>
+    <span class="n">maximumAtoms</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
+    <span class="n">completedNetworks</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CH2O2&#39;</span><span class="p">],</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>Multiple networks can be specified in the list:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">completedNetworks</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;CH2O2&#39;</span><span class="p">,</span> <span class="s1">&#39;C2H6&#39;</span><span class="p">],</span>
+</pre></div>
+</div>
+<p>When a network is marked as completed, RMG will not add any new reactions to it,
+though reactions already present in seed mechanisms will still be used.</p>
+</section>
 </section>
 <section id="uncertainty-analysis">
 <span id="uncertaintyanalysis"></span><h2><span class="section-number">4.11. </span>Uncertainty Analysis<a class="headerlink" href="#uncertainty-analysis" title="Permalink to this heading">¶</a></h2>
@@ -1115,6 +1145,7 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
 <li><a class="reference internal" href="#temperature-and-pressure-for-the-interpolation-scheme">4.10.3. Temperature and pressure for the interpolation scheme</a></li>
 <li><a class="reference internal" href="#interpolation-scheme">4.10.4. Interpolation scheme</a></li>
 <li><a class="reference internal" href="#maximum-size-of-adduct-for-which-pressure-dependence-kinetics-be-generated">4.10.5. Maximum size of adduct for which pressure dependence kinetics be generated</a></li>
+<li><a class="reference internal" href="#completed-pressure-dependent-networks">4.10.6. Completed Pressure-Dependent Networks</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#uncertainty-analysis">4.11. Uncertainty Analysis</a></li>
