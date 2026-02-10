@@ -138,11 +138,15 @@ class KineticsDatabase(object):
 
         Both styles can be loaded by this method.
         """
-        import imp
+        import importlib
 
         # Load the recommended.py file as a module
         try:
-            rec = imp.load_source('rec', filepath)
+            # https://docs.python.org/3/whatsnew/3.12.html#imp
+            loader = importlib.machinery.SourceFileLoader('rec', filepath)
+            spec = importlib.util.spec_from_file_location('rec', filepath, loader=loader)
+            rec = importlib.util.module_from_spec(spec)
+            loader.exec_module(rec)
         except Exception as e:
             raise DatabaseError('Unable to load recommended.py file for kinetics families: {0!s}'.format(e))
 
