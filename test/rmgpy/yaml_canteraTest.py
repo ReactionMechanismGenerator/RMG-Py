@@ -121,6 +121,68 @@ class CanteraYamlFileComparer:
             [e['atomic-weight'] for e in rmg_elements], abs=1e-3
         ), "YAML files have different element atomic weights."
 
+    def testSpeciesMatch(self):
+        """Test that species definitions match between the two YAML files."""
+        species1 = {s['name']: s for s in self.yaml1['species']}
+        species2 = {s['name']: s for s in self.yaml2['species']}
+        assert species1.keys() == species2.keys(), "Species names do not match."
+
+        for name in species1:
+            s1 = species1[name]
+            s2 = species2[name]
+
+            # Composition: ck2yaml uses int values, RMG uses float
+            assert {k: int(v) for k, v in s2['composition'].items()} == s1['composition'], \
+                f"Composition mismatch for {name}."
+
+            # Thermo model
+            assert s1['thermo']['model'] == s2['thermo']['model'], \
+                f"Thermo model mismatch for {name}."
+
+            # Temperature ranges (ck2yaml rounds, RMG keeps full precision)
+            if 'temperature-ranges' in s1['thermo'] and 'temperature-ranges' in s2['thermo']:
+                assert s1['thermo']['temperature-ranges'] == pytest.approx(
+                    s2['thermo']['temperature-ranges'], rel=1e-4
+                ), f"Temperature ranges mismatch for {name}."
+
+            # Thermo polynomial data
+            if 'data' in s1['thermo'] and 'data' in s2['thermo']:
+                assert len(s1['thermo']['data']) == len(s2['thermo']['data']), \
+                    f"Number of thermo polynomial ranges differs for {name}."
+                for i, (poly1, poly2) in enumerate(zip(s1['thermo']['data'], s2['thermo']['data'])):
+                    assert poly1 == pytest.approx(poly2, rel=1e-4), \
+                        f"Thermo polynomial {i} mismatch for {name}."
+            # Ideally thermo data would have notes.
+
+            # RMG includes reference-pressure but ck2yaml does not (when it's non-default)
+            # (no assertion needed, just noting the known difference)
+
+            # Transport data
+            assert ('transport' in s1) == ('transport' in s2), f"Transport data presence mismatch for {name}."
+            if 'transport' in s1 and 'transport' in s2:
+                t1 = s1['transport']
+                t2 = s2['transport']
+                assert t1['model'] == t2['model'], f"Transport model mismatch for {name}."
+                assert t1['geometry'] == t2['geometry'], f"Transport geometry mismatch for {name}."
+                assert t1.get('well-depth', 0) == pytest.approx(
+                    t2.get('well-depth', 0), rel=1e-3
+                ), f"Transport well-depth mismatch for {name}."
+                assert t1.get('diameter', 0) == pytest.approx(
+                    t2.get('diameter', 0), rel=1e-3
+                ), f"Transport diameter mismatch for {name}."
+                assert t1.get('polarizability', 0) == pytest.approx(
+                    t2.get('polarizability', 0), rel=1e-3
+                ), f"Transport polarizability mismatch for {name}."
+                assert t1.get('dipole', 0) == pytest.approx(
+                    t2.get('dipole', 0), rel=1e-3
+                ), f"Transport dipole mismatch for {name}."
+                assert t1.get('rotational-relaxation', 0) == pytest.approx(
+                    t2.get('rotational-relaxation', 0), rel=1e-3
+                ), f"Transport rotational-relaxation mismatch for {name}."
+                assert t1.get('note', '') == t2.get('note', ''), \
+                    f"Transport note mismatch for {name}."
+
+
 class TestPreviouslyWrittenCanteraYamlGasOnly(CanteraYamlFileComparer):
     """Tests for comparing previously written Cantera YAML files, gas-only mechanism.
 
