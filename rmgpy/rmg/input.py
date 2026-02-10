@@ -656,10 +656,7 @@ def liquid_cat_reactor(temperature,
                    constantSpecies=[]):
     for spec, conc in initialConcentrations.items():
         if not isinstance(conc, list):
-            concentration = Quantity(conc)
-            # check the dimensions are ok
-            # convert to mol/m^3 (or something numerically nice? or must it be SI)
-            initialConcentrations[spec] = concentration.value_si
+            initialConcentrations[spec] = Quantity(conc)
         else:
             if len(conc) != 2:
                 raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
@@ -715,14 +712,14 @@ def liquid_cat_reactor(temperature,
 
     initialCondLiq = dict()
     V = 1.0
-    A = V*Quantity(surfaceVolumeRatio).value_si
-    for key,item in initialConcentrations.items():
-        initialCondLiq[key] = item*V
+    A = V * Quantity(surfaceVolumeRatio).value_si
+    for key, conc in initialConcentrations.items():
+        initialCondLiq[key] = conc.value_si * V
     initialCondLiq["T"] = T
     initialCondLiq["V"] = V
     initialCondSurf = dict()
-    for key,item in initialSurfaceCoverages.items():
-        initialCondSurf[key] = item*rmg.surface_site_density.value_si*A
+    for key, surf_cov in initialSurfaceCoverages.items():
+        initialCondSurf[key] = surf_cov * rmg.surface_site_density.value_si * A
     initialCondSurf["T"] = T
     initialCondSurf["A"] = A
     initialCondSurf["d"] = 0.0
@@ -771,8 +768,7 @@ def constant_T_V_liquid_reactor(temperature,
 
     for spec, conc in initialConcentrations.items():
         if not isinstance(conc, list):
-            concentration = Quantity(conc)
-            initialConcentrations[spec] = concentration.value_si
+            initialConcentrations[spec] = Quantity(conc)
         else:
             raise InputError("Condition ranges not supported for this reaction type")
             if len(conc) != 2:
@@ -880,16 +876,16 @@ def constant_T_V_liquid_reactor(temperature,
     ############################################### process inputs ##############################################
 
     initial_conditions = dict()
-    for key, item in initialConcentrations.items():
-        initial_conditions[key] = item*V
+    for key, conc in initialConcentrations.items():
+        initial_conditions[key] = conc.value_si * V
     initial_conditions["T"] = T
     initial_conditions["V"] = V
 
     inlet_conditions = dict()
     if inletConcentrations:
         total_molar_flow_rate = 0
-        for key, item in inletConcentrations.items():
-            inlet_conditions[key] = item*inlet_volumetric_flow_rate
+        for key, inlet_conc in inletConcentrations.items():
+            inlet_conditions[key] = inlet_conc.value_si * inlet_volumetric_flow_rate
             total_molar_flow_rate += inlet_conditions[key]
         for key, item in inlet_conditions.items():
             inlet_conditions[key] = item/total_molar_flow_rate #molar fraction for each species
@@ -946,10 +942,7 @@ def liquid_reactor(temperature,
 
     for spec, conc in initialConcentrations.items():
         if not isinstance(conc, list):
-            concentration = Quantity(conc)
-            # check the dimensions are ok
-            # convert to mol/m^3 (or something numerically nice? or must it be SI)
-            initialConcentrations[spec] = concentration.value_si
+            initialConcentrations[spec] = Quantity(conc)
         else:
             if len(conc) != 2:
                 raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
