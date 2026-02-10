@@ -139,17 +139,32 @@ class CanteraYamlFileComparer:
             assert s1['thermo']['model'] == s2['thermo']['model'], \
                 f"Thermo model mismatch for {name}."
 
-            # Temperature ranges (ck2yaml rounds, RMG keeps full precision)
-            if 'temperature-ranges' in s1['thermo'] and 'temperature-ranges' in s2['thermo']:
-                assert s1['thermo']['temperature-ranges'] == pytest.approx(
-                    s2['thermo']['temperature-ranges'], rel=1e-4
-                ), f"Temperature ranges mismatch for {name}."
+            # Temperature ranges and polynomial data
+            # ck2yaml may collapse single-polynomial NASA7 (e.g. Ar) into one range
+            # while RMG always writes two polynomials with a midpoint temperature.
+            t_ranges1 = s1['thermo'].get('temperature-ranges', [])
+            t_ranges2 = s2['thermo'].get('temperature-ranges', [])
+            data1 = s1['thermo'].get('data', [])
+            data2 = s2['thermo'].get('data', [])
 
-            # Thermo polynomial data
-            if 'data' in s1['thermo'] and 'data' in s2['thermo']:
-                assert len(s1['thermo']['data']) == len(s2['thermo']['data']), \
+            if len(t_ranges1) == 2 and len(t_ranges2) == 3:
+                # ck2yaml collapsed to single polynomial; RMG has two identical ones
+                assert t_ranges1[0] == pytest.approx(t_ranges2[0], rel=1e-4), \
+                    f"Temperature range lower bound mismatch for {name}."
+                assert t_ranges1[1] == pytest.approx(t_ranges2[2], rel=1e-4), \
+                    f"Temperature range upper bound mismatch for {name}."
+                assert len(data1) == 1 and len(data2) == 2, \
+                    f"Expected 1 vs 2 polynomials for collapsed species {name}."
+                assert data1[0] == pytest.approx(data2[0], rel=1e-4), \
+                    f"Thermo polynomial mismatch for {name} (low range)."
+                assert data1[0] == pytest.approx(data2[1], rel=1e-4), \
+                    f"Thermo polynomial mismatch for {name} (high range should match low)."
+            else:
+                assert t_ranges1 == pytest.approx(t_ranges2, rel=1e-4), \
+                    f"Temperature ranges mismatch for {name}."
+                assert len(data1) == len(data2), \
                     f"Number of thermo polynomial ranges differs for {name}."
-                for i, (poly1, poly2) in enumerate(zip(s1['thermo']['data'], s2['thermo']['data'])):
+                for i, (poly1, poly2) in enumerate(zip(data1, data2)):
                     assert poly1 == pytest.approx(poly2, rel=1e-4), \
                         f"Thermo polynomial {i} mismatch for {name}."
             # Ideally thermo data would have notes.
