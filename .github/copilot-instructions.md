@@ -35,7 +35,7 @@ make test-functional  # Run functional tests
 make test-database    # Run database tests
 make test-all         # Run all tests
 make clean            # Remove build artifacts
-make decython         # Remove .so files for "pure Python" debugging. This target probably broken.
+make decython         # Remove .so files for "pure Python" debugging. Pure python mode is not reliably tested and might not work.
 make documentation    # Build Sphinx docs
 ```
 
@@ -72,7 +72,7 @@ species.generate_resonance_structures()
 ## RMG-database Integration
 The **RMG-database** is a separate repository containing all thermodynamic, kinetics, and transport data. It's typically cloned alongside RMG-Py in a sibling folder named `RMG-database`.
 
-### Database Structure (in RMG-database repo)
+### Database Structure (in RMG-database `input/` directory, eg. `RMG-database/input/thermo/`)
 - `thermo/` - Thermodynamic libraries and group additivity data
 - `kinetics/families/` - Reaction family templates with rate rules (e.g., `H_Abstraction`, `R_Addition_MultipleBond`)
 - `kinetics/libraries/` - Curated rate coefficient libraries
@@ -85,7 +85,7 @@ The `RMGDatabase` class (`rmgpy/data/rmg.py`) is the central interface:
 from rmgpy.data.rmg import RMGDatabase
 database = RMGDatabase()
 database.load(
-    path='/path/to/RMG-database',
+    path='/path/to/RMG-database/input',
     thermo_libraries=['primaryThermoLibrary'],
     kinetics_families='default',
     reaction_libraries=[],
@@ -99,10 +99,12 @@ database.load(
 - `Entry` (`rmgpy/data/base.py`) - Base class for database entries with metadata
 
 ### Data Flow for Species Thermodynamics
-1. `Species.get_thermo_data()` → `ThermoDatabase.get_thermo_data(species)`
-2. First checks thermo libraries for exact match (via graph isomorphism)
-3. Falls back to group additivity estimation using functional group contributions
-4. Returns `ThermoData`, `NASA`, or `Wilhoit` object
+1. `Species.get_thermo_data()` → `rmgpy.thermo.thermoengine.submit(species)` (may create/resolve futures)
+2. `thermoengine` dispatches to the loaded `ThermoDatabase` and ultimately calls `ThermoDatabase.get_thermo_data(species)`
+3. `ThermoDatabase` first checks thermo libraries for an exact match (via graph isomorphism)
+4. If no library match is found, `ThermoDatabase` falls back to group additivity estimation using functional group contributions
+5. The resolved result is returned as a `ThermoData`, `NASA`, or `Wilhoit` object
+
 
 ### Data Flow for Reaction Kinetics
 1. `KineticsFamily.generate_reactions(reactants)` - Matches reactant molecules to family templates
@@ -111,7 +113,7 @@ database.load(
 4. Returns `Arrhenius` or pressure-dependent kinetics model
 
 ## External Dependencies
-- **RMG-database**: Set location via `RMG_DATABASE_BRANCH` env var in CI, or pass path to `database.load()`
+- **RMG-database**: In CI, `RMG_DATABASE_BRANCH` controls which RMG-database branch is cloned. Locally, the database location is set via `settings['database.directory']` (default `../RMG-database/input`) or `database.directory` in an `rmgrc` file; you may also pass an explicit path to `database.load()`.
 - **Julia/RMS**: Optional (recommended) reactor simulation backend (install via `./install_rms.sh`)
 - Environment managed via `environment.yml` (conda/mamba)
 
@@ -125,18 +127,18 @@ Documentation lives in `documentation/source/` and is built with Sphinx (`make d
 
 ### API Reference (`documentation/source/reference/`)
 - Auto-generated from docstrings using `sphinx.ext.autodoc`
-- Each module has a corresponding `.rst` file (e.g., `reference/species/index.rst` → `rmgpy/species.py`)
+- Each module has a corresponding `.rst` file (e.g., `documentation/source/reference/species/index.rst` → `rmgpy/species.py`)
 - **Maintenance**: Add new modules to the appropriate `index.rst` toctree. Docstrings in code are automatically extracted.
 - Uses reStructuredText format with `.. automodule::` directives
 
 ### When to Update Documentation
-- **New input file options**: Update `users/rmg/input.rst`
-- **New public API**: Ensure docstrings exist; add module to `reference/` if new
+- **New input file options**: Update `documentation/source/users/rmg/input.rst`
+- **New public API**: Ensure docstrings exist; add module to `documentation/source/reference/` if new
 - **Changed behavior**: Update relevant user guide section
-- **New features**: Add to `users/rmg/features.rst` or create new `.rst` file
+- **New features**: Add to `documentation/source/users/rmg/features.rst` or create and link to new `.rst` file
 
 ## Style Guidelines
 - Follow PEP 8
 - Docstrings describe purpose, not implementation
 - Use `logging` module (not print statements)
-- MIT/X11 license header required on all source files
+- MIT license header required on all source files
