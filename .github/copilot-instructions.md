@@ -64,10 +64,31 @@ species = Species(label='ethane', molecule=[Molecule().from_smiles("CC")])
 species.generate_resonance_structures()
 ```
 
+```python
+from rmgpy.reaction import Reaction
+from rmgpy.kinetics import Arrhenius
+
+# Reaction with Arrhenius kinetics
+rxn = Reaction(
+    reactants=[Species(label='CH3', molecule=[Molecule(smiles='[CH3]')]),
+               Species(label='O2', molecule=[Molecule(smiles='[O][O]')])],
+    products=[Species(label='CH3OO', molecule=[Molecule(smiles='CO[O]')])],
+    kinetics=Arrhenius(A=(2.65e12, 'cm^3/(mol*s)'), n=0.0, Ea=(0.0, 'kJ/mol'), T0=(1, 'K')),
+)
+
+# Reaction without kinetics (e.g. for isomorphism checks)
+rxn2 = Reaction(
+    reactants=[Species().from_smiles('[O]'), Species().from_smiles('O=S=O')],
+    products=[Species().from_smiles('O=S(=O)=O')],
+)
+```
+
+
 ## Input Files
 - RMG inputs: Python scripts defining `database()`, `species()`, `simpleReactor()`, etc.
-- See `examples/rmg/minimal/input.py` for structure
+- See `examples/rmg/minimal/input.py` for structure and `examples/rmg/commented/input.py` for a file with detailed comments
 - Arkane inputs: Python scripts with `species()`, `transitionState()`, `reaction()` blocks
+- See `examples/arkane/` for examples
 
 ## RMG-database Integration
 The **RMG-database** is a separate repository containing all thermodynamic, kinetics, and transport data. It's typically cloned alongside RMG-Py in a sibling folder named `RMG-database`.
@@ -99,8 +120,8 @@ database.load(
 - `Entry` (`rmgpy/data/base.py`) - Base class for database entries with metadata
 
 ### Data Flow for Species Thermodynamics
-1. `Species.get_thermo_data()` → `rmgpy.thermo.thermoengine.submit(species)` (may create/resolve futures)
-2. `thermoengine` dispatches to the loaded `ThermoDatabase` and ultimately calls `ThermoDatabase.get_thermo_data(species)`
+1. `Species.get_thermo_data()` → `rmgpy.thermo.thermoengine.submit(species)`
+2. `thermoengine.submit()` generates resonance structures, then dispatches to `ThermoDatabase.get_thermo_data(species)`
 3. `ThermoDatabase` first checks thermo libraries for an exact match (via graph isomorphism)
 4. If no library match is found, `ThermoDatabase` falls back to group additivity estimation using functional group contributions
 5. The resolved result is returned as a `ThermoData`, `NASA`, or `Wilhoit` object
@@ -138,7 +159,7 @@ Documentation lives in `documentation/source/` and is built with Sphinx (`make d
 - **New features**: Add to `documentation/source/users/rmg/features.rst` or create and link to new `.rst` file
 
 ## Style Guidelines
-- Follow PEP 8
+- Follow PEP 8 for new or modified code, but don't modify code just to fix style
 - Docstrings describe purpose, not implementation
 - Use `logging` module (not print statements)
 - MIT license header required on all source files
