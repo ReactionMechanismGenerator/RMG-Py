@@ -41,6 +41,7 @@ from rmgpy.kinetics.arrhenius import (
     MultiArrhenius,
     MultiPDepArrhenius,
 )
+from rmgpy.kinetics.falloff import ThirdBody
 from rmgpy.util import make_output_subdirectory
 from datetime import datetime
 from rmgpy.chemkin import get_species_identifier
@@ -268,11 +269,81 @@ def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None):
     return result_dict
 
 
+def _get_A_conversion_factor(n_reactants):
+    """
+    Get the conversion factor for the pre-exponential factor A from
+    Cantera's SI default units to the declared YAML units
+    (length: cm, quantity: mol).
+
+    Cantera's input_data returns A in SI units (m, kmol, s).
+    The YAML file declares units: {length: cm, quantity: mol}.
+
+    The conversion depends on the reaction order (number of reactant
+    molecules), NOT on rate_coeff_units (which is Units(0.0) for
+    reactions created programmatically via to_cantera()).
+
+    For rate constant units [length^(3*(n-1)) / quantity^(n-1) / time]:
+      length: m -> cm  => multiply by (1e2)^(3*(n-1)) = 1e(6*(n-1))
+      quantity: kmol -> mol => divide by (1e3)^(n-1) = 1e(3*(n-1))
+      Combined: 1e(6*(n-1)) / 1e(3*(n-1)) = 1e(3*(n-1))
+
+    Conversion factors by reaction order:
+      - Unimolecular  (n=1): 1e0  = 1
+      - Bimolecular   (n=2): 1e3  = 1000
+      - Termolecular  (n=3): 1e6  = 1000000
+    """
+    order = max(n_reactants - 1, 0)
+    return 10.0 ** (3 * order)
+
+
+# Conversion factor for activation energy: J/kmol -> kcal/mol
+_EA_CONVERSION_FACTOR = 1.0 / 4184000.0  # 4184 J/kcal * 1000 mol/kmol
+
+
+def _convert_rate_constant_units(rate_dict, A_factor):
+    """
+    Convert a rate-constant dictionary {A, b, Ea} from Cantera SI defaults
+    (m, kmol, J/kmol) to declared YAML units (cm, mol, kcal/mol).
+    Modifies the dictionary in place.
+    """
+    if 'A' in rate_dict:
+        rate_dict['A'] = rate_dict['A'] * A_factor
+    if 'Ea' in rate_dict:
+        rate_dict['Ea'] = rate_dict['Ea'] * _EA_CONVERSION_FACTOR
+
+
+def _convert_reaction_data_units(reaction_data, n_reactants):
+    """
+    Convert all rate parameters in a reaction_data dict from Cantera SI
+    defaults to the declared YAML units (cm, mol, kcal/mol).
+
+    Handles simple Arrhenius (rate-constant), three-body, and
+    falloff (high-P-rate-constant, low-P-rate-constant) reactions.
+
+    n_reactants is the number of reactant molecules in the RMG reaction,
+    used to determine the A conversion factor.
+    """
+    A_factor = _get_A_conversion_factor(n_reactants)
+
+    if 'rate-constant' in reaction_data:
+        _convert_rate_constant_units(reaction_data['rate-constant'], A_factor)
+    if 'high-P-rate-constant' in reaction_data:
+        _convert_rate_constant_units(reaction_data['high-P-rate-constant'], A_factor)
+    if 'low-P-rate-constant' in reaction_data:
+        # Low-P limit is one order higher in concentration than high-P
+        low_P_A_factor = _get_A_conversion_factor(n_reactants + 1)
+        _convert_rate_constant_units(reaction_data['low-P-rate-constant'], low_P_A_factor)
+
+
 def reaction_to_dicts(obj, spcs):
     """
     Takes an RMG reaction object (obj), returns a list of dictionaries
     for YAML properties. For most reaction objects the list will be of
     length 1, but a MultiArrhenius or MultiPDepArrhenius will be longer.
+
+    The returned dictionaries have rate parameters converted from Cantera's
+    SI default units (m, kmol, J/kmol) to the declared YAML units
+    (cm, mol, kcal/mol) so the YAML file is self-consistent.
     """
 
     reaction_list = []
@@ -283,8 +354,19 @@ def reaction_to_dicts(obj, spcs):
     else:
         list_of_cantera_reactions = [obj.to_cantera(use_chemkin_identifier=True)]
 
+    # Count reactant molecules from the RMG reaction object.
+    # This is used to determine the A conversion factor since
+    # rate_coeff_units is Units(0.0) for programmatically-created reactions.
+    n_reactants = len(obj.reactants)
+
+    # For three-body reactions (+ M), the third body M acts as an
+    # additional reactant for unit purposes, so increment n_reactants.
+    if isinstance(obj.kinetics, ThirdBody):
+        n_reactants += 1
+
     for reaction in list_of_cantera_reactions:
         reaction_data = reaction.input_data
+        _convert_reaction_data_units(reaction_data, n_reactants)
         efficiencies = getattr(obj.kinetics, "efficiencies", {})
         if efficiencies:
             reaction_data["efficiencies"] = {
