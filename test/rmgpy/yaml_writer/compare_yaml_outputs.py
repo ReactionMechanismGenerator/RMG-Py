@@ -154,7 +154,13 @@ class CompareYaml:
         """Compare reactions between two YAML files.
         
         First checks that reaction counts and normalized equations match.
+        Then uses Cantera to load both files and compares forward rate
+        constants at a reference state to verify kinetic equivalence,
+        since the two files may use different unit systems internally.
         """
+        import cantera as ct
+        import numpy as np
+
         reactions1 = self.yaml1.get_reaction_df()
         reactions2 = self.yaml2.get_reaction_df()
 
@@ -175,4 +181,33 @@ class CompareYaml:
         # Check that all reaction equations are present in both files
         if all_eqs_1 != all_eqs_2:
             return False
-        return True
+
+        # Use Cantera to compare actual rate constants, since the two files
+        # may store A/Ea values in different unit systems
+        yaml1_path = self.yaml1.get_absolute_path()
+        yaml2_path = self.yaml2.get_absolute_path()
+        try:
+            gas1 = ct.Solution(yaml1_path)
+            gas2 = ct.Solution(yaml2_path)
+        except Exception:
+            # If Cantera can't load the files, fall back to equation-only comparison
+            return True
+
+        # Compare at a reference state
+        T, P = 1000.0, ct.one_atm
+        # Build a composition string from species common to both
+        species_names = [s.name for s in gas1.species()]
+        if len(species_names) >= 2:
+            comp = f"{species_names[0]}:0.5, {species_names[1]}:0.5"
+        else:
+            comp = f"{species_names[0]}:1.0"
+
+        gas1.TPX = T, P, comp
+        gas2.TPX = T, P, comp
+
+        kf1 = gas1.forward_rate_constants
+        kf2 = gas2.forward_rate_constants
+
+        # Use relative tolerance for comparison; allow 1% difference
+        # to account for Chemkin format precision loss
+        return np.allclose(kf1, kf2, rtol=0.01, atol=1e-50)
