@@ -2,7 +2,7 @@
 # This file contains the script used by GitHub actions to execute the Continuous Integration (CI)
 # for RMG-Py. This includes building RMG and its dependencies, executing the unit tests,
 # functional tests, database tests, and regression tests.
-# 
+#
 # This will run automatically on any push to any branch, but will only run one instance of
 # itself at a time per branch (to avoid spawning tons of runners, which prevents them from
 # executing).
@@ -14,7 +14,7 @@
 #
 #
 # Changelog:
-# 2023-04    - Jackson Burns - Added this header, regression tests, cleanup of action in 
+# 2023-04    - Jackson Burns - Added this header, regression tests, cleanup of action in
 #              in general, and documentation throughout the file.
 # 2023-05    - added Docker build steps
 # 2023-05-12 - added changes to allow running on forks
@@ -54,6 +54,8 @@ env:
   RMG_DATABASE_BRANCH: main
   # RMS branch to use for ReactionMechanismSimulator installation
   RMS_BRANCH: for_rmg
+  # RMS mode used for install_rms.sh
+  RMS_INSTALLER: continuous
   # julia parallel pre-compilation leads to race conditions and hangs, so we limit it to run in serial
   JULIA_NUM_PRECOMPILE_TASKS: 1
 
@@ -131,7 +133,7 @@ jobs:
     name: Regression Test
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
-    env: 
+    env:
       # This is true only if this is a reference case for the regression testing:
       REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
@@ -167,7 +169,7 @@ jobs:
 
       # RMG build step
       - run: make install
-      
+
       - name: Make separate No-RMS conda env
         run: |
           conda create --name rmg_env_without_rms --clone rmg_env
@@ -270,7 +272,7 @@ jobs:
           REFERENCE: stable_regression_results
         run: |
           conda activate rmg_env_without_rms
-          
+
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           mkdir -p "test/regression-diff"
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment minimal_surface;

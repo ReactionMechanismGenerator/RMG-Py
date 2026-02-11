@@ -31,6 +31,7 @@ from unittest.mock import patch
 
 import rmgpy.rmg.input as inp
 from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.ml.estimator import ADMONITION
 
 import pytest
@@ -373,3 +374,76 @@ class TestInputReactors:
         assert reactor.initial_mole_fractions["C"] == 0.2
 
         mock_logging.warning.assert_called_with("Initial mole fractions do not sum to one; normalizing.")
+
+
+class TestInputPressureDependence:
+    """
+    Contains unit tests for pressure dependence input, including completedNetworks
+    """
+
+    def setup_method(self):
+        """This method is run before every test in this class"""
+        global rmg
+        # Reset the completed networks set before each test
+        rmg.reaction_model = CoreEdgeReactionModel()
+        rmg.reaction_model.completed_pdep_networks = set()
+
+    def test_completed_networks_single(self):
+        """Test that a single completedNetwork can be added via pressure_dependence"""
+        global rmg
+        
+        inp.pressure_dependence(
+            method='modified strong collision',
+            temperatures=(300, 2000, 'K', 8),
+            pressures=(0.01, 100, 'bar', 5),
+            maximumGrainSize=(0.5, 'kcal/mol'),
+            minimumNumberOfGrains=250,
+            interpolation=('Chebyshev', 6, 4),
+            maximumAtoms=16,
+            completedNetworks=['CH2O2'],
+        )
+        
+        # Check that the network was added
+        assert len(rmg.reaction_model.completed_pdep_networks) == 1
+        # The formula CH2O2 should be converted to a sorted tuple of elements
+        expected_key = (('C', 1), ('H', 2), ('O', 2))
+        assert expected_key in rmg.reaction_model.completed_pdep_networks
+
+    def test_completed_networks_multiple(self):
+        """Test that multiple completedNetworks can be added via pressure_dependence"""
+        global rmg
+        
+        inp.pressure_dependence(
+            method='modified strong collision',
+            temperatures=(300, 2000, 'K', 8),
+            pressures=(0.01, 100, 'bar', 5),
+            maximumGrainSize=(0.5, 'kcal/mol'),
+            minimumNumberOfGrains=250,
+            interpolation=('Chebyshev', 6, 4),
+            maximumAtoms=16,
+            completedNetworks=['CH2O2', 'C2H6'],
+        )
+        
+        # Check that both networks were added
+        assert len(rmg.reaction_model.completed_pdep_networks) == 2
+        expected_key1 = (('C', 1), ('H', 2), ('O', 2))
+        expected_key2 = (('C', 2), ('H', 6))
+        assert expected_key1 in rmg.reaction_model.completed_pdep_networks
+        assert expected_key2 in rmg.reaction_model.completed_pdep_networks
+
+    def test_completed_networks_none(self):
+        """Test that pressure_dependence works without completedNetworks"""
+        global rmg
+        
+        inp.pressure_dependence(
+            method='modified strong collision',
+            temperatures=(300, 2000, 'K', 8),
+            pressures=(0.01, 100, 'bar', 5),
+            maximumGrainSize=(0.5, 'kcal/mol'),
+            minimumNumberOfGrains=250,
+            interpolation=('Chebyshev', 6, 4),
+            maximumAtoms=16,
+        )
+        
+        # Check that no networks were added
+        assert len(rmg.reaction_model.completed_pdep_networks) == 0
