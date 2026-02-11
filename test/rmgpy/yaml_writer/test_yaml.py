@@ -1,4 +1,4 @@
-from compare_yaml_outputs import *
+from compare_yaml_outputs import CompareYaml
 import os
 import pytest
 
