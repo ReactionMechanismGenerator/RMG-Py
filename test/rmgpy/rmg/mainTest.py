@@ -175,21 +175,36 @@ class TestMain:
             Rmem.generate_cond()
             Rmem.get_cond()
 
-    def test_make_cantera_input_file(self):
+    def test_make_cantera_input_file_from_ck(self):
         """
-        This test ensures that a usable Cantera input file is created.
+        This test ensures that a usable Cantera input file is created via the Chemkin to Cantera conversion.
         """
         import cantera as ct
 
-        outName = os.path.join(self.rmg.output_directory, "cantera")
-        files = os.listdir(outName)
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera_from_ck")
+        files = os.listdir(cantera_files)
         for f in files:
             if ".yaml" in f:
                 try:
-                    ct.Solution(os.path.join(outName, f))
+                    ct.Solution(os.path.join(cantera_files, f))
                 except:
                     assert False, "The output Cantera file is not loadable in Cantera."
     
+    def test_make_cantera_input_file_directly(self):
+        """
+        This tests to ensure that a usable Cantera input file is created via direct yaml writer.
+        """
+        import cantera as ct
+
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera")
+        files = os.listdir(cantera_files)
+        for f in files:
+            if ".yaml" in f:
+                try:
+                    ct.Solution(os.path.join(cantera_files, f))
+                except:
+                    assert False, "The output Cantera file is not loadable in Cantera."
+
     def test_cantera_input_files_match_chemkin(self):
         """
         Test that the Cantera YAML files generated directly by RMG match
