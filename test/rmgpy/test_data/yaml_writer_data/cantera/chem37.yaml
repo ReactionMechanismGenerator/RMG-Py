@@ -1,5 +1,5 @@
 generator: RMG
-date: Sat, 07 Feb 2026 23:36:05
+date: Thu, 12 Feb 2026 17:20:54
 
 units: {length: cm, time: s, quantity: mol, activation-energy: kcal/mol}
 
@@ -502,557 +502,563 @@ species:
       fallback method! Try improving transport databases!}
 reactions:
 - equation: H2(3) + O(2) <=> H(4) + OH(5)
-  rate-constant: {A: 38.7, b: 2.7, Ea: 26191840.0}
+  rate-constant: {A: 38700.0, b: 2.7, Ea: 6.260000000000001}
 - equation: HO2(6) + O(2) <=> O2(7) + OH(5)
-  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 20000000000000.004, b: 0.0, Ea: 0.0}
 - equation: H2O2(8) + O(2) <=> HO2(6) + OH(5)
-  rate-constant: {A: 9630.0, b: 2.0, Ea: 16736000.0}
+  rate-constant: {A: 9630000.0, b: 2.0, Ea: 4.0}
 - equation: CH(9) + O(2) <=> CO(10) + H(4)
-  rate-constant: {A: 57000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 57000000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH2(11) + O(2) <=> H(4) + HCO(12)
-  rate-constant: {A: 80000000000.00002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 80000000000000.02, b: 0.0, Ea: 0.0}
 - equation: CH2(S)(13) + O(2) <=> CO(10) + H2(3)
-  rate-constant: {A: 15000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 15000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH2(S)(13) + O(2) <=> H(4) + HCO(12)
-  rate-constant: {A: 15000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 15000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH3(14) + O(2) <=> CH2O(15) + H(4)
-  rate-constant: {A: 50600000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 50600000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH4(16) + O(2) <=> CH3(14) + OH(5)
-  rate-constant: {A: 1020000.0000000001, b: 1.5, Ea: 35982400.00000001}
+  rate-constant: {A: 1020000000.0000001, b: 1.5, Ea: 8.600000000000003}
 - equation: HCO(12) + O(2) <=> CO(10) + OH(5)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: HCO(12) + O(2) <=> CO2(17) + H(4)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2O(15) + O(2) <=> HCO(12) + OH(5)
-  rate-constant: {A: 39000000000.00001, b: 0.0, Ea: 14811360.0}
+  rate-constant: {A: 39000000000000.01, b: 0.0, Ea: 3.5400000000000005}
 - equation: CH2OH(18) + O(2) <=> CH2O(15) + OH(5)
-  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 10000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH3O(19) + O(2) <=> CH2O(15) + OH(5)
-  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 10000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH3OH(20) + O(2) <=> CH2OH(18) + OH(5)
-  rate-constant: {A: 388.00000000000006, b: 2.5, Ea: 12970400.0}
+  rate-constant: {A: 388000.00000000006, b: 2.5, Ea: 3.1}
 - equation: CH3OH(20) + O(2) <=> CH3O(19) + OH(5)
-  rate-constant: {A: 130.00000000000003, b: 2.5, Ea: 20920000.000000004}
+  rate-constant: {A: 130000.00000000003, b: 2.5, Ea: 5.000000000000001}
 - equation: C2H(21) + O(2) <=> CH(9) + CO(10)
-  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 50000000000000.01, b: 0.0, Ea: 0.0}
 - equation: C2H2(22) + O(2) <=> H(4) + HCCO(23)
-  rate-constant: {A: 13500.000000000002, b: 2.0, Ea: 7949600.000000001}
+  rate-constant: {A: 13500000.000000002, b: 2.0, Ea: 1.9000000000000004}
 - equation: C2H2(22) + O(2) <=> C2H(21) + OH(5)
-  rate-constant: {A: 4.600000000000001e+16, b: -1.41, Ea: 121126800.00000001}
+  rate-constant: {A: 4.600000000000001e+19, b: -1.41, Ea: 28.950000000000006}
 - equation: C2H2(22) + O(2) <=> CH2(11) + CO(10)
-  rate-constant: {A: 6940.000000000001, b: 2.0, Ea: 7949600.000000001}
+  rate-constant: {A: 6940000.000000001, b: 2.0, Ea: 1.9000000000000004}
 - equation: C2H3(24) + O(2) <=> CH2CO(25) + H(4)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: C2H4(26) + O(2) <=> CH3(14) + HCO(12)
-  rate-constant: {A: 12500.000000000002, b: 1.83, Ea: 920480.0}
+  rate-constant: {A: 12500000.000000002, b: 1.83, Ea: 0.22000000000000003}
 - equation: C2H5(27) + O(2) <=> CH2O(15) + CH3(14)
-  rate-constant: {A: 22400000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 22400000000000.004, b: 0.0, Ea: 0.0}
 - equation: O(2) + ethane(1) <=> C2H5(27) + OH(5)
-  rate-constant: {A: 89800.00000000001, b: 1.92, Ea: 23806960.000000004}
+  rate-constant: {A: 89800000.00000001, b: 1.92, Ea: 5.690000000000001}
 - equation: HCCO(23) + O(2) <=> 2 CO(10) + H(4)
-  rate-constant: {A: 100000000000.00002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 100000000000000.02, b: 0.0, Ea: 0.0}
 - equation: CH2CO(25) + O(2) <=> HCCO(23) + OH(5)
-  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 33472000.0}
+  rate-constant: {A: 10000000000000.002, b: 0.0, Ea: 8.0}
 - equation: CH2CO(25) + O(2) <=> CH2(11) + CO2(17)
-  rate-constant: {A: 1750000000.0000002, b: 0.0, Ea: 5648400.000000002}
+  rate-constant: {A: 1750000000000.0002, b: 0.0, Ea: 1.3500000000000005}
 - equation: CO(10) + O2(7) <=> CO2(17) + O(2)
-  rate-constant: {A: 2500000000.0000005, b: 0.0, Ea: 199995200.0}
+  rate-constant: {A: 2500000000000.0005, b: 0.0, Ea: 47.800000000000004}
 - equation: CH2O(15) + O2(7) <=> HCO(12) + HO2(6)
-  rate-constant: {A: 100000000000.00002, b: 0.0, Ea: 167360000.00000003}
-- equation: H(4) + 2 O2(7) <=> HO2(6) + O2(7)
-  rate-constant: {A: 20800000000000.004, b: -1.24, Ea: 0.0}
-- equation: H(4) + H2O(28) + O2(7) <=> H2O(28) + HO2(6)
-  rate-constant: {A: 11260000000000.002, b: -0.76, Ea: 0.0}
+  rate-constant: {A: 100000000000000.02, b: 0.0, Ea: 40.00000000000001}
+- equation: H(4) + 2 O2(7) + O2(7) <=> HO2(6) + O2(7) + O2(7)
+  rate-constant: {A: 2.0800000000000004e+19, b: -1.24, Ea: 0.0}
+  efficiencies: {O2(7): 1.0}
+- equation: H(4) + H2O(28) + O2(7) + H2O(28) <=> H2O(28) + HO2(6) + H2O(28)
+  rate-constant: {A: 1.1260000000000002e+19, b: -0.76, Ea: 0.0}
+  efficiencies: {H2O(28): 1.0}
 - equation: H(4) + O2(7) <=> O(2) + OH(5)
-  rate-constant: {A: 26500000000000.004, b: -0.6707, Ea: 71299544.00000001}
-- equation: 2 H(4) + H2(3) <=> 2 H2(3)
-  rate-constant: {A: 90000000000.00002, b: -0.6, Ea: 0.0}
-- equation: 2 H(4) + H2O(28) <=> H2(3) + H2O(28)
-  rate-constant: {A: 60000000000000.01, b: -1.25, Ea: 0.0}
-- equation: CO2(17) + 2 H(4) <=> CO2(17) + H2(3)
-  rate-constant: {A: 550000000000000.1, b: -2.0, Ea: 0.0}
+  rate-constant: {A: 2.6500000000000004e+16, b: -0.6707, Ea: 17.041000000000004}
+- equation: 2 H(4) + H2(3) + H2(3) <=> 2 H2(3) + H2(3)
+  rate-constant: {A: 9.000000000000002e+16, b: -0.6, Ea: 0.0}
+  efficiencies: {H2(3): 1.0}
+- equation: 2 H(4) + H2O(28) + H2O(28) <=> H2(3) + H2O(28) + H2O(28)
+  rate-constant: {A: 6.000000000000001e+19, b: -1.25, Ea: 0.0}
+  efficiencies: {H2O(28): 1.0}
+- equation: CO2(17) + 2 H(4) + CO2(17) <=> CO2(17) + H2(3) + CO2(17)
+  rate-constant: {A: 5.500000000000001e+20, b: -2.0, Ea: 0.0}
+  efficiencies: {CO2(17): 1.0}
 - equation: H(4) + HO2(6) <=> H2O(28) + O(2)
-  rate-constant: {A: 3970000000.0000005, b: 0.0, Ea: 2807464.0000000005}
+  rate-constant: {A: 3970000000000.0005, b: 0.0, Ea: 0.6710000000000002}
 - equation: H(4) + HO2(6) <=> H2(3) + O2(7)
-  rate-constant: {A: 44800000000.00001, b: 0.0, Ea: 4468512.000000002}
+  rate-constant: {A: 44800000000000.01, b: 0.0, Ea: 1.0680000000000005}
 - equation: H(4) + HO2(6) <=> 2 OH(5)
-  rate-constant: {A: 84000000000.00002, b: 0.0, Ea: 2656840.0}
+  rate-constant: {A: 84000000000000.02, b: 0.0, Ea: 0.635}
 - equation: H(4) + H2O2(8) <=> H2(3) + HO2(6)
-  rate-constant: {A: 12100.000000000002, b: 2.0, Ea: 21756800.000000004}
+  rate-constant: {A: 12100000.000000002, b: 2.0, Ea: 5.200000000000001}
 - equation: H(4) + H2O2(8) <=> H2O(28) + OH(5)
-  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 15062400.000000004}
+  rate-constant: {A: 10000000000000.002, b: 0.0, Ea: 3.600000000000001}
 - equation: CH(9) + H(4) <=> C(29) + H2(3)
-  rate-constant: {A: 165000000000.00003, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 165000000000000.03, b: 0.0, Ea: 0.0}
 - equation: CH2(S)(13) + H(4) <=> CH(9) + H2(3)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH4(16) + H(4) <=> CH3(14) + H2(3)
-  rate-constant: {A: 660000.0000000001, b: 1.62, Ea: 45354560.00000001}
+  rate-constant: {A: 660000000.0000001, b: 1.62, Ea: 10.840000000000003}
 - equation: H(4) + HCO(12) <=> CO(10) + H2(3)
-  rate-constant: {A: 73400000000.00002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 73400000000000.02, b: 0.0, Ea: 0.0}
 - equation: CH2O(15) + H(4) <=> H2(3) + HCO(12)
-  rate-constant: {A: 57400.000000000015, b: 1.9, Ea: 11472528.0}
+  rate-constant: {A: 57400000.000000015, b: 1.9, Ea: 2.7420000000000004}
 - equation: CH2OH(18) + H(4) <=> CH2O(15) + H2(3)
-  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 20000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2OH(18) + H(4) <=> CH3(14) + OH(5)
-  rate-constant: {A: 165000000.00000003, b: 0.65, Ea: -1188256.0}
+  rate-constant: {A: 165000000000.00003, b: 0.65, Ea: -0.28400000000000003}
 - equation: CH2OH(18) + H(4) <=> CH2(S)(13) + H2O(28)
-  rate-constant: {A: 32800000000.000004, b: -0.09, Ea: 2552240.0000000005}
-- equation: CH3O(19) + H(4) <=> CH2OH(18) + H(4)
-  rate-constant: {A: 41500.00000000001, b: 1.63, Ea: 8050016.000000002}
+  rate-constant: {A: 32800000000000.004, b: -0.09, Ea: 0.6100000000000002}
+- equation: CH3O(19) + H(4) + H(4) <=> CH2OH(18) + H(4) + H(4)
+  rate-constant: {A: 41500000.00000001, b: 1.63, Ea: 1.9240000000000006}
+  efficiencies: {H(4): 1.0}
 - equation: CH3O(19) + H(4) <=> CH2O(15) + H2(3)
-  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 20000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH3O(19) + H(4) <=> CH3(14) + OH(5)
-  rate-constant: {A: 1500000000.0000002, b: 0.5, Ea: -460240.0}
+  rate-constant: {A: 1500000000000.0002, b: 0.5, Ea: -0.11000000000000001}
 - equation: CH3O(19) + H(4) <=> CH2(S)(13) + H2O(28)
-  rate-constant: {A: 262000000000.00003, b: -0.23, Ea: 4476880.0}
+  rate-constant: {A: 262000000000000.03, b: -0.23, Ea: 1.07}
 - equation: CH3OH(20) + H(4) <=> CH2OH(18) + H2(3)
-  rate-constant: {A: 17000.000000000004, b: 2.1, Ea: 20376080.0}
+  rate-constant: {A: 17000000.000000004, b: 2.1, Ea: 4.87}
 - equation: CH3OH(20) + H(4) <=> CH3O(19) + H2(3)
-  rate-constant: {A: 4200.000000000001, b: 2.1, Ea: 20376080.0}
+  rate-constant: {A: 4200000.000000001, b: 2.1, Ea: 4.87}
 - equation: C2H3(24) + H(4) <=> C2H2(22) + H2(3)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: C2H4(26) + H(4) <=> C2H3(24) + H2(3)
-  rate-constant: {A: 1325.0000000000002, b: 2.53, Ea: 51212160.0}
+  rate-constant: {A: 1325000.0000000002, b: 2.53, Ea: 12.24}
 - equation: C2H5(27) + H(4) <=> C2H4(26) + H2(3)
-  rate-constant: {A: 2000000000.0000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 2000000000000.0002, b: 0.0, Ea: 0.0}
 - equation: H(4) + ethane(1) <=> C2H5(27) + H2(3)
-  rate-constant: {A: 115000.00000000001, b: 1.9, Ea: 31505520.000000004}
+  rate-constant: {A: 115000000.00000001, b: 1.9, Ea: 7.530000000000001}
 - equation: H(4) + HCCO(23) <=> CH2(S)(13) + CO(10)
-  rate-constant: {A: 100000000000.00002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 100000000000000.02, b: 0.0, Ea: 0.0}
 - equation: CH2CO(25) + H(4) <=> H2(3) + HCCO(23)
-  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 33472000.0}
+  rate-constant: {A: 50000000000000.01, b: 0.0, Ea: 8.0}
 - equation: CH2CO(25) + H(4) <=> CH3(14) + CO(10)
-  rate-constant: {A: 11300000000.000002, b: 0.0, Ea: 14342752.000000002}
-- equation: H(4) + HCCOH(30) <=> CH2CO(25) + H(4)
-  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 11300000000000.002, b: 0.0, Ea: 3.428000000000001}
+- equation: H(4) + HCCOH(30) + H(4) <=> CH2CO(25) + H(4) + H(4)
+  rate-constant: {A: 10000000000000.002, b: 0.0, Ea: 0.0}
+  efficiencies: {H(4): 1.0}
 - equation: H2(3) + OH(5) <=> H(4) + H2O(28)
-  rate-constant: {A: 216000.00000000003, b: 1.51, Ea: 14351120.000000002}
+  rate-constant: {A: 216000000.00000003, b: 1.51, Ea: 3.4300000000000006}
 - equation: 2 OH(5) <=> H2O(28) + O(2)
-  rate-constant: {A: 35.7, b: 2.4, Ea: -8828240.0}
+  rate-constant: {A: 35700.0, b: 2.4, Ea: -2.1100000000000003}
 - equation: HO2(6) + OH(5) <=> H2O(28) + O2(7)
-  rate-constant: {A: 14500000000.000002, b: 0.0, Ea: -2092000.0}
+  rate-constant: {A: 14500000000000.002, b: 0.0, Ea: -0.5}
   duplicate: true
 - equation: HO2(6) + OH(5) <=> H2O(28) + O2(7)
-  rate-constant: {A: 5000000000000.001, b: 0.0, Ea: 72508720.00000001}
+  rate-constant: {A: 5000000000000001.0, b: 0.0, Ea: 17.330000000000005}
   duplicate: true
 - equation: H2O2(8) + OH(5) <=> H2O(28) + HO2(6)
-  rate-constant: {A: 2000000000.0000002, b: 0.0, Ea: 1786568.0}
+  rate-constant: {A: 2000000000000.0002, b: 0.0, Ea: 0.42700000000000005}
   duplicate: true
 - equation: H2O2(8) + OH(5) <=> H2O(28) + HO2(6)
-  rate-constant: {A: 1700000000000000.2, b: 0.0, Ea: 123051440.00000001}
+  rate-constant: {A: 1.7000000000000003e+18, b: 0.0, Ea: 29.410000000000007}
   duplicate: true
 - equation: C(29) + OH(5) <=> CO(10) + H(4)
-  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 50000000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH(9) + OH(5) <=> H(4) + HCO(12)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2(11) + OH(5) <=> CH2O(15) + H(4)
-  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 20000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2(11) + OH(5) <=> CH(9) + H2O(28)
-  rate-constant: {A: 11300.000000000002, b: 2.0, Ea: 12552000.0}
+  rate-constant: {A: 11300000.000000002, b: 2.0, Ea: 3.0000000000000004}
 - equation: CH2(S)(13) + OH(5) <=> CH2O(15) + H(4)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH3(14) + OH(5) <=> CH2(11) + H2O(28)
-  rate-constant: {A: 56000.00000000001, b: 1.6, Ea: 22677280.000000004}
+  rate-constant: {A: 56000000.00000001, b: 1.6, Ea: 5.420000000000002}
 - equation: CH3(14) + OH(5) <=> CH2(S)(13) + H2O(28)
-  rate-constant: {A: 644000000000000.1, b: -1.34, Ea: 5928728.0}
+  rate-constant: {A: 6.440000000000001e+17, b: -1.34, Ea: 1.417}
 - equation: CH4(16) + OH(5) <=> CH3(14) + H2O(28)
-  rate-constant: {A: 100000.00000000001, b: 1.6, Ea: 13054080.000000002}
+  rate-constant: {A: 100000000.00000001, b: 1.6, Ea: 3.1200000000000006}
 - equation: CO(10) + OH(5) <=> CO2(17) + H(4)
-  rate-constant: {A: 47600.00000000001, b: 1.228, Ea: 292880.0}
+  rate-constant: {A: 47600000.00000001, b: 1.228, Ea: 0.07}
 - equation: HCO(12) + OH(5) <=> CO(10) + H2O(28)
-  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 50000000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH2O(15) + OH(5) <=> H2O(28) + HCO(12)
-  rate-constant: {A: 3430000.0000000005, b: 1.18, Ea: -1870248.0000000002}
+  rate-constant: {A: 3430000000.0000005, b: 1.18, Ea: -0.4470000000000001}
 - equation: CH2OH(18) + OH(5) <=> CH2O(15) + H2O(28)
-  rate-constant: {A: 5000000000.000001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 5000000000000.001, b: 0.0, Ea: 0.0}
 - equation: CH3O(19) + OH(5) <=> CH2O(15) + H2O(28)
-  rate-constant: {A: 5000000000.000001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 5000000000000.001, b: 0.0, Ea: 0.0}
 - equation: CH3OH(20) + OH(5) <=> CH2OH(18) + H2O(28)
-  rate-constant: {A: 1440.0000000000002, b: 2.0, Ea: -3514560.0000000005}
+  rate-constant: {A: 1440000.0000000002, b: 2.0, Ea: -0.8400000000000002}
 - equation: CH3OH(20) + OH(5) <=> CH3O(19) + H2O(28)
-  rate-constant: {A: 6300.000000000001, b: 2.0, Ea: 6276000.0}
+  rate-constant: {A: 6300000.000000001, b: 2.0, Ea: 1.5000000000000002}
 - equation: C2H(21) + OH(5) <=> H(4) + HCCO(23)
-  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 20000000000000.004, b: 0.0, Ea: 0.0}
 - equation: C2H2(22) + OH(5) <=> CH2CO(25) + H(4)
-  rate-constant: {A: 2.1800000000000005e-07, b: 4.5, Ea: -4184000.0}
+  rate-constant: {A: 0.00021800000000000004, b: 4.5, Ea: -1.0}
 - equation: C2H2(22) + OH(5) <=> H(4) + HCCOH(30)
-  rate-constant: {A: 504.0000000000001, b: 2.3, Ea: 56484000.0}
+  rate-constant: {A: 504000.0000000001, b: 2.3, Ea: 13.500000000000002}
 - equation: C2H2(22) + OH(5) <=> C2H(21) + H2O(28)
-  rate-constant: {A: 33700.0, b: 2.0, Ea: 58576000.00000001}
+  rate-constant: {A: 33700000.0, b: 2.0, Ea: 14.000000000000004}
 - equation: C2H2(22) + OH(5) <=> CH3(14) + CO(10)
-  rate-constant: {A: 4.830000000000001e-07, b: 4.0, Ea: -8368000.0}
+  rate-constant: {A: 0.0004830000000000001, b: 4.0, Ea: -2.0}
 - equation: C2H3(24) + OH(5) <=> C2H2(22) + H2O(28)
-  rate-constant: {A: 5000000000.000001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 5000000000000.001, b: 0.0, Ea: 0.0}
 - equation: C2H4(26) + OH(5) <=> C2H3(24) + H2O(28)
-  rate-constant: {A: 3600.0000000000005, b: 2.0, Ea: 10460000.000000002}
+  rate-constant: {A: 3600000.0000000005, b: 2.0, Ea: 2.5000000000000004}
 - equation: OH(5) + ethane(1) <=> C2H5(27) + H2O(28)
-  rate-constant: {A: 3540.0000000000005, b: 2.12, Ea: 3640080.0}
+  rate-constant: {A: 3540000.0000000005, b: 2.12, Ea: 0.8700000000000001}
 - equation: CH2CO(25) + OH(5) <=> H2O(28) + HCCO(23)
-  rate-constant: {A: 7500000000.000001, b: 0.0, Ea: 8368000.0}
+  rate-constant: {A: 7500000000000.001, b: 0.0, Ea: 2.0}
 - equation: 2 HO2(6) <=> H2O2(8) + O2(7)
-  rate-constant: {A: 130000000.00000001, b: 0.0, Ea: -6819920.000000001}
+  rate-constant: {A: 130000000000.00002, b: 0.0, Ea: -1.6300000000000003}
   duplicate: true
 - equation: 2 HO2(6) <=> H2O2(8) + O2(7)
-  rate-constant: {A: 420000000000.00006, b: 0.0, Ea: 50208000.0}
+  rate-constant: {A: 420000000000000.06, b: 0.0, Ea: 12.000000000000002}
   duplicate: true
 - equation: CH2(11) + HO2(6) <=> CH2O(15) + OH(5)
-  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 20000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH3(14) + HO2(6) <=> CH4(16) + O2(7)
-  rate-constant: {A: 1000000000.0000001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 1000000000000.0001, b: 0.0, Ea: 0.0}
 - equation: CH3(14) + HO2(6) <=> CH3O(19) + OH(5)
-  rate-constant: {A: 37800000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 37800000000000.01, b: 0.0, Ea: 0.0}
 - equation: CO(10) + HO2(6) <=> CO2(17) + OH(5)
-  rate-constant: {A: 150000000000.00003, b: 0.0, Ea: 98742400.00000003}
+  rate-constant: {A: 150000000000000.03, b: 0.0, Ea: 23.60000000000001}
 - equation: CH2O(15) + HO2(6) <=> H2O2(8) + HCO(12)
-  rate-constant: {A: 5600.000000000001, b: 2.0, Ea: 50208000.0}
+  rate-constant: {A: 5600000.000000001, b: 2.0, Ea: 12.000000000000002}
 - equation: C(29) + O2(7) <=> CO(10) + O(2)
-  rate-constant: {A: 58000000000.00001, b: 0.0, Ea: 2409984.0}
+  rate-constant: {A: 58000000000000.01, b: 0.0, Ea: 0.5760000000000001}
 - equation: C(29) + CH2(11) <=> C2H(21) + H(4)
-  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 50000000000000.01, b: 0.0, Ea: 0.0}
 - equation: C(29) + CH3(14) <=> C2H2(22) + H(4)
-  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 50000000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH(9) + O2(7) <=> HCO(12) + O(2)
-  rate-constant: {A: 67100000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 67100000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH(9) + H2(3) <=> CH2(11) + H(4)
-  rate-constant: {A: 108000000000.00002, b: 0.0, Ea: 13012240.000000002}
+  rate-constant: {A: 108000000000000.02, b: 0.0, Ea: 3.1100000000000008}
 - equation: CH(9) + H2O(28) <=> CH2O(15) + H(4)
-  rate-constant: {A: 5710000000.000001, b: 0.0, Ea: -3158920.0}
+  rate-constant: {A: 5710000000000.001, b: 0.0, Ea: -0.7550000000000001}
 - equation: CH(9) + CH2(11) <=> C2H2(22) + H(4)
-  rate-constant: {A: 40000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 40000000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH(9) + CH3(14) <=> C2H3(24) + H(4)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH(9) + CH4(16) <=> C2H4(26) + H(4)
-  rate-constant: {A: 60000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 60000000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH(9) + CO2(17) <=> CO(10) + HCO(12)
-  rate-constant: {A: 190000000000.00003, b: 0.0, Ea: 66073728.00000001}
+  rate-constant: {A: 190000000000000.03, b: 0.0, Ea: 15.792000000000003}
 - equation: CH(9) + CH2O(15) <=> CH2CO(25) + H(4)
-  rate-constant: {A: 94600000000.00002, b: 0.0, Ea: -2154760.0}
+  rate-constant: {A: 94600000000000.02, b: 0.0, Ea: -0.515}
 - equation: CH(9) + HCCO(23) <=> C2H2(22) + CO(10)
-  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 50000000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH2(11) + O2(7) => CO(10) + H(4) + OH(5)
-  rate-constant: {A: 5000000000.000001, b: 0.0, Ea: 6276000.0}
+  rate-constant: {A: 5000000000000.001, b: 0.0, Ea: 1.5000000000000002}
 - equation: CH2(11) + H2(3) <=> CH3(14) + H(4)
-  rate-constant: {A: 500.0000000000001, b: 2.0, Ea: 30250320.0}
+  rate-constant: {A: 500000.0000000001, b: 2.0, Ea: 7.23}
 - equation: 2 CH2(11) <=> C2H2(22) + H2(3)
-  rate-constant: {A: 1600000000000.0002, b: 0.0, Ea: 49973696.00000001}
+  rate-constant: {A: 1600000000000000.2, b: 0.0, Ea: 11.944000000000003}
 - equation: CH2(11) + CH3(14) <=> C2H4(26) + H(4)
-  rate-constant: {A: 40000000000.00001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 40000000000000.01, b: 0.0, Ea: 0.0}
 - equation: CH2(11) + CH4(16) <=> 2 CH3(14)
-  rate-constant: {A: 2460.0000000000005, b: 2.0, Ea: 34601680.0}
+  rate-constant: {A: 2460000.0000000005, b: 2.0, Ea: 8.270000000000001}
 - equation: CH2(11) + HCCO(23) <=> C2H3(24) + CO(10)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2(S)(13) + O2(7) <=> CO(10) + H(4) + OH(5)
-  rate-constant: {A: 28000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 28000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2(S)(13) + O2(7) <=> CO(10) + H2O(28)
-  rate-constant: {A: 12000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 12000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH2(S)(13) + H2(3) <=> CH3(14) + H(4)
-  rate-constant: {A: 70000000000.00002, b: 0.0, Ea: 0.0}
-- equation: CH2(S)(13) + H2O(28) <=> CH2(11) + H2O(28)
-  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 70000000000000.016, b: 0.0, Ea: 0.0}
+- equation: CH2(S)(13) + H2O(28) + H2O(28) <=> CH2(11) + H2O(28) + H2O(28)
+  rate-constant: {A: 30000000000000.004, b: 0.0, Ea: 0.0}
+  efficiencies: {H2O(28): 1.0}
 - equation: CH2(S)(13) + CH3(14) <=> C2H4(26) + H(4)
-  rate-constant: {A: 12000000000.000002, b: 0.0, Ea: -2384880.0}
+  rate-constant: {A: 12000000000000.002, b: 0.0, Ea: -0.5700000000000001}
 - equation: CH2(S)(13) + CH4(16) <=> 2 CH3(14)
-  rate-constant: {A: 16000000000.000002, b: 0.0, Ea: -2384880.0}
-- equation: CH2(S)(13) + CO(10) <=> CH2(11) + CO(10)
-  rate-constant: {A: 9000000000.000002, b: 0.0, Ea: 0.0}
-- equation: CH2(S)(13) + CO2(17) <=> CH2(11) + CO2(17)
-  rate-constant: {A: 7000000000.000001, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 16000000000000.002, b: 0.0, Ea: -0.5700000000000001}
+- equation: CH2(S)(13) + CO(10) + CO(10) <=> CH2(11) + CO(10) + CO(10)
+  rate-constant: {A: 9000000000000.002, b: 0.0, Ea: 0.0}
+  efficiencies: {CO(10): 1.0}
+- equation: CH2(S)(13) + CO2(17) + CO2(17) <=> CH2(11) + CO2(17) + CO2(17)
+  rate-constant: {A: 7000000000000.001, b: 0.0, Ea: 0.0}
+  efficiencies: {CO2(17): 1.0}
 - equation: CH2(S)(13) + CO2(17) <=> CH2O(15) + CO(10)
-  rate-constant: {A: 14000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 14000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH2(S)(13) + ethane(1) <=> C2H5(27) + CH3(14)
-  rate-constant: {A: 40000000000.00001, b: 0.0, Ea: -2301200.0000000005}
+  rate-constant: {A: 40000000000000.01, b: 0.0, Ea: -0.5500000000000002}
 - equation: CH3(14) + O2(7) <=> CH3O(19) + O(2)
-  rate-constant: {A: 35600000000.00001, b: 0.0, Ea: 127528320.00000001}
+  rate-constant: {A: 35600000000000.01, b: 0.0, Ea: 30.480000000000008}
 - equation: CH3(14) + O2(7) <=> CH2O(15) + OH(5)
-  rate-constant: {A: 2310000000.0000005, b: 0.0, Ea: 84997960.0}
+  rate-constant: {A: 2310000000000.0005, b: 0.0, Ea: 20.315}
 - equation: CH3(14) + H2O2(8) <=> CH4(16) + HO2(6)
-  rate-constant: {A: 24.500000000000004, b: 2.47, Ea: 21673120.000000004}
+  rate-constant: {A: 24500.000000000004, b: 2.47, Ea: 5.1800000000000015}
 - equation: 2 CH3(14) <=> C2H5(27) + H(4)
-  rate-constant: {A: 6840000000.000001, b: 0.1, Ea: 44350400.0}
+  rate-constant: {A: 6840000000000.001, b: 0.1, Ea: 10.600000000000001}
 - equation: CH3(14) + HCO(12) <=> CH4(16) + CO(10)
-  rate-constant: {A: 26480000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 26480000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2O(15) + CH3(14) <=> CH4(16) + HCO(12)
-  rate-constant: {A: 3.3200000000000003, b: 2.81, Ea: 24518240.0}
+  rate-constant: {A: 3320.0000000000005, b: 2.81, Ea: 5.86}
 - equation: CH3(14) + CH3OH(20) <=> CH2OH(18) + CH4(16)
-  rate-constant: {A: 30000.000000000004, b: 1.5, Ea: 41588960.0}
+  rate-constant: {A: 30000000.000000004, b: 1.5, Ea: 9.940000000000001}
 - equation: CH3(14) + CH3OH(20) <=> CH3O(19) + CH4(16)
-  rate-constant: {A: 10000.000000000002, b: 1.5, Ea: 41588960.0}
+  rate-constant: {A: 10000000.000000002, b: 1.5, Ea: 9.940000000000001}
 - equation: C2H4(26) + CH3(14) <=> C2H3(24) + CH4(16)
-  rate-constant: {A: 227.00000000000003, b: 2.0, Ea: 38492800.0}
+  rate-constant: {A: 227000.00000000003, b: 2.0, Ea: 9.200000000000001}
 - equation: CH3(14) + ethane(1) <=> C2H5(27) + CH4(16)
-  rate-constant: {A: 6140.000000000002, b: 1.74, Ea: 43722800.0}
-- equation: H2O(28) + HCO(12) <=> CO(10) + H(4) + H2O(28)
-  rate-constant: {A: 1500000000000000.2, b: -1.0, Ea: 71128000.0}
+  rate-constant: {A: 6140000.000000002, b: 1.74, Ea: 10.450000000000001}
+- equation: H2O(28) + HCO(12) + H2O(28) <=> CO(10) + H(4) + H2O(28) + H2O(28)
+  rate-constant: {A: 1.5000000000000003e+18, b: -1.0, Ea: 17.0}
+  efficiencies: {H2O(28): 1.0}
 - equation: HCO(12) + O2(7) <=> CO(10) + HO2(6)
-  rate-constant: {A: 13450000000.000002, b: 0.0, Ea: 1673600.0000000002}
+  rate-constant: {A: 13450000000000.002, b: 0.0, Ea: 0.4000000000000001}
 - equation: CH2OH(18) + O2(7) <=> CH2O(15) + HO2(6)
-  rate-constant: {A: 18000000000.000004, b: 0.0, Ea: 3765600.000000001}
+  rate-constant: {A: 18000000000000.004, b: 0.0, Ea: 0.9000000000000002}
 - equation: CH3O(19) + O2(7) <=> CH2O(15) + HO2(6)
-  rate-constant: {A: 4.2800000000000005e-16, b: 7.6, Ea: -14769520.000000002}
+  rate-constant: {A: 4.2800000000000004e-13, b: 7.6, Ea: -3.5300000000000007}
 - equation: C2H(21) + O2(7) <=> CO(10) + HCO(12)
-  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: -3158920.0}
+  rate-constant: {A: 10000000000000.002, b: 0.0, Ea: -0.7550000000000001}
 - equation: C2H(21) + H2(3) <=> C2H2(22) + H(4)
-  rate-constant: {A: 56800000.00000001, b: 0.9, Ea: 8338712.000000001}
+  rate-constant: {A: 56800000000.00001, b: 0.9, Ea: 1.9930000000000003}
 - equation: C2H3(24) + O2(7) <=> CH2O(15) + HCO(12)
-  rate-constant: {A: 45800000000000.01, b: -1.39, Ea: 4246760.0}
+  rate-constant: {A: 4.580000000000001e+16, b: -1.39, Ea: 1.0150000000000001}
 - equation: C2H5(27) + O2(7) <=> C2H4(26) + HO2(6)
-  rate-constant: {A: 840000000.0000001, b: 0.0, Ea: 16213000.000000002}
+  rate-constant: {A: 840000000000.0001, b: 0.0, Ea: 3.875000000000001}
 - equation: HCCO(23) + O2(7) <=> 2 CO(10) + OH(5)
-  rate-constant: {A: 3200000000.0000005, b: 0.0, Ea: 3573136.0}
+  rate-constant: {A: 3200000000000.0005, b: 0.0, Ea: 0.8540000000000001}
 - equation: 2 HCCO(23) <=> C2H2(22) + 2 CO(10)
-  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 10000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH3(14) + O(2) => CO(10) + H(4) + H2(3)
-  rate-constant: {A: 33700000000.000008, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 33700000000000.008, b: 0.0, Ea: 0.0}
 - equation: C2H4(26) + O(2) <=> CH2CHO(31) + H(4)
-  rate-constant: {A: 6700.000000000001, b: 1.83, Ea: 920480.0}
+  rate-constant: {A: 6700000.000000001, b: 1.83, Ea: 0.22000000000000003}
 - equation: C2H5(27) + O(2) <=> CH3CHO(32) + H(4)
-  rate-constant: {A: 109600000000.00002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 109600000000000.02, b: 0.0, Ea: 0.0}
 - equation: CH3(14) + OH(5) => CH2O(15) + H2(3)
-  rate-constant: {A: 8000000.000000001, b: 0.5, Ea: -7342920.0}
+  rate-constant: {A: 8000000000.000001, b: 0.5, Ea: -1.7550000000000001}
 - equation: CH2(11) + O2(7) => CO2(17) + 2 H(4)
-  rate-constant: {A: 5800000000.000001, b: 0.0, Ea: 6276000.0}
+  rate-constant: {A: 5800000000000.001, b: 0.0, Ea: 1.5000000000000002}
 - equation: CH2(11) + O2(7) <=> CH2O(15) + O(2)
-  rate-constant: {A: 2400000000.0000005, b: 0.0, Ea: 6276000.0}
+  rate-constant: {A: 2400000000000.0005, b: 0.0, Ea: 1.5000000000000002}
 - equation: 2 CH2(11) => C2H2(22) + 2 H(4)
-  rate-constant: {A: 200000000000.00003, b: 0.0, Ea: 45977976.0}
+  rate-constant: {A: 200000000000000.03, b: 0.0, Ea: 10.989}
 - equation: CH2(S)(13) + H2O(28) => CH2O(15) + H2(3)
-  rate-constant: {A: 68200000.00000001, b: 0.25, Ea: -3912040.0000000005}
+  rate-constant: {A: 68200000000.000015, b: 0.25, Ea: -0.9350000000000002}
 - equation: C2H3(24) + O2(7) <=> CH2CHO(31) + O(2)
-  rate-constant: {A: 303000000.00000006, b: 0.29, Ea: 46024.00000000001}
+  rate-constant: {A: 303000000000.00006, b: 0.29, Ea: 0.011000000000000003}
 - equation: C2H3(24) + O2(7) <=> C2H2(22) + HO2(6)
-  rate-constant: {A: 1337.0000000000002, b: 1.61, Ea: -1606656.0000000002}
+  rate-constant: {A: 1337000.0000000002, b: 1.61, Ea: -0.38400000000000006}
 - equation: CH3CHO(32) + O(2) <=> CH2CHO(31) + OH(5)
-  rate-constant: {A: 2920000000.0000005, b: 0.0, Ea: 7564672.000000002}
+  rate-constant: {A: 2920000000000.0005, b: 0.0, Ea: 1.8080000000000005}
 - equation: CH3CHO(32) + O(2) => CH3(14) + CO(10) + OH(5)
-  rate-constant: {A: 2920000000.0000005, b: 0.0, Ea: 7564672.000000002}
+  rate-constant: {A: 2920000000000.0005, b: 0.0, Ea: 1.8080000000000005}
 - equation: CH3CHO(32) + O2(7) => CH3(14) + CO(10) + HO2(6)
-  rate-constant: {A: 30100000000.000004, b: 0.0, Ea: 163803600.0}
+  rate-constant: {A: 30100000000000.004, b: 0.0, Ea: 39.150000000000006}
 - equation: CH3CHO(32) + H(4) <=> CH2CHO(31) + H2(3)
-  rate-constant: {A: 2050000.0000000005, b: 1.16, Ea: 10062520.0}
+  rate-constant: {A: 2050000000.0000005, b: 1.16, Ea: 2.4050000000000002}
 - equation: CH3CHO(32) + H(4) => CH3(14) + CO(10) + H2(3)
-  rate-constant: {A: 2050000.0000000005, b: 1.16, Ea: 10062520.0}
+  rate-constant: {A: 2050000000.0000005, b: 1.16, Ea: 2.4050000000000002}
 - equation: CH3CHO(32) + OH(5) => CH3(14) + CO(10) + H2O(28)
-  rate-constant: {A: 23430000.000000004, b: 0.73, Ea: -4656792.0}
+  rate-constant: {A: 23430000000.000004, b: 0.73, Ea: -1.113}
 - equation: CH3CHO(32) + HO2(6) => CH3(14) + CO(10) + H2O2(8)
-  rate-constant: {A: 3010000000.0000005, b: 0.0, Ea: 49885832.0}
-- equation: CH3(14) + CH3CHO(32) => CH3(14) + CH4(16) + CO(10)
-  rate-constant: {A: 2720.0000000000005, b: 1.77, Ea: 24769280.000000004}
+  rate-constant: {A: 3010000000000.0005, b: 0.0, Ea: 11.923000000000002}
+- equation: CH3(14) + CH3CHO(32) + CH3(14) => CH3(14) + CH4(16) + CO(10) + CH3(14)
+  rate-constant: {A: 2720000.0000000005, b: 1.77, Ea: 5.920000000000002}
+  efficiencies: {CH3(14): 1.0}
 - equation: CH2CHO(31) + O(2) => CH2(11) + CO2(17) + H(4)
-  rate-constant: {A: 150000000000.00003, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 150000000000000.03, b: 0.0, Ea: 0.0}
 - equation: CH2CHO(31) + O2(7) => CH2O(15) + CO(10) + OH(5)
-  rate-constant: {A: 18100000.000000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 18100000000.000004, b: 0.0, Ea: 0.0}
 - equation: CH2CHO(31) + O2(7) => 2 HCO(12) + OH(5)
-  rate-constant: {A: 23500000.000000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 23500000000.000004, b: 0.0, Ea: 0.0}
 - equation: CH2CHO(31) + H(4) <=> CH3(14) + HCO(12)
-  rate-constant: {A: 22000000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 22000000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2CHO(31) + H(4) <=> CH2CO(25) + H2(3)
-  rate-constant: {A: 11000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 11000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH2CHO(31) + OH(5) <=> CH2CO(25) + H2O(28)
-  rate-constant: {A: 12000000000.000002, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 12000000000000.002, b: 0.0, Ea: 0.0}
 - equation: CH2CHO(31) + OH(5) <=> CH2OH(18) + HCO(12)
-  rate-constant: {A: 30100000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 30100000000000.004, b: 0.0, Ea: 0.0}
 - equation: 2 O(2) + M <=> O2(7) + M
-  type: three-body
-  rate-constant: {A: 120000000000.00002, b: -1.0, Ea: 0.0}
+  rate-constant: {A: 1.2000000000000002e+17, b: -1.0, Ea: 0.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.4, CH4(16): 2.0, CO2(17): 3.6, H2O(28): 15.4,
     Ar: 0.83}
 - equation: H(4) + O(2) + M <=> OH(5) + M
-  type: three-body
-  rate-constant: {A: 500000000000.0001, b: -1.0, Ea: 0.0}
+  rate-constant: {A: 5.000000000000001e+17, b: -1.0, Ea: 0.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: H(4) + O2(7) + M <=> HO2(6) + M
-  type: three-body
-  rate-constant: {A: 2800000000000.0005, b: -0.86, Ea: 0.0}
+  rate-constant: {A: 2.8000000000000005e+18, b: -0.86, Ea: 0.0}
   efficiencies: {ethane(1): 1.5, O2(7): 0.0, CO2(17): 1.5, H2O(28): 0.0, N2: 0.0,
     Ar: 0.0}
 - equation: 2 H(4) + M <=> H2(3) + M
-  type: three-body
-  rate-constant: {A: 1000000000000.0002, b: -1.0, Ea: 0.0}
+  rate-constant: {A: 1.0000000000000003e+18, b: -1.0, Ea: 0.0}
   efficiencies: {ethane(1): 3.0, H2(3): 0.0, CH4(16): 2.0, CO2(17): 0.0, H2O(28): 0.0,
     Ar: 0.63}
 - equation: H(4) + OH(5) + M <=> H2O(28) + M
-  type: three-body
-  rate-constant: {A: 2.2000000000000004e+16, b: -2.0, Ea: 0.0}
+  rate-constant: {A: 2.2000000000000004e+22, b: -2.0, Ea: 0.0}
   efficiencies: {ethane(1): 3.0, H2(3): 0.73, CH4(16): 2.0, H2O(28): 3.65, Ar: 0.38}
 - equation: HCO(12) + M <=> CO(10) + H(4) + M
-  type: three-body
-  rate-constant: {A: 187000000000000.03, b: -1.0, Ea: 71128000.0}
+  rate-constant: {A: 1.8700000000000003e+17, b: -1.0, Ea: 17.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 0.0}
 - equation: CO(10) + O(2) (+M) <=> CO2(17) (+M)
   type: falloff
-  low-P-rate-constant: {A: 602000000.0000001, b: 0.0, Ea: 12552000.0}
-  high-P-rate-constant: {A: 18000000.000000004, b: 0.0, Ea: 9978840.0}
+  low-P-rate-constant: {A: 602000000000000.1, b: 0.0, Ea: 3.0000000000000004}
+  high-P-rate-constant: {A: 18000000000.000004, b: 0.0, Ea: 2.3850000000000002}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, O2(7): 6.0, CH4(16): 2.0, CO2(17): 3.5,
     H2O(28): 6.0, Ar: 0.5}
 - equation: CH2(11) + H(4) (+M) <=> CH3(14) (+M)
   type: falloff
-  low-P-rate-constant: {A: 1.0400000000000002e+20, b: -2.76, Ea: 6694400.000000001}
-  high-P-rate-constant: {A: 600000000000.0001, b: 0.0, Ea: 0.0}
+  low-P-rate-constant: {A: 1.0400000000000001e+26, b: -2.76, Ea: 1.6000000000000003}
+  high-P-rate-constant: {A: 600000000000000.1, b: 0.0, Ea: 0.0}
   Troe: {A: 0.562, T3: 91.0, T1: 5836.0, T2: 8552.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: CH3(14) + H(4) (+M) <=> CH4(16) (+M)
   type: falloff
-  low-P-rate-constant: {A: 2.6200000000000006e+27, b: -4.76, Ea: 10208960.000000002}
-  high-P-rate-constant: {A: 13900000000000.002, b: -0.534, Ea: 2242624.0000000005}
+  low-P-rate-constant: {A: 2.620000000000001e+33, b: -4.76, Ea: 2.440000000000001}
+  high-P-rate-constant: {A: 1.3900000000000002e+16, b: -0.534, Ea: 0.5360000000000001}
   Troe: {A: 0.783, T3: 74.0, T1: 2941.0, T2: 6964.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 3.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: H(4) + HCO(12) (+M) <=> CH2O(15) (+M)
   type: falloff
-  low-P-rate-constant: {A: 2.4700000000000005e+18, b: -2.57, Ea: 1778200.0}
-  high-P-rate-constant: {A: 1090000000.0000002, b: 0.48, Ea: -1087840.0000000005}
+  low-P-rate-constant: {A: 2.4700000000000006e+24, b: -2.57, Ea: 0.42500000000000004}
+  high-P-rate-constant: {A: 1090000000000.0002, b: 0.48, Ea: -0.2600000000000001}
   Troe: {A: 0.7824, T3: 271.0, T1: 2755.0, T2: 6570.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: CH2O(15) + H(4) (+M) <=> CH2OH(18) (+M)
   type: falloff
-  low-P-rate-constant: {A: 1.2700000000000002e+26, b: -4.82, Ea: 27321520.0}
-  high-P-rate-constant: {A: 540000000.0000001, b: 0.454, Ea: 15062400.000000004}
+  low-P-rate-constant: {A: 1.2700000000000002e+32, b: -4.82, Ea: 6.53}
+  high-P-rate-constant: {A: 540000000000.0001, b: 0.454, Ea: 3.600000000000001}
   Troe: {A: 0.7187, T3: 103.00000000000001, T1: 1291.0, T2: 4160.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
 - equation: CH2O(15) + H(4) (+M) <=> CH3O(19) (+M)
   type: falloff
-  low-P-rate-constant: {A: 2.2000000000000006e+24, b: -4.8, Ea: 23263040.0}
-  high-P-rate-constant: {A: 540000000.0000001, b: 0.454, Ea: 10878400.000000002}
+  low-P-rate-constant: {A: 2.2000000000000006e+30, b: -4.8, Ea: 5.5600000000000005}
+  high-P-rate-constant: {A: 540000000000.0001, b: 0.454, Ea: 2.6000000000000005}
   Troe: {A: 0.758, T3: 94.0, T1: 1555.0, T2: 4200.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
 - equation: CH2OH(18) + H(4) (+M) <=> CH3OH(20) (+M)
   type: falloff
-  low-P-rate-constant: {A: 4.360000000000001e+25, b: -4.65, Ea: 21254720.0}
-  high-P-rate-constant: {A: 1055000000.0000002, b: 0.5, Ea: 359824.0}
+  low-P-rate-constant: {A: 4.360000000000001e+31, b: -4.65, Ea: 5.08}
+  high-P-rate-constant: {A: 1055000000000.0002, b: 0.5, Ea: 0.08600000000000001}
   Troe: {A: 0.6, T3: 100.0, T1: 90000.0, T2: 10000.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
 - equation: CH3O(19) + H(4) (+M) <=> CH3OH(20) (+M)
   type: falloff
-  low-P-rate-constant: {A: 4.660000000000001e+35, b: -7.44, Ea: 58910720.0}
-  high-P-rate-constant: {A: 2430000000.0000005, b: 0.515, Ea: 209200.00000000003}
+  low-P-rate-constant: {A: 4.660000000000001e+41, b: -7.44, Ea: 14.080000000000002}
+  high-P-rate-constant: {A: 2430000000000.0005, b: 0.515, Ea: 0.05000000000000001}
   Troe: {A: 0.7, T3: 100.0, T1: 90000.0, T2: 10000.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
 - equation: C2H(21) + H(4) (+M) <=> C2H2(22) (+M)
   type: falloff
-  low-P-rate-constant: {A: 3.750000000000001e+27, b: -4.8, Ea: 7949600.000000001}
-  high-P-rate-constant: {A: 100000000000000.02, b: -1.0, Ea: 0.0}
+  low-P-rate-constant: {A: 3.7500000000000014e+33, b: -4.8, Ea: 1.9000000000000004}
+  high-P-rate-constant: {A: 1.0000000000000002e+17, b: -1.0, Ea: 0.0}
   Troe: {A: 0.6464, T3: 132.0, T1: 1315.0, T2: 5566.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: C2H2(22) + H(4) (+M) <=> C2H3(24) (+M)
   type: falloff
-  low-P-rate-constant: {A: 3.8000000000000006e+34, b: -7.27, Ea: 30208480.0}
-  high-P-rate-constant: {A: 5600000000.000001, b: 0.0, Ea: 10041600.0}
+  low-P-rate-constant: {A: 3.8000000000000005e+40, b: -7.27, Ea: 7.220000000000001}
+  high-P-rate-constant: {A: 5600000000000.001, b: 0.0, Ea: 2.4000000000000004}
   Troe: {A: 0.7507, T3: 98.50000000000001, T1: 1302.0, T2: 4167.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: C2H3(24) + H(4) (+M) <=> C2H4(26) (+M)
   type: falloff
-  low-P-rate-constant: {A: 1.4000000000000004e+24, b: -3.86, Ea: 13890880.000000004}
-  high-P-rate-constant: {A: 6080000000.000001, b: 0.27, Ea: 1171520.0}
+  low-P-rate-constant: {A: 1.4000000000000005e+30, b: -3.86, Ea: 3.320000000000001}
+  high-P-rate-constant: {A: 6080000000000.001, b: 0.27, Ea: 0.28}
   Troe: {A: 0.782, T3: 207.49999999999997, T1: 2663.0, T2: 6095.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: C2H4(26) + H(4) (+M) <=> C2H5(27) (+M)
   type: falloff
-  low-P-rate-constant: {A: 6.0000000000000005e+35, b: -7.62, Ea: 29162480.0}
-  high-P-rate-constant: {A: 540000000.0000001, b: 0.454, Ea: 7614880.000000001}
+  low-P-rate-constant: {A: 6.0000000000000004e+41, b: -7.62, Ea: 6.970000000000001}
+  high-P-rate-constant: {A: 540000000000.0001, b: 0.454, Ea: 1.8200000000000003}
   Troe: {A: 0.9753, T3: 209.99999999999997, T1: 983.9999999999999, T2: 4374.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: C2H5(27) + H(4) (+M) <=> ethane(1) (+M)
   type: falloff
-  low-P-rate-constant: {A: 1.9900000000000005e+35, b: -7.08, Ea: 27970040.0}
-  high-P-rate-constant: {A: 521000000000000.06, b: -0.99, Ea: 6610720.0}
+  low-P-rate-constant: {A: 1.9900000000000004e+41, b: -7.08, Ea: 6.6850000000000005}
+  high-P-rate-constant: {A: 5.2100000000000006e+17, b: -0.99, Ea: 1.58}
   Troe: {A: 0.8422, T3: 125.0, T1: 2219.0, T2: 6882.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: CO(10) + H2(3) (+M) <=> CH2O(15) (+M)
   type: falloff
-  low-P-rate-constant: {A: 5.07e+21, b: -3.42, Ea: 352920400.0}
-  high-P-rate-constant: {A: 43000.00000000001, b: 1.5, Ea: 333046400.0}
+  low-P-rate-constant: {A: 5.070000000000001e+27, b: -3.42, Ea: 84.35000000000001}
+  high-P-rate-constant: {A: 43000000.00000001, b: 1.5, Ea: 79.60000000000001}
   Troe: {A: 0.932, T3: 197.00000000000003, T1: 1540.0, T2: 10300.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: 2 OH(5) (+M) <=> H2O2(8) (+M)
   type: falloff
-  low-P-rate-constant: {A: 2300000000000.0005, b: -0.9, Ea: -7112800.0}
-  high-P-rate-constant: {A: 74000000000.00002, b: -0.37, Ea: 0.0}
+  low-P-rate-constant: {A: 2.3000000000000005e+18, b: -0.9, Ea: -1.7000000000000002}
+  high-P-rate-constant: {A: 74000000000000.02, b: -0.37, Ea: 0.0}
   Troe: {A: 0.7346, T3: 94.0, T1: 1756.0, T2: 5182.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: CH3(14) + OH(5) (+M) <=> CH3OH(20) (+M)
   type: falloff
-  low-P-rate-constant: {A: 4.000000000000001e+30, b: -5.92, Ea: 13137760.0}
-  high-P-rate-constant: {A: 2790000000000000.5, b: -1.43, Ea: 5564720.0}
+  low-P-rate-constant: {A: 4.0000000000000014e+36, b: -5.92, Ea: 3.14}
+  high-P-rate-constant: {A: 2.7900000000000005e+18, b: -1.43, Ea: 1.33}
   Troe: {A: 0.412, T3: 195.0, T1: 5900.0, T2: 6394.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
 - equation: CH(9) + CO(10) (+M) <=> HCCO(23) (+M)
   type: falloff
-  low-P-rate-constant: {A: 2.6900000000000003e+22, b: -3.74, Ea: 8100224.000000001}
-  high-P-rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  low-P-rate-constant: {A: 2.6900000000000003e+28, b: -3.74, Ea: 1.9360000000000004}
+  high-P-rate-constant: {A: 50000000000000.01, b: 0.0, Ea: 0.0}
   Troe: {A: 0.5757, T3: 237.00000000000003, T1: 1652.0, T2: 5069.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: CH2(11) + CO(10) (+M) <=> CH2CO(25) (+M)
   type: falloff
-  low-P-rate-constant: {A: 2.6900000000000006e+27, b: -5.11, Ea: 29685480.0}
-  high-P-rate-constant: {A: 810000000.0000001, b: 0.5, Ea: 18869840.000000004}
+  low-P-rate-constant: {A: 2.6900000000000005e+33, b: -5.11, Ea: 7.095000000000001}
+  high-P-rate-constant: {A: 810000000000.0001, b: 0.5, Ea: 4.510000000000002}
   Troe: {A: 0.5907, T3: 275.0, T1: 1226.0, T2: 5185.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: CH2(S)(13) + H2O(28) (+M) <=> CH3OH(20) (+M)
   type: falloff
-  low-P-rate-constant: {A: 1.88e+32, b: -6.36, Ea: 21087360.0}
-  high-P-rate-constant: {A: 482000000000000.06, b: -1.16, Ea: 4790680.000000001}
+  low-P-rate-constant: {A: 1.8800000000000002e+38, b: -6.36, Ea: 5.04}
+  high-P-rate-constant: {A: 4.8200000000000006e+17, b: -1.16, Ea: 1.1450000000000002}
   Troe: {A: 0.6027, T3: 208.0, T1: 3921.9999999999995, T2: 10180.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
 - equation: 2 CH3(14) (+M) <=> ethane(1) (+M)
   type: falloff
-  low-P-rate-constant: {A: 3.400000000000001e+35, b: -7.03, Ea: 11556208.000000002}
-  high-P-rate-constant: {A: 67700000000000.01, b: -1.18, Ea: 2736336.000000001}
+  low-P-rate-constant: {A: 3.4000000000000008e+41, b: -7.03, Ea: 2.7620000000000005}
+  high-P-rate-constant: {A: 6.770000000000001e+16, b: -1.18, Ea: 0.6540000000000002}
   Troe: {A: 0.619, T3: 73.2, T1: 1180.0, T2: 9999.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: C2H4(26) (+M) <=> C2H2(22) + H2(3) (+M)
   type: falloff
-  low-P-rate-constant: {A: 1.5800000000000006e+48, b: -9.3, Ea: 409195200.0}
-  high-P-rate-constant: {A: 8000000000000.0, b: 0.44, Ea: 363045680.00000006}
+  low-P-rate-constant: {A: 1.5800000000000005e+51, b: -9.3, Ea: 97.80000000000001}
+  high-P-rate-constant: {A: 8000000000000.0, b: 0.44, Ea: 86.77000000000002}
   Troe: {A: 0.7345, T3: 180.0, T1: 1035.0, T2: 5417.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: CH(9) + H2(3) (+M) <=> CH3(14) (+M)
   type: falloff
-  low-P-rate-constant: {A: 4.820000000000001e+19, b: -2.8, Ea: 2468560.0000000005}
-  high-P-rate-constant: {A: 1970000000.0000002, b: 0.43, Ea: -1548080.0000000002}
+  low-P-rate-constant: {A: 4.820000000000001e+25, b: -2.8, Ea: 0.5900000000000002}
+  high-P-rate-constant: {A: 1970000000000.0002, b: 0.43, Ea: -0.3700000000000001}
   Troe: {A: 0.578, T3: 122.0, T1: 2535.0, T2: 9365.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: CH2CO(25) + H(4) (+M) <=> CH2CHO(31) (+M)
   type: falloff
-  low-P-rate-constant: {A: 1.0120000000000002e+36, b: -7.63, Ea: 16125136.000000002}
-  high-P-rate-constant: {A: 486500000.00000006, b: 0.422, Ea: -7342920.0}
+  low-P-rate-constant: {A: 1.0120000000000001e+42, b: -7.63, Ea: 3.8540000000000005}
+  high-P-rate-constant: {A: 486500000000.00006, b: 0.422, Ea: -1.7550000000000001}
   Troe: {A: 0.465, T3: 201.0, T1: 1772.9999999999998, T2: 5333.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: C2H5(27) + CH3(14) (+M) <=> C3H8(33) (+M)
   type: falloff
-  low-P-rate-constant: {A: 2.7100000000000003e+68, b: -16.82, Ea: 54663960.00000001}
-  high-P-rate-constant: {A: 9430000000.000002, b: 0.0, Ea: 0.0}
+  low-P-rate-constant: {A: 2.7100000000000005e+74, b: -16.82, Ea: 13.065000000000003}
+  high-P-rate-constant: {A: 9430000000000.002, b: 0.0, Ea: 0.0}
   Troe: {A: 0.1527, T3: 291.0, T1: 2742.0, T2: 7748.0}
   efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
     Ar: 0.7}
 - equation: H(4) + HO2(6) <=> H2O2(8)
-  rate-constant: {A: 5250690.0, b: 1.27262, Ea: 0.0}
+  rate-constant: {A: 5250690000.0, b: 1.27262, Ea: 0.0}
 - equation: CH(9) + H(4) <=> CH2(S)(13)
-  rate-constant: {A: 53700000000.0, b: 0.15395, Ea: 0.0}
+  rate-constant: {A: 53700000000000.0, b: 0.15395, Ea: 0.0}
 - equation: H(4) + HCCO(23) <=> CH2CO(25)
-  rate-constant: {A: 11386000000.0, b: 0.308956, Ea: 0.0}
+  rate-constant: {A: 11386000000000.0, b: 0.308956, Ea: 0.0}
 - equation: C2H(21) + OH(5) <=> HCCOH(30)
-  rate-constant: {A: 77000000000.0, b: 4.95181e-08, Ea: 0.0}
+  rate-constant: {A: 77000000000000.0, b: 4.95181e-08, Ea: 0.0}
 - equation: H(4) + HCCO(23) <=> HCCOH(30)
-  rate-constant: {A: 2805150000.0, b: 0.314888, Ea: 0.0}
+  rate-constant: {A: 2805150000000.0, b: 0.314888, Ea: 0.0}
 - equation: CH3(14) + HCO(12) <=> CH3CHO(32)
-  rate-constant: {A: 18100000000.000004, b: 0.0, Ea: 0.0}
+  rate-constant: {A: 18100000000000.004, b: 0.0, Ea: 0.0}
 - equation: CH2CHO(31) + H(4) <=> CH3CHO(32)
-  rate-constant: {A: 78286700000.0, b: 0.0631113, Ea: 0.0}
+  rate-constant: {A: 78286700000000.0, b: 0.0631113, Ea: 0.0}
 - equation: 2 CH(9) <=> C2H2(22)
-  rate-constant: {A: 99813000.0, b: 0.610916, Ea: 0.0}
+  rate-constant: {A: 99813000000.0, b: 0.610916, Ea: 0.0}
