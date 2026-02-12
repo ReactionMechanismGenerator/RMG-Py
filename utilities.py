@@ -48,6 +48,7 @@ def check_dependencies():
     print('{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location'))
 
     missing = {
+        'cantera': _check_cantera(),
         'openbabel': _check_openbabel(),
         'pydqed': _check_pydqed(),
         'pyrdl': _check_pyrdl(),
@@ -57,9 +58,18 @@ def check_dependencies():
 
     if any(missing.values()):
         print("""
+        ╔═══════════════════════════════════════════════════════════════════════════╗
+        ║        !                                                   !              ║
+        ║       ! !            WARNING: MISSING DEPENDENCIES        ! !             ║
+        ║      !!!!!                                               !!!!!            ║
+        ╚═══════════════════════════════════════════════════════════════════════════╝
+
 There are missing dependencies as listed above. Please install them before proceeding.
 
     conda env update -f environment.yml
+              
+Or (often better) make a new conda environment and restart the installation instructions.
+See https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation
 
 Be sure to activate your conda environment (rmg_env by default) before installing or updating.
 """)
@@ -67,6 +77,35 @@ Be sure to activate your conda environment (rmg_env by default) before installin
         print("""
 Everything was found :)
 """)
+
+def _check_cantera():
+    """Check for Cantera with version >= 3.0"""
+    missing = False
+
+    try:
+        import cantera
+    except ImportError:
+        print('{0:<30}{1}'.format('Cantera',
+                                  'Not found. Necessary for output file writing and utilities.'))
+        missing = True
+    else:
+        version = cantera.__version__
+        location = cantera.__file__
+        
+        # Parse version string to compare (e.g., "3.0.0" -> (3, 0))
+        try:
+            version_tuple = tuple(int(x) for x in version.split('.')[:2])
+        except (ValueError, IndexError):
+            version_tuple = (0, 0)
+        
+        if version_tuple < (3, 0):
+            print('{0:<15}{1:<15}{2}'.format('Cantera', version, location))
+            print('    !!! Cantera version must be 3.0 or later.')
+            missing = True
+        else:
+            print('{0:<15}{1:<15}{2}'.format('Cantera', version, location))
+
+    return missing
 
 
 def _check_openbabel():
