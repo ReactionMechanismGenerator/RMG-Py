@@ -47,6 +47,40 @@ from datetime import datetime
 from rmgpy.chemkin import get_species_identifier
 
 
+def _convert_anymap_to_dict(obj):
+    """
+    Recursively convert Cantera AnyMap objects to regular Python dicts.
+    
+    Cantera's input_data property returns dicts containing AnyMap objects,
+    which are Cython extension types that cannot be serialized by YAML.
+    This function recursively converts all AnyMaps to plain dicts.
+    
+    Args:
+        obj: Any object (dict, list, AnyMap, or primitive type)
+        
+    Returns:
+        The object with all AnyMaps converted to dicts
+    """
+    try:
+        from cantera._utils import AnyMap
+    except ImportError:
+        # If Cantera is not available or doesn't have AnyMap, just return the object
+        return obj
+    
+    if isinstance(obj, AnyMap):
+        # Convert AnyMap to dict and recursively process values
+        return {k: _convert_anymap_to_dict(v) for k, v in dict(obj).items()}
+    elif isinstance(obj, dict):
+        # Recursively process dict values
+        return {k: _convert_anymap_to_dict(v) for k, v in obj.items()}
+    elif isinstance(obj, (list, tuple)):
+        # Recursively process list/tuple elements
+        return type(obj)(_convert_anymap_to_dict(item) for item in obj)
+    else:
+        # Return primitive types as-is
+        return obj
+
+
 def write_cantera(
     spcs,
     rxns,
@@ -376,6 +410,8 @@ def reaction_to_dicts(obj, spcs):
                 )
                 if val != 1
             }
+        # Convert any AnyMap objects to regular dicts before appending
+        reaction_data = _convert_anymap_to_dict(reaction_data)
         reaction_list.append(reaction_data)
 
     return reaction_list
@@ -404,6 +440,9 @@ def species_to_dict(species):
         sites = species_data["size"]
         species_data.pop("size", None)
         species_data["sites"] = sites
+
+    # Convert any AnyMap objects to regular dicts before returning
+    species_data = _convert_anymap_to_dict(species_data)
 
      # returns composition, name, thermo, and transport, and note
     return species_data
