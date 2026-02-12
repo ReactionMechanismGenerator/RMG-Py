@@ -1180,8 +1180,8 @@ def read_species_block(f, species_dict, species_aliases, species_list):
     tokens_upper = line.upper().split()
     first_token = tokens.pop(0)
     first_token = tokens_upper.pop(0)  # pop from both lists
-    assert first_token in ['SPECIES', 'SPEC', 'SITE']  # should be first token in first line
-    # Build list of species identifiers
+    assert first_token.startswith('SPEC') or first_token.startswith('SITE'), f"'{line}' should begin with SPECIES or SITE statement."
+     # Build list of species identifiers
     while 'END' not in tokens_upper:
         line = f.readline()
         # If the line contains only one species, and also contains
@@ -1206,6 +1206,8 @@ def read_species_block(f, species_dict, species_aliases, species_list):
         token_upper = token.upper()
         if token_upper in ['SPECIES', 'SPEC', 'SITE']:
             continue  # there may be more than one SPECIES statement
+        if re.match(r'^SITE/', token_upper):
+            continue # could be a named surface like SITE/SURF1/
         if token_upper == 'END':
             break
 
