@@ -2168,7 +2168,7 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Species section
-    surface_name = None
+    surface_name = 'SURF0' # Some ck2yaml versions (Cantera 3.1) require a name.
     if surface_name:
         f.write('SITE/{}/'.format(surface_name))
     else:
