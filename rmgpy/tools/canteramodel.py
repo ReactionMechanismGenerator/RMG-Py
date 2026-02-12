@@ -341,6 +341,7 @@ class Cantera(object):
         Note that if this is a surface mechanism, the calling function much include surface_file as a keyword argument for the parser
         """
         from cantera import ck2yaml
+        import yaml
 
         base = os.path.basename(chemkin_file)
         base_name = os.path.splitext(base)[0]
@@ -353,7 +354,20 @@ class Cantera(object):
         self.model = ct.Solution(out_name)
 
         if self.surface:
-            self.surface = ct.Interface(out_name, 'surface1')
+            # Find the surface phase name in the generated YAML file
+            with open(out_name, 'r') as f:
+                yaml_data = yaml.safe_load(f)
+            
+            surface_phase_name = None
+            for phase in yaml_data.get('phases', []):
+                if phase.get('thermo') == 'ideal-surface':
+                    surface_phase_name = phase.get('name')
+                    break
+            
+            if surface_phase_name is None:
+                raise ValueError(f"No surface phase found in {out_name}")
+            
+            self.surface = ct.Interface(out_name, surface_phase_name)
             self.model = self.surface.adjacent['gas']
 
     def modify_reaction_kinetics(self, rmg_reaction_index, rmg_reaction):
