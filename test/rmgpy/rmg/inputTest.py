@@ -280,10 +280,18 @@ class TestInputReactors:
         global rmg
         reactor = rmg.reaction_systems[0]
 
-        # Values get converted to default SI units, mol/m^3
-        assert reactor.initial_concentrations["A"] == 300
-        assert reactor.initial_concentrations["B"] == 200
-        assert reactor.initial_concentrations["C"] == 100
+        # Values are saved as Quantity to preserve units, but get changed to SI units, mol/m^3 in the set_initial_conditions function
+        assert reactor.initial_concentrations["A"].value_si == 300
+        assert reactor.initial_concentrations["B"].value_si == 200
+        assert reactor.initial_concentrations["C"].value_si == 100
+
+        rmg.reaction_systems[0].initialize_model(list(reactor.initial_concentrations.keys()), [], [], [])
+        rmg.reaction_systems[0].set_initial_conditions()
+        assert rmg.reaction_systems[0].core_species_concentrations[0] == 300
+        assert rmg.reaction_systems[0].core_species_concentrations[1] == 200
+        assert rmg.reaction_systems[0].core_species_concentrations[2] == 100
+        # Test that the units are saved internally in the reactor as mol/m^3
+
 
     def test_surface_reactor_mole_fractions(self):
         """Test that SurfaceReactor mole fractions are set properly"""

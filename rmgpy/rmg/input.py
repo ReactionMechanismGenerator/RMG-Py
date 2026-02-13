@@ -58,6 +58,7 @@ from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.base import ReactionSystem
 from rmgpy.solver.termination import (
     TerminationConversion,
     TerminationRateRatio,
@@ -656,10 +657,7 @@ def liquid_cat_reactor(temperature,
                    constantSpecies=[]):
     for spec, conc in initialConcentrations.items():
         if not isinstance(conc, list):
-            concentration = Quantity(conc)
-            # check the dimensions are ok
-            # convert to mol/m^3 (or something numerically nice? or must it be SI)
-            initialConcentrations[spec] = concentration.value_si
+            initialConcentrations[spec] = Quantity(conc)
         else:
             if len(conc) != 2:
                 raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
@@ -715,14 +713,14 @@ def liquid_cat_reactor(temperature,
 
     initialCondLiq = dict()
     V = 1.0
-    A = V*Quantity(surfaceVolumeRatio).value_si
-    for key,item in initialConcentrations.items():
-        initialCondLiq[key] = item*V
+    A = V * Quantity(surfaceVolumeRatio).value_si
+    for key, conc in initialConcentrations.items():
+        initialCondLiq[key] = conc.value_si * V
     initialCondLiq["T"] = T
     initialCondLiq["V"] = V
     initialCondSurf = dict()
-    for key,item in initialSurfaceCoverages.items():
-        initialCondSurf[key] = item*rmg.surface_site_density.value_si*A
+    for key, surf_cov in initialSurfaceCoverages.items():
+        initialCondSurf[key] = surf_cov * rmg.surface_site_density.value_si * A
     initialCondSurf["T"] = T
     initialCondSurf["A"] = A
     initialCondSurf["d"] = 0.0
@@ -771,8 +769,7 @@ def constant_T_V_liquid_reactor(temperature,
 
     for spec, conc in initialConcentrations.items():
         if not isinstance(conc, list):
-            concentration = Quantity(conc)
-            initialConcentrations[spec] = concentration.value_si
+            initialConcentrations[spec] = Quantity(conc)
         else:
             raise InputError("Condition ranges not supported for this reaction type")
             if len(conc) != 2:
@@ -880,16 +877,16 @@ def constant_T_V_liquid_reactor(temperature,
     ############################################### process inputs ##############################################
 
     initial_conditions = dict()
-    for key, item in initialConcentrations.items():
-        initial_conditions[key] = item*V
+    for key, conc in initialConcentrations.items():
+        initial_conditions[key] = conc.value_si * V
     initial_conditions["T"] = T
     initial_conditions["V"] = V
 
     inlet_conditions = dict()
     if inletConcentrations:
         total_molar_flow_rate = 0
-        for key, item in inletConcentrations.items():
-            inlet_conditions[key] = item*inlet_volumetric_flow_rate
+        for key, inlet_conc in inletConcentrations.items():
+            inlet_conditions[key] = inlet_conc.value_si * inlet_volumetric_flow_rate
             total_molar_flow_rate += inlet_conditions[key]
         for key, item in inlet_conditions.items():
             inlet_conditions[key] = item/total_molar_flow_rate #molar fraction for each species
@@ -946,10 +943,7 @@ def liquid_reactor(temperature,
 
     for spec, conc in initialConcentrations.items():
         if not isinstance(conc, list):
-            concentration = Quantity(conc)
-            # check the dimensions are ok
-            # convert to mol/m^3 (or something numerically nice? or must it be SI)
-            initialConcentrations[spec] = concentration.value_si
+            initialConcentrations[spec] = Quantity(conc)
         else:
             if len(conc) != 2:
                 raise InputError("Concentration values must either be in the form of (number,units) or a list with 2 "
@@ -990,7 +984,7 @@ def liquid_reactor(temperature,
     if sensitivityConcentrations is None or sensitivityTemperature is None:
         sens_conditions = None
     else:
-        sens_conditions = sensitivityConcentrations
+        sens_conditions = deepcopy(sensitivityConcentrations)
         sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
 
     system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitive_species, sensitivityThreshold,
@@ -1756,14 +1750,33 @@ def save_input_file(path, rmg):
 
     # Reaction systems
     for system in rmg.reaction_systems:
-        if rmg.solvent:
+        if isinstance(system, ConstantTLiquidSurfaceReactor):
+            f.write('liquidSurfaceReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    initialConcentrations={\n')
+            for spcs, conc in system.initial_conditions['liquid'].items():
+                if spcs in ['T', 'V']:
+                    continue
+                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs, conc, 'mol/m^3'))
+            f.write('    initialSurfaceCoverages={\n')
+            for spcs, conc_mols in system.initial_conditions['surface'].items():
+                if spcs in ['T', 'A', 'd']:
+                    continue
+                # surf conc here is in mols, need to convert back into unitless coverage fraction
+                coverage = conc_mols / (rmg.surface_site_density.value_si * system.initial_conditions['surface']['A'])
+                f.write('        "{0!s}": ({1:g}),\n'.format(spcs, coverage))
+            f.write('    },\n')
+            
+            # write the list of constant species
+            f.write(f'    constantSpecies = {system.const_spc_names},\n')
+
+            # write the surface Volume ratio, where ratio = A/V and A was originally constructed by assuming V=1 m^3
+            f.write('    surfaceVolumeRatio = ({0:g}, "{1!s}"),\n'.format(system.initial_conditions['surface']['A'], 'm^-1'))
+        elif isinstance(system, LiquidReactor):
             f.write('liquidReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
-                # conc may have been converted to SI, so we need to convert back
-                if type(conc) == float:
-                    conc = Quantity(conc, Concentration.units)
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
         elif isinstance(system, SurfaceReactor):
             f.write('surfaceReactor(\n')
@@ -1785,8 +1798,25 @@ def save_input_file(path, rmg):
         f.write('    },\n')
 
         # Termination criteria
+        if isinstance(system, ReactionSystem):
+            terminations = system.termination
+        elif isinstance(system, Reactor):  # RMS reactor terminations need to be converted back
+            terminations = []
+            for term in system.terminations:
+                if hasattr(term, 'time'):
+                    terminations.append(TerminationTime(time=(term.time, 's')))
+                elif hasattr(term, 'ratio'):
+                    terminations.append(TerminationRateRatio(ratio=term.ratio))
+                elif isinstance(term, tuple):
+                    species, conversion = term
+                    terminations.append(TerminationConversion(spec=species, conv=conversion))
+                else:
+                    raise NotImplementedError('Termination criterion of type {0} is not currently supported for RMS reactors. Please convert this criterion to a time-based criterion or remove it from the input file.'.format(type(term)))
+        else:
+            raise NotImplementedError('Termination criteria for reaction system of type {0} not supported'.format(type(system)))
+
         conversions = ''
-        for term in system.termination:
+        for term in terminations:
             if isinstance(term, TerminationTime):
                 f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.value, term.time.units))
             elif isinstance(term, TerminationRateRatio):

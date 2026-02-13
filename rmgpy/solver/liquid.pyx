@@ -73,7 +73,10 @@ cdef class LiquidReactor(ReactionSystem):
             self.Trange = [Quantity(t) for t in T]
 
         self.P = Quantity(100000., 'kPa')  # Arbitrary high pressure (1000 Bar) to get reactions in the high-pressure limit!
-        self.initial_concentrations = initial_concentrations  # should be passed in SI
+        for spec, conc in initial_concentrations.items():  # convert to Quantity if given as float (SI mol/m^3)
+            if isinstance(initial_concentrations[spec], float):
+                initial_concentrations[spec] = ScalarQuantity(initial_concentrations[spec], 'mol/m^3')
+        self.initial_concentrations = initial_concentrations  # should be passed in as Quantity to preserve units
         self.V = 0  # will be set from initial_concentrations in initialize_model
         self.constant_volume = True
         self.viscosity = 0  # in Pa*s
@@ -91,8 +94,6 @@ cdef class LiquidReactor(ReactionSystem):
         """
         initial_concentrations = {}
         for label, moleFrac in self.initial_concentrations.items():
-            if label == 'T':
-                continue
             initial_concentrations[species_dict[label]] = moleFrac
         self.initial_concentrations = initial_concentrations
 
@@ -202,7 +203,7 @@ cdef class LiquidReactor(ReactionSystem):
 
         for spec, conc in self.initial_concentrations.items():
             i = self.get_species_index(spec)
-            self.core_species_concentrations[i] = conc
+            self.core_species_concentrations[i] = conc.value_si
 
         V = 1.0 / np.sum(self.core_species_concentrations)
         self.V = V
