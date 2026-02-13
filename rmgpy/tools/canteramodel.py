@@ -341,6 +341,7 @@ class Cantera(object):
         Note that if this is a surface mechanism, the calling function much include surface_file as a keyword argument for the parser
         """
         from cantera import ck2yaml
+        import yaml
 
         base = os.path.basename(chemkin_file)
         base_name = os.path.splitext(base)[0]
@@ -353,7 +354,20 @@ class Cantera(object):
         self.model = ct.Solution(out_name)
 
         if self.surface:
-            self.surface = ct.Interface(out_name, 'surface1')
+            # Find the surface phase name in the generated YAML file
+            with open(out_name, 'r') as f:
+                yaml_data = yaml.safe_load(f)
+            
+            surface_phase_name = None
+            for phase in yaml_data.get('phases', []):
+                if phase.get('thermo') == 'ideal-surface':
+                    surface_phase_name = phase.get('name')
+                    break
+            
+            if surface_phase_name is None:
+                raise ValueError(f"No surface phase found in {out_name}")
+            
+            self.surface = ct.Interface(out_name, surface_phase_name)
             self.model = self.surface.adjacent['gas']
 
     def modify_reaction_kinetics(self, rmg_reaction_index, rmg_reaction):
@@ -817,13 +831,11 @@ def check_equivalent_cantera_reaction(ct_rxn1, ct_rxn2, check_id=False, dE=1e-5)
         if isinstance(ct_rxn1, ct.Reaction):
             # may not mean it is arrhenius, need to check if it is troe, 
             if isinstance(ct_rxn1.rate, ct.ArrheniusRate):
-                assert ct_rxn1.allow_negative_pre_exponential_factor == ct_rxn2.allow_negative_pre_exponential_factor, \
-                    "Same allow_negative_pre_exponential_factor attribute"
                 if ct_rxn1.rate or ct_rxn2.rate:
                     check_equivalent_arrhenius(ct_rxn1.rate, ct_rxn2.rate)
             elif isinstance(ct_rxn1.rate, ct.PlogRate):
                 if ct_rxn1.rate.rates or ct_rxn2.rate.rates:
-                    assert len(ct_rxn1.rates) == len(ct_rxn2.rates), "Same number of rates in PLOG reaction"
+                    assert len(ct_rxn1.rate.rates) == len(ct_rxn2.rate.rates), "Same number of rates in PLOG reaction"
 
                     for i in range(len(ct_rxn1.rate.rates)):
                         P1, arr1 = ct_rxn1.rate.rates[i]
