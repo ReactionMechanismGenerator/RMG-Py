@@ -113,8 +113,6 @@ export JULIA_PYTHONCALL_EXE="$CONDA_PREFIX/bin/python"
 export PYTHON_JULIAPKG_EXE="$(which julia)"
 export PYTHON_JULIAPKG_PROJECT="$CONDA_PREFIX/julia_env"
 
-conda install -y conda-forge::pyjuliacall
-
 echo "Environment variables referencing JULIA:"
 env | grep JULIA
 
@@ -180,6 +178,9 @@ if [ $julia_status -ne 0 ]; then
     echo "RMS installation failed!"
     return $julia_status
 fi
+
+# this makes the above RMS installation available to Python
+conda install -y conda-forge::pyjuliacall
 
 echo "Checking if ReactionMechanismSimulator is installed in the current conda environment for Python usage..."
 
