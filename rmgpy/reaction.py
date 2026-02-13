@@ -347,43 +347,53 @@ class Reaction:
             ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
 
         elif isinstance(self.kinetics, ThirdBody):
-            if ct_collider is not None:
-                ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider)
+            if ct_collider:
+                ct_reaction = ct.Reaction(reactants=ct_reactants,
+                                          products=ct_products,
+                                          third_body=ct_collider,
+                                          rate=ct.ArrheniusRate(),
+                                          )
             else:
-                ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants,
+                                          products=ct_products,
+                                          third_body="M",
+                                          rate=ct.ArrheniusRate(),
+                                          )
 
         elif isinstance(self.kinetics, Troe):
-            if ct_collider is not None:
-                ct_reaction = ct.FalloffReaction(
+            if ct_collider:
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
-                    tbody=ct_collider,
+                    third_body=ct_collider,
                     rate=ct.TroeRate()
                 )
             else:
-                ct_reaction = ct.FalloffReaction(
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
+                    third_body="M",
                     rate=ct.TroeRate()
                 )
 
         elif isinstance(self.kinetics, Lindemann):
-            if ct_collider is not None:
-                ct_reaction = ct.FalloffReaction(
+            if ct_collider:
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
-                    tbody=ct_collider,
+                    third_body=ct_collider,
                     rate=ct.LindemannRate()
                 )
             else:
-                ct_reaction = ct.FalloffReaction(
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
+                    third_body="M",
                     rate=ct.LindemannRate()
                 )
 
         elif isinstance(self.kinetics, SurfaceArrhenius):
-            ct_reaction = ct.InterfaceReaction(
+            ct_reaction = ct.Reaction(
                 reactants=ct_reactants,
                 products=ct_products,
                 rate=ct.InterfaceArrheniusRate()
@@ -416,8 +426,6 @@ class Reaction:
         self.kinetics.set_cantera_kinetics(ct_reaction, species_list)
 
         return ct_reaction
-
-
 
     def get_url(self):
         """
@@ -1439,7 +1447,7 @@ class Reaction:
         from rmgpy.molecule.element import element_list
         from rmgpy.molecule.fragment import CuttingLabel, Fragment
 
-        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Graph, atom=Vertex, element=Element,
+        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Molecule, atom=Atom, element=Element,
                        reactants_net_charge=cython.int, products_net_charge=cython.int)
 
         reactant_elements = {}
