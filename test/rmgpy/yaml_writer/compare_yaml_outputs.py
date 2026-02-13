@@ -189,8 +189,10 @@ class CompareYaml:
         try:
             gas1 = ct.Solution(yaml1_path)
             gas2 = ct.Solution(yaml2_path)
-        except Exception:
+        except Exception as e:
             # If Cantera can't load the files, fall back to equation-only comparison
+            print(f"Warning: Cantera failed to load one or both files: {e}")
+            print(f"Falling back to equation-only comparison")
             return True
 
         # Compare at a reference state
@@ -210,4 +212,17 @@ class CompareYaml:
 
         # Use relative tolerance for comparison; allow 1% difference
         # to account for Chemkin format precision loss
-        return np.allclose(kf1, kf2, rtol=0.01, atol=1e-50)
+        result = np.allclose(kf1, kf2, rtol=0.01, atol=1e-50)
+        
+        if not result:
+            # Find which reactions differ
+            diff_mask = ~np.isclose(kf1, kf2, rtol=0.01, atol=1e-50)
+            diff_indices = np.where(diff_mask)[0]
+            print(f"\n{len(diff_indices)} reactions have mismatched rate constants:")
+            for idx in diff_indices[:5]:  # Show first 5
+                rxn1 = gas1.reaction(int(idx))
+                rxn2 = gas2.reaction(int(idx))
+                print(f"  Reaction {idx}: {rxn1.equation}")
+                print(f"    RMG kf: {kf1[idx]:.6e}, CK kf: {kf2[idx]:.6e}, ratio: {kf1[idx]/kf2[idx] if kf2[idx] != 0 else 'inf':.4f}")
+        
+        return result
