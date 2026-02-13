@@ -205,20 +205,11 @@ class TestMain:
                 except:
                     assert False, "The output Cantera file is not loadable in Cantera."
 
-    def test_cantera_input_files_match_chemkin(self):
+    def test_cantera_input_files_match_chemkin_later(self):
         """
-        Test that the Cantera YAML files generated directly by RMG match
-        those converted from Chemkin files.
+        Copy the Cantera YAML files (generated directly by RMG and converted from Chemkin)
+        to the test data directory so that yaml_canteraTest can compare them.
         """
-        import sys
-        # Add the yaml_writer test directory to path for importing CompareYaml
-        yaml_writer_test_dir = os.path.join(
-            originalPath, "..", "test", "rmgpy", "yaml_writer"
-        )
-        sys.path.insert(0, yaml_writer_test_dir)
-        from compare_yaml_outputs import CompareYaml
-        sys.path.pop(0)
-
         # Find the RMG-generated cantera yaml file (named chem{N}.yaml)
         cantera_dir = os.path.join(self.rmg.output_directory, "cantera")
         cantera_from_ck_dir = os.path.join(
@@ -238,43 +229,19 @@ class TestMain:
         )
         rmg_yaml_file = cantera_files[0]
         rmg_yaml_path = os.path.join(cantera_dir, rmg_yaml_file)
-        # copy it to test/rmgpy/test_data/yaml_writer_data/cantera/
-        # so that it can be used in the yaml_writer tests as well
-        test_data_cantera_dir = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera')
-        shutil.copy(rmg_yaml_path, test_data_cantera_dir)
+        
+        # Copy RMG-generated YAML to test data directory
+        test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera', 'from_main_test.yaml')
+        shutil.copy(rmg_yaml_path, test_data_cantera_target)
 
         # Get the yaml file converted from chemkin
         ck_yaml_file = "chem.yaml"
         ck_yaml_path = os.path.join(cantera_from_ck_dir, ck_yaml_file)
         assert os.path.exists(ck_yaml_path), f"Chemkin-converted YAML file {ck_yaml_file} not found"
-        # copy it to test/rmgpy/test_data/yaml_writer_data/chemkin/
-        # so that it can be used in the yaml_writer tests as well
-        test_data_chemkin_dir = os.path.join(self.testDir, '..', 'yaml_writer_data', 'chemkin')
-        shutil.copy(ck_yaml_path, os.path.join(test_data_chemkin_dir, rmg_yaml_file)) # rename it to match the RMG-generated file for easier comparison in yaml_writer tests
-
-
-        # Compare the two yaml files
-        yaml_path_1 = os.path.join(cantera_dir, rmg_yaml_file)
-        yaml_path_2 = os.path.join(cantera_from_ck_dir, ck_yaml_file)
-        compare = CompareYaml(yaml_path_1, yaml_path_2)
-
-        # Check species count matches
-        assert compare.compare_species_count(), (
-            f"Species count mismatch between RMG yaml ({rmg_yaml_file}) "
-            f"and chemkin yaml ({ck_yaml_file})"
-        )
-
-        # Check species names match
-        assert compare.compare_species_names(), (
-            f"Species names mismatch between RMG yaml ({rmg_yaml_file}) "
-            f"and chemkin yaml ({ck_yaml_file})"
-        )
-
-        # Check reactions match
-        assert compare.compare_reactions(), (
-            f"Reactions mismatch between RMG yaml ({rmg_yaml_file}) "
-            f"and chemkin yaml ({ck_yaml_file})"
-        )
+        
+        # Copy chemkin-converted YAML to test data directory
+        test_data_chemkin_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'chemkin', 'from_main_test.yaml')
+        shutil.copy(ck_yaml_path, test_data_chemkin_target)
 
 
 @pytest.mark.functional
