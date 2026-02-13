@@ -3093,7 +3093,7 @@ multiplicity 2
         Test the Molecule.get_relevant_cycles() raises correct error after deprecation.
         """
         mol = Molecule(smiles="CCCC")
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(RuntimeError):
             mol.get_relevant_cycles()
 
     def test_cycle_list_order_sssr(self):
