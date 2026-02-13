@@ -26,6 +26,7 @@ Performance-critical code uses Cython (`.pyx` files) with declaration files (`.p
 - Use `cpdef` for methods callable from both Python and Cython
 - Use `cimport` for Cython-level imports (e.g., `cimport rmgpy.constants as constants`)
 - Register new Cython modules in `setup.py` `ext_modules` list
+- Remember to re-compile (e.g. run `make`) after modifying any `.pyx` or `.pxd` files, or if there seem to be weird bugs in them.
 
 ## Development Commands
 ```bash
