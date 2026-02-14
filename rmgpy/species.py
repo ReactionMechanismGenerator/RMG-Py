@@ -348,7 +348,7 @@ class Species(object):
                     return True
                 elif not strict:
                     return False
-        elif isinstance(other, Species):
+        elif isinstance(other, Species) or getattr(other, 'is_polymer', False):
             for molecule1 in self.molecule:
                 for molecule2 in other.molecule:
                     if molecule1.is_isomorphic(molecule2, generate_initial_map=generate_initial_map,
