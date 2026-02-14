@@ -157,6 +157,7 @@ cdef class Molecule(Graph):
     cdef public float symmetry_number
     cdef public int multiplicity
     cdef public bint reactive
+    cdef public bint is_polymer_proxy
     cdef public dict props
     cdef public str metal
     cdef public str facet
