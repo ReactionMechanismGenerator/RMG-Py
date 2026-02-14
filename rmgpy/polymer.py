@@ -226,6 +226,7 @@ class Polymer(Species):
         self._fingerprint = None
         self.thermo = None
         self.is_polymer = True
+        self.reactive = True
 
         if moments is not None:
             self.moments = np.array(moments, dtype=np.float64)
@@ -571,11 +572,13 @@ class Polymer(Species):
                                                            strict=strict):
                         return True
         elif isinstance(other, Molecule):
-            for mol_1 in self.molecule:
-                if mol_1.copy(deep=True).is_isomorphic(other.copy(deep=True),
-                                                       generate_initial_map=generate_initial_map,
-                                                       save_order=save_order,
-                                                       strict=strict):
+            for mol in self.molecule:
+                mol_clean = mol.copy(deep=True)
+                mol_clean.clear_labeled_atoms()
+                if mol_clean.copy(deep=True).is_isomorphic(other.copy(deep=True),
+                                                           generate_initial_map=generate_initial_map,
+                                                           save_order=save_order,
+                                                           strict=strict):
                     return True
             return False
         elif isinstance(other, Fragment):
@@ -632,6 +635,7 @@ class Polymer(Species):
         trimer.identify_ring_membership()
         spc = Species(molecule=[trimer])
         mol_0 = spc.molecule[0].copy(deep=True)
+        mol_0.clear_labeled_atoms()
         spc.molecule = generate_resonance_structures(mol_0,
                                                      clar_structures=False,
                                                      keep_isomorphic=False,
