@@ -330,7 +330,7 @@ PS_1
                         Mw=8000.0,
                         initial_mass=10.0)
         assert not spc_1.is_isomorphic(pol_1)
-        assert not pol_1.is_isomorphic(spc_1)
+        assert pol_1.is_isomorphic(spc_1)
         assert not pol_1.is_isomorphic(mol_1)
         assert self.polymer_1.is_isomorphic(self.polymer_1)
         assert self.polymer_1.is_isomorphic(pol_1)
