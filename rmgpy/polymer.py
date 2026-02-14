@@ -629,9 +629,7 @@ class Polymer(Species):
                                                      keep_isomorphic=False,
                                                      filter_structures=True,
                                                      save_order=True)
-        for mol in spc.molecule:
-            mol.is_polymer_proxy = True
-            mol.reactive = True
+        spc.is_polymer_proxy = True
         return spc
 
     def create_reacted_copy(self, reacted_proxy: Molecule) -> Optional['Polymer']:
