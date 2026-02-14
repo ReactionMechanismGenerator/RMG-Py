@@ -74,7 +74,7 @@ def fails_species_constraints(species):
         logging.debug('Species constraints could not be found.')
         species_constraints = {}
 
-    if species.is_polymer_proxy:
+    if species.is_polymer_proxy or getattr(species, 'is_polymer', False):
         return False
 
     if isinstance(species, Species):
