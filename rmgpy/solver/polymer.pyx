@@ -418,12 +418,40 @@ class HybridPolymerSystem(ReactionSystem):
                 )
             self.gas_species_mask = np.asarray(self.gas_species_mask, dtype=bool)
 
-        self.get_const_spc_indices(core_species)
-        self.set_initial_conditions()
+        # Build mapping: core species index -> polymer pool index (or -1)
+        n_core = self.num_core_species
+        self.species_to_pool_indices = np.full(n_core, -1, dtype=np.int32)
+        self.is_pool_proxy = np.zeros(n_core, dtype=np.int8)
+
+        for pool_i, pool in enumerate(self.polymer_pools):
+            for i in range(n_core):
+                if core_species[i].label == pool.label:
+                    self.species_to_pool_indices[i] = pool_i
+                    self.is_pool_proxy[i] = 1
+                    self.gas_species_mask[i] = False
+                    break
+
+            # map explicit oligomers
+            for dp, idx in pool.explicit_dp_to_species_index.items():
+                if 0 <= idx < n_core:
+                    self.species_to_pool_indices[idx] = pool_i
+
+            # map the moment indices
+            for idx in pool.mu_indices:
+                if 0 <= idx < n_core:
+                    self.species_to_pool_indices[idx] = pool_i
+
+            # map monomer-in-poly if used
+            if pool.monomer_poly_index is not None and 0 <= pool.monomer_poly_index < n_core:
+                self.species_to_pool_indices[pool.monomer_poly_index] = pool_i
 
         self._scratch_C_gas = np.zeros(n_core, float)
         self._scratch_C_poly = np.zeros(n_core, float)
         self._scratch_dn_dt = np.zeros(n_core, float)
+        self._scratch_proxy_activity = np.zeros(n_core, float)
+
+        self.get_const_spc_indices(core_species)
+        self.set_initial_conditions()
 
         if filter_reactions:
             ReactionSystem.set_initial_reaction_thresholds(self)
@@ -432,7 +460,6 @@ class HybridPolymerSystem(ReactionSystem):
 
         ReactionSystem.set_initial_derivative(self)
         ReactionSystem.initialize_solver(self)
-
 
     def set_initial_conditions(self):
         """
@@ -556,6 +583,7 @@ class HybridPolymerSystem(ReactionSystem):
         """
         Compute the residual (dn/dt - dydt) at time t for state y.
         """
+        cdef int i
         cdef int n_core = len(self.core_species_rates)
         cdef int n_rxn = len(self.core_reaction_rates)
         cdef int p0_idx, p1_idx, p2_idx, prod_p_idx, p_slot, p_idx_tmp
@@ -610,6 +638,9 @@ class HybridPolymerSystem(ReactionSystem):
         dn_dt = self._scratch_dn_dt
         dn_dt[:] = 0.0
 
+        proxy_activity = self._scratch_proxy_activity
+        proxy_activity[:] = 0.0
+
         self.core_reaction_rates[:] = 0.0
         self.edge_reaction_rates[:] = 0.0
         self.edge_species_rates[:] = 0.0
@@ -617,7 +648,7 @@ class HybridPolymerSystem(ReactionSystem):
         self.core_species_production_rates[:] = 0.0
         self.network_leak_rates[:] = 0.0
 
-        # 4.5 Recalculate P-dependent rates in the GAS phase
+        # 5. Recalculate P-dependent rates in the GAS phase
         if self.pdep_collision_reaction_indices.shape[0] != 0:
             T_val = self.T.value_si
             P_val = self.P.value_si
@@ -637,27 +668,35 @@ class HybridPolymerSystem(ReactionSystem):
             else:
                 pass
 
-        # 5. Standard Kinetics (Optimized Loop)
+        # 6. Standard Kinetics (Optimized Loop)
         for r_idx in range(ir.shape[0]):
             r0, r1, r2 = ir[r_idx, 0], ir[r_idx, 1], ir[r_idx, 2]
 
-            if r0 >= n_core: continue
-
-            # Determine phase from first reactant (all must match)
-            is_r0_gas = mask[r0]
-
-            # Check other reactants match r0's phase
-            if r1 != -1 and (r1 >= n_core or mask[r1] != is_r0_gas):
-                continue
-            if r2 != -1 and (r2 >= n_core or mask[r2] != is_r0_gas):
+            if r0 == -1 or r0 >= n_core:
                 continue
 
-            if is_r0_gas:
-                phase = 'gas'
-                V_rxn = V_gas
-            else:
+            r0_is_gas = mask[r0]
+            r1_is_gas = True
+            r2_is_gas = True
+
+            if r1 != -1:
+                if r1 >= n_core:
+                    continue
+                r1_is_gas = mask[r1]
+
+            if r2 != -1:
+                if r2 >= n_core:
+                    continue
+                r2_is_gas = mask[r2]
+
+            is_poly_event = (not r0_is_gas) or (r1 != -1 and not r1_is_gas) or (r2 != -1 and not r2_is_gas)
+
+            if is_poly_event:
                 phase = 'poly'
                 V_rxn = V_poly
+            else:
+                phase = 'gas'
+                V_rxn = V_gas
 
             # Product Checks
             p0, p1, p2 = ip[r_idx, 0], ip[r_idx, 1], ip[r_idx, 2]
@@ -665,34 +704,44 @@ class HybridPolymerSystem(ReactionSystem):
             prods_phase_ok = True
             has_edge_prod = False
             has_any_prod = False
+            has_poly_core_prod = False
+            has_gas_core_prod = False
 
-            # Unrolled Phase/Edge Check
-            if p0 != -1:
+            def _check_prod(p):
+                nonlocal prods_phase_ok, has_edge_prod, has_any_prod, has_poly_core_prod, has_gas_core_prod
+                if p == -1:
+                    return
                 has_any_prod = True
-                if p0 < n_core:
-                    if mask[p0] != is_r0_gas:
-                        prods_phase_ok = False
+                if p < n_core:
+                    if mask[p]:
+                        has_gas_core_prod = True
+                        # gas-event cannot make polymer
+                        if (not is_poly_event) and (not mask[p]):  # unreachable but kept for clarity
+                            prods_phase_ok = False
+                    else:
+                        has_poly_core_prod = True
+                        if (not is_poly_event):
+                            # gas event but polymer product -> disallow
+                            prods_phase_ok = False
                 else:
                     has_edge_prod = True
 
-            if prods_phase_ok and p1 != -1:
-                has_any_prod = True
-                if p1 < n_core:
-                    if mask[p1] != is_r0_gas:
-                        prods_phase_ok = False
-                else:
-                    has_edge_prod = True
+            _check_prod(p0)
+            if prods_phase_ok: _check_prod(p1)
+            if prods_phase_ok: _check_prod(p2)
 
-            if prods_phase_ok and p2 != -1:
-                has_any_prod = True
-                if p2 < n_core:
-                    if mask[p2] != is_r0_gas:
-                        prods_phase_ok = False
-                else:
-                    has_edge_prod = True
+            if prods_phase_ok and is_poly_event:
+                # Require at least one polymer product in core
+                if not has_poly_core_prod:
+                    prods_phase_ok = False
 
             if not prods_phase_ok:
                 continue
+
+            # 1. Map Reactants to Polymer Pools  (MOVED UP before _C)
+            p0_pool_idx = self.species_to_pool_indices[r0]
+            p1_pool_idx = -1 if r1 == -1 else self.species_to_pool_indices[r1]
+            p2_pool_idx = -1 if r2 == -1 else self.species_to_pool_indices[r2]  # optional but consistent
 
             # Rate Calculation
             kf = self.kf[r_idx]
@@ -701,7 +750,9 @@ class HybridPolymerSystem(ReactionSystem):
             def _C(idx):
                 if idx == -1:
                     return 1.0
-                return C_gas[idx] if phase == 'gas' else C_poly[idx]
+                if self.species_to_pool_indices[idx] != -1:
+                    return 1.0
+                return C_gas[idx] if mask[idx] else C_poly[idx]
 
             if r1 == -1:
                 rf = kf * _C(r0)
@@ -718,65 +769,70 @@ class HybridPolymerSystem(ReactionSystem):
                 if p1 != -1: rr *= _C(p1)
                 if p2 != -1: rr *= _C(p2)
 
-            rate = rf - rr
-
-            # 1. Map Reactants to Polymer Pools
-            p0_pool_idx = self.species_to_pool_indices[r0]
-            p1_pool_idx = -1 if r1 == -1 else self.species_to_pool_indices[r1]
-
-            # 2. Kinetic Hijack: Scale Rate by Polymer Site Density (mu1)
-            if p0_pool_idx != -1 or p1_pool_idx != -1:
+            # 2. Polymer scaling (unchanged)
+            if p0_pool_idx != -1 or p1_pool_idx != -1 or p2_pool_idx != -1:
                 if p0_pool_idx != -1:
-                    # Reactant 0 is the polymer
-                    conc_factor = max(0.0, y[self.polymer_pools[p0_pool_idx].mu_indices[1]]) / V_poly
-                    rate = kf * conc_factor
-                    if r1 != -1: rate *= _C(r1)
-                    if r2 != -1: rate *= _C(r2)
+                    site = max(0.0, y[self.polymer_pools[p0_pool_idx].mu_indices[1]]) / V_poly
+                elif p1_pool_idx != -1:
+                    site = max(0.0, y[self.polymer_pools[p1_pool_idx].mu_indices[1]]) / V_poly
                 else:
-                    # Reactant 1 is the polymer
-                    conc_factor = max(0.0, y[self.polymer_pools[p1_pool_idx].mu_indices[1]]) / V_poly
-                    rate = kf * _C(r0) * conc_factor
-                    if r2 != -1: rate *= _C(r2)
+                    site = max(0.0, y[self.polymer_pools[p2_pool_idx].mu_indices[1]]) / V_poly
 
+                rf *= site
+                rr *= site
+
+            # Net rate (volumetric, in the phase volume chosen earlier)
+            rate = rf - rr
             r_mol_s = rate * V_rxn
+            abs_flux = abs(r_mol_s)
 
-            # Update diagnostic rates for RMG's pruning logic
             if r_idx < n_rxn:
                 self.core_reaction_rates[r_idx] = rate
             else:
                 self.edge_reaction_rates[r_idx - n_rxn] = rate
 
-            # 3. Apply Fluxes to Reactants (Redirect to Moments if needed)
-            if p0_pool_idx != -1:
+            # 3. Apply Fluxes to Reactants
+            if self.is_pool_proxy[r0]:
                 dn_dt[self.polymer_pools[p0_pool_idx].mu_indices[1]] -= r_mol_s
+                proxy_activity[r0] += abs_flux
+                self.core_species_consumption_rates[r0] += rf
+                self.core_species_production_rates[r0] += rr
             else:
                 dn_dt[r0] -= r_mol_s
 
             if r1 != -1:
-                if p1_pool_idx != -1:
+                if self.is_pool_proxy[r1]:
                     dn_dt[self.polymer_pools[p1_pool_idx].mu_indices[1]] -= r_mol_s
+                    proxy_activity[r1] += abs_flux
+                    self.core_species_consumption_rates[r1] += rf
+                    self.core_species_production_rates[r1] += rr
                 else:
                     dn_dt[r1] -= r_mol_s
+
             if r2 != -1:
+                # if you ever allow polymer in r2, mirror the same logic; otherwise keep as-is
                 dn_dt[r2] -= r_mol_s
 
-            # 4. Apply Fluxes to Products (Redirect to Moments if needed)
+            # 4. Apply Fluxes to Products
             for p_slot in range(3):
                 p_idx_tmp = ip[r_idx, p_slot]
-                if p_idx_tmp == -1: continue
+                if p_idx_tmp == -1:
+                    continue
 
                 if p_idx_tmp < n_core:
-                    prod_p_idx = self.species_to_pool_indices[p_idx_tmp]
-                    if prod_p_idx != -1:
-                        # Increment Monomer Units moment for the product pool
-                        dn_dt[self.polymer_pools[prod_p_idx].mu_indices[1]] += r_mol_s
+                    if self.is_pool_proxy[p_idx_tmp]:
+                        pool_idx = self.species_to_pool_indices[p_idx_tmp]
+                        dn_dt[self.polymer_pools[pool_idx].mu_indices[1]] += r_mol_s
+                        proxy_activity[p_idx_tmp] += abs_flux
+                        self.core_species_production_rates[p_idx_tmp] += rf
+                        self.core_species_consumption_rates[p_idx_tmp] += rr
                     else:
+                        # feature polymer species (e.g., PS_rad, scission oligomer, etc.) stays explicit
                         dn_dt[p_idx_tmp] += r_mol_s
                 else:
-                    # Track edge species for model enlargement
                     self.edge_species_rates[p_idx_tmp - n_core] += rate
 
-        # 6. Network Leaks
+        # 7. Network Leaks
         for j in range(inet.shape[0]):
             s0 = inet[j, 0]
             if s0 == -1 or s0 >= n_core or not mask[s0]:
@@ -794,7 +850,7 @@ class HybridPolymerSystem(ReactionSystem):
             self.network_leak_rates[j] = rate
             dn_dt[s0] -= rate * V_gas
 
-        # 7. Polymer Tail & Handshake
+        # 8. Polymer Tail & Handshake
         for pool in self.polymer_pools:
             idx_mu0, idx_mu1, idx_mu2 = pool.mu_indices
             xs = pool.xs
@@ -877,7 +933,7 @@ class HybridPolymerSystem(ReactionSystem):
                 if 0 <= spc_idx < n_core:
                     dn_dt[spc_idx] += r_vol * V_poly
 
-        # 8. Mass Transfer
+        # 9. Mass Transfer
         for mt in self.mass_transfer:
             ig = mt.gas_index
             ipoly = mt.poly_index
@@ -891,13 +947,17 @@ class HybridPolymerSystem(ReactionSystem):
             dn_dt[ig] += dn
             dn_dt[ipoly] -= dn
 
-        # 9. Constants
+        # 10. Constants
         if self.const_spc_indices is not None:
             for i in self.const_spc_indices:
                 dn_dt[i] = 0.0
 
-        # 10. Diagnostics
+        # 11. Diagnostics
         self.core_species_rates[mask] = dn_dt[mask] / V_gas
         self.core_species_rates[~mask] = dn_dt[~mask] / V_poly
+
+        for i in range(n_core):
+            if self.is_pool_proxy[i]:
+                self.core_species_rates[i] = proxy_activity[i] / V_poly
 
         return (dn_dt - dydt), 1

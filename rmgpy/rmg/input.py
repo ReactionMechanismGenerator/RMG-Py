@@ -278,39 +278,37 @@ def polymer(label: str,
         initial_mass=initial_mass,
         moments=moments
     )
-
     poly_obj.creation_iteration = rmg.reaction_model.iteration_num
 
-    # 2. Handle Label Collision (Ensures unique labeling in species_dict)
-    i = 1
-    original_label = label
-    while label in species_dict:
-        label = f"{original_label}-{i}"
-        i += 1
-    poly_obj.label = label
+    formula = poly_obj.molecule[0].get_formula()
+    if formula in rmg.reaction_model.species_dict:
+        for existing_species in rmg.reaction_model.species_dict[formula]:
+            if existing_species.is_isomorphic(poly_obj):
+                raise InputError(f"Polymer species '{label}' is a duplicate of existing species '{existing_species.label}'.")
 
-    # 3. Register the main Polymer species
-    rmg.reaction_model.species_dict[poly_obj.label] = poly_obj
+    rmg.reaction_model.species_counter += 1
+    poly_obj.index = rmg.reaction_model.species_counter
+
+    if formula not in rmg.reaction_model.species_dict:
+        rmg.reaction_model.species_dict[formula] = [poly_obj]
+    else:
+        rmg.reaction_model.species_dict[formula].append(poly_obj)
+
     rmg.reaction_model.new_species_list.append(poly_obj)
     rmg.initial_species.append(poly_obj)
+    rmg.reaction_model.index_species_dict[poly_obj.index] = poly_obj
     species_dict[label] = poly_obj
 
-    # 4. INJECT MOMENT DUMMIES IMMEDIATELY
-    # These become 'Real' species in the eyes of RMG,
-    # ensuring they get a unique index in the solver's 'y' vector.
     for suffix in ['_mu0', '_mu1', '_mu2']:
         m_label = f"{poly_obj.label}{suffix}"
 
-        # Create non-reactive species placeholders
         m_spc = Species(label=m_label, reactive=False)
         m_spc.molecule = [Molecule().from_smiles("[He]")]
 
-        # Identity Lock: Register in all core registries
         rmg.reaction_model.species_dict[m_label] = m_spc
         rmg.initial_species.append(m_spc)
         species_dict[m_label] = m_spc
 
-    # 5. Generate Thermo for the Polymer (Delegates to the trimer proxy)
     rmg.reaction_model.generate_thermo(poly_obj)
 
     return poly_obj
