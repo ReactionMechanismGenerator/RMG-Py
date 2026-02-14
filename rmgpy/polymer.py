@@ -562,7 +562,7 @@ class Polymer(Species):
         Returns:
             bool: ``True`` if the species is isomorphic to `other`, ``False`` otherwise.
         """
-        if isinstance(other, Polymer):
+        if isinstance(other, (Polymer, Species)):
             for mol_1 in self.molecule:
                 for mol_2 in other.molecule:
                     if mol_1.copy(deep=True).is_isomorphic(mol_2.copy(deep=True),
@@ -570,11 +570,19 @@ class Polymer(Species):
                                                            save_order=save_order,
                                                            strict=strict):
                         return True
-        elif isinstance(other, (Molecule, Fragment, Species)):
+        elif isinstance(other, Molecule):
+            for mol_1 in self.molecule:
+                if mol_1.copy(deep=True).is_isomorphic(other.copy(deep=True),
+                                                       generate_initial_map=generate_initial_map,
+                                                       save_order=save_order,
+                                                       strict=strict):
+                    return True
+            return False
+        elif isinstance(other, Fragment):
             return False
         else:
             raise ValueError(f'Unexpected value "{other}" of type {type(other)} for other parameter;'
-                             ' should be a Polymer object.')
+                             ' should be a Polymer/Species/Molecule object.')
         return False
 
     def get_proxy_species(self, mode: str = 'auto') -> Optional[Species]:
