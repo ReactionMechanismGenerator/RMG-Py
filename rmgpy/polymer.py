@@ -363,6 +363,7 @@ class Polymer(Species):
         else:
             raise InputError(f"Polymer '{label}': Monomer must be a SMILES string or Molecule object.\n"
                              f"Got {monomer} of type {type(monomer)}.")
+        mol.is_polymer_proxy = True
 
         has_1 = any(mol.contains_labeled_atom(x) for x in LABELS_1)
         has_2 = any(mol.contains_labeled_atom(x) for x in LABELS_2)
@@ -619,6 +620,8 @@ class Polymer(Species):
         trimer = stitch_molecules_by_labeled_atoms(trimer, tail)
         if trimer is None: return None
 
+        trimer.update()
+        trimer.identify_ring_membership()
         spc = Species(molecule=[trimer])
         mol_0 = spc.molecule[0].copy(deep=True)
         spc.molecule = generate_resonance_structures(mol_0,
@@ -626,9 +629,38 @@ class Polymer(Species):
                                                      keep_isomorphic=False,
                                                      filter_structures=True,
                                                      save_order=True)
+        for mol in spc.molecule:
+            mol.is_polymer_proxy = True
+            mol.reactive = True
         return spc
 
     def create_reacted_copy(self, reacted_proxy: Molecule) -> Optional['Polymer']:
+        """
+        Wrapper that ensures any generated polymer fragment is sanitized
+        (labels stripped, proxy tagged) before returning to the RMG engine.
+        """
+        # 1. Call the core logic (the code you previously wrote)
+        new_poly = self._create_reacted_copy_logic(reacted_proxy)
+
+        if new_poly is None:
+            return None
+
+        # 2. Perform centralized sanitization (The Handshake Finalizer)
+        # This cleans the *1/*2 labels once and for all across all resonance structures
+        proxy_spec = new_poly.get_proxy_species()
+        for mol in proxy_spec.molecule:
+            # Strip internal connectivity markers so they don't interfere with kinetics
+            for atom in mol.atoms:
+                atom.label = ''
+
+            # Ensure the graph is perceived correctly for the next reaction round
+            mol.update()
+            mol.is_polymer_proxy = True
+            mol.reactive = True
+
+        return new_poly
+
+    def _create_reacted_copy_logic(self, reacted_proxy: Molecule) -> Optional['Polymer']:
         """
         Creates a new Polymer species from a reacted proxy fragment.
         Handles both modification (intact chain) and scission (broken chain).
@@ -641,18 +673,16 @@ class Polymer(Species):
                                  Returns None if for an invalid/unsupported polymer fragment.
         """
         product = reacted_proxy.copy(deep=True)
+        product.update()
 
         def _count_boundary_edges(atom_mapping):
             """Counts how many bonds connect the matched subgraph to the rest of the molecule."""
-            atom_set = set(atom_mapping.values())
+            atom_set = set(atom_mapping.keys())
             cut_bonds = 0
-            seen_bonds = set()
             for a in atom_set:
                 for b, bond in a.edges.items():
                     if b not in atom_set:
-                        if bond not in seen_bonds:
-                            cut_bonds += 1
-                            seen_bonds.add(bond)
+                        cut_bonds += 1
             return cut_bonds
 
         def _pick_best_match(matches):
@@ -732,7 +762,7 @@ class Polymer(Species):
                 initial_mass=self.initial_mass_g / 1000.0,
             )
 
-        elif head_atoms:
+        if head_atoms:
             try:
                 new_tail = self._extract_remainder(product, head_atoms)
             except ValueError:
@@ -760,7 +790,7 @@ class Polymer(Species):
                            moments=new_moments,
                            )
 
-        elif tail_atoms:
+        if tail_atoms:
             try:
                 new_head = self._extract_remainder(product, tail_atoms)
             except ValueError:
