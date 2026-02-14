@@ -1654,8 +1654,11 @@ class KineticsFamily(Database):
         for struct in product_structures:
             if self.is_molecule_forbidden(struct):
                 raise ForbiddenStructureException()
-            if fails_species_constraints(struct):
-                reason = fails_species_constraints(struct)
+            if any(spc.is_polymer_proxy for spc in reactant_structures + product_structures):
+                for spc in reactant_structures + product_structures:
+                    spc.is_polymer_proxy = True
+            reason = fails_species_constraints(struct)
+            if reason:
                 raise ForbiddenStructureException(
                     "Species constraints forbids product species {0}. Please "
                     "reformulate constraints, or explicitly "
@@ -2321,7 +2324,9 @@ class KineticsFamily(Database):
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxn_list:
-
+            if any(spc.is_polymer_proxy for spc in reaction.reactants + reaction.products):
+                for spc in reaction.products + reaction.reactants:
+                    spc.is_polymer_proxy = True
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clear_labeled_atoms()
