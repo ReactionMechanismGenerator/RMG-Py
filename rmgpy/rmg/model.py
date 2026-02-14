@@ -341,11 +341,10 @@ class CoreEdgeReactionModel:
             else:
                 return [self.make_new_species(mol, check_decay=check_decay) for mol in mols]
 
-        try:
-            spec = Species(label=label, molecule=[molecule], reactive=reactive, thermo=object.thermo, transport_data=object.transport_data)
-        except AttributeError:
-            spec = Species(label=label, molecule=[molecule], reactive=reactive)
-
+        thermo, transport = getattr(object, 'thermo', None), getattr(object, 'transport_data', None)
+        spec = Species(label=label, molecule=[molecule], reactive=reactive, thermo=thermo, transport_data=transport)
+        if molecule.is_polymer_proxy or object.is_polymer_proxy:
+            spec.is_polymer_proxy = True
         spec.generate_resonance_structures()
 
         if check_decay:
