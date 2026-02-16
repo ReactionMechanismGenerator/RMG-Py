@@ -116,8 +116,8 @@ class TestCanteraWriter2:
         assert 'transport' in d
         assert d['transport']['model'] == 'gas'
         assert d['transport']['geometry'] == 'linear'
-        # Diameter should be in meters (SI)
-        assert np.isclose(d['transport']['diameter'], 3.0e-10)
+        # Diameter should be in angstroms ( https://cantera.org/dev/yaml/species.html#gas-transport )
+        assert np.isclose(d['transport']['diameter'], 3.0)
 
     def test_reaction_to_dict_arrhenius(self):
         """Test standard Arrhenius kinetics."""
