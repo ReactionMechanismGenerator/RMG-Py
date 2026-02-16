@@ -358,14 +358,13 @@ def species_to_dict(species, species_list):
             transport_dict['polarizability'] = td.polarizability.value_si * 1e30  # Angstrom^3
         if getattr(td, 'rotrelaxcollnum', None) and td.rotrelaxcollnum != 0.0:
             transport_dict['rotational-relaxation'] = td.rotrelaxcollnum
+        if td.comment:
+            transport_dict['note'] = td.comment.strip()
         species_entry['transport'] = transport_dict
 
     if species.thermo and species.thermo.comment:
         clean_comment = species.thermo.comment.replace('\n', '; ').strip()
-        notes.append(f"Thermo Source: {clean_comment}")
-
-    if species.transport_data and species.transport_data.comment:
-        notes.append(f"Transport Source: {species.transport_data.comment.strip()}")
+        species_entry['thermo']['note'] = clean_comment
 
     if notes:
         species_entry['note'] = " | ".join(notes)
