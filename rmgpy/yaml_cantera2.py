@@ -67,7 +67,7 @@ SYMBOL_BY_NUMBER = {0: 'e', 1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7
 NUMBER_BY_SYMBOL = {value: key for key, value in SYMBOL_BY_NUMBER.items()}
 
 
-class CanteraWriter(object):
+class CanteraWriter2(object):
     """
     This class listens to a RMG subject and writes a Cantera YAML file
     with the current state of the RMG model at every iteration.
@@ -177,7 +177,7 @@ def generate_cantera_data(species_list, reaction_list, is_plasma=False, search_f
     # We output everything in SI units.
     data = {
         'description': 'RMG-Py Generated Mechanism',
-        'generator': 'RMG-Py CanteraWriter',
+        'generator': 'RMG-Py CanteraWriter2',
         'cantera-version': '3.1',
         'units': {
             'length': 'm',
