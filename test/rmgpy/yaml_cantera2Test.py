@@ -47,8 +47,8 @@ from rmgpy.kinetics import (
 )
 from rmgpy.thermo import NASA, NASAPolynomial
 from rmgpy.transport import TransportData
-from rmgpy.cantera import (
-    CanteraWriter,
+from rmgpy.yaml_cantera2 import (
+    CanteraWriter2,
     save_cantera_files,
     species_to_dict,
     reaction_to_dict_list,
@@ -56,7 +56,7 @@ from rmgpy.cantera import (
 )
 
 
-class TestCanteraWriter:
+class TestCanteraWriter2:
 
     def setup_method(self):
         """
@@ -341,10 +341,10 @@ class TestCanteraWriter:
 
     def test_cantera_writer_class_listener(self):
         """
-        Test the CanteraWriter class directly to ensure it correctly initializes
+        Test the CanteraWriter2 class directly to ensure it correctly initializes
         subdirectories and triggers the save on update().
         """
-        writer = CanteraWriter(self.tmp_dir)
+        writer = CanteraWriter2(self.tmp_dir)
         cantera_dir = os.path.join(self.tmp_dir, 'cantera')
         assert os.path.exists(cantera_dir)
         assert os.path.isdir(cantera_dir)
@@ -360,7 +360,7 @@ class TestCanteraWriter:
 
         with open(latest_file, 'r') as f:
             content = f.read()
-            assert "generator: RMG-Py CanteraWriter" in content
+            assert "generator: RMG-Py CanteraWriter2" in content
             assert "phases:" in content
             assert "species:" in content
 
