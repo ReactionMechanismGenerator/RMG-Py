@@ -75,7 +75,7 @@ class CanteraWriter2(object):
 
     def __init__(self, output_directory=''):
         self.output_directory = output_directory
-        make_output_subdirectory(output_directory, 'cantera')
+        make_output_subdirectory(output_directory, 'cantera2')
 
     def update(self, rmg):
         """
@@ -93,7 +93,7 @@ def save_cantera_files(rmg):
       2. chem.yaml (latest copy)
     """
     # Ensure subdirectory exists
-    cantera_dir = os.path.join(rmg.output_directory, 'cantera')
+    cantera_dir = os.path.join(rmg.output_directory, 'cantera2')
     if not os.path.exists(cantera_dir):
         os.mkdir(cantera_dir)
 
@@ -108,9 +108,9 @@ def save_cantera_files(rmg):
     num_species = len(rmg.reaction_model.core.species)
 
     # Define paths
-    this_cantera_path = os.path.join(rmg.output_directory, 'cantera',
+    this_cantera_path = os.path.join(cantera_dir,
                                      'chem{0:04d}.yaml'.format(num_species))
-    latest_cantera_path = os.path.join(rmg.output_directory, 'cantera', 'chem.yaml')
+    latest_cantera_path = os.path.join(cantera_dir, 'chem.yaml')
 
     logging.info(f"Saving current model core to Cantera file: {this_cantera_path}")
 
@@ -128,9 +128,9 @@ def save_cantera_files(rmg):
     if rmg.save_edge_species:
         logging.info('Saving current model core and edge to Cantera file...')
 
-        this_edge_path = os.path.join(rmg.output_directory, 'cantera',
+        this_edge_path = os.path.join(cantera_dir,
                                       'chem_edge{0:04d}.yaml'.format(num_species))
-        latest_edge_path = os.path.join(rmg.output_directory, 'cantera', 'chem_edge.yaml')
+        latest_edge_path = os.path.join(cantera_dir, 'chem_edge.yaml')
 
         # Create a simple container object to pass to save_cantera_model
         class MixedModel:
