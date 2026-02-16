@@ -34,7 +34,9 @@ a yaml file that can be read by Cantera
 
 
 import os
+import shutil
 import yaml
+import logging
 
 from rmgpy.species import Species
 from rmgpy.kinetics.arrhenius import (
@@ -474,9 +476,16 @@ class CanteraWriter(object):
     def __init__(self, output_directory=""):
         super(CanteraWriter, self).__init__()
         self.output_directory = output_directory
+        self.output_subdirectory = os.path.join(self.output_directory, "cantera")
         make_output_subdirectory(output_directory, "cantera")
 
     def update(self, rmg):
+
+        this_output_path = os.path.join(self.output_subdirectory,
+                                        f"chem{len(rmg.reaction_model.core.species):04d}.yaml")
+        latest_output_path = os.path.join(self.output_subdirectory, 'chem.yaml')
+
+        logging.info(f"Saving current model core to Cantera file: {this_output_path}")
 
         solvent_data = None
         if rmg.solvent:
@@ -492,7 +501,7 @@ class CanteraWriter(object):
             surface_site_density=surface_site_density,
             solvent=rmg.solvent,
             solvent_data=solvent_data,
-            path=os.path.join(self.output_directory, "cantera", "chem{}.yaml").format(
-                len(rmg.reaction_model.core.species)
-            ),
+            path=this_output_path
         )
+        # Update the latest output path
+        shutil.copy2(this_output_path, latest_output_path)
