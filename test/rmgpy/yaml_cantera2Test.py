@@ -243,8 +243,8 @@ class TestCanteraWriter2:
         mock_rmg = MockRMG(self.tmp_dir)
         save_cantera_files(mock_rmg)
 
-        yaml_file = os.path.join(self.tmp_dir, "cantera", "chem.yaml")
-        versioned_file = os.path.join(self.tmp_dir, "cantera", "chem0005.yaml")
+        yaml_file = os.path.join(self.tmp_dir, "cantera2", "chem.yaml")
+        versioned_file = os.path.join(self.tmp_dir, "cantera2", "chem0005.yaml")
         assert os.path.exists(yaml_file)
         assert os.path.exists(versioned_file)
 
@@ -345,7 +345,7 @@ class TestCanteraWriter2:
         subdirectories and triggers the save on update().
         """
         writer = CanteraWriter2(self.tmp_dir)
-        cantera_dir = os.path.join(self.tmp_dir, 'cantera')
+        cantera_dir = os.path.join(self.tmp_dir, 'cantera2')
         assert os.path.exists(cantera_dir)
         assert os.path.isdir(cantera_dir)
 
