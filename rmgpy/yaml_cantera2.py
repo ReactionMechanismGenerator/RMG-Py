@@ -361,8 +361,8 @@ def species_to_dict(species, species_list):
         species_entry['transport'] = {
             'model': 'gas',
             'geometry': 'atom' if td.shapeIndex == 0 else 'linear' if td.shapeIndex == 1 else 'nonlinear',
-            'well-depth': td.epsilon.value_si / constants.R,
-            'diameter': td.sigma.value_si,
+            'well-depth': td.epsilon.value_si / constants.R, # Kelvin
+            'diameter': td.sigma.value_si * 1e10,  # Angstroms
             'dipole': dipole,
             'rotational-relaxation': rot_relax
         }
