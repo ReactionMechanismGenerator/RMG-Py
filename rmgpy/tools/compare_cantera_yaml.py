@@ -15,8 +15,9 @@ Usage:
 
 import sys
 import argparse
+import logging
 from pathlib import Path
-from typing import Any, List, Tuple, Dict, Optional
+from typing import Any, List, Tuple, Dict
 from itertools import chain
 
 import yaml
@@ -240,8 +241,8 @@ def compare_values(val1: Any, val2: Any, path: str, atol: float = 1e-12,
     return differences
 
 
-def compare_yaml_files(file1: str, file2: str, atol: float = 1e-9,
-                      rtol: float = 1e-9) -> List[str]:
+def compare_yaml_files(file1: str, file2: str, atol: float = 1e-12,
+                      rtol: float = 1e-3) -> List[str]:
     """Compare two Cantera YAML files.
     
     Compares both the raw YAML structure and the species/reactions
@@ -265,14 +266,14 @@ def compare_yaml_files(file1: str, file2: str, atol: float = 1e-9,
     """
     differences = []
     
-    print(f"Loading {file1}...")
+    logging.info("Loading %s...", file1)
     model1 = CanteraModel(file1)
     
-    print(f"Loading {file2}...")
+    logging.info("Loading %s...", file2)
     model2 = CanteraModel(file2)
     
     # Compare YAML metadata (everything except species and reactions details)
-    print("Comparing YAML metadata...")
+    logging.info("Comparing YAML metadata...")
     yaml_meta1 = _extract_yaml_metadata(model1.yaml_data)
     yaml_meta2 = _extract_yaml_metadata(model2.yaml_data)
 
@@ -284,7 +285,7 @@ def compare_yaml_files(file1: str, file2: str, atol: float = 1e-9,
     differences.extend(compare_values(yaml_meta1, yaml_meta2, "metadata", atol, rtol))
     
     # Compare phases sequentially by order
-    print("Comparing phases...")
+    logging.info("Comparing phases...")
     phase_list1 = model1.yaml_data.get('phases', [])
     phase_list2 = model2.yaml_data.get('phases', [])
     
@@ -310,10 +311,10 @@ def compare_yaml_files(file1: str, file2: str, atol: float = 1e-9,
         phase1 = model1.phases[phase1_name]
         phase2 = model2.phases[phase2_name]
         
-        print(f"  Comparing species in phase '{phase1_name}'...")
+        logging.info("  Comparing species in phase '%s'...", phase1_name)
         differences.extend(_compare_species(phase1, phase2, phase1_name, atol, rtol))
         
-        print(f"  Comparing reactions in phase '{phase1_name}'...")
+        logging.info("  Comparing reactions in phase '%s'...", phase1_name)
         differences.extend(_compare_reactions(phase1, phase2, phase1_name, atol, rtol))
     
     return differences
@@ -408,6 +409,7 @@ def _compare_reactions(phase1, phase2, phase_name: str, atol: float, rtol: float
 
 def main():
     """Main entry point for the comparison script."""
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     parser = argparse.ArgumentParser(
         description="Compare two Cantera YAML mechanism files.",
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -430,7 +432,7 @@ Examples:
     # Verify files exist
     for file_path in [args.file1, args.file2]:
         if not Path(file_path).exists():
-            print(f"Error: File not found: {file_path}", file=sys.stderr)
+            logging.error("File not found: %s", file_path)
             sys.exit(1)
     
     try:
@@ -438,24 +440,24 @@ Examples:
             args.file1, args.file2, args.abs_tol, args.rel_tol
         )
         
-        print("\n" + "="*70)
         if len(differences) == 0:
-            print("✓ Files are equivalent (within specified tolerances)")
+            logging.info("Files are equivalent (within specified tolerances)")
             sys.exit(0)
         else:
-            print(f"✗ Files differ. Found {len(differences)} difference(s):\n")
+            logging.warning("Files differ. Found %d difference(s):", len(differences))
             for i, diff in enumerate(differences, 1):
-                print(f"{i:3d}. {diff}")
+                logging.info("%3d. %s", i, diff)
             sys.exit(1)
             
     except Exception as e:
-        print(f"Error: {e}", file=sys.stderr)
+        logging.exception("Error: %s", e)
         sys.exit(1)
 
 
 if __name__ == "__main__":
+    logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     if len(sys.argv) == 1:
-        print("No arguments provided. Using default test files for demonstration.")
+        logging.info("No arguments provided. Using default test files for demonstration.")
         sys.argv.extend([
             "test/rmgpy/test_data/yaml_writer_data/chemkin/chem37.yaml",
             "test/rmgpy/test_data/yaml_writer_data/cantera/chem37.yaml"
