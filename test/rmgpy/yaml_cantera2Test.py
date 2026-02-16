@@ -96,7 +96,7 @@ class TestCanteraWriter2:
             shapeIndex=shape_idx,
             sigma=(3.0, 'angstrom'),
             epsilon=(100.0, 'K'),
-            dipoleMoment=(0.0, 'De'),
+            dipoleMoment=(1.7, 'De'),
             polarizability=(0.0, 'angstrom^3'),
             rotrelaxcollnum=1.0
         )
@@ -117,7 +117,10 @@ class TestCanteraWriter2:
         assert d['transport']['model'] == 'gas'
         assert d['transport']['geometry'] == 'linear'
         # Diameter should be in angstroms ( https://cantera.org/dev/yaml/species.html#gas-transport )
-        assert np.isclose(d['transport']['diameter'], 3.0)
+        assert np.isclose(d['transport']['diameter'], 3.0) # Angstroms
+        assert np.isclose(d['transport']['dipole'], 1.7) # Debye
+        assert np.isclose(d['transport']['well-depth'], 100.0) # Kelvin
+        assert np.isclose(d['transport']['rotational-relaxation'], 1.0)
 
     def test_reaction_to_dict_arrhenius(self):
         """Test standard Arrhenius kinetics."""
