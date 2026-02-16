@@ -346,26 +346,19 @@ def species_to_dict(species, species_list):
     if species.transport_data and not species.contains_surface_site():
         td = species.transport_data
 
-        dipole = 0.0
-        if td.dipoleMoment is not None:
-            dipole = td.dipoleMoment.value_si * 1e21 / constants.c  # Debye
-
-        polarizability = 0.0
-        if hasattr(td, 'polarizability') and td.polarizability is not None:
-            polarizability = td.polarizability.value_si * 1e30  # Angstrom^3
-
-        rot_relax = 0.0
-        if hasattr(td, 'rotrelaxcollnum') and td.rotrelaxcollnum is not None:
-            rot_relax = td.rotrelaxcollnum
-
-        species_entry['transport'] = {
+        transport_dict = {
             'model': 'gas',
             'geometry': 'atom' if td.shapeIndex == 0 else 'linear' if td.shapeIndex == 1 else 'nonlinear',
             'well-depth': td.epsilon.value_si / constants.R, # Kelvin
             'diameter': td.sigma.value_si * 1e10,  # Angstroms
-            'dipole': dipole,
-            'rotational-relaxation': rot_relax
         }
+        if td.dipoleMoment and td.dipoleMoment.value_si != 0.0:
+            transport_dict['dipole'] = td.dipoleMoment.value_si * 1e21 / constants.c  # Debye
+        if getattr(td, 'polarizability', None) and td.polarizability.value_si != 0.0:
+            transport_dict['polarizability'] = td.polarizability.value_si * 1e30  # Angstrom^3
+        if getattr(td, 'rotrelaxcollnum', None) and td.rotrelaxcollnum != 0.0:
+            transport_dict['rotational-relaxation'] = td.rotrelaxcollnum
+        species_entry['transport'] = transport_dict
 
     if species.thermo and species.thermo.comment:
         clean_comment = species.thermo.comment.replace('\n', '; ').strip()
