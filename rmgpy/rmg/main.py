@@ -85,6 +85,7 @@ from rmgpy.tools.compare_cantera_yaml import compare_yaml_files, compare_yaml_fi
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yaml_rms import RMSWriter
 from rmgpy.yaml_cantera import CanteraWriter
+from rmgpy.yaml_cantera2 import CanteraWriter2
 
 ################################################################################
 
@@ -787,6 +788,7 @@ class RMG(util.Subject):
 
         self.attach(RMSWriter(self.output_directory))
         self.attach(CanteraWriter(self.output_directory))
+        self.attach(CanteraWriter2(self.output_directory))
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
 
