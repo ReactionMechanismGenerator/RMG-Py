@@ -402,7 +402,10 @@ def _extract_yaml_metadata(yaml_data: dict) -> dict:
     metadata.pop('reactions', None)
     reaction_blocks = []
     for phase in yaml_data.get('phases', []):
-        reaction_blocks.extend(phase.get('reactions', []))
+        reactions = phase.get('reactions', [])
+        if reactions in ('declared-species', 'all', 'none'):
+            continue
+        reaction_blocks.extend(reactions)
     for block in reaction_blocks:
         if block not in metadata:
             raise ValueError(f"Phase mentioned reactions block '{block}' not found in top-level YAML keys")
@@ -532,9 +535,14 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     if len(sys.argv) == 1:
         logging.info("No arguments provided. Using default test files for demonstration.")
+        # sys.argv.extend([
+        #     "test/rmgpy/test_data/yaml_writer_data/chemkin/from_main_test.yaml",
+        #     "test/rmgpy/test_data/yaml_writer_data/cantera/from_main_test.yaml"
+        # ])
+
         sys.argv.extend([
-            "test/rmgpy/test_data/yaml_writer_data/chemkin/from_main_test.yaml",
-            "test/rmgpy/test_data/yaml_writer_data/cantera/from_main_test.yaml"
+            "/Users/rwest/Code/RMG-Py/testing/eg0/cantera_from_ck/chem.yaml",
+            "/Users/rwest/Code/RMG-Py/testing/eg0/cantera2/chem.yaml"
         ])
 
     main()
