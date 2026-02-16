@@ -320,6 +320,80 @@ def compare_yaml_files(file1: str, file2: str, atol: float = 1e-12,
     return differences
 
 
+def compare_yaml_files_and_report(file1: str, file2: str, atol: float = 1e-12,
+                                   rtol: float = 1e-3, output: str = None) -> bool:
+    """Compare two Cantera YAML files and report results via logging.
+    
+    Performs a comparison between two Cantera YAML files and logs the results.
+    If an output file path is provided, also writes the report to that file.
+    
+    Parameters
+    ----------
+    file1 : str
+        Path to the first YAML file.
+    file2 : str
+        Path to the second YAML file.
+    atol : float
+        Absolute tolerance for numerical comparisons.
+    rtol : float
+        Relative tolerance for numerical comparisons.
+    output : str, optional
+        Path to an output file where the comparison report will be written.
+        If None, only logs to the standard logger.
+        
+    Returns
+    -------
+    bool
+        True if files are equivalent (no differences), False otherwise.
+    """
+    file_handler = None
+    root_logger = logging.getLogger()
+    
+    try:
+        # Set up optional file logging if output path provided
+        if output:
+            file_handler = logging.FileHandler(output)
+            file_handler.setFormatter(logging.Formatter("%(message)s"))
+            root_logger.addHandler(file_handler)
+        
+        # Check if file2 exists
+        if not Path(file2).exists():
+            logging.warning("Cantera YAML comparison skipped; file not found at %s", file2)
+            return False
+        
+        # Perform the comparison
+        differences = compare_yaml_files(file1, file2, atol, rtol)
+        
+        # Log and report results
+        if differences:
+            logging.warning(
+                "Cantera YAML comparison found %d difference(s) between %s and %s",
+                len(differences),
+                file1,
+                file2,
+            )
+            for diff in differences:
+                logging.warning("  %s", diff)
+            return False
+        else:
+            logging.info(
+                "Cantera YAML comparison passed: %s matches %s",
+                file1,
+                file2,
+            )
+            return True
+    
+    except Exception:
+        logging.exception("Cantera YAML comparison failed for %s vs %s", file1, file2)
+        return False
+    
+    finally:
+        # Clean up the file handler
+        if file_handler:
+            file_handler.close()
+            root_logger.removeHandler(file_handler)
+
+
 def _extract_yaml_metadata(yaml_data: dict) -> dict:
     """Extract metadata from YAML (excluding detailed species/reactions)."""
     metadata = yaml_data.copy()
@@ -459,8 +533,8 @@ if __name__ == "__main__":
     if len(sys.argv) == 1:
         logging.info("No arguments provided. Using default test files for demonstration.")
         sys.argv.extend([
-            "test/rmgpy/test_data/yaml_writer_data/chemkin/chem37.yaml",
-            "test/rmgpy/test_data/yaml_writer_data/cantera/chem37.yaml"
+            "test/rmgpy/test_data/yaml_writer_data/chemkin/from_main_test.yaml",
+            "test/rmgpy/test_data/yaml_writer_data/cantera/from_main_test.yaml"
         ])
 
     main()

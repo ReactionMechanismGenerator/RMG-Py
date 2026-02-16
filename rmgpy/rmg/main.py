@@ -79,6 +79,7 @@ from rmgpy.solver.base import TerminationTime
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
+from rmgpy.tools.compare_cantera_yaml import compare_yaml_files, compare_yaml_files_and_report
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yaml_rms import RMSWriter
 from rmgpy.yaml_cantera import CanteraWriter
@@ -1222,8 +1223,10 @@ class RMG(util.Subject):
 
         # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
         try:
+            logging.info("Translating final chemkin file into Cantera yaml.")
+            translated_cantera_file = None
             if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
-                self.generate_cantera_files_from_chemkin(
+                translated_cantera_file = self.generate_cantera_files_from_chemkin(
                     os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
                 )
@@ -1232,8 +1235,22 @@ class RMG(util.Subject):
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
                 )
             else:  # gas phase only
-                self.generate_cantera_files_from_chemkin(os.path.join(self.output_directory, "chemkin", "chem.inp"))
-                self.generate_cantera_files_from_chemkin(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
+                translated_cantera_file = self.generate_cantera_files_from_chemkin(
+                    os.path.join(self.output_directory, "chemkin", "chem.inp")
+                )
+                self.generate_cantera_files_from_chemkin(
+                    os.path.join(self.output_directory, "chemkin", "chem_annotated.inp")
+                )
+        
+            # Compare translated Cantera files and directly generated Cantera files
+
+            compare_yaml_files_and_report(translated_cantera_file,
+                                          os.path.join(self.output_directory, "cantera", "chem.yaml"),
+                                          output=os.path.join(self.output_directory, "cantera", "comparison_report.txt"))
+            compare_yaml_files_and_report(translated_cantera_file,
+                                          os.path.join(self.output_directory, "cantera2", "chem.yaml"),
+                                          output=os.path.join(self.output_directory, "cantera2", "comparison_report.txt"))
+
         except EnvironmentError:
             logging.exception("Could not generate Cantera files due to EnvironmentError. Check read\\write privileges in output directory.")
         except Exception:
@@ -1807,7 +1824,8 @@ class RMG(util.Subject):
     def generate_cantera_files_from_chemkin(self, chemkin_file, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
-        and save it in the cantera directory
+        and save it in the cantera directory. 
+        Returns the path to the generated cantera file.
         """
         transport_file = os.path.join(os.path.dirname(chemkin_file), "tran.dat")
         file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + ".yaml"
@@ -1829,6 +1847,7 @@ class RMG(util.Subject):
             logging.exception("Error converting to Cantera format.")
             logging.info("Trying again without transport data file.")
             parser.convert_mech(chemkin_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
+        return out_name
 
     def initialize_reaction_threshold_and_react_flags(self):
         num_core_species = len(self.reaction_model.core.species)
