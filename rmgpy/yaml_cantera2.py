@@ -353,7 +353,7 @@ def species_to_dict(species, species_list):
             'diameter': td.sigma.value_si * 1e10,  # Angstroms
         }
         if td.dipoleMoment and td.dipoleMoment.value_si != 0.0:
-            transport_dict['dipole'] = td.dipoleMoment.value_si * 1e21 / constants.c  # Debye
+            transport_dict['dipole'] = td.dipoleMoment.value_si * 1e21 * constants.c  # Debye
         if getattr(td, 'polarizability', None) and td.polarizability.value_si != 0.0:
             transport_dict['polarizability'] = td.polarizability.value_si * 1e30  # Angstrom^3
         if getattr(td, 'rotrelaxcollnum', None) and td.rotrelaxcollnum != 0.0:
