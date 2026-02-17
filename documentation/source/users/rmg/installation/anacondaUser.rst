@@ -9,7 +9,7 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
 
 #. Install both RMG and the RMG-database binaries through the terminal. Dependencies will be installed automatically. It is safest to make a new conda environment for RMG and its dependencies. Type the following command into the terminal to create the new environment named 'rmg_env' containing the latest stable version of the RMG program and its database. ::
 
-    conda create --name rmg_env 'rmg::rmg'
+    conda create -n rmg_env -c conda-forge -c rmg rmg
 
    Whenever you wish to use it you must first activate the environment::
 
@@ -19,7 +19,7 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
   
    To install a specific version of RMG, add the version to the install command::
 
-    conda create --name rmg_33_env 'rmg::rmg==3.3.0'
+    conda create --name rmg_33_env -c conda-forge -c rmg 'rmg==3.3.0'
   
    Not all versions of RMG are available via conda for all platforms. Check the `official RMG conda channel <https://anaconda.org/RMG/rmg/files>`_ to see which are available for download.
 
@@ -36,11 +36,11 @@ Updating your binary installation of RMG in Linux or Mac OSX
 
 If you had previously installed a binary version of the RMG package and wish to update to a newer version, we suggest creating a new conda environment and installing the updated version there :: 
 
-    conda create --name rmg_xyz_env 'rmg::rmg==x.y.z'
+    conda create --name rmg_xyz_env -c conda-forge -c rmg 'rmg==x.y.z'
     
 It is also possible, though not advisable, to update your existing installation to the latest stable version available on Anaconda by typing the following command on the terminal ::
 
     source activate rmg_env
-    conda update 'rmg::rmg'
+    conda update -c conda-forge -c rmg rmg
 
 Doing this may break any other code present in the conda environment and RMG may not function correctly. If you attempt this update method and face issues, please attempt to install the new version of RMG in a new conda environment before reaching out for assistance.
