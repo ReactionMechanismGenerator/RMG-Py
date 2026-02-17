@@ -651,8 +651,7 @@ class RMG(util.Subject):
         # Initialize reaction model
 
         for spec in self.initial_species:
-            if spec.reactive:
-                submit(spec, self.solvent)
+            submit(spec, self.solvent)
             if vapor_liquid_mass_transfer.enabled:
                 spec.get_liquid_volumetric_mass_transfer_coefficient_data()
                 spec.get_henry_law_constant_data()
