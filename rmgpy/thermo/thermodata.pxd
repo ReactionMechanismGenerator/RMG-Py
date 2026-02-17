@@ -38,6 +38,7 @@ cdef class ThermoData(HeatCapacityModel):
     
     cdef public ScalarQuantity _H298, _S298
     cdef public ArrayQuantity _Tdata, _Cpdata
+    cdef public dict _thermo_coverage_dependence
     
     cpdef double get_heat_capacity(self, double T) except -1000000000
 

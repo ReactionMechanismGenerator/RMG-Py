@@ -50,6 +50,7 @@ import psutil
 import yaml
 from cantera import ck2yaml
 from scipy.optimize import brute
+import cantera as ct
 
 import rmgpy.util as util
 from rmgpy import settings
@@ -196,6 +197,7 @@ class RMG(util.Subject):
         self.surface_site_density = None
         self.binding_energies = None
         self.coverage_dependence = False
+        self.thermo_coverage_dependence = False
         self.forbidden_structures = []
 
         self.reaction_model = None
@@ -513,7 +515,7 @@ class RMG(util.Subject):
 
         # Read input file
         self.load_input(self.input_file)
-        
+
         # Check if ReactionMechanismSimulator reactors are being used
         # if RMS is not installed but the user attempted to use it, the load_input_file would have failed
         # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
@@ -526,6 +528,7 @@ class RMG(util.Subject):
                 self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
                 self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
         self.reaction_model.coverage_dependence = self.coverage_dependence
+        self.reaction_model.thermo_coverage_dependence = self.thermo_coverage_dependence
 
         if kwargs.get("restart", ""):
             import rmgpy.rmg.input
@@ -772,7 +775,7 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        
+
         self.attach(RMSWriter(self.output_directory))
 
         if self.generate_output_html:
@@ -1233,6 +1236,44 @@ class RMG(util.Subject):
                     os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
                 )
+                if self.thermo_coverage_dependence:
+                    # add thermo coverage dependence to Cantera files
+                    chem_yaml_path = os.path.join(self.output_directory, "cantera", "chem.yaml")
+                    gas = ct.Solution(chem_yaml_path, "gas")
+                    surf = ct.Interface(chem_yaml_path, "surface1", [gas])
+                    with open(chem_yaml_path, 'r') as f:
+                        content = yaml.load(f, Loader=yaml.FullLoader)
+                    
+                    content['phases'][1]['reference-state-coverage'] = 0.11
+                    content['phases'][1]['thermo'] = 'coverage-dependent-surface'
+                    
+                    for s in self.reaction_model.core.species:
+                        if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
+                            for dep_sp, parameters in s.thermo.thermo_coverage_dependence.items():
+                                mol = Molecule().from_adjacency_list(dep_sp)
+                                for sp in self.reaction_model.core.species:
+                                    if sp.is_isomorphic(mol, strict=False):
+                                        parameters['units'] = {'energy':'J', 'quantity':'mol'}
+                                        parameters['enthalpy-coefficients'] = [value.value_si for value in parameters['enthalpy-coefficients']]
+                                        parameters['entropy-coefficients'] = [value.value_si for value in parameters['entropy-coefficients']]
+                                        try:
+                                            content["species"][gas.n_species+surf.species_index(sp.to_chemkin())]['coverage-dependencies'][sp.to_chemkin()] = parameters
+                                        except KeyError:
+                                            content["species"][gas.n_species+surf.species_index(sp.to_chemkin())]['coverage-dependencies'] = {sp.to_chemkin(): parameters}
+
+                    annotated_yaml_path = os.path.join(self.output_directory, "cantera", "chem_annotated.yaml")
+                    with open(annotated_yaml_path, 'r') as f:
+                        annotated_content = yaml.load(f, Loader=yaml.FullLoader)
+                    
+                    annotated_content['phases'] = content['phases']
+                    annotated_content['species'] = content['species']
+
+                    with open(chem_yaml_path, 'w') as output_f:
+                        yaml.dump(content, output_f, sort_keys=False)
+                    
+                    with open(annotated_yaml_path, 'w') as output_f:
+                        yaml.dump(annotated_content, output_f, sort_keys=False)
+                                       
             else:  # gas phase only
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))

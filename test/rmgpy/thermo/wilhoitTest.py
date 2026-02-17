@@ -31,7 +31,7 @@
 This script contains unit tests of the :mod:`rmgpy.thermo.wilhoit` module.
 """
 
-import os.path
+import os.path, ast
 
 
 import numpy as np
@@ -39,13 +39,12 @@ import numpy as np
 import rmgpy.constants as constants
 from rmgpy.quantity import ScalarQuantity
 from rmgpy.thermo.wilhoit import Wilhoit
-
+import rmgpy.quantity as quantity
 
 class TestWilhoit:
     """
     Contains unit tests of the :class:`Wilhoit` class.
     """
-
     def setup_class(self):
         self.Cp0 = 4.0
         self.CpInf = 21.5
@@ -59,6 +58,7 @@ class TestWilhoit:
         self.Tmin = 300.0
         self.Tmax = 3000.0
         self.comment = "C2H6"
+        self.thermo_coverage_dependence = {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}':{'model':'polynomial', 'enthalpy-coefficients':[(1,'J/mol'),(2,'J/mol'),(3,'J/mol')], "entropy-coefficients":[(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}}
         self.wilhoit = Wilhoit(
             Cp0=(self.Cp0 * constants.R, "J/(mol*K)"),
             CpInf=(self.CpInf * constants.R, "J/(mol*K)"),
@@ -71,6 +71,7 @@ class TestWilhoit:
             S0=(self.S0 * constants.R, "J/(mol*K)"),
             Tmin=(self.Tmin, "K"),
             Tmax=(self.Tmax, "K"),
+            thermo_coverage_dependence=self.thermo_coverage_dependence,
             comment=self.comment,
         )
 
@@ -159,6 +160,12 @@ class TestWilhoit:
         Test that the Wilhoit comment property was properly set.
         """
         assert self.wilhoit.comment == self.comment
+    
+    def test_thermo_coverage_dependence(self):
+        """
+        Test that the Wilhoit thermo_coverage_dependence property was properly set.
+        """
+        assert ast.literal_eval(repr(self.wilhoit.thermo_coverage_dependence)) == ast.literal_eval(repr(self.thermo_coverage_dependence))
 
     def test_is_temperature_valid(self):
         """
@@ -287,6 +294,7 @@ class TestWilhoit:
         assert self.wilhoit.Tmax.units == wilhoit.Tmax.units
         assert round(abs(self.wilhoit.E0.value - wilhoit.E0.value), 4) == 0
         assert self.wilhoit.E0.units == wilhoit.E0.units
+        assert repr(self.wilhoit.thermo_coverage_dependence) == repr(wilhoit.thermo_coverage_dependence)
         assert self.wilhoit.comment == wilhoit.comment
 
     def test_repr(self):
@@ -318,6 +326,7 @@ class TestWilhoit:
         assert self.wilhoit.Tmax.units == wilhoit.Tmax.units
         assert round(abs(self.wilhoit.E0.value - wilhoit.E0.value), 1) == 0
         assert self.wilhoit.E0.units == wilhoit.E0.units
+        assert repr(self.wilhoit.thermo_coverage_dependence) == repr(wilhoit.thermo_coverage_dependence)
         assert self.wilhoit.comment == wilhoit.comment
 
     def test_fit_to_data(self):
@@ -381,6 +390,7 @@ class TestWilhoit:
 
         spc = Species().from_smiles("CC")
         spc.get_thermo_data()
+        spc.thermo.thermo_coverage_dependence = self.thermo_coverage_dependence
 
         T = 1350.0  # not 298K!
 
@@ -418,6 +428,16 @@ class TestWilhoit:
         Test that a Wilhoit object can be converted to a dictionary representation properly
         """
         wilhoit_dict = self.wilhoit.as_dict()
+
+        assert wilhoit_dict["thermo_coverage_dependence"].keys() == self.thermo_coverage_dependence.keys()
+        sp_name = list(self.thermo_coverage_dependence.keys())[0]
+        assert wilhoit_dict['thermo_coverage_dependence'][sp_name]['model'] == self.thermo_coverage_dependence[sp_name]['model']
+        enthalpy_list = wilhoit_dict['thermo_coverage_dependence'][sp_name]['enthalpy-coefficients']['object']
+        assert [(int(coeff.value), str(coeff.units)) for coeff in enthalpy_list] == self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
+        entropy_list = wilhoit_dict['thermo_coverage_dependence'][sp_name]['entropy-coefficients']['object']
+        assert [(int(coeff.value), str(coeff.units)) for coeff in entropy_list] == self.thermo_coverage_dependence[sp_name]['entropy-coefficients']
+
+        wilhoit_dict = {k: wilhoit_dict[k] for k in wilhoit_dict.keys() - {'thermo_coverage_dependence'}}
         assert wilhoit_dict == {
             "comment": "C2H6",
             "B": {"units": "K", "class": "ScalarQuantity", "value": 1068.68},
@@ -448,6 +468,11 @@ class TestWilhoit:
                 "value": 178.76114800000002,
             },
             "class": "Wilhoit",
+            # 'thermo_coverage_dependence': {'1 O u0 p2 c0 {2,D} \n 2 X u0 p0 c0 {1,D}': {
+            #                                                                             'model': 'polynomial',
+            #                                                                             'enthalpy-coefficients': {'class': 'np_array', 'object': [(1,'J/mol'), (2,'J/mol'), (3,'J/mol')]},
+            #                                                                             'entropy-coefficients': {'class': 'np_array', 'object': [(1,'J/(mol*K)'),(2,'J/(mol*K)'),(3,'J/(mol*K)')]}}
+            #                               }
         }
 
     def test_make_wilhoit(self):
@@ -456,6 +481,6 @@ class TestWilhoit:
         """
         wilhoit_dict = self.wilhoit.as_dict()
         new_wilhoit = Wilhoit.__new__(Wilhoit)
-        class_dictionary = {"ScalarQuantity": ScalarQuantity, "Wilhoit": Wilhoit}
+        class_dictionary = {"ScalarQuantity": ScalarQuantity, "Wilhoit": Wilhoit, "np_array": np.array}
 
         new_wilhoit.make_object(wilhoit_dict, class_dictionary)

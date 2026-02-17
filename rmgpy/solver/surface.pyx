@@ -43,6 +43,8 @@ cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity
 from rmgpy.solver.base cimport ReactionSystem
+import copy
+from rmgpy.molecule import Molecule
 
 cdef class SurfaceReactor(ReactionSystem):
     """
@@ -66,9 +68,13 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public ScalarQuantity surface_site_density
     cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
+    cdef public np.ndarray thermo_coeff_matrix
+    cdef public np.ndarray stoi_matrix
 
     cdef public bint coverage_dependence
     cdef public dict coverage_dependencies
+    cdef public bint thermo_coverage_dependence
+
 
 
     def __init__(self,
@@ -84,6 +90,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  sensitivity_threshold=1e-3,
                  sens_conditions=None,
                  coverage_dependence=False,
+                 thermo_coverage_dependence=False,
                  ):
         ReactionSystem.__init__(self,
                                 termination,
@@ -103,6 +110,7 @@ cdef class SurfaceReactor(ReactionSystem):
         self.surface_volume_ratio = Quantity(surface_volume_ratio)
         self.surface_site_density = Quantity(surface_site_density)
         self.coverage_dependence = coverage_dependence
+        self.thermo_coverage_dependence = thermo_coverage_dependence
         self.V = 0  # will be set from ideal gas law in initialize_model
         self.constant_volume = True
         self.sens_conditions = sens_conditions
@@ -166,6 +174,10 @@ cdef class SurfaceReactor(ReactionSystem):
                                        )
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef Py_ssize_t index
+        cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index), len(self.species_index), 6), dtype=np.float64)
+        cdef np.ndarray stoi_matrix = np.zeros((self.reactant_indices.shape[0], len(self.species_index)), dtype=np.float64)
+        if self.thermo_coverage_dependence:
+            self.thermo_coeff_matrix = thermo_coeff_matrix
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
         species_on_surface = np.zeros((self.num_core_species), int)
@@ -195,6 +207,49 @@ cdef class SurfaceReactor(ReactionSystem):
                 means that Species with index 2 in the current simulation is used in
                 Reaction 3 with parameters a=0.1, m=-1, E=12 kJ/mol
                 """
+        for sp, sp_index in self.species_index.items():
+            if sp.contains_surface_site():
+                if self.thermo_coverage_dependence and sp.thermo.thermo_coverage_dependence:
+                    for spec, parameters in sp.thermo.thermo_coverage_dependence.items():
+                        molecule = Molecule().from_adjacency_list(spec)
+                        for species in self.species_index.keys():
+                            if species.is_isomorphic(molecule, strict=False):
+                                species_index = self.species_index[species]
+                                enthalpy_coeff = np.array([p.value_si for p in parameters['enthalpy-coefficients']])
+                                entropy_coeff = np.array([p.value_si for p in parameters['entropy-coefficients']])
+                                thermo_polynomials = np.concatenate((enthalpy_coeff, entropy_coeff), axis=0)
+                                self.thermo_coeff_matrix[sp_index, species_index] = [x for x in thermo_polynomials]
+        # create a stoichiometry matrix for reaction enthalpy and entropy correction 
+        # due to thermodynamic coverage dependence
+        if self.thermo_coverage_dependence:
+            ir = self.reactant_indices
+            ip = self.product_indices
+            for rxn_id, rxn_stoi_num in enumerate(stoi_matrix):
+                if ir[rxn_id, 0] >= self.num_core_species or ir[rxn_id, 1] >= self.num_core_species or ir[rxn_id, 2] >= self.num_core_species:
+                    continue
+                elif ip[rxn_id, 0] >= self.num_core_species or ip[rxn_id, 1] >= self.num_core_species or ip[rxn_id, 2] >= self.num_core_species:
+                    continue
+                else:
+                    if ir[rxn_id, 1] == -1:  # only one reactant
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                    elif ir[rxn_id, 2] == -1:  # only two reactants
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                        rxn_stoi_num[ir[rxn_id, 1]] += -1
+                    else:  # three reactants
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                        rxn_stoi_num[ir[rxn_id, 1]] += -1
+                        rxn_stoi_num[ir[rxn_id, 2]] += -1
+                    if ip[rxn_id, 1] == -1:  # only one product
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                    elif ip[rxn_id, 2] == -1:  # only two products
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                        rxn_stoi_num[ip[rxn_id, 1]] += 1
+                    else:  # three products
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                        rxn_stoi_num[ip[rxn_id, 1]] += 1
+                        rxn_stoi_num[ip[rxn_id, 2]] += 1
+            self.stoi_matrix = stoi_matrix
+        
         self.species_on_surface = species_on_surface
         self.reactions_on_surface = reactions_on_surface
 
@@ -378,9 +433,6 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
         cdef list list_of_coverage_deps
         cdef double surface_site_fraction, total_sites, a, m, E
-
-
-
         ir = self.reactant_indices
         ip = self.product_indices
         equilibrium_constants = self.Keq
@@ -414,7 +466,6 @@ cdef class SurfaceReactor(ReactionSystem):
         V = self.V  # constant volume reactor
         A = self.V * surface_volume_ratio_si  # area
         total_sites = self.surface_site_density.value_si * A  # todo: double check units
-
         for j in range(num_core_species):
             if species_on_surface[j]:
                 C[j] = (N[j] / V) / surface_volume_ratio_si
@@ -422,6 +473,26 @@ cdef class SurfaceReactor(ReactionSystem):
                 C[j] = N[j] / V
             #: surface species are in mol/m2, gas phase are in mol/m3
             core_species_concentrations[j] = C[j]
+        
+        # Thermodynamic coverage dependence
+        if self.thermo_coverage_dependence:
+            coverages = []
+            for i in range(len(N)):
+                if species_on_surface[i]:
+                    surface_site_fraction = N[i] / total_sites
+                else:
+                    surface_site_fraction = 0
+                coverages.append(surface_site_fraction)
+            coverages = np.array(coverages)
+            thermo_dep_coverage = np.stack([coverages, coverages**2, coverages**3, -self.T.value_si*coverages, -self.T.value_si*coverages**2, -self.T.value_si*coverages**3])
+            free_energy_coverage_corrections = []
+            for matrix in self.thermo_coeff_matrix:
+                sp_free_energy_correction = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
+                free_energy_coverage_corrections.append(sp_free_energy_correction)
+            rxns_free_energy_change = np.matmul(self.stoi_matrix,free_energy_coverage_corrections)
+            corrected_K_eq = copy.deepcopy(self.Keq)
+            corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
+            kr = kf / corrected_K_eq
 
         # Coverage dependence
         coverage_corrections = np.ones_like(kf, float)
