@@ -150,7 +150,7 @@ def get_concentration_dict_from_ckcsv(ckcsv_file):
                 units = row[1].strip()[1:-1].lower()
                 header = tokens[0] + '_(' + units + ')'
 
-                content_col = np.array([float(r) for r in row[2:]], np.float)
+                content_col = np.array([float(r) for r in row[2:]], np.float64)
                 content_col *= {'cm3': 1.0, 'm3': 1.00e+6}[units]
                 first_col_dict[header] = content_col
                 continue

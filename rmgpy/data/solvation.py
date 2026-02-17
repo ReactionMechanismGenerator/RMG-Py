@@ -2285,8 +2285,10 @@ class SolvationDatabase(object):
         Returns:
             delG (float): solvation free energy at the input temperature in J/mol.
             Kfactor (float): K-factor at the input temperature. K-factor is defined as a ratio of the mole fraction
-            of a solute in a gas-phase to the mole fraction of a solute in a liquid-phase at equilibrium.
-
+            of a solute in a gas-phase to the mole fraction of a solute in a liquid-phase at equilibrium
+            kH (float): the Henry's law constant at the input temperature. kH is defined as the ratio of the pressure
+            of a solute in the gas-phase to the concentration of a solute in the liquid-phase at equilibrium.
+            
         Raises:
             DatabaseError: if `solute_data.name_in_coolprop` is None or `solute_data` has any missing Abarham or
             Mintz solvent parameters.
