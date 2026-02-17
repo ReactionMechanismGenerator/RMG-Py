@@ -65,7 +65,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <ol class="arabic">
 <li><p>Install the <cite>conda</cite> package manager via <cite>miniforge</cite>, if you do not already have it (or Anaconda), by following the <a class="reference external" href="https://github.com/conda-forge/miniforge?tab=readme-ov-file#install">Miniforge installation instructions</a>.</p></li>
 <li><p>Install both RMG and the RMG-database binaries through the terminal. Dependencies will be installed automatically. It is safest to make a new conda environment for RMG and its dependencies. Type the following command into the terminal to create the new environment named ‘rmg_env’ containing the latest stable version of the RMG program and its database.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_env</span> <span class="s1">&#39;rmg::rmg&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">-</span><span class="n">n</span> <span class="n">rmg_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span> <span class="n">rmg</span>
 </pre></div>
 </div>
 <p>Whenever you wish to use it you must first activate the environment:</p>
@@ -74,7 +74,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 </div>
 <p>For more information about using conda, please check out the <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html">conda user guide</a>.</p>
 <p>To install a specific version of RMG, add the version to the install command:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_33_env</span> <span class="s1">&#39;rmg::rmg==3.3.0&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_33_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span> <span class="s1">&#39;rmg==3.3.0&#39;</span>
 </pre></div>
 </div>
 <p>Not all versions of RMG are available via conda for all platforms. Check the <a class="reference external" href="https://anaconda.org/RMG/rmg/files">official RMG conda channel</a> to see which are available for download.</p>
@@ -90,12 +90,12 @@ to a local directory.  Use the terminal to run your RMG job inside that folder u
 <section id="updating-your-binary-installation-of-rmg-in-linux-or-mac-osx">
 <h2><span class="section-number">3.2.1.1. </span>Updating your binary installation of RMG in Linux or Mac OSX<a class="headerlink" href="#updating-your-binary-installation-of-rmg-in-linux-or-mac-osx" title="Permalink to this heading">¶</a></h2>
 <p>If you had previously installed a binary version of the RMG package and wish to update to a newer version, we suggest creating a new conda environment and installing the updated version there</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_xyz_env</span> <span class="s1">&#39;rmg::rmg==x.y.z&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_xyz_env</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span> <span class="s1">&#39;rmg==x.y.z&#39;</span>
 </pre></div>
 </div>
 <p>It is also possible, though not advisable, to update your existing installation to the latest stable version available on Anaconda by typing the following command on the terminal</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">activate</span> <span class="n">rmg_env</span>
-<span class="n">conda</span> <span class="n">update</span> <span class="s1">&#39;rmg::rmg&#39;</span>
+<span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="o">-</span><span class="n">c</span> <span class="n">rmg</span> <span class="n">rmg</span>
 </pre></div>
 </div>
 <p>Doing this may break any other code present in the conda environment and RMG may not function correctly. If you attempt this update method and face issues, please attempt to install the new version of RMG in a new conda environment before reaching out for assistance.</p>
