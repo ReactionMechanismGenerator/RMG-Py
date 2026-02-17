@@ -1928,3 +1928,71 @@ def get_input(name):
             raise Exception('Unrecognized keyword: {}'.format(name))
 
     raise Exception('Could not get variable with name: {}'.format(name))
+
+################################################################################
+# YAML Input Support
+################################################################################
+
+def read_input_file_auto(path, rmg0):
+    """
+    read an RMG input file (either Python or YAML format) and process it
+    
+    this function automatically detects the file format based on the extension
+    and calls the appropriate reader
+    
+    Parameters
+    ----------
+    path : Union[str, Path]
+        Path to the input file (.py or .yaml/.yml)
+    rmg0 : RMG
+        RMG object to populate with input data
+    
+    Raises
+    ------
+    IOError
+        If the input file cannot be found
+    ValueError
+        If the file format is unsupported
+    ImportError
+        If the file is in YAML format but PyYAML is not installed in the 
+        current Python environment.
+    """
+    from pathlib import Path
+    
+    # get the file extension
+    file_path = Path(path)
+    extension = file_path.suffix.lower()
+    
+    # check if file exists
+    if not file_path.exists():
+        raise IOError(f'The input file "{path}" could not be found.')
+    
+    # route to appropriate reader based on extension
+    if extension == '.py':
+        # use the original Python input file reader
+        logging.info(f'Detected Python input file format (.py)')
+        read_input_file(path, rmg0)
+    elif extension in ['.yaml', '.yml']:
+        # use the YAML input file reader
+        try:
+            #iImport the YAML reader functions directly
+            import sys
+            import os
+            
+            # add the directory containing yaml_input_reader.py to the Python path
+            yaml_reader_dir = os.path.dirname(__file__)
+            if yaml_reader_dir not in sys.path:
+                sys.path.insert(0, yaml_reader_dir)
+            
+            from yaml_input_reader import read_yaml_input_file
+            logging.info(f'Detected YAML input file format ({extension})')
+            read_yaml_input_file(path, rmg0)
+        except ImportError:
+            raise ImportError(
+                "YAML support requires PyYAML. Install it with: pip install pyyaml"
+            )
+    else:
+        raise ValueError(
+            f'Unsupported input file format "{extension}". '
+            f'RMG supports .py and .yaml/.yml input files.'
+        )
