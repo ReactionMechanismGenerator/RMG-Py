@@ -113,8 +113,25 @@ export JULIA_PYTHONCALL_EXE="$CONDA_PREFIX/bin/python"
 export PYTHON_JULIAPKG_EXE="$(which julia)"
 export PYTHON_JULIAPKG_PROJECT="$CONDA_PREFIX/julia_env"
 
+conda install -y conda-forge::pyjuliacall
+
 echo "Environment variables referencing JULIA:"
 env | grep JULIA
+
+# Initialize the Julia environment from Python using juliacall
+python << EOF || return 1
+import sys
+try:
+    from juliacall import Main
+    Main.seval('println("Active Julia environment: ", Base.active_project())')
+    Main.seval('println("Julia load path: ", Base.load_path())')
+    Main.seval('using Pkg')
+    Main.seval('Pkg.status()')
+except Exception as e:
+    print("❌ Error while initializing Julia environment:")
+    print(e)
+    sys.exit(1)
+EOF
 
 # Install RMS
 if [ "$RMS_INSTALLER" = "standard" ] || [ "$RMS_INSTALLER" = "continuous" ]; then
@@ -163,23 +180,6 @@ if [ $julia_status -ne 0 ]; then
     echo "RMS installation failed!"
     return $julia_status
 fi
-
-conda install -y conda-forge::pyjuliacall
-
-# Initialize the Julia environment from Python using juliacall
-python << EOF || return 1
-import sys
-try:
-    from juliacall import Main
-    Main.seval('println("Active Julia environment: ", Base.active_project())')
-    Main.seval('println("Julia load path: ", Base.load_path())')
-    Main.seval('using Pkg')
-    Main.seval('Pkg.status()')
-except Exception as e:
-    print("❌ Error while initializing Julia environment:")
-    print(e)
-    sys.exit(1)
-EOF
 
 echo "Checking if ReactionMechanismSimulator is installed in the current conda environment for Python usage..."
 
