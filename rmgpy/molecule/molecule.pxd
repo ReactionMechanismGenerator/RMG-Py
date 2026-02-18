@@ -158,7 +158,7 @@ cdef class Molecule(Graph):
     cdef public int multiplicity
     cdef public bint reactive
     cdef public dict props
-    cdef public list _symm_sssr
+    cdef public tuple _symm_sssr
     cdef public tuple _sssr
     cdef public str metal
     cdef public str facet
