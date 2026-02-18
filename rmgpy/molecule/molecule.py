@@ -2663,10 +2663,10 @@ class Molecule(Graph):
         """
         if symmetrized:
             if self._symm_sssr is not None:
-                return self._symm_sssr
+                return list(self._symm_sssr)
         else:
             if self._sssr is not None:
-                return self._sssr
+                return list(self._sssr)
 
         # RDKit does not support electron
         if self.is_electron():
@@ -2691,9 +2691,9 @@ class Molecule(Graph):
             sorted_ring = self.sort_cyclic_vertices(atom_ring)
             sssr.append(sorted_ring)
         if symmetrized:
-            self._symm_sssr = sssr
+            self._symm_sssr = tuple(sssr)
         else:
-            self._sssr = sssr
+            self._sssr = tuple(sssr)
         return sssr
 
     def get_relevant_cycles(self):
