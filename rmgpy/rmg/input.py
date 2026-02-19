@@ -1618,6 +1618,8 @@ def read_input_file(path, rmg0):
         if not isinstance(reaction_system, Reactor):
             reaction_system.convert_initial_keys_to_species_objects(species_dict)
 
+    if rmg.output_directory is None:
+        rmg.output_directory = os.path.dirname(full_path)
     if rmg.quantum_mechanics:
         rmg.quantum_mechanics.set_default_output_directory(rmg.output_directory)
         rmg.quantum_mechanics.initialize()
