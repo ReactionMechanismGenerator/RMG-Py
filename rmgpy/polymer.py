@@ -727,25 +727,16 @@ class Polymer(Species):
         Wrapper that ensures any generated polymer fragment is sanitized
         (labels stripped, proxy tagged) before returning to the RMG engine.
         """
-        # 1. Call the core logic (the code you previously wrote)
         new_poly = self._create_reacted_copy_logic(reacted_proxy)
-
         if new_poly is None:
             return None
-
-        # 2. Perform centralized sanitization (The Handshake Finalizer)
-        # This cleans the *1/*2 labels once and for all across all resonance structures
         proxy_spec = new_poly.get_proxy_species()
         for mol in proxy_spec.molecule:
-            # Strip internal connectivity markers so they don't interfere with kinetics
             for atom in mol.atoms:
                 atom.label = ''
-
-            # Ensure the graph is perceived correctly for the next reaction round
             mol.update()
             mol.is_polymer_proxy = True
             mol.reactive = True
-
         return new_poly
 
     def _create_reacted_copy_logic(self, reacted_proxy: Molecule) -> Optional['Polymer']:
@@ -761,67 +752,71 @@ class Polymer(Species):
                                  Returns None if for an invalid/unsupported polymer fragment.
         """
         product = reacted_proxy.copy(deep=True)
+        product.clear_labeled_atoms()
         product.update()
 
-        def _count_boundary_edges(atom_mapping):
-            """Counts how many bonds connect the matched subgraph to the rest of the molecule."""
-            atom_set = set(atom_mapping.keys())
-            cut_bonds = 0
+        def _count_boundary_edges(m):
+            """Counts bonds leaving the matched subgraph."""
+            atom_set = _get_target_atoms(m)
+            cuts = 0
             for a in atom_set:
-                for b, bond in a.edges.items():
-                    if b not in atom_set:
-                        cut_bonds += 1
-            return cut_bonds
-
-        def _pick_best_match(matches):
-            """
-            Selects the best subgraph match using heuristics:
-            1. Terminal matches (Boundary Edges == 1) are preferred.
-            2. Fewer cuts are preferred (simpler excision).
-            3. Larger matches are preferred (tie-breaker).
-            """
-            scored = []
-            for m in matches:
-                b = _count_boundary_edges(m)
-                score = (abs(b - 1), b, -len(m))
-                scored.append((score, m))
-            scored.sort(key=lambda x: x[0])
-            return scored[0][1]
+                for nbr in a.bonds:
+                    if nbr not in atom_set:
+                        cuts += 1
+            return cuts
 
         head_groups = self._wing_groups("head")
         tail_groups = self._wing_groups("tail")
         head_matches, tail_matches = list(), list()
+
         for g in head_groups:
             head_matches.extend(product.find_subgraph_isomorphisms(g, save_order=True))
         for g in tail_groups:
             tail_matches.extend(product.find_subgraph_isomorphisms(g, save_order=True))
+
         head_atoms, tail_atoms = set(), set()
-
         if head_matches and tail_matches:
-            try:
-                head_atoms, tail_atoms = self._pick_disjoint_pair(head_matches, tail_matches, product)
-            except ValueError:
-                best_head = _pick_best_match(head_matches)
-                best_tail = _pick_best_match(tail_matches)
+            best_pair = None
+            best_score = (999, 999, 999)
+            for hm in head_matches:
+                ha = _get_target_atoms(hm)
+                h_bnd = _count_boundary_edges(hm)
+                for tm in tail_matches:
+                    ta = _get_target_atoms(tm)
+                    t_bnd = _count_boundary_edges(tm)
+                    if ha.isdisjoint(ta):
+                        score = (abs(h_bnd - 1) + abs(t_bnd - 1), h_bnd + t_bnd, -(len(ha) + len(ta)))
+                        if score < best_score:
+                            best_score = score
+                            best_pair = (ha, ta)
 
-                best_head_atoms = set(best_head.keys())
-                best_tail_atoms = set(best_tail.keys())
-
-                head_score = _count_boundary_edges(best_head)
-                tail_score = _count_boundary_edges(best_tail)
-
-                if abs(head_score - 1) <= abs(tail_score - 1):
-                    head_atoms = best_head_atoms
-                    tail_atoms = set()
+            if best_pair:
+                head_atoms, tail_atoms = best_pair
+            else:
+                def _score_single(m):
+                    b = _count_boundary_edges(m)
+                    return (abs(b - 1), b, -len(_get_target_atoms(m)))
+                best_head = min(head_matches, key=_score_single)
+                best_tail = min(tail_matches, key=_score_single)
+                if _score_single(best_head) <= _score_single(best_tail):
+                    head_atoms = _get_target_atoms(best_head)
                 else:
-                    tail_atoms = best_tail_atoms
-                    head_atoms = set()
+                    tail_atoms = _get_target_atoms(best_tail)
+
         elif head_matches:
-            best_head = _pick_best_match(head_matches)
-            head_atoms = set(best_head.keys())
+            def _score_single(m):
+                b = _count_boundary_edges(m)
+                return abs(b - 1), b, -len(_get_target_atoms(m))
+            best_head = min(head_matches, key=_score_single)
+            head_atoms = _get_target_atoms(best_head)
+
         elif tail_matches:
-            best_tail = _pick_best_match(tail_matches)
-            tail_atoms = set(best_tail.keys())
+            def _score_single(m):
+                b = _count_boundary_edges(m)
+                return abs(b - 1), b, -len(_get_target_atoms(m))
+
+            best_tail = min(tail_matches, key=_score_single)
+            tail_atoms = _get_target_atoms(best_tail)
 
         if head_atoms and tail_atoms:
             atoms_to_remove = head_atoms | tail_atoms
@@ -964,22 +959,19 @@ class Polymer(Species):
         uniq = dict()
         for m in molecules:
             g = m.to_group()
-            if g.multiplicity:
-                if 1 not in g.multiplicity:
-                    g.multiplicity = sorted(set(g.multiplicity + [1]))
-            else:
-                g.multiplicity = [1]
+            g.multiplicity = []
+
             for ga in g.atoms:
-                if not ga.radical_electrons:
-                    ga.radical_electrons = [0]
-                if not ga.charge:
-                    ga.charge = [0]
-                if len(ga.radical_electrons) == 1:
-                    u = ga.radical_electrons[0]
-                    q = ga.charge[0]
-                    if u != 0:
-                        ga.radical_electrons = [0, u]
-                        ga.charge = [q, q]
+                expanded_types = set(ga.atomtype)
+                for at in ga.atomtype:
+                    if at.label in ('Cd', 'Cb', 'Cbf', 'Cdd'):
+                        expanded_types.update([ATOMTYPES['Cd'], ATOMTYPES['Cb'], ATOMTYPES['Cbf']])
+                ga.atomtype = list(expanded_types)
+                ga.radical_electrons = []
+                ga.charge = []
+                ga.lone_pairs = []
+                for gb in ga.bonds.values():
+                    gb.order = [1, 1.5, 2, 3]
             g.update()
             key = g.to_adjacency_list()
             if key not in uniq:
@@ -1055,7 +1047,6 @@ class Polymer(Species):
                     continue
 
                 bh, bt = boundary_edges(H), boundary_edges(T)
-
                 boundary_penalty = abs(bh - 1) + abs(bt - 1)
                 boundary_score = -boundary_penalty
                 rem_connected = is_connected(remainder)
@@ -1071,7 +1062,8 @@ class Polymer(Species):
             raise ValueError("Could not find disjoint head/tail wing matches.")
         return best_pair
 
-    def _extract_remainder(self, complex_mol: Molecule, atoms_to_remove) -> Molecule:
+    @staticmethod
+    def _extract_remainder(complex_mol: Molecule, atoms_to_remove) -> Molecule:
         """
         Creates a new Molecule containing only the atoms NOT in 'atoms_to_remove'.
         Strips labels on the copied atoms so downstream label restoration is deterministic.
@@ -1089,18 +1081,15 @@ class Polymer(Species):
         remainder = Molecule()
         old_to_new_map = dict()
 
-        # 1. Add Atoms
         for atom in complex_mol.atoms:
             if atom not in atoms_to_remove:
                 new_atom = atom.copy()
                 new_atom.label = ''
                 remainder.add_atom(new_atom)
                 old_to_new_map[atom] = new_atom
-
         if not remainder.atoms:
             raise ValueError("Polymer extraction failed: No atoms remained after wing removal.")
 
-        # 2. Add Bonds
         added_bonds = set()
         for old_atom in complex_mol.atoms:
             if old_atom not in old_to_new_map:
@@ -1158,7 +1147,6 @@ class Polymer(Species):
         for atom in original_mol.atoms:
             if atom in removed_atoms:
                 continue
-
             for neighbor in atom.bonds:
                 if neighbor not in removed_atoms:
                     continue
@@ -1176,7 +1164,8 @@ class Polymer(Species):
 
         new_mol.update_multiplicity()
 
-    def _assert_end_group(self, mol: Molecule, want_label: str):
+    @staticmethod
+    def _assert_end_group(mol: Molecule, want_label: str):
         """
         Validate that a scission fragment can serve as an end-group.
         Contract we enforce:
@@ -1235,20 +1224,6 @@ class Polymer(Species):
         atom_2 = next(a for a in mol.atoms if a.label == '*2')
         if atom_1.radical_electrons < 1 or atom_2.radical_electrons < 1:
             raise ValueError("Feature unit labeled atoms '*1' and '*2' must each carry a radical electron.")
-
-    def _ensure_open_site(self, atom: 'Atom') -> None:
-        """
-        Ensure `atom` has at least one radical electron so it can serve as a stitch site.
-
-        This is used after we identify a cut bond between the kept remainder and a removed wing:
-        we label the kept-side atom (*1 or *2) and must ensure it is open-shell.
-
-        Args:
-            atom (Atom): Atom in the remainder molecule to make radical if needed.
-        """
-        if atom.radical_electrons >= 1:
-            return
-        atom.increment_radical()
 
     def get_thermo_data(self, solvent_name='', mode='auto'):
         """
@@ -1369,6 +1344,16 @@ class PolymerClass(str, Enum):
     END_MOD = 'END_MOD'   # Polymer with modified end-group (modified head or tail, backbone intact)
 
 
+MatchMapping = Mapping[Any, Any]
+
+
+@dataclass(frozen=True)
+class MatchSummary:
+    raw: int
+    disjoint: int
+    best_matches: List[MatchMapping]
+
+
 def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
                                       mol_2: Optional[Molecule],
                                       left_labels: Optional[Tuple[str, ...]] = None,
@@ -1397,16 +1382,12 @@ def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
     m1 = mol_1.copy(deep=True)
     m2 = mol_2.copy(deep=True)
 
-    # 1. Validation: Ensure exactly one label exists per side
     if sum(1 for a in m1.atoms if a.label in left_labels) != 1:
         raise ValueError("Stitch error: mol_1 must have exactly one left label.")
     if sum(1 for a in m2.atoms if a.label in right_labels) != 1:
         raise ValueError("Stitch error: mol_2 must have exactly one right label.")
 
-    # 2. Merge
     merged = m1.merge(m2)
-
-    # 3. Re-locate Stitch Sites
     idx_1 = find_labeled_atom(merged, left_labels)
     idx_2 = find_labeled_atom(merged, right_labels)
 
@@ -1418,13 +1399,11 @@ def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
     atom_1 = merged.atoms[idx_1]
     atom_2 = merged.atoms[idx_2]
 
-    # 4. Radical Validation
     if atom_1.radical_electrons < 1:
         raise ValueError(f"Stitch site 1 must have at least one radical electron (got {atom_1.radical_electrons}).")
     if atom_2.radical_electrons < 1:
         raise ValueError(f"Stitch site 2 must have at least one radical electron (got {atom_2.radical_electrons}).")
 
-    # 5. Bond & Update
     bond = Bond(atom_1, atom_2, order=1)
     merged.add_bond(bond)
     atom_1.decrement_radical()
@@ -1436,18 +1415,18 @@ def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
     return merged
 
 
-def _get_target_atoms(match: Dict[Any, Any]) -> set:
+def _get_target_atoms(match: Mapping[Any, Any]) -> set:
     """
-    Safely extracts the target molecule atoms from an RMG match mapping,
-    regardless of whether they are stored as keys or values.
+    Safely extracts the target molecule atoms from an RMG match mapping.
+    Uses '.element' because both Atom and GroupAtom possess a '.bonds' attribute.
     """
     vals = set(match.values())
-    if vals and hasattr(next(iter(vals)), "bonds"):
+    if vals and hasattr(next(iter(vals)), "element"):
         return vals
     keys = set(match.keys())
-    if keys and hasattr(next(iter(keys)), "bonds"):
+    if keys and hasattr(next(iter(keys)), "element"):
         return keys
-    return vals  # fallback
+    return vals
 
 
 def find_max_disjoint_matches(matches: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
@@ -1460,7 +1439,6 @@ def find_max_disjoint_matches(matches: List[Dict[Any, Any]]) -> List[Dict[Any, A
     """
     if not matches:
         return []
-
     matches = sorted(matches, key=lambda m: len(m), reverse=True)
 
     def solve(candidates: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
@@ -1491,23 +1469,6 @@ def _values_to_atoms(values: set, mol: 'Molecule') -> set:
     raise TypeError(f"Unsupported match value type: {type(sample)}")
 
 
-# def get_label_1_label_2_atoms(mol: Molecule) -> Optional[Tuple[int, int]]:
-#     """
-#     Finds the *1 and *2 labeled atoms in the molecule.
-#
-#     Args:
-#         mol (Molecule): The molecule to search.
-#
-#     Returns:
-#         Optional[tuple[int, int]]: Indices of the *1 and *2 labeled atoms.
-#     """
-#     atom_1_idx = find_labeled_atom(mol, LABELS_1)
-#     atom_2_idx = find_labeled_atom(mol, LABELS_2)
-#     if atom_1_idx is None or atom_2_idx is None:
-#         return None
-#     return atom_1_idx, atom_2_idx
-
-
 def find_labeled_atom(mol: Molecule, labels: Optional[tuple[str, ...]] = None) -> Optional[int]:
     """
     Finds the first atom in the molecule with any of the specified labels.
@@ -1533,14 +1494,19 @@ def _count_label(mol: Molecule, label: str) -> int:
     return sum(1 for a in mol.atoms if a.label == label)
 
 
-MatchMapping = Mapping[Any, Any]
+def _ensure_open_site(atom: 'Atom') -> None:
+    """
+    Ensure `atom` has at least one radical electron so it can serve as a stitch site.
 
+    This is used after we identify a cut bond between the kept remainder and a removed wing:
+    we label the kept-side atom (*1 or *2) and must ensure it is open-shell.
 
-@dataclass(frozen=True)
-class MatchSummary:
-    raw: int
-    disjoint: int
-    best_matches: List[MatchMapping]
+    Args:
+        atom (Atom): Atom in the remainder molecule to make radical if needed.
+    """
+    if atom.radical_electrons >= 1:
+        return
+    atom.increment_radical()
 
 
 def count_backbone_matches(product_mol: Molecule, monomer_group: 'Group') -> MatchSummary:
@@ -1570,13 +1536,25 @@ def classify_structure(species: 'Species',
     base_details = {"raw_matches": 0, "disjoint_matches": 0}
 
     # 1. Gates and Fail-Fasts
-    # CRITICAL FIX: Use '== False' instead of 'is False' to avoid numpy boolean bugs
-    if use_proxy_as_gate and getattr(species, "is_polymer_proxy", True) == False:
-        return PolymerClass.GAS, {**base_details, "reason": "proxy_flag_false"}
+    if use_proxy_as_gate:
+        spc_flag = True
+        if hasattr(species, "props") and "is_polymer_proxy" in species.props:
+            spc_flag = species.props["is_polymer_proxy"]
+        else:
+            spc_flag = getattr(species, "is_polymer_proxy", True)
+        mol_flag = True
+        if getattr(species, "molecule", None) and species.molecule:
+            mol = species.molecule[0]
+            if hasattr(mol, "props") and "is_polymer_proxy" in mol.props:
+                mol_flag = mol.props["is_polymer_proxy"]
+            else:
+                mol_flag = getattr(mol, "is_polymer_proxy", True)
+
+        if spc_flag == False or mol_flag == False:
+            return PolymerClass.GAS, {**base_details, "reason": "proxy_flag_false"}
 
     if not getattr(species, "molecule", None) or not species.molecule[0]:
         return PolymerClass.GAS, {**base_details, "reason": "no_molecule"}
-
     if monomer_group is None:
         monomer_group = getattr(original_polymer, "backbone_group", None)
     if monomer_group is None:
@@ -1596,9 +1574,10 @@ def classify_structure(species: 'Species',
 
     # 4. Type Guard
     if summary.disjoint > 0:
-        sample = next(iter(summary.best_matches[0].keys()))
+        sample_atoms = _get_target_atoms(summary.best_matches[0])
+        sample = next(iter(sample_atoms))
         if not hasattr(sample, "bonds"):
-            raise TypeError(f"Expected Atom objects in match mapping keys, got {type(sample).__name__}")
+            raise TypeError(f"Expected Atom objects in match mapping, got {type(sample).__name__}")
         details["match_value_type"] = type(sample).__name__
 
     # 5. Classification
@@ -1608,15 +1587,13 @@ def classify_structure(species: 'Species',
         return PolymerClass.END_MOD, details
 
     if summary.disjoint == 2:
-        m1_atoms = set(summary.best_matches[0].keys())
-        m2_atoms = frozenset(summary.best_matches[1].keys())
-
+        m1_atoms = _get_target_atoms(summary.best_matches[0])
+        m2_atoms = frozenset(_get_target_atoms(summary.best_matches[1]))
         is_connected = any(
             nbr in m2_atoms
             for atom in m1_atoms
             for nbr in atom.bonds.keys()
         )
-
         details["connected"] = is_connected
         return (PolymerClass.DISCARD if is_connected else PolymerClass.FEATURE), details
 
@@ -1628,7 +1605,8 @@ def classify_structure(species: 'Species',
 
 def process_polymer_candidates(candidates: List[Species],
                                _reaction_model,
-                               original_polymer) -> List[Species]:
+                               original_polymer,
+                               ) -> List[Species]:
     """
     Handshake function to convert generic Species into Polymer objects.
     """
@@ -1649,15 +1627,34 @@ def process_polymer_candidates(candidates: List[Species],
             raise TypeError(f"Expected PolymerClass enum, got {type(classification)}")
 
         stats[classification] += 1
-
         is_proxy = bool(classification != PolymerClass.GAS)
+
+        if not hasattr(cand, "props"):
+            cand.props = {}
+        cand.props["is_polymer_proxy"] = is_proxy
         cand.is_polymer_proxy = is_proxy
-        if getattr(cand, "molecule", None) and cand.molecule:
-            cand.molecule[0].is_polymer_proxy = is_proxy
+
+        if getattr(cand, "molecule", None):
+            for m in cand.molecule:
+                if not hasattr(m, "props"):
+                    m.props = {}
+                m.props["is_polymer_proxy"] = is_proxy
+                m.is_polymer_proxy = is_proxy
 
         if classification == PolymerClass.DISCARD:
             continue
-
         processed_list.append(cand)
-
     return processed_list
+
+def _find_disjoint_pair(head_matches, tail_matches):
+    """
+    Returns (head_atoms, tail_atoms) for the first disjoint head/tail match pair.
+    Uses _get_target_atoms to ensure we are comparing target Molecule Atom objects.
+    """
+    for hm in head_matches:
+        ha = _get_target_atoms(hm)
+        for tm in tail_matches:
+            ta = _get_target_atoms(tm)
+            if ha.isdisjoint(ta):
+                return ha, ta
+    return set(), set()
