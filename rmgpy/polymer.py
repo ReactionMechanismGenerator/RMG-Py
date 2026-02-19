@@ -97,17 +97,19 @@ In short:
 
 import numpy as np
 from copy import deepcopy
-from typing import List, Optional, Tuple, Union, TYPE_CHECKING
+from dataclasses import dataclass
+from enum import Enum
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Tuple, Union
 
 from rmgpy.exceptions import InputError
-from rmgpy.molecule import Bond, Molecule
+from rmgpy.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.resonance import generate_resonance_structures
 from rmgpy.species import Species
 from rmgpy.thermo import Wilhoit, NASA, ThermoData
 
 if TYPE_CHECKING:
-    from rmgpy.molecule import Atom
+    from rmgpy.molecule.group import Group
 
 
 LABELS_1, LABELS_2 = ('1', '*1'), ('2', '*2')
@@ -227,6 +229,7 @@ class Polymer(Species):
         self.thermo = None
         self.is_polymer = True
         self.reactive = True
+        self._cached_backbone_group = None
 
         if moments is not None:
             self.moments = np.array(moments, dtype=np.float64)
@@ -308,6 +311,68 @@ class Polymer(Species):
             self._feature_proxy = self._stitch_trimer(self.feature_monomer)
         return self._feature_proxy
 
+    @property
+    def backbone_group(self) -> 'Group':
+        """
+        Generates and caches a relaxed 'Backbone Pattern' monomer Group for subgraph searching.
+
+        This group is designed to identify the monomer's structural skeleton within a
+        larger, potentially reacted polymer chain. It purposefully relaxes electronic
+        and bonding constraints to ensure the backbone matches regardless of local
+        chemical environment changes (e.g., resonance, charging, or neighbor effects).
+
+        The generation process:
+        1.  **Strip Identity:** Removes monomer labels (*1, *2) and radical electrons
+            to represent the 'bound' state of the monomer in a chain.
+        2.  **Heal Perception:** Updates atom types to prevent RMG from misinterpreting
+            the stripped radicals as carbocations or lone pairs.
+        3.  **Relax Electronic Constraints:** Sets wildcards for atom types, charges,
+            and lone pairs. This ensures a match based purely on element connectivity.
+        4.  **Strict Radical Constraint:** Enforces `radical_electrons=[0]`. This is
+            critical: it ensures the pattern matches *only* unreacted buffer monomers
+            and fails to match monomers that have become active centers (radicals).
+        5.  **Relax Bond Orders:** Allows Single, Double, Triple, or Benzene bonds
+            between backbone atoms to account for potential resonance delocalization.
+
+        Returns:
+            Group: A relaxed Group object instance representing the monomer backbone.
+        """
+        if getattr(self, '_cached_backbone_group', None) is not None:
+            return self._cached_backbone_group
+
+        pat_mol = self.monomer.copy(deep=True)
+        pat_mol.clear_labeled_atoms()
+
+        for atom in pat_mol.atoms[:]:
+            if atom.is_hydrogen():
+                pat_mol.remove_atom(atom)
+
+        for atom in pat_mol.atoms:
+            atom.radical_electrons = 0
+
+        group = pat_mol.to_group()
+        group.multiplicity = []
+
+        for g_atom in group.atoms:
+            g_atom.atomtype = []
+            g_atom.radical_electrons = [0]
+            g_atom.charge = []
+            g_atom.lone_pairs = []
+
+        all_orders = [1, 1.5, 2, 3]
+        seen_bonds = set()
+        for g_atom in group.atoms:
+            for neighbor, g_bond in g_atom.bonds.items():
+                key = tuple(sorted((id(g_atom), id(neighbor))))
+                if key in seen_bonds:
+                    continue
+                seen_bonds.add(key)
+                g_bond.order = all_orders
+
+        group.update()
+        self._cached_backbone_group = group
+        return group
+
     def copy(self, deep=True):
         """
         Create a copy of the current species. If the
@@ -337,13 +402,13 @@ class Polymer(Species):
         other.moments = self.moments
         other.initial_mass_g = self.initial_mass_g
         other.monomer_mw_g_mol = self.monomer_mw_g_mol
-        other._baseline_proxy = self._baseline_proxy
-        other._feature_proxy = self._feature_proxy
+        other._baseline_proxy = self._baseline_proxy.copy(deep=True) if self._baseline_proxy else None
+        other._feature_proxy = self._feature_proxy.copy(deep=True) if self._feature_proxy else None
         other._fingerprint = self._fingerprint
         return other
 
-    def _validate_monomer(self,
-                          monomer: Union[Molecule, str],
+    @staticmethod
+    def _validate_monomer(monomer: Union[Molecule, str],
                           label: str,
                           ) -> Molecule:
         """
@@ -365,7 +430,6 @@ class Polymer(Species):
             raise InputError(f"Polymer '{label}': Monomer must be a SMILES string or Molecule object.\n"
                              f"Got {monomer} of type {type(monomer)}.")
         mol.is_polymer_proxy = True
-
         has_1 = any(mol.contains_labeled_atom(x) for x in LABELS_1)
         has_2 = any(mol.contains_labeled_atom(x) for x in LABELS_2)
         if not (has_1 and has_2) and mol.get_radical_count() < 2:
@@ -384,7 +448,6 @@ class Polymer(Species):
         i_1, i_2 = find_labeled_atom(mol, LABELS_1), find_labeled_atom(mol, LABELS_2)
         if i_1 is None or i_2 is None or i_1 == i_2:
             raise InputError(f"Polymer '{label}': failed to define distinct '*1' and '*2' sites on monomer.")
-        # Ensure the reactive sites are actually radicals
         for idx in [i_1, i_2]:
             atom = mol.atoms[idx]
             if atom.radical_electrons == 0:
@@ -545,7 +608,7 @@ class Polymer(Species):
                         return True
         return False
 
-    def is_isomorphic(self, other: (Union['Polymer', Species, Molecule, Fragment]),
+    def is_isomorphic(self, other: Union['Polymer', Species, Molecule, Fragment],
                       generate_initial_map=False,
                       save_order=True,
                       strict=True,
@@ -1280,10 +1343,21 @@ class Polymer(Species):
         return self.conformer
 
 
+class PolymerClass(str, Enum):
+    """
+    Classification of reaction products relative to the original polymer structure.
+    """
+    GAS = 'GAS'           # Not a polymer species
+    FEATURE = 'FEATURE'   # Polymer with modified center monomer
+    DISCARD = 'DISCARD'   # Polymer with modified buffer monomer (ignore)
+    SCISSION = 'SCISSION' # Scission fragment (requires moment update)
+    END_MOD = 'END_MOD'   # Polymer with modified end-group (modified head or tail, backbone intact)
+
+
 def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
                                       mol_2: Optional[Molecule],
-                                      left_labels=LABELS_1,
-                                      right_labels=LABELS_2,
+                                      left_labels: Optional[Tuple[str, ...]] = None,
+                                      right_labels: Optional[Tuple[str, ...]] = None,
                                       ) -> Optional[Molecule]:
     """
     Stitches two molecules together at their labeled '*1', '*2' atoms.
@@ -1291,48 +1365,129 @@ def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
     Args:
         mol_1 (Optional[Molecule]): The first molecule (with '*1' label).
         mol_2 (Optional[Molecule]): The second molecule (with '*2' label).
-        left_labels (tuple): Labels to search for in the first molecule.
-        right_labels (tuple): Labels to search for in the second molecule.
+        left_labels (Optional[Tuple[str, ...]]): Labels to search for in the first molecule.
+        right_labels (Optional[Tuple[str, ...]]): Labels to search for in the second molecule.
 
     Returns:
         Optional[Molecule]: The stitched molecule.
     """
+    left_labels = left_labels or LABELS_1
+    right_labels = right_labels or LABELS_2
+
+    if not set(left_labels).isdisjoint(right_labels):
+        raise ValueError("Stitch error: left_labels and right_labels overlap; ambiguous stitching.")
+
     if mol_1 is None or mol_2 is None:
         return None
-    mol_1 = mol_1.copy(deep=True)
-    mol_2 = mol_2.copy(deep=True)
-    len_mol_1 = len(mol_1.atoms)
-    i_1, i_2 = find_labeled_atom(mol_1, left_labels), find_labeled_atom(mol_2, right_labels)
-    if i_1 is None or i_2 is None:
-        raise ValueError("Cannot stitch molecules; missing '*1' in first or '*2' in second.")
-    merged = mol_1.merge(other=mol_2)
-    atom_1, atom_2 = merged.atoms[i_1], merged.atoms[len_mol_1 + i_2]
+    m1 = mol_1.copy(deep=True)
+    m2 = mol_2.copy(deep=True)
+
+    # 1. Validation: Ensure exactly one label exists per side
+    if sum(1 for a in m1.atoms if a.label in left_labels) != 1:
+        raise ValueError("Stitch error: mol_1 must have exactly one left label.")
+    if sum(1 for a in m2.atoms if a.label in right_labels) != 1:
+        raise ValueError("Stitch error: mol_2 must have exactly one right label.")
+
+    # 2. Merge
+    merged = m1.merge(m2)
+
+    # 3. Re-locate Stitch Sites
+    idx_1 = find_labeled_atom(merged, left_labels)
+    idx_2 = find_labeled_atom(merged, right_labels)
+
+    if idx_1 is None or idx_2 is None:
+        raise ValueError("Stitch error: Could not locate labels after merge.")
+    if idx_1 == idx_2:
+        raise ValueError("Stitch error: Stitch sites resolved to the same atom.")
+
+    atom_1 = merged.atoms[idx_1]
+    atom_2 = merged.atoms[idx_2]
+
+    # 4. Radical Validation
+    if atom_1.radical_electrons < 1:
+        raise ValueError(f"Stitch site 1 must have at least one radical electron (got {atom_1.radical_electrons}).")
+    if atom_2.radical_electrons < 1:
+        raise ValueError(f"Stitch site 2 must have at least one radical electron (got {atom_2.radical_electrons}).")
+
+    # 5. Bond & Update
     bond = Bond(atom_1, atom_2, order=1)
     merged.add_bond(bond)
-    if not atom_1.radical_electrons or not atom_2.radical_electrons:
-        raise ValueError("Stitch sites must be radicals (at least one radical electron each).")
     atom_1.decrement_radical()
     atom_2.decrement_radical()
-    atom_1.label, atom_2.label = '', ''
+    atom_1.label = ''
+    atom_2.label = ''
     merged.update_multiplicity()
+    merged.update_atomtypes()
     return merged
 
 
-def get_label_1_label_2_atoms(mol: Molecule) -> Optional[Tuple[int, int]]:
+def find_max_disjoint_matches(matches: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
     """
-    Finds the *1 and *2 labeled atoms in the molecule.
+    Return the largest subset of pairwise-disjoint isomorphism matches.
+
+    A "match" is a dict whose values are target atoms (or atom-like objects). Two matches
+    overlap if they share any value. This function finds the maximum-cardinality subset
+    with no overlaps (avoids greedy undercounting for symmetric/overlapping matches).
 
     Args:
-        mol (Molecule): The molecule to search.
+        matches: List of isomorphism mappings. Only the mapping values are used to check overlap.
 
     Returns:
-        Optional[tuple[int, int]]: Indices of the *1 and *2 labeled atoms.
+        A maximum-size subset of `matches` such that no two matches share any value.
+        If `matches` is empty, returns an empty list.
     """
-    atom_1_idx = find_labeled_atom(mol, LABELS_1)
-    atom_2_idx = find_labeled_atom(mol, LABELS_2)
-    if atom_1_idx is None or atom_2_idx is None:
-        return None
-    return atom_1_idx, atom_2_idx
+    if not matches:
+        return []
+
+    matches = sorted(matches, key=lambda m: len(m), reverse=True)
+
+    def solve(candidates: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
+        if not candidates:
+            return []
+
+        first = candidates[0]
+        first_atoms = set(first.values())
+
+        remaining_compatible = [m for m in candidates[1:] if not first_atoms.intersection(set(m.values()))]
+
+        with_first = [first] + solve(remaining_compatible)
+        without_first = solve(candidates[1:])
+
+        return with_first if len(with_first) >= len(without_first) else without_first
+
+    return solve(matches)
+
+
+def _values_to_atoms(values: set, mol: 'Molecule') -> set:
+    """
+    Normalize match mapping values to Atom objects.
+    Supports match values being Atoms or integer indices.
+    """
+    if not values:
+        return set()
+    sample = next(iter(values))
+    if hasattr(sample, "bonds"):
+        return set(values)
+    if isinstance(sample, int):
+        return {mol.atoms[i] for i in values}
+    raise TypeError(f"Unsupported match value type: {type(sample)}")
+
+
+# def get_label_1_label_2_atoms(mol: Molecule) -> Optional[Tuple[int, int]]:
+#     """
+#     Finds the *1 and *2 labeled atoms in the molecule.
+#
+#     Args:
+#         mol (Molecule): The molecule to search.
+#
+#     Returns:
+#         Optional[tuple[int, int]]: Indices of the *1 and *2 labeled atoms.
+#     """
+#     atom_1_idx = find_labeled_atom(mol, LABELS_1)
+#     atom_2_idx = find_labeled_atom(mol, LABELS_2)
+#     if atom_1_idx is None or atom_2_idx is None:
+#         return None
+#     return atom_1_idx, atom_2_idx
 
 
 def find_labeled_atom(mol: Molecule, labels: Optional[tuple[str, ...]] = None) -> Optional[int]:
@@ -1358,3 +1513,161 @@ def _labels_present(mol: Molecule) -> list[str]:
 def _count_label(mol: Molecule, label: str) -> int:
     """Count the number of atoms with a specific label in the molecule."""
     return sum(1 for a in mol.atoms if a.label == label)
+
+
+MatchMapping = Mapping[Any, Any]
+
+
+@dataclass(frozen=True)
+class MatchSummary:
+    raw: int
+    disjoint: int
+    best_matches: List[MatchMapping]
+
+
+def count_backbone_matches(product_mol: Molecule, monomer_group: 'Group') -> MatchSummary:
+    """
+    Abstracts the subgraph isomorphism and disjoint filtering logic.
+    """
+    matches = product_mol.find_subgraph_isomorphisms(monomer_group)
+    raw_count = len(matches)
+
+    best_disjoint_set = find_max_disjoint_matches(matches)
+    return MatchSummary(
+        raw=raw_count,
+        disjoint=len(best_disjoint_set),
+        best_matches=best_disjoint_set
+    )
+
+
+def classify_structure(species: 'Species',
+                       original_polymer,
+                       *,
+                       monomer_group: Optional['Group'] = None,
+                       use_proxy_as_gate: bool = False,
+                       ) -> Tuple[PolymerClass, Dict[str, Any]]:
+    """
+    Classifies a reaction product structurally by counting intact monomer subgraphs.
+    """
+    # Always include baseline counts for downstream safety
+    base_details = {"raw_matches": 0, "disjoint_matches": 0}
+
+    # 1. Gates and Fail-Fasts
+    if use_proxy_as_gate and getattr(species, "is_polymer_proxy", True) is False:
+        return PolymerClass.GAS, {**base_details, "reason": "proxy_flag_false"}
+
+    if not getattr(species, "molecule", None) or not species.molecule[0]:
+        return PolymerClass.GAS, {**base_details, "reason": "no_molecule"}
+
+    if monomer_group is None:
+        monomer_group = getattr(original_polymer, "backbone_group", None)
+    if monomer_group is None:
+        return PolymerClass.GAS, {**base_details, "reason": "no_backbone_group"}
+
+    # 2. Minimal Safe Normalization
+    # We MUST copy and clear labels here. If the solver hands us a proxy that
+    # still has *1 or *2 labels, it will fail to match the stripped group.
+    product_mol = species.molecule[0].copy(deep=True)
+    product_mol.clear_labeled_atoms()
+    product_mol.update_multiplicity()
+    # Note: Deliberately skipping update_atomtypes()
+
+    if True:  # temporarily
+        mol = product_mol
+        grp = monomer_group
+        print("DEBUG classify_structure:")
+        print("  mol atoms:", len(mol.atoms), "labels:", _labels_present(mol)[:10])
+        print("  mol radicals:", sum(a.radical_electrons for a in mol.atoms))
+        print("  group atoms:", len(grp.atoms))
+        # crude element counts for group
+        from collections import Counter
+        print("  group elements:", Counter([getattr(a.element, "symbol", "?") for a in grp.atoms]))
+
+    # 3. Search and Count
+    summary = count_backbone_matches(product_mol, monomer_group)
+    details: Dict[str, Any] = {
+        "raw_matches": summary.raw,
+        "disjoint_matches": summary.disjoint
+    }
+
+    # 4. Type Guard
+    if summary.disjoint > 0:
+        sample = next(iter(summary.best_matches[0].values()))
+        if not hasattr(sample, "bonds"):
+            raise TypeError(f"Expected Atom objects in match mapping, got {type(sample).__name__}")
+        details["match_value_type"] = type(sample).__name__
+
+    # 5. Classification
+    if summary.disjoint >= 3:
+        if summary.disjoint > 3:
+            details["note"] = "more_than_3_matches"
+        return PolymerClass.END_MOD, details
+
+    if summary.disjoint == 2:
+        v1 = set(summary.best_matches[0].values())
+        v2 = set(summary.best_matches[1].values())
+
+        m1_atoms = _values_to_atoms(v1, product_mol)
+        m2_atoms = _values_to_atoms(v2, product_mol)
+        m2_atoms_frozen = frozenset(m2_atoms)
+
+        is_connected = any(
+            nbr in m2_atoms_frozen
+            for atom in m1_atoms
+            for nbr in atom.bonds.keys()
+        )
+        details["connected"] = is_connected
+        return (PolymerClass.DISCARD if is_connected else PolymerClass.FEATURE), details
+
+    if summary.disjoint == 1:
+        return PolymerClass.SCISSION, details
+
+    return PolymerClass.GAS, {**details, "reason": "no_backbone_matches"}
+
+
+def process_polymer_candidates(candidates: List[Species],
+                               _reaction_model,
+                               original_polymer) -> List[Species]:
+    """
+    Handshake function to convert generic Species into Polymer objects.
+    """
+    processed_list: List['Species'] = []
+    stats = {k: 0 for k in PolymerClass}
+
+    # Precompute once (cached on original_polymer)
+    monomer_group = getattr(original_polymer, "backbone_group", None)
+
+    for cand in candidates:
+        was_proxy = getattr(cand, "is_polymer_proxy", False)
+
+        classification, details = classify_structure(
+            cand,
+            original_polymer,
+            monomer_group=monomer_group,
+            use_proxy_as_gate=False,
+        )
+
+        if not isinstance(classification, PolymerClass):
+            raise TypeError(f"Expected PolymerClass enum, got {type(classification)}")
+
+        stats[classification] += 1
+
+        # Output flag: derived strictly from structural classification
+        cand.is_polymer_proxy = (classification != PolymerClass.GAS)
+
+        # High-Value Diagnostic: Lazy logging prevents interpolation cost when debug is off
+        if classification == PolymerClass.GAS and was_proxy:
+            print(
+                f"Proxy '{cand.label}' classified as GAS. "
+                f"reason={details.get('reason')} raw={details.get('raw_matches')} disjoint={details.get('disjoint_matches')}"
+            )
+
+        if classification == PolymerClass.DISCARD:
+            continue
+
+        processed_list.append(cand)
+
+    stats_str = {k.value: v for k, v in stats.items()}
+    print(f"**** Polymer Classification Stats: {stats_str}")
+
+    return processed_list

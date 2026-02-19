@@ -596,6 +596,23 @@ class TestReactionDegeneracy:
             forward_reactions[0].degeneracy, reverse_reactions[0].degeneracy
         )
 
+    def test_reacting_polymer_proxy(self):
+        """
+        Test that a polymer proxy is reactive.
+        """
+
+        family = database.kinetics.families["H_Abstraction"]
+
+        mol_a = Molecule(smiles="CC(CC(CC(C)c1ccccc1)c1ccccc1)c1ccccc1", is_polymer_proxy=True)
+        mol_b = Molecule(smiles="[H]")
+
+        mol_a.assign_atom_ids()
+        mol_b.assign_atom_ids()
+
+        # generate reactions in both directions
+        forward_reactions = family._generate_reactions([mol_a, mol_b], forward=True)
+        assert len(forward_reactions) == 28
+
     def test_degeneracy_same_reactant_different_resonance_structure(self):
         """Test if degeneracy is correct when reacting different resonance structures."""
         family_label = "Disproportionation"

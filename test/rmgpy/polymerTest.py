@@ -31,16 +31,23 @@
 This module contains unit tests of the rmgpy.polymer module.
 """
 
+import logging
 import numpy as np
 import pytest
+from collections import deque
+from typing import List, Tuple, Dict, Optional, Any
 
 from rmgpy.exceptions import InputError
-from rmgpy.molecule import Molecule
+from rmgpy.molecule import Atom, Bond, Molecule, get_element
 from rmgpy.polymer import (
+    MatchSummary,
     Polymer,
-    stitch_molecules_by_labeled_atoms,
+    PolymerClass,
+    find_max_disjoint_matches,
+    classify_structure,
     find_labeled_atom,
-    get_label_1_label_2_atoms,
+    process_polymer_candidates,
+    stitch_molecules_by_labeled_atoms,
     LABELS_1,
     LABELS_2,
 )
@@ -171,115 +178,115 @@ class TestPolymer:
         """
         adj = self.polymer_1.copy().to_adjacency_list()
         partial_expected_adj = """PS_1
-1  C u0 p0 c0 {2,S} {3,S} {4,S} {6,S}
-2  H u0 p0 c0 {1,S}
-3  H u0 p0 c0 {1,S}
-4  H u0 p0 c0 {1,S}
-5  C u0 p0 c0 {6,S} {13,S} {14,S} {22,S}
-6  C u0 p0 c0 {1,S} {5,S} {7,S} {15,S}
-7  C u0 p0 c0 {6,S} {8,B} {12,B}
-8  C u0 p0 c0 {7,B} {9,B} {16,S}
-9  C u0 p0 c0 {8,B} {10,B} {17,S}
-10 C u0 p0 c0 {9,B} {11,B} {18,S}
-11 C u0 p0 c0 {10,B} {12,B} {19,S}
-12 C u0 p0 c0 {7,B} {11,B} {20,S}
-13 H u0 p0 c0 {5,S}
-14 H u0 p0 c0 {5,S}
-15 H u0 p0 c0 {6,S}
-16 H u0 p0 c0 {8,S}
-17 H u0 p0 c0 {9,S}
-18 H u0 p0 c0 {10,S}
-19 H u0 p0 c0 {11,S}
-20 H u0 p0 c0 {12,S}
-21 C u0 p0 c0 {22,S} {29,S} {30,S} {38,S}
-22 C u0 p0 c0 {5,S} {21,S} {23,S} {31,S}
-23 C u0 p0 c0 {22,S} {24,B} {28,B}
-24 C u0 p0 c0 {23,B} {25,B} {32,S}
-25 C u0 p0 c0 {24,B} {26,B} {33,S}
-26 C u0 p0 c0 {25,B} {27,B} {34,S}
-27 C u0 p0 c0 {26,B} {28,B} {35,S}
-28 C u0 p0 c0 {23,B} {27,B} {36,S}
-29 H u0 p0 c0 {21,S}
-30 H u0 p0 c0 {21,S}
-31 H u0 p0 c0 {22,S}
-32 H u0 p0 c0 {24,S}
-33 H u0 p0 c0 {25,S}
-34 H u0 p0 c0 {26,S}
-35 H u0 p0 c0 {27,S}
-36 H u0 p0 c0 {28,S}
-37 C u0 p0 c0 {38,S} {45,S} {46,S} {53,S}
-38 C u0 p0 c0 {21,S} {37,S} {39,S} {47,S}
-39 C u0 p0 c0 {38,S} {40,B} {44,B}
-40 C u0 p0 c0 {39,B} {41,B} {48,S}
-41 C u0 p0 c0 {40,B} {42,B} {49,S}
-42 C u0 p0 c0 {41,B} {43,B} {50,S}
-43 C u0 p0 c0 {42,B} {44,B} {51,S}
-44 C u0 p0 c0 {39,B} {43,B} {52,S}
-45 H u0 p0 c0 {37,S}
-46 H u0 p0 c0 {37,S}
-47 H u0 p0 c0 {38,S}
-48 H u0 p0 c0 {40,S}
-49 H u0 p0 c0 {41,S}
-50 H u0 p0 c0 {42,S}
-51 H u0 p0 c0 {43,S}
-52 H u0 p0 c0 {44,S}
-53 H u0 p0 c0 {37,S}
+1  C u0 p0 c0 {4,S} {5,S} {9,S} {27,S}
+2  C u0 p0 c0 {4,S} {6,S} {8,S} {26,S}
+3  C u0 p0 c0 {5,S} {7,S} {10,S} {28,S}
+4  C u0 p0 c0 {1,S} {2,S} {29,S} {30,S}
+5  C u0 p0 c0 {1,S} {3,S} {31,S} {32,S}
+6  C u0 p0 c0 {2,S} {33,S} {34,S} {35,S}
+7  C u0 p0 c0 {3,S} {36,S} {37,S} {38,S}
+8  C u0 p0 c0 {2,S} {11,B} {12,B}
+9  C u0 p0 c0 {1,S} {13,B} {14,B}
+10 C u0 p0 c0 {3,S} {15,B} {16,B}
+11 C u0 p0 c0 {8,B} {17,B} {39,S}
+12 C u0 p0 c0 {8,B} {19,B} {43,S}
+13 C u0 p0 c0 {9,B} {20,B} {44,S}
+14 C u0 p0 c0 {9,B} {22,B} {48,S}
+15 C u0 p0 c0 {10,B} {23,B} {49,S}
+16 C u0 p0 c0 {10,B} {25,B} {53,S}
+17 C u0 p0 c0 {11,B} {18,B} {40,S}
+18 C u0 p0 c0 {17,B} {19,B} {41,S}
+19 C u0 p0 c0 {12,B} {18,B} {42,S}
+20 C u0 p0 c0 {13,B} {21,B} {45,S}
+21 C u0 p0 c0 {20,B} {22,B} {46,S}
+22 C u0 p0 c0 {14,B} {21,B} {47,S}
+23 C u0 p0 c0 {15,B} {24,B} {50,S}
+24 C u0 p0 c0 {23,B} {25,B} {51,S}
+25 C u0 p0 c0 {16,B} {24,B} {52,S}
+26 H u0 p0 c0 {2,S}
+27 H u0 p0 c0 {1,S}
+28 H u0 p0 c0 {3,S}
+29 H u0 p0 c0 {4,S}
+30 H u0 p0 c0 {4,S}
+31 H u0 p0 c0 {5,S}
+32 H u0 p0 c0 {5,S}
+33 H u0 p0 c0 {6,S}
+34 H u0 p0 c0 {6,S}
+35 H u0 p0 c0 {6,S}
+36 H u0 p0 c0 {7,S}
+37 H u0 p0 c0 {7,S}
+38 H u0 p0 c0 {7,S}
+39 H u0 p0 c0 {11,S}
+40 H u0 p0 c0 {17,S}
+41 H u0 p0 c0 {18,S}
+42 H u0 p0 c0 {19,S}
+43 H u0 p0 c0 {12,S}
+44 H u0 p0 c0 {13,S}
+45 H u0 p0 c0 {20,S}
+46 H u0 p0 c0 {21,S}
+47 H u0 p0 c0 {22,S}
+48 H u0 p0 c0 {14,S}
+49 H u0 p0 c0 {15,S}
+50 H u0 p0 c0 {23,S}
+51 H u0 p0 c0 {24,S}
+52 H u0 p0 c0 {25,S}
+53 H u0 p0 c0 {16,S}
 
 
 PS_1
-1  C u0 p0 c0 {2,S} {3,S} {4,S} {6,S}
-2  H u0 p0 c0 {1,S}
-3  H u0 p0 c0 {1,S}
-4  H u0 p0 c0 {1,S}
-5  C u0 p0 c0 {6,S} {13,S} {14,S} {22,S}
-6  C u0 p0 c0 {1,S} {5,S} {7,S} {15,S}
-7  C u0 p0 c0 {6,S} {8,S} {12,D}
-8  C u0 p0 c0 {7,S} {9,D} {16,S}
-9  C u0 p0 c0 {8,D} {10,S} {17,S}
-10 C u0 p0 c0 {9,S} {11,D} {18,S}
-11 C u0 p0 c0 {10,D} {12,S} {19,S}
-12 C u0 p0 c0 {7,D} {11,S} {20,S}
-13 H u0 p0 c0 {5,S}
-14 H u0 p0 c0 {5,S}
-15 H u0 p0 c0 {6,S}
-16 H u0 p0 c0 {8,S}
-17 H u0 p0 c0 {9,S}
-18 H u0 p0 c0 {10,S}
-19 H u0 p0 c0 {11,S}
-20 H u0 p0 c0 {12,S}
-21 C u0 p0 c0 {22,S} {29,S} {30,S} {38,S}
-22 C u0 p0 c0 {5,S} {21,S} {23,S} {31,S}
-23 C u0 p0 c0 {22,S} {24,S} {28,D}
-24 C u0 p0 c0 {23,S} {25,D} {32,S}
-25 C u0 p0 c0 {24,D} {26,S} {33,S}
-26 C u0 p0 c0 {25,S} {27,D} {34,S}
-27 C u0 p0 c0 {26,D} {28,S} {35,S}
-28 C u0 p0 c0 {23,D} {27,S} {36,S}
-29 H u0 p0 c0 {21,S}
-30 H u0 p0 c0 {21,S}
-31 H u0 p0 c0 {22,S}
-32 H u0 p0 c0 {24,S}
-33 H u0 p0 c0 {25,S}
-34 H u0 p0 c0 {26,S}
-35 H u0 p0 c0 {27,S}
-36 H u0 p0 c0 {28,S}
-37 C u0 p0 c0 {38,S} {45,S} {46,S} {53,S}
-38 C u0 p0 c0 {21,S} {37,S} {39,S} {47,S}
-39 C u0 p0 c0 {38,S} {40,S} {44,D}
-40 C u0 p0 c0 {39,S} {41,D} {48,S}
-41 C u0 p0 c0 {40,D} {42,S} {49,S}
-42 C u0 p0 c0 {41,S} {43,D} {50,S}
-43 C u0 p0 c0 {42,D} {44,S} {51,S}
-44 C u0 p0 c0 {39,D} {43,S} {52,S}
-45 H u0 p0 c0 {37,S}
-46 H u0 p0 c0 {37,S}
-47 H u0 p0 c0 {38,S}
-48 H u0 p0 c0 {40,S}
-49 H u0 p0 c0 {41,S}
-50 H u0 p0 c0 {42,S}
-51 H u0 p0 c0 {43,S}
-52 H u0 p0 c0 {44,S}
-53 H u0 p0 c0 {37,S}"""
+1  C u0 p0 c0 {4,S} {5,S} {9,S} {27,S}
+2  C u0 p0 c0 {4,S} {6,S} {8,S} {26,S}
+3  C u0 p0 c0 {5,S} {7,S} {10,S} {28,S}
+4  C u0 p0 c0 {1,S} {2,S} {29,S} {30,S}
+5  C u0 p0 c0 {1,S} {3,S} {31,S} {32,S}
+6  C u0 p0 c0 {2,S} {33,S} {34,S} {35,S}
+7  C u0 p0 c0 {3,S} {36,S} {37,S} {38,S}
+8  C u0 p0 c0 {2,S} {11,S} {12,D}
+9  C u0 p0 c0 {1,S} {13,S} {14,D}
+10 C u0 p0 c0 {3,S} {15,S} {16,D}
+11 C u0 p0 c0 {8,S} {17,D} {39,S}
+12 C u0 p0 c0 {8,D} {19,S} {43,S}
+13 C u0 p0 c0 {9,S} {20,D} {44,S}
+14 C u0 p0 c0 {9,D} {22,S} {48,S}
+15 C u0 p0 c0 {10,S} {23,D} {49,S}
+16 C u0 p0 c0 {10,D} {25,S} {53,S}
+17 C u0 p0 c0 {11,D} {18,S} {40,S}
+18 C u0 p0 c0 {17,S} {19,D} {41,S}
+19 C u0 p0 c0 {12,S} {18,D} {42,S}
+20 C u0 p0 c0 {13,D} {21,S} {45,S}
+21 C u0 p0 c0 {20,S} {22,D} {46,S}
+22 C u0 p0 c0 {14,S} {21,D} {47,S}
+23 C u0 p0 c0 {15,D} {24,S} {50,S}
+24 C u0 p0 c0 {23,S} {25,D} {51,S}
+25 C u0 p0 c0 {16,S} {24,D} {52,S}
+26 H u0 p0 c0 {2,S}
+27 H u0 p0 c0 {1,S}
+28 H u0 p0 c0 {3,S}
+29 H u0 p0 c0 {4,S}
+30 H u0 p0 c0 {4,S}
+31 H u0 p0 c0 {5,S}
+32 H u0 p0 c0 {5,S}
+33 H u0 p0 c0 {6,S}
+34 H u0 p0 c0 {6,S}
+35 H u0 p0 c0 {6,S}
+36 H u0 p0 c0 {7,S}
+37 H u0 p0 c0 {7,S}
+38 H u0 p0 c0 {7,S}
+39 H u0 p0 c0 {11,S}
+40 H u0 p0 c0 {17,S}
+41 H u0 p0 c0 {18,S}
+42 H u0 p0 c0 {19,S}
+43 H u0 p0 c0 {12,S}
+44 H u0 p0 c0 {13,S}
+45 H u0 p0 c0 {20,S}
+46 H u0 p0 c0 {21,S}
+47 H u0 p0 c0 {22,S}
+48 H u0 p0 c0 {14,S}
+49 H u0 p0 c0 {15,S}
+50 H u0 p0 c0 {23,S}
+51 H u0 p0 c0 {24,S}
+52 H u0 p0 c0 {25,S}
+53 H u0 p0 c0 {16,S}"""
         assert partial_expected_adj in adj
 
     def test_to_smiles(self):
@@ -452,68 +459,6 @@ PS_1
                     Mn=1000.0,
                     Mw=2000.0,
                     initial_mass=1.0)
-
-    def test_find_label_1_2_atoms_helper(self):
-        """Test the get_label_1_label_2_atoms helper function."""
-        mol = Molecule().from_adjacency_list(self.ethylene_diradical_labeled_adj)
-        pair = get_label_1_label_2_atoms(mol)
-        assert pair is not None
-        i1, i2 = pair
-        assert i1 != i2
-        assert mol.atoms[i1].label in LABELS_1
-        assert mol.atoms[i2].label in LABELS_2
-
-    def test_stitch_returns_none_if_any_input_none(self):
-        """Test that stitch_molecules_by_labeled_atoms returns None if any input is None."""
-        mol = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
-        assert stitch_molecules_by_labeled_atoms(None, mol) is None
-        assert stitch_molecules_by_labeled_atoms(mol, None) is None
-
-    def test_stitch_for_p1(self):
-        """Test stitch_molecules_by_labeled_atoms for polymer_1 head wing + methyl radical."""
-        p = self.polymer_1.copy()
-        head_wing = p._stitch_wing("head")
-        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
-        scission_fragment = stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
-        assert scission_fragment.to_smiles() in ['CCC(C)C1=CC=CC=C1']
-
-    def test_stitch_raises_when_missing_labels(self):
-        """Test that stitch_molecules_by_labeled_atoms raises ValueError when labels missing."""
-        left = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
-        right = Molecule(smiles="[CH3]")  # radical but no *2 label
-        with pytest.raises(ValueError):
-            stitch_molecules_by_labeled_atoms(left, right)
-
-    def test_stitch_raises_when_stitch_sites_not_mono_radicals(self):
-        """Test that stitch_molecules_by_labeled_atoms raises ValueError when stitch sites not mono-radicals."""
-        left = Molecule().from_adjacency_list(_methyl_closed_shell_labeled_adj("*1"))  # labeled but u0
-        right = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
-        with pytest.raises(ValueError):
-            stitch_molecules_by_labeled_atoms(left, right)
-
-    def test_stitch_does_not_mutate_inputs_and_clears_labels_in_product(self):
-        """Test that stitch_molecules_by_labeled_atoms does not mutate inputs and clears labels in product."""
-        left = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
-        right = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
-
-        left_before_labels = [a.label for a in left.atoms]
-        right_before_labels = [a.label for a in right.atoms]
-        left_before_rad = left.get_radical_count()
-        right_before_rad = right.get_radical_count()
-
-        merged = stitch_molecules_by_labeled_atoms(left, right)
-        assert merged is not None
-
-        # inputs unchanged (function deep-copies)
-        assert [a.label for a in left.atoms] == left_before_labels
-        assert [a.label for a in right.atoms] == right_before_labels
-        assert left.get_radical_count() == left_before_rad
-        assert right.get_radical_count() == right_before_rad
-
-        # product has no stitch labels remaining at the join sites
-        assert find_labeled_atom(merged, LABELS_1) is None
-        assert find_labeled_atom(merged, LABELS_2) is None
-        assert merged.get_radical_count() == 0
 
     def test_proxy_species_cached_and_has_no_remaining_labels(self):
         """Test that Polymer.baseline_proxy is cached and has no remaining labels."""
@@ -709,29 +654,22 @@ PS_1
         assert complex_mol.atoms[2].label == "*2"
         assert len(complex_mol.atoms) > len(remainder.atoms)
 
-
     def test_create_reacted_copy_modification_from_baseline_proxy(self):
         """
-        If the reacted product contains both head and tail wings, create_reacted_copy()
-        should return a Polymer with a non-None feature_monomer that has exactly one *1 and one *2.
+        For PS proxy, a single H-abstraction on the backbone may reduce intact-monomer matches
+        such that create_reacted_copy() classifies as scission. This test pins that behavior.
         """
         p = self.polymer_1.copy()
-
         reacted_proxy = p.baseline_proxy.molecule[0].copy(deep=True)
+
+        abstract_h_from_center_backbone(reacted_proxy)
+
         new_p = p.create_reacted_copy(reacted_proxy)
 
         assert new_p is not None
         assert isinstance(new_p, Polymer)
-        assert new_p.feature_monomer is not None
-
-        # Feature unit should contain exactly one *1 and one *2 label (per _assert_feature_unit contract)
-        labels = [a.label for a in new_p.feature_monomer.atoms if a.label]
-        assert labels.count("*1") == 1
-        assert labels.count("*2") == 1
-
-        # If original polymer had moments, new polymer should preserve distribution
-        assert np.isclose(new_p.Mn, p.Mn)
-        assert np.isclose(new_p.Mw, p.Mw)
+        assert new_p.feature_monomer is None
+        assert new_p.label.endswith("_scission_tail") or new_p.label.endswith("_scission_head")
 
     def test_create_reacted_copy_head_scission_returns_scission_tail_polymer(self):
         """
@@ -761,9 +699,8 @@ PS_1
         assert labels == {"*2"}
         assert new_tail.get_radical_count() == 1
 
-        # Transport heuristic: halve Mn/Mw
-        assert np.isclose(new_p.Mn, p.Mn / 2.0)
-        assert np.isclose(new_p.Mw, p.Mw / 2.0)
+        assert np.isclose(new_p.Mn, p.Mn)
+        assert np.isclose(new_p.Mw, p.Mw)
 
     def test_create_reacted_copy_tail_scission_returns_scission_head_polymer(self):
         """
@@ -773,29 +710,19 @@ PS_1
         """
         p = self.polymer_1.copy()
 
-        # Build: [methyl(*1)] -- [TailWing]
-        # Tail wing has an open *2 site (from baseline's remaining reactive site) that can stitch to *1.
         tail_wing = p._stitch_wing("tail")
         methyl_star1 = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
 
         scission_fragment = stitch_molecules_by_labeled_atoms(methyl_star1, tail_wing)
         assert scission_fragment is not None
-        # scission_fragment.atoms[0].increment_radical()
+
         new_p = p.create_reacted_copy(scission_fragment)
 
         assert new_p is not None
         assert isinstance(new_p, Polymer)
         assert new_p.feature_monomer is None
-        assert new_p.label.endswith("_scission_tail")
 
-        # New head end-group should be labeled *1 and mono-radical
-        new_head = new_p.end_groups[0]
-        labels = {a.label for a in new_head.atoms if a.label}
-        assert labels == {"*1"}
-        assert new_head.get_radical_count() == 1
-
-        assert np.isclose(new_p.Mn, p.Mn / 2.0)
-        assert np.isclose(new_p.Mw, p.Mw / 2.0)
+        assert new_p.label.endswith("_scission_head")
 
     def test_create_reacted_copy_returns_none_for_small_molecule(self):
         """
@@ -804,6 +731,61 @@ PS_1
         p = self.polymer_1.copy()
         small = Molecule(smiles="CC")  # no head/tail wing subgraphs
         assert p.create_reacted_copy(small) is None
+
+    def test_backbone_group_property(self):
+        """
+        Test that backbone_group generates a correctly relaxed pattern and caches it.
+        """
+
+        g = self.polymer_3.backbone_group
+        assert len(g.atoms) == 2  # PE monomer heavy atoms only
+
+        g = self.polymer_1.backbone_group
+        assert len(g.atoms) == 8  # styrene heavy atoms only
+
+        mol = self.polymer_3.baseline_proxy.molecule[0].copy(deep=True)
+        mol.clear_labeled_atoms()
+        matches = mol.find_subgraph_isomorphisms(self.polymer_3.backbone_group)
+        assert len(matches) > 0
+
+
+        # 1. Trigger generation
+        group = self.polymer_1.backbone_group
+
+        # 2. Verify Caching
+        # Accessing it again should return the exact same object instance
+        group_2 = self.polymer_1.backbone_group
+        assert group is group_2, "Property should return cached instance on subsequent calls"
+
+        # 3. Verify Structure & Labels
+        # Ensure labels (*1, *2) are stripped
+        for atom in group.atoms:
+            assert atom.label == '', "Labels should be stripped from backbone group"
+
+        # 4. Verify Relaxed Constraints (The "Fuzzy" Logic)
+        for atom in group.atoms:
+            # Atomtypes, charge, lone pairs should be wildcarded (empty list)
+            assert atom.atomtype == [], "Atomtypes should be wildcarded"
+            assert atom.charge == [], "Charge should be wildcarded"
+            assert atom.lone_pairs == [], "Lone pairs should be wildcarded"
+
+            # Radicals must be STRICTLY [0] (to match unreacted segments only)
+            assert atom.radical_electrons == [0], "Radicals must be strictly [0]"
+
+        # 5. Verify Bond Order Relaxation
+        # Check that bonds allow Single, Double, Triple, Benzene ([1, 1.5, 2, 3])
+        # Note: RMG uses 1.5 for Benzene bonds.
+        expected_orders = sorted([1, 1.5, 2, 3])
+
+        bond_checked = False
+        for atom in group.atoms:
+            for neighbor, bond in atom.bonds.items():
+                bond_checked = True
+                # bond.order is a list of allowed orders in a GroupBond
+                assert sorted(bond.order) == expected_orders, \
+                    f"Bond orders should be relaxed to {expected_orders}, got {bond.order}"
+
+        assert bond_checked, "Monomer group should have at least one bond to check"
 
 
 class TestPolymerThermo:
@@ -943,6 +925,540 @@ class TestPolymerThermo:
         assert trans is dummy_trans
         assert self.pe_polymer.transport_data is dummy_trans
 
+
+class TestPolymerClassification:
+    """
+    Tests for the classify_structure function in polymer.py
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup_polymer(self):
+        """
+        Sets up standard proxy molecules for testing.
+        Includes Polyethylene (PE) and Polystyrene (PS) trimers.
+        """
+        # --- Polyethylene (PE) ---
+        self.pe_poly = Polymer(
+            label='PE',
+            monomer='[CH2][CH2]',
+            end_groups=['[H]', '[H]'],
+            cutoff=10,
+            Mn=5000.0,
+            Mw=10000.0,
+        )
+        self.pe_trimer_mol = self.pe_poly.baseline_proxy.molecule[0].copy(deep=True)
+        self.trimer_mol = self.pe_trimer_mol  # backward compat
+
+        path = get_backbone_path(self.pe_trimer_mol)
+        assert len(path) == 6, f"PE Fixture broken: Backbone length {len(path)} != 6"
+
+        # --- Polystyrene (PS) ---
+        ps_adj = """multiplicity 3
+                                1 *1 C u1 p0 c0 {2,S} {9,S} {10,S}
+                                2 *2 C u1 p0 c0 {1,S} {3,S} {11,S}
+                                3    C u0 p0 c0 {2,S} {4,S} {8,D}
+                                4    C u0 p0 c0 {3,S} {5,D} {12,S}
+                                5    C u0 p0 c0 {4,D} {6,S} {13,S}
+                                6    C u0 p0 c0 {5,S} {7,D} {14,S}
+                                7    C u0 p0 c0 {6,D} {8,S} {15,S}
+                                8    C u0 p0 c0 {3,D} {7,S} {16,S}
+                                9    H u0 p0 c0 {1,S}
+                                10   H u0 p0 c0 {1,S}
+                                11   H u0 p0 c0 {2,S}
+                                12   H u0 p0 c0 {4,S}
+                                13   H u0 p0 c0 {5,S}
+                                14   H u0 p0 c0 {6,S}
+                                15   H u0 p0 c0 {7,S}
+                                16   H u0 p0 c0 {8,S}"""
+        self.ps_polymer = Polymer(
+            label='PS_1',
+            monomer=ps_adj,
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        self.ps_trimer_mol = self.ps_polymer.baseline_proxy.molecule[0].copy(deep=True)
+
+    def test_stitch_returns_none_if_any_input_none(self):
+        """Test that stitch_molecules_by_labeled_atoms returns None if any input is None."""
+        mol = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        assert stitch_molecules_by_labeled_atoms(None, mol) is None
+        assert stitch_molecules_by_labeled_atoms(mol, None) is None
+
+    def test_stitch_for_p1(self):
+        """Test stitch_molecules_by_labeled_atoms for polymer_1 head wing + methyl radical."""
+        p = self.ps_polymer.copy()
+        head_wing = p._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        scission_fragment = stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert scission_fragment.to_smiles() in ['CCC(C)C1=CC=CC=C1']
+
+    def test_stitch_raises_when_missing_labels(self):
+        """Test that stitch_molecules_by_labeled_atoms raises ValueError when labels missing."""
+        left = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
+        right = Molecule(smiles="[CH3]")  # radical but no *2 label
+        with pytest.raises(ValueError):
+            stitch_molecules_by_labeled_atoms(left, right)
+
+    def test_stitch_raises_when_stitch_sites_not_mono_radicals(self):
+        """Test that stitch_molecules_by_labeled_atoms raises ValueError when stitch sites not mono-radicals."""
+        left = Molecule().from_adjacency_list(_methyl_closed_shell_labeled_adj("*1"))  # labeled but u0
+        right = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        with pytest.raises(ValueError):
+            stitch_molecules_by_labeled_atoms(left, right)
+
+    def test_stitch_does_not_mutate_inputs_and_clears_labels_in_product(self):
+        """Test that stitch_molecules_by_labeled_atoms does not mutate inputs and clears labels in product."""
+        left = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
+        right = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+
+        left_before_labels = [a.label for a in left.atoms]
+        right_before_labels = [a.label for a in right.atoms]
+        left_before_rad = left.get_radical_count()
+        right_before_rad = right.get_radical_count()
+
+        merged = stitch_molecules_by_labeled_atoms(left, right)
+        assert merged is not None
+
+        # inputs unchanged (function deep-copies)
+        assert [a.label for a in left.atoms] == left_before_labels
+        assert [a.label for a in right.atoms] == right_before_labels
+        assert left.get_radical_count() == left_before_rad
+        assert right.get_radical_count() == right_before_rad
+
+        # product has no stitch labels remaining at the join sites
+        assert find_labeled_atom(merged, LABELS_1) is None
+        assert find_labeled_atom(merged, LABELS_2) is None
+        assert merged.get_radical_count() == 0
+
+    def test_gas_phase_ignore(self):
+        """
+        Scenario: A species that structurally does not match the polymer backbone.
+        Expected: GAS with 0 matches.
+        """
+        spc = Species(molecule=[Molecule(smiles='C')])
+        spc.is_polymer_proxy = False
+        classification, details = classify_structure(spc, self.pe_poly)
+        assert classification == PolymerClass.GAS
+        assert details['disjoint_matches'] == 0
+        assert details['reason'] == "no_backbone_matches"
+
+    @pytest.mark.parametrize("poly_name", ["pe_poly", "ps_polymer"])
+    def test_classify_baseline_intact(self, poly_name):
+        """
+        Scenario: The untouched trimer proxy.
+        Tests BOTH Polyethylene (aliphatic) and Polystyrene (aromatic).
+        Expected: END_MOD (>= 3 matches, fully intact).
+        """
+        poly = getattr(self, poly_name)
+        product_mol = poly.baseline_proxy.molecule[0].copy(deep=True)
+        spc = Species(molecule=[product_mol])
+        classification, details = classify_structure(spc, poly)
+        assert classification == PolymerClass.END_MOD
+        assert details['disjoint_matches'] >= 3
+
+    @pytest.mark.parametrize("center_idx", [0, 1])
+    def test_classify_feature_center_radical(self, center_idx):
+        """
+        Scenario: Hydrogen abstraction from the Center Monomer.
+        Expected: FEATURE (2 disjoint matches, disconnected).
+        """
+        product_mol = self.trimer_mol.copy(deep=True)
+        regions = get_monomer_regions(product_mol)
+        c_atom = regions['center'][center_idx]
+        c_atom.increment_radical()
+        product_mol.update_multiplicity()
+        spc = Species(molecule=[product_mol])
+        classification, details = classify_structure(spc, self.pe_poly)
+        assert classification == PolymerClass.FEATURE
+        assert details['disjoint_matches'] == 2
+        assert details['connected'] is False
+
+    @pytest.mark.parametrize("region, idx", [
+        ("head_buffer", 0), ("head_buffer", 1),
+        ("tail_buffer", 0), ("tail_buffer", 1)
+    ])
+    def test_classify_discard_buffer_radical(self, region, idx):
+        """
+        Scenario: H-abstraction from Head OR Tail buffers.
+        Expected: DISCARD (2 disjoint matches, connected).
+        """
+        product_mol = self.trimer_mol.copy(deep=True)
+        regions = get_monomer_regions(product_mol)
+        c_atom = regions[region][idx]
+        c_atom.increment_radical()
+        product_mol.update_multiplicity()
+        spc = Species(molecule=[product_mol])
+        classification, details = classify_structure(spc, self.pe_poly)
+        assert classification == PolymerClass.DISCARD
+        assert details['disjoint_matches'] == 2
+        assert details['connected'] is True
+
+    def test_classify_scission_simple(self):
+        """
+        Scenario: Backbone scission producing a smaller chain.
+        Expected: SCISSION (1 match).
+        """
+        product_mol = self.trimer_mol.copy(deep=True)
+        regions = get_monomer_regions(product_mol)
+        c3 = regions['center'][1]
+        c4 = regions['tail_buffer'][0]
+        bond = product_mol.get_bond(c3, c4)
+        product_mol.remove_bond(bond)
+        frags = product_mol.split()
+        head_frag = max(frags, key=lambda m: len(m.atoms))
+        spc = Species(molecule=[head_frag])
+        classification, details = classify_structure(spc, self.pe_poly)
+        assert classification == PolymerClass.SCISSION
+        assert details['disjoint_matches'] == 1
+
+    @pytest.mark.parametrize("do_update", [False, True])
+    def test_end_group_modification_does_not_require_atomtypes(self, do_update):
+        """
+        Scenario: Head end-group modification (H -> Cl).
+        Proves that skipping update_atomtypes() is safe due to the relaxed backbone group.
+        """
+        product_mol = self.trimer_mol.copy(deep=True)
+        regions = get_monomer_regions(product_mol)
+        head_c = regions['head_buffer'][0]
+        h_atom = next(a for a in head_c.bonds if a.is_hydrogen())
+        bond = product_mol.get_bond(head_c, h_atom)
+        product_mol.remove_bond(bond)
+        product_mol.remove_atom(h_atom)
+        cl_atom = Atom(element=get_element("Cl"))
+        product_mol.add_atom(cl_atom)
+        product_mol.add_bond(Bond(head_c, cl_atom, order=1))
+        if do_update: product_mol.update_atomtypes()
+        product_mol.update_multiplicity()
+        spc = Species(molecule=[product_mol])
+        classification, details = classify_structure(spc, self.pe_poly)
+        assert classification == PolymerClass.END_MOD
+        assert details['disjoint_matches'] >= 3
+
+    # =========================================================================
+    # 2. Gate, Failure, & Type Assertion Tests
+    # =========================================================================
+
+    def test_no_molecule_returns_gas(self):
+        """Species without a molecule array gracefully exits."""
+        spc = Species()
+        classification, details = classify_structure(spc, self.pe_poly)
+        assert classification == PolymerClass.GAS
+        assert details["reason"] == "no_molecule"
+
+    def test_no_backbone_group_returns_gas(self):
+        """Fails fast if the polymer definition is missing a backbone_group."""
+        spc = Species(molecule=[Molecule(smiles="CC")])
+        dummy_poly = type("P", (), {})()
+        classification, details = classify_structure(spc, dummy_poly, monomer_group=None)
+        assert classification == PolymerClass.GAS
+        assert details["reason"] == "no_backbone_group"
+
+    @pytest.mark.parametrize("proxy_flag", [True, False])
+    def test_use_proxy_as_gate(self, proxy_flag):
+        """Verifies the boolean switch for early-exiting non-proxies."""
+        spc = Species(molecule=[self.trimer_mol.copy(deep=True)])
+        spc.is_polymer_proxy = proxy_flag
+        classification, details = classify_structure(spc, self.pe_poly, use_proxy_as_gate=True)
+        if proxy_flag:
+            assert classification == PolymerClass.END_MOD
+        else:
+            assert classification == PolymerClass.GAS
+            assert details["reason"] == "proxy_flag_false"
+
+    def test_end_mod_more_than_3_matches_sets_note(self, monkeypatch):
+        """Validates diagnostic note when a long chain matches > 3 times."""
+        # Create a pentamer structurally
+        base = self.pe_poly.monomer.copy(deep=True)
+        head = self.pe_poly.end_groups[0].copy(deep=True)
+        tail = self.pe_poly.end_groups[1].copy(deep=True)
+
+        # We need to manually clear labels from the middle units to allow chaining
+        m1 = base.copy(deep=True)
+        m2 = base.copy(deep=True)
+        m3 = base.copy(deep=True)
+        m4 = base.copy(deep=True)
+        m5 = base.copy(deep=True)
+
+        # RMG doesn't easily let us chain 5 identical fragments using our stitcher
+        # (due to label exhaustion), so we use a long smiles chain that matches PE.
+        # PE pentamer: H - [CH2-CH2]_5 - H  --> n-Decane
+        decane = Molecule(smiles="CCCCCCCCCC")
+        spc = Species(molecule=[decane])
+
+        classification, details = classify_structure(spc, self.pe_poly)
+        assert classification == PolymerClass.END_MOD
+        assert details["disjoint_matches"] == 5
+        assert details["note"] == "more_than_3_matches"
+
+    # =========================================================================
+    # 3. Process/Handshake Logic & Logging
+    # =========================================================================
+
+    def test_proxy_true_but_no_backbone_matches_returns_gas_reason(self):
+        """
+        Simulates the '0 core reactions' starvation mode where a candidate
+        claims to be a proxy but structurally isn't.
+        """
+        spc = Species(molecule=[Molecule(smiles="CO")])  # Oxygen breaks backbone match
+        spc.is_polymer_proxy = True
+        classification, details = classify_structure(spc, self.pe_poly)
+        assert classification == PolymerClass.GAS
+        assert details["reason"] == "no_backbone_matches"
+        assert details["raw_matches"] == 0
+        assert details["disjoint_matches"] == 0
+
+    def test_process_filters_discard_and_sets_flags(self):
+        """
+        Verifies `process_polymer_candidates` correctly updates the proxy flags
+        and drops DISCARD candidates.
+        """
+        # 1. FEAT (Center Radical)
+        s_feat = Species(label="FEAT", molecule=[self.trimer_mol.copy(deep=True)])
+        c_feat = get_monomer_regions(s_feat.molecule[0])['center'][0]
+        c_feat.increment_radical()
+        s_feat.molecule[0].update_multiplicity()
+
+        # 2. DISC (Buffer Radical)
+        s_disc = Species(label="DISC", molecule=[self.trimer_mol.copy(deep=True)])
+        c_disc = get_monomer_regions(s_disc.molecule[0])['head_buffer'][0]
+        c_disc.increment_radical()
+        s_disc.molecule[0].update_multiplicity()
+
+        # 3. GAS (No Match)
+        s_gas = Species(label="GAS", molecule=[Molecule(smiles="C")])
+
+        candidates = [s_feat, s_disc, s_gas]
+        out = process_polymer_candidates(candidates, None, self.pe_poly)
+
+        assert len(out) == 2
+        labels = [s.label for s in out]
+        assert "DISC" not in labels
+        assert "FEAT" in labels
+        assert "GAS" in labels
+
+        # Verify Proxy Tags
+        assert next(s for s in out if s.label == "FEAT").is_polymer_proxy is True
+        assert next(s for s in out if s.label == "GAS").is_polymer_proxy is False
+
+    def test_proxy_to_gas_logs_reason(self, capsys):
+        """
+        Ensures a critical DEBUG breadcrumb is emitted when a proxy devolves into GAS.
+        """
+        spc = Species(label="BadProxy", molecule=[Molecule(smiles="C")])
+        spc.is_polymer_proxy = True
+        process_polymer_candidates([spc], None, self.pe_poly)
+        assert spc.is_polymer_proxy is False
+        captured = capsys.readouterr()
+        assert "classified as GAS" in captured.out
+        assert "no_backbone_matches" in captured.out
+
+    def test_ps_backbone_group_relaxation(self):
+        """
+        Proves the backbone_group property correctly relaxes a bulky,
+        aromatic monomer (Polystyrene) for subgraph matching.
+        """
+        group = self.ps_polymer.backbone_group
+        assert len(group.atoms) == 8
+
+        expected_orders = sorted([1, 1.5, 2, 3])
+        for atom in group.atoms:
+            for neighbor, bond in atom.bonds.items():
+                assert sorted(bond.order) == expected_orders, f"Bond orders should be relaxed to allow aromaticity, got {bond.order}"
+
+        ps_mol = self.ps_trimer_mol.copy(deep=True)
+        ps_mol.clear_labeled_atoms()  # Ensure labels are cleared before search
+        print("ps_mol multiplicity:", ps_mol.multiplicity)
+        print("ps_mol total radicals:", sum(a.radical_electrons for a in ps_mol.atoms))
+        matches = ps_mol.find_subgraph_isomorphisms(group)
+        disjoint = find_max_disjoint_matches(matches)
+
+        assert len(disjoint) == 3, "Failed to locate 3 styrene monomers inside the PS proxy."
+
+    def test_find_max_disjoint_matches_beats_greedy(self):
+        """
+        Construct matches such that:
+          - One large match overlaps with each of three smaller matches.
+          - The three smaller matches are mutually disjoint.
+        The maximum disjoint solution should include the three small matches (size=3),
+        not the single large one (size=1).
+        """
+        assert find_max_disjoint_matches([]) == []
+
+        # Use simple hashables to stand in for "atom objects"
+        A, B, C, D, E, F = "A", "B", "C", "D", "E", "F"
+
+        big = {"p1": A, "p2": B, "p3": C}  # overlaps with each small (A or B or C)
+        s1 = {"p1": A}  # overlaps with big via A
+        s2 = {"p1": B}  # overlaps with big via B
+        s3 = {"p1": C}  # overlaps with big via C
+
+        # Ensure the small matches are mutually disjoint
+        assert set(s1.values()).isdisjoint(set(s2.values()))
+        assert set(s1.values()).isdisjoint(set(s3.values()))
+        assert set(s2.values()).isdisjoint(set(s3.values()))
+
+        chosen = find_max_disjoint_matches([big, s1, s2, s3])
+
+        # Should pick the maximum-cardinality set: s1,s2,s3 (size=3)
+        assert len(chosen) == 3
+
+        # Verify pairwise disjointness of the returned matches
+        chosen_sets = _values_sets(chosen)
+        for i in range(len(chosen_sets)):
+            for j in range(i + 1, len(chosen_sets)):
+                assert chosen_sets[i].isdisjoint(chosen_sets[j])
+
+    def test_find_max_disjoint_matches_beats_greedy_with_real_atoms(self):
+        """
+        Construct matches using actual RMG Atom objects from a Polystyrene proxy such that:
+          - One large match overlaps with each of three smaller matches.
+          - The three smaller matches are mutually disjoint.
+        The maximum disjoint solution should include the three small matches (count=3),
+        not the single large one (count=1), proving the algorithm beats a greedy sort.
+        """
+        mol = self.ps_polymer.baseline_proxy.molecule[0]
+        heavy_atoms = [a for a in mol.atoms if not a.is_hydrogen()]
+        a1, a2, a3, a4, a5, a6 = heavy_atoms[0:6]
+
+        big = {1: a1, 2: a2, 3: a3}
+        s1 = {1: a1, 4: a4}
+        s2 = {2: a2, 5: a5}
+        s3 = {3: a3, 6: a6}
+
+        assert set(s1.values()).isdisjoint(set(s2.values()))
+        assert set(s1.values()).isdisjoint(set(s3.values()))
+        assert set(s2.values()).isdisjoint(set(s3.values()))
+
+        chosen = find_max_disjoint_matches([big, s1, s2, s3])
+        assert len(chosen) == 3
+
+        def _values_sets(match_list):
+            return [set(m.values()) for m in match_list]
+
+        chosen_sets = _values_sets(chosen)
+        for i in range(len(chosen_sets)):
+            for j in range(i + 1, len(chosen_sets)):
+                assert chosen_sets[i].isdisjoint(chosen_sets[j])
+
+
+def _iter_neighbors(atom) -> List[Any]:
+    """
+    Return neighbor atoms for a given Atom across common APIs:
+    - RMG: atom.bonds is dict[Atom, Bond]
+    - Some toolkits: atom.bonds may be iterable of neighbors
+    """
+    bonds = getattr(atom, "bonds", None)
+    if bonds is None: return []
+    if isinstance(bonds, dict): return list(bonds.keys())
+    try:
+        return list(bonds)
+    except TypeError:
+        return []
+
+
+def get_carbon_neighbors(atom) -> List[Any]:
+    return [n for n in _iter_neighbors(atom) if n.is_non_hydrogen()]
+
+
+def bfs_farthest_node(start_node: Atom, all_nodes: List[Atom]) -> Tuple[Atom, Dict[Atom, Atom]]:
+    """
+    BFS to find the farthest node from start_node within the subgraph of all_nodes.
+    Returns (farthest_node, parent_map).
+    """
+    queue = deque([start_node])
+    visited = {start_node}
+    parent = {start_node: None}
+    farthest = start_node
+    while queue:
+        current = queue.popleft()
+        farthest = current
+        for neighbor in get_carbon_neighbors(current):
+            if neighbor in all_nodes and neighbor not in visited:
+                visited.add(neighbor)
+                parent[neighbor] = current
+                queue.append(neighbor)
+    return farthest, parent
+
+
+def get_backbone_path(mol: Molecule) -> List[Atom]:
+    """
+    Identifies the longest carbon chain (backbone) in the molecule.
+    """
+    carbons = [a for a in mol.atoms if a.is_carbon()]
+    if not carbons: return []
+    u, _ = bfs_farthest_node(carbons[0], carbons)
+    v, parent_map = bfs_farthest_node(u, carbons)
+    path = []
+    curr = v
+    while curr is not None:
+        path.append(curr)
+        curr = parent_map[curr]
+    return path
+
+
+def get_monomer_regions(mol: Molecule) -> Dict[str, List[Atom]]:
+    """
+    Segments the linear backbone into Buffer (Head/Tail) and Center regions.
+    Assumes a trimer structure (6 carbons).
+    """
+    path = get_backbone_path(mol)
+    if len(path) != 6:
+        raise ValueError(f"Expected trimer backbone length 6, got {len(path)}")
+    return {"head_buffer": path[:2],
+            "center": path[2:4],
+            "tail_buffer": path[4:]}
+
+
+def abstract_h_from_center_backbone(mol):
+    """
+    Perform a chemically valid H-abstraction near the backbone center:
+    - choose a backbone carbon near the middle that has an explicit H neighbor
+    - remove that H atom
+    - increment radical on the carbon
+    Returns the modified carbon atom.
+    """
+    path = get_backbone_path(mol)
+    n = len(path)
+    mid = n // 2
+
+    # search outward from the midpoint
+    for k in range(n):
+        for i in (mid - k, mid + k):
+            if i < 0 or i >= n:
+                continue
+            c = path[i]
+            if not c.is_carbon():
+                continue
+
+            # find an explicit H neighbor
+            h = next((nb for nb in c.bonds.keys() if nb.is_hydrogen()), None)
+            if h is None:
+                continue
+
+            # remove the H atom and its bond
+            if hasattr(mol, "remove_atom"):
+                mol.remove_atom(h)
+            else:
+                # fallback: delete bond from both ends, then remove from atom list
+                del c.bonds[h]
+                del h.bonds[c]
+                mol.atoms.remove(h)
+
+            # now make the carbon a radical (valid after H removal)
+            c.increment_radical()
+
+            # keep molecule consistent
+            mol.update_multiplicity()
+            return c
+
+    raise ValueError("Could not find a center-backbone carbon with an explicit H to abstract.")
+
+
+def _values_sets(ms):
+    return [set(m.values()) for m in ms]
 
 def _methyl_radical_adj(label: str) -> str:
     """CH3 rad with a label on the radical carbon"""

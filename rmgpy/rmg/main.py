@@ -67,6 +67,7 @@ from rmgpy.exceptions import (
 from rmgpy.kinetics import ThirdBody, Troe
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule import Molecule
+from rmgpy.polymer import process_polymer_candidates
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.listener import SimulationProfilePlotter, SimulationProfileWriter
@@ -666,7 +667,7 @@ class RMG(util.Subject):
             self.reaction_model.add_reaction_library_to_edge(library, requires_rms=requires_rms)
 
         # Also always add in a few bath gases (since RMG-Java does)
-        for label, smiles in [("Ar", "[Ar]"), ("He", "[He]"), ("Ne", "[Ne]"), ("N2", "N#N")]:
+        for label, smiles in [("Ar", "[Ar]"), ("He", "[He]"), ("N2", "N#N")]:
             molecule = Molecule().from_smiles(smiles)
             spec, is_new = self.reaction_model.make_new_species(molecule, label=label, reactive=False)
             if is_new:
@@ -700,7 +701,7 @@ class RMG(util.Subject):
         # For liquidReactor, checks whether the solvent is listed as one of the initial species.
         if self.solvent:
             if not solvent_mol:
-                logging.warn("Solvent molecular structure not specified, assuming simulation is appropriate")
+                logging.warning("Solvent molecular structure not specified, assuming simulation is appropriate")
             else:
                 solvent_structure_list = self.database.solvation.get_solvent_structure(self.solvent)
                 for spc in solvent_structure_list:
@@ -1032,7 +1033,10 @@ class RMG(util.Subject):
                         # the core
                         if obj != [] and not (obj is None):
                             objects_to_enlarge = self.process_to_species_networks(obj)
-
+                            objects_to_enlarge = process_polymer_candidates(
+                                candidates=objects_to_enlarge,
+                                reaction_model=self.reaction_model,
+                            )
                             reactor_done = False
                         # Enlarge objects identified by the simulation for enlarging
                         # These should be Species or Network objects

@@ -280,9 +280,12 @@ class CoreEdgeReactionModel:
 
         Returns the matched species if found and `None` otherwise.
         """
+        # print(f'\n\nchecking for existing species {molecule.to_smiles()}')
 
         # First check cache and return if species is found
         for i, spec in enumerate(self.species_cache):
+            # if spec is not None:
+            #     print(f'checking cache species {spec.molecule[0].to_smiles()}')
             if spec is not None and spec.is_isomorphic(molecule, strict=False):
                 self.species_cache.pop(i)
                 self.species_cache.insert(0, spec)
@@ -290,18 +293,22 @@ class CoreEdgeReactionModel:
 
         # If not found in cache, check all species with matching formula
         formula = molecule.get_formula()
+        # print(f'checking species with formula {formula}')
         try:
             species_list = self.species_dict[formula]
         except KeyError:
             pass
         else:
             for spec in species_list:
+                # print(f'checking species {spec.molecule[0].to_smiles()}')
                 if spec.is_isomorphic(molecule, strict=False):
                     self.species_cache.pop()
                     self.species_cache.insert(0, spec)
+                    # print(f'found existing species {spec.label} for molecule {molecule.to_smiles()}')
                     return spec
 
         # At this point we can conclude that the species is new
+        # print(f'no existing species found for molecule {molecule.to_smiles()}')
         return None
 
     def make_new_species(self, object, label="", reactive=True, check_existing=True, generate_thermo=True, check_decay=False, check_cut=False):
@@ -659,6 +666,11 @@ class CoreEdgeReactionModel:
                 new_species = new_object
 
                 object_was_in_edge = new_species in self.edge.species
+                if new_species.is_polymer_proxy:
+                    logging.info(f"\n\n\n\n\n**********************\nFound new polymer proxy species {new_species}\n\n\n\n\n\n\n\n\n\n\n\n\n")
+
+                if len(new_species.molecule[0].atoms) > 15 and not new_species.is_polymer_proxy:
+                    logging.info(f"\n\n\n\n\n\n\n\n\n****************************\nSpecies {new_species} has more than 15 atoms and is NOT a polymer proxy\n\n\n\n\n\n\n")
 
                 if not new_species.reactive:
                     logging.info("NOT generating reactions for unreactive species {0}".format(new_species))

@@ -2235,6 +2235,8 @@ class ThermoDatabase(object):
                             thermo_data.comment += f' + missing({group_str})'
                         else:
                             thermo_data.comment = f'Thermo group additivity estimation: missing({group_str})'
+                    if molecule.is_polymer_proxy:
+                        thermo_data.comment += ', polymer proxy'
                 # Correct for gauche and 1,5- interactions
                 # Pair atom with its 1st and 2nd nonHydrogen neighbors, 
                 # Then match the pair with the entries in the database longDistanceInteraction_noncyclic.py

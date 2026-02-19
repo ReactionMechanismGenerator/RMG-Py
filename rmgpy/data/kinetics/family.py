@@ -2324,9 +2324,6 @@ class KineticsFamily(Database):
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxn_list:
-            if any(spc.is_polymer_proxy for spc in reaction.reactants + reaction.products):
-                for spc in reaction.products + reaction.reactants:
-                    spc.is_polymer_proxy = True
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clear_labeled_atoms()
@@ -2339,6 +2336,10 @@ class KineticsFamily(Database):
 
             # Generate metadata about the reaction that we will need later
             reaction.pairs = self.get_reaction_pairs(reaction)
+            for pair in reaction.pairs:
+                if any (spc.is_polymer_proxy for spc in pair):
+                    for spc in pair:
+                        spc.is_polymer_proxy = True
             reaction.template = self.get_reaction_template_labels(reaction)
 
             if delete_labels:
@@ -2369,7 +2370,7 @@ class KineticsFamily(Database):
             for reactant in reaction.reactants:
                 for product in reaction.products:
                     pairs.append([reactant, product])
-        elif self.label.lower() in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
+        elif self.label.lower() in ('h_abstraction', 'f_abstraction', 'cl_abstraction', 'br_abstraction'):
             # Hardcoding for hydrogen abstraction: pair the reactant containing
             # *1 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2
