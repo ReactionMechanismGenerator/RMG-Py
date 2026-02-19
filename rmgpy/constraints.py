@@ -31,6 +31,7 @@ import logging
 
 from rmgpy.species import Species
 
+
 def pass_cutting_threshold(species):
     """
     Pass in either a `Species` or `Molecule` object and checks whether it passes 
@@ -57,6 +58,7 @@ def pass_cutting_threshold(species):
         return True
 
     return False
+
 
 def fails_species_constraints(species):
     """
@@ -140,5 +142,10 @@ def fails_species_constraints(species):
     if max_carbene_radicals != -1:
         if struct.get_singlet_carbene_count() > 0 and struct.get_radical_count() > max_carbene_radicals:
             return f"Exceeded maximumCarbeneRadicals: {struct.get_radical_count()} > {max_carbene_radicals}"
+
+    max_fused_rings = species_constraints.get('maximumFusedRings', -1)
+    if max_fused_rings != -1 and struct.is_cyclic():
+        if struct.get_ring_count_in_largest_fused_ring_system() > max_fused_rings:
+            return True
 
     return False
