@@ -103,6 +103,7 @@ from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Tuple, Uni
 
 from rmgpy.exceptions import InputError
 from rmgpy.molecule import Atom, Bond, Molecule
+from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.resonance import generate_resonance_structures
 from rmgpy.species import Species
@@ -343,22 +344,37 @@ class Polymer(Species):
         pat_mol = self.monomer.copy(deep=True)
         pat_mol.clear_labeled_atoms()
 
+        # 1. Strip Radicals
+        for atom in pat_mol.atoms:
+            atom.radical_electrons = 0
+
+        # 2. Assign base atomtypes (e.g., Cs for backbone, Cd for Kekule ring)
+        pat_mol.update_atomtypes()
+
+        # 3. Strip hydrogens to create a pure heavy-atom skeleton matcher
         for atom in pat_mol.atoms[:]:
             if atom.is_hydrogen():
                 pat_mol.remove_atom(atom)
 
-        for atom in pat_mol.atoms:
-            atom.radical_electrons = 0
-
+        # 4. Convert to Group
         group = pat_mol.to_group()
-        group.multiplicity = []
+        group.multiplicity = None
 
+        # 5. Relax Constraints
         for g_atom in group.atoms:
-            g_atom.atomtype = []
-            g_atom.radical_electrons = [0]
+
+            # Make Kekulé and Aromatic types interchangeable, but strictly preserve aliphatic (Cs) types.
+            expanded_types = set(g_atom.atomtype)
+            for at in g_atom.atomtype:
+                if at.label in ('Cd', 'Cb', 'Cbf', 'Cdd'):
+                    expanded_types.update([ATOMTYPES['Cd'], ATOMTYPES['Cb'], ATOMTYPES['Cbf'], ATOMTYPES['Cs']])
+            g_atom.atomtype = list(expanded_types)
+
+            g_atom.radical_electrons = [0]  # Strict unreacted
             g_atom.charge = []
             g_atom.lone_pairs = []
 
+        # 6. Relax Bond Orders
         all_orders = [1, 1.5, 2, 3]
         seen_bonds = set()
         for g_atom in group.atoms:
@@ -369,7 +385,6 @@ class Polymer(Species):
                 seen_bonds.add(key)
                 g_bond.order = all_orders
 
-        group.update()
         self._cached_backbone_group = group
         return group
 
@@ -1421,6 +1436,20 @@ def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
     return merged
 
 
+def _get_target_atoms(match: Dict[Any, Any]) -> set:
+    """
+    Safely extracts the target molecule atoms from an RMG match mapping,
+    regardless of whether they are stored as keys or values.
+    """
+    vals = set(match.values())
+    if vals and hasattr(next(iter(vals)), "bonds"):
+        return vals
+    keys = set(match.keys())
+    if keys and hasattr(next(iter(keys)), "bonds"):
+        return keys
+    return vals  # fallback
+
+
 def find_max_disjoint_matches(matches: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
     """
     Return the largest subset of pairwise-disjoint isomorphism matches.
@@ -1428,13 +1457,6 @@ def find_max_disjoint_matches(matches: List[Dict[Any, Any]]) -> List[Dict[Any, A
     A "match" is a dict whose values are target atoms (or atom-like objects). Two matches
     overlap if they share any value. This function finds the maximum-cardinality subset
     with no overlaps (avoids greedy undercounting for symmetric/overlapping matches).
-
-    Args:
-        matches: List of isomorphism mappings. Only the mapping values are used to check overlap.
-
-    Returns:
-        A maximum-size subset of `matches` such that no two matches share any value.
-        If `matches` is empty, returns an empty list.
     """
     if not matches:
         return []
@@ -1444,15 +1466,11 @@ def find_max_disjoint_matches(matches: List[Dict[Any, Any]]) -> List[Dict[Any, A
     def solve(candidates: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
         if not candidates:
             return []
-
         first = candidates[0]
-        first_atoms = set(first.values())
-
-        remaining_compatible = [m for m in candidates[1:] if not first_atoms.intersection(set(m.values()))]
-
+        first_atoms = set(first.keys())
+        remaining_compatible = [m for m in candidates[1:] if not first_atoms.intersection(set(m.keys()))]
         with_first = [first] + solve(remaining_compatible)
         without_first = solve(candidates[1:])
-
         return with_first if len(with_first) >= len(without_first) else without_first
 
     return solve(matches)
@@ -1549,11 +1567,11 @@ def classify_structure(species: 'Species',
     """
     Classifies a reaction product structurally by counting intact monomer subgraphs.
     """
-    # Always include baseline counts for downstream safety
     base_details = {"raw_matches": 0, "disjoint_matches": 0}
 
     # 1. Gates and Fail-Fasts
-    if use_proxy_as_gate and getattr(species, "is_polymer_proxy", True) is False:
+    # CRITICAL FIX: Use '== False' instead of 'is False' to avoid numpy boolean bugs
+    if use_proxy_as_gate and getattr(species, "is_polymer_proxy", True) == False:
         return PolymerClass.GAS, {**base_details, "reason": "proxy_flag_false"}
 
     if not getattr(species, "molecule", None) or not species.molecule[0]:
@@ -1565,23 +1583,9 @@ def classify_structure(species: 'Species',
         return PolymerClass.GAS, {**base_details, "reason": "no_backbone_group"}
 
     # 2. Minimal Safe Normalization
-    # We MUST copy and clear labels here. If the solver hands us a proxy that
-    # still has *1 or *2 labels, it will fail to match the stripped group.
     product_mol = species.molecule[0].copy(deep=True)
     product_mol.clear_labeled_atoms()
     product_mol.update_multiplicity()
-    # Note: Deliberately skipping update_atomtypes()
-
-    if True:  # temporarily
-        mol = product_mol
-        grp = monomer_group
-        print("DEBUG classify_structure:")
-        print("  mol atoms:", len(mol.atoms), "labels:", _labels_present(mol)[:10])
-        print("  mol radicals:", sum(a.radical_electrons for a in mol.atoms))
-        print("  group atoms:", len(grp.atoms))
-        # crude element counts for group
-        from collections import Counter
-        print("  group elements:", Counter([getattr(a.element, "symbol", "?") for a in grp.atoms]))
 
     # 3. Search and Count
     summary = count_backbone_matches(product_mol, monomer_group)
@@ -1592,9 +1596,9 @@ def classify_structure(species: 'Species',
 
     # 4. Type Guard
     if summary.disjoint > 0:
-        sample = next(iter(summary.best_matches[0].values()))
+        sample = next(iter(summary.best_matches[0].keys()))
         if not hasattr(sample, "bonds"):
-            raise TypeError(f"Expected Atom objects in match mapping, got {type(sample).__name__}")
+            raise TypeError(f"Expected Atom objects in match mapping keys, got {type(sample).__name__}")
         details["match_value_type"] = type(sample).__name__
 
     # 5. Classification
@@ -1604,18 +1608,15 @@ def classify_structure(species: 'Species',
         return PolymerClass.END_MOD, details
 
     if summary.disjoint == 2:
-        v1 = set(summary.best_matches[0].values())
-        v2 = set(summary.best_matches[1].values())
-
-        m1_atoms = _values_to_atoms(v1, product_mol)
-        m2_atoms = _values_to_atoms(v2, product_mol)
-        m2_atoms_frozen = frozenset(m2_atoms)
+        m1_atoms = set(summary.best_matches[0].keys())
+        m2_atoms = frozenset(summary.best_matches[1].keys())
 
         is_connected = any(
-            nbr in m2_atoms_frozen
+            nbr in m2_atoms
             for atom in m1_atoms
             for nbr in atom.bonds.keys()
         )
+
         details["connected"] = is_connected
         return (PolymerClass.DISCARD if is_connected else PolymerClass.FEATURE), details
 
@@ -1634,12 +1635,9 @@ def process_polymer_candidates(candidates: List[Species],
     processed_list: List['Species'] = []
     stats = {k: 0 for k in PolymerClass}
 
-    # Precompute once (cached on original_polymer)
     monomer_group = getattr(original_polymer, "backbone_group", None)
 
     for cand in candidates:
-        was_proxy = getattr(cand, "is_polymer_proxy", False)
-
         classification, details = classify_structure(
             cand,
             original_polymer,
@@ -1652,22 +1650,14 @@ def process_polymer_candidates(candidates: List[Species],
 
         stats[classification] += 1
 
-        # Output flag: derived strictly from structural classification
-        cand.is_polymer_proxy = (classification != PolymerClass.GAS)
-
-        # High-Value Diagnostic: Lazy logging prevents interpolation cost when debug is off
-        if classification == PolymerClass.GAS and was_proxy:
-            print(
-                f"Proxy '{cand.label}' classified as GAS. "
-                f"reason={details.get('reason')} raw={details.get('raw_matches')} disjoint={details.get('disjoint_matches')}"
-            )
+        is_proxy = bool(classification != PolymerClass.GAS)
+        cand.is_polymer_proxy = is_proxy
+        if getattr(cand, "molecule", None) and cand.molecule:
+            cand.molecule[0].is_polymer_proxy = is_proxy
 
         if classification == PolymerClass.DISCARD:
             continue
 
         processed_list.append(cand)
-
-    stats_str = {k.value: v for k, v in stats.items()}
-    print(f"**** Polymer Classification Stats: {stats_str}")
 
     return processed_list
