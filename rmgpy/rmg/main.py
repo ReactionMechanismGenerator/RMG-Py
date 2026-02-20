@@ -2137,8 +2137,9 @@ class RMG(util.Subject):
 
         if os.path.exists(os.path.join(module_path, "..", ".git")):
             try:
-                return subprocess.check_output(["git", "log", "--format=%H%n%cd", "-1"], cwd=module_path).splitlines()
-            except:
+                head, date = subprocess.check_output(["git", "log", "--format=%H%n%cd", "-1"], cwd=module_path).splitlines()
+                return head.decode(), date.decode()
+            except (subprocess.CalledProcessError, OSError):
                 return "", ""
         else:
             return "", ""
