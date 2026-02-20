@@ -39,15 +39,16 @@ from typing import List, Tuple, Dict, Any
 from rmgpy.exceptions import InputError
 from rmgpy.molecule import Atom, Bond, Molecule, get_element
 from rmgpy.polymer import (
+    LABELS_1,
+    LABELS_2,
     Polymer,
     PolymerClass,
+    get_target_atoms,
     find_max_disjoint_matches,
     classify_structure,
     find_labeled_atom,
     process_polymer_candidates,
     stitch_molecules_by_labeled_atoms,
-    LABELS_1,
-    LABELS_2,
 )
 from rmgpy.species import Species
 from rmgpy.statmech import Conformer
@@ -660,15 +661,25 @@ PS_1
         """
         p = self.polymer_1.copy()
         reacted_proxy = p.baseline_proxy.molecule[0].copy(deep=True)
-
         abstract_h_from_center_backbone(reacted_proxy)
-
         new_p = p.create_reacted_copy(reacted_proxy)
-
         assert new_p is not None
         assert isinstance(new_p, Polymer)
         assert new_p.feature_monomer is None
         assert new_p.label.endswith("_scission_tail") or new_p.label.endswith("_scission_head")
+
+    def test_create_reacted_copy_modification_baseline(self):
+        """
+        Ensures that an intact baseline proxy (unreacted) produces a
+        modified polymer (_mod) because it contains both wings.
+        """
+        p = self.polymer_1.copy()
+        reacted_proxy = p.baseline_proxy.molecule[0].copy(deep=True)
+        new_p = p.create_reacted_copy(reacted_proxy)
+        assert new_p is not None
+        assert new_p.label.endswith("_mod")
+        assert new_p.feature_monomer is not None
+        assert new_p.feature_monomer.is_isomorphic(p.monomer)
 
     def test_create_reacted_copy_head_scission_returns_scission_tail_polymer(self):
         """
@@ -783,6 +794,20 @@ PS_1
                     f"Bond orders should be relaxed to {expected_orders}, got {bond.order}"
 
         assert bond_checked, "Monomer group should have at least one bond to check"
+
+    def test_wing_groups_relaxation(self):
+        """Verify wing templates are properly relaxed for matching."""
+        wings = self.polymer_1._wing_groups("head")
+        assert len(wings) > 0
+
+        for group in wings:
+            for g_atom in group.atoms:
+                # Radical electrons should be [] (wildcard), not [0] or [1]
+                assert g_atom.radical_electrons == []
+                # Check for expanded atomtypes on a benzene carbon
+                if g_atom.is_carbon() and any(at.label == 'Cb' for at in g_atom.atomtype):
+                    labels = {at.label for at in g_atom.atomtype}
+                    assert 'Cb' in labels and 'Cd' in labels
 
 
 class TestPolymerThermo:
@@ -1281,36 +1306,64 @@ class TestPolymerClassification:
     def test_find_max_disjoint_matches_beats_greedy(self):
         """
         Construct matches such that:
-          - One large match overlaps with each of three smaller matches.
+          - One large match (3 atoms) overlaps with three smaller matches (1 atom each).
           - The three smaller matches are mutually disjoint.
-        The maximum disjoint solution should include the three small matches (size=3),
-        not the single large one (size=1).
+        Using real Atom objects from the trimer fixture ensures get_target_atoms
+        passes the isinstance(x, RMGAtom) check.
         """
-        assert find_max_disjoint_matches([]) == []
+        # 1. Access the real atoms from the PE trimer fixture
+        # PE trimer backbone: C0-C1-C2-C3-C4-C5
+        atoms = self.trimer_mol.atoms
+        c0, c2, c4 = atoms[0], atoms[2], atoms[4]
 
-        # Use simple hashables to stand in for "atom objects"
-        A, B, C, D, E, F = "A", "B", "C", "D", "E", "F"
+        # 2. Construct overlapping scenarios
+        # Big match covers all three target sites
+        big = {c0: "p1", c2: "p2", c4: "p3"}
 
-        # The mock ATOMS must be the KEYS now!
-        big = {A: "p1", B: "p2", C: "p3"}
-        s1 = {A: "p1"}
-        s2 = {B: "p1"}
-        s3 = {C: "p1"}
+        # Small matches cover only one site each
+        s1 = {c0: "p1"}
+        s2 = {c2: "p1"}
+        s3 = {c4: "p1"}
 
-        assert set(s1.keys()).isdisjoint(set(s2.keys()))
-        assert set(s1.keys()).isdisjoint(set(s3.keys()))
-        assert set(s2.keys()).isdisjoint(set(s3.keys()))
+        # 3. Verify disjointness of the small matches
+        assert get_target_atoms(s1).isdisjoint(get_target_atoms(s2))
+        assert get_target_atoms(s1).isdisjoint(get_target_atoms(s3))
+        assert get_target_atoms(s2).isdisjoint(get_target_atoms(s3))
 
+        # 4. Execute the solver
         chosen = find_max_disjoint_matches([big, s1, s2, s3])
+
         assert len(chosen) == 3
 
-        def _keys_sets(match_list):
-            return [set(m.keys()) for m in match_list]
+        # 5. Final validation of disjointness in the result
+        def _get_sets(match_list):
+            return [get_target_atoms(m) for m in match_list]
 
-        chosen_sets = _keys_sets(chosen)
+        chosen_sets = _get_sets(chosen)
         for i in range(len(chosen_sets)):
             for j in range(i + 1, len(chosen_sets)):
                 assert chosen_sets[i].isdisjoint(chosen_sets[j])
+
+    def test_find_max_disjoint_matches_invariance(self):
+        """
+        Verify that the solver handles matches regardless of whether
+        Atoms are in keys or values.
+        """
+        a1, a2 = self.trimer_mol.atoms[0], self.trimer_mol.atoms[1]
+
+        # Match 1: Atom as Key
+        m1 = {a1: "pattern_atom"}
+        # Match 2: Atom as Value
+        m2 = {"pattern_atom": a2}
+
+        # These should be seen as disjoint because a1 != a2
+        chosen = find_max_disjoint_matches([m1, m2])
+        assert len(chosen) == 2
+
+        # Match 3: Overlapping Atom as Value
+        m3 = {"other_pattern": a1}
+        chosen_overlap = find_max_disjoint_matches([m1, m3])
+        assert len(chosen_overlap) == 1
 
     def test_find_max_disjoint_matches_beats_greedy_with_real_atoms(self):
         """

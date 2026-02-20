@@ -757,7 +757,7 @@ class Polymer(Species):
 
         def _count_boundary_edges(m):
             """Counts bonds leaving the matched subgraph."""
-            atom_set = _get_target_atoms(m)
+            atom_set = get_target_atoms(m)
             cuts = 0
             for a in atom_set:
                 for nbr in a.bonds:
@@ -779,10 +779,10 @@ class Polymer(Species):
             best_pair = None
             best_score = (999, 999, 999)
             for hm in head_matches:
-                ha = _get_target_atoms(hm)
+                ha = get_target_atoms(hm)
                 h_bnd = _count_boundary_edges(hm)
                 for tm in tail_matches:
-                    ta = _get_target_atoms(tm)
+                    ta = get_target_atoms(tm)
                     t_bnd = _count_boundary_edges(tm)
                     if ha.isdisjoint(ta):
                         score = (abs(h_bnd - 1) + abs(t_bnd - 1), h_bnd + t_bnd, -(len(ha) + len(ta)))
@@ -795,28 +795,28 @@ class Polymer(Species):
             else:
                 def _score_single(m):
                     b = _count_boundary_edges(m)
-                    return (abs(b - 1), b, -len(_get_target_atoms(m)))
+                    return (abs(b - 1), b, -len(get_target_atoms(m)))
                 best_head = min(head_matches, key=_score_single)
                 best_tail = min(tail_matches, key=_score_single)
                 if _score_single(best_head) <= _score_single(best_tail):
-                    head_atoms = _get_target_atoms(best_head)
+                    head_atoms = get_target_atoms(best_head)
                 else:
-                    tail_atoms = _get_target_atoms(best_tail)
+                    tail_atoms = get_target_atoms(best_tail)
 
         elif head_matches:
             def _score_single(m):
                 b = _count_boundary_edges(m)
-                return abs(b - 1), b, -len(_get_target_atoms(m))
+                return abs(b - 1), b, -len(get_target_atoms(m))
             best_head = min(head_matches, key=_score_single)
-            head_atoms = _get_target_atoms(best_head)
+            head_atoms = get_target_atoms(best_head)
 
         elif tail_matches:
             def _score_single(m):
                 b = _count_boundary_edges(m)
-                return abs(b - 1), b, -len(_get_target_atoms(m))
+                return abs(b - 1), b, -len(get_target_atoms(m))
 
             best_tail = min(tail_matches, key=_score_single)
-            tail_atoms = _get_target_atoms(best_tail)
+            tail_atoms = get_target_atoms(best_tail)
 
         if head_atoms and tail_atoms:
             atoms_to_remove = head_atoms | tail_atoms
@@ -1030,12 +1030,12 @@ class Polymer(Species):
         best_pair, best_key = None, None
 
         for hm in head_matches:
-            H = set(hm.keys())
+            H = get_target_atoms(hm)
             if any(a not in target.atoms for a in H):
                 raise ValueError("Unexpected mapping direction in head match: keys are not target atoms.")
 
             for tm in tail_matches:
-                T = set(tm.keys())
+                T = get_target_atoms(tm)
                 if any(a not in target.atoms for a in T):
                     raise ValueError("Unexpected mapping direction in tail match: keys are not target atoms.")
 
@@ -1155,12 +1155,12 @@ class Polymer(Species):
                     if target_atom.label and target_atom.label != '*2':
                         raise ValueError(f"Label conflict: Atom already {target_atom.label}, wants *2")
                     target_atom.label = '*2'
-                    self._ensure_open_site(target_atom)
+                    _ensure_open_site(target_atom)
                 elif tail_match_atoms and neighbor in tail_match_atoms:
                     if target_atom.label and target_atom.label != '*1':
                         raise ValueError(f"Label conflict: Atom already {target_atom.label}, wants *1")
                     target_atom.label = '*1'
-                    self._ensure_open_site(target_atom)
+                    _ensure_open_site(target_atom)
 
         new_mol.update_multiplicity()
 
@@ -1415,18 +1415,20 @@ def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
     return merged
 
 
-def _get_target_atoms(match: Mapping[Any, Any]) -> set:
+def get_target_atoms(match: Mapping[Any, Any]) -> set:
     """
     Safely extracts the target molecule atoms from an RMG match mapping.
     Uses '.element' because both Atom and GroupAtom possess a '.bonds' attribute.
     """
+    if not match:
+        return set()
     vals = set(match.values())
-    if vals and hasattr(next(iter(vals)), "element"):
+    if vals and isinstance(next(iter(vals)), Atom):
         return vals
     keys = set(match.keys())
-    if keys and hasattr(next(iter(keys)), "element"):
+    if keys and isinstance(next(iter(keys)), Atom):
         return keys
-    return vals
+    return {x for x in vals | keys if isinstance(x, Atom)}
 
 
 def find_max_disjoint_matches(matches: List[Dict[Any, Any]]) -> List[Dict[Any, Any]]:
@@ -1445,28 +1447,13 @@ def find_max_disjoint_matches(matches: List[Dict[Any, Any]]) -> List[Dict[Any, A
         if not candidates:
             return []
         first = candidates[0]
-        first_atoms = set(first.keys())
-        remaining_compatible = [m for m in candidates[1:] if not first_atoms.intersection(set(m.keys()))]
+        first_atoms = get_target_atoms(first)
+        remaining_compatible = [m for m in candidates[1:] if first_atoms.isdisjoint(get_target_atoms(m))]
         with_first = [first] + solve(remaining_compatible)
         without_first = solve(candidates[1:])
         return with_first if len(with_first) >= len(without_first) else without_first
 
     return solve(matches)
-
-
-def _values_to_atoms(values: set, mol: 'Molecule') -> set:
-    """
-    Normalize match mapping values to Atom objects.
-    Supports match values being Atoms or integer indices.
-    """
-    if not values:
-        return set()
-    sample = next(iter(values))
-    if hasattr(sample, "bonds"):
-        return set(values)
-    if isinstance(sample, int):
-        return {mol.atoms[i] for i in values}
-    raise TypeError(f"Unsupported match value type: {type(sample)}")
 
 
 def find_labeled_atom(mol: Molecule, labels: Optional[tuple[str, ...]] = None) -> Optional[int]:
@@ -1574,7 +1561,7 @@ def classify_structure(species: 'Species',
 
     # 4. Type Guard
     if summary.disjoint > 0:
-        sample_atoms = _get_target_atoms(summary.best_matches[0])
+        sample_atoms = get_target_atoms(summary.best_matches[0])
         sample = next(iter(sample_atoms))
         if not hasattr(sample, "bonds"):
             raise TypeError(f"Expected Atom objects in match mapping, got {type(sample).__name__}")
@@ -1587,8 +1574,8 @@ def classify_structure(species: 'Species',
         return PolymerClass.END_MOD, details
 
     if summary.disjoint == 2:
-        m1_atoms = _get_target_atoms(summary.best_matches[0])
-        m2_atoms = frozenset(_get_target_atoms(summary.best_matches[1]))
+        m1_atoms = get_target_atoms(summary.best_matches[0])
+        m2_atoms = frozenset(get_target_atoms(summary.best_matches[1]))
         is_connected = any(
             nbr in m2_atoms
             for atom in m1_atoms
@@ -1649,12 +1636,12 @@ def process_polymer_candidates(candidates: List[Species],
 def _find_disjoint_pair(head_matches, tail_matches):
     """
     Returns (head_atoms, tail_atoms) for the first disjoint head/tail match pair.
-    Uses _get_target_atoms to ensure we are comparing target Molecule Atom objects.
+    Uses get_target_atoms to ensure we are comparing target Molecule Atom objects.
     """
     for hm in head_matches:
-        ha = _get_target_atoms(hm)
+        ha = get_target_atoms(hm)
         for tm in tail_matches:
-            ta = _get_target_atoms(tm)
+            ta = get_target_atoms(tm)
             if ha.isdisjoint(ta):
                 return ha, ta
     return set(), set()
