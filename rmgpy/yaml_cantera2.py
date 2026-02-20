@@ -184,9 +184,16 @@ def generate_cantera_data(species_list,
     """
     # --- 1. Header & Units ---
     # We output everything in SI units.
+    try:
+        from rmgpy.rmg.main import RMG
+        git_head, _ = RMG.get_git_commit(None, os.path.dirname(__file__))
+        git_head = " (git commit: {0})".format(git_head[:7])
+    except Exception:
+        git_head = ''
+
     data = {
         'description': 'RMG-Py Generated Mechanism',
-        'generator': 'RMG-Py CanteraWriter2',
+        'generator': f'RMG-Py CanteraWriter2 at {__file__}{git_head}',
         'cantera-version': '3.1',
         'units': {
             'length': 'm',
