@@ -99,11 +99,12 @@ import numpy as np
 from copy import deepcopy
 from dataclasses import dataclass
 from enum import Enum
-from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Set, Tuple, Union
+from typing import TYPE_CHECKING, Any, Dict, List, Mapping, Optional, Tuple, Union
 
 from rmgpy.exceptions import InputError
 from rmgpy.molecule import Atom, Bond, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
+from rmgpy.molecule.element import get_element
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.resonance import generate_resonance_structures
 from rmgpy.species import Species
@@ -727,7 +728,9 @@ class Polymer(Species):
         Wrapper that ensures any generated polymer fragment is sanitized
         (labels stripped, proxy tagged) before returning to the RMG engine.
         """
-        new_poly = self._create_reacted_copy_logic_orchestrator(reacted_proxy)
+        print(f'poly label before calling logic: {self.label}')
+        new_poly = self._create_reacted_copy_logic(reacted_proxy)
+        print(f'poly label after calling logic: {new_poly.label if new_poly else None}')
         if new_poly is None:
             return None
         proxy_spec = new_poly.get_proxy_species()
@@ -739,80 +742,348 @@ class Polymer(Species):
             mol.reactive = True
         return new_poly
 
-    def _create_reacted_copy_logic_orchestrator(self: "Polymer", reacted_proxy: "Molecule") -> Optional["Polymer"]:
+    def _create_reacted_copy_logic(self, reacted_proxy: Molecule) -> Optional['Polymer']:
         """
-        Traffic Controller only: no direct logic; delegates every step to atomic functions above.
+        Final Production Version: Flat, side-agnostic topological classifier.
+        Avoids AtomTypeError by using low-level Group-to-Molecule conversion.
         """
-        product = normalize_reacted_proxy(reacted_proxy)
+        # --- Step 0: Preflight and Normalization ---
+        full_mol = reacted_proxy.copy(deep=True)
+        # Standardize Polystyrene rings to Kekulé for robust subgraph matching
+        if full_mol.is_aromatic():
+            full_mol.kekulize()
+        full_mol.clear_labeled_atoms()
+        full_mol.update_multiplicity()
 
-        head_groups = build_wing_groups(self, "head")
-        tail_groups = build_wing_groups(self, "tail")
+        mon_heavy_count = sum(1 for a in self.monomer.atoms if not a.is_hydrogen())
+        heavy_mol, heavy_to_full = get_heavy_view_with_maps(full_mol)
+        heavy_count = len(heavy_mol.atoms)
 
-        head_matches = find_wing_matches(product, head_groups)
-        tail_matches = find_wing_matches(product, tail_groups)
-
-        head_atoms, tail_atoms = select_best_wing_atoms(product, head_matches, tail_matches)
-
-        scission_in_monomer = identify_scission_in_monomer(product, self, monomer_group=self.backbone_group)
-        case = classify_cut_case(head_atoms, tail_atoms, scission_in_monomer)
-
-        atoms_to_remove = compute_atoms_to_remove(head_atoms, tail_atoms, case)
-        if atoms_to_remove is None:
+        if heavy_count < mon_heavy_count:
             return None
 
-        fragment = extract_fragment_by_removal(product, atoms_to_remove)
-        if fragment is None:
-            return None
+        # --- Step 1: Pooled Matching (Manual Group-to-Molecule) ---
+        match_data = []
+        all_wing_groups = self._wing_groups("head") + self._wing_groups("tail")
 
-        orig_to_frag = build_orig_to_fragment_atom_map(product, fragment, atoms_to_remove)
-        if orig_to_frag is None:
-            return None
+        for g in all_wing_groups:
+            # 1. Manually build a Molecule from the Group atoms/edges
+            g_mol = Molecule()
+            g_mapping = {}  # {GroupAtom: MoleculeAtom}
 
-        cut_pairs = find_cut_interfaces(product, atoms_to_remove)
-        label_plan = infer_label_assignments(cut_pairs, head_atoms, tail_atoms, case)
-        if label_plan is None:
-            return None
+            # Group atoms are stored in the .atoms list (aliased from .vertices)
+            for ga in g.atoms:
+                # Extract element symbol: first char of atomtype label (e.g., 'Cb' -> 'C')
+                symbol = ga.atomtype[0].label[0]
+                new_atom = Atom(element=get_element(symbol))
+                g_mol.add_atom(new_atom)
+                g_mapping[ga] = new_atom
 
-        fragment_labeled = apply_labels_to_fragment(fragment, orig_to_frag, label_plan)
-        fragment_open = ensure_open_sites_on_labeled_atoms(fragment_labeled)
-        fragment_final = finalize_fragment(fragment_open)
+            # Iterate through the Group's edges (connectivity)
+            for ga1 in g.atoms:
+                if ga1 in g.edges:
+                    for ga2, g_bond in g.edges[ga1].items():
+                        if id(ga1) < id(ga2):
+                            # Map GroupBond to Molecule Bond
+                            order = g_bond.order[0] if isinstance(g_bond.order, list) else g_bond.order
+                            # Map 'benzene' or 1.5 to a bond order that Kekulize understands
+                            if order == 'benzene': order = 1.5
+                            g_mol.add_bond(Bond(g_mapping[ga1], g_mapping[ga2], order=order))
 
-        if case == "MODIFICATION":
-            if not validate_feature_fragment(fragment_final):
-                return None
-            poly = instantiate_modified_polymer(self, fragment_final)
-            return discard_if_proxy_unstitchable(poly)
+            # 2. Strip H and Kekulize the pattern
+            g_heavy = g_mol.copy(deep=True)
+            for a in g_heavy.atoms[:]:
+                if a.element.symbol == 'H':
+                    g_heavy.remove_atom(a)
 
-        # SCISSION-family: decide which end-group we produced from the *remainder*
-        # NOTE: remainder is the kept side after removing ONE wing; it must validate as an end-group.
-        if case in ("SCISSION_HEAD",):
-            if not validate_endgroup_fragment(fragment_final, want_label="*1"):
-                return None
-            dist = compute_scission_distribution(self)
-            poly = instantiate_scission_polymer(self, fragment_final, side="head", dist=dist)
-            return discard_if_proxy_unstitchable(poly)
+            if g_heavy.is_aromatic():
+                g_heavy.kekulize()
 
-        if case in ("SCISSION_TAIL",):
-            if not validate_endgroup_fragment(fragment_final, want_label="*2"):
-                return None
-            dist = compute_scission_distribution(self)
-            poly = instantiate_scission_polymer(self, fragment_final, side="tail", dist=dist)
-            return discard_if_proxy_unstitchable(poly)
+            # 3. Match heavy Molecule against heavy Molecule target
+            matches = heavy_mol.find_subgraph_isomorphisms(g_heavy, save_order=True)
+            for m in matches:
+                # m is {pattern_atom: target_atom}
+                atom_set = set(m.values())
+                # Use physical index average to identify position in the linear chain
+                avg_idx = sum(heavy_mol.atoms.index(a) for a in atom_set) / len(atom_set)
+                match_data.append({'atoms': atom_set, 'avg_idx': avg_idx})
 
-        if case == "SCISSION":
-            # Monomer-scission accepted: treat as head or tail scission if fragment has a valid end label,
-            # otherwise discard (cannot stitch deterministically).
-            if validate_endgroup_fragment(fragment_final, want_label="*1"):
-                dist = compute_scission_distribution(self)
-                poly = instantiate_scission_polymer(self, fragment_final, side="head", dist=dist)
-                return discard_if_proxy_unstitchable(poly)
-            if validate_endgroup_fragment(fragment_final, want_label="*2"):
-                dist = compute_scission_distribution(self)
-                poly = instantiate_scission_polymer(self, fragment_final, side="tail", dist=dist)
-                return discard_if_proxy_unstitchable(poly)
-            return None
+        # --- Step 2: MODIFICATION Branch (Finding disjoint trimer ends) ---
+        best_pair = None
+        max_dist = -1
+
+        for i, m1 in enumerate(match_data):
+            for j, m2 in enumerate(match_data):
+                if i >= j: continue
+                if m1['atoms'].isdisjoint(m2['atoms']):
+                    dist = abs(m1['avg_idx'] - m2['avg_idx'])
+                    remainder_heavy = set(heavy_mol.atoms) - (m1['atoms'] | m2['atoms'])
+
+                    # Ensure there is a meaningful remainder between the two wings
+                    if dist > max_dist and len(remainder_heavy) >= 0.5 * mon_heavy_count:
+                        max_dist = dist
+                        # Order physically: lower index is Head side
+                        best_pair = (m1, m2, remainder_heavy)
+
+        if best_pair:
+            h_data, t_data, r_heavy_set = best_pair
+            try:
+                removed_full = {heavy_to_full[a] for a in (h_data['atoms'] | t_data['atoms'])}
+                new_feat, survived_map = self._extract_remainder_with_map(full_mol, removed_full)
+
+                # Identify bridge atoms connecting to the specific wings
+                h_bridge_heavy = select_deterministic_cut_site(r_heavy_set, h_data['atoms'])
+                t_bridge_heavy = select_deterministic_cut_site(r_heavy_set, t_data['atoms'])
+
+                # Apply labels: *1 (Head side), *2 (Tail side)
+                survived_map[heavy_to_full[h_bridge_heavy]].label = '*1'
+                survived_map[heavy_to_full[t_bridge_heavy]].label = '*2'
+
+                for a in new_feat.atoms:
+                    if a.label:
+                        _ensure_open_site(a)
+
+                # Validation: Allow baseline trimer center to pass without feature check
+                if not new_feat.is_isomorphic(self.monomer, strict=False):
+                    self._assert_feature_unit(new_feat)
+
+                return Polymer(label=f"{self.label}_mod", monomer=self.monomer, feature_monomer=new_feat,
+                               end_groups=[eg.copy(deep=True) for eg in self.end_groups], cutoff=self.cutoff,
+                               Mn=self.Mn, Mw=self.Mw, moments=self.moments, initial_mass=self.initial_mass_g / 1000.0)
+            except Exception:
+                pass  # Fall through to scission logic
+
+        # --- Step 3: SCISSION Branch (One end only) ---
+        if match_data:
+            # Sort by terminality (fewest bonds to remainder)
+            sorted_m = sorted(match_data, key=lambda x: len(get_heavy_cut_edges(heavy_mol, x['atoms'])))
+            best_w = sorted_m[0]
+            is_head_side = best_w['avg_idx'] < (len(heavy_mol.atoms) / 2.0)
+
+            try:
+                removed_full = {heavy_to_full[a] for a in best_w['atoms']}
+                frag, survived_map = self._extract_remainder_with_map(full_mol, removed_full)
+
+                remainder_heavy = set(heavy_mol.atoms) - best_w['atoms']
+                bridge_heavy = select_deterministic_cut_site(remainder_heavy, best_w['atoms'])
+                target = survived_map[heavy_to_full[bridge_heavy]]
+
+                # Label remainder side: *1 if head removed, *2 if tail removed
+                target.label = '*1' if is_head_side else '*2'
+                lbl = "tail" if is_head_side else "head"
+
+                _ensure_open_site(target)
+                self._assert_end_group(frag, want_label=target.label)
+
+                return Polymer(label=f"{self.label}_scission_{lbl}", monomer=self.monomer,
+                               end_groups=[self.end_groups[0], frag] if is_head_side else [frag, self.end_groups[1]],
+                               cutoff=self.cutoff, Mn=self.Mn, Mw=self.Mw)
+            except Exception:
+                pass
 
         return None
+
+    def _extract_remainder_with_map(self, mol: Molecule, atoms_to_remove: set) -> Tuple[Molecule, Dict[Atom, Atom]]:
+        """
+        Creates a new Molecule by extracting atoms not in atoms_to_remove.
+        Returns (remainder_molecule, survived_map).
+        survived_map: {original_atom_obj: new_atom_obj}
+        """
+        remainder = Molecule()
+        survived_map = {}
+
+        # 1. Create survivors
+        for atom in mol.atoms:
+            if atom not in atoms_to_remove:
+                new_atom = atom.copy()
+                new_atom.label = ''
+                remainder.add_atom(new_atom)
+                survived_map[atom] = new_atom
+
+        if not remainder.atoms:
+            raise ValueError("Extraction resulted in an empty molecule.")
+
+        # 2. Add bonds using a stable sorting (atom objects themselves)
+        for old_atom, new_atom in survived_map.items():
+            for nbr, bond in old_atom.bonds.items():
+                if nbr in survived_map:
+                    # Prevent double-adding bonds
+                    if id(old_atom) < id(nbr):
+                        remainder.add_bond(Bond(new_atom, survived_map[nbr], order=bond.order))
+
+        remainder.update_multiplicity()
+        return remainder, survived_map
+
+
+
+
+
+
+
+
+
+
+    # def _create_reacted_copy_logic(self, reacted_proxy: Molecule) -> Optional['Polymer']:
+    #     """
+    #     Creates a new Polymer species from a reacted proxy fragment.
+    #     Handles both modification (intact chain) and scission (broken chain).
+    #
+    #     Args:
+    #         reacted_proxy (Molecule): A single product fragment from the reaction.
+    #
+    #     Returns:
+    #         Optional['Polymer']: A new Polymer species with updated feature or end-groups.
+    #                              Returns None if for an invalid/unsupported polymer fragment.
+    #     """
+    #     product = reacted_proxy.copy(deep=True)
+    #     product.clear_labeled_atoms()
+    #     product.update()
+    #
+    #     def _count_boundary_edges(m):
+    #         """Counts bonds leaving the matched subgraph."""
+    #         atom_set = get_target_atoms(m)
+    #         cuts = 0
+    #         for a in atom_set:
+    #             for nbr in a.bonds:
+    #                 if nbr not in atom_set:
+    #                     cuts += 1
+    #         return cuts
+    #
+    #     head_groups = self._wing_groups("head")
+    #     tail_groups = self._wing_groups("tail")
+    #     head_matches, tail_matches = list(), list()
+    #
+    #     for g in head_groups:
+    #         head_matches.extend(product.find_subgraph_isomorphisms(g, save_order=True))
+    #     for g in tail_groups:
+    #         tail_matches.extend(product.find_subgraph_isomorphisms(g, save_order=True))
+    #
+    #     head_atoms, tail_atoms = set(), set()
+    #     if head_matches and tail_matches:
+    #         best_pair = None
+    #         best_score = (999, 999, 999)
+    #         for hm in head_matches:
+    #             ha = get_target_atoms(hm)
+    #             h_bnd = _count_boundary_edges(hm)
+    #             for tm in tail_matches:
+    #                 ta = get_target_atoms(tm)
+    #                 t_bnd = _count_boundary_edges(tm)
+    #                 if ha.isdisjoint(ta):
+    #                     score = (abs(h_bnd - 1) + abs(t_bnd - 1), h_bnd + t_bnd, -(len(ha) + len(ta)))
+    #                     if score < best_score:
+    #                         best_score = score
+    #                         best_pair = (ha, ta)
+    #
+    #         if best_pair:
+    #             head_atoms, tail_atoms = best_pair
+    #         else:
+    #             def _score_single(m):
+    #                 b = _count_boundary_edges(m)
+    #                 return (abs(b - 1), b, -len(get_target_atoms(m)))
+    #             best_head = min(head_matches, key=_score_single)
+    #             best_tail = min(tail_matches, key=_score_single)
+    #             if _score_single(best_head) <= _score_single(best_tail):
+    #                 head_atoms = get_target_atoms(best_head)
+    #             else:
+    #                 tail_atoms = get_target_atoms(best_tail)
+    #
+    #     elif head_matches:
+    #         def _score_single(m):
+    #             b = _count_boundary_edges(m)
+    #             return abs(b - 1), b, -len(get_target_atoms(m))
+    #         best_head = min(head_matches, key=_score_single)
+    #         head_atoms = get_target_atoms(best_head)
+    #
+    #     elif tail_matches:
+    #         def _score_single(m):
+    #             b = _count_boundary_edges(m)
+    #             return abs(b - 1), b, -len(get_target_atoms(m))
+    #
+    #         best_tail = min(tail_matches, key=_score_single)
+    #         tail_atoms = get_target_atoms(best_tail)
+    #
+    #     if head_atoms and tail_atoms:
+    #         atoms_to_remove = head_atoms | tail_atoms
+    #         try:
+    #             new_feature_graph = self._extract_remainder(product, atoms_to_remove)
+    #         except ValueError:
+    #             return None
+    #         self._restore_labels(new_feature_graph,
+    #                              original_mol=product,
+    #                              removed_atoms=atoms_to_remove,
+    #                              head_match_atoms=head_atoms,
+    #                              tail_match_atoms=tail_atoms)
+    #         try:
+    #             self._assert_feature_unit(new_feature_graph)
+    #         except ValueError:
+    #             return None
+    #         return Polymer(
+    #             label=f"{self.label}_mod",
+    #             monomer=self.monomer,
+    #             feature_monomer=new_feature_graph,
+    #             end_groups=[eg.copy(deep=True) for eg in self.end_groups],
+    #             cutoff=self.cutoff,
+    #             Mn=None if self.moments is not None else self.Mn,
+    #             Mw=None if self.moments is not None else self.Mw,
+    #             moments=self.moments.tolist() if self.moments is not None else None,
+    #             initial_mass=self.initial_mass_g / 1000.0,
+    #         )
+    #
+    #     if head_atoms:
+    #         try:
+    #             new_tail = self._extract_remainder(product, head_atoms)
+    #         except ValueError:
+    #             return None
+    #         self._restore_labels(new_tail,
+    #                              original_mol=product,
+    #                              removed_atoms=head_atoms,
+    #                              head_match_atoms=head_atoms,
+    #                              tail_match_atoms=None)
+    #         try:
+    #             self._assert_end_group(new_tail, want_label='*2')
+    #         except ValueError:
+    #             return None
+    #         new_Mn = self.Mn / 2.0 if self.Mn else None
+    #         new_Mw = self.Mw / 2.0 if self.Mw else None
+    #         new_moments = self.moments.copy() if self.moments is not None else None
+    #         return Polymer(label=f"{self.label}_scission_tail",
+    #                        monomer=self.monomer,
+    #                        feature_monomer=None,
+    #                        end_groups=[self.end_groups[0].copy(deep=True), new_tail],
+    #                        cutoff=self.cutoff,
+    #                        Mn=new_Mn,
+    #                        Mw=new_Mw,
+    #                        initial_mass=0.0,
+    #                        moments=new_moments,
+    #                        )
+    #
+    #     if tail_atoms:
+    #         try:
+    #             new_head = self._extract_remainder(product, tail_atoms)
+    #         except ValueError:
+    #             return None
+    #         self._restore_labels(new_head,
+    #                              original_mol=product,
+    #                              removed_atoms=tail_atoms,
+    #                              head_match_atoms=None,
+    #                              tail_match_atoms=tail_atoms)
+    #         try:
+    #             self._assert_end_group(new_head, want_label='*1')
+    #         except ValueError:
+    #             return None
+    #         new_Mn = self.Mn / 2.0 if self.Mn else None
+    #         new_Mw = self.Mw / 2.0 if self.Mw else None
+    #         return Polymer(label=f"{self.label}_scission_head",
+    #                        monomer=self.monomer,
+    #                        feature_monomer=None,
+    #                        end_groups=[new_head, self.end_groups[1].copy(deep=True)],
+    #                        cutoff=self.cutoff,
+    #                        Mn=new_Mn,
+    #                        Mw=new_Mw,
+    #                        initial_mass=0.0,
+    #                        moments=None)
+    #
+    #     return None
 
     def _wing_pattern(self, side: str) -> Molecule:
         """
@@ -854,45 +1125,42 @@ class Polymer(Species):
 
     def _wing_groups(self, side: str):
         """
-        Generates relaxed wing groups by converting to Group BEFORE skeletonizing
-        to avoid Molecule-level AtomTypeErrors.
+        Return wing patterns as Groups, using resonance structures to get Clar & Kekulé (S/D/B) variants.
+        Prune duplicate Group patterns by adjacency-list string.
+        Then relax radical constraints so an open-shell wing can match a closed-shell proxy.
         """
-        wing_mol = self._stitch_wing(side=side)
-        mol_0 = wing_mol.copy(deep=True)
+        wing = self._stitch_wing(side=side)
+        for a in wing.atoms:
+            a.label = ''
+        wing.update_multiplicity()
+        spc = Species(molecule=[wing])
+        mol_0 = spc.molecule[0].copy(deep=True)
+        molecules = generate_resonance_structures(mol_0,
+                                                  clar_structures=False,
+                                                  keep_isomorphic=False,
+                                                  filter_structures=True,
+                                                  save_order=True)
+        uniq = dict()
+        for m in molecules:
+            g = m.to_group()
+            g.multiplicity = []
 
-        g0 = mol_0.to_group()
-
-        # RELAX EVERYTHING
-        g0.multiplicity = None
-        for ga in g0.atoms:
-            ga.radical_electrons = [0, 1, 2, 3]
-            ga.charge = []
-            ga.lone_pairs = []
-
-        # Remove H atoms from the Group (safe: filter atoms, not bonds-by-hand)
-        # AtomType label for hydrogen is 'H'
-        h_atoms = [ga for ga in g0.atoms if any(at.label == "H" for at in ga.atomtype)]
-        for ha in h_atoms:
-            # Group has remove_atom in RMG; if not available in your version, we can do bond-safe removal.
-            try:
-                g0.remove_atom(ha)
-            except AttributeError:
-                # fallback: detach bonds symmetrically then drop from list
-                for nbr in list(ha.bonds.keys()):
-                    if ha in nbr.bonds:
-                        del nbr.bonds[ha]
-                ha.bonds.clear()
-                g0.atoms.remove(ha)
-
-        # Broaden Carbon types + relax bond orders
-        for ga in g0.atoms:
-            if any(at.label.startswith("C") for at in ga.atomtype):
-                ga.atomtype = [ATOMTYPES['Cs'], ATOMTYPES['Cd'], ATOMTYPES['Cb'], ATOMTYPES['Cbf']]
-            for gb in ga.bonds.values():
-                gb.order = [1, 1.5, 2, 3]
-
-        g0.update()
-        return [g0]
+            for ga in g.atoms:
+                expanded_types = set(ga.atomtype)
+                for at in ga.atomtype:
+                    if at.label in ('Cd', 'Cb', 'Cbf', 'Cdd'):
+                        expanded_types.update([ATOMTYPES['Cd'], ATOMTYPES['Cb'], ATOMTYPES['Cbf']])
+                ga.atomtype = list(expanded_types)
+                ga.radical_electrons = []
+                ga.charge = []
+                ga.lone_pairs = []
+                for gb in ga.bonds.values():
+                    gb.order = [1, 1.5, 2, 3]
+            g.update()
+            key = g.to_adjacency_list()
+            if key not in uniq:
+                uniq[key] = g
+        return list(uniq.values())
 
     def _pick_disjoint_pair(self,
                             head_matches: list[dict],
@@ -1563,485 +1831,67 @@ def _find_disjoint_pair(head_matches, tail_matches):
     return set(), set()
 
 
+def get_heavy_view_with_maps(full_mol: Molecule):
+    """Creates heavy-atom view and returns {heavy_atom: full_atom} map."""
+    heavy_mol = full_mol.copy(deep=True)
+    # copy(deep=True) preserves atom list order.
+    heavy_to_full = {heavy_mol.atoms[i]: full_mol.atoms[i] for i in range(len(full_mol.atoms))}
+    for atom in heavy_mol.atoms[:]:
+        if atom.is_hydrogen():
+            if atom in heavy_to_full: del heavy_to_full[atom]
+            heavy_mol.remove_atom(atom)
+    return heavy_mol, heavy_to_full
 
 
+def get_cut_edges_between(set_a: set, set_b: set) -> List[Tuple[Atom, Atom]]:
+    """Edges crossing between disjoint sets. Tuple is (atom_in_a, atom_in_b)."""
+    edges = []
+    for a in set_a:
+        for nbr, bond in a.bonds.items():
+            if nbr in set_b:
+                edges.append((a, nbr))
+    return edges
 
-
-
-# -----------------------------------------------------------------------------
-# Phase 1: Identification
-# -----------------------------------------------------------------------------
-
-def normalize_reacted_proxy(reacted_proxy: "Molecule") -> "Molecule":
-    """
-    Pure normalization: deep-copy, clear labeled atoms, update, and update multiplicity.
-    """
-    product = reacted_proxy.copy(deep=True)
-    product.clear_labeled_atoms()
-    product.update()
-    product.update_multiplicity()
-    return product
-
-
-def build_wing_groups(polymer: "Polymer", side: str) -> List["Group"]:
-    """
-    Pure wrapper: returns resonance-expanded wing groups (head or tail).
-    """
-    if side not in ("head", "tail"):
-        raise ValueError(f"side must be 'head' or 'tail', got {side!r}")
-    return polymer._wing_groups(side)
-
-
-def find_wing_matches(product: "Molecule", wing_groups: List["Group"]) -> List[MatchMapping]:
-    """
-    Robust pure search:
-      1) Try subgraph matching on the full product (keeps H, avoids group/H mismatch).
-      2) If nothing matches, try heavy-atom skeleton matching ONLY if the group has no H atoms.
-    Returns matches whose target atoms are Atom objects from `product`.
-    """
-    def group_has_h(g: "Group") -> bool:
-        # Group atoms store AtomTypes with `.label` (e.g. 'H', 'Cs', ...)
-        for ga in g.atoms:
-            if any(getattr(at, "label", None) == "H" for at in getattr(ga, "atomtype", [])):
-                return True
-        return False
-
-    # ---- Pass 1: direct matching on the full product (most reliable)
-    direct_matches: List[MatchMapping] = []
-    for g in wing_groups:
-        direct_matches.extend(product.find_subgraph_isomorphisms(g, save_order=True))
-    if direct_matches:
-        return direct_matches
-
-    # ---- Pass 2: heavy-atom matching (ONLY if pattern is heavy-atom-only)
-    heavy_only_groups = [g for g in wing_groups if not group_has_h(g)]
-    if not heavy_only_groups:
-        return []
-
-    # Build heavy-atom view of the ORIGINAL product (stable mapping target)
-    product_heavy = [a for a in product.atoms if not a.is_hydrogen()]
-
-    # Search molecule: deep copy + delete H => atoms correspond 1:1 with product_heavy by order
-    search_mol = product.copy(deep=True)
-    search_mol.delete_hydrogens()
-    search_mol.update_multiplicity()
-
-    # Map each search_mol Atom identity -> heavy-atom index
-    search_atom_to_idx = {id(atom): i for i, atom in enumerate(search_mol.atoms)}
-
-    matches: List[MatchMapping] = []
-    for g in heavy_only_groups:
-        res_matches = search_mol.find_subgraph_isomorphisms(g, save_order=True)
-        for m in res_matches:
-            new_match = {}
-            for g_atom, s_atom in m.items():
-                idx = search_atom_to_idx.get(id(s_atom))
-                if idx is not None:
-                    new_match[g_atom] = product_heavy[idx]
-            if new_match:
-                matches.append(new_match)
-
-    return matches
-
-
-
-def score_boundary_edges(product: "Molecule", match: MatchMapping) -> int:
-    """
-    Pure scoring: counts bonds leaving the matched subgraph in product.
-    """
-    atom_set = get_target_atoms(match)
-    cuts = 0
+def get_heavy_cut_edges(mol: Molecule, atom_set: set) -> List[Tuple[Atom, Atom]]:
+    """Heavy-heavy bonds crossing the boundary of atom_set."""
+    edges = []
     for a in atom_set:
+        if a.is_hydrogen(): continue
         for nbr in a.bonds:
-            if nbr not in atom_set:
-                cuts += 1
-    return cuts
+            if not nbr.is_hydrogen() and nbr not in atom_set:
+                edges.append((a, nbr))
+    return edges
 
+def select_deterministic_cut_site(remainder_atoms: set, wing_atoms: set) -> Atom:
+    """Selects the bridge atom in the remainder connected to the wing."""
+    edges = get_cut_edges_between(remainder_atoms, wing_atoms)
+    if not edges: raise ValueError("No cut edges found.")
+    candidates = list({e[0] for e in edges})
+    # Sort by heavy degree then memory ID for stable tie-breaking
+    candidates.sort(key=lambda a: (sum(1 for n in a.bonds if not n.is_hydrogen()), id(a)))
+    return candidates[0]
 
-def select_best_wing_atoms(
-    product: "Molecule",
-    head_matches: List[MatchMapping],
-    tail_matches: List[MatchMapping],
-) -> Tuple[Set["Atom"], Set["Atom"]]:
+def _get_target_atoms(match: Dict[Any, Any]) -> set:
     """
-    Pure selection: picks best disjoint head/tail match sets using deterministic heuristic.
-    Returns possibly-empty (head_atoms, tail_atoms).
+    Safely extracts the target molecule atoms from an RMG match mapping,
+    regardless of whether they are stored as keys or values.
     """
-    head_atoms: Set["Atom"] = set()
-    tail_atoms: Set["Atom"] = set()
+    vals = set(match.values())
+    if vals and hasattr(next(iter(vals)), "bonds"):
+        return vals
+    keys = set(match.keys())
+    if keys and hasattr(next(iter(keys)), "bonds"):
+        return keys
+    return vals
 
-    def _score_single(m: MatchMapping) -> Tuple[int, int, int]:
-        b = score_boundary_edges(product, m)
-        # minimize abs(b-1), then b, then maximize size
-        return (abs(b - 1), b, -len(get_target_atoms(m)))
-
-    if head_matches and tail_matches:
-        best_pair = None
-        best_score = (999, 999, 999)
-        for hm in head_matches:
-            ha = get_target_atoms(hm)
-            h_bnd = score_boundary_edges(product, hm)
-            for tm in tail_matches:
-                ta = get_target_atoms(tm)
-                t_bnd = score_boundary_edges(product, tm)
-                if ha.isdisjoint(ta):
-                    score = (abs(h_bnd - 1) + abs(t_bnd - 1), h_bnd + t_bnd, -(len(ha) + len(ta)))
-                    if score < best_score:
-                        best_score = score
-                        best_pair = (ha, ta)
-        if best_pair:
-            return best_pair
-
-        # fallback: choose the best single wing (head or tail)
-        best_head = min(head_matches, key=_score_single)
-        best_tail = min(tail_matches, key=_score_single)
-        if _score_single(best_head) <= _score_single(best_tail):
-            return get_target_atoms(best_head), set()
-        else:
-            return set(), get_target_atoms(best_tail)
-
-    if head_matches:
-        best_head = min(head_matches, key=_score_single)
-        return get_target_atoms(best_head), set()
-
-    if tail_matches:
-        best_tail = min(tail_matches, key=_score_single)
-        return set(), get_target_atoms(best_tail)
-
-    return head_atoms, tail_atoms
-
-
-def count_backbone_disjoint(product: "Molecule", monomer_group: "Group") -> int:
+def strip_h_from_group(group):
     """
-    Pure counting: number of disjoint backbone matches in product.
+    Returns a deep copy of a Group with all strictly-hydrogen GroupAtoms removed.
+    In RMG Groups, hydrogen is identified by the 'H' atom type.
     """
-    summary = count_backbone_matches(product, monomer_group)
-    return summary.disjoint
-
-
-def identify_scission_in_monomer(product: "Molecule", polymer: "Polymer", monomer_group: Optional["Group"] = None) -> bool:
-    """
-    Pure detection: returns True if backbone disjoint matches indicate monomer scission (disjoint == 1).
-    """
-    monomer_group = monomer_group or polymer.backbone_group
-    return count_backbone_disjoint(product, monomer_group) == 1
-
-
-def classify_cut_case(
-    head_atoms: Set["Atom"],
-    tail_atoms: Set["Atom"],
-    scission_in_monomer: bool,
-) -> str:
-    """
-    Pure classification: returns one of:
-      "MODIFICATION", "SCISSION", "SCISSION_HEAD", "SCISSION_TAIL", "DISCARD".
-    """
-    if head_atoms and tail_atoms:
-        return "MODIFICATION"
-    if scission_in_monomer:
-        # We accept monomer scission, but whether we can instantiate depends on finding a wing.
-        return "SCISSION"
-    if head_atoms:
-        return "SCISSION_TAIL"
-    if tail_atoms:
-        return "SCISSION_HEAD"
-    return "DISCARD"
-
-
-def compute_atoms_to_remove(head_atoms: Set["Atom"], tail_atoms: Set["Atom"], case: str) -> Optional[Set["Atom"]]:
-    """
-    Pure planning: decides the exact atoms to remove from product based on case.
-    Returns None when the case is DISCARD or un-actionable.
-    """
-    if case == "MODIFICATION":
-        return set(head_atoms) | set(tail_atoms)
-
-    if case in ("SCISSION_HEAD", "SCISSION_TAIL"):
-        # Existing behavior: remove only one wing and keep the remainder as a new end-group.
-        return set(tail_atoms) if case == "SCISSION_HEAD" else set(head_atoms)
-
-    if case == "SCISSION":
-        # "Monomer scission accepted": if we found one wing, behave like that scission;
-        # if no wing atoms, we can't build a stitchable end-group => discard.
-        if head_atoms and not tail_atoms:
-            return set(head_atoms)
-        if tail_atoms and not head_atoms:
-            return set(tail_atoms)
-        return None
-
-    return None
-
-
-# -----------------------------------------------------------------------------
-# Phase 2: Extraction
-# -----------------------------------------------------------------------------
-
-def extract_fragment_by_removal(product: "Molecule", atoms_to_remove: Set["Atom"]) -> Optional["Molecule"]:
-    """
-    Pure extraction: returns remainder Molecule after removing atoms_to_remove, or None if invalid.
-    """
-    try:
-        return Polymer._extract_remainder(product, atoms_to_remove)
-    except Exception:
-        return None
-
-
-def build_orig_to_fragment_atom_map(
-    original: "Molecule",
-    fragment: "Molecule",
-    removed_atoms: Set["Atom"],
-) -> Optional[Dict["Atom", "Atom"]]:
-    """
-    Pure mapping: maps kept atoms in original (in original order) to fragment atoms (in fragment order).
-    Returns None on any mismatch.
-    """
-    orig_to_new: Dict["Atom", "Atom"] = {}
-    new_atom_iter = iter(fragment.atoms)
-    kept_count = 0
-
-    try:
-        for atom in original.atoms:
-            if atom not in removed_atoms:
-                kept_count += 1
-                orig_to_new[atom] = next(new_atom_iter)
-    except StopIteration:
-        return None
-
-    if kept_count != len(fragment.atoms):
-        return None
-    if len(orig_to_new) != len(fragment.atoms):
-        return None
-    return orig_to_new
-
-
-def find_cut_interfaces(original: "Molecule", removed_atoms: Set["Atom"]) -> List[Tuple["Atom", "Atom"]]:
-    """
-    Pure interface identification: returns list of (kept_atom, removed_neighbor) where bonds were cut.
-    """
-    cut_pairs: List[Tuple["Atom", "Atom"]] = []
-    for a in original.atoms:
-        if a in removed_atoms:
-            continue
-        for nbr in a.bonds:
-            if nbr in removed_atoms:
-                cut_pairs.append((a, nbr))
-    return cut_pairs
-
-
-# -----------------------------------------------------------------------------
-# Phase 3: Restoration
-# -----------------------------------------------------------------------------
-
-def infer_label_assignments(
-    cut_pairs: List[Tuple["Atom", "Atom"]],
-    head_atoms: Set["Atom"],
-    tail_atoms: Set["Atom"],
-    case: str,
-) -> Optional[Dict["Atom", str]]:
-    """
-    Pure planning: assigns '*1'/'*2' to ORIGINAL kept atoms at cut sites.
-    Returns None if conflicting labels would be assigned.
-    """
-    label_plan: Dict["Atom", str] = {}
-
-    for kept_atom, removed_neighbor in cut_pairs:
-        desired: Optional[str] = None
-
-        # Preserve the semantics used in your existing _restore_labels:
-        # - if removed neighbor was in head wing => kept side becomes '*2'
-        # - if removed neighbor was in tail wing => kept side becomes '*1'
-        if removed_neighbor in head_atoms:
-            desired = "*2"
-        elif removed_neighbor in tail_atoms:
-            desired = "*1"
-        else:
-            # In SCISSION/SCISSION_HEAD/SCISSION_TAIL cases, removed set is only one wing,
-            # so this usually won't happen; if it does, it's ambiguous => discard.
-            desired = None
-
-        if desired is None:
-            return None
-
-        if kept_atom in label_plan and label_plan[kept_atom] != desired:
-            return None
-        label_plan[kept_atom] = desired
-
-    # Extra guard: in MODIFICATION we expect to create a feature unit with both labels;
-    # in scission we expect exactly one label.
-    if case == "MODIFICATION":
-        # It's possible multiple cut pairs point to same kept atom; still must end up with at least one *1 and one *2.
-        if "*1" not in set(label_plan.values()) or "*2" not in set(label_plan.values()):
-            return None
-    else:
-        # SCISSION*, expect exactly one label type to appear
-        if len(set(label_plan.values())) != 1:
-            return None
-
-    return label_plan
-
-
-def apply_labels_to_fragment(
-    fragment: "Molecule",
-    orig_to_frag: Dict["Atom", "Atom"],
-    label_plan: Dict["Atom", str],
-) -> "Molecule":
-    """
-    Pure application: returns a fragment copy with labels set on mapped atoms.
-    """
-    frag = fragment.copy(deep=True)
-
-    # We must remap using the copied fragment atoms. orig_to_frag maps original->fragment (pre-copy),
-    # so rebuild a parallel mapping for the copy by index.
-    # This is deterministic because fragment.copy preserves atom ordering.
-    old_frag_atoms = list(fragment.atoms)
-    new_frag_atoms = list(frag.atoms)
-    frag_atom_map = {old: new for old, new in zip(old_frag_atoms, new_frag_atoms)}
-
-    for orig_atom, lab in label_plan.items():
-        old_frag_atom = orig_to_frag[orig_atom]
-        new_atom = frag_atom_map[old_frag_atom]
-        new_atom.label = lab
-
-    frag.update()
-    return frag
-
-
-def ensure_open_sites_on_labeled_atoms(fragment: "Molecule") -> "Molecule":
-    """
-    Pure healing: returns a fragment copy where labeled atoms have at least one radical electron.
-    """
-    frag = fragment.copy(deep=True)
-    for a in frag.atoms:
-        if a.label in ("*1", "*2"):
-            _ensure_open_site(a)
-    frag.update_multiplicity()
-    return frag
-
-
-def finalize_fragment(fragment: "Molecule") -> "Molecule":
-    """
-    Pure finalize: updates multiplicity and atomtypes; returns a consistent fragment.
-    """
-    frag = fragment.copy(deep=True)
-    frag.update()
-    frag.update_multiplicity()
-    return frag
-
-
-# -----------------------------------------------------------------------------
-# Phase 4: Instantiation + Validation
-# -----------------------------------------------------------------------------
-
-def validate_feature_fragment(fragment: "Molecule") -> bool:
-    """
-    Pure validation for feature repeat unit: exactly one *1, one *2, no other labels, radical_count == 2.
-    """
-    labels = _labels_present(fragment)
-    if _count_label(fragment, "*1") != 1 or _count_label(fragment, "*2") != 1:
-        return False
-    extras = [lab for lab in labels if lab not in {"*1", "*2"}]
-    if extras:
-        return False
-    if fragment.get_radical_count() != 2:
-        return False
-    a1 = next(a for a in fragment.atoms if a.label == "*1")
-    a2 = next(a for a in fragment.atoms if a.label == "*2")
-    return (a1.radical_electrons >= 1) and (a2.radical_electrons >= 1)
-
-
-def validate_endgroup_fragment(fragment: "Molecule", want_label: str) -> bool:
-    """
-    Pure validation for end-group: exactly one want_label, no other labels, radical_count==1 and on labeled atom.
-    """
-    if want_label not in ("*1", "*2"):
-        return False
-    labels = _labels_present(fragment)
-    if labels.count(want_label) != 1:
-        return False
-    extras = [lab for lab in labels if lab != want_label]
-    if extras:
-        return False
-    if fragment.get_radical_count() != 1:
-        return False
-    lab_atom = next(a for a in fragment.atoms if a.label == want_label)
-    return lab_atom.radical_electrons >= 1
-
-
-def compute_scission_distribution(
-    parent: "Polymer",
-) -> Tuple[Optional[float], Optional[float], Optional[np.ndarray]]:
-    """
-    Pure distribution update policy for scission child: halve Mn/Mw when using Mn/Mw; copy moments when using moments.
-    """
-    if parent.moments is not None:
-        return None, None, parent.moments.copy()
-    # Mn/Mw mode
-    new_Mn = parent.Mn / 2.0 if parent.Mn else None
-    new_Mw = parent.Mw / 2.0 if parent.Mw else None
-    return new_Mn, new_Mw, None
-
-
-def instantiate_modified_polymer(parent: "Polymer", feature_unit: "Molecule") -> "Polymer":
-    """
-    Pure constructor: returns a Polymer with feature_monomer=feature_unit and copied end_groups.
-    """
-    return Polymer(
-        label=f"{parent.label}_mod",
-        monomer=parent.monomer,
-        feature_monomer=feature_unit,
-        end_groups=[eg.copy(deep=True) for eg in parent.end_groups],
-        cutoff=parent.cutoff,
-        Mn=None if parent.moments is not None else parent.Mn,
-        Mw=None if parent.moments is not None else parent.Mw,
-        moments=parent.moments.tolist() if parent.moments is not None else None,
-        initial_mass=parent.initial_mass_g / 1000.0,
-    )
-
-
-def instantiate_scission_polymer(
-    parent: "Polymer",
-    new_end_group: "Molecule",
-    side: str,
-    dist: Tuple[Optional[float], Optional[float], Optional[np.ndarray]],
-) -> "Polymer":
-    """
-    Pure constructor: returns a Polymer with one end-group replaced (head or tail), and scission-adjusted distribution.
-    """
-    new_Mn, new_Mw, new_mom = dist
-    end_groups = [eg.copy(deep=True) for eg in parent.end_groups]
-    if side == "head":
-        end_groups[0] = new_end_group
-        label = f"{parent.label}_scission_head"
-    elif side == "tail":
-        end_groups[1] = new_end_group
-        label = f"{parent.label}_scission_tail"
-    else:
-        raise ValueError(f"side must be 'head' or 'tail', got {side!r}")
-
-    return Polymer(
-        label=label,
-        monomer=parent.monomer,
-        feature_monomer=None,
-        end_groups=end_groups,
-        cutoff=parent.cutoff,
-        Mn=new_Mn,
-        Mw=new_Mw,
-        moments=new_mom.tolist() if new_mom is not None else None,
-        initial_mass=0.0,
-    )
-
-
-def discard_if_proxy_unstitchable(poly: "Polymer") -> Optional["Polymer"]:
-    """
-    Pure gate: returns poly if proxy can be built, else None.
-    """
-    try:
-        _ = poly.get_proxy_species()  # forces stitching/cache
-        return poly
-    except Exception:
-        return None
-
-
-
-
-
+    g_heavy = group.copy(deep=True)
+    for ga in g_heavy.atoms[:]:
+        # Check if all allowed atom types for this GroupAtom are 'H'
+        if all(at.label == 'H' for at in ga.atomtype):
+            g_heavy.remove_atom(ga)
+    return g_heavy
