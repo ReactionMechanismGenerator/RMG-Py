@@ -196,7 +196,7 @@ class TestMain:
         """
         import cantera as ct
 
-        cantera_files = os.path.join(self.rmg.output_directory, "cantera")
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera1")
         files = os.listdir(cantera_files)
         for f in files:
             if ".yaml" in f:
@@ -208,10 +208,10 @@ class TestMain:
     def test_cantera_input_files_match_chemkin_later(self):
         """
         Copy the Cantera YAML files (generated directly by RMG and converted from Chemkin)
-        to the test data directory so that yaml_canteraTest can compare them.
+        to the test data directory so that yaml_cantera1Test can compare them.
         """
         # Find the RMG-generated cantera yaml file (named chem{N}.yaml)
-        cantera_dir = os.path.join(self.rmg.output_directory, "cantera")
+        cantera_dir = os.path.join(self.rmg.output_directory, "cantera1")
         cantera_from_ck_dir = os.path.join(
             self.rmg.output_directory, "cantera_from_ck"
         )
@@ -221,7 +221,7 @@ class TestMain:
             f for f in os.listdir(cantera_dir) if f.endswith('.yaml')
         ]
         assert len(cantera_files) > 0, \
-            "No Cantera YAML files found in cantera directory"
+            "No Cantera YAML files found in cantera1 directory"
         # Sort by the number in the filename to get the final mechanism
         cantera_files.sort(
             key=lambda x: int(''.join(filter(str.isdigit, x)) or 0),
@@ -231,7 +231,7 @@ class TestMain:
         rmg_yaml_path = os.path.join(cantera_dir, rmg_yaml_file)
         
         # Copy RMG-generated YAML to test data directory
-        test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera', 'from_main_test.yaml')
+        test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera1', 'from_main_test.yaml')
         shutil.copy(rmg_yaml_path, test_data_cantera_target)
 
         # Get the yaml file converted from chemkin

@@ -450,7 +450,7 @@ def species_to_dict(species):
     return species_data
 
 
-class CanteraWriter(object):
+class CanteraWriter1(object):
     """
     This class listens to a RMG subject
     and writes an YAML file with the current state of the RMG model,
@@ -460,7 +460,7 @@ class CanteraWriter(object):
     A new instance of the class can be appended to a subject as follows:
 
     rmg = ...
-    listener = CanteraWriter(outputDirectory)
+    listener = CanteraWriter1(outputDirectory)
     rmg.attach(listener)
 
     Whenever the subject calls the .notify() method, the
@@ -474,10 +474,10 @@ class CanteraWriter(object):
     """
 
     def __init__(self, output_directory=""):
-        super(CanteraWriter, self).__init__()
+        super(CanteraWriter1, self).__init__()
         self.output_directory = output_directory
-        self.output_subdirectory = os.path.join(self.output_directory, "cantera")
-        make_output_subdirectory(output_directory, "cantera")
+        self.output_subdirectory = os.path.join(self.output_directory, "cantera1")
+        make_output_subdirectory(output_directory, "cantera1")
 
     def update(self, rmg):
 
