@@ -82,7 +82,7 @@ from rmgpy.tools.plot import plot_sensitivity
 from rmgpy.tools.compare_cantera_yaml import compare_yaml_files, compare_yaml_files_and_report
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
 from rmgpy.yaml_rms import RMSWriter
-from rmgpy.yaml_cantera import CanteraWriter
+from rmgpy.yaml_cantera1 import CanteraWriter1
 from rmgpy.yaml_cantera2 import CanteraWriter2
 
 ################################################################################
@@ -774,7 +774,7 @@ class RMG(util.Subject):
         self.attach(ChemkinWriter(self.output_directory))
         
         self.attach(RMSWriter(self.output_directory))
-        self.attach(CanteraWriter(self.output_directory))
+        self.attach(CanteraWriter1(self.output_directory))
         self.attach(CanteraWriter2(self.output_directory))
         if self.generate_output_html:
             self.attach(OutputHTMLWriter(self.output_directory))
@@ -1223,7 +1223,7 @@ class RMG(util.Subject):
 
         self.run_model_analysis()
 
-        # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
+        # generate Cantera files chem.yaml & chem_annotated.yaml in designated Cantera output folders
         try:
             logging.info("Translating final chemkin file into Cantera yaml.")
             translated_cantera_file = None
@@ -1247,8 +1247,8 @@ class RMG(util.Subject):
             # Compare translated Cantera files and directly generated Cantera files
 
             compare_yaml_files_and_report(translated_cantera_file,
-                                          os.path.join(self.output_directory, "cantera", "chem.yaml"),
-                                          output=os.path.join(self.output_directory, "cantera", "comparison_report.txt"))
+                                          os.path.join(self.output_directory, "cantera1", "chem.yaml"),
+                                          output=os.path.join(self.output_directory, "cantera1", "comparison_report.txt"))
             compare_yaml_files_and_report(translated_cantera_file,
                                           os.path.join(self.output_directory, "cantera2", "chem.yaml"),
                                           output=os.path.join(self.output_directory, "cantera2", "comparison_report.txt"))
