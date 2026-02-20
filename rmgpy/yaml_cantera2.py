@@ -299,20 +299,14 @@ def species_to_dict(species, species_list):
     mol = species.molecule[0]
     atom_dict = dict(mol.get_element_count())
 
-    # --- FIX: Remove surface site marker 'X' ---
-    if 'X' in atom_dict:
-        del atom_dict['X']
-
-    # Calculate 'E' based on net charge: E = Z - charge
-    # --- FIX: Use .get() to avoid KeyError if 'X' or other unknown symbols are processed
-    Z_mol = sum(NUMBER_BY_SYMBOL.get(atom, 0) * count for atom, count in atom_dict.items())
+    # Number of electrons 'E'
+    # The special pseudo-element E is used in representing charged species, where it specifies
+    # the net number of electrons compared to the number needed to form a neutral species.
+    # That is, negatively charged ions will have E > 0, while positively charged ions will have E < 0.
+    # https://cantera.org/3.1/userguide/creating-mechanisms.html#elemental-composition
     charge = mol.get_net_charge()
-    if 'E' not in atom_dict:  # Don't double count if E is explicit
-        atom_dict['E'] = Z_mol - charge
-
-    # Remove E if 0 to keep it clean
-    if atom_dict.get('E') == 0:
-        del atom_dict['E']
+    if 'E' not in atom_dict and charge != 0:
+        atom_dict['E'] = -charge
 
     # Sort composition by atomic number
     atom_dict = {k: atom_dict[k] for k in sorted(atom_dict.keys(), key=lambda x: NUMBER_BY_SYMBOL.get(x, 999))}
