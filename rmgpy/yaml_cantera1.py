@@ -96,6 +96,13 @@ def write_cantera(
     Writes beginning lines of yaml file, then uses yaml.dump(result_dict) to write species/reactions info.
     """
 
+    try:
+        from rmgpy.rmg.main import RMG
+        git_head, _ = RMG.get_git_commit(None, os.path.dirname(__file__))
+        git_head = " (git commit: {0})".format(git_head[:7])
+    except Exception:
+        git_head = ''
+
     # intro to file will change depending on the presence of surface species
     is_surface = False
     for spc in spcs:
@@ -116,7 +123,8 @@ def write_cantera(
 
     with open(path, "w") as f:
         # generator line
-        f.write("generator: RMG\n")
+        generator = f"RMG-Py CanteraWriter1 at {__file__}{git_head}"
+        f.write(f'generator: "{generator}"\n')
 
         # datetime object containing current date and time
         now = datetime.now()
