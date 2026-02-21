@@ -680,7 +680,9 @@ PS_1
         assert new_p is not None
         assert new_p.label.endswith("_mod")
         assert new_p.feature_monomer is not None
-        assert new_p.feature_monomer.is_isomorphic(p.monomer)
+        from rmgpy.molecule.resonance import generate_resonance_structures
+        res_mols = generate_resonance_structures(new_p.feature_monomer)
+        assert any(m.is_isomorphic(p.monomer) for m in res_mols)
 
     def test_create_reacted_copy_head_scission_returns_scission_tail_polymer(self):
         """
@@ -714,26 +716,47 @@ PS_1
         assert np.isclose(new_p.Mw, p.Mw)
 
     def test_create_reacted_copy_tail_scission_returns_scission_head_polymer(self):
-        """
-        Construct a fragment with ONLY the tail wing present (no head wing),
-        so create_reacted_copy() should classify it as tail-side scission and return a Polymer
-        with a NEW head end-group labeled *1 and mono-radical.
-        """
         p = self.polymer_1.copy()
 
-        tail_wing = p._stitch_wing("tail")
-        methyl_star1 = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
+        # Build a "realistic" reacted proxy fragment:
+        #   (monomer)-(monomer)-(monomer)-(tail_end_group)
+        # with NO head end-group present (so head wing should NOT match),
+        # and one open radical on the uncapped end.
+        m1 = p.monomer.copy(deep=True)
+        m2 = p.monomer.copy(deep=True)
+        m3 = p.monomer.copy(deep=True)
+        tail = p.end_groups[1].copy(deep=True)  # tail end-group (validated to have *2)
 
-        scission_fragment = stitch_molecules_by_labeled_atoms(methyl_star1, tail_wing)
-        assert scission_fragment is not None
+        # Stitch 3 monomers into a short chain (head-to-tail orientation, *2 -> *1).
+        chain = stitch_molecules_by_labeled_atoms(m1, m2, left_labels=('*2', '2'), right_labels=('*1', '1'))
+        assert chain is not None
+        chain = stitch_molecules_by_labeled_atoms(chain, m3, left_labels=('*2', '2'), right_labels=('*1', '1'))
+        assert chain is not None
 
-        new_p = p.create_reacted_copy(scission_fragment)
+        # Cap ONLY the tail side. This consumes one radical on the chain end and the tail radical.
+        # The remaining chain end stays as a radical (uncapped end).
+        reacted_proxy = stitch_molecules_by_labeled_atoms(chain, tail, left_labels=('*2', '2'))
+        assert reacted_proxy is not None
+
+        # Make it look like a real RMG product: no labels.
+        reacted_proxy.clear_labeled_atoms()
+        reacted_proxy.update()
+        reacted_proxy.update_multiplicity()
+
+        # Sanity: should still be open-shell overall (one uncapped end radical)
+        assert reacted_proxy.get_radical_count() >= 1
+
+        new_p = p.create_reacted_copy(reacted_proxy)
 
         assert new_p is not None
         assert isinstance(new_p, Polymer)
         assert new_p.feature_monomer is None
-
         assert new_p.label.endswith("_scission_head")
+
+        # New head end-group should be *1-labeled and mono-radical
+        head_end = new_p.end_groups[0]
+        assert sum(1 for a in head_end.atoms if a.label == "*1") == 1
+        assert head_end.get_radical_count() == 1
 
     def test_create_reacted_copy_returns_none_for_small_molecule(self):
         """

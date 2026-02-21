@@ -700,20 +700,13 @@ class Polymer(Species):
         head = self.end_groups[0].copy(deep=True)
         tail = self.end_groups[1].copy(deep=True)
 
-        # HeadCap(*1) bonds to Baseline(*1)
-        trimer = stitch_molecules_by_labeled_atoms(head, baseline, right_labels=('*1', '1'))
+        trimer = stitch_molecules_by_labeled_atoms(head, baseline)
         if trimer is None: return None
-        # Now trimer has a *2 label from Baseline. We must bond Trimer(*2) to Center(*1).
-        # We need left_labels to be *2 for the trimer, and right_labels to be *1 for the center. 
-        # But wait, default is left_labels=*1. We must specify both!
-        # Actually, the trimer's open site is *2.
-        trimer = stitch_molecules_by_labeled_atoms(trimer, center, left_labels=('*2', '2'), right_labels=('*1', '1'))
+        trimer = stitch_molecules_by_labeled_atoms(trimer, center)
         if trimer is None: return None
-        # Now center has *2. Bond to second Baseline(*1).
-        trimer = stitch_molecules_by_labeled_atoms(trimer, baseline, left_labels=('*2', '2'), right_labels=('*1', '1'))
+        trimer = stitch_molecules_by_labeled_atoms(trimer, baseline)
         if trimer is None: return None
-        # Now second Baseline has *2. Bond to TailCap(*2).
-        trimer = stitch_molecules_by_labeled_atoms(trimer, tail, left_labels=('*2', '2'), right_labels=('*2', '2'))
+        trimer = stitch_molecules_by_labeled_atoms(trimer, tail)
         if trimer is None: return None
 
         trimer.update()
@@ -730,11 +723,11 @@ class Polymer(Species):
         return spc
 
     def create_reacted_copy(self, reacted_proxy: Molecule) -> Optional['Polymer']:
-        print(
-            f"[create_reacted_copy] input atoms={len(reacted_proxy.atoms)} radicals={reacted_proxy.get_radical_count()} labels={_labels_present(reacted_proxy)}")
+        """
+        Wrapper that ensures any generated polymer fragment is sanitized
+        (labels stripped, proxy tagged) before returning to the RMG engine.
+        """
         new_poly = self._create_reacted_copy_logic_orchestrator(reacted_proxy)
-        print(
-            f"[create_reacted_copy] orchestrator returned: {type(new_poly).__name__ if new_poly is not None else None}")
         if new_poly is None:
             return None
         proxy_spec = new_poly.get_proxy_species()
@@ -747,120 +740,78 @@ class Polymer(Species):
         return new_poly
 
     def _create_reacted_copy_logic_orchestrator(self: "Polymer", reacted_proxy: "Molecule") -> Optional["Polymer"]:
-        print(
-            f"[orchestrator] start atoms={len(reacted_proxy.atoms)} radicals={reacted_proxy.get_radical_count()} labels={_labels_present(reacted_proxy)}")
-
+        """
+        Traffic Controller only: no direct logic; delegates every step to atomic functions above.
+        """
         product = normalize_reacted_proxy(reacted_proxy)
-        print(
-            f"[orchestrator] normalized atoms={len(product.atoms)} radicals={product.get_radical_count()} mult={product.multiplicity}")
 
         head_groups = build_wing_groups(self, "head")
         tail_groups = build_wing_groups(self, "tail")
-        print(f"[orchestrator] wing_groups head={len(head_groups)} tail={len(tail_groups)}")
 
         head_matches = find_wing_matches(product, head_groups)
         tail_matches = find_wing_matches(product, tail_groups)
-        print(f"[orchestrator] wing_matches head={len(head_matches)} tail={len(tail_matches)}")
 
         head_atoms, tail_atoms = select_best_wing_atoms(product, head_matches, tail_matches)
-        print(f"[orchestrator] selected head_atoms={len(head_atoms)} tail_atoms={len(tail_atoms)}")
 
         scission_in_monomer = identify_scission_in_monomer(product, self, monomer_group=self.backbone_group)
-        print(f"[orchestrator] scission_in_monomer={scission_in_monomer}")
-
         case = classify_cut_case(head_atoms, tail_atoms, scission_in_monomer)
-        print(f"[orchestrator] case={case}")
 
         atoms_to_remove = compute_atoms_to_remove(head_atoms, tail_atoms, case)
-        print(f"[orchestrator] atoms_to_remove={(len(atoms_to_remove) if atoms_to_remove else None)}")
         if atoms_to_remove is None:
-            print("[orchestrator] DISCARD: atoms_to_remove is None")
             return None
 
         fragment = extract_fragment_by_removal(product, atoms_to_remove)
-        print(
-            f"[orchestrator] fragment={(None if fragment is None else f'atoms={len(fragment.atoms)} radicals={fragment.get_radical_count()} labels={_labels_present(fragment)}')}")
         if fragment is None:
-            print("[orchestrator] DISCARD: extract_fragment_by_removal returned None")
             return None
 
         orig_to_frag = build_orig_to_fragment_atom_map(product, fragment, atoms_to_remove)
-        print(f"[orchestrator] orig_to_frag={'None' if orig_to_frag is None else len(orig_to_frag)}")
         if orig_to_frag is None:
-            print("[orchestrator] DISCARD: build_orig_to_fragment_atom_map returned None")
             return None
 
         cut_pairs = find_cut_interfaces(product, atoms_to_remove)
-        print(f"[orchestrator] cut_pairs={len(cut_pairs)}")
-
         label_plan = infer_label_assignments(cut_pairs, head_atoms, tail_atoms, case)
-        print(
-            f"[orchestrator] label_plan={'None' if label_plan is None else {lab: sum(1 for v in label_plan.values() if v == lab) for lab in set(label_plan.values())} }")
         if label_plan is None:
-            print("[orchestrator] DISCARD: infer_label_assignments returned None")
             return None
 
         fragment_labeled = apply_labels_to_fragment(fragment, orig_to_frag, label_plan)
         fragment_open = ensure_open_sites_on_labeled_atoms(fragment_labeled)
         fragment_final = finalize_fragment(fragment_open)
-        print(
-            f"[orchestrator] fragment_final atoms={len(fragment_final.atoms)} radicals={fragment_final.get_radical_count()} labels={_labels_present(fragment_final)} mult={fragment_final.multiplicity}")
 
         if case == "MODIFICATION":
-            ok = validate_feature_fragment(fragment_final)
-            print(f"[orchestrator] validate_feature_fragment={ok}")
-            if not ok:
-                print("[orchestrator] DISCARD: feature fragment invalid")
+            if not validate_feature_fragment(fragment_final):
                 return None
             poly = instantiate_modified_polymer(self, fragment_final)
-            out = discard_if_proxy_unstitchable(poly)
-            print(f"[orchestrator] discard_if_proxy_unstitchable -> {type(out).__name__ if out else None}")
-            return out
+            return discard_if_proxy_unstitchable(poly)
 
-        if case == "SCISSION_HEAD":
-            ok = validate_endgroup_fragment(fragment_final, want_label="*1")
-            print(f"[orchestrator] validate_endgroup_fragment(*1)={ok}")
-            if not ok:
-                print("[orchestrator] DISCARD: endgroup invalid for *1")
+        # SCISSION-family: decide which end-group we produced from the *remainder*
+        # NOTE: remainder is the kept side after removing ONE wing; it must validate as an end-group.
+        if case in ("SCISSION_HEAD",):
+            if not validate_endgroup_fragment(fragment_final, want_label="*1"):
                 return None
             dist = compute_scission_distribution(self)
             poly = instantiate_scission_polymer(self, fragment_final, side="head", dist=dist)
-            out = discard_if_proxy_unstitchable(poly)
-            print(f"[orchestrator] discard_if_proxy_unstitchable -> {type(out).__name__ if out else None}")
-            return out
+            return discard_if_proxy_unstitchable(poly)
 
-        if case == "SCISSION_TAIL":
-            ok = validate_endgroup_fragment(fragment_final, want_label="*2")
-            print(f"[orchestrator] validate_endgroup_fragment(*2)={ok}")
-            if not ok:
-                print("[orchestrator] DISCARD: endgroup invalid for *2")
+        if case in ("SCISSION_TAIL",):
+            if not validate_endgroup_fragment(fragment_final, want_label="*2"):
                 return None
             dist = compute_scission_distribution(self)
             poly = instantiate_scission_polymer(self, fragment_final, side="tail", dist=dist)
-            out = discard_if_proxy_unstitchable(poly)
-            print(f"[orchestrator] discard_if_proxy_unstitchable -> {type(out).__name__ if out else None}")
-            return out
+            return discard_if_proxy_unstitchable(poly)
 
         if case == "SCISSION":
-            ok1 = validate_endgroup_fragment(fragment_final, want_label="*1")
-            ok2 = validate_endgroup_fragment(fragment_final, want_label="*2")
-            print(f"[orchestrator] SCISSION validate_endgroup_fragment(*1)={ok1} (*2)={ok2}")
-            if ok1:
+            # Monomer-scission accepted: treat as head or tail scission if fragment has a valid end label,
+            # otherwise discard (cannot stitch deterministically).
+            if validate_endgroup_fragment(fragment_final, want_label="*1"):
                 dist = compute_scission_distribution(self)
                 poly = instantiate_scission_polymer(self, fragment_final, side="head", dist=dist)
-                out = discard_if_proxy_unstitchable(poly)
-                print(f"[orchestrator] discard_if_proxy_unstitchable(*1) -> {type(out).__name__ if out else None}")
-                return out
-            if ok2:
+                return discard_if_proxy_unstitchable(poly)
+            if validate_endgroup_fragment(fragment_final, want_label="*2"):
                 dist = compute_scission_distribution(self)
                 poly = instantiate_scission_polymer(self, fragment_final, side="tail", dist=dist)
-                out = discard_if_proxy_unstitchable(poly)
-                print(f"[orchestrator] discard_if_proxy_unstitchable(*2) -> {type(out).__name__ if out else None}")
-                return out
-            print("[orchestrator] DISCARD: SCISSION but fragment not stitchable as *1 or *2 endgroup")
+                return discard_if_proxy_unstitchable(poly)
             return None
 
-        print("[orchestrator] DISCARD: fell through")
         return None
 
     def _wing_pattern(self, side: str) -> Molecule:
@@ -896,40 +847,51 @@ class Polymer(Species):
         baseline = self.monomer.copy(deep=True)
         if side == 'head':
             end = self.end_groups[0].copy(deep=True)
-            return stitch_molecules_by_labeled_atoms(end, baseline, right_labels=('*1', '1'))
+            return stitch_molecules_by_labeled_atoms(end, baseline)
         else:
             end = self.end_groups[1].copy(deep=True)
-            return stitch_molecules_by_labeled_atoms(baseline, end, left_labels=('*2', '2'))
+            return stitch_molecules_by_labeled_atoms(baseline, end)
 
-
-    def _wing_groups(self, side: str) -> List["Group"]:
+    def _wing_groups(self, side: str):
         """
-        Generates relaxed wing groups.
-        Preserves hydrogens to prevent sliding matches during subgraph isomorphism.
+        Generates relaxed wing groups by converting to Group BEFORE skeletonizing
+        to avoid Molecule-level AtomTypeErrors.
         """
         wing_mol = self._stitch_wing(side=side)
-        
-        for a in wing_mol.atoms:
-            a.label = ''
+        mol_0 = wing_mol.copy(deep=True)
 
-        # Convert to Group
-        g0 = wing_mol.to_group()
-        g0.multiplicity = []
+        g0 = mol_0.to_group()
 
+        # RELAX EVERYTHING
+        g0.multiplicity = None
         for ga in g0.atoms:
-            # RELAX: The most important part for matching skeleton-to-skeleton
-            ga.radical_electrons = []
+            ga.radical_electrons = [0, 1, 2, 3]
             ga.charge = []
             ga.lone_pairs = []
 
-            if any(at.label.startswith('C') for at in ga.atomtype):
-                ga.atomtype = [ATOMTYPES['C']]
+        # Remove H atoms from the Group (safe: filter atoms, not bonds-by-hand)
+        # AtomType label for hydrogen is 'H'
+        h_atoms = [ga for ga in g0.atoms if any(at.label == "H" for at in ga.atomtype)]
+        for ha in h_atoms:
+            # Group has remove_atom in RMG; if not available in your version, we can do bond-safe removal.
+            try:
+                g0.remove_atom(ha)
+            except AttributeError:
+                # fallback: detach bonds symmetrically then drop from list
+                for nbr in list(ha.bonds.keys()):
+                    if ha in nbr.bonds:
+                        del nbr.bonds[ha]
+                ha.bonds.clear()
+                g0.atoms.remove(ha)
 
+        # Broaden Carbon types + relax bond orders
+        for ga in g0.atoms:
+            if any(at.label.startswith("C") for at in ga.atomtype):
+                ga.atomtype = [ATOMTYPES['Cs'], ATOMTYPES['Cd'], ATOMTYPES['Cb'], ATOMTYPES['Cbf']]
             for gb in ga.bonds.values():
                 gb.order = [1, 1.5, 2, 3]
 
         g0.update()
-        g0.elementCount = {}  # Overwrite elementCount because expanded atomtypes incorrectly inflate it
         return [g0]
 
     def _pick_disjoint_pair(self,
@@ -1328,6 +1290,9 @@ def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
     left_labels = left_labels or LABELS_1
     right_labels = right_labels or LABELS_2
 
+    if not set(left_labels).isdisjoint(right_labels):
+        raise ValueError("Stitch error: left_labels and right_labels overlap; ambiguous stitching.")
+
     if mol_1 is None or mol_2 is None:
         return None
     m1 = mol_1.copy(deep=True)
@@ -1338,16 +1303,12 @@ def stitch_molecules_by_labeled_atoms(mol_1: Optional[Molecule],
     if sum(1 for a in m2.atoms if a.label in right_labels) != 1:
         raise ValueError("Stitch error: mol_2 must have exactly one right label.")
 
-    idx_1 = find_labeled_atom(m1, left_labels)
-    idx_2 = find_labeled_atom(m2, right_labels)
-    
-    if idx_1 is None or idx_2 is None:
-        raise ValueError("Stitch error: Could not locate labels before merge.")
-
-    len_m1_atoms = len(m1.atoms)
     merged = m1.merge(m2)
-    idx_2 += len_m1_atoms
+    idx_1 = find_labeled_atom(merged, left_labels)
+    idx_2 = find_labeled_atom(merged, right_labels)
 
+    if idx_1 is None or idx_2 is None:
+        raise ValueError("Stitch error: Could not locate labels after merge.")
     if idx_1 == idx_2:
         raise ValueError("Stitch error: Stitch sites resolved to the same atom.")
 
@@ -1633,14 +1594,54 @@ def build_wing_groups(polymer: "Polymer", side: str) -> List["Group"]:
 
 def find_wing_matches(product: "Molecule", wing_groups: List["Group"]) -> List[MatchMapping]:
     """
-    Finds wing patterns using a stable heavy-atom mapping.
-    Ensures that matches returned point to the actual atoms in 'product'.
+    Robust pure search:
+      1) Try subgraph matching on the full product (keeps H, avoids group/H mismatch).
+      2) If nothing matches, try heavy-atom skeleton matching ONLY if the group has no H atoms.
+    Returns matches whose target atoms are Atom objects from `product`.
     """
-    matches: List[MatchMapping] = []
-    for g in wing_groups:
-        matches.extend(product.find_subgraph_isomorphisms(g, save_order=True))
-    return matches
+    def group_has_h(g: "Group") -> bool:
+        # Group atoms store AtomTypes with `.label` (e.g. 'H', 'Cs', ...)
+        for ga in g.atoms:
+            if any(getattr(at, "label", None) == "H" for at in getattr(ga, "atomtype", [])):
+                return True
+        return False
 
+    # ---- Pass 1: direct matching on the full product (most reliable)
+    direct_matches: List[MatchMapping] = []
+    for g in wing_groups:
+        direct_matches.extend(product.find_subgraph_isomorphisms(g, save_order=True))
+    if direct_matches:
+        return direct_matches
+
+    # ---- Pass 2: heavy-atom matching (ONLY if pattern is heavy-atom-only)
+    heavy_only_groups = [g for g in wing_groups if not group_has_h(g)]
+    if not heavy_only_groups:
+        return []
+
+    # Build heavy-atom view of the ORIGINAL product (stable mapping target)
+    product_heavy = [a for a in product.atoms if not a.is_hydrogen()]
+
+    # Search molecule: deep copy + delete H => atoms correspond 1:1 with product_heavy by order
+    search_mol = product.copy(deep=True)
+    search_mol.delete_hydrogens()
+    search_mol.update_multiplicity()
+
+    # Map each search_mol Atom identity -> heavy-atom index
+    search_atom_to_idx = {id(atom): i for i, atom in enumerate(search_mol.atoms)}
+
+    matches: List[MatchMapping] = []
+    for g in heavy_only_groups:
+        res_matches = search_mol.find_subgraph_isomorphisms(g, save_order=True)
+        for m in res_matches:
+            new_match = {}
+            for g_atom, s_atom in m.items():
+                idx = search_atom_to_idx.get(id(s_atom))
+                if idx is not None:
+                    new_match[g_atom] = product_heavy[idx]
+            if new_match:
+                matches.append(new_match)
+
+    return matches
 
 
 
@@ -1752,29 +1753,20 @@ def compute_atoms_to_remove(head_atoms: Set["Atom"], tail_atoms: Set["Atom"], ca
     Pure planning: decides the exact atoms to remove from product based on case.
     Returns None when the case is DISCARD or un-actionable.
     """
-    def _expand_hydrogens(atoms: Set["Atom"]) -> Set["Atom"]:
-        expanded = set(atoms)
-        for a in atoms:
-            for nbr in a.bonds:
-                if getattr(nbr, 'is_hydrogen', lambda: False)():
-                    expanded.add(nbr)
-        return expanded
-
     if case == "MODIFICATION":
-        return _expand_hydrogens(set(head_atoms) | set(tail_atoms))
+        return set(head_atoms) | set(tail_atoms)
 
     if case in ("SCISSION_HEAD", "SCISSION_TAIL"):
         # Existing behavior: remove only one wing and keep the remainder as a new end-group.
-        base_atoms = set(tail_atoms) if case == "SCISSION_HEAD" else set(head_atoms)
-        return _expand_hydrogens(base_atoms)
+        return set(tail_atoms) if case == "SCISSION_HEAD" else set(head_atoms)
 
     if case == "SCISSION":
         # "Monomer scission accepted": if we found one wing, behave like that scission;
         # if no wing atoms, we can't build a stitchable end-group => discard.
         if head_atoms and not tail_atoms:
-            return _expand_hydrogens(set(head_atoms))
+            return set(head_atoms)
         if tail_atoms and not head_atoms:
-            return _expand_hydrogens(set(tail_atoms))
+            return set(tail_atoms)
         return None
 
     return None
@@ -2048,63 +2040,6 @@ def discard_if_proxy_unstitchable(poly: "Polymer") -> Optional["Polymer"]:
         return poly
     except Exception:
         return None
-
-
-def build_heavy_skeleton_with_map(mol: "Molecule") -> Tuple["Molecule", Dict["Atom", "Atom"]]:
-    """
-    Returns (heavy_mol, heavy_to_orig) where heavy_mol contains only non-H atoms,
-    and heavy_to_orig maps heavy atoms back to the original atoms in 'mol'.
-
-    This avoids index-based mapping which is fragile during hydrogen deletion.
-    """
-    heavy_mol = Molecule()
-    orig_to_heavy: Dict[Atom, Atom] = {}
-
-    # 1. Copy only heavy atoms to maintain a clean skeleton
-    for a in mol.atoms:
-        if a.is_hydrogen():
-            continue
-        # We copy the atom to avoid mutating the original product
-        a_heavy = a.copy()
-        a_heavy.label = ""  # Clear labels so they don't interfere with Group matching
-        heavy_mol.add_atom(a_heavy)
-        orig_to_heavy[a] = a_heavy
-
-    # 2. Reconstruct bonds between the kept heavy atoms
-    added_bonds = set()
-    for a in mol.atoms:
-        if a not in orig_to_heavy:
-            continue
-        for neighbor, bond in a.bonds.items():
-            if neighbor not in orig_to_heavy:
-                continue
-
-            # Prevent double-adding bonds
-            bond_key = frozenset((a, neighbor))
-            if bond_key in added_bonds:
-                continue
-
-            heavy_mol.add_bond(Bond(orig_to_heavy[a], orig_to_heavy[neighbor], order=bond.order))
-            added_bonds.add(bond_key)
-
-    heavy_mol.update_multiplicity()
-
-    # Invert the map for the "Lift" phase: heavy_atom -> original_atom
-    heavy_to_orig = {h: o for o, h in orig_to_heavy.items()}
-    return heavy_mol, heavy_to_orig
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
