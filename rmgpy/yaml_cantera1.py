@@ -132,7 +132,7 @@ def write_cantera(
 
         # units line
         f.write(
-            "\nunits: {length: cm, time: s, quantity: mol, activation-energy: kcal/mol}\n\n"
+            "\nunits: {length: m, time: s, quantity: kmol, activation-energy: J/kmol}\n\n"
         )
 
         f.write(phases_block)
