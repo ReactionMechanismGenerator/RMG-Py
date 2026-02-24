@@ -3209,20 +3209,87 @@ multiplicity 2
         Test that Molecule.get_largest_ring() method returns the largest ring.
         """
         # Create a complex polycyclic molecule
-        mol = Molecule(smiles="C14CCCCCC(C(CCC1CC2CCCCCCC2)CC3CCC3)C4")
-
-        # Get polycyclic rings
-        rings = mol.get_polycycles()
-        assert len(rings) == 1
-
-        long_ring = mol.get_largest_ring(rings[0][0])
-        long_ring2 = mol.get_largest_ring(rings[0][1])
-
-        # get the longer of the two rings
-        if len(long_ring) > len(long_ring2):
-            longest_ring = long_ring
-        else:
-            longest_ring = long_ring2
-
-        # longest ring should be one atom shorter than the full polycyclic ring
-        assert len(longest_ring) == len(rings[0]) - 1
+        mol = Molecule().from_adjacency_list("""
+        1  C u0 p0 c0 {2,S} {11,S} {26,S} {27,S}
+        2  C u0 p0 c0 {1,S} {3,S} {28,S} {29,S}
+        3  C u0 p0 c0 {2,S} {4,S} {30,S} {31,S}
+        4  C u0 p0 c0 {3,S} {5,S} {32,S} {33,S}
+        5  C u0 p0 c0 {4,S} {6,S} {34,S} {35,S}
+        6  C u0 p0 c0 {5,S} {7,S} {36,S} {37,S}
+        7  C u0 p0 c0 {6,S} {8,S} {26,S} {38,S}
+        8  C u0 p0 c0 {7,S} {9,S} {21,S} {39,S}
+        9  C u0 p0 c0 {8,S} {10,S} {40,S} {41,S}
+        10 C u0 p0 c0 {9,S} {11,S} {42,S} {43,S}
+        11 C u0 p0 c0 {1,S} {10,S} {12,S} {44,S}
+        12 C u0 p0 c0 {11,S} {13,S} {45,S} {46,S}
+        13 C u0 p0 c0 {12,S} {14,S} {20,S} {47,S}
+        14 C u0 p0 c0 {13,S} {15,S} {48,S} {49,S}
+        15 C u0 p0 c0 {14,S} {16,S} {50,S} {51,S}
+        16 C u0 p0 c0 {15,S} {17,S} {52,S} {53,S}
+        17 C u0 p0 c0 {16,S} {18,S} {54,S} {55,S}
+        18 C u0 p0 c0 {17,S} {19,S} {56,S} {57,S}
+        19 C u0 p0 c0 {18,S} {20,S} {58,S} {59,S}
+        20 C u0 p0 c0 {13,S} {19,S} {60,S} {61,S}
+        21 C u0 p0 c0 {8,S} {22,S} {62,S} {63,S}
+        22 C u0 p0 c0 {21,S} {23,S} {25,S} {64,S}
+        23 C u0 p0 c0 {22,S} {24,S} {65,S} {66,S}
+        24 C u0 p0 c0 {23,S} {25,S} {67,S} {68,S}
+        25 C u0 p0 c0 {22,S} {24,S} {69,S} {70,S}
+        26 C u0 p0 c0 {1,S} {7,S} {71,S} {72,S}
+        27 H u0 p0 c0 {1,S}
+        28 H u0 p0 c0 {2,S}
+        29 H u0 p0 c0 {2,S}
+        30 H u0 p0 c0 {3,S}
+        31 H u0 p0 c0 {3,S}
+        32 H u0 p0 c0 {4,S}
+        33 H u0 p0 c0 {4,S}
+        34 H u0 p0 c0 {5,S}
+        35 H u0 p0 c0 {5,S}
+        36 H u0 p0 c0 {6,S}
+        37 H u0 p0 c0 {6,S}
+        38 H u0 p0 c0 {7,S}
+        39 H u0 p0 c0 {8,S}
+        40 H u0 p0 c0 {9,S}
+        41 H u0 p0 c0 {9,S}
+        42 H u0 p0 c0 {10,S}
+        43 H u0 p0 c0 {10,S}
+        44 H u0 p0 c0 {11,S}
+        45 H u0 p0 c0 {12,S}
+        46 H u0 p0 c0 {12,S}
+        47 H u0 p0 c0 {13,S}
+        48 H u0 p0 c0 {14,S}
+        49 H u0 p0 c0 {14,S}
+        50 H u0 p0 c0 {15,S}
+        51 H u0 p0 c0 {15,S}
+        52 H u0 p0 c0 {16,S}
+        53 H u0 p0 c0 {16,S}
+        54 H u0 p0 c0 {17,S}
+        55 H u0 p0 c0 {17,S}
+        56 H u0 p0 c0 {18,S}
+        57 H u0 p0 c0 {18,S}
+        58 H u0 p0 c0 {19,S}
+        59 H u0 p0 c0 {19,S}
+        60 H u0 p0 c0 {20,S}
+        61 H u0 p0 c0 {20,S}
+        62 H u0 p0 c0 {21,S}
+        63 H u0 p0 c0 {21,S}
+        64 H u0 p0 c0 {22,S}
+        65 H u0 p0 c0 {23,S}
+        66 H u0 p0 c0 {23,S}
+        67 H u0 p0 c0 {24,S}
+        68 H u0 p0 c0 {24,S}
+        69 H u0 p0 c0 {25,S}
+        70 H u0 p0 c0 {25,S}
+        71 H u0 p0 c0 {26,S}
+        72 H u0 p0 c0 {26,S}
+        """)
+        # simple 8 membered ring
+        assert len(mol.get_largest_ring(mol.atoms[15])) == 8
+        # simple 4 membered ring
+        assert len(mol.get_largest_ring(mol.atoms[22])) == 4
+        # vertex in both the 8, 7, and 11 membered rings - should return 11
+        assert len(mol.get_largest_ring(mol.atoms[0])) == 11
+        # aliphatic linkage - not a member of a ring
+        assert len(mol.get_largest_ring(mol.atoms[20])) == 0
+        # bridgehead - should choose the larger of the two rings
+        assert len(mol.get_largest_ring(mol.atoms[25])) == 8
