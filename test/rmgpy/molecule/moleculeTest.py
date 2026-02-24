@@ -2309,6 +2309,79 @@ multiplicity 2
 
     def test_get_polycyclic_rings(self):
         """
+        Test that the Graph.get_polycycles() method returns only polycyclic rings.
+
+        The tested molecule is unrealistic chemically speaking, but is a good test
+        of the codebase.
+        """
+        vertices = [Atom(element="C") for _ in range(27)]
+        bonds = [
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 4),
+            (4, 5),
+            (5, 6),
+            (6, 7),
+            (7, 8),
+            (8, 9),
+            (9, 10),
+            (10, 11),
+            (11, 12),
+            (12, 13),
+            (13, 14),
+            (14, 15),
+            (14, 12),
+            (12, 16),
+            (16, 10),
+            (10, 17),
+            (17, 18),
+            (18, 19),
+            (9, 20),
+            (20, 21),
+            (21, 7),
+            (6, 22),
+            (22, 23),
+            (22, 4),
+            (23, 3),
+            (23, 24),
+            (24, 25),
+            (25, 1),
+        ]
+        edges = []
+        for bond in bonds:
+            edges.append(Bond(vertices[bond[0]], vertices[bond[1]]))
+
+        graph = Molecule()
+        for vertex in vertices:
+            graph.add_atom(vertex)
+        for edge in edges:
+            graph.add_bond(edge)
+        graph.update_connectivity_values()
+
+        sssr = graph.get_smallest_set_of_smallest_rings()
+        assert len(sssr) == 6
+        polycyclic_vertices = set(graph.get_all_polycyclic_vertices())
+        expected_polycyclic_vertices = set([vertices[index] for index in [3, 23, 4, 22, 12]])
+
+        assert polycyclic_vertices == expected_polycyclic_vertices
+
+        continuous_rings = graph.get_polycycles()
+        expected_continuous_rings = [
+            [vertices[index] for index in [1, 2, 3, 4, 5, 6, 22, 23, 24, 25]],
+            # [vertices[index] for index in [7,8,9,21,20]], # This is a nonpolycyclic ring
+            [vertices[index] for index in [10, 11, 12, 13, 14, 16]],
+        ]
+
+        # Convert to sets for comparison purposes
+        continuous_rings = [set(ring) for ring in continuous_rings]
+        expected_continuous_rings = [set(ring) for ring in expected_continuous_rings]
+        for ring in expected_continuous_rings:
+            assert ring in continuous_rings
+
+
+    def test_get_polycyclic_rings_common_molecules(self):
+        """
         Test that polycyclic rings within a molecule are returned properly in the function
         `Molecule.get_polycycles()`
         """
