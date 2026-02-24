@@ -158,6 +158,8 @@ cdef class Molecule(Graph):
     cdef public int multiplicity
     cdef public bint reactive
     cdef public dict props
+    cdef public tuple _symm_sssr
+    cdef public tuple _sssr
     cdef public str metal
     cdef public str facet
     cdef str _fingerprint
@@ -306,5 +308,21 @@ cdef class Molecule(Graph):
     cpdef bint is_multidentate(self)
 
     cpdef list get_desorbed_molecules(self)
+
+    cpdef list get_smallest_set_of_smallest_rings(self, bint symmetrized=?)
+
+    cpdef list get_relevant_cycles(self)  # deprecated
+
+    cpdef list get_all_polycyclic_vertices(self)
+
+    cpdef list get_polycycles(self)
+
+    cpdef list get_monocycles(self)
+
+    cpdef tuple get_disparate_cycles(self)
+
+    cpdef tuple _merge_cycles(self, list cycle_sets)
+
+    cpdef int get_max_cycle_overlap(self)
 
 cdef atom_id_counter

@@ -401,7 +401,7 @@ def aromaticity_filtration(mol_list, features):
         # Look for structures that don't have standard SDSDSD bond orders
         for mol in other_list:
             # Check all 6 membered rings
-            rings = [ring for ring in mol.get_relevant_cycles() if len(ring) == 6]
+            rings = [ring for ring in mol.get_smallest_set_of_smallest_rings() if len(ring) == 6]
             for ring in rings:
                 bond_list = mol.get_edges_in_cycle(ring)
                 bond_orders = ''.join([bond.get_order_str() for bond in bond_list])

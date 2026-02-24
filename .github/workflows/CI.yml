@@ -53,7 +53,7 @@ env:
   # main with the name of the branch
   RMG_DATABASE_BRANCH: main
   # RMS branch to use for ReactionMechanismSimulator installation
-  RMS_BRANCH: for_rmg
+  RMS_BRANCH: for_rmg-pythoncall_py311
   # RMS mode used for install_rms.sh
   RMS_INSTALLER: continuous
   # julia parallel pre-compilation leads to race conditions and hangs, so we limit it to run in serial
@@ -65,12 +65,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.9", "3.10", "3.11"]
         os: [macos-15-intel, macos-latest, ubuntu-latest]
         include-rms: ["", "with RMS"]
-        exclude:
-          - os: macos-15-intel  # GitHub's runners just aren't up to the task of installing Julia
-            include-rms: 'with RMS'
     runs-on: ${{ matrix.os }}
     name: Python ${{ matrix.python-version }} ${{ matrix.os }} Build and Test ${{ matrix.include-rms }}
     # skip scheduled runs from forks

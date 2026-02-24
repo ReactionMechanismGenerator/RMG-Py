@@ -2309,8 +2309,81 @@ multiplicity 2
 
     def test_get_polycyclic_rings(self):
         """
+        Test that the Graph.get_polycycles() method returns only polycyclic rings.
+
+        The tested molecule is unrealistic chemically speaking, but is a good test
+        of the codebase.
+        """
+        vertices = [Atom(element="C") for _ in range(27)]
+        bonds = [
+            (0, 1),
+            (1, 2),
+            (2, 3),
+            (3, 4),
+            (4, 5),
+            (5, 6),
+            (6, 7),
+            (7, 8),
+            (8, 9),
+            (9, 10),
+            (10, 11),
+            (11, 12),
+            (12, 13),
+            (13, 14),
+            (14, 15),
+            (14, 12),
+            (12, 16),
+            (16, 10),
+            (10, 17),
+            (17, 18),
+            (18, 19),
+            (9, 20),
+            (20, 21),
+            (21, 7),
+            (6, 22),
+            (22, 23),
+            (22, 4),
+            (23, 3),
+            (23, 24),
+            (24, 25),
+            (25, 1),
+        ]
+        edges = []
+        for bond in bonds:
+            edges.append(Bond(vertices[bond[0]], vertices[bond[1]]))
+
+        graph = Molecule()
+        for vertex in vertices:
+            graph.add_atom(vertex)
+        for edge in edges:
+            graph.add_bond(edge)
+        graph.update_connectivity_values()
+
+        sssr = graph.get_smallest_set_of_smallest_rings()
+        assert len(sssr) == 6
+        polycyclic_vertices = set(graph.get_all_polycyclic_vertices())
+        expected_polycyclic_vertices = set([vertices[index] for index in [3, 23, 4, 22, 12]])
+
+        assert polycyclic_vertices == expected_polycyclic_vertices
+
+        continuous_rings = graph.get_polycycles()
+        expected_continuous_rings = [
+            [vertices[index] for index in [1, 2, 3, 4, 5, 6, 22, 23, 24, 25]],
+            # [vertices[index] for index in [7,8,9,21,20]], # This is a nonpolycyclic ring
+            [vertices[index] for index in [10, 11, 12, 13, 14, 16]],
+        ]
+
+        # Convert to sets for comparison purposes
+        continuous_rings = [set(ring) for ring in continuous_rings]
+        expected_continuous_rings = [set(ring) for ring in expected_continuous_rings]
+        for ring in expected_continuous_rings:
+            assert ring in continuous_rings
+
+
+    def test_get_polycyclic_rings_common_molecules(self):
+        """
         Test that polycyclic rings within a molecule are returned properly in the function
-        `Graph().get_polycycles()`
+        `Molecule.get_polycycles()`
         """
         # norbornane
         m1 = Molecule(smiles="C1CC2CCC1C2")
@@ -2414,7 +2487,7 @@ multiplicity 2
     def test_get_smallest_set_of_smallest_rings(self):
         """
         Test that SSSR within a molecule are returned properly in the function
-        `Graph().get_smallest_set_of_smallest_rings()`
+        `Molecule().get_smallest_set_of_smallest_rings()`
         """
 
         m1 = Molecule(smiles="C12CCC1C3CC2CC3")
@@ -2447,95 +2520,33 @@ multiplicity 2
         sssr5_sizes_expected = [6, 6, 6]
         assert sssr5_sizes == sssr5_sizes_expected
 
-    def test_get_deterministic_smallest_set_of_smallest_rings_case1(self):
-        """
-        Test fused tricyclic can be decomposed into single rings more
-        deterministically
-        """
-        smiles = "C1C2C3C=CCCC2C13"
+        mol = Molecule(smiles="CCCC")
+        cycle_list = mol.get_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 0
+        
+        # Create a cycle of length 4
+        mol = Molecule(smiles="C1CCC1")
+        cycle_list = mol.get_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 1
+        assert len(cycle_list[0]) == 4
 
-        previous_num_shared_atoms_list = None
-        # repeat 100 time to test non-deterministic behavior
-        for _ in range(100):
-            mol = Molecule().from_smiles(smiles)
-            sssr_det = mol.get_deterministic_sssr()
+        # Create a bridged tricyclic
+        mol = Molecule(smiles="C1C(C)CC2CC1C=C3C2CCC3")
+        cycle_list = mol.get_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 3
+        assert len(cycle_list[0]) == 5
 
-            num_shared_atoms_list = []
-            for i, ring_i in enumerate(sssr_det):
-                for j in range(i + 1, len(sssr_det)):
-                    ring_j = sssr_det[j]
-                    num_shared_atoms = len(set(ring_i).intersection(ring_j))
-
-                    num_shared_atoms_list.append(num_shared_atoms)
-
-            num_shared_atoms_list = sorted(num_shared_atoms_list)
-
-            if previous_num_shared_atoms_list is None:
-                previous_num_shared_atoms_list = num_shared_atoms_list
-                continue
-            assert num_shared_atoms_list == previous_num_shared_atoms_list
-            previous_num_shared_atoms_list = num_shared_atoms_list
-
-    def test_get_deterministic_smallest_set_of_smallest_rings_case2(self):
-        """
-        Test if two possible smallest rings can join the smallest set
-        the method can pick one of them deterministically using sum of
-        atomic numbers along the rings.
-        In this test case and with currect method setup, ring (CCSCCCCC)
-        will be picked rather than ring(CCCOCC).
-        """
-
-        smiles = "C1=CC2C3CSC(CO3)C2C1"
-
-        previous_atom_symbols_list = None
-        # repeat 100 time to test non-deterministic behavior
-        for _ in range(100):
-            mol = Molecule().from_smiles(smiles)
-            sssr_det = mol.get_deterministic_sssr()
-
-            atom_symbols_list = []
-            for ring in sssr_det:
-                atom_symbols = sorted([a.element.symbol for a in ring])
-                atom_symbols_list.append(atom_symbols)
-
-            atom_symbols_list = sorted(atom_symbols_list)
-
-            if previous_atom_symbols_list is None:
-                previous_atom_symbols_list = atom_symbols_list
-                continue
-            assert atom_symbols_list == previous_atom_symbols_list
-            previous_atom_symbols_list = atom_symbols_list
-
-    def test_get_deterministic_smallest_set_of_smallest_rings_case3(self):
-        """
-        Test if two possible smallest rings can join the smallest set
-        the method can pick one of them deterministically when their
-        sum of atomic numbers along the rings are also equal to each other.
-
-        To break the tie, one option we have is to consider adding contributions
-        from other parts of the molecule, such as atomic number weighted connectivity
-        value and differentiate bond orders when calculating connectivity values.
-        """
-        smiles = "C=1CC2C3CSC(O[Si]3)C2C1"
-
-        previous_atom_symbols_list = None
-        # repeat 100 time to test non-deterministic behavior
-        for _ in range(100):
-            mol = Molecule().from_smiles(smiles)
-            sssr_det = mol.get_deterministic_sssr()
-
-            atom_symbols_list = []
-            for ring in sssr_det:
-                atom_symbols = sorted([a.element.symbol for a in ring])
-                atom_symbols_list.append(atom_symbols)
-
-            atom_symbols_list = sorted(atom_symbols_list)
-
-            if previous_atom_symbols_list is None:
-                previous_atom_symbols_list = atom_symbols_list
-                continue
-            assert atom_symbols_list == previous_atom_symbols_list
-            previous_atom_symbols_list = atom_symbols_list
+        # Test cubane - see:
+        # https://www.rdkit.org/docs/GettingStartedInPython.html#the-sssr-problem
+        # for why this test is the way it is
+        mol = Molecule(smiles="C12C3C4C1C5C2C3C45")
+        cycle_list = mol.get_smallest_set_of_smallest_rings()
+        assert len(cycle_list) == 5  # unsatisfying number, but 'true'
+        for cycle in cycle_list:
+            assert len(cycle) == 4
+        
+        cycle_list = mol.get_smallest_set_of_smallest_rings(symmetrized=True)
+        assert len(cycle_list) == 6  # satisfying, but no longer the 'true' SSSR
 
     def test_to_group(self):
         """
@@ -2980,10 +2991,23 @@ multiplicity 2
         mol = Molecule(smiles="c12ccccc1cccc2")
         mol.identify_ring_membership()
         for atom in mol.atoms:
-            if atom.element == "C":
+            if atom.is_carbon():
                 assert atom.props["inRing"]
-            elif atom.element == "H":
+            elif atom.is_hydrogen():
                 assert not atom.props["inRing"]
+            else:
+                raise ValueError("Unexpected atom type")
+        mol = Molecule(smiles="C1CCCC(O)CCCCCCC1")
+        mol.identify_ring_membership()
+        for atom in mol.atoms:
+            if atom.is_carbon():
+                assert atom.props["inRing"]
+            elif atom.is_hydrogen():
+                assert not atom.props["inRing"]
+            elif atom.is_oxygen():
+                assert not atom.props["inRing"]
+            else:
+                raise ValueError("Unexpected atom type")
 
     def test_enumerate_bonds(self):
         """Test that generating a count of bond labels works properly."""
@@ -3043,3 +3067,229 @@ multiplicity 2
         assert len(mol.get_all_edges()) == 2
         mol.remove_van_der_waals_bonds()
         assert len(mol.get_all_edges()) == 1
+
+    def test_get_relevant_cycles(self):
+        """
+        Test the Molecule.get_relevant_cycles() raises correct error after deprecation.
+        """
+        mol = Molecule(smiles="CCCC")
+        with pytest.raises(RuntimeError):
+            mol.get_relevant_cycles()
+
+    def test_cycle_list_order_sssr(self):
+        """
+        Test that get_smallest_set_of_smallest_rings return vertices in the proper order.
+
+        There are methods such as symmetry and molecule drawing which rely
+        on the fact that subsequent list entries are connected.
+        """
+        # Create a cycle of length 5
+        mol = Molecule(smiles="C1CCCC1")
+        # Test SSSR
+        sssr = mol.get_smallest_set_of_smallest_rings()
+        assert len(sssr) == 1
+        assert len(sssr[0]) == 5
+        for i in range(5):
+            assert mol.has_bond(sssr[0][i], sssr[0][i - 1])
+
+    def test_get_max_cycle_overlap(self):
+        """
+        Test that get_max_cycle_overlap returns the correct overlap numbers
+        for different molecules.
+        """
+        # Linear molecule
+        linear = Molecule(smiles="CCC")
+        assert linear.get_max_cycle_overlap() == 0
+        
+        # Monocyclic molecule
+        mono = Molecule(smiles="C1CCCC1")
+        assert mono.get_max_cycle_overlap() == 0
+        
+        # Spirocyclic molecule
+        spiro = Molecule(smiles="C1CCC2(CC1)CC2")
+        assert spiro.get_max_cycle_overlap() == 1
+        
+        # Fused bicyclic molecule
+        fused = Molecule(smiles="C1C2C(CCC1)CCCC2")
+        assert fused.get_max_cycle_overlap() == 2
+        
+        # Bridged bicyclic molecule
+        bridged = Molecule(smiles="C1CC2CCC1C2")
+        assert bridged.get_max_cycle_overlap() == 3
+        
+        # Cube-like molecule (cubane)
+        cube = Molecule(smiles="C12C3C4C1C5C2C3C45")
+        # With the current algorithm for maximum overlap determination, a cube
+        # only has an overlap of 2, because the set of relevant cycles
+        # contains the six four-membered faces. This could be changed in the
+        # future.
+        assert cube.get_max_cycle_overlap() == 2
+
+    def test_get_all_polycyclic_vertices(self):
+        """
+        Test that get_all_polycyclic_vertices returns the correct vertices.
+        """
+        # Simple linear molecule
+        mol = Molecule(smiles="CCC")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) == 0
+        
+        # Monocyclic molecule
+        mol = Molecule(smiles="C1CCCC1")
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) == 0
+        
+        # Fused bicyclic molecule
+        mol = Molecule().from_adjacency_list("""
+            1  C u0 p0 c0 {2,S} {4,S} {5,S} {11,S}
+            2  C u0 p0 c0 {1,S} {3,S} {6,S} {12,S}
+            3  C u0 p0 c0 {2,S} {7,S} {13,S} {14,S}
+            4  C u0 p0 c0 {1,S} {8,S} {19,S} {20,S}
+            5  C u0 p0 c0 {1,S} {9,S} {21,S} {22,S}
+            6  C u0 p0 c0 {2,S} {10,S} {27,S} {28,S}
+            7  C u0 p0 c0 {3,S} {8,S} {15,S} {16,S}
+            8  C u0 p0 c0 {4,S} {7,S} {17,S} {18,S}
+            9  C u0 p0 c0 {5,S} {10,S} {23,S} {24,S}
+            10 C u0 p0 c0 {6,S} {9,S} {25,S} {26,S}
+            11 H u0 p0 c0 {1,S}
+            12 H u0 p0 c0 {2,S}
+            13 H u0 p0 c0 {3,S}
+            14 H u0 p0 c0 {3,S}
+            15 H u0 p0 c0 {7,S}
+            16 H u0 p0 c0 {7,S}
+            17 H u0 p0 c0 {8,S}
+            18 H u0 p0 c0 {8,S}
+            19 H u0 p0 c0 {4,S}
+            20 H u0 p0 c0 {4,S}
+            21 H u0 p0 c0 {5,S}
+            22 H u0 p0 c0 {5,S}
+            23 H u0 p0 c0 {9,S}
+            24 H u0 p0 c0 {9,S}
+            25 H u0 p0 c0 {10,S}
+            26 H u0 p0 c0 {10,S}
+            27 H u0 p0 c0 {6,S}
+            28 H u0 p0 c0 {6,S}
+        """)
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) == 2
+        assert mol.atoms[0] is mol.get_all_polycyclic_vertices()[0]
+        assert mol.atoms[1] is mol.get_all_polycyclic_vertices()[1]
+        
+        # Spirocyclic molecule
+        mol = Molecule().from_adjacency_list("""
+        1  C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2  C u0 p0 c0 {1,S} {6,S} {9,S} {10,S}
+        3  C u0 p0 c0 {1,S} {8,S} {17,S} {18,S}
+        4  C u0 p0 c0 {1,S} {5,S} {19,S} {20,S}
+        5  C u0 p0 c0 {1,S} {4,S} {21,S} {22,S}
+        6  C u0 p0 c0 {2,S} {7,S} {11,S} {12,S}
+        7  C u0 p0 c0 {6,S} {8,S} {13,S} {14,S}
+        8  C u0 p0 c0 {3,S} {7,S} {15,S} {16,S}
+        9  H u0 p0 c0 {2,S}
+        10 H u0 p0 c0 {2,S}
+        11 H u0 p0 c0 {6,S}
+        12 H u0 p0 c0 {6,S}
+        13 H u0 p0 c0 {7,S}
+        14 H u0 p0 c0 {7,S}
+        15 H u0 p0 c0 {8,S}
+        16 H u0 p0 c0 {8,S}
+        17 H u0 p0 c0 {3,S}
+        18 H u0 p0 c0 {3,S}
+        19 H u0 p0 c0 {4,S}
+        20 H u0 p0 c0 {4,S}
+        21 H u0 p0 c0 {5,S}
+        22 H u0 p0 c0 {5,S}
+        """)
+        polycyclic_vertices = mol.get_all_polycyclic_vertices()
+        assert len(polycyclic_vertices) == 1
+        assert mol.atoms[0] is mol.get_all_polycyclic_vertices()[0]
+
+    def test_get_largest_ring(self):
+        """
+        Test that Molecule.get_largest_ring() method returns the largest ring.
+        """
+        # Create a complex polycyclic molecule
+        mol = Molecule().from_adjacency_list("""
+        1  C u0 p0 c0 {2,S} {11,S} {26,S} {27,S}
+        2  C u0 p0 c0 {1,S} {3,S} {28,S} {29,S}
+        3  C u0 p0 c0 {2,S} {4,S} {30,S} {31,S}
+        4  C u0 p0 c0 {3,S} {5,S} {32,S} {33,S}
+        5  C u0 p0 c0 {4,S} {6,S} {34,S} {35,S}
+        6  C u0 p0 c0 {5,S} {7,S} {36,S} {37,S}
+        7  C u0 p0 c0 {6,S} {8,S} {26,S} {38,S}
+        8  C u0 p0 c0 {7,S} {9,S} {21,S} {39,S}
+        9  C u0 p0 c0 {8,S} {10,S} {40,S} {41,S}
+        10 C u0 p0 c0 {9,S} {11,S} {42,S} {43,S}
+        11 C u0 p0 c0 {1,S} {10,S} {12,S} {44,S}
+        12 C u0 p0 c0 {11,S} {13,S} {45,S} {46,S}
+        13 C u0 p0 c0 {12,S} {14,S} {20,S} {47,S}
+        14 C u0 p0 c0 {13,S} {15,S} {48,S} {49,S}
+        15 C u0 p0 c0 {14,S} {16,S} {50,S} {51,S}
+        16 C u0 p0 c0 {15,S} {17,S} {52,S} {53,S}
+        17 C u0 p0 c0 {16,S} {18,S} {54,S} {55,S}
+        18 C u0 p0 c0 {17,S} {19,S} {56,S} {57,S}
+        19 C u0 p0 c0 {18,S} {20,S} {58,S} {59,S}
+        20 C u0 p0 c0 {13,S} {19,S} {60,S} {61,S}
+        21 C u0 p0 c0 {8,S} {22,S} {62,S} {63,S}
+        22 C u0 p0 c0 {21,S} {23,S} {25,S} {64,S}
+        23 C u0 p0 c0 {22,S} {24,S} {65,S} {66,S}
+        24 C u0 p0 c0 {23,S} {25,S} {67,S} {68,S}
+        25 C u0 p0 c0 {22,S} {24,S} {69,S} {70,S}
+        26 C u0 p0 c0 {1,S} {7,S} {71,S} {72,S}
+        27 H u0 p0 c0 {1,S}
+        28 H u0 p0 c0 {2,S}
+        29 H u0 p0 c0 {2,S}
+        30 H u0 p0 c0 {3,S}
+        31 H u0 p0 c0 {3,S}
+        32 H u0 p0 c0 {4,S}
+        33 H u0 p0 c0 {4,S}
+        34 H u0 p0 c0 {5,S}
+        35 H u0 p0 c0 {5,S}
+        36 H u0 p0 c0 {6,S}
+        37 H u0 p0 c0 {6,S}
+        38 H u0 p0 c0 {7,S}
+        39 H u0 p0 c0 {8,S}
+        40 H u0 p0 c0 {9,S}
+        41 H u0 p0 c0 {9,S}
+        42 H u0 p0 c0 {10,S}
+        43 H u0 p0 c0 {10,S}
+        44 H u0 p0 c0 {11,S}
+        45 H u0 p0 c0 {12,S}
+        46 H u0 p0 c0 {12,S}
+        47 H u0 p0 c0 {13,S}
+        48 H u0 p0 c0 {14,S}
+        49 H u0 p0 c0 {14,S}
+        50 H u0 p0 c0 {15,S}
+        51 H u0 p0 c0 {15,S}
+        52 H u0 p0 c0 {16,S}
+        53 H u0 p0 c0 {16,S}
+        54 H u0 p0 c0 {17,S}
+        55 H u0 p0 c0 {17,S}
+        56 H u0 p0 c0 {18,S}
+        57 H u0 p0 c0 {18,S}
+        58 H u0 p0 c0 {19,S}
+        59 H u0 p0 c0 {19,S}
+        60 H u0 p0 c0 {20,S}
+        61 H u0 p0 c0 {20,S}
+        62 H u0 p0 c0 {21,S}
+        63 H u0 p0 c0 {21,S}
+        64 H u0 p0 c0 {22,S}
+        65 H u0 p0 c0 {23,S}
+        66 H u0 p0 c0 {23,S}
+        67 H u0 p0 c0 {24,S}
+        68 H u0 p0 c0 {24,S}
+        69 H u0 p0 c0 {25,S}
+        70 H u0 p0 c0 {25,S}
+        71 H u0 p0 c0 {26,S}
+        72 H u0 p0 c0 {26,S}
+        """)
+        # simple 8 membered ring
+        assert len(mol.get_largest_ring(mol.atoms[15])) == 8
+        # simple 4 membered ring
+        assert len(mol.get_largest_ring(mol.atoms[22])) == 4
+        # vertex in both the 8, 7, and 11 membered rings - should return 11
+        assert len(mol.get_largest_ring(mol.atoms[0])) == 11
+        # aliphatic linkage - not a member of a ring
+        assert len(mol.get_largest_ring(mol.atoms[20])) == 0
+        # bridgehead - should choose the larger of the two rings
+        assert len(mol.get_largest_ring(mol.atoms[25])) == 8

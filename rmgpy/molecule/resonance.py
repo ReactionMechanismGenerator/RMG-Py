@@ -777,7 +777,7 @@ def generate_aryne_resonance_structures(mol):
                    i=cython.int, j=cython.int, bond_orders=str, new_orders=str,
                    ind=cython.int, bond=Edge, new_mol=Graph)
 
-    rings = mol.get_relevant_cycles()
+    rings = mol.get_smallest_set_of_smallest_rings()
     rings = [ring for ring in rings if len(ring) == 6]
 
     new_mol_list = []

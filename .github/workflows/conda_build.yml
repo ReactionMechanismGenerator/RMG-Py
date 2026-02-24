@@ -17,7 +17,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macos-15-intel, macos-latest]
         numpy-version: ["1.26"]
-        python-version: ["3.9"]
+        python-version: ["3.9", "3.10", "3.11"]
     runs-on: ${{ matrix.os }}
     name: Build ${{ matrix.os }} Python ${{ matrix.python-version }} Numpy ${{ matrix.numpy-version }}
     defaults:

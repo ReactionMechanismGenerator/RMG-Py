@@ -50,7 +50,6 @@ def check_dependencies():
     missing = {
         'openbabel': _check_openbabel(),
         'pydqed': _check_pydqed(),
-        'pyrdl': _check_pyrdl(),
         'rdkit': _check_rdkit(),
         'symmetry': _check_symmetry(),
     }
@@ -100,22 +99,6 @@ def _check_pydqed():
         version = pydqed.__version__
         location = pydqed.__file__
         print('{0:<15}{1:<15}{2}'.format('pydqed', version, location))
-
-    return missing
-
-
-def _check_pyrdl():
-    """Check for pyrdl"""
-    missing = False
-
-    try:
-        import py_rdl
-    except ImportError:
-        print('{0:<30}{1}'.format('pyrdl', 'Not found. Necessary for ring perception algorithms.'))
-        missing = True
-    else:
-        location = py_rdl.__file__
-        print('{0:<30}{1}'.format('pyrdl', location))
 
     return missing
 

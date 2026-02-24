@@ -467,7 +467,7 @@ def is_ring_partial_matched(ring, matched_group):
     else:
         submol_ring, _ = convert_ring_to_sub_molecule(ring)
         sssr = submol_ring.get_smallest_set_of_smallest_rings()
-        sssr_grp = matched_group.get_smallest_set_of_smallest_rings()
+        sssr_grp = matched_group.make_sample_molecule().get_smallest_set_of_smallest_rings()
         if sorted([len(sr) for sr in sssr]) == sorted([len(sr_grp) for sr_grp in sssr_grp]):
             return False
         else:
@@ -483,7 +483,7 @@ def bicyclic_decomposition_for_polyring(polyring):
     """
 
     submol, _ = convert_ring_to_sub_molecule(polyring)
-    sssr = submol.get_deterministic_sssr()
+    sssr = submol.get_smallest_set_of_smallest_rings()
 
     ring_pair_with_common_atoms_list = []
     ring_occurances_dict = {}
@@ -555,7 +555,7 @@ def split_bicyclic_into_single_rings(bicyclic_submol):
     Splits a given bicyclic submolecule into two individual single 
     ring submolecules (a list of `Molecule`s ).
     """
-    sssr = bicyclic_submol.get_deterministic_sssr()
+    sssr = bicyclic_submol.get_smallest_set_of_smallest_rings()
 
     return [convert_ring_to_sub_molecule(sssr[0])[0],
             convert_ring_to_sub_molecule(sssr[1])[0]]
