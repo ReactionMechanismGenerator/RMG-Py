@@ -377,7 +377,7 @@ class MoleculeDrawer(object):
 
         if use_rdkit == True:
             # Use RDKit 2D coordinate generation:
-            # Generate the RDkit molecule from the RDkit molecule, saving mapping
+            # Generate the RDkit molecule from the RMG molecule, saving mapping
             # in order to match the atoms in the rdmol with the atoms in the
             # RMG molecule (which is required to extract coordinates).
             rdmol, rd_atom_idx = self.molecule.to_rdkit_mol(remove_h=False,
@@ -394,8 +394,8 @@ class MoleculeDrawer(object):
                 coordinates[index, :] = [point.x * 0.6, point.y * 0.6]
 
             # RDKit generates some molecules more vertically than horizontally,
-            # Especially linear ones. This will reflect any molecule taller than
-            # it is wide across the line y=x
+            # especially linear ones. This will reflect any molecule taller than
+            # it is wide across the line y=x.
             ranges = np.ptp(coordinates, axis=0)
             if ranges[1] > ranges[0]:
                 temp = np.copy(coordinates)
