@@ -3067,16 +3067,69 @@ multiplicity 2
         assert len(polycyclic_vertices) == 0
         
         # Fused bicyclic molecule
-        # TODO: don't just test length, test the actual vertices
-        mol = Molecule(smiles="C1C2C(CCC1)CCCC2")
+        mol = Molecule().from_adjacency_list("""
+            1  C u0 p0 c0 {2,S} {4,S} {5,S} {11,S}
+            2  C u0 p0 c0 {1,S} {3,S} {6,S} {12,S}
+            3  C u0 p0 c0 {2,S} {7,S} {13,S} {14,S}
+            4  C u0 p0 c0 {1,S} {8,S} {19,S} {20,S}
+            5  C u0 p0 c0 {1,S} {9,S} {21,S} {22,S}
+            6  C u0 p0 c0 {2,S} {10,S} {27,S} {28,S}
+            7  C u0 p0 c0 {3,S} {8,S} {15,S} {16,S}
+            8  C u0 p0 c0 {4,S} {7,S} {17,S} {18,S}
+            9  C u0 p0 c0 {5,S} {10,S} {23,S} {24,S}
+            10 C u0 p0 c0 {6,S} {9,S} {25,S} {26,S}
+            11 H u0 p0 c0 {1,S}
+            12 H u0 p0 c0 {2,S}
+            13 H u0 p0 c0 {3,S}
+            14 H u0 p0 c0 {3,S}
+            15 H u0 p0 c0 {7,S}
+            16 H u0 p0 c0 {7,S}
+            17 H u0 p0 c0 {8,S}
+            18 H u0 p0 c0 {8,S}
+            19 H u0 p0 c0 {4,S}
+            20 H u0 p0 c0 {4,S}
+            21 H u0 p0 c0 {5,S}
+            22 H u0 p0 c0 {5,S}
+            23 H u0 p0 c0 {9,S}
+            24 H u0 p0 c0 {9,S}
+            25 H u0 p0 c0 {10,S}
+            26 H u0 p0 c0 {10,S}
+            27 H u0 p0 c0 {6,S}
+            28 H u0 p0 c0 {6,S}
+        """)
         polycyclic_vertices = mol.get_all_polycyclic_vertices()
-        assert len(polycyclic_vertices) > 0
+        assert len(polycyclic_vertices) == 2
+        assert mol.atoms[0] is mol.get_all_polycyclic_vertices()[0]
+        assert mol.atoms[1] is mol.get_all_polycyclic_vertices()[1]
         
         # Spirocyclic molecule
-        # TODO: don't just test length, test the actual vertices
-        mol = Molecule(smiles="C1CCC2(CC1)CC2")
+        mol = Molecule().from_adjacency_list("""
+        1  C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
+        2  C u0 p0 c0 {1,S} {6,S} {9,S} {10,S}
+        3  C u0 p0 c0 {1,S} {8,S} {17,S} {18,S}
+        4  C u0 p0 c0 {1,S} {5,S} {19,S} {20,S}
+        5  C u0 p0 c0 {1,S} {4,S} {21,S} {22,S}
+        6  C u0 p0 c0 {2,S} {7,S} {11,S} {12,S}
+        7  C u0 p0 c0 {6,S} {8,S} {13,S} {14,S}
+        8  C u0 p0 c0 {3,S} {7,S} {15,S} {16,S}
+        9  H u0 p0 c0 {2,S}
+        10 H u0 p0 c0 {2,S}
+        11 H u0 p0 c0 {6,S}
+        12 H u0 p0 c0 {6,S}
+        13 H u0 p0 c0 {7,S}
+        14 H u0 p0 c0 {7,S}
+        15 H u0 p0 c0 {8,S}
+        16 H u0 p0 c0 {8,S}
+        17 H u0 p0 c0 {3,S}
+        18 H u0 p0 c0 {3,S}
+        19 H u0 p0 c0 {4,S}
+        20 H u0 p0 c0 {4,S}
+        21 H u0 p0 c0 {5,S}
+        22 H u0 p0 c0 {5,S}
+        """)
         polycyclic_vertices = mol.get_all_polycyclic_vertices()
-        assert len(polycyclic_vertices) > 0
+        assert len(polycyclic_vertices) == 1
+        assert mol.atoms[0] is mol.get_all_polycyclic_vertices()[0]
 
     def test_get_largest_ring(self):
         """
