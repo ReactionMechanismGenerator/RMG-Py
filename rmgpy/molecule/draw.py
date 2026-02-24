@@ -380,6 +380,13 @@ class MoleculeDrawer(object):
             # Generate the RDkit molecule from the RMG molecule, saving mapping
             # in order to match the atoms in the rdmol with the atoms in the
             # RMG molecule (which is required to extract coordinates).
+            #
+            # partial sanitization is used to allow molecules to fail RDKit's
+            # bond order and implicit hydrogen assignments, and possibly also
+            # RDKit's aromaticity perception, while still drawing the molecule.
+            # this can happen because RMG uses partial bond orders and atom types
+            # that RDKit doesn't understand, though RDKit can still generate
+            # coordinates for the molecule.
             rdmol, rd_atom_idx = self.molecule.to_rdkit_mol(remove_h=False,
                                                             return_mapping=True,
                                                             sanitize="partial")
