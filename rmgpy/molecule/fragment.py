@@ -490,7 +490,7 @@ class Fragment(Molecule):
 
         return formula
 
-    def to_rdkit_mol(self, *args, **kwargs):
+    def to_rdkit_mol(self, **kwargs):
         """
         Convert a Fragment structure to a RDKit rdmol object.
 
@@ -514,7 +514,6 @@ class Fragment(Molecule):
         new_kwargs["save_order"] = True  # override user if needed
         rdmol, molecule_to_rdindex_mapping = converter.to_rdkit_mol(
             representative_molecule,
-            *args,
             **new_kwargs
         )
 

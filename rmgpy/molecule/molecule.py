@@ -2049,7 +2049,7 @@ class Molecule(Graph):
 
         return translator.to_smiles(self)
 
-    def to_rdkit_mol(self, *args, **kwargs):
+    def to_rdkit_mol(self, **kwargs):
         """
         Convert a molecular structure to a RDKit rdmol object.
         """
@@ -2057,7 +2057,7 @@ class Molecule(Graph):
         if self.is_electron():
             raise ValueError("Cannot convert electron molecule to RDKit Mol object")
         
-        return converter.to_rdkit_mol(self, *args, **kwargs)
+        return converter.to_rdkit_mol(self, **kwargs)
 
     def to_adjacency_list(self, label='', remove_h=False, remove_lone_pairs=False, old_style=False):
         """
