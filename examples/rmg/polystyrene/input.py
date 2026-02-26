@@ -62,15 +62,15 @@ model(
 simulator(atol=1e-16, rtol=1e-08, sens_atol=1e-06, sens_rtol=0.0001)
 
 # 7. PDep
-#pressureDependence(
-#    method='modified strong collision',
-#    maximumGrainSize=(2.0, 'kJ/mol'),
-#    minimumNumberOfGrains=250,
-#    temperatures=(300, 2500, 'K', 10),
-#    pressures=(0.1, 100, 'bar', 10),
-#    interpolation=('Chebyshev', 6, 4),
-#    maximumAtoms=16,
-#)
+pressureDependence(
+    method='modified strong collision',
+    maximumGrainSize=(2.0, 'kJ/mol'),
+    minimumNumberOfGrains=250,
+    temperatures=(300, 2500, 'K', 10),
+    pressures=(0.1, 100, 'bar', 10),
+    interpolation=('Chebyshev', 6, 4),
+    maximumAtoms=16,
+)
 
 options(
     name='Seed',
