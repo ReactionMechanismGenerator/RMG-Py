@@ -874,7 +874,9 @@ class CoreEdgeReactionModel:
             if not self.pressure_dependence:
                 # The pressure dependence option is turned off entirely
                 pdep = False
-            elif self.pressure_dependence.maximum_atoms is not None and self.pressure_dependence.maximum_atoms < isomer_atoms:
+            elif self.pressure_dependence.maximum_atoms is not None \
+                    and self.pressure_dependence.maximum_atoms < isomer_atoms \
+                    and not any([spec.is_polymer_proxy for spec in rxn.reactants + rxn.products]):
                 # The reaction involves so many atoms that pressure-dependent effects are assumed to be negligible
                 pdep = False
             elif not (rxn.is_isomerization() or rxn.is_dissociation() or rxn.is_association()):
