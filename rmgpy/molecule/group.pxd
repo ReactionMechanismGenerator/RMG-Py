@@ -84,6 +84,8 @@ cdef class GroupAtom(Vertex):
 
     cpdef bint is_electron(self)
 
+    cpdef bint is_hydrogen(self)
+
     cpdef bint is_oxygen(self)
 
     cpdef bint is_sulfur(self)
