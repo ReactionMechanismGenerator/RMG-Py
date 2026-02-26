@@ -650,6 +650,15 @@ class TestGroupAtom:
         proton = GroupAtom(atomtype=[ATOMTYPES['H+']])
         assert proton.is_proton()
 
+    def test_is_hydrogen(self):
+        """
+        Test the GroupAtom.is_hydrogen() method.
+        """
+        proton = GroupAtom(atomtype=[ATOMTYPES['H']])
+        assert proton.is_hydrogen()
+        proton = GroupAtom(atomtype=[ATOMTYPES['Cs']])
+        assert not proton.is_hydrogen()
+
 class TestGroupBond:
     """
     Contains unit tests of the GroupBond class.
