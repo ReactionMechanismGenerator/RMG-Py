@@ -1654,8 +1654,11 @@ class KineticsFamily(Database):
         for struct in product_structures:
             if self.is_molecule_forbidden(struct):
                 raise ForbiddenStructureException()
-            if fails_species_constraints(struct):
-                reason = fails_species_constraints(struct)
+            if any(spc.is_polymer_proxy for spc in reactant_structures + product_structures):
+                for spc in reactant_structures + product_structures:
+                    spc.is_polymer_proxy = True
+            reason = fails_species_constraints(struct)
+            if reason:
                 raise ForbiddenStructureException(
                     "Species constraints forbids product species {0}. Please "
                     "reformulate constraints, or explicitly "
@@ -1911,10 +1914,14 @@ class KineticsFamily(Database):
             # Not implemented yet for charge transfer reactions
             return 1
         reactants = reaction.reactants
+        is_poly_derived = any(spc.is_polymer_proxy for spc in (reaction.reactants + reaction.products))
         reactants, same_reactants = check_for_same_reactants(reactants)
 
         # Label reactant atoms for proper degeneracy calculation
         ensure_independent_atom_ids(reactants, resonance=resonance)
+        if is_poly_derived:
+            for spc in reactants:
+                spc.is_polymer_proxy = True
         molecule_combos = generate_molecule_combos(reactants)
 
         reactions = []
@@ -2317,7 +2324,6 @@ class KineticsFamily(Database):
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxn_list:
-
             # Restore the labeled atoms long enough to generate some metadata
             for reactant in reaction.reactants:
                 reactant.clear_labeled_atoms()
@@ -2330,6 +2336,10 @@ class KineticsFamily(Database):
 
             # Generate metadata about the reaction that we will need later
             reaction.pairs = self.get_reaction_pairs(reaction)
+            for pair in reaction.pairs:
+                if any (spc.is_polymer_proxy for spc in pair):
+                    for spc in pair:
+                        spc.is_polymer_proxy = True
             reaction.template = self.get_reaction_template_labels(reaction)
 
             if delete_labels:
@@ -2360,7 +2370,7 @@ class KineticsFamily(Database):
             for reactant in reaction.reactants:
                 for product in reaction.products:
                     pairs.append([reactant, product])
-        elif self.label.lower() in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
+        elif self.label.lower() in ('h_abstraction', 'f_abstraction', 'cl_abstraction', 'br_abstraction'):
             # Hardcoding for hydrogen abstraction: pair the reactant containing
             # *1 with the product containing *3 and vice versa
             assert len(reaction.reactants) == len(reaction.products) == 2
@@ -2507,6 +2517,11 @@ class KineticsFamily(Database):
         if not pairs:
             logging.debug('Preset mapping missing for determining reaction pairs for family {0!s}, '
                           'falling back to Reaction.generate_pairs'.format(self.label))
+
+        for reactant, product in pairs:
+            if reactant.is_polymer_proxy or product.is_polymer_proxy:
+                product.is_polymer_proxy = True
+                reactant.is_polymer_proxy = True
 
         return pairs
 
@@ -4908,3 +4923,25 @@ def get_site_solute_data(rxn):
         return site_data
     else:
         return None
+
+
+def _handshake_structures(structure_list, polymer_reactants):
+    """
+    Helper to scan a list of Molecules (reactants or products) and
+    convert them to Polymer objects if they match an input polymer structure.
+    It mutates species_list in-place: if a molecule in the list can be interpreted
+    as a polymer-derived fragment/modification, it replaces that molecule with the
+    corresponding Polymer returned by create_reacted_copy().
+    """
+    for i, mol in enumerate(structure_list):
+        if not isinstance(mol, Molecule):
+            continue
+        for polymer_obj in polymer_reactants:
+            try:
+                new_polymer = polymer_obj.create_reacted_copy(mol)
+
+                if new_polymer:
+                    structure_list[i] = new_polymer
+                    break
+            except (RuntimeError, ValueError):
+                pass
