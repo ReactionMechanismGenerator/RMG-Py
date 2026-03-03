@@ -322,6 +322,14 @@ The following is an example of a typical species item, based on methane using SM
 			"""
 	)
 
+For long lists of initial core species, you can specify a coreSpeciesList, shown below::
+
+    coreSpeciesList(
+        species_dictionary_file="path/to/your/species_dictionary.txt"
+    )
+
+This specifies the path for an RMG-formatted :ref:`species dictionary <the_chemkin_folder>` from which additional species will be loaded. Note that RMG will complain if any species in the input file is duplicated in the species dictionary.
+
 .. _forbidden_structures:
 
 Forbidden Structures
