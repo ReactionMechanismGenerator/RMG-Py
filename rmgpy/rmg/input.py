@@ -40,6 +40,7 @@ from rmgpy.data.surface import MetalDatabase
 from rmgpy.data.vaporLiquidMassTransfer import (
     liquidVolumetricMassTransferCoefficientPowerLaw,
 )
+from rmgpy.chemkin import load_species_dictionary
 from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
@@ -188,6 +189,16 @@ def convert_binding_energies(binding_energies):
             logging.error('Element {} missing from binding energies dictionary'.format(element))
             raise
     return new_dict
+
+
+def core_species_file(species_dictionary_file):
+    # all species here are assumed to be reactive
+    rmg.species_core_file = species_dictionary_file
+    new_species_dict = load_species_dictionary(species_dictionary_file)
+    for key in new_species_dict:
+        label = new_species_dict[key].label
+        structure = new_species_dict[key].molecule[0]
+        species(label, structure, reactive=True, cut=False, size_threshold=None)
 
 
 def species(label, structure, reactive=True, cut=False, size_threshold=None):
@@ -1560,6 +1571,7 @@ def read_input_file(path, rmg0):
         'False': False,
         'database': database,
         'catalystProperties': catalyst_properties,
+        'coreSpeciesFile': core_species_file,
         'species': species,
         'forbidden': forbidden,
         'SMARTS': smarts,
