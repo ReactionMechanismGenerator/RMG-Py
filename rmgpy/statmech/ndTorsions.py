@@ -35,8 +35,9 @@ import itertools
 
 import numdifftools as nd
 import numpy as np
-from scipy import integrate as inte
 from scipy import interpolate
+from scipy.integrate import simpson
+
 from sklearn import linear_model
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -614,7 +615,7 @@ class HinderedRotorClassicalND(Mode):
             Imat[coords] = f(*rphis[np.array(coords)])
         
         for i in range(len(self.pivots)):
-            Imat = inte.simps(Imat, rphis)
+            Imat = simpson(Imat, rphis)
             
         intg = Imat
         
