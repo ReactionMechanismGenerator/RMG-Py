@@ -75,7 +75,7 @@ pass a dict of options to the constructor to affect how the molecules are
 drawn.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.draw.MoleculeDrawer.draw">
-<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.draw.MoleculeDrawer.draw" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">draw</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">molecule</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_format</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_rdkit</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.draw.MoleculeDrawer.draw" title="Permalink to this definition">¶</a></dt>
 <dd><p>Draw the given <cite>molecule</cite> using the given image <cite>file_format</cite> - pdf, svg, ps, or
 png. If <cite>path</cite> is given, the drawing is saved to that location on disk. The
 <cite>options</cite> dict is an optional set of key-value pairs that can be used to
@@ -83,6 +83,8 @@ control the generated drawing.</p>
 <p>This function returns the Cairo surface and context used to create the
 drawing, as well as a bounding box for the molecule being drawn as the
 tuple (<cite>left</cite>, <cite>top</cite>, <cite>width</cite>, <cite>height</cite>).</p>
+<p>If <cite>use_rdkit</cite> is True, then the RDKit 2D coordinate generation is used to generate the coordinates.
+If <cite>use_rdkit</cite> is False, then the molecule is drawn using our (deprecated) original algorithm.</p>
 </dd></dl>
 
 <dl class="py method">

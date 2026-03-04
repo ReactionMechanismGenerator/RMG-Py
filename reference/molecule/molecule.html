@@ -471,7 +471,7 @@ same label, the value is converted to a list of these atoms.</p>
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_aromatic_rings">
 <span class="sig-name descname"><span class="pre">get_aromatic_rings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">save_order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_aromatic_rings" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all aromatic rings as a list of atoms and a list of bonds.</p>
-<p>Identifies rings using <cite>Graph.get_smallest_set_of_smallest_rings()</cite>, then uses RDKit to perceive aromaticity.
+<p>Identifies rings, then uses RDKit to perceive aromaticity.
 RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel’s Rule.
 Therefore, this method identifies “true” aromaticity, rather than simply the RMG bond type.</p>
 <p>The method currently restricts aromaticity to six-membered carbon-only rings. This is a limitation imposed
@@ -513,27 +513,10 @@ the bond order with the surface:
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_deterministic_sssr">
-<span class="sig-name descname"><span class="pre">get_deterministic_sssr</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_deterministic_sssr" title="Permalink to this definition">¶</a></dt>
-<dd><p>Modified <cite>Graph</cite> method <cite>get_smallest_set_of_smallest_rings</cite> by sorting calculated cycles
-by short length and then high atomic number instead of just short length (for cases where
-multiple cycles with same length are found, <cite>get_smallest_set_of_smallest_rings</cite> outputs
-non-determinstically).</p>
-<p>For instance, molecule with this smiles: C1CC2C3CSC(CO3)C2C1, will have non-deterministic
-output from <cite>get_smallest_set_of_smallest_rings</cite>, which leads to non-deterministic bicyclic decomposition.
-Using this new method can effectively prevent this situation.</p>
-<p>Important Note: This method returns an incorrect set of SSSR in certain molecules (such as cubane).
-It is recommended to use the main <cite>Graph.get_smallest_set_of_smallest_rings</cite> method in new applications.
-Alternatively, consider using <cite>Graph.get_relevant_cycles</cite> for deterministic output.</p>
-<p>In future development, this method should ideally be replaced by some method to select a deterministic
-set of SSSR from the set of Relevant Cycles, as that would be a more robust solution.</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_disparate_cycles">
 <span class="sig-name descname"><span class="pre">get_disparate_cycles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_disparate_cycles" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get all disjoint monocyclic and polycyclic cycle clusters in the molecule.
-Takes the RC and recursively merges all cycles which share vertices.</p>
+Takes the set of rings and recursively merges all cycles which share vertices.</p>
 <p>Returns: monocyclic_cycles, polycyclic_cycles</p>
 </dd></dl>
 
@@ -657,21 +640,6 @@ count as two, etc.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_relevant_cycles">
-<span class="sig-name descname"><span class="pre">get_relevant_cycles</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_relevant_cycles" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the set of relevant cycles as a list of lists.
-Uses RingDecomposerLib for ring perception.</p>
-<p>Kolodzik, A.; Urbaczek, S.; Rarey, M.
-Unique Ring Families: A Chemically Meaningful Description
-of Molecular Ring Topologies.
-J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021</p>
-<p>Flachsenberg, F.; Andresen, N.; Rarey, M.
-RingDecomposerLib: An Open-Source Implementation of
-Unique Ring Families and Other Cycle Bases.
-J. Chem. Inf. Model., 2017, 57 (2), pp 122-126</p>
-</dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_singlet_carbene_count">
 <span class="sig-name descname"><span class="pre">get_singlet_carbene_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_singlet_carbene_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the total number of singlet carbenes (lone pair on a carbon atom)
@@ -681,17 +649,15 @@ In the case of [C] with two lone pairs, this method will return 1.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_smallest_set_of_smallest_rings">
-<span class="sig-name descname"><span class="pre">get_smallest_set_of_smallest_rings</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_smallest_set_of_smallest_rings" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the smallest set of smallest rings as a list of lists.
-Uses RingDecomposerLib for ring perception.</p>
-<p>Kolodzik, A.; Urbaczek, S.; Rarey, M.
-Unique Ring Families: A Chemically Meaningful Description
-of Molecular Ring Topologies.
-J. Chem. Inf. Model., 2012, 52 (8), pp 2013-2021</p>
-<p>Flachsenberg, F.; Andresen, N.; Rarey, M.
-RingDecomposerLib: An Open-Source Implementation of
-Unique Ring Families and Other Cycle Bases.
-J. Chem. Inf. Model., 2017, 57 (2), pp 122-126</p>
+<span class="sig-name descname"><span class="pre">get_smallest_set_of_smallest_rings</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">symmetrized</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_smallest_set_of_smallest_rings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the smallest set of smallest rings (SSSR) as a list of lists of Atom objects, optionally with symmetrization.</p>
+<p>Uses RDKit’s built-in ring perception (GetSSSR) by default.
+Note that this is not the same as the Symmetrized SSSR (GetSymmSSSR) with symmetrized=True.
+The symmetrized SSSR is at least as large as the SSSR for a molecule.
+In certain highly-symmetric cases (e.g. cubane), the symmetrized SSSR
+can be a bit larger (i.e. the number of symmetrized rings is &gt;= NumBonds-NumAtoms+1).
+It is usually more chemically meaningful, and is less random/arbitrary than the SSSR,
+though RMG uses SSSR for historical reasons.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1127,7 +1093,7 @@ The available options for the <code class="docutils literal notranslate"><span c
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.to_rdkit_mol">
-<span class="sig-name descname"><span class="pre">to_rdkit_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_rdkit_mol" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_rdkit_mol</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.to_rdkit_mol" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a molecular structure to a RDKit rdmol object.</p>
 </dd></dl>
 
@@ -1283,7 +1249,6 @@ number of lone electron pairs, assuming a neutral molecule.</p>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_bonds"><code class="docutils literal notranslate"><span class="pre">Molecule.get_bonds()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_charge_span"><code class="docutils literal notranslate"><span class="pre">Molecule.get_charge_span()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_desorbed_molecules"><code class="docutils literal notranslate"><span class="pre">Molecule.get_desorbed_molecules()</span></code></a></li>
-<li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_deterministic_sssr"><code class="docutils literal notranslate"><span class="pre">Molecule.get_deterministic_sssr()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_disparate_cycles"><code class="docutils literal notranslate"><span class="pre">Molecule.get_disparate_cycles()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_edge"><code class="docutils literal notranslate"><span class="pre">Molecule.get_edge()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_edges"><code class="docutils literal notranslate"><span class="pre">Molecule.get_edges()</span></code></a></li>
@@ -1301,7 +1266,6 @@ number of lone electron pairs, assuming a neutral molecule.</p>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_polycycles"><code class="docutils literal notranslate"><span class="pre">Molecule.get_polycycles()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_radical_atoms"><code class="docutils literal notranslate"><span class="pre">Molecule.get_radical_atoms()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_radical_count"><code class="docutils literal notranslate"><span class="pre">Molecule.get_radical_count()</span></code></a></li>
-<li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_relevant_cycles"><code class="docutils literal notranslate"><span class="pre">Molecule.get_relevant_cycles()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_singlet_carbene_count"><code class="docutils literal notranslate"><span class="pre">Molecule.get_singlet_carbene_count()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_smallest_set_of_smallest_rings"><code class="docutils literal notranslate"><span class="pre">Molecule.get_smallest_set_of_smallest_rings()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_surface_sites"><code class="docutils literal notranslate"><span class="pre">Molecule.get_surface_sites()</span></code></a></li>
