@@ -3035,8 +3035,12 @@ reactions:
         ct_lindemann = self.lindemann.to_cantera(self.species_list, use_chemkin_identifier=True)
         assert type(ct_lindemann.rate) == type(self.ct_lindemann.rate)
         assert ct_lindemann.third_body.efficiencies == self.ct_lindemann.third_body.efficiencies
-        assert str(ct_lindemann.rate.low_rate) == str(self.ct_lindemann.rate.low_rate)
-        assert str(ct_lindemann.rate.high_rate) == str(self.ct_lindemann.rate.high_rate)
+        assert round(abs(ct_lindemann.rate.low_rate.activation_energy - self.ct_lindemann.rate.low_rate.activation_energy), 3) == 0
+        assert round(abs(ct_lindemann.rate.low_rate.pre_exponential_factor - self.ct_lindemann.rate.low_rate.pre_exponential_factor), 3) == 0
+        assert round(abs(ct_lindemann.rate.low_rate.temperature_exponent - self.ct_lindemann.rate.low_rate.temperature_exponent), 3) == 0
+        assert round(abs(ct_lindemann.rate.high_rate.activation_energy - self.ct_lindemann.rate.high_rate.activation_energy), 3) == 0
+        assert round(abs(ct_lindemann.rate.high_rate.pre_exponential_factor - self.ct_lindemann.rate.high_rate.pre_exponential_factor), 3) == 0
+        assert round(abs(ct_lindemann.rate.high_rate.temperature_exponent - self.ct_lindemann.rate.high_rate.temperature_exponent), 3) == 0
 
 
 class TestChargeTransferReaction:
