@@ -234,8 +234,8 @@ cdef class Lindemann(PDepKineticsModel):
         """
         import cantera as ct
 
-        high_rate = self.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
-        low_rate = self.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+        high_rate = self.arrheniusHigh.to_cantera_kinetics()
+        low_rate = self.arrheniusLow.to_cantera_kinetics()
         return ct.LindemannRate(low=low_rate, high=high_rate)
 
 
@@ -413,6 +413,6 @@ cdef class Troe(PDepKineticsModel):
             T2 = self.T2.value_si
             falloff = [A, T3, T1, T2]
         
-        high = self.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
-        low = self.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
+        high = self.arrheniusHigh.to_cantera_kinetics()
+        low = self.arrheniusLow.to_cantera_kinetics()
         return ct.TroeRate(high=high, low=low, falloff_coeffs=falloff)

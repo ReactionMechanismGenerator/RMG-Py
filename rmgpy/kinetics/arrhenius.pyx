@@ -232,14 +232,11 @@ cdef class Arrhenius(KineticsModel):
         """
         self._A.value_si *= factor
 
-    def to_cantera_kinetics(self, arrhenius_class=False):
+    def to_cantera_kinetics(self):
         """
         Converts the RMG Arrhenius object to a cantera ArrheniusRate or
         the auxiliary cantera Arrhenius class (used by falloff reactions). 
         Inputs for both are (A,b,E)  where A is in units of m^3/kmol/s, b is dimensionless, and E is in J/kmol
-
-        arrhenius_class: If ``True``, uses cantera.Arrhenius (for falloff reactions). If ``False``, uses 
-        Cantera.ArrheniusRate
         """
 
         import cantera as ct
@@ -269,10 +266,7 @@ cdef class Arrhenius(KineticsModel):
 
         b = self._n.value_si
         E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
-        if arrhenius_class:
-            return ct.Arrhenius(A, b, E)
-        else:
-            return ct.ArrheniusRate(A, b, E)
+        return ct.ArrheniusRate(A, b, E)
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
@@ -924,7 +918,7 @@ cdef class PDepArrhenius(PDepKineticsModel):
         assert isinstance(ct_reaction.rate, ct.PlogRate), "Must have a Cantera PlogRate attribute"
 
         pressures = copy.deepcopy(self._pressures.value_si)
-        ctArrhenius = [arr.to_cantera_kinetics(arrhenius_class=True) for arr in self.arrhenius]
+        ctArrhenius = [arr.to_cantera_kinetics() for arr in self.arrhenius]
 
         new_rates = ct.PlogRate(list(zip(pressures, ctArrhenius)))
         ct_reaction.rate = new_rates
