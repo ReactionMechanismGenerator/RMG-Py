@@ -490,51 +490,46 @@ class Fragment(Molecule):
 
         return formula
 
-    def to_rdkit_mol(self, remove_h=False, return_mapping=True, save_order=False):
+    def to_rdkit_mol(self, **kwargs):
         """
-        Convert a molecular structure to a RDKit rdmol object.
+        Convert a Fragment structure to a RDKit rdmol object.
+
+        Uses Fragment.get_representative_molecule to get a representative molecule,
+        and then uses converter.to_rdkit_mol to do the conversion.
+
+        Could change the order of atoms in the Fragment (self) to match the order of
+        representative_molecule.atoms, though that's probably the same.
         """
-        if remove_h:
-            # because we're replacing
-            # cutting labels with hydrogens
-            # so do not allow removeHs to be True
-            raise "Currently fragment to_rdkit_mol only allows keeping all the hydrogens."
 
-        mol0, mapping = self.get_representative_molecule("minimal", update=False)
+        if kwargs.get('remove_h', False):
+            # because we're replacing cutting labels with hydrogens
+            # do not allow removeHs to be True
+            raise ValueError("Currently Fragment to_rdkit_mol only allows keeping all the hydrogens.")
 
-        rdmol, rdAtomIdx_mol0 = converter.to_rdkit_mol(
-            mol0,
-            remove_h=remove_h,
-            return_mapping=return_mapping,
-            sanitize=True,
-            save_order=save_order,
+        representative_molecule, fragment_to_mol_mapping = self.get_representative_molecule("minimal", update=False)
+
+        new_kwargs = {**kwargs}  # make a copy of kwargs to avoid modifying the original one
+        new_kwargs["remove_h"] = False
+        new_kwargs["return_mapping"] = True  # override user if needed
+        new_kwargs["save_order"] = True  # override user if needed
+        rdmol, molecule_to_rdindex_mapping = converter.to_rdkit_mol(
+            representative_molecule,
+            **new_kwargs
         )
 
-        rdAtomIdx_frag = {}
-        for frag_atom, mol0_atom in mapping.items():
-            rd_idx = rdAtomIdx_mol0[mol0_atom]
-            rdAtomIdx_frag[frag_atom] = rd_idx
+        fragment_to_rdindex_mapping = {}
+        for fragment_atom, molecule_atom in fragment_to_mol_mapping.items():
+            rdmol_index = molecule_to_rdindex_mapping[molecule_atom]
+            fragment_to_rdindex_mapping[fragment_atom] = rdmol_index
 
-        # sync the order of fragment vertices with the order
-        # of mol0.atoms since mol0.atoms is changed/sorted in
-        # converter.to_rdkit_mol().
-        # Since the rdmol's atoms order is same as the order of mol0's atoms,
-        # the synchronization between fragment.atoms order and mol0.atoms order
-        # is necessary to make sure the order of fragment vertices
-        # reflects the order of rdmol's atoms
-        vertices_order = []
-        for v in self.vertices:
-            a = mapping[v]
-            idx = mol0.atoms.index(a)
-            vertices_order.append((v, idx))
+        # Sort the Fragment (self) vertices according to the order of the RDKit molecule's atoms
+        # (rwest is not sure this is needed, but it was here so he's leaving it)
+        self.vertices.sort(key=lambda v: fragment_to_rdindex_mapping[v])
 
-        adapted_vertices = [
-            tup[0] for tup in sorted(vertices_order, key=lambda tup: tup[1])
-        ]
-
-        self.vertices = adapted_vertices
-
-        return rdmol, rdAtomIdx_frag
+        if kwargs.get("return_mapping", False):
+            return rdmol, fragment_to_rdindex_mapping
+        else:
+            return rdmol
 
     def from_adjacency_list(
         self,
@@ -587,7 +582,7 @@ class Fragment(Molecule):
         """
         Returns all aromatic rings as a list of atoms and a list of bonds.
 
-        Identifies rings using `Graph.get_smallest_set_of_smallest_rings()`, then uses RDKit to perceive aromaticity.
+        Identifies rings, then uses RDKit to perceive aromaticity.
         RDKit uses an atom-based pi-electron counting algorithm to check aromaticity based on Huckel's Rule.
         Therefore, this method identifies "true" aromaticity, rather than simply the RMG bond type.
 
@@ -600,7 +595,7 @@ class Fragment(Molecule):
         AROMATIC = BondType.AROMATIC
 
         if rings is None:
-            rings = self.get_relevant_cycles()
+            rings = self.get_smallest_set_of_smallest_rings()
             rings = [ring for ring in rings if len(ring) == 6]
         if not rings:
             return [], []
@@ -681,9 +676,8 @@ class Fragment(Molecule):
         mol_repr.atoms = smiles_before.vertices
         mol_repr.update()
         smiles_after = mol_repr.to_smiles()
-        import re
 
-        smiles = re.sub(r"\[Si-3\]", "", smiles_after)
+        smiles = smiles_after.replace("[Si-3]", "")
 
         return smiles
 
@@ -911,7 +905,7 @@ class Fragment(Molecule):
         _, cutting_label_list = self.detect_cutting_label(molecule_smiles)
         # transfer to rdkit molecule for substruct matching
         f = self.from_smiles_like_string(molecule_smiles)
-        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol()
+        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol(remove_h=False, return_mapping=True)
 
         # replace CuttingLabel to special Atom (metal) in rdkit
         for atom, idx in rdAtomIdx_frag.items():
@@ -1037,7 +1031,7 @@ class Fragment(Molecule):
         _, cutting_label_list = self.detect_cutting_label(molecule_smiles)
         # transfer to rdkit molecule for substruct matching
         f = self.from_smiles_like_string(molecule_smiles)
-        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol()
+        molecule_to_cut, rdAtomIdx_frag = f.to_rdkit_mol(remove_h=False, return_mapping=True)
 
         # replace CuttingLabel to special Atom (metal) in rdkit
         for atom, idx in rdAtomIdx_frag.items():
@@ -1297,8 +1291,9 @@ class Fragment(Molecule):
         self.from_rdkit_mol(rdkitmol, atom_replace_dict)
 
         return self
-
-    def detect_cutting_label(self, smiles):
+    
+    @staticmethod
+    def detect_cutting_label(smiles):
         import re
         from rmgpy.molecule.element import element_list
 
@@ -1805,6 +1800,12 @@ class Fragment(Molecule):
         self.species_repr.symmetry_number = self.symmetry_number
 
     def get_representative_molecule(self, mode="minimal", update=True):
+        """
+        Generate a representative molecule from the fragment.
+        The representative molecule is generated by replacing all CuttingLabel
+        atoms with hydrogen atoms.
+        """
+
         if mode != "minimal":
             raise RuntimeError(
                 'Fragment.get_representative_molecule onyl supports mode="minimal"'

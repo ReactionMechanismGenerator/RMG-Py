@@ -34,7 +34,6 @@ import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.molecule.fragment import Fragment
-from rmgpy.species import Species
 
 def _to_molecule(obj):
     """Return plain Molecule; accept Molecule or (Molecule, mapping) tuple."""
@@ -113,6 +112,8 @@ class DiffusionLimited(object):
         (ie. forward direction if forward=True [default] or reverse if forward=False)
         Returns the rate coefficient k_diff in m3/mol/s.
         """
+        from rmgpy.species import Species
+
         if forward:
             reacting = reaction.reactants
         else:

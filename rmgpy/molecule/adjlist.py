@@ -1093,7 +1093,7 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
                 # numbers if doesn't work
                 try:
                     adjlist += bond.get_order_str()
-                except ValueError:
+                except (ValueError, TypeError):
                     adjlist += str(bond.get_order_num())
             adjlist += '}'
 

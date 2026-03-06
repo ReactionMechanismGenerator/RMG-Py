@@ -116,7 +116,7 @@ class OrcaLog(ESSAdapter):
         for (_, _, files) in os.walk(os.path.dirname(self.path)):
             for file_ in files:
                 if file_.endswith('.hess'):
-                    hess_files.append(file_)
+                    hess_files.append(os.path.join(os.path.dirname(self.path), file_))
             break
         if len(hess_files) == 1:
             hess_file = hess_files[0]

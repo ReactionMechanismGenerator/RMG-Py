@@ -41,7 +41,6 @@ import resource
 import shutil
 import sys
 import time
-import warnings
 from copy import deepcopy
 
 import h5py
@@ -56,8 +55,7 @@ from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints
 from rmgpy.data.base import Entry
-from rmgpy.data.kinetics.family import TemplateReaction
-from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.exceptions import (
@@ -74,11 +72,10 @@ from rmgpy.reaction import Reaction
 from rmgpy.rmg.listener import SimulationProfilePlotter, SimulationProfileWriter
 from rmgpy.rmg.model import CoreEdgeReactionModel, Species
 from rmgpy.rmg.output import OutputHTMLWriter
-from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
+from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
 from rmgpy.rmg.settings import ModelSettings
-from rmgpy.solver.base import TerminationConversion, TerminationTime
-from rmgpy.solver.simple import SimpleReactor
+from rmgpy.solver.base import TerminationTime
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
@@ -587,9 +584,9 @@ class RMG(util.Subject):
             shutil.copyfile(self.species_map_path, os.path.join(filters_restart, "species_map.yml"))
 
             # Load the seed mechanism to get the core and edge species
-            self.database.kinetics.load_libraries(restart_dir, libraries=["restart", "restart_edge"])
+            self.database.kinetics.load_libraries(restart_dir)#, libraries=["restart", "restart_edge"])
             self.seed_mechanisms.append("restart")
-            self.reaction_libraries.append(("restart_edge", False))
+#            self.reaction_libraries.append(("restart_edge", False))
 
         # Set trimolecular reactant flags of reaction systems
         if self.trimolecular:
@@ -693,10 +690,11 @@ class RMG(util.Subject):
                 if "allowed" in self.species_constraints and "input species" in self.species_constraints["allowed"]:
                     self.species_constraints["explicitlyAllowedMolecules"].append(spec.molecule[0])
                 else:
+                    reason = fails_species_constraints(spec)
                     raise ForbiddenStructureException(
                         "Species constraints forbids input species {0}. Please "
                         "reformulate constraints, remove the species, or explicitly "
-                        "allow it.".format(spec.label)
+                        "allow it. Reason: {1}".format(spec.label, reason)
                     )
 
         # For liquidReactor, checks whether the solvent is listed as one of the initial species.
@@ -2327,7 +2325,7 @@ class RMG_Memory(object):
         Jout /= tot  # normalize Jout
         n = self.rand_state.uniform(0, 1, 1)[0]  # draw a random number between 0 and 1
         s = 0.0
-        for indexes in np.ndenumerate(Jout):  # choose a coordinate such that grid[indexes] is choosen with probability Jout[indexes]
+        for indexes in np.ndenumerate(Jout):  # choose a coordinate such that grid[indexes] is chosen with probability Jout[indexes]
             s += Jout[indexes[0]]
             if s > n:
                 break
@@ -2401,7 +2399,7 @@ def log_conditions(rmg_memories, index):
     log newly generated reactor conditions
     """
     if rmg_memories[index].get_cond() is not None:
-        s = "conditions choosen for reactor {0} were: ".format(index)
+        s = f"conditions chosen for reactor {index} were: "
         for key, item in rmg_memories[index].get_cond().items():
             if key == "T":
                 s += "T = {0} K, ".format(item)

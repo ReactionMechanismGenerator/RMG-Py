@@ -250,8 +250,8 @@ pressureDependence(
     minimumNumberOfGrains=250,
     # the conditions for the rate to be output over
     # parameter order is: low_value, high_value, units, internal points
-    temperatures=(300, 2200, 'K', 2),
-    pressures=(0.01, 100, 'bar', 3),
+    temperatures=(300, 2200, 'K', 10),
+    pressures=(0.01, 100, 'bar', 10),
     # The two options for interpolation are 'PDepArrhenius' (no extra arguments) and
     # 'Chebyshev' which is followed by the number of basis sets in
     # Temperature and Pressure. These values must be less than the number of
@@ -260,6 +260,11 @@ pressureDependence(
     # turns off pressure dependence for molecules with number of atoms greater than the number specified below
     # this is due to faster internal rate of energy transfer for larger molecules
     maximumAtoms=15,
+    # (optional) list of networks that have been thoroughly studied and should not be expanded
+    # by RMG. This is useful when you have a detailed mechanism for a specific network (e.g., from
+    # a seed mechanism or reaction library) and don't want RMG to add its own estimates which may
+    # make the model worse. Specify networks by their chemical formula, e.g., ['CH2O2', 'C2H6']
+    # completedNetworks=['CH2O2'],
 )
 
 # optional block adds constraints on what RMG can output.

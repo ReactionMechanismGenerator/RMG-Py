@@ -169,16 +169,21 @@ cdef class SimpleReactor(ReactionSystem):
                     conditions[species_dict[label]] = value
         self.sens_conditions = conditions
 
-    def get_const_spc_indices (self, core_species):
+    def get_const_spc_indices(self, core_species):
         """
         Allow to identify constant Species position in solver
         """
-        for spc in self.const_spc_names:
-            if self.const_spc_indices is None:  # initialize once the list if constant SPC declared
-                self.const_spc_indices = []
-            for spc in core_species: #Need to identify the species object corresponding to the the string written in the input file
-                if spc.label == spc:
-                    self.const_spc_indices.append(core_species.index(spc)) 
+        if self.const_spc_names is None:
+            return
+        if self.const_spc_indices is None:
+            self.const_spc_indices = []
+        else:
+            return
+        for name in self.const_spc_names:
+            for spc in core_species:
+                if spc.label == name:
+                    self.const_spc_indices.append(core_species.index(spc))
+                    break
 
     cpdef initialize_model(self, list core_species, list core_reactions, list edge_species, list edge_reactions,
                           list surface_species=None, list surface_reactions=None, list pdep_networks=None,
