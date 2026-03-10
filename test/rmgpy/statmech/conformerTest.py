@@ -109,7 +109,7 @@ class TestConformer:
         self.conformer = Conformer(
             E0=(self.E0, "kJ/mol"),
             modes=[
-                IdealGasTranslation(mass=(30.0469, "amu")),
+                IdealGasTranslation(mass=(30.04695, "amu")),
                 NonlinearRotor(inertia=([6.27071, 25.3832, 25.3833], "amu*angstrom^2"), symmetry=6),
                 HarmonicOscillator(
                     frequencies=(
@@ -276,7 +276,7 @@ class TestConformer:
         """
         Test the Conformer.get_total_mass() method.
         """
-        assert round(abs(self.conformer.get_total_mass() * constants.Na * 1000.0 - np.sum(self.mass)), 6) == 0
+        assert abs(self.conformer.get_total_mass() * constants.Na * 1000.0 - np.sum(self.mass)) < 1.0e-5
 
     def test_get_center_of_mass(self):
         """

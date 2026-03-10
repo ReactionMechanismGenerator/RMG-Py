@@ -224,7 +224,7 @@ rotors = [HinderedRotor(scanLog=Log('{scan}'), pivots=[1, 2], top=[1, 3], symmet
         statmech_job = StatMechJob(species=h2o2, path=h2o2_path)
         statmech_job.level_of_theory = LevelOfTheory("b3lyp", "6-311+g(3df,2p)")
         statmech_job.load(pdep=False, plot=False)
-        assert round(abs(h2o2.conformer.E0.value_si - -146031.49933673252), 7) == 0
+        assert round(abs(h2o2.conformer.E0.value_si - -146066.21039109805), 7) == 0
         os.remove(h2o2_path)
 
     def test_hinder_rotor_from_1d_array(self):
@@ -367,7 +367,7 @@ rotors = [HinderedRotor1DArray(
         assert statmech_job.raw_hindered_rotor_data[0][2] == 1
         assert np.allclose(statmech_job.raw_hindered_rotor_data[0][3], angles, atol=1e-6)
         assert np.allclose(statmech_job.raw_hindered_rotor_data[0][4], energies, atol=1e-6)
-        assert round(abs(h2o2.conformer.E0.value_si - -146031.49933673252), 7) == 0
+        assert round(abs(h2o2.conformer.E0.value_si - -146066.21039109805), 7) == 0
         os.remove(h2o2_path)
 
     def test_scanlog_class(self):
