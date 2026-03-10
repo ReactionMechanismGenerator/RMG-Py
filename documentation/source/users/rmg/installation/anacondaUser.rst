@@ -38,7 +38,7 @@ If you had previously installed a binary version of the RMG package and wish to 
 
     conda create --name rmg_xyz_env -c conda-forge -c rmg 'rmg==x.y.z'
     
-It is also possible, though not advisable, to update your existing installation to the latest stable version available on Anaconda by typing the following command on the terminal ::
+It is also possible, though not advisable, to update your existing installation to the latest stable version by typing the following command on the terminal ::
 
     source activate rmg_env
     conda update -c conda-forge -c rmg rmg
