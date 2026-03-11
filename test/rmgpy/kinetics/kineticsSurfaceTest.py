@@ -31,14 +31,17 @@
 This script contains unit tests of the :mod:`rmgpy.kinetics.surface` module.
 """
 
-
+import copy
+import pickle
 import numpy as np
 
 from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius, SurfaceChargeTransfer, SurfaceArrheniusBM
 from rmgpy.species import Species
+from rmgpy.reaction import Reaction
 from rmgpy.molecule import Molecule
 import rmgpy.quantity as quantity
 import rmgpy.constants as constants
+import rmgpy.thermo
 
 
 class TestStickingCoefficient:
@@ -150,7 +153,6 @@ class TestStickingCoefficient:
         Test that an StickingCoefficient object can be pickled and unpickled with no loss
         of information.
         """
-        import pickle
 
         stick = pickle.loads(pickle.dumps(self.stick, -1))
         assert abs(self.stick.A.value - stick.A.value) < 1e0
@@ -213,7 +215,6 @@ class TestStickingCoefficient:
         Test that an StickingCoefficient object can be copied with deepcopy
         with no loss of information.
         """
-        import copy
 
         stick = copy.deepcopy(self.stick)
         assert abs(self.stick.A.value - stick.A.value) < 1e0
@@ -360,7 +361,6 @@ class TestSurfaceArrhenius:
         Test that an SurfaceArrhenius object can be pickled and unpickled with no loss
         of information.
         """
-        import pickle
 
         surfarr = pickle.loads(pickle.dumps(self.surfarr, -1))
         assert abs(self.surfarr.A.value - surfarr.A.value) < 1e0
@@ -423,7 +423,6 @@ class TestSurfaceArrhenius:
         Test that an SurfaceArrhenius object can be copied with deepcopy
         with no loss of information.
         """
-        import copy
 
         surfarr = copy.deepcopy(self.surfarr)
         assert abs(self.surfarr.A.value - surfarr.A.value) < 1e0
@@ -604,7 +603,6 @@ class TestSurfaceChargeTransfer:
         Test that an SurfaceChargeTransfer object can be pickled and unpickled with no loss
         of information.
         """
-        import pickle
         surfchargerxn_reduction = pickle.loads(pickle.dumps(self.surfchargerxn_reduction, -1))
         assert abs(self.surfchargerxn_reduction.A.value-surfchargerxn_reduction.A.value) < 1e0
         assert self.surfchargerxn_reduction.A.units == surfchargerxn_reduction.A.units
@@ -651,7 +649,6 @@ class TestSurfaceChargeTransfer:
         Test that an SurfaceChargeTransfer object can be copied with deepcopy
         with no loss of information.
         """
-        import copy
         surfchargerxn_reduction = copy.deepcopy(self.surfchargerxn_reduction)
         assert abs(self.surfchargerxn_reduction.A.value-surfchargerxn_reduction.A.value) < 1e0
         assert self.surfchargerxn_reduction.A.units == surfchargerxn_reduction.A.units
@@ -819,6 +816,48 @@ class TestSurfaceArrheniusBM:
             coverage_dependence=self.coverage_dependence,
         )
 
+        self.reaction1 = Reaction()
+        X = Species().from_adjacency_list('1 X u0 p0 c0\n')
+        OX = Species(smiles='O=*')
+        O2 = Species(smiles='[O][O]')
+        X.thermo = rmgpy.thermo.NASA(
+                polynomials = [
+                    rmgpy.thermo.NASAPolynomial(coeffs=[
+                    0.000000000E+00,   0.000000000E+00,   0.000000000E+00,   0.000000000E+00,
+                    0.000000000E+00,   0.000000000E+00,   0.000000000E+00], Tmin=(298.0,'K'), Tmax=(1000.0, 'K')),
+                    rmgpy.thermo.NASAPolynomial(coeffs=[
+                    0.000000000E+00,   0.000000000E+00,   0.000000000E+00,   0.000000000E+00,
+                    0.000000000E+00,   0.000000000E+00,   0.000000000E+00], Tmin=(1000.0,'K'), Tmax=(3000.0, 'K')),
+                ],
+                Tmin = (298.0, 'K'),
+                Tmax = (3000.0, 'K'),
+            )
+        OX.thermo = rmgpy.thermo.NASA(
+            polynomials=[
+                rmgpy.thermo.NASAPolynomial(coeffs=[-2.94475701E-01, 1.44162624E-02, -2.61322704E-05, 2.19005957E-08, -6.98019420E-12,
+                                    -1.64619234E+04, -1.99445623E-01], Tmin=(298.0, 'K'), Tmax=(1000.0, 'K')),
+                rmgpy.thermo.NASAPolynomial(coeffs=[2.90244691E+00, -3.38584457E-04, 6.43372619E-07, -3.66326660E-10, 6.90093884E-14,
+                                    -1.70497471E+04, -1.52559728E+01], Tmin=(1000.0, 'K'), Tmax=(2000.0, 'K')),
+            ],
+            Tmin=(298.0, 'K'),
+            Tmax=(2000.0, 'K'),
+        )
+        O2.thermo = rmgpy.thermo.NASA(
+            polynomials=[rmgpy.thermo.NASAPolynomial(coeffs=[3.53732,-0.00121571,5.31618e-06,-4.89443e-09,1.45845e-12,-1038.59,4.68368], Tmin=(100,'K'), Tmax=(1074.56,'K')),
+                        rmgpy.thermo.NASAPolynomial(coeffs=[3.15382,0.00167804,-7.69971e-07,1.51275e-10,-1.08782e-14,-1040.82,6.16754], Tmin=(1074.56,'K'), Tmax=(5000,'K'))],
+            Tmin=(100,'K'),
+            Tmax=(5000,'K')
+        )
+        self.reaction1.reactants = [O2, X, X]
+        self.reaction1.products = [OX, OX]
+        self.reaction1.kinetics = rmgpy.kinetics.surface.SurfaceArrhenius(
+            A=(1.89E21, 'cm^5/(mol^2*s)'),
+            n = -0.5,
+            Ea=(0.0, 'J/mol'),
+            Tmin = (200, 'K'),
+            Tmax = (3000, 'K'),
+        )
+
 
     def test_A(self):
         """
@@ -896,7 +935,6 @@ class TestSurfaceArrheniusBM:
         Test that a SurfaceArrheniusBM object can be pickled and unpickled with no loss
         of information.
         """
-        import pickle
 
         surfarrBM = pickle.loads(pickle.dumps(self.surfarrBM, -1))
         assert abs(self.surfarrBM.A.value - surfarrBM.A.value) < 1e0
@@ -959,7 +997,6 @@ class TestSurfaceArrheniusBM:
         Test that an SurfaceArrheniusBM object can be copied with deepcopy
         with no loss of information.
         """
-        import copy
 
         surfarrBM = copy.deepcopy(self.surfarrBM)
         assert abs(self.surfarrBM.A.value - surfarrBM.A.value) < 1e0
@@ -996,21 +1033,22 @@ class TestSurfaceArrheniusBM:
         """
         assert self.surfarrBM.is_identical_to(self.surfarrBM)
     
-    # def test_to_arrhenius(self):
-    #     """
-    #     Test that the SurfaceArrheniusBM.to_arrhenius method works
-    #     """
 
-    #     surface_charge_transfer = self.surfarr.to_surface_charge_transfer(2,-2)
-    #     assert isinstance(surface_charge_transfer, SurfaceChargeTransfer)
-    #     surface_charge_transfer0 = SurfaceChargeTransfer(
-    #         A = self.surfarr.A,
-    #         n = self.surfarr.n,
-    #         Ea = self.surfarr.Ea,
-    #         T0 = self.surfarr.T0,
-    #         Tmin = self.surfarr.Tmin,
-    #         Tmax = self.surfarr.Tmax,
-    #         electrons = -2,
-    #         V0 = (2,'V')
-    #     )
-    #     assert surface_charge_transfer.is_identical_to(surface_charge_transfer0)
+    def test_to_and_from_arrhenius(self):
+        """Test going from SurfaceArrhenius to SurfaceArrheniusBM and back again"""
+
+        reaction1_BM = copy.deepcopy(self.reaction1)
+        reaction1_BM.kinetics = rmgpy.kinetics.surface.SurfaceArrheniusBM().fit_to_reactions([self.reaction1], w0=1e6)
+        return_arrhenius = reaction1_BM.kinetics.to_arrhenius(dHrxn=reaction1_BM.get_enthalpy_of_reaction(298))
+        assert return_arrhenius.is_similar_to(self.reaction1.kinetics)
+
+        # not sure if .is_similar_to is wrong... because as the enthalpy of reaction changes
+        # assert self.reaction1.kinetics.is_similar_to(reaction1_BM.kinetics)
+        Ts = [500, 1000, 1500, 2000]
+        for T in Ts:
+            k1 = self.reaction1.kinetics.get_rate_coefficient(T)
+            dHrxn = reaction1_BM.get_enthalpy_of_reaction(T)
+            k2 = reaction1_BM.kinetics.get_rate_coefficient(T, dHrxn=dHrxn)
+            assert np.abs(np.log10(k1) - np.log10(k2)) < 0.1
+
+
