@@ -392,13 +392,6 @@ class Reaction:
                     rate=ct.LindemannRate()
                 )
 
-        elif isinstance(self.kinetics, SurfaceArrhenius):
-            ct_reaction = ct.Reaction(
-                reactants=ct_reactants,
-                products=ct_products,
-                rate=ct.InterfaceArrheniusRate()
-            )
-
         elif isinstance(self.kinetics, StickingCoefficient):
             ct_reaction = ct.Reaction(
                 reactants=ct_reactants,
