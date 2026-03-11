@@ -34,7 +34,7 @@ This script contains unit tests of the :mod:`rmgpy.kinetics.surface` module.
 
 import numpy as np
 
-from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius, SurfaceChargeTransfer
+from rmgpy.kinetics.surface import StickingCoefficient, SurfaceArrhenius, SurfaceChargeTransfer, SurfaceArrheniusBM
 from rmgpy.species import Species
 from rmgpy.molecule import Molecule
 import rmgpy.quantity as quantity
@@ -770,3 +770,247 @@ class TestSurfaceChargeTransfer:
             self.surfchargerxn_reduction.change_v0(V)
             assert self.surfchargerxn_reduction.V0.value_si == V_i + delta
             assert round(abs(self.surfchargerxn_reduction.Ea.value_si- (Ea_i - (alpha *electrons * constants.F * delta))), 6) == 0
+
+
+
+class TestSurfaceArrheniusBM:
+    """
+    Contains unit tests of the :class:`SurfaceArrheniusBM` class.
+    """
+
+    def setup_class(self):
+        self.A = 1.44e18
+        self.n = -0.087
+        self.Ea = 63.4
+        self.E0 = 63.4
+        self.w0 = 1e3
+        self.T0 = 1.0
+        self.Tmin = 300.0
+        self.Tmax = 3000.0
+        s = Species().from_adjacency_list("1 X u0 p0 c0")
+        s.label = "X"
+        self.coverage_dependence = {
+            s: {
+                "a": quantity.Dimensionless(0.0),
+                "m": quantity.Dimensionless(-1.0),
+                "E": quantity.Energy(0.0, "J/mol"),
+            }
+        }
+        self.comment = "CH3x + Hx <=> CH4 + x + x"
+        self.surfarr = SurfaceArrhenius(
+            A=(self.A, "m^2/(mol*s)"),
+            n=self.n,
+            Ea=(self.Ea, "kJ/mol"),
+            T0=(self.T0, "K"),
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            comment=self.comment,
+            coverage_dependence=self.coverage_dependence,
+        )
+
+        self.surfarrBM = SurfaceArrheniusBM(
+            A=(self.A, "m^2/(mol*s)"),
+            n=self.n,
+            E0=(self.E0, "kJ/mol"),
+            w0=(self.w0, "kJ/mol"),
+            Tmin=(self.Tmin, "K"),
+            Tmax=(self.Tmax, "K"),
+            comment=self.comment,
+            coverage_dependence=self.coverage_dependence,
+        )
+
+
+    def test_A(self):
+        """
+        Test that the SurfaceArrheniusBM A property was properly set.
+        """
+        assert abs(self.surfarrBM.A.value_si - self.A) < 1e0
+
+    def test_n(self):
+        """
+        Test that the SurfaceArrheniusBM n property was properly set.
+        """
+        assert round(abs(self.surfarrBM.n.value_si - self.n), 6) == 0
+
+    def test_E0(self):
+        """
+        Test that the SurfaceArrheniusBM E0 property was properly set.
+        """
+        assert round(abs(self.surfarrBM.E0.value_si * 0.001 - self.E0), 6) == 0
+
+    def test_w0(self):
+        """
+        Test that the SurfaceArrheniusBM w0 property was properly set.
+        """
+        assert round(abs(self.surfarrBM.w0.value_si * 0.001 - self.w0), 6) == 0
+
+    def test_Tmin(self):
+        """
+        Test that the SurfaceArrheniusBM Tmin property was properly set.
+        """
+        assert round(abs(self.surfarrBM.Tmin.value_si - self.Tmin), 6) == 0
+
+    def test_Tmax(self):
+        """
+        Test that the SurfaceArrheniusBM Tmax property was properly set.
+        """
+        assert round(abs(self.surfarrBM.Tmax.value_si - self.Tmax), 6) == 0
+
+    def test_comment(self):
+        """
+        Test that the SurfaceArrheniusBM comment property was properly set.
+        """
+        assert self.surfarrBM.comment == self.comment
+
+    def test_coverage_dependence(self):
+        """
+        Test that the coverage dependent parameters was properly set.
+        """
+        for key in self.surfarrBM.coverage_dependence.keys():
+            match = False
+            for key2 in self.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            assert match
+        for species, parameters in self.surfarrBM.coverage_dependence.items():
+            match = False
+            for species2 in self.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        assert value.value_si == self.coverage_dependence[species2][key].value_si
+            assert match
+
+    def test_is_temperature_valid(self):
+        """
+        Test the SurfaceArrheniusBM.is_temperature_valid() method.
+        """
+        T_data = np.array([200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 4000])
+        valid_data = np.array([False, True, True, True, True, True, True, True, True, False], bool)
+        for T, valid in zip(T_data, valid_data):
+            valid0 = self.surfarr.is_temperature_valid(T)
+            assert valid0 == valid
+
+    def test_pickle(self):
+        """
+        Test that a SurfaceArrheniusBM object can be pickled and unpickled with no loss
+        of information.
+        """
+        import pickle
+
+        surfarrBM = pickle.loads(pickle.dumps(self.surfarrBM, -1))
+        assert abs(self.surfarrBM.A.value - surfarrBM.A.value) < 1e0
+        assert self.surfarrBM.A.units == surfarrBM.A.units
+        assert round(abs(self.surfarrBM.n.value - surfarrBM.n.value), 4) == 0
+        assert round(abs(self.surfarrBM.E0.value - surfarrBM.E0.value), 4) == 0
+        assert self.surfarrBM.E0.units == surfarrBM.E0.units
+        assert round(abs(self.surfarrBM.w0.value - surfarrBM.w0.value), 4) == 0
+        assert self.surfarrBM.w0.units == surfarrBM.w0.units
+        assert round(abs(self.surfarrBM.Tmin.value - surfarrBM.Tmin.value), 4) == 0
+        assert self.surfarrBM.Tmin.units == surfarrBM.Tmin.units
+        assert round(abs(self.surfarrBM.Tmax.value - surfarrBM.Tmax.value), 4) == 0
+        assert self.surfarrBM.Tmax.units == surfarrBM.Tmax.units
+        assert self.surfarrBM.comment == surfarrBM.comment
+        for key in self.surfarrBM.coverage_dependence.keys():
+            match = False
+            for key2 in surfarrBM.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            assert match
+        for species, parameters in self.surfarrBM.coverage_dependence.items():
+            match = False
+            for species2 in surfarrBM.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        assert value.value_si == surfarrBM.coverage_dependence[species2][key].value_si
+            assert match
+        assert dir(self.surfarrBM) == dir(surfarrBM)
+
+    def test_repr(self):
+        """
+        Test that an SurfaceArrheniusBM object can be reconstructed from its repr()
+        output with no loss of information.
+        """
+        namespace = {}
+        exec("surfarrBM = {0!r}".format(self.surfarrBM), globals(), namespace)
+        assert "surfarrBM" in namespace
+        surfarrBM = namespace["surfarrBM"]
+        assert abs(self.surfarrBM.A.value - surfarrBM.A.value) < 1e0
+        assert self.surfarrBM.A.units == surfarrBM.A.units
+        assert round(abs(self.surfarrBM.n.value - surfarrBM.n.value), 4) == 0
+        assert round(abs(self.surfarrBM.E0.value - surfarrBM.E0.value), 4) == 0
+        assert self.surfarrBM.E0.units == surfarrBM.E0.units
+        assert round(abs(self.surfarrBM.w0.value - surfarrBM.w0.value), 4) == 0
+        assert self.surfarrBM.w0.units == surfarrBM.w0.units
+        assert round(abs(self.surfarrBM.Tmin.value - surfarrBM.Tmin.value), 4) == 0
+        assert self.surfarrBM.Tmin.units == surfarrBM.Tmin.units
+        assert round(abs(self.surfarrBM.Tmax.value - surfarrBM.Tmax.value), 4) == 0
+        assert self.surfarrBM.Tmax.units == surfarrBM.Tmax.units
+        assert self.surfarrBM.comment == surfarrBM.comment
+        assert [m.label for m in self.surfarrBM.coverage_dependence.keys()] == list(surfarrBM.coverage_dependence.keys())
+        for species, parameters in self.surfarrBM.coverage_dependence.items():
+            for key, value in parameters.items():
+                assert value.value_si == surfarrBM.coverage_dependence[species.label][key].value_si
+        assert dir(self.surfarrBM) == dir(surfarrBM)
+
+    def test_copy(self):
+        """
+        Test that an SurfaceArrheniusBM object can be copied with deepcopy
+        with no loss of information.
+        """
+        import copy
+
+        surfarrBM = copy.deepcopy(self.surfarrBM)
+        assert abs(self.surfarrBM.A.value - surfarrBM.A.value) < 1e0
+        assert self.surfarrBM.A.units == surfarrBM.A.units
+        assert round(abs(self.surfarrBM.n.value - surfarrBM.n.value), 4) == 0
+        assert round(abs(self.surfarrBM.E0.value - surfarrBM.E0.value), 4) == 0
+        assert self.surfarrBM.E0.units == surfarrBM.E0.units
+        assert round(abs(self.surfarrBM.w0.value - surfarrBM.w0.value), 4) == 0
+        assert self.surfarrBM.w0.units == surfarrBM.w0.units
+        assert round(abs(self.surfarrBM.Tmin.value - surfarrBM.Tmin.value), 4) == 0
+        assert self.surfarrBM.Tmin.units == surfarrBM.Tmin.units
+        assert round(abs(self.surfarrBM.Tmax.value - surfarrBM.Tmax.value), 4) == 0
+        assert self.surfarrBM.Tmax.units == surfarrBM.Tmax.units
+        assert self.surfarrBM.comment == surfarrBM.comment
+        for key in self.surfarrBM.coverage_dependence.keys():
+            match = False
+            for key2 in surfarrBM.coverage_dependence.keys():
+                if key.is_identical(key2):
+                    match = True
+            assert match
+        for species, parameters in self.surfarrBM.coverage_dependence.items():
+            match = False
+            for species2 in surfarrBM.coverage_dependence.keys():
+                if species.is_identical(species2):
+                    match = True
+                    for key, value in parameters.items():
+                        assert value.value_si == surfarrBM.coverage_dependence[species2][key].value_si
+            assert match
+        assert dir(self.surfarrBM) == dir(surfarrBM)
+
+    def test_is_identical_to(self):
+        """
+        Test that the SurfaceArrheniusBM.is_identical_to method works on itself
+        """
+        assert self.surfarrBM.is_identical_to(self.surfarrBM)
+    
+    # def test_to_arrhenius(self):
+    #     """
+    #     Test that the SurfaceArrheniusBM.to_arrhenius method works
+    #     """
+
+    #     surface_charge_transfer = self.surfarr.to_surface_charge_transfer(2,-2)
+    #     assert isinstance(surface_charge_transfer, SurfaceChargeTransfer)
+    #     surface_charge_transfer0 = SurfaceChargeTransfer(
+    #         A = self.surfarr.A,
+    #         n = self.surfarr.n,
+    #         Ea = self.surfarr.Ea,
+    #         T0 = self.surfarr.T0,
+    #         Tmin = self.surfarr.Tmin,
+    #         Tmax = self.surfarr.Tmax,
+    #         electrons = -2,
+    #         V0 = (2,'V')
+    #     )
+    #     assert surface_charge_transfer.is_identical_to(surface_charge_transfer0)

@@ -814,15 +814,13 @@ cdef class SurfaceArrheniusBM(ArrheniusBM):
                              `a`, the coefficient for exponential dependence on the coverage,
                              `m`, the power-law exponent of coverage dependence, and
                              `E`, the activation energy dependence on coverage.
-    `uncertainty`           Uncertainty information
     `comment`               Information about the model (e.g. its source)
     ======================= =============================================================
     """
 
     def __init__(self, A=None, n=0.0, w0=(0.0, 'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, 
-                 coverage_dependence=None, uncertainty=None, comment=''):
-        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, uncertainty=uncertainty,
-                               comment=comment)
+                 coverage_dependence=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
         self.A = A
         self.n = n
         self.w0 = w0
@@ -854,7 +852,7 @@ cdef class SurfaceArrheniusBM(ArrheniusBM):
         Return a string representation that can be used to reconstruct the
         SurfaceArrheniusBM object.
         """
-        string = 'SurfaceArrheniusBM(A={0!r}, n={1!r}, w={2!r}, E0={3!r}'.format(self.A, self.n, self.w0,
+        string = 'SurfaceArrheniusBM(A={0!r}, n={1!r}, w0={2!r}, E0={3!r}'.format(self.A, self.n, self.w0,
                                                                                       self.E0)
         if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
         if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
@@ -865,7 +863,6 @@ cdef class SurfaceArrheniusBM(ArrheniusBM):
             string += "}"
         if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
         if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
-        if self.uncertainty is not None: string += ', uncertainty={0!r}'.format(self.uncertainty)
         if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
         string += ')'
         return string
@@ -875,7 +872,7 @@ cdef class SurfaceArrheniusBM(ArrheniusBM):
         A helper function used when pickling an SurfaceArrheniusBM object.
         """
         return (SurfaceArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
-                                      self.uncertainty, self.coverage_dependence, self.comment))
+                                      self.coverage_dependence, self.comment))
 
     cpdef SurfaceArrhenius to_arrhenius(self, double dHrxn):
         """
@@ -893,7 +890,6 @@ cdef class SurfaceArrheniusBM(ArrheniusBM):
             T0=(1, "K"),
             Tmin=self.Tmin,
             Tmax=self.Tmax,
-            uncertainty=self.uncertainty,
             coverage_dependence=self.coverage_dependence,
             comment=self.comment,
         )
@@ -920,10 +916,7 @@ cdef class SurfaceArrheniusBM(ArrheniusBM):
                                  'm^5/(mol^2*s)': 1000000,
                                  }
 
-        if self._T0.value_si != 1:
-            A = self._A.value_si / (self._T0.value_si) ** self._n.value_si
-        else:
-            A = self._A.value_si
+        A = self._A.value_si
 
         try:
             A *= rate_units_conversion[self._A.units] # convert from /mol to /kmol
