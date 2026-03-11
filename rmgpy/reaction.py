@@ -55,7 +55,8 @@ from rmgpy.kinetics import KineticsData, ArrheniusBM, ArrheniusEP, ThirdBody, Li
     PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, get_rate_coefficient_units_from_reaction_order, \
     SurfaceArrheniusBEP, StickingCoefficientBEP, ArrheniusChargeTransfer, ArrheniusChargeTransferBM, Marcus
 from rmgpy.kinetics.arrhenius import Arrhenius  # Separate because we cimport from rmgpy.kinetics.arrhenius
-from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient, SurfaceChargeTransfer, SurfaceChargeTransferBEP  # Separate because we cimport from rmgpy.kinetics.surface
+from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient, SurfaceChargeTransfer, SurfaceChargeTransferBEP, \
+    SurfaceArrheniusBM  # Separate because we cimport from rmgpy.kinetics.surface
 from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule.element import Element, element_list
 from rmgpy.molecule.molecule import Molecule, Atom
@@ -398,6 +399,20 @@ class Reaction:
                 products=ct_products,
                 rate=ct.StickingArrheniusRate()
             )
+
+        elif isinstance(self.kinetics, ArrheniusBM):
+            if isinstance(self.kinetics, SurfaceArrheniusBM):
+                ct_reaction = ct.Reaction(
+                    reactants=ct_reactants,
+                    products=ct_products,
+                    rate=ct.InterfaceBlowersMaselRate()
+                )
+            else:
+                ct_reaction = ct.Reaction(
+                    reactants=ct_reactants,
+                    products=ct_products,
+                    rate=ct.BlowersMaselRate()
+                )
 
         else:
             raise NotImplementedError(f"Unable to set cantera kinetics for {self.kinetics}")
