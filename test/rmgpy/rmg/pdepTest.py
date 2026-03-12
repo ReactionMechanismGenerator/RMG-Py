@@ -31,12 +31,12 @@ import logging
 
 from copy import deepcopy
 
-from rmgpy.kinetics.arrhenius import Arrhenius
+from rmgpy.kinetics import Arrhenius, Chebyshev
 from rmgpy.pdep.collision import SingleExponentialDown
 from rmgpy.pdep.configuration import Configuration
 from rmgpy.pdep.network import Network
 from rmgpy.reaction import Reaction
-from rmgpy.rmg.pdep import PDepNetwork
+from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.species import Species, TransitionState
 from rmgpy.statmech.conformer import Conformer
 from rmgpy.statmech.rotation import NonlinearRotor
@@ -357,6 +357,19 @@ class TestPdep:
         self.pdepnetwork.index = 1
         self.pdepnetwork.explored = []
 
+
+        self.pdep_reaction = PDepReaction()
+        
+        self.pdep_reaction.reactants = [Species(smiles='[CH3]'), Species(smiles='[CH2]CC')]
+        self.pdep_reaction.products = [Species(smiles='CCCC')]
+        self.pdep_reaction.label = 'my reaction'
+        self.pdep_reaction.kinetics = Chebyshev(coeffs=[[13.07,0.1724,-0.0396,0.001702],[-0.7274,0.321,-0.07073,0.001855],
+                                                [-0.3293,0.2585,-0.04933,-0.001644],[-0.1983,0.1786,-0.02421,-0.00471],
+                                                [-0.1194,0.104,-0.004073,-0.005676],[-0.06581,0.04897,0.00688,-0.004585]],
+                                        kunits='cm^3/(mol*s)', Tmin=(300,'K'), Tmax=(2000,'K'), Pmin=(0.01,'atm'), Pmax=(98.692,'atm'))
+        self.pdep_reaction.reversible
+
+
     def test_energy_filter(self):
         rxns = self.pdepnetwork.get_energy_filtered_reactions(1000.0, 0.0)
         assert len(rxns) == 1
@@ -365,3 +378,14 @@ class TestPdep:
     def test_flux_filter(self):
         prods = self.pdepnetwork.get_rate_filtered_products(1000.0, 100000.0, 1.0)
         assert len(prods) == 0
+
+    def test_copy(self):
+        copy_pdep_reaction = deepcopy(self.pdep_reaction)
+
+        assert copy_pdep_reaction.is_isomorphic(self.pdep_reaction)
+        assert copy_pdep_reaction.reactants[0].is_isomorphic(self.pdep_reaction.reactants[0])
+        assert copy_pdep_reaction.reactants[1].is_isomorphic(self.pdep_reaction.reactants[1])
+        assert copy_pdep_reaction.products[0].is_isomorphic(self.pdep_reaction.products[0])
+        assert copy_pdep_reaction.label == self.pdep_reaction.label
+        assert copy_pdep_reaction.kinetics.is_identical_to(self.pdep_reaction.kinetics)
+        assert copy_pdep_reaction.reversible == self.pdep_reaction.reversible
