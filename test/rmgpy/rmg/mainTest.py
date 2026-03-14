@@ -55,7 +55,10 @@ class TestMain:
         cls.seedKinetics = os.path.join(cls.databaseDirectory, "kinetics", "libraries", "testSeed")
         cls.seedKineticsEdge = os.path.join(cls.databaseDirectory, "kinetics", "libraries", "testSeed_edge")
 
-        os.makedirs(os.path.join(cls.testDir, cls.outputDir), exist_ok=True)
+        output_path = os.path.join(cls.testDir, cls.outputDir)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.mkdir(output_path)
 
         cls.rmg = RMG(
             input_file=os.path.join(cls.testDir, "input.py"),
@@ -172,20 +175,73 @@ class TestMain:
             Rmem.generate_cond()
             Rmem.get_cond()
 
-    def test_make_cantera_input_file(self):
+    def test_make_cantera_input_file_from_ck(self):
         """
-        This test ensures that a usable Cantera input file is created.
+        This test ensures that a usable Cantera input file is created via the Chemkin to Cantera conversion.
         """
         import cantera as ct
 
-        outName = os.path.join(self.rmg.output_directory, "cantera")
-        files = os.listdir(outName)
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera_from_ck")
+        files = os.listdir(cantera_files)
         for f in files:
             if ".yaml" in f:
                 try:
-                    ct.Solution(os.path.join(outName, f))
+                    ct.Solution(os.path.join(cantera_files, f))
                 except:
                     assert False, "The output Cantera file is not loadable in Cantera."
+    
+    def test_make_cantera_input_file_directly(self):
+        """
+        This tests to ensure that a usable Cantera input file is created via direct yaml writer.
+        """
+        import cantera as ct
+
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera1")
+        files = os.listdir(cantera_files)
+        for f in files:
+            if ".yaml" in f:
+                try:
+                    ct.Solution(os.path.join(cantera_files, f))
+                except:
+                    assert False, "The output Cantera file is not loadable in Cantera."
+
+    def test_cantera_input_files_match_chemkin_later(self):
+        """
+        Copy the Cantera YAML files (generated directly by RMG and converted from Chemkin)
+        to the test data directory so that yaml_cantera1Test can compare them.
+        """
+        # Find the RMG-generated cantera yaml file (named chem{N}.yaml)
+        cantera_dir = os.path.join(self.rmg.output_directory, "cantera1")
+        cantera_from_ck_dir = os.path.join(
+            self.rmg.output_directory, "cantera_from_ck"
+        )
+
+        # Get the yaml files generated directly by RMG
+        cantera_files = [
+            f for f in os.listdir(cantera_dir) if f.endswith('.yaml')
+        ]
+        assert len(cantera_files) > 0, \
+            "No Cantera YAML files found in cantera1 directory"
+        # Sort by the number in the filename to get the final mechanism
+        cantera_files.sort(
+            key=lambda x: int(''.join(filter(str.isdigit, x)) or 0),
+            reverse=True
+        )
+        rmg_yaml_file = cantera_files[0]
+        rmg_yaml_path = os.path.join(cantera_dir, rmg_yaml_file)
+        
+        # Copy RMG-generated YAML to test data directory
+        test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera1', 'from_main_test.yaml')
+        shutil.copy(rmg_yaml_path, test_data_cantera_target)
+
+        # Get the yaml file converted from chemkin
+        ck_yaml_file = "chem.yaml"
+        ck_yaml_path = os.path.join(cantera_from_ck_dir, ck_yaml_file)
+        assert os.path.exists(ck_yaml_path), f"Chemkin-converted YAML file {ck_yaml_file} not found"
+        
+        # Copy chemkin-converted YAML to test data directory
+        test_data_chemkin_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'chemkin', 'from_main_test.yaml')
+        shutil.copy(ck_yaml_path, test_data_chemkin_target)
 
 
 @pytest.mark.functional
@@ -360,3 +416,172 @@ class TestProfiling:
             os.remove(os.path.join(cls.test_dir, "RMG.profile.dot"))
             os.remove(os.path.join(cls.test_dir, "RMG.profile.dot.ps2"))
 
+
+class TestCanteraOutputConversion:
+    """
+    Tests if we can convert Chemkin files to Cantera files without crashing.
+    (Or raising an exception for bad files.)
+    """
+    def setup_class(self):
+        self.chemkin_files = {
+            """ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /18.000/
+	N
+
+END
+
+SPECIES
+    ethane(1)       
+    CH3(4)          
+END
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+ethane(1)               H 6  C 2            G100.000   5000.000  954.52        1
+ 4.58987205E+00 1.41507042E-02-4.75958084E-06 8.60284590E-10-6.21708569E-14    2
+-1.27217823E+04-3.61762003E+00 3.78032308E+00-3.24248354E-03 5.52375224E-05    3
+-6.38573917E-08 2.28633835E-11-1.16203404E+04 5.21037799E+00                   4
+
+CH3(4)                  H 3  C 1            G100.000   5000.000  1337.62       1
+ 3.54144859E+00 4.76788187E-03-1.82149144E-06 3.28878182E-10-2.22546856E-14    2
+ 1.62239622E+04 1.66040083E+00 3.91546822E+00 1.84153688E-03 3.48743616E-06    3
+-3.32749553E-09 8.49963443E-13 1.62856393E+04 3.51739246E-01                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+CH3(4)+CH3(4)=ethane(1)                             8.260e+17 -1.400    1.000    
+
+END
+""": True,
+            """ELEMENTS
+	CI /13.003/
+	O
+	OI /18.000/
+	N
+
+END
+
+SPECIES
+    ethane(1)       
+    CH3(4)          
+END
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+ethane(1)               H 6  C  2            G100.000   5000.000  954.52        1
+ 4.58987205E+00 1.41507042E-02-4.75958084E-06 8.60284590E-10-6.21708569E-14    2
+-1.27217823E+04-3.61762003E+00 3.78032308E+00-3.24248354E-03 5.52375224E-05    3
+-6.38573917E-08 2.28633835E-11-1.16203404E+04 5.21037799E+00                   4
+
+CH3(4)                  H 3  C 1            G100.000   5000.000  1337.62       1
+ 3.54144859E+00 4.76788187E-03-1.82149144E-06 3.28878182E-10-2.22546856E-14    2
+ 1.62239622E+04 1.66040083E+00 3.91546822E+00 1.84153688E-03 3.48743616E-06    3
+-3.32749553E-09 8.49963443E-13 1.62856393E+04 3.51739246E-01                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+CH3(4)+CH3(4)=ethane(1)                             8.260e+17 -1.400    1.000    
+
+END
+""": False,
+            """ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /18.000/
+	N
+
+END
+
+SPECIES
+    ethane(1)       
+    CH3(4)          
+END
+
+THERM ALL
+    300.000  1000.000  5000.000
+
+ethane(1)               H 6  C 2            G100.000   5000.000  954.52        1
+ 4.58987205E+00 1.41507042E-02-4.75958084E-06 8.60284590E-10-6.21708569E-14    2
+-1.27217823E+04-3.61762003E+00 3.78032308E+00-3.24248354E-03 5.52375224E-05    3
+-6.38573917E-08 2.28633835E-11-1.16203404E+04 5.21037799E+00                   4
+
+END
+
+REACTIONS    KCAL/MOLE   MOLES
+
+CH3(4)+CH3(4)=ethane(1)                             8.260e+17 -1.400    1.000    
+
+END
+""": False,
+        }
+        self.rmg = RMG()
+        self.dir_name = "temp_dir_for_testing"
+        self.rmg.output_directory = os.path.join(originalPath, "..", "test", "rmgpy", "test_data", self.dir_name)
+
+        self.tran_dat = """
+! Species         Shape    LJ-depth  LJ-diam   DiplMom   Polzblty  RotRelaxNum Data     
+! Name            Index    epsilon/k_B sigma     mu        alpha     Zrot      Source   
+ethane(1)           2     252.301     4.302     0.000     0.000     1.500    ! GRI-Mech
+CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! GRI-Mech
+        """
+
+    def teardown_class(self):
+        os.chdir(originalPath)
+        # try to remove the tree. If testChemkinToCanteraConversion properly
+        # ran, the files should already be removed.
+        try:
+            shutil.rmtree(self.dir_name)
+        except OSError:
+            pass
+        # go back to the main RMG-Py directory
+        os.chdir("..")
+
+    def test_chemkin_to_cantera_conversion(self):
+        """
+        Tests that good and bad chemkin files raise proper exceptions
+        """
+
+        from cantera.ck2yaml import InputError
+
+        for ck_input, works in self.chemkin_files.items():
+            os.chdir(originalPath)
+            os.mkdir(self.dir_name)
+            os.chdir(self.dir_name)
+
+            f = open("chem001.inp", "w")
+            f.write(ck_input)
+            f.close()
+
+            f = open("tran.dat", "w")
+            f.write(self.tran_dat)
+            f.close()
+
+            if works:
+                self.rmg.generate_cantera_files_from_chemkin(os.path.join(os.getcwd(), "chem001.inp"))
+            else:
+                with pytest.raises(InputError):
+                    self.rmg.generate_cantera_files_from_chemkin(os.path.join(os.getcwd(), "chem001.inp"))
+
+            # clean up
+            os.chdir(originalPath)
+            shutil.rmtree(self.dir_name)
