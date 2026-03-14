@@ -785,6 +785,165 @@ cdef class SurfaceArrheniusBEP(ArrheniusEP):
 
 ################################################################################
 
+cdef class SurfaceArrheniusBM(ArrheniusBM):
+    """
+    A kinetics model based on the modified Arrhenius equation, using the
+    Blowers-Masel equation to determine the activation energy.
+    Based on Blowers and Masel's 2000 paper Engineering Approximations for Activation
+    Energies in Hydrogen Transfer Reactions.
+
+    It is very similar to the gas-phase :class:`ArrheniusBM`.
+    The only differences being the A factor has different units,
+    (and the catalysis community prefers to call it BEP rather than EP!)
+    and has a coverage_dependence parameter for coverage dependence
+
+    The attributes are:
+
+    ======================= =============================================================
+    Attribute               Description
+    ======================= =============================================================
+    `A`                     The preexponential factor
+    `n`                     The temperature exponent
+    `w0`                    The average of the bond dissociation energies of the bond formed and the bond broken
+    `E0`                    The activation energy for a thermoneutral reaction
+    `Tmin`                  The minimum temperature at which the model is valid, or zero if unknown or undefined
+    `Tmax`                  The maximum temperature at which the model is valid, or zero if unknown or undefined
+    `Pmin`                  The minimum pressure at which the model is valid, or zero if unknown or undefined
+    `Pmax`                  The maximum pressure at which the model is valid, or zero if unknown or undefined
+    `coverage_dependence`   A dictionary of coverage dependent parameters to a certain surface species with:
+                             `a`, the coefficient for exponential dependence on the coverage,
+                             `m`, the power-law exponent of coverage dependence, and
+                             `E`, the activation energy dependence on coverage.
+    `comment`               Information about the model (e.g. its source)
+    ======================= =============================================================
+    """
+
+    def __init__(self, A=None, n=0.0, w0=(0.0, 'J/mol'), E0=None, Tmin=None, Tmax=None, Pmin=None, Pmax=None, 
+                 coverage_dependence=None, comment=''):
+        KineticsModel.__init__(self, Tmin=Tmin, Tmax=Tmax, Pmin=Pmin, Pmax=Pmax, comment=comment)
+        self.A = A
+        self.n = n
+        self.w0 = w0
+        self.E0 = E0
+        self.coverage_dependence = coverage_dependence
+
+    property A:
+        """The preexponential factor, which has different usints from ArrheniusBM class."""
+        def __get__(self):
+            return self._A
+        def __set__(self, value):
+            self._A = quantity.SurfaceRateCoefficient(value)
+
+    property coverage_dependence:
+        """The coverage dependence parameters."""
+        def __get__(self):
+            return self._coverage_dependence
+        def __set__(self, value):
+             self._coverage_dependence = {}
+             if value:
+                 for species, parameters in value.items():
+                     processed_parameters = {'E': quantity.Energy(parameters['E']),
+                                             'm': quantity.Dimensionless(parameters['m']),
+                                             'a': quantity.Dimensionless(parameters['a'])}
+                     self._coverage_dependence[species] = processed_parameters
+
+    def __repr__(self):
+        """
+        Return a string representation that can be used to reconstruct the
+        SurfaceArrheniusBM object.
+        """
+        string = 'SurfaceArrheniusBM(A={0!r}, n={1!r}, w0={2!r}, E0={3!r}'.format(self.A, self.n, self.w0,
+                                                                                      self.E0)
+        if self.Tmin is not None: string += ', Tmin={0!r}'.format(self.Tmin)
+        if self.Tmax is not None: string += ', Tmax={0!r}'.format(self.Tmax)
+        if self.coverage_dependence:
+            string += ", coverage_dependence={"
+            for species, parameters in self.coverage_dependence.items():
+                string += f"{species.to_chemkin()!r}: {{'a':{repr(parameters['a'])}, 'm':{repr(parameters['m'])}, 'E':{repr(parameters['E'])}}},"
+            string += "}"
+        if self.Pmin is not None: string += ', Pmin={0!r}'.format(self.Pmin)
+        if self.Pmax is not None: string += ', Pmax={0!r}'.format(self.Pmax)
+        if self.comment != '': string += ', comment="""{0}"""'.format(self.comment)
+        string += ')'
+        return string
+
+    def __reduce__(self):
+        """
+        A helper function used when pickling an SurfaceArrheniusBM object.
+        """
+        return (SurfaceArrheniusBM, (self.A, self.n, self.w0, self.E0, self.Tmin, self.Tmax, self.Pmin, self.Pmax,
+                                      self.coverage_dependence, self.comment))
+
+    cpdef SurfaceArrhenius to_arrhenius(self, double dHrxn):
+        """
+        Return an :class:`SurfaceArrhenius` instance of the kinetics model using the
+        given enthalpy of reaction `dHrxn` to determine the activation energy.
+
+        Note that despite its name it does not return a :class:`Arrhenius` object
+        (although :class:`SurfaceArrhenius` is a subclass of :class:`Arrhenius`
+        so in a way, it does).
+        """
+        return SurfaceArrhenius(
+            A=self.A,
+            n=self.n,
+            Ea=(self.get_activation_energy(dHrxn) * 0.001, "kJ/mol"),
+            T0=(1, "K"),
+            Tmin=self.Tmin,
+            Tmax=self.Tmax,
+            coverage_dependence=self.coverage_dependence,
+            comment=self.comment,
+        )
+
+    def to_cantera_kinetics(self):
+        """
+        Converts the RMG SurfaceArrheniusBM object to a cantera InterfaceBlowersMaselRate
+        InterfaceBlowersMaselRate(A, b, E0 w0) where A is in units like m^2/kmol/s (depending on dimensionality)
+        b is dimensionless, E0 is in J/kmol, and w0 is in J/kmol
+        """
+        import cantera as ct
+
+        rate_units_conversion = {'1/s': 1,
+                                 's^-1': 1,
+                                 'm^2/(mol*s)': 1000,
+                                 'm^4/(mol^2*s)': 1000000,
+                                 'cm^2/(mol*s)': 1000,
+                                 'cm^4/(mol^2*s)': 1000000,
+                                 'm^2/(molecule*s)': 1000,
+                                 'm^4/(molecule^2*s)': 1000000,
+                                 'cm^2/(molecule*s)': 1000,
+                                 'cm^4/(molecule^2*s)': 1000000,
+                                 'cm^5/(mol^2*s)': 1000000,
+                                 'm^5/(mol^2*s)': 1000000,
+                                 }
+
+        A = self._A.value_si
+
+        try:
+            A *= rate_units_conversion[self._A.units] # convert from /mol to /kmol
+        except KeyError:
+            raise ValueError('Arrhenius A-factor units {0} not found among accepted units for converting to '
+                             'Cantera Arrhenius object.'.format(self._A.units))
+
+        b = self._n.value_si
+        E = self._E0.value_si * 1000  # convert from J/mol to J/kmol
+        w = self._w0.value_si * 1000  # convert from J/mol to J/kmol
+        return ct.InterfaceBlowersMaselRate(A, b, E, w)
+
+    def set_cantera_kinetics(self, ct_reaction, species_list):
+        """
+        Takes in a cantera Reaction object and sets its
+        rate to a cantera InterfaceBlowersMaselRate object.
+        """
+        import cantera as ct
+        if not isinstance(ct_reaction.rate, ct.InterfaceBlowersMaselRate):
+            raise TypeError("ct_reaction.rate must be an InterfaceBlowersMaselRate")
+
+        # Set the rate parameter to a cantera InterfaceBlowersMaselRate object
+        ct_reaction.rate = self.to_cantera_kinetics()
+
+
+################################################################################
+
 cdef class SurfaceChargeTransfer(KineticsModel):
 
     """

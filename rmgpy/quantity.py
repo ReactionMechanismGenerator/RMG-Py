@@ -729,6 +729,7 @@ class UnitType(object):
         return quantity
 
 
+
 Acceleration = UnitType('m/s^2')
 
 Area = UnitType('m^2')
@@ -885,3 +886,23 @@ def SurfaceRateCoefficient(*args, **kwargs):
 
     # Return the Quantity or ArrayQuantity object object
     return quantity
+
+SURFACERATECOEFFICIENT_SI_UNITS = {
+    's^-1': 's^-1',
+    'm^3/(mol*s)': 'm^3/(mol*s)',
+    'cm^3/(mol*s)': 'm^3/(mol*s)',
+    'm^3/(molecule*s)': 'm^3/(mol*s)',
+    'cm^3/(molecule*s)': 'm^3/(mol*s)',
+    'm^2/(mol*s)': 'm^2/(mol*s)',
+    'cm^2/(mol*s)': 'm^2/(mol*s)',
+    'm^2/(molecule*s)': 'm^2/(mol*s)',
+    'cm^2/(molecule*s)': 'm^2/(mol*s)',
+    'm^5/(mol^2*s)': 'm^5/(mol^2*s)',
+    'cm^5/(mol^2*s)': 'm^5/(mol^2*s)',
+    'm^5/(molecule^2*s)': 'm^5/(mol^2*s)',
+    'cm^5/(molecule^2*s)': 'm^5/(mol^2*s)',
+    'm^4/(mol^2*s)': 'm^4/(mol^2*s)',
+    'cm^4/(mol^2*s)': 'm^4/(mol^2*s)',
+    'm^4/(molecule^2*s)': 'm^4/(mol^2*s)',
+    'cm^4/(molecule^2*s)': 'm^4/(mol^2*s)',
+}
