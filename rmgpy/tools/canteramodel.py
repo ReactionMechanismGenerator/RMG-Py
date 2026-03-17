@@ -447,8 +447,10 @@ class Cantera(object):
                                         num_reactions=top_sensitive_reactions).barplot(
                     os.path.join(self.output_directory, '{0}_{1}_reaction_sensitivity.png'.format(i + 1, species.to_chemkin())))
                 if self.thermo_SA:
+                    for k in range(len(thermodynamic_sensitivity_data)):
+                        thermodynamic_sensitivity_data[k].data *= 4184000  # convert from J/kmol to kcal/mol
                     ThermoSensitivityPlot(x_var=time,
-                                          y_var=thermodynamic_sensitivity_data[j * num_ct_species:(j + 1) * num_ct_species]*4184000,
+                                          y_var=thermodynamic_sensitivity_data[j * num_ct_species:(j + 1) * num_ct_species],
                                           xlabel='dln(c)/d(H_i) [(kcal/mol)^-1]',
                                           num_species=top_sensitive_species).barplot(
                         os.path.join(self.output_directory, '{0}_{1}_thermo_sensitivity.png'.format(i + 1, species.to_chemkin())))
