@@ -443,10 +443,24 @@ class CoreEdgeReactionModel:
                 if isinstance(family_obj, KineticsLibrary) or isinstance(family_obj, KineticsFamily):
                     if not rxn.duplicate:
                         return True, rxn0
+                    elif (rxn.duplicate and rxn0.duplicate and isinstance(rxn, TemplateReaction)
+                          and isinstance(rxn0, TemplateReaction) and rxn.template is not None
+                          and rxn0.template is not None
+                          and frozenset(rxn.template) == frozenset(rxn0.template)):
+                        # Both reactions are duplicates (different templates for same species pair),
+                        # but they use the same template - so this is a true duplicate that should
+                        # not be added again
+                        return True, rxn0
                 else:
                     return True, rxn0
             elif isinstance(family_obj, KineticsFamily) and rxn_id == rxn_id0[::-1] and are_identical_species_references(rxn, rxn0):
                 if not rxn.duplicate:
+                    return True, rxn0
+                elif (rxn.duplicate and rxn0.duplicate and isinstance(rxn, TemplateReaction)
+                      and isinstance(rxn0, TemplateReaction) and rxn.template is not None
+                      and rxn0.template is not None
+                      and frozenset(rxn.template) == frozenset(rxn0.template)):
+                    # Same template duplicate exists in reverse direction
                     return True, rxn0
 
         # Now check seed mechanisms
