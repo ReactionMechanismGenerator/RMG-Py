@@ -296,7 +296,7 @@ class TestCoreEdgeReactionModel:
         """
         A method that is run before each unit test in this class.
         """
-        test_family = "H_Abstraction"
+        test_families = ["H_Abstraction", "intra_H_migration"]
 
         # set-up RMG object
         rmg = RMG()
@@ -308,7 +308,7 @@ class TestCoreEdgeReactionModel:
         # kinetics family loading
         rmg.database.load_kinetics(
             os.path.join(path, "kinetics"),
-            kinetics_families=[test_family],
+            kinetics_families=test_families,
             reaction_libraries=[],
         )
         # load empty forbidden structures to avoid any dependence on forbidden structures
@@ -821,6 +821,82 @@ class TestCoreEdgeReactionModel:
 
         assert found, "check_for_existing_reaction failed to identify existing reaction in the reverse direction"
         assert rxn == rxn_f
+
+    def test_check_for_existing_reaction_eliminates_same_reaction_from_reverse_multiple_templates(
+        self,
+    ):
+        """
+        Test that check_for_existing_reaction catches duplicate reactions
+        when there are multiple reaction sites (the model should have duplicates)
+        and the "new" reaction is equivalent to an existing one but proposed in the reverse.
+
+        Specifically, the model already contains two forward intra_H_migration reactions
+        (different templates, both marked duplicate=True).  When the same reactions are
+        subsequently generated in the reverse direction they must be recognised as already
+        present and not added a second time.
+        """
+        cerm = CoreEdgeReactionModel()
+
+        spcA = Species().from_smiles("CC(O[O])C(C)OO")
+        spcB = Species().from_smiles("[CH2]C(OO)C(C)OO")
+        spcA.label = "CC(O[O])C(C)OO"
+        spcB.label = "[CH2]C(OO)C(C)OO"
+        # Thermo values are not used by check_for_existing_reaction; use a placeholder.
+        spcA.thermo = THERMO_DICT["O"]
+        spcB.thermo = THERMO_DICT["O"]
+
+        cerm.add_species_to_core(spcA)
+        cerm.add_species_to_core(spcB)
+
+        # Two distinct forward reactions already in the model (different templates).
+        reaction_in_model1 = TemplateReaction(
+            reactants=[spcA],
+            products=[spcB],
+            family="intra_H_migration",
+            template=["R4H_SSS_O(Cs)Cs", "O_rad_out", "Cs_H_out_2H"],
+            duplicate=True,
+        )
+        reaction_in_model2 = TemplateReaction(
+            reactants=[spcA],
+            products=[spcB],
+            family="intra_H_migration",
+            template=["R5H_SSSS_OCC_C", "O_rad_out", "Cs_H_out_2H"],
+            duplicate=True,
+        )
+
+        # The same reactions proposed in the reverse direction (different template labels,
+        # same physical transformation).
+        reaction_to_add1 = TemplateReaction(
+            reactants=[spcB],
+            products=[spcA],
+            family="intra_H_migration",
+            template=["R4H_SSS", "C_rad_out_2H", "O_H_out"],
+            duplicate=True,
+        )
+        reaction_to_add2 = TemplateReaction(
+            reactants=[spcB],
+            products=[spcA],
+            family="intra_H_migration",
+            template=["R5H_SSSS", "C_rad_out_2H", "O_H_out"],
+            duplicate=True,
+        )
+
+        cerm.add_reaction_to_core(reaction_in_model1)
+        cerm.register_reaction(reaction_in_model1)
+        cerm.add_reaction_to_core(reaction_in_model2)
+        cerm.register_reaction(reaction_in_model2)
+
+        found1, _ = cerm.check_for_existing_reaction(reaction_to_add1)
+        assert found1, (
+            "check_for_existing_reaction failed to find existing duplicate (multiple sites) "
+            "when proposed from reverse (R4H template)"
+        )
+
+        found2, _ = cerm.check_for_existing_reaction(reaction_to_add2)
+        assert found2, (
+            "check_for_existing_reaction failed to find existing duplicate (multiple sites) "
+            "when proposed from reverse (R5H template)"
+        )
 
     @classmethod
     def teardown_class(cls):

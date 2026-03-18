@@ -456,11 +456,11 @@ class CoreEdgeReactionModel:
             elif isinstance(family_obj, KineticsFamily) and rxn_id == rxn_id0[::-1] and are_identical_species_references(rxn, rxn0):
                 if not rxn.duplicate:
                     return True, rxn0
-                elif (rxn.duplicate and rxn0.duplicate and isinstance(rxn, TemplateReaction)
-                      and isinstance(rxn0, TemplateReaction) and rxn.template is not None
-                      and rxn0.template is not None
-                      and frozenset(rxn.template) == frozenset(rxn0.template)):
-                    # Same template duplicate exists in reverse direction
+                elif rxn.duplicate and rxn0.duplicate:
+                    # The new reaction is a duplicate proposed from the reverse direction.
+                    # Template labels differ between forward and reverse, so template
+                    # comparison is not applicable here. Since the forward reaction is
+                    # already in the model, the reverse direction is already accounted for.
                     return True, rxn0
 
         # Now check seed mechanisms
