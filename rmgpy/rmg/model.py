@@ -416,6 +416,12 @@ class CoreEdgeReactionModel:
         in the reaction database are iterated over to check if a reaction was overlooked
         (a reaction with a different "family" key as the parameter reaction).
 
+        Note, this function assumes RMG is making the mechanism through its main loop,
+        where all forward duplicates from a family are found in a single enlarge step.
+        If you artificially construct your own a core-edge model and forget to include a
+        duplicate from the same family, but then try to add the missing reaction from
+        the reverse direction, this function will find the existing forward reaction and
+        assume you've already found all the duplicates.
         """
 
         # Make sure the reactant and product lists are sorted before performing the check
@@ -461,6 +467,9 @@ class CoreEdgeReactionModel:
                     # Template labels differ between forward and reverse, so template
                     # comparison is not applicable here. Since the forward reaction is
                     # already in the model, the reverse direction is already accounted for.
+                    # This assumes all forward duplicates have been found, which they will be
+                    # be during an RMG run, but might not be if you artificially construct your own
+                    # core edge reaction model
                     return True, rxn0
 
         # Now check seed mechanisms
