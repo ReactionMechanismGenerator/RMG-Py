@@ -24,7 +24,7 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Setup Miniforge
         uses: conda-incubator/setup-miniconda@v3
@@ -34,7 +34,7 @@ jobs:
           auto-update-conda: true
           show-channel-urls: true
           conda-remove-defaults: "true"
-          auto-activate-base: "true"
+          auto-activate: true
           activate-environment: ""
 
       - name: Install Build Tools

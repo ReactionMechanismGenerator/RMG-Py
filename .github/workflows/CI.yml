@@ -77,7 +77,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout RMG-Py
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Miniforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
@@ -138,7 +138,7 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout RMG-Py
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Miniforge Python 3.9
         uses: conda-incubator/setup-miniconda@v3
