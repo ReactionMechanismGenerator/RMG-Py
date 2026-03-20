@@ -834,6 +834,11 @@ class TestCoreEdgeReactionModel:
         (different templates, both marked duplicate=True).  When the same reactions are
         subsequently generated in the reverse direction they must be recognised as already
         present and not added a second time.
+
+        Note that the templates used here are marked as fictitious because the test database
+        is not necessarily large enough to distinguish these two cases. In any case, the
+        templates are not actually used for this test, but point to an example that can be
+        recreated with the full database.
         """
         cerm = CoreEdgeReactionModel()
 
@@ -853,14 +858,14 @@ class TestCoreEdgeReactionModel:
             reactants=[spcA],
             products=[spcB],
             family="intra_H_migration",
-            template=["R4H_SSS_O(Cs)Cs", "O_rad_out", "Cs_H_out_2H"],
+            template=["fictitious", "R4H_SSS_O(Cs)Cs", "O_rad_out", "Cs_H_out_2H"],
             duplicate=True,
         )
         reaction_in_model2 = TemplateReaction(
             reactants=[spcA],
             products=[spcB],
             family="intra_H_migration",
-            template=["R5H_SSSS_OCC_C", "O_rad_out", "Cs_H_out_2H"],
+            template=["fictitious", "R5H_SSSS_OCC_C", "O_rad_out", "Cs_H_out_2H"],
             duplicate=True,
         )
 
@@ -870,14 +875,14 @@ class TestCoreEdgeReactionModel:
             reactants=[spcB],
             products=[spcA],
             family="intra_H_migration",
-            template=["R4H_SSS", "C_rad_out_2H", "O_H_out"],
+            template=["fictitious", "R4H_SSS", "C_rad_out_2H", "O_H_out"],
             duplicate=True,
         )
         reaction_to_add2 = TemplateReaction(
             reactants=[spcB],
             products=[spcA],
             family="intra_H_migration",
-            template=["R5H_SSSS", "C_rad_out_2H", "O_H_out"],
+            template=["fictitious", "R5H_SSSS", "C_rad_out_2H", "O_H_out"],
             duplicate=True,
         )
 
