@@ -1873,6 +1873,8 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         # Write collider efficiencies
         for collider, efficiency in sorted(list(kinetics.efficiencies.items()), key=lambda item: id(item[0])):
             for species in species_list:
+                if getattr(species, 'is_moment_dummy', False):
+                    continue
                 if any([collider.is_isomorphic(molecule) for molecule in species.molecule]):
                     string += '{0!s}/{1:<4.2f}/ '.format(get_species_identifier(species), efficiency)
                     break

@@ -360,15 +360,16 @@ class CoreEdgeReactionModel:
             if already_exists:
                 continue
             m_spc = Species(label=m_label, reactive=False)
-            m_spc.molecule = [Molecule().from_smiles("[He]")]
+            m_spc.molecule = [Molecule().from_smiles("[Ne]")]
+            m_spc.is_moment_dummy = True
             m_spc.index = -1
             m_spc.creation_iteration = self.iteration_num
             self.new_species_list.append(m_spc)
-            he_formula = m_spc.molecule[0].get_formula()
-            if he_formula in self.species_dict:
-                self.species_dict[he_formula].append(m_spc)
+            formula = m_spc.molecule[0].get_formula()
+            if formula in self.species_dict:
+                self.species_dict[formula].append(m_spc)
             else:
-                self.species_dict[he_formula] = [m_spc]
+                self.species_dict[formula] = [m_spc]
             if generate_thermo:
                 self.generate_thermo(m_spc)
 
