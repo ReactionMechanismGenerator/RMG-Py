@@ -43,13 +43,15 @@ import rmgpy.data.rmg
 from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
-from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction
+from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
+from rmgpy.polymer import Polymer
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
 from rmgpy.kinetics import Arrhenius, KineticsData
+from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
 from rmgpy.quantity import Quantity
@@ -304,6 +306,74 @@ class CoreEdgeReactionModel:
         # At this point we can conclude that the species is new
         return None
 
+    def _register_polymer(self, poly, generate_thermo=True):
+        """
+        Register a new :class:`Polymer` species in the model, checking for
+        duplicates by fingerprint rather than by molecule isomorphism.
+
+        Every new Polymer also gets three moment-tracking dummy species
+        (``_mu0``, ``_mu1``, ``_mu2``) that act as placeholders in the
+        solver's y-vector for the distribution moments.
+
+        Returns ``(polymer, is_new)`` — the canonical polymer object and
+        whether it was freshly added.
+        """
+        fp = poly.fingerprint
+        # Search existing registries (fast: check in order of likelihood)
+        for spec in self.new_species_list + self.core.species + self.edge.species:
+            if isinstance(spec, Polymer) and spec.fingerprint == fp:
+                return spec, False
+
+        # Fresh polymer product — reset caches so it acts as an independent species
+        poly._fingerprint = None
+        poly._cached_backbone_group = None
+
+        self.species_counter += 1
+        poly.index = self.species_counter
+        poly.creation_iteration = self.iteration_num
+
+        formula = poly.molecule[0].get_formula()
+        if formula in self.species_dict:
+            self.species_dict[formula].append(poly)
+        else:
+            self.species_dict[formula] = [poly]
+
+        self.new_species_list.append(poly)
+        if poly.reactive:
+            self.index_species_dict[poly.index] = poly
+
+        logging.debug("Creating new Polymer species %s", poly.label)
+
+        if generate_thermo:
+            self.generate_thermo(poly)
+
+        # Inject moment-tracking dummy species (_mu0, _mu1, _mu2).
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            m_label = f"{poly.label}{suffix}"
+            # Check whether the dummy already exists (e.g., from the input
+            # file) to avoid duplicates.
+            already_exists = False
+            for existing in self.new_species_list + self.core.species + self.edge.species:
+                if existing.label == m_label:
+                    already_exists = True
+                    break
+            if already_exists:
+                continue
+            m_spc = Species(label=m_label, reactive=False)
+            m_spc.molecule = [Molecule().from_smiles("[He]")]
+            m_spc.index = -1
+            m_spc.creation_iteration = self.iteration_num
+            self.new_species_list.append(m_spc)
+            he_formula = m_spc.molecule[0].get_formula()
+            if he_formula in self.species_dict:
+                self.species_dict[he_formula].append(m_spc)
+            else:
+                self.species_dict[he_formula] = [m_spc]
+            if generate_thermo:
+                self.generate_thermo(m_spc)
+
+        return poly, True
+
     def make_new_species(self, object, label="", reactive=True, check_existing=True, generate_thermo=True, check_decay=False, check_cut=False):
         """
         Formally create a new species from the specified `object`, which can be
@@ -311,6 +381,12 @@ class CoreEdgeReactionModel:
         object. It is emphasized that `reactive` relates to the :Class:`Species` attribute, while `reactive_structure`
         relates to the :Class:`Molecule` attribute.
         """
+
+        # Polymer objects must be registered via their own path (fingerprint-based
+        # deduplication rather than molecule isomorphism, which would conflate
+        # different Polymer distributions that share the same proxy structure).
+        if isinstance(object, Polymer):
+            return self._register_polymer(object, generate_thermo=generate_thermo)
 
         if isinstance(object, rmgpy.species.Species):
             molecule = object.molecule[0]
@@ -494,6 +570,22 @@ class CoreEdgeReactionModel:
         # Determine the proper species objects for all reactants and products
         if forward.family and forward.is_forward:
             reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+
+            # Polymer handshake: if any reactant is a Polymer, attempt to
+            # convert product Molecule fragments into new Polymer objects
+            # (modification, scission-head, or scission-tail) before the
+            # generic make_new_species loop runs.  Without this step, the
+            # reacted proxy fragments would be registered as plain small-
+            # molecule Species and the polymer distribution would "leak"
+            # out of the kinetic model as gas-phase molecules.
+            polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
+            if polymer_reactants:
+                _handshake_structures(forward.products, polymer_reactants)
+                # Handshake replaced some Molecule objects in forward.products
+                # with Polymer objects, so forward.pairs references stale objects.
+                # Invalidate pairs so they are regenerated later.
+                forward.pairs = None
+
             products = []
             if perform_cut:
                 # check if the product is too large so that we can cut
@@ -520,6 +612,15 @@ class CoreEdgeReactionModel:
         else:
             try:
                 reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
+
+                # Polymer handshake (same logic as the is_forward branch):
+                # resolve reactants first so we can detect Polymer objects,
+                # then convert product Molecules before they are registered.
+                polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
+                if polymer_reactants:
+                    _handshake_structures(forward.products, polymer_reactants)
+                    forward.pairs = None
+
                 products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
             except:
                 logging.error(f"Error when making species in reaction {forward} from {forward.family}")
@@ -874,9 +975,12 @@ class CoreEdgeReactionModel:
             if not self.pressure_dependence:
                 # The pressure dependence option is turned off entirely
                 pdep = False
+            elif any(isinstance(spec, Polymer) for spec in rxn.reactants + rxn.products):
+                # Polymer reactions represent per-site kinetics on a
+                # macromolecule; pressure-dependent treatment is not meaningful.
+                pdep = False
             elif self.pressure_dependence.maximum_atoms is not None \
-                    and self.pressure_dependence.maximum_atoms < isomer_atoms \
-                    and not any([spec.is_polymer_proxy for spec in rxn.reactants + rxn.products]):
+                    and self.pressure_dependence.maximum_atoms < isomer_atoms:
                 # The reaction involves so many atoms that pressure-dependent effects are assumed to be negligible
                 pdep = False
             elif not (rxn.is_isomerization() or rxn.is_dissociation() or rxn.is_association()):
@@ -1168,6 +1272,18 @@ class CoreEdgeReactionModel:
         # Add the species to the core
         self.core.species.append(spec)
 
+        # If the species is a Polymer, also promote its moment-tracking
+        # dummies (_mu0, _mu1, _mu2) so the solver can track the distribution.
+        if isinstance(spec, Polymer):
+            for suffix in ('_mu0', '_mu1', '_mu2'):
+                m_label = f"{spec.label}{suffix}"
+                for dummy in list(self.edge.species):
+                    if dummy.label == m_label:
+                        self.edge.species.remove(dummy)
+                        if dummy not in self.core.species:
+                            self.core.species.append(dummy)
+                        break
+
         rxn_list = []
         if spec in self.edge.species:
             if requires_rms:
@@ -1204,8 +1320,19 @@ class CoreEdgeReactionModel:
     def add_species_to_edge(self, spec, requires_rms=False):
         """
         Add a species `spec` to the reaction model edge and optionally the RMS phase.
+        If ``spec`` is a Polymer, also place its moment-tracking dummies.
         """
         self.edge.species.append(spec)
+
+        # Promote any moment dummies that are still only in new_species_list
+        if isinstance(spec, Polymer):
+            for suffix in ('_mu0', '_mu1', '_mu2'):
+                m_label = f"{spec.label}{suffix}"
+                for dummy in self.new_species_list:
+                    if dummy.label == m_label and dummy not in self.edge.species:
+                        self.edge.species.append(dummy)
+                        break
+
         if not requires_rms:
             return
         destination_phase = "Surface" if spec.molecule[0].contains_surface_site() else "Default"

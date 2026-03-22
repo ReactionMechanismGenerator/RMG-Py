@@ -278,9 +278,47 @@ class Polymer(Species):
         """
         pass
 
+    def generate_resonance_structures(self, keep_isomorphic=True, filter_structures=True, save_order=False):
+        """
+        Override to keep Polymer.molecule in sync with the proxy.
+
+        The base Species.generate_resonance_structures can replace self.molecule
+        with a new list, breaking the shared reference with the proxy.  By
+        delegating to the proxy and re-binding afterwards, the proxy's internal
+        consistency is preserved.
+        """
+        proxy = self.get_proxy_species()
+        if proxy is not None:
+            proxy.generate_resonance_structures(
+                keep_isomorphic=keep_isomorphic,
+                filter_structures=filter_structures,
+                save_order=save_order,
+            )
+            self.molecule = proxy.molecule
+        else:
+            super().generate_resonance_structures(
+                keep_isomorphic=keep_isomorphic,
+                filter_structures=filter_structures,
+                save_order=save_order,
+            )
+
     def get_symmetry_number(self):
         """Delegates symmetry calculation to the proxy species."""
-        return self.get_proxy_species().get_symmetry_number()
+        proxy = self.get_proxy_species()
+        try:
+            return proxy.get_symmetry_number()
+        except (ValueError, KeyError):
+            # Proxy resonance structures may be inconsistent (e.g. stale atom
+            # IDs after shared-reference breakage).  Regenerate from the first
+            # molecule and retry.
+            mol = proxy.molecule[0].copy(deep=True)
+            mol.assign_atom_ids()
+            proxy.molecule = mol.generate_resonance_structures(
+                keep_isomorphic=True, filter_structures=True, save_order=True,
+            )
+            self.molecule = proxy.molecule
+            proxy.symmetry_number = -1  # reset cached value
+            return proxy.get_symmetry_number()
 
     def get_net_charge(self):
         """Delegates charge calculation to the proxy."""
@@ -292,7 +330,8 @@ class Polymer(Species):
         if self._fingerprint is None:
             if self.monomer:
                 feat = f'_Feat-{self.feature_monomer.fingerprint}' if self.feature_monomer else ''
-                self._fingerprint = f'Polymer_{self.monomer.fingerprint}{feat}_{self.cutoff}'
+                eg = '_'.join(eg.fingerprint for eg in self.end_groups) if self.end_groups else ''
+                self._fingerprint = f'Polymer_{self.monomer.fingerprint}{feat}_EG-{eg}_{self.cutoff}'
         return self._fingerprint
 
     @property
@@ -711,6 +750,7 @@ class Polymer(Species):
         spc = Species(molecule=[trimer])
         mol_0 = spc.molecule[0].copy(deep=True)
         mol_0.clear_labeled_atoms()
+        mol_0.assign_atom_ids()
         spc.molecule = generate_resonance_structures(mol_0,
                                                      clar_structures=False,
                                                      keep_isomorphic=False,
@@ -729,9 +769,7 @@ class Polymer(Species):
             return None
         proxy_spec = new_poly.get_proxy_species()
         for mol in proxy_spec.molecule:
-            for atom in mol.atoms:
-                atom.label = ''
-            mol.update()
+            mol.clear_labeled_atoms()
             mol.is_polymer_proxy = True
             mol.reactive = True
         return new_poly
@@ -1145,6 +1183,10 @@ class Polymer(Species):
         if hasattr(proxy.thermo, 'result') and not isinstance(proxy.thermo, (NASA, Wilhoit, ThermoData)):
             proxy.thermo = proxy.thermo.result()
         self.thermo = proxy.thermo
+        if self.thermo.comment and not self.thermo.comment.endswith(', Polymer'):
+            self.thermo.comment += ', Polymer'
+        elif not self.thermo.comment:
+            self.thermo.comment = 'Polymer'
         return self.thermo
 
     def get_enthalpy(self, T):

@@ -4864,14 +4864,20 @@ def get_site_solute_data(rxn):
 
 def _handshake_structures(structure_list, polymer_reactants):
     """
-    Helper to scan a list of Molecules (reactants or products) and
+    Helper to scan a list of Molecules or Species (reactants or products) and
     convert them to Polymer objects if they match an input polymer structure.
-    It mutates species_list in-place: if a molecule in the list can be interpreted
-    as a polymer-derived fragment/modification, it replaces that molecule with the
+    It mutates structure_list in-place: if an entry can be interpreted
+    as a polymer-derived fragment/modification, it replaces that entry with the
     corresponding Polymer returned by create_reacted_copy().
     """
-    for i, mol in enumerate(structure_list):
-        if not isinstance(mol, Molecule):
+    for i, item in enumerate(structure_list):
+        if hasattr(item, 'is_polymer') and item.is_polymer:
+            continue
+        if isinstance(item, Molecule):
+            mol = item
+        elif isinstance(item, Species):
+            mol = item.molecule[0]
+        else:
             continue
         for polymer_obj in polymer_reactants:
             try:

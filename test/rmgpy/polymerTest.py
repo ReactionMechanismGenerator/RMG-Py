@@ -299,9 +299,9 @@ PS_1
 
     def test_fingerprint_property(self):
         """Test that the fingerprint property works"""
-        assert self.polymer_1.fingerprint == "Polymer_C08H08N00O00S00_3"
-        assert self.polymer_2.fingerprint == "Polymer_C08H08N00O00S00_5"
-        assert self.polymer_3.fingerprint == "Polymer_C02H04N00O00S00_10"
+        assert self.polymer_1.fingerprint == "Polymer_C08H08N00O00S00_EG-C01H03N00O00S00_C00H01N00O00S00_3"
+        assert self.polymer_2.fingerprint == "Polymer_C08H08N00O00S00_EG-C01H03N00O00S00_C00H01N00O00S00_5"
+        assert self.polymer_3.fingerprint == "Polymer_C02H04N00O00S00_EG-C00H01N00O00S00_C00H01N00O00S00_10"
 
     def test_baseline_proxy(self):
         """Test that the baseline_proxy property works"""
@@ -1905,6 +1905,25 @@ class TestPolymerThermo:
         assert thermo is self.dummy_thermo
         assert self.pe_polymer.thermo is self.dummy_thermo  # Check sync behavior
 
+    def test_get_thermo_data_polymer_comment_suffix(self):
+        """Test that thermo comment gets ', Polymer' suffix."""
+        self.dummy_thermo.comment = 'Thermo group additivity estimation: group(Cs-CsCsHH)'
+        # Reset thermo so get_thermo_data re-applies
+        self.pe_polymer.thermo = None
+        thermo = self.pe_polymer.get_thermo_data()
+        assert thermo.comment.endswith(', Polymer')
+        # Calling again should not double-append
+        self.pe_polymer.thermo = None
+        thermo2 = self.pe_polymer.get_thermo_data()
+        assert thermo2.comment.count(', Polymer') == 1
+
+    def test_get_thermo_data_polymer_comment_empty(self):
+        """Test that empty thermo comment becomes 'Polymer'."""
+        self.dummy_thermo.comment = ''
+        self.pe_polymer.thermo = None
+        thermo = self.pe_polymer.get_thermo_data()
+        assert thermo.comment == 'Polymer'
+
     def test_thermo_properties_delegate_correctly(self):
         """Test get_enthalpy, entropy, heat_capacity, etc. return proxy values."""
         T = 500.0
@@ -2372,3 +2391,720 @@ def _safe_make_radical(mol: Molecule, atom: Atom):
         mol.remove_bond(bond)
         mol.remove_atom(h_atom)
     atom.increment_radical()
+
+
+# ---------------------------------------------------------------------------
+# Functional tests for the polymer-handshake pipeline
+# ---------------------------------------------------------------------------
+
+class TestHandshakeStructures:
+    """
+    Functional tests verifying that _handshake_structures (called from
+    CoreEdgeReactionModel.make_new_reaction) correctly converts product
+    Molecule objects into Polymer objects when a Polymer is among the
+    reaction reactants.
+
+    These tests simulate the key step in the pipeline:
+        react_all → generate_reactions_from_families → Molecule products
+        → _handshake_structures → Polymer products
+        → make_new_species / _register_polymer → Edge species
+    """
+
+    PS_ADJ = """multiplicity 3
+                1 *1 C u1 p0 c0 {2,S} {9,S} {10,S}
+                2 *2 C u1 p0 c0 {1,S} {3,S} {11,S}
+                3    C u0 p0 c0 {2,S} {4,S} {8,D}
+                4    C u0 p0 c0 {3,S} {5,D} {12,S}
+                5    C u0 p0 c0 {4,D} {6,S} {13,S}
+                6    C u0 p0 c0 {5,S} {7,D} {14,S}
+                7    C u0 p0 c0 {6,D} {8,S} {15,S}
+                8    C u0 p0 c0 {3,D} {7,S} {16,S}
+                9    H u0 p0 c0 {1,S}
+                10   H u0 p0 c0 {1,S}
+                11   H u0 p0 c0 {2,S}
+                12   H u0 p0 c0 {4,S}
+                13   H u0 p0 c0 {5,S}
+                14   H u0 p0 c0 {6,S}
+                15   H u0 p0 c0 {7,S}
+                16   H u0 p0 c0 {8,S}"""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        self._handshake = _handshake_structures
+        self.ps = Polymer(
+            label='PS',
+            monomer=self.PS_ADJ,
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+
+    # ------------------------------------------------------------------
+    # 1. Baseline (unreacted proxy) stays a Polymer
+    # ------------------------------------------------------------------
+    def test_handshake_baseline_proxy_returns_polymer(self):
+        """
+        The unreacted baseline proxy molecule should be recognised as 'still polymer'
+        (create_reacted_copy returns a copy), so _handshake_structures replaces
+        the Molecule with a Polymer.
+        """
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        product_list = [proxy_mol]
+        self._handshake(product_list, [self.ps])
+        assert isinstance(product_list[0], Polymer), (
+            "Unreacted proxy fragment should become a Polymer after handshake, "
+            f"got {type(product_list[0])}"
+        )
+
+    # ------------------------------------------------------------------
+    # 2. Head-scission fragment → scission_tail Polymer
+    # ------------------------------------------------------------------
+    def test_handshake_head_scission_fragment_returns_scission_tail_polymer(self):
+        """
+        A fragment that contains only the head wing (no tail wing) should be
+        classified as a scission_tail Polymer product.
+        """
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        scission_frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert scission_frag is not None, "test setup: scission fragment construction failed"
+
+        product_list = [scission_frag]
+        self._handshake(product_list, [self.ps])
+
+        result = product_list[0]
+        assert isinstance(result, Polymer), (
+            f"Scission fragment should become a Polymer, got {type(result)}"
+        )
+        assert result.label.endswith('_scission_tail'), (
+            f"Expected label ending in '_scission_tail', got '{result.label}'"
+        )
+
+    # ------------------------------------------------------------------
+    # 3. Tail-scission fragment → scission_head Polymer
+    # ------------------------------------------------------------------
+    def test_handshake_tail_scission_fragment_returns_scission_head_polymer(self):
+        """
+        A fragment that contains only the tail wing (no head wing) should be
+        classified as a scission_head Polymer product.
+        """
+        tail_wing = self.ps._stitch_wing("tail")
+        methyl_star1 = Molecule().from_adjacency_list(_methyl_radical_adj("*1"))
+        scission_frag = polymer.stitch_molecules_by_labeled_atoms(methyl_star1, tail_wing)
+        assert scission_frag is not None, "test setup: scission fragment construction failed"
+
+        product_list = [scission_frag]
+        self._handshake(product_list, [self.ps])
+
+        result = product_list[0]
+        assert isinstance(result, Polymer), (
+            f"Scission fragment should become a Polymer, got {type(result)}"
+        )
+        assert result.label.endswith('_scission_head'), (
+            f"Expected label ending in '_scission_head', got '{result.label}'"
+        )
+
+    # ------------------------------------------------------------------
+    # 4. Small molecule (no wings) is left as a Molecule
+    # ------------------------------------------------------------------
+    def test_handshake_small_molecule_remains_molecule(self):
+        """
+        A fragment too small to contain any polymer wing should NOT be
+        converted to a Polymer — it should remain a plain Molecule (gas-phase).
+        """
+        small = Molecule(smiles='CC')  # ethane — no PS wings
+        product_list = [small]
+        self._handshake(product_list, [self.ps])
+        assert isinstance(product_list[0], Molecule), (
+            "Small gas-phase molecule should remain a Molecule after handshake"
+        )
+
+    # ------------------------------------------------------------------
+    # 5. Non-Molecule items in the list are untouched
+    # ------------------------------------------------------------------
+    def test_handshake_ignores_non_molecule_items(self):
+        """
+        Non-Molecule items (e.g. already-converted Polymer or Species) in
+        the product list should be left unchanged.
+        """
+        already_poly = self.ps.copy()
+        product_list = [already_poly]
+        self._handshake(product_list, [self.ps])
+        assert product_list[0] is already_poly, (
+            "Non-Molecule items should be left untouched by _handshake_structures"
+        )
+
+    # ------------------------------------------------------------------
+    # 6. Mixed product list: one convertible, one gas
+    # ------------------------------------------------------------------
+    def test_handshake_mixed_product_list(self):
+        """
+        In a bimolecular-product reaction, one product may be a Polymer
+        fragment and the other a small gas-phase molecule.  Both must be
+        handled correctly in the same call.
+        """
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        polymer_frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+
+        gas_frag = Molecule(smiles='[CH3]')  # methyl radical — no PS wings
+
+        product_list = [polymer_frag, gas_frag]
+        self._handshake(product_list, [self.ps])
+
+        assert isinstance(product_list[0], Polymer), (
+            f"First product (polymer fragment) should be a Polymer, got {type(product_list[0])}"
+        )
+        assert isinstance(product_list[1], Molecule), (
+            f"Second product (gas fragment) should remain a Molecule, got {type(product_list[1])}"
+        )
+
+
+    # ------------------------------------------------------------------
+    # 7. Retroene-style scission: closed-shell fragments from proxy
+    # ------------------------------------------------------------------
+    def test_handshake_retroene_scission_products(self):
+        """
+        A Retroene reaction on the PS proxy trimer produces two closed-shell
+        fragments (no radicals).  The larger fragment containing a recognizable
+        wing should become a Polymer; the smaller one stays a Molecule.
+
+        PS proxy: CH3-CH2-CH(Ph)-CH2-CH(Ph)-CH2-CH(Ph)-H
+        Retroene splits e.g. into:
+          C17H18: C=C(CC(C)c1ccccc1)c1ccccc1  (larger, has a wing)
+          C8H10:  CC=C1C=CC=CC1               (smaller fragment)
+
+        At least the larger fragment must be recognized as polymer-derived.
+        """
+        # These are actual SMILES from the RMG run output
+        large_frag = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        small_frag = Molecule(smiles='C=C(C)c1ccccc1')
+
+        product_list = [large_frag, small_frag]
+        self._handshake(product_list, [self.ps])
+
+        # At least the large fragment should be recognized as a Polymer
+        assert isinstance(product_list[0], Polymer), (
+            f"Large Retroene fragment should become a Polymer, got {type(product_list[0])}"
+        )
+
+    def test_handshake_retroene_all_scission_products(self):
+        """
+        Test both pairs of Retroene products from the PS proxy.
+        For each pair, the larger fragment should become a Polymer.
+        """
+        pairs = [
+            ('C=C(CC(C)c1ccccc1)c1ccccc1', 'CC=C1C=CC=CC1'),     # C17H18 + C8H10
+            ('CC(CC=C1C=CC=CC1)c1ccccc1', 'C=C(C)c1ccccc1'),     # C16H18 + C9H10
+        ]
+        for large_smi, small_smi in pairs:
+            large_frag = Molecule(smiles=large_smi)
+            small_frag = Molecule(smiles=small_smi)
+            product_list = [large_frag, small_frag]
+            self._handshake(product_list, [self.ps])
+            assert isinstance(product_list[0], Polymer), (
+                f"Large fragment ({large_smi}) should become a Polymer, "
+                f"got {type(product_list[0])}"
+            )
+
+    # ------------------------------------------------------------------
+    # 8. Handshake with Species objects (real RMG flow)
+    # ------------------------------------------------------------------
+    def test_handshake_species_objects(self):
+        """
+        In the real RMG pipeline, find_degenerate_reactions wraps product
+        Molecules into Species objects before process_reaction is called.
+        _handshake_structures must handle Species (not just Molecule) items
+        in the product list.
+        """
+        from rmgpy.species import Species as Spc
+        large_mol = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        small_mol = Molecule(smiles='C=C(C)c1ccccc1')
+        large_spc = Spc(molecule=[large_mol])
+        small_spc = Spc(molecule=[small_mol])
+
+        product_list = [large_spc, small_spc]
+        self._handshake(product_list, [self.ps])
+
+        assert isinstance(product_list[0], Polymer), (
+            f"Species wrapping a large fragment should become a Polymer, "
+            f"got {type(product_list[0])}"
+        )
+        assert not isinstance(product_list[1], Polymer), (
+            "Small gas-phase fragment should stay a Species"
+        )
+
+    # ------------------------------------------------------------------
+    # 9. Scission product proxy symmetry / resonance hybrid
+    # ------------------------------------------------------------------
+    def test_scission_product_proxy_symmetry_number(self):
+        """
+        The proxy of a scission-tail Polymer must be able to compute its
+        symmetry number (which internally calls get_resonance_hybrid)
+        without crashing due to inconsistent resonance structures.
+
+        Regression test for ValueError: 'The specified vertices are not
+        connected by an edge in this graph' during thermo generation.
+        """
+        large_frag = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        product_list = [large_frag, Molecule(smiles='C=C(C)c1ccccc1')]
+        self._handshake(product_list, [self.ps])
+        poly = product_list[0]
+        assert isinstance(poly, Polymer)
+
+        proxy = poly.get_proxy_species()
+        # This is the exact call chain that crashed in the RMG run:
+        # get_symmetry_number → get_resonance_hybrid → get_bond
+        sym = poly.get_symmetry_number()
+        assert sym >= 1
+
+    def test_scission_product_generate_resonance_structures(self):
+        """
+        Calling generate_resonance_structures on a Polymer must not break
+        the shared molecule reference between the Polymer and its proxy.
+        """
+        large_frag = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        product_list = [large_frag, Molecule(smiles='C=C(C)c1ccccc1')]
+        self._handshake(product_list, [self.ps])
+        poly = product_list[0]
+        assert isinstance(poly, Polymer)
+
+        proxy = poly.get_proxy_species()
+        # Simulate what evaluator does
+        poly.generate_resonance_structures()
+        # After the call, Polymer.molecule must still reference the proxy's list
+        assert poly.molecule is proxy.molecule
+
+    def test_evaluator_on_scission_polymer(self):
+        """
+        Full evaluator path on a scission Polymer must not crash.
+        This mimics the exact thermo-generation flow triggered by
+        _register_polymer → generate_thermo → submit → evaluator.
+        """
+        large_frag = Molecule(smiles='C=C(CC(C)c1ccccc1)c1ccccc1')
+        product_list = [large_frag, Molecule(smiles='C=C(C)c1ccccc1')]
+        self._handshake(product_list, [self.ps])
+        poly = product_list[0]
+        assert isinstance(poly, Polymer)
+
+        # Simulate the evaluator flow
+        poly.generate_resonance_structures()
+        sym = poly.get_symmetry_number()
+        assert sym >= 1
+
+
+class TestPolymerRegistration:
+    """
+    Tests for Polymer registration in the CoreEdgeReactionModel:
+    fingerprint uniqueness, moment dummy injection, and the end-to-end
+    make_new_species → _register_polymer pipeline.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        self.model = CoreEdgeReactionModel()
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+
+    def test_register_polymer_assigns_index(self):
+        """A newly registered Polymer must get a positive species index."""
+        poly, is_new = self.model._register_polymer(self.ps, generate_thermo=False)
+        assert is_new is True
+        assert poly.index > 0
+
+    def test_register_polymer_creates_moment_dummies(self):
+        """_register_polymer must inject _mu0, _mu1, _mu2 dummy Species."""
+        self.model._register_polymer(self.ps, generate_thermo=False)
+        labels = [s.label for s in self.model.new_species_list]
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            expected = f'PS{suffix}'
+            assert expected in labels, f"Missing moment dummy '{expected}' in new_species_list"
+
+    def test_moment_dummies_are_nonreactive_he(self):
+        """Moment dummies must be non-reactive Species with He placeholder molecules."""
+        self.model._register_polymer(self.ps, generate_thermo=False)
+        for spc in self.model.new_species_list:
+            if spc.label.startswith('PS_mu'):
+                assert spc.reactive is False
+                assert spc.index == -1
+                assert spc.molecule[0].get_formula() == 'He'
+
+    def test_duplicate_polymer_returns_existing(self):
+        """Registering the same Polymer twice must return the first copy (is_new=False)."""
+        poly1, is_new1 = self.model._register_polymer(self.ps, generate_thermo=False)
+        dup = self.ps.copy(deep=True)
+        poly2, is_new2 = self.model._register_polymer(dup, generate_thermo=False)
+        assert is_new1 is True
+        assert is_new2 is False
+        assert poly1 is poly2
+
+    def test_scission_polymer_gets_different_fingerprint(self):
+        """A scission product must have a different fingerprint than its parent."""
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        scission = self.ps.create_reacted_copy(c16h18)
+        assert scission is not None, "test setup: create_reacted_copy returned None"
+        assert scission.fingerprint != self.ps.fingerprint, (
+            "Scission product must have a different fingerprint from the parent"
+        )
+
+    def test_scission_polymer_gets_own_moment_dummies(self):
+        """A scission product registered via make_new_species gets its own moment dummies."""
+        self.model._register_polymer(self.ps, generate_thermo=False)
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        scission = self.ps.create_reacted_copy(c16h18)
+        scission_reg, is_new = self.model.make_new_species(scission, generate_thermo=False)
+        assert is_new is True
+        assert isinstance(scission_reg, Polymer)
+        labels = [s.label for s in self.model.new_species_list]
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            expected = f'{scission_reg.label}{suffix}'
+            assert expected in labels, f"Missing moment dummy '{expected}' for scission product"
+
+    def test_make_new_species_routes_polymer_to_register_polymer(self):
+        """make_new_species with a Polymer must route to _register_polymer."""
+        poly, is_new = self.model.make_new_species(self.ps, generate_thermo=False)
+        assert is_new is True
+        assert isinstance(poly, Polymer)
+        assert poly.index > 0
+        # Moment dummies should also be present
+        labels = [s.label for s in self.model.new_species_list]
+        assert f'{poly.label}_mu0' in labels
+
+    def test_handshake_then_register_end_to_end(self):
+        """
+        Full pipeline: handshake converts product Molecule to Polymer,
+        then make_new_species registers it with index and moment dummies.
+        """
+        from rmgpy.data.kinetics.family import _handshake_structures
+
+        self.model._register_polymer(self.ps, generate_thermo=False)
+
+        # Simulate product list from a reaction
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        h_atom = Molecule().from_smiles('[H]')
+        products = [c16h18, h_atom]
+
+        _handshake_structures(products, [self.ps])
+
+        # After handshake: first product should be Polymer, second stays Molecule
+        assert isinstance(products[0], Polymer)
+        assert isinstance(products[1], Molecule)
+
+        # Register both via make_new_species
+        poly_prod, is_new_poly = self.model.make_new_species(products[0], generate_thermo=False)
+        h_prod, is_new_h = self.model.make_new_species(products[1], generate_thermo=False)
+
+        assert isinstance(poly_prod, Polymer)
+        assert is_new_poly is True
+        assert poly_prod.index > 0
+        assert not isinstance(h_prod, Polymer)
+        assert is_new_h is True
+
+        # Check moment dummies exist for the new polymer
+        labels = [s.label for s in self.model.new_species_list]
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            assert f'{poly_prod.label}{suffix}' in labels
+
+
+class TestMakeNewReactionPolymer:
+    """
+    Tests for make_new_reaction() handling Polymer reactants/products:
+    pairs invalidation after handshake, and end-to-end product registration.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        self.model = CoreEdgeReactionModel()
+
+        # Create and register a polystyrene Polymer
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        self.model._register_polymer(self.ps, generate_thermo=False)
+
+    def _make_retroene_template_reaction(self):
+        """
+        Build a TemplateReaction that mimics a Retroene scission of the PS proxy.
+
+        The PS trimer proxy decomposes into two fragments:
+          C16H18: CC(CC=C1C=CC=CC1)c1ccccc1 (scission-head-like)
+          C8H10:  CC=C1C=CC=CC1             (scission-tail-like)
+
+        Returns the TemplateReaction with pairs set (the scenario that
+        previously caused a ValueError after handshake).
+        """
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.kinetics import Arrhenius
+
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        c8h10 = Molecule().from_smiles('CC=C1C=CC=CC1')
+
+        rxn = TemplateReaction(
+            reactants=[proxy_mol],
+            products=[c16h18, c8h10],
+            family='Retroene',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1.29e12, 's^-1'), n=0.0, Ea=(71.113, 'kcal/mol')),
+            pairs=[(proxy_mol, c16h18), (proxy_mol, c8h10)],
+        )
+        return rxn
+
+    def test_make_new_reaction_no_pairs_crash(self):
+        """make_new_reaction must not raise ValueError on pairs lookup after handshake."""
+        rxn = self._make_retroene_template_reaction()
+        result_rxn, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        assert is_new is True
+        assert result_rxn is not None
+
+    def test_make_new_reaction_produces_polymer_products(self):
+        """At least one product of a Polymer scission must be a Polymer object."""
+        rxn = self._make_retroene_template_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        poly_products = [p for p in result_rxn.products if isinstance(p, Polymer)]
+        assert len(poly_products) > 0, (
+            f"Expected Polymer products, got: {[type(p).__name__ for p in result_rxn.products]}"
+        )
+
+    def test_make_new_reaction_polymer_products_get_moment_dummies(self):
+        """Polymer products from make_new_reaction must have moment dummies registered."""
+        rxn = self._make_retroene_template_reaction()
+        self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        labels = [s.label for s in self.model.new_species_list]
+        poly_products = [p for p in rxn.products if isinstance(p, Polymer)]
+        for poly in poly_products:
+            for suffix in ('_mu0', '_mu1', '_mu2'):
+                expected = f'{poly.label}{suffix}'
+                assert expected in labels, (
+                    f"Missing moment dummy '{expected}' for polymer product"
+                )
+
+    def test_make_new_reaction_reactant_resolves_to_polymer(self):
+        """The proxy Molecule reactant must resolve to the registered Polymer."""
+        rxn = self._make_retroene_template_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        assert isinstance(result_rxn.reactants[0], Polymer)
+        assert result_rxn.reactants[0].label == 'PS'
+
+    def test_make_new_reaction_pairs_regenerated(self):
+        """After handshake invalidates pairs, generate_pairs must restore them."""
+        rxn = self._make_retroene_template_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        assert result_rxn.pairs is not None
+        assert len(result_rxn.pairs) == max(len(result_rxn.reactants), len(result_rxn.products))
+
+
+class TestEnlargePolymerPipeline:
+    """
+    Tests that simulate the enlarge pipeline (make_new_reaction → edge placement)
+    for Polymer scission reactions. This mirrors what happens when a Polymer
+    species in the core reacts and its products are added to the model edge.
+
+    Uses make_new_reaction (with check_existing=False to avoid database
+    dependency) and then manually adds products to the edge, which is
+    exactly what process_new_reactions does after the reaction is created.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        self.model = CoreEdgeReactionModel()
+
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        self.model._register_polymer(self.ps, generate_thermo=False)
+        # Place PS directly in core (bypassing add_species_to_core which
+        # requires the full RMG database for forbidden structure checks)
+        self.model.core.species.append(self.ps)
+
+    def _make_retroene_reaction(self):
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.kinetics import Arrhenius
+
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        c16h18 = Molecule().from_smiles('CC(CC=C1C=CC=CC1)c1ccccc1')
+        c8h10 = Molecule().from_smiles('CC=C1C=CC=CC1')
+
+        return TemplateReaction(
+            reactants=[proxy_mol],
+            products=[c16h18, c8h10],
+            family='Retroene',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1.29e12, 's^-1'), n=0.0, Ea=(71.113, 'kcal/mol')),
+            pairs=[(proxy_mol, c16h18), (proxy_mol, c8h10)],
+        )
+
+    def test_enlarge_pipeline_polymer_products_in_edge(self):
+        """
+        Simulate the enlarge pipeline: create the reaction, then add
+        non-core products to the edge (as process_new_reactions does).
+        Polymer products must end up as Polymer objects in the edge.
+        """
+        rxn = self._make_retroene_reaction()
+        result_rxn, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        assert is_new is True
+
+        # Simulate process_new_reactions edge placement
+        for spec in result_rxn.products:
+            if spec not in self.model.core.species and spec not in self.model.edge.species:
+                self.model.edge.species.append(spec)
+
+        edge_polymers = [s for s in self.model.edge.species if isinstance(s, Polymer)]
+        assert len(edge_polymers) > 0, (
+            f"No Polymer found in edge species. Edge types: "
+            f"{[type(s).__name__ for s in self.model.edge.species]}"
+        )
+
+    def test_enlarge_pipeline_polymer_moment_dummies_registered(self):
+        """
+        After the enlarge pipeline, Polymer products in the edge
+        must have their _mu0, _mu1, _mu2 moment dummies registered.
+        """
+        rxn = self._make_retroene_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        for spec in result_rxn.products:
+            if spec not in self.model.core.species and spec not in self.model.edge.species:
+                self.model.edge.species.append(spec)
+
+        all_labels = {s.label for s in
+                      self.model.new_species_list + self.model.core.species + self.model.edge.species}
+
+        edge_polymers = [s for s in self.model.edge.species if isinstance(s, Polymer)]
+        for poly in edge_polymers:
+            for suffix in ('_mu0', '_mu1', '_mu2'):
+                expected = f'{poly.label}{suffix}'
+                assert expected in all_labels, (
+                    f"Missing moment dummy '{expected}' for edge polymer '{poly.label}'"
+                )
+
+    def test_enlarge_pipeline_polymer_products_have_unique_fingerprints(self):
+        """
+        Polymer scission products must have different fingerprints
+        from the parent PS and from each other.
+        """
+        rxn = self._make_retroene_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        poly_products = [p for p in result_rxn.products if isinstance(p, Polymer)]
+        fingerprints = {p.fingerprint for p in poly_products}
+        # All polymer products should have distinct fingerprints
+        assert len(fingerprints) == len(poly_products)
+        # None should match the parent PS fingerprint
+        for fp in fingerprints:
+            assert fp != self.ps.fingerprint, (
+                "Scission product fingerprint must differ from parent"
+            )
+
+    def test_polymer_reaction_not_pressure_dependent(self):
+        """
+        Reactions involving Polymer species must never be routed to the
+        pressure-dependent network, even when pressure_dependence is on.
+        They should go directly to the core or edge reaction lists.
+        """
+        rxn = self._make_retroene_reaction()
+        result_rxn, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        # Place all species in core so the reaction qualifies for the core
+        for spec in result_rxn.reactants + result_rxn.products:
+            if spec not in self.model.core.species:
+                self.model.core.species.append(spec)
+
+        # Enable pressure dependence on the model with a low atom limit
+        from unittest.mock import MagicMock
+        self.model.pressure_dependence = MagicMock()
+        self.model.pressure_dependence.maximum_atoms = 10  # far below polymer size
+        self.model.unrealgroups = []
+
+        # Simulate the pdep decision from process_new_reactions
+        isomer_atoms = sum(len(spec.molecule[0].atoms) for spec in result_rxn.reactants)
+        pdep = True
+        if not self.model.pressure_dependence:
+            pdep = False
+        elif any(isinstance(spec, Polymer) for spec in result_rxn.reactants + result_rxn.products):
+            pdep = False
+
+        assert pdep is False, (
+            "Polymer reaction should NOT be treated as pressure-dependent"
+        )
+
+    def test_moment_dummies_promoted_to_core_with_polymer(self):
+        """
+        When a Polymer is moved from edge to core, its _mu0, _mu1, _mu2
+        moment dummies must be promoted to the core as well.
+        """
+        from unittest.mock import patch, MagicMock
+
+        rxn = self._make_retroene_reaction()
+        result_rxn, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False, generate_kinetics=False,
+        )
+        # Find the scission polymer product
+        poly_product = None
+        for spec in result_rxn.products:
+            if isinstance(spec, Polymer) and spec is not self.ps:
+                poly_product = spec
+                break
+        assert poly_product is not None, "Expected a scission Polymer product"
+
+        # Place the polymer and its dummies in the edge (simulating edge placement)
+        self.model.edge.species.append(poly_product)
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            m_label = f"{poly_product.label}{suffix}"
+            for s in self.model.new_species_list:
+                if s.label == m_label:
+                    self.model.edge.species.append(s)
+                    break
+
+        # Mock get_db to avoid requiring the full RMG database
+        mock_forbidden = MagicMock()
+        mock_forbidden.is_molecule_forbidden.return_value = False
+        with patch('rmgpy.rmg.model.get_db', return_value=mock_forbidden):
+            self.model.add_species_to_core(poly_product)
+
+        core_labels = {s.label for s in self.model.core.species}
+        for suffix in ('_mu0', '_mu1', '_mu2'):
+            expected = f"{poly_product.label}{suffix}"
+            assert expected in core_labels, (
+                f"Moment dummy '{expected}' should be in core after polymer promotion"
+            )

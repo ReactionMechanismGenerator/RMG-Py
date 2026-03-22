@@ -289,26 +289,23 @@ def polymer(label: str,
         i += 1
     poly_obj.label = label
 
-    # 3. Register the main Polymer species
-    rmg.reaction_model.species_dict[poly_obj.label] = poly_obj
-    rmg.reaction_model.new_species_list.append(poly_obj)
+    # 3. Register the main Polymer species (routes through _register_polymer
+    #    which assigns species_counter / index / index_species_dict and
+    #    creates moment-tracking dummies _mu0, _mu1, _mu2).
+    poly_obj, _is_new = rmg.reaction_model.make_new_species(poly_obj, generate_thermo=False)
     rmg.initial_species.append(poly_obj)
     species_dict[label] = poly_obj
 
-    # 4. INJECT MOMENT DUMMIES IMMEDIATELY
-    # These become 'Real' species in the eyes of RMG,
-    # ensuring they get a unique index in the solver's 'y' vector.
+    # 4. Expose the moment dummies (already created by _register_polymer)
+    #    to initial_species and the input-level species_dict so the solver
+    #    sees them as core species from the start.
     for suffix in ['_mu0', '_mu1', '_mu2']:
         m_label = f"{poly_obj.label}{suffix}"
-
-        # Create non-reactive species placeholders
-        m_spc = Species(label=m_label, reactive=False)
-        m_spc.molecule = [Molecule().from_smiles("[He]")]
-
-        # Identity Lock: Register in all core registries
-        rmg.reaction_model.species_dict[m_label] = m_spc
-        rmg.initial_species.append(m_spc)
-        species_dict[m_label] = m_spc
+        for spc in rmg.reaction_model.new_species_list:
+            if spc.label == m_label:
+                rmg.initial_species.append(spc)
+                species_dict[m_label] = spc
+                break
 
     # 5. Generate Thermo for the Polymer (Delegates to the trimer proxy)
     rmg.reaction_model.generate_thermo(poly_obj)
