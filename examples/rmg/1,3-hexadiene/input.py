@@ -1,7 +1,7 @@
 # Data sources
 database(
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
-    reactionLibraries = [],
+    reactionLibraries = ['NOx2018'],
     seedMechanisms = [],
     kineticsDepositories = ['training'], 
     kineticsFamilies = 'default',
