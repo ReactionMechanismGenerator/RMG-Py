@@ -332,6 +332,17 @@ class CoreEdgeReactionModel:
         poly.index = self.species_counter
         poly.creation_iteration = self.iteration_num
 
+        # Disambiguate label if already taken by another species (e.g. two
+        # structurally distinct scission tails both labelled "PS_scission_tail").
+        # Unique labels are required so each Polymer gets its own mu dummies.
+        all_labels = {spec.label for spec in self.new_species_list + self.core.species + self.edge.species}
+        if poly.label in all_labels:
+            base = poly.label
+            n = 2
+            while f"{base}_{n}" in all_labels:
+                n += 1
+            poly.label = f"{base}_{n}"
+
         formula = poly.molecule[0].get_formula()
         if formula in self.species_dict:
             self.species_dict[formula].append(poly)

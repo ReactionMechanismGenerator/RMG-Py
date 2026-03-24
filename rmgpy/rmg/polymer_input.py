@@ -143,12 +143,20 @@ class HybridPolymerReactor(ReactionSystem):
         self.solver.listeners = self.listeners
 
         # 3. Delegate ALL numerical initialization to the Solver Engine
-        return self.solver.initialize_model(core_species=core_species, core_reactions=core_reactions,
+        result = self.solver.initialize_model(core_species=core_species, core_reactions=core_reactions,
                                             edge_species=edge_species, edge_reactions=edge_reactions,
                                             surface_species=surface_species, surface_reactions=surface_reactions,
                                             pdep_networks=pdep_networks, atol=atol, rtol=rtol, sensitivity=sensitivity,
                                             sens_atol=sens_atol, sens_rtol=sens_rtol, filter_reactions=filter_reactions,
                                             conditions=conditions)
+
+        # 4. Sync threshold arrays back from solver so RMG main can read them
+        self.unimolecular_threshold = self.solver.unimolecular_threshold
+        self.bimolecular_threshold = self.solver.bimolecular_threshold
+        if hasattr(self.solver, 'trimolecular_threshold') and self.solver.trimolecular_threshold is not None:
+            self.trimolecular_threshold = self.solver.trimolecular_threshold
+
+        return result
 
     def simulate(self, core_species, core_reactions, edge_species, edge_reactions, **kwargs):
         """
@@ -161,7 +169,15 @@ class HybridPolymerReactor(ReactionSystem):
                 self.solver.num_core_species != n_core or
                 self.solver.num_core_reactions != n_rxn):
             self.initialize_model(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
-        return self.solver.simulate(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
+        result = self.solver.simulate(core_species, core_reactions, edge_species, edge_reactions, **kwargs)
+
+        # Sync threshold arrays back from solver so RMG main can read them
+        self.unimolecular_threshold = self.solver.unimolecular_threshold
+        self.bimolecular_threshold = self.solver.bimolecular_threshold
+        if hasattr(self.solver, 'trimolecular_threshold') and self.solver.trimolecular_threshold is not None:
+            self.trimolecular_threshold = self.solver.trimolecular_threshold
+
+        return result
 
     def convert_initial_keys_to_species_objects(self, species_dict):
         """
