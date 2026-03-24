@@ -7,7 +7,7 @@
 CC=gcc
 CXX=g++
 
-.PHONY : all check clean install decython documentation test q2dtor
+.PHONY : all check clean install decython documentation test q2dtor fix-rpath-macos
 
 all: check install check
 
@@ -29,6 +29,34 @@ clean-solver:
 install:
 	@ python utilities.py check-pydas
 	python -m pip install --no-build-isolation -vv -e .
+	@$(MAKE) fix-rpath-macos
+
+fix-rpath-macos:
+	@if [ "$$(uname -s)" != "Darwin" ]; then \
+		exit 0; \
+	fi
+	@if [ -z "$$CONDA_PREFIX" ]; then \
+		echo "Skipping macOS rpath deduplication (CONDA_PREFIX is not set)."; \
+		exit 0; \
+	fi
+	@echo "Checking for duplicate LC_RPATH entries in rmgpy extension modules..."
+	@fixed=0; \
+	for so in $$(find rmgpy -type f -name '*.so'); do \
+		count=$$(otool -l "$$so" | awk '/cmd LC_RPATH/{getline; getline; print}' | grep -F "path $$CONDA_PREFIX/lib" | wc -l | tr -d ' '); \
+		if [ "$$count" -gt 1 ]; then \
+			echo "Removing duplicate LC_RPATH from $$so ($$count entries found)"; \
+			while [ "$$count" -gt 1 ]; do \
+				install_name_tool -delete_rpath "$$CONDA_PREFIX/lib" "$$so" || break; \
+				count=$$(otool -l "$$so" | awk '/cmd LC_RPATH/{getline; getline; print}' | grep -F "path $$CONDA_PREFIX/lib" | wc -l | tr -d ' '); \
+			done; \
+			fixed=$$((fixed + 1)); \
+		fi; \
+	done; \
+	if [ "$$fixed" -eq 0 ]; then \
+		echo "No duplicate LC_RPATH entries found."; \
+	else \
+		echo "Deduplicated LC_RPATH entries in $$fixed extension module(s)."; \
+	fi
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"
