@@ -7,9 +7,9 @@
 CC=gcc
 CXX=g++
 
-.PHONY : all check clean install decython documentation test q2dtor
+.PHONY : all build check clean install decython documentation test q2dtor
 
-all: check install check
+all: check build
 
 check:
 	@ python utilities.py check-dependencies
@@ -29,6 +29,9 @@ clean-solver:
 install:
 	@ python utilities.py check-pydas
 	python -m pip install --no-build-isolation -vv -e .
+
+build:
+	python setup.py build_ext --inplace
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"
