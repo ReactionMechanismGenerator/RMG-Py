@@ -159,6 +159,17 @@ Documentation lives in `documentation/source/` and is built with Sphinx (`make d
 - **Changed behavior**: Update relevant user guide section
 - **New features**: Add to `documentation/source/users/rmg/features.rst` or create and link to new `.rst` file
 
+## Pull Request Review Guidance
+### Review Priorities
+- Verify changed behavior is covered by tests, or request targeted tests for uncovered paths.
+- Check that user-facing changes include required documentation updates (especially input syntax in `documentation/source/users/rmg/input.rst`).
+- Confirm Cython changes are complete (`.pyx`/`.pxd` parity, required setup wiring, and likely rebuild impact).
+- Watch for performance regressions in hot paths (`rmgpy/molecule/`, `rmgpy/solver/`, kinetics generation loops).
+
+### Other checks
+- If `environment.yml` or `.conda/meta.yaml` change, verify they are consistent.
+- For changes that affect data loading or estimators, verify assumptions against RMG-database integration points in `rmgpy/data/rmg.py` and related loaders.
+
 ## Style Guidelines
 - Follow PEP 8 for new or modified code, but don't modify code just to fix style
 - Docstrings describe purpose, not implementation
