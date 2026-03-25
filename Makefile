@@ -7,13 +7,36 @@
 CC=gcc
 CXX=g++
 
+# Sentinel file written after a successful pip editable install.
+# Lives in the source tree; deleted by `make clean`.
+INSTALL_SENTINEL = .installed
+
 .PHONY : all build check clean install decython documentation test q2dtor
 
-all: check build
+# Default target: ensure installed, then build any changed extensions in place.
+all: check $(INSTALL_SENTINEL) build check
 
 check:
 	@ python utilities.py check-dependencies
 	@ python utilities.py check-pydas
+
+define DO_INSTALL
+	@ python utilities.py check-pydas
+	python -m pip install --no-build-isolation -vv -e .
+	@ touch $(INSTALL_SENTINEL)
+endef
+
+# Runs only if the sentinel doesn't exist.
+$(INSTALL_SENTINEL):
+	$(DO_INSTALL)
+
+# Explicit install target
+install:
+	$(DO_INSTALL)
+
+# Incremental in-place build; skips pip entirely.
+build:
+	python setup.py build_ext --inplace
 
 documentation:
 	$(MAKE) -C documentation html
@@ -22,16 +45,10 @@ documentation:
 clean:
 	@ python utilities.py clean
 	python -m pip uninstall --yes reactionmechanismgenerator || true  # can fail if RMG not installed at all
+	@ rm -f $(INSTALL_SENTINEL)
 
 clean-solver:
 	@ python utilities.py clean-solver
-
-install:
-	@ python utilities.py check-pydas
-	python -m pip install --no-build-isolation -vv -e .
-
-build:
-	python setup.py build_ext --inplace
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"
@@ -115,7 +132,7 @@ eg7: all
 	cp examples/rmg/gri_mech_rxn_lib/input.py testing/eg7/input.py
 	@ echo "Running eg7: gri_mech_rxn_lib example"
 	python rmg.py testing/eg7/input.py
-	
+
 scoop: all
 	mkdir -p testing/scoop
 	rm -rf testing/scoop/*
