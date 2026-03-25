@@ -36,6 +36,7 @@ dependencies:
   - conda-forge::xlrd
   - conda-forge::xlwt
   - conda-forge::h5py
+  # keep graphviz from conda-forge; see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2750
   - conda-forge::graphviz >=12
   - conda-forge::markupsafe
   - conda-forge::psutil
@@ -43,8 +44,6 @@ dependencies:
   # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
   - conda-forge::suitesparse
-  # see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2750
-  - conda-forge::graphviz 
   # ThermoCentralDatabaseInterface fails if pyopenssl is too old. 20 is just a guess at the version number. 
   - conda-forge::pyopenssl >20
 
