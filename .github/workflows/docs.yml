@@ -22,7 +22,7 @@ jobs:
           git config --global user.email "github-actions@github.com"
 
       - name: Clone RMG-Py
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -68,7 +68,7 @@ jobs:
           make
 
       - name: Checkout gh-pages Branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v6
         with:
           ref: gh-pages
           fetch-depth: 0
