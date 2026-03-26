@@ -208,7 +208,7 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
             continue
         for root, dirs, files in os.walk(species_directory):
             for f in files:
-                if f.endswith(species_index):
+                if f == species_index:
                     image_path = os.path.join(root, f)
                     break
         if os.path.exists(image_path):
