@@ -562,6 +562,10 @@ class RMG(util.Subject):
                 )
             )
 
+        # Auto-select libraries if any field uses 'auto' or '<PAH_libs>'
+        from rmgpy.data.libraries import auto_select_libraries
+        auto_select_libraries(self)
+
         # Load databases
         self.load_database()
 
@@ -1436,9 +1440,15 @@ class RMG(util.Subject):
         logging.info("Performing final model checks...")
 
         # Check that no two species in core or edge are isomorphic
+        # (skip polymer moment dummies and proxy species — they are intentionally
+        #  isomorphic placeholders distinguished only by label)
         for i, spc in enumerate(self.reaction_model.core.species):
+            if getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False):
+                continue
             for j in range(i):
                 spc2 = self.reaction_model.core.species[j]
+                if getattr(spc2, 'is_moment_dummy', False) or getattr(spc2, 'is_polymer_proxy', False):
+                    continue
                 if spc.is_isomorphic(spc2):
                     raise CoreError(
                         "Although the model has completed, species {0} is isomorphic to species {1} in the core. "
@@ -1447,8 +1457,12 @@ class RMG(util.Subject):
                     )
 
         for i, spc in enumerate(self.reaction_model.edge.species):
+            if getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False):
+                continue
             for j in range(i):
                 spc2 = self.reaction_model.edge.species[j]
+                if getattr(spc2, 'is_moment_dummy', False) or getattr(spc2, 'is_polymer_proxy', False):
+                    continue
                 if spc.is_isomorphic(spc2):
                     logging.warning(
                         "Species {0} is isomorphic to species {1} in the edge. This does not affect "
