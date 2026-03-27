@@ -688,12 +688,14 @@ cdef class ArrheniusBM(KineticsModel):
             self.comment = 'Fitted to {0} reactions at temperatures: {1}'.format(len(rxns), Ts)
 
         # fill in parameters
-        A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
-        order = len(rxns[0].reactants)
-        if order != 1 and rxn.is_surface_reaction():
-            raise NotImplementedError("Units not implemented for surface reactions.")
-        self.A = (A, A_units[order])
+        if rxn.is_surface_reaction():
+            A_units = quantity.SURFACERATECOEFFICIENT_SI_UNITS[rxn.kinetics.A.units]
+        else:
+            A_units = ['', 's^-1', 'm^3/(mol*s)', 'm^6/(mol^2*s)']
+            order = len(rxns[0].reactants)
+            A_units = A_units[order]
 
+        self.A = (A, A_units)
         self.n = n
         self.w0 = (w0, 'J/mol')
         self.E0 = (E0, 'J/mol')
