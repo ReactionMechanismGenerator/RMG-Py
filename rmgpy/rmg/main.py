@@ -562,6 +562,10 @@ class RMG(util.Subject):
                 )
             )
 
+        # Auto-select libraries if any field uses 'auto' or '<PAH_libs>'
+        from rmgpy.data.libraries import auto_select_libraries
+        auto_select_libraries(self)
+
         # Load databases
         self.load_database()
 

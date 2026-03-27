@@ -86,14 +86,40 @@ def database(
     # We don't actually load the database until after we're finished reading
     # the input file
     rmg.database_directory = settings['database.directory']
-    rmg.thermo_libraries = as_list(thermoLibraries, default=[])
-    rmg.transport_libraries = as_list(transportLibraries, default=None)
+
+    # Handle 'auto' and '<PAH_libs>' tokens: pass them through for later resolution
+    from rmgpy.data.libraries import AUTO, PAH_LIBS
+    _SPECIAL_TOKENS = (AUTO, PAH_LIBS)
+
+    if thermoLibraries in _SPECIAL_TOKENS:
+        rmg.thermo_libraries = thermoLibraries
+    else:
+        rmg.thermo_libraries = as_list(thermoLibraries, default=[])
+
+    if transportLibraries in _SPECIAL_TOKENS:
+        rmg.transport_libraries = transportLibraries
+    else:
+        rmg.transport_libraries = as_list(transportLibraries, default=None)
 
     # Modify reaction library list such that all entries are tuples
-    reaction_libraries = as_list(reactionLibraries, default=[])
-    rmg.reaction_libraries = [(name, False) if not isinstance(name, tuple) else name for name in reaction_libraries]
+    if reactionLibraries in _SPECIAL_TOKENS:
+        rmg.reaction_libraries = reactionLibraries
+    else:
+        reaction_libraries = as_list(reactionLibraries, default=[])
+        rmg.reaction_libraries = []
+        for item in reaction_libraries:
+            if item in _SPECIAL_TOKENS:
+                rmg.reaction_libraries.append(item)
+            elif isinstance(item, tuple):
+                rmg.reaction_libraries.append(item)
+            else:
+                rmg.reaction_libraries.append((item, False))
 
-    rmg.seed_mechanisms = as_list(seedMechanisms, default=[])
+    if seedMechanisms in _SPECIAL_TOKENS:
+        rmg.seed_mechanisms = seedMechanisms
+    else:
+        rmg.seed_mechanisms = as_list(seedMechanisms, default=[])
+
     rmg.statmech_libraries = as_list(frequenciesLibraries, default=[])
     rmg.kinetics_estimator = kineticsEstimator
 
@@ -107,12 +133,12 @@ def database(
                              "['training','PrIMe'].")
         rmg.kinetics_depositories = kineticsDepositories
 
-    if kineticsFamilies in ('default', 'all', 'none'):
+    if kineticsFamilies in ('default', 'all', 'none', 'auto'):
         rmg.kinetics_families = kineticsFamilies
     else:
         if not isinstance(kineticsFamilies, list):
-            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. "
-                             "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
+            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', 'auto', or a list of names "
+                             "eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kinetics_families = kineticsFamilies
 
     rmg.adsorption_groups = adsorptionGroups
