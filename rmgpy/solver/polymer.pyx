@@ -498,32 +498,71 @@ class HybridPolymerSystem(ReactionSystem):
 
 
     def diagnose_polymer_mapping(self, core_species):
-        print('\n\n\n\n\n\n\n\n\n\n-----------------------------------------------------------------------------------------------------\n\n')
-        print(f"\n{'=' * 20} POLYMER SOLVER DIAGNOSTIC {'=' * 20}")
-        print(f"{'Species Label':<25} | {'y0 Index':<10} | {'Initial Value':<15} | {'Pool Type'}")
-        print("-" * 75)
+        w = 90
+        print(f"\n{'=' * w}")
+        print(f"{'POLYMER SOLVER DIAGNOSTIC':^{w}}")
+        print(f"{'=' * w}")
 
-        for i, spec in enumerate(core_species):
-            val = self.y0[i]
-            pool_idx = self.species_to_pool_indices[i]
+        # --- Per-pool sections ---
+        for pool_i, pool in enumerate(self.polymer_pools):
+            print(f"\n--- Pool {pool_i}: '{pool.label}'  (xs={pool.xs}, "
+                  f"k_scission={pool.k_scission:.2e}, k_unzip={pool.k_unzip:.2e}) ---")
+            print(f"  {'Role':<16} {'Species Label':<30} {'Index':<7} {'y0':>13}")
+            print(f"  {'-'*16} {'-'*30} {'-'*7} {'-'*13}")
 
-            # Identify if this is a Proxy, a Moment, or an Explicit Oligomer
-            type_str = "Gas/Other"
-            if pool_idx != -1:
-                pool = self.polymer_pools[pool_idx]
-                if i in pool.mu_indices:
-                    m_type = ["mu0", "mu1", "mu2"][pool.mu_indices.index(i)]
-                    type_str = f"Moment ({m_type})"
-                elif self.is_pool_proxy[i]:
-                    type_str = "Proxy Species"
-                else:
-                    type_str = "Explicit/Feature"
+            # Moments
+            for k, mu_label in enumerate(["mu0", "mu1", "mu2"]):
+                idx = pool.mu_indices[k]
+                lbl = core_species[idx].label if 0 <= idx < len(core_species) else "???"
+                val = self.y0[idx] if 0 <= idx < len(self.y0) else float('nan')
+                print(f"  {'Moment ('+mu_label+')':<16} {lbl:<30} {idx:<7} {val:>13.4e}")
 
-            # We only care about printing the polymer-related species for brevity
-            if pool_idx != -1 or not self.gas_species_mask[i]:
-                print(f"{spec.label[:25]:<25} | {i:<10} | {val:<15.4e} | {type_str}")
+            # Proxy species
+            for i in range(len(core_species)):
+                if self.species_to_pool_indices[i] == pool_i and self.is_pool_proxy[i] and i not in pool.mu_indices:
+                    print(f"  {'Proxy':<16} {core_species[i].label:<30} {i:<7} {self.y0[i]:>13.4e}")
 
-        print(f"{'=' * 67}\n")
+            # Explicit oligomers
+            if pool.explicit_dp_to_species_index:
+                for dp in sorted(pool.explicit_dp_to_species_index):
+                    idx = pool.explicit_dp_to_species_index[dp]
+                    lbl = core_species[idx].label if 0 <= idx < len(core_species) else "???"
+                    val = self.y0[idx] if 0 <= idx < len(self.y0) else float('nan')
+                    print(f"  {'Explicit DP='+str(dp):<16} {lbl:<30} {idx:<7} {val:>13.4e}")
+
+            # Monomer
+            if pool.monomer_poly_index is not None:
+                idx = pool.monomer_poly_index
+                lbl = core_species[idx].label if 0 <= idx < len(core_species) else "???"
+                val = self.y0[idx] if 0 <= idx < len(self.y0) else float('nan')
+                print(f"  {'Monomer(poly)':<16} {lbl:<30} {idx:<7} {val:>13.4e}")
+
+            # Custom kinetics
+            if pool.tail_kinetics is not None:
+                print(f"  Custom tail_kinetics: YES")
+
+        # --- Unassigned non-gas species (catch anything missed) ---
+        unassigned = []
+        for i in range(len(core_species)):
+            if self.species_to_pool_indices[i] == -1 and not self.gas_species_mask[i]:
+                unassigned.append(i)
+        if unassigned:
+            print(f"\n--- Unassigned non-gas species (not in any pool) ---")
+            print(f"  {'Species Label':<30} {'Index':<7} {'y0':>13}")
+            print(f"  {'-'*30} {'-'*7} {'-'*13}")
+            for i in unassigned:
+                print(f"  {core_species[i].label:<30} {i:<7} {self.y0[i]:>13.4e}")
+
+        # --- Mass transfer ---
+        if self.mass_transfer:
+            print(f"\n--- Mass Transfer ---")
+            for mt in self.mass_transfer:
+                gas_lbl = core_species[mt.gas_index].label if 0 <= mt.gas_index < len(core_species) else "???"
+                poly_lbl = core_species[mt.poly_index].label if 0 <= mt.poly_index < len(core_species) else "???"
+                print(f"  {gas_lbl} (gas, idx={mt.gas_index}) <-> {poly_lbl} (poly, idx={mt.poly_index})  "
+                      f"kla={mt.kla:.2e}")
+
+        print(f"\n{'=' * w}\n")
 
 
 
