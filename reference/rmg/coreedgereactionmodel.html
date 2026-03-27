@@ -228,6 +228,12 @@ returned.</p>
 <p>If a match is not yet found, the Library (seed mechs, reaction libs)
 in the reaction database are iterated over to check if a reaction was overlooked
 (a reaction with a different “family” key as the parameter reaction).</p>
+<p>Note, this function assumes RMG is making the mechanism through its main loop,
+where all forward duplicates from a family are found in a single enlarge step.
+If you artificially construct your own a core-edge model and forget to include a
+duplicate from the same family, but then try to add the missing reaction from
+the reverse direction, this function will find the existing forward reaction and
+assume you’ve already found all the duplicates.</p>
 </dd></dl>
 
 <dl class="py method">
