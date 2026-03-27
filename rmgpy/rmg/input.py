@@ -1420,6 +1420,7 @@ def generated_species_constraints(**kwargs):
         'maximumRadicalElectrons',
         'maximumSingletCarbenes',
         'maximumCarbeneRadicals',
+        'maximumFusedRingSystemSize',
         'allowSingletO2',
         'speciesCuttingThreshold',
     ]
