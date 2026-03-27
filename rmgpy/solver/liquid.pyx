@@ -91,8 +91,6 @@ cdef class LiquidReactor(ReactionSystem):
         """
         initial_concentrations = {}
         for label, moleFrac in self.initial_concentrations.items():
-            if label == 'T':
-                continue
             initial_concentrations[species_dict[label]] = moleFrac
         self.initial_concentrations = initial_concentrations
 
