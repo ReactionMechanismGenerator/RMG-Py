@@ -40,6 +40,9 @@ from copy import deepcopy
 
 import numpy as np
 
+from pysidt import read_nodes, MultiTargetSingleEvalSubgraphIsomorphicDecisionTree
+from pysidt.utils import find_shortest_paths
+
 import rmgpy.constants as constants
 import rmgpy.molecule
 import rmgpy.quantity
