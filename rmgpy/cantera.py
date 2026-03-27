@@ -592,6 +592,14 @@ def get_reaction_equation(reaction, species_list):
 
 def get_label(obj: Union['Species', 'Molecule'], species_list: list['Species']):
     if species_list:
+        # First try identity match — needed for polymer moment species that are
+        # structurally identical (all single-Ne-atom placeholders) but have
+        # distinct labels (e.g. PS_mu0, PS_mu1, PS_mu2).
+        for sp in species_list:
+            if sp is obj:
+                return f'{sp.label}({sp.index})' if sp.index > 0 else sp.label
+        # Fall back to structural isomorphism for Molecule objects or
+        # species not found by identity (e.g. from a different model copy).
         for sp in species_list:
             if sp.is_isomorphic(obj):
                 return f'{sp.label}({sp.index})' if sp.index > 0 else sp.label
