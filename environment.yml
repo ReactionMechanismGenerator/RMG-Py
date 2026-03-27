@@ -19,6 +19,7 @@ channels:
   - conda-forge
   - rmg
   - nodefaults
+  - mjohnson541
 dependencies:
 # System-level dependencies - we could install these at the OS level
 # but by installing them in the conda environment we get better control
@@ -72,6 +73,7 @@ dependencies:
   - conda-forge::pandas
   - conda-forge::gprof2dot
   - conda-forge::numdifftools
+  - mjohnson541::pysidt-rmg
   # bug in quantities, see:
   # https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2694#issuecomment-2489286263
   - conda-forge::quantities !=0.16.0,!=0.16.1
