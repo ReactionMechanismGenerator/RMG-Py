@@ -197,6 +197,17 @@ def generate_cantera_data(species_list,
     }
 
     # --- 2. Phase Segregation (Gas vs Surface) ---
+    # Filter out polymer moment dummies and proxy species — their reactions
+    # are element-unbalanced (Ne placeholders) and handled by the custom
+    # polymer solver, not Cantera.
+    def _is_polymer_species(spc):
+        return getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False)
+
+    def _involves_polymer(rxn):
+        return any(_is_polymer_species(spc) for spc in rxn.reactants + rxn.products)
+
+    species_list = [spc for spc in species_list if not _is_polymer_species(spc)]
+
     gas_species, surface_species, gas_reactions, surface_reactions = list(), list(), list(), list()
 
     for spc in species_list:
@@ -206,6 +217,8 @@ def generate_cantera_data(species_list,
             gas_species.append(spc)
 
     for rxn in reaction_list:
+        if _involves_polymer(rxn):
+            continue
         if rxn.is_surface_reaction():
             surface_reactions.append(rxn)
         else:
