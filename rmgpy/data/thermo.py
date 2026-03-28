@@ -40,6 +40,8 @@ from copy import deepcopy
 
 import numpy as np
 
+from pysidt import read_nodes,MultiEvalSubgraphIsomorphicDecisionTreeRegressor
+
 import rmgpy.constants as constants
 import rmgpy.molecule
 import rmgpy.quantity
