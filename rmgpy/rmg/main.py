@@ -1473,6 +1473,9 @@ class RMG(util.Subject):
             if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
                 continue
+            if any(getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False)
+                   for spc in rxn.reactants + rxn.products):
+                continue
             violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
             if violator_list:
                 violators.extend(violator_list)
