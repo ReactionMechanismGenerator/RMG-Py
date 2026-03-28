@@ -576,9 +576,12 @@ class PolymerPhase(object):
                 if hasattr(spc, 'label') and spc.label:
                     poly_labels.add(spc.label)
 
-        # A. Explicit Initials
+        # A. Explicit Initials — only register species that are genuinely
+        #    polymer-phase (moment dummies, proxies, explicit oligomers).
+        #    initial_explicit can also contain gas-phase species like N2.
         for spc in self.initial_explicit.keys():
-            register(spc)
+            if getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False):
+                register(spc)
 
         # B. Pool Definitions
         for pool in self.pools:
