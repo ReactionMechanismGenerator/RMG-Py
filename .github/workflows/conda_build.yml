@@ -18,25 +18,25 @@ jobs:
         os: [ubuntu-latest, macos-15-intel, macos-latest]
         numpy-version: ["1.26"]
         python-version: ["3.9", "3.10", "3.11"]
-        event_name: ["${{ contains(github.event_name, 'pull_request') }}"]
+        is_pr: ["${{ contains(github.event_name, 'pull_request') }}"]
         exclude:
         # for PRs just run a single build per platform to save time and resources
-          - event_name: true
+          - is_pr: true
             os: ubuntu-latest
             python-version: "3.9"
-          - event_name: true
+          - is_pr: true
             os: ubuntu-latest
             python-version: "3.10"
-          - event_name: true
+          - is_pr: true
             os: macos-15-intel
             python-version: "3.9"
-          - event_name: true
+          - is_pr: true
             os: macos-15-intel
             python-version: "3.10"
-          - event_name: true
+          - is_pr: true
             os: macos-latest
             python-version: "3.9"
-          - event_name: true
+          - is_pr: true
             os: macos-latest
             python-version: "3.10"
     runs-on: ${{ matrix.os }}
