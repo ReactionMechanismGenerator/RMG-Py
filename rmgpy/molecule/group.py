@@ -155,6 +155,8 @@ class GroupAtom(Vertex):
     `reg_dim_r`          ``list``            List of inRing values that are free dimensions in tree optimization
     `reg_dim_site`       ``list``            List of sites that are free dimensions in tree optimization
     `reg_dim_morphology` ``list``            List of morphologies that are free dimensions in tree optimization
+    `reg_dim_ncoord`     ``list``            List of coordination numbers that are free dimensions in tree optimization
+    `reg_dim_p`          ``list``            List of numbers of electron pairs that are free dimensions in tree optimization
     ==================== =================== ====================================
 
     Each list represents a logical OR construct, i.e. an atom will match the
@@ -184,6 +186,8 @@ class GroupAtom(Vertex):
         self.reg_dim_r = [[], []]
         self.reg_dim_site = [[], []]
         self.reg_dim_morphology = [[], []]
+        self.reg_dim_ncoord = [[],[]]
+        self.reg_dim_p = [[],[]]
 
     def __reduce__(self):
         """
@@ -1561,6 +1565,8 @@ class Group(Graph):
             atm.reg_dim_r = [[], []]
             atm.reg_dim_site = [[],[]]
             atm.reg_dim_morphology = [[],[]]
+            atm.reg_dim_ncoord = [[],[]]
+            atm.reg_dim_p = [[],[]]
         for bd in self.get_all_edges():
             bd.reg_dim = [[], []]
 
