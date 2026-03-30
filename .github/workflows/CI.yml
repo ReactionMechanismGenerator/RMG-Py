@@ -69,7 +69,8 @@ jobs:
         os: [macos-15-intel, macos-latest, ubuntu-latest]
         include-rms: ["", "with RMS"]
         exclude:
-          # only check for optional RMS functionality on ubuntu, just to be safe (and only ubuntu since its the fastest and most abundant)
+          # only check for "with RMS" functionality on ubuntu, just to be safe
+          # (and only ubuntu since its the fastest and most abundant)
           - os: macos-15-intel
             include-rms: ""
           - os: macos-latest
