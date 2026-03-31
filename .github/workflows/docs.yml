@@ -7,6 +7,7 @@ on:
   pull_request:
   schedule:
     # * is a special character in YAML so you have to quote this string
+    # weekly: runs at 8am UTC on Mondays
     - cron: "0 8 * * 1"
 
 jobs:
@@ -26,13 +27,13 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Setup Miniforge Python 3.9
+      - name: Setup Miniforge Python 3.11
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
-          python-version: "3.9"
+          python-version: "3.11"
           activate-environment: rmg_env
           auto-update-conda: true
           show-channel-urls: true
