@@ -448,9 +448,20 @@ class TestInputPressureDependence:
         # Check that no networks were added
         assert len(rmg.reaction_model.completed_pdep_networks) == 0
 
+
 class TestWriteInputFile:
     """
-    Contains unit test for writing input files
+    Contains unit test for writing input files for each of the reactor types:
+
+        'simpleReactor': simple_reactor, ✅
+        'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
+        'constantTPIdealGasReactor' : constant_TP_ideal_gas_reactor,
+        'liquidSurfaceReactor' : liquid_cat_reactor,
+        'constantTVLiquidReactor': constant_T_V_liquid_reactor,
+        'liquidReactor': liquid_reactor,
+        'surfaceReactor': surface_reactor, ✅
+        'mbsampledReactor': mb_sampled_reactor,
+
     """
     def setup_method(self):
         """This method is run before every test in this class"""
@@ -501,4 +512,91 @@ class TestWriteInputFile:
         # clean up
         import os
         os.remove(superminimal_output_file)
+
+    @pytest.mark.skip(reason="Slow test that runs a full RMG job")
+    def test_write_superminimal_and_run(self):
+        """
+        Test that we can write superminimal input file and then run RMG without errors
+        """
+        import os
+        import shutil
+
+
+        superminimal_input_file = '../../../examples/rmg/superminimal/input.py'
+        new_run_dir = 'temp_superminimal_run'
+        os.makedirs(new_run_dir, exist_ok=True)
+        superminimal_output_file = os.path.join(new_run_dir, 'temp_superminimal_input.py')
+    
+
+        rmg = RMG()
+        inp.read_input_file(superminimal_input_file, rmg)
+        inp.save_input_file(superminimal_output_file, rmg)
+
+        # run RMG with the new input file
+        import subprocess
+        subprocess.run(['python', '../../../rmg.py', superminimal_output_file], check=True)
+
+
+        # clean up
+        shutil.rmtree(new_run_dir)
+
+
+    def test_write_min_surf_input(self):
+        """
+        Test that we can write the minimal surface input file and read it back in with the same values.
+        """
+
+        min_surf_input_file = '../../../examples/rmg/minimal_surface/input.py'
+        min_surf_output_file = 'temp_min_surf_input.py'
+
+
+        rmg = RMG()
+        inp.read_input_file(min_surf_input_file, rmg)
+
+        # read a bunch of values in from input file to check they are the same after writing
+        T = rmg.reaction_systems[0].T.value_si
+        P = rmg.reaction_systems[0].P_initial.value_si
+        initialMoleFractions = {k.label: v for k, v in rmg.reaction_systems[0].initial_gas_mole_fractions.items()}
+        initialSurfaceCoverages = {k.label: v for k, v in rmg.reaction_systems[0].initial_surface_coverages.items()}
+        for term in rmg.reaction_systems[0].termination:
+            if hasattr(term, 'time'):
+                termination_time = term.time.value_si
+            elif hasattr(term, 'conversion'):
+                termination_conversion = term.conversion
+                termination_converstion_species = term.species.label
+            elif hasattr(term, 'ratio'):
+                termination_ratio = term.ratio
+
+        binding_energies = {k: v.value_si for k, v in rmg.binding_energies.items()}
+        surface_site_density = rmg.surface_site_density.value_si
+
+
+        inp.save_input_file(min_surf_output_file, rmg)
+        # read it back in and confirm all the values match
+        rmg1 = RMG()
+        inp.read_input_file(min_surf_output_file, rmg1)
+        assert rmg1.reaction_systems[0].T.value_si == T
+        assert rmg1.reaction_systems[0].P_initial.value_si == P
+        output_mol_fractions = {k.label: v for k, v in rmg1.reaction_systems[0].initial_gas_mole_fractions.items()}
+        assert output_mol_fractions== initialMoleFractions
+        output_surface_coverages = {k.label: v for k, v in rmg1.reaction_systems[0].initial_surface_coverages.items()}
+        assert output_surface_coverages == initialSurfaceCoverages
+
+        output_binding_energies = {k: v.value_si for k, v in rmg1.binding_energies.items()}
+        assert output_binding_energies == binding_energies
+
+        assert rmg1.surface_site_density.value_si == surface_site_density
+
+        for term in rmg1.reaction_systems[0].termination:
+            if hasattr(term, 'time'):
+                assert term.time.value_si == termination_time
+            elif hasattr(term, 'conversion'):
+                assert term.conversion == termination_conversion
+                assert term.species.label == termination_converstion_species
+            elif hasattr(term, 'ratio'):
+                assert term.ratio == termination_ratio
+
+        # clean up
+        import os
+        os.remove(min_surf_output_file)
 
