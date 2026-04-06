@@ -454,7 +454,7 @@ class TestWriteInputFile:
     Contains unit test for writing input files for each of the reactor types:
 
         'simpleReactor': simple_reactor, ✅
-        'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
+        'constantVIdealGasReactor' : constant_V_ideal_gas_reactor, ✅
         'constantTPIdealGasReactor' : constant_TP_ideal_gas_reactor,
         'liquidSurfaceReactor' : liquid_cat_reactor, ✅
         'constantTVLiquidReactor': constant_T_V_liquid_reactor,
@@ -735,6 +735,71 @@ class TestWriteInputFile:
         # run RMG with the new input file
         import subprocess
         subprocess.run(['python', '../../../rmg.py', '-t', '00:00:01:30', liquid_output_file], check=True)
+
+        # clean up
+        shutil.rmtree(new_run_dir)
+
+    @pytest.mark.skip(reason="Slow because it has to compile Julia")
+    def test_write_constantVIdealGasReactor(self):
+        """
+        Test that we can write constant volume ideal gas reactor input file and read it back in with the same values.
+        """
+
+        rms_constant_V_input_file = '../../../examples/rmg/rms_constant_V/input.py'
+        rms_constant_V_output_file = 'temp_rms_constant_V_input.py'
+
+        rmg = RMG()
+        inp.read_input_file(rms_constant_V_input_file, rmg)
+
+        # read a bunch of values in from input file to check they are the same after writing
+        T = rmg.reaction_systems[0].T.value_si
+        P = rmg.reaction_systems[0].P.value_si
+        tf = rmg.reaction_systems[0].tf
+        init_conditions = {k: v for k, v in rmg.reaction_systems[0].initial_conditions.items()}
+
+        termination_species = rmg.reaction_systems[0].terminations[0][0].label
+        termination_conversion = rmg.reaction_systems[0].terminations[0][1]
+        termination_time = rmg.reaction_systems[0].terminations[1].time
+
+        inp.save_input_file(rms_constant_V_output_file, rmg)
+        # read it back in and confirm all the values match
+        rmg1 = RMG()
+        inp.read_input_file(rms_constant_V_output_file, rmg1)
+        assert rmg1.reaction_systems[0].T.value_si == T
+        assert rmg1.reaction_systems[0].P.value_si == P
+        assert rmg1.reaction_systems[0].tf == tf
+
+        new_init_conditions = {k: v for k, v in rmg1.reaction_systems[0].initial_conditions.items()}
+        assert pytest.approx(new_init_conditions) == init_conditions
+
+        assert rmg1.reaction_systems[0].terminations[0][0].label == termination_species
+        assert rmg1.reaction_systems[0].terminations[0][1] == termination_conversion
+        assert rmg1.reaction_systems[0].terminations[1].time == termination_time
+
+        # clean up
+        import os
+        os.remove(rms_constant_V_output_file)
+
+    @pytest.mark.skip(reason="Slow test that runs a full RMG job")
+    def test_write_constantVIdealGasReactor_and_run(self):
+        """
+        Test that we can write constant volume ideal gas reactor input file and then run RMG without errors
+        """
+        import os
+        import shutil
+
+        constant_V_input_file = '../../../examples/rmg/rms_constant_V/input.py'
+        new_run_dir = 'temp_constant_V_run'
+        os.makedirs(new_run_dir, exist_ok=True)
+        constant_V_output_file = os.path.join(new_run_dir, 'temp_constant_V_input.py')
+
+        rmg = RMG()
+        inp.read_input_file(constant_V_input_file, rmg)
+        inp.save_input_file(constant_V_output_file, rmg)
+
+        # run RMG with the new input file
+        import subprocess
+        subprocess.run(['python', '../../../rmg.py', '-t', '00:00:01:30', constant_V_output_file], check=True)
 
         # clean up
         shutil.rmtree(new_run_dir)

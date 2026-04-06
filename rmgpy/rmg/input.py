@@ -467,7 +467,7 @@ def constant_V_ideal_gas_reactor(temperature,
                 raise InputError('Initial mole fraction range out of order: {0}'.format(key))
 
     if not isinstance(temperature, list):
-        T = Quantity(temperature).value_si
+        T = Quantity(temperature)
     else:
         raise InputError("Condition ranges not supported for this reaction type")
         if len(temperature) != 2:
@@ -515,11 +515,11 @@ def constant_V_ideal_gas_reactor(temperature,
         termination.append(TerminationRateRatio(terminationRateRatio))
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
-    
+
     initial_cond = initialMoleFractions
-    initial_cond["T"] = T 
+    initial_cond["T"] = T.value_si
     initial_cond["P"] = P
-    system = ConstantVIdealGasReactor(rmg.reaction_model.core.phase_system,rmg.reaction_model.edge.phase_system,initial_cond,termination)
+    system = ConstantVIdealGasReactor(rmg.reaction_model.core.phase_system, rmg.reaction_model.edge.phase_system, initial_cond,termination)
     system.T = Quantity(T)
     system.P = Quantity(P)
     system.Trange = None
@@ -1577,9 +1577,9 @@ def read_input_file(path, rmg0):
         'adjacencyListGroup': adjacency_list_group,
         'react': react,
         'simpleReactor': simple_reactor,
-        'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
-        'constantTPIdealGasReactor' : constant_TP_ideal_gas_reactor,
-        'liquidSurfaceReactor' : liquid_cat_reactor,
+        'constantVIdealGasReactor': constant_V_ideal_gas_reactor,
+        'constantTPIdealGasReactor': constant_TP_ideal_gas_reactor,
+        'liquidSurfaceReactor': liquid_cat_reactor,
         'constantTVLiquidReactor': constant_T_V_liquid_reactor,
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor,
@@ -1741,14 +1741,14 @@ def save_input_file(path, rmg):
         """Get temperature string format for reaction system, whether single value or range"""
         if system.T is not None:
             return '({0:g},"{1!s}"),'.format(system.T.value, system.T.units)
-        
+
         return f'[({system.Trange[0].value:g}, "{system.Trange[0].units}"), ({system.Trange[1].value:g}, "{system.Trange[1].units}")],'
 
     def format_pressure(system):
         """Get pressure string format for reaction system, whether single value or range"""
         if system.P is not None:
             return '({0:g},"{1!s}"),'.format(system.P.value, system.P.units)
-        
+
         return f'[({system.Prange[0].value:g}, "{system.Prange[0].units}"), ({system.Prange[1].value:g}, "{system.Prange[1].units}")],'
 
     def format_initial_mole_fractions(system):
@@ -1760,7 +1760,6 @@ def save_input_file(path, rmg):
             else:
                 mole_fractions += '        "{0!s}": {1:g},\n'.format(spcs.label, molfrac)
         return mole_fractions
-
 
     # Reaction systems
     for system in rmg.reaction_systems:
@@ -1781,7 +1780,7 @@ def save_input_file(path, rmg):
                 coverage = conc_mols / (rmg.surface_site_density.value_si * system.initial_conditions['surface']['A'])
                 f.write('        "{0!s}": {1:g},\n'.format(spcs, coverage))
             f.write('    },\n')
-            
+
             # write the list of constant species
             f.write(f'    constantSpecies = {system.const_spc_names},\n')
 
@@ -1810,6 +1809,16 @@ def save_input_file(path, rmg):
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, cov))
             f.write('    },\n')
             f.write('    surfaceVolumeRatio = ({0:g}, "{1!s}"),\n'.format(system.surface_volume_ratio.value, system.surface_volume_ratio.units))
+        elif isinstance(system, ConstantVIdealGasReactor):
+            f.write('constantVIdealGasReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    pressure = ' + format_pressure(system) + '\n')
+            f.write('    initialMoleFractions={\n')
+            for spcs, conc in system.initial_conditions.items():
+                if spcs in ['T', 'P']:
+                    continue
+                f.write('        "{0!s}": {1:g},\n'.format(spcs, conc))
+            f.write('    },\n')
         else:
             f.write('simpleReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
