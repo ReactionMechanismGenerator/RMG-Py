@@ -458,7 +458,7 @@ class TestWriteInputFile:
         'constantTPIdealGasReactor' : constant_TP_ideal_gas_reactor,
         'liquidSurfaceReactor' : liquid_cat_reactor, ✅
         'constantTVLiquidReactor': constant_T_V_liquid_reactor,
-        'liquidReactor': liquid_reactor,
+        'liquidReactor': liquid_reactor, ✅
         'surfaceReactor': surface_reactor, ✅
         'mbsampledReactor': mb_sampled_reactor,
 
@@ -674,6 +674,67 @@ class TestWriteInputFile:
         # run RMG with the new input file
         import subprocess
         subprocess.run(['python', '../../../rmg.py', '-t', '00:00:01:30', liquid_cat_output_file], check=True)
+
+        # clean up
+        shutil.rmtree(new_run_dir)
+
+    def test_write_liquid_input(self):
+        """
+        Test that we can write the liquid reactor input file and read it back in with the same values.
+        """
+
+        liquid_input_file = '../../../examples/rmg/liquid_phase/input.py'
+        liquid_output_file = 'temp_liquid_input.py'
+
+        rmg = RMG()
+        inp.read_input_file(liquid_input_file, rmg)
+
+        # read a bunch of values in from input file to check they are the same after writing
+        T = rmg.reaction_systems[0].T.value_si
+        P = rmg.reaction_systems[0].P.value_si
+        initialConcentrations = {k.label: v for k, v in rmg.reaction_systems[0].initial_concentrations.items()}
+        for term in rmg.reaction_systems[0].termination:
+            if hasattr(term, 'time'):
+                termination_time = term.time.value_si
+        solvent = rmg.solvent
+
+        inp.save_input_file(liquid_output_file, rmg)
+        # read it back in and confirm all the values match
+        rmg1 = RMG()
+        inp.read_input_file(liquid_output_file, rmg1)
+        assert rmg1.reaction_systems[0].T.value_si == T
+        assert rmg1.reaction_systems[0].P.value_si == P
+        output_concentrations = {k.label: v for k, v in rmg1.reaction_systems[0].initial_concentrations.items()}
+        assert pytest.approx(output_concentrations) == initialConcentrations
+        for term in rmg1.reaction_systems[0].termination:
+            if hasattr(term, 'time'):
+                assert term.time.value_si == termination_time
+        assert rmg1.solvent == solvent
+
+        # clean up
+        import os
+        os.remove(liquid_output_file)
+
+    @pytest.mark.skip(reason="Slow test that runs a full RMG job")
+    def test_write_liquid_and_run(self):
+        """
+        Test that we can write liquid reactor input file and then run RMG without errors
+        """
+        import os
+        import shutil
+
+        liquid_input_file = '../../../examples/rmg/liquid_phase/input.py'
+        new_run_dir = 'temp_liquid_run'
+        os.makedirs(new_run_dir, exist_ok=True)
+        liquid_output_file = os.path.join(new_run_dir, 'temp_liquid_input.py')
+
+        rmg = RMG()
+        inp.read_input_file(liquid_input_file, rmg)
+        inp.save_input_file(liquid_output_file, rmg)
+
+        # run RMG with the new input file
+        import subprocess
+        subprocess.run(['python', '../../../rmg.py', '-t', '00:00:01:30', liquid_output_file], check=True)
 
         # clean up
         shutil.rmtree(new_run_dir)
