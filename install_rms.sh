@@ -37,6 +37,7 @@ if [ "$RMS_INSTALLER" = "developer" ]; then
         echo "Please set RMS_PATH to a valid ReactionMechanismSimulator.jl directory."
         return 1
     fi
+    export RMS_PATH
     echo "Using local RMS path: $RMS_PATH"
 fi
 
