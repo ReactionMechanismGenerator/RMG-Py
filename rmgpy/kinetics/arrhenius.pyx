@@ -580,11 +580,11 @@ cdef class ArrheniusBM(KineticsModel):
             # Negative E0 is unphysical, but could be encountered during optimization.
             Ea = E0 + max(dHrxn, 0.0)
         else:
-            Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-            Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) ** 2 / (Vp ** 2 - (2 * w0) ** 2 + dHrxn ** 2)
-            if (dHrxn < 0.0 and Ea < 0.0) or (dHrxn < -4 * E0):
+            Vp = 2 * w0 * (w0 + E0) / (w0 - E0)
+            Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (4 * w0 * w0) + dHrxn * dHrxn)
+            if (Ea < 0.0) or (dHrxn < -4 * E0):
                 Ea = 0.0
-            elif (dHrxn > 0.0 and Ea < dHrxn) or (dHrxn > 4 * E0):
+            elif (Ea < dHrxn) or (dHrxn > 4 * E0):
                 Ea = dHrxn
         return Ea
 
@@ -632,8 +632,8 @@ cdef class ArrheniusBM(KineticsModel):
             Ea = rxn.kinetics.Ea.value_si
 
             def kfcn(E0):
-                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                Vp = 2 * w0 * (w0 + E0) / (w0 - E0)
+                out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (4 * w0 * w0) + dHrxn * dHrxn)
                 return out
 
             E0 = fsolve(kfcn, w0 / 10.0)[0]
@@ -647,8 +647,8 @@ cdef class ArrheniusBM(KineticsModel):
             def kfcn(xs, lnA, n, E0):
                 T = xs[:,0]
                 dHrxn = xs[:,1]
-                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                Vp = 2 * w0 * (w0 + E0) / (w0 - E0)
+                Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (4 * w0 * w0) + dHrxn * dHrxn)
                 Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
                 Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
                 return lnA + np.log(T) * n + (-Ea / (8.314472 * T))
@@ -1585,11 +1585,11 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
             # Negative E0 is unphysical, but could be encountered during optimization.
             Ea = E0 + max(dHrxn, 0.0)
         else:
-            Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-            Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
-            if (dHrxn < 0.0 and Ea < 0.0) or (dHrxn < -4 * E0):
+            Vp = 2 * w0 * (w0 + E0) / (w0 - E0)
+            Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (4 * w0 * w0) + dHrxn * dHrxn)
+            if (Ea < 0.0) or (dHrxn < -4 * E0):
                 Ea = 0.0
-            elif (dHrxn > 0.0 and Ea < dHrxn) or (dHrxn > 4 * E0):
+            elif (Ea < dHrxn) or (dHrxn > 4 * E0):
                 Ea = dHrxn
         return Ea
 
@@ -1636,8 +1636,8 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
             Ea = rxn.kinetics.Ea.value_si
 
             def kfcn(E0):
-                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                Vp = 2 * w0 * (w0 + E0) / (w0 - E0)
+                out = Ea - (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (4 * w0 * w0) + dHrxn * dHrxn)
                 return out
 
             E0 = fsolve(kfcn, w0 / 10.0)[0]
@@ -1650,8 +1650,8 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
             def kfcn(xs, lnA, n, E0):
                 T = xs[:,0]
                 dHrxn = xs[:,1]
-                Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
-                Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
+                Vp = 2 * w0 * (w0 + E0) / (w0 - E0)
+                Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (4 * w0 * w0) + dHrxn * dHrxn)
                 Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
                 Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
                 return lnA + np.log(T) * n + (-Ea / (8.314 * T))
