@@ -577,10 +577,8 @@ cdef class ArrheniusBM(KineticsModel):
         E0 = self._E0.value_si
         w0 = self._w0.value_si
         if E0 < 0:
-            if dHrxn > 0:
-                Ea = dHrxn
-            else:
-                Ea = min(0.0, E0)
+            # Negative E0 is unphysical, but could be encountered during optimization.
+            Ea = E0 + max(dHrxn, 0.0)
         else:
             Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
             Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) ** 2 / (Vp ** 2 - (2 * w0) ** 2 + dHrxn ** 2)
@@ -1584,10 +1582,8 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
         E0 = self._E0.value_si
         w0 = self._w0.value_si
         if E0 < 0:
-            if dHrxn > 0:
-                Ea = dHrxn
-            else:
-                Ea = min(0.0, E0)
+            # Negative E0 is unphysical, but could be encountered during optimization.
+            Ea = E0 + max(dHrxn, 0.0)
         else:
             Vp = 2 * w0 * (2 * w0 + 2 * E0) / (2 * w0 - 2 * E0)
             Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (2 * w0) * (2 * w0) + dHrxn * dHrxn)
