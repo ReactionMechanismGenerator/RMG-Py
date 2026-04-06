@@ -21,7 +21,7 @@
 RMS_INSTALLER=${RMS_INSTALLER:-standard}
 
 # RMS branch for standard or continuous installs. Set to "for_rmg" by default.
-RMS_BRANCH=${RMS_BRANCH:-for_rmg}
+export RMS_BRANCH=${RMS_BRANCH:-for_rmg}
 
 # Get local RMS path if in developer mode
 if [ "$RMS_INSTALLER" = "developer" ]; then
