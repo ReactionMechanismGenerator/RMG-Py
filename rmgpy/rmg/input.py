@@ -1809,7 +1809,7 @@ def save_input_file(path, rmg):
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, cov))
             f.write('    },\n')
             f.write('    surfaceVolumeRatio = ({0:g}, "{1!s}"),\n'.format(system.surface_volume_ratio.value, system.surface_volume_ratio.units))
-        elif isinstance(system, ConstantVIdealGasReactor):
+        elif isinstance(system, ConstantVIdealGasReactor) or isinstance(system, ConstantTPIdealGasReactor):
             f.write('constantVIdealGasReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    pressure = ' + format_pressure(system) + '\n')
