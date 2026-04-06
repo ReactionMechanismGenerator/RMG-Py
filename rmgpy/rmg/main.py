@@ -49,7 +49,6 @@ import psutil
 import yaml
 from cantera import ck2yaml
 from scipy.optimize import brute
-import cantera as ct
 
 import rmgpy.util as util
 from rmgpy import settings
@@ -1235,14 +1234,13 @@ class RMG(util.Subject):
                 if self.thermo_coverage_dependence:
                     # add thermo coverage dependence to Cantera files
                     chem_yaml_path = os.path.join(self.output_directory, "cantera", "chem.yaml")
-                    gas = ct.Solution(chem_yaml_path, "gas")
-                    surf = ct.Interface(chem_yaml_path, "surface1", [gas])
                     with open(chem_yaml_path, 'r') as f:
                         content = yaml.load(f, Loader=yaml.FullLoader)
                     
                     content['phases'][1]['reference-state-coverage'] = 0.11
                     content['phases'][1]['thermo'] = 'coverage-dependent-surface'
-                    
+                    cantera_names = [content["species"][i]['name'] for i in range(len(content["species"]))]
+
                     for s in self.reaction_model.core.species:
                         if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
                             for dep_sp, parameters in s.thermo.thermo_coverage_dependence.items():
@@ -1253,9 +1251,9 @@ class RMG(util.Subject):
                                         parameters['enthalpy-coefficients'] = [value.value_si for value in parameters['enthalpy-coefficients']]
                                         parameters['entropy-coefficients'] = [value.value_si for value in parameters['entropy-coefficients']]
                                         try:
-                                            content["species"][gas.n_species+surf.species_index(sp.to_chemkin())]['coverage-dependencies'][sp.to_chemkin()] = parameters
+                                            content["species"][cantera_names.index(s.to_chemkin())]['coverage-dependencies'][sp.to_chemkin()] = parameters
                                         except KeyError:
-                                            content["species"][gas.n_species+surf.species_index(sp.to_chemkin())]['coverage-dependencies'] = {sp.to_chemkin(): parameters}
+                                            content["species"][cantera_names.index(s.to_chemkin())]['coverage-dependencies'] = {sp.to_chemkin(): parameters}
 
                     annotated_yaml_path = os.path.join(self.output_directory, "cantera", "chem_annotated.yaml")
                     with open(annotated_yaml_path, 'r') as f:
