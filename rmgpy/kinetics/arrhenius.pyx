@@ -699,6 +699,7 @@ cdef class ArrheniusBM(KineticsModel):
                         keep_trying = True
                         if attempts > 0:
                             self.w0.value_si *= 1.25
+                            w0 = self.w0.value_si # update local variable for use in kfcn optimization function
                         attempts += 1
                         E0 = self.w0.value_si / 10.0
                 except RuntimeError:
@@ -1702,6 +1703,7 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                         keep_trying = True
                         if attempts > 0:
                             self.w0.value_si *= 1.25
+                            w0 = self.w0.value_si # update local variable for use in kfcn optimization function
                         attempts += 1
                         E0 = self.w0.value_si / 10.0
                 except RuntimeError:
