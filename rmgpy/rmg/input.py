@@ -691,7 +691,7 @@ def liquid_cat_reactor(temperature,
                 raise InputError('Species {0} not found in the input file'.format(const_spc))
 
     if not isinstance(temperature, list):
-        T = Quantity(temperature).value_si
+        T = Quantity(temperature)
     else:
         raise InputError("Condition ranges not supported for this reaction type")
         if len(temperature) != 2:
@@ -721,12 +721,12 @@ def liquid_cat_reactor(temperature,
     A = V*Quantity(surfaceVolumeRatio).value_si
     for key,item in initialConcentrations.items():
         initialCondLiq[key] = item*V
-    initialCondLiq["T"] = T
+    initialCondLiq["T"] = T.value_si
     initialCondLiq["V"] = V
     initialCondSurf = dict()
     for key,item in initialSurfaceCoverages.items():
         initialCondSurf[key] = item*rmg.surface_site_density.value_si*A
-    initialCondSurf["T"] = T
+    initialCondSurf["T"] = T.value_si
     initialCondSurf["A"] = A
     initialCondSurf["d"] = 0.0
     if surfPotential:
@@ -736,12 +736,12 @@ def liquid_cat_reactor(temperature,
     if distance:
         initialCondLiq["d"] = Quantity(distance).value_si
     if viscosity:
-        initialCondLiq["mu"] = Quantity(distance).value_si
+        initialCondLiq["mu"] = Quantity(viscosity).value_si
     system = ConstantTLiquidSurfaceReactor(rmg.reaction_model.core.phase_system,
                                            rmg.reaction_model.edge.phase_system,
                                            {"liquid":initialCondLiq,"surface":initialCondSurf},
                                            termination,constantSpecies)
-    system.T = Quantity(T)
+    system.T = T
     system.Trange = None
     system.sensitive_species = []
     rmg.reaction_systems.append(system)
@@ -764,7 +764,7 @@ def constant_T_V_liquid_reactor(temperature,
     ################################################# check input ########################################################
 
     if not isinstance(temperature, list):
-        T = Quantity(temperature).value_si
+        T = Quantity(temperature)
     else:
         raise InputError("Condition ranges not supported for this reaction type")
         if len(temperature) != 2:
@@ -885,7 +885,7 @@ def constant_T_V_liquid_reactor(temperature,
     initial_conditions = dict()
     for key, item in initialConcentrations.items():
         initial_conditions[key] = item*V
-    initial_conditions["T"] = T
+    initial_conditions["T"] = T.value_si
     initial_conditions["V"] = V
 
     inlet_conditions = dict()
@@ -920,7 +920,7 @@ def constant_T_V_liquid_reactor(temperature,
                                            outlet_conditions,
                                            evap_cond_conditions,
                                            )
-    system.T = Quantity(T)
+    system.T = T
     system.Trange = None
     system.sensitive_species = []
     rmg.reaction_systems.append(system)
@@ -1413,6 +1413,7 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
 def generated_species_constraints(**kwargs):
     valid_constraints = [
         'allowed',
+        'explicitlyAllowedMolecules',
         'maximumCarbonAtoms',
         'maximumOxygenAtoms',
         'maximumNitrogenAtoms',
@@ -1708,7 +1709,7 @@ def save_input_file(path, rmg):
     f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermo_libraries))
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reaction_libraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seed_mechanisms))
-    f.write('    kinetics_depositories = {0!r},\n'.format(rmg.kinetics_depositories))
+    f.write('    kineticsDepositories = {0!r},\n'.format(rmg.kinetics_depositories))
     f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kinetics_families))
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
     f.write(')\n\n')
@@ -1739,14 +1740,14 @@ def save_input_file(path, rmg):
     def format_temperature(system):
         """Get temperature string format for reaction system, whether single value or range"""
         if system.T is not None:
-            return '({0:g},"{1!s}")'.format(system.T.value, system.T.units)
+            return '({0:g},"{1!s}"),'.format(system.T.value, system.T.units)
         
         return f'[({system.Trange[0].value:g}, "{system.Trange[0].units}"), ({system.Trange[1].value:g}, "{system.Trange[1].units}")],'
 
     def format_pressure(system):
         """Get pressure string format for reaction system, whether single value or range"""
         if system.P is not None:
-            return '({0:g},"{1!s}")'.format(system.P.value, system.P.units)
+            return '({0:g},"{1!s}"),'.format(system.P.value, system.P.units)
         
         return f'[({system.Prange[0].value:g}, "{system.Prange[0].units}"), ({system.Prange[1].value:g}, "{system.Prange[1].units}")],'
 
@@ -1771,13 +1772,14 @@ def save_input_file(path, rmg):
                 if spcs in ['T', 'V']:
                     continue
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs, conc, 'mol/m^3'))
+            f.write('    },\n')
             f.write('    initialSurfaceCoverages={\n')
             for spcs, conc_mols in system.initial_conditions['surface'].items():
                 if spcs in ['T', 'A', 'd']:
                     continue
                 # surf conc here is in mols, need to convert back into unitless coverage fraction
                 coverage = conc_mols / (rmg.surface_site_density.value_si * system.initial_conditions['surface']['A'])
-                f.write('        "{0!s}": ({1:g}),\n'.format(spcs, coverage))
+                f.write('        "{0!s}": {1:g},\n'.format(spcs, coverage))
             f.write('    },\n')
             
             # write the list of constant species
@@ -1794,6 +1796,7 @@ def save_input_file(path, rmg):
                 if type(conc) == float:
                     conc = Quantity(conc, Concentration.units)
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
+            f.write('    },\n')
         elif isinstance(system, SurfaceReactor):
             f.write('surfaceReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
@@ -1805,13 +1808,14 @@ def save_input_file(path, rmg):
             f.write('    initialSurfaceCoverages={\n')
             for spcs, cov in system.initial_surface_coverages.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, cov))
+            f.write('    },\n')
         else:
             f.write('simpleReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    pressure = ' + format_pressure(system) + '\n')
             f.write('    initialMoleFractions={\n')
             f.write(format_initial_mole_fractions(system))
-        f.write('    },\n')
+            f.write('    },\n')
 
         # Termination criteria
         if isinstance(system, ReactionSystem):
@@ -1875,7 +1879,7 @@ def save_input_file(path, rmg):
     f.write('    maximumEdgeSpecies = {0:d},\n'.format(rmg.model_settings_list[0].maximum_edge_species))
     f.write('    minCoreSizeForPrune = {0:d},\n'.format(rmg.model_settings_list[0].min_core_size_for_prune))
     f.write('    minSpeciesExistIterationsForPrune = {0:d},\n'.format(rmg.model_settings_list[0].min_species_exist_iterations_for_prune))
-    f.write('    filterReactions = {0:d},\n'.format(rmg.model_settings_list[0].filter_reactions))
+    f.write('    filterReactions = {0},\n'.format(bool(rmg.model_settings_list[0].filter_reactions)))
     f.write('    filterThreshold = {0:g},\n'.format(rmg.model_settings_list[0].filter_threshold))
     f.write(')\n\n')
 
@@ -1945,7 +1949,7 @@ def save_input_file(path, rmg):
     f.write('    keepIrreversible = {0},\n'.format(rmg.keep_irreversible))
     f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
-    f.write('    wallTime = {0},\n'.format(rmg.walltime))
+    f.write('    wallTime = "{0}",\n'.format(rmg.walltime))
     f.write(')\n\n')
 
     f.close()
