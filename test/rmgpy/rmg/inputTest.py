@@ -447,3 +447,58 @@ class TestInputPressureDependence:
         
         # Check that no networks were added
         assert len(rmg.reaction_model.completed_pdep_networks) == 0
+
+class TestWriteInputFile:
+    """
+    Contains unit test for writing input files
+    """
+    def setup_method(self):
+        """This method is run before every test in this class"""
+        global rmg
+        rmg.reaction_systems = []
+
+
+    def test_write_superminimal_input(self):
+        """
+        Test that we can write superminimal input file and read it back in with the same values.
+        """
+
+        superminimal_input_file = '../../../examples/rmg/superminimal/input.py'
+        superminimal_output_file = 'temp_superminimal_input.py'
+
+
+        rmg = RMG()
+        inp.read_input_file(superminimal_input_file, rmg)
+
+        # read a bunch of values in from input file to check they are the same after writing
+        T = rmg.reaction_systems[0].T.value_si
+        P = rmg.reaction_systems[0].P.value_si
+        initialMoleFractions = {k.label: v for k, v in rmg.reaction_systems[0].initial_mole_fractions.items()}
+        for term in rmg.reaction_systems[0].termination:
+            if hasattr(term, 'time'):
+                termination_time = term.time.value_si
+            elif hasattr(term, 'conversion'):
+                termination_conversion = term.conversion
+                termination_converstion_species = term.species.label
+
+
+
+        inp.save_input_file(superminimal_output_file, rmg)
+        # read it back in and confirm all the values match
+        rmg1 = RMG()
+        inp.read_input_file(superminimal_output_file, rmg1)
+        assert rmg1.reaction_systems[0].T.value_si == T
+        assert rmg1.reaction_systems[0].P.value_si == P
+        output_mol_fractions = {k.label: v for k, v in rmg1.reaction_systems[0].initial_mole_fractions.items()}
+        assert output_mol_fractions== initialMoleFractions
+        for term in rmg1.reaction_systems[0].termination:
+            if hasattr(term, 'time'):
+                assert term.time.value_si == termination_time
+            elif hasattr(term, 'conversion'):
+                assert term.conversion == termination_conversion
+                assert term.species.label == termination_converstion_species
+
+        # clean up
+        import os
+        os.remove(superminimal_output_file)
+
