@@ -35,7 +35,6 @@ from libc.math cimport sqrt, log
 
 cimport rmgpy.constants as constants
 import rmgpy.quantity as quantity
-from rmgpy.util import np_list
 
 # Prior to numpy 1.14, `numpy.linalg.lstsq` does not accept None as a value
 RCOND = -1 if int(np.__version__.split('.')[1]) < 14 else None
@@ -151,8 +150,8 @@ cdef class Wilhoit(HeatCapacityModel):
                  for species, parameters in value.items():
                     # just the polynomial model for now
                      processed_parameters = {'model': parameters['model'],
-                                             'enthalpy-coefficients': np_list([quantity.Enthalpy(p) for p in parameters['enthalpy-coefficients']]),
-                                             'entropy-coefficients': np_list([quantity.Entropy(p) for p in parameters['entropy-coefficients']]),
+                                             'enthalpy-coefficients': [quantity.Enthalpy(p) for p in parameters['enthalpy-coefficients']],
+                                             'entropy-coefficients': [quantity.Entropy(p) for p in parameters['entropy-coefficients']],
                                              }
                      self._thermo_coverage_dependence[species] = processed_parameters
 
