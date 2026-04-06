@@ -1819,6 +1819,15 @@ def save_input_file(path, rmg):
                     continue
                 f.write('        "{0!s}": {1:g},\n'.format(spcs, conc))
             f.write('    },\n')
+        elif isinstance(system, ConstantTVLiquidReactor):
+            f.write('constantTVLiquidReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    initialConcentrations={\n')
+            for spcs, conc in system.initial_conditions.items():
+                if spcs in ['T', 'V']:
+                    continue
+                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs, conc, 'mol/m^3'))
+            f.write('    },\n')
         else:
             f.write('simpleReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
