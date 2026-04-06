@@ -651,7 +651,7 @@ cdef class ArrheniusBM(KineticsModel):
                 Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (4 * w0 * w0) + dHrxn * dHrxn)
                 Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
                 Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
-                return lnA + np.log(T) * n + (-Ea / (8.314472 * T))
+                return lnA + np.log(T) * n + (-Ea / (constants.R * T))
 
             # get (T,dHrxn(T)) -> (Ln(k) mappings
             xdata = []
@@ -667,7 +667,7 @@ cdef class ArrheniusBM(KineticsModel):
                 for T in Ts:
                     xdata.append([T, dHrxn])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
-                    sigmas.append(s / (8.314 * T))
+                    sigmas.append(s / (constants.R * T))
                 # Use BEP with alpha = 0.25 for inital guess of E0
                 E0 += rxn.kinetics._Ea.value_si - 0.25 * dHrxn
                 lnA += np.log(rxn.kinetics.A.value_si)
@@ -1654,7 +1654,7 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                 Ea = (w0 + dHrxn / 2.0) * (Vp - 2 * w0 + dHrxn) * (Vp - 2 * w0 + dHrxn) / (Vp * Vp - (4 * w0 * w0) + dHrxn * dHrxn)
                 Ea = np.where(dHrxn< -4.0*E0, 0.0, Ea)
                 Ea = np.where(dHrxn > 4.0*E0, dHrxn, Ea)
-                return lnA + np.log(T) * n + (-Ea / (8.314 * T))
+                return lnA + np.log(T) * n + (-Ea / (constants.R * T))
 
             # get (T,dHrxn(T)) -> (Ln(k) mappings
             xdata = []
@@ -1670,7 +1670,7 @@ cdef class ArrheniusChargeTransferBM(KineticsModel):
                 for T in Ts:
                     xdata.append([T, dHrxn])
                     ydata.append(np.log(rxn.get_rate_coefficient(T)))
-                    sigmas.append(s / (8.314 * T))
+                    sigmas.append(s / (constants.R * T))
                 # Use BEP with alpha = 0.25 for initial guess of E0
                 E0 += rxn.kinetics._Ea.value_si - 0.25 * dHrxn
                 lnA += np.log(rxn.kinetics.A.value_si)

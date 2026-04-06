@@ -4631,7 +4631,7 @@ def _make_rule(rr):
                         average_kinetics([r.kinetics for r in rs[list(set(range(len(rs))) - {i})]]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                     ) for i, rxn in enumerate(rs)
                 ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
+            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * constants.R * Tref)) ** 2
             # weighted average calculations
             ws = 1.0 / varis
             V1 = ws.sum()
@@ -4659,7 +4659,7 @@ def _make_rule(rr):
                         .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                     ) for i, rxn in enumerate(rs)
                 ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
+            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * constants.R * Tref)) ** 2
             # weighted average calculations
             ws = 1.0 / varis
             V1 = ws.sum()
