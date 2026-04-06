@@ -456,7 +456,7 @@ class TestWriteInputFile:
         'simpleReactor': simple_reactor, ✅
         'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
         'constantTPIdealGasReactor' : constant_TP_ideal_gas_reactor,
-        'liquidSurfaceReactor' : liquid_cat_reactor,
+        'liquidSurfaceReactor' : liquid_cat_reactor, ✅
         'constantTVLiquidReactor': constant_T_V_liquid_reactor,
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor, ✅
@@ -468,7 +468,6 @@ class TestWriteInputFile:
         global rmg
         rmg.reaction_systems = []
 
-
     def test_write_superminimal_input(self):
         """
         Test that we can write superminimal input file and read it back in with the same values.
@@ -476,7 +475,6 @@ class TestWriteInputFile:
 
         superminimal_input_file = '../../../examples/rmg/superminimal/input.py'
         superminimal_output_file = 'temp_superminimal_input.py'
-
 
         rmg = RMG()
         inp.read_input_file(superminimal_input_file, rmg)
@@ -492,8 +490,6 @@ class TestWriteInputFile:
                 termination_conversion = term.conversion
                 termination_converstion_species = term.species.label
 
-
-
         inp.save_input_file(superminimal_output_file, rmg)
         # read it back in and confirm all the values match
         rmg1 = RMG()
@@ -501,7 +497,7 @@ class TestWriteInputFile:
         assert rmg1.reaction_systems[0].T.value_si == T
         assert rmg1.reaction_systems[0].P.value_si == P
         output_mol_fractions = {k.label: v for k, v in rmg1.reaction_systems[0].initial_mole_fractions.items()}
-        assert output_mol_fractions== initialMoleFractions
+        assert output_mol_fractions == initialMoleFractions
         for term in rmg1.reaction_systems[0].termination:
             if hasattr(term, 'time'):
                 assert term.time.value_si == termination_time
@@ -521,12 +517,10 @@ class TestWriteInputFile:
         import os
         import shutil
 
-
         superminimal_input_file = '../../../examples/rmg/superminimal/input.py'
         new_run_dir = 'temp_superminimal_run'
         os.makedirs(new_run_dir, exist_ok=True)
         superminimal_output_file = os.path.join(new_run_dir, 'temp_superminimal_input.py')
-    
 
         rmg = RMG()
         inp.read_input_file(superminimal_input_file, rmg)
@@ -536,10 +530,8 @@ class TestWriteInputFile:
         import subprocess
         subprocess.run(['python', '../../../rmg.py', superminimal_output_file], check=True)
 
-
         # clean up
         shutil.rmtree(new_run_dir)
-
 
     def test_write_min_surf_input(self):
         """
@@ -548,7 +540,6 @@ class TestWriteInputFile:
 
         min_surf_input_file = '../../../examples/rmg/minimal_surface/input.py'
         min_surf_output_file = 'temp_min_surf_input.py'
-
 
         rmg = RMG()
         inp.read_input_file(min_surf_input_file, rmg)
@@ -570,7 +561,6 @@ class TestWriteInputFile:
         binding_energies = {k: v.value_si for k, v in rmg.binding_energies.items()}
         surface_site_density = rmg.surface_site_density.value_si
 
-
         inp.save_input_file(min_surf_output_file, rmg)
         # read it back in and confirm all the values match
         rmg1 = RMG()
@@ -578,7 +568,7 @@ class TestWriteInputFile:
         assert rmg1.reaction_systems[0].T.value_si == T
         assert rmg1.reaction_systems[0].P_initial.value_si == P
         output_mol_fractions = {k.label: v for k, v in rmg1.reaction_systems[0].initial_gas_mole_fractions.items()}
-        assert output_mol_fractions== initialMoleFractions
+        assert output_mol_fractions == initialMoleFractions
         output_surface_coverages = {k.label: v for k, v in rmg1.reaction_systems[0].initial_surface_coverages.items()}
         assert output_surface_coverages == initialSurfaceCoverages
 
@@ -600,3 +590,90 @@ class TestWriteInputFile:
         import os
         os.remove(min_surf_output_file)
 
+    @pytest.mark.skip(reason="Slow test that runs a full RMG job")
+    def test_write_min_surf_and_run(self):
+        """
+        Test that we can write minimal surface input file and then run RMG without errors
+        """
+        import os
+        import shutil
+
+        min_surf_input_file = '../../../examples/rmg/minimal_surface/input.py'
+        new_run_dir = 'temp_min_surf_run'
+        os.makedirs(new_run_dir, exist_ok=True)
+        min_surf_output_file = os.path.join(new_run_dir, 'temp_min_surf_input.py')
+
+        rmg = RMG()
+        inp.read_input_file(min_surf_input_file, rmg)
+        inp.save_input_file(min_surf_output_file, rmg)
+
+        # run RMG with the new input file
+        import subprocess
+        subprocess.run(['python', '../../../rmg.py', min_surf_output_file], check=True)
+
+        # clean up
+        shutil.rmtree(new_run_dir)
+
+    @pytest.mark.skip(reason="Slow because it has to compile Julia")
+    def test_write_liquid_cat_input(self):
+        """
+        Test that we can write liquid catalyst input file and read it back in with the same values.
+        """
+
+        liquid_cat_input_file = '../../../examples/rmg/liquid_cat/input.py'
+        liquid_cat_output_file = 'temp_liquid_cat_input.py'
+
+        rmg = RMG()
+        inp.read_input_file(liquid_cat_input_file, rmg)
+
+        # read a bunch of values in from input file to check they are the same after writing
+        T = rmg.reaction_systems[0].T.value_si
+        tf = rmg.reaction_systems[0].tf
+        liquid_init_conditions = {k: v for k, v in rmg.reaction_systems[0].initial_conditions['liquid'].items()}
+        surf_init_conditions = {k: v for k, v in rmg.reaction_systems[0].initial_conditions['surface'].items()}
+
+        termination_species = rmg.reaction_systems[0].terminations[0][0].label
+        termination_conversion = rmg.reaction_systems[0].terminations[0][1]
+
+        inp.save_input_file(liquid_cat_output_file, rmg)
+        # read it back in and confirm all the values match
+        rmg1 = RMG()
+        inp.read_input_file(liquid_cat_output_file, rmg1)
+        assert rmg1.reaction_systems[0].T.value_si == T
+        assert rmg1.reaction_systems[0].tf == tf
+
+        liquid_init_conditions_output = {k: v for k, v in rmg1.reaction_systems[0].initial_conditions['liquid'].items()}
+        assert pytest.approx(liquid_init_conditions_output) == liquid_init_conditions
+        surf_init_conditions_output = {k: v for k, v in rmg1.reaction_systems[0].initial_conditions['surface'].items()}
+        assert pytest.approx(surf_init_conditions_output) == surf_init_conditions
+
+        assert rmg1.reaction_systems[0].terminations[0][0].label == termination_species
+        assert rmg1.reaction_systems[0].terminations[0][1] == termination_conversion
+
+        # clean up
+        import os
+        os.remove(liquid_cat_output_file)
+
+    @pytest.mark.skip(reason="Slow test that runs a full RMG job")
+    def test_write_liquid_cat_and_run(self):
+        """
+        Test that we can write liquid catalyst input file and then run RMG without errors
+        """
+        import os
+        import shutil
+
+        liquid_cat_input_file = '../../../examples/rmg/liquid_cat/input.py'
+        new_run_dir = 'temp_liquid_cat_run'
+        os.makedirs(new_run_dir, exist_ok=True)
+        liquid_cat_output_file = os.path.join(new_run_dir, 'temp_liquid_cat_input.py')
+
+        rmg = RMG()
+        inp.read_input_file(liquid_cat_input_file, rmg)
+        inp.save_input_file(liquid_cat_output_file, rmg)
+
+        # run RMG with the new input file
+        import subprocess
+        subprocess.run(['python', '../../../rmg.py', '-t', '00:00:01:30', liquid_cat_output_file], check=True)
+
+        # clean up
+        shutil.rmtree(new_run_dir)
