@@ -4628,7 +4628,7 @@ def _make_rule(rr):
             kin.comment = f"Blowers-Masel fit was bad ({reason}) so instead averaged from {n} reactions."
             dlnks = np.array([
                 np.log(
-                        average_kinetics([r.kinetics for r in rs[list(set(range(len(rs))) - {i})]]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                        average_kinetics([r.kinetics for r in np.delete(rs, i)]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                     ) for i, rxn in enumerate(rs)
                 ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
             varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * constants.R * Tref)) ** 2
@@ -4646,7 +4646,7 @@ def _make_rule(rr):
             if isinstance(rs[0].kinetics, Arrhenius):
                 dlnks = np.array([
                     np.log(
-                        arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
+                        arr().fit_to_reactions(np.delete(rs, i), recipe=recipe)
                 .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
                 .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
             ) for i, rxn in enumerate(rs)
@@ -4654,7 +4654,7 @@ def _make_rule(rr):
             else:
                 dlnks = np.array([
                     np.log(
-                        arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
+                        arr().fit_to_reactions(np.delete(rs, i), recipe=recipe)
                         .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(Tref))
                         .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                     ) for i, rxn in enumerate(rs)
