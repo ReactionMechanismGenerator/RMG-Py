@@ -1828,6 +1828,15 @@ def save_input_file(path, rmg):
                     continue
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs, conc, 'mol/m^3'))
             f.write('    },\n')
+        elif isinstance(system, MBSampledReactor):
+            f.write('mbsampledReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    pressure = ' + format_pressure(system) + '\n')
+            f.write('    initialMoleFractions={\n')
+            f.write(format_initial_mole_fractions(system))
+            f.write('    },\n')
+            f.write('    mbsamplingRate = ' + str(system.k_sampling.value_si) + ',\n')
+            f.write('    constantSpecies = ' + str([x.label for x in system.constantSpeciesList]) + ',\n')
         else:
             f.write('simpleReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
