@@ -145,7 +145,12 @@ order for the proper force constant matrix (in Cartesian coordinates)
 to be printed in the log file. If multiple such matrices are identified,
 only the last is returned. The units of the returned force constants
 are J/m^2. If no force constant matrix can be found in the log file,
-<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.</p>
+<code class="docutils literal notranslate"><span class="pre">None</span></code> is returned.
+Also checks that the force constant matrix was computed using the correct
+(input orientation Cartesian) coordinates.
+IOP(2/9=2000) must be specified for large cases (14+ atoms), but only
+if an optimization was also performed. A frequency calculation by itself
+will keep the input orientation.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -161,6 +166,14 @@ last is returned.</p>
 <span class="sig-name descname"><span class="pre">load_negative_frequency</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_negative_frequency" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the negative frequency from a transition state frequency
 calculation in cm^-1.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="arkane.ess.GaussianLog.load_route_section">
+<span class="sig-name descname"><span class="pre">load_route_section</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#arkane.ess.GaussianLog.load_route_section" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the route section of the Gaussian log file as a string. The route
+section is the line in the Gaussian input/output file that starts with “#”
+If there are multiple lines that start with # it returns the first.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -242,6 +255,7 @@ Return a list of atom numbers starting with the first atom as 1</p>
 <li><a class="reference internal" href="#arkane.ess.GaussianLog.load_force_constant_matrix"><code class="docutils literal notranslate"><span class="pre">GaussianLog.load_force_constant_matrix()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.ess.GaussianLog.load_geometry"><code class="docutils literal notranslate"><span class="pre">GaussianLog.load_geometry()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.ess.GaussianLog.load_negative_frequency"><code class="docutils literal notranslate"><span class="pre">GaussianLog.load_negative_frequency()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.ess.GaussianLog.load_route_section"><code class="docutils literal notranslate"><span class="pre">GaussianLog.load_route_section()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.ess.GaussianLog.load_scan_energies"><code class="docutils literal notranslate"><span class="pre">GaussianLog.load_scan_energies()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.ess.GaussianLog.load_scan_frozen_atoms"><code class="docutils literal notranslate"><span class="pre">GaussianLog.load_scan_frozen_atoms()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.ess.GaussianLog.load_scan_pivot_atoms"><code class="docutils literal notranslate"><span class="pre">GaussianLog.load_scan_pivot_atoms()</span></code></a></li>
