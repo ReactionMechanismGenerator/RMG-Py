@@ -123,6 +123,24 @@ class GaussianLog(ESSAdapter):
 
         return n_atoms
 
+    def load_route_section(self):
+        """
+        Return the route section of the Gaussian log file as a string. The route
+        section is the line in the Gaussian input/output file that starts with "#"
+        If there are multiple lines that start with # it returns the first.
+        """
+        route = ''
+        with open(self.path, 'r') as f:
+            line = f.readline()
+            while line != '':
+                line = line.strip()
+                if line.startswith('#'):
+                    route = line
+                    break
+                line = f.readline()
+
+        return route
+
     def load_force_constant_matrix(self):
         """
         Return the force constant matrix from the Gaussian log file. The job
@@ -132,8 +150,16 @@ class GaussianLog(ESSAdapter):
         only the last is returned. The units of the returned force constants
         are J/m^2. If no force constant matrix can be found in the log file,
         ``None`` is returned.
+        Also checks that the force constant matrix was computed using the correct
+        (input orientation Cartesian) coordinates.
+        IOP(2/9=2000) must be specified for large cases (14+ atoms), but only
+        if an optimization was also performed. A frequency calculation by itself
+        will keep the input orientation.
         """
         force = None
+
+        iop2_9_equals_2000 = False
+        optimization_performed = 'opt' in self.load_route_section().lower()
 
         n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
@@ -141,6 +167,9 @@ class GaussianLog(ESSAdapter):
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
+                if '2/9=2000' in line:
+                    iop2_9_equals_2000 = True
+
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
                     force = np.zeros((n_rows, n_rows), float)
@@ -157,6 +186,11 @@ class GaussianLog(ESSAdapter):
                     force *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
 
+        if optimization_performed and n_atoms > 13 and not iop2_9_equals_2000:
+            raise LogError(f'Gaussian optimization file {self.path} contains more than 13 atoms. '
+                           f'Please add the `iop(2/9=2000)` keyword to your input file '
+                           f'so Gaussian will compute force matrix using the input orientation Cartesians.')
+
         return force
 
     def load_geometry(self):
@@ -166,7 +200,7 @@ class GaussianLog(ESSAdapter):
         last is returned.
         """
         number, coord, mass = [], [], []
-
+        
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
