@@ -483,8 +483,16 @@ cdef class SurfaceReactor(ReactionSystem):
                 else:
                     surface_site_fraction = 0
                 coverages.append(surface_site_fraction)
-            coverages = np.array(coverages)
-            thermo_dep_coverage = np.stack([coverages, coverages**2, coverages**3, -self.T.value_si*coverages, -self.T.value_si*coverages**2, -self.T.value_si*coverages**3])
+            coverages = np.array(coverages, dtype=np.float64)
+            coverages_squared = coverages * coverages
+            temperature_scaled_coverages = -self.T.value_si * coverages
+            thermo_dep_coverage = np.empty((6, coverages.shape[0]), dtype=np.float64)
+            thermo_dep_coverage[0, :] = coverages
+            thermo_dep_coverage[1, :] = coverages_squared
+            thermo_dep_coverage[2, :] = coverages_squared * coverages
+            thermo_dep_coverage[3, :] = temperature_scaled_coverages
+            thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
+            thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
             free_energy_coverage_corrections = []
             for matrix in self.thermo_coeff_matrix:
                 sp_free_energy_correction = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
