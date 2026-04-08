@@ -123,15 +123,17 @@ cdef class ThermoData(HeatCapacityModel):
         def __get__(self):
             return self._thermo_coverage_dependence
         def __set__(self, value):
-            self._thermo_coverage_dependence = {}
             if value:
-                 for species, parameters in value.items():
+                self._thermo_coverage_dependence = {}
+                for species, parameters in value.items():
                     # just the polynomial model for now
-                     processed_parameters = {'model': parameters['model'],
-                                             'enthalpy-coefficients': [quantity.Enthalpy(p) for p in parameters['enthalpy-coefficients']],
-                                             'entropy-coefficients': [quantity.Entropy(p) for p in parameters['entropy-coefficients']],
-                                             }
-                     self._thermo_coverage_dependence[species] = processed_parameters
+                    processed_parameters = {'model': parameters['model'],
+                                            'enthalpy-coefficients': [quantity.Enthalpy(p) for p in parameters['enthalpy-coefficients']],
+                                            'entropy-coefficients': [quantity.Entropy(p) for p in parameters['entropy-coefficients']],
+                                            }
+                    self._thermo_coverage_dependence[species] = processed_parameters
+            else:
+                self._thermo_coverage_dependence = None
 
     @cython.boundscheck(False)
     @cython.wraparound(False)
