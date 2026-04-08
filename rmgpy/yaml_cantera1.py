@@ -82,6 +82,34 @@ def _convert_anymap_to_dict(obj):
         return obj
 
 
+def build_coverage_dependencies(species, all_species):
+    """
+    Build the coverage-dependencies dict for a surface species with coverage-dependent thermo.
+
+    Returns a dict mapping dependent species name -> Cantera coverage-dep parameters,
+    or None if this species has no coverage-dependent thermo.
+    """
+    if not species.contains_surface_site():
+        return None
+    thermo = species.thermo
+    if not hasattr(thermo, 'thermo_coverage_dependence') or not thermo.thermo_coverage_dependence:
+        return None
+
+    from rmgpy.molecule.molecule import Molecule
+    cov_deps = {}
+    for adj_list, parameters in thermo.thermo_coverage_dependence.items():
+        mol = Molecule().from_adjacency_list(adj_list)
+        for sp in all_species:
+            if sp.is_isomorphic(mol, strict=False):
+                cov_deps[get_species_identifier(sp)] = {
+                    'units': {'energy': 'J', 'quantity': 'mol'},
+                    'enthalpy-coefficients': [v.value_si for v in parameters['enthalpy-coefficients']],
+                    'entropy-coefficients': [v.value_si for v in parameters['entropy-coefficients']],
+                }
+                break
+    return cov_deps if cov_deps else None
+
+
 def write_cantera(
     spcs,
     rxns,
@@ -108,11 +136,15 @@ def write_cantera(
         if spc.contains_surface_site():
             is_surface = True
     if is_surface:
+        has_coverage_dependence = any(
+            hasattr(spc.thermo, 'thermo_coverage_dependence') and spc.thermo.thermo_coverage_dependence
+            for spc in spcs if spc.contains_surface_site()
+        )
         result_dict = get_mech_dict_surface(
             spcs, rxns, solvent=solvent, solvent_data=solvent_data
         )
         phases_block = get_phases_with_surface(
-            spcs, surface_site_density
+            spcs, surface_site_density, has_coverage_dependence=has_coverage_dependence
         )
     else:
         result_dict = get_mech_dict_nonsurface(
@@ -192,7 +224,7 @@ phases:
     return phases_block
 
 
-def get_phases_with_surface(spcs, surface_site_density):
+def get_phases_with_surface(spcs, surface_site_density, has_coverage_dependence=False):
     """
     Yaml files with surface species begin with the following blocks of text,
     which includes TWO phases instead of just one.
@@ -230,6 +262,9 @@ def get_phases_with_surface(spcs, surface_site_density):
         for s in gas_species_to_write
     ]
 
+    surface_thermo = 'coverage-dependent-surface' if has_coverage_dependence else 'ideal-surface'
+    reference_state_line = '\n  reference-state-coverage: 0.11' if has_coverage_dependence else ''
+
     phases_block = f"""
 phases:
 - name: gas
@@ -242,7 +277,7 @@ phases:
   state: {{T: 300.0, P: 1 atm}}
 
 - name: surface
-  thermo: ideal-surface
+  thermo: {surface_thermo}{reference_state_line}
   adjacent-phases: [gas]
   {ELEMENTS_LINE}
   species: [{', '.join(surface_species_to_write)}]
@@ -275,6 +310,12 @@ def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
 
     result_dict = dict()
     result_dict["species"] = [species_to_dict(x) for x in spcs]
+
+    # Add coverage-dependencies to surface species that have them
+    for i, spc in enumerate(spcs):
+        cov_deps = build_coverage_dependencies(spc, spcs)
+        if cov_deps:
+            result_dict["species"][i]['coverage-dependencies'] = cov_deps
 
     # separate gas and surface reactions
 
