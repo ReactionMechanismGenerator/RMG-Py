@@ -260,9 +260,14 @@ def generate_cantera_data(species_list,
     if surface_species:
         default_site_density = 2.5e-5  # mol/m^2
 
+        has_coverage_dependence = any(
+            hasattr(sp.thermo, 'thermo_coverage_dependence') and sp.thermo.thermo_coverage_dependence
+            for sp in surface_species
+        )
+
         surface_phase_def = {
             'name': 'surface',
-            'thermo': 'ideal-surface',
+            'thermo': 'coverage-dependent-surface' if has_coverage_dependence else 'ideal-surface',
             'adjacent-phases': ['gas'],
             'elements': sorted(list(elements_set)),
             'species': [get_label(sp, species_list) for sp in surface_species],
@@ -270,6 +275,8 @@ def generate_cantera_data(species_list,
             'reactions': 'declared-species',
             'site-density': site_density or default_site_density
         }
+        if has_coverage_dependence:
+            surface_phase_def['reference-state-coverage'] = 0.11
         phases.append(surface_phase_def)
 
     data['phases'] = phases
@@ -369,6 +376,27 @@ def species_to_dict(species, species_list):
 
     if notes:
         species_entry['note'] = " | ".join(notes)
+
+    # Add coverage-dependencies if this surface species has coverage-dependent thermo
+    if (species.contains_surface_site() and
+            hasattr(thermo_data, 'thermo_coverage_dependence') and
+            thermo_data.thermo_coverage_dependence):
+        from rmgpy.molecule.molecule import Molecule
+        cov_deps = {}
+        for adj_list, parameters in thermo_data.thermo_coverage_dependence.items():
+            mol = Molecule().from_adjacency_list(adj_list)
+            for sp in species_list:
+                if sp.is_isomorphic(mol, strict=False):
+                    dep_label = get_label(sp, species_list)
+                    if dep_label:
+                        cov_deps[dep_label] = {
+                            'units': {'energy': 'J', 'quantity': 'mol'},
+                            'enthalpy-coefficients': [v.value_si for v in parameters['enthalpy-coefficients']],
+                            'entropy-coefficients': [v.value_si for v in parameters['entropy-coefficients']],
+                        }
+                    break
+        if cov_deps:
+            species_entry['coverage-dependencies'] = cov_deps
 
     return species_entry
 
