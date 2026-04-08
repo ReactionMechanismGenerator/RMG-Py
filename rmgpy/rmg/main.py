@@ -1239,7 +1239,7 @@ class RMG(util.Subject):
                     
                     content['phases'][1]['reference-state-coverage'] = 0.11
                     content['phases'][1]['thermo'] = 'coverage-dependent-surface'
-                    cantera_names = [content["species"][i]['name'] for i in range(len(content["species"]))]
+                    cantera_names = [s['name'] for s in content["species"]]
 
                     for s in self.reaction_model.core.species:
                         if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
