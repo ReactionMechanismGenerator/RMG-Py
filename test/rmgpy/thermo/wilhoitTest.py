@@ -432,10 +432,10 @@ class TestWilhoit:
         assert wilhoit_dict["thermo_coverage_dependence"].keys() == self.thermo_coverage_dependence.keys()
         sp_name = list(self.thermo_coverage_dependence.keys())[0]
         assert wilhoit_dict['thermo_coverage_dependence'][sp_name]['model'] == self.thermo_coverage_dependence[sp_name]['model']
-        enthalpy_list = wilhoit_dict['thermo_coverage_dependence'][sp_name]['enthalpy-coefficients']['object']
-        assert [(int(coeff.value), str(coeff.units)) for coeff in enthalpy_list] == self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
-        entropy_list = wilhoit_dict['thermo_coverage_dependence'][sp_name]['entropy-coefficients']['object']
-        assert [(int(coeff.value), str(coeff.units)) for coeff in entropy_list] == self.thermo_coverage_dependence[sp_name]['entropy-coefficients']
+        enthalpy_list = wilhoit_dict['thermo_coverage_dependence'][sp_name]['enthalpy-coefficients']
+        assert [(int(coeff['value']), str(coeff['units'])) for coeff in enthalpy_list] == self.thermo_coverage_dependence[sp_name]['enthalpy-coefficients']
+        entropy_list = wilhoit_dict['thermo_coverage_dependence'][sp_name]['entropy-coefficients']
+        assert [(int(coeff['value']), str(coeff['units'])) for coeff in entropy_list] == self.thermo_coverage_dependence[sp_name]['entropy-coefficients']
 
         wilhoit_dict = {k: wilhoit_dict[k] for k in wilhoit_dict.keys() - {'thermo_coverage_dependence'}}
         assert wilhoit_dict == {
