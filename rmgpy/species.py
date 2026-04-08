@@ -428,13 +428,18 @@ class Species(object):
         from rmgpy.chemkin import get_species_identifier
         return get_species_identifier(self)
 
-    def to_cantera(self, use_chemkin_identifier=False):
+    def to_cantera(self, use_chemkin_identifier=False, all_species=None):
         """
         Converts the RMG Species object to a Cantera Species object
         with the appropriate thermo data.
 
         If use_chemkin_identifier is set to False, the species label is used
         instead. Be sure that species' labels are unique when setting it False.
+
+        If all_species is provided and this is a surface species with
+        coverage-dependent thermo, the coverage-dependencies are attached to
+        the Cantera Species object via update_user_data() so that they appear
+        in input_data and in Solution.write_yaml() output.
         """
         import cantera as ct
 
@@ -474,6 +479,32 @@ class Species(object):
 
         if self.transport_data:
             ct_species.transport = self.transport_data.to_cantera()
+
+        # Attach coverage-dependent thermo if present.
+        # thermo_coverage_dependence keys are adjacency-list strings; we resolve
+        # them to species names here using all_species.  The data is stored via
+        # update_user_data() so it appears in ct_species.input_data and in any
+        # YAML serialised by Cantera (e.g. Solution.write_yaml()).
+        if (all_species is not None
+                and self.contains_surface_site()
+                and self.thermo
+                and hasattr(self.thermo, 'thermo_coverage_dependence')
+                and self.thermo.thermo_coverage_dependence):
+            from rmgpy.molecule.molecule import Molecule
+            cov_deps = {}
+            for adj_list, parameters in self.thermo.thermo_coverage_dependence.items():
+                mol = Molecule().from_adjacency_list(adj_list)
+                for sp in all_species:
+                    if sp.is_isomorphic(mol, strict=False):
+                        dep_name = sp.to_chemkin() if use_chemkin_identifier else sp.label
+                        cov_deps[dep_name] = {
+                            'units': {'energy': 'J', 'quantity': 'mol'},
+                            'enthalpy-coefficients': [v.value_si for v in parameters['enthalpy-coefficients']],
+                            'entropy-coefficients': [v.value_si for v in parameters['entropy-coefficients']],
+                        }
+                        break
+            if cov_deps:
+                ct_species.update_user_data({'coverage-dependencies': cov_deps})
 
         return ct_species
 

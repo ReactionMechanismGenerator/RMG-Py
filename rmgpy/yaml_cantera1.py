@@ -82,34 +82,6 @@ def _convert_anymap_to_dict(obj):
         return obj
 
 
-def build_coverage_dependencies(species, all_species):
-    """
-    Build the coverage-dependencies dict for a surface species with coverage-dependent thermo.
-
-    Returns a dict mapping dependent species name -> Cantera coverage-dep parameters,
-    or None if this species has no coverage-dependent thermo.
-    """
-    if not species.contains_surface_site():
-        return None
-    thermo = species.thermo
-    if not hasattr(thermo, 'thermo_coverage_dependence') or not thermo.thermo_coverage_dependence:
-        return None
-
-    from rmgpy.molecule.molecule import Molecule
-    cov_deps = {}
-    for adj_list, parameters in thermo.thermo_coverage_dependence.items():
-        mol = Molecule().from_adjacency_list(adj_list)
-        for sp in all_species:
-            if sp.is_isomorphic(mol, strict=False):
-                cov_deps[get_species_identifier(sp)] = {
-                    'units': {'energy': 'J', 'quantity': 'mol'},
-                    'enthalpy-coefficients': [v.value_si for v in parameters['enthalpy-coefficients']],
-                    'entropy-coefficients': [v.value_si for v in parameters['entropy-coefficients']],
-                }
-                break
-    return cov_deps if cov_deps else None
-
-
 def write_cantera(
     spcs,
     rxns,
@@ -309,13 +281,7 @@ def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
             names[i] += "-" + str(names.count(name))
 
     result_dict = dict()
-    result_dict["species"] = [species_to_dict(x) for x in spcs]
-
-    # Add coverage-dependencies to surface species that have them
-    for i, spc in enumerate(spcs):
-        cov_deps = build_coverage_dependencies(spc, spcs)
-        if cov_deps:
-            result_dict["species"][i]['coverage-dependencies'] = cov_deps
+    result_dict["species"] = [species_to_dict(x, all_species=spcs) for x in spcs]
 
     # separate gas and surface reactions
 
@@ -386,16 +352,19 @@ def reaction_to_dicts(obj, spcs):
     return reaction_list
 
 
-def species_to_dict(species):
+def species_to_dict(species, all_species=None):
     """
-    Takes an RMG species object, returns a list of dictionaries
-    for YAML properties. Also adds in the number of surface sites
-    ('sites') to dictionary.
+    Takes an RMG species object, returns a dictionary of YAML properties.
+    Also adds in the number of surface sites ('sites') to the dictionary.
+
+    all_species: if provided, coverage-dependent thermo is resolved and
+    attached to the Cantera species object before serialisation, so it
+    appears in the returned dict automatically.
     """
     if not isinstance(species, Species):
         raise TypeError("species object must be an RMG Species")
 
-    cantera_species = species.to_cantera(use_chemkin_identifier=True)
+    cantera_species = species.to_cantera(use_chemkin_identifier=True, all_species=all_species)
     species_data = cantera_species.input_data
 
     try:
