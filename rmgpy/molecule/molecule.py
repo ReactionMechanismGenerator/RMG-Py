@@ -2681,31 +2681,21 @@ class Molecule(Graph):
                                       return_mapping=False,
                                       save_order=True,
                                       ignore_bond_orders=True)
-
+        rdkit_mol.UpdatePropertyCache(strict=False)
+        ranks = list(Chem.CanonicalRankAtoms(rdkit_mol, breakTies=True))
+        rank_to_idx = {rank: idx for idx, rank in enumerate(ranks)}
+        new_order = [rank_to_idx[i] for i in range(rdkit_mol.GetNumAtoms())]
+        canonical_mol = Chem.RenumberAtoms(rdkit_mol, new_order)
         if symmetrized:
-            ring_info = Chem.GetSymmSSSR(rdkit_mol)
+            ring_info = Chem.GetSymmSSSR(canonical_mol)
         else:
-            # Force deterministic SSSR by canonicalizing the atom numbering first.
-            # This prevents RDKit's arbitrary graph traversal from selecting 
-            # different sets of equivalent rings across different runs/platforms.
-            ranks = list(Chem.CanonicalRankAtoms(rdkit_mol, breakTies=True))
-            rank_to_idx = {rank: idx for idx, rank in enumerate(ranks)}
-            
-            # new_order maps the new atom index to the original atom index
-            new_order = [rank_to_idx[i] for i in range(rdkit_mol.GetNumAtoms())]
-            
-            canonical_mol = Chem.RenumberAtoms(rdkit_mol, new_order)
-            canonical_mol.UpdatePropertyCache(strict=False)
-            canonical_rings = Chem.GetSSSR(canonical_mol)
-            
-            # Map the resulting ring indices back to the original rdkit_mol numbering
-            ring_info = []
-            for ring in canonical_rings:
-                orig_ring = tuple([new_order[idx] for idx in ring])
-                ring_info.append(orig_ring)
+            ring_info = Chem.GetSSSR(canonical_mol)
 
         for ring in ring_info:
-            atom_ring = [self.atoms[idx] for idx in ring]
+            # Map the new canonical indices back to the original RMG atom indices
+            original_idx_ring = [new_order[idx] for idx in ring]
+            atom_ring = [self.atoms[idx] for idx in original_idx_ring]
+            
             sorted_ring = self.sort_cyclic_vertices(atom_ring)
             sssr.append(sorted_ring)
         if symmetrized:
