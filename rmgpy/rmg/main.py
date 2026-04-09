@@ -37,6 +37,7 @@ import gc
 import logging
 import marshal
 import os
+import re
 import resource
 import shutil
 import sys
@@ -1223,6 +1224,7 @@ class RMG(util.Subject):
         # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
         try:
             if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
+                # Surface (catalytic) chemistry
                 self.generate_cantera_files(
                     os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
@@ -1231,43 +1233,34 @@ class RMG(util.Subject):
                     os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
                 )
-                if self.thermo_coverage_dependence:
-                    # add thermo coverage dependence to Cantera files
-                    chem_yaml_path = os.path.join(self.output_directory, "cantera", "chem.yaml")
-                    with open(chem_yaml_path, 'r') as f:
-                        content = yaml.load(f, Loader=yaml.FullLoader)
-                    
-                    content['phases'][1]['reference-state-coverage'] = 0.11
-                    content['phases'][1]['thermo'] = 'coverage-dependent-surface'
-                    cantera_names = [s['name'] for s in content["species"]]
 
+                if self.thermo_coverage_dependence:
+                    # Build coverage_deps: {species_name: string_to_add_to_yaml}
+                    coverage_deps = {}
                     for s in self.reaction_model.core.species:
                         if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
-                            for dep_sp, parameters in s.thermo.thermo_coverage_dependence.items():
-                                mol = Molecule().from_adjacency_list(dep_sp)
+                            s_name = s.to_chemkin()
+                            for dep_sp_adj, parameters in s.thermo.thermo_coverage_dependence.items():
+                                mol = Molecule().from_adjacency_list(dep_sp_adj)
                                 for sp in self.reaction_model.core.species:
                                     if sp.is_isomorphic(mol, strict=False):
-                                        parameters['units'] = {'energy':'J', 'quantity':'mol'}
-                                        parameters['enthalpy-coefficients'] = [value.value_si for value in parameters['enthalpy-coefficients']]
-                                        parameters['entropy-coefficients'] = [value.value_si for value in parameters['entropy-coefficients']]
-                                        try:
-                                            content["species"][cantera_names.index(s.to_chemkin())]['coverage-dependencies'][sp.to_chemkin()] = parameters
-                                        except KeyError:
-                                            content["species"][cantera_names.index(s.to_chemkin())]['coverage-dependencies'] = {sp.to_chemkin(): parameters}
+                                        if s_name not in coverage_deps:
+                                            coverage_deps[s_name] = '  coverage-dependencies:'
+                                        coverage_deps[s_name] += f"""
+    {sp.to_chemkin()}:
+      model: {parameters['model']}
+      enthalpy-coefficients: {[v.value_si for v in parameters['enthalpy-coefficients']]}
+      entropy-coefficients: {[v.value_si for v in parameters['entropy-coefficients']]}
+      units: {{energy: J, quantity: mol}}
+"""
+                                        break
 
-                    annotated_yaml_path = os.path.join(self.output_directory, "cantera", "chem_annotated.yaml")
-                    with open(annotated_yaml_path, 'r') as f:
-                        annotated_content = yaml.load(f, Loader=yaml.FullLoader)
-                    
-                    annotated_content['phases'] = content['phases']
-                    annotated_content['species'] = content['species']
+                    for yaml_path in [
+                        os.path.join(self.output_directory, "cantera", "chem.yaml"),
+                        os.path.join(self.output_directory, "cantera", "chem_annotated.yaml"),
+                    ]:
+                        _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
 
-                    with open(chem_yaml_path, 'w') as output_f:
-                        yaml.dump(content, output_f, sort_keys=False, default_flow_style=None)
-                    
-                    with open(annotated_yaml_path, 'w') as output_f:
-                        yaml.dump(annotated_content, output_f, sort_keys=False, default_flow_style=None)
-                                       
             else:  # gas phase only
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
@@ -2431,6 +2424,45 @@ class RMG_Memory(object):
             self.scaled_condition_list.append(scaled_new_cond)
         return
 
+def _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps):
+    """Modify a Cantera YAML file in-place to add coverage-dependent surface thermo.
+
+    Makes targeted text insertions rather than loading and re-dumping the whole
+    file, so original formatting is preserved everywhere except the new lines.
+
+    Args:
+        yaml_path: path to the Cantera YAML file to modify
+        coverage_deps: dict mapping species ChemKin names to their coverage-dependency string.
+    """
+    with open(yaml_path, 'r') as f:
+        content = f.read()
+
+    # --- Modify the surface phase ---
+    # Replace 'ideal-surface' with 'coverage-dependent-surface' and add reference-state-coverage.
+    content = content.replace(
+        '  thermo: ideal-surface\n',
+        '  thermo: coverage-dependent-surface\n  reference-state-coverage: 0.11\n',
+        1,
+    )
+
+    # --- Insert coverage-dependencies block after each relevant species entry ---
+    for species_name, deps in coverage_deps.items():
+        match = re.search(r'^- name: ' + re.escape(species_name) + r'\n', content, re.MULTILINE)
+        if not match:
+            logging.warning(
+                f"Species {species_name} not found in {yaml_path}; skipping coverage-dependency insertion."
+            )
+            continue
+
+        after = match.end()
+        end_match = re.search(r'\n(?=(?:- |\n|\w))', content[after:])
+        if end_match:
+            insert_pos = after + end_match.start() + 1
+            content = content[:insert_pos] + deps + content[insert_pos:]
+        else:
+            content = content.rstrip('\n') + '\n' + deps
+    with open(yaml_path, 'w') as f:
+        f.write(content)
 
 def log_conditions(rmg_memories, index):
     """
