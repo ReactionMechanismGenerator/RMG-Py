@@ -23,19 +23,19 @@ jobs:
         # for PRs just run a single build per platform to save time and resources
           - is_pr: true
             os: ubuntu-latest
-            python-version: "3.9"
+            python-version: "3.11"
           - is_pr: true
             os: ubuntu-latest
             python-version: "3.10"
           - is_pr: true
             os: macos-15-intel
-            python-version: "3.9"
+            python-version: "3.11"
           - is_pr: true
             os: macos-15-intel
             python-version: "3.10"
           - is_pr: true
             os: macos-latest
-            python-version: "3.9"
+            python-version: "3.11"
           - is_pr: true
             os: macos-latest
             python-version: "3.10"
