@@ -365,10 +365,11 @@ class CoreEdgeReactionModel:
         spec.molecular_weight = Quantity(spec.molecule[0].get_molecular_weight() * 1000.0, "amu")
 
         if generate_thermo:
-            self.generate_thermo(spec)
+            # Rename from thermo library label only if no user-provided label exists yet.
+            self.generate_thermo(spec, rename=not bool(spec.label))
 
         # If the species still does not have a label, set initial label as the SMILES
-        # This may change later after getting thermo in self.generate_thermo()
+        # (applies when generate_thermo is False, or when no library match was found)
         if not spec.label:
             spec.label = spec.smiles
 
