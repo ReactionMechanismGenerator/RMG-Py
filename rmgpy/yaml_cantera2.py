@@ -203,10 +203,13 @@ def generate_cantera_data(species_list,
         }
     }
 
+    # Sort species list by index
+    sorted_species = sorted(species_list, key=lambda species: species.index)
+
     # --- 2. Phase Segregation (Gas vs Surface) ---
     gas_species, surface_species, gas_reactions, surface_reactions = list(), list(), list(), list()
 
-    for spc in species_list:
+    for spc in sorted_species:
         if spc.contains_surface_site():
             surface_species.append(spc)
         else:
@@ -223,7 +226,7 @@ def generate_cantera_data(species_list,
     elements_set = set(base_elements)
 
     if search_for_additional_elements:
-        for spc in species_list:
+        for spc in sorted_species:
             if spc.molecule and len(spc.molecule) > 0:
                 if spc.is_electron():
                     elements_set.add('E')
