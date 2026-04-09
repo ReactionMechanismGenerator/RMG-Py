@@ -2695,6 +2695,7 @@ class Molecule(Graph):
             new_order = [rank_to_idx[i] for i in range(rdkit_mol.GetNumAtoms())]
             
             canonical_mol = Chem.RenumberAtoms(rdkit_mol, new_order)
+            canonical_mol.UpdatePropertyCache(strict=False)
             canonical_rings = Chem.GetSSSR(canonical_mol)
             
             # Map the resulting ring indices back to the original rdkit_mol numbering
