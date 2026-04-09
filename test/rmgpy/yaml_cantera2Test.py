@@ -363,7 +363,7 @@ class TestCanteraWriter2:
 
         with open(latest_file, 'r') as f:
             content = f.read()
-            assert "generator: RMG-Py CanteraWriter2" in content
+            assert "generator: RMG-Py CanteraWriter2" in content or "generator: 'RMG-Py CanteraWriter2" in content
             assert "phases:" in content
             assert "species:" in content
 
