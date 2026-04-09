@@ -640,6 +640,13 @@ count as two, etc.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_ring_count_in_largest_fused_ring_system">
+<span class="sig-name descname"><span class="pre">get_ring_count_in_largest_fused_ring_system</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">int</span></span></span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_ring_count_in_largest_fused_ring_system" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the number of rings in the largest fused ring system in the molecule.
+Returns 0 if the molecule has no fused rings (only monocycles or no rings).</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.get_singlet_carbene_count">
 <span class="sig-name descname"><span class="pre">get_singlet_carbene_count</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.get_singlet_carbene_count" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return the total number of singlet carbenes (lone pair on a carbon atom)
@@ -1266,6 +1273,7 @@ number of lone electron pairs, assuming a neutral molecule.</p>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_polycycles"><code class="docutils literal notranslate"><span class="pre">Molecule.get_polycycles()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_radical_atoms"><code class="docutils literal notranslate"><span class="pre">Molecule.get_radical_atoms()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_radical_count"><code class="docutils literal notranslate"><span class="pre">Molecule.get_radical_count()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_ring_count_in_largest_fused_ring_system"><code class="docutils literal notranslate"><span class="pre">Molecule.get_ring_count_in_largest_fused_ring_system()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_singlet_carbene_count"><code class="docutils literal notranslate"><span class="pre">Molecule.get_singlet_carbene_count()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_smallest_set_of_smallest_rings"><code class="docutils literal notranslate"><span class="pre">Molecule.get_smallest_set_of_smallest_rings()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_surface_sites"><code class="docutils literal notranslate"><span class="pre">Molecule.get_surface_sites()</span></code></a></li>
