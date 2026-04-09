@@ -48,8 +48,8 @@ from rmgpy.rmg.pdep import PDepReaction
 from rmgpy.util import make_output_subdirectory
 import rmgpy.constants as constants
 
+from rmgpy.species import Species
 if TYPE_CHECKING:
-    from rmgpy.species import Species
     from rmgpy.molecule.molecule import Molecule
 
 SYMBOL_BY_NUMBER = {0: 'e', 1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 10: 'Ne',
@@ -612,6 +612,9 @@ def get_reaction_equation(reaction, species_list):
 
 
 def get_label(obj: Union['Species', 'Molecule'], species_list: list['Species']):
+    if isinstance(obj, Species):
+        return f'{obj.label}({obj.index})' if obj.index > 0 else obj.label
+
     if species_list:
         for sp in species_list:
             if sp.is_isomorphic(obj):
