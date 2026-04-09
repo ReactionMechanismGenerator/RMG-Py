@@ -1263,10 +1263,10 @@ class RMG(util.Subject):
                     annotated_content['species'] = content['species']
 
                     with open(chem_yaml_path, 'w') as output_f:
-                        yaml.dump(content, output_f, sort_keys=False)
+                        yaml.dump(content, output_f, sort_keys=False, default_flow_style=None)
                     
                     with open(annotated_yaml_path, 'w') as output_f:
-                        yaml.dump(annotated_content, output_f, sort_keys=False)
+                        yaml.dump(annotated_content, output_f, sort_keys=False, default_flow_style=None)
                                        
             else:  # gas phase only
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
