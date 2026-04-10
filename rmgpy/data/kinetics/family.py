@@ -3678,19 +3678,22 @@ class KineticsFamily(Database):
 
                 uncertainties[rxn] = self.rules.entries[entry.label][0].data.uncertainty
 
-
                 L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
 
                 if L != []:
                     if isinstance(L[0].kinetics, Arrhenius):
                         kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
-                        if kinetics.E0.value_si < 0.0 or len(L) == 1:
+                        # These conditions (eg. n>5) for rejecting the BM fit should correspond
+                        # to those in _marke_rule, and those just below:
+                        if len(L) == 1 or kinetics.E0.value_si < 0.0 or abs(kinetics.n.value_si) > 5.0:
                             kinetics = average_kinetics([r.kinetics for r in L])
                         else:
                             kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(298.))
                     else:
                         kinetics = ArrheniusChargeTransferBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
-                        if kinetics.E0.value_si < 0.0 or len(L) == 1:
+                        # These conditions (eg. n>5) for rejecting the BM fit should correspond
+                        # to those in _marke_rule, and those just above:
+                        if len(L) == 1 or kinetics.E0.value_si < 0.0 or abs(kinetics.n.value_si) > 5.0:
                             kinetics = average_kinetics([r.kinetics for r in L])
                         else:
                             kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.))
@@ -4612,8 +4615,9 @@ def _make_rule(rr):
         arr = ArrheniusChargeTransferBM
     if n > 1:
         kin = arr().fit_to_reactions(rs, recipe=recipe)
+
+    # If you update the following conditions, also update the cross_validate function.
     if n == 1 or kin.E0.value_si < 0.0 or abs(kin.n.value_si) > 5.0:
-        
         if n > 1: #we have an ArrheniusBM
             if kin.E0.value_si < 0.0:
                 reason = "E0<0"
@@ -4621,15 +4625,13 @@ def _make_rule(rr):
                 reason = "abs(n)>5"
             else:
                 reason = "?"
-        
+
         # still run it through the averaging function when n=1 to standardize the units and run checks
         kin = average_kinetics([r.kinetics for r in rs])
-        
-        if n == 1:
 
+        if n == 1:
             kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
         else:
-            
             kin.comment = f"Blowers-Masel fit was bad ({reason}) so instead averaged from {n} reactions."
             dlnks = np.array([
                 np.log(
