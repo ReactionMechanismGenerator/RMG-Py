@@ -846,16 +846,48 @@ class KineticsFamily(Database):
                         if spcs_labels != ex_spcs_labels:
                             # the species have different labels, therefore not a match
                             continue
-                        initial_map = {}
+                            
+                        multiple_mappings_to_test=False
+                    
+                        #first, check if we have a family that will have multiple atoms labeled with the same atom label i.e. R_Recombination family will have two atoms labeled as '*' on a single side of the reaction
+                        if any(isinstance(labeled_atoms, list) for labeled_atoms in spec_labeled_atoms.values()): 
+                            assert self.label=='R_Recombination' #this should only be happening for the R_Recomb family, I believe
+                            initial_map_a = {} #will have to test two variations, only one of which will pass the isomorphism test
+                            initial_map_b = {} 
+                            multiple_mappings_to_test = True
+                        else:
+                            initial_map = {}
                         try:
+                            
                             for atomLabel in spec_labeled_atoms:
-                                initial_map[spec_labeled_atoms[atomLabel]] = ex_spec_labeled_atoms[atomLabel]
-                        except KeyError:
+                                if multiple_mappings_to_test:
+                                    starred = spec_labeled_atoms[atomLabel]
+                                    
+                                    if isinstance(starred,list): #we are at an atomLabel with multiple atoms defined
+                                        initial_map_a[starred[0]] = ex_spec_labeled_atoms[atomLabel][0]
+                                        initial_map_a[starred[1]] = ex_spec_labeled_atoms[atomLabel][1]
+                                        
+                                        initial_map_b[starred[1]] = ex_spec_labeled_atoms[atomLabel][0]
+                                        initial_map_b[starred[0]] = ex_spec_labeled_atoms[atomLabel][1]
+                                    else: 
+                                        initial_map_a[starred] = ex_spec_labeled_atoms[atomLabel]
+                                        initial_map_b[starred] = ex_spec_labeled_atoms[atomLabel]
+                                else: 
+                                    initial_map[spec_labeled_atoms[atomLabel]] = ex_spec_labeled_atoms[atomLabel]
+                        except KeyError :
                             # Atom labels did not match, therefore not a match
                             continue
-                        if spec.molecule[0].is_isomorphic(ex_spec.molecule[0], initial_map):
-                            spec.label = ex_spec.label
-                            break
+                                           
+                        if multiple_mappings_to_test:
+                            for initial_map in [initial_map_a, initial_map_b]:
+                                if spec.molecule[0].is_isomorphic(ex_spec.molecule[0], initial_map):
+                                    spec.label = ex_spec.label
+                                    break
+                                           
+                        if not multiple_mappings_to_test:                
+                            if spec.molecule[0].is_isomorphic(ex_spec.molecule[0], initial_map):
+                                spec.label = ex_spec.label
+                                break
                 else:  # No isomorphic existing species found
                     spec_formula = spec.molecule[0].get_formula()
                     if spec_formula not in species_dict:
