@@ -64,7 +64,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <h1>rmgpy.thermo.NASA<a class="headerlink" href="#rmgpy-thermo-nasa" title="Permalink to this heading">¶</a></h1>
 <span class="target" id="thermonasa"></span><dl class="py class">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.thermo.</span></span><span class="sig-name descname"><span class="pre">NASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polynomials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cp0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CpInf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASA" title="Permalink to this definition">¶</a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">rmgpy.thermo.</span></span><span class="sig-name descname"><span class="pre">NASA</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polynomials</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tmax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">E0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Cp0</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">CpInf</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">thermo_coverage_dependence</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">comment</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASA" title="Permalink to this definition">¶</a></dt>
 <dd><p>A heat capacity model based on a set of one, two, or three
 <a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial"><code class="xref py py-class docutils literal notranslate"><span class="pre">NASAPolynomial</span></code></a> objects. The attributes are:</p>
 <table class="docutils align-default">
@@ -86,7 +86,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <tr class="row-odd"><td><p><cite>E0</cite></p></td>
 <td><p>The energy at zero Kelvin (including zero point energy)</p></td>
 </tr>
-<tr class="row-even"><td><p><cite>comment</cite></p></td>
+<tr class="row-even"><td><p><cite>thermo_coverage_dependence</cite></p></td>
+<td><p>The coverage dependence of the thermo</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>comment</cite></p></td>
 <td><p>Information about the model (e.g. its source)</p></td>
 </tr>
 </tbody>
@@ -301,6 +304,12 @@ returned.</p>
 <span class="sig-name descname"><span class="pre">select_polynomial</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">double</span> <span class="pre">T</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="nasapolynomial.html#rmgpy.thermo.NASAPolynomial" title="rmgpy.thermo.NASAPolynomial"><span class="pre">NASAPolynomial</span></a></span></span><a class="headerlink" href="#rmgpy.thermo.NASA.select_polynomial" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py attribute">
+<dt class="sig sig-object py" id="rmgpy.thermo.NASA.thermo_coverage_dependence">
+<span class="sig-name descname"><span class="pre">thermo_coverage_dependence</span></span><a class="headerlink" href="#rmgpy.thermo.NASA.thermo_coverage_dependence" title="Permalink to this definition">¶</a></dt>
+<dd><p>The coverage dependence of the thermo</p>
+</dd></dl>
+
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.thermo.NASA.to_cantera">
 <span class="sig-name descname"><span class="pre">to_cantera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.thermo.NASA.to_cantera" title="Permalink to this definition">¶</a></dt>
@@ -418,6 +427,7 @@ limits at zero and infinite temperature.</p>
 <li><a class="reference internal" href="#rmgpy.thermo.NASA.poly3"><code class="docutils literal notranslate"><span class="pre">NASA.poly3</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.thermo.NASA.polynomials"><code class="docutils literal notranslate"><span class="pre">NASA.polynomials</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.thermo.NASA.select_polynomial"><code class="docutils literal notranslate"><span class="pre">NASA.select_polynomial()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.thermo.NASA.thermo_coverage_dependence"><code class="docutils literal notranslate"><span class="pre">NASA.thermo_coverage_dependence</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.thermo.NASA.to_cantera"><code class="docutils literal notranslate"><span class="pre">NASA.to_cantera()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.thermo.NASA.to_thermo_data"><code class="docutils literal notranslate"><span class="pre">NASA.to_thermo_data()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.thermo.NASA.to_wilhoit"><code class="docutils literal notranslate"><span class="pre">NASA.to_wilhoit()</span></code></a></li>
