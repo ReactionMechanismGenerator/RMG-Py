@@ -127,7 +127,7 @@ class TestUncertainty:
             "RCCJ",
         }
         other_expected = {"ketene", "R"}
-        assert set(self.uncertainty.all_thermo_sources) == {"GAV", "Library", "QM"}
+        assert set(self.uncertainty.all_thermo_sources) == {"GAV", "Library", "QM", "ADS", "Surface_Library"}
         assert set(self.uncertainty.all_thermo_sources["GAV"]) == {"group", "radical", "other"}
         grp = set([e.label for e in self.uncertainty.all_thermo_sources["GAV"]["group"]])
         rad = set([e.label for e in self.uncertainty.all_thermo_sources["GAV"]["radical"]])
@@ -151,7 +151,7 @@ class TestUncertainty:
             'C/H3/Cs\\H3;C_rad/H2/Cs\\H\\Cs\\Cs|O',
             'C/H3/Cs\\H3;Cd_Cd\\H2_pri_rad',
         }
-        assert set(self.uncertainty.all_kinetic_sources) == {"Rate Rules", "Training", "Library", "PDep"}
+        assert set(self.uncertainty.all_kinetic_sources) == {"Rate Rules", "Training", "Library", "PDep", "Surface_Library"}
         assert set(self.uncertainty.all_kinetic_sources["Rate Rules"].keys()) == {"Disproportionation", "H_Abstraction"}
         rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["Disproportionation"]])
         assert rr == Disproportionation_rr_expected

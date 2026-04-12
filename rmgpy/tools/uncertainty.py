@@ -43,7 +43,7 @@ class ThermoParameterUncertainty(object):
     This class is an engine that generates the species uncertainty based on its thermo sources.
     """
 
-    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.10):
+    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.1, dG_ADS_correction=6.918, dG_surf_lib=6.918):
         """
         Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
         in units of kcal/mol.
@@ -55,6 +55,8 @@ class ThermoParameterUncertainty(object):
         self.dG_QM = dG_QM
         self.dG_GAV = dG_GAV
         self.dG_group = dG_group
+        self.dG_ADS_correction = dG_ADS_correction
+        self.dG_surf_lib = dG_surf_lib
 
     def get_uncertainty_value(self, source):
         """
@@ -63,6 +65,8 @@ class ThermoParameterUncertainty(object):
         dG = 0.0
         if 'Library' in source:
             dG += self.dG_library
+        if 'Surface_Library' in source:
+            dG += self.dG_surf_lib
         if 'QM' in source:
             dG += self.dG_QM
         if 'GAV' in source:
@@ -70,6 +74,8 @@ class ThermoParameterUncertainty(object):
             for group_type, group_entries in source['GAV'].items():
                 group_weights = [groupTuple[-1] for groupTuple in group_entries]
                 dG += np.sum([weight * self.dG_group for weight in group_weights])
+        if 'ADS' in source:
+            dG += self.dG_ADS_correction  # Add adsorption correction uncertainty
 
         return dG
 
@@ -78,7 +84,7 @@ class ThermoParameterUncertainty(object):
         Obtain the partial uncertainty dG/dG_corr*dG_corr, where dG_corr is the correlated parameter
         
         `corr_param` is the parameter identifier itself, which is a integer for QM and library parameters, or a string for group values
-        `corr_source_type` is a string, being either 'Library', 'QM', 'GAV', or 'Estimation'
+        `corr_source_type` is a string, being either 'Library', 'QM', 'GAV', 'ADS', or 'Estimation'
         `corr_group_type` is a string used only when the source type is 'GAV' and indicates grouptype
         """
 
@@ -88,11 +94,25 @@ class ThermoParameterUncertainty(object):
                     # Correlated parameter is a source of the overall parameter
                     return self.dG_library
 
+        elif corr_source_type == 'Surface_Library':
+            if 'Surface_Library' in source:
+                if source['Surface_Library'] == corr_param:
+                    # Correlated parameter is a source of the overall parameter
+                    return self.dG_surf_lib
+
         elif corr_source_type == 'QM':
             if 'QM' in source:
                 if source['QM'] == corr_param:
                     # Correlated parameter is a source of the overall parameter
                     return self.dG_QM
+
+        elif corr_source_type == 'ADS':
+            if 'ADS' in source:
+                if corr_group_type in source['ADS']:
+                    group_list = source['ADS'][corr_group_type]
+                    for group, weight in group_list:  # there should be only one group entry for adsorption corrections
+                        if group == corr_param:
+                            return weight * self.dG_ADS_correction
 
         elif corr_source_type == 'GAV':
             if 'GAV' in source:
@@ -105,8 +125,9 @@ class ThermoParameterUncertainty(object):
         elif corr_source_type == 'Estimation':
             if 'GAV' in source:
                 return self.dG_GAV
+
         else:
-            raise Exception('Thermo correlated source must be GAV, QM, Library, or Estimation')
+            raise Exception('Thermo correlated source must be GAV, QM, Library, Surface_Library, ADS, or Estimation')
 
         # If we get here, it means the correlated parameter was not found
         return None
@@ -127,7 +148,7 @@ class KineticParameterUncertainty(object):
     """
 
     def __init__(self, dlnk_library=0.5, dlnk_training=0.5, dlnk_pdep=2.0, dlnk_family=1.0, dlnk_nonexact=3.5,
-                 dlnk_rule=0.5):
+                 dlnk_rule=0.5, dlnk_surf_library=2.659, dlnk_surf_training=2.659, dlnk_surf_rule=2.659):
         """
         Initialize the different uncertainties dlnk
         
@@ -140,6 +161,9 @@ class KineticParameterUncertainty(object):
         self.dlnk_family = dlnk_family
         self.dlnk_nonexact = dlnk_nonexact
         self.dlnk_rule = dlnk_rule
+        self.dlnk_surf_library = dlnk_surf_library
+        self.dlnk_surf_training = dlnk_surf_training
+        self.dlnk_surf_rule = dlnk_surf_rule
 
     def get_uncertainty_value(self, source):
         """
@@ -149,6 +173,9 @@ class KineticParameterUncertainty(object):
         if 'Library' in source:
             # Should be a single library reaction source
             dlnk += self.dlnk_library
+        elif 'Surface_Library' in source:
+            # Should be a single library reaction source
+            dlnk += self.dlnk_surf_library
         elif 'PDep' in source:
             # Should be a single pdep reaction source
             dlnk += self.dlnk_pdep
@@ -156,7 +183,10 @@ class KineticParameterUncertainty(object):
             # Should be a single training reaction
             # Although some training entries may be used in reverse,
             # We still consider the kinetics to be directly dependent 
-            dlnk += self.dlnk_training
+            if 'surface' in source['Training'][0].lower():
+                dlnk += self.dlnk_surf_training
+            else:
+                dlnk += self.dlnk_training
         elif 'Rate Rules' in source:
             family_label = source['Rate Rules'][0]
             source_dict = source['Rate Rules'][1]
@@ -164,7 +194,8 @@ class KineticParameterUncertainty(object):
             rule_weights = [ruleTuple[-1] for ruleTuple in source_dict['rules']]
             training_weights = [trainingTuple[-1] for trainingTuple in source_dict['training']]
 
-            dlnk += self.dlnk_family ** 2
+            dlnk += self.dlnk_family
+
             N = len(rule_weights) + len(training_weights)
             if 'node_std_dev' in source_dict:
                 # Handle autogen BM trees
@@ -186,15 +217,19 @@ class KineticParameterUncertainty(object):
                     # nonexactness contribution increases as N increases
                     dlnk += np.log10(N + 1) * self.dlnk_nonexact
 
-                # Add the contributions from rules
-                dlnk += np.sum([weight * self.dlnk_rule for weight in rule_weights])
-                # Add the contributions from training
-                # Even though these source from training reactions, we actually
-                # use the uncertainty for rate rules, since these are now approximations
-                # of the original reaction.  We consider these to be independent of original the training
-                # parameters because the rate rules may be reversing the training reactions,
-                # which leads to more complicated dependence
-                dlnk += np.sum([weight * self.dlnk_rule for weight in training_weights])
+                if 'surface' in family_label.lower():
+                    dlnk += np.sum([weight * self.dlnk_surf_rule for weight in rule_weights])
+                    dlnk += np.sum([weight * self.dlnk_surf_training for weight in training_weights])
+                else:
+                    # Add the contributions from rules
+                    dlnk += np.sum([weight * self.dlnk_rule for weight in rule_weights])
+                    # Add the contributions from training
+                    # Even though these source from training reactions, we actually
+                    # use the uncertainty for rate rules, since these are now approximations
+                    # of the original reaction.  We consider these to be independent of original the training
+                    # parameters because the rate rules may be reversing the training reactions,
+                    # which leads to more complicated dependence
+                    dlnk += np.sum([weight * self.dlnk_rule for weight in training_weights])
 
         return dlnk
 
@@ -211,17 +246,24 @@ class KineticParameterUncertainty(object):
             if 'Rate Rules' in source:
                 family_label = source['Rate Rules'][0]
                 if corr_family == family_label:
+                    surface_family = 'surface' in family_label.lower()
                     source_dict = source['Rate Rules'][1]
                     rules = source_dict['rules']
                     training = source_dict['training']
                     if rules:
                         for ruleEntry, weight in rules:
                             if corr_param == ruleEntry:
-                                return weight * self.dlnk_rule
+                                if surface_family:
+                                    return weight * self.dlnk_surf_rule
+                                else:
+                                    return weight * self.dlnk_rule
                     if training:
                         for ruleEntry, trainingEntry, weight in training:
                             if corr_param == ruleEntry:
-                                return weight * self.dlnk_rule
+                                if surface_family:
+                                    return weight * self.dlnk_surf_rule
+                                else:
+                                    return weight * self.dlnk_rule
 
         # Writing it this way in the function is not the most efficient, but makes it easy to use, and
         # testing a few if statements is not too costly
@@ -230,6 +272,11 @@ class KineticParameterUncertainty(object):
                 if corr_param == source['Library']:
                     # Should be a single library reaction source
                     return self.dlnk_library
+        elif corr_source_type == 'Surface_Library':
+            if 'Surface_Library' in source:
+                if corr_param == source['Surface_Library']:
+                    # Should be a single library reaction source
+                    return self.dlnk_surf_library
         elif corr_source_type == 'PDep':
             if 'PDep' in source:
                 if corr_param == source['PDep']:
@@ -238,7 +285,10 @@ class KineticParameterUncertainty(object):
             if 'Training' in source:
                 # Should be a unique single training reaction
                 if corr_param == source['Training']:
-                    return self.dlnk_training
+                    if 'surface' in source['Training'][0].lower():
+                        return self.dlnk_surf_training
+                    else:
+                        return self.dlnk_training
 
         elif corr_source_type == 'Estimation':
             # Return all the uncorrelated uncertainty associated with using an estimation scheme
@@ -247,7 +297,9 @@ class KineticParameterUncertainty(object):
                 source_dict = source['Rate Rules'][1]
                 exact = source_dict['exact']
 
+                family_label = source['Rate Rules'][0]
                 dlnk = self.dlnk_family  # Base uncorrelated uncertainty just from using rate rule estimation
+
                 # Additional uncertainty from using non-exact rate rule
                 N = len(source_dict['rules']) + len(source_dict['training'])
                 if not exact:
@@ -371,6 +423,7 @@ class Uncertainty(object):
 
         # couldn't find saturated species in the model, try libraries
         new_spc = Species(molecule=[saturated_struct])
+        new_spc.generate_resonance_structures()
         thermo = self.database.thermo.get_thermo_data_from_libraries(new_spc)
 
         if thermo is not None:
@@ -386,24 +439,72 @@ class Uncertainty(object):
         Must be done after loading model and database to work.
         """
         self.species_sources_dict = {}
+        self.extra_species = []
         for species in self.species_list:
             if species not in self.extra_species:
                 source = self.database.thermo.extract_source_from_comments(species)
+                assert source.keys() <= {'Library', 'QM', 'GAV', 'ADS'}, 'Source of thermo must be either Library, QM, GAV, or ADS'
 
                 # Now prep the source data
                 # Do not alter the GAV information, but reassign QM and Library sources to the species indices that they came from
+                # Also specify the source as a Surface Library (if it has surface sites and comes from a library), for better differentiation when assigning uncertainties
                 if len(source) == 1:
                     # The thermo came from a single source, so we know it comes from a value describing the exact species
                     if 'Library' in source:
                         # Use just the species index in self.species_list, for better shorter printouts when debugging
                         source['Library'] = self.species_list.index(species)
+                        if species.contains_surface_site():
+                            source['Surface_Library'] = source.pop('Library')
                     if 'QM' in source:
                         source['QM'] = self.species_list.index(species)
 
                 elif len(source) == 2:
-                    # The thermo has two sources, which indicates it's an HBI correction on top of a library or QM value.
-                    # We must retrieve the original saturated molecule's thermo instead of using the radical species as the source of thermo
-                    saturated_species, ignore_spc = self.retrieve_saturated_species_from_list(species)
+                    # The thermo has two sources, which indicates it's an HBI correction on top of a library or QM value...
+                    # OR it is an adsorption correction with gas-phase thermo from Library/QM/GAV (no need to edit GAV source)
+                    if 'ADS' in source:
+                        # Need to retrieve the gas-phase molecule that the adsorption correction was applied to, and assign the source of the thermo to be that molecule instead of the surface species
+                        if not species.contains_surface_site():
+                            raise ValueError('Species uses adsorption correction but does not contain any surface sites')
+                        dummy_gas_species = Species()
+                        dummy_gas_species.molecule = species.molecule[0].get_desorbed_molecules()
+                        # add to species list if it's not already there, so we can reference it in the source dictionary
+                        for spc in self.species_list:
+                            if spc.is_isomorphic(dummy_gas_species):
+                                dummy_gas_species = spc
+                                break
+                        else:
+                            dummy_gas_species.thermo = self.database.thermo.get_thermo_data(dummy_gas_species)
+                            self.species_list.append(dummy_gas_species)
+                            self.extra_species.append(dummy_gas_species)
+
+                        if 'Library' in source:
+                            # Use just the species index in self.species_list, for better shorter printouts when debugging
+                            source['Library'] = self.species_list.index(dummy_gas_species)
+                        if 'QM' in source:
+                            source['QM'] = self.species_list.index(dummy_gas_species)
+                    else:
+                        # We must retrieve the original saturated molecule's thermo instead of using the radical species as the source of thermo
+                        saturated_species, ignore_spc = self.retrieve_saturated_species_from_list(species)
+
+                        if ignore_spc:  # this is saturated species that isn't in the actual model  
+                            self.extra_species.append(saturated_species)
+
+                        if 'Library' in source:
+                            source['Library'] = self.species_list.index(saturated_species)
+
+                            if saturated_species.contains_surface_site():
+                                source['Surface_Library'] = source.pop('Library')  # surface species library + radical correction
+                        if 'QM' in source:
+                            source['QM'] = self.species_list.index(saturated_species)
+                elif len(source) == 3:
+                    # combination of adsorption correction, GAV (radical), and Library/ML
+
+                    assert species.contains_surface_site(), 'only surface species should have 3 sources: adsorption correction, GAV, library/ML'
+
+                    # retrieve the desorbed version of the surface species-- the thing the adsorption correction was applied to during thermo estimation
+                    dummy_gas_species = Species()
+                    dummy_gas_species.molecule = species.molecule[0].get_desorbed_molecules()
+                    saturated_species, ignore_spc = self.retrieve_saturated_species_from_list(dummy_gas_species)
 
                     if ignore_spc:  # this is saturated species that isn't in the actual model
                         self.extra_species.append(saturated_species)
@@ -413,18 +514,20 @@ class Uncertainty(object):
                     if 'QM' in source:
                         source['QM'] = self.species_list.index(saturated_species)
                 else:
-                    raise Exception('Source of thermo should not use more than two sources out of QM, Library, or GAV.')
+                    raise Exception('Source of thermo should not use more than three sources out of ADS, QM, Library, or GAV.')
 
                 self.species_sources_dict[species] = source
 
         self.reaction_sources_dict = {}
         for reaction in self.reaction_list:
             source = self.database.kinetics.extract_source_from_comments(reaction)
-            # Prep the source data 
+            # Prep the source data
             # Consider any library or PDep reaction to be an independent parameter for now
             # and assign the source to the index of the reaction within self.reaction_list
             if 'Library' in source:
                 source['Library'] = self.reaction_list.index(reaction)
+                if reaction.is_surface_reaction():
+                    source['Surface_Library'] = source.pop('Library')
             elif 'PDep' in source:
                 source['PDep'] = self.reaction_list.index(reaction)
             elif 'Training' in source:
@@ -444,7 +547,8 @@ class Uncertainty(object):
                         # this is the absolute average deviation and not the standard deviation of the node, but it is still probably better than the default
                         # note, we'd need abs(mu) to be able to convert back to std_dev from absolute average deviation, which is why we're not doing it here
                         long_desc = source['Rate Rules'][1]['rules'][0][0].long_desc
-                        std_dev_matches = re.search(r'Standard Deviation in ln\(k\): ([0-9]*.[0-9]*)', long_desc)
+                        # This search string handles scientific notation or regular float with optional + or - sign
+                        std_dev_matches = re.search(r'Standard Deviation in ln\(k\): ([-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?)', long_desc)
                         if std_dev_matches is not None:
                             std_dev = float(std_dev_matches[1])
                         n_train_matches = re.search('rule fitted to ([0-9]*) training reactions', long_desc)
@@ -465,7 +569,7 @@ class Uncertainty(object):
         be performed after extract_sources_from_model function
         """
         # Account for all the thermo sources
-        all_thermo_sources = {'GAV': {}, 'Library': set(), 'QM': set()}
+        all_thermo_sources = {'GAV': {}, 'Library': set(), 'QM': set(), 'ADS': {}, 'Surface_Library': set()}
         for source in self.species_sources_dict.values():
             if 'GAV' in source:
                 for groupType in source['GAV'].keys():
@@ -478,6 +582,15 @@ class Uncertainty(object):
                 all_thermo_sources['Library'].add(source['Library'])
             if 'QM' in source:
                 all_thermo_sources['QM'].add(source['QM'])
+            if 'ADS' in source:
+                for ads_group in source['ADS'].keys():
+                    ads_group_entries = [groupTuple[0] for groupTuple in source['ADS'][ads_group]]
+                    if ads_group not in all_thermo_sources['ADS']:
+                        all_thermo_sources['ADS'][ads_group] = set(ads_group_entries)
+                    else:
+                        all_thermo_sources['ADS'][ads_group].update(ads_group_entries)
+            if 'Surface_Library' in source:
+                all_thermo_sources['Surface_Library'].add(source['Surface_Library'])
 
                 # Convert to lists
         self.all_thermo_sources = {}
@@ -486,9 +599,13 @@ class Uncertainty(object):
         self.all_thermo_sources['GAV'] = {}
         for groupType in all_thermo_sources['GAV'].keys():
             self.all_thermo_sources['GAV'][groupType] = list(all_thermo_sources['GAV'][groupType])
+        self.all_thermo_sources['ADS'] = {}
+        for ads_group in all_thermo_sources['ADS'].keys():
+            self.all_thermo_sources['ADS'][ads_group] = list(all_thermo_sources['ADS'][ads_group])
+        self.all_thermo_sources['Surface_Library'] = list(all_thermo_sources['Surface_Library'])
 
         # Account for all the kinetics sources
-        all_kinetic_sources = {'Rate Rules': {}, 'Training': {}, 'Library': [], 'PDep': []}
+        all_kinetic_sources = {'Rate Rules': {}, 'Training': {}, 'Library': [], 'PDep': [], 'Surface_Library': []}
         for source in self.reaction_sources_dict.values():
             if 'Training' in source:
                 family_label = source['Training'][0]
@@ -499,6 +616,8 @@ class Uncertainty(object):
                     all_kinetic_sources['Training'][family_label].add(training_entry)
             elif 'Library' in source:
                 all_kinetic_sources['Library'].append(source['Library'])
+            elif 'Surface_Library' in source:
+                all_kinetic_sources['Surface_Library'].append(source['Surface_Library'])
             elif 'PDep' in source:
                 all_kinetic_sources['PDep'].append(source['PDep'])
             elif 'Rate Rules' in source:
@@ -523,6 +642,7 @@ class Uncertainty(object):
 
         self.all_kinetic_sources = {}
         self.all_kinetic_sources['Library'] = all_kinetic_sources['Library']
+        self.all_kinetic_sources['Surface_Library'] = all_kinetic_sources['Surface_Library']
         self.all_kinetic_sources['PDep'] = all_kinetic_sources['PDep']
         # Convert to lists
         self.all_kinetic_sources['Rate Rules'] = {}
@@ -559,10 +679,23 @@ class Uncertainty(object):
                     except IndexError:
                         label = 'Library {}'.format(self.extra_species[source['Library'] - len(self.species_list)].to_chemkin())
                     dG[label] = pdG
+                if 'Surface_Library' in source:
+                    pdG = g_param_engine.get_partial_uncertainty_value(source, 'Surface_Library', corr_param=source['Surface_Library'])
+                    try:
+                        label = 'Surface_Library {}'.format(self.species_list[source['Surface_Library']].to_chemkin())
+                    except IndexError:
+                        label = 'Surface_Library {}'.format(self.extra_species[source['Surface_Library'] - len(self.species_list)].to_chemkin())
+                    dG[label] = pdG
                 if 'QM' in source:
                     pdG = g_param_engine.get_partial_uncertainty_value(source, 'QM', corr_param=source['QM'])
                     label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
                     dG[label] = pdG
+                if 'ADS' in source:
+                    for adsGroupType, groupList in source['ADS'].items():
+                        for group, weight in groupList:
+                            pdG = g_param_engine.get_partial_uncertainty_value(source, 'ADS', group, adsGroupType)
+                            label = 'AdsorptionGroup({}) {}'.format(adsGroupType, group.label)
+                            dG[label] = pdG
                 if 'GAV' in source:
                     for groupType, groupList in source['GAV'].items():
                         for group, weight in groupList:
@@ -614,6 +747,11 @@ class Uncertainty(object):
                 elif 'Library' in source:
                     dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Library', source['Library'])
                     label = 'Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnk[label] = dplnk
+
+                elif 'Surface_Library' in source:
+                    dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Surface_Library', source['Surface_Library'])
+                    label = 'Surface_Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
                     dlnk[label] = dplnk
 
                 elif 'Training' in source:
