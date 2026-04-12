@@ -336,7 +336,7 @@ class Uncertainty(object):
                 family.add_rules_from_training(thermo_database=self.database.thermo)
                 family.fill_rules_by_averaging_up(verbose=True)
 
-    def load_model(self, chemkin_path, dictionary_path, transport_path=None):
+    def load_model(self, chemkin_path, dictionary_path, transport_path=None, surface_path=None):
         """
         Load a RMG-generated model into the Uncertainty class
         `chemkin_path`: path to the chem_annotated.inp CHEMKIN mechanism
@@ -351,7 +351,8 @@ class Uncertainty(object):
 
         self.species_list, self.reaction_list = load_chemkin_file(chemkin_path,
                                                                   dictionary_path=dictionary_path,
-                                                                  transport_path=transport_path)
+                                                                  transport_path=transport_path,
+                                                                  surface_path=surface_path)
 
     def retrieve_saturated_species_from_list(self, species):
         """
