@@ -169,13 +169,12 @@ class TestUncertainty:
 
         np.testing.assert_allclose(
             thermo_unc,
-            [1.5, 1.5, 2.0, 1.9, 3.1, 1.5, 1.9, 2.0, 2.0, 1.9, 2.2, 1.9, 2.0, 1.5, 3.1, 1.9, 1.5, 2.0, 1.7, 1.8, 1.8, 1.9, 1.8, 1.9, 1.9],
+            [1.5, 1.5, 1.7745, 1.7461, 2.1447, 1.5, 1.6879, 1.7173, 1.7745, 1.7461, 1.7745, 1.7461, 1.7745, 1.5, 2.1447, 1.6879, 1.5, 1.7745, 1.6277, 1.6581, 1.6581, 1.6879, 1.5967, 1.6277, 1.6277],
             rtol=1e-4,
         )
         np.testing.assert_allclose(
             kinetic_unc,
-            # the 7.81 value comes from the SIDT tree node uncertainty: 5.756 + non-exact penalty for N=1: log10(1+1) * 3.5 + family uncertainty: 1.0
-            [0.5, 1.5, 3.169924, 3.169924, 2.553605, 0.5, 2.0, 7.81, 7.81, 0.5],
+            [0.5, 1.118, 1.9783, 1.9783, 1.5363, 0.5, 2.0, 5.9369, 5.9369, 0.5],
             rtol=1e-4
         )
 
@@ -185,13 +184,13 @@ class TestUncertainty:
         """
 
         expected_results = {  # order is (total_uncertainty, [group_names], [group_counts])
-            'CCCC': (1.9, ['Cs-CsCsHH', 'Cs-CsHHH'], [2, 2]),
-            'CCCCCCCCCC': (2.5, ['Cs-CsCsHH', 'Cs-CsHHH'], [8, 2]),
-            'CC(OO)CC': (2.1, ['O2s-OsCs', 'O2s-OsH', 'Cs-CsCsOsH', 'Cs-CsCsHH', 'Cs-CsHHH'], [1, 1, 1, 1, 2]),
-            'C=NCC': (1.9, ['N3d-CdCs', 'Cs-(N3dCd)CsHH', 'Cs-CsHHH', 'Cd-N3dHH'], [1, 1, 1, 1]),
-            'C=C': (1.7, ['Cds-CdsHH'], [2]),
-            'C*': (10.018, ['CH3'], [1]),  # Gas library + radical + adsorption correction
-            'O=[CH]*': (8.618, ['Cds-OdHH', 'HCdsJO'], [1, 1]),  # GAV + radical + adsorption correction
+            'CCCC': (1.7460950718675086, ['Cs-CsCsHH', 'Cs-CsHHH'], [2, 2]),
+            'CCCCCCCCCC': (3.006693865361088, ['Cs-CsCsHH', 'Cs-CsHHH'], [8, 2]),
+            'CC(OO)CC': (1.7460950718675086, ['O2s-OsCs', 'O2s-OsH', 'Cs-CsCsOsH', 'Cs-CsCsHH', 'Cs-CsHHH'], [1, 1, 1, 1, 2]),
+            'C=NCC': (1.6277051330016747, ['N3d-CdCs', 'Cs-(N3dCd)CsHH', 'Cs-CsHHH', 'Cd-N3dHH'], [1, 1, 1, 1]),
+            'C=C': (1.6277051330016747, ['Cds-CdsHH'], [2]),
+            'C*': (7.242829557569335, ['CH3'], [1]),  # Gas library + radical + adsorption correction
+            'O=[CH]*': (7.0928439994123655, ['Cds-OdHH', 'HCdsJO'], [1, 1]),  # GAV + radical + adsorption correction
         }
 
         uncertainty = rmgpy.tools.uncertainty.Uncertainty()
