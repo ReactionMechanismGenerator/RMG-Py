@@ -2750,7 +2750,14 @@ class ThermoDatabase(object):
 
         comment = comment.replace(' + ', ' +')
         comment = comment.replace(' - ', ' -')
-        tokens = comment.split()
+
+        # Sometimes chemkin splits the comment with newlines
+        # this allows us to get rid of newlines while ensuring separate
+        # groups are still split by spaces
+        comment = comment.replace(')\n+', ') +')
+        comment = comment.replace(')\n-', ') -')
+        comment = comment.replace('\n', '')
+        tokens = comment.split(' ')
 
         groups = {}
         group_types = list(self.groups.keys())

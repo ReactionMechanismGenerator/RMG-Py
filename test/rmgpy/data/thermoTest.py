@@ -529,6 +529,49 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert source["GAV"]["ring"][0][1] == -1  # the weight of benzene contribution should be -1
         assert source["GAV"]["group"][0][1] == 2  # weight of the group(Cs-CsCsHH) conbtribution should be 2
 
+        # Check extract source from comment with tricky group(labelA)\n+ group(labelB) case (newline instead of space to split)
+        tricky_newline_plus_sp = Species(smiles="[O]C(O)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)F")
+        tricky_newline_plus_sp.thermo = NASA()
+        tricky_newline_plus_sp.thermo.comment = 'Thermo group additivity estimation: group(O2s-CsH) + group(O2s-CsH) + group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) +\nlongDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) +\nlongDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) +\nlongDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCsCsFF) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2)\n+ group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCFOO) +\ngroup(CsCsFFF) + longDistanceInteraction_noncyclic(Cs(F)3-Cs(F)2) + longDistanceInteraction_noncyclic(Cs(F)3-R-Cs(F)2) + radical(O2sj(Cs-F1sO2sCs))'
+        source = self.database.extract_source_from_comments(tricky_newline_plus_sp)
+        assert source['GAV']['group'][0][0].label == "O2s-CsH"
+        assert source['GAV']['group'][0][1] == 2
+        assert source['GAV']['group'][1][0].label == "CsCsCsFF"
+        assert source['GAV']['group'][1][1] == 6
+        assert source['GAV']['group'][2][0].label == "CsCFOO"
+        assert source['GAV']['group'][2][1] == 1
+        assert source['GAV']['group'][3][0].label == "CsCsFFF"
+        assert source['GAV']['group'][3][1] == 1
+        assert source['GAV']['longDistanceInteraction_noncyclic'][0][0].label == "Cs(F)2-Cs(F)2"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][0][1] == 10
+        assert source['GAV']['longDistanceInteraction_noncyclic'][1][0].label == "CsF2-CsF2-CsF2"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][1][1] == 9
+        assert source['GAV']['longDistanceInteraction_noncyclic'][2][0].label == "Cs(F)2-Cs(F)"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][2][1] == 1
+        assert source['GAV']['longDistanceInteraction_noncyclic'][3][0].label == "Cs(F)3-Cs(F)2"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][3][1] == 1
+        assert source['GAV']['longDistanceInteraction_noncyclic'][4][0].label == "Cs(F)3-R-Cs(F)2"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][4][1] == 1
+        assert source['GAV']['radical'][0][0].label == "O2sj(Cs-F1sO2sCs)"
+        assert source['GAV']['radical'][0][1] == 1
+
+        # check extract source from comment with newline through group name
+        newline_sp = Species(smiles="[O]OC(C#N)(C)C")
+        newline_sp.thermo = NASA()
+        newline_sp.thermo.comment = 'Thermo group additivity estimation: group(O2s-OsCs) + group(O2s-OsH) + group(N3t-(Cs)Ct) + group(Cs-(Cds-Cds)CsCsOs) + group(Cs-CsHHH) + group(Cs-\nCsHHH) + group(Ct-N3tCs) + radical(C3COOJ)'
+        source = self.database.extract_source_from_comments(newline_sp)
+        assert "GAV" in source
+        assert source['GAV']['group'][0][0].label == "O2s-OsCs"
+        assert source['GAV']['group'][1][0].label == "O2s-OsH"
+        assert source['GAV']['group'][2][0].label == "N3t-(Cs)Ct"
+        assert source['GAV']['group'][3][0].label == "Cs-(Cds-Cds)CsCsOs"
+        assert source['GAV']['group'][4][0].label == "Cs-CsHHH"
+        assert source['GAV']['group'][5][0].label == "Ct-N3tCs"
+        assert source["GAV"]["radical"][0][0].label == "C3COOJ"
+        assert source["GAV"]["radical"][0][1] == 1
+        assert all(source['GAV']['group'][x][1] == 1 for x in [0, 1, 2, 3, 5])
+        assert source['GAV']['group'][4][1] == 2
+
     def test_species_thermo_generation_hbi_library(self):
         """Test thermo generation for species objects for HBI correction on library value.
 
