@@ -169,7 +169,7 @@ class TestUncertainty:
 
         np.testing.assert_allclose(
             thermo_unc,
-            [1.5, 1.5, 1.7745, 1.7461, 2.1447, 1.5, 1.6879, 1.7173, 1.7745, 1.7461, 1.7745, 1.7461, 1.7745, 1.5, 2.1447, 1.6879, 1.5, 1.7745, 1.6277, 1.6581, 1.6581, 1.6879, 1.5967, 1.6277, 1.6277],
+            [1.5, 1.5, 2.61966, 2.51994, 2.23886, 1.5, 2.30761, 2.41611, 2.61966, 2.51994, 2.61966, 2.51994, 2.61966, 1.5, 2.23886, 2.30761, 1.5, 2.61966, 2.07366, 2.19376, 2.19376, 2.30761, 1.94616, 2.07366, 2.07366],
             rtol=1e-4,
         )
         np.testing.assert_allclose(
@@ -184,13 +184,13 @@ class TestUncertainty:
         """
 
         expected_results = {  # order is (total_uncertainty, [group_names], [group_counts])
-            'CCCC': (1.7460950718675086, ['Cs-CsCsHH', 'Cs-CsHHH'], [2, 2]),
-            'CCCCCCCCCC': (3.006693865361088, ['Cs-CsCsHH', 'Cs-CsHHH'], [8, 2]),
-            'CC(OO)CC': (1.7460950718675086, ['O2s-OsCs', 'O2s-OsH', 'Cs-CsCsOsH', 'Cs-CsCsHH', 'Cs-CsHHH'], [1, 1, 1, 1, 2]),
-            'C=NCC': (1.6277051330016747, ['N3d-CdCs', 'Cs-(N3dCd)CsHH', 'Cs-CsHHH', 'Cd-N3dHH'], [1, 1, 1, 1]),
-            'C=C': (1.6277051330016747, ['Cds-CdsHH'], [2]),
-            'C*': (7.242829557569335, ['CH3'], [1]),  # Gas library + radical + adsorption correction
-            'O=[CH]*': (7.0928439994123655, ['Cds-OdHH', 'HCdsJO'], [1, 1]),  # GAV + radical + adsorption correction
+            'CCCC': (2.5199409675625337, ['Cs-CsCsHH', 'Cs-CsHHH'], [2, 2]),
+            'CCCCCCCCCC': (6.091048438487417, ['Cs-CsCsHH', 'Cs-CsHHH'], [8, 2]),
+            'CC(OO)CC': (2.5199409675625337, ['O2s-OsCs', 'O2s-OsH', 'Cs-CsCsOsH', 'Cs-CsCsHH', 'Cs-CsHHH'], [1, 1, 1, 1, 2]),
+            'C=NCC': (2.07365649035707, ['N3d-CdCs', 'Cs-(N3dCd)CsHH', 'Cs-CsHHH', 'Cd-N3dHH'], [1, 1, 1, 1]),
+            'C=C': (2.07365649035707, ['Cds-CdsHH'], [2]),
+            'C*': (7.271261019245562, ['CH3'], [1]),  # Gas library + radical + adsorption correction
+            'O=[CH]*': (7.150786643440007, ['Cds-OdHH', 'HCdsJO'], [1, 1]),  # GAV + radical + adsorption correction
         }
 
         uncertainty = rmgpy.tools.uncertainty.Uncertainty()

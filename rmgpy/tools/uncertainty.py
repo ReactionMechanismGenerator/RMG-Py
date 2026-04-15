@@ -43,7 +43,7 @@ class ThermoParameterUncertainty(object):
     This class is an engine that generates the species uncertainty based on its thermo sources.
     """
 
-    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.316, dG_ADS_correction=6.918, dG_surf_lib=6.918):
+    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.7159, dG_ADS_correction=6.918, dG_surf_lib=6.918):
         """
         Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
         in units of kcal/mol.
