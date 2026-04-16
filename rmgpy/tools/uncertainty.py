@@ -765,7 +765,8 @@ class Uncertainty(object):
                 self.kinetic_input_uncertainties.append(dlnk)
 
     def sensitivity_analysis(self, initial_mole_fractions, sensitive_species, T, P, termination_time,
-                             sensitivity_threshold=1e-3, number=10, fileformat='.png'):
+                             sensitivity_threshold=1e-3, number=10, fileformat='.png', initial_surface_coverages=None,
+                             surface_volume_ratio=None, surface_site_density=2.72e-5):
         """
         Run sensitivity analysis using the RMG solver in a single ReactionSystem object
 
@@ -774,7 +775,7 @@ class Uncertainty(object):
         number is the number of top species thermo or reaction kinetics desired to be plotted
         """
 
-        from rmgpy.solver import SimpleReactor, TerminationTime
+        from rmgpy.solver import SimpleReactor, SurfaceReactor, TerminationTime
         from rmgpy.quantity import Quantity
         from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
         from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
@@ -782,12 +783,29 @@ class Uncertainty(object):
         P = Quantity(P)
         termination = [TerminationTime(Quantity(termination_time))]
 
-        reaction_system = SimpleReactor(T=T,
-                                        P=P,
-                                        initial_mole_fractions=initial_mole_fractions,
-                                        termination=termination,
-                                        sensitive_species=sensitive_species,
-                                        sensitivity_threshold=sensitivity_threshold)
+        surface_mech = any([x.contains_surface_site() for x in self.species_list])
+        if surface_mech:
+            assert surface_volume_ratio is not None, 'Must provide surface_volume_ratio for sensitivity analysis of surface mechanisms'
+            surface_volume_ratio = Quantity(surface_volume_ratio)
+
+        if not surface_mech:
+            reaction_system = SimpleReactor(T=T,
+                                            P=P,
+                                            initial_mole_fractions=initial_mole_fractions,
+                                            termination=termination,
+                                            sensitive_species=sensitive_species,
+                                            sensitivity_threshold=sensitivity_threshold)
+        else:
+            reaction_system = SurfaceReactor(T=T,
+                                             P_initial=P,
+                                             initial_gas_mole_fractions=initial_mole_fractions,
+                                             initial_surface_coverages=initial_surface_coverages,
+                                             surface_volume_ratio=surface_volume_ratio,
+                                             surface_site_density=surface_site_density,
+                                             n_sims=1,
+                                             termination=termination,
+                                             sensitive_species=sensitive_species,
+                                             sensitivity_threshold=sensitivity_threshold)
 
         # Create the csv worksheets for logging sensitivity
         util.make_output_subdirectory(self.output_directory, 'solver')
