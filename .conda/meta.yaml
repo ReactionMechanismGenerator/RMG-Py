@@ -6,7 +6,7 @@
 #
 package:
   name: rmg
-  version: 3.3.0
+  version: 4.0.0.rc1
 
 source:
   path: ../
@@ -66,7 +66,7 @@ requirements:
     - rmg::pydas >=1.0.3
     - rmg::pydqed >=1.0.3
     - rmg::symmetry
-    - rmg::rmgdatabase =3.3.0
+    - rmg::rmgdatabase =4.0.0.rc1
     - blas=*=openblas
   run: *runtime_requirements
 test:
