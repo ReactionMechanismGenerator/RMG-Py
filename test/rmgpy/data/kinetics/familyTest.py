@@ -294,52 +294,56 @@ multiplicity 2
 
     def test_surface_dissociation_charge_separation(self):
         """
-        Test that the Surface_Dissociation_Charge_Separation family returns a
-        properly re-labeled product structure.
-        This family is its own reverse.
+        Test that the Surface_Dissociation_Charge_Separation family identifies
+        reatants and labels them and reacts them properly, and check that the
+        products are reacted to form the reactants again.
         """
         family = self.database.families["Surface_Dissociation_Charge_Separation"]
-        reactants = [
+        expected_reactants = [
             Molecule().from_adjacency_list(
                 """
-1 *3 X  u0  p0 c0  {2,S}
-2 *1 N  u0  p0 c+1  {1,S} {3,D} {4,S}
+1 X  u0  p0 c0  {2,S}
+2 N  u0  p0 c+1  {1,S} {3,D} {4,S}
 3 O  u0  p2 c0  {2,D}
-4 *2 O  u0  p3 c-1  {2,S}
+4 O  u0  p3 c-1  {2,S}
         """
             ),
-            Molecule().from_adjacency_list("1 *4 X  u0 p0 c0"),
+            Molecule().from_adjacency_list("1 X  u0 p0 c0"),
         ]
         expected_products = [
             Molecule().from_adjacency_list(
                 """
-1 *3 X  u0 p0 c0 {2,S}
-2 *1 N  u0 p1 c0 {1,S} {3,D}
+1 X  u0 p0 c0 {2,S}
+2 N  u0 p1 c0 {1,S} {3,D}
 3 O  u0 p2 c0 {2,D}
         """
             ),
             Molecule().from_adjacency_list(
                 """
-1 *4 X  u0 p0 c0 {2,D}
-2 *2 O  u0 p2 c0 {1,D}
+1 X  u0 p0 c0 {2,D}
+2 O  u0 p2 c0 {1,D}
         """
             ),
         ]
-        products = family.apply_recipe(reactants)
 
-        assert len(products) == 2
+        labeled_rxn = Reaction(reactants=expected_reactants, products=expected_products)
+        family.add_atom_labels_for_reaction(labeled_rxn)
 
-        mapping1 = {}
-        for label, atom in expected_products[0].get_all_labeled_atoms().items():
-            mapping1[atom] = products[0].get_labeled_atoms(label)[0]
+        fam_products = family.apply_recipe([m.molecule[0] for m in labeled_rxn.reactants])
+        assert len(fam_products) == 2
+        assert expected_products[0].is_isomorphic(fam_products[0])
+        assert expected_products[1].is_isomorphic(fam_products[1])
 
-        assert expected_products[0].is_isomorphic(products[0], mapping1)
+        fam_reactants = family.apply_recipe(fam_products, forward=False)
+        assert len(fam_reactants) == 2
+        assert expected_reactants[0].is_isomorphic(fam_reactants[0])
+        assert expected_reactants[1].is_isomorphic(fam_reactants[1])
 
-        mapping2 = {}
-        for label, atom in expected_products[1].get_all_labeled_atoms().items():
-            mapping2[atom] = products[1].get_labeled_atoms(label)[0]
+        fam_product_species = [Species(molecule=[p]) for p in fam_products]
+        fam_reactant_species = [Species(molecule=[r]) for r in fam_reactants]
 
-        assert expected_products[1].is_isomorphic(products[1], mapping2)
+        fam_rxn = Reaction(reactants=fam_reactant_species, products=fam_product_species)
+        assert fam_rxn.is_isomorphic(labeled_rxn)
 
     def test_h_abstraction(self):
         """
