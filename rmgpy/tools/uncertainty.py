@@ -29,6 +29,7 @@
 
 import os
 import re
+import pickle
 
 import numpy as np
 
@@ -36,6 +37,7 @@ import rmgpy.util as util
 from rmgpy.species import Species
 from rmgpy.tools.data import GenericData
 from rmgpy.tools.plot import parse_csv_data, plot_sensitivity, ReactionSensitivityPlot, ThermoSensitivityPlot
+from rmgpy.kinetics.surface import SurfaceArrheniusBEP, StickingCoefficientBEP, SurfaceArrheniusBEP
 
 
 class ThermoParameterUncertainty(object):
@@ -345,6 +347,9 @@ class Uncertainty(object):
         self.all_kinetic_sources = None
         self.thermo_input_uncertainties = None
         self.kinetic_input_uncertainties = None
+        self.thermo_covariance_matrix = None
+        self.kinetic_covariance_matrix = None
+        self.overall_covariance_matrix = None
         self.output_directory = output_directory if output_directory else os.getcwd()
 
         # For extra species needed for correlated analysis but not in model
@@ -914,6 +919,185 @@ class Uncertainty(object):
             output[sens_species] = (total_variance, reaction_uncertainty, thermo_uncertainty)
 
         return output
+
+    def get_thermo_covariance_matrix(self):
+        """
+        Export the thermo covariance matrix as a numpy array
+        """
+        assert self.thermo_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.thermo_input_uncertainties) > 0, 'No thermodynamic parameters found'
+        if isinstance(self.thermo_input_uncertainties[0], np.float64):
+            print("""Warning -- parameter uncertainties assigned without correlations.
+All off diagonals will be zero unless you call assign_parameter_uncertainties(correlated=True)""")
+            self.thermo_covariance_matrix = np.float_power(np.diag(self.thermo_input_uncertainties), 2.0)
+            return self.thermo_covariance_matrix
+
+        self.thermo_covariance_matrix = np.zeros((len(self.species_list), len(self.species_list)))
+
+        for i in range(len(self.species_list)):
+            for j in range(len(self.species_list)):
+
+                # assuming only sources that match are correlated
+                for source_i in self.thermo_input_uncertainties[i].keys():
+                    if source_i in self.thermo_input_uncertainties[j].keys():
+                        self.thermo_covariance_matrix[i, j] += self.thermo_input_uncertainties[i][source_i] * self.thermo_input_uncertainties[j][source_i]
+
+        return self.thermo_covariance_matrix
+
+    def get_kinetic_covariance_matrix(self, k_param_engine=None):
+        """
+        Export the kinetic covariance matrix as a numpy array
+        """
+        assert self.kinetic_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.kinetic_input_uncertainties) > 0, 'No kinetic parameters found'
+        if isinstance(self.kinetic_input_uncertainties[0], np.float64):
+            print("""Warning -- parameter uncertainties assigned without correlations.
+All off diagonals will be zero unless you call assign_parameter_uncertainties(correlated=True)""")
+            self.kinetic_covariance_matrix = np.float_power(np.diag(self.kinetic_input_uncertainties), 2.0)
+            return self.kinetic_covariance_matrix
+
+        if k_param_engine is None:
+            k_param_engine = KineticParameterUncertainty()
+
+        self.kinetic_covariance_matrix = np.zeros((len(self.reaction_list), len(self.reaction_list)))
+
+        # takes a while to load the family reaction maps
+        auto_gen_family_rxn_maps = {}
+        if self.all_kinetic_sources is None:
+            self.compile_all_sources()
+        for family in self.all_kinetic_sources['Rate Rules'].keys():
+            if self.database.kinetics.families[family].auto_generated:
+                auto_gen_family_rxn_maps[family] = self.database.kinetics.families[family].get_reaction_matches(
+                    thermo_database=self.database.thermo,
+                    remove_degeneracy=True,
+                    get_reverse=True,
+                    exact_matches_only=False,
+                    fix_labels=True
+                )
+
+        for i, reaction in enumerate(self.reaction_list):
+            source_dict_i = self.reaction_sources_dict[self.reaction_list[i]]
+            for j, other_reaction in enumerate(self.reaction_list):
+                # assuming only sources that match are correlated
+                source_dict_j = self.reaction_sources_dict[self.reaction_list[j]]
+
+                for source_i in self.kinetic_input_uncertainties[i].keys():
+                    if source_i in self.kinetic_input_uncertainties[j].keys():
+                        self.kinetic_covariance_matrix[i, j] += self.kinetic_input_uncertainties[i][source_i] * self.kinetic_input_uncertainties[j][source_i]
+                else:
+                    # no match in rules, but there may be overlap if they're SIDT trees using the same family
+                    if 'Rate Rules' in source_dict_i.keys() and 'Rate Rules' in source_dict_j.keys():
+                        if source_dict_i['Rate Rules'][1]['autogenerated'] and source_dict_j['Rate Rules'][1]['autogenerated'] and \
+                                source_dict_i['Rate Rules'][0] == source_dict_j['Rate Rules'][0]:
+                            # get #training reactions in overlap
+                            family = source_dict_i['Rate Rules'][0]
+                            node_name_i = source_dict_i['Rate Rules'][1]['template'][0].label
+                            node_name_j = source_dict_j['Rate Rules'][1]['template'][0].label
+                            rxns_i = auto_gen_family_rxn_maps[family][node_name_i]
+                            rxns_j = auto_gen_family_rxn_maps[family][node_name_j]
+
+                            # count overlapping reactions:
+                            overlap_count = 0
+                            for r_i in rxns_i:
+                                if r_i in rxns_j:
+                                    overlap_count += 1
+
+                            self.kinetic_covariance_matrix[i, j] += (overlap_count / len(rxns_i)) * (overlap_count / len(rxns_j)) * (k_param_engine.dlnk_rule ** 2.0)
+
+                # check if a training reaction exactly matches a rate rule data entry
+                if 'Training' in source_dict_i.keys() and 'Rate Rules' in source_dict_j.keys():
+                    rate_rules_training_reactions = [t[1] for t in source_dict_j['Rate Rules'][1]['training']]
+                    weights = [t[2] for t in source_dict_j['Rate Rules'][1]['training']]
+                    training_reaction = source_dict_i['Training'][1]
+                    for k in range(len(rate_rules_training_reactions)):
+                        if rate_rules_training_reactions[k].item.is_isomorphic(training_reaction.item):
+                            self.kinetic_covariance_matrix[i, j] += weights[k] * k_param_engine.dlnk_training * k_param_engine.dlnk_rule
+                elif 'Training' in source_dict_j.keys() and 'Rate Rules' in source_dict_i.keys():
+                    rate_rules_training_reactions = [t[1] for t in source_dict_i['Rate Rules'][1]['training']]
+                    weights = [t[2] for t in source_dict_i['Rate Rules'][1]['training']]
+                    training_reaction = source_dict_j['Training'][1]
+                    for k in range(len(rate_rules_training_reactions)):
+                        if rate_rules_training_reactions[k].item.is_isomorphic(training_reaction.item):
+                            self.kinetic_covariance_matrix[i, j] += weights[k] * k_param_engine.dlnk_training * k_param_engine.dlnk_rule
+
+                # Add in thermo correlations if both BEP
+                if isinstance(reaction.kinetics, (SurfaceArrheniusBEP, StickingCoefficientBEP)) and \
+                        isinstance(other_reaction.kinetics, (SurfaceArrheniusBEP, StickingCoefficientBEP)):
+
+                    alpha_i = reaction.kinetics.alpha.value_si
+                    alpha_j = other_reaction.kinetics.alpha.value_si
+
+                    R = 8.314472
+                    T = 1000.0
+                    r1_sp_indices = [self.species_list.index(sp) for sp in reaction.reactants + reaction.products]
+                    r1_coefficients = [-1 for x in reaction.reactants]
+                    r1_coefficients.extend([1 for x in reaction.products])
+
+                    r2_sp_indices = [self.species_list.index(sp) for sp in other_reaction.reactants + other_reaction.products]
+                    r2_coefficients = [-1 for x in other_reaction.reactants]
+                    r2_coefficients.extend([1 for x in other_reaction.products])
+                    for r1 in range(len(r1_sp_indices)):
+                        for r2 in range(len(r2_sp_indices)):
+
+                            covH = self.thermo_covariance_matrix[r1_sp_indices[r1], r2_sp_indices[r2]] * 4184 * 4184  # convert from kcal/mol to J/mol
+                            nu_i = r1_coefficients[r1]
+                            nu_j = r2_coefficients[r2]
+
+                            self.kinetic_covariance_matrix[i, j] += nu_i * nu_j * alpha_i * alpha_j * covH / np.float_power(R * T, 2.0)
+
+        return self.kinetic_covariance_matrix
+
+    def get_overall_covariance_matrix(self):
+        # make combined thermo and kinetics covariance matrix, species first, then reactions
+
+        assert self.kinetic_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.kinetic_input_uncertainties) > 0, 'No kinetic parameters found'
+        assert self.thermo_covariance_matrix is not None, 'Must create thermo covariance matrix first'
+        assert self.kinetic_covariance_matrix is not None, 'Must create kinetics covariance matrix first'
+
+        self.overall_covariance_matrix = np.zeros((len(self.species_list) + len(self.reaction_list), len(self.species_list) + len(self.reaction_list)))
+        self.overall_covariance_matrix[:len(self.species_list), :len(self.species_list)] = self.thermo_covariance_matrix
+        self.overall_covariance_matrix[len(self.species_list):, len(self.species_list):] = self.kinetic_covariance_matrix
+
+        # fill in the covariance between reaction and species based on BEP relationships if applicable
+        for i in range(len(self.reaction_list)):
+            reaction = self.reaction_list[i]
+
+            BEP = None
+            BEP_types = [SurfaceArrheniusBEP, StickingCoefficientBEP]
+            if isinstance(reaction.kinetics, tuple(BEP_types)):
+                BEP = reaction.kinetics
+            elif 'Rate Rules' not in self.reaction_sources_dict[reaction]:
+                pass  # nothing to do here if kinetics doesn't depend on thermo through a BEP
+            elif self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'] and \
+                    isinstance(self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'][0][0].data, tuple(BEP_types)):
+                BEP = self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'][0][0].data
+            elif self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'] and \
+                    isinstance(self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'][0][0].data, tuple(BEP_types)):
+                BEP = self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'][0][0].data
+
+            if BEP:
+                alpha_i = BEP.alpha.value_si
+
+                R = 8.314472
+                T = 1000.0
+                r1_sp_indices = [self.species_list.index(sp) for sp in reaction.reactants + reaction.products]
+                r1_coefficients = [-1 for x in reaction.reactants]
+                r1_coefficients.extend([1 for x in reaction.products])
+
+                for r1 in range(len(r1_sp_indices)):  # loop over species in the reaction
+                    for j in range(len(self.species_list)):  # loop over all species
+                        covH = self.thermo_covariance_matrix[r1_sp_indices[r1], j] * 4184 * 4184  # convert from kcal/mol to J/mol
+                        nu_i = r1_coefficients[r1]
+
+                        self.overall_covariance_matrix[len(self.species_list) + i, j] += nu_i * alpha_i * covH / (R * T) / 4184  # convert back to kcal/mol
+
+        # fill in the lower triangle by copying from the top
+        for i in range(len(self.reaction_list)):
+            for j in range(len(self.species_list)):
+                self.overall_covariance_matrix[j, len(self.species_list) + i] = self.overall_covariance_matrix[len(self.species_list) + i, j]
+
+        return self.overall_covariance_matrix
 
 
 def process_local_results(results, sensitive_species, number=10):
