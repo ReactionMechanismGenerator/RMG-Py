@@ -332,11 +332,12 @@ class Uncertainty(object):
     for a single RMG-generated mechanism.
     """
 
-    def __init__(self, species_list=None, reaction_list=None, output_directory=''):
+    def __init__(self, species_list=None, reaction_list=None, output_directory='', thermo_corr_dir=None):
         """
         `species_list`: list of RMG species objects
         `reaction_list`: list of RMG reaction objects
         `outputDirectoy`: directory path for saving output files from the analyses
+        `thermo_corr_dir`: directory path for saving thermo correlation files
         """
         self.database = None
         self.species_list = species_list
@@ -351,6 +352,8 @@ class Uncertainty(object):
         self.kinetic_covariance_matrix = None
         self.overall_covariance_matrix = None
         self.output_directory = output_directory if output_directory else os.getcwd()
+        self.thermo_corr_dir = thermo_corr_dir
+        self.thermo_corr_data = {}  # a dictionary of available thermo covariance matrices for each library
 
         # For extra species needed for correlated analysis but not in model
         self.extra_species = []
@@ -941,6 +944,121 @@ All off diagonals will be zero unless you call assign_parameter_uncertainties(co
                 for source_i in self.thermo_input_uncertainties[i].keys():
                     if source_i in self.thermo_input_uncertainties[j].keys():
                         self.thermo_covariance_matrix[i, j] += self.thermo_input_uncertainties[i][source_i] * self.thermo_input_uncertainties[j][source_i]
+        
+        # load correlations between adsorbates calculated with BEEF vdW
+        # load the saved species ensemble data: this includes a numpy matrix of dG values for each species and a pickle of the species adjacency list
+        if self.thermo_corr_dir is not None:
+            def get_i_spec(spec, species_list):
+                for i in range(len(species_list)):
+                    if spec.is_isomorphic(species_list[i]):
+                        return i
+                return None
+
+            def get_i_group(group, group_list):
+                for i in range(len(group_list)):
+                    if group.is_identical(group_list[i]):
+                        return i
+                return None
+
+            # load the ensemble data
+            # TODO - generalize this
+            my_library = 'surfaceThermoPt111'
+            corr_thermo_data_file = os.path.join(self.thermo_corr_dir, f'{my_library}_cov.npy')
+            self.thermo_corr_data = {my_library: np.load(corr_thermo_data_file) / 4.18 / 4.18}  # convert from kJ^2/mol^2 to kcal^2/mol^2
+            molecules_file = os.path.join(os.path.join(self.thermo_corr_dir, f'{my_library}_molecules.pickle'))
+            with open(molecules_file, 'rb') as f:
+                # this should be a list of molecule adjacency lists
+                molecules_data = pickle.load(f)
+            correlated_species = []
+            for i in range(len(molecules_data)):
+                sp = Species().from_adjacency_list(molecules_data[i])
+                correlated_species.append(sp)
+            assert len(correlated_species) == self.thermo_corr_data[my_library].shape[0]
+
+            assert 'adsorptionPt111' in self.database.thermo.groups, 'BEEF adsorption corrections require adsorptionPt111 group in the thermo database'
+            db_ads_group_items = [self.database.thermo.groups['adsorptionPt111'].entries[key].item for key in self.database.thermo.groups['adsorptionPt111'].entries]
+
+            def get_species_indices_in_group(group):
+                species_used = []
+                for j in range(len(correlated_species)):
+                    if correlated_species[j].molecule[0].is_subgraph_isomorphic(group, generate_initial_map=True):
+                        species_used.append(j)
+                return species_used
+
+            def get_cov_sp_lists(sp_list_i, sp_list_j):
+                if len(sp_list_i) == 0 or len(sp_list_j) == 0:
+                    return 0
+
+                cov = 0
+                for i in sp_list_i:
+                    for j in sp_list_j:
+                        cov += self.thermo_corr_data[my_library][i, j]
+                cov /= len(sp_list_i) * len(sp_list_j)
+                return cov
+
+            # now splice this into the big thermo covariance matrix
+            for i_spc in range(len(self.species_list)):
+                for j_spc in range(len(self.species_list)):
+
+                    # does species use surfaceThermoPt111 lin?
+                    i_uses_pt111_lib = False
+                    j_uses_pt111_lib = False
+                    if 'surfaceThermoPt111' in self.species_list[i_spc].thermo.comment:
+                        i_uses_pt111_lib = True
+                    if 'surfaceThermoPt111' in self.species_list[j_spc].thermo.comment:
+                        j_uses_pt111_lib = True
+
+                    # does species use adsorptionPt111 group?
+                    i_ads_group = None
+                    j_ads_group = None
+                    if 'ADS' in self.species_sources_dict[self.species_list[i_spc]]:
+                        i_ads_group = self.species_sources_dict[self.species_list[i_spc]]['ADS']['adsorptionPt111'][0][0].item
+                    if 'ADS' in self.species_sources_dict[self.species_list[j_spc]]:
+                        j_ads_group = self.species_sources_dict[self.species_list[j_spc]]['ADS']['adsorptionPt111'][0][0].item
+
+                    # two libraries
+                    if i_uses_pt111_lib and j_uses_pt111_lib:
+                        i_spc_beef = get_i_spec(self.species_list[i_spc], correlated_species)
+                        j_spc_beef = get_i_spec(self.species_list[j_spc], correlated_species)
+                        if i_spc_beef is not None and j_spc_beef is not None:
+                            self.thermo_covariance_matrix[i_spc, j_spc] += self.thermo_corr_data[my_library][i_spc_beef, j_spc_beef]
+                        else:
+                            # TODO add default value here??
+                            pass
+                    # two groups
+                    elif i_ads_group is not None and j_ads_group is not None:
+                        i_beef = get_i_group(i_ads_group, db_ads_group_items)
+                        j_beef = get_i_group(j_ads_group, db_ads_group_items)
+                        if i_beef is not None and j_beef is not None:
+                            species_list_i = get_species_indices_in_group(db_ads_group_items[i_beef])
+                            species_list_j = get_species_indices_in_group(db_ads_group_items[j_beef])
+                            self.thermo_covariance_matrix[i_spc, j_spc] += get_cov_sp_lists(species_list_i, species_list_j)
+                        else:
+                            # TODO add default value here??
+                            pass
+                    # one group and one library
+                    elif i_uses_pt111_lib and j_ads_group is not None:
+                        i_spc_beef = get_i_spec(self.species_list[i_spc], correlated_species)
+                        if i_spc_beef is not None:
+                            species_list_i = [i_spc_beef]
+                            j_beef = get_i_group(j_ads_group, db_ads_group_items)
+                            if j_beef is not None:
+                                species_list_j = get_species_indices_in_group(db_ads_group_items[j_beef])
+                                self.thermo_covariance_matrix[i_spc, j_spc] += get_cov_sp_lists(species_list_i, species_list_j)
+                        else:
+                            # TODO add default value here??
+                            pass
+                    elif j_uses_pt111_lib and i_ads_group is not None:
+                        j_spc_beef = get_i_spec(self.species_list[j_spc], correlated_species)
+                        if j_spc_beef is not None:
+                            species_list_j = [j_spc_beef]
+                            i_beef = get_i_group(i_ads_group, db_ads_group_items)
+                            if i_beef is not None:
+                                species_list_i = get_species_indices_in_group(db_ads_group_items[i_beef])
+                                self.thermo_covariance_matrix[i_spc, j_spc] += get_cov_sp_lists(species_list_i, species_list_j)
+                        else:
+                            # TODO add default value here??
+                            pass
 
         return self.thermo_covariance_matrix
 
