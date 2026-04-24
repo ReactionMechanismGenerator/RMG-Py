@@ -39,3 +39,4 @@ from arkane.ess.orca import OrcaLog
 from arkane.ess.psi4_parser import Psi4Log
 from arkane.ess.qchem import QChemLog
 from arkane.ess.terachem import TeraChemLog
+from arkane.ess.xtb import XTBLog
