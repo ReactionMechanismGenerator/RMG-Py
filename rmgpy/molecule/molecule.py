@@ -2681,13 +2681,21 @@ class Molecule(Graph):
                                       return_mapping=False,
                                       save_order=True,
                                       ignore_bond_orders=True)
-
+        rdkit_mol.UpdatePropertyCache(strict=False)
+        ranks = list(Chem.CanonicalRankAtoms(rdkit_mol, breakTies=True))
+        rank_to_idx = {rank: idx for idx, rank in enumerate(ranks)}
+        new_order = [rank_to_idx[i] for i in range(rdkit_mol.GetNumAtoms())]
+        canonical_mol = Chem.RenumberAtoms(rdkit_mol, new_order)
         if symmetrized:
-            ring_info = Chem.GetSymmSSSR(rdkit_mol)
+            ring_info = Chem.GetSymmSSSR(canonical_mol)
         else:
-            ring_info = Chem.GetSSSR(rdkit_mol)
+            ring_info = Chem.GetSSSR(canonical_mol)
+
         for ring in ring_info:
-            atom_ring = [self.atoms[idx] for idx in ring]
+            # Map the new canonical indices back to the original RMG atom indices
+            original_idx_ring = [new_order[idx] for idx in ring]
+            atom_ring = [self.atoms[idx] for idx in original_idx_ring]
+            
             sorted_ring = self.sort_cyclic_vertices(atom_ring)
             sssr.append(sorted_ring)
         if symmetrized:

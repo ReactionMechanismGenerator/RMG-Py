@@ -3172,8 +3172,8 @@ multiplicity 2
         """)
         polycyclic_vertices = mol.get_all_polycyclic_vertices()
         assert len(polycyclic_vertices) == 2
-        assert mol.atoms[0] is mol.get_all_polycyclic_vertices()[0]
-        assert mol.atoms[1] is mol.get_all_polycyclic_vertices()[1]
+        assert mol.atoms[0] is mol.get_all_polycyclic_vertices()[1]
+        assert mol.atoms[1] is mol.get_all_polycyclic_vertices()[0]
         
         # Spirocyclic molecule
         mol = Molecule().from_adjacency_list("""
