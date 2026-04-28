@@ -2346,6 +2346,11 @@ class KineticsFamily(Database):
                 if same_species_lists(products, products0, strict=not prod_resonance, save_order=self.save_order):
                     rxn_list.append(reaction)
 
+        #let me see what atom labeling it is considering
+        for reaction in rxn_list:
+            for reactant in reaction.reactants:
+                print(reactant.to_adjacency_list())
+      
         # Determine the reactant-product pairs to use for flux analysis
         # Also store the reaction template (useful so we can easily get the kinetics later)
         for reaction in rxn_list:
@@ -2946,7 +2951,7 @@ class KineticsFamily(Database):
                 ob, boo = get_objective_function(new, old, T=T)
             return ob, True
 
-    def get_extension_edge(self, parent, template_rxn_map, obj, T, iter_max=np.inf, iter_item_cap=np.inf):
+    def get_extension_edge(self, parent, template_rxn_map, obj, T, iter_max=np.inf, iter_item_cap=np.inf, leaf_node_max=None):
         """
         finds the set of all extension groups to parent such that
         1) the extension group divides the set of reactions under parent
@@ -2985,8 +2990,11 @@ class KineticsFamily(Database):
                     # second is extensions that match all reactions
                     reg_dict[(typ, indc)] = ([], [])
                 val, boo = self.eval_ext(parent, grp2, name, template_rxn_map, obj, T)
-
+                #print(val, boo, typ)
+                
+                
                 if val != np.inf:
+                    #print('here')
                     out_exts[-1].append(exts[i])  # this extension splits reactions (optimization dim)
                     if typ == 'atomExt':
                         reg_dict[(typ, indc)][0].extend(grp2.atoms[indc[0]].atomtype)
@@ -2994,10 +3002,12 @@ class KineticsFamily(Database):
                         reg_dict[(typ, indc)][0].extend(grp2.atoms[indc[0]].radical_electrons)
                     elif typ == 'bondExt':
                         reg_dict[(typ, indc)][0].extend(grp2.get_bond(grp2.atoms[indc[0]], grp2.atoms[indc[1]]).order)
-
+                
                 elif boo:  # this extension matches all reactions (regularization dim)
+                    #print('here 2')
                     if typ == 'intNewBondExt' or typ == 'extNewBondExt':
                         # these are bond formation extensions, we want to expand these until we get splits
+                        #print('here 3')
                         ext_inds.append(i)
                     elif typ == 'atomExt':
                         reg_dict[(typ, indc)][0].extend(grp2.atoms[indc[0]].atomtype)
@@ -3085,10 +3095,13 @@ class KineticsFamily(Database):
                                 bd = grpc.get_bond(atms[indcr[0]], atms[indcr[1]])
                                 bd.reg_dim = [list(set(bd.order) & set(reg_val[0])),
                                               list(set(bd.order) & set(reg_val[1]))]
-
+            #print(grps)
+            #print(exts)
+            #print(ext_inds)
             out_exts.append([])
             grps[iter].pop()
             names.pop()
+            #print(grps)
 
             for ind in ext_inds:  # collect the groups to be expanded
                 grpr, grpcr, namer, typr, indcr = exts[ind]
@@ -3099,7 +3112,17 @@ class KineticsFamily(Database):
 
             if first_time:
                 first_time = False
-
+            
+            #print(grps)
+            #print(iter)
+            #print(grps[iter])
+            #print(len(grps))
+            #print(any([len(x)>0 for x in out_exts]))
+            #print(iter_max)
+            #print(len(grps[iter+1]))
+            #print(iter_item_cap)
+            
+            
             if grps[iter] == [] and len(grps) != iter+1 and (not (any([len(x)>0 for x in out_exts]) and iter+1 > iter_max)):
                 iter += 1
                 if len(grps[iter]) > iter_item_cap:
@@ -3109,6 +3132,10 @@ class KineticsFamily(Database):
 
             elif grps[iter] == [] and len(grps) != iter+1 and (any([len(x)>0 for x in out_exts]) and iter+1 > iter_max):
                 logging.error("iter_max achieved terminating early")
+                
+            elif leaf_node_max: 
+                if len(template_rxn_map[parent.label])<=leaf_node_max and grps==[[]]: #we are at a node that cannot be further split but has so few training reactions that we are ok with it being a leaf node
+                    gave_up_split=True
 
         out = []
         # compile all of the valid extensions together
@@ -3118,12 +3145,12 @@ class KineticsFamily(Database):
 
         return out, gave_up_split
 
-    def extend_node(self, parent, template_rxn_map, obj=None, T=1000.0, iter_max=np.inf, iter_item_cap=np.inf):
+    def extend_node(self, parent, template_rxn_map, obj=None, T=1000.0, iter_max=np.inf, iter_item_cap=np.inf, leaf_node_max=None):
         """
         Constructs an extension to the group parent based on evaluation
         of the objective function obj
         """
-        exts, gave_up_split = self.get_extension_edge(parent, template_rxn_map, obj=obj, T=T, iter_max=iter_max, iter_item_cap=iter_item_cap)
+        exts, gave_up_split = self.get_extension_edge(parent, template_rxn_map, obj=obj, T=T, iter_max=iter_max, iter_item_cap=iter_item_cap, leaf_node_max=leaf_node_max)
 
         if exts == [] and not gave_up_split:  # should only occur when all reactions at this node are identical
             rs = template_rxn_map[parent.label]
