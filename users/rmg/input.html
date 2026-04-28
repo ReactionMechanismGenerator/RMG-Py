@@ -235,16 +235,86 @@ This can be specified with any combination of specific families and predefined s
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span>
 </pre></div>
 </div>
-<p>The following is an example of a database block, based on above chosen libraries and options:</p>
+</section>
+<section id="automatic-library-and-family-selection">
+<span id="auto-library-selection"></span><h3><span class="section-number">4.2.8. </span>Automatic Library and Family Selection<a class="headerlink" href="#automatic-library-and-family-selection" title="Permalink to this heading">¶</a></h3>
+<p>Instead of manually listing every library, you can let RMG choose the appropriate
+thermo libraries, kinetics libraries, transport libraries, seed mechanisms, and
+kinetics families automatically based on the species and reactor conditions in your
+input file. Use the <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> keyword in any library field:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">database</span><span class="p">(</span>
-        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;primaryThermoLibrary&#39;</span><span class="p">,</span> <span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">],</span>
-        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;Glarborg/C3&#39;</span><span class="p">,</span><span class="kc">False</span><span class="p">)],</span>
-        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;GRI-Mech3.0&#39;</span><span class="p">],</span>
+        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+        <span class="n">transportLibraries</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
         <span class="n">kineticsDepositories</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;training&#39;</span><span class="p">],</span>
-        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;defult&#39;</span><span class="p">,</span>
         <span class="n">kineticsEstimator</span> <span class="o">=</span> <span class="s1">&#39;rate rules&#39;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
+</div>
+<p>When <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> is specified, RMG analyzes the initial species and reactor
+conditions to detect the chemistry present (e.g., nitrogen, sulfur, oxygen,
+halogens, surface, liquid phase) and selects the relevant library sets.
+The triggered sets and their corresponding libraries are logged at the start
+of the RMG run.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Non-reactive species (those declared with <code class="docutils literal notranslate"><span class="pre">reactive=False</span></code>, such as bath
+gases) are skipped during chemistry detection and will not trigger any
+chemistry sets on their own. For example, using N<sub>2</sub> purely as a
+bath gas will not pull in the nitrogen library — the nitrogen set is
+triggered only when a reactive species containing nitrogen is present.</p>
+</div>
+<p><strong>Mixing manual and auto selection.</strong> You can combine user-specified libraries
+with <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> in a list. The position of <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> controls the priority:
+libraries before it have higher priority, libraries after it have lower:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;myCustomLib&#39;</span><span class="p">,</span> <span class="s1">&#39;auto&#39;</span><span class="p">]</span>
+
+<span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;myFallbackLib&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>If a library you listed manually also appears in the auto-selected set, it will
+not be added twice. It keeps the position you gave it, and the auto-selected
+copy is skipped.</p>
+<p><strong>PAH libraries and the ``&lt;PAH_libs&gt;`` keyword.</strong>
+The auto-selection splits high-temperature C/H chemistry into two tiers:</p>
+<ul class="simple">
+<li><p><strong>CH_pyrolysis_core</strong> — fundamental high-T radical and small-molecule chemistry
+(e.g., acetylene initiation, alkane cracking). Always included when carbon is
+present and the maximum reactor temperature is at least 800 K.</p></li>
+<li><p><strong>PAH_formation</strong> — aromatic ring formation, naphthalene pathways (CPD + HACA),
+and larger PAH growth. This is a large set (~70 kinetics libraries) that can
+significantly increase model size and generation time.</p></li>
+</ul>
+<p>For <strong>pure C/H pyrolysis</strong> (no oxygen in any input species), both tiers are
+included automatically — PAH formation is expected in such systems.</p>
+<p>For <strong>oxygenated systems</strong> (any species contains O, including oxygenated fuels
+like ethanol or DME), only CH_pyrolysis_core is included by default because
+PAH chemistry is typically a minor pathway. If you know your system forms
+significant amounts of aromatics (e.g., fuel-rich partial oxidation), you can
+explicitly request the PAH libraries by adding the <code class="docutils literal notranslate"><span class="pre">'&lt;PAH_libs&gt;'</span></code> keyword
+to any library field:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">database</span><span class="p">(</span>
+        <span class="n">thermoLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;PAH_libs&gt;&#39;</span><span class="p">],</span>
+        <span class="n">reactionLibraries</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="s1">&#39;&lt;PAH_libs&gt;&#39;</span><span class="p">],</span>
+        <span class="n">seedMechanisms</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+        <span class="n">transportLibraries</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+        <span class="n">kineticsFamilies</span> <span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">'&lt;PAH_libs&gt;'</span></code> keyword is consumed during processing (it does not appear
+in the final library list) — it only serves as a signal to include the
+PAH_formation set. It can be placed anywhere in the list; its position does
+not affect library priority.</p>
+<p><strong>Previewing the selection.</strong> A Jupyter notebook is provided at
+<code class="file docutils literal notranslate"><span class="pre">ipython/auto_library_selection.ipynb</span></code> that lets you preview exactly which
+libraries and families RMG would choose for a given input file, without running
+the full job.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">'auto'</span></code> keyword is opt-in. If you do not use it you must list every library explicitly.</p>
 </div>
 </section>
 </section>
@@ -1119,6 +1189,7 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
 <li><a class="reference internal" href="#kinetics-depositories">4.2.5. Kinetics Depositories</a></li>
 <li><a class="reference internal" href="#kinetics-families">4.2.6. Kinetics Families</a></li>
 <li><a class="reference internal" href="#kinetics-estimator">4.2.7. Kinetics Estimator</a></li>
+<li><a class="reference internal" href="#automatic-library-and-family-selection">4.2.8. Automatic Library and Family Selection</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#list-of-species">4.3. List of species</a></li>
