@@ -55,6 +55,7 @@ import rmgpy.util as util
 from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints
+from rmgpy.data.auto_database import auto_select_libraries, to_reaction_library_tuples
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
@@ -183,6 +184,7 @@ class RMG(util.Subject):
         self.thermo_libraries = None
         self.transport_libraries = None
         self.reaction_libraries = None
+        self.reaction_libraries_output_edge = set()
         self.statmech_libraries = None
         self.seed_mechanisms = None
         self.kinetics_families = None
@@ -564,6 +566,15 @@ class RMG(util.Subject):
                     maxproc, psutil.cpu_count()
                 )
             )
+
+        # Auto-select libraries if any field uses 'auto' or '<PAH_libs>'
+        auto_select_libraries(self)
+
+        # Convert reaction libraries from plain strings to (name, bool) tuples
+        # (the bool controls whether unused edge reactions are written to the chemkin output)
+        if isinstance(self.reaction_libraries, list):
+            output_edge = getattr(self, 'reaction_libraries_output_edge', set())
+            self.reaction_libraries = to_reaction_library_tuples(self.reaction_libraries, output_edge)
 
         # Load databases
         self.load_database()

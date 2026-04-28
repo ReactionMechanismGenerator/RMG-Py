@@ -204,16 +204,91 @@ The last section is specifying that RMG is estimating kinetics of reactions from
 	kineticsEstimator = 'rate rules'
 
 
-The following is an example of a database block, based on above chosen libraries and options::
+.. _auto_library_selection:
+
+Automatic Library and Family Selection
+--------------------------------------
+Instead of manually listing every library, you can let RMG choose the appropriate
+thermo libraries, kinetics libraries, transport libraries, seed mechanisms, and
+kinetics families automatically based on the species and reactor conditions in your
+input file. Use the ``'auto'`` keyword in any library field::
 
 	database(
-		thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
-		reactionLibraries = [('Glarborg/C3',False)],
-		seedMechanisms = ['GRI-Mech3.0'],
+		thermoLibraries = 'auto',
+		reactionLibraries = 'auto',
+		transportLibraries = 'auto',
+		seedMechanisms = 'auto',
+		kineticsFamilies = 'auto',
 		kineticsDepositories = ['training'],
-		kineticsFamilies = 'defult',
 		kineticsEstimator = 'rate rules',
 	)
+
+When ``'auto'`` is specified, RMG analyzes the initial species and reactor
+conditions to detect the chemistry present (e.g., nitrogen, sulfur, oxygen,
+halogens, surface, liquid phase) and selects the relevant library sets.
+The triggered sets and their corresponding libraries are logged at the start
+of the RMG run.
+
+.. note::
+	Non-reactive species (those declared with ``reactive=False``, such as bath
+	gases) are skipped during chemistry detection and will not trigger any
+	chemistry sets on their own. For example, using N\ :sub:`2` purely as a
+	bath gas will not pull in the nitrogen library — the nitrogen set is
+	triggered only when a reactive species containing nitrogen is present.
+
+**Mixing manual and auto selection.** You can combine user-specified libraries
+with ``'auto'`` in a list. The position of ``'auto'`` controls the priority:
+libraries before it have higher priority, libraries after it have lower::
+
+	thermoLibraries = ['myCustomLib', 'auto']
+
+	thermoLibraries = ['auto', 'myFallbackLib']
+
+If a library you listed manually also appears in the auto-selected set, it will
+not be added twice. It keeps the position you gave it, and the auto-selected
+copy is skipped.
+
+**PAH libraries and the ``<PAH_libs>`` keyword.**
+The auto-selection splits high-temperature C/H chemistry into two tiers:
+
+* **CH_pyrolysis_core** — fundamental high-T radical and small-molecule chemistry
+  (e.g., acetylene initiation, alkane cracking). Always included when carbon is
+  present and the maximum reactor temperature is at least 800 K.
+* **PAH_formation** — aromatic ring formation, naphthalene pathways (CPD + HACA),
+  and larger PAH growth. This is a large set (~70 kinetics libraries) that can
+  significantly increase model size and generation time.
+
+For **pure C/H pyrolysis** (no oxygen in any input species), both tiers are
+included automatically — PAH formation is expected in such systems.
+
+For **oxygenated systems** (any species contains O, including oxygenated fuels
+like ethanol or DME), only CH_pyrolysis_core is included by default because
+PAH chemistry is typically a minor pathway. If you know your system forms
+significant amounts of aromatics (e.g., fuel-rich partial oxidation), you can
+explicitly request the PAH libraries by adding the ``'<PAH_libs>'`` keyword
+to any library field::
+
+	database(
+		thermoLibraries = ['auto', '<PAH_libs>'],
+		reactionLibraries = ['auto', '<PAH_libs>'],
+		seedMechanisms = 'auto',
+		transportLibraries = 'auto',
+		kineticsFamilies = 'auto',
+	)
+
+The ``'<PAH_libs>'`` keyword is consumed during processing (it does not appear
+in the final library list) — it only serves as a signal to include the
+PAH_formation set. It can be placed anywhere in the list; its position does
+not affect library priority.
+
+**Previewing the selection.** A Jupyter notebook is provided at
+:file:`ipython/auto_library_selection.ipynb` that lets you preview exactly which
+libraries and families RMG would choose for a given input file, without running
+the full job.
+
+.. note::
+	The ``'auto'`` keyword is opt-in. If you do not use it you must list every library explicitly.
+
 
 .. _species_list:
 
