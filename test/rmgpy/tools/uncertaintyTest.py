@@ -127,7 +127,7 @@ class TestUncertainty:
             "RCCJ",
         }
         other_expected = {"ketene", "R"}
-        assert set(self.uncertainty.all_thermo_sources) == {"GAV", "Library", "QM"}
+        assert set(self.uncertainty.all_thermo_sources) == {"GAV", "Library", "QM", "ADS", "Surface_Library"}
         assert set(self.uncertainty.all_thermo_sources["GAV"]) == {"group", "radical", "other"}
         grp = set([e.label for e in self.uncertainty.all_thermo_sources["GAV"]["group"]])
         rad = set([e.label for e in self.uncertainty.all_thermo_sources["GAV"]["radical"]])
@@ -151,7 +151,7 @@ class TestUncertainty:
             'C/H3/Cs\\H3;C_rad/H2/Cs\\H\\Cs\\Cs|O',
             'C/H3/Cs\\H3;Cd_Cd\\H2_pri_rad',
         }
-        assert set(self.uncertainty.all_kinetic_sources) == {"Rate Rules", "Training", "Library", "PDep"}
+        assert set(self.uncertainty.all_kinetic_sources) == {"Rate Rules", "Training", "Library", "PDep", "Surface_Library"}
         assert set(self.uncertainty.all_kinetic_sources["Rate Rules"].keys()) == {"Disproportionation", "H_Abstraction"}
         rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["Disproportionation"]])
         assert rr == Disproportionation_rr_expected
@@ -174,6 +174,48 @@ class TestUncertainty:
         )
         np.testing.assert_allclose(
             kinetic_unc,
-            [0.5, 1.5, 3.169924, 3.169924, 2.553605, 0.5, 2.0, 2.553605, 2.553605, 0.5],
+            # the 7.81 value comes from the SIDT tree node uncertainty: 5.756 + non-exact penalty for N=1: log10(1+1) * 3.5 + family uncertainty: 1.0
+            [0.5, 1.5, 3.169924, 3.169924, 2.553605, 0.5, 2.0, 7.81, 7.81, 0.5],
             rtol=1e-4
         )
+
+    def test_specific_species_uncertainties(self):
+        """
+        Test uncertainties for a few specific examples
+        """
+
+        expected_results = {  # order is (total_uncertainty, [group_names], [group_counts])
+            'CCCC': (1.9, ['Cs-CsCsHH', 'Cs-CsHHH'], [2, 2]),
+            'CCCCCCCCCC': (2.5, ['Cs-CsCsHH', 'Cs-CsHHH'], [8, 2]),
+            'CC(OO)CC': (2.1, ['O2s-OsCs', 'O2s-OsH', 'Cs-CsCsOsH', 'Cs-CsCsHH', 'Cs-CsHHH'], [1, 1, 1, 1, 2]),
+            'C=NCC': (1.9, ['N3d-CdCs', 'Cs-(N3dCd)CsHH', 'Cs-CsHHH', 'Cd-N3dHH'], [1, 1, 1, 1]),
+            'C=C': (1.7, ['Cds-CdsHH'], [2]),
+            'C*': (10.018, ['CH3'], [1]),  # Gas library + radical + adsorption correction
+            'O=[CH]*': (8.618, ['Cds-OdHH', 'HCdsJO'], [1, 1]),  # GAV + radical + adsorption correction
+        }
+
+        uncertainty = rmgpy.tools.uncertainty.Uncertainty()
+        uncertainty.database = self.uncertainty.database  # use the same database as the main test
+        new_species_list = [rmgpy.species.Species(smiles=spc) for spc in expected_results.keys()]
+        for spc in new_species_list:
+            spc.thermo = self.uncertainty.database.thermo.get_thermo_data(spc)
+            if not isinstance(spc.thermo, rmgpy.thermo.NASA):
+                spc.thermo = spc.thermo.to_nasa(Tmin=298, Tmax=3000, Tint=1000)
+        uncertainty.species_list = new_species_list
+        uncertainty.reaction_list = []  # no need to test kinetics here
+
+        uncertainty.extract_sources_from_model()  # this will populate the sources dict with the new species
+        uncertainty.assign_parameter_uncertainties()  # this will assign the uncertainties based on the sources and the database
+
+        for i, sp in enumerate(uncertainty.species_list):
+            source = uncertainty.species_sources_dict[sp]
+
+            actual_group_data = []
+            for group_type, group_entries in source['GAV'].items():
+                for group, count in group_entries:
+                    actual_group_data.append((group.label, count))
+            expected_result = expected_results[sp.smiles]
+            expected_group_data = sorted(zip(expected_result[1], expected_result[2]))
+            actual_group_data = sorted(actual_group_data)
+            assert np.isclose(uncertainty.thermo_input_uncertainties[i], expected_result[0], rtol=1e-4)
+            assert actual_group_data == expected_group_data

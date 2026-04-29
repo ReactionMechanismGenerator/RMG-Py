@@ -571,6 +571,84 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert source["GAV"]["radical"][0][1] == 1
         assert all(source['GAV']['group'][x][1] == 1 for x in [0, 1, 2, 3, 5])
         assert source['GAV']['group'][4][1] == 2
+        
+        # ------------------------------- Surface Examples ---------------------------
+        # Surface library only
+        OX = rmgpy.species.Species(smiles="O=*")
+        OX.thermo = rmgpy.thermo.NASA()
+        OX.thermo.comment = 'Thermo library: surfaceThermoPt111'
+        source = self.database.extract_source_from_comments(OX)
+        assert "Library" in source
+        assert source["Library"] == "surfaceThermoPt111"
+
+        # Gas library + adsorption correction
+        CH2X = rmgpy.species.Species(smiles="[CH2]=*")
+        CH2X.thermo = rmgpy.thermo.NASA()
+        CH2X.thermo.comment = 'Gas phase thermo for CH2(T) from Thermo library: primaryThermoLibrary. Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111(C=*R2)'
+        source = self.database.extract_source_from_comments(CH2X)
+        assert "Library" in source
+        assert source["Library"] == "primaryThermoLibrary"
+        assert "ADS" in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'C=*R2'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
+
+        # GAV gas + adsorption correction
+        CO2X = rmgpy.species.Species(smiles="O=C=O.*")
+        CO2X.thermo = rmgpy.thermo.NASA()
+        CO2X.thermo.comment = 'Gas phase thermo for O=C=O from Thermo group additivity estimation: group(Cdd-OdOd). Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111((CR2)*)'
+        source = self.database.extract_source_from_comments(CO2X)
+        assert "GAV" in source
+        assert source["GAV"]["group"][0][0].label == "Cdd-OdOd"
+        assert source["GAV"]["group"][0][1] == 1  # weight should be 1
+        assert len(source["GAV"]["group"]) == 1  # there should only be one GAV contribution
+        assert "ADS" in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2)*'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
+
+        # Gas library + radical for HBI + adsorption correction
+        CHOX = rmgpy.species.Species(smiles="O=[CH]*")
+        CHOX.thermo = rmgpy.thermo.NASA()
+        CHOX.thermo.comment = 'Gas phase thermo for [CH]=O from Thermo library: primaryThermoLibrary + radical(HCdsJO). Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C-*R3)'
+        source = self.database.extract_source_from_comments(CHOX)
+        assert "Library" in source
+        assert source["Library"] == "primaryThermoLibrary"
+        assert "GAV" in source
+        assert source["GAV"]["radical"][0][0].label == "HCdsJO"
+        assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
+        assert len(source["GAV"]["radical"]) == 1  # there should only be one radical contribution
+        assert "ADS" in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'C-*R3'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
+
+        # Also test that the database is retrieving and assembling comments correctly
+        # Here we use the extremely limited test database already available in memory
+        OX_comment = self.database.get_thermo_data(OX).comment
+        OX.thermo.comment = OX_comment  # set the comment to be the generated comment
+        source = self.database.extract_source_from_comments(OX)
+        assert "Library" in source
+        assert source["Library"] == "primaryThermoLibrary"
+        assert 'ADS' in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'O=*'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
+
+        # an example with a radical and a library and an adsorption correction
+        CH2CHCH_ads = rmgpy.species.Species(smiles="[CH]C=C.*")
+        CH2CHCH_ads.thermo = self.database.get_thermo_data(CH2CHCH_ads)
+        source = self.database.extract_source_from_comments(CH2CHCH_ads)
+        assert "Library" in source
+        assert source["Library"] == "DFT_QCI_thermo"
+        assert "GAV" in source
+        assert source["GAV"]["radical"][0][0].label == "AllylJ2_triplet"
+        assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
+        assert len(source["GAV"]["radical"]) == 1  # there should only be one radical contribution
+        assert "ADS" in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2CR)*'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
     def test_species_thermo_generation_hbi_library(self):
         """Test thermo generation for species objects for HBI correction on library value.
