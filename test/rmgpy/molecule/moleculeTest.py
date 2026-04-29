@@ -3172,8 +3172,8 @@ multiplicity 2
         """)
         polycyclic_vertices = mol.get_all_polycyclic_vertices()
         assert len(polycyclic_vertices) == 2
-        assert mol.atoms[0] is mol.get_all_polycyclic_vertices()[0]
-        assert mol.atoms[1] is mol.get_all_polycyclic_vertices()[1]
+        assert mol.atoms[0] is mol.get_all_polycyclic_vertices()[1]
+        assert mol.atoms[1] is mol.get_all_polycyclic_vertices()[0]
         
         # Spirocyclic molecule
         mol = Molecule().from_adjacency_list("""
@@ -3293,3 +3293,14 @@ multiplicity 2
         assert len(mol.get_largest_ring(mol.atoms[20])) == 0
         # bridgehead - should choose the larger of the two rings
         assert len(mol.get_largest_ring(mol.atoms[25])) == 8
+
+    def test_get_ring_count_in_largest_fused_ring_system(self):
+        """Test that we can count the rings in the largest fused ring system."""
+        mol = Molecule(smiles="CCCC")
+        assert mol.get_ring_count_in_largest_fused_ring_system() == 0
+        mol = Molecule(smiles="c1ccccc1")
+        assert mol.get_ring_count_in_largest_fused_ring_system() == 0
+        mol = Molecule(smiles="c12ccccc1cccc2")
+        assert mol.get_ring_count_in_largest_fused_ring_system() == 2
+        mol = Molecule(smiles="C[C]1C2C(=O)C3CC4C(=O)C=C2CC143")
+        assert mol.get_ring_count_in_largest_fused_ring_system() == 4

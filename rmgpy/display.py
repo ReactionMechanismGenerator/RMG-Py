@@ -29,18 +29,18 @@
 
 """
 This module contains only a display() function, which, if you are running in
-the IPython --pylab mode, will render things inline in pretty SVG or PNG graphics.
-If you are NOT running in IPython --pylab mode, it will do nothing.
+a Jupyter notebook or IPython session, will render things inline in pretty SVG or PNG graphics.
+If you are NOT running in such an environment, it will do nothing.
 """
 
 try:
-    from IPython.core.interactiveshell import InteractiveShell
+    from IPython import get_ipython
+    _ipython = get_ipython()
 except ImportError:
+    _ipython = None
+
+if _ipython is not None:
+    from IPython.display import display
+else:
     def display(obj):
         pass
-else:
-    if InteractiveShell.initialized():
-        from IPython.core.display import display
-    else:
-        def display(obj):
-            pass

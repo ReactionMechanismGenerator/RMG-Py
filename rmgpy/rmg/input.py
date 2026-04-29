@@ -63,6 +63,7 @@ from rmgpy.solver.termination import (
     TerminationRateRatio,
     TerminationTime,
 )
+from rmgpy.data.auto_database import AUTO, PAH_LIBS
 from rmgpy.util import as_list
 
 ################################################################################
@@ -86,14 +87,55 @@ def database(
     # We don't actually load the database until after we're finished reading
     # the input file
     rmg.database_directory = settings['database.directory']
-    rmg.thermo_libraries = as_list(thermoLibraries, default=[])
-    rmg.transport_libraries = as_list(transportLibraries, default=None)
 
-    # Modify reaction library list such that all entries are tuples
-    reaction_libraries = as_list(reactionLibraries, default=[])
-    rmg.reaction_libraries = [(name, False) if not isinstance(name, tuple) else name for name in reaction_libraries]
+    # Handle 'auto' token: pass through for later resolution by auto_select_libraries().
+    # '<PAH_libs>' is only valid as a token inside a list, not as a standalone value.
+    for field_name, field_val in [('thermoLibraries', thermoLibraries),
+                                  ('transportLibraries', transportLibraries),
+                                  ('reactionLibraries', reactionLibraries),
+                                  ('seedMechanisms', seedMechanisms)]:
+        if field_val == PAH_LIBS:
+            raise InputError(f"'{PAH_LIBS}' cannot be used as a standalone value for {field_name}. "
+                             f"Use it as a token inside a list, e.g. ['{AUTO}', '{PAH_LIBS}'].")
 
-    rmg.seed_mechanisms = as_list(seedMechanisms, default=[])
+    if thermoLibraries == AUTO:
+        rmg.thermo_libraries = AUTO
+    else:
+        rmg.thermo_libraries = as_list(thermoLibraries, default=[])
+
+    if transportLibraries == AUTO:
+        rmg.transport_libraries = AUTO
+    else:
+        rmg.transport_libraries = as_list(transportLibraries, default=None)
+
+    # Store reaction libraries as plain strings; remember which ones had True option
+    # (the bool indicates "also output unused edge reactions to chemkin file")
+    if reactionLibraries == AUTO:
+        rmg.reaction_libraries = AUTO
+        rmg.reaction_libraries_output_edge = set()
+    else:
+        reaction_libraries = as_list(reactionLibraries, default=[])
+        rmg.reaction_libraries = []
+        rmg.reaction_libraries_output_edge = set()
+        for item in reaction_libraries:
+            if isinstance(item, tuple):
+                name, option = item
+                if name == PAH_LIBS:
+                    raise InputError(f"'{PAH_LIBS}' cannot be used as a tuple entry in reactionLibraries. "
+                                     f"Use it as a plain string token, e.g. ['{AUTO}', '{PAH_LIBS}'].")
+                rmg.reaction_libraries.append(name)
+                if option:
+                    rmg.reaction_libraries_output_edge.add(name)
+            elif item in (AUTO, PAH_LIBS):
+                rmg.reaction_libraries.append(item)
+            else:
+                rmg.reaction_libraries.append(item)
+
+    if seedMechanisms == AUTO:
+        rmg.seed_mechanisms = AUTO
+    else:
+        rmg.seed_mechanisms = as_list(seedMechanisms, default=[])
+
     rmg.statmech_libraries = as_list(frequenciesLibraries, default=[])
     rmg.kinetics_estimator = kineticsEstimator
 
@@ -107,12 +149,12 @@ def database(
                              "['training','PrIMe'].")
         rmg.kinetics_depositories = kineticsDepositories
 
-    if kineticsFamilies in ('default', 'all', 'none'):
+    if kineticsFamilies in ('default', 'all', 'none', 'auto'):
         rmg.kinetics_families = kineticsFamilies
     else:
         if not isinstance(kineticsFamilies, list):
-            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. "
-                             "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
+            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', 'auto', or a list of names "
+                             "eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kinetics_families = kineticsFamilies
 
     rmg.adsorption_groups = adsorptionGroups
@@ -120,7 +162,8 @@ def database(
 def catalyst_properties(bindingEnergies=None,
                         surfaceSiteDensity=None,
                         metal=None,
-                        coverageDependence=False):
+                        coverageDependence=False,
+                        thermoCoverageDependence=False,):
     """
     Specify the properties of the catalyst.
     Binding energies of C,H,O,N atoms, and the surface site density.
@@ -167,6 +210,7 @@ def catalyst_properties(bindingEnergies=None,
     else:
         logging.info("Coverage dependence is turned OFF")
     rmg.coverage_dependence = coverageDependence
+    rmg.thermo_coverage_dependence = thermoCoverageDependence
 
 def convert_binding_energies(binding_energies):
     """
@@ -1088,7 +1132,8 @@ def surface_reactor(temperature,
                             sensitive_species=sensitive_species,
                             sensitivity_threshold=sensitivityThreshold,
                             sens_conditions=sens_conditions,
-                            coverage_dependence=rmg.coverage_dependence)
+                            coverage_dependence=rmg.coverage_dependence,
+                            thermo_coverage_dependence=rmg.thermo_coverage_dependence)
     rmg.reaction_systems.append(system)
     system.log_initial_conditions(number=len(rmg.reaction_systems))
 
@@ -1420,6 +1465,7 @@ def generated_species_constraints(**kwargs):
         'maximumRadicalElectrons',
         'maximumSingletCarbenes',
         'maximumCarbeneRadicals',
+        'maximumFusedRingSystemSize',
         'allowSingletO2',
         'speciesCuttingThreshold',
     ]

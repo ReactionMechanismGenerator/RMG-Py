@@ -37,6 +37,7 @@ import gc
 import logging
 import marshal
 import os
+import re
 import resource
 import shutil
 import sys
@@ -54,6 +55,7 @@ import rmgpy.util as util
 from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints
+from rmgpy.data.auto_database import auto_select_libraries, to_reaction_library_tuples
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
@@ -182,6 +184,7 @@ class RMG(util.Subject):
         self.thermo_libraries = None
         self.transport_libraries = None
         self.reaction_libraries = None
+        self.reaction_libraries_output_edge = set()
         self.statmech_libraries = None
         self.seed_mechanisms = None
         self.kinetics_families = None
@@ -193,6 +196,7 @@ class RMG(util.Subject):
         self.surface_site_density = None
         self.binding_energies = None
         self.coverage_dependence = False
+        self.thermo_coverage_dependence = False
         self.forbidden_structures = []
 
         self.reaction_model = None
@@ -510,7 +514,7 @@ class RMG(util.Subject):
 
         # Read input file
         self.load_input(self.input_file)
-        
+
         # Check if ReactionMechanismSimulator reactors are being used
         # if RMS is not installed but the user attempted to use it, the load_input_file would have failed
         # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
@@ -523,6 +527,7 @@ class RMG(util.Subject):
                 self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
                 self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
         self.reaction_model.coverage_dependence = self.coverage_dependence
+        self.reaction_model.thermo_coverage_dependence = self.thermo_coverage_dependence
 
         if kwargs.get("restart", ""):
             import rmgpy.rmg.input
@@ -561,6 +566,15 @@ class RMG(util.Subject):
                     maxproc, psutil.cpu_count()
                 )
             )
+
+        # Auto-select libraries if any field uses 'auto' or '<PAH_libs>'
+        auto_select_libraries(self)
+
+        # Convert reaction libraries from plain strings to (name, bool) tuples
+        # (the bool controls whether unused edge reactions are written to the chemkin output)
+        if isinstance(self.reaction_libraries, list):
+            output_edge = getattr(self, 'reaction_libraries_output_edge', set())
+            self.reaction_libraries = to_reaction_library_tuples(self.reaction_libraries, output_edge)
 
         # Load databases
         self.load_database()
@@ -648,8 +662,7 @@ class RMG(util.Subject):
         # Initialize reaction model
 
         for spec in self.initial_species:
-            if spec.reactive:
-                submit(spec, self.solvent)
+            submit(spec, self.solvent)
             if vapor_liquid_mass_transfer.enabled:
                 spec.get_liquid_volumetric_mass_transfer_coefficient_data()
                 spec.get_henry_law_constant_data()
@@ -769,7 +782,7 @@ class RMG(util.Subject):
         """
 
         self.attach(ChemkinWriter(self.output_directory))
-        
+
         self.attach(RMSWriter(self.output_directory))
 
         if self.generate_output_html:
@@ -1222,6 +1235,7 @@ class RMG(util.Subject):
         # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
         try:
             if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
+                # Surface (catalytic) chemistry
                 self.generate_cantera_files(
                     os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
@@ -1230,6 +1244,34 @@ class RMG(util.Subject):
                     os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
                     surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
                 )
+
+                if self.thermo_coverage_dependence:
+                    # Build coverage_deps: {species_name: string_to_add_to_yaml}
+                    coverage_deps = {}
+                    for s in self.reaction_model.core.species:
+                        if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
+                            s_name = s.to_chemkin()
+                            for dep_sp_adj, parameters in s.thermo.thermo_coverage_dependence.items():
+                                mol = Molecule().from_adjacency_list(dep_sp_adj)
+                                for sp in self.reaction_model.core.species:
+                                    if sp.is_isomorphic(mol, strict=False):
+                                        if s_name not in coverage_deps:
+                                            coverage_deps[s_name] = '  coverage-dependencies:'
+                                        coverage_deps[s_name] += f"""
+    {sp.to_chemkin()}:
+      model: {parameters['model']}
+      enthalpy-coefficients: {[v.value_si for v in parameters['enthalpy-coefficients']]}
+      entropy-coefficients: {[v.value_si for v in parameters['entropy-coefficients']]}
+      units: {{energy: J, quantity: mol}}
+"""
+                                        break
+
+                    for yaml_path in [
+                        os.path.join(self.output_directory, "cantera", "chem.yaml"),
+                        os.path.join(self.output_directory, "cantera", "chem_annotated.yaml"),
+                    ]:
+                        _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
+
             else:  # gas phase only
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
                 self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
@@ -2393,6 +2435,45 @@ class RMG_Memory(object):
             self.scaled_condition_list.append(scaled_new_cond)
         return
 
+def _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps):
+    """Modify a Cantera YAML file in-place to add coverage-dependent surface thermo.
+
+    Makes targeted text insertions rather than loading and re-dumping the whole
+    file, so original formatting is preserved everywhere except the new lines.
+
+    Args:
+        yaml_path: path to the Cantera YAML file to modify
+        coverage_deps: dict mapping species ChemKin names to their coverage-dependency string.
+    """
+    with open(yaml_path, 'r') as f:
+        content = f.read()
+
+    # --- Modify the surface phase ---
+    # Replace 'ideal-surface' with 'coverage-dependent-surface' and add reference-state-coverage.
+    content = content.replace(
+        '  thermo: ideal-surface\n',
+        '  thermo: coverage-dependent-surface\n  reference-state-coverage: 0.11\n',
+        1,
+    )
+
+    # --- Insert coverage-dependencies block after each relevant species entry ---
+    for species_name, deps in coverage_deps.items():
+        match = re.search(r'^- name: ' + re.escape(species_name) + r'\n', content, re.MULTILINE)
+        if not match:
+            logging.warning(
+                f"Species {species_name} not found in {yaml_path}; skipping coverage-dependency insertion."
+            )
+            continue
+
+        after = match.end()
+        end_match = re.search(r'\n(?=(?:- |\n|\w))', content[after:])
+        if end_match:
+            insert_pos = after + end_match.start() + 1
+            content = content[:insert_pos] + deps + content[insert_pos:]
+        else:
+            content = content.rstrip('\n') + '\n' + deps
+    with open(yaml_path, 'w') as f:
+        f.write(content)
 
 def log_conditions(rmg_memories, index):
     """

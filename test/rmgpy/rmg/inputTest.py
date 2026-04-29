@@ -30,6 +30,7 @@
 from unittest.mock import patch
 
 import rmgpy.rmg.input as inp
+from rmgpy.exceptions import InputError
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.ml.estimator import ADMONITION
@@ -66,33 +67,123 @@ class TestInputDatabase:
 
     def test_importing_database_reaction_libraries_from_string(self):
         """
-        Test that we can import Reaction Libraries using the non-tuple form.
+        Test that reaction libraries given as plain strings are stored as strings.
         """
         global rmg
-        # add database properties to RMG
         inp.database(reactionLibraries=["test"])
-        assert isinstance(rmg.reaction_libraries[0], tuple)
-        assert not rmg.reaction_libraries[0][1]
+        assert rmg.reaction_libraries == ["test"]
+        assert "test" not in rmg.reaction_libraries_output_edge
 
     def test_importing_database_reaction_libraries_from_false_tuple(self):
         """
-        Test that we can import Reaction Libraries using the Tuple False form.
+        Test that (name, False) tuples are stored as plain strings without output_edge.
         """
         global rmg
-        # add database properties to RMG
         inp.database(reactionLibraries=[("test", False)])
-        assert isinstance(rmg.reaction_libraries[0], tuple)
-        assert not rmg.reaction_libraries[0][1]
+        assert rmg.reaction_libraries == ["test"]
+        assert "test" not in rmg.reaction_libraries_output_edge
 
     def test_importing_database_reaction_libraries_from_true_tuple(self):
         """
-        Test that we can import Reaction Libraries using the Tuple True form.
+        Test that (name, True) tuples are stored as plain strings with the name in output_edge.
         """
         global rmg
-        # add database properties to RMG
         inp.database(reactionLibraries=[("test", True)])
-        assert isinstance(rmg.reaction_libraries[0], tuple)
-        assert rmg.reaction_libraries[0][1]
+        assert rmg.reaction_libraries == ["test"]
+        assert "test" in rmg.reaction_libraries_output_edge
+
+class TestInputDatabaseAutoSelection:
+    """Tests for 'auto' and '<PAH_libs>' token handling in database()."""
+
+    def test_thermo_auto_string(self):
+        global rmg
+        inp.database(thermoLibraries='auto')
+        assert rmg.thermo_libraries == 'auto'
+
+    def test_thermo_auto_in_list(self):
+        global rmg
+        inp.database(thermoLibraries=['myLib', 'auto'])
+        assert rmg.thermo_libraries == ['myLib', 'auto']
+
+    def test_thermo_pah_libs_in_list(self):
+        global rmg
+        inp.database(thermoLibraries=['auto', '<PAH_libs>'])
+        assert rmg.thermo_libraries == ['auto', '<PAH_libs>']
+
+    def test_transport_auto_string(self):
+        global rmg
+        inp.database(transportLibraries='auto')
+        assert rmg.transport_libraries == 'auto'
+
+    def test_reaction_libraries_auto_string(self):
+        global rmg
+        inp.database(reactionLibraries='auto')
+        assert rmg.reaction_libraries == 'auto'
+
+    def test_reaction_libraries_auto_in_list(self):
+        global rmg
+        inp.database(reactionLibraries=['auto', '<PAH_libs>'])
+        assert 'auto' in rmg.reaction_libraries
+        assert '<PAH_libs>' in rmg.reaction_libraries
+
+    def test_reaction_libraries_mixed_auto_and_tuple(self):
+        global rmg
+        inp.database(reactionLibraries=[('myLib', True), 'auto'])
+        assert rmg.reaction_libraries == ['myLib', 'auto']
+        assert 'myLib' in rmg.reaction_libraries_output_edge
+
+    def test_seed_mechanisms_auto(self):
+        global rmg
+        inp.database(seedMechanisms='auto')
+        assert rmg.seed_mechanisms == 'auto'
+
+    def test_kinetics_families_auto(self):
+        global rmg
+        inp.database(kineticsFamilies='auto')
+        assert rmg.kinetics_families == 'auto'
+
+    def test_kinetics_families_auto_with_exclusion(self):
+        global rmg
+        inp.database(kineticsFamilies=['!H_Abstraction', 'auto'])
+        assert rmg.kinetics_families == ['!H_Abstraction', 'auto']
+
+    def test_default_no_auto(self):
+        """Without 'auto', fields should behave as before."""
+        global rmg
+        inp.database(
+            thermoLibraries=['primaryThermoLibrary'],
+            reactionLibraries=[('lib1', False)],
+            seedMechanisms=[],
+            transportLibraries=None,
+            kineticsFamilies='default',
+        )
+        assert rmg.thermo_libraries == ['primaryThermoLibrary']
+        assert rmg.reaction_libraries == ['lib1']
+        assert 'lib1' not in rmg.reaction_libraries_output_edge
+        assert rmg.seed_mechanisms == []
+        assert rmg.transport_libraries is None
+        assert rmg.kinetics_families == 'default'
+
+    def test_pah_libs_standalone_thermo_raises(self):
+        with pytest.raises(InputError):
+            inp.database(thermoLibraries='<PAH_libs>')
+
+    def test_pah_libs_standalone_reaction_raises(self):
+        with pytest.raises(InputError):
+            inp.database(reactionLibraries='<PAH_libs>')
+
+    def test_pah_libs_standalone_transport_raises(self):
+        with pytest.raises(InputError):
+            inp.database(transportLibraries='<PAH_libs>')
+
+    def test_pah_libs_standalone_seeds_raises(self):
+        with pytest.raises(InputError):
+            inp.database(seedMechanisms='<PAH_libs>')
+
+    def test_pah_libs_tuple_in_reaction_libs_raises(self):
+        with pytest.raises(InputError):
+            inp.database(reactionLibraries=[('<PAH_libs>', True)])
+
 
 @pytest.mark.skip(reason=ADMONITION)
 class TestInputMLEstimator:

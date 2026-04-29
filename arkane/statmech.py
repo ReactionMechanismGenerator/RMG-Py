@@ -57,7 +57,7 @@ from rmgpy.quantity import Quantity
 
 from arkane.common import ArkaneSpecies, symbol_by_number, get_principal_moments_of_inertia
 from arkane.encorr.corr import get_atom_correction, get_bac
-from arkane.ess import ESSAdapter, ess_factory, _registered_ess_adapters, GaussianLog, QChemLog
+from arkane.ess import ESSAdapter, ess_factory, _registered_ess_adapters, GaussianLog, QChemLog, XTBLog
 from arkane.encorr.isodesmic import ErrorCancelingSpecies, IsodesmicRingScheme
 from arkane.modelchem import LevelOfTheory, CompositeLevelOfTheory, standardize_name
 from arkane.output import prettify
@@ -506,10 +506,21 @@ class StatMechJob(object):
                                  self.species.label))
 
         logging.debug('    Reading molecular degrees of freedom...')
-        conformer, unscaled_frequencies = statmech_log.load_conformer(symmetry=external_symmetry,
+        if isinstance(statmech_log, XTBLog):
+            # XTB frequencies log does not contain geometry information, so read the geometry from the geometry log
+            # frequencies from the frequencies log and combine them to create the conformer object
+            conformer, unscaled_frequencies = geom_log.load_conformer(symmetry=external_symmetry,
                                                                       spin_multiplicity=spin_multiplicity,
                                                                       optical_isomers=optical_isomers,
                                                                       label=self.species.label)
+            unscaled_frequencies = statmech_log._load_frequencies()
+            if unscaled_frequencies:
+                conformer.modes.append(HarmonicOscillator(frequencies=(unscaled_frequencies, "cm^-1")))
+        else:
+            conformer, unscaled_frequencies = statmech_log.load_conformer(symmetry=external_symmetry,
+                                                                          spin_multiplicity=spin_multiplicity,
+                                                                          optical_isomers=optical_isomers,
+                                                                          label=self.species.label)
 
         for mode in conformer.modes:
             if isinstance(mode, (Translation, IdealGasTranslation)):
@@ -695,7 +706,10 @@ class StatMechJob(object):
 
         # save supporting information for calculation
         self.supporting_info = [self.species.label]
-        optical_isomers_read, symmetry_read, point_group_read = statmech_log.get_symmetry_properties()
+        if isinstance(statmech_log, XTBLog):
+            optical_isomers_read, symmetry_read, point_group_read = geom_log.get_symmetry_properties()
+        else:
+            optical_isomers_read, symmetry_read, point_group_read = statmech_log.get_symmetry_properties()
         self.supporting_info.append(external_symmetry if external_symmetry else symmetry_read)
         self.supporting_info.append(optical_isomers if optical_isomers else optical_isomers_read)
         self.supporting_info.append(point_group_read)

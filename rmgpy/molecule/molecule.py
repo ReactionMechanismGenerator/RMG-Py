@@ -2681,13 +2681,21 @@ class Molecule(Graph):
                                       return_mapping=False,
                                       save_order=True,
                                       ignore_bond_orders=True)
-
+        rdkit_mol.UpdatePropertyCache(strict=False)
+        ranks = list(Chem.CanonicalRankAtoms(rdkit_mol, breakTies=True))
+        rank_to_idx = {rank: idx for idx, rank in enumerate(ranks)}
+        new_order = [rank_to_idx[i] for i in range(rdkit_mol.GetNumAtoms())]
+        canonical_mol = Chem.RenumberAtoms(rdkit_mol, new_order)
         if symmetrized:
-            ring_info = Chem.GetSymmSSSR(rdkit_mol)
+            ring_info = Chem.GetSymmSSSR(canonical_mol)
         else:
-            ring_info = Chem.GetSSSR(rdkit_mol)
+            ring_info = Chem.GetSSSR(canonical_mol)
+
         for ring in ring_info:
-            atom_ring = [self.atoms[idx] for idx in ring]
+            # Map the new canonical indices back to the original RMG atom indices
+            original_idx_ring = [new_order[idx] for idx in ring]
+            atom_ring = [self.atoms[idx] for idx in original_idx_ring]
+            
             sorted_ring = self.sort_cyclic_vertices(atom_ring)
             sssr.append(sorted_ring)
         if symmetrized:
@@ -3125,6 +3133,36 @@ class Molecule(Graph):
                 logging.debug("After removing from surface:\n" + desorbed_molecule.to_adjacency_list())
 
         return desorbed_molecules
+
+    def get_ring_count_in_largest_fused_ring_system(self) -> int:
+        """
+        Get the number of rings in the largest fused ring system in the molecule.
+        Returns 0 if the molecule has no fused rings (only monocycles or no rings).
+        """
+        cython.declare(polycycles=list, sssr=list, sssr_sets=list, ring_counts=list)
+        cython.declare(polycycle=list, ring=list)
+
+        polycycles = self.get_polycycles()
+        if not polycycles:
+            return 0
+
+        sssr = self.get_smallest_set_of_smallest_rings()
+        if not sssr:
+            return 0
+
+        sssr_sets = [set(r) for r in sssr]
+
+        ring_counts = list()
+        for polycycle in polycycles:
+            poly_set = set(polycycle)
+            ring_count = 0
+            for ring_set in sssr_sets:
+                if ring_set.issubset(poly_set):
+                    ring_count += 1
+            ring_counts.append(ring_count)
+
+        return max(ring_counts) if ring_counts else 0
+
 
 # this variable is used to name atom IDs so that there are as few conflicts by 
 # using the entire space of integer objects

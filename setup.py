@@ -27,8 +27,26 @@
 #                                                                             #
 ###############################################################################
 
+import sys
+
 from setuptools import setup
-    
+
+# On macOS, conda-forge Python bakes duplicate -Wl,-rpath flags into its sysconfig data,
+# which causes every compiled extension to have duplicate LC_RPATH Mach-O load commands
+# that macOS rejects on import.  Deduplicate the linker flags here, before Cython
+# generates any .so files, so they are built clean.  This patches the live dict that
+# setuptools reads during build_ext, keeping the conda env itself untouched.
+if sys.platform == 'darwin':
+    import sysconfig as _sysconfig
+    _cv = _sysconfig.get_config_vars()
+    for _k in ('LDFLAGS', 'LDSHARED', 'BLDSHARED', 'PY_LDFLAGS'):
+        _v = _cv.get(_k) or ''
+        if _v:
+            _seen: set = set()
+            _cv[_k] = ' '.join(x for x in _v.split() if not (x in _seen or _seen.add(x)))
+            if _v != _cv[_k]:
+                print(f"Deduplicated {_k} from '{_v}' to '{_cv[_k]}'")
+
 try:
     from Cython.Build import cythonize
     from Cython.Compiler import Options
