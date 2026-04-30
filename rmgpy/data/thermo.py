@@ -860,6 +860,8 @@ class ThermoDatabase(object):
         self.libraries = {}
         self.surface = {}
         self.groups = {}
+        self.sidts = {}
+        self.sidt_taggings_and_decompositions = {}
         self.adsorption_groups = "adsorptionPt111"
         self.library_order = []
         self.local_context = {
@@ -886,6 +888,7 @@ class ThermoDatabase(object):
             'depository': self.depository,
             'libraries': self.libraries,
             'groups': self.groups,
+            'sidts': self.sidts,
             'library_order': self.library_order,
             'surface' : self.surface,
         }
@@ -898,6 +901,7 @@ class ThermoDatabase(object):
         self.depository = d['depository']
         self.libraries = d['libraries']
         self.groups = d['groups']
+        self.sidts = d['sidts']
         self.library_order = d['library_order']
         self.surface = d['surface']
 
@@ -912,6 +916,7 @@ class ThermoDatabase(object):
             self.depository = {}
         self.load_libraries(os.path.join(path, 'libraries'), libraries)
         self.load_groups(os.path.join(path, 'groups'))
+        self.load_sidts(os.path.join(path,'sidt'))
         if surface:
             self.load_surface()
 
