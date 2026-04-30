@@ -7,7 +7,7 @@ Guidance for AI agents working in this repo. Also read [.github/copilot-instruct
 **RMG-Py** = Reaction Mechanism Generator (chemical kinetics mechanism generator). Two installable packages: `rmgpy/` (mechanism generation) and `arkane/` (statistical mechanics from QM calculations). Heavy use of Cython for performance. Depends on a sibling repo **RMG-database** for thermo/kinetics data.
 
 Entry points:
-- `rmg.py <input.py>` — runs RMG on a Python-style input file (camelCase syntax — see `examples/rmg/minimal/input.py`)
+- `rmg.py <input.py>` — runs RMG on a Python-style input file (see `examples/rmg/minimal/input.py`)
 - `Arkane.py <input.py>` — runs Arkane
 - Both are also installed as console scripts (`rmg.py`, `Arkane.py`) via `setup.py`. They thin-wrap `rmgpy.__main__:main` / `arkane.__main__:main`.
 - Scripts under `scripts/` are also installed (e.g. `simulate.py`, `diffModels.py`, `mergeModels.py`, `rmg2to3.py`).
@@ -106,7 +106,7 @@ Template: [rmgpy/rmgrc_template](rmgpy/rmgrc_template). Copy it (don't edit in p
 
 ## Conventions
 
-- **Python API uses `snake_case`**. The mass rename happened in the Python 3 transition (see `scripts/rmg2to3.py` — automated converter for old code).
+- **Python API uses `snake_case`**.
 - **Input file DSL keeps `camelCase`** (`thermoLibraries`, `simpleReactor`, `terminationConversion`, ...) for backward compatibility. When adding a new input keyword, follow camelCase and update [documentation/source/users/rmg/input.rst](documentation/source/users/rmg/input.rst).
 - All source files require the MIT license header (template lives in [LICENSE.txt](LICENSE.txt); `python utilities.py update-headers` re-applies it across `.py`/`.pyx`/`.pxd` in `rmgpy/`, `scripts/`, and the root).
 - Use `logging` not `print`.
