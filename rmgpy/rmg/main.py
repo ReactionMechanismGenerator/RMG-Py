@@ -400,6 +400,10 @@ class RMG(util.Subject):
         save_input_file(path, self)
 
     def load_database(self):
+        if "SIDT" in self.adsorption_groups:
+            Pt111_adsorption = "adsorptionSIDTPt111"
+        else:
+            Pt111_adsorption = "adsorptionPt111"
         self.database = RMGDatabase()
         self.database.load(
             path=self.database_directory,
@@ -410,7 +414,7 @@ class RMG(util.Subject):
             kinetics_families=self.kinetics_families,
             kinetics_depositories=self.kinetics_depositories,
             statmech_libraries = self.statmech_libraries,
-            adsorption_groups='adsorptionPt111', # use Pt111 groups for training reactions
+            adsorption_groups=Pt111_adsorption, # use Pt111 groups for training reactions
             # frequenciesLibraries = self.statmech_libraries,
             depository=False,  # Don't bother loading the depository information, as we don't use it
         )
