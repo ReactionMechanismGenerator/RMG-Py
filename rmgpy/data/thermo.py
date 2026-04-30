@@ -1012,6 +1012,71 @@ class ThermoDatabase(object):
 
         self.record_ring_generic_nodes()
         self.record_polycylic_generic_nodes()
+        
+    def load_sidts(self, path):
+        """
+        Load thermo SIDTs from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        logging.info('Loading thermodynamics SIDTs from {0}...'.format(path))
+        categories = [
+            "Pt111_monodentate_adsorption_corrections",
+            "Pt111_bidentate_adsorption_corrections",
+            "Pt111_vdw_adsorption_corrections",
+        ]
+        
+        def add_monodentate_tag(m):
+            for a in m.atoms:
+                if a.is_surface_site():
+                    adatom = list(a.bonds.keys())[0]
+                    adatom.label = "*"
+                    break
+        
+        def add_bidentate_tag(m):
+            structs = []
+            sites = m.get_surface_sites()
+            s1 = sites[0]
+            s2 = sites[1]
+            paths = find_shortest_paths(s1,s2)
+            path = paths[0]
+            for a in path:
+                a.label = "*"
+
+        def add_vdw_tag(m):
+            for a in m.atoms:
+                if a.is_surface_site():
+                    a.label = "*"
+                    break
+        
+        def multidentate_decomposition(m):
+            structs = []
+            sites = m.get_surface_sites()
+            for tup in itertools.combinations(sites,2):
+                s1 = tup[0]
+                s2 = tup[1]
+                paths = find_shortest_paths(s1,s2)
+                path = paths[0]
+                inds = []
+                for p in path:
+                    inds.append(m.atoms.index(p))
+                mol = m.copy(deep=True)
+                for ind in inds:
+                    mol.atoms[ind].label = "*"
+                structs.append(mol)
+        
+            return structs
+        
+        self.sidt_taggings_and_decompositions = {
+            "Pt111_monodentate_adsorption_corrections": add_monodentate_tag,
+            "Pt111_bidentate_adsorption_corrections": add_bidentate_tag,
+            "Pt111_vdw_adsorption_corrections": add_vdw_tag,
+            "Pt111_multidentate_adsorption_corrections": multidentate_decomposition, #special
+        }
+        
+        for category in categories:
+            nodes = read_nodes(os.path.join(path,category+".json"))
+            tree = MultiTargetSingleEvalSubgraphIsomorphicDecisionTree(nodes=nodes)
+            self.sidts[category] = tree
 
     def save(self, path):
         """
