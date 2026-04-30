@@ -22,21 +22,24 @@ RMG-Py is the Reaction Mechanism Generator - an automatic chemical kinetics mech
 
 ### Cython Architecture
 Performance-critical code uses Cython (`.pyx` files) with declaration files (`.pxd`):
-- Always pair `.pyx` with `.pxd` for public cdef classes/methods
+- Some `.py` files are also cythonized — they have a `.pxd` sibling and are listed in `setup.py` `ext_modules` (e.g. `rmgpy/species.py`, `rmgpy/reaction.py`, `rmgpy/quantity.py`, `rmgpy/constants.py`, and most of `rmgpy/molecule/`). The compiled `.so` is what gets imported, so edits won't take effect until rebuilt.
+- Always pair `.pyx` (or cythonized `.py`) with `.pxd` for public cdef classes/methods
 - Use `cpdef` for methods callable from both Python and Cython
 - Use `cimport` for Cython-level imports (e.g., `cimport rmgpy.constants as constants`)
 - Register new Cython modules in `setup.py` `ext_modules` list
-- Remember to re-compile (e.g. run `make`) after modifying any `.pyx` or `.pxd` files, or if there seem to be weird bugs in them.
+- Remember to re-compile (`make build`) after modifying any `.pyx`, `.pxd`, or cythonized `.py` file, or if there seem to be weird bugs in them.
 
 ## Development Commands
 ```bash
-make install          # Build Cython extensions and install in editable mode
+make install          # First-time pip editable install + Cython build. Writes a .installed sentinel; subsequent `make install` is a no-op until `make clean`.
+make build            # Incremental in-place Cython rebuild (`setup.py build_ext --inplace`). Fast — use this after editing .pyx/.pxd/cythonized .py.
+make                  # Default target: dep check, install if needed (via sentinel), then `make build`. Safe go-to.
 make test             # Run unit tests (excludes functional/database tests)
 make test-functional  # Run functional tests
 make test-database    # Run database tests
 make test-all         # Run all tests
-make clean            # Remove build artifacts
-make decython         # Remove .so files for "pure Python" debugging. Pure python mode is not reliably tested and might not work.
+make clean            # Remove .so/.pyc/.c build artifacts, the build/ dir, the .installed sentinel, and pip-uninstall the package.
+make decython         # Remove most .so files for "pure Python" debugging (keeps _statmech.so, quantity.so, and rmgpy/solver/*.so). Pure python mode is not reliably tested and might not work.
 make documentation    # Build Sphinx docs
 ```
 
