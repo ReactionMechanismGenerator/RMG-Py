@@ -46,6 +46,9 @@ from rmgpy.kinetics.arrhenius import (
 from rmgpy.util import make_output_subdirectory
 from datetime import datetime
 from rmgpy.chemkin import get_species_identifier
+from rmgpy.data.kinetics.family import TemplateReaction
+from rmgpy.data.kinetics.library import LibraryReaction
+from rmgpy.rmg.pdep import PDepReaction
 
 
 def _convert_anymap_to_dict(obj):
@@ -89,10 +92,12 @@ def write_cantera(
     solvent=None,
     solvent_data=None,
     path="chem.yml",
+    verbose=False,
 ):
     """
     Writes yaml file depending on the type of system (gas-phase, catalysis).
     Writes beginning lines of yaml file, then uses yaml.dump(result_dict) to write species/reactions info.
+    If verbose=True, species and reaction notes (SMILES, source, kinetics comment) are included.
     """
 
     try:
@@ -113,14 +118,14 @@ def write_cantera(
             for spc in spcs if spc.contains_surface_site()
         )
         result_dict = get_mech_dict_surface(
-            spcs, rxns, solvent=solvent, solvent_data=solvent_data
+            spcs, rxns, solvent=solvent, solvent_data=solvent_data, verbose=verbose
         )
         phases_block = get_phases_with_surface(
             spcs, surface_site_density, has_coverage_dependence=has_coverage_dependence
         )
     else:
         result_dict = get_mech_dict_nonsurface(
-            spcs, rxns, solvent=solvent, solvent_data=solvent_data
+            spcs, rxns, solvent=solvent, solvent_data=solvent_data, verbose=verbose
         )
         phases_block = get_phases_gas_only(spcs)
 
@@ -262,7 +267,7 @@ phases:
     return phases_block
 
 
-def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
+def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None, verbose=False):
     """
     For systems with surface species/reactions.
     Adds 'species', 'gas-reactions', and 'site0-reactions' to result_dict.
@@ -281,24 +286,24 @@ def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None):
             names[i] += "-" + str(names.count(name))
 
     result_dict = dict()
-    result_dict["species"] = [species_to_dict(x, all_species=spcs) for x in spcs]
+    result_dict["species"] = [species_to_dict(x, all_species=spcs, verbose=verbose) for x in spcs]
 
     # separate gas and surface reactions
 
     gas_reactions = []
     for rmg_rxn in gas_rxns:
-        gas_reactions.extend(reaction_to_dicts(rmg_rxn, spcs))
+        gas_reactions.extend(reaction_to_dicts(rmg_rxn, spcs, verbose=verbose))
     result_dict["gas-reactions"] = gas_reactions
 
     surface_reactions = []
     for rmg_rxn in surface_rxns:
-        surface_reactions.extend(reaction_to_dicts(rmg_rxn, spcs))
+        surface_reactions.extend(reaction_to_dicts(rmg_rxn, spcs, verbose=verbose))
     result_dict["site0-reactions"] = surface_reactions
 
     return result_dict
 
 
-def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None):
+def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None, verbose=False):
     """
     For gas-phase systems.
     Adds 'species' and 'reactions' to result_dict.
@@ -309,21 +314,22 @@ def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None):
             names[i] += "-" + str(names.count(name))
 
     result_dict = dict()
-    result_dict["species"] = [species_to_dict(x) for x in spcs]
+    result_dict["species"] = [species_to_dict(x, verbose=verbose) for x in spcs]
 
     reactions = []
     for rmg_rxn in rxns:
-        reactions.extend(reaction_to_dicts(rmg_rxn, spcs))
+        reactions.extend(reaction_to_dicts(rmg_rxn, spcs, verbose=verbose))
     result_dict["reactions"] = reactions
 
     return result_dict
 
 
-def reaction_to_dicts(obj, spcs):
+def reaction_to_dicts(obj, spcs, verbose=False):
     """
     Takes an RMG reaction object (obj), returns a list of dictionaries
     for YAML properties. For most reaction objects the list will be of
     length 1, but a MultiArrhenius or MultiPDepArrhenius will be longer.
+    If verbose=True, a 'note' field is added with source and kinetics comment.
     """
 
     reaction_list = []
@@ -347,12 +353,28 @@ def reaction_to_dicts(obj, spcs):
             }
         # Convert any AnyMap objects to regular dicts before appending
         reaction_data = _convert_anymap_to_dict(reaction_data)
+
+        if verbose:
+            note_parts = []
+            if isinstance(obj, TemplateReaction):
+                note_parts.append(f"Template reaction: {obj.family}")
+            elif isinstance(obj, LibraryReaction):
+                note_parts.append(f"Library reaction: {obj.library}")
+            elif isinstance(obj, PDepReaction):
+                note_parts.append(f"PDep reaction: {obj.network}")
+            if obj.specific_collider is not None:
+                note_parts.append(f"Specific collider: {obj.specific_collider.label}")
+            if obj.kinetics.comment:
+                note_parts.append(obj.kinetics.comment.replace('\n', '; ').strip())
+            if note_parts:
+                reaction_data["note"] = " | ".join(note_parts)
+
         reaction_list.append(reaction_data)
 
     return reaction_list
 
 
-def species_to_dict(species, all_species=None):
+def species_to_dict(species, all_species=None, verbose=False):
     """
     Takes an RMG species object, returns a dictionary of YAML properties.
     Also adds in the number of surface sites ('sites') to the dictionary.
@@ -360,6 +382,7 @@ def species_to_dict(species, all_species=None):
     all_species: if provided, coverage-dependent thermo is resolved and
     attached to the Cantera species object before serialisation, so it
     appears in the returned dict automatically.
+    If verbose=True, species SMILES and thermo/transport comments are included.
     """
     if not isinstance(species, Species):
         raise TypeError("species object must be an RMG Species")
@@ -367,12 +390,13 @@ def species_to_dict(species, all_species=None):
     cantera_species = species.to_cantera(use_chemkin_identifier=True, all_species=all_species)
     species_data = cantera_species.input_data
 
-    try:
-        transport_comment = species.transport_data.comment
-        if transport_comment:
-            species_data["transport"]["note"] = transport_comment
-    except AttributeError:
-        pass
+    if verbose:
+        try:
+            transport_comment = species.transport_data.comment
+            if transport_comment:
+                species_data["transport"]["note"] = transport_comment
+        except AttributeError:
+            pass
 
     if "size" in species_data:
         sites = species_data["size"]
@@ -382,7 +406,20 @@ def species_to_dict(species, all_species=None):
     # Convert any AnyMap objects to regular dicts before returning
     species_data = _convert_anymap_to_dict(species_data)
 
-     # returns composition, name, thermo, and transport, and note
+    if verbose:
+        try:
+            smiles = species.to_smiles()
+            if smiles:
+                species_data["note"] = smiles
+        except Exception:
+            pass
+        if species.thermo and species.thermo.comment:
+            clean_comment = species.thermo.comment.replace('\n', '; ').strip()
+            if clean_comment:
+                if "thermo" in species_data and isinstance(species_data["thermo"], dict):
+                    species_data["thermo"]["note"] = clean_comment
+
+    # returns composition, name, thermo, and transport, and note
     return species_data
 
 
@@ -417,8 +454,9 @@ class CanteraWriter1(object):
 
     def update(self, rmg):
 
+        num_species = len(rmg.reaction_model.core.species)
         this_output_path = os.path.join(self.output_subdirectory,
-                                        f"chem{len(rmg.reaction_model.core.species):04d}.yaml")
+                                        f"chem{num_species:04d}.yaml")
         latest_output_path = os.path.join(self.output_subdirectory, 'chem.yaml')
 
         logging.info(f"Saving current model core to Cantera file: {this_output_path}")
@@ -437,7 +475,19 @@ class CanteraWriter1(object):
             surface_site_density=surface_site_density,
             solvent=rmg.solvent,
             solvent_data=solvent_data,
-            path=this_output_path
+            path=this_output_path,
         )
-        # Update the latest output path
         shutil.copy2(this_output_path, latest_output_path)
+
+        if rmg.verbose_comments:
+            annotated_path = os.path.join(self.output_subdirectory, 'chem_annotated.yaml')
+            logging.info(f"Saving annotated Cantera file: {annotated_path}")
+            write_cantera(
+                rmg.reaction_model.core.species,
+                rmg.reaction_model.core.reactions,
+                surface_site_density=surface_site_density,
+                solvent=rmg.solvent,
+                solvent_data=solvent_data,
+                path=annotated_path,
+                verbose=True,
+            )
