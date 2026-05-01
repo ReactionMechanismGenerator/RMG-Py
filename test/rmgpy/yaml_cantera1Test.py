@@ -34,11 +34,265 @@ Tests for rmgpy.yaml_cantera1 module.
 import copy
 import os
 import pytest
+import numpy as np
 import yaml
 
+from rmgpy.species import Species
+from rmgpy.reaction import Reaction
+from rmgpy.thermo import NASA, NASAPolynomial
+from rmgpy.transport import TransportData
+from rmgpy.kinetics import (
+    Arrhenius,
+    PDepArrhenius,
+    Troe,
+    ThirdBody,
+)
+from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient
 from rmgpy.yaml_cantera1 import (
     CanteraWriter1,
+    species_to_dict,
+    reaction_to_dicts,
 )
+
+
+def _make_nasa_thermo():
+    coeffs = [1.0, 0.0, 0.0, 0.0, 0.0, -100.0, 1.0]
+    return NASA(
+        polynomials=[
+            NASAPolynomial(coeffs=coeffs, Tmin=(200, "K"), Tmax=(1000, "K")),
+            NASAPolynomial(coeffs=coeffs, Tmin=(1000, "K"), Tmax=(6000, "K")),
+        ],
+        Tmin=(200, "K"),
+        Tmax=(6000, "K"),
+    )
+
+
+def _make_gas_species(label, smiles, index):
+    sp = Species(label=label, index=index)
+    sp.from_smiles(smiles)
+    sp.thermo = _make_nasa_thermo()
+    sp.transport_data = TransportData(
+        shapeIndex=1,
+        sigma=(3.0, "angstrom"),
+        epsilon=(100.0, "K"),
+        dipoleMoment=(0.0, "De"),
+        polarizability=(0.0, "angstrom^3"),
+        rotrelaxcollnum=1.0,
+    )
+    return sp
+
+
+def _make_surface_species(label, adjlist, index):
+    sp = Species(label=label, index=index)
+    sp.from_adjacency_list(adjlist)
+    sp.thermo = _make_nasa_thermo()
+    return sp
+
+
+class TestYamlCantera1Functions:
+    """Unit tests for the individual helper functions in yaml_cantera1."""
+
+    # ------------------------------------------------------------------
+    # Shared fixtures
+    # ------------------------------------------------------------------
+    @pytest.fixture(autouse=True)
+    def _build_species(self):
+        self.h2 = _make_gas_species("H2", "[H][H]", index=1)
+        self.h = _make_gas_species("H", "[H]", index=2)
+        self.ar = _make_gas_species("Ar", "[Ar]", index=3)
+        self.x = _make_surface_species("X", "1 X u0 p0", index=4)
+        self.hx = _make_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=5
+        )
+        self.all_gas = [self.h2, self.h, self.ar]
+        self.all_surface = [self.x, self.hx, self.h2]
+
+    # ------------------------------------------------------------------
+    # species_to_dict
+    # ------------------------------------------------------------------
+    def test_species_to_dict_gas_name_and_thermo(self):
+        """Gas species: correct name, NASA7 thermo with two polynomial ranges."""
+        d = species_to_dict(self.h2)
+        assert d["name"] == "H2(1)"
+        assert d["composition"] == {"H": 2.0}
+        assert d["thermo"]["model"] == "NASA7"
+        assert len(d["thermo"]["temperature-ranges"]) == 3  # low, mid, high
+        assert len(d["thermo"]["data"]) == 2
+
+    def test_species_to_dict_gas_transport(self):
+        """Gas species transport data is present and contains geometry."""
+        d = species_to_dict(self.h2)
+        assert "transport" in d
+        assert d["transport"]["model"] == "gas"
+        assert d["transport"]["geometry"] == "linear"
+        assert np.isclose(d["transport"]["diameter"], 3.0)
+        assert np.isclose(d["transport"]["well-depth"], 100.0)
+
+    def test_species_to_dict_surface_composition(self):
+        """Surface species has X in composition and no transport block."""
+        d = species_to_dict(self.hx)
+        assert "X" in d["composition"]
+        assert d["composition"]["X"] == 1.0
+        assert "H" in d["composition"]
+        assert "transport" not in d
+
+    def test_species_to_dict_surface_thermo_model(self):
+        """Surface species reports NASA7 thermo."""
+        d = species_to_dict(self.x)
+        assert d["thermo"]["model"] == "NASA7"
+
+    # ------------------------------------------------------------------
+    # reaction_to_dicts — gas-phase kinetics
+    # Units declared in yaml_cantera1: activation-energy: J/kmol,
+    # so all Ea values come through multiplied by 1000 relative to J/mol.
+    # ------------------------------------------------------------------
+    def test_reaction_to_dicts_arrhenius_equation_and_rate(self):
+        """Arrhenius: equation string and rate-constant keys present with J/kmol Ea."""
+        kin = Arrhenius(A=(1e13, "s^-1"), n=0.5, Ea=(10, "kJ/mol"), T0=(1, "K"))
+        rxn = Reaction(reactants=[self.h2], products=[self.h, self.h], kinetics=kin)
+        entries = reaction_to_dicts(rxn, self.all_gas)
+        assert len(entries) == 1
+        d = entries[0]
+        assert d["equation"] == "H2(1) <=> 2 H(2)"
+        assert "rate-constant" in d
+        assert np.isclose(d["rate-constant"]["A"], 1e13)
+        assert np.isclose(d["rate-constant"]["b"], 0.5)
+        assert np.isclose(d["rate-constant"]["Ea"], 10e6)  # 10 kJ/mol → 1e7 J/kmol
+
+    def test_reaction_to_dicts_thirdbody(self):
+        """ThirdBody: equation uses M, efficiencies map present."""
+        kin = ThirdBody(
+            arrheniusLow=Arrhenius(
+                A=(1e18, "cm^6/(mol^2*s)"), n=-1, Ea=(0, "J/mol"), T0=(1, "K")
+            ),
+            efficiencies={self.ar.molecule[0]: 0.7},
+        )
+        rxn = Reaction(
+            reactants=[self.h, self.h], products=[self.h2], kinetics=kin
+        )
+        entries = reaction_to_dicts(rxn, self.all_gas)
+        d = entries[0]
+        assert "M" in d["equation"]
+        assert "rate-constant" in d
+        assert "efficiencies" in d
+        assert np.isclose(d["efficiencies"]["Ar(3)"], 0.7)
+
+    def test_reaction_to_dicts_pdep_arrhenius(self):
+        """PDepArrhenius: type is pressure-dependent-Arrhenius, rate-constants list."""
+        kin = PDepArrhenius(
+            pressures=([0.1, 1.0], "atm"),
+            arrhenius=[
+                Arrhenius(A=(1e10, "s^-1"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K")),
+                Arrhenius(A=(1e12, "s^-1"), n=0, Ea=(15, "kJ/mol"), T0=(1, "K")),
+            ],
+        )
+        rxn = Reaction(reactants=[self.h2], products=[self.h, self.h], kinetics=kin)
+        entries = reaction_to_dicts(rxn, self.all_gas)
+        d = entries[0]
+        assert d["type"] == "pressure-dependent-Arrhenius"
+        rates = d["rate-constants"]
+        assert len(rates) == 2
+        assert np.isclose(rates[0]["P"], 0.1 * 101325.0)
+        assert np.isclose(rates[0]["A"], 1e10)
+        assert np.isclose(rates[0]["Ea"], 10e6)   # J/kmol
+        assert np.isclose(rates[1]["P"], 1.0 * 101325.0)
+        assert np.isclose(rates[1]["A"], 1e12)
+        assert np.isclose(rates[1]["Ea"], 15e6)   # J/kmol
+
+    def test_reaction_to_dicts_troe(self):
+        """Troe: type falloff, Troe block present, high/low rate constants."""
+        kin = Troe(
+            arrheniusHigh=Arrhenius(
+                A=(1e14, "s^-1"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K")
+            ),
+            arrheniusLow=Arrhenius(
+                A=(1e20, "cm^3/(mol*s)"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K")
+            ),
+            alpha=0.5,
+            T3=(100, "K"),
+            T1=(200, "K"),
+            T2=(300, "K"),
+            efficiencies={self.ar.molecule[0]: 2.0},
+        )
+        rxn = Reaction(reactants=[self.h], products=[self.h], kinetics=kin)
+        entries = reaction_to_dicts(rxn, self.all_gas)
+        d = entries[0]
+        assert d["type"] == "falloff"
+        assert "Troe" in d
+        assert np.isclose(d["Troe"]["A"], 0.5)
+        assert np.isclose(d["Troe"]["T3"], 100.0)
+        assert np.isclose(d["Troe"]["T1"], 200.0)
+        assert np.isclose(d["Troe"]["T2"], 300.0)
+        assert np.isclose(d["high-P-rate-constant"]["A"], 1e14)
+        assert np.isclose(d["high-P-rate-constant"]["Ea"], 10e6)  # J/kmol
+        assert "efficiencies" in d
+        assert np.isclose(d["efficiencies"]["Ar(3)"], 2.0)
+
+    # ------------------------------------------------------------------
+    # reaction_to_dicts — surface kinetics
+    # ------------------------------------------------------------------
+    def test_reaction_to_dicts_surface_arrhenius(self):
+        """SurfaceArrhenius: rate-constant present, A converted to /kmol."""
+        kin = SurfaceArrhenius(
+            A=(1e13, "m^2/(mol*s)"), n=0.5, Ea=(50, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[self.h2, self.x],
+            products=[self.hx, self.hx],
+            kinetics=kin,
+        )
+        entries = reaction_to_dicts(rxn, self.all_surface)
+        d = entries[0]
+        assert "rate-constant" in d
+        # A in m^2/(mol*s) → ×1000 → m^2/(kmol*s)
+        assert np.isclose(d["rate-constant"]["A"], 1e16)
+        assert np.isclose(d["rate-constant"]["b"], 0.5)
+        assert np.isclose(d["rate-constant"]["Ea"], 50e6)  # J/kmol
+
+    def test_reaction_to_dicts_sticking_coefficient(self):
+        """StickingCoefficient: sticking-coefficient block present, A dimensionless."""
+        kin = StickingCoefficient(
+            A=(0.1, ""), n=0, Ea=(0, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[self.h2, self.x, self.x],
+            products=[self.hx, self.hx],
+            kinetics=kin,
+        )
+        entries = reaction_to_dicts(rxn, self.all_surface)
+        d = entries[0]
+        assert "sticking-coefficient" in d
+        assert np.isclose(d["sticking-coefficient"]["A"], 0.1)
+        assert np.isclose(d["sticking-coefficient"]["Ea"], 0.0)
+
+    def test_reaction_to_dicts_coverage_dependence(self):
+        """Coverage-dependent kinetics: coverage-dependencies block present with correct units.
+
+        yaml_cantera1 declares activation-energy: J/kmol, so E must be ×1000
+        relative to RMG's J/mol value_si.
+        """
+        kin = StickingCoefficient(
+            A=(0.1, ""),
+            n=0,
+            Ea=(0, "kJ/mol"),
+            T0=(1, "K"),
+            coverage_dependence={
+                self.hx: {"a": 0.5, "m": -1.0, "E": (5.0, "kJ/mol")}
+            },
+        )
+        rxn = Reaction(
+            reactants=[self.h2, self.x, self.x],
+            products=[self.hx, self.hx],
+            kinetics=kin,
+        )
+        entries = reaction_to_dicts(rxn, self.all_surface)
+        d = entries[0]
+        assert "coverage-dependencies" in d
+        cov = d["coverage-dependencies"]["H_X(5)"]
+        assert np.isclose(cov["a"], 0.5)
+        assert np.isclose(cov["m"], -1.0)
+        # 5 kJ/mol = 5000 J/mol → ×1000 → 5 000 000 J/kmol
+        assert np.isclose(cov["E"], 5e6)
 
 
 class TestCanteraWriter1:
