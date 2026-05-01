@@ -91,6 +91,7 @@ def save_cantera_files(rmg):
     Creates:
       1. chem{N}.yaml (where N is num species)
       2. chem.yaml (latest copy)
+      3. chem_annotated.yaml (if rmg.verbose_comments is True)
     """
     # Ensure subdirectory exists
     cantera_dir = os.path.join(rmg.output_directory, 'cantera2')
@@ -114,13 +115,21 @@ def save_cantera_files(rmg):
 
     logging.info(f"Saving current model core to Cantera file: {this_cantera_path}")
 
-    # Write the YAML file
-    save_cantera_model(rmg.reaction_model.core, this_cantera_path, site_density=site_density)
+    # Write the YAML file (non-verbose)
+    save_cantera_model(rmg.reaction_model.core, this_cantera_path, site_density=site_density,
+                       verbose=False)
 
     # Copy to 'chem.yaml' (The latest file)
     if os.path.exists(latest_cantera_path):
         os.unlink(latest_cantera_path)
     shutil.copy2(this_cantera_path, latest_cantera_path)
+
+    # Write annotated file if verbose_comments is requested
+    if rmg.verbose_comments:
+        annotated_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
+        logging.info(f"Saving annotated Cantera file: {annotated_path}")
+        save_cantera_model(rmg.reaction_model.core, annotated_path, site_density=site_density,
+                           verbose=True)
 
     # -------------------------------------------------------------------------
     # 2. Save Edge Model (Optional, matching ChemkinWriter logic)
@@ -143,17 +152,25 @@ def save_cantera_files(rmg):
             rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions
         )
 
-        save_cantera_model(edge_model, this_edge_path, site_density=site_density)
+        save_cantera_model(edge_model, this_edge_path, site_density=site_density, verbose=False)
 
         if os.path.exists(latest_edge_path):
             os.unlink(latest_edge_path)
         shutil.copy2(this_edge_path, latest_edge_path)
 
+        if rmg.verbose_comments:
+            annotated_edge_path = os.path.join(cantera_dir, 'chem_edge_annotated.yaml')
+            logging.info(f"Saving annotated edge Cantera file: {annotated_edge_path}")
+            save_cantera_model(edge_model, annotated_edge_path, site_density=site_density,
+                               verbose=True)
 
-def save_cantera_model(model_container, path, site_density=None):
+
+def save_cantera_model(model_container, path, site_density=None, verbose=False):
     """
     Internal helper to generate the dictionary and write the YAML file.
     model_container must have .species and .reactions attributes (lists).
+    If verbose=True, species/reaction notes (SMILES, source, kinetics
+    comments) are included in the output.
     """
     species_list = model_container.species
     reaction_list = model_container.reactions
@@ -165,7 +182,8 @@ def save_cantera_model(model_container, path, site_density=None):
             break
 
     # Generate Data
-    yaml_data = generate_cantera_data(species_list, reaction_list, is_plasma=is_plasma, site_density=site_density)
+    yaml_data = generate_cantera_data(species_list, reaction_list, is_plasma=is_plasma,
+                                      site_density=site_density, verbose=verbose)
 
     # Write
     with open(path, 'w') as f:
@@ -178,9 +196,11 @@ def generate_cantera_data(species_list,
                           is_plasma=False,
                           site_density=None,
                           search_for_additional_elements=False,
+                          verbose=False,
                           ):
     """
     Converts RMG objects into a dictionary structure compatible with Cantera YAML.
+    If verbose=True, species/reaction notes are included (SMILES, source, kinetics comments).
     """
     # --- 1. Header & Units ---
     # We output everything in SI units.
@@ -286,16 +306,16 @@ def generate_cantera_data(species_list,
 
     species_data = list()
     for sp in species_list:
-        species_data.append(species_to_dict(sp, species_list))
+        species_data.append(species_to_dict(sp, species_list, verbose=verbose))
     data['species'] = species_data
 
     reaction_data = list()
     for rxn in gas_reactions:
-        entries = reaction_to_dict_list(rxn, species_list)
+        entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
         if entries:
             reaction_data.extend(entries)
     for rxn in surface_reactions:
-        entries = reaction_to_dict_list(rxn, species_list)
+        entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
         if entries:
             reaction_data.extend(entries)
     data['reactions'] = reaction_data
@@ -303,14 +323,17 @@ def generate_cantera_data(species_list,
     return data
 
 
-def species_to_dict(species, species_list):
-    """Convert an RMG Species object to a Cantera YAML dictionary."""
+def species_to_dict(species, species_list, verbose=False):
+    """Convert an RMG Species object to a Cantera YAML dictionary.
+    If verbose=True, species notes (SMILES, thermo/transport comments) are included.
+    """
 
     notes = list()
-    try:
-        notes.append(species.to_smiles())
-    except:
-        pass
+    if verbose:
+        try:
+            notes.append(species.to_smiles())
+        except:
+            pass
 
     # Composition
     mol = species.molecule[0]
@@ -369,11 +392,11 @@ def species_to_dict(species, species_list):
             transport_dict['polarizability'] = td.polarizability.value_si * 1e30  # Angstrom^3
         if getattr(td, 'rotrelaxcollnum', None) and td.rotrelaxcollnum != 0.0:
             transport_dict['rotational-relaxation'] = td.rotrelaxcollnum
-        if td.comment:
+        if verbose and td.comment:
             transport_dict['note'] = td.comment.strip()
         species_entry['transport'] = transport_dict
 
-    if species.thermo and species.thermo.comment:
+    if verbose and species.thermo and species.thermo.comment:
         clean_comment = species.thermo.comment.replace('\n', '; ').strip()
         species_entry['thermo']['note'] = clean_comment
 
@@ -404,9 +427,10 @@ def species_to_dict(species, species_list):
     return species_entry
 
 
-def reaction_to_dict_list(reaction, species_list=None):
+def reaction_to_dict_list(reaction, species_list=None, verbose=False):
     """
     Convert an RMG Reaction object to a LIST of Cantera YAML dictionaries.
+    If verbose=True, a 'note' field is added with source and kinetics comment.
     """
     # Check for MultiKinetics (duplicates grouped in one RMG object)
     if isinstance(reaction.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
@@ -421,7 +445,7 @@ def reaction_to_dict_list(reaction, species_list=None):
                 kinetics=sub_kin,
                 duplicate=True
             )
-            sub_result = reaction_to_dict_list(sub_rxn, species_list)
+            sub_result = reaction_to_dict_list(sub_rxn, species_list, verbose=verbose)
             if sub_result:
                 entries.extend(sub_result)
         return entries
@@ -540,27 +564,26 @@ def reaction_to_dict_list(reaction, species_list=None):
         if cov_deps:
             entry['coverage-dependencies'] = cov_deps
 
-    # --- Metadata / Notes ---
-    note_parts = list()
-    if isinstance(reaction, TemplateReaction):
-        note_parts.append(f"Source: Template family {reaction.family}")
-    elif isinstance(reaction, LibraryReaction):
-        note_parts.append(f"Source: Library {reaction.library}")
-    elif isinstance(reaction, PDepReaction):
-        note_parts.append(f"Source: PDep Network #{reaction.network.index}")
-    elif isinstance(reaction, Reaction):
-        note_parts.append(f"Source: P{reaction.kinetics.comment}")
+    # --- Metadata / Notes (only when verbose) ---
+    if verbose:
+        note_parts = list()
+        if isinstance(reaction, TemplateReaction):
+            note_parts.append(f"Source: Template family {reaction.family}")
+        elif isinstance(reaction, LibraryReaction):
+            note_parts.append(f"Source: Library {reaction.library}")
+        elif isinstance(reaction, PDepReaction):
+            note_parts.append(f"Source: PDep Network #{reaction.network.index}")
 
-    if hasattr(kin, 'comment') and kin.comment:
-        clean_comment = kin.comment.replace('\n', '; ').strip()
-        if clean_comment:
-            note_parts.append(clean_comment)
+        if hasattr(kin, 'comment') and kin.comment:
+            clean_comment = kin.comment.replace('\n', '; ').strip()
+            if clean_comment:
+                note_parts.append(clean_comment)
 
-    if reaction.specific_collider:
-        note_parts.append(f"Specific collider: {reaction.specific_collider.label}")
+        if reaction.specific_collider:
+            note_parts.append(f"Specific collider: {reaction.specific_collider.label}")
 
-    if note_parts:
-        entry['note'] = " | ".join(note_parts)
+        if note_parts:
+            entry['note'] = " | ".join(note_parts)
 
     return [entry]
 
