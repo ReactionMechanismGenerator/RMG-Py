@@ -501,58 +501,25 @@ def reaction_to_dict_list(reaction, species_list=None):
                                  (lbl := get_label(m, species_list)) is not None}
 
     elif isinstance(kin, PDepArrhenius):
-        # Check if any pressure point uses MultiArrhenius (sum of rates)
-        has_multi = any(isinstance(arr, MultiArrhenius) for arr in kin.arrhenius)
-
-        if has_multi:
-            max_terms = 0
-            for arr in kin.arrhenius:
-                if isinstance(arr, MultiArrhenius):
-                    max_terms = max(max_terms, len(arr.arrhenius))
-                else:
-                    max_terms = max(max_terms, 1)
-
-            entries = []
-            for i in range(max_terms):
-                sub_entry = entry.copy()
-                sub_entry['type'] = 'pressure-dependent-Arrhenius'
-                sub_entry['duplicate'] = True
-
-                rates = []
-                for P, arr in zip(kin.pressures.value_si, kin.arrhenius):
-                    current_arr = None
-                    if isinstance(arr, MultiArrhenius):
-                        if i < len(arr.arrhenius):
-                            current_arr = arr.arrhenius[i]
-                    elif isinstance(arr, Arrhenius):
-                        if i == 0:
-                            current_arr = arr
-
-                    if current_arr:
-                        rates.append({
-                            'P': float(P),
-                            'A': current_arr.A.value_si,
-                            'b': current_arr.n.value_si,
-                            'Ea': current_arr.Ea.value_si
-                        })
-                    else:
-                        rates.append({'P': float(P), 'A': 0.0, 'b': 0.0, 'Ea': 0.0})
-
-                sub_entry['rate-constants'] = rates
-                entries.append(sub_entry)
-            return entries
-
-        else:
-            entry['type'] = 'pressure-dependent-Arrhenius'
-            rates = []
-            for P, arr in zip(kin.pressures.value_si, kin.arrhenius):
+        # A MultiArrhenius entry comes from a chemkin PLOG block with duplicate
+        # pressures; expand it into one rate-constants entry per inner Arrhenius
+        # at the shared pressure. Cantera's pressure-dependent-Arrhenius sums
+        # duplicate-pressure entries at evaluation, matching chemkin semantics.
+        # Splitting into separate `duplicate: true` reactions would be wrong:
+        # that interpolates each component independently, then sums, which
+        # gives different rates at intermediate pressures.
+        entry['type'] = 'pressure-dependent-Arrhenius'
+        rates = []
+        for P, arr in zip(kin.pressures.value_si, kin.arrhenius):
+            sub_arrhenius = arr.arrhenius if isinstance(arr, MultiArrhenius) else [arr]
+            for sub in sub_arrhenius:
                 rates.append({
                     'P': float(P),
-                    'A': arr.A.value_si,
-                    'b': arr.n.value_si,
-                    'Ea': arr.Ea.value_si
+                    'A': sub.A.value_si,
+                    'b': sub.n.value_si,
+                    'Ea': sub.Ea.value_si
                 })
-            entry['rate-constants'] = rates
+        entry['rate-constants'] = rates
 
     else:
         logging.warning(f"Skipping reaction {equation}: Unknown kinetics type {type(kin)}")
