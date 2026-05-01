@@ -45,6 +45,7 @@ from rmgpy.kinetics import (
     Lindemann,
     ThirdBody,
 )
+from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient
 from rmgpy.thermo import NASA, NASAPolynomial
 from rmgpy.transport import TransportData
 from rmgpy.yaml_cantera2 import (
@@ -402,3 +403,139 @@ class TestCanteraWriter2:
                 self.save_edge_species = False
 
         return MockRMG(self.tmp_dir, MockModel(MockCore(species_list, reaction_list)))
+
+    def _create_surface_species(self, label, adjlist, index):
+        """Helper to create an RMG surface Species with NASA thermo (no transport)."""
+        sp = Species(label=label, index=index)
+        sp.from_adjacency_list(adjlist)
+        coeffs = [1.0, 0.0, 0.0, 0.0, 0.0, -100.0, 1.0]
+        sp.thermo = NASA(
+            polynomials=[
+                NASAPolynomial(coeffs=coeffs, Tmin=(200, "K"), Tmax=(1000, "K")),
+                NASAPolynomial(coeffs=coeffs, Tmin=(1000, "K"), Tmax=(6000, "K")),
+            ],
+            Tmin=(200, "K"),
+            Tmax=(6000, "K"),
+        )
+        return sp
+
+    # ------------------------------------------------------------------
+    # Surface species
+    # ------------------------------------------------------------------
+    def test_species_to_dict_surface_no_transport(self):
+        """Surface species: composition contains X, no transport block."""
+        sp = self._create_surface_species(
+            "X", "1 X u0 p0", index=10
+        )
+        d = species_to_dict(sp, [sp])
+        assert "X" in d["composition"]
+        assert "transport" not in d
+
+    def test_species_to_dict_surface_thermo(self):
+        """Surface species reports NASA7 thermo with two polynomial ranges."""
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=11
+        )
+        d = species_to_dict(hx, [hx])
+        assert d["thermo"]["model"] == "NASA7"
+        assert len(d["thermo"]["data"]) == 2
+        assert d["composition"] == {"H": 1, "X": 1}
+
+    # ------------------------------------------------------------------
+    # Surface reactions
+    # yaml_cantera2 declares activation-energy: J/mol, so value_si is used
+    # directly without any ×1000 conversion.
+    # ------------------------------------------------------------------
+    def test_reaction_to_dict_surface_arrhenius(self):
+        """SurfaceArrhenius: type is interface-Arrhenius, rate-constant in J/mol."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=3
+        )
+        kin = SurfaceArrhenius(
+            A=(1e13, "m^2/(mol*s)"), n=0.5, Ea=(50, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[h2, x], products=[hx, hx], kinetics=kin
+        )
+        entries = reaction_to_dict_list(rxn, species_list=[h2, x, hx])
+        assert len(entries) == 1
+        d = entries[0]
+        assert d["type"] == "interface-Arrhenius"
+        assert "rate-constant" in d
+        assert np.isclose(d["rate-constant"]["A"], 1e13)
+        assert np.isclose(d["rate-constant"]["b"], 0.5)
+        assert np.isclose(d["rate-constant"]["Ea"], 50000.0)  # J/mol
+
+    def test_reaction_to_dict_sticking_coefficient(self):
+        """StickingCoefficient: type is sticking-Arrhenius, A is dimensionless."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=3
+        )
+        kin = StickingCoefficient(
+            A=(0.1, ""), n=0, Ea=(0, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[h2, x, x], products=[hx, hx], kinetics=kin
+        )
+        entries = reaction_to_dict_list(rxn, species_list=[h2, x, hx])
+        assert len(entries) == 1
+        d = entries[0]
+        assert d["type"] == "sticking-Arrhenius"
+        assert "sticking-coefficient" in d
+        assert np.isclose(d["sticking-coefficient"]["A"], 0.1)
+        assert np.isclose(d["sticking-coefficient"]["Ea"], 0.0)
+
+    def test_reaction_to_dict_coverage_dependence(self):
+        """Coverage-dependent kinetics: coverage-dependencies block written correctly.
+
+        yaml_cantera2 declares activation-energy: J/mol, so E uses value_si
+        (J/mol) directly — no ×1000 conversion.
+        """
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=3
+        )
+        kin = StickingCoefficient(
+            A=(0.1, ""),
+            n=0,
+            Ea=(0, "kJ/mol"),
+            T0=(1, "K"),
+            coverage_dependence={
+                hx: {"a": 0.5, "m": -1.0, "E": (5.0, "kJ/mol")}
+            },
+        )
+        rxn = Reaction(
+            reactants=[h2, x, x], products=[hx, hx], kinetics=kin
+        )
+        entries = reaction_to_dict_list(rxn, species_list=[h2, x, hx])
+        d = entries[0]
+        assert "coverage-dependencies" in d
+        cov = d["coverage-dependencies"]["H_X(3)"]
+        assert np.isclose(cov["a"], 0.5)
+        assert np.isclose(cov["m"], -1.0)
+        # 5 kJ/mol = 5000 J/mol — written directly (J/mol units declared)
+        assert np.isclose(cov["E"], 5000.0)
+
+    def test_reaction_to_dict_thirdbody_unit(self):
+        """ThirdBody: type three-body, efficiencies map, rate-constant present."""
+        h = self._create_dummy_species("H", "[H]", index=1)
+        h2 = self._create_dummy_species("H2", "[H][H]", index=2)
+        ar = self._create_dummy_species("Ar", "[Ar]", index=3)
+        kin = ThirdBody(
+            arrheniusLow=Arrhenius(
+                A=(1e18, "cm^6/(mol^2*s)"), n=-1, Ea=(0, "J/mol"), T0=(1, "K")
+            ),
+            efficiencies={ar.molecule[0]: 0.7},
+        )
+        rxn = Reaction(reactants=[h, h], products=[h2], kinetics=kin)
+        entries = reaction_to_dict_list(rxn, species_list=[h, h2, ar])
+        d = entries[0]
+        assert d.get("type") == "three-body"
+        assert "rate-constant" in d
+        assert "efficiencies" in d
+        assert np.isclose(d["efficiencies"]["Ar(3)"], 0.7)
