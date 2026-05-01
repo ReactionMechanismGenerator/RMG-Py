@@ -26,8 +26,8 @@
 ###############################################################################
 
 """
-Contains the :class:`SimpleReactor` class, providing a reaction system
-consisting of a homogeneous, isothermal, isobaric batch reactor.
+Contains the :class:`SurfaceReactor` class, providing a reaction system
+consisting of a heterogeneous, isothermal, constant volume batch reactor.
 """
 
 import itertools
