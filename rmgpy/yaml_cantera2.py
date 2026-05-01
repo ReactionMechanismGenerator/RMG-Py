@@ -530,13 +530,13 @@ def reaction_to_dict_list(reaction, species_list=None):
 
                     if current_arr:
                         rates.append({
-                            'P': P,
+                            'P': float(P),
                             'A': current_arr.A.value_si,
                             'b': current_arr.n.value_si,
                             'Ea': current_arr.Ea.value_si
                         })
                     else:
-                        rates.append({'P': P, 'A': 0.0, 'b': 0.0, 'Ea': 0.0})
+                        rates.append({'P': float(P), 'A': 0.0, 'b': 0.0, 'Ea': 0.0})
 
                 sub_entry['rate-constants'] = rates
                 entries.append(sub_entry)
@@ -547,7 +547,7 @@ def reaction_to_dict_list(reaction, species_list=None):
             rates = []
             for P, arr in zip(kin.pressures.value_si, kin.arrhenius):
                 rates.append({
-                    'P': P,
+                    'P': float(P),
                     'A': arr.A.value_si,
                     'b': arr.n.value_si,
                     'Ea': arr.Ea.value_si
