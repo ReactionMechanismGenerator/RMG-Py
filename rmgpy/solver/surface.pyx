@@ -36,7 +36,7 @@ import logging
 cimport cython
 import numpy as np
 cimport numpy as np
-from libc.math cimport exp
+from libc.math cimport exp, pow
 
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
@@ -478,9 +478,11 @@ cdef class SurfaceReactor(ReactionSystem):
             #: surface species are in mol/m2, gas phase are in mol/m3
             core_species_concentrations[j] = C[j]
         
+        if self.thermo_coverage_dependence or self.coverage_dependence:
+            coverages = np.where(species_on_surface, np.maximum(N / total_sites, 0.0), 0.0)
+
         # Thermodynamic coverage dependence
         if self.thermo_coverage_dependence:
-            coverages = np.where(species_on_surface, N / total_sites, 0.0)
             coverages_squared = coverages * coverages
             temperature_scaled_coverages = -self.T.value_si * coverages
             thermo_dep_coverage = np.empty((6, coverages.shape[0]), dtype=np.float64)
@@ -508,12 +510,12 @@ cdef class SurfaceReactor(ReactionSystem):
             """
             for i, list_of_coverage_deps in self.coverage_dependencies.items():
                 # Species i, Reaction j
-                surface_site_fraction = N[i] / total_sites
-                if surface_site_fraction < 1e-15:
+                surface_site_fraction = coverages[i]
+                if surface_site_fraction <= 1e-6:
                     continue
                 for j, a, m, E in list_of_coverage_deps:
                     coverage_corrections[j] *= 10. ** (a * surface_site_fraction) *\
-                                                surface_site_fraction ** m *\
+                                                pow(surface_site_fraction, m) *\
                                                 exp(-1 * E * surface_site_fraction / (constants.R * self.T.value_si))
             kf = kf * coverage_corrections # make a corrected copy kf, but leave the original array at self.kf unchanged
             kr = kr * coverage_corrections
