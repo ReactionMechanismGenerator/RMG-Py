@@ -70,6 +70,8 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray thermo_coeff_matrix
     cdef public np.ndarray stoi_matrix
+    cdef public np.ndarray _jacobian_inv_omega
+    cdef public bint _jacobian_inv_omega_num_core_species
 
     cdef public bint coverage_dependence
     cdef public dict coverage_dependencies
@@ -115,6 +117,8 @@ cdef class SurfaceReactor(ReactionSystem):
         self.constant_volume = True
         self.sens_conditions = sens_conditions
         self.n_sims = n_sims
+        self._jacobian_inv_omega = None  # array of 1/V (gas-phase) or 1/A (surface-phase) for corresponding gas or surface species
+        self._jacobian_inv_omega_num_core_species = 0
 
         self.coverage_dependencies = {}
 
@@ -380,11 +384,15 @@ cdef class SurfaceReactor(ReactionSystem):
             i = self.get_species_index(spec)
             self.y0[i] = total_surface_sites * coverage  # moles in reactor
 
+        # array of stored 1/V (gas-phase) or 1/A (surface-phase) for corresponding gas or surface species to help compute Jacobian
+        self._jacobian_inv_omega = np.full(self.num_core_species, 1.0 / V, dtype=np.float64)
         for j, isSurfaceSpecies in enumerate(self.species_on_surface):  # should only go up to core species
             if isSurfaceSpecies:
                 self.core_species_concentrations[j] = self.y0[j] / V / surface_volume_ratio_si  # moles per m2 of surface
+                self._jacobian_inv_omega[j] = 1.0 / (V * surface_volume_ratio_si)
             else:
                 self.core_species_concentrations[j] = self.y0[j] / V  # moles per m3 of gas
+        self._jacobian_inv_omega_num_core_species = self.num_core_species
 
     def compute_network_variables(self, pdep_networks=None):
         # ToDo: this should allow pressure to vary?
@@ -688,16 +696,23 @@ cdef class SurfaceReactor(ReactionSystem):
         V = self.V
         A = V * self.surface_volume_ratio.value_si  # surface area in m^2
 
-        # Per-species normalization: Omega[i] = A for surface species, V for gas
-        Omega = np.full(num_core_species, V, dtype=np.float64)
-        for i in range(num_core_species):
-            if self.species_on_surface[i]:
-                Omega[i] = A
+        # Cache inverse per-species normalization on the instance since
+        # species_on_surface is static for SurfaceReactor and V/A are constant
+        inv_omega = self._jacobian_inv_omega
+        cached_num_core_species = self._jacobian_inv_omega_num_core_species
+
+        if cached_num_core_species != num_core_species:
+            inv_omega = np.full(num_core_species, 1.0 / V, dtype=np.float64)
+            for i in range(num_core_species):
+                if self.species_on_surface[i]:
+                    inv_omega[i] = 1.0 / A
+            self._jacobian_inv_omega = inv_omega
+            self._jacobian_inv_omega_num_core_species = num_core_species
 
         # Concentrations — surface species in mol/m^2, gas in mol/m^3
         C = np.zeros_like(self.core_species_concentrations)
         for j in range(num_core_species):
-            C[j] = y[j] / Omega[j]
+            C[j] = y[j] * inv_omega[j]
 
         for j in range(num_core_reactions):
 
@@ -707,8 +722,8 @@ cdef class SurfaceReactor(ReactionSystem):
             k = kf[j]
 
             if ir[j, 1] == -1:  # unimolecular forward
-                # deriv = k * V / Omega[s]; gas: k*1 = k; surface: k*V/A = k/svr
-                deriv = k * V / Omega[ir[j, 0]]
+                # deriv = k * V * inv_omega[s]; gas: k*1 = k; surface: k*V/A = k/svr
+                deriv = k * V * inv_omega[ir[j, 0]]
                 pd[ir[j, 0], ir[j, 0]] -= deriv
 
                 pd[ip[j, 0], ir[j, 0]] += deriv
@@ -719,7 +734,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
             elif ir[j, 2] == -1:  # bimolecular forward
                 if ir[j, 0] == ir[j, 1]:  # A + A -> products
-                    deriv = 2 * k * C[ir[j, 0]] * V / Omega[ir[j, 0]]
+                    deriv = 2 * k * C[ir[j, 0]] * V * inv_omega[ir[j, 0]]
                     pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
 
                     pd[ip[j, 0], ir[j, 0]] += deriv
@@ -730,7 +745,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 else:  # A + B -> products
                     # derivative with respect to n[A]
-                    deriv = k * C[ir[j, 1]] * V / Omega[ir[j, 0]]
+                    deriv = k * C[ir[j, 1]] * V * inv_omega[ir[j, 0]]
                     pd[ir[j, 0], ir[j, 0]] -= deriv
                     pd[ir[j, 1], ir[j, 0]] -= deriv
 
@@ -741,7 +756,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ip[j, 2], ir[j, 0]] += deriv
 
                     # derivative with respect to n[B]
-                    deriv = k * C[ir[j, 0]] * V / Omega[ir[j, 1]]
+                    deriv = k * C[ir[j, 0]] * V * inv_omega[ir[j, 1]]
                     pd[ir[j, 0], ir[j, 1]] -= deriv
                     pd[ir[j, 1], ir[j, 1]] -= deriv
 
@@ -754,7 +769,7 @@ cdef class SurfaceReactor(ReactionSystem):
             else:  # trimolecular forward
 
                 if (ir[j, 0] == ir[j, 1]) and (ir[j, 0] == ir[j, 2]):  # A+A+A
-                    deriv = 3 * k * C[ir[j, 0]] * C[ir[j, 0]] * V / Omega[ir[j, 0]]
+                    deriv = 3 * k * C[ir[j, 0]] * C[ir[j, 0]] * V * inv_omega[ir[j, 0]]
                     pd[ir[j, 0], ir[j, 0]] -= 3 * deriv
 
                     pd[ip[j, 0], ir[j, 0]] += deriv
@@ -765,7 +780,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 elif ir[j, 0] == ir[j, 1]:  # A+A+B
                     # derivative with respect to n[A]
-                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 2]] * V / Omega[ir[j, 0]]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 2]] * V * inv_omega[ir[j, 0]]
                     pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
                     pd[ir[j, 2], ir[j, 0]] -= deriv
 
@@ -776,7 +791,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ip[j, 2], ir[j, 0]] += deriv
 
                     # derivative with respect to n[B]
-                    deriv = k * C[ir[j, 0]] * C[ir[j, 0]] * V / Omega[ir[j, 2]]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 0]] * V * inv_omega[ir[j, 2]]
                     pd[ir[j, 0], ir[j, 2]] -= 2 * deriv
                     pd[ir[j, 2], ir[j, 2]] -= deriv
 
@@ -788,7 +803,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 elif ir[j, 1] == ir[j, 2]:  # A+B+B
                     # derivative with respect to n[A]
-                    deriv = k * C[ir[j, 1]] * C[ir[j, 1]] * V / Omega[ir[j, 0]]
+                    deriv = k * C[ir[j, 1]] * C[ir[j, 1]] * V * inv_omega[ir[j, 0]]
                     pd[ir[j, 0], ir[j, 0]] -= deriv
                     pd[ir[j, 1], ir[j, 0]] -= 2 * deriv
 
@@ -799,7 +814,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ip[j, 2], ir[j, 0]] += deriv
 
                     # derivative with respect to n[B]
-                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 1]] * V / Omega[ir[j, 1]]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 1]] * V * inv_omega[ir[j, 1]]
                     pd[ir[j, 0], ir[j, 1]] -= deriv
                     pd[ir[j, 1], ir[j, 1]] -= 2 * deriv
 
@@ -811,7 +826,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 elif ir[j, 0] == ir[j, 2]:  # A+B+A
                     # derivative with respect to n[A]
-                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 1]] * V / Omega[ir[j, 0]]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 1]] * V * inv_omega[ir[j, 0]]
                     pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
                     pd[ir[j, 1], ir[j, 0]] -= deriv
 
@@ -822,7 +837,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ip[j, 2], ir[j, 0]] += deriv
 
                     # derivative with respect to n[B]
-                    deriv = k * C[ir[j, 0]] * C[ir[j, 0]] * V / Omega[ir[j, 1]]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 0]] * V * inv_omega[ir[j, 1]]
                     pd[ir[j, 0], ir[j, 1]] -= 2 * deriv
                     pd[ir[j, 1], ir[j, 1]] -= deriv
 
@@ -834,7 +849,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 else:  # A+B+C, all distinct
                     # derivative with respect to n[A]
-                    deriv = k * C[ir[j, 1]] * C[ir[j, 2]] * V / Omega[ir[j, 0]]
+                    deriv = k * C[ir[j, 1]] * C[ir[j, 2]] * V * inv_omega[ir[j, 0]]
                     pd[ir[j, 0], ir[j, 0]] -= deriv
                     pd[ir[j, 1], ir[j, 0]] -= deriv
                     pd[ir[j, 2], ir[j, 0]] -= deriv
@@ -846,7 +861,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ip[j, 2], ir[j, 0]] += deriv
 
                     # derivative with respect to n[B]
-                    deriv = k * C[ir[j, 0]] * C[ir[j, 2]] * V / Omega[ir[j, 1]]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 2]] * V * inv_omega[ir[j, 1]]
                     pd[ir[j, 0], ir[j, 1]] -= deriv
                     pd[ir[j, 1], ir[j, 1]] -= deriv
                     pd[ir[j, 2], ir[j, 1]] -= deriv
@@ -858,7 +873,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ip[j, 2], ir[j, 1]] += deriv
 
                     # derivative with respect to n[C]
-                    deriv = k * C[ir[j, 0]] * C[ir[j, 1]] * V / Omega[ir[j, 2]]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 1]] * V * inv_omega[ir[j, 2]]
                     pd[ir[j, 0], ir[j, 2]] -= deriv
                     pd[ir[j, 1], ir[j, 2]] -= deriv
                     pd[ir[j, 2], ir[j, 2]] -= deriv
@@ -875,7 +890,7 @@ cdef class SurfaceReactor(ReactionSystem):
             k = kr[j]
 
             if ip[j, 1] == -1:  # unimolecular reverse
-                deriv = k * V / Omega[ip[j, 0]]
+                deriv = k * V * inv_omega[ip[j, 0]]
                 pd[ip[j, 0], ip[j, 0]] -= deriv
 
                 pd[ir[j, 0], ip[j, 0]] += deriv
@@ -886,7 +901,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
             elif ip[j, 2] == -1:  # bimolecular reverse
                 if ip[j, 0] == ip[j, 1]:  # P+P -> reactants
-                    deriv = 2 * k * C[ip[j, 0]] * V / Omega[ip[j, 0]]
+                    deriv = 2 * k * C[ip[j, 0]] * V * inv_omega[ip[j, 0]]
                     pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
 
                     pd[ir[j, 0], ip[j, 0]] += deriv
@@ -897,7 +912,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 else:  # P1+P2 -> reactants
                     # derivative with respect to n[P1]
-                    deriv = k * C[ip[j, 1]] * V / Omega[ip[j, 0]]
+                    deriv = k * C[ip[j, 1]] * V * inv_omega[ip[j, 0]]
                     pd[ip[j, 0], ip[j, 0]] -= deriv
                     pd[ip[j, 1], ip[j, 0]] -= deriv
 
@@ -908,7 +923,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ir[j, 2], ip[j, 0]] += deriv
 
                     # derivative with respect to n[P2]
-                    deriv = k * C[ip[j, 0]] * V / Omega[ip[j, 1]]
+                    deriv = k * C[ip[j, 0]] * V * inv_omega[ip[j, 1]]
                     pd[ip[j, 0], ip[j, 1]] -= deriv
                     pd[ip[j, 1], ip[j, 1]] -= deriv
 
@@ -921,7 +936,7 @@ cdef class SurfaceReactor(ReactionSystem):
             else:  # trimolecular reverse
 
                 if (ip[j, 0] == ip[j, 1]) and (ip[j, 0] == ip[j, 2]):  # P+P+P
-                    deriv = 3 * k * C[ip[j, 0]] * C[ip[j, 0]] * V / Omega[ip[j, 0]]
+                    deriv = 3 * k * C[ip[j, 0]] * C[ip[j, 0]] * V * inv_omega[ip[j, 0]]
                     pd[ip[j, 0], ip[j, 0]] -= 3 * deriv
 
                     pd[ir[j, 0], ip[j, 0]] += deriv
@@ -932,7 +947,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 elif ip[j, 0] == ip[j, 1]:  # P1+P1+P2
                     # derivative with respect to n[P1]
-                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 2]] * V / Omega[ip[j, 0]]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 2]] * V * inv_omega[ip[j, 0]]
                     pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
                     pd[ip[j, 2], ip[j, 0]] -= deriv
 
@@ -943,7 +958,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ir[j, 2], ip[j, 0]] += deriv
 
                     # derivative with respect to n[P2]
-                    deriv = k * C[ip[j, 0]] * C[ip[j, 0]] * V / Omega[ip[j, 2]]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 0]] * V * inv_omega[ip[j, 2]]
                     pd[ip[j, 0], ip[j, 2]] -= 2 * deriv
                     pd[ip[j, 2], ip[j, 2]] -= deriv
 
@@ -955,7 +970,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 elif ip[j, 1] == ip[j, 2]:  # P1+P2+P2
                     # derivative with respect to n[P1]
-                    deriv = k * C[ip[j, 1]] * C[ip[j, 1]] * V / Omega[ip[j, 0]]
+                    deriv = k * C[ip[j, 1]] * C[ip[j, 1]] * V * inv_omega[ip[j, 0]]
                     pd[ip[j, 0], ip[j, 0]] -= deriv
                     pd[ip[j, 1], ip[j, 0]] -= 2 * deriv
 
@@ -966,7 +981,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ir[j, 2], ip[j, 0]] += deriv
 
                     # derivative with respect to n[P2]
-                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 1]] * V / Omega[ip[j, 1]]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 1]] * V * inv_omega[ip[j, 1]]
                     pd[ip[j, 0], ip[j, 1]] -= deriv
                     pd[ip[j, 1], ip[j, 1]] -= 2 * deriv
 
@@ -978,7 +993,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 elif ip[j, 0] == ip[j, 2]:  # P1+P2+P1
                     # derivative with respect to n[P1]
-                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 1]] * V / Omega[ip[j, 0]]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 1]] * V * inv_omega[ip[j, 0]]
                     pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
                     pd[ip[j, 1], ip[j, 0]] -= deriv
 
@@ -989,7 +1004,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ir[j, 2], ip[j, 0]] += deriv
 
                     # derivative with respect to n[P2]
-                    deriv = k * C[ip[j, 0]] * C[ip[j, 0]] * V / Omega[ip[j, 1]]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 0]] * V * inv_omega[ip[j, 1]]
                     pd[ip[j, 0], ip[j, 1]] -= 2 * deriv
                     pd[ip[j, 1], ip[j, 1]] -= deriv
 
@@ -1001,7 +1016,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
                 else:  # P1+P2+P3, all distinct
                     # derivative with respect to n[P1]
-                    deriv = k * C[ip[j, 1]] * C[ip[j, 2]] * V / Omega[ip[j, 0]]
+                    deriv = k * C[ip[j, 1]] * C[ip[j, 2]] * V * inv_omega[ip[j, 0]]
                     pd[ip[j, 0], ip[j, 0]] -= deriv
                     pd[ip[j, 1], ip[j, 0]] -= deriv
                     pd[ip[j, 2], ip[j, 0]] -= deriv
@@ -1013,7 +1028,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ir[j, 2], ip[j, 0]] += deriv
 
                     # derivative with respect to n[P2]
-                    deriv = k * C[ip[j, 0]] * C[ip[j, 2]] * V / Omega[ip[j, 1]]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 2]] * V * inv_omega[ip[j, 1]]
                     pd[ip[j, 0], ip[j, 1]] -= deriv
                     pd[ip[j, 1], ip[j, 1]] -= deriv
                     pd[ip[j, 2], ip[j, 1]] -= deriv
@@ -1025,7 +1040,7 @@ cdef class SurfaceReactor(ReactionSystem):
                             pd[ir[j, 2], ip[j, 1]] += deriv
 
                     # derivative with respect to n[P3]
-                    deriv = k * C[ip[j, 0]] * C[ip[j, 1]] * V / Omega[ip[j, 2]]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 1]] * V * inv_omega[ip[j, 2]]
                     pd[ip[j, 0], ip[j, 2]] -= deriv
                     pd[ip[j, 1], ip[j, 2]] -= deriv
                     pd[ip[j, 2], ip[j, 2]] -= deriv
