@@ -491,3 +491,36 @@ class CanteraWriter1(object):
                 path=annotated_path,
                 verbose=True,
             )
+
+        if rmg.save_edge_species:
+            logging.info('Saving current model core and edge to Cantera file...')
+            edge_species = rmg.reaction_model.core.species + rmg.reaction_model.edge.species
+            edge_reactions = rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions
+
+            this_edge_path = os.path.join(self.output_subdirectory,
+                                          f"chem_edge{num_species:04d}.yaml")
+            latest_edge_path = os.path.join(self.output_subdirectory, 'chem_edge.yaml')
+
+            write_cantera(
+                edge_species,
+                edge_reactions,
+                surface_site_density=surface_site_density,
+                solvent=rmg.solvent,
+                solvent_data=solvent_data,
+                path=this_edge_path,
+            )
+            shutil.copy2(this_edge_path, latest_edge_path)
+
+            if rmg.verbose_comments:
+                annotated_edge_path = os.path.join(self.output_subdirectory,
+                                                    'chem_edge_annotated.yaml')
+                logging.info(f"Saving annotated edge Cantera file: {annotated_edge_path}")
+                write_cantera(
+                    edge_species,
+                    edge_reactions,
+                    surface_site_density=surface_site_density,
+                    solvent=rmg.solvent,
+                    solvent_data=solvent_data,
+                    path=annotated_edge_path,
+                    verbose=True,
+                )
