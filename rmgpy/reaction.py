@@ -425,6 +425,19 @@ class Reaction:
         # Now we set the kinetics.
         self.kinetics.set_cantera_kinetics(ct_reaction, species_list)
 
+        # Coverage dependencies are not handled by set_cantera_kinetics; set them here.
+        # Cantera's coverage_dependencies E is in J/kmol; RMG's value_si is J/mol.
+        if hasattr(self.kinetics, 'coverage_dependence') and self.kinetics.coverage_dependence:
+            cov_deps = {}
+            for sp, params in self.kinetics.coverage_dependence.items():
+                sp_label = sp.to_chemkin() if use_chemkin_identifier else sp.label
+                cov_deps[sp_label] = {
+                    'a': params['a'].value_si,
+                    'm': params['m'].value_si,
+                    'E': params['E'].value_si * 1000,  # J/mol → J/kmol
+                }
+            ct_reaction.rate.coverage_dependencies = cov_deps
+
         return ct_reaction
 
     def get_url(self):
