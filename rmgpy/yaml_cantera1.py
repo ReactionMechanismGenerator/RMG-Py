@@ -354,6 +354,20 @@ def reaction_to_dicts(obj, spcs, verbose=False):
         # Convert any AnyMap objects to regular dicts before appending
         reaction_data = _convert_anymap_to_dict(reaction_data)
 
+        # Coverage dependencies are not set by set_cantera_kinetics; add them here.
+        # Units: E in J/kmol (matching the file-level 'activation-energy: J/kmol').
+        if hasattr(obj.kinetics, 'coverage_dependence') and obj.kinetics.coverage_dependence:
+            cov_deps = {}
+            for sp, cov_params in obj.kinetics.coverage_dependence.items():
+                sp_label = get_species_identifier(sp)
+                cov_deps[sp_label] = {
+                    'a': cov_params['a'].value_si,
+                    'm': cov_params['m'].value_si,
+                    'E': cov_params['E'].value_si * 1000,  # J/mol → J/kmol
+                }
+            if cov_deps:
+                reaction_data['coverage-dependencies'] = cov_deps
+
         if verbose:
             note_parts = []
             if isinstance(obj, TemplateReaction):
