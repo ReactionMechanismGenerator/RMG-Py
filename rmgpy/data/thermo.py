@@ -1074,9 +1074,10 @@ class ThermoDatabase(object):
         }
         
         for category in categories:
-            nodes = read_nodes(os.path.join(path,category+".json"))
-            tree = MultiTargetSingleEvalSubgraphIsomorphicDecisionTree(nodes=nodes)
-            self.sidts[category] = tree
+            if os.path.exists(os.path.join(path,category+".json")):
+                nodes = read_nodes(os.path.join(path,category+".json"))
+                tree = MultiTargetSingleEvalSubgraphIsomorphicDecisionTree(nodes=nodes)
+                self.sidts[category] = tree
 
     def save(self, path):
         """
