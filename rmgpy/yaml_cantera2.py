@@ -557,9 +557,9 @@ def reaction_to_dict_list(reaction, species_list=None, verbose=False):
             if sp_label:
                 # Cantera YAML expects { a: ..., m: ..., E: ... }
                 cov_deps[sp_label] = {
-                    'a': cov_params.a.value_si,
-                    'm': cov_params.m.value_si,
-                    'E': cov_params.E.value_si
+                    'a': cov_params['a'].value_si,
+                    'm': cov_params['m'].value_si,
+                    'E': cov_params['E'].value_si
                 }
         if cov_deps:
             entry['coverage-dependencies'] = cov_deps
