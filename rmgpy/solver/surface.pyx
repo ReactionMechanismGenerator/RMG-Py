@@ -612,7 +612,7 @@ cdef class SurfaceReactor(ReactionSystem):
         res = core_species_rates * V
         # mol/s
 
-        if self.sensitivity and False:
+        if self.sensitivity:
             delta = np.zeros(len(N), float)
             delta[:num_core_species] = res
             if self.jacobian_matrix is None:
@@ -631,3 +631,410 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # Return DELTA, IRES.  IRES is set to 1 in order to tell DASPK to evaluate the sensitivity residuals
         return delta, 1
+
+    @cython.boundscheck(False)
+    def jacobian(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
+                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
+        """
+        Return the analytical Jacobian for the reaction system.
+
+        Constant volume (isochoric), variable pressure, with mixed gas-phase
+        and surface species.
+
+        kf[j] and kr[j] are given in volume units (mol / m^3 / s), even for
+        surface reactions.  generate_rate_coefficients premultiplies the raw
+        surface rate coefficient by surface_volume_ratio (= A/V, units 1/m) so
+        that the residual can uniformly compute:
+
+            reaction_rate [mol/m^3/s] = k * prod_r C[r]
+            dn_i/dt [mol/s]           = nu_ij * reaction_rate * V
+
+        for every reaction regardless of phase.
+
+        Concentrations
+        --------------
+        Gas-phase species:  C[i] = y[i] / V                    (mol / m^3)
+        Surface species:    C[i] = y[i] / V / svr = y[i] / A   (mol / m^2)
+
+        where svr = surface_volume_ratio (1/m)
+
+        Derivative rule
+        ---------------
+            deriv w.r.t. n[s]  =  k * (prod_{r != s} C[r]) * V / Omega[s]
+
+        For gas-phase species:    V / Omega[s] = V / V = 1
+        For surface species:      V / Omega[s] = V / A = 1 / svr
+
+        No corr terms (like in SimpleReactor) because V and A are both constant.
+        """
+        cdef np.ndarray[np.int_t, ndim=2] ir, ip
+        cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C
+        cdef np.ndarray[np.float64_t, ndim=2] pd
+        cdef np.ndarray[np.float64_t, ndim=1] Omega   # per-species normalization
+        cdef int num_core_reactions, num_core_species, i, j
+        cdef double k, V, A, deriv
+
+        ir = self.reactant_indices
+        ip = self.product_indices
+
+        kf = self.kf  # already in volume units for all reactions
+        kr = self.kb  # already in volume units for all reactions
+        num_core_reactions = len(self.core_reaction_rates)
+        num_core_species = len(self.core_species_concentrations)
+
+        pd = np.zeros((num_core_species, num_core_species), dtype=np.float64)
+        np.fill_diagonal(pd, -cj)
+
+        V = self.V
+        A = V * self.surface_volume_ratio.value_si  # surface area in m^2
+
+        # Per-species normalization: Omega[i] = A for surface species, V for gas
+        Omega = np.full(num_core_species, V, dtype=np.float64)
+        for i in range(num_core_species):
+            if self.species_on_surface[i]:
+                Omega[i] = A
+
+        # Concentrations — surface species in mol/m^2, gas in mol/m^3
+        C = np.zeros_like(self.core_species_concentrations)
+        for j in range(num_core_species):
+            C[j] = y[j] / Omega[j]
+
+        for j in range(num_core_reactions):
+
+            # ------------------------------------------------------------------
+            # Forward reaction
+            # ------------------------------------------------------------------
+            k = kf[j]
+
+            if ir[j, 1] == -1:  # unimolecular forward
+                # deriv = k * V / Omega[s]; gas: k*1 = k; surface: k*V/A = k/svr
+                deriv = k * V / Omega[ir[j, 0]]
+                pd[ir[j, 0], ir[j, 0]] -= deriv
+
+                pd[ip[j, 0], ir[j, 0]] += deriv
+                if ip[j, 1] != -1:
+                    pd[ip[j, 1], ir[j, 0]] += deriv
+                    if ip[j, 2] != -1:
+                        pd[ip[j, 2], ir[j, 0]] += deriv
+
+            elif ir[j, 2] == -1:  # bimolecular forward
+                if ir[j, 0] == ir[j, 1]:  # A + A -> products
+                    deriv = 2 * k * C[ir[j, 0]] * V / Omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                else:  # A + B -> products
+                    # derivative with respect to n[A]
+                    deriv = k * C[ir[j, 1]] * V / Omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= deriv
+                    pd[ir[j, 1], ir[j, 0]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = k * C[ir[j, 0]] * V / Omega[ir[j, 1]]
+                    pd[ir[j, 0], ir[j, 1]] -= deriv
+                    pd[ir[j, 1], ir[j, 1]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 1]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 1]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 1]] += deriv
+
+            else:  # trimolecular forward
+
+                if (ir[j, 0] == ir[j, 1]) and (ir[j, 0] == ir[j, 2]):  # A+A+A
+                    deriv = 3 * k * C[ir[j, 0]] * C[ir[j, 0]] * V / Omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= 3 * deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                elif ir[j, 0] == ir[j, 1]:  # A+A+B
+                    # derivative with respect to n[A]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 2]] * V / Omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
+                    pd[ir[j, 2], ir[j, 0]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 0]] * V / Omega[ir[j, 2]]
+                    pd[ir[j, 0], ir[j, 2]] -= 2 * deriv
+                    pd[ir[j, 2], ir[j, 2]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 2]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 2]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 2]] += deriv
+
+                elif ir[j, 1] == ir[j, 2]:  # A+B+B
+                    # derivative with respect to n[A]
+                    deriv = k * C[ir[j, 1]] * C[ir[j, 1]] * V / Omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= deriv
+                    pd[ir[j, 1], ir[j, 0]] -= 2 * deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 1]] * V / Omega[ir[j, 1]]
+                    pd[ir[j, 0], ir[j, 1]] -= deriv
+                    pd[ir[j, 1], ir[j, 1]] -= 2 * deriv
+
+                    pd[ip[j, 0], ir[j, 1]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 1]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 1]] += deriv
+
+                elif ir[j, 0] == ir[j, 2]:  # A+B+A
+                    # derivative with respect to n[A]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 1]] * V / Omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
+                    pd[ir[j, 1], ir[j, 0]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 0]] * V / Omega[ir[j, 1]]
+                    pd[ir[j, 0], ir[j, 1]] -= 2 * deriv
+                    pd[ir[j, 1], ir[j, 1]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 1]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 1]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 1]] += deriv
+
+                else:  # A+B+C, all distinct
+                    # derivative with respect to n[A]
+                    deriv = k * C[ir[j, 1]] * C[ir[j, 2]] * V / Omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= deriv
+                    pd[ir[j, 1], ir[j, 0]] -= deriv
+                    pd[ir[j, 2], ir[j, 0]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 2]] * V / Omega[ir[j, 1]]
+                    pd[ir[j, 0], ir[j, 1]] -= deriv
+                    pd[ir[j, 1], ir[j, 1]] -= deriv
+                    pd[ir[j, 2], ir[j, 1]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 1]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 1]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 1]] += deriv
+
+                    # derivative with respect to n[C]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 1]] * V / Omega[ir[j, 2]]
+                    pd[ir[j, 0], ir[j, 2]] -= deriv
+                    pd[ir[j, 1], ir[j, 2]] -= deriv
+                    pd[ir[j, 2], ir[j, 2]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 2]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 2]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 2]] += deriv
+
+            # ------------------------------------------------------------------
+            # Reverse reaction  (ip <-> ir relative to forward block above)
+            # ------------------------------------------------------------------
+            k = kr[j]
+
+            if ip[j, 1] == -1:  # unimolecular reverse
+                deriv = k * V / Omega[ip[j, 0]]
+                pd[ip[j, 0], ip[j, 0]] -= deriv
+
+                pd[ir[j, 0], ip[j, 0]] += deriv
+                if ir[j, 1] != -1:
+                    pd[ir[j, 1], ip[j, 0]] += deriv
+                    if ir[j, 2] != -1:
+                        pd[ir[j, 2], ip[j, 0]] += deriv
+
+            elif ip[j, 2] == -1:  # bimolecular reverse
+                if ip[j, 0] == ip[j, 1]:  # P+P -> reactants
+                    deriv = 2 * k * C[ip[j, 0]] * V / Omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                else:  # P1+P2 -> reactants
+                    # derivative with respect to n[P1]
+                    deriv = k * C[ip[j, 1]] * V / Omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= deriv
+                    pd[ip[j, 1], ip[j, 0]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = k * C[ip[j, 0]] * V / Omega[ip[j, 1]]
+                    pd[ip[j, 0], ip[j, 1]] -= deriv
+                    pd[ip[j, 1], ip[j, 1]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 1]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 1]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 1]] += deriv
+
+            else:  # trimolecular reverse
+
+                if (ip[j, 0] == ip[j, 1]) and (ip[j, 0] == ip[j, 2]):  # P+P+P
+                    deriv = 3 * k * C[ip[j, 0]] * C[ip[j, 0]] * V / Omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= 3 * deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                elif ip[j, 0] == ip[j, 1]:  # P1+P1+P2
+                    # derivative with respect to n[P1]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 2]] * V / Omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
+                    pd[ip[j, 2], ip[j, 0]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 0]] * V / Omega[ip[j, 2]]
+                    pd[ip[j, 0], ip[j, 2]] -= 2 * deriv
+                    pd[ip[j, 2], ip[j, 2]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 2]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 2]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 2]] += deriv
+
+                elif ip[j, 1] == ip[j, 2]:  # P1+P2+P2
+                    # derivative with respect to n[P1]
+                    deriv = k * C[ip[j, 1]] * C[ip[j, 1]] * V / Omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= deriv
+                    pd[ip[j, 1], ip[j, 0]] -= 2 * deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 1]] * V / Omega[ip[j, 1]]
+                    pd[ip[j, 0], ip[j, 1]] -= deriv
+                    pd[ip[j, 1], ip[j, 1]] -= 2 * deriv
+
+                    pd[ir[j, 0], ip[j, 1]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 1]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 1]] += deriv
+
+                elif ip[j, 0] == ip[j, 2]:  # P1+P2+P1
+                    # derivative with respect to n[P1]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 1]] * V / Omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
+                    pd[ip[j, 1], ip[j, 0]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 0]] * V / Omega[ip[j, 1]]
+                    pd[ip[j, 0], ip[j, 1]] -= 2 * deriv
+                    pd[ip[j, 1], ip[j, 1]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 1]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 1]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 1]] += deriv
+
+                else:  # P1+P2+P3, all distinct
+                    # derivative with respect to n[P1]
+                    deriv = k * C[ip[j, 1]] * C[ip[j, 2]] * V / Omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= deriv
+                    pd[ip[j, 1], ip[j, 0]] -= deriv
+                    pd[ip[j, 2], ip[j, 0]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 2]] * V / Omega[ip[j, 1]]
+                    pd[ip[j, 0], ip[j, 1]] -= deriv
+                    pd[ip[j, 1], ip[j, 1]] -= deriv
+                    pd[ip[j, 2], ip[j, 1]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 1]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 1]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 1]] += deriv
+
+                    # derivative with respect to n[P3]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 1]] * V / Omega[ip[j, 2]]
+                    pd[ip[j, 0], ip[j, 2]] -= deriv
+                    pd[ip[j, 1], ip[j, 2]] -= deriv
+                    pd[ip[j, 2], ip[j, 2]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 2]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 2]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 2]] += deriv
+
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, float)
+        return pd
