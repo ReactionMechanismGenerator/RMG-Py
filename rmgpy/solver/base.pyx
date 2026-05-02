@@ -754,14 +754,14 @@ cdef class ReactionSystem(DASx):
                                          'in model resurrection process'.format(self.t, obj,edge_species_rates[ind]))
                             invalid_objects.append(obj)
 
-                        if total_div_accum_nums and len(total_div_accum_nums) > 0:  #if dynamics data available
+                        if total_div_accum_nums is not None and len(total_div_accum_nums) > 0:  #if dynamics data available
                             ind = np.argmax(total_div_accum_nums)
                             obj = edge_reactions[ind]
                             logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
                                          'in model resurrection process'.format(self.t, obj,total_div_accum_nums[ind]))
                             invalid_objects.append(obj)
 
-                        if pdep_networks != [] and network_leak_rate_ratios != []:
+                        if pdep_networks != [] and len(network_leak_rate_ratios) > 0:
                             ind = np.argmax(network_leak_rate_ratios)
                             obj = pdep_networks[ind]
                             logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} '
