@@ -1092,45 +1092,33 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
             d[3 * i + 2, 5] = (p[i, 0] * inertia_xyz[2, 1] - p[i, 1] * inertia_xyz[2, 0]) * amass[i]
 
     # Make sure projection matrix is orthonormal
+    p = np.hstack((d, np.identity(n_atoms * 3, float)))
 
-    inertia = np.identity(n_atoms * 3, float)
+    # Compute the QR decomposition in reduced mode
+    Q, R = np.linalg.qr(p, mode='reduced')
 
-    p = np.zeros((n_atoms * 3, 3 * n_atoms + external), float)
+    # Verify that Q has orthonormal columns:
+    if np.isclose(np.dot(Q.T, Q), np.eye(Q.shape[1])).all():
+        logging.debug("Q has orthonormal columns")
+    else:
+        logging.warning("Q does not have orthonormal columns")
+    # Verify the reconstruction
+    reconstructed_p = Q @ R
+    if np.isclose(p, reconstructed_p).all():
+        logging.debug("Reconstruction of projection matrix is correct")
+    else:
+        logging.warning("Reconstruction of projection matrix is incorrect")
 
-    p[:, 0:external] = d[:, 0:external]
-    p[:, external:external + 3 * n_atoms] = inertia[:, 0:3 * n_atoms]
+    # Check for nearly zero columns in the QR decomposition
+    for i, rkk in enumerate(R.diagonal()):
+        if abs(rkk) < 1E-15:
+            logging.warning(f'Column {i} of the QR decomposition is nearly zero, could lose a basis')
 
-    for i in range(3 * n_atoms + external):
-        norm = 0.0
-        for j in range(3 * n_atoms):
-            norm += p[j, i] * p[j, i]
-        for j in range(3 * n_atoms):
-            if norm > 1E-15:
-                p[j, i] /= np.sqrt(norm)
-            else:
-                p[j, i] = 0.0
-        for j in range(i + 1, 3 * n_atoms + external):
-            proj = 0.0
-            for k in range(3 * n_atoms):
-                proj += p[k, i] * p[k, j]
-            for k in range(3 * n_atoms):
-                p[k, j] -= proj * p[k, i]
-
-    # Order p, there will be vectors that are 0.0
-    i = 0
-    while i < 3 * n_atoms:
-        norm = 0.0
-        for j in range(3 * n_atoms):
-            norm += p[j, i] * p[j, i]
-        if norm < 0.5:
-            p[:, i:3 * n_atoms + external - 1] = p[:, i + 1:3 * n_atoms + external]
-        else:
-            i += 1
 
     # T is the transformation vector from cartesian to internal coordinates
     T = np.zeros((n_atoms * 3, 3 * n_atoms - external), float)
 
-    T[:, 0:3 * n_atoms - external] = p[:, external:3 * n_atoms]
+    T[:, :] = Q[:, external:3 * n_atoms]
 
     # Generate mass-weighted force constant matrix
     # This converts the axes to mass-weighted Cartesian axes
@@ -1224,23 +1212,19 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
                 d_int[j, i] += d_int_proj[k, i] * vmw[j, k]
 
     # Ortho normalize
-    for i in range(n_rotors):
-        norm = 0.0
-        for j in range(3 * n_atoms):
-            norm += d_int[j, i] * d_int[j, i]
-        for j in range(3 * n_atoms):
-            d_int[j, i] /= np.sqrt(norm)
-        for j in range(i + 1, n_rotors):
-            proj = 0.0
-            for k in range(3 * n_atoms):
-                proj += d_int[k, i] * d_int[k, j]
-            for k in range(3 * n_atoms):
-                d_int[k, j] -= proj * d_int[k, i]
+    # Here, Q will have orthonormal columns, and R is the triangular factor.
+    Q, R = np.linalg.qr(d_int, mode='reduced')
+    # replace d_int with its orthonormalized version:
+    d_int = Q
 
     # calculate the frequencies corresponding to the internal rotors
     int_proj = np.dot(fm, d_int)
     kmus = np.array([np.linalg.norm(int_proj[:, i]) for i in range(int_proj.shape[1])])
     int_rotor_freqs = np.sqrt(kmus) / (2.0 * math.pi * constants.c * 100.0)
+
+    logging.debug('Frequencies from internal rotors:')
+    for i in range(n_rotors):
+        logging.debug('  rotor %d: %.6f cm^-1', i, int_rotor_freqs[i])
 
     if get_projected_out_freqs:
         return int_rotor_freqs
@@ -1248,8 +1232,8 @@ def project_rotors(conformer, hessian, rotors, linear, is_ts, get_projected_out_
     # Do the projection
     d_int_proj = np.dot(vmw.T, d_int)
     proj = np.dot(d_int, d_int.T)
-    inertia = np.identity(n_atoms * 3, float)
-    proj = inertia - proj
+    identity = np.identity(n_atoms * 3, float)
+    proj = identity - proj
     fm = np.dot(proj, np.dot(fm, proj))
     # Get eigenvalues of mass-weighted force constant matrix
     eig, v = np.linalg.eigh(fm)
