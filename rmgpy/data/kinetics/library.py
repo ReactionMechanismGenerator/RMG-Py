@@ -493,6 +493,7 @@ class KineticsLibrary(Database):
         species_dict = self.get_species(os.path.join(os.path.dirname(path), 'dictionary.txt'))
         # Make sure all of the reactions draw from only this set
         entries = self.entries.values()
+        rejected_entry_indices = []
         for entry in entries:
             # Create a new reaction per entry
             rxn = entry.item
@@ -561,14 +562,16 @@ class KineticsLibrary(Database):
                 raise DatabaseError('Reaction {0} in kinetics library {1} was not balanced! '
                                     'Please reformulate.'.format(rxn, self.label))
 
-            if len(rxn.reactants) > 3:
-                raise DatabaseError('RMG does not accept reactions with more than 3 reactants in its solver. '
-                                    'Reaction {0} in kinetics library {1} has {2} reactants.'
-                                    .format(rxn, self.label, len(rxn.reactants)))
-            if len(rxn.products) > 3:
-                raise DatabaseError('RMG does not accept reactions with more than 3 products in its solver. '
-                                    'Reaction {0} in kinetics library {1} has {2} reactants.'
-                                    .format(rxn, self.label, len(rxn.products)))
+            if len(rxn.reactants) > 3 or len(rxn.products) > 3:
+                logging.warning(
+                    'Rejecting reaction {0} from kinetics library {1}: RMG\'s solver supports up to 3 '
+                    'reactants and 3 products, but this reaction has {2} reactants and {3} products. '
+                    'It will be skipped to keep the model clean.'
+                    .format(rxn, self.label, len(rxn.reactants), len(rxn.products)))
+                rejected_entry_indices.append(entry.index)
+
+        for index in rejected_entry_indices:
+            del self.entries[index]
 
         if not self.auto_generated:
             self.check_for_duplicates()
