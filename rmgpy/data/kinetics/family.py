@@ -2707,7 +2707,8 @@ class KineticsFamily(Database):
                 template_reactants = [x.item for x in template.reactants]
         else:
             template_reactants = [x.item for x in template.reactants]
-
+if (num_reactants := len(reactants0)) != (num_template := len(template_reactants)):
+    raise ValueError(f"Reaction has {num_reactants} reactants but template has {num_template} reactants.")
         if len(reactants0) == 1:
             molecule = reactants0[0]
             mappings = self._match_reactant_to_template(molecule, template_reactants[0])
@@ -2743,7 +2744,7 @@ class KineticsFamily(Database):
             reactant_structures = [molecule_a, molecule_b, molecule_c]
             num_mappings = len(mappings_a) * len(mappings_b) * len(mappings_c)
         else:
-            raise IndexError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
+            raise ValueError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
 
         for mapping in mappings:
             try:
