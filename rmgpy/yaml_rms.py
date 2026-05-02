@@ -33,6 +33,10 @@ Reaction Mechanism Simulator (RMS)
 """
 
 import os
+try:
+    from yaml import CDumper as Dumper
+except ImportError:
+    from yaml import Dumper
 import yaml
 import logging
 
@@ -60,7 +64,7 @@ def convert_chemkin_to_rms(chemkin_path, dictionary_path=None, output="chem.rms"
 def write_rms(spcs, rxns, solvent=None, solvent_data=None, path="chem.rms"):
     result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
     with open(path, 'w') as f:
-        yaml.dump(result_dict, stream=f)
+        yaml.dump(result_dict, stream=f, Dumper=Dumper, sort_keys=False)
 
 
 def get_mech_dict(spcs, rxns, solvent='solvent', solvent_data=None):
