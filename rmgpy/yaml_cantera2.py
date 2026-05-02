@@ -34,6 +34,10 @@ from typing import Union, TYPE_CHECKING
 import os
 import shutil
 import logging
+try:
+    from yaml import CDumper as Dumper
+except ImportError:
+    from yaml import Dumper
 import yaml
 
 from rmgpy.data.kinetics.family import TemplateReaction
@@ -188,7 +192,7 @@ def save_cantera_model(model_container, path, site_density=None, verbose=False):
     # Write
     with open(path, 'w') as f:
         # sort_keys=False ensures 'units' comes first, then 'phases', etc.
-        yaml.dump(yaml_data, f, sort_keys=False, default_flow_style=None)
+        yaml.dump(yaml_data, f, Dumper=Dumper, sort_keys=False, default_flow_style=None)
 
 
 def generate_cantera_data(species_list,

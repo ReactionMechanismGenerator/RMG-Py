@@ -35,6 +35,10 @@ a yaml file that can be read by Cantera
 
 import os
 import shutil
+try:
+    from yaml import CDumper as Dumper
+except ImportError:
+    from yaml import Dumper
 import yaml
 import logging
 
@@ -148,7 +152,7 @@ def write_cantera(
 
         f.write(ELEMENTS_BLOCK)
 
-        yaml.dump(result_dict, stream=f, sort_keys=False, default_flow_style=None, width=80)
+        yaml.dump(result_dict, stream=f, Dumper=Dumper, sort_keys=False, default_flow_style=None, width=80)
 
 def get_elements_block():
     """
