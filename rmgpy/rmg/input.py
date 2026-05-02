@@ -58,6 +58,7 @@ from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.base import ReactionSystem
 from rmgpy.solver.termination import (
     TerminationConversion,
     TerminationRateRatio,
@@ -508,7 +509,7 @@ def constant_V_ideal_gas_reactor(temperature,
                 raise InputError('Initial mole fraction range out of order: {0}'.format(key))
 
     if not isinstance(temperature, list):
-        T = Quantity(temperature).value_si
+        T = Quantity(temperature)
     else:
         raise InputError("Condition ranges not supported for this reaction type")
         if len(temperature) != 2:
@@ -556,11 +557,11 @@ def constant_V_ideal_gas_reactor(temperature,
         termination.append(TerminationRateRatio(terminationRateRatio))
     if len(termination) == 0:
         raise InputError('No termination conditions specified for reaction system #{0}.'.format(len(rmg.reaction_systems) + 2))
-    
+
     initial_cond = initialMoleFractions
-    initial_cond["T"] = T 
+    initial_cond["T"] = T.value_si
     initial_cond["P"] = P
-    system = ConstantVIdealGasReactor(rmg.reaction_model.core.phase_system,rmg.reaction_model.edge.phase_system,initial_cond,termination)
+    system = ConstantVIdealGasReactor(rmg.reaction_model.core.phase_system, rmg.reaction_model.edge.phase_system, initial_cond,termination)
     system.T = Quantity(T)
     system.P = Quantity(P)
     system.Trange = None
@@ -732,7 +733,7 @@ def liquid_cat_reactor(temperature,
                 raise InputError('Species {0} not found in the input file'.format(const_spc))
 
     if not isinstance(temperature, list):
-        T = Quantity(temperature).value_si
+        T = Quantity(temperature)
     else:
         raise InputError("Condition ranges not supported for this reaction type")
         if len(temperature) != 2:
@@ -762,12 +763,12 @@ def liquid_cat_reactor(temperature,
     A = V*Quantity(surfaceVolumeRatio).value_si
     for key,item in initialConcentrations.items():
         initialCondLiq[key] = item*V
-    initialCondLiq["T"] = T
+    initialCondLiq["T"] = T.value_si
     initialCondLiq["V"] = V
     initialCondSurf = dict()
     for key,item in initialSurfaceCoverages.items():
         initialCondSurf[key] = item*rmg.surface_site_density.value_si*A
-    initialCondSurf["T"] = T
+    initialCondSurf["T"] = T.value_si
     initialCondSurf["A"] = A
     initialCondSurf["d"] = 0.0
     if surfPotential:
@@ -777,12 +778,12 @@ def liquid_cat_reactor(temperature,
     if distance:
         initialCondLiq["d"] = Quantity(distance).value_si
     if viscosity:
-        initialCondLiq["mu"] = Quantity(distance).value_si
+        initialCondLiq["mu"] = Quantity(viscosity).value_si
     system = ConstantTLiquidSurfaceReactor(rmg.reaction_model.core.phase_system,
                                            rmg.reaction_model.edge.phase_system,
                                            {"liquid":initialCondLiq,"surface":initialCondSurf},
                                            termination,constantSpecies)
-    system.T = Quantity(T)
+    system.T = T
     system.Trange = None
     system.sensitive_species = []
     rmg.reaction_systems.append(system)
@@ -805,7 +806,7 @@ def constant_T_V_liquid_reactor(temperature,
     ################################################# check input ########################################################
 
     if not isinstance(temperature, list):
-        T = Quantity(temperature).value_si
+        T = Quantity(temperature)
     else:
         raise InputError("Condition ranges not supported for this reaction type")
         if len(temperature) != 2:
@@ -926,7 +927,7 @@ def constant_T_V_liquid_reactor(temperature,
     initial_conditions = dict()
     for key, item in initialConcentrations.items():
         initial_conditions[key] = item*V
-    initial_conditions["T"] = T
+    initial_conditions["T"] = T.value_si
     initial_conditions["V"] = V
 
     inlet_conditions = dict()
@@ -961,7 +962,7 @@ def constant_T_V_liquid_reactor(temperature,
                                            outlet_conditions,
                                            evap_cond_conditions,
                                            )
-    system.T = Quantity(T)
+    system.T = T
     system.Trange = None
     system.sensitive_species = []
     rmg.reaction_systems.append(system)
@@ -1034,7 +1035,7 @@ def liquid_reactor(temperature,
     if sensitivityConcentrations is None or sensitivityTemperature is None:
         sens_conditions = None
     else:
-        sens_conditions = sensitivityConcentrations
+        sens_conditions = deepcopy(sensitivityConcentrations)
         sens_conditions['T'] = Quantity(sensitivityTemperature).value_si
 
     system = LiquidReactor(T, initialConcentrations, nSims, termination, sensitive_species, sensitivityThreshold,
@@ -1454,6 +1455,7 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
 def generated_species_constraints(**kwargs):
     valid_constraints = [
         'allowed',
+        'explicitlyAllowedMolecules',
         'maximumCarbonAtoms',
         'maximumOxygenAtoms',
         'maximumNitrogenAtoms',
@@ -1617,9 +1619,9 @@ def read_input_file(path, rmg0):
         'adjacencyListGroup': adjacency_list_group,
         'react': react,
         'simpleReactor': simple_reactor,
-        'constantVIdealGasReactor' : constant_V_ideal_gas_reactor,
-        'constantTPIdealGasReactor' : constant_TP_ideal_gas_reactor,
-        'liquidSurfaceReactor' : liquid_cat_reactor,
+        'constantVIdealGasReactor': constant_V_ideal_gas_reactor,
+        'constantTPIdealGasReactor': constant_TP_ideal_gas_reactor,
+        'liquidSurfaceReactor': liquid_cat_reactor,
         'constantTVLiquidReactor': constant_T_V_liquid_reactor,
         'liquidReactor': liquid_reactor,
         'surfaceReactor': surface_reactor,
@@ -1663,6 +1665,8 @@ def read_input_file(path, rmg0):
         if not isinstance(reaction_system, Reactor):
             reaction_system.convert_initial_keys_to_species_objects(species_dict)
 
+    if rmg.output_directory is None:
+        rmg.output_directory = os.path.dirname(full_path)
     if rmg.quantum_mechanics:
         rmg.quantum_mechanics.set_default_output_directory(rmg.output_directory)
         rmg.quantum_mechanics.initialize()
@@ -1747,7 +1751,7 @@ def save_input_file(path, rmg):
     f.write('    thermoLibraries = {0!r},\n'.format(rmg.thermo_libraries))
     f.write('    reactionLibraries = {0!r},\n'.format(rmg.reaction_libraries))
     f.write('    seedMechanisms = {0!r},\n'.format(rmg.seed_mechanisms))
-    f.write('    kinetics_depositories = {0!r},\n'.format(rmg.kinetics_depositories))
+    f.write('    kineticsDepositories = {0!r},\n'.format(rmg.kinetics_depositories))
     f.write('    kineticsFamilies = {0!r},\n'.format(rmg.kinetics_families))
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
     f.write(')\n\n')
@@ -1778,15 +1782,15 @@ def save_input_file(path, rmg):
     def format_temperature(system):
         """Get temperature string format for reaction system, whether single value or range"""
         if system.T is not None:
-            return '({0:g},"{1!s}")'.format(system.T.value, system.T.units)
-        
+            return '({0:g},"{1!s}"),'.format(system.T.value, system.T.units)
+
         return f'[({system.Trange[0].value:g}, "{system.Trange[0].units}"), ({system.Trange[1].value:g}, "{system.Trange[1].units}")],'
 
     def format_pressure(system):
         """Get pressure string format for reaction system, whether single value or range"""
         if system.P is not None:
-            return '({0:g},"{1!s}")'.format(system.P.value, system.P.units)
-        
+            return '({0:g},"{1!s}"),'.format(system.P.value, system.P.units)
+
         return f'[({system.Prange[0].value:g}, "{system.Prange[0].units}"), ({system.Prange[1].value:g}, "{system.Prange[1].units}")],'
 
     def format_initial_mole_fractions(system):
@@ -1799,10 +1803,32 @@ def save_input_file(path, rmg):
                 mole_fractions += '        "{0!s}": {1:g},\n'.format(spcs.label, molfrac)
         return mole_fractions
 
-
     # Reaction systems
     for system in rmg.reaction_systems:
-        if rmg.solvent:
+        if isinstance(system, ConstantTLiquidSurfaceReactor):
+            f.write('liquidSurfaceReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    initialConcentrations={\n')
+            for spcs, conc in system.initial_conditions['liquid'].items():
+                if spcs in ['T', 'V']:
+                    continue
+                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs, conc, 'mol/m^3'))
+            f.write('    },\n')
+            f.write('    initialSurfaceCoverages={\n')
+            for spcs, conc_mols in system.initial_conditions['surface'].items():
+                if spcs in ['T', 'A', 'd']:
+                    continue
+                # surf conc here is in mols, need to convert back into unitless coverage fraction
+                coverage = conc_mols / (rmg.surface_site_density.value_si * system.initial_conditions['surface']['A'])
+                f.write('        "{0!s}": {1:g},\n'.format(spcs, coverage))
+            f.write('    },\n')
+
+            # write the list of constant species
+            f.write(f'    constantSpecies = {system.const_spc_names},\n')
+
+            # write the surface Volume ratio, where ratio = A/V and A was originally constructed by assuming V=1 m^3
+            f.write('    surfaceVolumeRatio = ({0:g}, "{1!s}"),\n'.format(system.initial_conditions['surface']['A'], 'm^-1'))
+        elif isinstance(system, LiquidReactor):
             f.write('liquidReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    initialConcentrations={\n')
@@ -1811,6 +1837,7 @@ def save_input_file(path, rmg):
                 if type(conc) == float:
                     conc = Quantity(conc, Concentration.units)
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
+            f.write('    },\n')
         elif isinstance(system, SurfaceReactor):
             f.write('surfaceReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
@@ -1822,17 +1849,64 @@ def save_input_file(path, rmg):
             f.write('    initialSurfaceCoverages={\n')
             for spcs, cov in system.initial_surface_coverages.items():
                 f.write('        "{0!s}": {1:g},\n'.format(spcs.label, cov))
+            f.write('    },\n')
+            f.write('    surfaceVolumeRatio = ({0:g}, "{1!s}"),\n'.format(system.surface_volume_ratio.value, system.surface_volume_ratio.units))
+        elif isinstance(system, ConstantVIdealGasReactor) or isinstance(system, ConstantTPIdealGasReactor):
+            f.write('constantVIdealGasReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    pressure = ' + format_pressure(system) + '\n')
+            f.write('    initialMoleFractions={\n')
+            for spcs, conc in system.initial_conditions.items():
+                if spcs in ['T', 'P']:
+                    continue
+                f.write('        "{0!s}": {1:g},\n'.format(spcs, conc))
+            f.write('    },\n')
+        elif isinstance(system, ConstantTVLiquidReactor):
+            f.write('constantTVLiquidReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    initialConcentrations={\n')
+            for spcs, conc in system.initial_conditions.items():
+                if spcs in ['T', 'V']:
+                    continue
+                f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs, conc, 'mol/m^3'))
+            f.write('    },\n')
+        elif isinstance(system, MBSampledReactor):
+            f.write('mbsampledReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    pressure = ' + format_pressure(system) + '\n')
+            f.write('    initialMoleFractions={\n')
+            f.write(format_initial_mole_fractions(system))
+            f.write('    },\n')
+            f.write('    mbsamplingRate = ' + str(system.k_sampling.value_si) + ',\n')
+            f.write('    constantSpecies = ' + str([x.label for x in system.constantSpeciesList]) + ',\n')
         else:
             f.write('simpleReactor(\n')
             f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    pressure = ' + format_pressure(system) + '\n')
             f.write('    initialMoleFractions={\n')
             f.write(format_initial_mole_fractions(system))
-        f.write('    },\n')
+            f.write('    },\n')
 
         # Termination criteria
+        if isinstance(system, ReactionSystem):
+            terminations = system.termination
+        elif isinstance(system, Reactor):  # RMS reactor terminations need to be converted back
+            terminations = []
+            for term in system.terminations:
+                if hasattr(term, 'time'):
+                    terminations.append(TerminationTime(time=(term.time, 's')))
+                elif hasattr(term, 'ratio'):
+                    terminations.append(TerminationRateRatio(ratio=term.ratio))
+                elif isinstance(term, tuple):
+                    species, conversion = term
+                    terminations.append(TerminationConversion(spec=species, conv=conversion))
+                else:
+                    raise NotImplementedError('Termination criterion of type {0} is not currently supported for RMS reactors. Please convert this criterion to a time-based criterion or remove it from the input file.'.format(type(term)))
+        else:
+            raise NotImplementedError('Termination criteria for reaction system of type {0} not supported'.format(type(system)))
+
         conversions = ''
-        for term in system.termination:
+        for term in terminations:
             if isinstance(term, TerminationTime):
                 f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.value, term.time.units))
             elif isinstance(term, TerminationRateRatio):
@@ -1875,7 +1949,7 @@ def save_input_file(path, rmg):
     f.write('    maximumEdgeSpecies = {0:d},\n'.format(rmg.model_settings_list[0].maximum_edge_species))
     f.write('    minCoreSizeForPrune = {0:d},\n'.format(rmg.model_settings_list[0].min_core_size_for_prune))
     f.write('    minSpeciesExistIterationsForPrune = {0:d},\n'.format(rmg.model_settings_list[0].min_species_exist_iterations_for_prune))
-    f.write('    filterReactions = {0:d},\n'.format(rmg.model_settings_list[0].filter_reactions))
+    f.write('    filterReactions = {0},\n'.format(bool(rmg.model_settings_list[0].filter_reactions)))
     f.write('    filterThreshold = {0:g},\n'.format(rmg.model_settings_list[0].filter_threshold))
     f.write(')\n\n')
 
@@ -1945,7 +2019,7 @@ def save_input_file(path, rmg):
     f.write('    keepIrreversible = {0},\n'.format(rmg.keep_irreversible))
     f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
-    f.write('    wallTime = {0},\n'.format(rmg.walltime))
+    f.write('    wallTime = "{0}",\n'.format(rmg.walltime))
     f.write(')\n\n')
 
     f.close()
