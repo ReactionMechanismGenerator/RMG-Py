@@ -564,6 +564,22 @@ class CoreEdgeReactionModel:
         forward.reactants = reactants
         forward.products = products
 
+        # RMG's solver (rmgpy/solver/base.pyx and simple.pyx) hardcodes
+        # max 3 reactants and max 3 products per reaction. Reactions that
+        # exceed this limit (typically arising from decay_species fragmenting
+        # a biradical product into multiple closed-shell fragments + leaving
+        # groups, e.g. R(••)(OOH)(OOH) -> R(=O)(=O) + OH + OH) cannot be
+        # represented in the solver and trigger an IndexError at simulation
+        # init. Drop them here with a logged warning so the rest of the
+        # mechanism can continue to be built and simulated.
+        if len(forward.reactants) > 3 or len(forward.products) > 3:
+            logging.warning(
+                "Dropping reaction with %d reactants and %d products "
+                "(exceeds solver limit of 3 each): %s",
+                len(forward.reactants), len(forward.products), forward,
+            )
+            return None, False
+
         if check_existing:
             found, rxn = self.check_for_existing_reaction(forward)
             if found:
@@ -1676,6 +1692,9 @@ class CoreEdgeReactionModel:
                     reversible=rxn.reversible,
                 )
             r, isNew = self.make_new_reaction(rxn)  # updates self.new_species_list and self.new_reaction_list
+            if r is None:
+                # make_new_reaction dropped the reaction (e.g., >3 reactants/products)
+                continue
             for s in rxn.reactants+rxn.products:
                 if s in self.edge.species and s not in edge_species_to_move:
                     edge_species_to_move.append(s)
