@@ -451,7 +451,7 @@ class CanteraYamlFileComparer:
                 assert t1.get('note', '') == t2.get('note', ''), \
                     f"Transport note mismatch for {name}."
 
-
+@pytest.mark.skip(reason="These files are out of date and have been removed.")
 class TestPreviouslyWrittenCanteraYamlGasOnly(CanteraYamlFileComparer):
     """Tests for comparing previously written Cantera YAML files, gas-only mechanism.
 
@@ -488,7 +488,7 @@ class TestRecentlyGeneratedCanteraYamlGasOnly(CanteraYamlFileComparer):
         request.cls.yaml_path_1 = chemkin_file
         request.cls.yaml_path_2 = cantera_file
 
-@pytest.mark.skip(reason="These files are out of date.")
+@pytest.mark.skip(reason="These files are out of date and have been removed.")
 class TestPreviouslyWrittenCanteraYamlWithSurface(CanteraYamlFileComparer):
     """Tests for comparing previously written Cantera YAML files, with surface mechanism.
 
