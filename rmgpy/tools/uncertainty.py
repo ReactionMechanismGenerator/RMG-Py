@@ -43,7 +43,7 @@ class ThermoParameterUncertainty(object):
     This class is an engine that generates the species uncertainty based on its thermo sources.
     """
 
-    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.1, dG_ADS_correction=6.918, dG_surf_lib=6.918):
+    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.7159, dG_ADS_correction=6.918, dG_surf_lib=6.918):
         """
         Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
         in units of kcal/mol.
@@ -62,22 +62,22 @@ class ThermoParameterUncertainty(object):
         """
         Retrieve the uncertainty value in kcal/mol when the source of the thermo of a species is given.
         """
-        dG = 0.0
+        varG = 0.0
         if 'Library' in source:
-            dG += self.dG_library
+            varG += self.dG_library ** 2
         if 'Surface_Library' in source:
-            dG += self.dG_surf_lib
+            varG += self.dG_surf_lib ** 2
         if 'QM' in source:
-            dG += self.dG_QM
+            varG += self.dG_QM ** 2
         if 'GAV' in source:
-            dG += self.dG_GAV  # Add a fixed uncertainty for the GAV method
+            varG += self.dG_GAV ** 2  # Add a fixed uncertainty for the GAV method
             for group_type, group_entries in source['GAV'].items():
                 group_weights = [groupTuple[-1] for groupTuple in group_entries]
-                dG += np.sum([weight * self.dG_group for weight in group_weights])
+                varG += np.sum([weight ** 2 * self.dG_group ** 2 for weight in group_weights])
         if 'ADS' in source:
-            dG += self.dG_ADS_correction  # Add adsorption correction uncertainty
+            varG += self.dG_ADS_correction ** 2  # Add adsorption correction uncertainty
 
-        return dG
+        return np.sqrt(varG)
 
     def get_partial_uncertainty_value(self, source, corr_source_type, corr_param=None, corr_group_type=None):
         """
@@ -170,24 +170,24 @@ class KineticParameterUncertainty(object):
         """
         Retrieve the dlnk uncertainty when the source of the reaction kinetics are given
         """
-        dlnk = 0.0
+        varlnk = 0.0
         if 'Library' in source:
             # Should be a single library reaction source
-            dlnk += self.dlnk_library
+            varlnk += self.dlnk_library ** 2
         elif 'Surface_Library' in source:
             # Should be a single library reaction source
-            dlnk += self.dlnk_surf_library
+            varlnk += self.dlnk_surf_library ** 2
         elif 'PDep' in source:
             # Should be a single pdep reaction source
-            dlnk += self.dlnk_pdep
+            varlnk += self.dlnk_pdep ** 2
         elif 'Training' in source:
             # Should be a single training reaction
             # Although some training entries may be used in reverse,
-            # We still consider the kinetics to be directly dependent 
+            # We still consider the kinetics to be directly dependent
             if 'surface' in source['Training'][0].lower():
-                dlnk += self.dlnk_surf_training
+                varlnk += self.dlnk_surf_training ** 2
             else:
-                dlnk += self.dlnk_training
+                varlnk += self.dlnk_training ** 2
         elif 'Rate Rules' in source:
             family_label = source['Rate Rules'][0]
             source_dict = source['Rate Rules'][1]
@@ -195,14 +195,14 @@ class KineticParameterUncertainty(object):
             rule_weights = [ruleTuple[-1] for ruleTuple in source_dict['rules']]
             training_weights = [trainingTuple[-1] for trainingTuple in source_dict['training']]
 
-            dlnk += self.dlnk_family
+            varlnk += self.dlnk_family ** 2
 
             N = len(rule_weights) + len(training_weights)
             if 'node_std_dev' in source_dict:
                 # Handle autogen BM trees
                 if source_dict['node_std_dev'] < 0:
                     raise ValueError('Invalid value for std dev of kinetics family rule node')
-                dlnk += source_dict['node_std_dev']
+                varlnk += np.float_power(source_dict['node_std_dev'], 2.0)
                 if source_dict['node_n_train'] is None:
                     raise ValueError('Invalid number of training reactions for kinetics family rule node')
                 N = source_dict['node_n_train']
@@ -211,28 +211,28 @@ class KineticParameterUncertainty(object):
                 # every node template has its own fitted rate rule by definition, but here we use the
                 # number of training reactions as an approximation of the node's specificity/generality
                 # and add a penalty for being too general (large # of training reactions)
-                dlnk += np.log10(N + 1) * self.dlnk_nonexact
+                varlnk += (np.log10(N + 1) * self.dlnk_nonexact) ** 2
             else:
                 # Handle hand-made trees
                 if not exact:
                     # nonexactness contribution increases as N increases
-                    dlnk += np.log10(N + 1) * self.dlnk_nonexact
+                    varlnk += (np.log10(N + 1) * self.dlnk_nonexact) ** 2
 
                 if 'surface' in family_label.lower():
-                    dlnk += np.sum([weight * self.dlnk_surf_rule for weight in rule_weights])
-                    dlnk += np.sum([weight * self.dlnk_surf_training for weight in training_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_rule ** 2 for weight in rule_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_training ** 2 for weight in training_weights])
                 else:
                     # Add the contributions from rules
-                    dlnk += np.sum([weight * self.dlnk_rule for weight in rule_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in rule_weights])
                     # Add the contributions from training
                     # Even though these source from training reactions, we actually
                     # use the uncertainty for rate rules, since these are now approximations
                     # of the original reaction.  We consider these to be independent of original the training
                     # parameters because the rate rules may be reversing the training reactions,
                     # which leads to more complicated dependence
-                    dlnk += np.sum([weight * self.dlnk_rule for weight in training_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in training_weights])
 
-        return dlnk
+        return np.sqrt(varlnk)
 
     def get_partial_uncertainty_value(self, source, corr_source_type, corr_param=None, corr_family=None):
         """
@@ -442,10 +442,16 @@ class Uncertainty(object):
         """
         self.species_sources_dict = {}
         self.extra_species = []
+        allowed_source_keys = {'Library', 'QM', 'GAV', 'ADS'}
         for species in self.species_list:
             if species not in self.extra_species:
                 source = self.database.thermo.extract_source_from_comments(species)
-                assert source.keys() <= {'Library', 'QM', 'GAV', 'ADS'}, 'Source of thermo must be either Library, QM, GAV, or ADS'
+                unexpected_source_keys = set(source.keys()) - allowed_source_keys
+                if unexpected_source_keys:
+                    raise ValueError(
+                        f'Source of thermo must be either Library, QM, GAV, or ADS; '
+                        f'got unexpected source keys {unexpected_source_keys} for species {species.label}'
+                    )
 
                 # Now prep the source data
                 # Do not alter the GAV information, but reassign QM and Library sources to the species indices that they came from
@@ -501,7 +507,11 @@ class Uncertainty(object):
                 elif len(source) == 3:
                     # combination of adsorption correction, GAV (radical), and Library/ML
 
-                    assert species.contains_surface_site(), 'only surface species should have 3 sources: adsorption correction, GAV, library/ML'
+                    if not species.contains_surface_site():
+                        raise ValueError(
+                            f'Only surface species should have 3 thermo sources (adsorption correction, GAV, and library/QM); '
+                            f'got species={species.label}, source={source}'
+                        )
 
                     # retrieve the desorbed version of the surface species-- the thing the adsorption correction was applied to during thermo estimation
                     dummy_gas_species = Species()
