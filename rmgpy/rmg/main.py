@@ -1524,7 +1524,18 @@ class RMG(util.Subject):
             if rxn.is_surface_reaction():
                 # Don't check collision limits for surface reactions.
                 continue
-            violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
+            try:
+                violator_list = rxn.check_collision_limit_violation(t_min=self.Tmin, t_max=self.Tmax, p_min=self.Pmin, p_max=self.Pmax)
+            except Exception as e:
+                # Some kinetics parameterizations (e.g. ThirdBody/Arrhenius with
+                # parameters that trigger Cython's complex-from-** path) raise
+                # during rate evaluation at the boundary T/P. Skip the check for
+                # that reaction rather than aborting the entire RMG run.
+                logging.warning(
+                    "Skipping collision-limit check for reaction %s due to %s: %s",
+                    rxn, type(e).__name__, e,
+                )
+                continue
             if violator_list:
                 violators.extend(violator_list)
         # Whether or not violators were found, rename 'collision_rate_violators.log' if it exists
