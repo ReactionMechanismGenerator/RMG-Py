@@ -29,6 +29,7 @@
 
 import os
 import re
+import pickle
 
 import numpy as np
 
@@ -36,6 +37,7 @@ import rmgpy.util as util
 from rmgpy.species import Species
 from rmgpy.tools.data import GenericData
 from rmgpy.tools.plot import parse_csv_data, plot_sensitivity, ReactionSensitivityPlot, ThermoSensitivityPlot
+from rmgpy.kinetics.surface import SurfaceArrheniusBEP, StickingCoefficientBEP, SurfaceArrheniusBEP
 
 
 class ThermoParameterUncertainty(object):
@@ -43,7 +45,7 @@ class ThermoParameterUncertainty(object):
     This class is an engine that generates the species uncertainty based on its thermo sources.
     """
 
-    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.1, dG_ADS_correction=6.918, dG_surf_lib=6.918):
+    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.7159, dG_ADS_correction=6.918, dG_surf_lib=6.918):
         """
         Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
         in units of kcal/mol.
@@ -62,22 +64,22 @@ class ThermoParameterUncertainty(object):
         """
         Retrieve the uncertainty value in kcal/mol when the source of the thermo of a species is given.
         """
-        dG = 0.0
+        varG = 0.0
         if 'Library' in source:
-            dG += self.dG_library
+            varG += self.dG_library ** 2
         if 'Surface_Library' in source:
-            dG += self.dG_surf_lib
+            varG += self.dG_surf_lib ** 2
         if 'QM' in source:
-            dG += self.dG_QM
+            varG += self.dG_QM ** 2
         if 'GAV' in source:
-            dG += self.dG_GAV  # Add a fixed uncertainty for the GAV method
+            varG += self.dG_GAV ** 2  # Add a fixed uncertainty for the GAV method
             for group_type, group_entries in source['GAV'].items():
                 group_weights = [groupTuple[-1] for groupTuple in group_entries]
-                dG += np.sum([weight * self.dG_group for weight in group_weights])
+                varG += np.sum([weight ** 2 * self.dG_group ** 2 for weight in group_weights])
         if 'ADS' in source:
-            dG += self.dG_ADS_correction  # Add adsorption correction uncertainty
+            varG += self.dG_ADS_correction ** 2  # Add adsorption correction uncertainty
 
-        return dG
+        return np.sqrt(varG)
 
     def get_partial_uncertainty_value(self, source, corr_source_type, corr_param=None, corr_group_type=None):
         """
@@ -170,24 +172,24 @@ class KineticParameterUncertainty(object):
         """
         Retrieve the dlnk uncertainty when the source of the reaction kinetics are given
         """
-        dlnk = 0.0
+        varlnk = 0.0
         if 'Library' in source:
             # Should be a single library reaction source
-            dlnk += self.dlnk_library
+            varlnk += self.dlnk_library ** 2
         elif 'Surface_Library' in source:
             # Should be a single library reaction source
-            dlnk += self.dlnk_surf_library
+            varlnk += self.dlnk_surf_library ** 2
         elif 'PDep' in source:
             # Should be a single pdep reaction source
-            dlnk += self.dlnk_pdep
+            varlnk += self.dlnk_pdep ** 2
         elif 'Training' in source:
             # Should be a single training reaction
             # Although some training entries may be used in reverse,
-            # We still consider the kinetics to be directly dependent 
+            # We still consider the kinetics to be directly dependent
             if 'surface' in source['Training'][0].lower():
-                dlnk += self.dlnk_surf_training
+                varlnk += self.dlnk_surf_training ** 2
             else:
-                dlnk += self.dlnk_training
+                varlnk += self.dlnk_training ** 2
         elif 'Rate Rules' in source:
             family_label = source['Rate Rules'][0]
             source_dict = source['Rate Rules'][1]
@@ -195,14 +197,14 @@ class KineticParameterUncertainty(object):
             rule_weights = [ruleTuple[-1] for ruleTuple in source_dict['rules']]
             training_weights = [trainingTuple[-1] for trainingTuple in source_dict['training']]
 
-            dlnk += self.dlnk_family
+            varlnk += self.dlnk_family ** 2
 
             N = len(rule_weights) + len(training_weights)
             if 'node_std_dev' in source_dict:
                 # Handle autogen BM trees
                 if source_dict['node_std_dev'] < 0:
                     raise ValueError('Invalid value for std dev of kinetics family rule node')
-                dlnk += source_dict['node_std_dev']
+                varlnk += np.float_power(source_dict['node_std_dev'], 2.0)
                 if source_dict['node_n_train'] is None:
                     raise ValueError('Invalid number of training reactions for kinetics family rule node')
                 N = source_dict['node_n_train']
@@ -211,28 +213,28 @@ class KineticParameterUncertainty(object):
                 # every node template has its own fitted rate rule by definition, but here we use the
                 # number of training reactions as an approximation of the node's specificity/generality
                 # and add a penalty for being too general (large # of training reactions)
-                dlnk += np.log10(N + 1) * self.dlnk_nonexact
+                varlnk += (np.log10(N + 1) * self.dlnk_nonexact) ** 2
             else:
                 # Handle hand-made trees
                 if not exact:
                     # nonexactness contribution increases as N increases
-                    dlnk += np.log10(N + 1) * self.dlnk_nonexact
+                    varlnk += (np.log10(N + 1) * self.dlnk_nonexact) ** 2
 
                 if 'surface' in family_label.lower():
-                    dlnk += np.sum([weight * self.dlnk_surf_rule for weight in rule_weights])
-                    dlnk += np.sum([weight * self.dlnk_surf_training for weight in training_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_rule ** 2 for weight in rule_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_training ** 2 for weight in training_weights])
                 else:
                     # Add the contributions from rules
-                    dlnk += np.sum([weight * self.dlnk_rule for weight in rule_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in rule_weights])
                     # Add the contributions from training
                     # Even though these source from training reactions, we actually
                     # use the uncertainty for rate rules, since these are now approximations
                     # of the original reaction.  We consider these to be independent of original the training
                     # parameters because the rate rules may be reversing the training reactions,
                     # which leads to more complicated dependence
-                    dlnk += np.sum([weight * self.dlnk_rule for weight in training_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in training_weights])
 
-        return dlnk
+        return np.sqrt(varlnk)
 
     def get_partial_uncertainty_value(self, source, corr_source_type, corr_param=None, corr_family=None):
         """
@@ -330,11 +332,12 @@ class Uncertainty(object):
     for a single RMG-generated mechanism.
     """
 
-    def __init__(self, species_list=None, reaction_list=None, output_directory=''):
+    def __init__(self, species_list=None, reaction_list=None, output_directory='', thermo_corr_dir=None):
         """
         `species_list`: list of RMG species objects
         `reaction_list`: list of RMG reaction objects
         `outputDirectoy`: directory path for saving output files from the analyses
+        `thermo_corr_dir`: directory path for saving thermo correlation files
         """
         self.database = None
         self.species_list = species_list
@@ -345,7 +348,12 @@ class Uncertainty(object):
         self.all_kinetic_sources = None
         self.thermo_input_uncertainties = None
         self.kinetic_input_uncertainties = None
+        self.thermo_covariance_matrix = None
+        self.kinetic_covariance_matrix = None
+        self.overall_covariance_matrix = None
         self.output_directory = output_directory if output_directory else os.getcwd()
+        self.thermo_corr_dir = thermo_corr_dir
+        self.thermo_corr_data = {}  # a dictionary of available thermo covariance matrices for each library
 
         # For extra species needed for correlated analysis but not in model
         self.extra_species = []
@@ -914,6 +922,300 @@ class Uncertainty(object):
             output[sens_species] = (total_variance, reaction_uncertainty, thermo_uncertainty)
 
         return output
+
+    def get_thermo_covariance_matrix(self):
+        """
+        Export the thermo covariance matrix as a numpy array
+        """
+        assert self.thermo_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.thermo_input_uncertainties) > 0, 'No thermodynamic parameters found'
+        if isinstance(self.thermo_input_uncertainties[0], np.float64):
+            print("""Warning -- parameter uncertainties assigned without correlations.
+All off diagonals will be zero unless you call assign_parameter_uncertainties(correlated=True)""")
+            self.thermo_covariance_matrix = np.float_power(np.diag(self.thermo_input_uncertainties), 2.0)
+            return self.thermo_covariance_matrix
+
+        self.thermo_covariance_matrix = np.zeros((len(self.species_list), len(self.species_list)))
+
+        for i in range(len(self.species_list)):
+            for j in range(len(self.species_list)):
+
+                # assuming only sources that match are correlated
+                for source_i in self.thermo_input_uncertainties[i].keys():
+                    if source_i in self.thermo_input_uncertainties[j].keys():
+                        self.thermo_covariance_matrix[i, j] += self.thermo_input_uncertainties[i][source_i] * self.thermo_input_uncertainties[j][source_i]
+        
+        # load correlations between adsorbates calculated with BEEF vdW
+        # load the saved species ensemble data: this includes a numpy matrix of dG values for each species and a pickle of the species adjacency list
+        if self.thermo_corr_dir is not None:
+            def get_i_spec(spec, species_list):
+                for i in range(len(species_list)):
+                    if spec.is_isomorphic(species_list[i]):
+                        return i
+                return None
+
+            def get_i_group(group, group_list):
+                for i in range(len(group_list)):
+                    if group.is_identical(group_list[i]):
+                        return i
+                return None
+
+            # load the ensemble data
+            # TODO - generalize this
+            my_library = 'surfaceThermoPt111'
+            corr_thermo_data_file = os.path.join(self.thermo_corr_dir, f'{my_library}_cov.npy')
+            self.thermo_corr_data = {my_library: np.load(corr_thermo_data_file) / 4.18 / 4.18}  # convert from kJ^2/mol^2 to kcal^2/mol^2
+            molecules_file = os.path.join(os.path.join(self.thermo_corr_dir, f'{my_library}_molecules.pickle'))
+            with open(molecules_file, 'rb') as f:
+                # this should be a list of molecule adjacency lists
+                molecules_data = pickle.load(f)
+            correlated_species = []
+            for i in range(len(molecules_data)):
+                sp = Species().from_adjacency_list(molecules_data[i])
+                correlated_species.append(sp)
+            assert len(correlated_species) == self.thermo_corr_data[my_library].shape[0]
+
+            assert 'adsorptionPt111' in self.database.thermo.groups, 'BEEF adsorption corrections require adsorptionPt111 group in the thermo database'
+            db_ads_group_items = [self.database.thermo.groups['adsorptionPt111'].entries[key].item for key in self.database.thermo.groups['adsorptionPt111'].entries]
+
+            def get_species_indices_in_group(group):
+                species_used = []
+                for j in range(len(correlated_species)):
+                    if correlated_species[j].molecule[0].is_subgraph_isomorphic(group, generate_initial_map=True):
+                        species_used.append(j)
+                return species_used
+
+            def get_cov_sp_lists(sp_list_i, sp_list_j):
+                if len(sp_list_i) == 0 or len(sp_list_j) == 0:
+                    return 0
+
+                cov = 0
+                for i in sp_list_i:
+                    for j in sp_list_j:
+                        cov += self.thermo_corr_data[my_library][i, j]
+                cov /= len(sp_list_i) * len(sp_list_j)
+                return cov
+
+            # now splice this into the big thermo covariance matrix
+            for i_spc in range(len(self.species_list)):
+                for j_spc in range(len(self.species_list)):
+
+                    # does species use surfaceThermoPt111 lin?
+                    i_uses_pt111_lib = False
+                    j_uses_pt111_lib = False
+                    if 'surfaceThermoPt111' in self.species_list[i_spc].thermo.comment:
+                        i_uses_pt111_lib = True
+                    if 'surfaceThermoPt111' in self.species_list[j_spc].thermo.comment:
+                        j_uses_pt111_lib = True
+
+                    # does species use adsorptionPt111 group?
+                    i_ads_group = None
+                    j_ads_group = None
+                    if 'ADS' in self.species_sources_dict[self.species_list[i_spc]]:
+                        i_ads_group = self.species_sources_dict[self.species_list[i_spc]]['ADS']['adsorptionPt111'][0][0].item
+                    if 'ADS' in self.species_sources_dict[self.species_list[j_spc]]:
+                        j_ads_group = self.species_sources_dict[self.species_list[j_spc]]['ADS']['adsorptionPt111'][0][0].item
+
+                    # two libraries
+                    if i_uses_pt111_lib and j_uses_pt111_lib:
+                        i_spc_beef = get_i_spec(self.species_list[i_spc], correlated_species)
+                        j_spc_beef = get_i_spec(self.species_list[j_spc], correlated_species)
+                        if i_spc_beef is not None and j_spc_beef is not None:
+                            self.thermo_covariance_matrix[i_spc, j_spc] += self.thermo_corr_data[my_library][i_spc_beef, j_spc_beef]
+                        else:
+                            # TODO add default value here??
+                            pass
+                    # two groups
+                    elif i_ads_group is not None and j_ads_group is not None:
+                        i_beef = get_i_group(i_ads_group, db_ads_group_items)
+                        j_beef = get_i_group(j_ads_group, db_ads_group_items)
+                        if i_beef is not None and j_beef is not None:
+                            species_list_i = get_species_indices_in_group(db_ads_group_items[i_beef])
+                            species_list_j = get_species_indices_in_group(db_ads_group_items[j_beef])
+                            self.thermo_covariance_matrix[i_spc, j_spc] += get_cov_sp_lists(species_list_i, species_list_j)
+                        else:
+                            # TODO add default value here??
+                            pass
+                    # one group and one library
+                    elif i_uses_pt111_lib and j_ads_group is not None:
+                        i_spc_beef = get_i_spec(self.species_list[i_spc], correlated_species)
+                        if i_spc_beef is not None:
+                            species_list_i = [i_spc_beef]
+                            j_beef = get_i_group(j_ads_group, db_ads_group_items)
+                            if j_beef is not None:
+                                species_list_j = get_species_indices_in_group(db_ads_group_items[j_beef])
+                                self.thermo_covariance_matrix[i_spc, j_spc] += get_cov_sp_lists(species_list_i, species_list_j)
+                        else:
+                            # TODO add default value here??
+                            pass
+                    elif j_uses_pt111_lib and i_ads_group is not None:
+                        j_spc_beef = get_i_spec(self.species_list[j_spc], correlated_species)
+                        if j_spc_beef is not None:
+                            species_list_j = [j_spc_beef]
+                            i_beef = get_i_group(i_ads_group, db_ads_group_items)
+                            if i_beef is not None:
+                                species_list_i = get_species_indices_in_group(db_ads_group_items[i_beef])
+                                self.thermo_covariance_matrix[i_spc, j_spc] += get_cov_sp_lists(species_list_i, species_list_j)
+                        else:
+                            # TODO add default value here??
+                            pass
+
+        return self.thermo_covariance_matrix
+
+    def get_kinetic_covariance_matrix(self, k_param_engine=None):
+        """
+        Export the kinetic covariance matrix as a numpy array
+        """
+        assert self.kinetic_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.kinetic_input_uncertainties) > 0, 'No kinetic parameters found'
+        if isinstance(self.kinetic_input_uncertainties[0], np.float64):
+            print("""Warning -- parameter uncertainties assigned without correlations.
+All off diagonals will be zero unless you call assign_parameter_uncertainties(correlated=True)""")
+            self.kinetic_covariance_matrix = np.float_power(np.diag(self.kinetic_input_uncertainties), 2.0)
+            return self.kinetic_covariance_matrix
+
+        if k_param_engine is None:
+            k_param_engine = KineticParameterUncertainty()
+
+        self.kinetic_covariance_matrix = np.zeros((len(self.reaction_list), len(self.reaction_list)))
+
+        # takes a while to load the family reaction maps
+        auto_gen_family_rxn_maps = {}
+        if self.all_kinetic_sources is None:
+            self.compile_all_sources()
+        for family in self.all_kinetic_sources['Rate Rules'].keys():
+            if self.database.kinetics.families[family].auto_generated:
+                auto_gen_family_rxn_maps[family] = self.database.kinetics.families[family].get_reaction_matches(
+                    thermo_database=self.database.thermo,
+                    remove_degeneracy=True,
+                    get_reverse=True,
+                    exact_matches_only=False,
+                    fix_labels=True
+                )
+
+        for i, reaction in enumerate(self.reaction_list):
+            source_dict_i = self.reaction_sources_dict[self.reaction_list[i]]
+            for j, other_reaction in enumerate(self.reaction_list):
+                # assuming only sources that match are correlated
+                source_dict_j = self.reaction_sources_dict[self.reaction_list[j]]
+
+                for source_i in self.kinetic_input_uncertainties[i].keys():
+                    if source_i in self.kinetic_input_uncertainties[j].keys():
+                        self.kinetic_covariance_matrix[i, j] += self.kinetic_input_uncertainties[i][source_i] * self.kinetic_input_uncertainties[j][source_i]
+                else:
+                    # no match in rules, but there may be overlap if they're SIDT trees using the same family
+                    if 'Rate Rules' in source_dict_i.keys() and 'Rate Rules' in source_dict_j.keys():
+                        if source_dict_i['Rate Rules'][1]['autogenerated'] and source_dict_j['Rate Rules'][1]['autogenerated'] and \
+                                source_dict_i['Rate Rules'][0] == source_dict_j['Rate Rules'][0]:
+                            # get #training reactions in overlap
+                            family = source_dict_i['Rate Rules'][0]
+                            node_name_i = source_dict_i['Rate Rules'][1]['template'][0].label
+                            node_name_j = source_dict_j['Rate Rules'][1]['template'][0].label
+                            rxns_i = auto_gen_family_rxn_maps[family][node_name_i]
+                            rxns_j = auto_gen_family_rxn_maps[family][node_name_j]
+
+                            # count overlapping reactions:
+                            overlap_count = 0
+                            for r_i in rxns_i:
+                                if r_i in rxns_j:
+                                    overlap_count += 1
+
+                            self.kinetic_covariance_matrix[i, j] += (overlap_count / len(rxns_i)) * (overlap_count / len(rxns_j)) * (k_param_engine.dlnk_rule ** 2.0)
+
+                # check if a training reaction exactly matches a rate rule data entry
+                if 'Training' in source_dict_i.keys() and 'Rate Rules' in source_dict_j.keys():
+                    rate_rules_training_reactions = [t[1] for t in source_dict_j['Rate Rules'][1]['training']]
+                    weights = [t[2] for t in source_dict_j['Rate Rules'][1]['training']]
+                    training_reaction = source_dict_i['Training'][1]
+                    for k in range(len(rate_rules_training_reactions)):
+                        if rate_rules_training_reactions[k].item.is_isomorphic(training_reaction.item):
+                            self.kinetic_covariance_matrix[i, j] += weights[k] * k_param_engine.dlnk_training * k_param_engine.dlnk_rule
+                elif 'Training' in source_dict_j.keys() and 'Rate Rules' in source_dict_i.keys():
+                    rate_rules_training_reactions = [t[1] for t in source_dict_i['Rate Rules'][1]['training']]
+                    weights = [t[2] for t in source_dict_i['Rate Rules'][1]['training']]
+                    training_reaction = source_dict_j['Training'][1]
+                    for k in range(len(rate_rules_training_reactions)):
+                        if rate_rules_training_reactions[k].item.is_isomorphic(training_reaction.item):
+                            self.kinetic_covariance_matrix[i, j] += weights[k] * k_param_engine.dlnk_training * k_param_engine.dlnk_rule
+
+                # Add in thermo correlations if both BEP
+                if isinstance(reaction.kinetics, (SurfaceArrheniusBEP, StickingCoefficientBEP)) and \
+                        isinstance(other_reaction.kinetics, (SurfaceArrheniusBEP, StickingCoefficientBEP)):
+
+                    alpha_i = reaction.kinetics.alpha.value_si
+                    alpha_j = other_reaction.kinetics.alpha.value_si
+
+                    R = 8.314472
+                    T = 1000.0
+                    r1_sp_indices = [self.species_list.index(sp) for sp in reaction.reactants + reaction.products]
+                    r1_coefficients = [-1 for x in reaction.reactants]
+                    r1_coefficients.extend([1 for x in reaction.products])
+
+                    r2_sp_indices = [self.species_list.index(sp) for sp in other_reaction.reactants + other_reaction.products]
+                    r2_coefficients = [-1 for x in other_reaction.reactants]
+                    r2_coefficients.extend([1 for x in other_reaction.products])
+                    for r1 in range(len(r1_sp_indices)):
+                        for r2 in range(len(r2_sp_indices)):
+
+                            covH = self.thermo_covariance_matrix[r1_sp_indices[r1], r2_sp_indices[r2]] * 4184 * 4184  # convert from kcal/mol to J/mol
+                            nu_i = r1_coefficients[r1]
+                            nu_j = r2_coefficients[r2]
+
+                            self.kinetic_covariance_matrix[i, j] += nu_i * nu_j * alpha_i * alpha_j * covH / np.float_power(R * T, 2.0)
+
+        return self.kinetic_covariance_matrix
+
+    def get_overall_covariance_matrix(self):
+        # make combined thermo and kinetics covariance matrix, species first, then reactions
+
+        assert self.kinetic_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.kinetic_input_uncertainties) > 0, 'No kinetic parameters found'
+        assert self.thermo_covariance_matrix is not None, 'Must create thermo covariance matrix first'
+        assert self.kinetic_covariance_matrix is not None, 'Must create kinetics covariance matrix first'
+
+        self.overall_covariance_matrix = np.zeros((len(self.species_list) + len(self.reaction_list), len(self.species_list) + len(self.reaction_list)))
+        self.overall_covariance_matrix[:len(self.species_list), :len(self.species_list)] = self.thermo_covariance_matrix
+        self.overall_covariance_matrix[len(self.species_list):, len(self.species_list):] = self.kinetic_covariance_matrix
+
+        # fill in the covariance between reaction and species based on BEP relationships if applicable
+        for i in range(len(self.reaction_list)):
+            reaction = self.reaction_list[i]
+
+            BEP = None
+            BEP_types = [SurfaceArrheniusBEP, StickingCoefficientBEP]
+            if isinstance(reaction.kinetics, tuple(BEP_types)):
+                BEP = reaction.kinetics
+            elif 'Rate Rules' not in self.reaction_sources_dict[reaction]:
+                pass  # nothing to do here if kinetics doesn't depend on thermo through a BEP
+            elif self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'] and \
+                    isinstance(self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'][0][0].data, tuple(BEP_types)):
+                BEP = self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'][0][0].data
+            elif self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'] and \
+                    isinstance(self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'][0][0].data, tuple(BEP_types)):
+                BEP = self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'][0][0].data
+
+            if BEP:
+                alpha_i = BEP.alpha.value_si
+
+                R = 8.314472
+                T = 1000.0
+                r1_sp_indices = [self.species_list.index(sp) for sp in reaction.reactants + reaction.products]
+                r1_coefficients = [-1 for x in reaction.reactants]
+                r1_coefficients.extend([1 for x in reaction.products])
+
+                for r1 in range(len(r1_sp_indices)):  # loop over species in the reaction
+                    for j in range(len(self.species_list)):  # loop over all species
+                        covH = self.thermo_covariance_matrix[r1_sp_indices[r1], j] * 4184 * 4184  # convert from kcal/mol to J/mol
+                        nu_i = r1_coefficients[r1]
+
+                        self.overall_covariance_matrix[len(self.species_list) + i, j] += nu_i * alpha_i * covH / (R * T) / 4184  # convert back to kcal/mol
+
+        # fill in the lower triangle by copying from the top
+        for i in range(len(self.reaction_list)):
+            for j in range(len(self.species_list)):
+                self.overall_covariance_matrix[j, len(self.species_list) + i] = self.overall_covariance_matrix[len(self.species_list) + i, j]
+
+        return self.overall_covariance_matrix
 
 
 def process_local_results(results, sensitive_species, number=10):
