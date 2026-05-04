@@ -432,9 +432,14 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             ind = isomer_spcs.index(self.source[0])
             b[ind] = -1.0  # flux at source
         else:
-            b = -b / b.sum()  # 1.0 flux from source
+            total_source_flux = b.sum()
+            if total_source_flux == 0:
+                return None
+            b = -b / total_source_flux  # 1.0 flux from source
 
         if len(b) == 1:
+            if A[0, 0] == 0:
+                return None
             return np.array([b[0] / A[0, 0]])
 
         con = np.linalg.cond(A)
