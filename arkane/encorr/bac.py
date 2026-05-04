@@ -1092,10 +1092,13 @@ def get_confidence_intervals(x: np.ndarray,
         weights = np.eye(n)
 
     e = y - ypred  # Residuals
-    sigma2 = e.T @ weights @ e / (n - p)  # MSE
+    dof = n - p
+    if dof <= 0:
+        return np.nan, np.nan
+    sigma2 = e.T @ weights @ e / dof  # MSE
     cov = sigma2 * np.linalg.inv(x.T @ weights @ x)  # covariance matrix
     se = np.sqrt(np.diag(cov))  # standard error
-    tdist = distributions.t.ppf(1 - alpha / 2, n - p)  # student-t
+    tdist = distributions.t.ppf(1 - alpha / 2, dof)  # student-t
     ci = tdist * se  # confidence interval half-width
     return ci, cov
 
@@ -1103,6 +1106,7 @@ def get_confidence_intervals(x: np.ndarray,
 def _covariance_to_correlation(cov: np.ndarray) -> np.ndarray:
     """Convert (unscaled) covariance matrix to correlation matrix"""
     v = np.sqrt(np.diag(cov))
-    corr = cov / np.outer(v, v)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        corr = cov / np.outer(v, v)
     corr[cov == 0] = 0
     return corr
