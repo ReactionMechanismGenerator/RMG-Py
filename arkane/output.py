@@ -65,8 +65,10 @@ class PrettifyVisitor(ast.NodeVisitor):
         return isinstance(node, ast.Constant) and isinstance(node.value, (int, float, complex)) and not isinstance(node.value, bool)
 
     @classmethod
-    def _is_string_or_number(cls, node):
-        return cls._is_string(node) or cls._is_number(node)
+    def _is_simple_constant(cls, node):
+        return cls._is_string(node) or cls._is_number(node) or (
+            isinstance(node, ast.Constant) and isinstance(node.value, bool)
+        )
 
     def visit_Call(self, node):
         """
@@ -96,7 +98,7 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         Return a pretty representation of the list represented by `node`.
         """
-        if any([not (self._is_string_or_number(e) or isinstance(e, ast.UnaryOp)) for e in node.elts]):
+        if any([not (self._is_simple_constant(e) or isinstance(e, ast.UnaryOp)) for e in node.elts]):
             # Split elements onto multiple lines
             result = '[\n'
             self.level += 1
@@ -143,8 +145,8 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         Return a pretty representation of the dict represented by `node`.
         """
-        if (any([not self._is_string_or_number(e) for e in node.keys])
-                or any([not self._is_string_or_number(e) for e in node.values])):
+        if (any([not self._is_simple_constant(e) for e in node.keys])
+                or any([not self._is_simple_constant(e) for e in node.values])):
             # Split elements onto multiple lines
             result = '{\n'
             self.level += 1
@@ -166,6 +168,8 @@ class PrettifyVisitor(ast.NodeVisitor):
         Return a pretty representation of the constant represented by `node`.
         """
         if isinstance(node.value, str):
+            result = repr(node.value)
+        elif isinstance(node.value, bool):
             result = repr(node.value)
         elif isinstance(node.value, (int, float, complex)) and not isinstance(node.value, bool):
             result = '{0:g}'.format(node.value)
