@@ -2381,7 +2381,7 @@ class SolvationDatabase(object):
 
         # Generate Amatrix and bvector for Ax = b
         Amatrix = np.zeros((4, 4))
-        bvec = np.zeros((4, 1))
+        bvec = np.zeros(4)
         # 1. Tr*ln(K-factor) value at T = 298 K
         rho_g_298 = get_gas_saturation_density(solvent_name, 298)
         rho_l_298 = get_liquid_saturation_density(solvent_name, 298)
