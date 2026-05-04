@@ -190,13 +190,28 @@ class TestMain:
                 except:
                     assert False, "The output Cantera file is not loadable in Cantera."
     
-    def test_make_cantera_input_file_directly(self):
+    def test_make_cantera_input_file_directly_1(self):
         """
-        This tests to ensure that a usable Cantera input file is created via direct yaml writer.
+        This tests to ensure that a usable Cantera input file is created via direct yaml writer 1.
         """
         import cantera as ct
 
         cantera_files = os.path.join(self.rmg.output_directory, "cantera1")
+        files = os.listdir(cantera_files)
+        for f in files:
+            if ".yaml" in f:
+                try:
+                    ct.Solution(os.path.join(cantera_files, f))
+                except:
+                    assert False, "The output Cantera file is not loadable in Cantera."
+
+    def test_make_cantera_input_file_directly_2(self):
+        """
+        This tests to ensure that a usable Cantera input file is created via direct yaml writer 2.
+        """
+        import cantera as ct
+
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera2")
         files = os.listdir(cantera_files)
         for f in files:
             if ".yaml" in f:
@@ -210,37 +225,27 @@ class TestMain:
         Copy the Cantera YAML files (generated directly by RMG and converted from Chemkin)
         to the test data directory so that yaml_cantera1Test can compare them.
         """
-        # Find the RMG-generated cantera yaml file (named chem{N}.yaml)
+        # Copy RMG-generated YAML 1 to test data directory
         cantera_dir = os.path.join(self.rmg.output_directory, "cantera1")
-        cantera_from_ck_dir = os.path.join(
-            self.rmg.output_directory, "cantera_from_ck"
-        )
-
-        # Get the yaml files generated directly by RMG
-        cantera_files = [
-            f for f in os.listdir(cantera_dir) if f.endswith('.yaml')
-        ]
-        assert len(cantera_files) > 0, \
-            "No Cantera YAML files found in cantera1 directory"
-        # Sort by the number in the filename to get the final mechanism
-        cantera_files.sort(
-            key=lambda x: int(''.join(filter(str.isdigit, x)) or 0),
-            reverse=True
-        )
-        rmg_yaml_file = cantera_files[0]
-        rmg_yaml_path = os.path.join(cantera_dir, rmg_yaml_file)
-        
-        # Copy RMG-generated YAML to test data directory
+        rmg_yaml_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
+        assert os.path.exists(rmg_yaml_path), f"RMG-generated Cantera YAML file {rmg_yaml_path} not found"
         test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera1', 'from_main_test.yaml')
         shutil.copy(rmg_yaml_path, test_data_cantera_target)
 
-        # Get the yaml file converted from chemkin
-        ck_yaml_file = "chem.yaml"
-        ck_yaml_path = os.path.join(cantera_from_ck_dir, ck_yaml_file)
-        assert os.path.exists(ck_yaml_path), f"Chemkin-converted YAML file {ck_yaml_file} not found"
-        
+        # Copy RMG-generated YAML 2 to test data directory
+        cantera_dir = os.path.join(self.rmg.output_directory, "cantera2")
+        rmg_yaml_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
+        assert os.path.exists(rmg_yaml_path), f"RMG-generated Cantera YAML file {rmg_yaml_path} not found"
+        test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera2', 'from_main_test.yaml')
+        shutil.copy(rmg_yaml_path, test_data_cantera_target)
+
         # Copy chemkin-converted YAML to test data directory
-        test_data_chemkin_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'chemkin', 'from_main_test.yaml')
+        cantera_from_ck_dir = os.path.join(
+            self.rmg.output_directory, "cantera_from_ck"
+        )
+        ck_yaml_path = os.path.join(cantera_from_ck_dir, "chem_annotated.yaml")
+        assert os.path.exists(ck_yaml_path), f"Chemkin-converted YAML file {ck_yaml_path} not found"
+        test_data_chemkin_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'ck2yaml', 'from_main_test.yaml')
         shutil.copy(ck_yaml_path, test_data_chemkin_target)
 
 

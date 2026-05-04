@@ -77,6 +77,7 @@ options(
     generateOutputHTML=False,
     generatePlots=False,
     saveEdgeSpecies=False,
+    verboseComments=True,
     saveSimulationProfiles=False,
 )
 
