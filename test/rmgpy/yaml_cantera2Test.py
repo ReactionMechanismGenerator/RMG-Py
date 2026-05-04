@@ -243,6 +243,7 @@ class TestCanteraWriter2:
                 self.output_directory = out_dir
                 self.reaction_model = MockModel()
                 self.save_edge_species = False
+                self.verbose_comments = False
 
         mock_rmg = MockRMG(self.tmp_dir)
         save_cantera_files(mock_rmg)
@@ -401,6 +402,7 @@ class TestCanteraWriter2:
                 self.output_directory = out_dir
                 self.reaction_model = model
                 self.save_edge_species = False
+                self.verbose_comments = False
 
         return MockRMG(self.tmp_dir, MockModel(MockCore(species_list, reaction_list)))
 
