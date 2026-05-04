@@ -541,6 +541,15 @@ cpdef double phi(double beta, int k, double E, logQ) except -10000000:
     T = 1.0 / (constants.R * beta)
     return logQ(T) - k * log(beta) + beta * E
 
+
+def _phi_for_optimizer(beta, int k, double E, logQ):
+    """
+    Evaluate :func:`phi` from SciPy optimizers, which pass the scalar search
+    coordinate as a one-element array.
+    """
+    return phi(float(np.asarray(beta).item()), k, E, logQ)
+
+
 @cython.boundscheck(False)
 @cython.wraparound(False)
 def get_density_of_states_forst(np.ndarray[np.float64_t, ndim=1] e_list, logQ, int order=1):
@@ -557,6 +566,7 @@ def get_density_of_states_forst(np.ndarray[np.float64_t, ndim=1] e_list, logQ, i
 
     cdef np.ndarray[np.float64_t, ndim=1] dens_states, sum_states
     cdef double x, dx, v, E, dE
+    cdef object opt_result
     cdef int i, k
 
     if order != 1 and order != 2:
@@ -580,10 +590,10 @@ def get_density_of_states_forst(np.ndarray[np.float64_t, ndim=1] e_list, logQ, i
 
         # Find minimum of phi  func x0  arg     xtol  ftol maxi  maxf fullout  disp retall  callback
         try:
-            x = scipy.optimize.fmin(phi, x, (k, E, logQ), 1e-8, 1e-8, 100, 1000, False, False, False, None)
+            opt_result = scipy.optimize.fmin(_phi_for_optimizer, np.array([x]), (k, E, logQ), 1e-8, 1e-8, 100, 1000, False, False, False, None)
         except ValueError:
             break
-        x = float(x)
+        x = float(opt_result.item())
         dx = 1e-2 * x
 
         # Evaluate derivatives needed for steepest descents approximation numerically
