@@ -43,6 +43,7 @@ from collections import OrderedDict
 from copy import deepcopy
 
 import numpy as np
+from scipy.optimize import OptimizeWarning
 from sklearn.model_selection import KFold
 
 from rmgpy import settings
@@ -4654,13 +4655,20 @@ def _make_rule(rr):
             kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
         else:
             if isinstance(rs[0].kinetics, Arrhenius):
-                dlnks = np.array([
-                    np.log(
-                        arr().fit_to_reactions(np.delete(rs, i), recipe=recipe)
-                .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
-                .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-            ) for i, rxn in enumerate(rs)
-        ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+                with warnings.catch_warnings():
+                    # Jackknife refits use sparse samples and only consume fitted rates, not covariance estimates.
+                    warnings.filterwarnings(
+                        "ignore",
+                        message="Covariance of the parameters could not be estimated",
+                        category=OptimizeWarning,
+                    )
+                    dlnks = np.array([
+                        np.log(
+                            arr().fit_to_reactions(np.delete(rs, i), recipe=recipe)
+                            .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
+                            .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                        ) for i, rxn in enumerate(rs)
+                    ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
             else:
                 dlnks = np.array([
                     np.log(
