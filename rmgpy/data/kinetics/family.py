@@ -2914,7 +2914,7 @@ class KineticsFamily(Database):
                 ob, boo = get_objective_function(new, old, T=T)
             return ob, True
 
-    def get_extension_edge(self, parent, template_rxn_map, obj, T, iter_max=np.inf, iter_item_cap=np.inf, leaf_node_max=None):
+    def get_extension_edge(self, parent, template_rxn_map, obj, T, iter_max=np.inf, iter_item_cap=np.inf, leaf_node_max=2):
         """
         finds the set of all extension groups to parent such that
         1) the extension group divides the set of reactions under parent
@@ -3083,7 +3083,7 @@ class KineticsFamily(Database):
                 if len(template_rxn_map[parent.label])<=leaf_node_max and grps==[[]]: 
                     #at a node that cannot be further split but has so few training reactions that we are ok with it being a leaf node
                     gave_up_split=True
-                    print(f'Node with {len(template_rxn_map[parent.label])} training reactions cannot be split further, now a leaf node.')
+                    logging.error(f'Node with {len(template_rxn_map[parent.label])} cannot be split any further, finalizing as leaf node.')
 
         out = []
         # compile all of the valid extensions together
@@ -3093,7 +3093,7 @@ class KineticsFamily(Database):
 
         return out, gave_up_split
 
-    def extend_node(self, parent, template_rxn_map, obj=None, T=1000.0, iter_max=np.inf, iter_item_cap=np.inf, leaf_node_max=None):
+    def extend_node(self, parent, template_rxn_map, obj=None, T=1000.0, iter_max=np.inf, iter_item_cap=np.inf, leaf_node_max=2):
         """
         Constructs an extension to the group parent based on evaluation
         of the objective function obj
@@ -3262,7 +3262,7 @@ class KineticsFamily(Database):
 
     def generate_tree(self, rxns=None, obj=None, thermo_database=None, T=1000.0, nprocs=1, min_splitable_entry_num=2,
                       min_rxns_to_spawn=20, max_batch_size=800, outlier_fraction=0.02, stratum_num=8,
-                      new_fraction_threshold_to_reopt_node=0.25, extension_iter_max=np.inf, extension_iter_item_cap=np.inf, leaf_node_max = None):
+                      new_fraction_threshold_to_reopt_node=0.25, extension_iter_max=np.inf, extension_iter_item_cap=np.inf, leaf_node_max=2):
         """
         Generate a tree by greedy optimization based on the objective function obj
         the optimization is done by iterating through every group and if the group has
@@ -3299,7 +3299,7 @@ class KineticsFamily(Database):
             template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database, remove_degeneracy=True,
                                                          fix_labels=True, exact_matches_only=True, get_reverse=True)
             self.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs - 1, depth=0,
-                                 min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max, leaf_node_max = leaf_node_max)
+                                 min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max, leaf_node_max=leaf_node_max)
         else:
             def rxnkey(rxn):
                 c = 0
@@ -3322,7 +3322,7 @@ class KineticsFamily(Database):
                 logging.error("building tree with {} rxns".format(len(rxns)))
                 self.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs - 1, depth=0,
                                      min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn, extension_iter_max=extension_iter_max,
-                                     extension_iter_item_cap=extension_iter_item_cap, leaf_node_max = leaf_node_max)
+                                     extension_iter_item_cap=extension_iter_item_cap, leaf_node_max=leaf_node_max)
                 logging.error("built tree with {} nodes".format(len(list(self.groups.entries))))
 
             self.auto_generated = True
@@ -3403,7 +3403,7 @@ class KineticsFamily(Database):
                     entry.item.clear_reg_dims()
 
     def make_tree_nodes(self, template_rxn_map=None, obj=None, T=1000.0, nprocs=0, depth=0, min_splitable_entry_num=2,
-                        min_rxns_to_spawn=20, extension_iter_max=np.inf, extension_iter_item_cap=np.inf, leaf_node_max=None):
+                        min_rxns_to_spawn=20, extension_iter_max=np.inf, extension_iter_item_cap=np.inf, leaf_node_max=2):
 
         if depth > 0:
             root = self.groups.entries[list(template_rxn_map.keys())[0]]
@@ -3479,7 +3479,7 @@ class KineticsFamily(Database):
                                                             obj=obj, T=T, nprocs=procs_out - 1, depth=depth,
                                                             min_splitable_entry_num=min_splitable_entry_num,
                                                             min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max,
-                                                            extension_iter_item_cap=extension_iter_item_cap)
+                                                            extension_iter_item_cap=extension_iter_item_cap, leaf_node_max=leaf_node_max)
                         active_procs.append(p)
                         active_conns.append(conn)
                         proc_names.append(name)
@@ -4719,7 +4719,7 @@ def _child_make_tree_nodes(family, child_conn, template_rxn_map, obj, T, nprocs,
 
     family.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs, depth=depth + 1,
                            min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,
-                           extension_iter_max=extension_iter_max, extension_iter_item_cap=extension_iter_item_cap, leaf_node_max = leaf_node_max)
+                           extension_iter_max=extension_iter_max, extension_iter_item_cap=extension_iter_item_cap, leaf_node_max=leaf_node_max)
 
     child_conn.send(list(family.groups.entries.values()))
 
