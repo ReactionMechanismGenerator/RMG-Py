@@ -1,0 +1,1329 @@
+generator: "RMG-Py CanteraWriter1 at /Users/rwest/Code/RMG-Py/rmgpy/yaml_cantera1.py (git commit: 1568184)"
+date: Sun, 03 May 2026 22:13:40
+
+units: {length: m, time: s, quantity: kmol, activation-energy: J/kmol}
+
+
+phases:
+- name: gas
+  thermo: ideal-gas
+  elements: [H, C, O, N, Ne, Ar, He, Si, S, F, Cl, Br, I, D, T, CI, OI, X]
+  species: [N2, Ar, He, Ne, ethane(1), O(2), H2(3), H(4), OH(5), HO2(6), O2(7), H2O2(8), CH(9), CO(10), CH2(11), HCO(12), CH2(S)(13), CH3(14), CH2O(15), CH4(16), CO2(17), CH2OH(18), CH3O(19), CH3OH(20), C2H(21), C2H2(22), HCCO(23), C2H3(24), CH2CO(25), C2H4(26), C2H5(27), H2O(28), C(29), HCCOH(30), CH2CHO(31), CH3CHO(32), C3H8(33)]
+  kinetics: gas
+  transport: mixture-averaged
+  state: {T: 300.0, P: 1 atm}
+
+elements:
+- symbol: D
+  atomic-weight: 2.014102
+- symbol: T
+  atomic-weight: 3.016049
+- symbol: CI
+  atomic-weight: 13.003354
+- symbol: OI
+  atomic-weight: 17.999159
+- symbol: X
+  atomic-weight: 195.083
+
+species:
+- name: ethane(1)
+  composition: {C: 2.0, H: 6.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 954.5110936886715, 5000.0]
+    data:
+    - [3.780345805837327, -0.0032427616688195738, 5.5238540835961135e-05, -6.385877469439608e-08,
+      2.28639998353842e-11, -11620.34135275107, 5.210297172176226]
+    - [4.589795312018622, 0.014150836627966965, -4.7596579825052244e-06, 8.603029496983977e-10,
+      -6.217238823881424e-14, -12721.75068161533, -3.6171891868496764]
+    note: 'Thermo group additivity estimation: group(Cs-CsHHH) + group(Cs-CsHHH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 4.3020000000000005, well-depth: 252.30104810022812,
+    rotational-relaxation: 1.5, note: GRI-Mech}
+- name: O(2)
+  composition: {O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 3381.427070109808, 5000.0]
+    data:
+    - [2.4999999999985287, 9.628563723021598e-15, -1.4423129357510334e-17, 7.111203555044388e-21,
+      -1.081468248287365e-24, 29230.244128550923, 5.12616427269486]
+    - [2.499999993394482, 7.0272581087493795e-12, -2.7749960501602356e-15, 4.81886544110849e-19,
+      -3.1045794407491553e-23, 29230.244133471373, 5.126164313272914]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: atom, diameter: 2.7500000000000004, well-depth: 80.00026940977129,
+    note: GRI-Mech}
+- name: H2(3)
+  composition: {H: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1959.0734570532368, 5000.0]
+    data:
+    - [3.4353640322436836, 0.000212711088867548, -2.786267109928371e-07, 3.4026847506425956e-10,
+      -7.76035238245164e-14, -1031.3598354840772, -3.9084169952050014]
+    - [2.7881746899044373, 0.0005876294327569003, 1.5901580485407815e-07, -5.527498406457646e-11,
+      4.343188667565404e-15, -596.1494960879099, 0.11268014479418695]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: linear, diameter: 2.9200000000000004, well-depth: 38.00012796964137,
+    polarizability: 0.7900000000000005, rotational-relaxation: 280.0, note: GRI-Mech}
+- name: H(4)
+  composition: {H: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 3381.427070109808, 5000.0]
+    data:
+    - [2.4999999999985287, 9.628563723021598e-15, -1.4423129357510334e-17, 7.111203555044388e-21,
+      -1.081468248287365e-24, 25474.21776872916, -0.4449728963280224]
+    - [2.499999993394482, 7.0272581087493795e-12, -2.7749960501602356e-15, 4.81886544110849e-19,
+      -3.1045794407491553e-23, 25474.217773649605, -0.444972855749969]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: atom, diameter: 2.0500000000000003, well-depth: 145.00018762466215,
+    note: GRI-Mech}
+- name: OH(5)
+  composition: {H: 1.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1145.7520269685585, 5000.0]
+    data:
+    - [3.514568030889614, 2.927749474273922e-05, -5.321637895868379e-07, 1.0194907787997865e-09,
+      -3.859453686345065e-13, 3414.2541976175758, 2.104348876239043]
+    - [3.0719398919454433, 0.0006040155603844118, -1.3978216817494781e-08, -2.1344627096837766e-11,
+      2.480657980220244e-15, 3579.386728674486, 4.577999618270958]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: linear, diameter: 2.7500000000000004, well-depth: 80.00026940977129,
+    note: GRI-Mech}
+- name: HO2(6)
+  composition: {H: 1.0, O: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 932.147807123929, 5000.0]
+    data:
+    - [4.04594657447324, -0.0017346688146588037, 1.0376730032838863e-05, -1.022036035881876e-08,
+      3.3491349668804084e-12, -986.754316874425, 4.6358069149070324]
+    - [3.2102333691731144, 0.0036794289568842686, -1.2770210213031316e-06, 2.180465263628796e-10,
+      -1.463389951108199e-14, -910.3663758168628, 8.182947949802738]
+    note: 'Thermo group additivity estimation: group(O2s-OsH) + group(O2s-OsH) + radical(HOOJ)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.4580000000000015, well-depth: 107.40032560095216,
+    rotational-relaxation: 1.0, note: GRI-Mech}
+- name: O2(7)
+  composition: {O: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1074.5487910223908, 5000.0]
+    data:
+    - [3.5373230506433604, -0.001215723673673554, 5.316226913876108e-06, -4.894494564171178e-09,
+      1.4584747893316288e-12, -1038.5885150253216, 4.683679586164618]
+    - [3.1538173541160557, 0.0016780494172578125, -7.69977463345062e-07, 1.5127621307497415e-10,
+      -1.0878302972154481e-14, -1040.815775508589, 6.1675778705421145]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: linear, diameter: 3.4580000000000015, well-depth: 107.40032560095216,
+    polarizability: 1.6000000000000008, rotational-relaxation: 3.8, note: GRI-Mech}
+- name: H2O2(8)
+  composition: {H: 2.0, O: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 908.8636980899306, 5000.0]
+    data:
+    - [3.731366284109007, 0.003350606013094521, 9.350720493428984e-06, -1.521051004866441e-08,
+      6.416107043520503e-12, -17721.171163869974, 5.459079107803863]
+    - [5.415764982526016, 0.002610120173918772, -4.3991489926460024e-07, 4.911425476518949e-11,
+      -3.352347640995115e-15, -18302.943400742348, -4.022358081202631]
+    note: 'Thermo group additivity estimation: group(O2s-OsH) + group(O2s-OsH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.4580000000000015, well-depth: 107.40032560095216,
+    rotational-relaxation: 3.8, note: GRI-Mech}
+- name: CH(9)
+  composition: {C: 1.0, H: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 926.4996998286691, 5000.0]
+    data:
+    - [4.114883798366483, -0.00036105622302789266, -6.34738424724746e-06, 1.0588830857995857e-08,
+      -4.570592635290404e-12, 75083.85536332303, 1.6126948258692664]
+    - [2.3397315833288777, 0.0017585822652602947, -8.029170644997589e-07, 1.4045749082137327e-10,
+      -8.474970838349845e-15, 75650.75149764838, 11.32545135377962]
+    note: 'Thermo library: primaryThermoLibrary + radical(Cs_P)'
+  transport: {model: gas, geometry: linear, diameter: 2.7500000000000004, well-depth: 80.00026940977129,
+    note: GRI-Mech}
+- name: CO(10)
+  composition: {C: 1.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1571.6325038092866, 5000.0]
+    data:
+    - [3.568380183872591, -0.0008521275749708765, 2.4891831341165422e-06, -1.5633152724367305e-09,
+      3.135967411946522e-13, -14284.254949016655, 3.579121029658425]
+    - [2.913058334465055, 0.0016465903493515035, -6.886211322091902e-07, 1.2103870467221813e-10,
+      -7.840283442517857e-15, -14180.880154113569, 6.710506180052189]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: linear, diameter: 3.6500000000000004, well-depth: 98.10027624123336,
+    polarizability: 1.9500000000000008, rotational-relaxation: 1.8, note: GRI-Mech}
+- name: CH2(11)
+  composition: {C: 1.0, H: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1104.6163817756849, 5000.0]
+    data:
+    - [4.011923841489133, -0.00015497839451543438, 3.2629774085156933e-06, -2.4042174893371504e-09,
+      5.694965417963233e-13, 45867.680221696675, 0.5332006293939462]
+    - [3.1498337193348007, 0.0029667428526204092, -9.760559992782986e-07, 1.5411531705304938e-10,
+      -9.503384326736568e-15, 46058.139092219215, 4.7780774856041885]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.8, well-depth: 144.00072548202698,
+    note: GRI-Mech}
+- name: HCO(12)
+  composition: {C: 1.0, H: 1.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1565.714132371199, 5000.0]
+    data:
+    - [4.35602339043274, -0.0034709024404038355, 1.2566500153664981e-05, -9.99496787565554e-09,
+      2.278910275533282e-12, 3995.7703823171323, 2.7511152173315896]
+    - [4.618552189478943, 0.005044727567949883, -4.392490375225836e-06, 9.733000206186813e-10,
+      -7.074497320360272e-14, 2787.5657280626556, -2.2289265396150277]
+    note: 'Thermo group additivity estimation: group(Cds-OdHH) + radical(HCdsJO)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.590000000000001, well-depth: 498.001556803607,
+    note: GRI-Mech}
+- name: CH2(S)(13)
+  composition: {C: 1.0, H: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1442.3511750737548, 5000.0]
+    data:
+    - [4.102644262821686, -0.0014406893453596408, 5.450704522808327e-06, -3.580035535341835e-09,
+      7.561975727674366e-13, 50400.578468202875, -0.411767744752251]
+    - [2.626461951839261, 0.003947647061872542, -1.499250600733676e-06, 2.545411695073568e-10,
+      -1.6295740679010454e-14, 50691.75925170181, 6.783860566624157]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.8, well-depth: 144.00072548202698,
+    note: GRI-Mech}
+- name: CH3(14)
+  composition: {C: 1.0, H: 3.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1337.620819587787, 5000.0]
+    data:
+    - [3.915468545997816, 0.0018415334744105523, 3.487446141728892e-06, -3.3275059960317733e-09,
+      8.499669695415019e-13, 16285.63932910768, 0.3517380395131654]
+    - [3.5414438177641827, 0.0047678891393774115, -1.8214953036507109e-06, 3.2887903936663636e-10,
+      -2.2254753367320316e-14, 16223.964546647976, 1.6604283078795798]
+    note: 'Thermo library: primaryThermoLibrary + radical(CH3)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.8, well-depth: 144.00072548202698,
+    note: GRI-Mech}
+- name: CH2O(15)
+  composition: {C: 1.0, H: 2.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1402.2812011786486, 5000.0]
+    data:
+    - [4.322896688132622, -0.00506327946440804, 2.151558020865406e-05, -1.7652165578523147e-08,
+      4.318158267459416e-12, -14278.956505443542, 2.3924226447408348]
+    - [3.179936326492375, 0.00955601269235614, -6.273028454801088e-06, 1.3355481910102911e-09,
+      -9.684126206021399e-14, -15075.21914563935, 4.31085170341811]
+    note: 'Thermo group additivity estimation: group(Cds-OdHH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.590000000000001, well-depth: 498.001556803607,
+    rotational-relaxation: 2.0, note: GRI-Mech}
+- name: CH4(16)
+  composition: {C: 1.0, H: 4.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1084.123827322365, 5000.0]
+    data:
+    - [4.205413249592893, -0.005355550700516357, 2.5112249357340948e-05, -2.137618922935306e-08,
+      5.97520127499108e-12, -10161.943218560951, -0.9212721095036059]
+    - [0.9082771923874331, 0.011454066909071433, -4.571727616998398e-06, 8.29189195152023e-10,
+      -5.6631286728402924e-14, -9719.979461834091, 13.993029451960226]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.746000000000001, well-depth: 141.400440100105,
+    polarizability: 2.600000000000002, rotational-relaxation: 13.0, note: GRI-Mech}
+- name: CO2(17)
+  composition: {C: 1.0, O: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 988.8860879833867, 5000.0]
+    data:
+    - [3.2786139579157667, 0.0027414907869317043, 7.160850310649065e-06, -1.080287685514878e-08,
+      4.14288279908879e-12, -48470.31456638012, 5.979355663789081]
+    - [4.546085505272925, 0.0029191505308481846, -1.1548474402701926e-06, 2.276560890459939e-10,
+      -1.7091195474740168e-14, -48980.355193356234, -1.432689313852118]
+    note: 'Thermo group additivity estimation: missing(O2d-Cdd) + missing(O2d-Cdd)
+      + group(Cdd-OdOd)'
+  transport: {model: gas, geometry: linear, diameter: 3.763, well-depth: 244.00106224424113,
+    polarizability: 2.650000000000001, rotational-relaxation: 2.1, note: GRI-Mech}
+- name: CH2OH(18)
+  composition: {C: 1.0, H: 3.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 895.0128423768832, 5000.0]
+    data:
+    - [3.711747875498063, 0.0019310495477475086, 2.1234224669361647e-05, -3.031581261488382e-08,
+      1.2487821239782904e-11, -4007.4595420199803, 7.291993676284961]
+    - [6.0562988011935595, 0.0030217384679415552, 1.720948400698776e-08, -6.962736851576313e-11,
+      5.182164230170264e-15, -4890.505525515445, -6.3476542841121555]
+    note: 'Thermo group additivity estimation: group(O2s-CsH) + group(Cs-OsHHH) +
+      radical(CsJOH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.6900000000000013, well-depth: 417.00182525120056,
+    dipole: 1.7000000000000002, rotational-relaxation: 2.0, note: GRI-Mech}
+- name: CH3O(19)
+  composition: {C: 1.0, H: 3.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 916.8834490980655, 5000.0]
+    data:
+    - [4.0013575561328585, -0.004156835987149363, 3.263543261448762e-05, -3.71118105654598e-08,
+      1.3570917933379284e-11, -6.152570493302685, 6.813714035946757]
+    - [4.016223845036489, 0.006268132072155586, -1.5806804808679084e-06, 2.44606571076615e-10,
+      -1.7033720648694282e-14, -449.8054684774207, 4.338796349824254]
+    note: 'Thermo group additivity estimation: group(O2s-CsH) + group(Cs-OsHHH) +
+      radical(H3COJ)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.6900000000000013, well-depth: 417.00182525120056,
+    dipole: 1.7000000000000002, rotational-relaxation: 2.0, note: GRI-Mech}
+- name: CH3OH(20)
+  composition: {C: 1.0, H: 4.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 952.1389908637451, 5000.0]
+    data:
+    - [3.8949618831293553, -0.0007713534032064971, 2.6475516242260254e-05, -2.9179363149306652e-08,
+      1.0083470134889905e-11, -26335.85476940014, 6.364759206338717]
+    - [3.138078300120791, 0.010354206425018032, -3.569573213259954e-06, 6.2228670380635e-10,
+      -4.2780556797788775e-14, -26551.895613135097, 8.087777938366735]
+    note: 'Thermo group additivity estimation: group(O2s-CsH) + group(Cs-OsHHH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.626000000000001, well-depth: 481.802091582003,
+    rotational-relaxation: 1.0, note: GRI-Mech}
+- name: C2H(21)
+  composition: {C: 2.0, H: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1076.5739030931832, 5000.0]
+    data:
+    - [3.038528423280286, 0.011544944603038693, -2.1326485954432746e-05, 1.819338534674556e-08,
+      -5.41594365314797e-12, 66398.01413786084, 5.966763865161724]
+    - [4.008476679662765, 0.002068132533447794, 6.051403922076703e-08, -1.1771143178546624e-10,
+      1.292843103778667e-14, 66529.51239223393, 2.796431735903967]
+    note: 'Thermo group additivity estimation: group(Ct-CtH) + group(Ct-CtH) + radical(Acetyl)'
+  transport: {model: gas, geometry: linear, diameter: 4.1000000000000005, well-depth: 209.00064369691785,
+    rotational-relaxation: 2.5, note: GRI-Mech}
+- name: C2H2(22)
+  composition: {C: 2.0, H: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 888.6182543600265, 5000.0]
+    data:
+    - [3.0357585217151586, 0.007712248787838784, 2.535472846104679e-06, -1.0814091419221027e-08,
+      5.50793884017531e-12, 25852.6438513772, 4.544573545031331]
+    - [5.7620170200918155, 0.002371637509595834, -1.4961216335698123e-07, -2.1908364280616377e-11,
+      2.21719408295192e-15, 25094.4612801627, -9.825927939150352]
+    note: 'Thermo group additivity estimation: group(Ct-CtH) + group(Ct-CtH)'
+  transport: {model: gas, geometry: linear, diameter: 4.1000000000000005, well-depth: 209.00064369691785,
+    rotational-relaxation: 2.5, note: GRI-Mech}
+- name: HCCO(23)
+  composition: {C: 2.0, H: 1.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 936.0672810203184, 5000.0]
+    data:
+    - [3.4564721955019664, 0.01057287065008409, -7.35997930717575e-06, 7.974865857027052e-10,
+      8.644788930195111e-13, 22595.688064401904, 7.094966296818602]
+    - [5.9981069864241885, 0.003144794134936119, -9.578007435439627e-07, 1.5562106735769888e-10,
+      -1.0430827416714007e-14, 21969.463783317686, -5.802371777239033]
+    note: 'Thermo group additivity estimation: missing(O2d-Cdd) + group(Cds-(Cdd-O2d)HH)
+      + missing(Cdd-CdO2d) + radical(Cds_P)'
+  transport: {model: gas, geometry: nonlinear, diameter: 2.5000000000000013, well-depth: 150.00110650441783,
+    rotational-relaxation: 1.0, note: GRI-Mech}
+- name: C2H3(24)
+  composition: {C: 2.0, H: 3.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 931.9858880076591, 5000.0]
+    data:
+    - [3.9066414443391624, -0.00406161805089794, 3.867505561886614e-05, -4.629356294110721e-08,
+      1.7288184850765833e-11, 34797.18098324665, 6.098116827390869]
+    - [5.448161345038558, 0.004983220634586766, -1.088008027091821e-06, 1.7978956968030537e-10,
+      -1.4505633804539655e-14, 33829.69476393835, -4.879180043982607]
+    note: 'Thermo group additivity estimation: group(Cds-CdsHH) + group(Cds-CdsHH)
+      + radical(Cds_P)'
+  transport: {model: gas, geometry: nonlinear, diameter: 4.1000000000000005, well-depth: 209.00064369691785,
+    rotational-relaxation: 1.0, note: GRI-Mech}
+- name: CH2CO(25)
+  composition: {C: 2.0, H: 2.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 956.6589663809253, 5000.0]
+    data:
+    - [3.5274937117983933, 0.007083323568383587, 9.178495162982448e-06, -1.6427295974845557e-08,
+      6.7119937845095964e-12, -7123.942950136391, 5.743686833486504]
+    - [5.764843860393455, 0.005965775843435247, -1.984972026524795e-06, 3.527701091332367e-10,
+      -2.5164077388183256e-14, -7928.956600867915, -6.9211732597275475]
+    note: 'Thermo group additivity estimation: missing(O2d-Cdd) + group(Cds-(Cdd-O2d)HH)
+      + missing(Cdd-CdO2d)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.9700000000000006, well-depth: 436.0012277388149,
+    rotational-relaxation: 2.0, note: GRI-Mech}
+- name: C2H4(26)
+  composition: {C: 2.0, H: 4.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 940.4415341496032, 5000.0]
+    data:
+    - [3.979761078299263, -0.007575804379415596, 5.5298083380567165e-05, -6.362321213029474e-08,
+      2.3177190400951143e-11, 5077.460147499724, 4.0461684201547214]
+    - [5.202940933280232, 0.007824516477330179, -2.1268877513906106e-06, 3.7970335544514704e-10,
+      -2.946814128701208e-14, 3936.3029880366635, -6.623812180250903]
+    note: 'Thermo group additivity estimation: group(Cds-CdsHH) + group(Cds-CdsHH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.9710000000000005, well-depth: 280.80075319274636,
+    rotational-relaxation: 1.5, note: GRI-Mech}
+- name: C2H5(27)
+  composition: {C: 2.0, H: 5.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 900.3133686413051, 5000.0]
+    data:
+    - [3.8218366887126693, -0.0034336137652750723, 5.092576559329648e-05, -6.202121616415652e-08,
+      2.3707360339402987e-11, 13066.01287427912, 7.616431110400184]
+    - [5.156207199872521, 0.009431228225167086, -1.8194614628685796e-06, 2.2119612633683184e-10,
+      -1.4348159485107404e-14, 12064.083237107747, -2.9109776507588903]
+    note: 'Thermo group additivity estimation: group(Cs-CsHHH) + group(Cs-CsHHH) +
+      radical(CCJ)'
+  transport: {model: gas, geometry: nonlinear, diameter: 4.3020000000000005, well-depth: 252.30104810022812,
+    rotational-relaxation: 1.5, note: GRI-Mech}
+- name: H2O(28)
+  composition: {H: 2.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1130.2428926130467, 5000.0]
+    data:
+    - [4.057636187975462, -0.0007879398698184641, 2.908788069492715e-06, -1.475204287660629e-09,
+      2.128490170160392e-13, -30281.5866521907, -0.31136534685788253]
+    - [2.8432480470655004, 0.002751089366900853, -7.8103367121036e-07, 1.0724414332729549e-10,
+      -5.793963421285384e-15, -29958.611693452458, 5.910433578723651]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: nonlinear, diameter: 2.6050000000000004, well-depth: 572.4019516813576,
+    dipole: 1.8439999999999999, rotational-relaxation: 4.0, note: GRI-Mech}
+- name: C(29)
+  composition: {C: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 3381.427070109808, 5000.0]
+    data:
+    - [2.4999999999985287, 9.628563723021598e-15, -1.4423129357510334e-17, 7.111203555044388e-21,
+      -1.081468248287365e-24, 85474.52470343288, 3.659784206708707]
+    - [2.499999993394482, 7.0272581087493795e-12, -2.7749960501602356e-15, 4.81886544110849e-19,
+      -3.1045794407491553e-23, 85474.52470835333, 3.6597842472867588]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: atom, diameter: 3.2980000000000005, well-depth: 71.40020436655509,
+    note: GRI-Mech}
+- name: HCCOH(30)
+  composition: {C: 2.0, H: 2.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 1009.8671367328868, 5000.0]
+    data:
+    - [3.3040912347897615, 0.012502446003621081, -3.795055354192445e-06, -4.4633009808641336e-09,
+      2.663225471130415e-12, 8782.035416515859, 7.197168970728035]
+    - [6.7124551454507815, 0.005148330500649028, -2.0007834627740915e-06, 3.788190799793496e-10,
+      -2.7409124748516927e-14, 7780.23551660169, -10.831376654084673]
+    note: 'Thermo group additivity estimation: group(O2s-CtH) + group(Ct-CtOs) + group(Ct-CtH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.9700000000000006, well-depth: 436.0012277388149,
+    rotational-relaxation: 2.0, note: GRI-Mech}
+- name: CH2CHO(31)
+  composition: {C: 2.0, H: 3.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 914.2195653125194, 5000.0]
+    data:
+    - [3.347148890024995, 0.0012878732026556307, 5.399642419215212e-05, -7.841121904676618e-08,
+      3.240708687065647e-11, -2992.8440212693995, 8.9731019330448]
+    - [11.726154554803275, -0.001473691800042265, 2.907484426602473e-06, -5.970162857550277e-10,
+      3.7029752558219025e-14, -5941.538943574109, -38.44712632255116]
+    note: 'Thermo group additivity estimation: group(O2s-(Cds-Cd)H) + group(Cds-CdsOsH)
+      + group(Cds-CdsHH) + radical(C=COJ)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.9700000000000006, well-depth: 436.0012277388149,
+    rotational-relaxation: 2.0, note: GRI-Mech}
+- name: CH3CHO(32)
+  composition: {C: 2.0, H: 4.0, O: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 984.2016120728738, 5000.0]
+    data:
+    - [3.7007802531138334, 0.0003879420044348043, 3.8692486968828104e-05, -4.5244175226526585e-08,
+      1.588568911984255e-11, -21380.907966251474, 9.13565622207468]
+    - [4.588928731919886, 0.01288931344454544, -4.914985254816196e-06, 9.265000639719394e-10,
+      -6.710044287886815e-14, -22336.02926281222, 0.9008805816430335]
+    note: 'Thermo group additivity estimation: group(Cs-(Cds-O2d)HHH) + group(Cds-OdCsH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 3.9700000000000006, well-depth: 436.0012277388149,
+    rotational-relaxation: 2.0, note: GRI-Mech}
+- name: C3H8(33)
+  composition: {C: 3.0, H: 8.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [100.0, 986.5741824852131, 5000.0]
+    data:
+    - [3.052565931612535, 0.01250994052655728, 3.793862567309607e-05, -5.120220837447088e-08,
+      1.8706492840834734e-11, -14454.176775999556, 10.067246001067637]
+    - [5.91316392026703, 0.021876253744009963, -8.176607701325125e-06, 1.4985452522965277e-09,
+      -1.0599135379428694e-13, -16038.878659602295, -8.865558390351929]
+    note: 'Thermo group additivity estimation: group(Cs-CsCsHH) + group(Cs-CsHHH)
+      + group(Cs-CsHHH)'
+  transport: {model: gas, geometry: nonlinear, diameter: 4.982000000000001, well-depth: 266.8010668626943,
+    rotational-relaxation: 1.0, note: GRI-Mech}
+- name: N2
+  composition: {N: 2.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [200.0, 1000.0, 6000.0]
+    data:
+    - [3.53101, -0.000123661, -5.02999e-07, 2.43531e-09, -1.40881e-12, -1046.98, 2.96747]
+    - [2.95258, 0.0013969, -4.92632e-07, 7.8601e-11, -4.60755e-15, -923.949, 5.87189]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: linear, diameter: 3.6210000000000013, well-depth: 97.53030619382686,
+    polarizability: 1.7600000000000011, rotational-relaxation: 4.0, note: GRI-Mech}
+- name: Ar
+  composition: {Ar: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [200.0, 1000.0, 6000.0]
+    data:
+    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 4.37967]
+    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 4.37967]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: atom, diameter: 3.3300000000000005, well-depth: 136.50054988458677,
+    note: GRI-Mech}
+- name: He
+  composition: {He: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [200.0, 1000.0, 6000.0]
+    data:
+    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 0.928724]
+    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 0.928724]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: atom, diameter: 2.5760000000000005, well-depth: 10.2,
+    note: NOx2018}
+- name: Ne
+  composition: {Ne: 1.0}
+  thermo:
+    model: NASA7
+    reference-pressure: 10000.0
+    temperature-ranges: [200.0, 1000.0, 6000.0]
+    data:
+    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 3.35532]
+    - [2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 3.35532]
+    note: 'Thermo library: primaryThermoLibrary'
+  transport: {model: gas, geometry: atom, diameter: 3.7580000000000005, well-depth: 148.6,
+    note: Epsilon & sigma estimated with fixed Lennard Jones Parameters. This is the
+      fallback method! Try improving transport databases!}
+reactions:
+- equation: H2(3) + O(2) <=> H(4) + OH(5)
+  rate-constant: {A: 38.7, b: 2.7, Ea: 26191840.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HO2(6) + O(2) <=> O2(7) + OH(5)
+  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H2O2(8) + O(2) <=> HO2(6) + OH(5)
+  rate-constant: {A: 9630.0, b: 2.0, Ea: 16736000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + O(2) <=> CO(10) + H(4)
+  rate-constant: {A: 57000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + O(2) <=> H(4) + HCO(12)
+  rate-constant: {A: 80000000000.00002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + O(2) <=> CO(10) + H2(3)
+  rate-constant: {A: 15000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + O(2) <=> H(4) + HCO(12)
+  rate-constant: {A: 15000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + O(2) <=> CH2O(15) + H(4)
+  rate-constant: {A: 50600000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH4(16) + O(2) <=> CH3(14) + OH(5)
+  rate-constant: {A: 1020000.0000000001, b: 1.5, Ea: 35982400.00000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HCO(12) + O(2) <=> CO(10) + OH(5)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HCO(12) + O(2) <=> CO2(17) + H(4)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2O(15) + O(2) <=> HCO(12) + OH(5)
+  rate-constant: {A: 39000000000.00001, b: 0.0, Ea: 14811360.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2OH(18) + O(2) <=> CH2O(15) + OH(5)
+  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3O(19) + O(2) <=> CH2O(15) + OH(5)
+  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3OH(20) + O(2) <=> CH2OH(18) + OH(5)
+  rate-constant: {A: 388.00000000000006, b: 2.5, Ea: 12970400.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3OH(20) + O(2) <=> CH3O(19) + OH(5)
+  rate-constant: {A: 130.00000000000003, b: 2.5, Ea: 20920000.000000004}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H(21) + O(2) <=> CH(9) + CO(10)
+  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H2(22) + O(2) <=> H(4) + HCCO(23)
+  rate-constant: {A: 13500.000000000002, b: 2.0, Ea: 7949600.000000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H2(22) + O(2) <=> C2H(21) + OH(5)
+  rate-constant: {A: 4.600000000000001e+16, b: -1.41, Ea: 121126800.00000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H2(22) + O(2) <=> CH2(11) + CO(10)
+  rate-constant: {A: 6940.000000000001, b: 2.0, Ea: 7949600.000000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H3(24) + O(2) <=> CH2CO(25) + H(4)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H4(26) + O(2) <=> CH3(14) + HCO(12)
+  rate-constant: {A: 12500.000000000002, b: 1.83, Ea: 920480.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H5(27) + O(2) <=> CH2O(15) + CH3(14)
+  rate-constant: {A: 22400000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: O(2) + ethane(1) <=> C2H5(27) + OH(5)
+  rate-constant: {A: 89800.00000000001, b: 1.92, Ea: 23806960.000000004}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HCCO(23) + O(2) <=> 2 CO(10) + H(4)
+  rate-constant: {A: 100000000000.00002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CO(25) + O(2) <=> HCCO(23) + OH(5)
+  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 33472000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CO(25) + O(2) <=> CH2(11) + CO2(17)
+  rate-constant: {A: 1750000000.0000002, b: 0.0, Ea: 5648400.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CO(10) + O2(7) <=> CO2(17) + O(2)
+  rate-constant: {A: 2500000000.0000005, b: 0.0, Ea: 199995200.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2O(15) + O2(7) <=> HCO(12) + HO2(6)
+  rate-constant: {A: 100000000000.00002, b: 0.0, Ea: 167360000.00000003}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + 2 O2(7) + O2(7) <=> HO2(6) + O2(7) + O2(7)
+  rate-constant: {A: 20800000000000.004, b: -1.24, Ea: 0.0}
+  efficiencies: {O2(7): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + H2O(28) + O2(7) + H2O(28) <=> H2O(28) + HO2(6) + H2O(28)
+  rate-constant: {A: 11260000000000.002, b: -0.76, Ea: 0.0}
+  efficiencies: {H2O(28): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + O2(7) <=> O(2) + OH(5)
+  rate-constant: {A: 26500000000000.004, b: -0.6707, Ea: 71299544.00000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 H(4) + H2(3) + H2(3) <=> 2 H2(3) + H2(3)
+  rate-constant: {A: 90000000000.00002, b: -0.6, Ea: 0.0}
+  efficiencies: {H2(3): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 H(4) + H2O(28) + H2O(28) <=> H2(3) + H2O(28) + H2O(28)
+  rate-constant: {A: 60000000000000.01, b: -1.25, Ea: 0.0}
+  efficiencies: {H2O(28): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CO2(17) + 2 H(4) + CO2(17) <=> CO2(17) + H2(3) + CO2(17)
+  rate-constant: {A: 550000000000000.1, b: -2.0, Ea: 0.0}
+  efficiencies: {CO2(17): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + HO2(6) <=> H2O(28) + O(2)
+  rate-constant: {A: 3970000000.0000005, b: 0.0, Ea: 2807464.0000000005}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + HO2(6) <=> H2(3) + O2(7)
+  rate-constant: {A: 44800000000.00001, b: 0.0, Ea: 4468512.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + HO2(6) <=> 2 OH(5)
+  rate-constant: {A: 84000000000.00002, b: 0.0, Ea: 2656840.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + H2O2(8) <=> H2(3) + HO2(6)
+  rate-constant: {A: 12100.000000000002, b: 2.0, Ea: 21756800.000000004}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + H2O2(8) <=> H2O(28) + OH(5)
+  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 15062400.000000004}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + H(4) <=> C(29) + H2(3)
+  rate-constant: {A: 165000000000.00003, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + H(4) <=> CH(9) + H2(3)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH4(16) + H(4) <=> CH3(14) + H2(3)
+  rate-constant: {A: 660000.0000000001, b: 1.62, Ea: 45354560.00000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + HCO(12) <=> CO(10) + H2(3)
+  rate-constant: {A: 73400000000.00002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2O(15) + H(4) <=> H2(3) + HCO(12)
+  rate-constant: {A: 57400.000000000015, b: 1.9, Ea: 11472528.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2OH(18) + H(4) <=> CH2O(15) + H2(3)
+  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2OH(18) + H(4) <=> CH3(14) + OH(5)
+  rate-constant: {A: 165000000.00000003, b: 0.65, Ea: -1188256.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2OH(18) + H(4) <=> CH2(S)(13) + H2O(28)
+  rate-constant: {A: 32800000000.000004, b: -0.09, Ea: 2552240.0000000005}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3O(19) + H(4) + H(4) <=> CH2OH(18) + H(4) + H(4)
+  rate-constant: {A: 41500.00000000001, b: 1.63, Ea: 8050016.000000002}
+  efficiencies: {H(4): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3O(19) + H(4) <=> CH2O(15) + H2(3)
+  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3O(19) + H(4) <=> CH3(14) + OH(5)
+  rate-constant: {A: 1500000000.0000002, b: 0.5, Ea: -460240.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3O(19) + H(4) <=> CH2(S)(13) + H2O(28)
+  rate-constant: {A: 262000000000.00003, b: -0.23, Ea: 4476880.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3OH(20) + H(4) <=> CH2OH(18) + H2(3)
+  rate-constant: {A: 17000.000000000004, b: 2.1, Ea: 20376080.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3OH(20) + H(4) <=> CH3O(19) + H2(3)
+  rate-constant: {A: 4200.000000000001, b: 2.1, Ea: 20376080.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H3(24) + H(4) <=> C2H2(22) + H2(3)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H4(26) + H(4) <=> C2H3(24) + H2(3)
+  rate-constant: {A: 1325.0000000000002, b: 2.53, Ea: 51212160.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H5(27) + H(4) <=> C2H4(26) + H2(3)
+  rate-constant: {A: 2000000000.0000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + ethane(1) <=> C2H5(27) + H2(3)
+  rate-constant: {A: 115000.00000000001, b: 1.9, Ea: 31505520.000000004}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + HCCO(23) <=> CH2(S)(13) + CO(10)
+  rate-constant: {A: 100000000000.00002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CO(25) + H(4) <=> H2(3) + HCCO(23)
+  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 33472000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CO(25) + H(4) <=> CH3(14) + CO(10)
+  rate-constant: {A: 11300000000.000002, b: 0.0, Ea: 14342752.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + HCCOH(30) + H(4) <=> CH2CO(25) + H(4) + H(4)
+  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 0.0}
+  efficiencies: {H(4): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H2(3) + OH(5) <=> H(4) + H2O(28)
+  rate-constant: {A: 216000.00000000003, b: 1.51, Ea: 14351120.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 OH(5) <=> H2O(28) + O(2)
+  rate-constant: {A: 35.7, b: 2.4, Ea: -8828240.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HO2(6) + OH(5) <=> H2O(28) + O2(7)
+  rate-constant: {A: 14500000000.000002, b: 0.0, Ea: -2092000.0}
+  duplicate: true
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HO2(6) + OH(5) <=> H2O(28) + O2(7)
+  rate-constant: {A: 5000000000000.001, b: 0.0, Ea: 72508720.00000001}
+  duplicate: true
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H2O2(8) + OH(5) <=> H2O(28) + HO2(6)
+  rate-constant: {A: 2000000000.0000002, b: 0.0, Ea: 1786568.0}
+  duplicate: true
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H2O2(8) + OH(5) <=> H2O(28) + HO2(6)
+  rate-constant: {A: 1700000000000000.2, b: 0.0, Ea: 123051440.00000001}
+  duplicate: true
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C(29) + OH(5) <=> CO(10) + H(4)
+  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + OH(5) <=> H(4) + HCO(12)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + OH(5) <=> CH2O(15) + H(4)
+  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + OH(5) <=> CH(9) + H2O(28)
+  rate-constant: {A: 11300.000000000002, b: 2.0, Ea: 12552000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + OH(5) <=> CH2O(15) + H(4)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + OH(5) <=> CH2(11) + H2O(28)
+  rate-constant: {A: 56000.00000000001, b: 1.6, Ea: 22677280.000000004}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + OH(5) <=> CH2(S)(13) + H2O(28)
+  rate-constant: {A: 644000000000000.1, b: -1.34, Ea: 5928728.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH4(16) + OH(5) <=> CH3(14) + H2O(28)
+  rate-constant: {A: 100000.00000000001, b: 1.6, Ea: 13054080.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CO(10) + OH(5) <=> CO2(17) + H(4)
+  rate-constant: {A: 47600.00000000001, b: 1.228, Ea: 292880.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HCO(12) + OH(5) <=> CO(10) + H2O(28)
+  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2O(15) + OH(5) <=> H2O(28) + HCO(12)
+  rate-constant: {A: 3430000.0000000005, b: 1.18, Ea: -1870248.0000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2OH(18) + OH(5) <=> CH2O(15) + H2O(28)
+  rate-constant: {A: 5000000000.000001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3O(19) + OH(5) <=> CH2O(15) + H2O(28)
+  rate-constant: {A: 5000000000.000001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3OH(20) + OH(5) <=> CH2OH(18) + H2O(28)
+  rate-constant: {A: 1440.0000000000002, b: 2.0, Ea: -3514560.0000000005}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3OH(20) + OH(5) <=> CH3O(19) + H2O(28)
+  rate-constant: {A: 6300.000000000001, b: 2.0, Ea: 6276000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H(21) + OH(5) <=> H(4) + HCCO(23)
+  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H2(22) + OH(5) <=> CH2CO(25) + H(4)
+  rate-constant: {A: 2.1800000000000005e-07, b: 4.5, Ea: -4184000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H2(22) + OH(5) <=> H(4) + HCCOH(30)
+  rate-constant: {A: 504.0000000000001, b: 2.3, Ea: 56484000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H2(22) + OH(5) <=> C2H(21) + H2O(28)
+  rate-constant: {A: 33700.0, b: 2.0, Ea: 58576000.00000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H2(22) + OH(5) <=> CH3(14) + CO(10)
+  rate-constant: {A: 4.830000000000001e-07, b: 4.0, Ea: -8368000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H3(24) + OH(5) <=> C2H2(22) + H2O(28)
+  rate-constant: {A: 5000000000.000001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H4(26) + OH(5) <=> C2H3(24) + H2O(28)
+  rate-constant: {A: 3600.0000000000005, b: 2.0, Ea: 10460000.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: OH(5) + ethane(1) <=> C2H5(27) + H2O(28)
+  rate-constant: {A: 3540.0000000000005, b: 2.12, Ea: 3640080.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CO(25) + OH(5) <=> H2O(28) + HCCO(23)
+  rate-constant: {A: 7500000000.000001, b: 0.0, Ea: 8368000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 HO2(6) <=> H2O2(8) + O2(7)
+  rate-constant: {A: 130000000.00000001, b: 0.0, Ea: -6819920.000000001}
+  duplicate: true
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 HO2(6) <=> H2O2(8) + O2(7)
+  rate-constant: {A: 420000000000.00006, b: 0.0, Ea: 50208000.0}
+  duplicate: true
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + HO2(6) <=> CH2O(15) + OH(5)
+  rate-constant: {A: 20000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + HO2(6) <=> CH4(16) + O2(7)
+  rate-constant: {A: 1000000000.0000001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + HO2(6) <=> CH3O(19) + OH(5)
+  rate-constant: {A: 37800000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CO(10) + HO2(6) <=> CO2(17) + OH(5)
+  rate-constant: {A: 150000000000.00003, b: 0.0, Ea: 98742400.00000003}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2O(15) + HO2(6) <=> H2O2(8) + HCO(12)
+  rate-constant: {A: 5600.000000000001, b: 2.0, Ea: 50208000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C(29) + O2(7) <=> CO(10) + O(2)
+  rate-constant: {A: 58000000000.00001, b: 0.0, Ea: 2409984.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C(29) + CH2(11) <=> C2H(21) + H(4)
+  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C(29) + CH3(14) <=> C2H2(22) + H(4)
+  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + O2(7) <=> HCO(12) + O(2)
+  rate-constant: {A: 67100000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + H2(3) <=> CH2(11) + H(4)
+  rate-constant: {A: 108000000000.00002, b: 0.0, Ea: 13012240.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + H2O(28) <=> CH2O(15) + H(4)
+  rate-constant: {A: 5710000000.000001, b: 0.0, Ea: -3158920.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + CH2(11) <=> C2H2(22) + H(4)
+  rate-constant: {A: 40000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + CH3(14) <=> C2H3(24) + H(4)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + CH4(16) <=> C2H4(26) + H(4)
+  rate-constant: {A: 60000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + CO2(17) <=> CO(10) + HCO(12)
+  rate-constant: {A: 190000000000.00003, b: 0.0, Ea: 66073728.00000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + CH2O(15) <=> CH2CO(25) + H(4)
+  rate-constant: {A: 94600000000.00002, b: 0.0, Ea: -2154760.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + HCCO(23) <=> C2H2(22) + CO(10)
+  rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + O2(7) => CO(10) + H(4) + OH(5)
+  rate-constant: {A: 5000000000.000001, b: 0.0, Ea: 6276000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + H2(3) <=> CH3(14) + H(4)
+  rate-constant: {A: 500.0000000000001, b: 2.0, Ea: 30250320.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 CH2(11) <=> C2H2(22) + H2(3)
+  rate-constant: {A: 1600000000000.0002, b: 0.0, Ea: 49973696.00000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + CH3(14) <=> C2H4(26) + H(4)
+  rate-constant: {A: 40000000000.00001, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + CH4(16) <=> 2 CH3(14)
+  rate-constant: {A: 2460.0000000000005, b: 2.0, Ea: 34601680.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + HCCO(23) <=> C2H3(24) + CO(10)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + O2(7) <=> CO(10) + H(4) + OH(5)
+  rate-constant: {A: 28000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + O2(7) <=> CO(10) + H2O(28)
+  rate-constant: {A: 12000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + H2(3) <=> CH3(14) + H(4)
+  rate-constant: {A: 70000000000.00002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + H2O(28) + H2O(28) <=> CH2(11) + H2O(28) + H2O(28)
+  rate-constant: {A: 30000000000.000004, b: 0.0, Ea: 0.0}
+  efficiencies: {H2O(28): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + CH3(14) <=> C2H4(26) + H(4)
+  rate-constant: {A: 12000000000.000002, b: 0.0, Ea: -2384880.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + CH4(16) <=> 2 CH3(14)
+  rate-constant: {A: 16000000000.000002, b: 0.0, Ea: -2384880.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + CO(10) + CO(10) <=> CH2(11) + CO(10) + CO(10)
+  rate-constant: {A: 9000000000.000002, b: 0.0, Ea: 0.0}
+  efficiencies: {CO(10): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + CO2(17) + CO2(17) <=> CH2(11) + CO2(17) + CO2(17)
+  rate-constant: {A: 7000000000.000001, b: 0.0, Ea: 0.0}
+  efficiencies: {CO2(17): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + CO2(17) <=> CH2O(15) + CO(10)
+  rate-constant: {A: 14000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + ethane(1) <=> C2H5(27) + CH3(14)
+  rate-constant: {A: 40000000000.00001, b: 0.0, Ea: -2301200.0000000005}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + O2(7) <=> CH3O(19) + O(2)
+  rate-constant: {A: 35600000000.00001, b: 0.0, Ea: 127528320.00000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + O2(7) <=> CH2O(15) + OH(5)
+  rate-constant: {A: 2310000000.0000005, b: 0.0, Ea: 84997960.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + H2O2(8) <=> CH4(16) + HO2(6)
+  rate-constant: {A: 24.500000000000004, b: 2.47, Ea: 21673120.000000004}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 CH3(14) <=> C2H5(27) + H(4)
+  rate-constant: {A: 6840000000.000001, b: 0.1, Ea: 44350400.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + HCO(12) <=> CH4(16) + CO(10)
+  rate-constant: {A: 26480000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2O(15) + CH3(14) <=> CH4(16) + HCO(12)
+  rate-constant: {A: 3.3200000000000003, b: 2.81, Ea: 24518240.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + CH3OH(20) <=> CH2OH(18) + CH4(16)
+  rate-constant: {A: 30000.000000000004, b: 1.5, Ea: 41588960.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + CH3OH(20) <=> CH3O(19) + CH4(16)
+  rate-constant: {A: 10000.000000000002, b: 1.5, Ea: 41588960.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H4(26) + CH3(14) <=> C2H3(24) + CH4(16)
+  rate-constant: {A: 227.00000000000003, b: 2.0, Ea: 38492800.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + ethane(1) <=> C2H5(27) + CH4(16)
+  rate-constant: {A: 6140.000000000002, b: 1.74, Ea: 43722800.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H2O(28) + HCO(12) + H2O(28) <=> CO(10) + H(4) + H2O(28) + H2O(28)
+  rate-constant: {A: 1500000000000000.2, b: -1.0, Ea: 71128000.0}
+  efficiencies: {H2O(28): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HCO(12) + O2(7) <=> CO(10) + HO2(6)
+  rate-constant: {A: 13450000000.000002, b: 0.0, Ea: 1673600.0000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2OH(18) + O2(7) <=> CH2O(15) + HO2(6)
+  rate-constant: {A: 18000000000.000004, b: 0.0, Ea: 3765600.000000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3O(19) + O2(7) <=> CH2O(15) + HO2(6)
+  rate-constant: {A: 4.2800000000000005e-16, b: 7.6, Ea: -14769520.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H(21) + O2(7) <=> CO(10) + HCO(12)
+  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: -3158920.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H(21) + H2(3) <=> C2H2(22) + H(4)
+  rate-constant: {A: 56800000.00000001, b: 0.9, Ea: 8338712.000000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H3(24) + O2(7) <=> CH2O(15) + HCO(12)
+  rate-constant: {A: 45800000000000.01, b: -1.39, Ea: 4246760.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H5(27) + O2(7) <=> C2H4(26) + HO2(6)
+  rate-constant: {A: 840000000.0000001, b: 0.0, Ea: 16213000.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HCCO(23) + O2(7) <=> 2 CO(10) + OH(5)
+  rate-constant: {A: 3200000000.0000005, b: 0.0, Ea: 3573136.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 HCCO(23) <=> C2H2(22) + 2 CO(10)
+  rate-constant: {A: 10000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + O(2) => CO(10) + H(4) + H2(3)
+  rate-constant: {A: 33700000000.000008, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H4(26) + O(2) <=> CH2CHO(31) + H(4)
+  rate-constant: {A: 6700.000000000001, b: 1.83, Ea: 920480.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H5(27) + O(2) <=> CH3CHO(32) + H(4)
+  rate-constant: {A: 109600000000.00002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + OH(5) => CH2O(15) + H2(3)
+  rate-constant: {A: 8000000.000000001, b: 0.5, Ea: -7342920.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + O2(7) => CO2(17) + 2 H(4)
+  rate-constant: {A: 5800000000.000001, b: 0.0, Ea: 6276000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + O2(7) <=> CH2O(15) + O(2)
+  rate-constant: {A: 2400000000.0000005, b: 0.0, Ea: 6276000.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 CH2(11) => C2H2(22) + 2 H(4)
+  rate-constant: {A: 200000000000.00003, b: 0.0, Ea: 45977976.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + H2O(28) => CH2O(15) + H2(3)
+  rate-constant: {A: 68200000.00000001, b: 0.25, Ea: -3912040.0000000005}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H3(24) + O2(7) <=> CH2CHO(31) + O(2)
+  rate-constant: {A: 303000000.00000006, b: 0.29, Ea: 46024.00000000001}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H3(24) + O2(7) <=> C2H2(22) + HO2(6)
+  rate-constant: {A: 1337.0000000000002, b: 1.61, Ea: -1606656.0000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3CHO(32) + O(2) <=> CH2CHO(31) + OH(5)
+  rate-constant: {A: 2920000000.0000005, b: 0.0, Ea: 7564672.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3CHO(32) + O(2) => CH3(14) + CO(10) + OH(5)
+  rate-constant: {A: 2920000000.0000005, b: 0.0, Ea: 7564672.000000002}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3CHO(32) + O2(7) => CH3(14) + CO(10) + HO2(6)
+  rate-constant: {A: 30100000000.000004, b: 0.0, Ea: 163803600.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3CHO(32) + H(4) <=> CH2CHO(31) + H2(3)
+  rate-constant: {A: 2050000.0000000005, b: 1.16, Ea: 10062520.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3CHO(32) + H(4) => CH3(14) + CO(10) + H2(3)
+  rate-constant: {A: 2050000.0000000005, b: 1.16, Ea: 10062520.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3CHO(32) + OH(5) => CH3(14) + CO(10) + H2O(28)
+  rate-constant: {A: 23430000.000000004, b: 0.73, Ea: -4656792.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3CHO(32) + HO2(6) => CH3(14) + CO(10) + H2O2(8)
+  rate-constant: {A: 3010000000.0000005, b: 0.0, Ea: 49885832.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + CH3CHO(32) + CH3(14) => CH3(14) + CH4(16) + CO(10) + CH3(14)
+  rate-constant: {A: 2720.0000000000005, b: 1.77, Ea: 24769280.000000004}
+  efficiencies: {CH3(14): 1.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CHO(31) + O(2) => CH2(11) + CO2(17) + H(4)
+  rate-constant: {A: 150000000000.00003, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CHO(31) + O2(7) => CH2O(15) + CO(10) + OH(5)
+  rate-constant: {A: 18100000.000000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CHO(31) + O2(7) => 2 HCO(12) + OH(5)
+  rate-constant: {A: 23500000.000000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CHO(31) + H(4) <=> CH3(14) + HCO(12)
+  rate-constant: {A: 22000000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CHO(31) + H(4) <=> CH2CO(25) + H2(3)
+  rate-constant: {A: 11000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CHO(31) + OH(5) <=> CH2CO(25) + H2O(28)
+  rate-constant: {A: 12000000000.000002, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CHO(31) + OH(5) <=> CH2OH(18) + HCO(12)
+  rate-constant: {A: 30100000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 O(2) + M <=> O2(7) + M
+  rate-constant: {A: 120000000000.00002, b: -1.0, Ea: 0.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.4, CH4(16): 2.0, CO2(17): 3.6, H2O(28): 15.4,
+    Ar: 0.83}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + O(2) + M <=> OH(5) + M
+  rate-constant: {A: 500000000000.0001, b: -1.0, Ea: 0.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + O2(7) + M <=> HO2(6) + M
+  rate-constant: {A: 2800000000000.0005, b: -0.86, Ea: 0.0}
+  efficiencies: {ethane(1): 1.5, O2(7): 0.0, CO2(17): 1.5, H2O(28): 0.0, N2: 0.0,
+    Ar: 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 H(4) + M <=> H2(3) + M
+  rate-constant: {A: 1000000000000.0002, b: -1.0, Ea: 0.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 0.0, CH4(16): 2.0, CO2(17): 0.0, H2O(28): 0.0,
+    Ar: 0.63}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + OH(5) + M <=> H2O(28) + M
+  rate-constant: {A: 2.2000000000000004e+16, b: -2.0, Ea: 0.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 0.73, CH4(16): 2.0, H2O(28): 3.65, Ar: 0.38}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: HCO(12) + M <=> CO(10) + H(4) + M
+  rate-constant: {A: 187000000000000.03, b: -1.0, Ea: 71128000.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 0.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CO(10) + O(2) (+M) <=> CO2(17) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 602000000.0000001, b: 0.0, Ea: 12552000.0}
+  high-P-rate-constant: {A: 18000000.000000004, b: 0.0, Ea: 9978840.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, O2(7): 6.0, CH4(16): 2.0, CO2(17): 3.5,
+    H2O(28): 6.0, Ar: 0.5}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + H(4) (+M) <=> CH3(14) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 1.0400000000000002e+20, b: -2.76, Ea: 6694400.000000001}
+  high-P-rate-constant: {A: 600000000000.0001, b: 0.0, Ea: 0.0}
+  Troe: {A: 0.562, T3: 91.0, T1: 5836.0, T2: 8552.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + H(4) (+M) <=> CH4(16) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 2.6200000000000006e+27, b: -4.76, Ea: 10208960.000000002}
+  high-P-rate-constant: {A: 13900000000000.002, b: -0.534, Ea: 2242624.0000000005}
+  Troe: {A: 0.783, T3: 74.0, T1: 2941.0, T2: 6964.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 3.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + HCO(12) (+M) <=> CH2O(15) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 2.4700000000000005e+18, b: -2.57, Ea: 1778200.0}
+  high-P-rate-constant: {A: 1090000000.0000002, b: 0.48, Ea: -1087840.0000000005}
+  Troe: {A: 0.7824, T3: 271.0, T1: 2755.0, T2: 6570.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2O(15) + H(4) (+M) <=> CH2OH(18) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 1.2700000000000002e+26, b: -4.82, Ea: 27321520.0}
+  high-P-rate-constant: {A: 540000000.0000001, b: 0.454, Ea: 15062400.000000004}
+  Troe: {A: 0.7187, T3: 103.00000000000001, T1: 1291.0, T2: 4160.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2O(15) + H(4) (+M) <=> CH3O(19) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 2.2000000000000006e+24, b: -4.8, Ea: 23263040.0}
+  high-P-rate-constant: {A: 540000000.0000001, b: 0.454, Ea: 10878400.000000002}
+  Troe: {A: 0.758, T3: 94.0, T1: 1555.0, T2: 4200.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2OH(18) + H(4) (+M) <=> CH3OH(20) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 4.360000000000001e+25, b: -4.65, Ea: 21254720.0}
+  high-P-rate-constant: {A: 1055000000.0000002, b: 0.5, Ea: 359824.0}
+  Troe: {A: 0.6, T3: 100.0, T1: 90000.0, T2: 10000.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3O(19) + H(4) (+M) <=> CH3OH(20) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 4.660000000000001e+35, b: -7.44, Ea: 58910720.0}
+  high-P-rate-constant: {A: 2430000000.0000005, b: 0.515, Ea: 209200.00000000003}
+  Troe: {A: 0.7, T3: 100.0, T1: 90000.0, T2: 10000.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H(21) + H(4) (+M) <=> C2H2(22) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 3.750000000000001e+27, b: -4.8, Ea: 7949600.000000001}
+  high-P-rate-constant: {A: 100000000000000.02, b: -1.0, Ea: 0.0}
+  Troe: {A: 0.6464, T3: 132.0, T1: 1315.0, T2: 5566.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H2(22) + H(4) (+M) <=> C2H3(24) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 3.8000000000000006e+34, b: -7.27, Ea: 30208480.0}
+  high-P-rate-constant: {A: 5600000000.000001, b: 0.0, Ea: 10041600.0}
+  Troe: {A: 0.7507, T3: 98.50000000000001, T1: 1302.0, T2: 4167.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H3(24) + H(4) (+M) <=> C2H4(26) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 1.4000000000000004e+24, b: -3.86, Ea: 13890880.000000004}
+  high-P-rate-constant: {A: 6080000000.000001, b: 0.27, Ea: 1171520.0}
+  Troe: {A: 0.782, T3: 207.49999999999997, T1: 2663.0, T2: 6095.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H4(26) + H(4) (+M) <=> C2H5(27) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 6.0000000000000005e+35, b: -7.62, Ea: 29162480.0}
+  high-P-rate-constant: {A: 540000000.0000001, b: 0.454, Ea: 7614880.000000001}
+  Troe: {A: 0.9753, T3: 209.99999999999997, T1: 983.9999999999999, T2: 4374.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H5(27) + H(4) (+M) <=> ethane(1) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 1.9900000000000005e+35, b: -7.08, Ea: 27970040.0}
+  high-P-rate-constant: {A: 521000000000000.06, b: -0.99, Ea: 6610720.0}
+  Troe: {A: 0.8422, T3: 125.0, T1: 2219.0, T2: 6882.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CO(10) + H2(3) (+M) <=> CH2O(15) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 5.07e+21, b: -3.42, Ea: 352920400.0}
+  high-P-rate-constant: {A: 43000.00000000001, b: 1.5, Ea: 333046400.0}
+  Troe: {A: 0.932, T3: 197.00000000000003, T1: 1540.0, T2: 10300.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 OH(5) (+M) <=> H2O2(8) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 2300000000000.0005, b: -0.9, Ea: -7112800.0}
+  high-P-rate-constant: {A: 74000000000.00002, b: -0.37, Ea: 0.0}
+  Troe: {A: 0.7346, T3: 94.0, T1: 1756.0, T2: 5182.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH3(14) + OH(5) (+M) <=> CH3OH(20) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 4.000000000000001e+30, b: -5.92, Ea: 13137760.0}
+  high-P-rate-constant: {A: 2790000000000000.5, b: -1.43, Ea: 5564720.0}
+  Troe: {A: 0.412, T3: 195.0, T1: 5900.0, T2: 6394.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + CO(10) (+M) <=> HCCO(23) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 2.6900000000000003e+22, b: -3.74, Ea: 8100224.000000001}
+  high-P-rate-constant: {A: 50000000000.00001, b: 0.0, Ea: 0.0}
+  Troe: {A: 0.5757, T3: 237.00000000000003, T1: 1652.0, T2: 5069.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(11) + CO(10) (+M) <=> CH2CO(25) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 2.6900000000000006e+27, b: -5.11, Ea: 29685480.0}
+  high-P-rate-constant: {A: 810000000.0000001, b: 0.5, Ea: 18869840.000000004}
+  Troe: {A: 0.5907, T3: 275.0, T1: 1226.0, T2: 5185.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2(S)(13) + H2O(28) (+M) <=> CH3OH(20) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 1.88e+32, b: -6.36, Ea: 21087360.0}
+  high-P-rate-constant: {A: 482000000000000.06, b: -1.16, Ea: 4790680.000000001}
+  Troe: {A: 0.6027, T3: 208.0, T1: 3921.9999999999995, T2: 10180.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: 2 CH3(14) (+M) <=> ethane(1) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 3.400000000000001e+35, b: -7.03, Ea: 11556208.000000002}
+  high-P-rate-constant: {A: 67700000000000.01, b: -1.18, Ea: 2736336.000000001}
+  Troe: {A: 0.619, T3: 73.2, T1: 1180.0, T2: 9999.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H4(26) (+M) <=> C2H2(22) + H2(3) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 1.5800000000000006e+48, b: -9.3, Ea: 409195200.0}
+  high-P-rate-constant: {A: 8000000000000.0, b: 0.44, Ea: 363045680.00000006}
+  Troe: {A: 0.7345, T3: 180.0, T1: 1035.0, T2: 5417.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH(9) + H2(3) (+M) <=> CH3(14) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 4.820000000000001e+19, b: -2.8, Ea: 2468560.0000000005}
+  high-P-rate-constant: {A: 1970000000.0000002, b: 0.43, Ea: -1548080.0000000002}
+  Troe: {A: 0.578, T3: 122.0, T1: 2535.0, T2: 9365.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: CH2CO(25) + H(4) (+M) <=> CH2CHO(31) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 1.0120000000000002e+36, b: -7.63, Ea: 16125136.000000002}
+  high-P-rate-constant: {A: 486500000.00000006, b: 0.422, Ea: -7342920.0}
+  Troe: {A: 0.465, T3: 201.0, T1: 1772.9999999999998, T2: 5333.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: C2H5(27) + CH3(14) (+M) <=> C3H8(33) (+M)
+  type: falloff
+  low-P-rate-constant: {A: 2.7100000000000003e+68, b: -16.82, Ea: 54663960.00000001}
+  high-P-rate-constant: {A: 9430000000.000002, b: 0.0, Ea: 0.0}
+  Troe: {A: 0.1527, T3: 291.0, T1: 2742.0, T2: 7748.0}
+  efficiencies: {ethane(1): 3.0, H2(3): 2.0, CH4(16): 2.0, CO2(17): 2.0, H2O(28): 6.0,
+    Ar: 0.7}
+  note: 'Library reaction: GRI-Mech3.0'
+- equation: H(4) + HO2(6) <=> H2O2(8)
+  rate-constant: {A: 5250690.0, b: 1.27262, Ea: 0.0}
+  note: 'Template reaction: R_Recombination | Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_2CNO->O_3R!H->O
+    in family R_Recombination.'
+- equation: CH(9) + H(4) <=> CH2(S)(13)
+  rate-constant: {A: 53700000000.0, b: 0.15395, Ea: 0.0}
+  note: 'Template reaction: R_Recombination | Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_N-2CNO->O
+    in family R_Recombination.'
+- equation: H(4) + HCCO(23) <=> CH2CO(25)
+  rate-constant: {A: 11386000000.0, b: 0.308956, Ea: 0.0}
+  note: 'Template reaction: R_Recombination | Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_Sp-3R!H=2CCNNOO_N-3R!H->O_Ext-3CS-R
+    in family R_Recombination.'
+- equation: C2H(21) + OH(5) <=> HCCOH(30)
+  rate-constant: {A: 77000000000.0, b: 4.95181e-08, Ea: 0.0}
+  note: 'Template reaction: R_Recombination | Estimated from node Root_N-1R->H_N-1CNOS->N_1COS->O_2R->C_Ext-2C-R
+    in family R_Recombination.'
+- equation: H(4) + HCCO(23) <=> HCCOH(30)
+  rate-constant: {A: 2805150000.0, b: 0.314888, Ea: 0.0}
+  note: 'Template reaction: R_Recombination | Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_2CNO->O_N-3R!H->O
+    in family R_Recombination.'
+- equation: CH3(14) + HCO(12) <=> CH3CHO(32)
+  rate-constant: {A: 18100000000.000004, b: 0.0, Ea: 0.0}
+  note: 'Template reaction: R_Recombination | Matched reaction 71 CH3 + CHO <=> C2H4O
+    in R_Recombination/training; This reaction matched rate rule [Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_N-Sp-3R!H-2R_3R!H->O];
+    family: R_Recombination'
+- equation: CH2CHO(31) + H(4) <=> CH3CHO(32)
+  rate-constant: {A: 78286700000.0, b: 0.0631113, Ea: 0.0}
+  note: 'Template reaction: R_Recombination | Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_3R!H->C_Sp-3C-2CN
+    in family R_Recombination.'
+- equation: 2 CH(9) <=> C2H2(22)
+  rate-constant: {A: 99813000.0, b: 0.610916, Ea: 0.0}
+  note: 'Template reaction: R_Recombination | Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing
+    in family R_Recombination.'
