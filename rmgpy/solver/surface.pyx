@@ -475,9 +475,9 @@ cdef class SurfaceReactor(ReactionSystem):
         surface_volume_ratio_si = self.surface_volume_ratio.value_si
 
         C = np.zeros_like(self.core_species_concentrations)
-        V = self.V  # constant volume reactor
-        A = self.V * surface_volume_ratio_si  # area
-        total_sites = self.surface_site_density.value_si * A  # todo: double check units
+        V = self.V  # constant volume reactor in m^3
+        A = self.V * surface_volume_ratio_si  # area in m^2
+        total_sites = self.surface_site_density.value_si * A  # moles of sites
         for j in range(num_core_species):
             if species_on_surface[j]:
                 C[j] = (N[j] / V) / surface_volume_ratio_si
