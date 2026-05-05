@@ -680,12 +680,15 @@ class Uncertainty(object):
 
         self.thermo_input_uncertainties = []
         self.kinetic_input_uncertainties = []
+        self.thermo_input_intermediates = []  # store the intermediate dG_i/dq for each parameter q that contributes to the uncertainty of G_i, for use in correlated uncertainty analysis
+        self.kinetic_input_intermediates = []
 
         for species in self.species_list:
             if not correlated:
                 dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
                 self.thermo_input_uncertainties.append(dG)
             else:
+                # ------------------------------ Connie's Formulation -----------------------------
                 source = self.species_sources_dict[species]
                 dG = {}
                 if 'Library' in source:
@@ -725,13 +728,54 @@ class Uncertainty(object):
                         dG[label] = est_pdG
                 self.thermo_input_uncertainties.append(dG)
 
+                # ------------------------------------ My Formulation -------------------------------
+                # we need to save dG_i/dq for each intermediate parameter q_w that contributes to G_i
+
+                dGdq = {}
+                if 'Library' in source:
+                    try:
+                        label = 'Library {}'.format(self.species_list[source['Library']].to_chemkin())
+                    except IndexError:
+                        label = 'Library {}'.format(self.extra_species[source['Library'] - len(self.species_list)].to_chemkin())
+                    dGdq[label] = 1  # dG/dG_lib = 1, because the parameter is never scaled by anything other than 1 when it is used
+                if 'Surface_Library' in source:
+                    try:
+                        label = 'Surface_Library {}'.format(self.species_list[source['Surface_Library']].to_chemkin())
+                    except IndexError:
+                        label = 'Surface_Library {}'.format(self.extra_species[source['Surface_Library'] - len(self.species_list)].to_chemkin())
+                    dGdq[label] = 1  # dG/dG_surf = 1, because the parameter is never scaled by anything other than 1 when it is used
+                if 'QM' in source:
+                    label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
+                    dGdq[label] = 1
+                if 'ADS' in source:
+                    for adsGroupType, groupList in source['ADS'].items():
+                        for group, weight in groupList:
+                            label = 'AdsorptionGroup({}) {}'.format(adsGroupType, group.label)
+                            if weight != 1:
+                                raise ValueError('Weight for adsorption group contribution to thermo should be 1, but got weight={weight} for {adsGroupType} in species {species}'.format(weight=weight, adsGroupType=adsGroupType, species=species))
+                            dGdq[label] = weight  # This should be 1
+                if 'GAV' in source:
+                    for groupType, groupList in source['GAV'].items():
+                        for group, weight in groupList:
+                            label = 'Group({}) {}'.format(groupType, group.label)
+                            dGdq[label] = weight  # dG/dG_group = weight, because the group contribution is scaled by the weight when it is used in the thermo estimation
+                    # We also know if there is group additivity used, there will be uncorrelated estimation error
+                    if est_pdG:
+                        label = 'Estimation {}'.format(species.to_chemkin())
+                        dGdq[label] = 1  # dG/dG_est = 1, because the estimation error is added on top of the group additivity value, so it is never scaled by anything other than 1 when it is used
+
+                self.thermo_input_intermediates.append(dGdq)
+
+
         for reaction in self.reaction_list:
             if not correlated:
                 dlnk = k_param_engine.get_uncertainty_value(self.reaction_sources_dict[reaction])
                 self.kinetic_input_uncertainties.append(dlnk)
             else:
+                # ------------------------- Connie's Formulation -------------------------
                 source = self.reaction_sources_dict[reaction]
                 dlnk = {}
+                dlnkdq = {}
                 if 'Rate Rules' in source:
                     family = source['Rate Rules'][0]
                     source_dict = source['Rate Rules'][1]
@@ -777,6 +821,54 @@ class Uncertainty(object):
                     dlnk[label] = dplnk
 
                 self.kinetic_input_uncertainties.append(dlnk)
+
+                # ------------------------------------ My Formulation -------------------------------
+                # we need to save dlnk/dq for each intermediate parameter q_w that contributes to ln(k) of the reaction
+                if 'Rate Rules' in source:
+                    family = source['Rate Rules'][0]
+                    source_dict = source['Rate Rules'][1]
+                    rules = source_dict['rules']
+                    training = source_dict['training']
+                    exact = source_dict['exact']
+                    for ruleEntry, weight in rules:
+                        label = '{} {}'.format(family, ruleEntry)
+                        dlnkdq[label] = weight  # dlnk/dlnk_rule = weight, because the rate rule is scaled by the weight when it is used in the kinetics estimation
+
+                    for ruleEntry, trainingEntry, weight in training:
+                        label = '{} {}'.format(family, ruleEntry)
+                        dlnkdq[label] = weight  # dlnk/dlnk_training = weight, because the training entry is scaled by the weight when it is used in the kinetics estimation
+
+                    # There is also estimation error if rate rules are used
+
+                    # Record dlnk/dlnk_family, the derivative with respect to the family estimation uncertainty
+                    label = 'Estimation Family {} {}'.format(family, reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1  # dlnk/dlnk_family = 1, because the family estimation uncertainty is added on top of the rate rule values, so it is never scaled by anything other than 1 when it is used
+
+                    # Record the non-exact estimation error if not an exact match for a rate rule
+                    if not exact:
+                        N = len(source_dict['rules']) + len(source_dict['training'])
+                        label = 'Estimation nonexact {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                        dlnkdq[label] = np.log10(N + 1) 
+
+                elif 'PDep' in source:
+                    label = 'PDep {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1.0  # dlnk/dlnk_PDep = 1, because the PDep kinetics is never scaled by anything other than 1 when it is used
+
+                elif 'Library' in source:
+                    label = 'Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1.0  # dlnk/dlnk_lib = 1, because the library kinetics is never scaled by anything other than 1 when it is used
+
+                elif 'Surface_Library' in source:
+                    label = 'Surface_Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1.0  # dlnk/dlnk_surf_lib = 1, because the surface library kinetics is never scaled by anything other than 1 when it is used
+
+                elif 'Training' in source:
+                    family = source['Training'][0]
+                    label = 'Training {} {}'.format(family, reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1.0
+
+                self.kinetic_input_intermediates.append(dlnkdq)
+
 
     def sensitivity_analysis(self, initial_mole_fractions, sensitive_species, T, P, termination_time,
                              sensitivity_threshold=1e-3, number=10, fileformat='.png'):
