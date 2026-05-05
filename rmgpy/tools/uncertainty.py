@@ -1275,7 +1275,7 @@ class Uncertainty(object):
         return output
 
 
-    def get_thermo_covariance_matrix(self):
+    def get_thermo_covariance_matrix(self, g_param_engine=None):
         """
         Return the thermo covariance matrix as a numpy array.
         NxN square matrix where N is the number of species in the model,
@@ -1293,13 +1293,33 @@ All off diagonals will be zero unless you call assign_parameter_uncertainties(co
 
         self.thermo_covariance_matrix = np.zeros((len(self.species_list), len(self.species_list)))
 
+        if g_param_engine is None:
+            g_param_engine = ThermoParameterUncertainty()
+        # assemble all the different qs
+        q_thermos = []
+        for i in range(len(self.species_list)):
+            for label in self.thermo_input_intermediates[i].keys():
+                if label not in q_thermos:
+                    q_thermos.append(label)
+
+        
         for i in range(len(self.species_list)):
             for j in range(len(self.species_list)):
-                # assumes only sources that match are correlated
-                # if sources match, add the product of their partial uncertainties to the covariance matrix
-                for source_i in self.thermo_input_uncertainties[i].keys():
-                    if source_i in self.thermo_input_uncertainties[j].keys():
-                        self.thermo_covariance_matrix[i, j] += self.thermo_input_uncertainties[i][source_i] * self.thermo_input_uncertainties[j][source_i]
+                entry = 0.0
+                for q in q_thermos:
+                    dG_i_dq = self.thermo_input_intermediates[i].get(q, 0.0)  # if q does not contribute to the uncertainty of species i, its partial derivative is 0
+                    for r in q_thermos:
+                        dG_j_dq = self.thermo_input_intermediates[j].get(r, 0.0)  # if q does not contribute to the uncertainty of species j, its partial derivative is 0
+                        entry += dG_i_dq * g_param_engine.get_covariance_qq(q, r) * dG_j_dq
+                self.thermo_covariance_matrix[i, j] = entry
+
+        # for i in range(len(self.species_list)):
+        #     for j in range(len(self.species_list)):
+        #         # assumes only sources that match are correlated
+        #         # if sources match, add the product of their partial uncertainties to the covariance matrix
+        #         for source_i in self.thermo_input_uncertainties[i].keys():
+        #             if source_i in self.thermo_input_uncertainties[j].keys():
+        #                 self.thermo_covariance_matrix[i, j] += self.thermo_input_uncertainties[i][source_i] * self.thermo_input_uncertainties[j][source_i]
 
         return self.thermo_covariance_matrix
 
