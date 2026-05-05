@@ -46,7 +46,7 @@ from rmgpy import settings
 from rmgpy.data.base import LogicOr
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.exceptions import ImplicitBenzeneError, UnexpectedChargeError
-from rmgpy.molecule import Group
+from rmgpy.molecule import Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.quantity import ScalarQuantity
@@ -241,7 +241,27 @@ class TestDatabase:
                     assert self.check_surface_thermo_libraries_have_surface_attributes(
                         library_name, library
                     ), "Thermo surface libraries {0}: Entry has metal attributes?".format(library_name)
-
+        
+        with check:
+            assert len(self.database.thermo.sidts) > 0, "SIDT thermochemistry models did not load?"
+        
+        for name,tree in self.database.thermo.sidts.items():
+            tagging = self.database.thermo.sidt_taggings_and_decompositions[name]
+            if "monodentate" in name:
+                tmol = Molecule(smiles="C*")
+                tagging(tmol)
+                tree.evaluate(tmol)
+            elif "bidentate" in name:
+                tmol = Molecule(smiles="*CC*")
+                tagging(tmol)
+                tree.evaluate(tmol)
+            elif "vdw" in name:
+                tmol = Molecule(smiles="C.*")
+                tagging(tmol)
+                tree.evaluate(tmol)
+            else:
+                pass
+        
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.items():
             with check:
