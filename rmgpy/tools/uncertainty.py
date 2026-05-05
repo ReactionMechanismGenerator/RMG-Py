@@ -143,6 +143,49 @@ class ThermoParameterUncertainty(object):
         f = np.sqrt(3) * dG
         return f
 
+    def get_covariance_qq(self, source1, source2, q_label1, q_label2):
+        """
+        Gets the covariance between two sources source1 and source2
+        Where q_label1 and q_label2 are the keys of the self.input_thermo_intermediates
+        later on, we'll use source1 and source to go fetch entries from a covariance matrix if necessary
+        """
+        intermediate_parameters = {
+            'Library': self.dG_library,
+            'Surface_Library': self.dG_surf_lib,
+            'QM': self.dG_QM,
+            'Estimation': self.dG_GAV,
+            'ADS': self.dG_ADS_correction,
+            'Group': self.dG_group,
+        }
+        
+        # figure out the type of each correlated parameter from its label
+        corr_type1 = None
+        corr_type2 = None
+
+        for intermediate_type in intermediate_parameters.keys():
+            if q_label1.startswith(intermediate_type):
+                corr_type1 = intermediate_type
+            if q_label2.startswith(intermediate_type):
+                corr_type2 = intermediate_type
+
+        if corr_type1 is None or corr_type2 is None:
+            raise ValueError(f'Could not determine the type of the correlated parameters from their labels {q_label1} and {q_label2}')
+
+        if corr_type1 != corr_type2:
+            # TODO - when you add BEEF correlations, you'll have to retrieve ADS tree and surface_library correlations
+            # If the two correlated parameters are of different types, we consider them to be uncorrelated
+            return 0
+
+        # TODO - when you add BEEF correlations, you'll have to retrieve library entry correlations here instead of assuming they're all independent
+        # TODO - when you add ADS tree correlations, you'll have to retrieve group correlations here instead of assuming they're all independent
+        # only correlated if they are exactly the same group with the same group type
+
+        elif q_label1 == q_label2:
+            # If the two correlated parameters are exactly the same, return the variance of that parameter
+            return intermediate_parameters[corr_type1] ** 2.0
+        return 0
+
+
 
 class KineticParameterUncertainty(object):
     """
@@ -323,6 +366,48 @@ class KineticParameterUncertainty(object):
         dlnk = self.get_uncertainty_value(source)
         f = np.sqrt(3) / np.log(10) * dlnk
         return f
+    
+    def get_covariance_qq(self, source1, source2, q_label1, q_label2):
+        """
+        Gets the covariance between two sources source1 and source2
+        Where q_label1 and q_label2 are the keys of the self.input_kinetic_intermediates
+        later on, we'll use source1 and source to go fetch entries from a covariance matrix if necessary
+        """
+    
+        intermediate_parameters = {
+            'Library': self.dlnk_library,
+            'Surface_Library': self.dlnk_surf_library,
+            'PDep': self.dlnk_pdep,
+            'Training': self.dlnk_training,
+            'Rate Rules': self.dlnk_rule,
+            'Estimation Family': self.dlnk_family,
+            'Estimation Nonexact': self.dlnk_nonexact,
+            'Surface Training': self.dlnk_surf_training,
+            'Surface Rule': self.dlnk_surf_rule,
+        }
+
+        corr_type1 = None
+        corr_type2 = None
+
+        for intermediate_type in intermediate_parameters.keys():
+            if q_label1.startswith(intermediate_type):
+                corr_type1 = intermediate_type
+            if q_label2.startswith(intermediate_type):
+                corr_type2 = intermediate_type
+
+        if corr_type1 is None or corr_type2 is None:
+            raise ValueError(f'Could not determine the type of the correlated parameters from their labels {q_label1} and {q_label2}')
+
+        if corr_type1 != corr_type2:
+            # If the two correlated parameters are of different types, we consider them to be uncorrelated
+            return 0
+        
+        elif q_label1 == q_label2:
+            # If the two correlated parameters are exactly the same, return the variance of that parameter
+            return intermediate_parameters[corr_type1] ** 2.0
+        
+        return 0
+        
 
 
 class Uncertainty(object):
@@ -824,18 +909,24 @@ class Uncertainty(object):
 
                 # ------------------------------------ My Formulation -------------------------------
                 # we need to save dlnk/dq for each intermediate parameter q_w that contributes to ln(k) of the reaction
+
+                # TODO add handling for surface rate rule
+                # TODO add handling for surface training reaction
                 if 'Rate Rules' in source:
                     family = source['Rate Rules'][0]
                     source_dict = source['Rate Rules'][1]
                     rules = source_dict['rules']
                     training = source_dict['training']
                     exact = source_dict['exact']
+                    surface_prefix = ''
+                    if reaction.is_surface_reaction():
+                        surface_prefix = 'Surface Rule '
                     for ruleEntry, weight in rules:
-                        label = '{} {}'.format(family, ruleEntry)
+                        label = '{}{} {}'.format(surface_prefix, family, ruleEntry)
                         dlnkdq[label] = weight  # dlnk/dlnk_rule = weight, because the rate rule is scaled by the weight when it is used in the kinetics estimation
 
                     for ruleEntry, trainingEntry, weight in training:
-                        label = '{} {}'.format(family, ruleEntry)
+                        label = '{}{} {}'.format(surface_prefix, family, ruleEntry)
                         dlnkdq[label] = weight  # dlnk/dlnk_training = weight, because the training entry is scaled by the weight when it is used in the kinetics estimation
 
                     # There is also estimation error if rate rules are used
@@ -847,7 +938,7 @@ class Uncertainty(object):
                     # Record the non-exact estimation error if not an exact match for a rate rule
                     if not exact:
                         N = len(source_dict['rules']) + len(source_dict['training'])
-                        label = 'Estimation nonexact {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                        label = 'Estimation Nonexact {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
                         dlnkdq[label] = np.log10(N + 1) 
 
                 elif 'PDep' in source:
@@ -864,7 +955,10 @@ class Uncertainty(object):
 
                 elif 'Training' in source:
                     family = source['Training'][0]
-                    label = 'Training {} {}'.format(family, reaction.to_chemkin(self.species_list, kinetics=False))
+                    surface_prefix = ''
+                    if reaction.is_surface_reaction():
+                        surface_prefix = 'Surface '
+                    label = '{}Training {} {}'.format(surface_prefix, family, reaction.to_chemkin(self.species_list, kinetics=False))
                     dlnkdq[label] = 1.0
 
                 self.kinetic_input_intermediates.append(dlnkdq)
