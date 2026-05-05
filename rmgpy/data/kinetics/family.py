@@ -3292,7 +3292,7 @@ class KineticsFamily(Database):
             template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database, remove_degeneracy=True,
                                                          fix_labels=True, exact_matches_only=True, get_reverse=True)
             self.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs - 1, depth=0,
-                                 min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max)
+                                 min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max, extension_iter_item_cap=extension_iter_item_cap)
         else:
             def rxnkey(rxn):
                 c = 0
