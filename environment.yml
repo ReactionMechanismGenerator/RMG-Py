@@ -47,6 +47,7 @@ dependencies:
   - conda-forge::cclib >=1.6.3,<1.9
   - conda-forge::openbabel >= 3
   - conda-forge::rdkit >=2022.09.1
+  - rmg::pysidt-rmg >=1.2
 
 # Python tools
   - conda-forge::python >=3.9,<3.12  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
