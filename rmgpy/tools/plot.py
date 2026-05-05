@@ -492,7 +492,7 @@ class ReactionSensitivityPlot(GenericPlot):
             self.xlabel = "dln(c)/dln(k_i)"
         GenericPlot.barplot(self, filename=filename, idx=idx)
 
-    def uncertainty_plot(self, total_variance, t=None, filename=""):
+    def uncertainty_plot(self, total_variance, t=None, filename="", uncertainty_contributions=None):
         """
         Plot the top uncertainty contributions resulting from uncertainties in the
         kinetic parameters.  The total_variance must be specified.  Optionally,
@@ -511,15 +511,20 @@ class ReactionSensitivityPlot(GenericPlot):
 
         total_uncertainty = total_variance
 
-        for reactionSens in self.y_var:
-            if isinstance(reactionSens, np.ndarray):
-                # The parameter uncertainties are an array which should have the same length as the sensitivity data
-                uncertainty_data = reactionSens * reactionSens.uncertainty
-                uncertainty_contribution = uncertainty_data[idx] ** 2
-            else:
-                uncertainty_contribution = (reactionSens.data[idx] * reactionSens.uncertainty) ** 2
+        if uncertainty_contributions is not None:
+            assert len(uncertainty_contributions) == len(self.y_var), "Length of uncertainty contributions must match the number of reaction sensitivities"
+            for i, reactionSens in enumerate(self.y_var):
+                reaction_uncertainty.append([reactionSens.label, reactionSens.reaction, uncertainty_contributions[i]])
+        else:
+            for reactionSens in self.y_var:
+                if isinstance(reactionSens, np.ndarray):
+                    # The parameter uncertainties are an array which should have the same length as the sensitivity data
+                    uncertainty_data = reactionSens * reactionSens.uncertainty
+                    uncertainty_contribution = uncertainty_data[idx] ** 2
+                else:
+                    uncertainty_contribution = (reactionSens.data[idx] * reactionSens.uncertainty) ** 2
 
-            reaction_uncertainty.append([reactionSens.label, reactionSens.reaction, uncertainty_contribution])
+                reaction_uncertainty.append([reactionSens.label, reactionSens.reaction, uncertainty_contribution])
 
         # Normalize and create new list of GenericData
         new_y_var = []
@@ -602,7 +607,7 @@ class ThermoSensitivityPlot(GenericPlot):
             self.xlabel = "dln(c)/d(G_i) [(kcal/mol)^-1]"
         GenericPlot.barplot(self, filename=filename, idx=idx)
 
-    def uncertainty_plot(self, total_variance, t=None, filename=""):
+    def uncertainty_plot(self, total_variance, t=None, filename="", uncertainty_contributions=None):
         """
         Plot the top uncertainty contributions resulting from uncertainties in the
         thermo parameters.  The total_variance must be specified.  Optionally,
@@ -621,15 +626,20 @@ class ThermoSensitivityPlot(GenericPlot):
 
         total_uncertainty = total_variance
 
-        for thermoSens in self.y_var:
-            if isinstance(thermoSens, np.ndarray):
-                # The parameter uncertainties are an array which should have the same length as the sensitivity data
-                uncertainty_data = thermoSens * thermoSens.uncertainty
-                uncertainty_contribution = uncertainty_data[idx] ** 2
-            else:
-                # The parameter uncertainty is a scalar
-                uncertainty_contribution = (thermoSens.data[idx] * thermoSens.uncertainty) ** 2
-            thermo_uncertainty.append([thermoSens.label, thermoSens.species, uncertainty_contribution])
+        if uncertainty_contributions is not None:
+            assert len(uncertainty_contributions) == len(self.y_var), "Length of uncertainty contributions must match the number of thermo sensitivities"
+            for i, thermoSens in enumerate(self.y_var):
+                thermo_uncertainty.append([thermoSens.label, thermoSens.species, uncertainty_contributions[i]])
+        else:
+            for thermoSens in self.y_var:
+                if isinstance(thermoSens, np.ndarray):
+                    # The parameter uncertainties are an array which should have the same length as the sensitivity data
+                    uncertainty_data = thermoSens * thermoSens.uncertainty
+                    uncertainty_contribution = uncertainty_data[idx] ** 2
+                else:
+                    # The parameter uncertainty is a scalar
+                    uncertainty_contribution = (thermoSens.data[idx] * thermoSens.uncertainty) ** 2
+                thermo_uncertainty.append([thermoSens.label, thermoSens.species, uncertainty_contribution])
 
         # Normalize and create new list of GenericData
         new_y_var = []

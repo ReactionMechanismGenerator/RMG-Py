@@ -143,9 +143,9 @@ class ThermoParameterUncertainty(object):
         f = np.sqrt(3) * dG
         return f
 
-    def get_covariance_qq(self, source1, source2, q_label1, q_label2):
+    def get_covariance_qq(self, q_label1, q_label2):
         """
-        Gets the covariance between two sources source1 and source2
+        Gets the covariance between two intermediate sources q1 and q2
         Where q_label1 and q_label2 are the keys of the self.input_thermo_intermediates
         later on, we'll use source1 and source to go fetch entries from a covariance matrix if necessary
         """
@@ -381,9 +381,9 @@ class KineticParameterUncertainty(object):
         f = np.sqrt(3) / np.log(10) * dlnk
         return f
     
-    def get_covariance_qq(self, source1, source2, q_label1, q_label2):
+    def get_covariance_qq(self, q_label1, q_label2):
         """
-        Gets the covariance between two sources source1 and source2
+        Gets the covariance between two intermediate sources q1 and q2
         Where q_label1 and q_label2 are the keys of the self.input_kinetic_intermediates
         later on, we'll use source1 and source to go fetch entries from a covariance matrix if necessary
         """
@@ -786,6 +786,7 @@ class Uncertainty(object):
             if not correlated:
                 dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
                 self.thermo_input_uncertainties.append(dG)
+                self.thermo_input_intermediates.append(dG)  # in the uncorrelated case, the intermediate is just the uncertainty value itself, since there is only one parameter that contributes to the uncertainty
             else:
                 # ------------------------------ Connie's Formulation -----------------------------
                 source = self.species_sources_dict[species]
@@ -870,6 +871,7 @@ class Uncertainty(object):
             if not correlated:
                 dlnk = k_param_engine.get_uncertainty_value(self.reaction_sources_dict[reaction])
                 self.kinetic_input_uncertainties.append(dlnk)
+                self.kinetic_input_intermediates.append(dlnk)  # in the uncorrelated case, the intermediate is just the uncertainty value itself, since there is only one parameter that contributes to the uncertainty
             else:
                 # ------------------------- Connie's Formulation -------------------------
                 source = self.reaction_sources_dict[reaction]
@@ -1124,6 +1126,149 @@ class Uncertainty(object):
             t_path = os.path.join(folder, 'thermoLocalUncertainty_{0}'.format(sens_species.to_chemkin()) + fileformat)
             reaction_uncertainty = ReactionSensitivityPlot(x_var=time, y_var=reaction_data_list, num_reactions=number).uncertainty_plot(total_variance, filename=r_path)
             thermo_uncertainty = ThermoSensitivityPlot(x_var=time, y_var=thermo_data_list, num_species=number).uncertainty_plot(total_variance, filename=t_path)
+
+            output[sens_species] = (total_variance, reaction_uncertainty, thermo_uncertainty)
+
+        return output
+
+    def local_analysis_intermediate(self, sensitive_species, reaction_system_index=0, correlated=False, number=10,
+                       fileformat='.png', k_param_engine=None, g_param_engine=None):
+        """
+        Uses my formulation where parameters might not be fully independent
+        Conduct local uncertainty analysis on the reaction model.
+        sensitive_species is a list of sensitive Species objects
+        number is the number of highest contributing uncertain parameters desired to be plotted
+        fileformat can be either .png, .pdf, or .svg
+        """
+
+        if g_param_engine is None:
+            g_param_engine = ThermoParameterUncertainty()
+        if k_param_engine is None:
+            k_param_engine = KineticParameterUncertainty()
+
+        output = {}
+        for sens_species in sensitive_species:
+            csvfile_path = os.path.join(self.output_directory, 'solver',
+                                        'sensitivity_{0}_SPC_{1}.csv'.format(reaction_system_index + 1,
+                                                                             sens_species.index))
+            time, data_list = parse_csv_data(csvfile_path)
+            
+            # compile a list of species and reaction sensitivities
+            # Note that most species/reactions won't meet the sensitivity threshold and thus won't be included in this list because they're functionally zero
+            # for uncorrelated analysis, the uncertainty assigned is the uncertainty value of the one parameter
+            # for correlated analysis, the uncertainty is a dictionary of partial derivatives:
+            # dG_i/dq for each parameter q that contributes to the uncertainty of G_i
+            # or dlnk_i/dq for each parameter q that contributes to the uncertainty of ln(k_i)
+            thermo_data_list = []
+            reaction_data_list = []
+            for data in data_list:
+                if data.species:
+                    for species in self.species_list:
+                        if species.to_chemkin() == data.species:
+                            index = self.species_list.index(species)
+                            break
+                    else:
+                        raise Exception('Chemkin name {} of species in the CSV file does not match anything in the '
+                                        'species list.'.format(data.species))
+
+                    data.uncertainty = self.thermo_input_intermediates[index]
+                    thermo_data_list.append(data)
+
+                if data.reaction:
+                    rxn_index = int(data.index) - 1
+                    data.uncertainty = self.kinetic_input_intermediates[rxn_index]
+                    reaction_data_list.append(data)
+
+            sigma_ww_thermo = np.eye(len(thermo_data_list))  # diagonal covariance matrix for thermo parameters, where the diagonal elements are the variances of the parameters
+            sigma_ww_kinetic = np.eye(len(reaction_data_list))  # diagonal covariance matrix for kinetic parameters, where the diagonal elements are the variances of the parameters
+            
+            
+            if correlated:
+                intermediate_thermo_parameters = {}
+                intermediate_kinetic_parameters = {}
+                # This gives us sum_i dy/dG_i * dG_i/dq
+                for data in thermo_data_list:
+                    for label, dGdq in data.uncertainty.items():
+                        if label in intermediate_thermo_parameters:
+                            # Unpack the labels and partial uncertainties
+                            intermediate_thermo_parameters[label].data[0] += data.data[-1] * dGdq  # Multiply the sensitivity with the partial uncertainty
+                        else:
+                            # setting uncertainty = 1.0 here allows us to use the same multiplication as the uncorrelated case
+                            # TODO this was not at all intuitive me, so maybe refactor so that things are just handled separately?
+                            intermediate_thermo_parameters[label] = GenericData(data=[data.data[-1] * dGdq],
+                                                                                uncertainty=1.0, label=label, species='dummy')
+                # This gives us sum_i dy/dlnk_i * dlnk_i/dq
+                for data in reaction_data_list:
+                    for label, dlnkdq in data.uncertainty.items():
+                        if label in intermediate_kinetic_parameters:
+                            intermediate_kinetic_parameters[label].data[0] += data.data[-1] * dlnkdq
+                        else:
+                            # setting uncertainty = 1.0 here allows us to use the same multiplication as the uncorrelated case
+                            intermediate_kinetic_parameters[label] = GenericData(data=[data.data[-1] * dlnkdq],
+                                                                                 uncertainty=1.0, label=label, reaction='dummy')
+
+                # this is like a vector [(sum_i dy/dG_i * dG_i/dq) for q in all_qs]
+                thermo_data_list = list(intermediate_thermo_parameters.values())
+                reaction_data_list = list(intermediate_kinetic_parameters.values())
+
+                # we still need to get a covariance matrix.
+                sigma_ww_thermo = np.zeros((len(thermo_data_list), len(thermo_data_list)))  # diagonal covariance matrix for thermo parameters, where the diagonal elements are the variances of the parameters
+                sigma_ww_kinetic = np.zeros((len(reaction_data_list), len(reaction_data_list)))  # diagonal covariance matrix for kinetic parameters, where the diagonal elements are the variances of the parameters
+
+                for i in range(len(thermo_data_list)):
+                    label_i = thermo_data_list[i].label
+                    for j in range(len(thermo_data_list)):
+                        label_j = thermo_data_list[j].label
+                        sigma_ww_thermo[i, j] = g_param_engine.get_covariance_qq(label_i, label_j)
+                for i in range(len(reaction_data_list)):
+                    label_i = reaction_data_list[i].label
+                    for j in range(len(reaction_data_list)):
+                        label_j = reaction_data_list[j].label
+                        sigma_ww_kinetic[i, j] = k_param_engine.get_covariance_qq(label_i, label_j)
+
+
+            # Compute total variance
+            total_variance = 0.0
+
+            # need to multiply it all together here
+            if not correlated:
+                for data in thermo_data_list:
+                    total_variance += (data.data[-1] * data.uncertainty) ** 2
+                for data in reaction_data_list:
+                    total_variance += (data.data[-1] * data.uncertainty) ** 2
+            else:
+                # this is like y^T * sigma_ww * y, where y is the vector of (sum_i dy/dG_i * dG_i/dq) for q in all_qs
+                thermo_vector = np.array([data.data[-1] for data in thermo_data_list])
+                kinetic_vector = np.array([data.data[-1] for data in reaction_data_list])
+
+                # record the contributions from each parameter
+                thermo_contributions = np.multiply(thermo_vector, np.dot(sigma_ww_thermo, thermo_vector))
+                kinetic_contributions = np.multiply(kinetic_vector, np.dot(sigma_ww_kinetic, kinetic_vector))
+
+                total_variance += np.dot(thermo_vector, np.dot(sigma_ww_thermo, thermo_vector))
+                total_variance += np.dot(kinetic_vector, np.dot(sigma_ww_kinetic, kinetic_vector))
+
+
+            if not correlated:
+                # Add the reaction index to the data label of the reaction uncertainties
+                # data.index stores the physical index of the reaction + 1, so we convert it to the RMG index here
+                for data in reaction_data_list:
+                    data.label = 'k' + str(self.reaction_list[data.index - 1].index) + ': ' + data.label.split()[-1]
+
+            if correlated:
+                folder = os.path.join(self.output_directory, 'correlated')
+            else:
+                folder = os.path.join(self.output_directory, 'uncorrelated')
+            if not os.path.exists(folder):
+                try:
+                    os.makedirs(folder)
+                except OSError as e:
+                    raise OSError('Uncertainty output directory could not be created: {0!s}'.format(e))
+
+            r_path = os.path.join(folder, 'kineticsLocalUncertainty_{0}'.format(sens_species.to_chemkin()) + fileformat)
+            t_path = os.path.join(folder, 'thermoLocalUncertainty_{0}'.format(sens_species.to_chemkin()) + fileformat)
+            reaction_uncertainty = ReactionSensitivityPlot(x_var=time, y_var=reaction_data_list, num_reactions=number).uncertainty_plot(total_variance, filename=r_path, uncertainty_contributions=kinetic_contributions)
+            thermo_uncertainty = ThermoSensitivityPlot(x_var=time, y_var=thermo_data_list, num_species=number).uncertainty_plot(total_variance, filename=t_path, uncertainty_contributions=thermo_contributions)
 
             output[sens_species] = (total_variance, reaction_uncertainty, thermo_uncertainty)
 
