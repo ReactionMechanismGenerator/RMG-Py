@@ -2716,11 +2716,13 @@ class ThermoDatabase(object):
         Parses the verbose string of comments from the thermo data of the species object,
         and extracts the thermo sources.
 
-        Returns a dictionary with keys of either 'Library', 'QM', and/or 'GAV'.
+        Returns a dictionary with keys of 'Library', 'QM', 'ADS', and/or 'GAV'.
         Commonly, species thermo are estimated using only one of these sources.
         However, a radical can be estimated with more than one type of source, for 
         instance a saturated library value and a GAV HBI correction, or a QM saturated value
-        and a GAV HBI correction.  
+        and a GAV HBI correction. Adsorbates can be estimated using a single library
+        for the adsorbate or a combination of a gas phase library for the
+        gas phase portion and an adsorption correction.
         
         source = {'Library': String_Name_of_Library_Used,
                   'QM': String_of_Method_Used,

@@ -36,6 +36,7 @@ import rmgpy.util as util
 from rmgpy.species import Species
 from rmgpy.tools.data import GenericData
 from rmgpy.tools.plot import parse_csv_data, plot_sensitivity, ReactionSensitivityPlot, ThermoSensitivityPlot
+from rmgpy.kinetics.surface import SurfaceArrheniusBEP, StickingCoefficientBEP, SurfaceArrheniusBEP
 
 
 class ThermoParameterUncertainty(object):
@@ -43,7 +44,7 @@ class ThermoParameterUncertainty(object):
     This class is an engine that generates the species uncertainty based on its thermo sources.
     """
 
-    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.1, dG_ADS_correction=6.918, dG_surf_lib=6.918):
+    def __init__(self, dG_library=1.5, dG_QM=3.0, dG_GAV=1.5, dG_group=0.7159, dG_ADS_correction=6.918, dG_surf_lib=6.918):
         """
         Initialize the different uncertainties dG_library, dG_QM, dG_GAV, and dG_other with set values
         in units of kcal/mol.
@@ -62,22 +63,22 @@ class ThermoParameterUncertainty(object):
         """
         Retrieve the uncertainty value in kcal/mol when the source of the thermo of a species is given.
         """
-        dG = 0.0
+        varG = 0.0
         if 'Library' in source:
-            dG += self.dG_library
+            varG += self.dG_library ** 2
         if 'Surface_Library' in source:
-            dG += self.dG_surf_lib
+            varG += self.dG_surf_lib ** 2
         if 'QM' in source:
-            dG += self.dG_QM
+            varG += self.dG_QM ** 2
         if 'GAV' in source:
-            dG += self.dG_GAV  # Add a fixed uncertainty for the GAV method
+            varG += self.dG_GAV ** 2  # Add a fixed uncertainty for the GAV method
             for group_type, group_entries in source['GAV'].items():
                 group_weights = [groupTuple[-1] for groupTuple in group_entries]
-                dG += np.sum([weight * self.dG_group for weight in group_weights])
+                varG += np.sum([weight ** 2 * self.dG_group ** 2 for weight in group_weights])
         if 'ADS' in source:
-            dG += self.dG_ADS_correction  # Add adsorption correction uncertainty
+            varG += self.dG_ADS_correction ** 2  # Add adsorption correction uncertainty
 
-        return dG
+        return np.sqrt(varG)
 
     def get_partial_uncertainty_value(self, source, corr_source_type, corr_param=None, corr_group_type=None):
         """
@@ -142,6 +143,49 @@ class ThermoParameterUncertainty(object):
         f = np.sqrt(3) * dG
         return f
 
+    def get_covariance_qq(self, q_label1, q_label2):
+        """
+        Gets the covariance between two intermediate sources q1 and q2
+        Where q_label1 and q_label2 are the keys of the self.input_thermo_intermediates
+        later on, we'll use source1 and source to go fetch entries from a covariance matrix if necessary
+        """
+        intermediate_parameters = {
+            'Library': self.dG_library,
+            'Surface_Library': self.dG_surf_lib,
+            'QM': self.dG_QM,
+            'Estimation': self.dG_GAV,
+            'ADS': self.dG_ADS_correction,
+            'Group': self.dG_group,
+        }
+        
+        # figure out the type of each correlated parameter from its label
+        corr_type1 = None
+        corr_type2 = None
+
+        for intermediate_type in intermediate_parameters.keys():
+            if q_label1.startswith(intermediate_type):
+                corr_type1 = intermediate_type
+            if q_label2.startswith(intermediate_type):
+                corr_type2 = intermediate_type
+
+        if corr_type1 is None or corr_type2 is None:
+            raise ValueError(f'Could not determine the type of the correlated parameters from their labels {q_label1} and {q_label2}')
+
+        if corr_type1 != corr_type2:
+            # TODO - when you add BEEF correlations, you'll have to retrieve ADS tree and surface_library correlations
+            # If the two correlated parameters are of different types, we consider them to be uncorrelated
+            return 0
+
+        # TODO - when you add BEEF correlations, you'll have to retrieve library entry correlations here instead of assuming they're all independent
+        # TODO - when you add ADS tree correlations, you'll have to retrieve group correlations here instead of assuming they're all independent
+        # only correlated if they are exactly the same group with the same group type
+
+        elif q_label1 == q_label2:
+            # If the two correlated parameters are exactly the same, return the variance of that parameter
+            return intermediate_parameters[corr_type1] ** 2.0
+        return 0
+
+
 
 class KineticParameterUncertainty(object):
     """
@@ -170,24 +214,24 @@ class KineticParameterUncertainty(object):
         """
         Retrieve the dlnk uncertainty when the source of the reaction kinetics are given
         """
-        dlnk = 0.0
+        varlnk = 0.0
         if 'Library' in source:
             # Should be a single library reaction source
-            dlnk += self.dlnk_library
+            varlnk += self.dlnk_library ** 2
         elif 'Surface_Library' in source:
             # Should be a single library reaction source
-            dlnk += self.dlnk_surf_library
+            varlnk += self.dlnk_surf_library ** 2
         elif 'PDep' in source:
             # Should be a single pdep reaction source
-            dlnk += self.dlnk_pdep
+            varlnk += self.dlnk_pdep ** 2
         elif 'Training' in source:
             # Should be a single training reaction
             # Although some training entries may be used in reverse,
-            # We still consider the kinetics to be directly dependent 
+            # We still consider the kinetics to be directly dependent
             if 'surface' in source['Training'][0].lower():
-                dlnk += self.dlnk_surf_training
+                varlnk += self.dlnk_surf_training ** 2
             else:
-                dlnk += self.dlnk_training
+                varlnk += self.dlnk_training ** 2
         elif 'Rate Rules' in source:
             family_label = source['Rate Rules'][0]
             source_dict = source['Rate Rules'][1]
@@ -195,44 +239,58 @@ class KineticParameterUncertainty(object):
             rule_weights = [ruleTuple[-1] for ruleTuple in source_dict['rules']]
             training_weights = [trainingTuple[-1] for trainingTuple in source_dict['training']]
 
-            dlnk += self.dlnk_family
+            varlnk += self.dlnk_family ** 2
 
             N = len(rule_weights) + len(training_weights)
             if 'node_std_dev' in source_dict:
-                # Handle autogen BM trees
-                if source_dict['node_std_dev'] < 0:
-                    raise ValueError('Invalid value for std dev of kinetics family rule node')
-                dlnk += source_dict['node_std_dev']
-                if source_dict['node_n_train'] is None:
-                    raise ValueError('Invalid number of training reactions for kinetics family rule node')
-                N = source_dict['node_n_train']
+                # revert back to old handling of SIDT trees for comparison sake
+                # here we pretend it's a just a regular rate rule
+                if not exact:
+                    varlnk += (np.log10(N + 1) * self.dlnk_nonexact) ** 2
+                
+                if 'surface' in family_label.lower():
+                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_rule ** 2 for weight in rule_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_training ** 2 for weight in training_weights])
+                else:
+                    # Add the contributions from rules
+                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in rule_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in training_weights])
 
-                # Technically every lookup in the autogenerated trees is an "exact" match because
-                # every node template has its own fitted rate rule by definition, but here we use the
-                # number of training reactions as an approximation of the node's specificity/generality
-                # and add a penalty for being too general (large # of training reactions)
-                dlnk += np.log10(N + 1) * self.dlnk_nonexact
+
+                # # Handle autogen BM trees
+                # if source_dict['node_std_dev'] < 0:
+                #     raise ValueError('Invalid value for std dev of kinetics family rule node')
+                # varlnk += np.float_power(source_dict['node_std_dev'], 2.0)
+                # if source_dict['node_n_train'] is None:
+                #     raise ValueError('Invalid number of training reactions for kinetics family rule node')
+                # N = source_dict['node_n_train']
+
+                # # Technically every lookup in the autogenerated trees is an "exact" match because
+                # # every node template has its own fitted rate rule by definition, but here we use the
+                # # number of training reactions as an approximation of the node's specificity/generality
+                # # and add a penalty for being too general (large # of training reactions)
+                # varlnk += (np.log10(N + 1) * self.dlnk_nonexact) ** 2
             else:
                 # Handle hand-made trees
                 if not exact:
                     # nonexactness contribution increases as N increases
-                    dlnk += np.log10(N + 1) * self.dlnk_nonexact
+                    varlnk += (np.log10(N + 1) * self.dlnk_nonexact) ** 2
 
                 if 'surface' in family_label.lower():
-                    dlnk += np.sum([weight * self.dlnk_surf_rule for weight in rule_weights])
-                    dlnk += np.sum([weight * self.dlnk_surf_training for weight in training_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_rule ** 2 for weight in rule_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_training ** 2 for weight in training_weights])
                 else:
                     # Add the contributions from rules
-                    dlnk += np.sum([weight * self.dlnk_rule for weight in rule_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in rule_weights])
                     # Add the contributions from training
                     # Even though these source from training reactions, we actually
                     # use the uncertainty for rate rules, since these are now approximations
                     # of the original reaction.  We consider these to be independent of original the training
                     # parameters because the rate rules may be reversing the training reactions,
                     # which leads to more complicated dependence
-                    dlnk += np.sum([weight * self.dlnk_rule for weight in training_weights])
+                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in training_weights])
 
-        return dlnk
+        return np.sqrt(varlnk)
 
     def get_partial_uncertainty_value(self, source, corr_source_type, corr_param=None, corr_family=None):
         """
@@ -322,6 +380,48 @@ class KineticParameterUncertainty(object):
         dlnk = self.get_uncertainty_value(source)
         f = np.sqrt(3) / np.log(10) * dlnk
         return f
+    
+    def get_covariance_qq(self, q_label1, q_label2):
+        """
+        Gets the covariance between two intermediate sources q1 and q2
+        Where q_label1 and q_label2 are the keys of the self.input_kinetic_intermediates
+        later on, we'll use source1 and source to go fetch entries from a covariance matrix if necessary
+        """
+    
+        intermediate_parameters = {
+            'Library': self.dlnk_library,
+            'Surface_Library': self.dlnk_surf_library,
+            'PDep': self.dlnk_pdep,
+            'Training': self.dlnk_training,
+            'Rate Rules': self.dlnk_rule,
+            'Estimation Family': self.dlnk_family,
+            'Estimation Nonexact': self.dlnk_nonexact,
+            'Surface Training': self.dlnk_surf_training,
+            'Surface Rule': self.dlnk_surf_rule,
+        }
+
+        corr_type1 = None
+        corr_type2 = None
+
+        for intermediate_type in intermediate_parameters.keys():
+            if q_label1.startswith(intermediate_type):
+                corr_type1 = intermediate_type
+            if q_label2.startswith(intermediate_type):
+                corr_type2 = intermediate_type
+
+        if corr_type1 is None or corr_type2 is None:
+            raise ValueError(f'Could not determine the type of the correlated parameters from their labels {q_label1} and {q_label2}')
+
+        if corr_type1 != corr_type2:
+            # If the two correlated parameters are of different types, we consider them to be uncorrelated
+            return 0
+        
+        elif q_label1 == q_label2:
+            # If the two correlated parameters are exactly the same, return the variance of that parameter
+            return intermediate_parameters[corr_type1] ** 2.0
+        
+        return 0
+        
 
 
 class Uncertainty(object):
@@ -345,6 +445,9 @@ class Uncertainty(object):
         self.all_kinetic_sources = None
         self.thermo_input_uncertainties = None
         self.kinetic_input_uncertainties = None
+        self.thermo_covariance_matrix = None
+        self.kinetic_covariance_matrix = None
+        self.overall_covariance_matrix = None
         self.output_directory = output_directory if output_directory else os.getcwd()
 
         # For extra species needed for correlated analysis but not in model
@@ -442,10 +545,16 @@ class Uncertainty(object):
         """
         self.species_sources_dict = {}
         self.extra_species = []
+        allowed_source_keys = {'Library', 'QM', 'GAV', 'ADS'}
         for species in self.species_list:
             if species not in self.extra_species:
                 source = self.database.thermo.extract_source_from_comments(species)
-                assert source.keys() <= {'Library', 'QM', 'GAV', 'ADS'}, 'Source of thermo must be either Library, QM, GAV, or ADS'
+                unexpected_source_keys = set(source.keys()) - allowed_source_keys
+                if unexpected_source_keys:
+                    raise ValueError(
+                        f'Source of thermo must be either Library, QM, GAV, or ADS; '
+                        f'got unexpected source keys {unexpected_source_keys} for species {species.label}'
+                    )
 
                 # Now prep the source data
                 # Do not alter the GAV information, but reassign QM and Library sources to the species indices that they came from
@@ -501,7 +610,11 @@ class Uncertainty(object):
                 elif len(source) == 3:
                     # combination of adsorption correction, GAV (radical), and Library/ML
 
-                    assert species.contains_surface_site(), 'only surface species should have 3 sources: adsorption correction, GAV, library/ML'
+                    if not species.contains_surface_site():
+                        raise ValueError(
+                            f'Only surface species should have 3 thermo sources (adsorption correction, GAV, and library/QM); '
+                            f'got species={species.label}, source={source}'
+                        )
 
                     # retrieve the desorbed version of the surface species-- the thing the adsorption correction was applied to during thermo estimation
                     dummy_gas_species = Species()
@@ -666,12 +779,16 @@ class Uncertainty(object):
 
         self.thermo_input_uncertainties = []
         self.kinetic_input_uncertainties = []
+        self.thermo_input_intermediates = []  # store the intermediate dG_i/dq for each parameter q that contributes to the uncertainty of G_i, for use in correlated uncertainty analysis
+        self.kinetic_input_intermediates = []
 
         for species in self.species_list:
             if not correlated:
                 dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
                 self.thermo_input_uncertainties.append(dG)
+                self.thermo_input_intermediates.append(dG)  # in the uncorrelated case, the intermediate is just the uncertainty value itself, since there is only one parameter that contributes to the uncertainty
             else:
+                # ------------------------------ Connie's Formulation -----------------------------
                 source = self.species_sources_dict[species]
                 dG = {}
                 if 'Library' in source:
@@ -711,13 +828,55 @@ class Uncertainty(object):
                         dG[label] = est_pdG
                 self.thermo_input_uncertainties.append(dG)
 
+                # ------------------------------------ My Formulation -------------------------------
+                # we need to save dG_i/dq for each intermediate parameter q_w that contributes to G_i
+
+                dGdq = {}
+                if 'Library' in source:
+                    try:
+                        label = 'Library {}'.format(self.species_list[source['Library']].to_chemkin())
+                    except IndexError:
+                        label = 'Library {}'.format(self.extra_species[source['Library'] - len(self.species_list)].to_chemkin())
+                    dGdq[label] = 1  # dG/dG_lib = 1, because the parameter is never scaled by anything other than 1 when it is used
+                if 'Surface_Library' in source:
+                    try:
+                        label = 'Surface_Library {}'.format(self.species_list[source['Surface_Library']].to_chemkin())
+                    except IndexError:
+                        label = 'Surface_Library {}'.format(self.extra_species[source['Surface_Library'] - len(self.species_list)].to_chemkin())
+                    dGdq[label] = 1  # dG/dG_surf = 1, because the parameter is never scaled by anything other than 1 when it is used
+                if 'QM' in source:
+                    label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
+                    dGdq[label] = 1
+                if 'ADS' in source:
+                    for adsGroupType, groupList in source['ADS'].items():
+                        for group, weight in groupList:
+                            label = 'AdsorptionGroup({}) {}'.format(adsGroupType, group.label)
+                            if weight != 1:
+                                raise ValueError('Weight for adsorption group contribution to thermo should be 1, but got weight={weight} for {adsGroupType} in species {species}'.format(weight=weight, adsGroupType=adsGroupType, species=species))
+                            dGdq[label] = weight  # This should be 1
+                if 'GAV' in source:
+                    for groupType, groupList in source['GAV'].items():
+                        for group, weight in groupList:
+                            label = 'Group({}) {}'.format(groupType, group.label)
+                            dGdq[label] = weight  # dG/dG_group = weight, because the group contribution is scaled by the weight when it is used in the thermo estimation
+                    # We also know if there is group additivity used, there will be uncorrelated estimation error
+                    if est_pdG:
+                        label = 'Estimation {}'.format(species.to_chemkin())
+                        dGdq[label] = 1  # dG/dG_est = 1, because the estimation error is added on top of the group additivity value, so it is never scaled by anything other than 1 when it is used
+
+                self.thermo_input_intermediates.append(dGdq)
+
+
         for reaction in self.reaction_list:
             if not correlated:
                 dlnk = k_param_engine.get_uncertainty_value(self.reaction_sources_dict[reaction])
                 self.kinetic_input_uncertainties.append(dlnk)
+                self.kinetic_input_intermediates.append(dlnk)  # in the uncorrelated case, the intermediate is just the uncertainty value itself, since there is only one parameter that contributes to the uncertainty
             else:
+                # ------------------------- Connie's Formulation -------------------------
                 source = self.reaction_sources_dict[reaction]
                 dlnk = {}
+                dlnkdq = {}
                 if 'Rate Rules' in source:
                     family = source['Rate Rules'][0]
                     source_dict = source['Rate Rules'][1]
@@ -763,6 +922,63 @@ class Uncertainty(object):
                     dlnk[label] = dplnk
 
                 self.kinetic_input_uncertainties.append(dlnk)
+
+                # ------------------------------------ My Formulation -------------------------------
+                # we need to save dlnk/dq for each intermediate parameter q_w that contributes to ln(k) of the reaction
+
+                # TODO add handling for surface rate rule
+                # TODO add handling for surface training reaction
+                if 'Rate Rules' in source:
+                    family = source['Rate Rules'][0]
+                    source_dict = source['Rate Rules'][1]
+                    rules = source_dict['rules']
+                    training = source_dict['training']
+                    exact = source_dict['exact']
+                    surface_prefix = ''
+                    if reaction.is_surface_reaction():
+                        surface_prefix = 'Surface Rule '
+                    for ruleEntry, weight in rules:
+                        label = '{}{} {}'.format(surface_prefix, family, ruleEntry)
+                        dlnkdq[label] = weight  # dlnk/dlnk_rule = weight, because the rate rule is scaled by the weight when it is used in the kinetics estimation
+
+                    for ruleEntry, trainingEntry, weight in training:
+                        label = '{}{} {}'.format(surface_prefix, family, ruleEntry)
+                        dlnkdq[label] = weight  # dlnk/dlnk_training = weight, because the training entry is scaled by the weight when it is used in the kinetics estimation
+
+                    # There is also estimation error if rate rules are used
+
+                    # Record dlnk/dlnk_family, the derivative with respect to the family estimation uncertainty
+                    label = 'Estimation Family {} {}'.format(family, reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1  # dlnk/dlnk_family = 1, because the family estimation uncertainty is added on top of the rate rule values, so it is never scaled by anything other than 1 when it is used
+
+                    # Record the non-exact estimation error if not an exact match for a rate rule
+                    if not exact:
+                        N = len(source_dict['rules']) + len(source_dict['training'])
+                        label = 'Estimation Nonexact {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                        dlnkdq[label] = np.log10(N + 1) 
+
+                elif 'PDep' in source:
+                    label = 'PDep {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1.0  # dlnk/dlnk_PDep = 1, because the PDep kinetics is never scaled by anything other than 1 when it is used
+
+                elif 'Library' in source:
+                    label = 'Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1.0  # dlnk/dlnk_lib = 1, because the library kinetics is never scaled by anything other than 1 when it is used
+
+                elif 'Surface_Library' in source:
+                    label = 'Surface_Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1.0  # dlnk/dlnk_surf_lib = 1, because the surface library kinetics is never scaled by anything other than 1 when it is used
+
+                elif 'Training' in source:
+                    family = source['Training'][0]
+                    surface_prefix = ''
+                    if reaction.is_surface_reaction():
+                        surface_prefix = 'Surface '
+                    label = '{}Training {} {}'.format(surface_prefix, family, reaction.to_chemkin(self.species_list, kinetics=False))
+                    dlnkdq[label] = 1.0
+
+                self.kinetic_input_intermediates.append(dlnkdq)
+
 
     def sensitivity_analysis(self, initial_mole_fractions, sensitive_species, T, P, termination_time,
                              sensitivity_threshold=1e-3, number=10, fileformat='.png'):
@@ -914,6 +1130,359 @@ class Uncertainty(object):
             output[sens_species] = (total_variance, reaction_uncertainty, thermo_uncertainty)
 
         return output
+
+    def local_analysis_intermediate(self, sensitive_species, reaction_system_index=0, correlated=False, number=10,
+                       fileformat='.png', k_param_engine=None, g_param_engine=None):
+        """
+        Uses my formulation where parameters might not be fully independent
+        Conduct local uncertainty analysis on the reaction model.
+        sensitive_species is a list of sensitive Species objects
+        number is the number of highest contributing uncertain parameters desired to be plotted
+        fileformat can be either .png, .pdf, or .svg
+        """
+
+        if g_param_engine is None:
+            g_param_engine = ThermoParameterUncertainty()
+        if k_param_engine is None:
+            k_param_engine = KineticParameterUncertainty()
+
+        output = {}
+        for sens_species in sensitive_species:
+            csvfile_path = os.path.join(self.output_directory, 'solver',
+                                        'sensitivity_{0}_SPC_{1}.csv'.format(reaction_system_index + 1,
+                                                                             sens_species.index))
+            time, data_list = parse_csv_data(csvfile_path)
+            
+            # compile a list of species and reaction sensitivities
+            # Note that most species/reactions won't meet the sensitivity threshold and thus won't be included in this list because they're functionally zero
+            # for uncorrelated analysis, the uncertainty assigned is the uncertainty value of the one parameter
+            # for correlated analysis, the uncertainty is a dictionary of partial derivatives:
+            # dG_i/dq for each parameter q that contributes to the uncertainty of G_i
+            # or dlnk_i/dq for each parameter q that contributes to the uncertainty of ln(k_i)
+            thermo_data_list = []
+            reaction_data_list = []
+            for data in data_list:
+                if data.species:
+                    for species in self.species_list:
+                        if species.to_chemkin() == data.species:
+                            index = self.species_list.index(species)
+                            break
+                    else:
+                        raise Exception('Chemkin name {} of species in the CSV file does not match anything in the '
+                                        'species list.'.format(data.species))
+
+                    data.uncertainty = self.thermo_input_intermediates[index]
+                    thermo_data_list.append(data)
+
+                if data.reaction:
+                    rxn_index = int(data.index) - 1
+                    data.uncertainty = self.kinetic_input_intermediates[rxn_index]
+                    reaction_data_list.append(data)
+
+            sigma_ww_thermo = np.eye(len(thermo_data_list))  # diagonal covariance matrix for thermo parameters, where the diagonal elements are the variances of the parameters
+            sigma_ww_kinetic = np.eye(len(reaction_data_list))  # diagonal covariance matrix for kinetic parameters, where the diagonal elements are the variances of the parameters
+            
+            
+            if correlated:
+                intermediate_thermo_parameters = {}
+                intermediate_kinetic_parameters = {}
+                # This gives us sum_i dy/dG_i * dG_i/dq
+                for data in thermo_data_list:
+                    for label, dGdq in data.uncertainty.items():
+                        if label in intermediate_thermo_parameters:
+                            # Unpack the labels and partial uncertainties
+                            intermediate_thermo_parameters[label].data[0] += data.data[-1] * dGdq  # Multiply the sensitivity with the partial uncertainty
+                        else:
+                            # setting uncertainty = 1.0 here allows us to use the same multiplication as the uncorrelated case
+                            # TODO this was not at all intuitive me, so maybe refactor so that things are just handled separately?
+                            intermediate_thermo_parameters[label] = GenericData(data=[data.data[-1] * dGdq],
+                                                                                uncertainty=1.0, label=label, species='dummy')
+                # This gives us sum_i dy/dlnk_i * dlnk_i/dq
+                for data in reaction_data_list:
+                    for label, dlnkdq in data.uncertainty.items():
+                        if label in intermediate_kinetic_parameters:
+                            intermediate_kinetic_parameters[label].data[0] += data.data[-1] * dlnkdq
+                        else:
+                            # setting uncertainty = 1.0 here allows us to use the same multiplication as the uncorrelated case
+                            intermediate_kinetic_parameters[label] = GenericData(data=[data.data[-1] * dlnkdq],
+                                                                                 uncertainty=1.0, label=label, reaction='dummy')
+
+                # this is like a vector [(sum_i dy/dG_i * dG_i/dq) for q in all_qs]
+                thermo_data_list = list(intermediate_thermo_parameters.values())
+                reaction_data_list = list(intermediate_kinetic_parameters.values())
+
+                # we still need to get a covariance matrix.
+                sigma_ww_thermo = np.zeros((len(thermo_data_list), len(thermo_data_list)))  # diagonal covariance matrix for thermo parameters, where the diagonal elements are the variances of the parameters
+                sigma_ww_kinetic = np.zeros((len(reaction_data_list), len(reaction_data_list)))  # diagonal covariance matrix for kinetic parameters, where the diagonal elements are the variances of the parameters
+
+                for i in range(len(thermo_data_list)):
+                    label_i = thermo_data_list[i].label
+                    for j in range(len(thermo_data_list)):
+                        label_j = thermo_data_list[j].label
+                        sigma_ww_thermo[i, j] = g_param_engine.get_covariance_qq(label_i, label_j)
+                for i in range(len(reaction_data_list)):
+                    label_i = reaction_data_list[i].label
+                    for j in range(len(reaction_data_list)):
+                        label_j = reaction_data_list[j].label
+                        sigma_ww_kinetic[i, j] = k_param_engine.get_covariance_qq(label_i, label_j)
+
+
+            # Compute total variance
+            total_variance = 0.0
+
+            # need to multiply it all together here
+            if not correlated:
+                for data in thermo_data_list:
+                    total_variance += (data.data[-1] * data.uncertainty) ** 2
+                for data in reaction_data_list:
+                    total_variance += (data.data[-1] * data.uncertainty) ** 2
+            else:
+                # this is like y^T * sigma_ww * y, where y is the vector of (sum_i dy/dG_i * dG_i/dq) for q in all_qs
+                thermo_vector = np.array([data.data[-1] for data in thermo_data_list])
+                kinetic_vector = np.array([data.data[-1] for data in reaction_data_list])
+
+                # record the contributions from each parameter
+                thermo_contributions = np.multiply(thermo_vector, np.dot(sigma_ww_thermo, thermo_vector))
+                kinetic_contributions = np.multiply(kinetic_vector, np.dot(sigma_ww_kinetic, kinetic_vector))
+
+                total_variance += np.dot(thermo_vector, np.dot(sigma_ww_thermo, thermo_vector))
+                total_variance += np.dot(kinetic_vector, np.dot(sigma_ww_kinetic, kinetic_vector))
+
+
+            if not correlated:
+                # Add the reaction index to the data label of the reaction uncertainties
+                # data.index stores the physical index of the reaction + 1, so we convert it to the RMG index here
+                for data in reaction_data_list:
+                    data.label = 'k' + str(self.reaction_list[data.index - 1].index) + ': ' + data.label.split()[-1]
+
+            if correlated:
+                folder = os.path.join(self.output_directory, 'correlated')
+            else:
+                folder = os.path.join(self.output_directory, 'uncorrelated')
+            if not os.path.exists(folder):
+                try:
+                    os.makedirs(folder)
+                except OSError as e:
+                    raise OSError('Uncertainty output directory could not be created: {0!s}'.format(e))
+
+            r_path = os.path.join(folder, 'kineticsLocalUncertainty_{0}'.format(sens_species.to_chemkin()) + fileformat)
+            t_path = os.path.join(folder, 'thermoLocalUncertainty_{0}'.format(sens_species.to_chemkin()) + fileformat)
+            reaction_uncertainty = ReactionSensitivityPlot(x_var=time, y_var=reaction_data_list, num_reactions=number).uncertainty_plot(total_variance, filename=r_path, uncertainty_contributions=kinetic_contributions)
+            thermo_uncertainty = ThermoSensitivityPlot(x_var=time, y_var=thermo_data_list, num_species=number).uncertainty_plot(total_variance, filename=t_path, uncertainty_contributions=thermo_contributions)
+
+            output[sens_species] = (total_variance, reaction_uncertainty, thermo_uncertainty)
+
+        return output
+
+
+    def get_thermo_covariance_matrix(self, g_param_engine=None):
+        """
+        Return the thermo covariance matrix as a numpy array.
+        NxN square matrix where N is the number of species in the model,
+        with the covariance between species i and j in the ith row and jth column. 
+        Units are in (kcal/mol)^2.
+        Must call assign_parameter_uncertainties first to populate the source dictionaries.
+        """
+        assert self.thermo_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.thermo_input_uncertainties) > 0, 'No thermodynamic parameters found'
+        if isinstance(self.thermo_input_uncertainties[0], np.float64):
+            print("""Warning -- parameter uncertainties assigned without correlations.
+All off diagonals will be zero unless you call assign_parameter_uncertainties(correlated=True)""")
+            self.thermo_covariance_matrix = np.float_power(np.diag(self.thermo_input_uncertainties), 2.0)
+            return self.thermo_covariance_matrix
+
+        self.thermo_covariance_matrix = np.zeros((len(self.species_list), len(self.species_list)))
+
+        if g_param_engine is None:
+            g_param_engine = ThermoParameterUncertainty()
+        # assemble all the different qs
+        q_thermos = []
+        for i in range(len(self.species_list)):
+            for label in self.thermo_input_intermediates[i].keys():
+                if label not in q_thermos:
+                    q_thermos.append(label)
+
+        
+        for i in range(len(self.species_list)):
+            for j in range(len(self.species_list)):
+                entry = 0.0
+                for q in q_thermos:
+                    dG_i_dq = self.thermo_input_intermediates[i].get(q, 0.0)  # if q does not contribute to the uncertainty of species i, its partial derivative is 0
+                    for r in q_thermos:
+                        dG_j_dq = self.thermo_input_intermediates[j].get(r, 0.0)  # if q does not contribute to the uncertainty of species j, its partial derivative is 0
+                        entry += dG_i_dq * g_param_engine.get_covariance_qq(q, r) * dG_j_dq
+                self.thermo_covariance_matrix[i, j] = entry
+
+        # for i in range(len(self.species_list)):
+        #     for j in range(len(self.species_list)):
+        #         # assumes only sources that match are correlated
+        #         # if sources match, add the product of their partial uncertainties to the covariance matrix
+        #         for source_i in self.thermo_input_uncertainties[i].keys():
+        #             if source_i in self.thermo_input_uncertainties[j].keys():
+        #                 self.thermo_covariance_matrix[i, j] += self.thermo_input_uncertainties[i][source_i] * self.thermo_input_uncertainties[j][source_i]
+
+        return self.thermo_covariance_matrix
+
+    def get_kinetic_covariance_matrix(self, k_param_engine=None):
+        """
+        Return the kinetic covariance matrix as a numpy array.
+        MxM square matrix where M is the number of reactions in the model,
+        with the covariance between reaction i and j in the ith row and jth column.
+        Units are in (ln(k))^2.
+        Must call assign_parameter_uncertainties first to populate the source dictionaries.
+        """
+        assert self.kinetic_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.kinetic_input_uncertainties) > 0, 'No kinetic parameters found'
+        if isinstance(self.kinetic_input_uncertainties[0], np.float64):
+            print("""Warning -- parameter uncertainties assigned without correlations.
+All off diagonals will be zero unless you call assign_parameter_uncertainties(correlated=True)""")
+            self.kinetic_covariance_matrix = np.float_power(np.diag(self.kinetic_input_uncertainties), 2.0)
+            return self.kinetic_covariance_matrix
+
+        if k_param_engine is None:
+            k_param_engine = KineticParameterUncertainty()
+
+        self.kinetic_covariance_matrix = np.zeros((len(self.reaction_list), len(self.reaction_list)))
+
+        # Load the family reaction maps for autogenerated families.
+        # This allows us to determine which reactions overlap between nodes in the same autogenerated family.
+        # This can take a minute or two.
+        auto_gen_family_rxn_maps = {}
+        if self.all_kinetic_sources is None:
+            self.compile_all_sources()
+        for family in self.all_kinetic_sources['Rate Rules'].keys():
+            if self.database.kinetics.families[family].auto_generated:
+                auto_gen_family_rxn_maps[family] = self.database.kinetics.families[family].get_reaction_matches(
+                    thermo_database=self.database.thermo,
+                    remove_degeneracy=True,
+                    get_reverse=True,
+                    exact_matches_only=False,
+                    fix_labels=True
+                )
+
+        for i, reaction in enumerate(self.reaction_list):
+            source_dict_i = self.reaction_sources_dict[self.reaction_list[i]]
+            for j, other_reaction in enumerate(self.reaction_list):
+                # assuming only sources that match are correlated
+                source_dict_j = self.reaction_sources_dict[self.reaction_list[j]]
+
+                for source_i in self.kinetic_input_uncertainties[i].keys():
+                    if source_i in self.kinetic_input_uncertainties[j].keys():
+                        self.kinetic_covariance_matrix[i, j] += self.kinetic_input_uncertainties[i][source_i] * self.kinetic_input_uncertainties[j][source_i]
+                else:
+                    # no match in rules, but there may be overlap if they're SIDT trees using the same family
+                    if 'Rate Rules' in source_dict_i.keys() and 'Rate Rules' in source_dict_j.keys():
+                        if source_dict_i['Rate Rules'][1]['autogenerated'] and source_dict_j['Rate Rules'][1]['autogenerated'] and \
+                                source_dict_i['Rate Rules'][0] == source_dict_j['Rate Rules'][0]:
+                            # get #training reactions in overlap
+                            family = source_dict_i['Rate Rules'][0]
+                            node_name_i = source_dict_i['Rate Rules'][1]['template'][0].label
+                            node_name_j = source_dict_j['Rate Rules'][1]['template'][0].label
+                            rxns_i = auto_gen_family_rxn_maps[family][node_name_i]
+                            rxns_j = auto_gen_family_rxn_maps[family][node_name_j]
+
+                            # count overlapping reactions:
+                            overlap_count = 0
+                            for r_i in rxns_i:
+                                if r_i in rxns_j:
+                                    overlap_count += 1
+
+                            self.kinetic_covariance_matrix[i, j] += (overlap_count / len(rxns_i)) * (overlap_count / len(rxns_j)) * (k_param_engine.dlnk_rule ** 2.0)
+
+                # check if a training reaction exactly matches a rate rule data entry
+                if 'Training' in source_dict_i.keys() and 'Rate Rules' in source_dict_j.keys():
+                    rate_rules_training_reactions = [t[1] for t in source_dict_j['Rate Rules'][1]['training']]
+                    weights = [t[2] for t in source_dict_j['Rate Rules'][1]['training']]
+                    training_reaction = source_dict_i['Training'][1]
+                    for k in range(len(rate_rules_training_reactions)):
+                        if rate_rules_training_reactions[k].item.is_isomorphic(training_reaction.item):
+                            self.kinetic_covariance_matrix[i, j] += weights[k] * k_param_engine.dlnk_training * k_param_engine.dlnk_rule
+                elif 'Training' in source_dict_j.keys() and 'Rate Rules' in source_dict_i.keys():
+                    rate_rules_training_reactions = [t[1] for t in source_dict_i['Rate Rules'][1]['training']]
+                    weights = [t[2] for t in source_dict_i['Rate Rules'][1]['training']]
+                    training_reaction = source_dict_j['Training'][1]
+                    for k in range(len(rate_rules_training_reactions)):
+                        if rate_rules_training_reactions[k].item.is_isomorphic(training_reaction.item):
+                            self.kinetic_covariance_matrix[i, j] += weights[k] * k_param_engine.dlnk_training * k_param_engine.dlnk_rule
+
+                # Add in thermo correlations if both BEP
+                if isinstance(reaction.kinetics, (SurfaceArrheniusBEP, StickingCoefficientBEP)) and \
+                        isinstance(other_reaction.kinetics, (SurfaceArrheniusBEP, StickingCoefficientBEP)):
+
+                    alpha_i = reaction.kinetics.alpha.value_si
+                    alpha_j = other_reaction.kinetics.alpha.value_si
+
+                    R = 8.314472
+                    T = 1000.0
+                    r1_sp_indices = [self.species_list.index(sp) for sp in reaction.reactants + reaction.products]
+                    r1_coefficients = [-1 for x in reaction.reactants]
+                    r1_coefficients.extend([1 for x in reaction.products])
+
+                    r2_sp_indices = [self.species_list.index(sp) for sp in other_reaction.reactants + other_reaction.products]
+                    r2_coefficients = [-1 for x in other_reaction.reactants]
+                    r2_coefficients.extend([1 for x in other_reaction.products])
+                    for r1 in range(len(r1_sp_indices)):
+                        for r2 in range(len(r2_sp_indices)):
+
+                            covH = self.thermo_covariance_matrix[r1_sp_indices[r1], r2_sp_indices[r2]] * 4184 * 4184  # convert from kcal/mol to J/mol
+                            nu_i = r1_coefficients[r1]
+                            nu_j = r2_coefficients[r2]
+
+                            self.kinetic_covariance_matrix[i, j] += nu_i * nu_j * alpha_i * alpha_j * covH / np.float_power(R * T, 2.0)
+
+        return self.kinetic_covariance_matrix
+
+    def get_overall_covariance_matrix(self):
+        # make combined thermo and kinetics covariance matrix, species first, then reactions
+
+        assert self.kinetic_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.kinetic_input_uncertainties) > 0, 'No kinetic parameters found'
+        assert self.thermo_covariance_matrix is not None, 'Must create thermo covariance matrix first'
+        assert self.kinetic_covariance_matrix is not None, 'Must create kinetics covariance matrix first'
+
+        self.overall_covariance_matrix = np.zeros((len(self.species_list) + len(self.reaction_list), len(self.species_list) + len(self.reaction_list)))
+        self.overall_covariance_matrix[:len(self.species_list), :len(self.species_list)] = self.thermo_covariance_matrix
+        self.overall_covariance_matrix[len(self.species_list):, len(self.species_list):] = self.kinetic_covariance_matrix
+
+        # fill in the covariance between reaction and species based on BEP relationships if applicable
+        for i in range(len(self.reaction_list)):
+            reaction = self.reaction_list[i]
+
+            BEP = None
+            BEP_types = [SurfaceArrheniusBEP, StickingCoefficientBEP]
+            if isinstance(reaction.kinetics, tuple(BEP_types)):
+                BEP = reaction.kinetics
+            elif 'Rate Rules' not in self.reaction_sources_dict[reaction]:
+                pass  # nothing to do here if kinetics doesn't depend on thermo through a BEP
+            elif self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'] and \
+                    isinstance(self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'][0][0].data, tuple(BEP_types)):
+                BEP = self.reaction_sources_dict[reaction]['Rate Rules'][1]['rules'][0][0].data
+            elif self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'] and \
+                    isinstance(self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'][0][0].data, tuple(BEP_types)):
+                BEP = self.reaction_sources_dict[reaction]['Rate Rules'][1]['training'][0][0].data
+
+            if BEP:
+                alpha_i = BEP.alpha.value_si
+
+                R = 8.314472
+                T = 1000.0
+                r1_sp_indices = [self.species_list.index(sp) for sp in reaction.reactants + reaction.products]
+                r1_coefficients = [-1 for x in reaction.reactants]
+                r1_coefficients.extend([1 for x in reaction.products])
+
+                for r1 in range(len(r1_sp_indices)):  # loop over species in the reaction
+                    for j in range(len(self.species_list)):  # loop over all species
+                        covH = self.thermo_covariance_matrix[r1_sp_indices[r1], j] * 4184 * 4184  # convert from kcal/mol to J/mol
+                        nu_i = r1_coefficients[r1]
+
+                        self.overall_covariance_matrix[len(self.species_list) + i, j] += nu_i * alpha_i * covH / (R * T) / 4184  # convert back to kcal/mol
+
+        # fill in the lower triangle by copying from the top
+        for i in range(len(self.reaction_list)):
+            for j in range(len(self.species_list)):
+                self.overall_covariance_matrix[j, len(self.species_list) + i] = self.overall_covariance_matrix[len(self.species_list) + i, j]
+
+        return self.overall_covariance_matrix
 
 
 def process_local_results(results, sensitive_species, number=10):
