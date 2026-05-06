@@ -450,13 +450,19 @@ class CanteraWriter1(object):
 
     """
 
-    def __init__(self, output_directory=""):
+    def __init__(self, output_directory="", config=None):
         super(CanteraWriter1, self).__init__()
         self.output_directory = output_directory
+        self.config = config
         self.output_subdirectory = os.path.join(self.output_directory, "cantera1")
         make_output_subdirectory(output_directory, "cantera1")
 
     def update(self, rmg):
+        if self.config is not None and not self.config.should_write(
+                rmg.reaction_model.iteration_num, rmg.is_final_save):
+            return
+        verbose = self.config.verbose_comments if (self.config and self.config.verbose_comments is not None) else rmg.verbose_comments
+        save_edge = self.config.save_edge if (self.config and self.config.save_edge is not None) else rmg.save_edge_species
 
         num_species = len(rmg.reaction_model.core.species)
         this_output_path = os.path.join(self.output_subdirectory,
@@ -483,7 +489,7 @@ class CanteraWriter1(object):
         )
         shutil.copy2(this_output_path, latest_output_path)
 
-        if rmg.verbose_comments:
+        if verbose:
             annotated_path = os.path.join(self.output_subdirectory, 'chem_annotated.yaml')
             logging.info(f"Saving annotated Cantera file: {annotated_path}")
             write_cantera(
@@ -496,7 +502,7 @@ class CanteraWriter1(object):
                 verbose=True,
             )
 
-        if rmg.save_edge_species:
+        if save_edge:
             logging.info('Saving current model core and edge to Cantera file...')
             edge_species = rmg.reaction_model.core.species + rmg.reaction_model.edge.species
             edge_reactions = rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions
@@ -515,7 +521,7 @@ class CanteraWriter1(object):
             )
             shutil.copy2(this_edge_path, latest_edge_path)
 
-            if rmg.verbose_comments:
+            if verbose:
                 annotated_edge_path = os.path.join(self.output_subdirectory,
                                                     'chem_edge_annotated.yaml')
                 logging.info(f"Saving annotated edge Cantera file: {annotated_edge_path}")

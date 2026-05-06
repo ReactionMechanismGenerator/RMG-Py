@@ -77,26 +77,33 @@ class CanteraWriter2(object):
     with the current state of the RMG model at every iteration.
     """
 
-    def __init__(self, output_directory=''):
+    def __init__(self, output_directory='', config=None):
         self.output_directory = output_directory
+        self.config = config
         make_output_subdirectory(output_directory, 'cantera2')
 
     def update(self, rmg):
         """
         Called whenever the RMG subject notifies listeners.
         """
-        save_cantera_files(rmg)
+        if self.config is not None and not self.config.should_write(
+                rmg.reaction_model.iteration_num, rmg.is_final_save):
+            return
+        save_cantera_files(rmg, config=self.config)
 
 
-def save_cantera_files(rmg):
+def save_cantera_files(rmg, config=None):
     """
     Save the current reaction model to a set of Cantera YAML files.
 
     Creates:
       1. chem{N}.yaml (where N is num species)
       2. chem.yaml (latest copy)
-      3. chem_annotated.yaml (if rmg.verbose_comments is True)
+      3. chem_annotated.yaml (if verbose_comments is True)
     """
+    verbose = config.verbose_comments if (config and config.verbose_comments is not None) else rmg.verbose_comments
+    save_edge = config.save_edge if (config and config.save_edge is not None) else rmg.save_edge_species
+
     # Ensure subdirectory exists
     cantera_dir = os.path.join(rmg.output_directory, 'cantera2')
     if not os.path.exists(cantera_dir):
@@ -129,7 +136,7 @@ def save_cantera_files(rmg):
     shutil.copy2(this_cantera_path, latest_cantera_path)
 
     # Write annotated file if verbose_comments is requested
-    if rmg.verbose_comments:
+    if verbose:
         annotated_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
         logging.info(f"Saving annotated Cantera file: {annotated_path}")
         save_cantera_model(rmg.reaction_model.core, annotated_path, site_density=site_density,
@@ -138,7 +145,7 @@ def save_cantera_files(rmg):
     # -------------------------------------------------------------------------
     # 2. Save Edge Model (Optional, matching ChemkinWriter logic)
     # -------------------------------------------------------------------------
-    if rmg.save_edge_species:
+    if save_edge:
         logging.info('Saving current model core and edge to Cantera file...')
 
         this_edge_path = os.path.join(cantera_dir,
@@ -162,7 +169,7 @@ def save_cantera_files(rmg):
             os.unlink(latest_edge_path)
         shutil.copy2(this_edge_path, latest_edge_path)
 
-        if rmg.verbose_comments:
+        if verbose:
             annotated_edge_path = os.path.join(cantera_dir, 'chem_edge_annotated.yaml')
             logging.info(f"Saving annotated edge Cantera file: {annotated_edge_path}")
             save_cantera_model(edge_model, annotated_edge_path, site_density=site_density,

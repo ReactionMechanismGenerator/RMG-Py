@@ -221,23 +221,47 @@ options(
     generatePESDiagrams=False,
     # saves mole fraction of species in 'solver/' to help you create plots
     saveSimulationProfiles=False,
-    # gets RMG to output comments on where kinetics were obtained in the chemkin file.
-    # useful for debugging kinetics but increases memory usage of the chemkin output file
+    # Global fallback for verbose comments (comments on where kinetics were obtained).
+    # Useful for debugging kinetics but increases output file size.
+    # Individual writers can override this with their own verboseComments key.
     verboseComments=False,
-    # gets RMG to generate edge species chemkin files. Uses lots of memory in output.
-    # Helpful for seeing why some reaction are not appearing in core model.
+    # Global fallback for saving edge-species files. Uses lots of memory in output.
+    # Helpful for seeing why some reactions are not appearing in the core model.
+    # Individual writers can override this with their own saveEdge key.
     saveEdgeSpecies=False,
-    # Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
-    # do not converge.
-    # wallTime = '00:00:00',
-    # Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
-    # reactions while keeping the reversibility as as.
+    # Sets a time limit in the form DD:HH:MM:SS after (or shortly before) which the RMG job will stop.
+    # Useful for profiling on jobs that do not converge.
+    wallTime = '00:00:00:00',
+    # If keepIrreversible=False (default) forces RMG to import library reactions as reversible.
+    # If set to True, RMG will import library reactions while keeping the reversibility as specified.
     keepIrreversible=False,
     # Allows families with three products to react in the diverse direction (default).
     trimolecularProductReversible=True,
     # Allows a seed to be saved every n iterations.
     # The default of -1 causes the iteration to only be saved at the end of the RMG job
-    saveSeedModulus=-1
+    saveSeedModulus=-1,
+    #
+    # --- Per-writer output configuration ---
+    # Each writer accepts True/False or a dict with keys:
+    #   'saveInterval': N  (positive = every N iterations; -1 = end of run only)
+    #   'verboseComments': True/False  (overrides the global verboseComments above)
+    #   'saveEdge': True/False  (overrides the global saveEdgeSpecies above)
+    #
+    # Chemkin writer: always on by default; saves every iteration.
+    generateChemkin=True,
+    # generateChemkin={'saveInterval': -1, 'verboseComments': True, 'saveEdge': True},
+    #
+    # RMS YAML writer: always on by default; saves every iteration.
+    generateRMSYAML=True,
+    # generateRMSYAML={'saveInterval': -1},
+    #
+    # Cantera YAML v1 writer: off by default.
+    generateCanteraYAML1=False,
+    # generateCanteraYAML1={'saveInterval': -1, 'verboseComments': True, 'saveEdge': False},
+    #
+    # Cantera YAML v2 writer: off by default.
+    generateCanteraYAML2=False,
+    # generateCanteraYAML2={'saveInterval': 1, 'verboseComments': True, 'saveEdge': True},
 )
 
 # optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.
