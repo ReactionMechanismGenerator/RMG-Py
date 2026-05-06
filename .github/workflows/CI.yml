@@ -176,7 +176,7 @@ jobs:
 
       - name: Make separate No-RMS conda env
         run: |
-          conda create --name rmg_env_without_rms --clone rmg_env
+          conda create --name rmg_env_without_rms -f environment.yml
 
       - name: Setup Juliaup
         uses: julia-actions/install-juliaup@v2
