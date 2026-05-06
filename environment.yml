@@ -25,6 +25,7 @@ dependencies:
   - conda-forge::cairo
   - conda-forge::cairocffi
   - conda-forge::ffmpeg >= 7
+  - conda-forge::x264 !=1!164.3095  # avoid broken package cache build
   - conda-forge::xlrd
   - conda-forge::xlwt
   - conda-forge::h5py
