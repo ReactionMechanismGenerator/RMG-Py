@@ -1367,7 +1367,7 @@ class ThermoDatabase(object):
         if species.contains_surface_site():
             try:
                 thermo0 = self.get_thermo_data_for_surface_species(species)
-                metal_to_scale_from = self.adsorption_groups.split('adsorption')[-1]
+                metal_to_scale_from = self.adsorption_groups.split('adsorption')[-1].replace("SIDT","",1)
                 if metal_to_scale_from != metal_to_scale_to:
                     thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=metal_to_scale_from, metal_to_scale_to=metal_to_scale_to)  # group adsorption values come from Pt111
                 return thermo0
