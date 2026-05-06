@@ -86,4 +86,9 @@ options(
     units='si',
     generateOutputHTML=False,
     generatePlots=False,
+    # Large model: write output every 5 iterations and skip edge species to reduce I/O
+    generateChemkin={'saveInterval': 5, 'saveEdge': False},
+    generateRMSYAML={'saveInterval': 5},
+    generateCanteraYAML1={'saveInterval': 10},
+    generateCanteraYAML2={'saveInterval': 10},
 )
