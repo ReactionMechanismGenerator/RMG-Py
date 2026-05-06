@@ -76,7 +76,7 @@ from rmgpy.rmg.model import CoreEdgeReactionModel, Species
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
-from rmgpy.rmg.settings import ModelSettings
+from rmgpy.rmg.settings import ModelSettings, WriterConfig
 from rmgpy.solver.base import TerminationTime
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
@@ -146,8 +146,14 @@ class RMG(util.Subject):
     `generate_output_html`                                     ``True`` to draw pictures of the species and reactions, saving a visualized model in an output HTML file.  ``False`` otherwise
     `generate_plots`                                           ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `generate_PES_diagrams`                                    ``True`` to generate potential energy surface diagrams for pressure dependent networks in the model, ``False`` otherwise
-    `verbose_comments`                                         ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
-    `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
+    `verbose_comments`                                         ``True`` to keep the verbose comments for database estimates, ``False`` otherwise (global fallback when writer config does not override)
+    `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise (global fallback when writer config does not override)
+    `chemkin_writer_config`                                    :class:`WriterConfig` controlling when the Chemkin writer runs and its per-writer options
+    `rms_writer_config`                                        :class:`WriterConfig` controlling when the RMS YAML writer runs and its per-writer options
+    `cantera1_writer_config`                                   :class:`WriterConfig` controlling when CanteraWriter1 runs and its per-writer options
+    `cantera2_writer_config`                                   :class:`WriterConfig` controlling when CanteraWriter2 runs and its per-writer options
+    `html_writer_config`                                       :class:`WriterConfig` controlling when the HTML writer runs and its per-writer options
+    `is_final_save`                                            Set to ``True`` immediately before the end-of-run ``save_everything()`` call so writers know it is the final notification
     `keep_irreversible`                                        ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `trimolecular_product_reversible`                          ``True`` (default) to allow families with trimolecular products to react in the reverse direction, ``False`` otherwise
     `pressure_dependence`                                      Whether to process unimolecular (pressure-dependent) reaction networks
@@ -231,6 +237,12 @@ class RMG(util.Subject):
         self.save_simulation_profiles = None
         self.verbose_comments = None
         self.save_edge_species = None
+        self.chemkin_writer_config = None
+        self.rms_writer_config = None
+        self.cantera1_writer_config = None
+        self.cantera2_writer_config = None
+        self.html_writer_config = None
+        self.is_final_save = False
         self.keep_irreversible = None
         self.trimolecular_product_reversible = None
         self.pressure_dependence = None
@@ -784,13 +796,22 @@ class RMG(util.Subject):
         found in the RMG input file.
         """
 
-        self.attach(ChemkinWriter(self.output_directory))
+        cfg_chemkin  = self.chemkin_writer_config  or WriterConfig(save_interval=1)
+        cfg_rms      = self.rms_writer_config      or WriterConfig(save_interval=1)
+        cfg_cantera1 = self.cantera1_writer_config or WriterConfig(save_interval=0)
+        cfg_cantera2 = self.cantera2_writer_config or WriterConfig(save_interval=0)
+        cfg_html     = self.html_writer_config     or WriterConfig(save_interval=0)
 
-        self.attach(RMSWriter(self.output_directory))
-        self.attach(CanteraWriter1(self.output_directory))
-        self.attach(CanteraWriter2(self.output_directory))
-        if self.generate_output_html:
-            self.attach(OutputHTMLWriter(self.output_directory))
+        if cfg_chemkin.enabled:
+            self.attach(ChemkinWriter(self.output_directory, cfg_chemkin))
+        if cfg_rms.enabled:
+            self.attach(RMSWriter(self.output_directory, cfg_rms))
+        if cfg_cantera1.enabled:
+            self.attach(CanteraWriter1(self.output_directory, cfg_cantera1))
+        if cfg_cantera2.enabled:
+            self.attach(CanteraWriter2(self.output_directory, cfg_cantera2))
+        if cfg_html.enabled:
+            self.attach(OutputHTMLWriter(self.output_directory, cfg_html))
 
         if self.quantum_mechanics:
             self.attach(QMDatabaseWriter())
@@ -1233,6 +1254,14 @@ class RMG(util.Subject):
 
         # Save the final seed mechanism
         self.make_seed_mech()
+
+        # Notify all writers that this is the final save (end-of-run).
+        # Writers configured with saveInterval=-1 will write only here.
+        # Writers configured with saveInterval>0 will also write here
+        # unless they already wrote on this iteration.
+        self.is_final_save = True
+        self.save_everything()
+        self.is_final_save = False
 
         self.run_model_analysis()
 
