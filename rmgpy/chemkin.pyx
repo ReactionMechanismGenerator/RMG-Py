@@ -2272,10 +2272,12 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
         save_transport_file(transport_path, species_list)
 
 
-def save_chemkin_files(rmg):
+def save_chemkin_files(rmg, config=None):
     """
     Save the current reaction model to a set of Chemkin files.
     """
+    verbose = config.verbose_comments if (config and config.verbose_comments is not None) else rmg.verbose_comments
+    save_edge = config.save_edge if (config and config.save_edge is not None) else rmg.save_edge_species
 
     # todo: make this an attribute or method of reactionModel
     is_surface_model = any([s.contains_surface_site() for s in rmg.reaction_model.core.species])
@@ -2310,7 +2312,7 @@ def save_chemkin_files(rmg):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path, latest_chemkin_path)
 
-    if rmg.save_edge_species:
+    if save_edge:
         logging.info('Saving current model core and edge to Chemkin file...')
         this_chemkin_path = os.path.join(rmg.output_directory, 'chemkin',
                                          'chem_edge{0:04d}.inp'.format(len(rmg.reaction_model.core.species)))
@@ -2319,7 +2321,7 @@ def save_chemkin_files(rmg):
         latest_dictionary_path = os.path.join(rmg.output_directory, 'chemkin', 'species_edge_dictionary.txt')
         latest_transport_path = None
         save_chemkin(rmg.reaction_model, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path,
-                     latest_transport_path, rmg.save_edge_species)
+                     latest_transport_path, save_edge)
 
         if is_surface_model:
             paths = []
@@ -2386,9 +2388,13 @@ class ChemkinWriter(object):
     rmg.detach(listener)
     
     """
-    def __init__(self, output_directory=''):
+    def __init__(self, output_directory='', config=None):
         super(ChemkinWriter, self).__init__()
+        self.config = config
         make_output_subdirectory(output_directory, 'chemkin')
 
     def update(self, rmg):
-        save_chemkin_files(rmg)
+        if self.config is not None and not self.config.should_write(
+                rmg.reaction_model.iteration_num, rmg.is_final_save):
+            return
+        save_chemkin_files(rmg, config=self.config)

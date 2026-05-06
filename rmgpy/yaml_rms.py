@@ -274,12 +274,16 @@ class RMSWriter(object):
     rmg.detach(listener)
 
     """
-    def __init__(self, output_directory=''):
+    def __init__(self, output_directory='', config=None):
         super(RMSWriter, self).__init__()
         self.output_directory = output_directory
+        self.config = config
         make_output_subdirectory(output_directory, 'rms')
 
     def update(self, rmg):
+        if self.config is not None and not self.config.should_write(
+                rmg.reaction_model.iteration_num, rmg.is_final_save):
+            return
         solvent_data = None
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
