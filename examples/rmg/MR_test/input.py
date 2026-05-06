@@ -260,9 +260,9 @@ options(
     #Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
     #do not converge.
     #wallTime = '00:00:00', 
+    #When keepIrreversible=False (default), forces RMG to import library reactions as reversible. 
+    #Otherwise, if set to True, RMG will import library reactions while keeping the reversibility as specified.
     keepIrreversible=False,
-    #Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
-    #reactions while keeping the reversibility as as.
 )
 
 # optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.

@@ -271,6 +271,19 @@ class RMG(util.Subject):
         self.exec_time = []
         self.liquid_volumetric_mass_transfer_coefficient_power_law = None
 
+    @staticmethod
+    def _parse_walltime_to_seconds(walltime):
+        """
+        Convert walltime string DD:HH:MM:SS to seconds.
+        """
+        data = walltime.split(":")
+        if len(data) != 4:
+            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(walltime))
+        try:
+            return int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
+        except ValueError as exc:
+            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(walltime)) from exc
+
     def load_input(self, path=None):
         """
         Load an RMG job from the input file located at `input_file`, or
@@ -582,6 +595,24 @@ class RMG(util.Subject):
                 )
             )
 
+        if "walltime" in kwargs:
+            logging.info(
+                "Overriding walltime from input file (%s) with command-line value (%s).",
+                self.walltime,
+                kwargs["walltime"],
+            )
+            self.walltime = kwargs["walltime"]
+
+        if "max_iterations" in kwargs:
+            logging.info(
+                "Overriding max_iterations from input file (%s) with command-line value (%s).",
+                self.max_iterations,
+                kwargs["max_iterations"],
+            )
+            self.max_iterations = kwargs["max_iterations"]
+
+        self.walltime = self._parse_walltime_to_seconds(self.walltime)
+
         # Auto-select libraries if any field uses 'auto' or '<PAH_libs>'
         auto_select_libraries(self)
 
@@ -658,21 +689,6 @@ class RMG(util.Subject):
             for reaction_system in self.reaction_systems:
                 if reaction_system.T:
                     reaction_system.viscosity = solvent_data.get_solvent_viscosity(reaction_system.T.value_si)
-
-        try:
-            self.walltime = kwargs["walltime"]
-        except KeyError:
-            pass
-
-        try:
-            self.max_iterations = kwargs["max_iterations"]
-        except KeyError:
-            pass
-
-        data = self.walltime.split(":")
-        if not len(data) == 4:
-            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(self.walltime))
-        self.walltime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
 
         # Initialize reaction model
 
@@ -931,6 +947,7 @@ class RMG(util.Subject):
             self.make_seed_mech()
 
         max_num_spcs_hit = False  # default
+        end_early = False
 
         for q, model_settings in enumerate(self.model_settings_list):
             if len(self.simulator_settings_list) > 1:
@@ -940,7 +957,7 @@ class RMG(util.Subject):
 
             self.filter_reactions = model_settings.filter_reactions
 
-            logging.info("Beginning model generation stage {0}...\n".format(q + 1))
+            logging.info(f"Beginning model generation stage {q + 1} of {len(self.model_settings_list)}.\n")
 
             self.done = False
 
@@ -1235,7 +1252,8 @@ class RMG(util.Subject):
                         core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
                         logging.info("The current model core has %s species and %s reactions" % (core_spec, core_reac))
                         logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
-                        return
+                        end_early = True
+                        break
 
                 if self.max_iterations and (self.reaction_model.iteration_num >= self.max_iterations):
                     logging.info("MODEL GENERATION TERMINATED")
@@ -1246,11 +1264,15 @@ class RMG(util.Subject):
                     core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
                     logging.info("The current model core has %s species and %s reactions" % (core_spec, core_reac))
                     logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
-                    return
+                    end_early = True
+                    break
 
             if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
                 logging.info("The maximum number of species ({0}) has been hit, Exiting stage {1} ...".format(model_settings.max_num_species, q + 1))
                 max_num_spcs_hit = False
+
+            if end_early:  # breaks the settings for loop
+                break
 
         # Save the final seed mechanism
         self.make_seed_mech()
@@ -1333,12 +1355,14 @@ class RMG(util.Subject):
 
         self.check_model()
         # Write output file
-        logging.info("")
-        logging.info("MODEL GENERATION COMPLETED")
-        logging.info("")
-        core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
-        logging.info("The final model core has %s species and %s reactions" % (core_spec, core_reac))
-        logging.info("The final model edge has %s species and %s reactions" % (edge_spec, edge_reac))
+
+        if not end_early:
+            logging.info("")
+            logging.info("MODEL GENERATION COMPLETED")
+            logging.info("")
+            core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
+            logging.info("The final model core has %s species and %s reactions" % (core_spec, core_reac))
+            logging.info("The final model edge has %s species and %s reactions" % (edge_spec, edge_reac))
 
         self.finish()
 
