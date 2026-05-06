@@ -1267,62 +1267,64 @@ class RMG(util.Subject):
 
         # generate Cantera files chem.yaml & chem_annotated.yaml in designated Cantera output folders
         try:
-            logging.info("Translating final chemkin file into Cantera yaml.")
             translated_cantera_file = None
-            if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
-                # Surface (catalytic) chemistry
-                translated_cantera_file = self.generate_cantera_files_from_chemkin(
-                    os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
-                )
-                self.generate_cantera_files_from_chemkin(
-                    os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
-                )
+            if self.chemkin_writer_config and self.chemkin_writer_config.enabled:
+                logging.info("Translating final chemkin file into Cantera yaml.")
+                if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
+                    # Surface (catalytic) chemistry
+                    translated_cantera_file = self.generate_cantera_files_from_chemkin(
+                        os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
+                        surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
+                    )
+                    self.generate_cantera_files_from_chemkin(
+                        os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
+                        surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
+                    )
 
-                if self.thermo_coverage_dependence:
-                    # Build coverage_deps: {species_name: string_to_add_to_yaml}
-                    coverage_deps = {}
-                    for s in self.reaction_model.core.species:
-                        if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
-                            s_name = s.to_chemkin()
-                            for dep_sp_adj, parameters in s.thermo.thermo_coverage_dependence.items():
-                                mol = Molecule().from_adjacency_list(dep_sp_adj)
-                                for sp in self.reaction_model.core.species:
-                                    if sp.is_isomorphic(mol, strict=False):
-                                        if s_name not in coverage_deps:
-                                            coverage_deps[s_name] = '  coverage-dependencies:'
-                                        coverage_deps[s_name] += f"""
+                    if self.thermo_coverage_dependence:
+                        # Build coverage_deps: {species_name: string_to_add_to_yaml}
+                        coverage_deps = {}
+                        for s in self.reaction_model.core.species:
+                            if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
+                                s_name = s.to_chemkin()
+                                for dep_sp_adj, parameters in s.thermo.thermo_coverage_dependence.items():
+                                    mol = Molecule().from_adjacency_list(dep_sp_adj)
+                                    for sp in self.reaction_model.core.species:
+                                        if sp.is_isomorphic(mol, strict=False):
+                                            if s_name not in coverage_deps:
+                                                coverage_deps[s_name] = '  coverage-dependencies:'
+                                            coverage_deps[s_name] += f"""
     {sp.to_chemkin()}:
       model: {parameters['model']}
       enthalpy-coefficients: {[v.value_si for v in parameters['enthalpy-coefficients']]}
       entropy-coefficients: {[v.value_si for v in parameters['entropy-coefficients']]}
       units: {{energy: J, quantity: mol}}
 """
-                                        break
+                                            break
 
-                    for yaml_path in [
-                        os.path.join(self.output_directory, "cantera", "chem.yaml"),
-                        os.path.join(self.output_directory, "cantera", "chem_annotated.yaml"),
-                    ]:
-                        _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
+                        for yaml_path in [
+                            os.path.join(self.output_directory, "cantera", "chem.yaml"),
+                            os.path.join(self.output_directory, "cantera", "chem_annotated.yaml"),
+                        ]:
+                            _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
 
-            else:  # gas phase only
-                translated_cantera_file = self.generate_cantera_files_from_chemkin(
-                    os.path.join(self.output_directory, "chemkin", "chem.inp")
-                )
-                self.generate_cantera_files_from_chemkin(
-                    os.path.join(self.output_directory, "chemkin", "chem_annotated.inp")
-                )
-        
-            # Compare translated Cantera files and directly generated Cantera files
+                else:  # gas phase only
+                    translated_cantera_file = self.generate_cantera_files_from_chemkin(
+                        os.path.join(self.output_directory, "chemkin", "chem.inp")
+                    )
+                    self.generate_cantera_files_from_chemkin(
+                        os.path.join(self.output_directory, "chemkin", "chem_annotated.inp")
+                    )
 
-            compare_yaml_files_and_report(translated_cantera_file,
-                                          os.path.join(self.output_directory, "cantera1", "chem.yaml"),
-                                          output=os.path.join(self.output_directory, "cantera1", "comparison_report.txt"))
-            compare_yaml_files_and_report(translated_cantera_file,
-                                          os.path.join(self.output_directory, "cantera2", "chem.yaml"),
-                                          output=os.path.join(self.output_directory, "cantera2", "comparison_report.txt"))
+            # Compare translated Cantera files against directly generated Cantera files
+            if translated_cantera_file and self.cantera1_writer_config and self.cantera1_writer_config.enabled:
+                compare_yaml_files_and_report(translated_cantera_file,
+                                              os.path.join(self.output_directory, "cantera1", "chem.yaml"),
+                                              output=os.path.join(self.output_directory, "cantera1", "comparison_report.txt"))
+            if translated_cantera_file and self.cantera2_writer_config and self.cantera2_writer_config.enabled:
+                compare_yaml_files_and_report(translated_cantera_file,
+                                              os.path.join(self.output_directory, "cantera2", "chem.yaml"),
+                                              output=os.path.join(self.output_directory, "cantera2", "comparison_report.txt"))
 
         except EnvironmentError:
             logging.exception("Could not generate Cantera files due to EnvironmentError. Check read\\write privileges in output directory.")
