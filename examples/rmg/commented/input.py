@@ -229,11 +229,11 @@ options(
     # Helpful for seeing why some reactions are not appearing in the core model.
     # Individual writers can override this with their own saveEdge key.
     saveEdgeSpecies=False,
-    # Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
-    # do not converge.
-    # wallTime = '00:00:00',
-    # Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
-    # reactions while keeping the reversibility as as.
+    # Sets a time limit in the form DD:HH:MM:SS after (or shortly before) which the RMG job will stop.
+    # Useful for profiling on jobs that do not converge.
+    wallTime = '00:00:00:00',
+    # If keepIrreversible=False (default) forces RMG to import library reactions as reversible.
+    # If set to True, RMG will import library reactions while keeping the reversibility as specified.
     keepIrreversible=False,
     # Allows families with three products to react in the diverse direction (default).
     trimolecularProductReversible=True,

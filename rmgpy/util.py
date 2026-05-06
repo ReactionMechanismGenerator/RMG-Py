@@ -173,7 +173,7 @@ def parse_command_line_arguments(command_line_args=None):
     parser.add_argument('-P', '--postprocess', action='store_true',
                         help='postprocess profiling statistics from previous [failed] run; does not run the simulation')
 
-    parser.add_argument('-t', '--walltime', type=str, nargs=1, default='00:00:00:00',
+    parser.add_argument('-t', '--walltime', type=str, nargs=1, default=None,
                         metavar='DD:HH:MM:SS', help='set the maximum execution time')
 
     parser.add_argument('-i', '--maxiter', type=int, nargs=1, default=None,
@@ -197,7 +197,7 @@ def parse_command_line_arguments(command_line_args=None):
     args.file = args.file[0]
 
     # If walltime was specified, retrieve this string from the element 1 list
-    if args.walltime != '00:00:00:00':
+    if args.walltime:
         args.walltime = args.walltime[0]
 
     if args.restart:
