@@ -87,5 +87,9 @@ options(
     units='si',
     generateOutputHTML=False,
     generatePlots=False,
+    generateChemkin={'saveInterval': 5, 'saveEdge': True},
+    generateRMSYAML={'saveInterval': 5},
+    generateCanteraYAML1={'saveInterval': 5},
+    generateCanteraYAML2={'saveInterval': 5},
 )
 
