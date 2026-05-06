@@ -1846,12 +1846,21 @@ class ThermoDatabase(object):
             else: # >2 surface sites
                 data = None
                 sts = self.sidt_taggings_and_decompositions["Pt111_multidentate_adsorption_corrections"](molecule)
+                Nsts = 0
                 for st in sts:
                     if data is None:
-                        data = self.sidts["Pt111_bidentate_adsorption_corrections"].evaluate(st)
+                        dE = self.sidts["Pt111_bidentate_adsorption_corrections"].evaluate(st)
                     else:
-                        data += self.sidts["Pt111_bidentate_adsorption_corrections"].evaluate(st)
-                data /= len(sts)
+                        dE = self.sidts["Pt111_bidentate_adsorption_corrections"].evaluate(st)
+                    
+                    if dE is not None:
+                        if data is None:
+                            data = dE
+                        else:
+                            data += dE
+                        Nsts += 1
+                        
+                data /= Nsts
                 unc = [275.3710444584647,
                         35.06003505844255,
                         9.443946756077908,
