@@ -1094,7 +1094,7 @@ def get_confidence_intervals(x: np.ndarray,
     e = y - ypred  # Residuals
     dof = n - p
     if dof <= 0:
-        return np.nan, np.nan
+        return np.full(p, np.nan), np.full((p, p), np.nan)
     sigma2 = e.T @ weights @ e / dof  # MSE
     cov = sigma2 * np.linalg.inv(x.T @ weights @ x)  # covariance matrix
     se = np.sqrt(np.diag(cov))  # standard error
