@@ -363,7 +363,7 @@ class TestMainFunctions:
         num_rows = df.shape[0]
 
         num_iter_actual = num_rows
-        num_iter_expected = self.max_iter + 1  # +1 is for saving iteration 0
+        num_iter_expected = self.max_iter + 2 # +2 is for saving iteration 0, and the final after the loop ends.
         assert num_iter_actual == num_iter_expected
 
     @classmethod

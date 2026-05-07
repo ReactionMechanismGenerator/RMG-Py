@@ -1274,6 +1274,7 @@ class RMG(util.Subject):
             if end_early:  # breaks the settings for loop
                 break
 
+        self.reaction_model.iteration_num += 1
         # Save the final seed mechanism
         self.make_seed_mech()
 
