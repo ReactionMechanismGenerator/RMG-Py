@@ -79,7 +79,15 @@ options(
     saveEdgeSpecies=False,
     verboseComments=True,
     saveSimulationProfiles=False,
+    generateCanteraYAML1=True,
+    generateCanteraYAML2=True,
+    generateRMSYAML=True,
+    generateChemkin=True,
 )
 
-generatedSpeciesConstraints(allowed=['seed mechanisms','reaction libraries'],
-maximumRadicalElectrons=3,maximumCarbeneRadicals=3,maximumSingletCarbenes=3)
+generatedSpeciesConstraints(
+    allowed=['seed mechanisms','reaction libraries'],
+    maximumRadicalElectrons=3,
+    maximumCarbeneRadicals=3,
+    maximumSingletCarbenes=3
+)
