@@ -122,6 +122,9 @@ When changing things, also update:
 - **New user-facing feature** → mention in `documentation/source/users/rmg/features.rst` or a sibling `.rst`.
 - **Behavior change** → relevant section of the user guide (`users/rmg/` or `users/arkane/`).
 
+You should keep this documentation (CLAUDE.md) up to date as needed.
+Always make changes to this file in a separate commit for clarity, and explain in detail to the user why changes were necessary.
+
 The `gh-pages` branch hosts the live site; CI publishes on push to `main`.
 
 ## CI
