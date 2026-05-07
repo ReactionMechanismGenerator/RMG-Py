@@ -1094,8 +1094,10 @@ Setting ``saveSeedToDatabase`` to ``True`` tells RMG (if generating a seed) to a
 
 The ``units`` field is set to ``si``.  Currently there are no other unit options.
 
-Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
-HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs.
+Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.
+It will save a visualized HTML file for your model containing all the species and reactions. 
+Turning this feature off by setting it to ``False`` may save memory if running large jobs.
+It can be configured using a dictionary of settings in place of the ``True`` statement, as described below.
 
 Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
 
@@ -1116,8 +1118,8 @@ Setting ``saveSeedModulus`` to ``-1`` will only save the seed from the last iter
 Per-writer Output Configuration
 --------------------------------
 
-Each of the following options controls a separate output-format writer.  Each
-accepts ``True``, ``False``, or a Python dict with optional keys:
+Each of the following options controls a separate output-format writer.
+Each accepts ``True``, ``False``, or a Python dict with optional keys:
 
 * ``'saveInterval'`` *(int)* — positive N writes every N iterations (iteration
   numbering starts at 0); ``-1`` writes only at the very end of the run.
@@ -1140,17 +1142,44 @@ Examples::
 
 ``generateChemkin`` (default ``True``)
   Controls the Chemkin writer.  Output is written to the ``chemkin/`` folder.
+  When enabled, Cantera's ``ck2yaml`` converter is also run at the end of the
+  job to produce a ``cantera_from_ck/`` folder — see :ref:`output`.
 
 ``generateRMSYAML`` (default ``True``)
   Controls the RMS YAML writer.  Output is written to the ``rms/`` folder.
 
-``generateCanteraYAML1`` (default ``False``)
-  Controls the Cantera YAML v1 writer.  Output is written to the ``cantera1/``
-  folder.  This writer is disabled by default.
+``generateCanteraYAML1`` (default ``False``) *(beta)*
+  Controls the *direct* Cantera YAML v1 writer.  Output is written to the
+  ``cantera1/`` folder.  Unlike the ``cantera_from_ck`` route (which converts
+  a Chemkin file via ``ck2yaml``), this writer constructs the YAML directly
+  from RMG's internal Python objects without going through Chemkin at all.
+  It runs at every iteration (or on the configured schedule) so you get a
+  history of the growing mechanism.
 
-``generateCanteraYAML2`` (default ``False``)
-  Controls the Cantera YAML v2 writer.  Output is written to the ``cantera2/``
-  folder.  This writer is disabled by default.
+  .. warning::
+
+     This writer is in **beta**.  The output should be valid Cantera YAML, but
+     it has been less extensively tested than the established
+     ``cantera_from_ck`` route.  If both this writer and the Chemkin writer
+     are enabled, a ``comparison_report.txt`` is generated at the end of the
+     run comparing the two outputs numerically.  Please report discrepancies
+     on the `RMG-Py issue tracker
+     <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`_.
+
+``generateCanteraYAML2`` (default ``False``) *(beta)*
+  Controls the *direct* Cantera YAML v2 writer.  Output is written to the
+  ``cantera2/`` folder.  Like ``generateCanteraYAML1``, this writer bypasses
+  the Chemkin intermediate, but instead uses the Cantera Python API
+  (``ct.Solution``) to construct and serialise the mechanism.  It also runs
+  at every iteration (or on the configured schedule).
+
+  .. warning::
+
+     This writer is in **beta**.  It has been less extensively tested than the
+     established ``cantera_from_ck`` route.  When enabled alongside the Chemkin
+     writer, a ``comparison_report.txt`` is generated at the end of the run.
+     Please report discrepancies on the `RMG-Py issue tracker
+     <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`_.
 
 ``generateOutputHTML`` (default ``False``)
   Controls the HTML species-visualisation writer.  Output is written to the
