@@ -64,18 +64,18 @@ class ThermoParameterUncertainty(object):
         """
         varG = 0.0
         if 'Library' in source:
-            varG += self.dG_library ** 2
+            varG += self.dG_library * self.dG_library
         if 'Surface_Library' in source:
-            varG += self.dG_surf_lib ** 2
+            varG += self.dG_surf_lib * self.dG_surf_lib
         if 'QM' in source:
-            varG += self.dG_QM ** 2
+            varG += self.dG_QM * self.dG_QM
         if 'GAV' in source:
-            varG += self.dG_GAV ** 2  # Add a fixed uncertainty for the GAV method
+            varG += self.dG_GAV * self.dG_GAV  # Add a fixed uncertainty for the GAV method
             for group_type, group_entries in source['GAV'].items():
                 group_weights = [groupTuple[-1] for groupTuple in group_entries]
-                varG += np.sum([weight ** 2 * self.dG_group ** 2 for weight in group_weights])
+                varG += np.sum([weight * weight * self.dG_group * self.dG_group for weight in group_weights])
         if 'ADS' in source:
-            varG += self.dG_ADS_correction ** 2  # Add adsorption correction uncertainty
+            varG += self.dG_ADS_correction * self.dG_ADS_correction  # Add adsorption correction uncertainty
 
         return np.sqrt(varG)
 
@@ -173,21 +173,21 @@ class KineticParameterUncertainty(object):
         varlnk = 0.0
         if 'Library' in source:
             # Should be a single library reaction source
-            varlnk += self.dlnk_library ** 2
+            varlnk += self.dlnk_library * self.dlnk_library
         elif 'Surface_Library' in source:
             # Should be a single library reaction source
-            varlnk += self.dlnk_surf_library ** 2
+            varlnk += self.dlnk_surf_library * self.dlnk_surf_library
         elif 'PDep' in source:
             # Should be a single pdep reaction source
-            varlnk += self.dlnk_pdep ** 2
+            varlnk += self.dlnk_pdep * self.dlnk_pdep
         elif 'Training' in source:
             # Should be a single training reaction
             # Although some training entries may be used in reverse,
             # We still consider the kinetics to be directly dependent
             if 'surface' in source['Training'][0].lower():
-                varlnk += self.dlnk_surf_training ** 2
+                varlnk += self.dlnk_surf_training * self.dlnk_surf_training
             else:
-                varlnk += self.dlnk_training ** 2
+                varlnk += self.dlnk_training * self.dlnk_training
         elif 'Rate Rules' in source:
             family_label = source['Rate Rules'][0]
             source_dict = source['Rate Rules'][1]
@@ -195,7 +195,7 @@ class KineticParameterUncertainty(object):
             rule_weights = [ruleTuple[-1] for ruleTuple in source_dict['rules']]
             training_weights = [trainingTuple[-1] for trainingTuple in source_dict['training']]
 
-            varlnk += self.dlnk_family ** 2
+            varlnk += self.dlnk_family * self.dlnk_family
 
             N = len(rule_weights) + len(training_weights)
             if 'node_std_dev' in source_dict:
@@ -219,18 +219,18 @@ class KineticParameterUncertainty(object):
                     varlnk += (np.log10(N + 1) * self.dlnk_nonexact) ** 2
 
                 if 'surface' in family_label.lower():
-                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_rule ** 2 for weight in rule_weights])
-                    varlnk += np.sum([weight ** 2 * self.dlnk_surf_training ** 2 for weight in training_weights])
+                    varlnk += np.sum([weight * weight * self.dlnk_surf_rule * self.dlnk_surf_rule for weight in rule_weights])
+                    varlnk += np.sum([weight * weight * self.dlnk_surf_training * self.dlnk_surf_training for weight in training_weights])
                 else:
                     # Add the contributions from rules
-                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in rule_weights])
+                    varlnk += np.sum([weight * weight * self.dlnk_rule * self.dlnk_rule for weight in rule_weights])
                     # Add the contributions from training
                     # Even though these source from training reactions, we actually
                     # use the uncertainty for rate rules, since these are now approximations
                     # of the original reaction.  We consider these to be independent of original the training
                     # parameters because the rate rules may be reversing the training reactions,
                     # which leads to more complicated dependence
-                    varlnk += np.sum([weight ** 2 * self.dlnk_rule ** 2 for weight in training_weights])
+                    varlnk += np.sum([weight * weight * self.dlnk_rule * self.dlnk_rule for weight in training_weights])
 
         return np.sqrt(varlnk)
 
