@@ -48,8 +48,10 @@ class TestUncertainty:
         chemkin_file = os.path.join(chem_dir, "chem_annotated.inp")
         spc_dict = os.path.join(chem_dir, "species_dictionary.txt")
 
-        cls.uncertainty = Uncertainty(output_directory="chemDir")
+        cls.uncertainty = Uncertainty(output_directory=os.path.abspath(os.path.join(os.path.dirname(__file__), "chemDir")))
         cls.uncertainty.load_model(chemkin_file, spc_dict)
+        for i in range(len(cls.uncertainty.species_list)):
+            cls.uncertainty.species_list[i].index = i  # local analysis depends on species being indexed
 
         # load database properly
         cls.uncertainty.database = RMGDatabase()
@@ -177,6 +179,122 @@ class TestUncertainty:
             [0.5, 1.118, 1.9783, 1.9783, 1.5363, 0.5, 2.0, 1.5363, 1.5363, 0.5],
             rtol=1e-4
         )
+
+    def test_local_analysis(self):
+        """
+        Test to run uncorrelated and then correlated local_analysis and make sure the results are expected
+        """
+        # variances are listed in decreasing order
+        # names are listed in order of decreasing variance contribution
+        expected_uncorrelated_total_variance = 1.8329056941266446
+        expected_uncorrelated_thermo_variances = np.array([0.17092419, 0.09781627, 0.06186124, 0.04856985, 0.00391013, 0.00306632, 0.00041446, 9.953e-05])
+        expected_uncorrelated_kinetics_variances = np.array([1.1311145, 0.15888459, 0.085189, 0.02022449, 0.01687337, 0.01605351, 0.01588366, 0.0010829, 0.00080811, 0.00012957])
+        expected_correlated_total_variance = 3.006637059881831
+        expected_correlated_thermo_variances = np.array([0.09145902, 0.07672388, 0.04856985, 0.04573167, 0.03236887, 0.01747643, 0.01098087, 0.00143231, 0.0013764, 0.00031352, 0.00028968, 0.00014685, 0.0001338, 3.263e-05])
+        expected_correlated_kinetics_variances = np.array([2.0212174, 0.28939964, 0.15516713, 0.11981721, 0.02838292, 0.01687337, 0.0161796, 0.01605351, 0.0040449, 0.00253735, 0.00253735, 0.00193506, 0.00168253, 0.00136045, 0.00136045, 0.00080811, 0.00012957, 0.00011471])
+        expected_uncorrelated_thermo_labels = [
+            'dln[C2H6(18)]/dG[CH(4)]',
+            'dln[C2H6(18)]/dG[C2H3(20)]',
+            'dln[C2H6(18)]/dG[C2H6(18)]',
+            'dln[C2H6(18)]/dG[CH2(5)]',
+            'dln[C2H6(18)]/dG[CH4(16)]',
+            'dln[C2H6(18)]/dG[CH3(14)]',
+            'dln[C2H6(18)]/dG[C2H4(11)]',
+            'dln[C2H6(18)]/dG[C2H5(12)]',
+        ]
+        expected_uncorrelated_kinetics_labels = [
+            'k8: C2H5(12)+CH3CHCH3(21)<=>C2H6(18)+C3H6(22)',
+            'k3: C2H6(18)+PC3H7(15)<=>C2H5(12)+C3H8(19)',
+            'k4: C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)',
+            'k2: CH3(14)+PC3H7(15)<=>CH4(16)+CH2CH2CH2(17)',
+            'k1: O(0)+H2O2(3)<=>OH(1)+HO2(2)',
+            'k7: HCCO(10)(+M)<=>O(0)+C2H(8)(+M)',
+            'k5: CH3(14)+C3H8(19)<=>CH4(16)+PC3H7(15)',
+            'k9: C3H5(24)+CH2CH2CH2(17)<=>C3H5(23)+C3H6(22)',
+            'k10: CH3(14)+C2H5(12)<=>CH4(16)+C2H4(11)',
+            'k6: CH3(14)+C2H6(18)<=>CH4(16)+C2H5(12)',
+        ]
+        expected_correlated_thermo_labels = [
+            'Library CH4(16)',
+            'Estimation CH(4)',
+            'Library CH2(5)',
+            'Estimation C2H3(20)',
+            'Estimation C2H6(18)',
+            'Group(radical) CJ3',
+            'Group(radical) CCJ',
+            'Group(group) Cs-CsHHH',
+            'Estimation CH3(14)',
+            'Group(radical) CH3',
+            'Group(other) R',
+            'Estimation C2H4(11)',
+            'Group(group) Cds-CdsHH',
+            'Estimation C2H5(12)',
+        ]
+        expected_correlated_kinetics_labels = [
+            'Estimation C2H5(12)+CH3CHCH3(21)<=>C2H6(18)+C3H6(22)',
+            'Estimation C2H6(18)+PC3H7(15)<=>C2H5(12)+C3H8(19)',
+            'Estimation C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)',
+            'Disproportionation Root_Ext-2R!H-R_2R!H->C_4R->C',
+            'Estimation CH3(14)+C3H8(19)<=>CH4(16)+PC3H7(15)',
+            'Library O(0)+H2O2(3)<=>OH(1)+HO2(2)',
+            'Estimation CH3(14)+PC3H7(15)<=>CH4(16)+CH2CH2CH2(17)',
+            'PDep HCCO(10)(+M)<=>O(0)+C2H(8)(+M)',
+            'H_Abstraction C/H3/Cs;C_methyl',
+            'H_Abstraction C/H3/Cs\\H3;C_rad/H2/Cs\\H\\Cs\\Cs|O',
+            'H_Abstraction C/H3/Cs\\H3;C_rad/H2/Cs\\H3',
+            'Estimation C3H5(24)+CH2CH2CH2(17)<=>C3H5(23)+C3H6(22)',
+            'H_Abstraction C/H3/Cs\\H2\\O;C_methyl',
+            'H_Abstraction C/H3/Cs\\H3;Cd_Cd\\H2_pri_rad',
+            'H_Abstraction C/H3/Cs\\H2\\Cs|O;Cd_Cd\\H2_rad/Cs',
+            'Training Disproportionation CH3(14)+C2H5(12)<=>CH4(16)+C2H4(11)',
+            'Training H_Abstraction CH3(14)+C2H6(18)<=>CH4(16)+C2H5(12)',
+            'Disproportionation Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C_N-1R!H-inRing_N-Sp-6C-4C',
+        ]
+
+        sensitive_species = [self.uncertainty.species_list[18]]
+
+        # uncorrelated analysis first
+        self.uncertainty.assign_parameter_uncertainties()
+        output = self.uncertainty.local_analysis(sensitive_species=sensitive_species)
+        total_variance, kinetic_uncertainty, thermo_uncertainty = output[sensitive_species[0]]
+        assert np.isclose(total_variance, expected_uncorrelated_total_variance)
+
+        # order of kinetic or thermo uncertainty is not guaranteed, this sorts by contribution
+        kinetic_variances = [r[2] for r in kinetic_uncertainty]
+        kinetics_names = [r[0] for r in kinetic_uncertainty]
+        sorted_kinetics_names = [x for _, x in sorted(zip(kinetic_variances, kinetics_names))][::-1]
+        sorted_kinetic_variances = sorted(kinetic_variances, reverse=True)
+        assert np.isclose(sorted_kinetic_variances, expected_uncorrelated_kinetics_variances).all()
+        assert sorted_kinetics_names == expected_uncorrelated_kinetics_labels
+
+        thermo_variances = [s[2] for s in thermo_uncertainty]
+        thermo_names = [s[0] for s in thermo_uncertainty]
+        sorted_thermo_names = [x for _, x in sorted(zip(thermo_variances, thermo_names))][::-1]
+        sorted_thermo_variances = sorted(thermo_variances, reverse=True)
+        assert np.isclose(sorted_thermo_variances, expected_uncorrelated_thermo_variances).all()
+        assert sorted_thermo_names == expected_uncorrelated_thermo_labels
+
+        # now repeat for correlated analysis
+        self.uncertainty.assign_parameter_uncertainties(correlated=True)
+        output = self.uncertainty.local_analysis(sensitive_species=sensitive_species, correlated=True)
+        total_variance, kinetic_uncertainty, thermo_uncertainty = output[sensitive_species[0]]
+        assert np.isclose(total_variance, expected_correlated_total_variance)
+
+        # order of kinetic or thermo uncertainty is not guaranteed, this sorts by contribution
+        kinetic_variances = [r[2] for r in kinetic_uncertainty]
+        kinetics_names = [r[0] for r in kinetic_uncertainty]
+        sorted_kinetic_variances = sorted(kinetic_variances, reverse=True)
+        sorted_kinetics_names = [x for _, x in sorted(zip(kinetic_variances, kinetics_names))][::-1]
+        assert np.isclose(sorted_kinetic_variances, expected_correlated_kinetics_variances).all()
+        assert sorted_kinetics_names == expected_correlated_kinetics_labels
+
+        thermo_variances = [s[2] for s in thermo_uncertainty]
+        thermo_names = [s[0] for s in thermo_uncertainty]
+        sorted_thermo_variances = sorted(thermo_variances, reverse=True)
+        sorted_thermo_names = [x for _, x in sorted(zip(thermo_variances, thermo_names))][::-1]
+        assert np.isclose(sorted_thermo_variances, expected_correlated_thermo_variances).all()
+        assert sorted_thermo_names == expected_correlated_thermo_labels
+
 
     def test_specific_species_uncertainties(self):
         """
