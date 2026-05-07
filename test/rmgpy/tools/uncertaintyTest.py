@@ -28,7 +28,7 @@
 ###############################################################################
 
 import os
-
+import copy
 
 import numpy as np
 
@@ -300,6 +300,48 @@ class TestUncertainty:
         assert np.isclose(sorted_thermo_variances, expected_correlated_thermo_variances).all()
         assert sorted_thermo_names == expected_correlated_thermo_labels
 
+        # -------------------- repeat the exact same test for new formulation --------------------------
+        # uncorrelated analysis first
+        self.uncertainty.assign_intermediate_uncertainties()
+        output = self.uncertainty.local_analysis_intermediate(sensitive_species=sensitive_species)
+        total_variance, kinetic_uncertainty, thermo_uncertainty = output[sensitive_species[0]]
+        assert np.isclose(total_variance, expected_uncorrelated_total_variance)
+
+        # order of kinetic or thermo uncertainty is not guaranteed, this sorts by contribution
+        kinetic_variances = [r[2] for r in kinetic_uncertainty]
+        kinetics_names = [r[0] for r in kinetic_uncertainty]
+        sorted_kinetics_names = [x for _, x in sorted(zip(kinetic_variances, kinetics_names))][::-1]
+        sorted_kinetic_variances = sorted(kinetic_variances, reverse=True)
+        assert np.isclose(sorted_kinetic_variances, expected_uncorrelated_kinetics_variances).all()
+        assert sorted_kinetics_names == expected_uncorrelated_kinetics_labels
+
+        thermo_variances = [s[2] for s in thermo_uncertainty]
+        thermo_names = [s[0] for s in thermo_uncertainty]
+        sorted_thermo_names = [x for _, x in sorted(zip(thermo_variances, thermo_names))][::-1]
+        sorted_thermo_variances = sorted(thermo_variances, reverse=True)
+        assert np.isclose(sorted_thermo_variances, expected_uncorrelated_thermo_variances).all()
+        assert sorted_thermo_names == expected_uncorrelated_thermo_labels
+
+        # now repeat for correlated analysis
+        self.uncertainty.assign_intermediate_uncertainties(correlated=True)
+        output = self.uncertainty.local_analysis_intermediate(sensitive_species=sensitive_species, correlated=True)
+        total_variance, kinetic_uncertainty, thermo_uncertainty = output[sensitive_species[0]]
+        assert np.isclose(total_variance, expected_correlated_total_variance)
+
+        # order of kinetic or thermo uncertainty is not guaranteed, this sorts by contribution
+        kinetic_variances = [r[2] for r in kinetic_uncertainty]
+        kinetics_names = [r[0] for r in kinetic_uncertainty]
+        sorted_kinetic_variances = sorted(kinetic_variances, reverse=True)
+        sorted_kinetics_names = [x for _, x in sorted(zip(kinetic_variances, kinetics_names))][::-1]
+        assert np.isclose(sorted_kinetic_variances, expected_correlated_kinetics_variances).all()
+        assert sorted_kinetics_names == expected_correlated_kinetics_labels
+
+        thermo_variances = [s[2] for s in thermo_uncertainty]
+        thermo_names = [s[0] for s in thermo_uncertainty]
+        sorted_thermo_variances = sorted(thermo_variances, reverse=True)
+        sorted_thermo_names = [x for _, x in sorted(zip(thermo_variances, thermo_names))][::-1]
+        assert np.isclose(sorted_thermo_variances, expected_correlated_thermo_variances).all()
+        assert sorted_thermo_names == expected_correlated_thermo_labels
 
     def test_specific_species_uncertainties(self):
         """
