@@ -87,6 +87,12 @@ function.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="arkane.output.PrettifyVisitor.visit_Constant">
+<span class="sig-name descname"><span class="pre">visit_Constant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Constant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a pretty representation of the constant represented by <cite>node</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="arkane.output.PrettifyVisitor.visit_Dict">
 <span class="sig-name descname"><span class="pre">visit_Dict</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Dict" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the dict represented by <cite>node</cite>.</p>
@@ -96,18 +102,6 @@ function.</p>
 <dt class="sig sig-object py" id="arkane.output.PrettifyVisitor.visit_List">
 <span class="sig-name descname"><span class="pre">visit_List</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_List" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a pretty representation of the list represented by <cite>node</cite>.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.output.PrettifyVisitor.visit_Num">
-<span class="sig-name descname"><span class="pre">visit_Num</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Num" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a pretty representation of the number represented by <cite>node</cite>.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="arkane.output.PrettifyVisitor.visit_Str">
-<span class="sig-name descname"><span class="pre">visit_Str</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#arkane.output.PrettifyVisitor.visit_Str" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return a pretty representation of the string represented by <cite>node</cite>.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -220,10 +214,9 @@ onto multiple lines, indenting as appropriate for readability.</p>
 <li><a class="reference internal" href="#arkane.output.PrettifyVisitor.generic_visit"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.generic_visit()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Call"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Call()</span></code></a></li>
+<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Constant"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Constant()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Dict"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Dict()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_List"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_List()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Num"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Num()</span></code></a></li>
-<li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Str"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Str()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_Tuple"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_Tuple()</span></code></a></li>
 <li><a class="reference internal" href="#arkane.output.PrettifyVisitor.visit_UnaryOp"><code class="docutils literal notranslate"><span class="pre">PrettifyVisitor.visit_UnaryOp()</span></code></a></li>
 </ul>
