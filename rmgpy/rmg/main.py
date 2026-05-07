@@ -1298,10 +1298,12 @@ class RMG(util.Subject):
                         os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
                         surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
                     )
-                    self.generate_cantera_files_from_chemkin(
-                        os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
-                        surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
-                    )
+                    annotated_gas = os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp")
+                    if os.path.exists(annotated_gas):
+                        self.generate_cantera_files_from_chemkin(
+                            annotated_gas,
+                            surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
+                        )
 
                     if self.thermo_coverage_dependence:
                         # Build coverage_deps: {species_name: string_to_add_to_yaml}
@@ -1325,18 +1327,19 @@ class RMG(util.Subject):
                                             break
 
                         for yaml_path in [
-                            os.path.join(self.output_directory, "cantera", "chem.yaml"),
-                            os.path.join(self.output_directory, "cantera", "chem_annotated.yaml"),
+                            os.path.join(self.output_directory, "cantera_from_ck", "chem.yaml"),
+                            os.path.join(self.output_directory, "cantera_from_ck", "chem_annotated.yaml"),
                         ]:
-                            _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
+                            if os.path.exists(yaml_path):
+                                _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
 
                 else:  # gas phase only
                     translated_cantera_file = self.generate_cantera_files_from_chemkin(
                         os.path.join(self.output_directory, "chemkin", "chem.inp")
                     )
-                    self.generate_cantera_files_from_chemkin(
-                        os.path.join(self.output_directory, "chemkin", "chem_annotated.inp")
-                    )
+                    annotated = os.path.join(self.output_directory, "chemkin", "chem_annotated.inp")
+                    if os.path.exists(annotated):
+                        self.generate_cantera_files_from_chemkin(annotated)
 
             # Compare translated Cantera files against directly generated Cantera files
             if translated_cantera_file and self.cantera1_writer_config and self.cantera1_writer_config.enabled:
