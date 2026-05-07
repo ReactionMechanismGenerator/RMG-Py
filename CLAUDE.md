@@ -111,6 +111,7 @@ Template: [rmgpy/rmgrc_template](rmgpy/rmgrc_template). Copy it (don't edit in p
 - All source files require the MIT license header (template lives in [LICENSE.txt](LICENSE.txt); `python utilities.py update-headers` re-applies it across `.py`/`.pyx`/`.pxd` in `rmgpy/`, `scripts/`, and the root).
 - Use `logging` not `print`.
 - Don't reach for `__init__.py`-as-namespace imports across cython modules; use `cimport rmgpy.constants as constants` etc.
+- Git commit messages should include a short summary (one line), followed by a blank line, then a more detailed description that explains the motivation and rationale for the change, so that a human code reviewer can understand without the context of the conversation.
 
 ## Documentation
 
