@@ -206,6 +206,38 @@ model.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.jacobian">
+<span class="sig-name descname"><span class="pre">jacobian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dydt</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cj</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">senpar</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">array([0.])</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.jacobian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the analytical Jacobian for the reaction system.</p>
+<p>Constant volume (isochoric), variable pressure, with mixed gas-phase
+and surface species.</p>
+<p>kf[j] and kr[j] are given in volume units (mol / m^3 / s), even for
+surface reactions.  generate_rate_coefficients premultiplies the raw
+surface rate coefficient by surface_volume_ratio (= A/V, units 1/m) so
+that the residual can uniformly compute:</p>
+<blockquote>
+<div><p>reaction_rate [mol/m^3/s] = k * prod_r C[r]
+dn_i/dt [mol/s]           = nu_ij * reaction_rate * V</p>
+</div></blockquote>
+<p>for every reaction regardless of phase.</p>
+<section id="concentrations">
+<h2>Concentrations<a class="headerlink" href="#concentrations" title="Permalink to this heading">¶</a></h2>
+<p>Gas-phase species:  C[i] = y[i] / V                    (mol / m^3)
+Surface species:    C[i] = y[i] / V / svr = y[i] / A   (mol / m^2)</p>
+<p>where svr = surface_volume_ratio (1/m)</p>
+</section>
+<section id="derivative-rule">
+<h2>Derivative rule<a class="headerlink" href="#derivative-rule" title="Permalink to this heading">¶</a></h2>
+<blockquote>
+<div><p>deriv w.r.t. n[s]  =  k * (prod_{r != s} C[r]) * V / Omega[s]</p>
+</div></blockquote>
+<p>For gas-phase species:    V / Omega[s] = V / V = 1
+For surface species:      V / Omega[s] = V / A = 1 / svr</p>
+<p>No corr terms (like in SimpleReactor) because V and A are both constant.</p>
+</section>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.log_conversions">
 <span class="sig-name descname"><span class="pre">log_conversions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y0</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.log_conversions" title="Permalink to this definition">¶</a></dt>
 <dd><p>Log information about the current conversion values.</p>
@@ -338,6 +370,7 @@ and <cite>dydt</cite> attributes.</p>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.initialize_model"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.initialize_model()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.initialize_surface"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.initialize_surface()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.initiate_tolerances"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.initiate_tolerances()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.jacobian"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.jacobian()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.log_conversions"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.log_conversions()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.log_initial_conditions"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.log_initial_conditions()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.log_rates"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.log_rates()</span></code></a></li>
