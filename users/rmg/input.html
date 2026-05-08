@@ -1033,13 +1033,17 @@ Int J Chem Kinet. 2020; 52: 266– 282. <a class="reference external" href="http
     <span class="n">units</span><span class="o">=</span><span class="s1">&#39;si&#39;</span><span class="p">,</span>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-            <span class="n">generatePESDiagrams</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">generatePESDiagrams</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">verboseComments</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">keepIrreversible</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">trimolecularProductReversible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">saveSeedModulus</span><span class="o">=-</span><span class="mi">1</span>
+    <span class="n">saveSeedModulus</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">generateChemkin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">generateRMSYAML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">generateCanteraYAML1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">generateCanteraYAML2</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -1047,16 +1051,83 @@ Int J Chem Kinet. 2020; 52: 266– 282. <a class="reference external" href="http
 <p>Setting <code class="docutils literal notranslate"><span class="pre">generateSeedEachIteration</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> (default) tells RMG to save and update a seed mechanism and thermo library during the current run</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">saveSeedToDatabase</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> tells RMG (if generating a seed) to also save that seed mechanism and thermo library directly into the database</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">units</span></code> field is set to <code class="docutils literal notranslate"><span class="pre">si</span></code>.  Currently there are no other unit options.</p>
-<p>Setting <code class="docutils literal notranslate"><span class="pre">generateOutputHTML</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will let RMG know that you want to save 2-D images (png files in the local <code class="docutils literal notranslate"><span class="pre">species</span></code> folder) of all species in the generated core model.  It will save a visualized
-HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to <code class="docutils literal notranslate"><span class="pre">False</span></code> may save memory if running large jobs.</p>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">generateOutputHTML</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will let RMG know that you want to save 2-D images (png files in the local <code class="docutils literal notranslate"><span class="pre">species</span></code> folder) of all species in the generated core model.
+It will save a visualized HTML file for your model containing all the species and reactions.
+Turning this feature off by setting it to <code class="docutils literal notranslate"><span class="pre">False</span></code> may save memory if running large jobs.
+It can be configured using a dictionary of settings in place of the <code class="docutils literal notranslate"><span class="pre">True</span></code> statement, as described below.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">generatePlots</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">generatePESDiagrams</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will generate potential energy surface diagrams for each pressure dependent network in the model.  These diagrams will be saved in the <code class="docutils literal notranslate"><span class="pre">pdep/</span></code> folder in the output directory. Only applicable if pressure dependence is enabled.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">saveSimulationProfiles</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will make RMG save csv files of the simulation in .csv files in the <code class="docutils literal notranslate"><span class="pre">solver/</span></code> folder.  The filename will be <code class="docutils literal notranslate"><span class="pre">simulation_1_26.csv</span></code> where the first number corresponds to the reaciton system, and the second number corresponds to the total number of species at the point of the simulation.  Therefore, the highest second number will indicate the latest simulation that RMG has complete while enlarging the core model.  The information inside the csv file will provide the time, reactor volume in m^3, as well as mole fractions of the individual species.</p>
-<p>Setting <code class="docutils literal notranslate"><span class="pre">verboseComments</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.</p>
-<p>Setting <code class="docutils literal notranslate"><span class="pre">saveEdgeSpecies</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as <code class="docutils literal notranslate"><span class="pre">chem_edge.inp</span></code> and <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.inp</span></code> files located inside the <code class="docutils literal notranslate"><span class="pre">chemkin</span></code> folder.  These files will be helpful in viewing RMG’s estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.</p>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">verboseComments</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.  This is a global fallback; individual writers can override it (see below).</p>
+<p>Setting <code class="docutils literal notranslate"><span class="pre">saveEdgeSpecies</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as <code class="docutils literal notranslate"><span class="pre">chem_edge.inp</span></code> and <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.inp</span></code> files located inside the <code class="docutils literal notranslate"><span class="pre">chemkin</span></code> folder.  These files will be helpful in viewing RMG’s estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.  This is a global fallback; individual writers can override it (see below).</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">keepIrreversible</span></code> to <code class="docutils literal notranslate"><span class="pre">True</span></code> will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if <code class="docutils literal notranslate"><span class="pre">False</span></code> (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">trimolecularProductReversible</span></code> to <code class="docutils literal notranslate"><span class="pre">False</span></code> will not allow families with three products to react in the reverse direction. Default is <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
 <p>Setting <code class="docutils literal notranslate"><span class="pre">saveSeedModulus</span></code> to <code class="docutils literal notranslate"><span class="pre">-1</span></code> will only save the seed from the last iteration at the end of an RMG job. Alternatively, the seed can be saved every <code class="docutils literal notranslate"><span class="pre">n</span></code> iterations by setting <code class="docutils literal notranslate"><span class="pre">saveSeedModulus</span></code> to <code class="docutils literal notranslate"><span class="pre">n</span></code>.</p>
+<section id="per-writer-output-configuration">
+<h3><span class="section-number">4.12.1. </span>Per-writer Output Configuration<a class="headerlink" href="#per-writer-output-configuration" title="Permalink to this heading">¶</a></h3>
+<p>Each of the following options controls a separate output-format writer.
+Each accepts <code class="docutils literal notranslate"><span class="pre">True</span></code>, <code class="docutils literal notranslate"><span class="pre">False</span></code>, or a Python dict with optional keys:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">'saveInterval'</span></code> <em>(int)</em> — positive N writes every N iterations (iteration
+numbering starts at 0); <code class="docutils literal notranslate"><span class="pre">-1</span></code> writes only at the very end of the run.
+Defaults to <code class="docutils literal notranslate"><span class="pre">1</span></code> (every iteration) for writers that are on by default.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'verboseComments'</span></code> <em>(bool, optional)</em> — overrides the global
+<code class="docutils literal notranslate"><span class="pre">verboseComments</span></code> flag for this writer only.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">'saveEdge'</span></code> <em>(bool, optional)</em> — overrides the global <code class="docutils literal notranslate"><span class="pre">saveEdgeSpecies</span></code>
+flag for this writer only.</p></li>
+</ul>
+<p>Examples:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Chemkin: save only at the end, with verbose comments and edge species</span>
+<span class="n">generateChemkin</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;verboseComments&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;saveEdge&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}</span>
+
+<span class="c1"># RMS YAML: save every 5 iterations</span>
+<span class="n">generateRMSYAML</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">}</span>
+
+<span class="c1"># Cantera YAML v2: save every iteration with verbose comments</span>
+<span class="n">generateCanteraYAML2</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;verboseComments&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;saveEdge&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+</pre></div>
+</div>
+<dl>
+<dt><code class="docutils literal notranslate"><span class="pre">generateChemkin</span></code> (default <code class="docutils literal notranslate"><span class="pre">True</span></code>)</dt><dd><p>Controls the Chemkin writer.  Output is written to the <code class="docutils literal notranslate"><span class="pre">chemkin/</span></code> folder.
+When enabled, Cantera’s <code class="docutils literal notranslate"><span class="pre">ck2yaml</span></code> converter is also run at the end of the
+job to produce a <code class="docutils literal notranslate"><span class="pre">cantera_from_ck/</span></code> folder — see <a class="reference internal" href="output.html#output"><span class="std std-ref">Analyzing the Output Files</span></a>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">generateRMSYAML</span></code> (default <code class="docutils literal notranslate"><span class="pre">True</span></code>)</dt><dd><p>Controls the RMS YAML writer.  Output is written to the <code class="docutils literal notranslate"><span class="pre">rms/</span></code> folder.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">generateCanteraYAML1</span></code> (default <code class="docutils literal notranslate"><span class="pre">False</span></code>) <em>(beta)</em></dt><dd><p>Controls the <em>direct</em> Cantera YAML v1 writer.  Output is written to the
+<code class="docutils literal notranslate"><span class="pre">cantera1/</span></code> folder.  Unlike the <code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code> route (which converts
+a Chemkin file via <code class="docutils literal notranslate"><span class="pre">ck2yaml</span></code>), this writer constructs the YAML directly
+from RMG’s internal Python objects without going through Chemkin at all.
+It runs at every iteration (or on the configured schedule) so you get a
+history of the growing mechanism.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This writer is in <strong>beta</strong>.  The output should be valid Cantera YAML, but
+it has been less extensively tested than the established
+<code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code> route.  If both this writer and the Chemkin writer
+are enabled, a <code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> is generated at the end of the
+run comparing the two outputs numerically.  Please report discrepancies
+on the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">RMG-Py issue tracker</a>.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">generateCanteraYAML2</span></code> (default <code class="docutils literal notranslate"><span class="pre">False</span></code>) <em>(beta)</em></dt><dd><p>Controls the <em>direct</em> Cantera YAML v2 writer.  Output is written to the
+<code class="docutils literal notranslate"><span class="pre">cantera2/</span></code> folder.  Like <code class="docutils literal notranslate"><span class="pre">generateCanteraYAML1</span></code>, this writer bypasses
+the Chemkin intermediate, but instead uses the Cantera Python API
+(<code class="docutils literal notranslate"><span class="pre">ct.Solution</span></code>) to construct and serialise the mechanism.  It also runs
+at every iteration (or on the configured schedule).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This writer is in <strong>beta</strong>.  It has been less extensively tested than the
+established <code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code> route.  When enabled alongside the Chemkin
+writer, a <code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> is generated at the end of the run.
+Please report discrepancies on the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">RMG-Py issue tracker</a>.</p>
+</div>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">generateOutputHTML</span></code> (default <code class="docutils literal notranslate"><span class="pre">False</span></code>)</dt><dd><p>Controls the HTML species-visualisation writer.  Output is written to the
+<code class="docutils literal notranslate"><span class="pre">species/</span></code> folder.  Accepts <code class="docutils literal notranslate"><span class="pre">True</span></code>/<code class="docutils literal notranslate"><span class="pre">False</span></code> or the same dict format.</p>
+</dd>
+</dl>
+</section>
 </section>
 <section id="species-constraints">
 <h2><span class="section-number">4.13. </span>Species Constraints<a class="headerlink" href="#species-constraints" title="Permalink to this heading">¶</a></h2>
@@ -1223,7 +1294,10 @@ This can be done by setting <code class="docutils literal notranslate"><span cla
 </ul>
 </li>
 <li><a class="reference internal" href="#uncertainty-analysis">4.11. Uncertainty Analysis</a></li>
-<li><a class="reference internal" href="#miscellaneous-options">4.12. Miscellaneous Options</a></li>
+<li><a class="reference internal" href="#miscellaneous-options">4.12. Miscellaneous Options</a><ul>
+<li><a class="reference internal" href="#per-writer-output-configuration">4.12.1. Per-writer Output Configuration</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#species-constraints">4.13. Species Constraints</a></li>
 <li><a class="reference internal" href="#staging">4.14. Staging</a></li>
 <li><a class="reference internal" href="#restarting-from-a-seed-mechanism">4.15. Restarting from a Seed Mechanism</a></li>

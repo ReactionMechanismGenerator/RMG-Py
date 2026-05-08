@@ -282,7 +282,10 @@ returned.</p>
 <dt class="sig sig-object py" id="rmgpy.kinetics.PDepArrhenius.set_cantera_kinetics">
 <span class="sig-name descname"><span class="pre">set_cantera_kinetics</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ct_reaction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">species_list</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.kinetics.PDepArrhenius.set_cantera_kinetics" title="Permalink to this definition">¶</a></dt>
 <dd><p>Sets a Cantera PlogReaction()’s <cite>rates</cite> attribute with
-A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]</p>
+a list of tuples containing [(pressure in Pa, cantera arrhenius object), …].</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">MultiArrhenius</span></code> entry (from chemkin PLOG blocks with duplicate
+pressures) is expanded into one tuple per inner Arrhenius; Cantera’s
+PlogRate sums duplicate-pressure entries at evaluation.</p>
 </dd></dl>
 
 <dl class="py attribute">

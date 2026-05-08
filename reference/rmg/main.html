@@ -176,10 +176,28 @@ attributes are:</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to generate potential energy surface diagrams for pressure dependent networks in the model, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
 </tr>
 <tr class="row-even"><td><p><cite>verbose_comments</cite></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to keep the verbose comments for database estimates, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to keep the verbose comments for database estimates, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise (global fallback when writer config does not override)</p></td>
 </tr>
 <tr class="row-odd"><td><p><cite>save_edge_species</cite></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to save chemkin and HTML files of the edge species, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to save chemkin and HTML files of the edge species, <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise (global fallback when writer config does not override)</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>chemkin_writer_config</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">WriterConfig</span></code> controlling when the Chemkin writer runs and its per-writer options</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>rms_writer_config</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">WriterConfig</span></code> controlling when the RMS YAML writer runs and its per-writer options</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>cantera1_writer_config</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">WriterConfig</span></code> controlling when CanteraWriter1 runs and its per-writer options</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>cantera2_writer_config</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">WriterConfig</span></code> controlling when CanteraWriter2 runs and its per-writer options</p></td>
+</tr>
+<tr class="row-even"><td><p><cite>html_writer_config</cite></p></td>
+<td><p><code class="xref py py-class docutils literal notranslate"><span class="pre">WriterConfig</span></code> controlling when the HTML writer runs and its per-writer options</p></td>
+</tr>
+<tr class="row-odd"><td><p><cite>is_final_save</cite></p></td>
+<td><p>Set to <code class="docutils literal notranslate"><span class="pre">True</span></code> immediately before the end-of-run <code class="docutils literal notranslate"><span class="pre">save_everything()</span></code> call so writers know it is the final notification</p></td>
 </tr>
 <tr class="row-even"><td><p><cite>keep_irreversible</cite></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">True</span></code> to keep ireversibility of library reactions as is (‘&lt;=&gt;’ or ‘=&gt;’). <code class="docutils literal notranslate"><span class="pre">False</span></code> (default) to force all library reactions to be reversible (‘&lt;=&gt;’)</p></td>
@@ -258,10 +276,11 @@ by the <code class="xref py py-mod docutils literal notranslate"><span class="pr
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.generate_cantera_files">
-<span class="sig-name descname"><span class="pre">generate_cantera_files</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chemkin_file</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.generate_cantera_files" title="Permalink to this definition">¶</a></dt>
+<dt class="sig sig-object py" id="rmgpy.rmg.main.RMG.generate_cantera_files_from_chemkin">
+<span class="sig-name descname"><span class="pre">generate_cantera_files_from_chemkin</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">chemkin_file</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.main.RMG.generate_cantera_files_from_chemkin" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
-and save it in the cantera directory</p>
+and save it in the cantera directory.
+Returns the path to the generated cantera file.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -453,7 +472,7 @@ True then the graph generation will be attempted either way</p>
 <li><a class="reference internal" href="#rmgpy.rmg.main.RMG.clear"><code class="docutils literal notranslate"><span class="pre">RMG.clear()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.main.RMG.execute"><code class="docutils literal notranslate"><span class="pre">RMG.execute()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.main.RMG.finish"><code class="docutils literal notranslate"><span class="pre">RMG.finish()</span></code></a></li>
-<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.generate_cantera_files"><code class="docutils literal notranslate"><span class="pre">RMG.generate_cantera_files()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.rmg.main.RMG.generate_cantera_files_from_chemkin"><code class="docutils literal notranslate"><span class="pre">RMG.generate_cantera_files_from_chemkin()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.main.RMG.initialize"><code class="docutils literal notranslate"><span class="pre">RMG.initialize()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.main.RMG.initialize_seed_mech"><code class="docutils literal notranslate"><span class="pre">RMG.initialize_seed_mech()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.main.RMG.load_input"><code class="docutils literal notranslate"><span class="pre">RMG.load_input()</span></code></a></li>

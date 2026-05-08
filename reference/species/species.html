@@ -428,11 +428,15 @@ eg. 2 for bidentate.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.species.Species.to_cantera">
-<span class="sig-name descname"><span class="pre">to_cantera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_chemkin_identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_cantera" title="Permalink to this definition">¶</a></dt>
+<span class="sig-name descname"><span class="pre">to_cantera</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">use_chemkin_identifier</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_species</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.species.Species.to_cantera" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts the RMG Species object to a Cantera Species object
 with the appropriate thermo data.</p>
 <p>If use_chemkin_identifier is set to False, the species label is used
 instead. Be sure that species’ labels are unique when setting it False.</p>
+<p>If all_species is provided and this is a surface species with
+coverage-dependent thermo, the coverage-dependencies are attached to
+the Cantera Species object via update_user_data() so that they appear
+in input_data and in Solution.write_yaml() output.</p>
 </dd></dl>
 
 <dl class="py method">

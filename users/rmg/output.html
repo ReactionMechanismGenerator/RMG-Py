@@ -63,9 +63,13 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <span id="output"></span><h1><span class="section-number">7. </span>Analyzing the Output Files<a class="headerlink" href="#analyzing-the-output-files" title="Permalink to this heading">¶</a></h1>
 <p>You will see that a sucessfully executed RMG job will create multiple output files and folders:
 <code class="docutils literal notranslate"><span class="pre">output.html</span></code> (if <code class="docutils literal notranslate"><span class="pre">generateOutputHTML=True</span></code> is specified)
+<code class="docutils literal notranslate"><span class="pre">/cantera_from_ck</span></code>
+<code class="docutils literal notranslate"><span class="pre">/cantera1</span></code> (if <code class="docutils literal notranslate"><span class="pre">generateCanteraYAML1=True</span></code> is specified)
+<code class="docutils literal notranslate"><span class="pre">/cantera2</span></code> (if <code class="docutils literal notranslate"><span class="pre">generateCanteraYAML2=True</span></code> is specified)
 <code class="docutils literal notranslate"><span class="pre">/chemkin</span></code>
 <code class="docutils literal notranslate"><span class="pre">/pdep</span></code>
 <code class="docutils literal notranslate"><span class="pre">/plot</span></code>
+<code class="docutils literal notranslate"><span class="pre">/rms</span></code>
 <code class="docutils literal notranslate"><span class="pre">/solver</span></code>
 <code class="docutils literal notranslate"><span class="pre">/species</span></code>
 <code class="docutils literal notranslate"><span class="pre">RMG.log</span></code></p>
@@ -96,6 +100,83 @@ network.</p>
 <h2><span class="section-number">7.4. </span>The Solver Folder<a class="headerlink" href="#the-solver-folder" title="Permalink to this heading">¶</a></h2>
 <p>RMG currently includes a solver for isothermal batch reactors. This is in fact a critical part of the model enlargement algorithm. If you have included simulations in your input file, the solutions will be located in <code class="docutils literal notranslate"><span class="pre">/solver</span></code>. You will probably only be interested in the files with the largest number tags.
 Please note that up to and including RMG-Py version 2.3.0 these files showed mole fraction of each species at each step, but they now show amount (number of moles) of each species; you must divide by the sum if you wish to get a mole fraction.</p>
+</section>
+<section id="cantera-output-folders">
+<h2><span class="section-number">7.5. </span>Cantera Output Folders<a class="headerlink" href="#cantera-output-folders" title="Permalink to this heading">¶</a></h2>
+<p>RMG can write mechanisms in <a class="reference external" href="https://cantera.org">Cantera</a> YAML format via three distinct
+routes, producing up to three output folders.  All three require Cantera to be installed in
+the conda environment (it is included in the standard <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code>).</p>
+<section id="cantera-from-ck">
+<h3><span class="section-number">7.5.1. </span><code class="docutils literal notranslate"><span class="pre">/cantera_from_ck</span></code><a class="headerlink" href="#cantera-from-ck" title="Permalink to this heading">¶</a></h3>
+<p>This folder is always produced when the Chemkin writer is enabled (<code class="docutils literal notranslate"><span class="pre">generateChemkin=True</span></code>, the default).
+After the final RMG iteration, Cantera’s own <code class="docutils literal notranslate"><span class="pre">ck2yaml</span></code> converter is used to translate the Chemkin-format files in <code class="docutils literal notranslate"><span class="pre">/chemkin</span></code> into Cantera YAML.
+This is the most thoroughly tested route and is the recommended output for production use.</p>
+</section>
+<section id="cantera1-beta">
+<h3><span class="section-number">7.5.2. </span><code class="docutils literal notranslate"><span class="pre">/cantera1</span></code> <em>(beta)</em><a class="headerlink" href="#cantera1-beta" title="Permalink to this heading">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">cantera1</span></code> writer is in <strong>beta</strong>.  It uses the Cantera Python API to construct and
+serialise the mechanism YAML, rather than writing the YAML by hand.  It has been less
+extensively tested than the <code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code> route.  Please report any discrepancies.</p>
+</div>
+<p>This folder is created when <code class="docutils literal notranslate"><span class="pre">generateCanteraYAML1=True</span></code> is set in the <code class="docutils literal notranslate"><span class="pre">options()</span></code> block
+(disabled by default).  The writer runs after every RMG iteration (or on the schedule set by
+<code class="docutils literal notranslate"><span class="pre">saveInterval</span></code>), so the folder accumulates a history of the growing mechanism.</p>
+<p>Files generated:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">chem{NNNN}.yaml</span></code> — mechanism snapshot at the iteration when the core contained <em>NNNN</em>
+species (e.g. <code class="docutils literal notranslate"><span class="pre">chem0042.yaml</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> — copy of the latest snapshot; always reflects the current model state</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_annotated.yaml</span></code> — annotated version with SMILES, source, and kinetics comments
+(written when <code class="docutils literal notranslate"><span class="pre">verboseComments=True</span></code> for this writer)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_edge{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.yaml</span></code> — edge-model
+equivalents (written when <code class="docutils literal notranslate"><span class="pre">saveEdge=True</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> — numerical comparison of <code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> against the
+<code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code> translation (written at the end of the run if both writers are enabled;
+see below)</p></li>
+</ul>
+</section>
+<section id="cantera2-beta">
+<h3><span class="section-number">7.5.3. </span><code class="docutils literal notranslate"><span class="pre">/cantera2</span></code> <em>(beta)</em><a class="headerlink" href="#cantera2-beta" title="Permalink to this heading">¶</a></h3>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">cantera2</span></code> writer is in <strong>beta</strong>.  It generates Cantera YAML directly from RMG’s
+internal Python data structures, without going through the Chemkin intermediate.  While
+it should produce valid mechanisms, it has been less extensively tested than the
+<code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code> route.  Please report any discrepancies.</p>
+</div>
+<p>This folder is created when <code class="docutils literal notranslate"><span class="pre">generateCanteraYAML2=True</span></code> is set in the <code class="docutils literal notranslate"><span class="pre">options()</span></code> block
+(disabled by default).  Like <code class="docutils literal notranslate"><span class="pre">cantera1</span></code>, it runs at every iteration (or on the configured
+schedule).</p>
+<p>Files generated:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">chem{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> — latest mechanism snapshot and its labelled history</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_annotated.yaml</span></code> — annotated version (written when <code class="docutils literal notranslate"><span class="pre">verboseComments=True</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_edge{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.yaml</span></code> — edge-model
+equivalents (written when <code class="docutils literal notranslate"><span class="pre">saveEdge=True</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> — numerical comparison against the <code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code>
+translation (written at the end of the run if both writers are enabled)</p></li>
+</ul>
+</section>
+<section id="comparison-reports">
+<h3><span class="section-number">7.5.4. </span>Comparison Reports<a class="headerlink" href="#comparison-reports" title="Permalink to this heading">¶</a></h3>
+<p>When a direct-writer folder (<code class="docutils literal notranslate"><span class="pre">cantera1</span></code> or <code class="docutils literal notranslate"><span class="pre">cantera2</span></code>) is used alongside the Chemkin
+writer, RMG automatically compares the final <code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> from that folder against the
+<code class="docutils literal notranslate"><span class="pre">cantera_from_ck/chem.yaml</span></code> produced by <code class="docutils literal notranslate"><span class="pre">ck2yaml</span></code>.  The comparison checks differences
+in the yaml data. Not all differences are necessarily problematic.  Results are written to
+<code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> inside the relevant direct-writer folder.</p>
+<p>If you find that the two routes disagree in a problematic way, please open an issue on the
+<a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/issues">RMG-Py GitHub repository</a>
+and include the <code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> and a minimal reproducing <code class="docutils literal notranslate"><span class="pre">input.py</span></code>.</p>
+</section>
+</section>
+<section id="the-rms-yaml-folder">
+<h2><span class="section-number">7.6. </span>The RMS YAML Folder<a class="headerlink" href="#the-rms-yaml-folder" title="Permalink to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">/rms</span></code> folder contains the mechanism in
+<a class="reference external" href="https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl">ReactionMechanismSimulator (RMS)</a>
+YAML format.  This writer is enabled by default (<code class="docutils literal notranslate"><span class="pre">generateRMSYAML=True</span></code>) and writes at
+every iteration, unless configured otherwise by <code class="docutils literal notranslate"><span class="pre">saveInterval</span></code>.</p>
 </section>
 </section>
 
@@ -135,6 +216,14 @@ Please note that up to and including RMG-Py version 2.3.0 these files showed mol
 <li><a class="reference internal" href="#the-species-folder">7.2. The Species Folder</a></li>
 <li><a class="reference internal" href="#the-pdep-folder">7.3. The Pdep Folder</a></li>
 <li><a class="reference internal" href="#the-solver-folder">7.4. The Solver Folder</a></li>
+<li><a class="reference internal" href="#cantera-output-folders">7.5. Cantera Output Folders</a><ul>
+<li><a class="reference internal" href="#cantera-from-ck">7.5.1. <code class="docutils literal notranslate"><span class="pre">/cantera_from_ck</span></code></a></li>
+<li><a class="reference internal" href="#cantera1-beta">7.5.2. <code class="docutils literal notranslate"><span class="pre">/cantera1</span></code> <em>(beta)</em></a></li>
+<li><a class="reference internal" href="#cantera2-beta">7.5.3. <code class="docutils literal notranslate"><span class="pre">/cantera2</span></code> <em>(beta)</em></a></li>
+<li><a class="reference internal" href="#comparison-reports">7.5.4. Comparison Reports</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-rms-yaml-folder">7.6. The RMS YAML Folder</a></li>
 </ul>
 </li>
 </ul>

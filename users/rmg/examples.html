@@ -216,6 +216,11 @@ calculation of pressure-dependent reaction rates.</p>
     <span class="n">generateOutputHTML</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">generatePlots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="n">generatePESDiagrams</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># Large model: write output every 5 iterations and skip edge species to reduce I/O</span>
+    <span class="n">generateChemkin</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;saveEdge&#39;</span><span class="p">:</span> <span class="kc">False</span><span class="p">},</span>
+    <span class="n">generateRMSYAML</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="n">generateCanteraYAML1</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
+    <span class="n">generateCanteraYAML2</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;saveInterval&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">},</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -447,23 +452,47 @@ for new users to better understand the options of rmg input files</p>
     <span class="n">generatePESDiagrams</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="c1"># saves mole fraction of species in &#39;solver/&#39; to help you create plots</span>
     <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="c1"># gets RMG to output comments on where kinetics were obtained in the chemkin file.</span>
-    <span class="c1"># useful for debugging kinetics but increases memory usage of the chemkin output file</span>
+    <span class="c1"># Global fallback for verbose comments (comments on where kinetics were obtained).</span>
+    <span class="c1"># Useful for debugging kinetics but increases output file size.</span>
+    <span class="c1"># Individual writers can override this with their own verboseComments key.</span>
     <span class="n">verboseComments</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="c1"># gets RMG to generate edge species chemkin files. Uses lots of memory in output.</span>
-    <span class="c1"># Helpful for seeing why some reaction are not appearing in core model.</span>
+    <span class="c1"># Global fallback for saving edge-species files. Uses lots of memory in output.</span>
+    <span class="c1"># Helpful for seeing why some reactions are not appearing in the core model.</span>
+    <span class="c1"># Individual writers can override this with their own saveEdge key.</span>
     <span class="n">saveEdgeSpecies</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="c1"># Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that</span>
-    <span class="c1"># do not converge.</span>
-    <span class="c1"># wallTime = &#39;00:00:00&#39;,</span>
-    <span class="c1"># Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library</span>
-    <span class="c1"># reactions while keeping the reversibility as as.</span>
+    <span class="c1"># Sets a time limit in the form DD:HH:MM:SS after (or shortly before) which the RMG job will stop.</span>
+    <span class="c1"># Useful for profiling on jobs that do not converge.</span>
+    <span class="n">wallTime</span> <span class="o">=</span> <span class="s1">&#39;00:00:00:00&#39;</span><span class="p">,</span>
+    <span class="c1"># If keepIrreversible=False (default) forces RMG to import library reactions as reversible.</span>
+    <span class="c1"># If set to True, RMG will import library reactions while keeping the reversibility as specified.</span>
     <span class="n">keepIrreversible</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="c1"># Allows families with three products to react in the diverse direction (default).</span>
     <span class="n">trimolecularProductReversible</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="c1"># Allows a seed to be saved every n iterations.</span>
     <span class="c1"># The default of -1 causes the iteration to only be saved at the end of the RMG job</span>
-    <span class="n">saveSeedModulus</span><span class="o">=-</span><span class="mi">1</span>
+    <span class="n">saveSeedModulus</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="c1">#</span>
+    <span class="c1"># --- Per-writer output configuration ---</span>
+    <span class="c1"># Each writer accepts True/False or a dict with keys:</span>
+    <span class="c1">#   &#39;saveInterval&#39;: N  (positive = every N iterations; -1 = end of run only)</span>
+    <span class="c1">#   &#39;verboseComments&#39;: True/False  (overrides the global verboseComments above)</span>
+    <span class="c1">#   &#39;saveEdge&#39;: True/False  (overrides the global saveEdgeSpecies above)</span>
+    <span class="c1">#</span>
+    <span class="c1"># Chemkin writer: always on by default; saves every iteration.</span>
+    <span class="n">generateChemkin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># generateChemkin={&#39;saveInterval&#39;: -1, &#39;verboseComments&#39;: True, &#39;saveEdge&#39;: True},</span>
+    <span class="c1">#</span>
+    <span class="c1"># RMS YAML writer: always on by default; saves every iteration.</span>
+    <span class="n">generateRMSYAML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># generateRMSYAML={&#39;saveInterval&#39;: -1},</span>
+    <span class="c1">#</span>
+    <span class="c1"># Cantera YAML v1 writer: off by default.</span>
+    <span class="n">generateCanteraYAML1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="c1"># generateCanteraYAML1={&#39;saveInterval&#39;: -1, &#39;verboseComments&#39;: True, &#39;saveEdge&#39;: False},</span>
+    <span class="c1">#</span>
+    <span class="c1"># Cantera YAML v2 writer: off by default.</span>
+    <span class="n">generateCanteraYAML2</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="c1"># generateCanteraYAML2={&#39;saveInterval&#39;: 1, &#39;verboseComments&#39;: True, &#39;saveEdge&#39;: True},</span>
 <span class="p">)</span>
 
 <span class="c1"># optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.</span>
