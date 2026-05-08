@@ -189,9 +189,9 @@ class TestUncertainty:
         expected_uncorrelated_total_variance = 1.8329056941266446
         expected_uncorrelated_thermo_variances = np.array([0.17092419, 0.09781627, 0.06186124, 0.04856985, 0.00391013, 0.00306632, 0.00041446, 9.953e-05])
         expected_uncorrelated_kinetics_variances = np.array([1.1311145, 0.15888459, 0.085189, 0.02022449, 0.01687337, 0.01605351, 0.01588366, 0.0010829, 0.00080811, 0.00012957])
-        expected_correlated_total_variance = 3.006637059881831
+        expected_correlated_total_variance = 1.7732795017083922
         expected_correlated_thermo_variances = np.array([0.09145902, 0.07672388, 0.04856985, 0.04573167, 0.03236887, 0.01747643, 0.01098087, 0.00143231, 0.0013764, 0.00031352, 0.00028968, 0.00014685, 0.0001338, 3.263e-05])
-        expected_correlated_kinetics_variances = np.array([2.0212174, 0.28939964, 0.15516713, 0.11981721, 0.02838292, 0.01687337, 0.0161796, 0.01605351, 0.0040449, 0.00253735, 0.00253735, 0.00193506, 0.00168253, 0.00136045, 0.00136045, 0.00080811, 0.00012957, 0.00011471])
+        expected_correlated_kinetics_variances = np.array([0.53202843, 0.47926886, 0.11981721, 0.11321232, 0.06070094, 0.04059757, 0.02176716, 0.01687337, 0.0161796, 0.01605351, 0.007471, 0.00673013, 0.0040449, 0.00253735, 0.00253735, 0.00168253, 0.00136045, 0.00136045, 0.00080811, 0.00050935, 0.00045884, 0.00012957, 0.00011471])
         expected_uncorrelated_thermo_labels = [
             'dln[C2H6(18)]/dG[CH(4)]',
             'dln[C2H6(18)]/dG[C2H3(20)]',
@@ -231,22 +231,27 @@ class TestUncertainty:
             'Estimation C2H5(12)',
         ]
         expected_correlated_kinetics_labels = [
-            'Estimation C2H5(12)+CH3CHCH3(21)<=>C2H6(18)+C3H6(22)',
-            'Estimation C2H6(18)+PC3H7(15)<=>C2H5(12)+C3H8(19)',
-            'Estimation C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)',
+            'Estimation Nonexact C2H5(12)+CH3CHCH3(21)<=>C2H6(18)+C3H6(22)',
+            'Estimation Family C2H5(12)+CH3CHCH3(21)<=>C2H6(18)+C3H6(22)',
             'Rate Rule Disproportionation Root_Ext-2R!H-R_2R!H->C_4R->C',
-            'Estimation CH3(14)+C3H8(19)<=>CH4(16)+PC3H7(15)',
+            'Estimation Nonexact C2H6(18)+PC3H7(15)<=>C2H5(12)+C3H8(19)',
+            'Estimation Nonexact C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)',
+            'Estimation Family C2H6(18)+PC3H7(15)<=>C2H5(12)+C3H8(19)',
+            'Estimation Family C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)',
             'Library O(0)+H2O2(3)<=>OH(1)+HO2(2)',
-            'Estimation CH3(14)+PC3H7(15)<=>CH4(16)+CH2CH2CH2(17)',
+            'Estimation Family CH3(14)+PC3H7(15)<=>CH4(16)+CH2CH2CH2(17)',
             'PDep HCCO(10)(+M)<=>O(0)+C2H(8)(+M)',
+            'Estimation Nonexact CH3(14)+C3H8(19)<=>CH4(16)+PC3H7(15)',
+            'Estimation Family CH3(14)+C3H8(19)<=>CH4(16)+PC3H7(15)',
             'Rate Rule H_Abstraction C/H3/Cs;C_methyl',
             'Rate Rule H_Abstraction C/H3/Cs\\H3;C_rad/H2/Cs\\H\\Cs\\Cs|O',
             'Rate Rule H_Abstraction C/H3/Cs\\H3;C_rad/H2/Cs\\H3',
-            'Estimation C3H5(24)+CH2CH2CH2(17)<=>C3H5(23)+C3H6(22)',
             'Rate Rule H_Abstraction C/H3/Cs\\H2\\O;C_methyl',
             'Rate Rule H_Abstraction C/H3/Cs\\H3;Cd_Cd\\H2_pri_rad',
             'Rate Rule H_Abstraction C/H3/Cs\\H2\\Cs|O;Cd_Cd\\H2_rad/Cs',
             'Training Disproportionation CH3(14)+C2H5(12)<=>CH4(16)+C2H4(11)',
+            'Estimation Nonexact C3H5(24)+CH2CH2CH2(17)<=>C3H5(23)+C3H6(22)',
+            'Estimation Family C3H5(24)+CH2CH2CH2(17)<=>C3H5(23)+C3H6(22)',
             'Training H_Abstraction CH3(14)+C2H6(18)<=>CH4(16)+C2H5(12)',
             'Rate Rule Disproportionation Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C_N-1R!H-inRing_N-Sp-6C-4C',
         ]

@@ -223,7 +223,7 @@ class KineticParameterUncertainty(object):
         Obtain the partial uncertainty dlnk/dlnk_corr*dlnk_corr, where dlnk_corr is the correlated parameter
 
         `corr_param` is the parameter identifier itself, which is the string identifier of the rate rule
-        `corr_source_type` is a string, being either 'Rate Rules', 'Library', 'PDep', 'Training' or 'Estimation'
+        `corr_source_type` is a string, being either 'Rate Rules', 'Library', 'PDep', 'Training', 'Estimation Nonexact', or 'Estimation Family'
         `corr_family` is a string used only when the source type is 'Rate Rules' and indicates the family
         """
 
@@ -275,24 +275,22 @@ class KineticParameterUncertainty(object):
                     else:
                         return self.dlnk_training
 
-        elif corr_source_type == 'Estimation':
-            # Return all the uncorrelated uncertainty associated with using an estimation scheme
 
+        elif corr_source_type == 'Estimation Nonexact':
+            # Return the uncorrelated uncertainty associated with using a non-exact rate rule
             if 'Rate Rules' in source:
                 source_dict = source['Rate Rules'][1]
                 exact = source_dict['exact']
-
-                family_label = source['Rate Rules'][0]
-                dlnk = self.dlnk_family  # Base uncorrelated uncertainty just from using rate rule estimation
-
-                # Additional uncertainty from using non-exact rate rule
                 N = len(source_dict['rules']) + len(source_dict['training'])
                 if not exact:
                     # nonexactness contribution increases as N increases
-                    dlnk += np.log10(N + 1) * self.dlnk_nonexact
-                return dlnk
+                    return np.log10(N + 1) * self.dlnk_nonexact
+        elif corr_source_type == 'Estimation Family':
+            # Return the uncertainty associated with using a family decision tree
+            if 'Rate Rules' in source:
+                return self.dlnk_family
         else:
-            raise Exception('Kinetics correlated source must be Rate Rules, Library, PDep, Training, or Estimation')
+            raise Exception('Kinetics correlated source must be Rate Rules, Library, PDep, Training, Estimation Nonexact, or Estimation Family')
 
         # If we get here, it means that we did not find the correlated parameter in the source
         return None
@@ -712,11 +710,16 @@ class Uncertainty(object):
                         label = '{}Rate Rule {} {}'.format(surface_prefix, family, ruleEntry)
                         dlnk[label] = dplnk
 
-                    # There is also estimation error if rate rules are used
-                    est_dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Estimation')
-                    if est_dplnk:
-                        label = 'Estimation {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
-                        dlnk[label] = est_dplnk
+                    # There is also estimation error if rate rules are used (nonexact and family contribute to this)
+                    nonexact_dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Estimation Nonexact', corr_family=family)
+                    if nonexact_dplnk:
+                        label = 'Estimation Nonexact {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                        dlnk[label] = nonexact_dplnk
+
+                    family_dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Estimation Family', corr_family=family)
+                    if family_dplnk:
+                        label = 'Estimation Family {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                        dlnk[label] = family_dplnk
 
                 elif 'PDep' in source:
                     dplnk = k_param_engine.get_partial_uncertainty_value(source, 'PDep', source['PDep'])
