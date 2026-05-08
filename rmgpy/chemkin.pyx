@@ -47,7 +47,7 @@ from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import ChemkinError
 from rmgpy.molecule.element import get_element
 from rmgpy.molecule.util import get_element_count
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, QuantityError
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.species import Species
@@ -397,7 +397,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Aunits_surf, Eunits):
             # this identifies reactions like 'H+H+M=H2+M' as opposed to 'H+H(+M)=H2(+M)' as identified above
             third_body = True
         elif reactant not in species_dict:
-            raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
+            raise ChemkinError('Unexpected reactant "{0}" in reaction line {1}.'.format(reactant, line))
         else:
             reactant_species = species_dict[reactant]
             if not reactant_species.reactive:
@@ -1405,6 +1405,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         '{0}^3/({1}*{2})'.format(volume_units, molecule_units, time_units),  # Second-order
         '{0}^6/({1}^2*{2})'.format(volume_units, molecule_units, time_units),  # Third-order
         '{0}^9/({1}^3*{2})'.format(volume_units, molecule_units, time_units),  # Fourth-order
+        f"{volume_units}^12/({molecule_units}^4*{time_units})",  # Fifth-order
     ]
 
     Aunits_surf = [
@@ -1412,6 +1413,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         's^-1'.format(time_units),  # First-order
         '{0}^2/({1}*{2})'.format(area_units, molecule_units, time_units),  # Second-order
         '{0}^4/({1}^2*{2})'.format(area_units, molecule_units, time_units),  # Third-order
+        '{0}^6/({1}^3*{2})'.format(area_units, molecule_units, time_units),  # Fourth-order
     ]
     Eunits = energy_units
 
@@ -1481,10 +1483,13 @@ def read_reactions_block(f, species_dict, read_comments=True):
             reaction = read_reaction_comments(reaction, comments, read=read_comments)
         except ChemkinError as e:
             if "Skip reaction!" in str(e):
-                logging.warning("Skipping the reaction {0!r}".format(kinetics))
+                logging.warning("Skipping the reaction {0!r} because of {e!s}".format(kinetics))
                 continue
             else:
                 raise
+        except QuantityError as e:
+            logging.warning(f"Skipping the reaction {kinetics!r} due to units error: {e}")
+            continue
         reaction_list.append(reaction)
 
     return reaction_list
