@@ -669,7 +669,7 @@ class Uncertainty(object):
                     for adsGroupType, groupList in source['ADS'].items():
                         for group, weight in groupList:
                             pdG = g_param_engine.get_partial_uncertainty_value(source, 'ADS', group, adsGroupType)
-                            label = 'AdsorptionGroup({}) {}'.format(adsGroupType, group.label)
+                            label = 'AdsorptionCorrection({}) {}'.format(adsGroupType, group.label)
                             dG[label] = pdG
                 if 'GAV' in source:
                     for groupType, groupList in source['GAV'].items():
@@ -696,16 +696,20 @@ class Uncertainty(object):
                     source_dict = source['Rate Rules'][1]
                     rules = source_dict['rules']
                     training = source_dict['training']
+                    surface_prefix = ''
+                    if reaction.is_surface_reaction():
+                        surface_prefix = 'Surface '
+
                     for ruleEntry, weight in rules:
                         dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Rate Rules', corr_param=ruleEntry,
                                                                              corr_family=family)
-                        label = '{} {}'.format(family, ruleEntry)
+                        label = '{}Rate Rule {} {}'.format(surface_prefix, family, ruleEntry)
                         dlnk[label] = dplnk
 
                     for ruleEntry, trainingEntry, weight in training:
                         dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Rate Rules', corr_param=ruleEntry,
                                                                              corr_family=family)
-                        label = '{} {}'.format(family, ruleEntry)
+                        label = '{}Rate Rule {} {}'.format(surface_prefix, family, ruleEntry)
                         dlnk[label] = dplnk
 
                     # There is also estimation error if rate rules are used
