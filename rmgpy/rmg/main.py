@@ -76,13 +76,16 @@ from rmgpy.rmg.model import CoreEdgeReactionModel, Species
 from rmgpy.rmg.output import OutputHTMLWriter
 from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
-from rmgpy.rmg.settings import ModelSettings
+from rmgpy.rmg.settings import ModelSettings, WriterConfig
 from rmgpy.solver.base import TerminationTime
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
+from rmgpy.tools.compare_cantera_yaml import compare_yaml_files, compare_yaml_files_and_report
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
-from rmgpy.yml import RMSWriter
+from rmgpy.yaml_rms import RMSWriter
+from rmgpy.yaml_cantera1 import CanteraWriter1
+from rmgpy.yaml_cantera2 import CanteraWriter2
 
 ################################################################################
 
@@ -143,8 +146,14 @@ class RMG(util.Subject):
     `generate_output_html`                                     ``True`` to draw pictures of the species and reactions, saving a visualized model in an output HTML file.  ``False`` otherwise
     `generate_plots`                                           ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
     `generate_PES_diagrams`                                    ``True`` to generate potential energy surface diagrams for pressure dependent networks in the model, ``False`` otherwise
-    `verbose_comments`                                         ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
-    `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
+    `verbose_comments`                                         ``True`` to keep the verbose comments for database estimates, ``False`` otherwise (global fallback when writer config does not override)
+    `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise (global fallback when writer config does not override)
+    `chemkin_writer_config`                                    :class:`WriterConfig` controlling when the Chemkin writer runs and its per-writer options
+    `rms_writer_config`                                        :class:`WriterConfig` controlling when the RMS YAML writer runs and its per-writer options
+    `cantera1_writer_config`                                   :class:`WriterConfig` controlling when CanteraWriter1 runs and its per-writer options
+    `cantera2_writer_config`                                   :class:`WriterConfig` controlling when CanteraWriter2 runs and its per-writer options
+    `html_writer_config`                                       :class:`WriterConfig` controlling when the HTML writer runs and its per-writer options
+    `is_final_save`                                            Set to ``True`` immediately before the end-of-run ``save_everything()`` call so writers know it is the final notification
     `keep_irreversible`                                        ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `trimolecular_product_reversible`                          ``True`` (default) to allow families with trimolecular products to react in the reverse direction, ``False`` otherwise
     `pressure_dependence`                                      Whether to process unimolecular (pressure-dependent) reaction networks
@@ -228,6 +237,12 @@ class RMG(util.Subject):
         self.save_simulation_profiles = None
         self.verbose_comments = None
         self.save_edge_species = None
+        self.chemkin_writer_config = None
+        self.rms_writer_config = None
+        self.cantera1_writer_config = None
+        self.cantera2_writer_config = None
+        self.html_writer_config = None
+        self.is_final_save = False
         self.keep_irreversible = None
         self.trimolecular_product_reversible = None
         self.pressure_dependence = None
@@ -255,6 +270,19 @@ class RMG(util.Subject):
 
         self.exec_time = []
         self.liquid_volumetric_mass_transfer_coefficient_power_law = None
+
+    @staticmethod
+    def _parse_walltime_to_seconds(walltime):
+        """
+        Convert walltime string DD:HH:MM:SS to seconds.
+        """
+        data = walltime.split(":")
+        if len(data) != 4:
+            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(walltime))
+        try:
+            return int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
+        except ValueError as exc:
+            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(walltime)) from exc
 
     def load_input(self, path=None):
         """
@@ -567,6 +595,24 @@ class RMG(util.Subject):
                 )
             )
 
+        if "walltime" in kwargs:
+            logging.info(
+                "Overriding walltime from input file (%s) with command-line value (%s).",
+                self.walltime,
+                kwargs["walltime"],
+            )
+            self.walltime = kwargs["walltime"]
+
+        if "max_iterations" in kwargs:
+            logging.info(
+                "Overriding max_iterations from input file (%s) with command-line value (%s).",
+                self.max_iterations,
+                kwargs["max_iterations"],
+            )
+            self.max_iterations = kwargs["max_iterations"]
+
+        self.walltime = self._parse_walltime_to_seconds(self.walltime)
+
         # Auto-select libraries if any field uses 'auto' or '<PAH_libs>'
         auto_select_libraries(self)
 
@@ -643,21 +689,6 @@ class RMG(util.Subject):
             for reaction_system in self.reaction_systems:
                 if reaction_system.T:
                     reaction_system.viscosity = solvent_data.get_solvent_viscosity(reaction_system.T.value_si)
-
-        try:
-            self.walltime = kwargs["walltime"]
-        except KeyError:
-            pass
-
-        try:
-            self.max_iterations = kwargs["max_iterations"]
-        except KeyError:
-            pass
-
-        data = self.walltime.split(":")
-        if not len(data) == 4:
-            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(self.walltime))
-        self.walltime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
 
         # Initialize reaction model
 
@@ -781,12 +812,22 @@ class RMG(util.Subject):
         found in the RMG input file.
         """
 
-        self.attach(ChemkinWriter(self.output_directory))
+        cfg_chemkin  = self.chemkin_writer_config  or WriterConfig(save_interval=1)
+        cfg_rms      = self.rms_writer_config      or WriterConfig(save_interval=1)
+        cfg_cantera1 = self.cantera1_writer_config or WriterConfig(save_interval=0)
+        cfg_cantera2 = self.cantera2_writer_config or WriterConfig(save_interval=0)
+        cfg_html     = self.html_writer_config     or WriterConfig(save_interval=0)
 
-        self.attach(RMSWriter(self.output_directory))
-
-        if self.generate_output_html:
-            self.attach(OutputHTMLWriter(self.output_directory))
+        if cfg_chemkin.enabled:
+            self.attach(ChemkinWriter(self.output_directory, cfg_chemkin))
+        if cfg_rms.enabled:
+            self.attach(RMSWriter(self.output_directory, cfg_rms))
+        if cfg_cantera1.enabled:
+            self.attach(CanteraWriter1(self.output_directory, cfg_cantera1))
+        if cfg_cantera2.enabled:
+            self.attach(CanteraWriter2(self.output_directory, cfg_cantera2))
+        if cfg_html.enabled:
+            self.attach(OutputHTMLWriter(self.output_directory, cfg_html))
 
         if self.quantum_mechanics:
             self.attach(QMDatabaseWriter())
@@ -906,6 +947,7 @@ class RMG(util.Subject):
             self.make_seed_mech()
 
         max_num_spcs_hit = False  # default
+        end_early = False
 
         for q, model_settings in enumerate(self.model_settings_list):
             if len(self.simulator_settings_list) > 1:
@@ -915,7 +957,7 @@ class RMG(util.Subject):
 
             self.filter_reactions = model_settings.filter_reactions
 
-            logging.info("Beginning model generation stage {0}...\n".format(q + 1))
+            logging.info(f"Beginning model generation stage {q + 1} of {len(self.model_settings_list)}.\n")
 
             self.done = False
 
@@ -1210,7 +1252,8 @@ class RMG(util.Subject):
                         core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
                         logging.info("The current model core has %s species and %s reactions" % (core_spec, core_reac))
                         logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
-                        return
+                        end_early = True
+                        break
 
                 if self.max_iterations and (self.reaction_model.iteration_num >= self.max_iterations):
                     logging.info("MODEL GENERATION TERMINATED")
@@ -1221,60 +1264,94 @@ class RMG(util.Subject):
                     core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
                     logging.info("The current model core has %s species and %s reactions" % (core_spec, core_reac))
                     logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
-                    return
+                    end_early = True
+                    break
 
             if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
                 logging.info("The maximum number of species ({0}) has been hit, Exiting stage {1} ...".format(model_settings.max_num_species, q + 1))
                 max_num_spcs_hit = False
 
+            if end_early:  # breaks the settings for loop
+                break
+
+        self.reaction_model.iteration_num += 1
         # Save the final seed mechanism
         self.make_seed_mech()
 
+        # Notify all writers that this is the final save (end-of-run).
+        # Writers configured with saveInterval=-1 will write only here.
+        # Writers configured with saveInterval>0 will also write here
+        # unless they already wrote on this iteration.
+        self.is_final_save = True
+        self.save_everything()
+        self.is_final_save = False
+
         self.run_model_analysis()
 
-        # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
+        # generate Cantera files chem.yaml & chem_annotated.yaml in designated Cantera output folders
         try:
-            if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
-                # Surface (catalytic) chemistry
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
-                )
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
-                )
+            translated_cantera_file = None
+            if self.chemkin_writer_config and self.chemkin_writer_config.enabled:
+                logging.info("Translating final chemkin file into Cantera yaml.")
+                if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
+                    # Surface (catalytic) chemistry
+                    translated_cantera_file = self.generate_cantera_files_from_chemkin(
+                        os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
+                        surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
+                    )
+                    annotated_gas = os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp")
+                    if os.path.exists(annotated_gas):
+                        self.generate_cantera_files_from_chemkin(
+                            annotated_gas,
+                            surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
+                        )
 
-                if self.thermo_coverage_dependence:
-                    # Build coverage_deps: {species_name: string_to_add_to_yaml}
-                    coverage_deps = {}
-                    for s in self.reaction_model.core.species:
-                        if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
-                            s_name = s.to_chemkin()
-                            for dep_sp_adj, parameters in s.thermo.thermo_coverage_dependence.items():
-                                mol = Molecule().from_adjacency_list(dep_sp_adj)
-                                for sp in self.reaction_model.core.species:
-                                    if sp.is_isomorphic(mol, strict=False):
-                                        if s_name not in coverage_deps:
-                                            coverage_deps[s_name] = '  coverage-dependencies:'
-                                        coverage_deps[s_name] += f"""
+                    if self.thermo_coverage_dependence:
+                        # Build coverage_deps: {species_name: string_to_add_to_yaml}
+                        coverage_deps = {}
+                        for s in self.reaction_model.core.species:
+                            if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
+                                s_name = s.to_chemkin()
+                                for dep_sp_adj, parameters in s.thermo.thermo_coverage_dependence.items():
+                                    mol = Molecule().from_adjacency_list(dep_sp_adj)
+                                    for sp in self.reaction_model.core.species:
+                                        if sp.is_isomorphic(mol, strict=False):
+                                            if s_name not in coverage_deps:
+                                                coverage_deps[s_name] = '  coverage-dependencies:'
+                                            coverage_deps[s_name] += f"""
     {sp.to_chemkin()}:
       model: {parameters['model']}
       enthalpy-coefficients: {[v.value_si for v in parameters['enthalpy-coefficients']]}
       entropy-coefficients: {[v.value_si for v in parameters['entropy-coefficients']]}
       units: {{energy: J, quantity: mol}}
 """
-                                        break
+                                            break
 
-                    for yaml_path in [
-                        os.path.join(self.output_directory, "cantera", "chem.yaml"),
-                        os.path.join(self.output_directory, "cantera", "chem_annotated.yaml"),
-                    ]:
-                        _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
+                        for yaml_path in [
+                            os.path.join(self.output_directory, "cantera_from_ck", "chem.yaml"),
+                            os.path.join(self.output_directory, "cantera_from_ck", "chem_annotated.yaml"),
+                        ]:
+                            if os.path.exists(yaml_path):
+                                _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
 
-            else:  # gas phase only
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
+                else:  # gas phase only
+                    translated_cantera_file = self.generate_cantera_files_from_chemkin(
+                        os.path.join(self.output_directory, "chemkin", "chem.inp")
+                    )
+                    annotated = os.path.join(self.output_directory, "chemkin", "chem_annotated.inp")
+                    if os.path.exists(annotated):
+                        self.generate_cantera_files_from_chemkin(annotated)
+
+            # Compare translated Cantera files against directly generated Cantera files
+            if translated_cantera_file and self.cantera1_writer_config and self.cantera1_writer_config.enabled:
+                compare_yaml_files_and_report(translated_cantera_file,
+                                              os.path.join(self.output_directory, "cantera1", "chem.yaml"),
+                                              output=os.path.join(self.output_directory, "cantera1", "comparison_report.txt"))
+            if translated_cantera_file and self.cantera2_writer_config and self.cantera2_writer_config.enabled:
+                compare_yaml_files_and_report(translated_cantera_file,
+                                              os.path.join(self.output_directory, "cantera2", "chem.yaml"),
+                                              output=os.path.join(self.output_directory, "cantera2", "comparison_report.txt"))
+
         except EnvironmentError:
             logging.exception("Could not generate Cantera files due to EnvironmentError. Check read\\write privileges in output directory.")
         except Exception:
@@ -1282,12 +1359,14 @@ class RMG(util.Subject):
 
         self.check_model()
         # Write output file
-        logging.info("")
-        logging.info("MODEL GENERATION COMPLETED")
-        logging.info("")
-        core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
-        logging.info("The final model core has %s species and %s reactions" % (core_spec, core_reac))
-        logging.info("The final model edge has %s species and %s reactions" % (edge_spec, edge_reac))
+
+        if not end_early:
+            logging.info("")
+            logging.info("MODEL GENERATION COMPLETED")
+            logging.info("")
+            core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
+            logging.info("The final model core has %s species and %s reactions" % (core_spec, core_reac))
+            logging.info("The final model edge has %s species and %s reactions" % (edge_spec, edge_reac))
 
         self.finish()
 
@@ -1845,14 +1924,15 @@ class RMG(util.Subject):
             raise TypeError("improper call, obj input was incorrect")
         return potential_spcs
 
-    def generate_cantera_files(self, chemkin_file, **kwargs):
+    def generate_cantera_files_from_chemkin(self, chemkin_file, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
-        and save it in the cantera directory
+        and save it in the cantera directory. 
+        Returns the path to the generated cantera file.
         """
         transport_file = os.path.join(os.path.dirname(chemkin_file), "tran.dat")
         file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + ".yaml"
-        out_name = os.path.join(self.output_directory, "cantera", file_name)
+        out_name = os.path.join(self.output_directory, "cantera_from_ck", file_name)
         if "surface_file" in kwargs:
             out_name = out_name.replace("-gas.", ".")
         cantera_dir = os.path.dirname(out_name)
@@ -1870,6 +1950,7 @@ class RMG(util.Subject):
             logging.exception("Error converting to Cantera format.")
             logging.info("Trying again without transport data file.")
             parser.convert_mech(chemkin_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
+        return out_name
 
     def initialize_reaction_threshold_and_react_flags(self):
         num_core_species = len(self.reaction_model.core.species)
@@ -2157,8 +2238,9 @@ class RMG(util.Subject):
 
         if os.path.exists(os.path.join(module_path, "..", ".git")):
             try:
-                return subprocess.check_output(["git", "log", "--format=%H%n%cd", "-1"], cwd=module_path).splitlines()
-            except:
+                head, date = subprocess.check_output(["git", "log", "--format=%H%n%cd", "-1"], cwd=module_path).splitlines()
+                return head.decode(), date.decode()
+            except (subprocess.CalledProcessError, OSError):
                 return "", ""
         else:
             return "", ""

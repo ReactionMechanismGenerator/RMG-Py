@@ -139,3 +139,45 @@ class SimulatorSettings(object):
         self.rtol = rtol
         self.sens_atol = sens_atol
         self.sens_rtol = sens_rtol
+
+
+class WriterConfig:
+    """
+    Configuration for a single output-format writer.
+
+    Attributes
+    ----------
+    save_interval : int
+        How often to write output.  Positive N = every N iterations (0-indexed
+        iteration numbers, so iteration 0 is always included).  -1 = end of run
+        only.  0 = disabled entirely.
+    verbose_comments : bool or None
+        Per-writer override for verbose comments.  None means fall back to the
+        global ``rmg.verbose_comments``.
+    save_edge : bool or None
+        Per-writer override for saving edge species.  None means fall back to
+        the global ``rmg.save_edge_species``.
+    """
+
+    def __init__(self, save_interval=1, verbose_comments=None, save_edge=None):
+        self.save_interval = save_interval
+        self.verbose_comments = verbose_comments
+        self.save_edge = save_edge
+        self._last_write = -1
+
+    @property
+    def enabled(self):
+        return self.save_interval != 0
+
+    def should_write(self, iteration_num, is_final):
+        """Return True if the writer should produce output right now."""
+        if not self.enabled:
+            return False
+        if self.save_interval == -1:
+            return is_final
+        if is_final:
+            return self._last_write != iteration_num
+        result = (iteration_num % self.save_interval == 0)
+        if result:
+            self._last_write = iteration_num
+        return result

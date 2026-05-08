@@ -31,8 +31,10 @@ from unittest.mock import patch
 
 import rmgpy.rmg.input as inp
 from rmgpy.exceptions import InputError
+from rmgpy.rmg.input import _parse_writer_config, _writer_config_to_input
 from rmgpy.rmg.main import RMG
 from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.rmg.settings import WriterConfig
 from rmgpy.ml.estimator import ADMONITION
 
 import pytest
@@ -538,3 +540,95 @@ class TestInputPressureDependence:
         
         # Check that no networks were added
         assert len(rmg.reaction_model.completed_pdep_networks) == 0
+
+
+class TestWriterConfig:
+    """Unit tests for WriterConfig and the _parse_writer_config / _writer_config_to_input helpers."""
+
+    def test_parse_false_disables(self):
+        cfg = _parse_writer_config(False)
+        assert not cfg.enabled
+        assert cfg.save_interval == 0
+
+    def test_parse_true_enables_default_interval(self):
+        cfg = _parse_writer_config(True)
+        assert cfg.enabled
+        assert cfg.save_interval == 1
+        assert cfg.verbose_comments is None
+        assert cfg.save_edge is None
+
+    def test_parse_true_custom_default_interval(self):
+        cfg = _parse_writer_config(True, default_save_interval=5)
+        assert cfg.save_interval == 5
+
+    def test_parse_dict_full(self):
+        cfg = _parse_writer_config({'saveInterval': -1, 'verboseComments': True, 'saveEdge': False})
+        assert cfg.enabled
+        assert cfg.save_interval == -1
+        assert cfg.verbose_comments is True
+        assert cfg.save_edge is False
+
+    def test_parse_dict_partial(self):
+        cfg = _parse_writer_config({'saveInterval': 3})
+        assert cfg.save_interval == 3
+        assert cfg.verbose_comments is None
+        assert cfg.save_edge is None
+
+    def test_parse_invalid_raises(self):
+        with pytest.raises(InputError):
+            _parse_writer_config(42)
+
+    def test_should_write_every_iteration(self):
+        cfg = WriterConfig(save_interval=1)
+        assert cfg.should_write(0, False)
+        assert cfg.should_write(1, False)
+        assert cfg.should_write(5, False)
+
+    def test_should_write_every_n_iterations(self):
+        cfg = WriterConfig(save_interval=3)
+        assert cfg.should_write(0, False)
+        assert not cfg.should_write(1, False)
+        assert not cfg.should_write(2, False)
+        assert cfg.should_write(3, False)
+        assert cfg.should_write(6, False)
+
+    def test_should_write_end_only(self):
+        cfg = WriterConfig(save_interval=-1)
+        assert not cfg.should_write(0, False)
+        assert not cfg.should_write(5, False)
+        assert cfg.should_write(5, True)
+
+    def test_should_write_disabled(self):
+        cfg = WriterConfig(save_interval=0)
+        assert not cfg.should_write(0, False)
+        assert not cfg.should_write(0, True)
+
+    def test_should_write_final_always_writes(self):
+        cfg = WriterConfig(save_interval=5)
+        # Iteration 7 was not written (not multiple of 5)
+        assert cfg.should_write(7, True)
+
+    def test_should_write_final_no_double_write(self):
+        cfg = WriterConfig(save_interval=5)
+        # Iteration 5 is a multiple of 5 — written during loop
+        cfg.should_write(5, False)
+        # Final call at same iteration should be skipped
+        assert not cfg.should_write(5, True)
+
+    def test_writer_config_to_input_false(self):
+        cfg = WriterConfig(save_interval=0)
+        assert _writer_config_to_input(cfg) is False
+
+    def test_writer_config_to_input_true(self):
+        cfg = WriterConfig(save_interval=1)
+        assert _writer_config_to_input(cfg) is True
+
+    def test_writer_config_to_input_dict(self):
+        cfg = WriterConfig(save_interval=-1, verbose_comments=True, save_edge=False)
+        result = _writer_config_to_input(cfg)
+        assert "'saveInterval': -1" in result
+        assert "'verboseComments': True" in result
+        assert "'saveEdge': False" in result
+
+    def test_writer_config_to_input_none(self):
+        assert _writer_config_to_input(None) is False

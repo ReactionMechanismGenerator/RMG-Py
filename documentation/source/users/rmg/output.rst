@@ -4,13 +4,17 @@
 Analyzing the Output Files
 **************************
 
-You will see that a sucessfully executed RMG job will create multiple output files and folders: 
+You will see that a sucessfully executed RMG job will create multiple output files and folders:
 ``output.html`` (if ``generateOutputHTML=True`` is specified)
+``/cantera_from_ck``
+``/cantera1`` (if ``generateCanteraYAML1=True`` is specified)
+``/cantera2`` (if ``generateCanteraYAML2=True`` is specified)
 ``/chemkin``
-``/pdep``  
+``/pdep``
 ``/plot``
+``/rms``
 ``/solver``
-``/species``  
+``/species``
 ``RMG.log``
 
 ------------------
@@ -39,6 +43,92 @@ network.
 
 ------------------
 The Solver Folder
------------------- 
-RMG currently includes a solver for isothermal batch reactors. This is in fact a critical part of the model enlargement algorithm. If you have included simulations in your input file, the solutions will be located in ``/solver``. You will probably only be interested in the files with the largest number tags.  
+------------------
+RMG currently includes a solver for isothermal batch reactors. This is in fact a critical part of the model enlargement algorithm. If you have included simulations in your input file, the solutions will be located in ``/solver``. You will probably only be interested in the files with the largest number tags.
 Please note that up to and including RMG-Py version 2.3.0 these files showed mole fraction of each species at each step, but they now show amount (number of moles) of each species; you must divide by the sum if you wish to get a mole fraction.
+
+------------------------------
+Cantera Output Folders
+------------------------------
+
+RMG can write mechanisms in `Cantera <https://cantera.org>`_ YAML format via three distinct
+routes, producing up to three output folders.  All three require Cantera to be installed in
+the conda environment (it is included in the standard ``rmg_env``).
+
+``/cantera_from_ck``
+^^^^^^^^^^^^^^^^^^^^
+
+This folder is always produced when the Chemkin writer is enabled (``generateChemkin=True``, the default).
+After the final RMG iteration, Cantera's own ``ck2yaml`` converter is used to translate the Chemkin-format files in ``/chemkin`` into Cantera YAML.
+This is the most thoroughly tested route and is the recommended output for production use.
+
+``/cantera1`` *(beta)*
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+   The ``cantera1`` writer is in **beta**.  It uses the Cantera Python API to construct and
+   serialise the mechanism YAML, rather than writing the YAML by hand.  It has been less
+   extensively tested than the ``cantera_from_ck`` route.  Please report any discrepancies.
+
+This folder is created when ``generateCanteraYAML1=True`` is set in the ``options()`` block
+(disabled by default).  The writer runs after every RMG iteration (or on the schedule set by
+``saveInterval``), so the folder accumulates a history of the growing mechanism.
+
+Files generated:
+
+* ``chem{NNNN}.yaml`` — mechanism snapshot at the iteration when the core contained *NNNN*
+  species (e.g. ``chem0042.yaml``)
+* ``chem.yaml`` — copy of the latest snapshot; always reflects the current model state
+* ``chem_annotated.yaml`` — annotated version with SMILES, source, and kinetics comments
+  (written when ``verboseComments=True`` for this writer)
+* ``chem_edge{NNNN}.yaml`` / ``chem_edge.yaml`` / ``chem_edge_annotated.yaml`` — edge-model
+  equivalents (written when ``saveEdge=True``)
+* ``comparison_report.txt`` — numerical comparison of ``chem.yaml`` against the
+  ``cantera_from_ck`` translation (written at the end of the run if both writers are enabled;
+  see below)
+
+``/cantera2`` *(beta)*
+^^^^^^^^^^^^^^^^^^^^^^
+
+.. note::
+
+   The ``cantera2`` writer is in **beta**.  It generates Cantera YAML directly from RMG's
+   internal Python data structures, without going through the Chemkin intermediate.  While
+   it should produce valid mechanisms, it has been less extensively tested than the
+   ``cantera_from_ck`` route.  Please report any discrepancies.
+
+This folder is created when ``generateCanteraYAML2=True`` is set in the ``options()`` block
+(disabled by default).  Like ``cantera1``, it runs at every iteration (or on the configured
+schedule).
+
+Files generated:
+
+* ``chem{NNNN}.yaml`` / ``chem.yaml`` — latest mechanism snapshot and its labelled history
+* ``chem_annotated.yaml`` — annotated version (written when ``verboseComments=True``)
+* ``chem_edge{NNNN}.yaml`` / ``chem_edge.yaml`` / ``chem_edge_annotated.yaml`` — edge-model
+  equivalents (written when ``saveEdge=True``)
+* ``comparison_report.txt`` — numerical comparison against the ``cantera_from_ck``
+  translation (written at the end of the run if both writers are enabled)
+
+Comparison Reports
+^^^^^^^^^^^^^^^^^^
+
+When a direct-writer folder (``cantera1`` or ``cantera2``) is used alongside the Chemkin
+writer, RMG automatically compares the final ``chem.yaml`` from that folder against the
+``cantera_from_ck/chem.yaml`` produced by ``ck2yaml``.  The comparison checks differences
+in the yaml data. Not all differences are necessarily problematic.  Results are written to
+``comparison_report.txt`` inside the relevant direct-writer folder.
+
+If you find that the two routes disagree in a problematic way, please open an issue on the
+`RMG-Py GitHub repository <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`_
+and include the ``comparison_report.txt`` and a minimal reproducing ``input.py``.
+
+------------------------------
+The RMS YAML Folder
+------------------------------
+
+The ``/rms`` folder contains the mechanism in
+`ReactionMechanismSimulator (RMS) <https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl>`_
+YAML format.  This writer is enabled by default (``generateRMSYAML=True``) and writes at
+every iteration, unless configured otherwise by ``saveInterval``.

@@ -53,7 +53,7 @@ from rmgpy.rmg.reactionmechanismsimulator_reactors import (
     ConstantVIdealGasReactor,
     Reactor,
 )
-from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
+from rmgpy.rmg.settings import ModelSettings, SimulatorSettings, WriterConfig
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
@@ -1418,10 +1418,65 @@ def pressure_dependence(
             rmg.reaction_model.add_completed_pdep_network(formula)
 
 
+def _parse_writer_config(value, default_save_interval=1):
+    """
+    Parse an output-writer configuration value from an input file.
+
+    Parameters
+    ----------
+    value : bool or dict
+        ``False`` disables the writer.  ``True`` enables it with
+        *default_save_interval*.  A dict may contain the keys
+        ``'saveInterval'`` (int), ``'verboseComments'`` (bool), and
+        ``'saveEdge'`` (bool).
+    default_save_interval : int
+        Save interval to use when ``value`` is ``True``.
+
+    Returns
+    -------
+    WriterConfig
+    """
+    if value is False:
+        return WriterConfig(save_interval=0)
+    if value is True:
+        return WriterConfig(save_interval=default_save_interval)
+    if isinstance(value, dict):
+        si = value.get('saveInterval', default_save_interval)
+        return WriterConfig(
+            save_interval=si,
+            verbose_comments=value.get('verboseComments', None),
+            save_edge=value.get('saveEdge', None),
+        )
+    raise InputError(
+        f"Writer config must be True, False, or a dict with keys "
+        f"'saveInterval', 'verboseComments', 'saveEdge'; got {type(value).__name__!r}"
+    )
+
+
+def _writer_config_to_input(cfg):
+    """
+    Serialize a WriterConfig back to a value suitable for writing into an
+    RMG input file (i.e. ``True``, ``False``, or a dict literal string).
+    """
+    if cfg is None or not cfg.enabled:
+        return False
+    has_overrides = (cfg.verbose_comments is not None or cfg.save_edge is not None)
+    if cfg.save_interval == 1 and not has_overrides:
+        return True
+    parts = [f"'saveInterval': {cfg.save_interval}"]
+    if cfg.verbose_comments is not None:
+        parts.append(f"'verboseComments': {cfg.verbose_comments}")
+    if cfg.save_edge is not None:
+        parts.append(f"'saveEdge': {cfg.save_edge}")
+    return '{' + ', '.join(parts) + '}'
+
+
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
-            generateOutputHTML=False, generatePlots=False, generatePESDiagrams=False, saveSimulationProfiles=False, verboseComments=False,
-            saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00',
-            saveSeedModulus=-1):
+            generateOutputHTML=False, generatePlots=False, generatePESDiagrams=False, saveSimulationProfiles=False,
+            verboseComments=False, saveEdgeSpecies=False, keepIrreversible=False,
+            trimolecularProductReversible=True, wallTime='00:00:00:00', saveSeedModulus=-1,
+            generateChemkin=True, generateRMSYAML=True,
+            generateCanteraYAML1=False, generateCanteraYAML2=False):
     if saveRestartPeriod:
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
                         "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
@@ -1434,7 +1489,7 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
     rmg.units = units
     if generateOutputHTML:
         logging.warning('Generate Output HTML option was turned on. Note that this will slow down model generation.')
-    rmg.generate_output_html = generateOutputHTML
+    rmg.generate_output_html = bool(generateOutputHTML)
     rmg.generate_plots = generatePlots
     rmg.generate_PES_diagrams = generatePESDiagrams
     if generatePESDiagrams:
@@ -1449,6 +1504,12 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
     rmg.trimolecular_product_reversible = trimolecularProductReversible
     rmg.walltime = wallTime
     rmg.save_seed_modulus = saveSeedModulus
+
+    rmg.chemkin_writer_config = _parse_writer_config(generateChemkin)
+    rmg.rms_writer_config = _parse_writer_config(generateRMSYAML)
+    rmg.cantera1_writer_config = _parse_writer_config(generateCanteraYAML1)
+    rmg.cantera2_writer_config = _parse_writer_config(generateCanteraYAML2)
+    rmg.html_writer_config = _parse_writer_config(generateOutputHTML)
 
 
 def generated_species_constraints(**kwargs):
@@ -1937,7 +1998,7 @@ def save_input_file(path, rmg):
     # Options
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
-    f.write('    generateOutputHTML = {0},\n'.format(rmg.generate_output_html))
+    f.write('    generateOutputHTML = {0},\n'.format(_writer_config_to_input(rmg.html_writer_config)))
     f.write('    generatePlots = {0},\n'.format(rmg.generate_plots))
     f.write('    generatePESDiagrams = {0},\n'.format(rmg.generate_PES_diagrams))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.save_simulation_profiles))
@@ -1946,6 +2007,12 @@ def save_input_file(path, rmg):
     f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
     f.write('    wallTime = {0},\n'.format(rmg.walltime))
+    f.write('    generateChemkin = {0},\n'.format(_writer_config_to_input(rmg.chemkin_writer_config)))
+    f.write('    generateRMSYAML = {0},\n'.format(_writer_config_to_input(rmg.rms_writer_config)))
+    if rmg.cantera1_writer_config and rmg.cantera1_writer_config.enabled:
+        f.write('    generateCanteraYAML1 = {0},\n'.format(_writer_config_to_input(rmg.cantera1_writer_config)))
+    if rmg.cantera2_writer_config and rmg.cantera2_writer_config.enabled:
+        f.write('    generateCanteraYAML2 = {0},\n'.format(_writer_config_to_input(rmg.cantera2_writer_config)))
     f.write(')\n\n')
 
     f.close()

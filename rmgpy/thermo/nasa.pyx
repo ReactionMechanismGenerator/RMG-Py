@@ -421,7 +421,6 @@ cdef class NASA(HeatCapacityModel):
             poly.change_base_entropy(deltaS)
         return self
 
-    # need to modify this to include the thermo coverage dependence
     def to_cantera(self):
         """
         Return the cantera equivalent NasaPoly2 object from this NASA object.

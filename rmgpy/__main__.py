@@ -62,11 +62,13 @@ def main():
 
     kwargs = {
         'restart': args.restart,
-        'walltime': args.walltime,
         'maxproc': args.maxproc,
         'kineticsdatastore': args.kineticsdatastore,
-        'max_iterations': args.maxiter,
     }
+    if args.walltime is not None:
+        kwargs['walltime'] = args.walltime
+    if args.maxiter is not None:
+        kwargs['max_iterations'] = args.maxiter
 
     if args.profile:
         import cProfile

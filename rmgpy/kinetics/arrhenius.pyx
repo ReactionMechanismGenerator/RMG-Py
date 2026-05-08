@@ -946,17 +946,24 @@ cdef class PDepArrhenius(PDepKineticsModel):
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
         Sets a Cantera PlogReaction()'s `rates` attribute with
-        A list of tuples containing [(pressure in Pa, cantera arrhenius object), (..)]
+        a list of tuples containing [(pressure in Pa, cantera arrhenius object), ...].
+
+        A ``MultiArrhenius`` entry (from chemkin PLOG blocks with duplicate
+        pressures) is expanded into one tuple per inner Arrhenius; Cantera's
+        PlogRate sums duplicate-pressure entries at evaluation.
         """
         import cantera as ct
-        import copy
         assert isinstance(ct_reaction.rate, ct.PlogRate), "Must have a Cantera PlogRate attribute"
 
-        pressures = copy.deepcopy(self._pressures.value_si)
-        ctArrhenius = [arr.to_cantera_kinetics(arrhenius_class=True) for arr in self.arrhenius]
+        rate_pairs = []
+        for P, arr in zip(self._pressures.value_si, self.arrhenius):
+            if isinstance(arr, MultiArrhenius):
+                for sub in arr.arrhenius:
+                    rate_pairs.append((P, sub.to_cantera_kinetics(arrhenius_class=True)))
+            else:
+                rate_pairs.append((P, arr.to_cantera_kinetics(arrhenius_class=True)))
 
-        new_rates = ct.PlogRate(list(zip(pressures, ctArrhenius)))
-        ct_reaction.rate = new_rates
+        ct_reaction.rate = ct.PlogRate(rate_pairs)
 
 ################################################################################
 

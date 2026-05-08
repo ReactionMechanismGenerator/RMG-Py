@@ -206,7 +206,7 @@ class TestRMGScript:
         args = parse_command_line_arguments(["input.py"])
 
         # Test default values
-        assert args.walltime == "00:00:00:00"
+        assert args.walltime is None
         assert args.output_directory == os.path.abspath(os.path.dirname("./"))
         assert args.debug == False
         assert args.file == "input.py"

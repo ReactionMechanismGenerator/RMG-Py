@@ -33,6 +33,10 @@ Reaction Mechanism Simulator (RMS)
 """
 
 import os
+try:
+    from yaml import CDumper as Dumper
+except ImportError:
+    from yaml import Dumper
 import yaml
 import logging
 
@@ -49,7 +53,7 @@ from rmgpy.kinetics.surface import StickingCoefficient, SurfaceChargeTransfer
 from rmgpy.util import make_output_subdirectory
 
 
-def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"):
+def convert_chemkin_to_rms(chemkin_path, dictionary_path=None, output="chem.rms"):
     if dictionary_path:
         spcs, rxns = load_chemkin_file(chemkin_path, dictionary_path=dictionary_path)
     else:
@@ -57,10 +61,10 @@ def convert_chemkin_to_yml(chemkin_path, dictionary_path=None, output="chem.rms"
     write_yml(spcs, rxns, path=output)
 
 
-def write_yml(spcs, rxns, solvent=None, solvent_data=None, path="chem.yml"):
+def write_rms(spcs, rxns, solvent=None, solvent_data=None, path="chem.rms"):
     result_dict = get_mech_dict(spcs, rxns, solvent=solvent, solvent_data=solvent_data)
     with open(path, 'w') as f:
-        yaml.dump(result_dict, stream=f)
+        yaml.dump(result_dict, stream=f, Dumper=Dumper, sort_keys=False)
 
 
 def get_mech_dict(spcs, rxns, solvent='solvent', solvent_data=None):
@@ -270,14 +274,18 @@ class RMSWriter(object):
     rmg.detach(listener)
 
     """
-    def __init__(self, output_directory=''):
+    def __init__(self, output_directory='', config=None):
         super(RMSWriter, self).__init__()
         self.output_directory = output_directory
+        self.config = config
         make_output_subdirectory(output_directory, 'rms')
 
     def update(self, rmg):
+        if self.config is not None and not self.config.should_write(
+                rmg.reaction_model.iteration_num, rmg.is_final_save):
+            return
         solvent_data = None
         if rmg.solvent:
             solvent_data = rmg.database.solvation.get_solvent_data(rmg.solvent)
-        write_yml(rmg.reaction_model.core.species, rmg.reaction_model.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
+        write_rms(rmg.reaction_model.core.species, rmg.reaction_model.core.reactions, solvent=rmg.solvent, solvent_data=solvent_data,
                   path=os.path.join(self.output_directory, 'rms', 'chem{}.rms').format(len(rmg.reaction_model.core.species)))
