@@ -343,6 +343,68 @@ class TestUncertainty:
         assert np.isclose(sorted_thermo_variances, expected_correlated_thermo_variances).all()
         assert sorted_thermo_names == expected_correlated_thermo_labels
 
+    def test_covariance_matrices(self):
+        """
+        Test that the covariance matrices are being constructed correctly, and that the correlated uncertainties are different from the uncorrelated ones
+        """
+
+        # have to add an extra reaction to see any kinetic correlations
+        # copy reaction 4 and change the index so it is a new reaction, but with the same source (rate rule) as the original reaction
+        extra_reaction = copy.deepcopy(self.uncertainty.reaction_list[4])
+        self.uncertainty.reaction_list.append(extra_reaction)
+        try:  # this will still error out if there's a problem, but will reset the reaction list so it doesn't affect other tests
+            self.uncertainty.extract_sources_from_model()  # this will assign the same source to the new reaction as the original reaction
+
+            self.uncertainty.assign_parameter_uncertainties(correlated=False)
+            uncorrelated_thermo_inputs = np.array(self.uncertainty.thermo_input_uncertainties)
+            uncorrelated_kinetic_inputs = np.array(self.uncertainty.kinetic_input_uncertainties)
+
+            self.uncertainty.assign_intermediate_uncertainties(correlated=False)
+            uncorrelated_thermo_covariance = self.uncertainty.get_thermo_covariance_matrix()
+            uncorrelated_kinetic_covariance = self.uncertainty.get_kinetic_covariance_matrix()
+            
+            self.uncertainty.assign_intermediate_uncertainties(correlated=True)
+            correlated_thermo_covariance = self.uncertainty.get_thermo_covariance_matrix()
+            correlated_kinetic_covariance = self.uncertainty.get_kinetic_covariance_matrix()
+            Sigma_ww_thermo = self.uncertainty._get_intermediate_thermo_covariance_matrix()
+            Sigma_ww_kinetics = self.uncertainty._get_intermediate_kinetics_covariance_matrix()
+        finally:
+            self.uncertainty.reaction_list.pop()  # remove the extra reaction so it doesn't affect other tests
+        
+        # check that the diagonal elements of the correlated and uncorrelated covariance matrices are the same and equal to the squares of the input uncertainties
+        np.testing.assert_allclose(np.diag(uncorrelated_thermo_covariance), np.float_power(uncorrelated_thermo_inputs, 2.0), rtol=1e-4)
+        np.testing.assert_allclose(np.diag(correlated_thermo_covariance), np.float_power(uncorrelated_thermo_inputs, 2.0), rtol=1e-4)
+        np.testing.assert_allclose(np.diag(uncorrelated_kinetic_covariance), np.float_power(uncorrelated_kinetic_inputs, 2.0), rtol=1e-4)
+        np.testing.assert_allclose(np.diag(correlated_kinetic_covariance), np.float_power(uncorrelated_kinetic_inputs, 2.0), rtol=1e-4)
+
+        # check that the off-diagonal elements of the uncorrelated covariance matrix are zero
+        off_diagonal_kinetic_uncorrelated = uncorrelated_kinetic_covariance - np.diag(np.diag(uncorrelated_kinetic_covariance))
+        assert np.allclose(off_diagonal_kinetic_uncorrelated, 0, atol=1e-8)
+        off_diagonal_thermo_uncorrelated = uncorrelated_thermo_covariance - np.diag(np.diag(uncorrelated_thermo_covariance))
+        assert np.allclose(off_diagonal_thermo_uncorrelated, 0, atol=1e-8)
+
+        # check that the off-diagonal elements of the correlated covariance matrix are not all zero
+        off_diagonal_kinetic_correlated = correlated_kinetic_covariance - np.diag(np.diag(correlated_kinetic_covariance))
+        assert not np.allclose(off_diagonal_kinetic_correlated, 0, atol=1e-8)
+        off_diagonal_thermo_correlated = correlated_thermo_covariance - np.diag(np.diag(correlated_thermo_covariance))
+        assert not np.allclose(off_diagonal_thermo_correlated, 0, atol=1e-8)
+
+        # check that the correlated covariance matrices are symmetric
+        assert np.allclose(correlated_kinetic_covariance, correlated_kinetic_covariance.T, atol=1e-8)
+        assert np.allclose(correlated_thermo_covariance, correlated_thermo_covariance.T, atol=1e-8)
+        assert np.allclose(Sigma_ww_kinetics, Sigma_ww_kinetics.T, atol=1e-8)
+        assert np.allclose(Sigma_ww_thermo, Sigma_ww_thermo.T, atol=1e-8)
+
+        # check that the matrix is positive semi-definite by confirming that all eigenvalues are non-negative
+        kinetic_eigenvalues = np.linalg.eigvals(correlated_kinetic_covariance)
+        assert np.all(kinetic_eigenvalues >= -1e-8)  # allow for small numerical errors
+        thermo_eigenvalues = np.linalg.eigvals(correlated_thermo_covariance)
+        assert np.all(thermo_eigenvalues >= -1e-8)  # allow for small numerical errors
+        intermediate_kinetic_eigenvalues = np.linalg.eigvals(Sigma_ww_kinetics)
+        assert np.all(intermediate_kinetic_eigenvalues >= -1e-8)
+        intermediate_thermo_eigenvalues = np.linalg.eigvals(Sigma_ww_thermo)
+        assert np.all(intermediate_thermo_eigenvalues >= -1e-8)
+
     def test_specific_species_uncertainties(self):
         """
         Test uncertainties for a few specific examples
