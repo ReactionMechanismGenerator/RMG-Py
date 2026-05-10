@@ -1869,3 +1869,180 @@ class MassFluxAccumulator:
         if motif_key not in self._records:
             return 0.0
         return sum(m for (_, m) in self._records[motif_key])
+
+
+def _bfs_grow_heavy_subset(
+    start: 'Atom',
+    size: int,
+) -> Optional[Set['Atom']]:
+    """BFS-grow a connected subset of ``size`` heavy atoms starting at ``start``.
+
+    Returns the set, or ``None`` if a connected subset of that size is not
+    reachable from ``start`` via heavy-atom-only edges.
+    """
+    if start.element.symbol == 'H':
+        return None
+    visited: Set[Atom] = {start}
+    if size == 1:
+        return visited
+    queue: List[Atom] = [start]
+    while queue and len(visited) < size:
+        a = queue.pop(0)
+        for nbr in a.edges.keys():
+            if nbr.element.symbol != 'H' and nbr not in visited:
+                visited.add(nbr)
+                if len(visited) == size:
+                    break
+                queue.append(nbr)
+    return visited if len(visited) == size else None
+
+
+def _atom_subset_to_group(sub_atoms: Set['Atom']) -> Optional[Group]:
+    """Build a :class:`Group` pattern from an arbitrary subset of Atoms.
+
+    Mirrors :meth:`Molecule.to_group` but iterates a subset; bonds are added
+    only for edges whose both endpoints are in the subset.
+    """
+    if not sub_atoms:
+        return None
+    atom_to_group: Dict['Atom', GroupAtom] = {}
+    for atom in sub_atoms:
+        ga = GroupAtom(
+            atomtype=[atom.atomtype],
+            radical_electrons=[atom.radical_electrons],
+            charge=[atom.charge],
+            lone_pairs=[atom.lone_pairs],
+            label=getattr(atom, 'label', '') or '',
+        )
+        atom_to_group[atom] = ga
+    group = Group(atoms=list(atom_to_group.values()))
+    seen: Set[Tuple[int, int]] = set()
+    for atom in sub_atoms:
+        for bonded, bond in atom.edges.items():
+            if bonded in atom_to_group:
+                key = tuple(sorted((id(atom), id(bonded))))
+                if key in seen:
+                    continue
+                seen.add(key)
+                group.add_bond(
+                    GroupBond(atom_to_group[atom], atom_to_group[bonded],
+                              order=[bond.order])
+                )
+    group.update()
+    return group
+
+
+def count_disjoint_subgraph_isomorphisms(
+    mol: Molecule,
+    group: Group,
+) -> int:
+    """Count how many mutually disjoint occurrences of ``group`` appear in ``mol``.
+
+    Greedy Maximum Set Packing over :meth:`Molecule.find_subgraph_isomorphisms`.
+    Mirrors the pattern used inside :func:`_analyze_wing_matches`.
+    """
+    if group is None:
+        return 0
+    try:
+        mappings = mol.find_subgraph_isomorphisms(group, save_order=True)
+    except (NotImplementedError, AttributeError, ValueError):
+        return 0
+    if not mappings:
+        return 0
+    occupied: Set[int] = set()
+    count = 0
+    for mapping in mappings:
+        atoms_used = {id(a) for a in mapping.keys()}
+        if not atoms_used & occupied:
+            count += 1
+            occupied |= atoms_used
+    return count
+
+
+def discover_repeat_motif(
+    mol: Molecule,
+    *,
+    min_motif_size: int = 2,
+) -> Optional[Group]:
+    """Auto-detect a repeat motif within ``mol`` (design doc §4.2).
+
+    Returns a :class:`Group` pattern that occurs at least twice as a
+    disjoint subgraph in ``mol``, or ``None`` if no such motif exists.
+
+    Algorithm: enumerate connected heavy-atom subsets of varying sizes,
+    test each for ≥2 disjoint isomorphisms, prefer the motif that
+    maximises the disjoint occurrence count (tie-break: smaller motif —
+    more "basic" repeat unit). Phase-1 implementation; pathologically
+    large products may be slow. See design doc §10.
+    """
+    heavy = [a for a in mol.atoms if a.element.symbol != 'H']
+    if len(heavy) < 2 * min_motif_size:
+        return None
+    max_size = len(heavy) // 2
+
+    seen_signatures: Set[frozenset] = set()
+    best: Optional[Tuple[int, int, Group]] = None  # (n_occ, size, group)
+
+    for start in heavy:
+        for size in range(min_motif_size, max_size + 1):
+            sub_atoms = _bfs_grow_heavy_subset(start, size)
+            if sub_atoms is None or len(sub_atoms) != size:
+                continue
+            sig = frozenset(id(a) for a in sub_atoms)
+            if sig in seen_signatures:
+                continue
+            seen_signatures.add(sig)
+
+            group = _atom_subset_to_group(sub_atoms)
+            if group is None:
+                continue
+            n_occ = count_disjoint_subgraph_isomorphisms(mol, group)
+            if n_occ < 2:
+                continue
+            # Selection: max n_occ, tie-break smaller size (more "basic" motif).
+            score = (n_occ, -size)
+            if best is None or score > (best[0], -best[1]):
+                best = (n_occ, size, group)
+    return best[2] if best else None
+
+
+def similarity_merge(
+    candidate: Union[Group, Molecule],
+    pool_registry: List['Polymer'],
+) -> Optional['Polymer']:
+    """Return an existing pool whose monomer pattern matches ``candidate``.
+
+    Used as the first phase of the spawn-trigger pipeline (design doc §4.3):
+    before treating a detected motif as novel, check whether it is already
+    represented by a live pool. If so, the caller should extend that pool's
+    feature_monomer set rather than spawning a new pool.
+
+    Returns ``None`` if no pool matches.
+    """
+    if not pool_registry:
+        return None
+
+    for pool in pool_registry:
+        try:
+            pool_pattern = pool.backbone_group
+        except Exception:
+            continue
+        if pool_pattern is None:
+            continue
+
+        if isinstance(candidate, Group):
+            try:
+                if candidate.is_isomorphic(pool_pattern):
+                    return pool
+            except (NotImplementedError, AttributeError, ValueError):
+                pass
+        elif isinstance(candidate, Molecule):
+            # A whole molecule "merges" if it contains the pool's backbone as
+            # a subgraph. Best-effort: gives the right answer for the synthetic
+            # tests; the production caller passes Group from discover_repeat_motif.
+            try:
+                if candidate.is_subgraph_isomorphic(pool_pattern):
+                    return pool
+            except (NotImplementedError, AttributeError, ValueError):
+                pass
+    return None

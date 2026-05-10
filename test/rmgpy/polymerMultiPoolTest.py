@@ -95,10 +95,10 @@ class TestDiscoverRepeatMotif:
         mol = Molecule().from_adjacency_list(PE_3MER_ADJ)
         motif = discover_repeat_motif(mol)
         assert motif is not None, "PE 3-mer must yield a discoverable motif"
-        # Heuristic: the motif's heavy-atom count should equal one ethylene unit (2 C).
-        heavy_atoms = [a for a in motif.atoms if a.element.symbol != "H"]
-        assert len(heavy_atoms) == 2, (
-            f"PE motif should be ethylene-sized; got {len(heavy_atoms)} heavy atoms"
+        # The motif is a Group built from heavy atoms only; one ethylene
+        # repeat unit has 2 atoms.
+        assert len(motif.atoms) == 2, (
+            f"PE motif should be ethylene-sized; got {len(motif.atoms)} GroupAtoms"
         )
 
     def test_motif_count_meets_cutoff(self):
