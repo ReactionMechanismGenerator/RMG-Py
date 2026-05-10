@@ -164,7 +164,7 @@ The signature is a canonical SMARTS or RMG `Group` adjacency-list hash. Trailing
 ```
 1. for intent in queued_spawn_intents:
 2.     new_pool = Polymer(
-3.         label=auto_label(intent.parent_pool, intent.monomer),  # e.g., "carbon_phenol_d1"
+3.         label=auto_label(intent.parent_pool, intent.monomer),  # e.g., "phenol_formaldehyde_d1"
 4.         monomer=intent.monomer,
 5.         feature_monomer=None,
 6.         end_groups=intent.end_groups,
@@ -238,11 +238,11 @@ Path: `<output_dir>/polymer_pools.json` alongside `chem.yaml`.
   "rmg_iteration": 12,
   "pools": [
     {
-      "label": "carbon_phenol",
+      "label": "phenol_formaldehyde",
       "monomer_smiles": "[CH2]c1c(O)c([CH2])c(C)cc1",
       "monomer_adj_list": "1 C u1 ...",      // RMG adjacency list, exact pattern
       "feature_monomers_smiles": [],
-      "end_groups": ["[CH3]", "[H]"],
+      "end_groups": ["[H]", "[H]"],
       "cutoff": 3,
       "parent_pool": null,                     // root
       "spawn_iteration": 0,
@@ -251,13 +251,13 @@ Path: `<output_dir>/polymer_pools.json` alongside `chem.yaml`.
       "current_moments": {"mu0": 1.2e-3, "mu1": 0.84, "mu2": 612.4}   // optional snapshot
     },
     {
-      "label": "carbon_phenol_d1",
+      "label": "phenol_formaldehyde_d1",
       "monomer_smiles": "...",
       "monomer_adj_list": "...",
       "feature_monomers_smiles": [],
-      "end_groups": ["[CH3]", "[H]"],
+      "end_groups": ["[H]", "[H]"],
       "cutoff": 3,
-      "parent_pool": "carbon_phenol",
+      "parent_pool": "phenol_formaldehyde",
       "spawn_iteration": 7,
       "spawn_event_metadata": {
         "triggering_product_smiles": "...",
@@ -321,7 +321,7 @@ Assertions:
 Run a small carbon-phenol model with limited families and constraints (so it finishes in ~5 min on CI). Assertions:
 - `polymer_pools.json` is emitted with `schema_version` set
 - `len(pools) >= 2`
-- At least one pool has `parent_pool == "carbon_phenol"`
+- At least one pool has `parent_pool == "phenol_formaldehyde"`
 - Mass-balance invariant holds across the run within 1e-6
 - No NaN in any μ trajectory
 - `<pool_label>_muN` pseudo-species appear in cantera YAML output
