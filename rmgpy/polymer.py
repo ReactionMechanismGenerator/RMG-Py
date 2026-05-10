@@ -95,6 +95,10 @@ In short:
 
 """
 
+import datetime
+import json
+import os
+
 import numpy as np
 from collections import defaultdict
 from copy import deepcopy
@@ -2126,6 +2130,103 @@ def process_polymer_candidates_multipool(
         processed.append(cand)
 
     return processed, spawn_intents
+
+
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION = "1.0"
+POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
+
+
+def _serialize_pool_for_sidecar(pool: 'Polymer') -> Dict[str, Any]:
+    """Convert a :class:`Polymer` instance to a JSON-serialisable dict.
+
+    Schema: see ``docs/multi_pool_design.md`` §6.
+    """
+    monomer_smiles = ""
+    monomer_adj_list = ""
+    try:
+        if getattr(pool, "monomer", None) is not None:
+            monomer_smiles = pool.monomer.to_smiles() if hasattr(pool.monomer, "to_smiles") else ""
+            monomer_adj_list = (
+                pool.monomer.to_adjacency_list() if hasattr(pool.monomer, "to_adjacency_list") else ""
+            )
+    except Exception:
+        pass
+
+    feature_smiles: List[str] = []
+    feature_attr = getattr(pool, "feature_monomers", None) or (
+        [pool.feature_monomer] if getattr(pool, "feature_monomer", None) else []
+    )
+    for fm in feature_attr:
+        try:
+            if hasattr(fm, "to_smiles"):
+                feature_smiles.append(fm.to_smiles())
+        except Exception:
+            continue
+
+    spawn_metadata = getattr(pool, "spawn_metadata", None) or {"source": "input"}
+    mu_indices = getattr(pool, "mu_indices", None)
+    if mu_indices is not None and not isinstance(mu_indices, dict):
+        try:
+            mu0_idx, mu1_idx, mu2_idx = mu_indices
+            mu_indices = {"mu0_idx": mu0_idx, "mu1_idx": mu1_idx, "mu2_idx": mu2_idx}
+        except Exception:
+            mu_indices = None
+
+    return {
+        "label": getattr(pool, "label", ""),
+        "monomer_smiles": monomer_smiles,
+        "monomer_adj_list": monomer_adj_list,
+        "feature_monomers_smiles": feature_smiles,
+        "end_groups": [
+            eg.to_smiles() if hasattr(eg, "to_smiles") else str(eg)
+            for eg in (getattr(pool, "end_groups", []) or [])
+        ],
+        "cutoff": getattr(pool, "cutoff", None),
+        "parent_pool": getattr(pool, "parent_pool_label", None),
+        "spawn_iteration": getattr(pool, "spawn_iteration", 0),
+        "spawn_event_metadata": spawn_metadata,
+        "mu_indices": mu_indices,
+    }
+
+
+def write_polymer_pools_sidecar(
+    pool_registry: List['Polymer'],
+    output_dir: str,
+    iteration: int = 0,
+    filename: str = POLYMER_POOLS_SIDECAR_FILENAME,
+) -> str:
+    """Emit ``polymer_pools.json`` alongside ``chem.yaml`` (design doc §6).
+
+    The TA-side mechanism loader (``~/Code/TA``) consumes this file in
+    lock-step with the cantera YAML to recover pool semantics that cannot
+    be reverse-inferred from ``<label>_muN`` pseudo-species names.
+
+    Parameters
+    ----------
+    pool_registry : list of Polymer
+        All live pools at the time of writing.
+    output_dir : str
+        Directory where ``chem.yaml`` is being written.
+    iteration : int
+        RMG iteration number. Recorded in the sidecar header.
+    filename : str
+        Override the default basename. Defaults to ``polymer_pools.json``.
+
+    Returns
+    -------
+    str
+        Absolute path of the written file.
+    """
+    payload = {
+        "schema_version": POLYMER_POOLS_SIDECAR_SCHEMA_VERSION,
+        "generated_at": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "rmg_iteration": int(iteration),
+        "pools": [_serialize_pool_for_sidecar(p) for p in pool_registry],
+    }
+    path = os.path.join(output_dir, filename)
+    with open(path, "w", encoding="utf-8") as fh:
+        json.dump(payload, fh, indent=2, default=str)
+    return path
 
 
 def _tag_polymer_proxy(cand: 'Species', *, is_proxy: bool) -> None:

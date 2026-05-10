@@ -257,6 +257,67 @@ class TestProcessPolymerCandidatesMultiPool:
 # SpawnIntent dataclass shape
 # ---------------------------------------------------------------------------
 
+class TestPolymerPoolsSidecar:
+    """Sidecar JSON writer (``polymer_pools.json``) — design doc §6."""
+
+    def test_writes_valid_schema(self, parent_polymer, tmp_path):
+        import json
+        from rmgpy.polymer import (
+            POLYMER_POOLS_SIDECAR_SCHEMA_VERSION,
+            write_polymer_pools_sidecar,
+        )
+
+        path = write_polymer_pools_sidecar(
+            pool_registry=[parent_polymer],
+            output_dir=str(tmp_path),
+            iteration=0,
+        )
+        with open(path, "r", encoding="utf-8") as fh:
+            data = json.load(fh)
+
+        assert data["schema_version"] == POLYMER_POOLS_SIDECAR_SCHEMA_VERSION
+        assert data["rmg_iteration"] == 0
+        assert isinstance(data["pools"], list) and len(data["pools"]) == 1
+        pool = data["pools"][0]
+        assert pool["label"] == "PE"
+        assert pool["end_groups"] == ["[H]", "[H]"]
+        assert pool["cutoff"] == 3
+        # Root pool has no parent.
+        assert pool["parent_pool"] is None
+
+    def test_serialises_multiple_pools(self, parent_polymer, tmp_path):
+        import json
+        from rmgpy.polymer import write_polymer_pools_sidecar
+
+        # Synthesize a second pool by hand to exercise multi-pool serialisation.
+        second = Polymer(
+            label="PE_d1",
+            monomer="[CH2][CH2]",
+            end_groups=["[H]", "[H]"],
+            cutoff=3,
+            Mn=800.0,
+            Mw=1500.0,
+            initial_mass=0.5,
+        )
+        second.parent_pool_label = parent_polymer.label
+        second.spawn_iteration = 7
+        second.spawn_metadata = {"triggering_dp": 4, "mass_flux_at_spawn": 0.012}
+        second.mu_indices = (41, 42, 43)
+
+        path = write_polymer_pools_sidecar(
+            pool_registry=[parent_polymer, second],
+            output_dir=str(tmp_path),
+            iteration=7,
+        )
+        data = json.loads(open(path).read())
+        assert len(data["pools"]) == 2
+        d1 = data["pools"][1]
+        assert d1["parent_pool"] == "PE"
+        assert d1["spawn_iteration"] == 7
+        assert d1["mu_indices"] == {"mu0_idx": 41, "mu1_idx": 42, "mu2_idx": 43}
+        assert d1["spawn_event_metadata"]["triggering_dp"] == 4
+
+
 class TestSpawnIntentShape:
     """The SpawnIntent dataclass must carry the contract fields TA expects."""
 
