@@ -2006,6 +2006,145 @@ def discover_repeat_motif(
     return best[2] if best else None
 
 
+def _estimate_relative_flux(
+    candidate: 'Species',
+    pool_registry: List['Polymer'],
+    reaction_model: Any,
+) -> float:
+    """Estimate the fraction of polymer-derived mass flowing into ``candidate``.
+
+    Phase-1 simplification: when ``reaction_model`` is ``None`` (unit-test
+    path) return 0.5, so the spawn gate is exercised by the threshold knob
+    without needing a full reaction-rate integrator. The real implementation,
+    used during an RMG run, will integrate reaction rates and species
+    molecular weights over the trailing window via :class:`MassFluxAccumulator`
+    (design doc §4.4).
+    """
+    if reaction_model is None:
+        return 0.5
+    # TODO(multi-pool §4.4): real flux calculation against reaction_model
+    return 0.5
+
+
+def process_polymer_candidates_multipool(
+    candidates: List['Species'],
+    reaction_model: Any,
+    pool_registry: List['Polymer'],
+    *,
+    max_pools: int = 5,
+    mass_flux_threshold: float = 0.01,
+    iteration: int = 0,
+    flux_accumulator: Optional[MassFluxAccumulator] = None,
+) -> Tuple[List['Species'], List[SpawnIntent]]:
+    """Multi-pool aware product classification + spawn-intent generation.
+
+    Extends :func:`process_polymer_candidates` (single-pool) per design doc §4.1
+    by:
+
+    * Classifying each candidate against EVERY pool in ``pool_registry``.
+    * Running :func:`discover_repeat_motif` when no existing pool classifies.
+    * Similarity-merging the discovered motif against existing pool patterns.
+    * Gating spawns on a mass-flux threshold and a ``max_pools`` cap.
+
+    Returns
+    -------
+    processed : list of Species
+        Candidates that survived classification (i.e. were not dropped as
+        :attr:`PolymerClass.DISCARD`). All survivors are tagged with
+        ``is_polymer_proxy``.
+    spawn_intents : list of :class:`SpawnIntent`
+        Queued spawn requests to drain between RMG iterations (state-vector
+        resize + solver reinit happens there, design doc §4.5).
+    """
+    processed: List['Species'] = []
+    spawn_intents: List[SpawnIntent] = []
+
+    for cand in candidates:
+        # Phase A: classify against every existing pool, take the first non-trivial hit.
+        matched_pool: Optional['Polymer'] = None
+        matched_class: Optional[PolymerClass] = None
+        for pool in pool_registry:
+            try:
+                klass, _ = classify_structure(cand, pool)
+            except Exception:
+                continue
+            if klass not in (PolymerClass.GAS, PolymerClass.UNKNOWN):
+                matched_pool = pool
+                matched_class = klass
+                break
+
+        if matched_pool is not None:
+            _tag_polymer_proxy(cand, is_proxy=(matched_class != PolymerClass.GAS))
+            if matched_class != PolymerClass.DISCARD:
+                processed.append(cand)
+            continue
+
+        # Phase B: novel-monomer discovery.
+        mol = cand.molecule[0] if getattr(cand, "molecule", None) else None
+        if mol is None:
+            continue
+        motif = discover_repeat_motif(mol)
+        if motif is None:
+            _tag_polymer_proxy(cand, is_proxy=False)
+            continue
+
+        # Phase C: similarity-merge against existing pools.
+        merged_pool = similarity_merge(motif, pool_registry)
+        if merged_pool is not None:
+            _tag_polymer_proxy(cand, is_proxy=True)
+            processed.append(cand)
+            continue
+
+        # Phase D: gates — relative flux and max_pools cap.
+        relative_flux = _estimate_relative_flux(cand, pool_registry, reaction_model)
+        if relative_flux < mass_flux_threshold:
+            _tag_polymer_proxy(cand, is_proxy=True)
+            processed.append(cand)
+            continue
+        if len(pool_registry) >= max_pools:
+            _tag_polymer_proxy(cand, is_proxy=True)
+            processed.append(cand)
+            continue
+
+        # Phase E: queue the spawn intent.
+        triggering_dp = count_disjoint_subgraph_isomorphisms(mol, motif)
+        parent_for_intent = pool_registry[0] if pool_registry else None
+        if parent_for_intent is None:
+            continue
+        spawn_intents.append(
+            SpawnIntent(
+                parent_pool=parent_for_intent,
+                monomer=motif,
+                end_groups=list(parent_for_intent.end_groups),
+                triggering_product=cand,
+                triggering_dp=triggering_dp,
+                triggering_moles=float(getattr(cand, "amount", 1.0)),
+                mass_flux_at_spawn=relative_flux,
+            )
+        )
+        _tag_polymer_proxy(cand, is_proxy=True)
+        processed.append(cand)
+
+    return processed, spawn_intents
+
+
+def _tag_polymer_proxy(cand: 'Species', *, is_proxy: bool) -> None:
+    """Stamp an ``is_polymer_proxy`` flag on a Species and its Molecules.
+
+    Mirrors the tagging block inside :func:`process_polymer_candidates`.
+    """
+    if not hasattr(cand, "props"):
+        cand.props = {}
+    cand.props["is_polymer_proxy"] = is_proxy
+    cand.is_polymer_proxy = is_proxy
+    if getattr(cand, "molecule", None):
+        for m in cand.molecule:
+            if not hasattr(m, "props"):
+                m.props = {}
+            m.props["is_polymer_proxy"] = is_proxy
+            m.is_polymer_proxy = is_proxy
+
+
 def similarity_merge(
     candidate: Union[Group, Molecule],
     pool_registry: List['Polymer'],
