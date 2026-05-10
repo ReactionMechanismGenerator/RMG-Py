@@ -96,8 +96,9 @@ In short:
 """
 
 import numpy as np
+from collections import defaultdict
 from copy import deepcopy
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
 
@@ -1809,3 +1810,62 @@ def get_element_symbol(atom: Union[Atom, GroupAtom]) -> str:
             return min(candidates, key=len)
         return at.label
     raise ValueError(f"Could not extract element from {type(atom)}: {atom}")
+
+
+# ---------------------------------------------------------------------------
+# Dynamic multi-pool spawning — see docs/multi_pool_design.md
+# ---------------------------------------------------------------------------
+
+@dataclass
+class SpawnIntent:
+    """A queued request to spawn a new polymer pool.
+
+    Mirrors the ``polymer_pools.json`` sidecar schema entries (design doc §6).
+    Created during product classification when a structurally novel chain
+    population is detected; drained between RMG iterations to grow the pool
+    registry and resize the solver state vector.
+    """
+
+    parent_pool: 'Polymer'
+    monomer: Union[Group, Molecule]
+    end_groups: List[str]
+    triggering_product: Optional['Species'] = None
+    triggering_dp: int = 0
+    triggering_moles: float = 0.0
+    triggering_reaction_index: Optional[int] = None
+    mass_flux_at_spawn: float = 0.0
+
+
+class MassFluxAccumulator:
+    """Trailing-window accumulator for mass produced into a candidate motif.
+
+    Used by the spawn gate (design doc §4.4): a motif must accumulate at
+    least ``threshold`` fraction of total polymer-derived mass over the
+    last ``window`` RMG iterations before it is allowed to spawn its own
+    pool. Single transient peaks therefore cannot trigger spawning.
+    """
+
+    def __init__(self, window: int = 3):
+        if window < 1:
+            raise ValueError(f"window must be >= 1; got {window}")
+        self.window = window
+        # {motif_key: list of (iteration, mass)}
+        self._records: Dict[str, List[Tuple[int, float]]] = defaultdict(list)
+
+    def record(self, motif_key: str, mass: float, iteration: int) -> None:
+        """Record ``mass`` produced into ``motif_key`` at iteration ``iteration``.
+
+        Entries older than ``window`` iterations relative to the recording
+        iteration are evicted on each call.
+        """
+        cutoff = iteration - self.window + 1
+        self._records[motif_key] = [
+            (i, m) for (i, m) in self._records[motif_key] if i >= cutoff
+        ]
+        self._records[motif_key].append((iteration, float(mass)))
+
+    def flux(self, motif_key: str) -> float:
+        """Sum of masses currently in the rolling window for ``motif_key``."""
+        if motif_key not in self._records:
+            return 0.0
+        return sum(m for (_, m) in self._records[motif_key])
