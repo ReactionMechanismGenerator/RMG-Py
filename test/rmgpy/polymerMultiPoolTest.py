@@ -302,6 +302,33 @@ class TestRegisterSpawnedPools:
         # All daughter Polymers passed to the reaction model.
         assert fake.registered == new_pools
 
+    def test_apply_spawn_intents_drains_and_registers(self, parent_polymer):
+        """End-to-end hook that callers in model.py will use:
+        intents go in, registered Polymers come out, and the reaction
+        model has seen them. Single entry point for the iteration-boundary
+        glue.
+        """
+        from rmgpy.polymer import SpawnIntent, apply_spawn_intents
+
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=parent_polymer.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+            triggering_moles=1.0e-5,
+        )
+        fake = _FakeReactionModel()
+
+        spawned = apply_spawn_intents(
+            fake, [intent], iteration=5,
+            existing_pools=[parent_polymer],
+        )
+
+        assert len(spawned) == 1
+        assert fake.registered == spawned
+        # Daughter's μ-indices land past the parent's default (0,1,2) slots.
+        assert spawned[0].mu_indices == (3, 4, 5)
+
 
 class TestSchulzFloryClosure:
     """Closure helper relating μ₂ to (μ₀, μ₁) for a Schulz-Flory distribution.

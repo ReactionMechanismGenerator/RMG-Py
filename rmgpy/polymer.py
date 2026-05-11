@@ -2323,6 +2323,28 @@ def drain_spawn_intents(
     return new_pools
 
 
+def apply_spawn_intents(
+    reaction_model: Any,
+    intents: List[SpawnIntent],
+    iteration: int,
+    existing_pools: Optional[List['Polymer']] = None,
+) -> List['Polymer']:
+    """Iteration-boundary entry point.
+
+    Drains queued :class:`SpawnIntent`s into new :class:`Polymer` pools and
+    registers each with ``reaction_model``. Returns the materialised pools
+    so the caller can extend its pool registry.
+
+    This is the single hook the RMG main loop will call between iterations
+    (design doc §4.5). The next :meth:`HybridPolymerSystem.initialize_model`
+    sees the expanded core species list and grows the state vector
+    automatically.
+    """
+    new_pools = drain_spawn_intents(intents, iteration, existing_pools=existing_pools)
+    register_spawned_pools(reaction_model, new_pools)
+    return new_pools
+
+
 def register_spawned_pools(
     reaction_model: Any,
     new_pools: List['Polymer'],
