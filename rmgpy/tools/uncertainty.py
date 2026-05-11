@@ -1492,6 +1492,11 @@ class Uncertainty(object):
             thermo_contributions = np.multiply(np.dot(species_sensitivity, dG_dq), np.dot(Sigma_qq_thermo, np.dot(dG_dq.T, species_sensitivity.T)).T)
             kinetic_contributions = np.multiply(np.dot(reaction_sensitivity, dlnkdq), np.dot(Sigma_qq_kinetics, np.dot(dlnkdq.T, reaction_sensitivity.T)).T) 
 
+            for i in range(len(thermo_contributions)):
+                if thermo_contributions[i] < 0:
+                    print(f'Warning: negative contribution to variance from {self.all_thermo_intermediates[i]} of {thermo_contributions[i]}. Setting contribution to 0 for plotting purposes.')
+                    thermo_contributions[i] = 0
+
             total_variance = np.sum(thermo_contributions) + np.sum(kinetic_contributions)
 
             # 5. ------------------------- Make plots --------------------------
