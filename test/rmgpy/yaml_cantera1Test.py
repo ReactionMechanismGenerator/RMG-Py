@@ -294,6 +294,46 @@ class TestYamlCantera1Functions:
         # 5 kJ/mol = 5000 J/mol → ×1000 → 5 000 000 J/kmol
         assert np.isclose(cov["E"], 5e6)
 
+    def test_reaction_to_dicts_surface_spectator_species(self):
+        """SurfaceArrhenius with a spectator species on both sides must not produce efficiencies.
+
+        Cantera's Python API misidentifies a species with equal stoichiometry on
+        both sides (a net spectator / surface catalyst) as a third-body collider,
+        causing input_data to include a spurious 'efficiencies' entry and doubled
+        stoichiometry in the equation string.  reaction_to_dicts must detect and
+        fix this.
+        """
+        # Build a second surface species to act as spectator (adsorbed oxygen)
+        ox = _make_surface_species(
+            "O_X",
+            "1 O u0 p2 c0 {2,D}\n2 X u0 p0 c0 {1,D}",
+            index=6,
+        )
+        # H_X(5) + O_X(6) <=> X(4) + O_X(6)  — O_X is spectator on both sides
+        kin = SurfaceArrhenius(
+            A=(4.18e20, "m^2/(mol*s)"), n=0.0, Ea=(148.7, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[self.hx, ox],
+            products=[self.x, ox],
+            kinetics=kin,
+        )
+        species_list = self.all_surface + [ox]
+        entries = reaction_to_dicts(rxn, species_list)
+        d = entries[0]
+        assert "efficiencies" not in d, (
+            "Spurious 'efficiencies' must not appear for a SurfaceArrhenius reaction "
+            "even when a species appears on both sides."
+        )
+        eq = d["equation"]
+        # O_X(6) should appear exactly once on each side, not doubled
+        assert eq.count("O_X(6)") == 2, (
+            f"Spectator O_X should appear once per side in: {eq}"
+        )
+        assert "2 O_X" not in eq, (
+            f"Spectator stoichiometry should not be doubled in: {eq}"
+        )
+
 
 class TestCanteraWriter1:
     """Tests for the CanteraWriter1 class."""
