@@ -257,6 +257,52 @@ class TestProcessPolymerCandidatesMultiPool:
 # SpawnIntent dataclass shape
 # ---------------------------------------------------------------------------
 
+class _FakeReactionModel:
+    """Minimal stand-in for CoreEdgeReactionModel.
+
+    Records every make_new_species call so the test can assert that
+    register_spawned_pools delegated correctly. The real model would
+    proceed to install moment dummies via _register_polymer — that path
+    is covered by the existing TestPolymerRegistration suite, so we
+    only check the delegation here.
+    """
+
+    def __init__(self):
+        self.registered: List = []
+
+    def make_new_species(self, obj, **kwargs):
+        self.registered.append(obj)
+        return obj, True
+
+
+class TestRegisterSpawnedPools:
+    """Daughter pools landed by drain_spawn_intents must be registered with
+    the reaction model so the next RMG iteration's solver sees them as
+    core species and gives them their μ-dummies."""
+
+    def test_each_new_pool_registered_with_reaction_model(self, parent_polymer):
+        from rmgpy.polymer import (
+            SpawnIntent,
+            drain_spawn_intents,
+            register_spawned_pools,
+        )
+
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=parent_polymer.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+            triggering_moles=1.0e-5,
+        )
+        new_pools = drain_spawn_intents([intent], iteration=4)
+        fake = _FakeReactionModel()
+
+        register_spawned_pools(fake, new_pools)
+
+        # All daughter Polymers passed to the reaction model.
+        assert fake.registered == new_pools
+
+
 class TestSchulzFloryClosure:
     """Closure helper relating μ₂ to (μ₀, μ₁) for a Schulz-Flory distribution.
 

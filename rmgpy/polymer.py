@@ -2323,6 +2323,23 @@ def drain_spawn_intents(
     return new_pools
 
 
+def register_spawned_pools(
+    reaction_model: Any,
+    new_pools: List['Polymer'],
+) -> None:
+    """Register each daughter ``Polymer`` with the reaction model.
+
+    Iteration-boundary glue (design doc §4.5). ``reaction_model.make_new_species``
+    (which dispatches to ``_register_polymer`` for ``Polymer`` arguments)
+    handles label disambiguation and the automatic creation of the three
+    ``_mu0`` / ``_mu1`` / ``_mu2`` moment-dummy core species. The next call
+    to :meth:`HybridPolymerSystem.initialize_model` then picks them up via
+    the standard polymer-pool resolution path — no Cython hot-reinit needed.
+    """
+    for poly in new_pools:
+        reaction_model.make_new_species(poly)
+
+
 def _tag_polymer_proxy(cand: 'Species', *, is_proxy: bool) -> None:
     """Stamp an ``is_polymer_proxy`` flag on a Species and its Molecules.
 
