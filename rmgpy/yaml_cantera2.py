@@ -201,6 +201,25 @@ def save_cantera_model(model_container, path, site_density=None, verbose=False):
         # sort_keys=False ensures 'units' comes first, then 'phases', etc.
         yaml.dump(yaml_data, f, Dumper=Dumper, sort_keys=False, default_flow_style=None)
 
+def get_elements_lists():
+    """
+    Returns custom element definitions and the full elements list for phases.
+    """
+    from rmgpy.molecule.element import get_element
+    elements_list = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S',
+                     'F', 'Cl', 'Br', 'I', 'E']
+    isotopes = (('H', 2), ('H', 3), ('C', 13), ('O', 18))
+    custom_elements = []
+    for symbol, isotope in isotopes:
+        element = get_element(symbol, isotope=isotope)
+        chemkin_name = element.chemkin_name
+        mass = 1000 * element.mass
+        custom_elements.append({'symbol': chemkin_name, 'atomic-weight': mass})
+        elements_list.append(chemkin_name)
+    # Surface sites
+    elements_list.append('X')
+    custom_elements.append({'symbol': 'X', 'atomic-weight': 195.083})
+    return custom_elements, elements_list
 
 def generate_cantera_data(species_list,
                           reaction_list,
@@ -253,8 +272,10 @@ def generate_cantera_data(species_list,
             gas_reactions.append(rxn)
 
     # --- 3. Phase Definitions ---
-    base_elements = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'F', 'Cl', 'Br', 'I', 'E']
-    elements_set = set(base_elements)
+    custom_elements, all_elements = get_elements_lists()
+    
+    data['elements'] = custom_elements
+    elements_set = set(all_elements)
 
     if search_for_additional_elements:
         for spc in sorted_species:
