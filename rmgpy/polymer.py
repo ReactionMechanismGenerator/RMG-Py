@@ -2305,6 +2305,20 @@ def drain_spawn_intents(
         new_pool.end_groups_str = list(intent.end_groups)
         new_pool.mu_indices = (next_idx, next_idx + 1, next_idx + 2)
         next_idx += 3
+        new_pool.spawn_metadata = {
+            "triggering_dp": int(intent.triggering_dp),
+            "triggering_moles": N,
+            "mass_flux_at_spawn": float(intent.mass_flux_at_spawn),
+        }
+        tp = intent.triggering_product
+        if tp is not None:
+            try:
+                if getattr(tp, "molecule", None) and tp.molecule:
+                    new_pool.spawn_metadata["triggering_product_smiles"] = (
+                        tp.molecule[0].to_smiles()
+                    )
+            except Exception:
+                pass
         new_pools.append(new_pool)
     return new_pools
 

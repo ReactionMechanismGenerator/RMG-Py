@@ -366,6 +366,27 @@ class TestDrainSpawnIntents:
         # Label is namespaced under the parent so the sidecar can show lineage.
         assert spawned.label.startswith(parent_polymer.label + "_")
 
+    def test_stamps_spawn_event_metadata_for_sidecar(self, parent_polymer):
+        """``write_polymer_pools_sidecar`` reads ``pool.spawn_metadata``;
+        drain must populate it from the intent so the JSON record is complete.
+        """
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=parent_polymer.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=4,
+            triggering_moles=1.42e-5,
+            mass_flux_at_spawn=0.07,
+        )
+        spawned = drain_spawn_intents([intent], iteration=11)[0]
+
+        meta = spawned.spawn_metadata
+        assert meta["triggering_dp"] == 4
+        assert meta["triggering_moles"] == pytest.approx(1.42e-5)
+        assert meta["mass_flux_at_spawn"] == pytest.approx(0.07)
+
     def test_allocates_contiguous_mu_indices_after_existing(self, parent_polymer):
         """Daughter pools must receive μ-indices that don't collide with the
         indices already held by live pools. The Cython solver uses these
