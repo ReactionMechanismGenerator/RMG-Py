@@ -318,6 +318,39 @@ class TestPolymerPoolsSidecar:
         assert d1["spawn_event_metadata"]["triggering_dp"] == 4
 
 
+class TestDrainSpawnIntents:
+    """Pure-Python drain of queued SpawnIntents into new Polymer pools.
+
+    This is the iteration-boundary hook (design doc §4.5) running on the
+    Python side. The Cython solver-reinit half follows separately and
+    consumes the Polymer objects produced here.
+    """
+
+    def test_drains_one_intent_into_one_pool(self, parent_polymer):
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=parent_polymer.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_product=None,
+            triggering_dp=4,
+            triggering_moles=1.42e-5,
+            mass_flux_at_spawn=0.05,
+        )
+
+        new_pools = drain_spawn_intents([intent], iteration=7)
+
+        assert len(new_pools) == 1
+        spawned = new_pools[0]
+        # New pool's structural metadata mirrors the intent + parent.
+        assert spawned.parent_pool_label == parent_polymer.label
+        assert spawned.spawn_iteration == 7
+        assert spawned.end_groups_str == ["[H]", "[H]"]
+        # Label is namespaced under the parent so the sidecar can show lineage.
+        assert spawned.label.startswith(parent_polymer.label + "_")
+
+
 class TestSpawnIntentShape:
     """The SpawnIntent dataclass must carry the contract fields TA expects."""
 

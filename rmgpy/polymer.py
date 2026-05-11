@@ -2229,6 +2229,39 @@ def write_polymer_pools_sidecar(
     return path
 
 
+def drain_spawn_intents(
+    intents: List[SpawnIntent],
+    iteration: int,
+) -> List['Polymer']:
+    """Materialise queued :class:`SpawnIntent`s into new :class:`Polymer` pools.
+
+    Iteration-boundary hook (design doc §4.5). Each returned Polymer carries
+    ``parent_pool_label``, ``spawn_iteration``, and ``end_groups_str`` so the
+    sidecar writer can serialise lineage without re-deriving it.
+
+    State-vector resize and the corresponding ``CVodeReInit`` on the Cython
+    solver side consume this list as a separate step.
+    """
+    new_pools: List['Polymer'] = []
+    for i, intent in enumerate(intents):
+        parent = intent.parent_pool
+        new_label = f"{parent.label}_d{i + 1}"
+        new_pool = Polymer(
+            label=new_label,
+            monomer=parent.monomer,
+            end_groups=intent.end_groups,
+            cutoff=parent.cutoff,
+            Mn=parent.Mn,
+            Mw=parent.Mw,
+            initial_mass=0.001,
+        )
+        new_pool.parent_pool_label = parent.label
+        new_pool.spawn_iteration = iteration
+        new_pool.end_groups_str = list(intent.end_groups)
+        new_pools.append(new_pool)
+    return new_pools
+
+
 def _tag_polymer_proxy(cand: 'Species', *, is_proxy: bool) -> None:
     """Stamp an ``is_polymer_proxy`` flag on a Species and its Molecules.
 
