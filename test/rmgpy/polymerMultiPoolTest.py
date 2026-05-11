@@ -350,6 +350,31 @@ class TestDrainSpawnIntents:
         # Label is namespaced under the parent so the sidecar can show lineage.
         assert spawned.label.startswith(parent_polymer.label + "_")
 
+    def test_subsequent_calls_avoid_label_collisions(self, parent_polymer):
+        """Two drain calls for the same parent must produce distinct labels.
+
+        The pool registry grows across iterations; without an
+        ``existing_pools`` hint the second call would reuse ``<parent>_d1``
+        and clash with a live pool.
+        """
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=parent_polymer.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+            triggering_moles=1.0e-5,
+        )
+
+        first = drain_spawn_intents([intent], iteration=7,
+                                    existing_pools=[parent_polymer])
+        second = drain_spawn_intents([intent], iteration=8,
+                                     existing_pools=[parent_polymer] + first)
+        assert first[0].label != second[0].label, (
+            "Cross-call drains must avoid label collisions on the same parent"
+        )
+
 
 class TestSpawnIntentShape:
     """The SpawnIntent dataclass must carry the contract fields TA expects."""

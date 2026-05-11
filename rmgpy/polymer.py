@@ -2232,6 +2232,7 @@ def write_polymer_pools_sidecar(
 def drain_spawn_intents(
     intents: List[SpawnIntent],
     iteration: int,
+    existing_pools: Optional[List['Polymer']] = None,
 ) -> List['Polymer']:
     """Materialise queued :class:`SpawnIntent`s into new :class:`Polymer` pools.
 
@@ -2239,13 +2240,22 @@ def drain_spawn_intents(
     ``parent_pool_label``, ``spawn_iteration``, and ``end_groups_str`` so the
     sidecar writer can serialise lineage without re-deriving it.
 
+    ``existing_pools`` is consulted to namespace daughter labels — the
+    n-th daughter of a given parent across all calls gets ``<parent>_d{n}``,
+    preventing collisions when the registry grows across iterations.
+
     State-vector resize and the corresponding ``CVodeReInit`` on the Cython
     solver side consume this list as a separate step.
     """
+    taken: Set[str] = {p.label for p in (existing_pools or [])}
     new_pools: List['Polymer'] = []
-    for i, intent in enumerate(intents):
+    for intent in intents:
         parent = intent.parent_pool
-        new_label = f"{parent.label}_d{i + 1}"
+        n = 1
+        while f"{parent.label}_d{n}" in taken:
+            n += 1
+        new_label = f"{parent.label}_d{n}"
+        taken.add(new_label)
         new_pool = Polymer(
             label=new_label,
             monomer=parent.monomer,
