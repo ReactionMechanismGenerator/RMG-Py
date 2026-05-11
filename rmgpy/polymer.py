@@ -2265,6 +2265,10 @@ def drain_spawn_intents(
             Mw=parent.Mw,
             initial_mass=0.001,
         )
+        # Event-spawn initialisation (design doc §5): μ_k = N · DP^k.
+        N = float(intent.triggering_moles)
+        DP = float(intent.triggering_dp)
+        new_pool.moments = np.array([N, N * DP, N * DP * DP], dtype=np.float64)
         new_pool.parent_pool_label = parent.label
         new_pool.spawn_iteration = iteration
         new_pool.end_groups_str = list(intent.end_groups)

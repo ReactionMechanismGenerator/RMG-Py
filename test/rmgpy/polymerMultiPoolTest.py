@@ -350,6 +350,25 @@ class TestDrainSpawnIntents:
         # Label is namespaced under the parent so the sidecar can show lineage.
         assert spawned.label.startswith(parent_polymer.label + "_")
 
+    def test_initialises_daughter_moments_from_event(self, parent_polymer):
+        """B.μ_k = N·DP^k from the triggering event (design doc §5)."""
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+
+        N = 1.42e-5
+        DP = 4
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=parent_polymer.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=DP,
+            triggering_moles=N,
+        )
+        spawned = drain_spawn_intents([intent], iteration=0)[0]
+
+        assert spawned.moments[0] == pytest.approx(N)
+        assert spawned.moments[1] == pytest.approx(N * DP)
+        assert spawned.moments[2] == pytest.approx(N * DP * DP)
+
     def test_subsequent_calls_avoid_label_collisions(self, parent_polymer):
         """Two drain calls for the same parent must produce distinct labels.
 
