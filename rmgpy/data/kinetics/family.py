@@ -1335,6 +1335,111 @@ class KineticsFamily(Database):
                           DeprecationWarning)
             return
         self.rules.fill_rules_by_averaging_up(self.get_root_template(), {}, verbose)
+        
+        
+        
+    def make_reverse_map_for_family_with_own_reverse(self):
+        """
+        Separating out the hardcoded relabeling of atoms that in apply_recipe. A reverse_map can now be created
+        for these specific families without calling apply_recipe.
+        """
+        
+        #check to make sure the family doesn't already have a reverse_map: 
+        if self.reverse_map:
+            logging.error('Family already has reverse_map.')
+            return 
+        
+        
+        
+        label = self.label.lower()
+        
+        # If reaction family is its own reverse, relabel atoms
+        # Unfortunately, reaction family info is
+        #  hardcoded, so this must be updated if the database changes.
+        if not self.reverse_template:
+          
+            # key: atom_labeling in forward direction, value: atom label in reverse direction
+            atom_labels = {}
+            
+
+            if label in ('1,2_xy_interchange'):
+                # Labels for nodes are swapped
+                atom_labels['*1'] = '*4'
+                atom_labels['*4'] = '*1'
+
+            if label in ('h_abstraction','f_abstraction','cl_abstraction','br_abstraction'):
+                # '*2' is the H that migrates
+                # it moves from '*1' to '*3'
+                atom_labels['*1'] = '*3'
+                atom_labels['*3'] = '*1'
+
+            elif label == 'intra_h_migration':
+                # '*3' is the H that migrates
+                # swap the two ends between which the H moves
+                atom_labels['*1'] = '*2'
+                atom_labels['*2'] = '*1'
+                # reverse all the atoms in the chain between *1 and *2
+                highest = len(atom_labels)
+                if highest > 4:
+                    # swap *4 with *5
+                    atom_labels['*4'] = '*5'
+                    atom_labels['*5'] = '*4'
+                if highest > 6:
+                    # swap *6 with the highest, etc.
+                    for i in range(6, highest + 1):
+                        atom_labels['*{0:d}'.format(i)].label = '*{0:d}'.format(6 + highest - i)
+
+            elif label == 'intra_ene_reaction':
+                # Labels for nodes are swapped
+                atom_labels['*1'] = '*2'
+                atom_labels['*2'] = '*1'
+                atom_labels['*3'] = '*5'
+                atom_labels['*5'] = '*3'
+
+            elif label == '6_membered_central_c-c_shift':
+                # Labels for nodes are swapped
+                atom_labels['*1'] = '*3'
+                atom_labels['*3'] = '*1'
+                atom_labels['*4'] = '*6'
+                atom_labels['*6'] = '*4'
+
+            elif label == '1,2_shiftc':
+                # Labels for nodes are swapped
+                atom_labels['*2'] = '*3'
+                atom_labels['*3'] = '*2'
+                self.reverse_map = atom_labels
+
+            elif label == 'intra_r_add_exo_scission':
+                # Labels for nodes are swapped
+                atom_labels['*1'] = '*3'
+                atom_labels['*3'] = '*1'
+
+            elif label == 'intra_substitutions_isomerization':
+                # Swap *2 and *3
+                atom_labels['*2'] = '*3'
+                atom_labels['*3'] = '*2'
+
+            elif label == 'surface_abstraction':
+                atom_labels['*1'] = '*3'
+                atom_labels['*2'] = '*5'
+                atom_labels['*3'] = '*1'
+                atom_labels['*5'] = '*2'
+
+            elif label == 'surface_abstraction_single_vdw':
+                # *3 migrates from *2-*1 to *4-*5
+                # so swap *1 with *5, swap *2 with *4
+                atom_labels['*1'] = '*5'
+                atom_labels['*5'] = '*1'
+                atom_labels['*2'] = '*4'
+                atom_labels['*4'] = '*2'
+            
+        if atom_labels == {}: #if this wasn't one of the families with hardcoded reverse mapping
+            logging.error('No hardcoded relabeling of atoms in for this family. Cannot generate a reverse map for this family.')
+            return 
+        else: 
+            self.reverse_map=atom_labels
+            return 
+
 
     def apply_recipe(self, reactant_structures, forward=True, unique=True, relabel_atoms=True):
         """
@@ -3286,6 +3391,10 @@ class KineticsFamily(Database):
             stratum_num: Number of strata used in stratified sampling scheme
             max_rxns_to_reopt_node: Nodes with more matching reactions than this will not be pruned
         """
+        
+        if self.own_reverse and not self.reverse_template:
+            self.make_reverse_map_for_family_with_own_reverse()
+        
         if rxns is None:
             rxns = self.get_training_set(thermo_database=thermo_database, remove_degeneracy=True, estimate_thermo=True,
                                          fix_labels=True, get_reverse=True, rxns_with_kinetics_only=True)
