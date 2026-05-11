@@ -2229,6 +2229,21 @@ def write_polymer_pools_sidecar(
     return path
 
 
+def schulz_flory_mu2(mu0: float, mu1: float) -> float:
+    """Predict μ₂ from (μ₀, μ₁) under a Schulz-Flory chain-length distribution.
+
+    For P(n) = p^(n-1)·(1-p), the analytic relations are
+    μ₀=N, μ₁=N/(1-p), μ₂=N·(1+p)/(1-p)². Eliminating ``p`` gives the
+    closed form ``μ₂ = 2·μ₁²/μ₀ − μ₁``.
+
+    Used in inter-pool transfer-reaction moment effects (design doc §5)
+    when the second-moment source term cannot be read off directly.
+    """
+    if mu0 == 0:
+        return 0.0
+    return 2.0 * mu1 * mu1 / mu0 - mu1
+
+
 def drain_spawn_intents(
     intents: List[SpawnIntent],
     iteration: int,

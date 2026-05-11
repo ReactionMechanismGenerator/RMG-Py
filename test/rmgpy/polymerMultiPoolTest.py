@@ -257,6 +257,22 @@ class TestProcessPolymerCandidatesMultiPool:
 # SpawnIntent dataclass shape
 # ---------------------------------------------------------------------------
 
+class TestSchulzFloryClosure:
+    """Closure helper relating μ₂ to (μ₀, μ₁) for a Schulz-Flory distribution.
+
+    Used by the inter-pool transfer-reaction moment effects (design doc §5).
+    """
+
+    def test_closed_form_on_known_distribution(self):
+        """For Flory-Schulz P(n) = p^(n-1)·(1-p), ⟨n⟩ = 5, N = 1:
+        analytic μ₂ = N·(1+p)/(1-p)² = 45.
+        Closed-form check: μ₂ = 2·μ₁²/μ₀ − μ₁ = 2·25/1 − 5 = 45.
+        """
+        from rmgpy.polymer import schulz_flory_mu2
+
+        assert schulz_flory_mu2(mu0=1.0, mu1=5.0) == pytest.approx(45.0)
+
+
 class TestPolymerPoolsSidecar:
     """Sidecar JSON writer (``polymer_pools.json``) — design doc §6."""
 
