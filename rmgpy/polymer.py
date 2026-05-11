@@ -2263,6 +2263,22 @@ def drain_spawn_intents(
     solver side consume this list as a separate step.
     """
     taken: Set[str] = {p.label for p in (existing_pools or [])}
+    # μ_index allocator: next free slot is one past the max index any
+    # existing pool already claims. Pools without explicit mu_indices are
+    # assumed to occupy [0, 1, 2] (root-pool convention).
+    max_idx = -1
+    for p in (existing_pools or []):
+        mi = getattr(p, "mu_indices", None)
+        if mi is None:
+            max_idx = max(max_idx, 2)
+        else:
+            try:
+                max_idx = max(max_idx, max(int(x) for x in (
+                    mi.values() if isinstance(mi, dict) else mi
+                )))
+            except (TypeError, ValueError):
+                continue
+    next_idx = max_idx + 1
     new_pools: List['Polymer'] = []
     for intent in intents:
         parent = intent.parent_pool
@@ -2287,6 +2303,8 @@ def drain_spawn_intents(
         new_pool.parent_pool_label = parent.label
         new_pool.spawn_iteration = iteration
         new_pool.end_groups_str = list(intent.end_groups)
+        new_pool.mu_indices = (next_idx, next_idx + 1, next_idx + 2)
+        next_idx += 3
         new_pools.append(new_pool)
     return new_pools
 
