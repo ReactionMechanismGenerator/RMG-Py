@@ -1979,13 +1979,14 @@ def get_w0(actions, rxn):
             mol = mol.merge(m)
         else:
             mol = m.copy(deep=True)
+                 
     a_dict = mol.get_all_labeled_atoms()
 
     recipe = actions
 
     wb = 0.0
     wf = 0.0
-    for act in recipe:
+    for ind, act in enumerate(recipe):
 
         if act[0] in ['BREAK_BOND','FORM_BOND','CHANGE_BOND']:
 
@@ -2003,7 +2004,27 @@ def get_w0(actions, rxn):
             bd = Bond(atom1, atom2, act[2])
             wf += bd.get_bde()
         elif act[0] == 'CHANGE_BOND':
-            bd1 = mol.get_bond(atom1, atom2)
+            
+            #make sure the bond has been formed before it can be changed (only exception to this is halocarbene_recombination_double)
+            try: 
+                bd1 = mol.get_bond(atom1, atom2)
+            except ValueError as e: 
+                #confirm that this is the error we need to catch
+                if 'The specified vertices are not connected by an edge in this graph.' in str(e): 
+                    if ind!=0: #make sure we are at least one action step in
+                        current_action = act
+                        previous_action = recipe[ind-1]
+                        
+                        #make sure this error occurred because there was FORM_BOND and then CHANGE_BOND performed between the same two atoms. 
+                        assert previous_action[0]=='FORM_BOND' and current_action[1:]==previous_action[1:], f'{e} This is NOT because CHANGE_BOND was performed on a bond that was formed in the action step before.'
+                        
+                        #perform the bond forming of the previous action step
+                        #This is just so that bd1 can still be called without breaking things. 
+                        #but molecule should not actually have bond added to it
+                        bd1 = Bond(atom1, atom2, previous_action[2])
+                        
+                        #overwrite bond order for bd1 to reflect the fact that originally there was no bond between these two atoms
+                        bd1.order = 0
 
             if act[2] + bd1.order == 0.5:
                 mol2 = None
@@ -2029,7 +2050,13 @@ def get_w0(actions, rxn):
                 bd2_bde = 0.0
             else:
                 bd2_bde = bd2.get_bde()
-            bde_diff = bd2_bde - bd1.get_bde()
+            
+            if bd1.order == 0:
+                bd1_bde = 0.0
+            else:
+                bd1_bde = bd1.get_bde()
+                
+            bde_diff = bd2_bde - bd1_bde
             if bde_diff > 0:
                 wf += abs(bde_diff)
             else:
