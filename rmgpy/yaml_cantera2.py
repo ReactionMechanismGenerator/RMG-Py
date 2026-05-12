@@ -296,9 +296,10 @@ def generate_cantera_data(species_list,
         'elements': sorted(list(elements_set)),
         'species': [get_label(spc, species_list) for spc in gas_species],
         'kinetics': 'gas',
-        'reactions': 'declared-species',
     }
 
+    if surface_species:
+        gas_phase_def['reactions'] = ['gas-reactions']
     if is_plasma:
         gas_phase_def['transport'] = 'ionized-gas'
         # Plasma specific defaults
@@ -327,8 +328,8 @@ def generate_cantera_data(species_list,
             'elements': sorted(list(elements_set)),
             'species': [get_label(sp, species_list) for sp in surface_species],
             'kinetics': 'surface',
-            'reactions': 'declared-species',
-            'site-density': site_density or default_site_density
+            'reactions': ['surface-reactions'],
+            'site-density': site_density or default_site_density,
         }
         if has_coverage_dependence:
             surface_phase_def['reference-state-coverage'] = 0.11
@@ -341,16 +342,25 @@ def generate_cantera_data(species_list,
         species_data.append(species_to_dict(sp, species_list, verbose=verbose))
     data['species'] = species_data
 
-    reaction_data = list()
+    # Build separate reaction lists for each phase if there are two phases
+    gas_reaction_data = list()
     for rxn in gas_reactions:
         entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
         if entries:
-            reaction_data.extend(entries)
-    for rxn in surface_reactions:
-        entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
-        if entries:
-            reaction_data.extend(entries)
-    data['reactions'] = reaction_data
+            gas_reaction_data.extend(entries)
+
+    if surface_species:
+        data['gas-reactions'] = gas_reaction_data
+    else:
+        data['reactions'] = gas_reaction_data
+
+    if surface_reactions:
+        surface_reaction_data = list()
+        for rxn in surface_reactions:
+            entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
+            if entries:
+                surface_reaction_data.extend(entries)
+        data['surface-reactions'] = surface_reaction_data
 
     return data
 
