@@ -394,13 +394,12 @@ def species_to_dict(species, all_species=None, verbose=False):
     cantera_species = species.to_cantera(use_chemkin_identifier=True, all_species=all_species)
     species_data = cantera_species.input_data
 
-    if verbose:
-        try:
-            transport_comment = species.transport_data.comment
-            if transport_comment:
-                species_data["transport"]["note"] = transport_comment
-        except AttributeError:
-            pass
+    try:
+        transport_comment = species.transport_data.comment
+        if transport_comment:
+            species_data["transport"]["note"] = transport_comment
+    except AttributeError:
+        pass
 
     if "size" in species_data:
         sites = species_data["size"]
