@@ -408,8 +408,8 @@ def species_to_dict(species, species_list, verbose=False):
         },
     }
 
-    if species.contains_surface_site():
-        num_sites = sum(1 for atom in mol.atoms if atom.symbol == 'X')
+    num_sites = mol.number_of_surface_sites()
+    if num_sites > 1:
         species_entry['sites'] = num_sites
 
     # Transport (if available) - Only relevant for gas phase usually
