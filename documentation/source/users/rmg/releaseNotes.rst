@@ -4,6 +4,18 @@
 Release Notes
 *************
 
+RMG-Py Version 4.0.0.rc1
+====================
+Date: April 24, 2026
+
+TODO: fill out
+
+RMG-Database Version 4.0.0.rc1
+==========================
+Date: April 24, 2026
+
+TODO: fill out
+
 RMG-Py Version 3.3.0
 ====================
 Date: July 10, 2025

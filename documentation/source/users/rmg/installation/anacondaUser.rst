@@ -19,7 +19,7 @@ Binary Installation Using Anaconda for Unix-Based Systems: Linux and Mac OSX
   
    To install a specific version of RMG, add the version to the install command::
 
-    conda create --name rmg_33_env -c conda-forge -c rmg 'rmg==3.3.0'
+    conda create --name rmg_33_env -c conda-forge -c rmg 'rmg==4.0.0.rc1'
   
    Not all versions of RMG are available via conda for all platforms. Check the `official RMG conda channel <https://anaconda.org/RMG/rmg/files>`_ to see which are available for download.
 
