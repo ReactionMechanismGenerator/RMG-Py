@@ -2054,6 +2054,30 @@ class RMG(util.Subject):
         # Notify registered listeners:
         self.notify()
 
+        # Emit the polymer_pools.json sidecar alongside the chemkin / cantera
+        # outputs so the TA-side mechanism loader (~/Code/TA) can pick up
+        # pool semantics. See docs/multi_pool_design.md §6.
+        try:
+            from rmgpy.polymer import Polymer, write_polymer_pools_sidecar
+            pool_registry = [
+                s for s in (
+                    self.reaction_model.core.species
+                    + self.reaction_model.edge.species
+                    + self.reaction_model.new_species_list
+                )
+                if isinstance(s, Polymer)
+            ]
+            if pool_registry and self.output_directory:
+                chemkin_dir = os.path.join(self.output_directory, "chemkin")
+                target_dir = chemkin_dir if os.path.isdir(chemkin_dir) else self.output_directory
+                write_polymer_pools_sidecar(
+                    pool_registry=pool_registry,
+                    output_dir=target_dir,
+                    iteration=getattr(self.reaction_model, "iteration_num", 0),
+                )
+        except Exception as e:
+            logging.warning(f"Failed to write polymer_pools.json sidecar: {e}")
+
         self.save_profiler_info()
 
     def finish(self):
