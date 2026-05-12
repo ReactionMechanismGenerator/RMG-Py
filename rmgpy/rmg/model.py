@@ -921,6 +921,12 @@ class CoreEdgeReactionModel:
             react_edge=react_edge,
         )
 
+        # Multi-pool spawn pass — detect novel polymer chain populations among
+        # the freshly-added candidates and grow the pool registry accordingly
+        # (see docs/multi_pool_design.md §4.5).
+        if self.new_species_list:
+            self._apply_multipool_spawn_pass(self.new_species_list)
+
         logging.info("")
 
     def add_new_surface_objects(self, obj, new_surface_species, new_surface_reactions, reaction_system):
