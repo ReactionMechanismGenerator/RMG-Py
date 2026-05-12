@@ -1346,6 +1346,16 @@ class RMG(util.Subject):
                     if os.path.exists(annotated):
                         self.generate_cantera_files_from_chemkin(annotated)
 
+            # Strip transport notes from the non-annotated ck2yaml file to match the non-verbose RMG writers
+            ck_chem_yaml = os.path.join(self.output_directory, "cantera_from_ck", "chem.yaml")
+            if os.path.exists(ck_chem_yaml):
+                with open(ck_chem_yaml) as f:
+                    ck_text = f.read()
+                # Remove 'note:' lines and their indented continuations (multi-line values are more-indented)
+                ck_text = re.sub(r'^( +)note:.*\n(?:\1 +[^\n]*\n)*', '', ck_text, flags=re.MULTILINE)
+                with open(ck_chem_yaml, "w") as f:
+                    f.write(ck_text)
+
             # Compare translated Cantera files against directly generated Cantera files
             if translated_cantera_file and self.cantera1_writer_config and self.cantera1_writer_config.enabled:
                 compare_yaml_files_and_report(translated_cantera_file,

@@ -428,7 +428,7 @@ def species_to_dict(species, species_list, verbose=False):
             transport_dict['polarizability'] = td.polarizability.value_si * 1e30  # Angstrom^3
         if getattr(td, 'rotrelaxcollnum', None) and td.rotrelaxcollnum != 0.0:
             transport_dict['rotational-relaxation'] = td.rotrelaxcollnum
-        if td.comment:
+        if verbose and td.comment:
             transport_dict['note'] = td.comment.strip()
         species_entry['transport'] = transport_dict
 
