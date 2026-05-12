@@ -330,6 +330,66 @@ class TestRegisterSpawnedPools:
         assert spawned[0].mu_indices == (3, 4, 5)
 
 
+class TestMultiPoolPipelineEndToEnd:
+    """Composition test: candidates → classify → drain → register → sidecar.
+
+    Exercises every multi-pool public API in a single flow without a real
+    RMG run. The carbon-phenol full-RMG integration test (when wired into
+    the main loop) is heavier and lives in solverPolymerTest.py.
+    """
+
+    def test_novel_product_spawns_and_registers_and_serializes(
+        self, parent_polymer, tmp_path
+    ):
+        import json
+        from rmgpy.polymer import (
+            apply_spawn_intents,
+            process_polymer_candidates_multipool,
+            write_polymer_pools_sidecar,
+        )
+        from rmgpy.species import Species
+
+        # The parent pool occupies state-vector slots 0..2 by convention.
+        parent_polymer.mu_indices = (0, 1, 2)
+
+        # A candidate that is structurally novel relative to the PE parent
+        # (a phenolic 3-mer surrogate) — should trigger a spawn intent.
+        novel = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+
+        processed, intents = process_polymer_candidates_multipool(
+            candidates=[novel],
+            reaction_model=None,
+            pool_registry=[parent_polymer],
+        )
+        assert len(intents) == 1, "Novel product must produce one spawn intent"
+
+        fake = _FakeReactionModel()
+        spawned = apply_spawn_intents(
+            fake, intents, iteration=7, existing_pools=[parent_polymer],
+        )
+        assert len(spawned) == 1
+        assert fake.registered == spawned, (
+            "Daughter Polymer must be handed to the reaction model"
+        )
+
+        # Sidecar reflects the full registry — parent first, daughter second.
+        registry = [parent_polymer] + spawned
+        path = write_polymer_pools_sidecar(
+            pool_registry=registry, output_dir=str(tmp_path), iteration=7,
+        )
+        with open(path) as fh:
+            data = json.load(fh)
+
+        labels = [p["label"] for p in data["pools"]]
+        assert labels[0] == parent_polymer.label
+        assert labels[1].startswith(parent_polymer.label + "_")
+        # Daughter records its parent lineage and spawn iteration.
+        daughter = data["pools"][1]
+        assert daughter["parent_pool"] == parent_polymer.label
+        assert daughter["spawn_iteration"] == 7
+        assert daughter["mu_indices"]["mu0_idx"] == 3
+
+
 class TestSchulzFloryClosure:
     """Closure helper relating μ₂ to (μ₀, μ₁) for a Schulz-Flory distribution.
 
