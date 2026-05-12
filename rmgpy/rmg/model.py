@@ -386,6 +386,45 @@ class CoreEdgeReactionModel:
 
         return poly, True
 
+    def _apply_multipool_spawn_pass(self, candidates):
+        """Run multi-pool polymer spawn detection on a list of candidate Species.
+
+        Iteration-boundary hook (see docs/multi_pool_design.md §4.5). Filters
+        ``candidates`` to those tagged ``is_polymer_proxy``, classifies them
+        against the current live pool registry, and drains any spawn intents
+        into newly-registered :class:`Polymer` objects. The registration path
+        goes through :meth:`make_new_species`, so each daughter Polymer
+        auto-attaches its own ``_mu0`` / ``_mu1`` / ``_mu2`` moment-dummy
+        core species. The next :meth:`HybridPolymerSystem.initialize_model`
+        sees the expanded core species list and grows the state vector
+        through the standard polymer-pool resolution path.
+        """
+        from rmgpy.polymer import (
+            apply_spawn_intents,
+            process_polymer_candidates_multipool,
+        )
+        proxy = [c for c in candidates if getattr(c, "is_polymer_proxy", False)]
+        if not proxy:
+            return
+        pool_registry = [
+            s for s in (self.core.species + self.edge.species + self.new_species_list)
+            if isinstance(s, Polymer)
+        ]
+        if not pool_registry:
+            return
+        _, intents = process_polymer_candidates_multipool(
+            candidates=proxy,
+            reaction_model=self,
+            pool_registry=pool_registry,
+        )
+        if not intents:
+            return
+        apply_spawn_intents(
+            self, intents,
+            iteration=getattr(self, "iteration_num", 0),
+            existing_pools=pool_registry,
+        )
+
     def make_new_species(self, object, label="", reactive=True, check_existing=True, generate_thermo=True, check_decay=False, check_cut=False):
         """
         Formally create a new species from the specified `object`, which can be

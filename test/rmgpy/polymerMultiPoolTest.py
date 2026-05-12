@@ -330,6 +330,59 @@ class TestRegisterSpawnedPools:
         assert spawned[0].mu_indices == (3, 4, 5)
 
 
+class TestReactionModelIntegration:
+    """Wiring between the multi-pool classifier and the live
+    CoreEdgeReactionModel — the hook the RMG main loop calls at the
+    iteration boundary.
+    """
+
+    def test_iteration_boundary_pass_spawns_and_registers(self):
+        """With a parent Polymer registered and a novel polymer-proxy
+        candidate, calling _apply_multipool_spawn_pass on the reaction
+        model produces a daughter Polymer in new_species_list, with
+        its own _mu0/_mu1/_mu2 dummy core species.
+        """
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        from rmgpy.species import Species
+
+        model = CoreEdgeReactionModel()
+        parent = Polymer(
+            label="PS",
+            monomer="[CH2][CH]c1ccccc1",
+            end_groups=["[CH3]", "[H]"],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        model._register_polymer(parent, generate_thermo=False)
+        parent.mu_indices = (0, 1, 2)
+
+        # Synthetic phenolic-trimer candidate; tagged polymer-proxy so the
+        # integration helper picks it up.
+        phenolic = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+        phenolic.is_polymer_proxy = True
+
+        model._apply_multipool_spawn_pass([phenolic])
+
+        # A daughter Polymer should be registered, with auto-attached dummies.
+        daughter_polys = [
+            s for s in model.new_species_list
+            if isinstance(s, Polymer) and s is not parent
+        ]
+        assert len(daughter_polys) == 1, (
+            f"expected one daughter Polymer, got {len(daughter_polys)}: "
+            f"{[p.label for p in daughter_polys]}"
+        )
+        daughter = daughter_polys[0]
+        dummy_labels = {f"{daughter.label}_mu0", f"{daughter.label}_mu1",
+                        f"{daughter.label}_mu2"}
+        present = {s.label for s in model.new_species_list}
+        assert dummy_labels.issubset(present), (
+            f"Daughter moment dummies missing: {dummy_labels - present}"
+        )
+
+
 class TestMultiPoolPipelineEndToEnd:
     """Composition test: candidates → classify → drain → register → sidecar.
 

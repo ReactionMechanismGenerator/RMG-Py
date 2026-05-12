@@ -2287,6 +2287,11 @@ def drain_spawn_intents(
             n += 1
         new_label = f"{parent.label}_d{n}"
         taken.add(new_label)
+        # Daughter monomer: kept as the parent's monomer (a labeled-radical
+        # Molecule passes Polymer.__init__ validation). The true detected
+        # motif lives on intent.monomer (a Group) and is referenced via
+        # spawn_metadata for downstream chemistry; the placeholder here is
+        # just a valid Molecule the constructor will accept.
         new_pool = Polymer(
             label=new_label,
             monomer=parent.monomer,
@@ -2296,6 +2301,10 @@ def drain_spawn_intents(
             Mw=parent.Mw,
             initial_mass=0.001,
         )
+        # Override fingerprint so _register_polymer's dedup sees the daughter
+        # as distinct from the parent (which shares monomer + end_groups +
+        # cutoff and would otherwise hash to the same fingerprint).
+        new_pool._fingerprint = f"{parent.fingerprint}_daughter-{new_label}"
         # Event-spawn initialisation (design doc §5): μ_k = N · DP^k.
         N = float(intent.triggering_moles)
         DP = float(intent.triggering_dp)
