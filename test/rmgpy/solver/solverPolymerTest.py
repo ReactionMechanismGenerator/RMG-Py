@@ -272,6 +272,74 @@ class TestHybridPolymerReactor:
         with pytest.raises(ValueError):
             rxn_system.initialize_model(core_species, [rxn], [], [])
 
+    def test_initialize_model_accepts_two_pools(self):
+        """Synthetic multi-pool: HybridPolymerSystem must accept and resolve
+        two structurally-distinct PolymerPoolConfig objects in one solver.
+
+        The single-pool tests above prove the per-pool plumbing works; this
+        test covers the multi-pool path that the dynamic spawning feature
+        (see ~/Code/RMG-Py/docs/multi_pool_design.md) targets: by the end of
+        an RMG run with spawn-detection enabled, the solver may hold N>1
+        pools. Validate that initialize_model resolves both pools cleanly
+        and that pool_mu0_indices is populated for each.
+        """
+        Inert = _spc("N#N", "N2")
+
+        # Pool A — three moment dummies (any non-isomorphic SMILES works).
+        A_mu0 = _spc("CO", "PoolA_mu0")
+        A_mu1 = _spc("C=O", "PoolA_mu1")
+        A_mu2 = _spc("C#N", "PoolA_mu2")
+        for spc in (A_mu0, A_mu1, A_mu2):
+            spc.reactive = False
+
+        # Pool B — three moment dummies with distinct structures.
+        B_mu0 = _spc("CC", "PoolB_mu0")
+        B_mu1 = _spc("C=C", "PoolB_mu1")
+        B_mu2 = _spc("C#C", "PoolB_mu2")
+        for spc in (B_mu0, B_mu1, B_mu2):
+            spc.reactive = False
+
+        core_species = [Inert, A_mu0, A_mu1, A_mu2, B_mu0, B_mu1, B_mu2]
+        # Indices: Inert=0, PoolA mu0/1/2 = 1/2/3, PoolB mu0/1/2 = 4/5/6
+        gas_mask = np.array(
+            [True, False, False, False, False, False, False], dtype=bool
+        )
+
+        pool_a = PolymerPoolConfig(
+            label="PoolA", xs=3,
+            explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3),
+        )
+        pool_b = PolymerPoolConfig(
+            label="PoolB", xs=3,
+            explicit_dp_to_species_index={},
+            mu_indices=(4, 5, 6),
+        )
+
+        rxn_system = HybridPolymerSystem(
+            T=900.0, P=1.0e5,
+            initial_mole_fractions={Inert: 1.0},
+            V_poly=1.0e-3,
+            polymer_pools=[pool_a, pool_b],
+            gas_species_mask=gas_mask,
+            initial_polymer_moments={
+                "PoolA": (1.0e-3, 1.0e-2, 1.0e-1),
+                "PoolB": (5.0e-4, 5.0e-3, 5.0e-2),
+            },
+        )
+
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        assert len(rxn_system.polymer_pools) == 2
+        assert rxn_system.polymer_pools[0].label == "PoolA"
+        assert rxn_system.polymer_pools[1].label == "PoolB"
+        # mu0 indices populated per-pool from the configured tuples.
+        assert int(rxn_system.pool_mu0_indices[0]) == 1
+        assert int(rxn_system.pool_mu0_indices[1]) == 4
+        # Initial moments land at the correct state-vector slots.
+        assert abs(rxn_system.y[1] - 1.0e-3) < 1e-12
+        assert abs(rxn_system.y[4] - 5.0e-4) < 1e-12
+
     def test_initialization_subtracts_explicit_from_total_moments(self):
         """
         If initial_polymer_moments are provided (Total) along with explicit species,
