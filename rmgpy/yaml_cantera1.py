@@ -265,6 +265,7 @@ phases:
   kinetics: surface
   reactions: [site0-reactions]
   site-density: {surface_site_density * 1e-4 }
+  state: {{T: 300.0, P: 1 atm}}
 """
     # surface_site_density * 1e-4 #in units of mol/cm^2
 

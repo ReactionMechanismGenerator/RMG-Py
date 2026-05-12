@@ -311,6 +311,7 @@ def generate_cantera_data(species_list,
     else:
         gas_phase_def['transport'] = 'mixture-averaged'
 
+    gas_phase_def['state'] = {'T': 300.0, 'P': '1 atm'}
     phases.append(gas_phase_def)
 
     if surface_species:
@@ -330,6 +331,7 @@ def generate_cantera_data(species_list,
             'kinetics': 'surface',
             'reactions': ['surface-reactions'],
             'site-density': site_density or default_site_density,
+            'state': {'T': 300.0, 'P': '1 atm'},
         }
         if has_coverage_dependence:
             surface_phase_def['reference-state-coverage'] = 0.11
