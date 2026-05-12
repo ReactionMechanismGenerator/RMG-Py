@@ -29,10 +29,12 @@
 
 
 import cantera as ct
+import copy
 import os
 import shutil
 import numpy as np
 import pytest
+import yaml
 
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
@@ -53,7 +55,8 @@ from rmgpy.yaml_cantera2 import (
     save_cantera_files,
     species_to_dict,
     reaction_to_dict_list,
-    generate_cantera_data
+    generate_cantera_data,
+    get_elements_lists,
 )
 
 
@@ -541,3 +544,288 @@ class TestCanteraWriter2:
         assert "rate-constant" in d
         assert "efficiencies" in d
         assert np.isclose(d["efficiencies"]["Ar(3)"], 0.7)
+
+    def test_get_elements_block_isotopes_and_surface_site(self):
+        """get_elements_lists returns isotope definitions and X with correct weights."""
+        custom_elements, elements_list = get_elements_lists()
+
+        assert 'X' in elements_list
+        x_entry = next((e for e in custom_elements if e['symbol'] == 'X'), None)
+        assert x_entry is not None
+        assert np.isclose(x_entry['atomic-weight'], 195.083)
+
+        symbols = [e['symbol'] for e in custom_elements]
+        assert 'D' in symbols   # H-2
+        assert 'T' in symbols   # H-3
+        for entry in custom_elements:
+            assert entry['atomic-weight'] > 0
+
+    def test_generate_cantera_data_elements_block(self):
+        """generate_cantera_data includes top-level 'elements' key with custom definitions."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        data = generate_cantera_data([h2], [])
+
+        assert 'elements' in data
+        custom_elements = data['elements']
+        assert isinstance(custom_elements, list)
+        assert len(custom_elements) > 0
+        symbols = [e['symbol'] for e in custom_elements]
+        assert 'X' in symbols
+
+    def test_generate_cantera_data_gas_phase_state(self):
+        """Gas phase definition includes a 'state' block with T and P."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        data = generate_cantera_data([h2], [])
+
+        gas_phase = data['phases'][0]
+        assert 'state' in gas_phase
+        assert np.isclose(gas_phase['state']['T'], 300.0)
+        assert gas_phase['state']['P'] == '1 atm'
+
+    def test_generate_cantera_data_gas_reactions_key(self):
+        """Gas-only model uses top-level 'reactions' key (matching ck2yaml)."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        h = self._create_dummy_species("H", "[H]", index=2)
+        rxn = Reaction(
+            reactants=[h2], products=[h, h],
+            kinetics=Arrhenius(A=(1e13, "s^-1"), n=0, Ea=(400, "kJ/mol"), T0=(1, "K"))
+        )
+        data = generate_cantera_data([h2, h], [rxn])
+
+        gas_phase = data['phases'][0]
+        assert 'reactions' not in gas_phase, "Gas-only phase should not reference reactions"
+        assert 'reactions' in data
+        assert len(data['reactions']) == 1
+        assert 'gas-reactions' not in data
+
+    def test_generate_cantera_data_surface_phase_state_and_reactions_key(self):
+        """Surface phase has 'state' and references 'surface-reactions'; data has that key."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=3
+        )
+        kin = SurfaceArrhenius(
+            A=(1e13, "m^2/(mol*s)"), n=0, Ea=(50, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(reactants=[h2, x], products=[hx, hx], kinetics=kin)
+        data = generate_cantera_data([h2, x, hx], [rxn])
+
+        surface_phase = next(p for p in data['phases'] if p['name'] == 'surface')
+        assert 'state' in surface_phase
+        assert np.isclose(surface_phase['state']['T'], 300.0)
+        assert surface_phase['reactions'] == ['surface-reactions']
+        assert 'surface-reactions' in data
+        assert len(data['surface-reactions']) == 1
+
+    def test_species_to_dict_surface_sites_count(self):
+        """species_to_dict reports correct 'sites' count for surface species."""
+        # Single-site species
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=11
+        )
+        d = species_to_dict(hx, [hx])
+        assert 'sites' in d
+        assert d['sites'] == 1
+
+        # Bidentate glyoxal adsorbed via C and O (2 X atoms)
+        glyoxal_xx = self._create_surface_species(
+            "glyoxalXX",
+            "1 O u0 p2 c0 {3,S} {8,S}\n"
+            "2 O u0 p2 c0 {4,D}\n"
+            "3 C u0 p0 c0 {1,S} {4,S} {5,S} {7,S}\n"
+            "4 C u0 p0 c0 {2,D} {3,S} {6,S}\n"
+            "5 H u0 p0 c0 {3,S}\n"
+            "6 H u0 p0 c0 {4,S}\n"
+            "7 X u0 p0 c0 {3,S}\n"
+            "8 X u0 p0 c0 {1,S}",
+            index=215,
+        )
+        d2 = species_to_dict(glyoxal_xx, [glyoxal_xx])
+        assert 'sites' in d2
+        assert d2['sites'] == 2
+
+    def test_species_to_dict_gas_no_sites_field(self):
+        """Gas species must not have a 'sites' field."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        d = species_to_dict(h2, [h2])
+        assert 'sites' not in d
+
+    def test_species_to_dict_transport_note_without_verbose(self):
+        """Transport 'note' is written even when verbose=False."""
+        sp = self._create_dummy_species("H2", "[H][H]", index=1)
+        sp.transport_data.comment = "from GRI-Mech"
+        d = species_to_dict(sp, [sp], verbose=False)
+        assert 'note' in d['transport']
+        assert d['transport']['note'] == "from GRI-Mech"
+
+
+class CanteraYamlFileComparer:
+    """
+    For comparing two Cantera YAML files.
+    This class provides methods to compare species and reactions between the two files.
+
+        Args:
+            yaml_path_1: Path to the first YAML file, converted from Chemkin by ck2yaml.
+            yaml_path_2: Path to the second YAML file, written directly by RMG.
+    """
+    yaml_path_1 = None
+    yaml_path_2 = None
+
+    @pytest.fixture(autouse=True, scope="class")  # loaded once per Class
+    def load_yaml_files(self, request):
+        """Load the two YAML files to be compared."""
+        with open(request.cls.yaml_path_1, 'r') as file:
+            request.cls.yaml1 = yaml.safe_load(file)
+        with open(request.cls.yaml_path_2, 'r') as file:
+            request.cls.yaml2 = yaml.safe_load(file)
+
+    @pytest.fixture(autouse=True)  # runs before each test method
+    def copy_yaml_dicts(self):
+        """Make deep copies so tests can modify without affecting other tests."""
+        self.yaml1 = copy.deepcopy(self.__class__.yaml1)
+        self.yaml2 = copy.deepcopy(self.__class__.yaml2)
+
+    def testGeneratorsAsExpected(self):
+        "Check the two yaml files were generated by the expected tools (ck2yaml vs RMG)."
+        assert self.yaml1['generator'] == 'ck2yaml', "First YAML file should be generated by ck2yaml."
+        assert 'RMG' in self.yaml2['generator'], "Second YAML file should be generated by RMG."
+
+    def testKeysMatch(self):
+        """Test that the top-level keys in both YAML files match, except those expected not to."""
+        # Remove keys unique to each generator
+        self.yaml1.pop('input-files', None)
+        self.yaml1.pop('cantera-version', None)
+        self.yaml1.pop('date', None)
+        self.yaml2.pop('cantera-version', None)
+        self.yaml2.pop('description', None)
+        for model in [self.yaml1, self.yaml2]:
+            for phase in model['phases']:
+                for reactions_block in phase.get('reactions', []):
+                    assert reactions_block in model, f"Expected reactions block '{reactions_block}' not found in YAML file."
+                    model.pop(reactions_block, None)
+        assert self.yaml1.keys() == self.yaml2.keys(), "YAML files have different top-level keys."
+
+    def testPhasesMatch(self):
+        """Test that the phase definitions in both YAML files match."""
+        assert len(self.yaml1['phases']) == len(self.yaml2['phases']), "YAML files have different numbers of phases"
+
+        for phase1, phase2 in zip(self.yaml1['phases'], self.yaml2['phases']):
+            assert phase1['name'] == phase2['name'], f"Phase names do not match: {phase1['name']} vs {phase2['name']}."
+            assert phase1['thermo'] == phase2['thermo'], f"Thermo definitions for phase {phase1['name']} do not match."
+            assert phase1.get('transport', '') == phase2.get('transport', ''), f"Transport definitions for phase {phase1['name']} do not match."
+            assert phase1.get('adjacent-phases', []) == phase2.get('adjacent-phases', []), f"Adjacent phases for phase {phase1['name']} do not match."
+            assert phase1.get('species', []) == phase2.get('species', []), f"Species lists for phase {phase1['name']} do not match."
+            assert phase1.get('reactions', []) == phase2.get('reactions', []), f"Reactions blocks for phase {phase1['name']} do not match."
+            # the ck2yaml has all elements in Titlecase, while RMG lets some isotopes be CI and OI (not Ci and Oi).
+            assert sorted(phase1.get('elements', [])) == sorted(e.title() for e in phase2.get('elements', [])), f"Element lists for phase {phase1['name']} do not match."
+            assert phase1.get('state', {}) == phase2.get('state', {}), f"State definitions for phase {phase1['name']} do not match."
+
+    def testElementsMatch(self):
+        """Test that the element definitions in both YAML files match."""
+        ck2yaml_elements = sorted(self.yaml1['elements'], key=lambda e: e['symbol'])
+        # Put symbol into Titlecase to match ck2yaml's formatting
+        rmg_elements = [{'symbol': e['symbol'].title(), 'atomic-weight': e['atomic-weight']} for e in self.yaml2['elements']]
+        rmg_elements = sorted(rmg_elements, key=lambda e: e['symbol'])
+        # Compare symbols exactly, and atomic weights approximately
+        assert [e['symbol'] for e in ck2yaml_elements] == [e['symbol'] for e in rmg_elements], \
+            "YAML files have different element symbols."
+        assert [e['atomic-weight'] for e in ck2yaml_elements] == pytest.approx(
+            [e['atomic-weight'] for e in rmg_elements], abs=1e-3
+        ), "YAML files have different element atomic weights."
+
+    def testSpeciesMatch(self):
+        """Test that species definitions match between the two YAML files."""
+        species1 = {s['name']: s for s in self.yaml1['species']}
+        species2 = {s['name']: s for s in self.yaml2['species']}
+        assert species1.keys() == species2.keys(), "Species names do not match."
+
+        for name in species1:
+            s1 = species1[name]
+            s2 = species2[name]
+
+            # Composition: ck2yaml uses int values, RMG uses float
+            assert {k: int(v) for k, v in s2['composition'].items()} == s1['composition'], \
+                f"Composition mismatch for {name}."
+
+            # Thermo model
+            assert s1['thermo']['model'] == s2['thermo']['model'], \
+                f"Thermo model mismatch for {name}."
+
+            # Temperature ranges and polynomial data
+            t_ranges1 = s1['thermo'].get('temperature-ranges', [])
+            t_ranges2 = s2['thermo'].get('temperature-ranges', [])
+            data1 = s1['thermo'].get('data', [])
+            data2 = s2['thermo'].get('data', [])
+
+            if len(t_ranges1) == 2 and len(t_ranges2) == 3:
+                # ck2yaml collapsed to single polynomial; RMG has two identical ones
+                assert t_ranges1[0] == pytest.approx(t_ranges2[0], rel=1e-4), \
+                    f"Temperature range lower bound mismatch for {name}."
+                assert t_ranges1[1] == pytest.approx(t_ranges2[2], rel=1e-4), \
+                    f"Temperature range upper bound mismatch for {name}."
+                assert len(data1) == 1 and len(data2) == 2, \
+                    f"Expected 1 vs 2 polynomials for collapsed species {name}."
+                assert data1[0] == pytest.approx(data2[0], rel=1e-4), \
+                    f"Thermo polynomial mismatch for {name} (low range)."
+                assert data1[0] == pytest.approx(data2[1], rel=1e-4), \
+                    f"Thermo polynomial mismatch for {name} (high range should match low)."
+            else:
+                assert t_ranges1 == pytest.approx(t_ranges2, rel=1e-4), \
+                    f"Temperature ranges mismatch for {name}."
+                assert len(data1) == len(data2), \
+                    f"Number of thermo polynomial ranges differs for {name}."
+                for i, (poly1, poly2) in enumerate(zip(data1, data2)):
+                    assert poly1 == pytest.approx(poly2, rel=1e-4), \
+                        f"Thermo polynomial {i} mismatch for {name}."
+
+            # Transport data
+            assert ('transport' in s1) == ('transport' in s2), f"Transport data presence mismatch for {name}."
+            if 'transport' in s1 and 'transport' in s2:
+                t1 = s1['transport']
+                t2 = s2['transport']
+                assert t1['model'] == t2['model'], f"Transport model mismatch for {name}."
+                assert t1['geometry'] == t2['geometry'], f"Transport geometry mismatch for {name}."
+                assert t1.get('well-depth', 0) == pytest.approx(
+                    t2.get('well-depth', 0), rel=1e-3
+                ), f"Transport well-depth mismatch for {name}."
+                assert t1.get('diameter', 0) == pytest.approx(
+                    t2.get('diameter', 0), rel=1e-3
+                ), f"Transport diameter mismatch for {name}."
+                assert t1.get('polarizability', 0) == pytest.approx(
+                    t2.get('polarizability', 0), rel=1e-3
+                ), f"Transport polarizability mismatch for {name}."
+                assert t1.get('dipole', 0) == pytest.approx(
+                    t2.get('dipole', 0), rel=1e-3
+                ), f"Transport dipole mismatch for {name}."
+                assert t1.get('rotational-relaxation', 0) == pytest.approx(
+                    t2.get('rotational-relaxation', 0), rel=1e-3
+                ), f"Transport rotational-relaxation mismatch for {name}."
+                assert t1.get('note', '') == t2.get('note', ''), \
+                    f"Transport note mismatch for {name}."
+
+
+class TestRecentlyGeneratedCanteraYaml2GasOnly(CanteraYamlFileComparer):
+    """Tests for comparing recently generated Cantera YAML files from cantera2, gas-only mechanism.
+
+    These are generated on the fly in the mainTest.py functional test and stored in the testing data directory.
+    """
+    test_data_folder = 'test/rmgpy/test_data/yaml_writer_data/'
+
+    @pytest.fixture(autouse=True, scope="class")
+    def find_recent_files(self, request):
+        """Find the YAML files generated by mainTest."""
+        cantera_dir = os.path.join(self.test_data_folder, 'cantera2')
+        chemkin_dir = os.path.join(self.test_data_folder, 'ck2yaml')
+
+        if not os.path.exists(cantera_dir) or not os.path.exists(chemkin_dir):
+            pytest.skip("YAML test data directories not found. Run mainTest first.")
+
+        cantera_file = os.path.join(cantera_dir, 'from_main_test.yaml')
+        chemkin_file = os.path.join(chemkin_dir, 'from_main_test.yaml')
+
+        if not os.path.exists(cantera_file) or not os.path.exists(chemkin_file):
+            pytest.skip("from_main_test.yaml files not found. Run mainTest first.")
+
+        request.cls.yaml_path_1 = chemkin_file
+        request.cls.yaml_path_2 = cantera_file

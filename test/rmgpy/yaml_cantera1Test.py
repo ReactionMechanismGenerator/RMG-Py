@@ -52,6 +52,11 @@ from rmgpy.yaml_cantera1 import (
     CanteraWriter1,
     species_to_dict,
     reaction_to_dicts,
+    get_elements_block,
+    get_phases_gas_only,
+    get_phases_with_surface,
+    get_mech_dict_nonsurface,
+    get_mech_dict_surface,
 )
 
 
@@ -333,6 +338,98 @@ class TestYamlCantera1Functions:
         assert "2 O_X" not in eq, (
             f"Spectator stoichiometry should not be doubled in: {eq}"
         )
+
+    def test_get_elements_block_isotopes_and_surface_site(self):
+        """get_elements_block returns isotope definitions and X with correct weights."""
+        elements_block, elements_line = get_elements_block()
+
+        # elements_line should list X
+        assert 'X' in elements_line
+
+        # elements_block should contain isotope symbols and X
+        assert 'D' in elements_block    # H-2
+        assert 'T' in elements_block    # H-3
+        assert 'X' in elements_block
+        assert '195.083' in elements_block  # X atomic weight
+
+    def test_get_phases_gas_only_has_state(self):
+        """Gas-only phases block includes state with T and P."""
+        phases_block = get_phases_gas_only([self.h2, self.h])
+        assert 'state:' in phases_block
+        assert 'T: 300.0' in phases_block
+        assert 'P: 1 atm' in phases_block
+
+    def test_get_phases_gas_only_has_elements(self):
+        """Gas-only phases block includes elements line."""
+        phases_block = get_phases_gas_only([self.h2])
+        assert 'elements:' in phases_block
+
+    def test_get_mech_dict_nonsurface_reactions_key(self):
+        """Gas-only mech dict uses 'reactions' key."""
+        rxn = Reaction(
+            reactants=[self.h2], products=[self.h, self.h],
+            kinetics=Arrhenius(A=(1e13, "s^-1"), n=0, Ea=(400, "kJ/mol"), T0=(1, "K"))
+        )
+        result = get_mech_dict_nonsurface([self.h2, self.h], [rxn])
+        assert 'species' in result
+        assert 'reactions' in result
+        assert len(result['reactions']) == 1
+
+    def test_get_mech_dict_surface_has_gas_and_surface_reactions(self):
+        """Surface mech dict separates gas-reactions and site0-reactions."""
+        kin = SurfaceArrhenius(
+            A=(1e13, "m^2/(mol*s)"), n=0, Ea=(50, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(reactants=[self.h2, self.x], products=[self.hx, self.hx], kinetics=kin)
+        result = get_mech_dict_surface(
+            [self.h2, self.x, self.hx], [rxn]
+        )
+        assert 'species' in result
+        assert 'gas-reactions' in result
+        assert 'site0-reactions' in result
+        assert len(result['site0-reactions']) == 1
+
+    def test_get_phases_with_surface_has_state(self):
+        """Surface phases block includes state for both gas and surface phases."""
+        phases_block = get_phases_with_surface(
+            [self.h2, self.x, self.hx],
+            surface_site_density=2.5e-9,  # mol/cm^2-equivalent SI
+        )
+        # Should have two phase definitions each with state
+        assert phases_block.count('state:') == 2
+        assert 'T: 300.0' in phases_block
+        assert 'P: 1 atm' in phases_block
+
+    def test_species_to_dict_surface_sites_count(self):
+        """species_to_dict reports correct 'sites' count for multi-site surface species."""
+        # Bidentate glyoxal adsorbed via C and O (2 X atoms)
+        glyoxal_xx = _make_surface_species(
+            "glyoxalXX",
+            "1 O u0 p2 c0 {3,S} {8,S}\n"
+            "2 O u0 p2 c0 {4,D}\n"
+            "3 C u0 p0 c0 {1,S} {4,S} {5,S} {7,S}\n"
+            "4 C u0 p0 c0 {2,D} {3,S} {6,S}\n"
+            "5 H u0 p0 c0 {3,S}\n"
+            "6 H u0 p0 c0 {4,S}\n"
+            "7 X u0 p0 c0 {3,S}\n"
+            "8 X u0 p0 c0 {1,S}",
+            index=215,
+        )
+        d2 = species_to_dict(glyoxal_xx)
+        assert 'sites' in d2
+        assert d2['sites'] == 2
+
+    def test_species_to_dict_gas_no_sites_field(self):
+        """Gas species must not have a 'sites' field."""
+        d = species_to_dict(self.h2)
+        assert 'sites' not in d
+
+    def test_species_to_dict_transport_note_without_verbose(self):
+        """Transport 'note' is written even when verbose=False."""
+        self.h2.transport_data.comment = "from GRI-Mech"
+        d = species_to_dict(self.h2, verbose=False)
+        assert 'note' in d['transport']
+        assert d['transport']['note'] == "from GRI-Mech"
 
 
 class TestCanteraWriter1:
