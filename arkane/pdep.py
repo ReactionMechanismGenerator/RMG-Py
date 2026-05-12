@@ -132,9 +132,11 @@ class PressureDependenceJob(object):
 
         if Tlist is not None:
             self.Tlist = Tlist
-            self.Tmin = (np.min(self.Tlist.value_si), "K")
-            self.Tmax = (np.max(self.Tlist.value_si), "K")
             self.Tcount = len(self.Tlist.value_si)
+            if self.Tmin is None:
+                self.Tmin = (np.min(self.Tlist.value_si), "K")
+            if self.Tmax is None:
+                self.Tmax = (np.max(self.Tlist.value_si), "K")
         else:
             self.Tlist = None
 
@@ -143,9 +145,11 @@ class PressureDependenceJob(object):
         self.Pcount = Pcount
         if Plist is not None:
             self.Plist = Plist
-            self.Pmin = (np.min(self.Plist.value_si) * 1e-5, "bar")
-            self.Pmax = (np.max(self.Plist.value_si) * 1e-5, "bar")
             self.Pcount = len(self.Plist.value_si)
+            if self.Pmin is None:
+                self.Pmin = (np.min(self.Plist.value_si) * 1e-5, "bar")
+            if self.Pmax is None:
+                self.Pmax = (np.max(self.Plist.value_si) * 1e-5, "bar")
         else:
             self.Plist = None
 
@@ -618,7 +622,7 @@ class PressureDependenceJob(object):
                 plt.savefig(os.path.join(output_directory, 'plots', 'kinetics_{0:d}.pdf'.format(count)))
                 plt.close()
 
-    def draw(self, output_directory, file_format='pdf'):
+    def draw(self, output_directory, file_format='pdf', filename_stem='network'):
         """
         Generate a PDF drawing of the pressure-dependent reaction network.
         This requires that Cairo and its Python wrapper be available; if not,
@@ -626,6 +630,10 @@ class PressureDependenceJob(object):
 
         You may also generate different formats of drawings, by changing format to
         one of the following: `pdf`, `svg`, `png`.
+
+        The default filename stem is 'network', which will result in a file
+        named 'network.pdf' in the specified output directory. You can change
+        this by passing a different `filename_stem` argument.
         """
 
         # Skip this step if cairo is not installed
@@ -639,7 +647,7 @@ class PressureDependenceJob(object):
 
         from rmgpy.pdep.draw import NetworkDrawer
 
-        path = os.path.join(output_directory, 'network.' + file_format)
+        path = os.path.join(output_directory, f'{filename_stem}.{file_format}')
 
         NetworkDrawer().draw(self.network, file_format=file_format, path=path)
 
@@ -695,7 +703,10 @@ class PressureDependenceJob(object):
                 f.write('    label = {0!r},\n'.format(ts.label))
                 if ts.conformer is not None:
                     if ts.conformer.E0 is not None:
-                        f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
+                        if self.network.energy_correction:
+                            f.write(f'    E0 = ({ts.conformer.E0.value_si * 0.001:.3f} - {self.network.energy_correction * 0.001:.3f}, "kJ/mol"), # removing the applied energy_correction\n')
+                        else:
+                            f.write('    E0 = {0!r},\n'.format(ts.conformer.E0))
                     if len(ts.conformer.modes) > 0:
                         f.write('    modes = [\n')
                         for mode in ts.conformer.modes:

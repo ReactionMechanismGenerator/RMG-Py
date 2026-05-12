@@ -30,8 +30,8 @@ data and physical quantities.
 
 .. [#f2] No longer distributed
 
-.. _MultiWell: https://clasp-research.engin.umich.edu/multiwell/
-.. _UNIMOL: http://www.ccl.net/cca/software/SOURCES/FORTRAN/unimol/index.shtml
-.. _ChemRate: https://kinetics.nist.gov/ChemRate/
-.. _Variflex: http://web.archive.org/web/20181126234555/http://ftp.tcg.anl.gov/pub/variflex/Summary.vrfx
+.. _MultiWell: https://web.archive.org/web/20220927051103/https://multiwell.engin.umich.edu/about/
+.. _UNIMOL: https://server.ccl.net//cca/software/SOURCES/FORTRAN/unimol/index.shtml
+.. _ChemRate: https://web.archive.org/web/20220621125921/https://kinetics.nist.gov/ChemRate/
+.. _Variflex: https://web.archive.org/web/20181126234555/http://ftp.tcg.anl.gov/pub/variflex/Summary.vrfx
 .. _MESMER: https://sourceforge.net/projects/mesmer/

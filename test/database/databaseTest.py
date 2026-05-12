@@ -46,7 +46,7 @@ from rmgpy import settings
 from rmgpy.data.base import LogicOr
 from rmgpy.data.rmg import RMGDatabase
 from rmgpy.exceptions import ImplicitBenzeneError, UnexpectedChargeError
-from rmgpy.molecule import Group
+from rmgpy.molecule import Group, Molecule
 from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.quantity import ScalarQuantity
@@ -241,7 +241,27 @@ class TestDatabase:
                     assert self.check_surface_thermo_libraries_have_surface_attributes(
                         library_name, library
                     ), "Thermo surface libraries {0}: Entry has metal attributes?".format(library_name)
-
+        
+        with check:
+            assert len(self.database.thermo.sidts) > 0, "SIDT thermochemistry models did not load?"
+        
+        for name,tree in self.database.thermo.sidts.items():
+            tagging = self.database.thermo.sidt_taggings_and_decompositions[name]
+            if "monodentate" in name:
+                tmol = Molecule(smiles="C*")
+                tagging(tmol)
+                tree.evaluate(tmol)
+            elif "bidentate" in name:
+                tmol = Molecule(smiles="*CC*")
+                tagging(tmol)
+                tree.evaluate(tmol)
+            elif "vdw" in name:
+                tmol = Molecule(smiles="C.*")
+                tagging(tmol)
+                tree.evaluate(tmol)
+            else:
+                pass
+        
     def test_solvation(self):
         for group_name, group in self.database.solvation.groups.items():
             with check:
@@ -463,12 +483,12 @@ class TestDatabase:
         failed = False
         if "_Pt" in library.label:
             for entry in entries:
-                if entry.metal is not "Pt":
+                if entry.metal != "Pt":
                     logging.error(f"Expected {entry} metal attribute in {library} library to match Pt, but was {entry.metal}")
                     failed = True
         if "_Ni" in library.label:
             for entry in entries:
-                if entry.metal is not "Ni":
+                if entry.metal != "Ni":
                     logging.error(f"Expected {entry} metal attribute in {library} library to match Ni, but was {entry.metal}")
                     failed = True
         for entry in entries:
@@ -1090,7 +1110,7 @@ class TestDatabase:
                         continue
                     # Create list of all the atomTypes that should be present in addition or instead of Cd
                     correct_atom_list = []
-                    num_of_d_bonds = sum([1 if x.order[0] is "D" and len(x.order) == 1 else 0 for x in atom.bonds.values()])
+                    num_of_d_bonds = sum([1 if x.order[0] == "D" and len(x.order) == 1 else 0 for x in atom.bonds.values()])
                     if num_of_d_bonds == 2:
                         correct_atom_list.append("Cdd")
                     elif num_of_d_bonds == 1:
@@ -1675,11 +1695,11 @@ Origin Group AdjList:
         for entry in group.entries.values():
             if isinstance(entry.data, rmgpy.thermo.thermodata.ThermoData):
                 if "Pt" in group_name:
-                    if entry.metal is not "Pt":
+                    if entry.metal != "Pt":
                         logging.error(f"Expected {entry} metal attribute in {group_name} group to match Pt, but was {entry.metal}")
                         failed = True
                 if "111" in group_name:
-                    if entry.facet is not "111":
+                    if entry.facet != "111":
                         logging.error(f"Expected {entry} facet attribute in {group_name} group to match 111, but was {entry.facet}")
                         failed = True
                 if not entry.metal:
@@ -1701,15 +1721,15 @@ Origin Group AdjList:
         failed = False
         for entry in library.entries.values():
             if "Pt" in library_name:
-                if entry.metal is not "Pt":
+                if entry.metal != "Pt":
                     logging.error(f"Expected {entry} metal attribute in {library_name} library to match Pt, but was {entry.metal}")
                     failed = True
             if "Ni" in library_name:
-                if entry.metal is not "Ni":
+                if entry.metal != "Ni":
                     logging.error(f"Expected {entry} metal attribute in {library_name} library to match Ni, but was {entry.metal}")
                     failed = True
             if "111" in library_name:
-                if entry.facet is not "111":
+                if entry.facet != "111":
                     logging.error(f"Expected {entry} facet attribute in {library_name} library to match 111, but was {entry.facet}")
                     failed = True
             if not entry.metal:
@@ -1929,7 +1949,7 @@ Origin Group AdjList:
                         continue
                     # figure out what the correct atomtype is
                     correct_atom_list = []
-                    num_of_d_bonds = sum([1 if x.order[0] is "D" and len(x.order) == 1 else 0 for x in atom.bonds.values()])
+                    num_of_d_bonds = sum([1 if x.order[0] == "D" and len(x.order) == 1 else 0 for x in atom.bonds.values()])
                     if num_of_d_bonds == 2:
                         correct_atom_list.append("Cdd")
                     elif num_of_d_bonds == 1:

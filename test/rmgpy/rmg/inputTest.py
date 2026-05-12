@@ -30,7 +30,11 @@
 from unittest.mock import patch
 
 import rmgpy.rmg.input as inp
+from rmgpy.exceptions import InputError
+from rmgpy.rmg.input import _parse_writer_config, _writer_config_to_input
 from rmgpy.rmg.main import RMG
+from rmgpy.rmg.model import CoreEdgeReactionModel
+from rmgpy.rmg.settings import WriterConfig
 from rmgpy.ml.estimator import ADMONITION
 
 import pytest
@@ -65,33 +69,123 @@ class TestInputDatabase:
 
     def test_importing_database_reaction_libraries_from_string(self):
         """
-        Test that we can import Reaction Libraries using the non-tuple form.
+        Test that reaction libraries given as plain strings are stored as strings.
         """
         global rmg
-        # add database properties to RMG
         inp.database(reactionLibraries=["test"])
-        assert isinstance(rmg.reaction_libraries[0], tuple)
-        assert not rmg.reaction_libraries[0][1]
+        assert rmg.reaction_libraries == ["test"]
+        assert "test" not in rmg.reaction_libraries_output_edge
 
     def test_importing_database_reaction_libraries_from_false_tuple(self):
         """
-        Test that we can import Reaction Libraries using the Tuple False form.
+        Test that (name, False) tuples are stored as plain strings without output_edge.
         """
         global rmg
-        # add database properties to RMG
         inp.database(reactionLibraries=[("test", False)])
-        assert isinstance(rmg.reaction_libraries[0], tuple)
-        assert not rmg.reaction_libraries[0][1]
+        assert rmg.reaction_libraries == ["test"]
+        assert "test" not in rmg.reaction_libraries_output_edge
 
     def test_importing_database_reaction_libraries_from_true_tuple(self):
         """
-        Test that we can import Reaction Libraries using the Tuple True form.
+        Test that (name, True) tuples are stored as plain strings with the name in output_edge.
         """
         global rmg
-        # add database properties to RMG
         inp.database(reactionLibraries=[("test", True)])
-        assert isinstance(rmg.reaction_libraries[0], tuple)
-        assert rmg.reaction_libraries[0][1]
+        assert rmg.reaction_libraries == ["test"]
+        assert "test" in rmg.reaction_libraries_output_edge
+
+class TestInputDatabaseAutoSelection:
+    """Tests for 'auto' and '<PAH_libs>' token handling in database()."""
+
+    def test_thermo_auto_string(self):
+        global rmg
+        inp.database(thermoLibraries='auto')
+        assert rmg.thermo_libraries == 'auto'
+
+    def test_thermo_auto_in_list(self):
+        global rmg
+        inp.database(thermoLibraries=['myLib', 'auto'])
+        assert rmg.thermo_libraries == ['myLib', 'auto']
+
+    def test_thermo_pah_libs_in_list(self):
+        global rmg
+        inp.database(thermoLibraries=['auto', '<PAH_libs>'])
+        assert rmg.thermo_libraries == ['auto', '<PAH_libs>']
+
+    def test_transport_auto_string(self):
+        global rmg
+        inp.database(transportLibraries='auto')
+        assert rmg.transport_libraries == 'auto'
+
+    def test_reaction_libraries_auto_string(self):
+        global rmg
+        inp.database(reactionLibraries='auto')
+        assert rmg.reaction_libraries == 'auto'
+
+    def test_reaction_libraries_auto_in_list(self):
+        global rmg
+        inp.database(reactionLibraries=['auto', '<PAH_libs>'])
+        assert 'auto' in rmg.reaction_libraries
+        assert '<PAH_libs>' in rmg.reaction_libraries
+
+    def test_reaction_libraries_mixed_auto_and_tuple(self):
+        global rmg
+        inp.database(reactionLibraries=[('myLib', True), 'auto'])
+        assert rmg.reaction_libraries == ['myLib', 'auto']
+        assert 'myLib' in rmg.reaction_libraries_output_edge
+
+    def test_seed_mechanisms_auto(self):
+        global rmg
+        inp.database(seedMechanisms='auto')
+        assert rmg.seed_mechanisms == 'auto'
+
+    def test_kinetics_families_auto(self):
+        global rmg
+        inp.database(kineticsFamilies='auto')
+        assert rmg.kinetics_families == 'auto'
+
+    def test_kinetics_families_auto_with_exclusion(self):
+        global rmg
+        inp.database(kineticsFamilies=['!H_Abstraction', 'auto'])
+        assert rmg.kinetics_families == ['!H_Abstraction', 'auto']
+
+    def test_default_no_auto(self):
+        """Without 'auto', fields should behave as before."""
+        global rmg
+        inp.database(
+            thermoLibraries=['primaryThermoLibrary'],
+            reactionLibraries=[('lib1', False)],
+            seedMechanisms=[],
+            transportLibraries=None,
+            kineticsFamilies='default',
+        )
+        assert rmg.thermo_libraries == ['primaryThermoLibrary']
+        assert rmg.reaction_libraries == ['lib1']
+        assert 'lib1' not in rmg.reaction_libraries_output_edge
+        assert rmg.seed_mechanisms == []
+        assert rmg.transport_libraries is None
+        assert rmg.kinetics_families == 'default'
+
+    def test_pah_libs_standalone_thermo_raises(self):
+        with pytest.raises(InputError):
+            inp.database(thermoLibraries='<PAH_libs>')
+
+    def test_pah_libs_standalone_reaction_raises(self):
+        with pytest.raises(InputError):
+            inp.database(reactionLibraries='<PAH_libs>')
+
+    def test_pah_libs_standalone_transport_raises(self):
+        with pytest.raises(InputError):
+            inp.database(transportLibraries='<PAH_libs>')
+
+    def test_pah_libs_standalone_seeds_raises(self):
+        with pytest.raises(InputError):
+            inp.database(seedMechanisms='<PAH_libs>')
+
+    def test_pah_libs_tuple_in_reaction_libs_raises(self):
+        with pytest.raises(InputError):
+            inp.database(reactionLibraries=[('<PAH_libs>', True)])
+
 
 @pytest.mark.skip(reason=ADMONITION)
 class TestInputMLEstimator:
@@ -117,7 +211,7 @@ class TestInputMLEstimator:
         assert isinstance(rmg.ml_settings, dict)
 
 
-class TestInputThemoCentralDatabase:
+class TestInputThermoCentralDatabase:
     """
     Contains unit tests rmgpy.rmg.input.thermo_central_database
     """
@@ -127,7 +221,7 @@ class TestInputThemoCentralDatabase:
         global rmg
         rmg.thermo_central_database = None
 
-    def test_themo_central_database(self):
+    def test_thermo_central_database(self):
         """
         Test that we can input.
         """
@@ -373,3 +467,168 @@ class TestInputReactors:
         assert reactor.initial_mole_fractions["C"] == 0.2
 
         mock_logging.warning.assert_called_with("Initial mole fractions do not sum to one; normalizing.")
+
+
+class TestInputPressureDependence:
+    """
+    Contains unit tests for pressure dependence input, including completedNetworks
+    """
+
+    def setup_method(self):
+        """This method is run before every test in this class"""
+        global rmg
+        # Reset the completed networks set before each test
+        rmg.reaction_model = CoreEdgeReactionModel()
+        rmg.reaction_model.completed_pdep_networks = set()
+
+    def test_completed_networks_single(self):
+        """Test that a single completedNetwork can be added via pressure_dependence"""
+        global rmg
+        
+        inp.pressure_dependence(
+            method='modified strong collision',
+            temperatures=(300, 2000, 'K', 8),
+            pressures=(0.01, 100, 'bar', 5),
+            maximumGrainSize=(0.5, 'kcal/mol'),
+            minimumNumberOfGrains=250,
+            interpolation=('Chebyshev', 6, 4),
+            maximumAtoms=16,
+            completedNetworks=['CH2O2'],
+        )
+        
+        # Check that the network was added
+        assert len(rmg.reaction_model.completed_pdep_networks) == 1
+        # The formula CH2O2 should be converted to a sorted tuple of elements
+        expected_key = (('C', 1), ('H', 2), ('O', 2))
+        assert expected_key in rmg.reaction_model.completed_pdep_networks
+
+    def test_completed_networks_multiple(self):
+        """Test that multiple completedNetworks can be added via pressure_dependence"""
+        global rmg
+        
+        inp.pressure_dependence(
+            method='modified strong collision',
+            temperatures=(300, 2000, 'K', 8),
+            pressures=(0.01, 100, 'bar', 5),
+            maximumGrainSize=(0.5, 'kcal/mol'),
+            minimumNumberOfGrains=250,
+            interpolation=('Chebyshev', 6, 4),
+            maximumAtoms=16,
+            completedNetworks=['CH2O2', 'C2H6'],
+        )
+        
+        # Check that both networks were added
+        assert len(rmg.reaction_model.completed_pdep_networks) == 2
+        expected_key1 = (('C', 1), ('H', 2), ('O', 2))
+        expected_key2 = (('C', 2), ('H', 6))
+        assert expected_key1 in rmg.reaction_model.completed_pdep_networks
+        assert expected_key2 in rmg.reaction_model.completed_pdep_networks
+
+    def test_completed_networks_none(self):
+        """Test that pressure_dependence works without completedNetworks"""
+        global rmg
+        
+        inp.pressure_dependence(
+            method='modified strong collision',
+            temperatures=(300, 2000, 'K', 8),
+            pressures=(0.01, 100, 'bar', 5),
+            maximumGrainSize=(0.5, 'kcal/mol'),
+            minimumNumberOfGrains=250,
+            interpolation=('Chebyshev', 6, 4),
+            maximumAtoms=16,
+        )
+        
+        # Check that no networks were added
+        assert len(rmg.reaction_model.completed_pdep_networks) == 0
+
+
+class TestWriterConfig:
+    """Unit tests for WriterConfig and the _parse_writer_config / _writer_config_to_input helpers."""
+
+    def test_parse_false_disables(self):
+        cfg = _parse_writer_config(False)
+        assert not cfg.enabled
+        assert cfg.save_interval == 0
+
+    def test_parse_true_enables_default_interval(self):
+        cfg = _parse_writer_config(True)
+        assert cfg.enabled
+        assert cfg.save_interval == 1
+        assert cfg.verbose_comments is None
+        assert cfg.save_edge is None
+
+    def test_parse_true_custom_default_interval(self):
+        cfg = _parse_writer_config(True, default_save_interval=5)
+        assert cfg.save_interval == 5
+
+    def test_parse_dict_full(self):
+        cfg = _parse_writer_config({'saveInterval': -1, 'verboseComments': True, 'saveEdge': False})
+        assert cfg.enabled
+        assert cfg.save_interval == -1
+        assert cfg.verbose_comments is True
+        assert cfg.save_edge is False
+
+    def test_parse_dict_partial(self):
+        cfg = _parse_writer_config({'saveInterval': 3})
+        assert cfg.save_interval == 3
+        assert cfg.verbose_comments is None
+        assert cfg.save_edge is None
+
+    def test_parse_invalid_raises(self):
+        with pytest.raises(InputError):
+            _parse_writer_config(42)
+
+    def test_should_write_every_iteration(self):
+        cfg = WriterConfig(save_interval=1)
+        assert cfg.should_write(0, False)
+        assert cfg.should_write(1, False)
+        assert cfg.should_write(5, False)
+
+    def test_should_write_every_n_iterations(self):
+        cfg = WriterConfig(save_interval=3)
+        assert cfg.should_write(0, False)
+        assert not cfg.should_write(1, False)
+        assert not cfg.should_write(2, False)
+        assert cfg.should_write(3, False)
+        assert cfg.should_write(6, False)
+
+    def test_should_write_end_only(self):
+        cfg = WriterConfig(save_interval=-1)
+        assert not cfg.should_write(0, False)
+        assert not cfg.should_write(5, False)
+        assert cfg.should_write(5, True)
+
+    def test_should_write_disabled(self):
+        cfg = WriterConfig(save_interval=0)
+        assert not cfg.should_write(0, False)
+        assert not cfg.should_write(0, True)
+
+    def test_should_write_final_always_writes(self):
+        cfg = WriterConfig(save_interval=5)
+        # Iteration 7 was not written (not multiple of 5)
+        assert cfg.should_write(7, True)
+
+    def test_should_write_final_no_double_write(self):
+        cfg = WriterConfig(save_interval=5)
+        # Iteration 5 is a multiple of 5 — written during loop
+        cfg.should_write(5, False)
+        # Final call at same iteration should be skipped
+        assert not cfg.should_write(5, True)
+
+    def test_writer_config_to_input_false(self):
+        cfg = WriterConfig(save_interval=0)
+        assert _writer_config_to_input(cfg) is False
+
+    def test_writer_config_to_input_true(self):
+        cfg = WriterConfig(save_interval=1)
+        assert _writer_config_to_input(cfg) is True
+
+    def test_writer_config_to_input_dict(self):
+        cfg = WriterConfig(save_interval=-1, verbose_comments=True, save_edge=False)
+        result = _writer_config_to_input(cfg)
+        assert "'saveInterval': -1" in result
+        assert "'verboseComments': True" in result
+        assert "'saveEdge': False" in result
+
+    def test_writer_config_to_input_none(self):
+        assert _writer_config_to_input(None) is False

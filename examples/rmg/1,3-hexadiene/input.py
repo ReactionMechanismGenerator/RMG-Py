@@ -1,7 +1,7 @@
 # Data sources
 database(
     thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
-    reactionLibraries = [],
+    reactionLibraries = ['NOx2018'],
     seedMechanisms = [],
     kineticsDepositories = ['training'], 
     kineticsFamilies = 'default',
@@ -89,4 +89,10 @@ options(
     units='si',
     generateOutputHTML=False,
     generatePlots=False,
+    generatePESDiagrams=True,
+    # Large model: write output every 5 iterations and skip edge species to reduce I/O
+    generateChemkin={'saveInterval': 1, 'saveEdge': False},
+    generateRMSYAML={'saveInterval': 5},
+    generateCanteraYAML1={'saveInterval': 5},
+    generateCanteraYAML2={'saveInterval': 5},
 )

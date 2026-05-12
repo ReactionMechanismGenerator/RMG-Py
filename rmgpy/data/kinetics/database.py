@@ -46,7 +46,9 @@ from rmgpy.kinetics import Arrhenius, ArrheniusEP, ThirdBody, Lindemann, Troe, \
                            PDepArrhenius, MultiArrhenius, MultiPDepArrhenius, \
                            Chebyshev, KineticsData, StickingCoefficient, \
                            StickingCoefficientBEP, SurfaceArrhenius, SurfaceArrheniusBEP, \
-                           ArrheniusBM, SurfaceChargeTransfer, KineticsModel, Marcus
+                           ArrheniusBM, SurfaceChargeTransfer, KineticsModel, Marcus, \
+                           ArrheniusChargeTransfer, ArrheniusChargeTransferBM
+from rmgpy.kinetics.uncertainties import RateUncertainty
 from rmgpy.molecule import Molecule, Group
 from rmgpy.reaction import Reaction, same_species_lists
 from rmgpy.species import Species
@@ -70,6 +72,7 @@ class KineticsDatabase(object):
             'KineticsData': KineticsData,
             'Arrhenius': Arrhenius,
             'ArrheniusEP': ArrheniusEP,
+            'ArrheniusChargeTransfer': ArrheniusChargeTransfer,
             'MultiArrhenius': MultiArrhenius,
             'MultiPDepArrhenius': MultiPDepArrhenius,
             'PDepArrhenius': PDepArrhenius,
@@ -84,11 +87,13 @@ class KineticsDatabase(object):
             'SurfaceChargeTransfer': SurfaceChargeTransfer,
             'R': constants.R,
             'ArrheniusBM': ArrheniusBM,
+            'ArrheniusChargeTransferBM': ArrheniusChargeTransferBM,
             'SoluteData': SoluteData,
             'SoluteTSData': SoluteTSData,
             'SoluteTSDiffData': SoluteTSDiffData,
             'KineticsModel': KineticsModel,
             'Marcus': Marcus,
+            'RateUncertainty': RateUncertainty,
         }
         self.global_context = {}
 
@@ -133,11 +138,15 @@ class KineticsDatabase(object):
 
         Both styles can be loaded by this method.
         """
-        import imp
+        import importlib
 
         # Load the recommended.py file as a module
         try:
-            rec = imp.load_source('rec', filepath)
+            # https://docs.python.org/3/whatsnew/3.12.html#imp
+            loader = importlib.machinery.SourceFileLoader('rec', filepath)
+            spec = importlib.util.spec_from_file_location('rec', filepath, loader=loader)
+            rec = importlib.util.module_from_spec(spec)
+            loader.exec_module(rec)
         except Exception as e:
             raise DatabaseError('Unable to load recommended.py file for kinetics families: {0!s}'.format(e))
 
@@ -263,7 +272,16 @@ class KineticsDatabase(object):
                 for f in files:
                     if f.lower() == 'reactions.py':
                         library_file = os.path.join(root, f)
-                        label = os.path.dirname(library_file)[len(path) + 1:]
+                        dirname = os.path.dirname(library_file)
+                        if dirname == path:
+                            label = os.path.basename(dirname)
+                        else:
+                            label = os.path.relpath(dirname, path)
+
+                        if not label:
+                            logging.warning(f"Empty label for {library_file}. Using 'default'.")
+                            label = "default"
+                        
                         logging.info(f'Loading kinetics library {label} from {library_file}...')
                         library = KineticsLibrary(label=label)
                         try:
@@ -738,42 +756,52 @@ and immediately used in input files without any additional changes.
                 else:
                     kinetics = training_entry.data
             elif 'Rate Rules' in source:
-
                 source_dict = source['Rate Rules'][1]
                 rules = source_dict['rules']
                 training = source_dict['training']
                 degeneracy = source_dict['degeneracy']
 
-                log_a = 0
-                n = 0
-                alpha = 0
-                E0 = 0
-                for rule_entry, weight in rules:
-                    log_a += np.log10(rule_entry.data.A.value_si) * weight
-                    n += rule_entry.data.n.value_si * weight
-                    alpha += rule_entry.data.alpha.value_si * weight
-                    E0 += rule_entry.data.E0.value_si * weight
-                for rule_entry, training_entry, weight in training:
-                    log_a += np.log10(rule_entry.data.A.value_si) * weight
-                    n += rule_entry.data.n.value_si * weight
-                    alpha += rule_entry.data.alpha.value_si * weight
-                    E0 += rule_entry.data.E0.value_si * weight
-
-                a_units = rule_entry.data.A.units
-                if a_units == 'cm^3/(mol*s)' or a_units == 'cm^3/(molecule*s)' or a_units == 'm^3/(molecule*s)':
-                    a_units = 'm^3/(mol*s)'
-                elif a_units == 'cm^6/(mol^2*s)' or a_units == 'cm^6/(molecule^2*s)' or a_units == 'm^6/(molecule^2*s)':
-                    a_units = 'm^6/(mol^2*s)'
-                elif a_units == 's^-1' or a_units == 'm^3/(mol*s)' or a_units == 'm^6/(mol^2*s)':
-                    pass
-                else:
-                    raise ValueError('Invalid units {0} for averaging kinetics.'.format(a_units))
-                kinetics = ArrheniusEP(
-                    A=(degeneracy * 10 ** log_a, a_units),
-                    n=n,
-                    alpha=alpha,
-                    E0=(E0 * 0.001, "kJ/mol"),
-                )
+                if rules and isinstance(rules[0][0].data, ArrheniusBM):
+                    # This is a rate rule with ArrheniusBM kinetics
+                    assert len(rules) == 1, "There should only be one rate rule for ArrheniusBM kinetics in the autogenerated trees"
+                    kinetics = ArrheniusBM(  # have to create a new object to avoid modifying the original when we multiply by degeneracy
+                        A=rules[0][0].data.A,
+                        n=rules[0][0].data.n,
+                        w0=rules[0][0].data.w0,
+                        E0=rules[0][0].data.E0,
+                    )
+                    kinetics.A.value_si *= degeneracy
+                else:  # ArrheniusEP kinetics
+                    log_a = 0
+                    n = 0
+                    alpha = 0
+                    E0 = 0
+                    for rule_entry, weight in rules:
+                        log_a += np.log10(rule_entry.data.A.value_si) * weight
+                        n += rule_entry.data.n.value_si * weight
+                        alpha += rule_entry.data.alpha.value_si * weight
+                        E0 += rule_entry.data.E0.value_si * weight
+                    for rule_entry, training_entry, weight in training:
+                        log_a += np.log10(rule_entry.data.A.value_si) * weight
+                        n += rule_entry.data.n.value_si * weight
+                        alpha += rule_entry.data.alpha.value_si * weight
+                        E0 += rule_entry.data.E0.value_si * weight
+                    a_units = rule_entry.data.A.units
+                    if a_units == 'cm^3/(mol*s)' or a_units == 'cm^3/(molecule*s)' or a_units == 'm^3/(molecule*s)':
+                        a_units = 'm^3/(mol*s)'
+                    elif a_units == 'cm^6/(mol^2*s)' or a_units == 'cm^6/(molecule^2*s)' or a_units == 'm^6/(molecule^2*s)':
+                        a_units = 'm^6/(mol^2*s)'
+                    elif a_units == 's^-1' or a_units == 'm^3/(mol*s)' or a_units == 'm^6/(mol^2*s)':
+                        pass
+                    else:
+                        raise ValueError('Invalid units {0} for averaging kinetics.'.format(a_units))
+                    
+                    kinetics = ArrheniusEP(
+                        A=(degeneracy * 10 ** log_a, a_units),
+                        n=n,
+                        alpha=alpha,
+                        E0=(E0 * 0.001, "kJ/mol"),
+                    )
             else:
                 raise ValueError("Source data must be either 'Library', 'PDep','Training', or 'Rate Rules'.")
 

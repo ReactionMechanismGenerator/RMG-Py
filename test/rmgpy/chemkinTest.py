@@ -44,6 +44,7 @@ from rmgpy.chemkin import (
     save_chemkin_surface_file,
     save_species_dictionary,
     save_transport_file,
+    write_kinetics_entry,
     write_thermo_entry,
 )
 from rmgpy.chemkin import _remove_line_breaks, _process_duplicate_reactions
@@ -664,6 +665,33 @@ class ChemkinTest:
         # clean up
         os.remove(chemkin_save_path)
         os.remove(dictionary_save_path)
+
+    def test_write_kinetics_entry_with_coverage_dependence(self):
+        """Test that write_kinetics_entry correctly writes COV lines for surface reactions
+        with coverage-dependent kinetics."""
+        s_ox = Species().from_smiles("O=[*]")
+        s_ox.label = "OX"
+
+        kinetics = SurfaceArrhenius(
+            A=(7.39e19, "cm^2/(mol*s)"),
+            n=0.0,
+            Ea=(18.475, "kcal/mol"),
+            T0=(1, "K"),
+            coverage_dependence={s_ox: {"a": 0.0, "m": 0.0, "E": (-17.5, "kcal/mol")}},
+        )
+
+        rxn = Reaction(
+            reactants=[s_ox],
+            products=[s_ox],
+            kinetics=kinetics,
+        )
+
+        result = write_kinetics_entry(rxn, species_list=[s_ox])
+
+        assert "COV" in result
+        cov_line = [line for line in result.splitlines() if "COV" in line][0]
+        assert "OX" in cov_line
+        assert "-17.500" in cov_line
 
 
 class TestThermoReadWrite:

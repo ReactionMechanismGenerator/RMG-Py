@@ -367,20 +367,18 @@ class KineticsRules(Database):
             
             kinetics = deepcopy(entry.data)
             if entry0 == entry:
-                kinetics.comment = "Estimated from node {}".format(entry.label)
+                kinetics.comment = f"Estimated from node {entry.label} in family {self.label.replace('/rules','')}."
                 kinetics.A.value_si *= degeneracy
                 if degeneracy > 1:
-                    kinetics.comment += "\n"
-                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
-                return kinetics,entry
+                    kinetics.comment += f"\nMultiplied by reaction path degeneracy {degeneracy}"
+                return kinetics, entry
             else:
-                kinetics.comment = "Matched node {}\n".format(entry0.label)
-                kinetics.comment += "Estimated from node {}".format(entry.label)
+                kinetics.comment = f"Matched node {entry0.label}\n"
+                kinetics.comment += f"Estimated from node {entry.label} in family {self.label.replace('/rules','')}."
                 kinetics.A.value_si *= degeneracy
                 if degeneracy > 1:
-                    kinetics.comment += "\n"
-                    kinetics.comment += "Multiplied by reaction path degeneracy {0}".format(degeneracy)
-                return kinetics,None
+                    kinetics.comment += f"\nMultiplied by reaction path degeneracy {degeneracy}"
+                return kinetics, None
                      
         original_leaves = get_template_label(template)
         template_list = [template]
@@ -451,8 +449,8 @@ class KineticsRules(Database):
         kinetics_list = remove_identical_kinetics(saved_kinetics)
 
         if len(kinetics_list) == 0:
-            raise KineticsError('Unable to determine kinetics for reaction with template {0} in family '
-                                '{1}.'.format(template, self.label))
+            raise KineticsError("Unable to determine kinetics for reaction "
+                                f"with template {template!r} in family {self.label!s}.")
 
         elif len(kinetics_list) == 1:
             kinetics, t = kinetics_list[0]

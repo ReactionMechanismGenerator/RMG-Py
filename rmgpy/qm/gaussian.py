@@ -27,12 +27,12 @@
 #                                                                             #
 ###############################################################################
 
-import distutils.spawn
 import itertools
 import logging
 import os
 import re
 from subprocess import Popen
+import shutil
 
 import cclib
 
@@ -55,7 +55,7 @@ class Gaussian:
 
     for exe in executablesToTry:
         try:
-            executable_path = distutils.spawn.find_executable(exe)
+            executable_path = shutil.which(exe)
         except:
             executable_path = None
         if executable_path is not None:

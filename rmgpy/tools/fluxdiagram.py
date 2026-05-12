@@ -40,9 +40,8 @@ import warnings
 import numpy as np
 import pydot
 
-from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.rmg.settings import SimulatorSettings
-from rmgpy.solver.base import TerminationTime, TerminationConversion
+from rmgpy.solver.base import TerminationConversion, TerminationTime
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.tools.loader import load_rmg_job
 
@@ -208,7 +207,7 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
             continue
         for root, dirs, files in os.walk(species_directory):
             for f in files:
-                if f.endswith(species_index):
+                if f == species_index:
                     image_path = os.path.join(root, f)
                     break
         if os.path.exists(image_path):
@@ -308,7 +307,10 @@ def generate_flux_diagram(reaction_model, times, concentrations, reaction_rates,
                '-pix_fmt', 'yuv420p',  # Pixel format
                'flux_diagram.avi']  # Output filename
 
-    subprocess.check_call(command, cwd=output_directory)
+    try:
+        subprocess.run(command, check=True, capture_output=True, cwd=output_directory)
+    except subprocess.CalledProcessError as err:
+        raise RuntimeError(f"{err} {err.stderr.decode('utf8')} {err.stdout.decode('utf8')}") from err
 
 
 ################################################################################
@@ -538,6 +540,7 @@ def create_flux_diagram(input_file, chemkin_file, species_dict, save_path=None, 
     Generates the flux diagram based on a condition 'input_file', chemkin.inp chemkin_file,
     a species_dict txt file, plus an optional chemkin_output file.
     """
+    from rmgpy.kinetics.diffusionLimited import diffusion_limiter
     if species_path is None:
         species_path = os.path.join(os.path.dirname(input_file), 'species')
         generate_images = True

@@ -31,20 +31,41 @@
 Contains functionality for directly simulating the master equation
 and implementing the SLS master equation reduction method
 """
-import sys
 
-from diffeqpy import de
-from julia import Main
-import scipy.sparse as sparse
+import logging
+import os
+
 import numpy as np
 import scipy.linalg
-import mpmath
 import scipy.optimize as opt
 
+import rmgpy
 import rmgpy.constants as constants
-from rmgpy.pdep.reaction import calculate_microcanonical_rate_coefficient
 from rmgpy.pdep.me import generate_full_me_matrix, states_to_configurations
-from rmgpy.statmech.translation import IdealGasTranslation
+from rmgpy.rmg.reactionmechanismsimulator_reactors import to_julia
+
+class LazyMain:
+    """
+    A Lazy wrapper for the juliacall Main module, that will delay importing
+    the underlying Main module until it is first called.
+    This is to delay loading Julia until it's really needed.
+    """
+    # If you modify this class, please consider making similar changes to
+    # rmgpy/rmg/reactionmechanismsimulator_reactors.py, which has a similar LazyMain class
+    def __getattr__(self, name):
+        try:
+            from juliacall import Main as JuliaMain
+            Main = JuliaMain
+            Main.seval("using ReactionMechanismSimulator.SciMLBase")
+            Main.seval("using ReactionMechanismSimulator.Sundials")
+        except Exception as e:
+            logging.error("Failed to import Julia and load ReactionMechanismSimulator components needed.")
+            raise
+        globals()['Main'] = JuliaMain  # Replace proxy with real thing, for next time it's called
+        return getattr(JuliaMain, name) # Return the attribute for the first time it's called
+
+Main = LazyMain()
+
 
 
 def get_initial_condition(network, x0, indices):
@@ -85,30 +106,36 @@ def get_initial_condition(network, x0, indices):
 
 
 def solve_me(M, p0, t):
-    f = Main.eval(
+    f = Main.seval(
         """
-function f(u, M, t)
-    return M*u
+function f(du, u, M, t)
+    du .= M * u
+    return du
 end"""
     )
-    jac = Main.eval(
+    jac = Main.seval(
         """
-function jac(u, M, t)
-    return M
+function jac(J, u, M, t)
+    J .= M
+    return J
 end"""
     )
+    p0 = to_julia(p0)
+    M = to_julia(M)
     tspan = (0.0, t)
-    fcn = de.ODEFunction(f, jac=jac)
-    prob = de.ODEProblem(fcn, p0, tspan, M)
-    sol = de.solve(prob, solver=de.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
+    fcn = Main.ODEFunction(f, jac=jac)
+    prob = Main.ODEProblem(fcn, p0, tspan, M)
+    sol = Main.solve(prob, Main.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
 
 def solve_me_fcns(f, jac, M, p0, t):
+    p0 = to_julia(p0)
+    M = to_julia(M)
     tspan = (0.0, t)
-    fcn = de.ODEFunction(f, jac=jac)
-    prob = de.ODEProblem(fcn, p0, tspan, M)
-    sol = de.solve(prob, solver=de.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
+    fcn = Main.ODEFunction(f, jac=jac)
+    prob = Main.ODEProblem(fcn, p0, tspan, M)
+    sol = Main.solve(prob, Main.CVODE_BDF(), abstol=1e-16, reltol=1e-6)
     return sol
 
 
@@ -150,16 +177,18 @@ def get_rate_coefficients_SLS(network, T, P, method="mexp", neglect_high_energy_
     tau = np.abs(1.0 / fastest_reaction)
 
     if method == "ode":
-        f = Main.eval(
+        f = Main.seval(
             """
-function f(u,M,t)
-    return M*u
+function f(du, u, M, t)
+    du .= M * u
+    return du
 end"""
         )
-        jac = Main.eval(
+        jac = Main.seval(
             """
-function jac(u,M,t)
-    return M
+function jac(J, u, M, t)
+    J .= M
+    return J
 end"""
         )
 
@@ -247,7 +276,7 @@ end"""
     xseq = []
     dxdtseq = []
 
-    # Single domainant source simulations
+    # Single dominant source simulations
     for i, isomer in enumerate(isomers):
         xsout, dxdtout = run_single_source(network, isomer)
         for j in range(len(xsout)):

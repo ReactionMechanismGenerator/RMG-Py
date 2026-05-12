@@ -22,33 +22,32 @@ Gaussian, Q-Chem, Molpro, Orca, Psi4, and TeraChem.
 
 ## How to Install
 You can either download the source from GitHub and compile yourself, or download the binaries from Anaconda.
-Please see the [Download and Install](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html) page for detailed instructions.
+Please see the [Download and Install](https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html) page for detailed instructions.
 
 ## Documentation
-- [RMG Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/rmg/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
-- [Arkane Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/arkane/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
-- [RMG API Reference](http://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_API_Reference.pdf))
+- [RMG Documentation](https://ReactionMechanismGenerator.github.io/RMG-Py/users/rmg/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
+- [Arkane Documentation](https://ReactionMechanismGenerator.github.io/RMG-Py/users/arkane/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
+- [RMG API Reference](https://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_API_Reference.pdf))
 
 ## How to Contribute
-Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/RMG-Contributor-Guidelines)
+Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CONTRIBUTING.md)
 for details on how to contribute to RMG-Py, Arkane, or RMG-database.
 
 ## How to Give Feedback
 
 Please post any issues you may have to the [issues page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/)
-or drop in to the [chat room](https://gitter.im/ReactionMechanismGenerator/RMG-Py) or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
+or email [rmg_dev@mit.edu](mailto:rmg_dev@mit.edu) if you have questions.  
 
 ## Useful Links
 - [Interactive Website](https://rmg.mit.edu): Visit this site to visualize RMG-generated models, view the databases, and 
 perform thermodynamics and kinetics searches
-- [Wiki](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki): a wiki for developer notes
 - [Issues Page](https://github.com/ReactionMechanismGenerator/RMG-Py/issues/): view current issues and feature requests
 
 ## Credits
-- [Professor William H. Green's research group](http://cheme.scripts.mit.edu/green-group/) at the 
-[Massachusetts Institute of Technology](http://web.mit.edu/) 
-- [Professor Richard H. West's research group](http://www.northeastern.edu/comocheng/) at 
-[Northeastern University](http://www.northeastern.edu/). 
+- [Professor William H. Green's research group](https://greengroup.mit.edu/) at the 
+[Massachusetts Institute of Technology](https://web.mit.edu/) 
+- [Professor Richard H. West's research group](https://www.northeastern.edu/comocheng/) at 
+[Northeastern University](https://www.northeastern.edu/). 
 
 ## Resources and References
 The resources and relevant publications are listed [here](https://rmg.mit.edu/resources) on the RMG-website. 

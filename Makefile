@@ -7,28 +7,36 @@
 CC=gcc
 CXX=g++
 
-.PHONY : all minimal main solver check pycheck arkane clean install decython documentation test q2dtor
+# Sentinel file written after a successful pip editable install.
+# Lives in the source tree; deleted by `make clean`.
+INSTALL_SENTINEL = .installed
 
-all: pycheck main solver check
+.PHONY : all build check clean install decython documentation test q2dtor
 
-minimal:
-	python setup.py build_ext minimal --inplace --build-temp .
-
-main:
-	python setup.py build_ext main --inplace --build-temp .
-
-solver:
-	@ python utilities.py check-pydas
-	python setup.py build_ext solver --inplace --build-temp .
-
-arkane:
-	python setup.py build_ext arkane --inplace --build-temp .
+# Default target: ensure installed, then build any changed extensions in place.
+all: check $(INSTALL_SENTINEL) build check
 
 check:
 	@ python utilities.py check-dependencies
+	@ python utilities.py check-pydas
 
-pycheck:
-	@ python utilities.py check-python
+define DO_INSTALL
+	@ python utilities.py check-pydas
+	python -m pip install --no-build-isolation -vv -e .
+	@ touch $(INSTALL_SENTINEL)
+endef
+
+# Runs only if the sentinel doesn't exist.
+$(INSTALL_SENTINEL):
+	$(DO_INSTALL)
+
+# Explicit install target
+install:
+	$(DO_INSTALL)
+
+# Incremental in-place build; skips pip entirely.
+build:
+	python setup.py build_ext --inplace
 
 documentation:
 	$(MAKE) -C documentation html
@@ -36,13 +44,11 @@ documentation:
 
 clean:
 	@ python utilities.py clean
+	python -m pip uninstall --yes reactionmechanismgenerator || true  # can fail if RMG not installed at all
+	@ rm -f $(INSTALL_SENTINEL)
 
 clean-solver:
 	@ python utilities.py clean-solver
-
-install:
-	@ python utilities.py check-pydas
-	python setup.py install
 
 q2dtor:
 	@ echo -e "\nInstalling Q2DTor...\n"
@@ -62,16 +68,16 @@ decython:
 	find . -name *.pyc -exec rm -f '{}' \;
 
 test-all:
-	python-jl -m pytest
+	python -m pytest
 
 test test-unittests:
-	python-jl -m pytest -m "not functional and not database"
+	python -m pytest -m "not functional and not database"
 
 test-functional:
-	python-jl -m pytest -m "functional"
+	python -m pytest -m "functional"
 
 test-database:
-	python-jl -m pytest -m "database"
+	python -m pytest -m "database"
 
 eg0: all
 	mkdir -p testing/eg0
@@ -126,7 +132,7 @@ eg7: all
 	cp examples/rmg/gri_mech_rxn_lib/input.py testing/eg7/input.py
 	@ echo "Running eg7: gri_mech_rxn_lib example"
 	python rmg.py testing/eg7/input.py
-	
+
 scoop: all
 	mkdir -p testing/scoop
 	rm -rf testing/scoop/*
@@ -141,3 +147,25 @@ eg4: all
 	cp examples/thermoEstimator/input.py testing/eg4/input.py
 	@ echo "Running thermo data estimator example. This tests QM."
 	python scripts/thermoEstimator.py testing/eg4/input.py
+
+# RMS reactor examples (require Julia)
+eg8: all
+	mkdir -p testing/eg8
+	rm -rf testing/eg8/*
+	cp examples/rmg/rms_constant_V/input.py testing/eg8/input.py
+	@ echo "Running RMS constantVIdealGasReactor example (requires Julia)"
+	python rmg.py testing/eg8/input.py
+
+eg9: all
+	mkdir -p testing/eg9
+	rm -rf testing/eg9/*
+	cp examples/rmg/nox_transitory_edge/input.py testing/eg9/input.py
+	@ echo "Running RMS constantTPIdealGasReactor example (requires Julia)"
+	python rmg.py testing/eg9/input.py
+
+eg10: all
+	mkdir -p testing/eg10
+	rm -rf testing/eg10/*
+	cp examples/rmg/liquid_cat/input.py testing/eg10/input.py
+	@ echo "Running RMS liquidSurfaceReactor example (requires Julia)"
+	python rmg.py testing/eg10/input.py

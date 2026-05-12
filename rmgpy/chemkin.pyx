@@ -47,7 +47,7 @@ from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import ChemkinError
 from rmgpy.molecule.element import get_element
 from rmgpy.molecule.util import get_element_count
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, QuantityError
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.species import Species
@@ -73,7 +73,7 @@ def read_thermo_entry(entry, Tmin=0, Tint=0, Tmax=0):
     the label of the species and the thermodynamics model as a :class:`NASA`
     object.
     
-    Format specification at http://www2.galcit.caltech.edu/EDL/public/formats/chemkin.html
+    Format specification at https://shepherd.caltech.edu/EDL/PublicResources/sdt/formats/chemkin.html
     """
     lines = entry.splitlines()
     species = str(lines[0][0:18].split()[0].strip())
@@ -397,7 +397,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Aunits_surf, Eunits):
             # this identifies reactions like 'H+H+M=H2+M' as opposed to 'H+H(+M)=H2(+M)' as identified above
             third_body = True
         elif reactant not in species_dict:
-            raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
+            raise ChemkinError('Unexpected reactant "{0}" in reaction line {1}.'.format(reactant, line))
         else:
             reactant_species = species_dict[reactant]
             if not reactant_species.reactive:
@@ -501,7 +501,7 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
         tokens = case_preserved_tokens[1].split()
         cov_dep_species = species_dict[tokens[0].strip()]
         Ea = Quantity(float(tokens[3]), Eunits)
-        k.coverage_dependence[cov_dep_species] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E':Ea}
+        k.coverage_dependence[cov_dep_species] = {'a': Quantity(float(tokens[1])), 'm': Quantity(float(tokens[2])), 'E': Ea}
 
     elif 'LOW' in line:
         # Low-pressure-limit Arrhenius parameters
@@ -1180,8 +1180,8 @@ def read_species_block(f, species_dict, species_aliases, species_list):
     tokens_upper = line.upper().split()
     first_token = tokens.pop(0)
     first_token = tokens_upper.pop(0)  # pop from both lists
-    assert first_token in ['SPECIES', 'SPEC', 'SITE']  # should be first token in first line
-    # Build list of species identifiers
+    assert first_token.startswith('SPEC') or first_token.startswith('SITE'), f"'{line}' should begin with SPECIES or SITE statement."
+     # Build list of species identifiers
     while 'END' not in tokens_upper:
         line = f.readline()
         # If the line contains only one species, and also contains
@@ -1206,6 +1206,8 @@ def read_species_block(f, species_dict, species_aliases, species_list):
         token_upper = token.upper()
         if token_upper in ['SPECIES', 'SPEC', 'SITE']:
             continue  # there may be more than one SPECIES statement
+        if re.match(r'^SITE/', token_upper):
+            continue # could be a named surface like SITE/SURF1/
         if token_upper == 'END':
             break
 
@@ -1403,6 +1405,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         '{0}^3/({1}*{2})'.format(volume_units, molecule_units, time_units),  # Second-order
         '{0}^6/({1}^2*{2})'.format(volume_units, molecule_units, time_units),  # Third-order
         '{0}^9/({1}^3*{2})'.format(volume_units, molecule_units, time_units),  # Fourth-order
+        f"{volume_units}^12/({molecule_units}^4*{time_units})",  # Fifth-order
     ]
 
     Aunits_surf = [
@@ -1410,6 +1413,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         's^-1'.format(time_units),  # First-order
         '{0}^2/({1}*{2})'.format(area_units, molecule_units, time_units),  # Second-order
         '{0}^4/({1}^2*{2})'.format(area_units, molecule_units, time_units),  # Third-order
+        '{0}^6/({1}^3*{2})'.format(area_units, molecule_units, time_units),  # Fourth-order
     ]
     Eunits = energy_units
 
@@ -1479,10 +1483,13 @@ def read_reactions_block(f, species_dict, read_comments=True):
             reaction = read_reaction_comments(reaction, comments, read=read_comments)
         except ChemkinError as e:
             if "Skip reaction!" in str(e):
-                logging.warning("Skipping the reaction {0!r}".format(kinetics))
+                logging.warning("Skipping the reaction {0!r} because of {e!s}".format(kinetics))
                 continue
             else:
                 raise
+        except QuantityError as e:
+            logging.warning(f"Skipping the reaction {kinetics!r} due to units error: {e}")
+            continue
         reaction_list.append(reaction)
 
     return reaction_list
@@ -1865,7 +1872,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         for species, cov_params in kinetics.coverage_dependence.items():
             label = get_species_identifier(species)
             string += f'    COV / {label:<41} '
-            string += f"{cov_params['a']:<9.3g} {cov_params['m']:<9.3g} {cov_params['E'].value_si/4184.:<9.3f} /\n"
+            string += f"{cov_params['a'].value_si:<9.3g} {cov_params['m'].value_si:<9.3g} {cov_params['E'].value_si/4184.:<9.3f} /\n"
 
     if isinstance(kinetics, (_kinetics.ThirdBody, _kinetics.Lindemann, _kinetics.Troe)):
         # Write collider efficiencies
@@ -2168,7 +2175,7 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Species section
-    surface_name = None
+    surface_name = 'SURF0' # Some ck2yaml versions (Cantera 3.1) require a name.
     if surface_name:
         f.write('SITE/{}/'.format(surface_name))
     else:
@@ -2270,10 +2277,12 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
         save_transport_file(transport_path, species_list)
 
 
-def save_chemkin_files(rmg):
+def save_chemkin_files(rmg, config=None):
     """
     Save the current reaction model to a set of Chemkin files.
     """
+    verbose = config.verbose_comments if (config and config.verbose_comments is not None) else rmg.verbose_comments
+    save_edge = config.save_edge if (config and config.save_edge is not None) else rmg.save_edge_species
 
     # todo: make this an attribute or method of reactionModel
     is_surface_model = any([s.contains_surface_site() for s in rmg.reaction_model.core.species])
@@ -2308,7 +2317,7 @@ def save_chemkin_files(rmg):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path, latest_chemkin_path)
 
-    if rmg.save_edge_species:
+    if save_edge:
         logging.info('Saving current model core and edge to Chemkin file...')
         this_chemkin_path = os.path.join(rmg.output_directory, 'chemkin',
                                          'chem_edge{0:04d}.inp'.format(len(rmg.reaction_model.core.species)))
@@ -2317,7 +2326,7 @@ def save_chemkin_files(rmg):
         latest_dictionary_path = os.path.join(rmg.output_directory, 'chemkin', 'species_edge_dictionary.txt')
         latest_transport_path = None
         save_chemkin(rmg.reaction_model, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path,
-                     latest_transport_path, rmg.save_edge_species)
+                     latest_transport_path, save_edge)
 
         if is_surface_model:
             paths = []
@@ -2384,9 +2393,13 @@ class ChemkinWriter(object):
     rmg.detach(listener)
     
     """
-    def __init__(self, output_directory=''):
+    def __init__(self, output_directory='', config=None):
         super(ChemkinWriter, self).__init__()
+        self.config = config
         make_output_subdirectory(output_directory, 'chemkin')
 
     def update(self, rmg):
-        save_chemkin_files(rmg)
+        if self.config is not None and not self.config.should_write(
+                rmg.reaction_model.iteration_num, rmg.is_final_save):
+            return
+        save_chemkin_files(rmg, config=self.config)

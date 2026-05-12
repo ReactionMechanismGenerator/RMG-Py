@@ -16,7 +16,7 @@ The instructions listed below were written for Ubuntu 12.04 and should generally
 	sudo apt-get install git g++ gfortran python-dev liblapack-dev
 	sudo apt-get install python-openbabel python-setuptools python-pip
 
-* After creating a `Github account <https://github.com/join>`_, generate your public key: ::
+* After creating a `Github account <https://github.com/signup>`_, generate your public key: ::
 
 	cd ~; ssh-keygen		# press enter to save to the default directory
 					# create a password if desired

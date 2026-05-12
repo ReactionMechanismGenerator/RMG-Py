@@ -37,11 +37,11 @@ import gc
 import logging
 import marshal
 import os
+import re
 import resource
 import shutil
 import sys
 import time
-import warnings
 from copy import deepcopy
 
 import h5py
@@ -52,35 +52,40 @@ from cantera import ck2yaml
 from scipy.optimize import brute
 
 import rmgpy.util as util
-from rmgpy.rmg.model import Species, CoreEdgeReactionModel
-from rmgpy.rmg.pdep import PDepNetwork
 from rmgpy import settings
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints
+from rmgpy.data.auto_database import auto_select_libraries, to_reaction_library_tuples
 from rmgpy.data.base import Entry
-from rmgpy.data.kinetics.family import TemplateReaction
-from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
+from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
-from rmgpy.exceptions import ForbiddenStructureException, DatabaseError, CoreError, InputError
-from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
-from rmgpy.kinetics import ThirdBody
-from rmgpy.kinetics import Troe
+from rmgpy.exceptions import (
+    CoreError,
+    DatabaseError,
+    ForbiddenStructureException,
+    InputError,
+)
+from rmgpy.kinetics import ThirdBody, Troe
+from rmgpy.kinetics.diffusionLimited import diffusion_limiter
 from rmgpy.molecule import Molecule
 from rmgpy.qm.main import QMDatabaseWriter
 from rmgpy.reaction import Reaction
-from rmgpy.rmg.listener import SimulationProfileWriter, SimulationProfilePlotter
+from rmgpy.rmg.listener import SimulationProfilePlotter, SimulationProfileWriter
+from rmgpy.rmg.model import CoreEdgeReactionModel, Species
 from rmgpy.rmg.output import OutputHTMLWriter
-from rmgpy.rmg.pdep import PDepReaction
-from rmgpy.rmg.settings import ModelSettings
-from rmgpy.solver.base import TerminationTime, TerminationConversion
-from rmgpy.solver.simple import SimpleReactor
+from rmgpy.rmg.pdep import PDepNetwork
+from rmgpy.rmg.reactionmechanismsimulator_reactors import Reactor as RMSReactor
+from rmgpy.rmg.settings import ModelSettings, WriterConfig
+from rmgpy.solver.base import TerminationTime
 from rmgpy.stats import ExecutionStatsWriter
 from rmgpy.thermo.thermoengine import submit
 from rmgpy.tools.plot import plot_sensitivity
+from rmgpy.tools.compare_cantera_yaml import compare_yaml_files, compare_yaml_files_and_report
 from rmgpy.tools.uncertainty import Uncertainty, process_local_results
-from rmgpy.yml import RMSWriter
-from rmgpy.rmg.reactors import Reactor
+from rmgpy.yaml_rms import RMSWriter
+from rmgpy.yaml_cantera1 import CanteraWriter1
+from rmgpy.yaml_cantera2 import CanteraWriter2
 
 ################################################################################
 
@@ -140,8 +145,15 @@ class RMG(util.Subject):
     `units`                                                    The unit system to use to save output files (currently must be 'si')
     `generate_output_html`                                     ``True`` to draw pictures of the species and reactions, saving a visualized model in an output HTML file.  ``False`` otherwise
     `generate_plots`                                           ``True`` to generate plots of the job execution statistics after each iteration, ``False`` otherwise
-    `verbose_comments`                                         ``True`` to keep the verbose comments for database estimates, ``False`` otherwise
-    `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
+    `generate_PES_diagrams`                                    ``True`` to generate potential energy surface diagrams for pressure dependent networks in the model, ``False`` otherwise
+    `verbose_comments`                                         ``True`` to keep the verbose comments for database estimates, ``False`` otherwise (global fallback when writer config does not override)
+    `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise (global fallback when writer config does not override)
+    `chemkin_writer_config`                                    :class:`WriterConfig` controlling when the Chemkin writer runs and its per-writer options
+    `rms_writer_config`                                        :class:`WriterConfig` controlling when the RMS YAML writer runs and its per-writer options
+    `cantera1_writer_config`                                   :class:`WriterConfig` controlling when CanteraWriter1 runs and its per-writer options
+    `cantera2_writer_config`                                   :class:`WriterConfig` controlling when CanteraWriter2 runs and its per-writer options
+    `html_writer_config`                                       :class:`WriterConfig` controlling when the HTML writer runs and its per-writer options
+    `is_final_save`                                            Set to ``True`` immediately before the end-of-run ``save_everything()`` call so writers know it is the final notification
     `keep_irreversible`                                        ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `trimolecular_product_reversible`                          ``True`` (default) to allow families with trimolecular products to react in the reverse direction, ``False`` otherwise
     `pressure_dependence`                                      Whether to process unimolecular (pressure-dependent) reaction networks
@@ -181,6 +193,7 @@ class RMG(util.Subject):
         self.thermo_libraries = None
         self.transport_libraries = None
         self.reaction_libraries = None
+        self.reaction_libraries_output_edge = set()
         self.statmech_libraries = None
         self.seed_mechanisms = None
         self.kinetics_families = None
@@ -192,6 +205,7 @@ class RMG(util.Subject):
         self.surface_site_density = None
         self.binding_energies = None
         self.coverage_dependence = False
+        self.thermo_coverage_dependence = False
         self.forbidden_structures = []
 
         self.reaction_model = None
@@ -219,9 +233,16 @@ class RMG(util.Subject):
         self.units = "si"
         self.generate_output_html = None
         self.generate_plots = None
+        self.generate_PES_diagrams = None
         self.save_simulation_profiles = None
         self.verbose_comments = None
         self.save_edge_species = None
+        self.chemkin_writer_config = None
+        self.rms_writer_config = None
+        self.cantera1_writer_config = None
+        self.cantera2_writer_config = None
+        self.html_writer_config = None
+        self.is_final_save = False
         self.keep_irreversible = None
         self.trimolecular_product_reversible = None
         self.pressure_dependence = None
@@ -250,6 +271,19 @@ class RMG(util.Subject):
         self.exec_time = []
         self.liquid_volumetric_mass_transfer_coefficient_power_law = None
 
+    @staticmethod
+    def _parse_walltime_to_seconds(walltime):
+        """
+        Convert walltime string DD:HH:MM:SS to seconds.
+        """
+        data = walltime.split(":")
+        if len(data) != 4:
+            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(walltime))
+        try:
+            return int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
+        except ValueError as exc:
+            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(walltime)) from exc
+
     def load_input(self, path=None):
         """
         Load an RMG job from the input file located at `input_file`, or
@@ -268,14 +302,9 @@ class RMG(util.Subject):
         if self.pressure_dependence:
             self.pressure_dependence.output_file = self.output_directory
             self.reaction_model.pressure_dependence = self.pressure_dependence
+            self.pressure_dependence.generate_PES_diagrams = self.generate_PES_diagrams
         if self.solvent:
             self.reaction_model.solvent_name = self.solvent
-
-        if self.surface_site_density:
-            self.reaction_model.surface_site_density = self.surface_site_density
-            self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
-            self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
-        self.reaction_model.coverage_dependence = self.coverage_dependence
 
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
@@ -399,6 +428,10 @@ class RMG(util.Subject):
         save_input_file(path, self)
 
     def load_database(self):
+        if "SIDT" in self.adsorption_groups:
+            Pt111_adsorption = "adsorptionSIDTPt111"
+        else:
+            Pt111_adsorption = "adsorptionPt111"
         self.database = RMGDatabase()
         self.database.load(
             path=self.database_directory,
@@ -409,7 +442,7 @@ class RMG(util.Subject):
             kinetics_families=self.kinetics_families,
             kinetics_depositories=self.kinetics_depositories,
             statmech_libraries = self.statmech_libraries,
-            adsorption_groups='adsorptionPt111', # use Pt111 groups for training reactions
+            adsorption_groups=Pt111_adsorption, # use Pt111 groups for training reactions
             # frequenciesLibraries = self.statmech_libraries,
             depository=False,  # Don't bother loading the depository information, as we don't use it
         )
@@ -514,6 +547,20 @@ class RMG(util.Subject):
         # Read input file
         self.load_input(self.input_file)
 
+        # Check if ReactionMechanismSimulator reactors are being used
+        # if RMS is not installed but the user attempted to use it, the load_input_file would have failed
+        # if RMS is not installed and they did not use it, we avoid calling certain functions that would raise an error
+        # if RMS is installed but they did not use it, we can avoid extra work
+        requires_rms = any(isinstance(reactor_system, RMSReactor) for reactor_system in self.reaction_systems)
+
+        if self.surface_site_density:
+            self.reaction_model.surface_site_density = self.surface_site_density
+            if requires_rms:
+                self.reaction_model.core.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
+                self.reaction_model.edge.phase_system.phases["Surface"].site_density = self.surface_site_density.value_si
+        self.reaction_model.coverage_dependence = self.coverage_dependence
+        self.reaction_model.thermo_coverage_dependence = self.thermo_coverage_dependence
+
         if kwargs.get("restart", ""):
             import rmgpy.rmg.input
 
@@ -552,11 +599,38 @@ class RMG(util.Subject):
                 )
             )
 
+        if "walltime" in kwargs:
+            logging.info(
+                "Overriding walltime from input file (%s) with command-line value (%s).",
+                self.walltime,
+                kwargs["walltime"],
+            )
+            self.walltime = kwargs["walltime"]
+
+        if "max_iterations" in kwargs:
+            logging.info(
+                "Overriding max_iterations from input file (%s) with command-line value (%s).",
+                self.max_iterations,
+                kwargs["max_iterations"],
+            )
+            self.max_iterations = kwargs["max_iterations"]
+
+        self.walltime = self._parse_walltime_to_seconds(self.walltime)
+
+        # Auto-select libraries if any field uses 'auto' or '<PAH_libs>'
+        auto_select_libraries(self)
+
+        # Convert reaction libraries from plain strings to (name, bool) tuples
+        # (the bool controls whether unused edge reactions are written to the chemkin output)
+        if isinstance(self.reaction_libraries, list):
+            output_edge = getattr(self, 'reaction_libraries_output_edge', set())
+            self.reaction_libraries = to_reaction_library_tuples(self.reaction_libraries, output_edge)
+
         # Load databases
         self.load_database()
 
         for reaction_system in self.reaction_systems:
-            if isinstance(reaction_system, Reactor):
+            if isinstance(reaction_system, RMSReactor):
                 reaction_system.finish_termination_criteria()
 
         # Load restart seed mechanism (if specified)
@@ -574,9 +648,9 @@ class RMG(util.Subject):
             shutil.copyfile(self.species_map_path, os.path.join(filters_restart, "species_map.yml"))
 
             # Load the seed mechanism to get the core and edge species
-            self.database.kinetics.load_libraries(restart_dir, libraries=["restart", "restart_edge"])
+            self.database.kinetics.load_libraries(restart_dir)#, libraries=["restart", "restart_edge"])
             self.seed_mechanisms.append("restart")
-            self.reaction_libraries.append(("restart_edge", False))
+#            self.reaction_libraries.append(("restart_edge", False))
 
         # Set trimolecular reactant flags of reaction systems
         if self.trimolecular:
@@ -604,8 +678,9 @@ class RMG(util.Subject):
                                longDesc='',
                                )
                 solvent_mol = False
-            self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
-            self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
+            if requires_rms:
+                self.reaction_model.core.phase_system.phases["Default"].set_solvent(solvent_data)
+                self.reaction_model.edge.phase_system.phases["Default"].set_solvent(solvent_data)
 
             diffusion_limiter.enable(solvent_data, self.database.solvation)
             logging.info("Setting solvent data for {0}".format(self.solvent))
@@ -619,40 +694,24 @@ class RMG(util.Subject):
                 if reaction_system.T:
                     reaction_system.viscosity = solvent_data.get_solvent_viscosity(reaction_system.T.value_si)
 
-        try:
-            self.walltime = kwargs["walltime"]
-        except KeyError:
-            pass
-
-        try:
-            self.max_iterations = kwargs["max_iterations"]
-        except KeyError:
-            pass
-
-        data = self.walltime.split(":")
-        if not len(data) == 4:
-            raise ValueError("Invalid format for wall time {0}; should be DD:HH:MM:SS.".format(self.walltime))
-        self.walltime = int(data[-1]) + 60 * int(data[-2]) + 3600 * int(data[-3]) + 86400 * int(data[-4])
-
         # Initialize reaction model
 
         for spec in self.initial_species:
-            if spec.reactive:
-                submit(spec, self.solvent)
+            submit(spec, self.solvent)
             if vapor_liquid_mass_transfer.enabled:
                 spec.get_liquid_volumetric_mass_transfer_coefficient_data()
                 spec.get_henry_law_constant_data()
-            self.reaction_model.add_species_to_edge(spec)
+            self.reaction_model.add_species_to_edge(spec, requires_rms=requires_rms)
 
         # Seed mechanisms: add species and reactions from seed mechanism
         # DON'T generate any more reactions for the seed species at this time
         for seed_mechanism in self.seed_mechanisms:
-            self.reaction_model.add_seed_mechanism_to_core(seed_mechanism, react=False)
+            self.reaction_model.add_seed_mechanism_to_core(seed_mechanism, react=False, requires_rms=requires_rms)
 
         # Reaction libraries: add species and reactions from reaction library to the edge so
         # that RMG can find them if their rates are large enough
         for library, option in self.reaction_libraries:
-            self.reaction_model.add_reaction_library_to_edge(library)
+            self.reaction_model.add_reaction_library_to_edge(library, requires_rms=requires_rms)
 
         # Also always add in a few bath gases (since RMG-Java does)
         for label, smiles in [("Ar", "[Ar]"), ("He", "[He]"), ("Ne", "[Ne]"), ("N2", "N#N")]:
@@ -679,10 +738,11 @@ class RMG(util.Subject):
                 if "allowed" in self.species_constraints and "input species" in self.species_constraints["allowed"]:
                     self.species_constraints["explicitlyAllowedMolecules"].append(spec.molecule[0])
                 else:
+                    reason = fails_species_constraints(spec)
                     raise ForbiddenStructureException(
                         "Species constraints forbids input species {0}. Please "
                         "reformulate constraints, remove the species, or explicitly "
-                        "allow it.".format(spec.label)
+                        "allow it. Reason: {1}".format(spec.label, reason)
                     )
 
         # For liquidReactor, checks whether the solvent is listed as one of the initial species.
@@ -728,38 +788,50 @@ class RMG(util.Subject):
         # This is necessary so that the PDep algorithm can identify the bath gas
         for spec in self.initial_species:
             if not spec.reactive:
-                self.reaction_model.enlarge(spec)
+                self.reaction_model.enlarge(spec, requires_rms=requires_rms)
         for spec in self.initial_species:
             if spec.reactive:
-                self.reaction_model.enlarge(spec)
+                self.reaction_model.enlarge(spec, requires_rms=requires_rms)
 
         # chatelak: store constant SPC indices in the reactor attributes if any constant SPC provided in the input file
         # advantages to write it here: this is run only once (as species indexes does not change over the generation)
         if self.solvent is not None:
             for index, reaction_system in enumerate(self.reaction_systems):
                 if (
-                    not isinstance(reaction_system, Reactor) and reaction_system.const_spc_names is not None
-                ):  # if no constant species provided do nothing
+                    not isinstance(reaction_system, RMSReactor)
+                ) and reaction_system.const_spc_names is not None:  # if no constant species provided do nothing
                     reaction_system.get_const_spc_indices(self.reaction_model.core.species)  # call the function to identify indices in the solver
 
         self.initialize_reaction_threshold_and_react_flags()
         if self.filter_reactions and self.init_react_tuples:
-            self.react_init_tuples()
+            self.react_init_tuples(requires_rms=requires_rms)
         self.reaction_model.initialize_index_species_dict()
 
         self.initialize_seed_mech()
+        return requires_rms
 
-    def register_listeners(self):
+    def register_listeners(self, requires_rms=False):
         """
         Attaches listener classes depending on the options
         found in the RMG input file.
         """
 
-        self.attach(ChemkinWriter(self.output_directory))
-        self.attach(RMSWriter(self.output_directory))
+        cfg_chemkin  = self.chemkin_writer_config  or WriterConfig(save_interval=1)
+        cfg_rms      = self.rms_writer_config      or WriterConfig(save_interval=1)
+        cfg_cantera1 = self.cantera1_writer_config or WriterConfig(save_interval=0)
+        cfg_cantera2 = self.cantera2_writer_config or WriterConfig(save_interval=0)
+        cfg_html     = self.html_writer_config     or WriterConfig(save_interval=0)
 
-        if self.generate_output_html:
-            self.attach(OutputHTMLWriter(self.output_directory))
+        if cfg_chemkin.enabled:
+            self.attach(ChemkinWriter(self.output_directory, cfg_chemkin))
+        if cfg_rms.enabled:
+            self.attach(RMSWriter(self.output_directory, cfg_rms))
+        if cfg_cantera1.enabled:
+            self.attach(CanteraWriter1(self.output_directory, cfg_cantera1))
+        if cfg_cantera2.enabled:
+            self.attach(CanteraWriter2(self.output_directory, cfg_cantera2))
+        if cfg_html.enabled:
+            self.attach(OutputHTMLWriter(self.output_directory, cfg_html))
 
         if self.quantum_mechanics:
             self.attach(QMDatabaseWriter())
@@ -768,7 +840,7 @@ class RMG(util.Subject):
 
         if self.save_simulation_profiles:
             for index, reaction_system in enumerate(self.reaction_systems):
-                if isinstance(reaction_system, Reactor):
+                if requires_rms and isinstance(reaction_system, RMSReactor):
                     typ = type(reaction_system)
                     raise InputError(f"save_simulation_profiles=True not compatible with reactor of type {typ}")
                 reaction_system.attach(SimulationProfileWriter(self.output_directory, index, self.reaction_model.core.species))
@@ -781,11 +853,12 @@ class RMG(util.Subject):
         ``initialize`` is a ``bool`` type flag used to determine whether to call self.initialize()
         """
 
+        requires_rms=False
         if initialize:
-            self.initialize(**kwargs)
+            requires_rms = self.initialize(**kwargs)
 
         # register listeners
-        self.register_listeners()
+        self.register_listeners(requires_rms=requires_rms)
 
         self.done = False
 
@@ -812,7 +885,7 @@ class RMG(util.Subject):
             # Update react flags
             if self.filter_reactions:
                 # Run the reaction system to update threshold and react flags
-                if isinstance(reaction_system, Reactor):
+                if requires_rms and isinstance(reaction_system, RMSReactor):
                     self.update_reaction_threshold_and_react_flags(
                         rxn_sys_unimol_threshold=np.zeros((len(self.reaction_model.core.species),), bool),
                         rxn_sys_bimol_threshold=np.zeros((len(self.reaction_model.core.species), len(self.reaction_model.core.species)), bool),
@@ -855,6 +928,7 @@ class RMG(util.Subject):
                 unimolecular_react=self.unimolecular_react,
                 bimolecular_react=self.bimolecular_react,
                 trimolecular_react=self.trimolecular_react,
+                requires_rms=requires_rms,
             )
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
@@ -867,7 +941,7 @@ class RMG(util.Subject):
             )
 
         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-            self.reaction_model.thermo_filter_down(maximum_edge_species=self.model_settings_list[0].maximum_edge_species)
+            self.reaction_model.thermo_filter_down(maximum_edge_species=self.model_settings_list[0].maximum_edge_species, requires_rms=requires_rms)
 
         logging.info("Completed initial enlarge edge step.\n")
 
@@ -877,6 +951,7 @@ class RMG(util.Subject):
             self.make_seed_mech()
 
         max_num_spcs_hit = False  # default
+        end_early = False
 
         for q, model_settings in enumerate(self.model_settings_list):
             if len(self.simulator_settings_list) > 1:
@@ -886,7 +961,7 @@ class RMG(util.Subject):
 
             self.filter_reactions = model_settings.filter_reactions
 
-            logging.info("Beginning model generation stage {0}...\n".format(q + 1))
+            logging.info(f"Beginning model generation stage {q + 1} of {len(self.model_settings_list)}.\n")
 
             self.done = False
 
@@ -933,7 +1008,7 @@ class RMG(util.Subject):
                             prune = False
 
                         try:
-                            if isinstance(reaction_system, Reactor):
+                            if requires_rms and isinstance(reaction_system, RMSReactor):
                                 (
                                     terminated,
                                     resurrected,
@@ -1026,7 +1101,7 @@ class RMG(util.Subject):
 
                         # Add objects to enlarge to the core first
                         for objectToEnlarge in objects_to_enlarge:
-                            self.reaction_model.enlarge(objectToEnlarge)
+                            self.reaction_model.enlarge(objectToEnlarge, requires_rms=requires_rms)
 
                         if model_settings.filter_reactions:
                             # Run a raw simulation to get updated reaction system threshold values
@@ -1035,7 +1110,7 @@ class RMG(util.Subject):
                             temp_model_settings.tol_keep_in_edge = 0
                             if not resurrected:
                                 try:
-                                    if isinstance(reaction_system, Reactor):
+                                    if requires_rms and isinstance(reaction_system, RMSReactor):
                                         (
                                             terminated,
                                             resurrected,
@@ -1104,7 +1179,7 @@ class RMG(util.Subject):
                                     skip_update=True,
                                 )
                                 logging.warning(
-                                    "Reaction thresholds/flags for Reaction System {0} was not updated due " "to resurrection".format(index + 1)
+                                    "Reaction thresholds/flags for Reaction System {0} was not updated due to resurrection".format(index + 1)
                                 )
 
                             logging.info("")
@@ -1127,13 +1202,14 @@ class RMG(util.Subject):
                             unimolecular_react=self.unimolecular_react,
                             bimolecular_react=self.bimolecular_react,
                             trimolecular_react=self.trimolecular_react,
+                            requires_rms=requires_rms,
                         )
 
                         if old_edge_size != len(self.reaction_model.edge.reactions) or old_core_size != len(self.reaction_model.core.reactions):
                             reactor_done = False
 
                         if not np.isinf(self.model_settings_list[0].thermo_tol_keep_spc_in_edge):
-                            self.reaction_model.thermo_filter_down(maximum_edge_species=model_settings.maximum_edge_species)
+                            self.reaction_model.thermo_filter_down(maximum_edge_species=model_settings.maximum_edge_species, requires_rms=requires_rms)
 
                         max_num_spcs_hit = len(self.reaction_model.core.species) >= model_settings.max_num_species
 
@@ -1160,6 +1236,7 @@ class RMG(util.Subject):
                             model_settings.tol_move_to_core,
                             model_settings.maximum_edge_species,
                             model_settings.min_species_exist_iterations_for_prune,
+                            requires_rms=requires_rms,
                         )
                         # Perform garbage collection after pruning
                         collected = gc.collect()
@@ -1179,7 +1256,8 @@ class RMG(util.Subject):
                         core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
                         logging.info("The current model core has %s species and %s reactions" % (core_spec, core_reac))
                         logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
-                        return
+                        end_early = True
+                        break
 
                 if self.max_iterations and (self.reaction_model.iteration_num >= self.max_iterations):
                     logging.info("MODEL GENERATION TERMINATED")
@@ -1190,31 +1268,94 @@ class RMG(util.Subject):
                     core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
                     logging.info("The current model core has %s species and %s reactions" % (core_spec, core_reac))
                     logging.info("The current model edge has %s species and %s reactions" % (edge_spec, edge_reac))
-                    return
+                    end_early = True
+                    break
 
             if max_num_spcs_hit:  # resets maxNumSpcsHit and continues the settings for loop
                 logging.info("The maximum number of species ({0}) has been hit, Exiting stage {1} ...".format(model_settings.max_num_species, q + 1))
                 max_num_spcs_hit = False
 
+            if end_early:  # breaks the settings for loop
+                break
+
+        self.reaction_model.iteration_num += 1
         # Save the final seed mechanism
         self.make_seed_mech()
 
+        # Notify all writers that this is the final save (end-of-run).
+        # Writers configured with saveInterval=-1 will write only here.
+        # Writers configured with saveInterval>0 will also write here
+        # unless they already wrote on this iteration.
+        self.is_final_save = True
+        self.save_everything()
+        self.is_final_save = False
+
         self.run_model_analysis()
 
-        # generate Cantera files chem.yaml & chem_annotated.yaml in a designated `cantera` output folder
+        # generate Cantera files chem.yaml & chem_annotated.yaml in designated Cantera output folders
         try:
-            if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
-                )
-                self.generate_cantera_files(
-                    os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp"),
-                    surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
-                )
-            else:  # gas phase only
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem.inp"))
-                self.generate_cantera_files(os.path.join(self.output_directory, "chemkin", "chem_annotated.inp"))
+            translated_cantera_file = None
+            if self.chemkin_writer_config and self.chemkin_writer_config.enabled:
+                logging.info("Translating final chemkin file into Cantera yaml.")
+                if any([s.contains_surface_site() for s in self.reaction_model.core.species]):
+                    # Surface (catalytic) chemistry
+                    translated_cantera_file = self.generate_cantera_files_from_chemkin(
+                        os.path.join(self.output_directory, "chemkin", "chem-gas.inp"),
+                        surface_file=(os.path.join(self.output_directory, "chemkin", "chem-surface.inp")),
+                    )
+                    annotated_gas = os.path.join(self.output_directory, "chemkin", "chem_annotated-gas.inp")
+                    if os.path.exists(annotated_gas):
+                        self.generate_cantera_files_from_chemkin(
+                            annotated_gas,
+                            surface_file=(os.path.join(self.output_directory, "chemkin", "chem_annotated-surface.inp")),
+                        )
+
+                    if self.thermo_coverage_dependence:
+                        # Build coverage_deps: {species_name: string_to_add_to_yaml}
+                        coverage_deps = {}
+                        for s in self.reaction_model.core.species:
+                            if s.contains_surface_site() and s.thermo.thermo_coverage_dependence:
+                                s_name = s.to_chemkin()
+                                for dep_sp_adj, parameters in s.thermo.thermo_coverage_dependence.items():
+                                    mol = Molecule().from_adjacency_list(dep_sp_adj)
+                                    for sp in self.reaction_model.core.species:
+                                        if sp.is_isomorphic(mol, strict=False):
+                                            if s_name not in coverage_deps:
+                                                coverage_deps[s_name] = '  coverage-dependencies:'
+                                            coverage_deps[s_name] += f"""
+    {sp.to_chemkin()}:
+      model: {parameters['model']}
+      enthalpy-coefficients: {[v.value_si for v in parameters['enthalpy-coefficients']]}
+      entropy-coefficients: {[v.value_si for v in parameters['entropy-coefficients']]}
+      units: {{energy: J, quantity: mol}}
+"""
+                                            break
+
+                        for yaml_path in [
+                            os.path.join(self.output_directory, "cantera_from_ck", "chem.yaml"),
+                            os.path.join(self.output_directory, "cantera_from_ck", "chem_annotated.yaml"),
+                        ]:
+                            if os.path.exists(yaml_path):
+                                _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps)
+
+                else:  # gas phase only
+                    translated_cantera_file = self.generate_cantera_files_from_chemkin(
+                        os.path.join(self.output_directory, "chemkin", "chem.inp")
+                    )
+                    annotated = os.path.join(self.output_directory, "chemkin", "chem_annotated.inp")
+                    if os.path.exists(annotated):
+                        self.generate_cantera_files_from_chemkin(annotated)
+
+            # Compare translated Cantera files against directly generated Cantera files
+            if translated_cantera_file and self.cantera1_writer_config and self.cantera1_writer_config.enabled:
+                compare_yaml_files_and_report(translated_cantera_file,
+                                              os.path.join(self.output_directory, "cantera1", "chem.yaml"),
+                                              output=os.path.join(self.output_directory, "cantera1", "comparison_report.txt"))
+            if translated_cantera_file and self.cantera2_writer_config and self.cantera2_writer_config.enabled:
+                compare_yaml_files_and_report(translated_cantera_file,
+                                              os.path.join(self.output_directory, "cantera2", "chem.yaml"),
+                                              output=os.path.join(self.output_directory, "cantera2", "comparison_report.txt"))
+
         except EnvironmentError:
             logging.exception("Could not generate Cantera files due to EnvironmentError. Check read\\write privileges in output directory.")
         except Exception:
@@ -1222,12 +1363,14 @@ class RMG(util.Subject):
 
         self.check_model()
         # Write output file
-        logging.info("")
-        logging.info("MODEL GENERATION COMPLETED")
-        logging.info("")
-        core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
-        logging.info("The final model core has %s species and %s reactions" % (core_spec, core_reac))
-        logging.info("The final model edge has %s species and %s reactions" % (edge_spec, edge_reac))
+
+        if not end_early:
+            logging.info("")
+            logging.info("MODEL GENERATION COMPLETED")
+            logging.info("")
+            core_spec, core_reac, edge_spec, edge_reac = self.reaction_model.get_model_size()
+            logging.info("The final model core has %s species and %s reactions" % (core_spec, core_reac))
+            logging.info("The final model edge has %s species and %s reactions" % (edge_spec, edge_reac))
 
         self.finish()
 
@@ -1274,12 +1417,16 @@ class RMG(util.Subject):
         if self.uncertainty is not None and self.uncertainty["global"]:
             try:
                 import muq
-            except ImportError:
-                logging.error("Unable to import MUQ. Skipping global uncertainty analysis.")
+            except ImportError as ie:
+                logging.error(
+                    f"Skipping global uncertainty analysis! Unable to import MUQ (original error: {str(ie)})."
+                    "Install muq with 'conda install -c conda-forge muq'."
+                )
                 self.uncertainty["global"] = False
             else:
-                import re
                 import random
+                import re
+
                 from rmgpy.tools.canteramodel import Cantera
                 from rmgpy.tools.globaluncertainty import ReactorPCEFactory
 
@@ -1781,14 +1928,15 @@ class RMG(util.Subject):
             raise TypeError("improper call, obj input was incorrect")
         return potential_spcs
 
-    def generate_cantera_files(self, chemkin_file, **kwargs):
+    def generate_cantera_files_from_chemkin(self, chemkin_file, **kwargs):
         """
         Convert a chemkin mechanism chem.inp file to a cantera mechanism file chem.yaml
-        and save it in the cantera directory
+        and save it in the cantera directory. 
+        Returns the path to the generated cantera file.
         """
         transport_file = os.path.join(os.path.dirname(chemkin_file), "tran.dat")
         file_name = os.path.splitext(os.path.basename(chemkin_file))[0] + ".yaml"
-        out_name = os.path.join(self.output_directory, "cantera", file_name)
+        out_name = os.path.join(self.output_directory, "cantera_from_ck", file_name)
         if "surface_file" in kwargs:
             out_name = out_name.replace("-gas.", ".")
         cantera_dir = os.path.dirname(out_name)
@@ -1806,6 +1954,7 @@ class RMG(util.Subject):
             logging.exception("Error converting to Cantera format.")
             logging.info("Trying again without transport data file.")
             parser.convert_mech(chemkin_file, out_name=out_name, quiet=True, permissive=True, **kwargs)
+        return out_name
 
     def initialize_reaction_threshold_and_react_flags(self):
         num_core_species = len(self.reaction_model.core.species)
@@ -1924,7 +2073,7 @@ class RMG(util.Subject):
                         if self.trimolecular:
                             self.trimolecular_react[:num_restart_spcs, :num_restart_spcs, :num_restart_spcs] = False
 
-    def react_init_tuples(self):
+    def react_init_tuples(self, requires_rms=False):
         """
         Reacts tuples given in the react block
         """
@@ -1957,6 +2106,7 @@ class RMG(util.Subject):
             unimolecular_react=self.unimolecular_react,
             bimolecular_react=self.bimolecular_react,
             trimolecular_react=self.trimolecular_react,
+            requires_rms=requires_rms,
         )
 
     def update_reaction_threshold_and_react_flags(
@@ -2092,8 +2242,9 @@ class RMG(util.Subject):
 
         if os.path.exists(os.path.join(module_path, "..", ".git")):
             try:
-                return subprocess.check_output(["git", "log", "--format=%H%n%cd", "-1"], cwd=module_path).splitlines()
-            except:
+                head, date = subprocess.check_output(["git", "log", "--format=%H%n%cd", "-1"], cwd=module_path).splitlines()
+                return head.decode(), date.decode()
+            except (subprocess.CalledProcessError, OSError):
                 return "", ""
         else:
             return "", ""
@@ -2251,7 +2402,7 @@ class RMG_Memory(object):
                 if isinstance(value, list):
                     self.Ranges[key] = [v.value_si for v in value]
 
-        if isinstance(reaction_system, Reactor):
+        if isinstance(reaction_system, RMSReactor):
             self.tmax = reaction_system.tf
         else:
             for term in reaction_system.termination:
@@ -2302,7 +2453,7 @@ class RMG_Memory(object):
         Jout /= tot  # normalize Jout
         n = self.rand_state.uniform(0, 1, 1)[0]  # draw a random number between 0 and 1
         s = 0.0
-        for indexes in np.ndenumerate(Jout):  # choose a coordinate such that grid[indexes] is choosen with probability Jout[indexes]
+        for indexes in np.ndenumerate(Jout):  # choose a coordinate such that grid[indexes] is chosen with probability Jout[indexes]
             s += Jout[indexes[0]]
             if s > n:
                 break
@@ -2370,13 +2521,52 @@ class RMG_Memory(object):
             self.scaled_condition_list.append(scaled_new_cond)
         return
 
+def _add_coverage_dependence_to_cantera_yaml(yaml_path, coverage_deps):
+    """Modify a Cantera YAML file in-place to add coverage-dependent surface thermo.
+
+    Makes targeted text insertions rather than loading and re-dumping the whole
+    file, so original formatting is preserved everywhere except the new lines.
+
+    Args:
+        yaml_path: path to the Cantera YAML file to modify
+        coverage_deps: dict mapping species ChemKin names to their coverage-dependency string.
+    """
+    with open(yaml_path, 'r') as f:
+        content = f.read()
+
+    # --- Modify the surface phase ---
+    # Replace 'ideal-surface' with 'coverage-dependent-surface' and add reference-state-coverage.
+    content = content.replace(
+        '  thermo: ideal-surface\n',
+        '  thermo: coverage-dependent-surface\n  reference-state-coverage: 0.11\n',
+        1,
+    )
+
+    # --- Insert coverage-dependencies block after each relevant species entry ---
+    for species_name, deps in coverage_deps.items():
+        match = re.search(r'^- name: ' + re.escape(species_name) + r'\n', content, re.MULTILINE)
+        if not match:
+            logging.warning(
+                f"Species {species_name} not found in {yaml_path}; skipping coverage-dependency insertion."
+            )
+            continue
+
+        after = match.end()
+        end_match = re.search(r'\n(?=(?:- |\n|\w))', content[after:])
+        if end_match:
+            insert_pos = after + end_match.start() + 1
+            content = content[:insert_pos] + deps + content[insert_pos:]
+        else:
+            content = content.rstrip('\n') + '\n' + deps
+    with open(yaml_path, 'w') as f:
+        f.write(content)
 
 def log_conditions(rmg_memories, index):
     """
     log newly generated reactor conditions
     """
     if rmg_memories[index].get_cond() is not None:
-        s = "conditions choosen for reactor {0} were: ".format(index)
+        s = f"conditions chosen for reactor {index} were: "
         for key, item in rmg_memories[index].get_cond().items():
             if key == "T":
                 s += "T = {0} K, ".format(item)
@@ -2469,7 +2659,16 @@ def make_profile_graph(stats_file, force_graph_generation=False):
 
     if display_found or force_graph_generation:
         try:
-            from gprof2dot import PstatsParser, DotWriter, SAMPLES, themes, TIME, TIME_RATIO, TOTAL_TIME, TOTAL_TIME_RATIO
+            from gprof2dot import (
+                SAMPLES,
+                TIME,
+                TIME_RATIO,
+                TOTAL_TIME,
+                TOTAL_TIME_RATIO,
+                DotWriter,
+                PstatsParser,
+                themes,
+            )
         except ImportError:
             logging.warning("Trouble importing from package gprof2dot. Unable to create a graph of the profile statistics.")
             logging.warning("Try getting the latest version with something like `pip install --upgrade gprof2dot`.")

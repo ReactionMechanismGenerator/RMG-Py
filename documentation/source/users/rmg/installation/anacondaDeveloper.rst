@@ -6,6 +6,11 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
+#. If your `conda` version is older than 23.10.0, manually switch the solver backend to `libmamba` (or update your conda)::
+
+    conda install -n base conda-libmamba-solver
+    conda config --set solver libmamba
+
 #. There are a few system-level dependencies which are required and should not be installed via Conda. These include
    `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
 
@@ -52,28 +57,17 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    For information on using ``ssh`` with GitHub see the `Connecting to GitHub with SSH <https://docs.github.com/en/authentication/connecting-to-github-with-ssh>`_
 
-#. Switch the conda solver backend to speed up creation of the RMG environment ::
-
-    conda install -n base conda-libmamba-solver
-    conda config --set solver libmamba
-
 #. Navigate to the RMG-Py directory ::
 
     cd RMG-Py
 
-#. Apple silicon (M1+) users only: execute the following commands
-   **instead of** the following `conda env create -f environment.yml` step.
-   (This will tell conda that we want to the environment to use x86 
-   architecture rather than the native ARM64 architecture) ::
-
-    conda create -n rmg_env
-    conda activate rmg_env
-    conda config --env --set subdir osx-64
-    conda env update -f environment.yml
-
 #. Create the conda environment for RMG-Py::
 
     conda env create -f environment.yml
+
+   To give it a different name (such as ``rmg_env2``), you can use the ``-n`` flag::
+
+    conda env create -f environment.yml -n rmg_env2
 
    If either of these commands return an error due to being unable to find the ``conda`` command,
    try to either close and reopen your terminal to refresh your environment variables
@@ -87,46 +81,79 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     source ~/.zshrc
 
+   NOTE: You may wish to forbid ``conda`` from installing from the Anaconda channels due to licensing restrictions.
+   The ``environment.yml`` file already forbids using default channels, but you may further add the file ``.condarc`` to your RMG-Py directory (or modify the ``.condarc`` in your home directory) with the following contents before running the ``conda env create`` command: ::
+
+     channels:
+       - conda-forge
+       - nodefaults
+     channel_priority: strict
+     custom_channels:
+       main: null
+       r: null
+       anaconda: null
+       msys2: null
+
 #. Activate conda environment ::
 
     conda activate rmg_env
-
-#. Switch the conda solver to libmamba again, to accelerate any changes you might make to this conda environment in the future::
-
-    conda config --set solver libmamba
 
 #. Compile RMG-Py after activating the conda environment ::
 
     make
 
-#. Modify environment variables. Add RMG-Py to the PYTHONPATH to ensure that you can access RMG modules from any folder.
-   *This is important before the next step in which julia dependencies are installed.*
-   Also, add your RMG-Py folder to PATH to launch ``rmg.py`` from any folder.
+#. **Optional**: add your RMG-Py folder to ``PATH`` to launch ``rmg.py`` from any folder.
 
-   In general, these commands should be placed in the appropriate shell initialization file.
+   In general, this commands should be placed in the appropriate shell initialization file.
    For Linux users using bash (the default on distributions mentioned here), these should be placed in ``~/.bashrc``.
    For MacOS users using bash (default before MacOS Catalina), these should be placed in ``~/.bash_profile``, which you should create if it doesn't exist.
    For MacOS users using zsh (default beginning in MacOS Catalina), these should be placed in ``~/.zshrc``. ::
 
-    export PYTHONPATH=YourFolder/RMG-Py/:$PYTHONPATH
     export PATH=YourFolder/RMG-Py/:$PATH
 
    NOTE: Make sure to change ``YourFolder`` to the path leading to the ``RMG-Py`` code. Not doing so will lead to an error stating that python cannot find the module ``rmgpy``.
 
    Be sure to either close and reopen your terminal to refresh your environment variables (``source ~/.bashrc`` or ``source ~/.zshrc``).
 
-#. Install and Link Julia dependencies: ::
+#. **Optional (Recommended)**: Install and Link Julia dependencies.
 
-     julia -e 'using Pkg; Pkg.add("PyCall");Pkg.build("PyCall");Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator;'
+    Installing Julia and ReactionMechanismSimulator.jl (RMS) will enable all the features in RMG that require RMS-based reactors,
+    as well as using ``method='ode'`` when solving the Master Equation with Arkane.
+    Note that installing RMS can cause errors when running Cantera simulations; this should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate conda environment without RMS in it.
 
-     python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
+    Ensure that you have modified your environment variables as described above, and then run the following: ::
+
+     source install_rms.sh
+
+    Follow the instructions that it provides for installing Julia and Juliaup,
+    which can involve several steps including restarting your terminal or shell.
+    Run the script again, until it finishes installing RMS and all of its dependencies, and reports that ReactionMechanismSimulator is installed.
+
+    **Advanced Usage**:
+    The ``install_rms.sh`` script has options, that can be set as environment variables or variables to the script.
+    By default, it installs the latest release of the ``for_rmg`` branch of RMS, from `the official GitHub fork <https://github.com/ReactionMechanismGenerator/ReactionMechanismSimulator.jl/branches>`_, which is recommended for most users.
+    To install a different branch (from the same github repository) specify ``RMS_BRANCH``.
+    The default installation mode is ``standard``, which prompts the user to confirm their conda environment.
+    In an automated workflow (eg. CI/CD), you may wish to set ``RMS_INSTALLER`` to ``continuous`` to skip the prompt.
+    If you set ``RMS_INSTALLER`` to ``developer`` then it will link to a local version of RMS,
+    so you must also specify ``RMS_PATH`` to point to your local clone of the ReactionMechanismSimulator.jl repository.
+    Exmaple usage: ::
+
+     export RMS_BRANCH=for_rmg
+     export RMS_INSTALLER=continuous
+     source install_rms.sh
+
+    or ::
+
+     RMS_INSTALLER=developer RMS_PATH=$HOME/Code/ReactionMechanismSimulator.jl source install_rms.sh
 
 
 #. Finally, you can run RMG from any location by typing the following (given that you have prepared the input file as ``input.py`` in the current folder). ::
 
-    python-jl replace/with/path/to/rmg.py input.py
+    python replace/with/path/to/rmg.py input.py
 
 You may now use RMG-Py, Arkane, as well as any of the :ref:`Standalone Modules <modules>` included in the RMG-Py package.
+For more information about using conda, please check out the `conda user guide <https://docs.conda.io/projects/conda/en/latest/user-guide/getting-started.html>`_.
 
 
 Debugging
@@ -139,7 +166,7 @@ You might have to edit them slightly to match your exact paths. Specifically,
 you will need ``/opt/miniconda3/envs/rmg_env`` to point to where your conda environment is located.
 
 This configuration will allow you to debug the rms_constant_V example, running through
-python-jl. ::
+python. ::
 
         {
             "name": "Python: rmg.py rms_constant_V",
@@ -147,7 +174,7 @@ python-jl. ::
             "request": "launch",
             "cwd": "${workspaceFolder}/",
             "program": "rmg.py",
-            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python",
             "args": [
                 "examples/rmg/rms_constant_V/input.py",
             ],
@@ -166,7 +193,7 @@ Open one of the many test files named ``*Test.py`` in ``test/rmgpy`` before you 
             "type": "python",
             "request": "launch",
             "program": "/opt/miniconda3/envs/rmg_env/bin/pytest",
-            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python",
             "args": [
                 "--capture=no",
                 "--verbose",
@@ -186,7 +213,7 @@ This configuration will allow you to debug running all the database tests.::
             "type": "python",
             "request": "launch",
             "program": "/opt/miniconda3/envs/rmg_env/bin/pytest",
-            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python",
             "args": [
                 "--capture=no",
                 "--verbose",
@@ -207,7 +234,7 @@ This configuration will allow you to use the debugger breakpoints inside unit te
             "request": "launch",
             "program": "${file}",
             "purpose": ["debug-test"],
-            "python": "/opt/miniconda3/envs/rmg_env/bin/python-jl",
+            "python": "/opt/miniconda3/envs/rmg_env/bin/python",
             "console": "integratedTerminal",
             "justMyCode": false,
             "env": {"PYTEST_ADDOPTS": "--no-cov",} // without disabling coverage VS Code doesn't stop at breakpoints while debugging because pytest-cov is using the same technique to access the source code being run
@@ -255,7 +282,7 @@ To configure the rest of the settings, find the ``settings.json`` file in your `
 You can use the following settings to configure the pytest framework::
 
     "python.testing.pytestEnabled": true,
-    "python.testing.pytestPath": "python-jl -m pytest",
+    "python.testing.pytestPath": "python -m pytest",
     "python.testing.pytestArgs": [
         "-p", "julia.pytestplugin",
         "--julia-compiled-modules=no",
@@ -281,25 +308,30 @@ Running Examples
 
 A number of basic examples can be run immediately.  Additional example input files can be found in the ``RMG-Py/examples`` folder.  Please read more on :ref:`Example Input Files <examples>` in the documentation.
     
-#. **Minimal Example**: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the ``RMG-Py/testing/minimal`` folder::
+#. **Minimal Example**: this will run an Ethane pyrolysis model.  It should take less than a minute to complete. The results will be in the ``RMG-Py/testing/eg1`` folder::
 
     cd RMG-Py
     make eg1
     
-#. **Hexadiene Example**: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the ``RMG-Py/testing/hexadiene`` folder::
+#. **Hexadiene Example**: this will run a Hexadiene model with pressure dependence and QMTP.  Note that you must have MOPAC installed for this to run. The results will be in the ``RMG-Py/testing/eg2`` folder::
 
     cd RMG-Py
     make eg2
     
-#. **Liquid Phase Example**: this will run a liquid phase RMG model.  The results will be in the ``RMG-Py/testing/liquid_phase`` folder ::
+#. **Liquid Phase Example**: this will run a liquid phase RMG model.  The results will be in the ``RMG-Py/testing/eg3`` folder ::
 
     cd RMG-Py
     make eg3
     
-#. **ThermoEstimator Example**: this will run the :ref:`Thermo Estimation Module <thermoModule>` on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the ``RMG-Py/testing/thermoEstimator`` folder ::
+#. **ThermoEstimator Example**: this will run the :ref:`Thermo Estimation Module <thermoModule>` on a few molecules. Note that you must have MOPAC installed for this to run completely. The results will be in the ``RMG-Py/testing/eg4`` folder ::
 
     cd RMG-Py
     make eg4
+
+#. **RMS Constant Volume Example**: this will run a constant volume reactor using the ReactionMechanismSimulator.jl package. Note that you must have Julia and ReactionMechanismSimulator.jl installed for this to run completely. The results will be in the ``RMG-Py/testing/eg8`` folder ::
+
+    cd RMG-Py
+    make eg8
 
 
 Building Documentation

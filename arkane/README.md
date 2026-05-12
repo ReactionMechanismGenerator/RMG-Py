@@ -13,13 +13,13 @@ Arkane is distributed via the [RMG-Py repository](https://github.com/ReactionMec
 as a [root module](https://github.com/ReactionMechanismGenerator/RMG-Py/tree/main/arkane).
 
 ## How to Install
-Please follow the [installation instructions](http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html)
+Please follow the [installation instructions](https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation/index.html)
 for RMG-Py.
 
 ## Documentation
-- [RMG Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/rmg/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
-- [Arkane Documentation](http://ReactionMechanismGenerator.github.io/RMG-Py/users/arkane/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
-- [RMG API Reference](http://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_API_Reference.pdf))
+- [RMG Documentation](https://ReactionMechanismGenerator.github.io/RMG-Py/users/rmg/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
+- [Arkane Documentation](https://ReactionMechanismGenerator.github.io/RMG-Py/users/arkane/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_and_Arkane_Documentation.pdf))
+- [RMG API Reference](https://reactionmechanismgenerator.github.io/RMG-Py/reference/index.html) ([PDF version](https://github.com/ReactionMechanismGenerator/RMG-Py/raw/main/documentation/RMG-Py_API_Reference.pdf))
 
 ## How to cite
 A. Grinberg Dana, M.S. Johnson, J.W. Allen, S. Sharma, S. Raman, M. Liu, C.W. Gao, C.A. Grambow, M.J. Goldman,
@@ -32,7 +32,7 @@ A statistical mechanics, thermodynamics, transition state theory, and master equ
 DOI: [10.1002/kin.21637](https://doi.org/10.1002/kin.21637)
 
 ## How to Contribute
-Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/wiki/RMG-Contributor-Guidelines)
+Please see the [Contributor Guidelines](https://github.com/ReactionMechanismGenerator/RMG-Py/blob/main/CONTRIBUTING.md)
 for details on how to contribute to RMG-Py or RMG-database.
 
 ## How to Give Feedback

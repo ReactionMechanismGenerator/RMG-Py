@@ -62,7 +62,7 @@ class DepositoryReaction(Reaction):
                  depository=None,
                  family=None,
                  entry=None,
-                 electrons=None,
+                 electrons=0,
                  ):
         Reaction.__init__(self,
                           index=index,

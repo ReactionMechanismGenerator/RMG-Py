@@ -110,132 +110,121 @@ class TestArkaneJob:
         arkane = Arkane()
         job_list = arkane.load_input_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..", "arkane", "data", "methoxy.py"))
         pdepjob = job_list[-1]
+        cls.pdepjob = pdepjob
         cls.kineticsjob = job_list[0]
         pdepjob.active_j_rotor = True
         network = pdepjob.network
-        cls.Nisom = len(network.isomers)
-        cls.Nreac = len(network.reactants)
-        cls.Nprod = len(network.products)
-        cls.Npath = len(network.path_reactions)
-        cls.PathReaction2 = network.path_reactions[2]
-        cls.TminValue = pdepjob.Tmin.value
-        cls.Tmaxvalue = pdepjob.Tmax.value
-        cls.TmaxUnits = pdepjob.Tmax.units
-        cls.TlistValue = pdepjob.Tlist.value
-        cls.PminValue = pdepjob.Pmin.value
-        cls.Pcount = pdepjob.Pcount
-        cls.Tcount = pdepjob.Tcount
-        cls.GenTlist = pdepjob.generate_T_list()
-        cls.PlistValue = pdepjob.Plist.value
-        cls.maximum_grain_size_value = pdepjob.maximum_grain_size.value
-        cls.method = pdepjob.method
-        cls.rmgmode = pdepjob.rmgmode
+        cls.network = network
 
     # test Arkane's interactions with the network module
     def test_num_isom(self):
         """
         Test the number of isomers identified.
         """
-        assert self.Nisom == 2
+        assert len(self.network.isomers) == 2
 
     def test_num_reac(self):
         """
         Test the number of reactants identified.
         """
-        assert self.Nreac == 1
+        assert len(self.network.reactants) == 1
 
     def test_num_prod(self):
         """
         Test the number of products identified.
         """
-        assert self.Nprod == 1
+        assert len(self.network.products) == 1
 
     def test_n_path_reactions(self):
         """
         Test the whether or not RMG mode is turned on.
         """
-        assert self.Npath == 3
+        assert len(self.network.path_reactions) == 3
 
     def test_path_reactions(self):
         """
         Test a path reaction label
         """
-        assert str(self.PathReaction2) == "CH2OH <=> methoxy"
+        assert str(self.network.path_reactions[2]) == "CH2OH <=> methoxy"
 
     # test Arkane's interactions with the pdep module
     def test_temperatures_units(self):
         """
         Test the Temperature Units.
         """
-        assert str(self.TmaxUnits) == "K"
+        assert str(self.pdepjob.Tmax.units) == "K"
 
-    def test_temperatures_value(self):
+    def test_temperatures_limits(self):
         """
-        Test the temperature value.
+        Test the temperature limits.
         """
-        assert self.TminValue == 450.0
+        assert self.pdepjob.Tmin.value_si == 450.0
+        assert self.pdepjob.Tmax.value_si == 1200.0
 
     def test_temperatures_list(self):
         """
         Test the temperature list.
         """
-        assert np.array_equal(self.TlistValue, np.array([450, 500, 678, 700]))
+        assert np.array_equal(self.pdepjob.Tlist.value_si, np.array([450, 500, 678, 700]))
 
-    def test_min_pressure_value(self):
+    def test_pressure_limits(self):
         """
-        Test the minimum pressure value.
+        Test the pressure limits.
         """
-        assert "%0.7f" % self.PminValue == str(0.0101325)
+        assert self.pdepjob.Pmin.value_si == 1013.25  # Pa
+        assert self.pdepjob.Pmax.value_si == 101325000.0  # Pa
 
     def test_pressure_count(self):
         """
         Test the number pressures specified.
         """
-        assert self.Pcount == 7
+        assert self.pdepjob.Pcount == 7
 
     def test_temperature_count(self):
         """
         Test the number temperatures specified.
         """
-        assert self.Tcount == 4
+        assert self.pdepjob.Tcount == 4
 
     def test_pressure_list(self):
         """
         Test the pressure list.
         """
-        assert np.array_equal(self.PlistValue, np.array([0.01, 0.1, 1, 3, 10, 100, 1000]))
+        assert np.array_equal(self.pdepjob.Plist.value, np.array([0.01, 0.1, 1, 3, 10, 100, 1000]))
+        assert self.pdepjob.Plist.units == 'atm'
 
     def test_generate_temperature_list(self):
         """
         Test the generated temperature list.
         """
-        assert list(self.GenTlist) == [450.0, 500.0, 678.0, 700.0]
+        assert list(self.pdepjob.generate_T_list()) == [450.0, 500.0, 678.0, 700.0]
 
     def test_maximum_grain_size_value(self):
         """
         Test the max grain size value.
         """
-        assert self.maximum_grain_size_value == 0.5
+        assert self.pdepjob.maximum_grain_size.value == 0.5
+        assert self.pdepjob.maximum_grain_size.units == 'kcal/mol'
 
     def test_method(self):
         """
         Test the master equation solution method chosen.
         """
-        assert self.method == "modified strong collision"
+        assert self.pdepjob.method == "modified strong collision"
 
     def test_rmg_mode(self):
         """
         Test the whether or not RMG mode is turned on.
         """
-        assert self.rmgmode == False
+        assert self.pdepjob.rmgmode == False
 
     # Test Arkane's interactions with the kinetics module
     def test_calculate_tst_rate_coefficient(self):
         """
         Test the calculation of the high-pressure limit rate coef for one of the kinetics jobs at Tmin and Tmax.
         """
-        assert "%0.7f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.TminValue) == str(46608.5904933)
-        assert "%0.5f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(self.Tmaxvalue) == str(498796.64535)
+        assert "%0.7f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(450.0) == str(46608.5904933)
+        assert "%0.5f" % self.kineticsjob.reaction.calculate_tst_rate_coefficient(700.0) == str(498796.64535)
 
     def test_tunneling(self):
         """

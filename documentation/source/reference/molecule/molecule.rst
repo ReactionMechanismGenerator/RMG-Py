@@ -1,3 +1,5 @@
+.. _rmgpy.molecule.Molecule:
+
 ***********************
 rmgpy.molecule.Molecule
 ***********************

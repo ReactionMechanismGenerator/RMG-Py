@@ -56,6 +56,20 @@ class PrettifyVisitor(ast.NodeVisitor):
         self.level = level
         self.indent = indent
 
+    @staticmethod
+    def _is_string(node):
+        return isinstance(node, ast.Constant) and isinstance(node.value, str)
+
+    @staticmethod
+    def _is_number(node):
+        return isinstance(node, ast.Constant) and isinstance(node.value, (int, float, complex)) and not isinstance(node.value, bool)
+
+    @classmethod
+    def _is_simple_constant(cls, node):
+        return cls._is_string(node) or cls._is_number(node) or (
+            isinstance(node, ast.Constant) and isinstance(node.value, bool)
+        )
+
     def visit_Call(self, node):
         """
         Return a pretty representation of the class or function call represented by `node`.
@@ -84,7 +98,7 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         Return a pretty representation of the list represented by `node`.
         """
-        if any([not isinstance(e, (ast.Str, ast.Num, ast.UnaryOp)) for e in node.elts]):
+        if any([not (self._is_simple_constant(e) or isinstance(e, ast.UnaryOp)) for e in node.elts]):
             # Split elements onto multiple lines
             result = '[\n'
             self.level += 1
@@ -105,11 +119,11 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         # If the tuple represents a quantity, keep it on one line
         is_quantity = True
-        if len(node.elts) == 0 or not isinstance(node.elts[0], (ast.Num, ast.List)) or (
+        if len(node.elts) == 0 or not (self._is_number(node.elts[0]) or isinstance(node.elts[0], ast.List)) or (
                 isinstance(node.elts[0], ast.List) and
-                any([not isinstance(e, (ast.Num, ast.UnaryOp)) for e in node.elts[0].elts])):
+                any([not (self._is_number(e) or isinstance(e, ast.UnaryOp)) for e in node.elts[0].elts])):
             is_quantity = False
-        elif len(node.elts) < 2 or not isinstance(node.elts[1], ast.Str):
+        elif len(node.elts) < 2 or not self._is_string(node.elts[1]):
             is_quantity = False
 
         if not is_quantity:
@@ -131,8 +145,8 @@ class PrettifyVisitor(ast.NodeVisitor):
         """
         Return a pretty representation of the dict represented by `node`.
         """
-        if (any([not isinstance(e, (ast.Str, ast.Num)) for e in node.keys])
-                or any([not isinstance(e, (ast.Str, ast.Num)) for e in node.values])):
+        if (any([not self._is_simple_constant(e) for e in node.keys])
+                or any([not self._is_simple_constant(e) for e in node.values])):
             # Split elements onto multiple lines
             result = '{\n'
             self.level += 1
@@ -149,20 +163,18 @@ class PrettifyVisitor(ast.NodeVisitor):
             self.string = result
             return result
 
-    def visit_Str(self, node):
+    def visit_Constant(self, node):
         """
-        Return a pretty representation of the string represented by `node`.
+        Return a pretty representation of the constant represented by `node`.
         """
-        result = repr(node.s)
-        self.string = result
-        return result
-
-    def visit_Num(self, node):
-        """
-        Return a pretty representation of the number represented by `node`.
-        """
-        result = '{0:g}'.format(node.n)
-        # result = repr(node.n)
+        if isinstance(node.value, str):
+            result = repr(node.value)
+        elif isinstance(node.value, bool):
+            result = repr(node.value)
+        elif isinstance(node.value, (int, float, complex)) and not isinstance(node.value, bool):
+            result = '{0:g}'.format(node.value)
+        else:
+            return None
         self.string = result
         return result
 

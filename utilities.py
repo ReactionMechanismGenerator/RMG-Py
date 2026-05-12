@@ -48,51 +48,61 @@ def check_dependencies():
     print('{0:<15}{1:<15}{2}'.format('Package', 'Version', 'Location'))
 
     missing = {
-        'lpsolve': _check_lpsolve(),
+        'cantera': _check_cantera(),
         'openbabel': _check_openbabel(),
         'pydqed': _check_pydqed(),
-        'pyrdl': _check_pyrdl(),
         'rdkit': _check_rdkit(),
         'symmetry': _check_symmetry(),
     }
 
     if any(missing.values()):
         print("""
+        ╔═══════════════════════════════════════════════════════════════════════════╗
+        ║        !                                                   !              ║
+        ║       ! !            WARNING: MISSING DEPENDENCIES        ! !             ║
+        ║      !!!!!                                               !!!!!            ║
+        ╚═══════════════════════════════════════════════════════════════════════════╝
+
 There are missing dependencies as listed above. Please install them before proceeding.
 
-Using Anaconda, these dependencies can be individually installed from the RMG channel as follows:
-
-    conda install -c rmg [package name]
-{0}
-You can alternatively update your environment and install all missing dependencies as follows:
-
     conda env update -f environment.yml
+              
+Or (often better) make a new conda environment and restart the installation instructions.
+See https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/installation
 
 Be sure to activate your conda environment (rmg_env by default) before installing or updating.
-""".format("""
-RDKit should be installed from the RDKit channel instead:
-
-    conda install -c rdkit rdkit
-""" if missing['rdkit'] else ''))
+""")
     else:
         print("""
 Everything was found :)
 """)
 
-
-def _check_lpsolve():
-    """Check for lpsolve"""
+def _check_cantera():
+    """Check for Cantera with version >= 3.0"""
     missing = False
 
     try:
-        import lpsolve55
+        import cantera
     except ImportError:
-        print('{0:<30}{1}'.format('lpsolve55',
-                                  'Not found. Necessary for generating Clar structures for aromatic species.'))
+        print('{0:<30}{1}'.format('Cantera',
+                                  'Not found. Necessary for output file writing and utilities.'))
         missing = True
     else:
-        location = lpsolve55.__file__
-        print('{0:<30}{1}'.format('lpsolve55', location))
+        version = cantera.__version__
+        location = cantera.__file__
+        
+        # Parse version string to compare (e.g., "3.0.0" -> (3, 0))
+        try:
+            version_tuple = tuple(int(x) for x in version.split('.')[:2])
+        except (ValueError, IndexError):
+            version_tuple = (0, 0)
+        
+        if version_tuple < (3, 0):
+            print('{0:<15}{1:<15}{2}'.format('Cantera', version, location))
+            print('    !!! Cantera version must be 3.0 or later.')
+            missing = True
+        else:
+            print('{0:<15}{1:<15}{2}'.format('Cantera', version, location))
 
     return missing
 
@@ -128,22 +138,6 @@ def _check_pydqed():
         version = pydqed.__version__
         location = pydqed.__file__
         print('{0:<15}{1:<15}{2}'.format('pydqed', version, location))
-
-    return missing
-
-
-def _check_pyrdl():
-    """Check for pyrdl"""
-    missing = False
-
-    try:
-        import py_rdl
-    except ImportError:
-        print('{0:<30}{1}'.format('pyrdl', 'Not found. Necessary for ring perception algorithms.'))
-        missing = True
-    else:
-        location = py_rdl.__file__
-        print('{0:<30}{1}'.format('pyrdl', location))
 
     return missing
 
@@ -246,21 +240,6 @@ def check_pydas():
             elif dassl:
                 f.write('DEF DASPK = 0\n')
 
-
-def check_python():
-    """
-    Check that Python 3 is in the environment.
-    """
-    major = sys.version_info.major
-    minor = sys.version_info.minor
-    if not (major == 3 and minor >= 7):
-        sys.exit('\nRMG-Py requires Python 3.7 or higher. You are using Python {0}.{1}.\n\n'
-                 'If you are using Anaconda, you should create a new environment using\n\n'
-                 '    conda env create -f environment.yml\n\n'
-                 'If you have an existing rmg_env, you can remove it using\n\n'
-                 '    conda remove --name rmg_env --all\n'.format(major, minor))
-
-
 def clean(subdirectory=''):
     """
     Removes files generated during compilation.
@@ -271,7 +250,7 @@ def clean(subdirectory=''):
     if platform.system() == 'Windows':
         extensions = ['.pyd', '.pyc']
     else:
-        extensions = ['.so', '.pyc']
+        extensions = ['.so', '.pyc', ".c"]
 
     # Remove temporary build files
     print('Removing build directory...')
@@ -310,7 +289,7 @@ def update_headers():
     start of each file, be sure to double-check the results to make sure
     important lines aren't accidentally overwritten.
     """
-    shebang = """#!/usr/bin/env python-jl
+    shebang = """#!/usr/bin/env python
 
 """
 
@@ -411,7 +390,6 @@ if __name__ == '__main__':
     parser.add_argument('command', metavar='COMMAND', type=str,
                         choices=['check-dependencies',
                                  'check-pydas',
-                                 'check-python',
                                  'clean',
                                  'clean-solver',
                                  'update-headers'],
@@ -423,8 +401,6 @@ if __name__ == '__main__':
         check_dependencies()
     elif args.command == 'check-pydas':
         check_pydas()
-    elif args.command == 'check-python':
-        check_python()
     elif args.command == 'clean':
         clean()
     elif args.command == 'clean-solver':

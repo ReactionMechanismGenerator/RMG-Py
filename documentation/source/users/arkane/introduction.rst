@@ -31,7 +31,7 @@ License
 =======
 
 Arkane is provided as free, open source code under the terms of the
-`MIT/X11 License <http://www.opensource.org/licenses/mit-license.php>`_. The
+`MIT/X11 License <https://opensource.org/license/mit>`_. The
 full, official license is reproduced below
 
 

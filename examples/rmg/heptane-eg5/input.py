@@ -3,7 +3,7 @@ database(
     thermoLibraries = ['primaryThermoLibrary'],
     reactionLibraries = [],
     seedMechanisms = [],
-    kineticsDepositories = ['training'], 
+    kineticsDepositories = ['training'],
     kineticsFamilies = 'default',
     kineticsEstimator = 'rate rules',
 )
@@ -71,4 +71,12 @@ pressureDependence(
     interpolation=('Chebyshev', 6, 4),
 )
 
-
+options(
+    units='si',
+    generateOutputHTML={'saveInterval': 10, 'saveEdge': True},
+    generatePlots=False,
+    generateChemkin={'saveInterval': 1, 'saveEdge': False},
+    generateRMSYAML={'saveInterval': 5},
+    generateCanteraYAML1={'saveInterval': 5, 'saveEdge': True},
+    generateCanteraYAML2={'saveInterval': 10, 'saveEdge': True},
+)

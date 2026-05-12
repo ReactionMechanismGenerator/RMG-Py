@@ -2,7 +2,7 @@
 # This file contains the script used by GitHub actions to execute the Continuous Integration (CI)
 # for RMG-Py. This includes building RMG and its dependencies, executing the unit tests,
 # functional tests, database tests, and regression tests.
-# 
+#
 # This will run automatically on any push to any branch, but will only run one instance of
 # itself at a time per branch (to avoid spawning tons of runners, which prevents them from
 # executing).
@@ -12,20 +12,6 @@
 # them. These 'answers' are re-generated daily, or on any push to main, and retrieved whenever
 # a push is made to a non-main branch. The new proposed changes are referred to as "Dynamic".
 #
-#
-# Changelog:
-# 2023-04    - Jackson Burns - Added this header, regression tests, cleanup of action in 
-#              in general, and documentation throughout the file.
-# 2023-05    - added Docker build steps
-# 2023-05-12 - added changes to allow running on forks
-# 2023-06-06 - added matrix build for libstdcxx-ng versions 12 and 13 on ubuntu. Only expect 12 to work.
-# 2023-06-07 - updated regression testing. Now fails if significant changes are detected.
-# 2023-06-15 - revert changes from 06-06, both now work
-# 2023-06-27 - add option to run from RMG-database with GitHub resuable workflows
-# 2023-07-17 - made it pass by default
-# 2023-07-21 - upload the regression results summary as artifact (for use as a comment on PRs)
-# 2023-07-31 - removed option to run from RMG-database with GitHub resuable workflows
-# 2024-10-01 - deprecated Mambaforge with Miniforge3 for environment creation
 
 name: Continuous Integration
 
@@ -33,10 +19,14 @@ on:
   schedule:
     # * is a special character in YAML so you have to quote this string
     - cron: "0 8 * * *"
-  # runs on all branches on both RMG-Py and forks
-  push:
+  # allow running on RMG-Py on a pushed branch, only if triggered manually
+  workflow_dispatch:
   # runs on PRs against RMG-Py (and anywhere else, but we add this for RMG-Py)
   pull_request:
+  # runs on pushes to main branch
+  push:
+    branches:
+      - main
 
 # this prevents one PR from simultaneously running multiple runners, which will clog up the queue
 # and prevent other PRs from running the CI
@@ -48,11 +38,39 @@ env:
   # if running on RMG-Py but requiring changes on an un-merged branch of RMG-database, replace
   # main with the name of the branch
   RMG_DATABASE_BRANCH: main
+  # RMS branch to use for ReactionMechanismSimulator installation
+  RMS_BRANCH: for_rmg
+  # RMS mode used for install_rms.sh
+  RMS_INSTALLER: continuous
+  # julia parallel pre-compilation leads to race conditions and hangs, so we limit it to run in serial
+  JULIA_NUM_PRECOMPILE_TASKS: 1
 
 
 jobs:
-  build-osx:
-    runs-on: macos-13
+  build-and-test:
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+        os: [macos-15-intel, macos-latest, ubuntu-latest]
+        include-rms: ["", "with RMS"]
+        exclude:
+          # on macos, only check with RMS (assume it also works without RMS)
+          - os: macos-15-intel
+            include-rms: ""
+          - os: macos-latest
+            include-rms: ""
+          # on macos, only test with latest Python version
+          - os: macos-15-intel
+            python-version: "3.9"
+          - os: macos-latest
+            python-version: "3.9"
+          - os: macos-15-intel
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.10"
+    runs-on: ${{ matrix.os }}
+    name: Python ${{ matrix.python-version }} ${{ matrix.os }} Build and Test ${{ matrix.include-rms }}
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
     defaults:
@@ -60,35 +78,25 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout RMG-Py
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      # Step to create a custom condarc.yml before setting up conda
-      - name: Create custom conda config file
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "channels:" > $RUNNER_CWD/condarc.yml
-          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
-          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
-          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
-          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
-
-      # configures the mamba environment manager and builds the environment
-      - name: Setup Miniforge Python 3.7
+      - name: Setup Miniforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
-          python-version: 3.7
-          condarc-file: condarc.yml
+          python-version: ${{ matrix.python-version }}
           activate-environment: rmg_env
-          use-mamba: true
+          auto-update-conda: true
+          show-channel-urls: true
+          conda-remove-defaults: "true"
 
       # list the environment for debugging purposes
-      - name: mamba info
+      - name: conda info
         run: |
-          mamba info
-          mamba list
+          conda info
+          conda list
 
       # Clone RMG-database
       - name: Clone RMG-database
@@ -96,24 +104,40 @@ jobs:
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-      # modify env variables as directed in the RMG installation instructions
-      - name: Set Environment Variables
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
-          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
-
       # RMG build step
-      - name: make RMG
-        run: |
-          make clean
-          make
+      - run: make install
 
-  build-and-test-linux:
+      - name: Setup Juliaup
+        if: matrix.include-rms == 'with RMS'
+        uses: julia-actions/install-juliaup@v2
+        with:
+          channel: '1.10'
+
+      # RMS installation and linking to Julia
+      - name: Install and link Julia dependencies
+        if: matrix.include-rms == 'with RMS'
+        timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
+        run: . install_rms.sh
+
+      - name: Install Q2DTor
+        run: echo "" | make q2dtor
+
+      # non-regression testing
+      - name: Run Unit, Functional, and Database Tests
+        if: matrix.os == 'ubuntu-latest'
+        run: make test-all
+
+      # for the less capable non-linux runners, we only run units tests
+      - name: Run Unit Tests
+        if: matrix.os != 'ubuntu-latest'
+        run: make test-unittests
+
+  regression-test:
     runs-on: ubuntu-latest
+    name: Regression Test
     # skip scheduled runs from forks
     if: ${{ !( github.repository != 'ReactionMechanismGenerator/RMG-Py' && github.event_name == 'schedule' ) }}
-    env: 
+    env:
       # This is true only if this is a reference case for the regression testing:
       REFERENCE_JOB: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
     defaults:
@@ -121,35 +145,25 @@ jobs:
         shell: bash -l {0}
     steps:
       - name: Checkout RMG-Py
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      # Step to create a custom condarc.yml before setting up conda
-      - name: Create custom condarc.yml
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "channels:" > $RUNNER_CWD/condarc.yml
-          echo "  - conda-forge" >> $RUNNER_CWD/condarc.yml
-          echo "  - rmg" >> $RUNNER_CWD/condarc.yml
-          echo "  - cantera" >> $RUNNER_CWD/condarc.yml
-          echo "show_channel_urls: true" >> $RUNNER_CWD/condarc.yml
-
-      # configures the mamba environment manager and builds the environment
-      - name: Setup Miniforge Python 3.7
+      - name: Setup Miniforge Python 3.9
         uses: conda-incubator/setup-miniconda@v3
         with:
           environment-file: environment.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
-          python-version: 3.7
-          condarc-file: condarc.yml
+          python-version: 3.9
           activate-environment: rmg_env
-          use-mamba: true
+          auto-update-conda: true
+          show-channel-urls: true
+          conda-remove-defaults: "true"
 
       # list the environment for debugging purposes
-      - name: mamba info
+      - name: conda info
         run: |
-          mamba info
-          mamba list
+          conda info
+          conda list
 
       # Clone RMG-database
       - name: Clone RMG-database
@@ -157,42 +171,34 @@ jobs:
           cd ..
           git clone -b $RMG_DATABASE_BRANCH https://github.com/ReactionMechanismGenerator/RMG-database.git
 
-      # modify env variables as directed in the RMG installation instructions
-      - name: Set Environment Variables
-        run: |
-          RUNNER_CWD=$(pwd)
-          echo "PYTHONPATH=$RUNNER_CWD/RMG-Py:$PYTHONPATH" >> $GITHUB_ENV
-          echo "$RUNNER_CWD/RMG-Py" >> $GITHUB_PATH
-
       # RMG build step
-      - name: make RMG
+      - run: make install
+
+      - name: Make separate No-RMS conda env
         run: |
-          make clean
-          make
+          conda create --name rmg_env_without_rms -f environment.yml
+
+      - name: Setup Juliaup
+        uses: julia-actions/install-juliaup@v2
+        with:
+          channel: '1.10'
 
       # RMS installation and linking to Julia
       - name: Install and link Julia dependencies
         timeout-minutes: 120 # this usually takes 20-45 minutes (or hangs for 6+ hours).
         run: |
-          python -c "import julia; julia.install(); import diffeqpy; diffeqpy.install()"
-          julia -e 'using Pkg; Pkg.add(PackageSpec(name="ReactionMechanismSimulator",rev="for_rmg")); using ReactionMechanismSimulator'
+          . install_rms.sh
 
       - name: Install Q2DTor
         run: echo "" | make q2dtor
 
-      # non-regression testing
-      - name: Run Unit, Functional, and Database Tests
-        # aggregate into one command so we only have to eat the collection time once
-        run: make test-all
-
       # Regression Testing - Test Execution
       - name: Regression Tests - Execution
         id: regression-execution
-        timeout-minutes: 60
         run: |
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation RMS_liquidSurface_ch4o2cat fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
           do
-            if python-jl rmg.py test/regression/"$regr_test"/input.py; then
+            if python rmg.py test/regression/"$regr_test"/input.py; then
               echo "$regr_test" "Executed Successfully"
             else
               echo "$regr_test" "Failed to Execute" | tee -a $GITHUB_STEP_SUMMARY
@@ -238,12 +244,17 @@ jobs:
         run: mkdir stable_regression_results
 
       # Retrieve Stable Results for reference
-      - name : Find ID of Reference Results
+      - name: Find ID of Reference Results
+        if: ${{ env.REFERENCE_JOB == 'false' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         # this will search for the last successful execution of CI on main
         run: |
-          run_id=$(gh run list -R ReactionMechanismGenerator/RMG-Py --workflow="Continuous Integration" --branch main --limit 15 --json databaseId,conclusion --jq 'map(select(.conclusion == "success")) | .[0].databaseId')
+          run_id=$(gh run list -R ReactionMechanismGenerator/RMG-Py --workflow="Continuous Integration" --branch main --limit 60 --json databaseId,conclusion --jq 'map(select(.conclusion == "success")) | .[0].databaseId')
+          if [ -z "$run_id" ] || [ "$run_id" = "null" ]; then
+            echo "::error::No successful reference run found in last 60 runs."
+            exit 1
+          fi
           echo "CI_RUN_ID=$run_id" >> $GITHUB_ENV
 
       - name: Retrieve Stable Regression Results
@@ -264,6 +275,11 @@ jobs:
         env:
           REFERENCE: stable_regression_results
         run: |
+          conda activate rmg_env_without_rms
+          echo "CONDA_PREFIX: $CONDA_PREFIX"  # see if the conda environment was activated
+          conda run -n rmg_env_without_rms conda install -y pip
+          conda run -n rmg_env_without_rms make install
+
           exec 2> >(tee -a regression.stderr >&2) 1> >(tee -a regression.stdout)
           mkdir -p "test/regression-diff"
           for regr_test in aromatics liquid_oxidation nitrogen oxidation sulfur superminimal RMS_constantVIdealGasReactor_superminimal RMS_CSTR_liquid_oxidation fragment RMS_constantVIdealGasReactor_fragment minimal_surface;
@@ -282,12 +298,12 @@ jobs:
 
             echo "<details>"
             # Compare the edge and core
-            if python-jl scripts/checkModels.py \
+            if conda run -n rmg_env_without_rms python scripts/checkModels.py \
                 "$regr_test-core" \
                 $REFERENCE/"$regr_test"/chemkin/chem_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_annotated.inp \
-                test/regression/"$regr_test"/chemkin/species_dictionary.txt
+                test/regression/"$regr_test"/chemkin/species_dictionary.txt &> checkModels.err
             then
               echo "<summary>$regr_test Passed Core Comparison ✅</summary>"
             else
@@ -298,13 +314,19 @@ jobs:
             echo "" # blank line so next block is interpreted as markdown
             cat "$regr_test-core.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-core.log")
             echo "</details>"
+            if [ -s checkModels.err ]; then
+              echo "<details>"
+              echo "<summary>Errors occurred during core comparison ⚠️</summary>"
+              cat checkModels.err
+              echo "</details>"
+            fi
             echo "<details>"
-            if python-jl scripts/checkModels.py \
+            if conda run -n rmg_env_without_rms python scripts/checkModels.py \
                 "$regr_test-edge" \
                 $REFERENCE/"$regr_test"/chemkin/chem_edge_annotated.inp \
                 $REFERENCE/"$regr_test"/chemkin/species_edge_dictionary.txt \
                 test/regression/"$regr_test"/chemkin/chem_edge_annotated.inp \
-                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt
+                test/regression/"$regr_test"/chemkin/species_edge_dictionary.txt &> checkModels.err
             then
               echo "<summary>$regr_test Passed Edge Comparison ✅</summary>"
             else
@@ -313,17 +335,23 @@ jobs:
               export FAILED=Yes
             fi
             echo "" # blank line so next block is interpreted as markdown
-            cat "$regr_test-edge.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-core.log")
+            cat "$regr_test-edge.log" || (echo "Dumping the whole log failed, please download it from GitHub actions. Here are the first 100 lines:" && head -n100 "$regr_test-edge.log")
             echo "</details>"
+            if [ -s checkModels.err ]; then
+              echo "<details>"
+              echo "<summary>Errors occurred during edge comparison ⚠️</summary>"
+              cat checkModels.err
+              echo "</details>"
+            fi
 
             # Check for Regression between Reference and Dynamic (skip superminimal)
             if [ -f test/regression/"$regr_test"/regression_input.py ];
             then
               echo "<details>"
-              if python-jl rmgpy/tools/regression.py \
+              if conda run -n rmg_env_without_rms python rmgpy/tools/regression.py \
                 test/regression/"$regr_test"/regression_input.py \
                 $REFERENCE/"$regr_test"/chemkin \
-                test/regression/"$regr_test"/chemkin
+                test/regression/"$regr_test"/chemkin 2> regression.py.err
               then
                 echo "<summary>$regr_test Passed Observable Testing ✅</summary>"
               else
@@ -331,6 +359,12 @@ jobs:
                 export FAILED=Yes
               fi
               echo "</details>"
+              if [ -s regression.py.err ]; then
+                echo "<details>"
+                echo "<summary>Errors occurred during observable testing ⚠️</summary>"
+                cat regression.py.err
+                echo "</details>"
+              fi
             fi
             echo ""
           done
@@ -356,15 +390,15 @@ jobs:
           cat summary.txt > $GITHUB_STEP_SUMMARY
 
       - name: Upload regression summary artifact
-       # the annotate workflow uses this artifact to add a comment to the PR
-        uses: actions/upload-artifact@v3
-        if : ${{ github.event_name == 'pull_request' }}
+        # the annotate workflow uses this artifact to add a comment to the PR
+        uses: actions/upload-artifact@v4
+        if: ${{ github.event_name == 'pull_request' }}
         with:
           name: regression_summary
           path: summary.txt
 
       - name: Upload Comparison Results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: regression_test_comparison_results
           path: |
@@ -374,36 +408,41 @@ jobs:
       - name: Code coverage install and run
         if: success() || ( failure() && steps.regression-execution.conclusion == 'success' )
         run: |
-          mamba install -y -c conda-forge codecov
+          conda install -y -c conda-forge codecov
           codecov
 
   build-and-push-docker:
     # after testing and on pushes to main, build and push docker image
-    # technically we could live without the 'needs' since _in theory_
-    # nothing will ever be merged into main that fails the tests, but
-    # who knows ¯\_(ツ)_/¯
     #
     # taken from https://github.com/docker/build-push-action
-    needs: build-and-test-linux
+    needs: [build-and-test, regression-test]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
+    # Run on push to main or on pull requests from official fork.
+    if: |
+      (github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py') ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == 'ReactionMechanismGenerator/RMG-Py')
     steps:
       - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
+        uses: docker/setup-qemu-action@v3
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
+        uses: docker/setup-buildx-action@v3
 
       - name: Login to Docker Hub
-        uses: docker/login-action@v2
+        if: github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py'
+        uses: docker/login-action@v3
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push
+      - name: Build (and Push if on main)
         uses: docker/build-push-action@v6
+        env:
+          BUILDKIT_PROGRESS: plain
         with:
-          push: true
+          push: ${{ github.ref == 'refs/heads/main' && github.repository == 'ReactionMechanismGenerator/RMG-Py' }}
           tags: reactionmechanismgenerator/rmg:latest
           build-args: |
-            RMS_Branch=for_rmg
+            RMG_Py_Branch=${{ github.head_ref || github.ref_name }}
+            RMG_Database_Branch=${{ env.RMG_DATABASE_BRANCH }}
+            RMS_Branch=${{ env.RMS_BRANCH }}

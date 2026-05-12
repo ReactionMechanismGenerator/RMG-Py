@@ -31,6 +31,12 @@ cimport rmgpy.molecule.molecule as mol
 from cpython cimport bool
 ################################################################################
 
+cdef bool check_set(super_list, sub_list)
+
+cdef list add_cb_atom_to_ring(ring, cb_atom)
+
+cdef list merge_overlapping_benzene_rings(ring1, ring2, od)
+
 cdef class GroupAtom(Vertex):
 
     cdef public list atomtype
@@ -47,6 +53,8 @@ cdef class GroupAtom(Vertex):
     cdef public list reg_dim_r
     cdef public list reg_dim_site
     cdef public list reg_dim_morphology
+    cdef public list reg_dim_ncoord
+    cdef public list reg_dim_p
     
     cpdef Vertex copy(self)
 

@@ -93,10 +93,10 @@ class ArkaneGaussianLogTest:
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], float)
-        assert abs(trans.get_partition_function(t_list) - 5.83338e6) < 1e1
-        assert abs(rot.get_partition_function(t_list) - 2.59622e3) < 1e-2
-        assert abs(vib.get_partition_function(t_list) - 1.0481e0) < 1e-4
+        t = 298.15
+        assert abs(trans.get_partition_function(t) - 5.83338e6) < 1e1
+        assert abs(rot.get_partition_function(t) - 2.59622e3) < 1e-2
+        assert abs(vib.get_partition_function(t) - 1.0481e0) < 1e-4
 
         assert round(abs(e0 / constants.Na / constants.E_h - -78.467452), 4) == 0
         assert conformer.spin_multiplicity == 1
@@ -152,10 +152,10 @@ class ArkaneGaussianLogTest:
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, LinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], float)
-        assert abs(trans.get_partition_function(t_list) - 7.11169e6) < 1e1
-        assert abs(rot.get_partition_function(t_list) - 7.13316e1) < 1e-4
-        assert abs(vib.get_partition_function(t_list) - 1.00037e0) < 1e-4
+        t = 298.15
+        assert abs(trans.get_partition_function(t) - 7.11169e6) < 1e1
+        assert abs(rot.get_partition_function(t) - 7.13316e1) < 1e-4
+        assert abs(vib.get_partition_function(t) - 1.00037e0) < 1e-4
 
         assert round(abs(e0 / constants.Na / constants.E_h - -150.3784877), 4) == 0
         assert conformer.spin_multiplicity == 3
@@ -180,11 +180,10 @@ class ArkaneGaussianLogTest:
         trans = [mode for mode in conformer.modes if isinstance(mode, IdealGasTranslation)][0]
         rot = [mode for mode in conformer.modes if isinstance(mode, NonlinearRotor)][0]
         vib = [mode for mode in conformer.modes if isinstance(mode, HarmonicOscillator)][0]
-        t_list = np.array([298.15], float)
-
-        assert abs(trans.get_partition_function(t_list) - 5.83338e6) < 1e1
-        assert abs(rot.get_partition_function(t_list) - 2.53410e3) < 1e-2
-        assert abs(vib.get_partition_function(t_list) - 1.0304e0) < 1e-4
+        t = 298.15
+        assert abs(trans.get_partition_function(t) - 5.83338e6) < 1e1
+        assert abs(rot.get_partition_function(t) - 2.53410e3) < 1e-2
+        assert abs(vib.get_partition_function(t) - 1.0304e0) < 1e-4
 
         assert round(abs(e0 / constants.Na / constants.E_h - -78.562189), 4) == 0
         assert conformer.spin_multiplicity == 1
@@ -246,3 +245,28 @@ class ArkaneGaussianLogTest:
         with pytest.raises(LogError):
             log = GaussianLog(os.path.join(self.data_path, "rocbs-qb3_85_methanol.out"))
             imaginary_freq = log.load_negative_frequency()
+
+    def test_load_rotational_constants(self):
+        """
+        Load the rotational constants from a Gaussian output file.
+        """
+        # try reading rotational constants from a regular gaussian log file with no stars
+        log = GaussianLog(os.path.join(self.data_path, "ethylene.log"))
+        conformer, unscaled_freqs = log.load_conformer()
+        assert NonlinearRotor in [type(mode) for mode in conformer.modes]
+        for mode in conformer.modes:
+            if isinstance(mode, NonlinearRotor):
+                assert mode.symmetry == 4
+                # test the rotational constants are read in correctly
+                assert np.all(np.isclose(mode.inertia.value_si, np.array([5.69516245e-47, 2.77584017e-46, 3.34535660e-46]), atol=1e-48))
+
+
+        # test that it can read in the rotational constants even if the last instance is stars instead of digits
+        log = GaussianLog(os.path.join(self.data_path, "starred_rotational_constant.log"))
+        conformer, unscaled_freqs = log.load_conformer()
+        assert NonlinearRotor in [type(mode) for mode in conformer.modes]
+        for mode in conformer.modes:
+            if isinstance(mode, NonlinearRotor):
+                assert mode.symmetry == 1
+                # test the rotational constants are read in correctly
+                assert np.all(np.isclose(mode.inertia.value_si, np.array([5.64469824e-54, 1.86319657e-46, 1.86319657e-46]), atol=1e-48))

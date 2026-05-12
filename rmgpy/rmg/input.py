@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+
 
 ###############################################################################
 #                                                                             #
@@ -35,23 +35,36 @@ import numpy as np
 
 from rmgpy import settings
 from rmgpy.data.base import Entry
+from rmgpy.data.solvation import SolventData
+from rmgpy.data.surface import MetalDatabase
+from rmgpy.data.vaporLiquidMassTransfer import (
+    liquidVolumetricMassTransferCoefficientPowerLaw,
+)
 from rmgpy.exceptions import DatabaseError, InputError
 from rmgpy.molecule import Molecule
+from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
-from rmgpy.quantity import Quantity, Energy, RateCoefficient, SurfaceConcentration
+from rmgpy.quantity import Energy, Quantity, RateCoefficient, SurfaceConcentration, Concentration
 from rmgpy.rmg.model import CoreEdgeReactionModel
-from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
-from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
+from rmgpy.rmg.reactionmechanismsimulator_reactors import (
+    ConstantTLiquidSurfaceReactor,
+    ConstantTPIdealGasReactor,
+    ConstantTVLiquidReactor,
+    ConstantVIdealGasReactor,
+    Reactor,
+)
+from rmgpy.rmg.settings import ModelSettings, SimulatorSettings, WriterConfig
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
+from rmgpy.solver.termination import (
+    TerminationConversion,
+    TerminationRateRatio,
+    TerminationTime,
+)
+from rmgpy.data.auto_database import AUTO, PAH_LIBS
 from rmgpy.util import as_list
-from rmgpy.data.surface import MetalDatabase
-from rmgpy.rmg.reactors import Reactor, ConstantVIdealGasReactor, ConstantTLiquidSurfaceReactor, ConstantTVLiquidReactor, ConstantTPIdealGasReactor
-from rmgpy.data.vaporLiquidMassTransfer import liquidVolumetricMassTransferCoefficientPowerLaw
-from rmgpy.molecule.fragment import Fragment
-from rmgpy.data.solvation import SolventData
 
 ################################################################################
 
@@ -74,14 +87,55 @@ def database(
     # We don't actually load the database until after we're finished reading
     # the input file
     rmg.database_directory = settings['database.directory']
-    rmg.thermo_libraries = as_list(thermoLibraries, default=[])
-    rmg.transport_libraries = as_list(transportLibraries, default=None)
 
-    # Modify reaction library list such that all entries are tuples
-    reaction_libraries = as_list(reactionLibraries, default=[])
-    rmg.reaction_libraries = [(name, False) if not isinstance(name, tuple) else name for name in reaction_libraries]
+    # Handle 'auto' token: pass through for later resolution by auto_select_libraries().
+    # '<PAH_libs>' is only valid as a token inside a list, not as a standalone value.
+    for field_name, field_val in [('thermoLibraries', thermoLibraries),
+                                  ('transportLibraries', transportLibraries),
+                                  ('reactionLibraries', reactionLibraries),
+                                  ('seedMechanisms', seedMechanisms)]:
+        if field_val == PAH_LIBS:
+            raise InputError(f"'{PAH_LIBS}' cannot be used as a standalone value for {field_name}. "
+                             f"Use it as a token inside a list, e.g. ['{AUTO}', '{PAH_LIBS}'].")
 
-    rmg.seed_mechanisms = as_list(seedMechanisms, default=[])
+    if thermoLibraries == AUTO:
+        rmg.thermo_libraries = AUTO
+    else:
+        rmg.thermo_libraries = as_list(thermoLibraries, default=[])
+
+    if transportLibraries == AUTO:
+        rmg.transport_libraries = AUTO
+    else:
+        rmg.transport_libraries = as_list(transportLibraries, default=None)
+
+    # Store reaction libraries as plain strings; remember which ones had True option
+    # (the bool indicates "also output unused edge reactions to chemkin file")
+    if reactionLibraries == AUTO:
+        rmg.reaction_libraries = AUTO
+        rmg.reaction_libraries_output_edge = set()
+    else:
+        reaction_libraries = as_list(reactionLibraries, default=[])
+        rmg.reaction_libraries = []
+        rmg.reaction_libraries_output_edge = set()
+        for item in reaction_libraries:
+            if isinstance(item, tuple):
+                name, option = item
+                if name == PAH_LIBS:
+                    raise InputError(f"'{PAH_LIBS}' cannot be used as a tuple entry in reactionLibraries. "
+                                     f"Use it as a plain string token, e.g. ['{AUTO}', '{PAH_LIBS}'].")
+                rmg.reaction_libraries.append(name)
+                if option:
+                    rmg.reaction_libraries_output_edge.add(name)
+            elif item in (AUTO, PAH_LIBS):
+                rmg.reaction_libraries.append(item)
+            else:
+                rmg.reaction_libraries.append(item)
+
+    if seedMechanisms == AUTO:
+        rmg.seed_mechanisms = AUTO
+    else:
+        rmg.seed_mechanisms = as_list(seedMechanisms, default=[])
+
     rmg.statmech_libraries = as_list(frequenciesLibraries, default=[])
     rmg.kinetics_estimator = kineticsEstimator
 
@@ -95,12 +149,12 @@ def database(
                              "['training','PrIMe'].")
         rmg.kinetics_depositories = kineticsDepositories
 
-    if kineticsFamilies in ('default', 'all', 'none'):
+    if kineticsFamilies in ('default', 'all', 'none', 'auto'):
         rmg.kinetics_families = kineticsFamilies
     else:
         if not isinstance(kineticsFamilies, list):
-            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', or a list of names eg. "
-                             "['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
+            raise InputError("kineticsFamilies should be either 'default', 'all', 'none', 'auto', or a list of names "
+                             "eg. ['H_Abstraction','R_Recombination'] or ['!Intra_Disproportionation'].")
         rmg.kinetics_families = kineticsFamilies
 
     rmg.adsorption_groups = adsorptionGroups
@@ -108,7 +162,8 @@ def database(
 def catalyst_properties(bindingEnergies=None,
                         surfaceSiteDensity=None,
                         metal=None,
-                        coverageDependence=False):
+                        coverageDependence=False,
+                        thermoCoverageDependence=False,):
     """
     Specify the properties of the catalyst.
     Binding energies of C,H,O,N atoms, and the surface site density.
@@ -155,6 +210,7 @@ def catalyst_properties(bindingEnergies=None,
     else:
         logging.info("Coverage dependence is turned OFF")
     rmg.coverage_dependence = coverageDependence
+    rmg.thermo_coverage_dependence = thermoCoverageDependence
 
 def convert_binding_energies(binding_energies):
     """
@@ -1076,7 +1132,8 @@ def surface_reactor(temperature,
                             sensitive_species=sensitive_species,
                             sensitivity_threshold=sensitivityThreshold,
                             sens_conditions=sens_conditions,
-                            coverage_dependence=rmg.coverage_dependence)
+                            coverage_dependence=rmg.coverage_dependence,
+                            thermo_coverage_dependence=rmg.thermo_coverage_dependence)
     rmg.reaction_systems.append(system)
     system.log_initial_conditions(number=len(rmg.reaction_systems))
 
@@ -1314,6 +1371,7 @@ def pressure_dependence(
         minimumNumberOfGrains=0,
         interpolation=None,
         maximumAtoms=None,
+        completedNetworks=None,
 ):
     from arkane.pdep import PressureDependenceJob
 
@@ -1355,16 +1413,75 @@ def pressure_dependence(
     rmg.pressure_dependence.active_k_rotor = True
     rmg.pressure_dependence.rmgmode = True
 
+    if completedNetworks:
+        for formula in completedNetworks:
+            rmg.reaction_model.add_completed_pdep_network(formula)
+
+
+def _parse_writer_config(value, default_save_interval=1):
+    """
+    Parse an output-writer configuration value from an input file.
+
+    Parameters
+    ----------
+    value : bool or dict
+        ``False`` disables the writer.  ``True`` enables it with
+        *default_save_interval*.  A dict may contain the keys
+        ``'saveInterval'`` (int), ``'verboseComments'`` (bool), and
+        ``'saveEdge'`` (bool).
+    default_save_interval : int
+        Save interval to use when ``value`` is ``True``.
+
+    Returns
+    -------
+    WriterConfig
+    """
+    if value is False:
+        return WriterConfig(save_interval=0)
+    if value is True:
+        return WriterConfig(save_interval=default_save_interval)
+    if isinstance(value, dict):
+        si = value.get('saveInterval', default_save_interval)
+        return WriterConfig(
+            save_interval=si,
+            verbose_comments=value.get('verboseComments', None),
+            save_edge=value.get('saveEdge', None),
+        )
+    raise InputError(
+        f"Writer config must be True, False, or a dict with keys "
+        f"'saveInterval', 'verboseComments', 'saveEdge'; got {type(value).__name__!r}"
+    )
+
+
+def _writer_config_to_input(cfg):
+    """
+    Serialize a WriterConfig back to a value suitable for writing into an
+    RMG input file (i.e. ``True``, ``False``, or a dict literal string).
+    """
+    if cfg is None or not cfg.enabled:
+        return False
+    has_overrides = (cfg.verbose_comments is not None or cfg.save_edge is not None)
+    if cfg.save_interval == 1 and not has_overrides:
+        return True
+    parts = [f"'saveInterval': {cfg.save_interval}"]
+    if cfg.verbose_comments is not None:
+        parts.append(f"'verboseComments': {cfg.verbose_comments}")
+    if cfg.save_edge is not None:
+        parts.append(f"'saveEdge': {cfg.save_edge}")
+    return '{' + ', '.join(parts) + '}'
+
 
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
-            generateOutputHTML=False, generatePlots=False, saveSimulationProfiles=False, verboseComments=False,
-            saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00',
-            saveSeedModulus=-1):
+            generateOutputHTML=False, generatePlots=False, generatePESDiagrams=False, saveSimulationProfiles=False,
+            verboseComments=False, saveEdgeSpecies=False, keepIrreversible=False,
+            trimolecularProductReversible=True, wallTime='00:00:00:00', saveSeedModulus=-1,
+            generateChemkin=True, generateRMSYAML=True,
+            generateCanteraYAML1=False, generateCanteraYAML2=False):
     if saveRestartPeriod:
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
                         "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
                         "restarting an RMG job see the documentation for restarting from a seed mechanism at "
-                        "http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
+                        "https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism")
 
     rmg.name = name
     rmg.generate_seed_each_iteration = generateSeedEachIteration
@@ -1372,8 +1489,11 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
     rmg.units = units
     if generateOutputHTML:
         logging.warning('Generate Output HTML option was turned on. Note that this will slow down model generation.')
-    rmg.generate_output_html = generateOutputHTML
+    rmg.generate_output_html = bool(generateOutputHTML)
     rmg.generate_plots = generatePlots
+    rmg.generate_PES_diagrams = generatePESDiagrams
+    if generatePESDiagrams:
+        logging.info('Potential Energy Surface diagrams will be generated in the "pdep" folder.')
     rmg.save_simulation_profiles = saveSimulationProfiles
     rmg.verbose_comments = verboseComments
     if saveEdgeSpecies:
@@ -1384,6 +1504,12 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
     rmg.trimolecular_product_reversible = trimolecularProductReversible
     rmg.walltime = wallTime
     rmg.save_seed_modulus = saveSeedModulus
+
+    rmg.chemkin_writer_config = _parse_writer_config(generateChemkin)
+    rmg.rms_writer_config = _parse_writer_config(generateRMSYAML)
+    rmg.cantera1_writer_config = _parse_writer_config(generateCanteraYAML1)
+    rmg.cantera2_writer_config = _parse_writer_config(generateCanteraYAML2)
+    rmg.html_writer_config = _parse_writer_config(generateOutputHTML)
 
 
 def generated_species_constraints(**kwargs):
@@ -1400,6 +1526,7 @@ def generated_species_constraints(**kwargs):
         'maximumRadicalElectrons',
         'maximumSingletCarbenes',
         'maximumCarbeneRadicals',
+        'maximumFusedRingSystemSize',
         'allowSingletO2',
         'speciesCuttingThreshold',
     ]
@@ -1448,7 +1575,7 @@ def uncertainty(localAnalysis=False, globalAnalysis=False, uncorrelated=True, co
 def restart_from_seed(path=None, coreSeed=None, edgeSeed=None, filters=None, speciesMap=None):
     parent_dir = os.path.dirname(rmg.input_file)
     rmg.restart = True
-    doc_link = 'http://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
+    doc_link = 'https://reactionmechanismgenerator.github.io/RMG-Py/users/rmg/input.html#restarting-from-a-seed-mechanism.'
 
     if path:
         if any((coreSeed, edgeSeed, filters, speciesMap)):
@@ -1628,6 +1755,8 @@ def read_thermo_input_file(path, rmg0):
     rmg.reaction_model = CoreEdgeReactionModel()
     rmg.initial_species = []
     rmg.reaction_systems = []
+    if rmg.output_directory is None:
+        rmg.output_directory = os.path.dirname(full_path)
     species_dict = {}
 
     global_context = {'__builtins__': None}
@@ -1684,12 +1813,16 @@ def save_input_file(path, rmg):
     f.write('    kineticsEstimator = {0!r},\n'.format(rmg.kinetics_estimator))
     f.write(')\n\n')
 
-    if rmg.surfaceSiteDenisty or rmg.binding_energies:
+    if rmg.surface_site_density or rmg.binding_energies:
         f.write('catalystProperties(\n')
-        if rmg.surfaceSiteDenisty:
-            f.write('    surface_site_density = {0!r},'.format(rmg.surface_site_density))
+        if rmg.surface_site_density:
+            f.write('    surfaceSiteDensity = ({0:g}, "{1!s}"),'.format(rmg.surface_site_density.value, rmg.surface_site_density.units) + '\n')
         if rmg.binding_energies:
-            f.write('    binding_energies = {0!r},'.format(rmg.binding_energies))
+            f.write('    bindingEnergies = {\n')
+            for spc, be in rmg.binding_energies.items():
+                f.write('        "{0!s}": ({1:g}, "{2!s}"),\n'.format(spc, be.value, be.units))
+            f.write('    },\n')
+
         f.write(')\n\n')
 
     # Species
@@ -1703,23 +1836,59 @@ def save_input_file(path, rmg):
         f.write('"""),\n')
         f.write(')\n\n')
 
+    def format_temperature(system):
+        """Get temperature string format for reaction system, whether single value or range"""
+        if system.T is not None:
+            return '({0:g},"{1!s}")'.format(system.T.value, system.T.units)
+        
+        return f'[({system.Trange[0].value:g}, "{system.Trange[0].units}"), ({system.Trange[1].value:g}, "{system.Trange[1].units}")],'
+
+    def format_pressure(system):
+        """Get pressure string format for reaction system, whether single value or range"""
+        if system.P is not None:
+            return '({0:g},"{1!s}")'.format(system.P.value, system.P.units)
+        
+        return f'[({system.Prange[0].value:g}, "{system.Prange[0].units}"), ({system.Prange[1].value:g}, "{system.Prange[1].units}")],'
+
+    def format_initial_mole_fractions(system):
+        """Get initial mole fractions string format for reaction system"""
+        mole_fractions = ''
+        for spcs, molfrac in system.initial_mole_fractions.items():
+            if isinstance(molfrac, list):
+                mole_fractions += '        "{0!s}": [{1:g}, {2:g}],\n'.format(spcs.label, molfrac[0], molfrac[1])
+            else:
+                mole_fractions += '        "{0!s}": {1:g},\n'.format(spcs.label, molfrac)
+        return mole_fractions
+
+
     # Reaction systems
     for system in rmg.reaction_systems:
         if rmg.solvent:
             f.write('liquidReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
+            f.write('    temperature = ' + format_temperature(system) + '\n')
             f.write('    initialConcentrations={\n')
             for spcs, conc in system.initial_concentrations.items():
+                # conc may have been converted to SI, so we need to convert back
+                if type(conc) == float:
+                    conc = Quantity(conc, Concentration.units)
                 f.write('        "{0!s}": ({1:g},"{2!s}"),\n'.format(spcs.label, conc.value, conc.units))
+        elif isinstance(system, SurfaceReactor):
+            f.write('surfaceReactor(\n')
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    initialPressure = ({0:g},"{1!s}"),\n'.format(system.P_initial.value, system.P_initial.units))
+            f.write('    initialGasMoleFractions={\n')
+            for spcs, molfrac in system.initial_gas_mole_fractions.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write('    },\n')
+            f.write('    initialSurfaceCoverages={\n')
+            for spcs, cov in system.initial_surface_coverages.items():
+                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, cov))
         else:
             f.write('simpleReactor(\n')
-            f.write('    temperature = ({0:g},"{1!s}"),\n'.format(system.T.value, system.T.units))
-            # Convert the pressure from SI pascal units to bar here
-            # Do something more fancy later for converting to user's desired units for both T and P..
-            f.write('    pressure = ({0:g},"{1!s}"),\n'.format(system.P.value, system.P.units))
+            f.write('    temperature = ' + format_temperature(system) + '\n')
+            f.write('    pressure = ' + format_pressure(system) + '\n')
             f.write('    initialMoleFractions={\n')
-            for spcs, molfrac in system.initial_mole_fractions.items():
-                f.write('        "{0!s}": {1:g},\n'.format(spcs.label, molfrac))
+            f.write(format_initial_mole_fractions(system))
         f.write('    },\n')
 
         # Termination criteria
@@ -1727,9 +1896,12 @@ def save_input_file(path, rmg):
         for term in system.termination:
             if isinstance(term, TerminationTime):
                 f.write('    terminationTime = ({0:g},"{1!s}"),\n'.format(term.time.value, term.time.units))
-
-            else:
+            elif isinstance(term, TerminationRateRatio):
+                f.write('    terminationRateRatio = {0:g},\n'.format(term.ratio))
+            elif isinstance(term, TerminationConversion):
                 conversions += '        "{0:s}": {1:g},\n'.format(term.species.label, term.conversion)
+            else:
+                raise NotImplementedError('Termination criteria of type {0} not supported'.format(type(term)))
         if conversions:
             f.write('    terminationConversion = {\n')
             f.write(conversions)
@@ -1772,9 +1944,9 @@ def save_input_file(path, rmg):
     if rmg.pressure_dependence:
         f.write('pressureDependence(\n')
         f.write('    method = {0!r},\n'.format(rmg.pressure_dependence.method))
-        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.grain_size.value,
-                                                                   rmg.pressure_dependence.grain_size.units))
-        f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressure_dependence.grain_count))
+        f.write('    maximumGrainSize = ({0:g},"{1!s}"),\n'.format(rmg.pressure_dependence.maximum_grain_size.value,
+                                                                   rmg.pressure_dependence.maximum_grain_size.units))
+        f.write('    minimumNumberOfGrains = {0},\n'.format(rmg.pressure_dependence.minimum_grain_count))
         f.write('    temperatures = ({0:g},{1:g},"{2!s}",{3:d}),\n'.format(
             rmg.pressure_dependence.Tmin.value,
             rmg.pressure_dependence.Tmax.value,
@@ -1789,6 +1961,11 @@ def save_input_file(path, rmg):
         ))
         f.write('    interpolation = {0},\n'.format(rmg.pressure_dependence.interpolation_model))
         f.write('    maximumAtoms = {0}, \n'.format(rmg.pressure_dependence.maximum_atoms))
+        if rmg.reaction_model.completed_pdep_networks:
+            def formula(elements):
+                return ''.join(f'{el}{count}' if count > 1 else f'{el}' for el, count in elements)
+            f.write('    completedNetworks = {0},\n'.format(
+                [formula(net) for net in rmg.reaction_model.completed_pdep_networks]))
         f.write(')\n\n')
 
     # Quantum Mechanics
@@ -1821,14 +1998,21 @@ def save_input_file(path, rmg):
     # Options
     f.write('options(\n')
     f.write('    units = "{0}",\n'.format(rmg.units))
-    f.write('    generateOutputHTML = {0},\n'.format(rmg.generate_output_html))
+    f.write('    generateOutputHTML = {0},\n'.format(_writer_config_to_input(rmg.html_writer_config)))
     f.write('    generatePlots = {0},\n'.format(rmg.generate_plots))
+    f.write('    generatePESDiagrams = {0},\n'.format(rmg.generate_PES_diagrams))
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.save_simulation_profiles))
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.save_edge_species))
     f.write('    keepIrreversible = {0},\n'.format(rmg.keep_irreversible))
     f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
     f.write('    wallTime = {0},\n'.format(rmg.walltime))
+    f.write('    generateChemkin = {0},\n'.format(_writer_config_to_input(rmg.chemkin_writer_config)))
+    f.write('    generateRMSYAML = {0},\n'.format(_writer_config_to_input(rmg.rms_writer_config)))
+    if rmg.cantera1_writer_config and rmg.cantera1_writer_config.enabled:
+        f.write('    generateCanteraYAML1 = {0},\n'.format(_writer_config_to_input(rmg.cantera1_writer_config)))
+    if rmg.cantera2_writer_config and rmg.cantera2_writer_config.enabled:
+        f.write('    generateCanteraYAML2 = {0},\n'.format(_writer_config_to_input(rmg.cantera2_writer_config)))
     f.write(')\n\n')
 
     f.close()

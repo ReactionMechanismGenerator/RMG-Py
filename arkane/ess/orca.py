@@ -116,7 +116,7 @@ class OrcaLog(ESSAdapter):
         for (_, _, files) in os.walk(os.path.dirname(self.path)):
             for file_ in files:
                 if file_.endswith('.hess'):
-                    hess_files.append(file_)
+                    hess_files.append(os.path.join(os.path.dirname(self.path), file_))
             break
         if len(hess_files) == 1:
             hess_file = hess_files[0]
@@ -215,9 +215,11 @@ class OrcaLog(ESSAdapter):
             if spin_multiplicity == 0 and ' Multiplicity           Mult' in line:
                 spin_multiplicity = int(float(line.split()[3]))
 
-            if ' Mode    freq' in line:
+            if 'Mode' in line and "freq" in line:
                 frequencies = list()
                 for line_ in log[(i + 2):]:
+                    if "------" in line_:
+                        continue
                     if not line_.strip():
                         break
                     frequencies.extend([float(line_.split()[1])])
@@ -236,7 +238,7 @@ class OrcaLog(ESSAdapter):
         if len(inertia) and not all(i == 0.0 for i in inertia):
             if any(i == 0.0 for i in inertia):
                 inertia.remove(0.0)
-                rot.append(LinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry))
+                rot.append(LinearRotor(inertia=(inertia[0], "amu*angstrom^2"), symmetry=symmetry))
             else:
                 rot.append(NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry))
 

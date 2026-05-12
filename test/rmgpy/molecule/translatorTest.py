@@ -874,7 +874,7 @@ class SMILESGenerationTest:
 5 X u0 p0 c0 {1,S}
 """
         )
-        smiles = "C[Pt]"
+        smiles = "[CH3][Pt]"
 
         assert to_smiles(mol, backend="rdkit") == smiles
 

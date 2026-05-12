@@ -123,6 +123,24 @@ class GaussianLog(ESSAdapter):
 
         return n_atoms
 
+    def load_route_section(self):
+        """
+        Return the route section of the Gaussian log file as a string. The route
+        section is the line in the Gaussian input/output file that starts with "#"
+        If there are multiple lines that start with # it returns the first.
+        """
+        route = ''
+        with open(self.path, 'r') as f:
+            line = f.readline()
+            while line != '':
+                line = line.strip()
+                if line.startswith('#'):
+                    route = line
+                    break
+                line = f.readline()
+
+        return route
+
     def load_force_constant_matrix(self):
         """
         Return the force constant matrix from the Gaussian log file. The job
@@ -132,8 +150,16 @@ class GaussianLog(ESSAdapter):
         only the last is returned. The units of the returned force constants
         are J/m^2. If no force constant matrix can be found in the log file,
         ``None`` is returned.
+        Also checks that the force constant matrix was computed using the correct
+        (input orientation Cartesian) coordinates.
+        IOP(2/9=2000) must be specified for large cases (14+ atoms), but only
+        if an optimization was also performed. A frequency calculation by itself
+        will keep the input orientation.
         """
         force = None
+
+        iop2_9_equals_2000 = False
+        optimization_performed = 'opt' in self.load_route_section().lower()
 
         n_atoms = self.get_number_of_atoms()
         n_rows = n_atoms * 3
@@ -141,6 +167,9 @@ class GaussianLog(ESSAdapter):
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
+                if '2/9=2000' in line:
+                    iop2_9_equals_2000 = True
+
                 # Read force constant matrix
                 if 'Force constants in Cartesian coordinates:' in line:
                     force = np.zeros((n_rows, n_rows), float)
@@ -157,6 +186,11 @@ class GaussianLog(ESSAdapter):
                     force *= 4.35974417e-18 / 5.291772108e-11 ** 2
                 line = f.readline()
 
+        if optimization_performed and n_atoms > 13 and not iop2_9_equals_2000:
+            raise LogError(f'Gaussian optimization file {self.path} contains more than 13 atoms. '
+                           f'Please add the `iop(2/9=2000)` keyword to your input file '
+                           f'so Gaussian will compute force matrix using the input orientation Cartesians.')
+
         return force
 
     def load_geometry(self):
@@ -166,7 +200,7 @@ class GaussianLog(ESSAdapter):
         last is returned.
         """
         number, coord, mass = [], [], []
-
+        
         with open(self.path, 'r') as f:
             line = f.readline()
             while line != '':
@@ -227,6 +261,10 @@ class GaussianLog(ESSAdapter):
                     logging.debug('Conformer {0} is assigned a spin multiplicity of {1}'
                                   .format(label, spin_multiplicity))
 
+                # Keep track of rotational constants as we go in case Gaussian prints ****** instead of the value
+                if 'Rotational constants (GHZ):' in line and '*****' not in line:
+                    rot_const = [float(d) for d in line.split()[-3:]]
+
                 # The data we want is in the Thermochemistry section of the output
                 if '- Thermochemistry -' in line:
                     modes = []
@@ -246,9 +284,15 @@ class GaussianLog(ESSAdapter):
 
                         # Read moments of inertia for external rotational modes
                         elif 'Rotational constants (GHZ):' in line:
-                            inertia = [float(d) for d in line.split()[-3:]]
+                            inertia = [d for d in line.split()[-3:]]
+                            for i in range(len(inertia)):
+                                if '*******' in inertia[i]:
+                                    try:  # set rotational constant to the last known value
+                                        inertia[i] = rot_const[i]
+                                    except NameError:
+                                        raise LogError('Rotational constant listed as ***** and no previous value given')
                             for i in range(3):
-                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * inertia[i] * 1e9) \
+                                inertia[i] = constants.h / (8 * constants.pi * constants.pi * float(inertia[i]) * 1e9) \
                                              * constants.Na * 1e23
                             rotation = NonlinearRotor(inertia=(inertia, "amu*angstrom^2"), symmetry=symmetry)
                             modes.append(rotation)
@@ -514,7 +558,7 @@ class GaussianLog(ESSAdapter):
         parameters after letter_spec is found. If not specified or False, it will
         return the preceeding letters, which are typically the atom numbers.
 
-        More information about the syntax can be found http://gaussian.com/opt/
+        More information about the syntax can be found https://gaussian.com/opt/
         """
         output = []
         reached_input_spec_section = False

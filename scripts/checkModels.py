@@ -289,20 +289,13 @@ def initialize_log(verbose, log_file_name='checkModels.log'):
     # only works properly if it is the only logger
     # see https://github.com/rdkit/rdkit/pull/4846 for the changes in RDKit
 
-    # clear all other existing loggers
-    # https://stackoverflow.com/a/12158233
-    for handler in logging.root.handlers[:]:
-        logging.root.removeHandler(handler)
-
-    # once moved to a more recent python (at least 3.8), just add force=true to this statement
-    # and remove the above
     logging.basicConfig(
         filename=log_file_name,
         filemode='w',
         format='%(message)s',
-        level=verbose
+        level=verbose,
+        force=True  # clear all previous log handlers, including those from RDKit
     )
-
 
 if __name__ == '__main__':
     error = main()

@@ -260,9 +260,9 @@ options(
     #Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
     #do not converge.
     #wallTime = '00:00:00', 
+    #When keepIrreversible=False (default), forces RMG to import library reactions as reversible. 
+    #Otherwise, if set to True, RMG will import library reactions while keeping the reversibility as specified.
     keepIrreversible=False,
-    #Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
-    #reactions while keeping the reversibility as as.
 )
 
 # optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.
@@ -275,8 +275,8 @@ pressureDependence(
  	minimumNumberOfGrains=250,
  	#the conditions for the rate to be output over
  	#parameter order is: low_value, high_value, units, internal points
- 	temperatures=(300,2200,'K',2),
- 	pressures=(0.01,100.01,'bar',3),
+ 	temperatures=(300,2200,'K',10),
+ 	pressures=(0.01,100.01,'bar',10),
  	#The two options for interpolation are 'PDepArrhenius' (no extra arguments) and 
  	#'Chebyshev' which is followed by the number of basis sets in 
  	#Temperature and Pressure. These values must be less than the number of 
@@ -305,7 +305,5 @@ generatedSpeciesConstraints(
     #If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered 
     #which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
     #allowSingletO2=False,
-    # maximum allowed number of non-normal isotope atoms:
-    #maximumIsotopicAtoms=2,
 )
 

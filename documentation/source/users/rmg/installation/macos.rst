@@ -30,7 +30,7 @@ homebrew-python (which used to be at ``https://github.com/Homebrew/homebrew-pyth
 	brew update
 	brew install git
 
-* Optional (but recommended for Nitrogen-chemistry nomenclature): install `OpenBabel <http://www.openbabel.org>`_::
+* Optional (but recommended for Nitrogen-chemistry nomenclature): install `OpenBabel <http://openbabel.org>`_::
 
 	brew install open-babel --with-python --HEAD
 
@@ -102,4 +102,4 @@ homebrew-python (which used to be at ``https://github.com/Homebrew/homebrew-pyth
 	make eg2
 
 To run with on-the-fly Quantum Mechanics calculations, you will also need to install
-`MOPAC <http://openmopac.net/downloads.html>`_ or `Gaussian <https://gaussian.com>`_, then run `make QM`.
+`MOPAC <https://openmopac.net/downloads.html>`_ or `Gaussian <https://gaussian.com>`_, then run `make QM`.

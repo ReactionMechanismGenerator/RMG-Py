@@ -26,8 +26,8 @@
 ###############################################################################
 
 """
-Contains the :class:`SimpleReactor` class, providing a reaction system
-consisting of a homogeneous, isothermal, isobaric batch reactor.
+Contains the :class:`SurfaceReactor` class, providing a reaction system
+consisting of a heterogeneous, isothermal, constant volume batch reactor.
 """
 
 import itertools
@@ -36,13 +36,15 @@ import logging
 cimport cython
 import numpy as np
 cimport numpy as np
-from libc.math cimport exp
+from libc.math cimport exp, pow
 
 import rmgpy.constants as constants
 cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity
 from rmgpy.solver.base cimport ReactionSystem
+import copy
+from rmgpy.molecule import Molecule
 
 cdef class SurfaceReactor(ReactionSystem):
     """
@@ -66,9 +68,15 @@ cdef class SurfaceReactor(ReactionSystem):
     cdef public ScalarQuantity surface_site_density
     cdef public np.ndarray reactions_on_surface  # (catalyst surface, not core/edge surface)
     cdef public np.ndarray species_on_surface  # (catalyst surface, not core/edge surface)
+    cdef public np.ndarray thermo_coeff_matrix
+    cdef public np.ndarray stoi_matrix
+    cdef public np.ndarray _jacobian_inv_omega
+    cdef public bint _jacobian_inv_omega_num_core_species
 
     cdef public bint coverage_dependence
     cdef public dict coverage_dependencies
+    cdef public bint thermo_coverage_dependence
+
 
 
     def __init__(self,
@@ -84,6 +92,7 @@ cdef class SurfaceReactor(ReactionSystem):
                  sensitivity_threshold=1e-3,
                  sens_conditions=None,
                  coverage_dependence=False,
+                 thermo_coverage_dependence=False,
                  ):
         ReactionSystem.__init__(self,
                                 termination,
@@ -103,10 +112,13 @@ cdef class SurfaceReactor(ReactionSystem):
         self.surface_volume_ratio = Quantity(surface_volume_ratio)
         self.surface_site_density = Quantity(surface_site_density)
         self.coverage_dependence = coverage_dependence
+        self.thermo_coverage_dependence = thermo_coverage_dependence
         self.V = 0  # will be set from ideal gas law in initialize_model
         self.constant_volume = True
         self.sens_conditions = sens_conditions
         self.n_sims = n_sims
+        self._jacobian_inv_omega = None  # array of 1/V (gas-phase) or 1/A (surface-phase) for corresponding gas or surface species
+        self._jacobian_inv_omega_num_core_species = 0
 
         self.coverage_dependencies = {}
 
@@ -166,6 +178,10 @@ cdef class SurfaceReactor(ReactionSystem):
                                        )
         cdef np.ndarray[np.int_t, ndim=1] species_on_surface, reactions_on_surface
         cdef Py_ssize_t index
+        cdef np.ndarray thermo_coeff_matrix = np.zeros((len(self.species_index), len(self.species_index), 6), dtype=np.float64)
+        cdef np.ndarray stoi_matrix = np.zeros((self.reactant_indices.shape[0], len(self.species_index)), dtype=np.float64)
+        if self.thermo_coverage_dependence:
+            self.thermo_coeff_matrix = thermo_coeff_matrix
         #: 1 if it's on a surface, 0 if it's in the gas phase
         reactions_on_surface = np.zeros((self.num_core_reactions + self.num_edge_reactions), int)
         species_on_surface = np.zeros((self.num_core_species), int)
@@ -195,6 +211,49 @@ cdef class SurfaceReactor(ReactionSystem):
                 means that Species with index 2 in the current simulation is used in
                 Reaction 3 with parameters a=0.1, m=-1, E=12 kJ/mol
                 """
+        for sp, sp_index in self.species_index.items():
+            if sp.contains_surface_site():
+                if self.thermo_coverage_dependence and sp.thermo.thermo_coverage_dependence:
+                    for spec, parameters in sp.thermo.thermo_coverage_dependence.items():
+                        molecule = Molecule().from_adjacency_list(spec)
+                        for species in self.species_index.keys():
+                            if species.is_isomorphic(molecule, strict=False):
+                                species_index = self.species_index[species]
+                                enthalpy_coeff = np.array([p.value_si for p in parameters['enthalpy-coefficients']])
+                                entropy_coeff = np.array([p.value_si for p in parameters['entropy-coefficients']])
+                                thermo_polynomials = np.concatenate((enthalpy_coeff, entropy_coeff), axis=0)
+                                self.thermo_coeff_matrix[sp_index, species_index] = [x for x in thermo_polynomials]
+        # create a stoichiometry matrix for reaction enthalpy and entropy correction 
+        # due to thermodynamic coverage dependence
+        if self.thermo_coverage_dependence:
+            ir = self.reactant_indices
+            ip = self.product_indices
+            for rxn_id, rxn_stoi_num in enumerate(stoi_matrix):
+                if ir[rxn_id, 0] >= self.num_core_species or ir[rxn_id, 1] >= self.num_core_species or ir[rxn_id, 2] >= self.num_core_species:
+                    continue
+                elif ip[rxn_id, 0] >= self.num_core_species or ip[rxn_id, 1] >= self.num_core_species or ip[rxn_id, 2] >= self.num_core_species:
+                    continue
+                else:
+                    if ir[rxn_id, 1] == -1:  # only one reactant
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                    elif ir[rxn_id, 2] == -1:  # only two reactants
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                        rxn_stoi_num[ir[rxn_id, 1]] += -1
+                    else:  # three reactants
+                        rxn_stoi_num[ir[rxn_id, 0]] += -1
+                        rxn_stoi_num[ir[rxn_id, 1]] += -1
+                        rxn_stoi_num[ir[rxn_id, 2]] += -1
+                    if ip[rxn_id, 1] == -1:  # only one product
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                    elif ip[rxn_id, 2] == -1:  # only two products
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                        rxn_stoi_num[ip[rxn_id, 1]] += 1
+                    else:  # three products
+                        rxn_stoi_num[ip[rxn_id, 0]] += 1
+                        rxn_stoi_num[ip[rxn_id, 1]] += 1
+                        rxn_stoi_num[ip[rxn_id, 2]] += 1
+            self.stoi_matrix = stoi_matrix
+        
         self.species_on_surface = species_on_surface
         self.reactions_on_surface = reactions_on_surface
 
@@ -325,11 +384,15 @@ cdef class SurfaceReactor(ReactionSystem):
             i = self.get_species_index(spec)
             self.y0[i] = total_surface_sites * coverage  # moles in reactor
 
+        # array of stored 1/V (gas-phase) or 1/A (surface-phase) for corresponding gas or surface species to help compute Jacobian
+        self._jacobian_inv_omega = np.full(self.num_core_species, 1.0 / V, dtype=np.float64)
         for j, isSurfaceSpecies in enumerate(self.species_on_surface):  # should only go up to core species
             if isSurfaceSpecies:
                 self.core_species_concentrations[j] = self.y0[j] / V / surface_volume_ratio_si  # moles per m2 of surface
+                self._jacobian_inv_omega[j] = 1.0 / (V * surface_volume_ratio_si)
             else:
                 self.core_species_concentrations[j] = self.y0[j] / V  # moles per m3 of gas
+        self._jacobian_inv_omega_num_core_species = self.num_core_species
 
     def compute_network_variables(self, pdep_networks=None):
         # ToDo: this should allow pressure to vary?
@@ -378,9 +441,10 @@ cdef class SurfaceReactor(ReactionSystem):
         cdef np.ndarray[np.float64_t, ndim=2] jacobian, dgdk
         cdef list list_of_coverage_deps
         cdef double surface_site_fraction, total_sites, a, m, E
-
-
-
+        cdef np.ndarray[np.float64_t, ndim=1] coverages, coverages_squared, temperature_scaled_coverages
+        cdef np.ndarray[np.float64_t, ndim=2] thermo_dep_coverage
+        cdef np.ndarray[np.float64_t, ndim=1] free_energy_coverage_corrections, rxns_free_energy_change, corrected_K_eq
+        cdef double sp_free_energy_correction
         ir = self.reactant_indices
         ip = self.product_indices
         equilibrium_constants = self.Keq
@@ -411,10 +475,9 @@ cdef class SurfaceReactor(ReactionSystem):
         surface_volume_ratio_si = self.surface_volume_ratio.value_si
 
         C = np.zeros_like(self.core_species_concentrations)
-        V = self.V  # constant volume reactor
-        A = self.V * surface_volume_ratio_si  # area
-        total_sites = self.surface_site_density.value_si * A  # todo: double check units
-
+        V = self.V  # constant volume reactor in m^3
+        A = self.V * surface_volume_ratio_si  # area in m^2
+        total_sites = self.surface_site_density.value_si * A  # moles of sites
         for j in range(num_core_species):
             if species_on_surface[j]:
                 C[j] = (N[j] / V) / surface_volume_ratio_si
@@ -422,6 +485,28 @@ cdef class SurfaceReactor(ReactionSystem):
                 C[j] = N[j] / V
             #: surface species are in mol/m2, gas phase are in mol/m3
             core_species_concentrations[j] = C[j]
+        
+        if self.thermo_coverage_dependence or self.coverage_dependence:
+            coverages = np.where(species_on_surface, np.maximum(N / total_sites, 0.0), 0.0)
+
+        # Thermodynamic coverage dependence
+        if self.thermo_coverage_dependence:
+            coverages_squared = coverages * coverages
+            temperature_scaled_coverages = -self.T.value_si * coverages
+            thermo_dep_coverage = np.empty((6, coverages.shape[0]), dtype=np.float64)
+            thermo_dep_coverage[0, :] = coverages
+            thermo_dep_coverage[1, :] = coverages_squared
+            thermo_dep_coverage[2, :] = coverages_squared * coverages
+            thermo_dep_coverage[3, :] = temperature_scaled_coverages
+            thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
+            thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
+            free_energy_coverage_corrections = np.empty(len(self.thermo_coeff_matrix), dtype=np.float64)
+            for i, matrix in enumerate(self.thermo_coeff_matrix):
+                free_energy_coverage_corrections[i] = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
+            rxns_free_energy_change = np.matmul(self.stoi_matrix,free_energy_coverage_corrections)
+            corrected_K_eq = copy.deepcopy(self.Keq)
+            corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
+            kr = kf / corrected_K_eq
 
         # Coverage dependence
         coverage_corrections = np.ones_like(kf, float)
@@ -433,12 +518,12 @@ cdef class SurfaceReactor(ReactionSystem):
             """
             for i, list_of_coverage_deps in self.coverage_dependencies.items():
                 # Species i, Reaction j
-                surface_site_fraction = N[i] / total_sites
-                if surface_site_fraction < 1e-15:
+                surface_site_fraction = coverages[i]
+                if surface_site_fraction <= 1e-6:
                     continue
                 for j, a, m, E in list_of_coverage_deps:
                     coverage_corrections[j] *= 10. ** (a * surface_site_fraction) *\
-                                                surface_site_fraction ** m *\
+                                                pow(surface_site_fraction, m) *\
                                                 exp(-1 * E * surface_site_fraction / (constants.R * self.T.value_si))
             kf = kf * coverage_corrections # make a corrected copy kf, but leave the original array at self.kf unchanged
             kr = kr * coverage_corrections
@@ -537,7 +622,7 @@ cdef class SurfaceReactor(ReactionSystem):
         res = core_species_rates * V
         # mol/s
 
-        if self.sensitivity and False:
+        if self.sensitivity:
             delta = np.zeros(len(N), float)
             delta[:num_core_species] = res
             if self.jacobian_matrix is None:
@@ -556,3 +641,417 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # Return DELTA, IRES.  IRES is set to 1 in order to tell DASPK to evaluate the sensitivity residuals
         return delta, 1
+
+    @cython.boundscheck(False)
+    def jacobian(self, double t, np.ndarray[np.float64_t, ndim=1] y, np.ndarray[np.float64_t, ndim=1] dydt,
+                 double cj, np.ndarray[np.float64_t, ndim=1] senpar = np.zeros(1, float)):
+        """
+        Return the analytical Jacobian for the reaction system.
+
+        Constant volume (isochoric), variable pressure, with mixed gas-phase
+        and surface species.
+
+        kf[j] and kr[j] are given in volume units (mol / m^3 / s), even for
+        surface reactions.  generate_rate_coefficients premultiplies the raw
+        surface rate coefficient by surface_volume_ratio (= A/V, units 1/m) so
+        that the residual can uniformly compute:
+
+            reaction_rate [mol/m^3/s] = k * prod_r C[r]
+            dn_i/dt [mol/s]           = nu_ij * reaction_rate * V
+
+        for every reaction regardless of phase.
+
+        Concentrations
+        --------------
+        Gas-phase species:  C[i] = y[i] / V                    (mol / m^3)
+        Surface species:    C[i] = y[i] / V / svr = y[i] / A   (mol / m^2)
+
+        where svr = surface_volume_ratio (1/m)
+
+        Derivative rule
+        ---------------
+            deriv w.r.t. n[s]  =  k * (prod_{r != s} C[r]) * V / Omega[s]
+
+        For gas-phase species:    V / Omega[s] = V / V = 1
+        For surface species:      V / Omega[s] = V / A = 1 / svr
+
+        No corr terms (like in SimpleReactor) because V and A are both constant.
+        """
+        cdef np.ndarray[np.int_t, ndim=2] ir, ip
+        cdef np.ndarray[np.float64_t, ndim=1] kf, kr, C
+        cdef np.ndarray[np.float64_t, ndim=2] pd
+        cdef np.ndarray[np.float64_t, ndim=1] Omega   # per-species normalization
+        cdef int num_core_reactions, num_core_species, i, j
+        cdef double k, V, A, deriv
+
+        ir = self.reactant_indices
+        ip = self.product_indices
+
+        kf = self.kf  # already in volume units for all reactions
+        kr = self.kb  # already in volume units for all reactions
+        num_core_reactions = len(self.core_reaction_rates)
+        num_core_species = len(self.core_species_concentrations)
+
+        pd = np.zeros((num_core_species, num_core_species), dtype=np.float64)
+        np.fill_diagonal(pd, -cj)
+
+        V = self.V
+        A = V * self.surface_volume_ratio.value_si  # surface area in m^2
+
+        # Cache inverse per-species normalization on the instance since
+        # species_on_surface is static for SurfaceReactor and V/A are constant
+        inv_omega = self._jacobian_inv_omega
+        cached_num_core_species = self._jacobian_inv_omega_num_core_species
+
+        if cached_num_core_species != num_core_species:
+            inv_omega = np.full(num_core_species, 1.0 / V, dtype=np.float64)
+            for i in range(num_core_species):
+                if self.species_on_surface[i]:
+                    inv_omega[i] = 1.0 / A
+            self._jacobian_inv_omega = inv_omega
+            self._jacobian_inv_omega_num_core_species = num_core_species
+
+        # Concentrations — surface species in mol/m^2, gas in mol/m^3
+        C = np.zeros_like(self.core_species_concentrations)
+        for j in range(num_core_species):
+            C[j] = y[j] * inv_omega[j]
+
+        for j in range(num_core_reactions):
+
+            # ------------------------------------------------------------------
+            # Forward reaction
+            # ------------------------------------------------------------------
+            k = kf[j]
+
+            if ir[j, 1] == -1:  # unimolecular forward
+                # deriv = k * V * inv_omega[s]; gas: k*1 = k; surface: k*V/A = k/svr
+                deriv = k * V * inv_omega[ir[j, 0]]
+                pd[ir[j, 0], ir[j, 0]] -= deriv
+
+                pd[ip[j, 0], ir[j, 0]] += deriv
+                if ip[j, 1] != -1:
+                    pd[ip[j, 1], ir[j, 0]] += deriv
+                    if ip[j, 2] != -1:
+                        pd[ip[j, 2], ir[j, 0]] += deriv
+
+            elif ir[j, 2] == -1:  # bimolecular forward
+                if ir[j, 0] == ir[j, 1]:  # A + A -> products
+                    deriv = 2 * k * C[ir[j, 0]] * V * inv_omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                else:  # A + B -> products
+                    # derivative with respect to n[A]
+                    deriv = k * C[ir[j, 1]] * V * inv_omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= deriv
+                    pd[ir[j, 1], ir[j, 0]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = k * C[ir[j, 0]] * V * inv_omega[ir[j, 1]]
+                    pd[ir[j, 0], ir[j, 1]] -= deriv
+                    pd[ir[j, 1], ir[j, 1]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 1]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 1]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 1]] += deriv
+
+            else:  # trimolecular forward
+
+                if (ir[j, 0] == ir[j, 1]) and (ir[j, 0] == ir[j, 2]):  # A+A+A
+                    deriv = 3 * k * C[ir[j, 0]] * C[ir[j, 0]] * V * inv_omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= 3 * deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                elif ir[j, 0] == ir[j, 1]:  # A+A+B
+                    # derivative with respect to n[A]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 2]] * V * inv_omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
+                    pd[ir[j, 2], ir[j, 0]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 0]] * V * inv_omega[ir[j, 2]]
+                    pd[ir[j, 0], ir[j, 2]] -= 2 * deriv
+                    pd[ir[j, 2], ir[j, 2]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 2]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 2]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 2]] += deriv
+
+                elif ir[j, 1] == ir[j, 2]:  # A+B+B
+                    # derivative with respect to n[A]
+                    deriv = k * C[ir[j, 1]] * C[ir[j, 1]] * V * inv_omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= deriv
+                    pd[ir[j, 1], ir[j, 0]] -= 2 * deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 1]] * V * inv_omega[ir[j, 1]]
+                    pd[ir[j, 0], ir[j, 1]] -= deriv
+                    pd[ir[j, 1], ir[j, 1]] -= 2 * deriv
+
+                    pd[ip[j, 0], ir[j, 1]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 1]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 1]] += deriv
+
+                elif ir[j, 0] == ir[j, 2]:  # A+B+A
+                    # derivative with respect to n[A]
+                    deriv = 2 * k * C[ir[j, 0]] * C[ir[j, 1]] * V * inv_omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= 2 * deriv
+                    pd[ir[j, 1], ir[j, 0]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 0]] * V * inv_omega[ir[j, 1]]
+                    pd[ir[j, 0], ir[j, 1]] -= 2 * deriv
+                    pd[ir[j, 1], ir[j, 1]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 1]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 1]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 1]] += deriv
+
+                else:  # A+B+C, all distinct
+                    # derivative with respect to n[A]
+                    deriv = k * C[ir[j, 1]] * C[ir[j, 2]] * V * inv_omega[ir[j, 0]]
+                    pd[ir[j, 0], ir[j, 0]] -= deriv
+                    pd[ir[j, 1], ir[j, 0]] -= deriv
+                    pd[ir[j, 2], ir[j, 0]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 0]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 0]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 0]] += deriv
+
+                    # derivative with respect to n[B]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 2]] * V * inv_omega[ir[j, 1]]
+                    pd[ir[j, 0], ir[j, 1]] -= deriv
+                    pd[ir[j, 1], ir[j, 1]] -= deriv
+                    pd[ir[j, 2], ir[j, 1]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 1]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 1]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 1]] += deriv
+
+                    # derivative with respect to n[C]
+                    deriv = k * C[ir[j, 0]] * C[ir[j, 1]] * V * inv_omega[ir[j, 2]]
+                    pd[ir[j, 0], ir[j, 2]] -= deriv
+                    pd[ir[j, 1], ir[j, 2]] -= deriv
+                    pd[ir[j, 2], ir[j, 2]] -= deriv
+
+                    pd[ip[j, 0], ir[j, 2]] += deriv
+                    if ip[j, 1] != -1:
+                        pd[ip[j, 1], ir[j, 2]] += deriv
+                        if ip[j, 2] != -1:
+                            pd[ip[j, 2], ir[j, 2]] += deriv
+
+            # ------------------------------------------------------------------
+            # Reverse reaction  (ip <-> ir relative to forward block above)
+            # ------------------------------------------------------------------
+            k = kr[j]
+
+            if ip[j, 1] == -1:  # unimolecular reverse
+                deriv = k * V * inv_omega[ip[j, 0]]
+                pd[ip[j, 0], ip[j, 0]] -= deriv
+
+                pd[ir[j, 0], ip[j, 0]] += deriv
+                if ir[j, 1] != -1:
+                    pd[ir[j, 1], ip[j, 0]] += deriv
+                    if ir[j, 2] != -1:
+                        pd[ir[j, 2], ip[j, 0]] += deriv
+
+            elif ip[j, 2] == -1:  # bimolecular reverse
+                if ip[j, 0] == ip[j, 1]:  # P+P -> reactants
+                    deriv = 2 * k * C[ip[j, 0]] * V * inv_omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                else:  # P1+P2 -> reactants
+                    # derivative with respect to n[P1]
+                    deriv = k * C[ip[j, 1]] * V * inv_omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= deriv
+                    pd[ip[j, 1], ip[j, 0]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = k * C[ip[j, 0]] * V * inv_omega[ip[j, 1]]
+                    pd[ip[j, 0], ip[j, 1]] -= deriv
+                    pd[ip[j, 1], ip[j, 1]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 1]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 1]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 1]] += deriv
+
+            else:  # trimolecular reverse
+
+                if (ip[j, 0] == ip[j, 1]) and (ip[j, 0] == ip[j, 2]):  # P+P+P
+                    deriv = 3 * k * C[ip[j, 0]] * C[ip[j, 0]] * V * inv_omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= 3 * deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                elif ip[j, 0] == ip[j, 1]:  # P1+P1+P2
+                    # derivative with respect to n[P1]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 2]] * V * inv_omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
+                    pd[ip[j, 2], ip[j, 0]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 0]] * V * inv_omega[ip[j, 2]]
+                    pd[ip[j, 0], ip[j, 2]] -= 2 * deriv
+                    pd[ip[j, 2], ip[j, 2]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 2]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 2]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 2]] += deriv
+
+                elif ip[j, 1] == ip[j, 2]:  # P1+P2+P2
+                    # derivative with respect to n[P1]
+                    deriv = k * C[ip[j, 1]] * C[ip[j, 1]] * V * inv_omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= deriv
+                    pd[ip[j, 1], ip[j, 0]] -= 2 * deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 1]] * V * inv_omega[ip[j, 1]]
+                    pd[ip[j, 0], ip[j, 1]] -= deriv
+                    pd[ip[j, 1], ip[j, 1]] -= 2 * deriv
+
+                    pd[ir[j, 0], ip[j, 1]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 1]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 1]] += deriv
+
+                elif ip[j, 0] == ip[j, 2]:  # P1+P2+P1
+                    # derivative with respect to n[P1]
+                    deriv = 2 * k * C[ip[j, 0]] * C[ip[j, 1]] * V * inv_omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= 2 * deriv
+                    pd[ip[j, 1], ip[j, 0]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 0]] * V * inv_omega[ip[j, 1]]
+                    pd[ip[j, 0], ip[j, 1]] -= 2 * deriv
+                    pd[ip[j, 1], ip[j, 1]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 1]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 1]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 1]] += deriv
+
+                else:  # P1+P2+P3, all distinct
+                    # derivative with respect to n[P1]
+                    deriv = k * C[ip[j, 1]] * C[ip[j, 2]] * V * inv_omega[ip[j, 0]]
+                    pd[ip[j, 0], ip[j, 0]] -= deriv
+                    pd[ip[j, 1], ip[j, 0]] -= deriv
+                    pd[ip[j, 2], ip[j, 0]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 0]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 0]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 0]] += deriv
+
+                    # derivative with respect to n[P2]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 2]] * V * inv_omega[ip[j, 1]]
+                    pd[ip[j, 0], ip[j, 1]] -= deriv
+                    pd[ip[j, 1], ip[j, 1]] -= deriv
+                    pd[ip[j, 2], ip[j, 1]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 1]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 1]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 1]] += deriv
+
+                    # derivative with respect to n[P3]
+                    deriv = k * C[ip[j, 0]] * C[ip[j, 1]] * V * inv_omega[ip[j, 2]]
+                    pd[ip[j, 0], ip[j, 2]] -= deriv
+                    pd[ip[j, 1], ip[j, 2]] -= deriv
+                    pd[ip[j, 2], ip[j, 2]] -= deriv
+
+                    pd[ir[j, 0], ip[j, 2]] += deriv
+                    if ir[j, 1] != -1:
+                        pd[ir[j, 1], ip[j, 2]] += deriv
+                        if ir[j, 2] != -1:
+                            pd[ir[j, 2], ip[j, 2]] += deriv
+
+        self.jacobian_matrix = pd + cj * np.identity(num_core_species, float)
+        return pd

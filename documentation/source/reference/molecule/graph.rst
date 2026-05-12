@@ -1,3 +1,5 @@
+.. _rmgpy.molecule.graph.Graph:
+
 **************************
 rmgpy.molecule.graph.Graph
 **************************

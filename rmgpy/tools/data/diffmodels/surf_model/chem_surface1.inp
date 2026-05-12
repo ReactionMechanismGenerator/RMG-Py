@@ -1,4 +1,4 @@
-SITE   SDEN/2.9430E-09/ ! mol/cm^2
+SITE/SURF0/   SDEN/2.9430E-09/ ! mol/cm^2
     X(1)                ! X(1)
     H*(10)              ! H*(10)
     O*(11)              ! O*(11)

@@ -27,7 +27,6 @@
 #                                                                             #
 ###############################################################################
 
-import distutils.spawn
 import logging
 import os
 import re
@@ -52,7 +51,7 @@ class Mopac(object):
     input_file_extension = ".mop"
     output_file_extension = ".out"
 
-    executable_path = distutils.spawn.find_executable("mopac")
+    executable_path = shutil.which("mopac")
 
     use_polar = False  # use polar keyword in MOPAC
 

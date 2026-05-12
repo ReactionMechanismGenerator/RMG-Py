@@ -32,15 +32,12 @@ import os
 import shutil
 from unittest.mock import patch
 
+import pandas as pd
 import pytest
 
-import pandas as pd
-
-from rmgpy.rmg.main import RMG, initialize_log, make_profile_graph
-from rmgpy.rmg.main import RMG_Memory
-from rmgpy import get_path
-from rmgpy import settings
+from rmgpy import get_path, settings
 from rmgpy.data.rmg import RMGDatabase
+from rmgpy.rmg.main import RMG, RMG_Memory, initialize_log, make_profile_graph
 from rmgpy.rmg.model import CoreEdgeReactionModel
 
 originalPath = get_path()
@@ -58,7 +55,10 @@ class TestMain:
         cls.seedKinetics = os.path.join(cls.databaseDirectory, "kinetics", "libraries", "testSeed")
         cls.seedKineticsEdge = os.path.join(cls.databaseDirectory, "kinetics", "libraries", "testSeed_edge")
 
-        os.mkdir(os.path.join(cls.testDir, cls.outputDir))
+        output_path = os.path.join(cls.testDir, cls.outputDir)
+        if os.path.exists(output_path):
+            shutil.rmtree(output_path)
+        os.mkdir(output_path)
 
         cls.rmg = RMG(
             input_file=os.path.join(cls.testDir, "input.py"),
@@ -122,6 +122,11 @@ class TestMain:
         """Test that edge seed mechanisms are created in the correct database locations."""
         assert os.path.exists(self.seedKinetics)
 
+    def test_rmg_rms_mechanism_files_creation(self):
+        """Test that rms mechanisms are created in the correct location."""
+        assert os.path.exists(os.path.join(self.rmg.output_directory,"rms"))
+        assert len(os.listdir(os.path.join(self.rmg.output_directory,"rms"))) != 0
+        
     def test_rmg_seed_works(self):
         """Test that the created seed libraries work.
 
@@ -170,20 +175,78 @@ class TestMain:
             Rmem.generate_cond()
             Rmem.get_cond()
 
-    def test_make_cantera_input_file(self):
+    def test_make_cantera_input_file_from_ck(self):
         """
-        This tests to ensure that a usable Cantera input file is created.
+        This test ensures that a usable Cantera input file is created via the Chemkin to Cantera conversion.
         """
         import cantera as ct
 
-        outName = os.path.join(self.rmg.output_directory, "cantera")
-        files = os.listdir(outName)
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera_from_ck")
+        files = os.listdir(cantera_files)
         for f in files:
             if ".yaml" in f:
                 try:
-                    ct.Solution(os.path.join(outName, f))
+                    ct.Solution(os.path.join(cantera_files, f))
                 except:
                     assert False, "The output Cantera file is not loadable in Cantera."
+    
+    def test_make_cantera_input_file_directly_1(self):
+        """
+        This tests to ensure that a usable Cantera input file is created via direct yaml writer 1.
+        """
+        import cantera as ct
+
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera1")
+        files = os.listdir(cantera_files)
+        for f in files:
+            if ".yaml" in f:
+                try:
+                    ct.Solution(os.path.join(cantera_files, f))
+                except:
+                    assert False, "The output Cantera file is not loadable in Cantera."
+
+    def test_make_cantera_input_file_directly_2(self):
+        """
+        This tests to ensure that a usable Cantera input file is created via direct yaml writer 2.
+        """
+        import cantera as ct
+
+        cantera_files = os.path.join(self.rmg.output_directory, "cantera2")
+        files = os.listdir(cantera_files)
+        for f in files:
+            if ".yaml" in f:
+                try:
+                    ct.Solution(os.path.join(cantera_files, f))
+                except:
+                    assert False, "The output Cantera file is not loadable in Cantera."
+
+    def test_cantera_input_files_match_chemkin_later(self):
+        """
+        Copy the Cantera YAML files (generated directly by RMG and converted from Chemkin)
+        to the test data directory so that yaml_cantera1Test can compare them.
+        """
+        # Copy RMG-generated YAML 1 to test data directory
+        cantera_dir = os.path.join(self.rmg.output_directory, "cantera1")
+        rmg_yaml_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
+        assert os.path.exists(rmg_yaml_path), f"RMG-generated Cantera YAML file {rmg_yaml_path} not found"
+        test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera1', 'from_main_test.yaml')
+        shutil.copy(rmg_yaml_path, test_data_cantera_target)
+
+        # Copy RMG-generated YAML 2 to test data directory
+        cantera_dir = os.path.join(self.rmg.output_directory, "cantera2")
+        rmg_yaml_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
+        assert os.path.exists(rmg_yaml_path), f"RMG-generated Cantera YAML file {rmg_yaml_path} not found"
+        test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera2', 'from_main_test.yaml')
+        shutil.copy(rmg_yaml_path, test_data_cantera_target)
+
+        # Copy chemkin-converted YAML to test data directory
+        cantera_from_ck_dir = os.path.join(
+            self.rmg.output_directory, "cantera_from_ck"
+        )
+        ck_yaml_path = os.path.join(cantera_from_ck_dir, "chem_annotated.yaml")
+        assert os.path.exists(ck_yaml_path), f"Chemkin-converted YAML file {ck_yaml_path} not found"
+        test_data_chemkin_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'ck2yaml', 'from_main_test.yaml')
+        shutil.copy(ck_yaml_path, test_data_chemkin_target)
 
 
 @pytest.mark.functional
@@ -195,7 +258,10 @@ class TestRestartWithFilters:
         cls.outputDir = os.path.join(cls.testDir, "output_w_filters")
         cls.databaseDirectory = settings["database.directory"]
 
-        os.mkdir(cls.outputDir)
+        try:
+            os.mkdir(cls.outputDir)
+        except FileExistsError:
+            pass  # output directory already exists
         initialize_log(logging.INFO, os.path.join(cls.outputDir, "RMG.log"))
 
         cls.rmg = RMG(
@@ -269,7 +335,7 @@ class TestMainFunctions:
         cls.outputDir = os.path.join(cls.testDir, "output")
         cls.databaseDirectory = settings["database.directory"]
 
-        os.mkdir(os.path.join(cls.testDir, cls.outputDir))
+        os.makedirs(os.path.join(cls.testDir, cls.outputDir), exist_ok=True)
 
         cls.max_iter = 10
 
@@ -297,7 +363,7 @@ class TestMainFunctions:
         num_rows = df.shape[0]
 
         num_iter_actual = num_rows
-        num_iter_expected = self.max_iter + 1  # +1 is for saving iteration 0
+        num_iter_expected = self.max_iter + 2 # +2 is for saving iteration 0, and the final after the loop ends.
         assert num_iter_actual == num_iter_expected
 
     @classmethod
@@ -356,7 +422,11 @@ class TestProfiling:
             os.remove(os.path.join(cls.test_dir, "RMG.profile.dot.ps2"))
 
 
-class TestCanteraOutput:
+class TestCanteraOutputConversion:
+    """
+    Tests if we can convert Chemkin files to Cantera files without crashing.
+    (Or raising an exception for bad files.)
+    """
     def setup_class(self):
         self.chemkin_files = {
             """ELEMENTS
@@ -512,10 +582,10 @@ CH3(4)              2     144.001     3.800     0.000     0.000     0.000    ! G
             f.close()
 
             if works:
-                self.rmg.generate_cantera_files(os.path.join(os.getcwd(), "chem001.inp"))
+                self.rmg.generate_cantera_files_from_chemkin(os.path.join(os.getcwd(), "chem001.inp"))
             else:
                 with pytest.raises(InputError):
-                    self.rmg.generate_cantera_files(os.path.join(os.getcwd(), "chem001.inp"))
+                    self.rmg.generate_cantera_files_from_chemkin(os.path.join(os.getcwd(), "chem001.inp"))
 
             # clean up
             os.chdir(originalPath)

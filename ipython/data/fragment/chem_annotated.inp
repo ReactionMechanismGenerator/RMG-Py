@@ -1,0 +1,2584 @@
+ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /17.999/
+	N
+	Ne
+	Ar
+	He
+	Si
+	S
+	F
+	Cl
+	Br
+	I
+	X /195.083/
+END
+
+SPECIES
+    Ar                  ! Ar
+    He                  ! He
+    Ne                  ! Ne
+    N2                  ! N2
+    RC10L(1)            ! RC10L(1)
+    RC10(2)             ! RC10(2)
+    LC10(3)             ! LC10(3)
+    [CH2]C(C)CR(4)      ! [CH2]C(C)CR(4)
+    C[CH]CC(C)L(5)      ! C[CH]CC(C)L(5)
+    C[CH]CC(C)CR(6)     ! C[CH]CC(C)CR(6)
+    [CH2]C(C)L(7)       ! [CH2]C(C)L(7)
+    C8H15LR(8)          ! CC(L)C[CH]CC(C)CR(8)
+    [CH3](9)            ! [CH3](9)
+    C9H17LR(10)         ! C[C](CC(C)L)CC(C)CR(10)
+    [H](11)             ! [H](11)
+    C[CH]CR(12)         ! C[CH]CR(12)
+    C6H12L(13)          ! [CH2]C(C)CC(C)L(13)
+    C8H15LR(14)         ! CC(L)CC(C)C[CH]CR(14)
+    [CH2]R(15)          ! [CH2]R(15)
+    C8H16L(16)          ! C[CH]CC(C)CC(C)L(16)
+    C9H17LR(17)         ! C[C](CR)CC(C)CC(C)L(17)
+    C9H17LR(18)         ! CC(L)CC(C)[CH]C(C)CR(18)
+    C7H14R(19)          ! [CH2]C(C)CC(C)CR(19)
+    C[CH]L(20)          ! C[CH]L(20)
+    C9H17LR(21)         ! CC(L)[CH]C(C)CC(C)CR(21)
+    C8H15LR(22)         ! CC(CR)CC(C)C[CH]L(22)
+    C9H17LR(23)         ! C[C](L)CC(C)CC(C)CR(23)
+    C9H17LR(24)         ! [CH2]C(CC(C)L)CC(C)CR(24)
+    C9H17LR(25)         ! [CH2]C(CR)CC(C)CC(C)L(25)
+    C9H17LR(26)         ! CC(L)CC(C)CC(C)[CH]R(26)
+    C9H17LR(27)         ! [CH2]C(L)CC(C)CC(C)CR(27)
+    C6H11R(62)          ! CC=CC(C)CR(62)
+    C6H11R(63)          ! C=CCC(C)CR(63)
+    C3H6(64)            ! C=CC(64)
+    C3H5L(65)           ! C=C(C)L(65)
+    C2H3L(66)           ! C=CL(66)
+    C4H7R(71)           ! C=C(C)CR(71)
+    C3H5R(72)           ! C=CCR(72)
+    C5H9L(73)           ! CC=CC(C)L(73)
+    C5H9L(74)           ! C=CCC(C)L(74)
+    C3H5R(83)           ! CC=CR(83)
+    C6H11L(84)          ! C=C(C)CC(C)L(84)
+    C7H13R(97)          ! C=C(C)CC(C)CR(97)
+    C8H15L(111)         ! C=CCC(C)CC(C)L(111)
+    C8H14LR(150)        ! CC(L)CC(C)CC=CR(150)
+    C8H14LR(164)        ! CC(L)CC=CC(C)CR(164)
+    C8H14LR(165)        ! CC(L)C=CCC(C)CR(165)
+    [H][H](325)         ! [H][H](325)
+END
+
+
+
+THERM ALL
+   300.000  1000.000  5000.000
+
+! Thermo library: primaryThermoLibrary
+Ar                      Ar  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 4.37967000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 4.37967000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+He                      He  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 9.28724000E-01 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 9.28724000E-01                   4
+
+! Thermo library: primaryThermoLibrary
+Ne                      Ne  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 3.35532000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 3.35532000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+N2                      N   2               G   200.000  6000.000 1000.00      1
+ 2.95258000E+00 1.39690000E-03-4.92632000E-07 7.86010000E-11-4.60755000E-15    2
+-9.23949000E+02 5.87189000E+00 3.53101000E+00-1.23661000E-04-5.02999000E-07    3
+ 2.43531000E-09-1.40881000E-12-1.04698000E+03 2.96747000E+00                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH)
+RC10L(1)                C   9H  18          G   100.000  5000.000 1475.26      1
+ 7.59527265E+01 2.20398857E-01-9.14166768E-05 1.66861440E-08-1.13498798E-12    2
+-8.62393442E+04-3.30152007E+02-1.93244603E+01 4.78730632E-01-3.54079131E-04    3
+ 1.35382025E-07-2.12492715E-11-5.81274564E+04 1.66552930E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) +
+! group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH)
+RC10(2)                 C  10H  21          G   100.000  5000.000 1541.53      1
+ 5.25819489E+01 1.41559382E-01-5.75049202E-05 1.03543459E-08-6.97198657E-13    2
+-6.81216300E+04-2.27869819E+02-1.12586918E+01 3.07216223E-01-2.18700371E-04    3
+ 8.00673293E-08-1.20031165E-11-4.84393645E+04 1.07752422E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) +
+! group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH)
+LC10(3)                 C  10H  21          G   100.000  5000.000 1541.53      1
+ 5.25819489E+01 1.41559382E-01-5.75049202E-05 1.03543459E-08-6.97198657E-13    2
+-6.81216300E+04-2.27869819E+02-1.12586918E+01 3.07216223E-01-2.18700371E-04    3
+ 8.00673293E-08-1.20031165E-11-4.84393645E+04 1.07752422E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-
+! CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-
+! CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + radical(Isobutyl)
+[CH2]C(C)CR(4)          C   4H   8          G   100.000  5000.000 1519.89      1
+ 3.92971374E+01 1.00629610E-01-4.00343235E-05 7.13856904E-09-4.78397325E-13    2
+-2.03296429E+04-1.61023714E+02-7.18966086E+00 2.22972289E-01-1.60776111E-04    3
+ 6.00993889E-08-9.18969923E-12-6.19869573E+03 8.27092992E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-
+! CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + radical(RCCJC)
+C[CH]CC(C)L(5)          C   5H  10          G   100.000  5000.000 1528.47      1
+ 3.66312420E+01 1.15381069E-01-4.77500008E-05 8.67439859E-09-5.87080927E-13    2
+-2.33093871E+04-1.43929727E+02-7.07661102E+00 2.29762918E-01-1.59999915E-04    3
+ 5.76333835E-08-8.59482270E-12-9.94799145E+03 8.54797554E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-
+! CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) +
+! radical(RCCJC)
+C[CH]CC(C)CR(6)         C   6H  12          G   100.000  5000.000 1504.79      1
+ 3.73110913E+01 1.24090851E-01-5.16915187E-05 9.42937394E-09-6.40146335E-13    2
+-2.63152347E+04-1.45476937E+02-7.63102161E+00 2.43555478E-01-1.70776350E-04    3
+ 6.21877044E-08-9.40524700E-12-1.27896009E+04 8.97083427E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-
+! CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsHH) + radical(Isobutyl)
+[CH2]C(C)L(7)           C   3H   6          G   100.000  5000.000 1541.84      1
+ 3.85264346E+01 9.20736962E-02-3.61811961E-05 6.40440071E-09-4.27052486E-13    2
+-1.72857330E+04-1.58965096E+02-6.64458457E+00 2.09262089E-01-1.50190573E-04    3
+ 5.57006673E-08-8.42021705E-12-3.35656520E+03 7.85165315E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) +
+! group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH) + radical(RCCJCC)
+C8H15LR(8)              C   8H  15          G   100.000  5000.000 1423.28      1
+ 6.38491514E+01 2.27283841E-01-9.64768002E-05 1.78263378E-08-1.22222559E-12    2
+-5.48216363E+04-2.60521291E+02-1.74481515E+01 4.55765955E-01-3.37278499E-04    3
+ 1.30619914E-07-2.10347791E-11-3.16802137E+04 1.60385025E+02                   4
+
+! Thermo library: DFT_QCI_thermo
+[CH3](9)                C   1H   3          G   100.000  5000.000  660.43      1
+ 3.22169619E+00 5.22645935E-03-1.64124747E-06 2.58224223E-10-1.62579069E-14    2
+ 1.65213098E+04 3.53937882E+00 3.94800601E+00 8.27585327E-04 8.34937170E-06    3
+-9.82642428E-09 3.80107815E-12 1.64253714E+04 3.36651000E-01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Tertalkyl)
+C9H17LR(10)             C   9H  17          G   100.000  5000.000 1391.83      1
+ 6.32703056E+01 2.38341075E-01-1.01906629E-04 1.89141652E-08-1.30110285E-12    2
+-5.85097935E+04-2.56014986E+02-1.79729931E+01 4.71824588E-01-3.53533001E-04    3
+ 1.39438176E-07-2.29493263E-11-3.58941544E+04 1.62798539E+02                   4
+
+! Thermo library: primaryThermoLibrary
+[H](11)                 H   1               G   100.000  5000.000 4879.80      1
+ 4.28461071E+00-1.45494649E-03 4.44804306E-07-6.04359642E-11 3.07921551E-15    2
+ 2.37230923E+04-1.18931307E+01 2.50000000E+00-3.01680531E-12 3.74582141E-15    3
+-1.50856878E-18 1.86626471E-22 2.54742178E+04-4.44972899E-01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) +
+! radical(RCCJC)
+C[CH]CR(12)             C   3H   6          G   100.000  5000.000 1547.64      1
+ 3.27302891E+01 1.02317768E-01-4.24205778E-05 7.70581989E-09-5.21142104E-13    2
+-1.58940257E+04-1.25870970E+02-5.70657287E+00 2.01658288E-01-1.38700604E-04    3
+ 4.91786288E-08-7.22032709E-12-3.99642449E+03 7.63522683E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH)
+! + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-
+! CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + radical(Isobutyl)
+C6H12L(13)              C   6H  12          G   100.000  5000.000 1508.31      1
+ 4.32997841E+01 1.13536220E-01-4.52795639E-05 8.08827093E-09-5.42830794E-13    2
+-2.77937839E+04-1.79666230E+02-8.55761506E+00 2.51060901E-01-1.82046723E-04    3
+ 6.85388536E-08-1.05624317E-11-1.21503963E+04 9.18285444E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH)
+! + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) +
+! group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH) + radical(RCCJCC)
+C8H15LR(14)             C   8H  15          G   100.000  5000.000 1423.28      1
+ 6.38491514E+01 2.27283841E-01-9.64768002E-05 1.78263378E-08-1.22222559E-12    2
+-5.48216363E+04-2.60521291E+02-1.74481515E+01 4.55765955E-01-3.37278499E-04    3
+ 1.30619914E-07-2.10347791E-11-3.16802137E+04 1.60385025E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + radical(RCCJ)
+[CH2]R(15)              C   1H   2          G   100.000  5000.000 1624.67      1
+ 3.64342628E+01 7.74271969E-02-3.08292238E-05 5.47405194E-09-3.64442149E-13    2
+-1.05305196E+04-1.52030890E+02-5.26003466E+00 1.80079407E-01-1.25603661E-04    3
+ 4.43634844E-08-6.34860309E-12 3.01747467E+03 6.93547392E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH)
+! + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) +
+! radical(RCCJC)
+C8H16L(16)              C   8H  16          G   100.000  5000.000 1494.00      1
+ 4.12792903E+01 1.37057210E-01-5.69716242E-05 1.03873719E-08-7.05271154E-13    2
+-3.37654895E+04-1.63926569E+02-9.00332728E+00 2.71682854E-01-1.92138095E-04    3
+ 7.07026920E-08-1.07982083E-11-1.87410614E+04 9.88442472E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Tertalkyl)
+C9H17LR(17)             C   9H  17          G   100.000  5000.000 1391.83      1
+ 6.32703056E+01 2.38341075E-01-1.01906629E-04 1.89141652E-08-1.30110285E-12    2
+-5.85097935E+04-2.56014986E+02-1.79729931E+01 4.71824588E-01-3.53533001E-04    3
+ 1.39438176E-07-2.29493263E-11-3.58941544E+04 1.62798539E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Cs_S)
+C9H17LR(18)             C   9H  17          G   100.000  5000.000 1460.63      1
+ 7.19977683E+01 2.24243339E-01-9.42216375E-05 1.73117341E-08-1.18223982E-12    2
+-6.12541061E+04-3.05075733E+02-1.87004950E+01 4.72621942E-01-3.49292386E-04    3
+ 1.33730935E-07-2.11082267E-11-3.47585066E+04 1.66854569E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH)
+! + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-
+! Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + radical(Isobutyl)
+C7H14R(19)              C   7H  14          G   100.000  5000.000 1490.65      1
+ 4.40905342E+01 1.22073944E-01-4.91281613E-05 8.82232750E-09-5.94222892E-13    2
+-3.08523513E+04-1.81849180E+02-9.10945862E+00 2.64833411E-01-1.92786068E-04    3
+ 7.30721050E-08-1.13699105E-11-1.49921675E+04 9.60470150E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + radical(RCCJC)
+C[CH]L(20)              C   2H   4          G   100.000  5000.000 1579.28      1
+ 3.21216796E+01 9.35183728E-02-3.84391970E-05 6.94332967E-09-4.67565700E-13    2
+-1.29304013E+04-1.24747436E+02-5.16084017E+00 1.87946471E-01-1.28125990E-04    3
+ 4.48026861E-08-6.46063403E-12-1.15436170E+03 7.21565463E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Cs_S)
+C9H17LR(21)             C   9H  17          G   100.000  5000.000 1460.63      1
+ 7.19977683E+01 2.24243339E-01-9.42216375E-05 1.73117341E-08-1.18223982E-12    2
+-6.12541061E+04-3.05075733E+02-1.87004950E+01 4.72621942E-01-3.49292386E-04    3
+ 1.33730935E-07-2.11082267E-11-3.47585066E+04 1.66854569E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH)
+! + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) +
+! group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH) + radical(RCCJCC)
+C8H15LR(22)             C   8H  15          G   100.000  5000.000 1423.28      1
+ 6.38491514E+01 2.27283841E-01-9.64768002E-05 1.78263378E-08-1.22222559E-12    2
+-5.48216363E+04-2.60521291E+02-1.74481515E+01 4.55765955E-01-3.37278499E-04    3
+ 1.30619914E-07-2.10347791E-11-3.16802137E+04 1.60385025E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Tertalkyl)
+C9H17LR(23)             C   9H  17          G   100.000  5000.000 1391.83      1
+ 6.32703056E+01 2.38341075E-01-1.01906629E-04 1.89141652E-08-1.30110285E-12    2
+-5.85097935E+04-2.56014986E+02-1.79729931E+01 4.71824588E-01-3.53533001E-04    3
+ 1.39438176E-07-2.29493263E-11-3.58941544E+04 1.62798539E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Isobutyl)
+C9H17LR(24)             C   9H  17          G   100.000  5000.000 1430.10      1
+ 7.27036113E+01 2.21748671E-01-9.18410721E-05 1.67782653E-08-1.14345952E-12    2
+-5.97403375E+04-3.08286668E+02-1.91398093E+01 4.78637161E-01-3.61287547E-04    3
+ 1.42386424E-07-2.31015446E-11-3.34714644E+04 1.67660576E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Isobutyl)
+C9H17LR(25)             C   9H  17          G   100.000  5000.000 1430.10      1
+ 7.27036113E+01 2.21748671E-01-9.18410721E-05 1.67782653E-08-1.14345952E-12    2
+-5.97403375E+04-3.08286668E+02-1.91398093E+01 4.78637161E-01-3.61287547E-04    3
+ 1.42386424E-07-2.31015446E-11-3.34714644E+04 1.67660576E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Cs_S)
+C9H17LR(26)             C   9H  17          G   100.000  5000.000 1460.63      1
+ 7.19977683E+01 2.24243339E-01-9.42216375E-05 1.73117341E-08-1.18223982E-12    2
+-6.12541061E+04-3.05075733E+02-1.87004950E+01 4.72621942E-01-3.49292386E-04    3
+ 1.33730935E-07-2.11082267E-11-3.47585066E+04 1.66854569E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH) + radical(Isobutyl)
+C9H17LR(27)             C   9H  17          G   100.000  5000.000 1430.10      1
+ 7.27036113E+01 2.21748671E-01-9.18410721E-05 1.67782653E-08-1.14345952E-12    2
+-5.97403375E+04-3.08286668E+02-1.91398093E+01 4.78637161E-01-3.61287547E-04    3
+ 1.42386424E-07-2.31015446E-11-3.34714644E+04 1.67660576E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) +
+! group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-
+! CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH)
+C6H11R(62)              C   6H  11          G   100.000  5000.000 1573.71      1
+ 4.44612679E+01 1.10025127E-01-4.45886531E-05 8.00876631E-09-5.37868282E-13    2
+-3.95104387E+04-1.88881337E+02-8.23868402E+00 2.43974906E-01-1.72263413E-04    3
+ 6.20948558E-08-9.12992986E-12-2.29234166E+04 8.92619424E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-
+! CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-
+! CsCsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH)
+! + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH)
+C6H11R(63)              C   6H  11          G   100.000  5000.000 1578.25      1
+ 4.59273942E+01 1.07895491E-01-4.34622377E-05 7.78257137E-09-5.21702119E-13    2
+-3.83265635E+04-1.96693498E+02-8.43352653E+00 2.45669303E-01-1.74403890E-04    3
+ 6.30929252E-08-9.28295722E-12-2.11673681E+04 9.03728539E+01                   4
+
+! Thermo library: DFT_QCI_thermo
+C3H6(64)                C   3H   6          G   100.000  5000.000  983.76      1
+ 5.36759614E+00 1.70742261E-02-6.35103242E-06 1.16618492E-09-8.27611661E-14    2
+-4.87156906E+02-4.54492517E+00 3.31910941E+00 8.17972674E-03 3.34731098E-05    3
+-4.36187016E-08 1.58210466E-11 7.49325825E+02 9.54029198E+00                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsCs) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) +
+! group(Cds-CdsHH)
+C3H5L(65)               C   3H   5          G   100.000  5000.000 1574.44      1
+ 3.87517154E+01 9.03517290E-02-3.64895374E-05 6.54422913E-09-4.39155717E-13    2
+-2.80190418E+04-1.63108661E+02-6.34472110E+00 2.04923426E-01-1.45644562E-04    3
+ 5.27639799E-08-7.77825453E-12-1.38187557E+04 7.49247053E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH)
+C2H3L(66)               C   2H   3          G   100.000  5000.000 1653.47      1
+ 4.07472984E+01 7.74274736E-02-3.03141993E-05 5.32810523E-09-3.52143688E-13    2
+-2.45919534E+04-1.76104865E+02-6.01948094E+00 1.90563656E-01-1.32949521E-04    3
+ 4.67099316E-08-6.60896467E-12-9.12647378E+03 7.30356660E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsCs) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH) + group(Cds-CdsHH)
+C4H7R(71)               C   4H   7          G   100.000  5000.000 1549.92      1
+ 3.94537374E+01 9.90023581E-02-4.03890136E-05 7.28801432E-09-4.91219520E-13    2
+-3.10255334E+04-1.64764885E+02-6.88564511E+00 2.18594304E-01-1.56129389E-04    3
+ 5.70715027E-08-8.52124697E-12-1.66610987E+04 7.91018156E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) +
+! group(Cds-CdsHH)
+C3H5R(72)               C   3H   5          G   100.000  5000.000 1625.44      1
+ 4.13862705E+01 8.61337492E-02-3.42268985E-05 6.07203761E-09-4.04046807E-13    2
+-2.75511245E+04-1.77368501E+02-6.54350498E+00 2.04082909E-01-1.43073676E-04    3
+ 5.07150799E-08-7.27035444E-12-1.19697442E+04 7.71481717E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) +
+! group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-
+! CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-
+! CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH)
+C5H9L(73)               C   5H   9          G   100.000  5000.000 1596.57      1
+ 4.37876098E+01 1.01341724E-01-4.06760002E-05 7.26278061E-09-4.85675394E-13    2
+-3.65219957E+04-1.87395970E+02-7.70226593E+00 2.30345109E-01-1.61878518E-04    3
+ 5.78731671E-08-8.41066926E-12-2.00808315E+04 8.51019874E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-
+! CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH)
+C5H9L(74)               C   5H   9          G   100.000  5000.000 1600.37      1
+ 4.52410425E+01 9.92345921E-02-3.95628677E-05 7.03976654E-09-4.69775321E-13    2
+-3.53332330E+04-1.95137432E+02-7.89885179E+00 2.32054786E-01-1.64054110E-04    3
+ 5.88995829E-08-8.57106973E-12-1.83246846E+04 8.62196012E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsHH)
+C3H5R(83)               C   3H   5          G   100.000  5000.000 1622.82      1
+ 3.96066557E+01 8.88863736E-02-3.57371619E-05 6.37743093E-09-4.25855325E-13    2
+-2.83510858E+04-1.67856510E+02-6.28922015E+00 2.02012181E-01-1.40300873E-04    3
+ 4.93328310E-08-7.04323137E-12-1.34548815E+04 7.57859249E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-
+! CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cds-CdsCsCs) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH)
+C6H11L(84)              C   6H  11          G   100.000  5000.000 1534.15      1
+ 4.34034160E+01 1.11985713E-01-4.56734843E-05 8.24616922E-09-5.56305774E-13    2
+-3.88648973E+04-1.83099788E+02-8.25204974E+00 2.46667339E-01-1.77357083E-04    3
+ 6.54694174E-08-9.88121457E-12-2.30154472E+04 8.82153104E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-
+! CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-
+! CsCsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-
+! Cds)HHH) + group(Cds-CdsCsCs) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH)
+C7H13R(97)              C   7H  13          G   100.000  5000.000 1514.67      1
+ 4.41409116E+01 1.20598345E-01-4.95593696E-05 8.98807649E-09-6.08292176E-13    2
+-4.18950910E+04-1.84971837E+02-8.80080202E+00 2.60410006E-01-1.88018010E-04    3
+ 6.99297270E-08-1.06669406E-11-2.58573727E+04 9.24221816E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH)
+! + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH)
+C8H15L(111)             C   8H  15          G   100.000  5000.000 1561.44      1
+ 4.98473061E+01 1.20915231E-01-4.87623922E-05 8.74358294E-09-5.86975445E-13    2
+-4.57452467E+04-2.14850577E+02-9.79589225E+00 2.73705180E-01-1.95540038E-04    3
+ 7.14111061E-08-1.06205668E-11-2.71193561E+04 9.94710061E+01                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-
+! ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH)
+! + group(Cs-CsCsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-(Cds-Cds)CsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-
+! CdsHH) + group(Cds-CdsHH)
+C8H14LR(150)            C   8H  14          G   100.000  5000.000 1490.73      1
+ 7.52218400E+01 2.05970078E-01-8.51480111E-05 1.55110364E-08-1.05344838E-12    2
+-6.93165308E+04-3.27177092E+02-1.84676554E+01 4.57366169E-01-3.38111248E-04    3
+ 1.28639993E-07-2.00258111E-11-4.13838084E+04 1.62226161E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) +
+! group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-(Cds-Cds)CsHH) +
+! group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH)
+C8H14LR(164)            C   8H  14          G   100.000  5000.000 1491.31      1
+ 7.55987905E+01 2.05240558E-01-8.47033752E-05 1.54176021E-08-1.04663355E-12    2
+-7.01299116E+04-3.29234795E+02-1.85211475E+01 4.57690681E-01-3.38625655E-04    3
+ 1.28930056E-07-2.00757001E-11-4.20576331E+04 1.62454586E+02                   4
+
+! Thermo group additivity estimation: group(Cs-(Cds-Cds)CsCsCs) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-(Cds-Cds)CsCsCs) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) +
+! longDistanceInteraction_noncyclic(CsCs-TT) + group(Cs-CsCsCsH) + group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) +
+! group(Cs-(Cds-Cds)CsCsH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-(Cds-Cds)CsCsH) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) +
+! longDistanceInteraction_noncyclic(CsCs-ST) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-CsCsHH) + group(Cs-(Cds-Cds)CsHH) +
+! group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + group(Cs-CsHHH) +
+! group(Cs-(Cds-Cds)HHH) + group(Cs-(Cds-Cds)HHH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) +
+! group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsCsH) + group(Cds-CdsHH) + group(Cds-CdsHH)
+C8H14LR(165)            C   8H  14          G   100.000  5000.000 1491.31      1
+ 7.55987905E+01 2.05240558E-01-8.47033752E-05 1.54176021E-08-1.04663355E-12    2
+-7.01299116E+04-3.29234795E+02-1.85211475E+01 4.57690681E-01-3.38625655E-04    3
+ 1.28930056E-07-2.00757001E-11-4.20576331E+04 1.62454586E+02                   4
+
+! Thermo library: primaryThermoLibrary
+[H][H](325)             H   2               G   100.000  5000.000 1959.07      1
+ 2.78818509E+00 5.87615921E-04 1.59022130E-07-5.52762536E-11 4.34328120E-15    2
+-5.96155632E+02 1.12618494E-01 3.43536393E+00 2.12711953E-04-2.78628671E-07    3
+ 3.40270013E-10-7.76039045E-14-1.03135983E+03-3.90841661E+00                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Reaction index: Chemkin #1; RMG #2
+! Template reaction: R_Recombination
+! Flux pairs: C[CH]CC(C)CR(6), RC10L(1); [CH2]C(C)L(7), RC10L(1); 
+! Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-2R-R_N-3R!H->O_Ext-3C-R in family R_Recombination.
+[CH2]C(C)L(7)+C[CH]CC(C)CR(6)<=>RC10L(1)            3.481290e+13 -0.158    0.000    
+
+! Reaction index: Chemkin #2; RMG #1
+! Template reaction: R_Recombination
+! Flux pairs: [CH2]C(C)CR(4), RC10L(1); C[CH]CC(C)L(5), RC10L(1); 
+! Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-2R-R_N-3R!H->O_Ext-3C-R in family R_Recombination.
+[CH2]C(C)CR(4)+C[CH]CC(C)L(5)<=>RC10L(1)            3.481290e+13 -0.158    0.000    
+
+! Reaction index: Chemkin #3; RMG #5
+! Template reaction: R_Recombination
+! Flux pairs: C[CH]CR(12), RC10L(1); C6H12L(13), RC10L(1); 
+! Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-2R-R_N-3R!H->O_Ext-3C-R in family R_Recombination.
+C[CH]CR(12)+C6H12L(13)<=>RC10L(1)                   3.481290e+13 -0.158    0.000    
+
+! Reaction index: Chemkin #4; RMG #10
+! Template reaction: R_Recombination
+! Flux pairs: C7H14R(19), RC10L(1); C[CH]L(20), RC10L(1); 
+! Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-2R-R_N-3R!H->O_Ext-3C-R in family R_Recombination.
+C[CH]L(20)+C7H14R(19)<=>RC10L(1)                    3.481290e+13 -0.158    0.000    
+
+! Reaction index: Chemkin #5; RMG #7
+! Template reaction: R_Recombination
+! Flux pairs: [CH2]R(15), RC10L(1); C8H16L(16), RC10L(1); 
+! Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-2R-R_N-3R!H->O_Ext-3C-R in family R_Recombination.
+[CH2]R(15)+C8H16L(16)<=>RC10L(1)                    3.481290e+13 -0.158    0.000    
+
+! Reaction index: Chemkin #6; RMG #12
+! Template reaction: R_Recombination
+! Flux pairs: C8H15LR(22), RC10L(1); [CH3](9), RC10L(1); 
+! Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-2R-R_N-3R!H->O_Ext-3C-R in family R_Recombination.
+[CH3](9)+C8H15LR(22)<=>RC10L(1)                     3.481290e+13 -0.158    0.000    
+
+! Reaction index: Chemkin #7; RMG #6
+! Template reaction: R_Recombination
+! Flux pairs: C8H15LR(14), RC10L(1); [CH3](9), RC10L(1); 
+! Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-2R-R_N-3R!H->O_Ext-3C-R in family R_Recombination.
+[CH3](9)+C8H15LR(14)<=>RC10L(1)                     3.481290e+13 -0.158    0.000    
+
+! Reaction index: Chemkin #8; RMG #3
+! Template reaction: R_Recombination
+! Flux pairs: C8H15LR(8), RC10L(1); [CH3](9), RC10L(1); 
+! Estimated from node Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Ext-2R-R_N-3R!H->O_Ext-3C-R in family R_Recombination.
+[CH3](9)+C8H15LR(8)<=>RC10L(1)                      3.481290e+13 -0.158    0.000    
+
+! Reaction index: Chemkin #9; RMG #54
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H6(64), C[CH]CC(C)CR(6); C[CH]CR(12), C[CH]CC(C)CR(6); 
+! From training reaction 239 used for Cds-HH_Cds-Cs\H3/H;CsJ-CsCsH
+! Exact match found for rate rule [Cds-HH_Cds-Cs\H3/H;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C3H6(64)+C[CH]CR(12)<=>C[CH]CC(C)CR(6)              1.710000e+03 2.410     3.550    
+
+! Reaction index: Chemkin #10; RMG #120
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H6(64), [CH2]C(C)CR(4); [CH2]R(15), [CH2]C(C)CR(4); 
+! From training reaction 2938 used for Cds-CsH_Cds-HH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH2]R(15)+C3H6(64)<=>[CH2]C(C)CR(4)                1.502000e+00 3.105     5.819    
+
+! Reaction index: Chemkin #11; RMG #124
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H6(64), C[CH]CC(C)L(5); C[CH]L(20), C[CH]CC(C)L(5); 
+! From training reaction 239 used for Cds-HH_Cds-Cs\H3/H;CsJ-CsCsH
+! Exact match found for rate rule [Cds-HH_Cds-Cs\H3/H;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C[CH]L(20)+C3H6(64)<=>C[CH]CC(C)L(5)                1.710000e+03 2.410     3.550    
+
+! Reaction index: Chemkin #12; RMG #206
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H6(64), C6H12L(13); [CH2]C(C)L(7), C6H12L(13); 
+! From training reaction 2938 used for Cds-CsH_Cds-HH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C3H6(64)+[CH2]C(C)L(7)<=>C6H12L(13)                 1.502000e+00 3.105     5.819    
+
+! Reaction index: Chemkin #13; RMG #303
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H6(64), C7H14R(19); [CH2]C(C)CR(4), C7H14R(19); 
+! From training reaction 2938 used for Cds-CsH_Cds-HH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C3H6(64)+[CH2]C(C)CR(4)<=>C7H14R(19)                1.502000e+00 3.105     5.819    
+
+! Reaction index: Chemkin #14; RMG #410
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H6(64), C8H16L(16); C[CH]CC(C)L(5), C8H16L(16); 
+! From training reaction 239 used for Cds-HH_Cds-Cs\H3/H;CsJ-CsCsH
+! Exact match found for rate rule [Cds-HH_Cds-Cs\H3/H;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C3H6(64)+C[CH]CC(C)L(5)<=>C8H16L(16)                1.710000e+03 2.410     3.550    
+
+! Reaction index: Chemkin #15; RMG #207
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C5H9L(74), C6H12L(13); [CH3](9), C6H12L(13); 
+! From training reaction 2929 used for Cds-CsH_Cds-HH;CsJ-HHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-HHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH3](9)+C5H9L(74)<=>C6H12L(13)                     1.580000e+02 2.966     6.337    
+
+! Reaction index: Chemkin #16; RMG #725
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C5H9L(74), C8H15LR(8); C[CH]CR(12), C8H15LR(8); 
+! Estimated using an average for rate rule [Cds-HH_Cds-CsH;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C[CH]CR(12)+C5H9L(74)<=>C8H15LR(8)                  1.710000e+03 2.410     3.550    
+
+! Reaction index: Chemkin #17; RMG #304
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H11R(63), C7H14R(19); [CH3](9), C7H14R(19); 
+! From training reaction 2929 used for Cds-CsH_Cds-HH;CsJ-HHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-HHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH3](9)+C6H11R(63)<=>C7H14R(19)                    1.580000e+02 2.966     6.337    
+
+! Reaction index: Chemkin #18; RMG #726
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H11R(63), C8H15LR(8); C[CH]L(20), C8H15LR(8); 
+! Estimated using an average for rate rule [Cds-HH_Cds-CsH;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C[CH]L(20)+C6H11R(63)<=>C8H15LR(8)                  1.710000e+03 2.410     3.550    
+
+! Reaction index: Chemkin #19; RMG #56
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C2H3L(66), [CH2]C(C)L(7); [CH3](9), [CH2]C(C)L(7); 
+! From training reaction 2929 used for Cds-CsH_Cds-HH;CsJ-HHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-HHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH3](9)+C2H3L(66)<=>[CH2]C(C)L(7)                  1.580000e+02 2.966     6.337    
+
+! Reaction index: Chemkin #20; RMG #526
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C2H3L(66), C8H15LR(22); C[CH]CC(C)CR(6), C8H15LR(22); 
+! Estimated using an average for rate rule [Cds-HH_Cds-CsH;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C2H3L(66)+C[CH]CC(C)CR(6)<=>C8H15LR(22)             1.710000e+03 2.410     3.550    
+
+! Reaction index: Chemkin #21; RMG #121
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H5R(72), [CH2]C(C)CR(4); [CH3](9), [CH2]C(C)CR(4); 
+! From training reaction 2929 used for Cds-CsH_Cds-HH;CsJ-HHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-HHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH3](9)+C3H5R(72)<=>[CH2]C(C)CR(4)                 1.580000e+02 2.966     6.337    
+
+! Reaction index: Chemkin #22; RMG #643
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H5R(72), C8H15LR(14); C[CH]CC(C)L(5), C8H15LR(14); 
+! Estimated using an average for rate rule [Cds-HH_Cds-CsH;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C3H5R(72)+C[CH]CC(C)L(5)<=>C8H15LR(14)              1.710000e+03 2.410     3.550    
+
+! Reaction index: Chemkin #23; RMG #53
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H11R(63), C[CH]CC(C)CR(6); [H](11), C[CH]CC(C)CR(6); 
+! From training reaction 9 used for Cds-HH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-HH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C6H11R(63)<=>C[CH]CC(C)CR(6)                3.360000e+08 1.560     0.600    
+
+! Reaction index: Chemkin #24; RMG #123
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C5H9L(74), C[CH]CC(C)L(5); [H](11), C[CH]CC(C)L(5); 
+! From training reaction 9 used for Cds-HH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-HH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C5H9L(74)<=>C[CH]CC(C)L(5)                  3.360000e+08 1.560     0.600    
+
+! Reaction index: Chemkin #25; RMG #204
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H5R(72), C[CH]CR(12); [H](11), C[CH]CR(12); 
+! From training reaction 9 used for Cds-HH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-HH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C3H5R(72)<=>C[CH]CR(12)                     3.360000e+08 1.560     0.600    
+
+! Reaction index: Chemkin #26; RMG #305
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C2H3L(66), C[CH]L(20); [H](11), C[CH]L(20); 
+! From training reaction 9 used for Cds-HH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-HH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C2H3L(66)<=>C[CH]L(20)                      3.360000e+08 1.560     0.600    
+
+! Reaction index: Chemkin #27; RMG #203
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H5R(83), C[CH]CR(12); [H](11), C[CH]CR(12); 
+! From training reaction 2935 used for Cds-CsH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C3H5R(83)<=>C[CH]CR(12)                     8.892000e+09 1.073     2.175    
+
+! Reaction index: Chemkin #28; RMG #1720
+! Template reaction: Disproportionation
+! Flux pairs: C[CH]CR(12), C3H5R(83); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+[H](11)+C[CH]CR(12)<=>[H][H](325)+C3H5R(83)         1.191692e+10 0.568     0.000    
+
+! Reaction index: Chemkin #29; RMG #1721
+! Template reaction: Disproportionation
+! Flux pairs: C[CH]CR(12), C3H5R(72); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+[H](11)+C[CH]CR(12)<=>[H][H](325)+C3H5R(72)         1.225854e+27 -4.376    3.356    
+
+! Reaction index: Chemkin #30; RMG #1724
+! Template reaction: Disproportionation
+! Flux pairs: C[CH]CC(C)CR(6), C6H11R(63); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+[H](11)+C[CH]CC(C)CR(6)<=>[H][H](325)+C6H11R(63)    1.225854e+27 -4.376    3.239    
+
+! Reaction index: Chemkin #31; RMG #1731
+! Template reaction: Disproportionation
+! Flux pairs: C[CH]CC(C)L(5), C5H9L(74); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+[H](11)+C[CH]CC(C)L(5)<=>[H][H](325)+C5H9L(74)      1.225854e+27 -4.376    3.239    
+
+! Reaction index: Chemkin #32; RMG #1735
+! Template reaction: Disproportionation
+! Flux pairs: C[CH]L(20), C2H3L(66); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+[H](11)+C[CH]L(20)<=>[H][H](325)+C2H3L(66)          1.225854e+27 -4.376    3.356    
+
+! Reaction index: Chemkin #33; RMG #1775
+! Template reaction: R_Recombination
+! Flux pairs: [H](11), [H][H](325); [H](11), [H][H](325); 
+! Matched reaction 56 H + H <=> H2 in R_Recombination/training
+! This reaction matched rate rule [Root_1R->H_N-2R->S_2CHNO->H]
+! family: R_Recombination
+[H](11)+[H](11)<=>[H][H](325)                       5.450000e+10 0.000     1.500    
+
+! Reaction index: Chemkin #34; RMG #55
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C3H5L(65), [CH2]C(C)L(7); [H](11), [CH2]C(C)L(7); 
+! From training reaction 102 used for Cds-CsCs_Cds-HH;HJ
+! Exact match found for rate rule [Cds-CsCs_Cds-HH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C3H5L(65)<=>[CH2]C(C)L(7)                   5.075183e+03 2.822     -1.156   
+
+! Reaction index: Chemkin #35; RMG #1728
+! Template reaction: Disproportionation
+! Flux pairs: [CH2]C(C)L(7), C3H5L(65); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_N-4CHNS->C in family Disproportionation.
+[H](11)+[CH2]C(C)L(7)<=>[H][H](325)+C3H5L(65)       4.559710e+12 -0.222    0.000    
+
+! Reaction index: Chemkin #36; RMG #13
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(23), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_Ext-2CN-R_Ext-2CN-R in family R_Recombination.
+[H](11)+C9H17LR(23)<=>RC10L(1)                      1.625980e+13 0.255     0.000    
+
+! Reaction index: Chemkin #37; RMG #956
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(23)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #38; RMG #1142
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(23)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #39; RMG #1359
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(23)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    4.616    
+
+! Reaction index: Chemkin #40; RMG #1516
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(23)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    4.616    
+
+! Reaction index: Chemkin #41; RMG #1695
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(23); 
+! From training reaction 952 used for C/H/Cs3;H_rad
+! Exact match found for rate rule [C/H/Cs3;H_rad]
+! Euclidian distance = 0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(23)          4.760000e-01 4.340     2.000    
+
+! Reaction index: Chemkin #42; RMG #1789
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(23)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #43; RMG #2014
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(23)<=>C3H5L(65)+RC10L(1)      5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #44; RMG #2071
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C[CH]CC(C)CR(6), C9H17LR(23); C3H5L(65), C9H17LR(23); 
+! From training reaction 2931 used for Cds-HH_Cds-CsCs;CsJ-CsCsH
+! Exact match found for rate rule [Cds-HH_Cds-CsCs;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C3H5L(65)+C[CH]CC(C)CR(6)<=>C9H17LR(23)             5.575000e+02 2.470     3.895    
+
+! Reaction index: Chemkin #45; RMG #8
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(17), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_Ext-2CN-R_Ext-2CN-R in family R_Recombination.
+[H](11)+C9H17LR(17)<=>RC10L(1)                      1.625980e+13 0.255     0.000    
+
+! Reaction index: Chemkin #46; RMG #950
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(17)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #47; RMG #1136
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(17)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #48; RMG #1353
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(17)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    4.616    
+
+! Reaction index: Chemkin #49; RMG #1510
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(17)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    4.616    
+
+! Reaction index: Chemkin #50; RMG #1692
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(17); 
+! From training reaction 952 used for C/H/Cs3;H_rad
+! Exact match found for rate rule [C/H/Cs3;H_rad]
+! Euclidian distance = 0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(17)          4.760000e-01 4.340     2.000    
+
+! Reaction index: Chemkin #51; RMG #1783
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(17)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #52; RMG #2008
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(17)<=>C3H5L(65)+RC10L(1)      5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #53; RMG #2179
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(23); C9H17LR(17), RC10L(1); 
+! From training reaction 3026 used for C/H/Cs3;C_rad/Cs3
+! Exact match found for rate rule [C/H/Cs3;C_rad/Cs3]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(17)+RC10L(1)<=>C9H17LR(23)+RC10L(1)         5.420000e-04 4.340     4.900    
+
+! Reaction index: Chemkin #54; RMG #119
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C4H7R(71), [CH2]C(C)CR(4); [H](11), [CH2]C(C)CR(4); 
+! From training reaction 102 used for Cds-CsCs_Cds-HH;HJ
+! Exact match found for rate rule [Cds-CsCs_Cds-HH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C4H7R(71)<=>[CH2]C(C)CR(4)                  5.075183e+03 2.822     -1.156   
+
+! Reaction index: Chemkin #55; RMG #1718
+! Template reaction: Disproportionation
+! Flux pairs: [CH2]C(C)CR(4), C4H7R(71); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_N-4CHNS->C in family Disproportionation.
+[H](11)+[CH2]C(C)CR(4)<=>[H][H](325)+C4H7R(71)      4.559710e+12 -0.222    0.000    
+
+! Reaction index: Chemkin #56; RMG #2189
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C4H7R(71), C9H17LR(17); C[CH]CC(C)L(5), C9H17LR(17); 
+! From training reaction 2931 used for Cds-HH_Cds-CsCs;CsJ-CsCsH
+! Exact match found for rate rule [Cds-HH_Cds-CsCs;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C4H7R(71)+C[CH]CC(C)L(5)<=>C9H17LR(17)              5.575000e+02 2.470     3.895    
+
+! Reaction index: Chemkin #57; RMG #2283
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(17)<=>C4H7R(71)+RC10L(1)     5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #58; RMG #2289
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(23)<=>C4H7R(71)+RC10L(1)     5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #59; RMG #4
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(10), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_Ext-2CN-R_Ext-2CN-R in family R_Recombination.
+[H](11)+C9H17LR(10)<=>RC10L(1)                      1.625980e+13 0.255     0.000    
+
+! Reaction index: Chemkin #60; RMG #948
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(10)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #61; RMG #1134
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(10)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #62; RMG #1351
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(10)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    4.616    
+
+! Reaction index: Chemkin #63; RMG #1508
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(10)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    4.616    
+
+! Reaction index: Chemkin #64; RMG #1691
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(10); 
+! From training reaction 952 used for C/H/Cs3;H_rad
+! Exact match found for rate rule [C/H/Cs3;H_rad]
+! Euclidian distance = 0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(10)          4.760000e-01 4.340     2.000    
+
+! Reaction index: Chemkin #65; RMG #1781
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(10)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #66; RMG #2006
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(10)<=>C3H5L(65)+RC10L(1)      5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #67; RMG #2178
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(23); C9H17LR(10), RC10L(1); 
+! From training reaction 3026 used for C/H/Cs3;C_rad/Cs3
+! Exact match found for rate rule [C/H/Cs3;C_rad/Cs3]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(10)+RC10L(1)<=>C9H17LR(23)+RC10L(1)         5.420000e-04 4.340     4.900    
+
+! Reaction index: Chemkin #68; RMG #2190
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(17); C9H17LR(10), RC10L(1); 
+! From training reaction 3026 used for C/H/Cs3;C_rad/Cs3
+! Exact match found for rate rule [C/H/Cs3;C_rad/Cs3]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(10)+RC10L(1)<=>C9H17LR(17)+RC10L(1)         5.420000e-04 4.340     4.900    
+
+! Reaction index: Chemkin #69; RMG #2281
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(10)<=>C4H7R(71)+RC10L(1)     5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #70; RMG #205
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H11L(84), C6H12L(13); [H](11), C6H12L(13); 
+! From training reaction 102 used for Cds-CsCs_Cds-HH;HJ
+! Exact match found for rate rule [Cds-CsCs_Cds-HH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C6H11L(84)<=>C6H12L(13)                     5.075183e+03 2.822     -1.156   
+
+! Reaction index: Chemkin #71; RMG #1733
+! Template reaction: Disproportionation
+! Flux pairs: C6H12L(13), C6H11L(84); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_N-4CHNS->C in family Disproportionation.
+[H](11)+C6H12L(13)<=>[H][H](325)+C6H11L(84)         4.559710e+12 -0.222    0.000    
+
+! Reaction index: Chemkin #72; RMG #2488
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H11L(84), C9H17LR(10); C[CH]CR(12), C9H17LR(10); 
+! From training reaction 2931 used for Cds-HH_Cds-CsCs;CsJ-CsCsH
+! Exact match found for rate rule [Cds-HH_Cds-CsCs;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C[CH]CR(12)+C6H11L(84)<=>C9H17LR(10)                5.575000e+02 2.470     3.895    
+
+! Reaction index: Chemkin #73; RMG #2589
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(10)<=>C6H11L(84)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #74; RMG #2591
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(17)<=>C6H11L(84)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #75; RMG #2597
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(23)<=>C6H11L(84)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #76; RMG #302
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C7H13R(97), C7H14R(19); [H](11), C7H14R(19); 
+! From training reaction 102 used for Cds-CsCs_Cds-HH;HJ
+! Exact match found for rate rule [Cds-CsCs_Cds-HH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C7H13R(97)<=>C7H14R(19)                     5.075183e+03 2.822     -1.156   
+
+! Reaction index: Chemkin #77; RMG #1726
+! Template reaction: Disproportionation
+! Flux pairs: C7H14R(19), C7H13R(97); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_N-4CHNS->C in family Disproportionation.
+[H](11)+C7H14R(19)<=>[H][H](325)+C7H13R(97)         4.559710e+12 -0.222    0.000    
+
+! Reaction index: Chemkin #78; RMG #2489
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C7H13R(97), C9H17LR(10); C[CH]L(20), C9H17LR(10); 
+! From training reaction 2931 used for Cds-HH_Cds-CsCs;CsJ-CsCsH
+! Exact match found for rate rule [Cds-HH_Cds-CsCs;CsJ-CsCsH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C[CH]L(20)+C7H13R(97)<=>C9H17LR(10)                 5.575000e+02 2.470     3.895    
+
+! Reaction index: Chemkin #79; RMG #2846
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(10)<=>C7H13R(97)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #80; RMG #2848
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(17)<=>C7H13R(97)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #81; RMG #2854
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(23)<=>C7H13R(97)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #82; RMG #16
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(26), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_Ext-2CN-R in family R_Recombination.
+[H](11)+C9H17LR(26)<=>RC10L(1)                      1.766370e+13 0.153     0.000    
+
+! Reaction index: Chemkin #83; RMG #962
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(26)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #84; RMG #1148
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(26)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #85; RMG #1365
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(26)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    4.274    
+
+! Reaction index: Chemkin #86; RMG #1522
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(26)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    4.274    
+
+! Reaction index: Chemkin #87; RMG #1698
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(26); 
+! Estimated using an average for rate rule [C/H2/NonDeC;H_rad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(26)          6.382500e+01 3.680     4.700    
+
+! Reaction index: Chemkin #88; RMG #1795
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(26)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #89; RMG #1867
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H12L(13), C9H17LR(26); C3H5R(83), C9H17LR(26); 
+! From training reaction 436 used for Cds-CsH_Cds-CsH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C3H5R(83)+C6H12L(13)<=>C9H17LR(26)                  1.020000e+03 2.410     6.230    
+
+! Reaction index: Chemkin #90; RMG #2020
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(26)<=>C3H5L(65)+RC10L(1)      5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #91; RMG #2184
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(23); C9H17LR(26), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(26)+RC10L(1)<=>C9H17LR(23)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #92; RMG #2195
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(17); C9H17LR(26), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(26)+RC10L(1)<=>C9H17LR(17)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #93; RMG #2295
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(26)<=>C4H7R(71)+RC10L(1)     5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #94; RMG #2494
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(10); C9H17LR(26), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(26)+RC10L(1)<=>C9H17LR(10)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #95; RMG #2603
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(26)<=>C6H11L(84)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #96; RMG #2860
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(26)<=>C7H13R(97)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #97; RMG #11
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(21), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_Ext-2CN-R in family R_Recombination.
+[H](11)+C9H17LR(21)<=>RC10L(1)                      1.766370e+13 0.153     0.000    
+
+! Reaction index: Chemkin #98; RMG #954
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(21)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #99; RMG #1140
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(21)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #100; RMG #1357
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(21)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    4.274    
+
+! Reaction index: Chemkin #101; RMG #1514
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(21)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    4.274    
+
+! Reaction index: Chemkin #102; RMG #1694
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(21); 
+! Estimated using an average for rate rule [C/H2/NonDeC;H_rad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(21)          6.382500e+01 3.680     4.700    
+
+! Reaction index: Chemkin #103; RMG #1787
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(21)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #104; RMG #2012
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(21)<=>C3H5L(65)+RC10L(1)      5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #105; RMG #2181
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(23); C9H17LR(21), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(21)+RC10L(1)<=>C9H17LR(23)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #106; RMG #2192
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(17); C9H17LR(21), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(21)+RC10L(1)<=>C9H17LR(17)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #107; RMG #2287
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(21)<=>C4H7R(71)+RC10L(1)     5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #108; RMG #2491
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(10); C9H17LR(21), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(21)+RC10L(1)<=>C9H17LR(10)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #109; RMG #2595
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(21)<=>C6H11L(84)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #110; RMG #2852
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(21)<=>C7H13R(97)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #111; RMG #3142
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(26); C9H17LR(21), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(21)+RC10L(1)<=>C9H17LR(26)+RC10L(1)         2.573748e-03 4.290     7.713    
+
+! Reaction index: Chemkin #112; RMG #122
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C5H9L(73), C[CH]CC(C)L(5); [H](11), C[CH]CC(C)L(5); 
+! From training reaction 2935 used for Cds-CsH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C5H9L(73)<=>C[CH]CC(C)L(5)                  8.892000e+09 1.073     2.175    
+
+! Reaction index: Chemkin #113; RMG #1730
+! Template reaction: Disproportionation
+! Flux pairs: C[CH]CC(C)L(5), C5H9L(73); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+[H](11)+C[CH]CC(C)L(5)<=>[H][H](325)+C5H9L(73)      1.191692e+10 0.568     0.000    
+
+! Reaction index: Chemkin #114; RMG #3148
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C5H9L(73), C9H17LR(21); [CH2]C(C)CR(4), C9H17LR(21); 
+! From training reaction 436 used for Cds-CsH_Cds-CsH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH2]C(C)CR(4)+C5H9L(73)<=>C9H17LR(21)              1.020000e+03 2.410     6.230    
+
+! Reaction index: Chemkin #115; RMG #3256
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(10)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #116; RMG #3258
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(17)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #117; RMG #3262
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(21)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #118; RMG #3264
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(23)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #119; RMG #3270
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(26)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #120; RMG #9
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(18), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_Ext-2CN-R in family R_Recombination.
+[H](11)+C9H17LR(18)<=>RC10L(1)                      1.766370e+13 0.153     0.000    
+
+! Reaction index: Chemkin #121; RMG #952
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(18)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #122; RMG #1138
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(18)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #123; RMG #1355
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(18)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    4.274    
+
+! Reaction index: Chemkin #124; RMG #1512
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(18)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    4.274    
+
+! Reaction index: Chemkin #125; RMG #1693
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(18); 
+! Estimated using an average for rate rule [C/H2/NonDeC;H_rad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(18)          6.382500e+01 3.680     4.700    
+
+! Reaction index: Chemkin #126; RMG #1785
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(18)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #127; RMG #2010
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(18)<=>C3H5L(65)+RC10L(1)      5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #128; RMG #2180
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(23); C9H17LR(18), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(18)+RC10L(1)<=>C9H17LR(23)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #129; RMG #2191
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(17); C9H17LR(18), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(18)+RC10L(1)<=>C9H17LR(17)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #130; RMG #2285
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(18)<=>C4H7R(71)+RC10L(1)     5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #131; RMG #2490
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(10); C9H17LR(18), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(18)+RC10L(1)<=>C9H17LR(10)+RC10L(1)         1.277125e-04 4.473     6.257    
+
+! Reaction index: Chemkin #132; RMG #2593
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(18)<=>C6H11L(84)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #133; RMG #2850
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-4C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(18)<=>C7H13R(97)+RC10L(1)        5.258140e+13 -0.550    0.000    
+
+! Reaction index: Chemkin #134; RMG #3141
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(26); C9H17LR(18), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(18)+RC10L(1)<=>C9H17LR(26)+RC10L(1)         2.573748e-03 4.290     7.713    
+
+! Reaction index: Chemkin #135; RMG #3151
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(21); C9H17LR(18), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H/NonDeC]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(18)+RC10L(1)<=>C9H17LR(21)+RC10L(1)         2.573748e-03 4.290     7.713    
+
+! Reaction index: Chemkin #136; RMG #3260
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(18)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #137; RMG #52
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H11R(62), C[CH]CC(C)CR(6); [H](11), C[CH]CC(C)CR(6); 
+! From training reaction 2935 used for Cds-CsH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C6H11R(62)<=>C[CH]CC(C)CR(6)                8.892000e+09 1.073     2.175    
+
+! Reaction index: Chemkin #138; RMG #1723
+! Template reaction: Disproportionation
+! Flux pairs: C[CH]CC(C)CR(6), C6H11R(62); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+[H](11)+C[CH]CC(C)CR(6)<=>[H][H](325)+C6H11R(62)    1.191692e+10 0.568     0.000    
+
+! Reaction index: Chemkin #139; RMG #3546
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H11R(62), C9H17LR(18); [CH2]C(C)L(7), C9H17LR(18); 
+! From training reaction 436 used for Cds-CsH_Cds-CsH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH2]C(C)L(7)+C6H11R(62)<=>C9H17LR(18)              1.020000e+03 2.410     6.230    
+
+! Reaction index: Chemkin #140; RMG #3663
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(10)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #141; RMG #3665
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(17)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #142; RMG #3667
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(18)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #143; RMG #3669
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(21)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #144; RMG #3671
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(23)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #145; RMG #3677
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(26)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #146; RMG #14
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(24), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_3R!H->C_Sp-3C-2CN_Ext-3C-R_N-
+! Sp-4R!H=3C_Sp-4R!H-3C in family R_Recombination.
+[H](11)+C9H17LR(24)<=>RC10L(1)                      9.174990e+13 0.115     0.000    
+
+! Reaction index: Chemkin #147; RMG #958
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(24)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    3.707    
+
+! Reaction index: Chemkin #148; RMG #1006
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: [CH2]C(C)CR(4), C9H17LR(24); C5H9L(74), C9H17LR(24); 
+! From training reaction 2938 used for Cds-CsH_Cds-HH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH2]C(C)CR(4)+C5H9L(74)<=>C9H17LR(24)              1.502000e+00 3.105     5.819    
+
+! Reaction index: Chemkin #149; RMG #1144
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(24)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    3.707    
+
+! Reaction index: Chemkin #150; RMG #1225
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: [CH2]C(C)L(7), C9H17LR(24); C6H11R(63), C9H17LR(24); 
+! From training reaction 2938 used for Cds-CsH_Cds-HH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH2]C(C)L(7)+C6H11R(63)<=>C9H17LR(24)              1.502000e+00 3.105     5.819    
+
+! Reaction index: Chemkin #151; RMG #1361
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(24)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    3.834    
+
+! Reaction index: Chemkin #152; RMG #1518
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(24)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    3.834    
+
+! Reaction index: Chemkin #153; RMG #1696
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(24); 
+! Estimated using an average for rate rule [C/H3/Cs\TwoNonDe;H_rad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 3.0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(24)          5.670000e+06 2.210     7.500    
+
+! Reaction index: Chemkin #154; RMG #1791
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(24)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #155; RMG #2016
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(24)<=>C3H5L(65)+RC10L(1)      7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #156; RMG #2182
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(23); C9H17LR(24), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(24)+RC10L(1)<=>C9H17LR(23)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #157; RMG #2193
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(17); C9H17LR(24), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(24)+RC10L(1)<=>C9H17LR(17)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #158; RMG #2291
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(24)<=>C4H7R(71)+RC10L(1)     7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #159; RMG #2492
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(10); C9H17LR(24), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(24)+RC10L(1)<=>C9H17LR(10)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #160; RMG #2599
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(24)<=>C6H11L(84)+RC10L(1)        7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #161; RMG #2856
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(24)<=>C7H13R(97)+RC10L(1)        7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #162; RMG #3143
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(26); C9H17LR(24), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(24)+RC10L(1)<=>C9H17LR(26)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #163; RMG #3152
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(21); C9H17LR(24), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(24)+RC10L(1)<=>C9H17LR(21)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #164; RMG #3266
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(24)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #165; RMG #3550
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(18); C9H17LR(24), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(24)+RC10L(1)<=>C9H17LR(18)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #166; RMG #3673
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(24)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #167; RMG #17
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(27), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_3R!H->C_Sp-3C-2CN_Ext-3C-R_N-
+! Sp-4R!H=3C_Sp-4R!H-3C in family R_Recombination.
+[H](11)+C9H17LR(27)<=>RC10L(1)                      9.174990e+13 0.115     0.000    
+
+! Reaction index: Chemkin #168; RMG #964
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(27)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    3.707    
+
+! Reaction index: Chemkin #169; RMG #1150
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(27)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    3.707    
+
+! Reaction index: Chemkin #170; RMG #1367
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(27)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    3.834    
+
+! Reaction index: Chemkin #171; RMG #1419
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C7H14R(19), C9H17LR(27); C2H3L(66), C9H17LR(27); 
+! From training reaction 2938 used for Cds-CsH_Cds-HH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C2H3L(66)+C7H14R(19)<=>C9H17LR(27)                  1.502000e+00 3.105     5.819    
+
+! Reaction index: Chemkin #172; RMG #1524
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(27)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    3.834    
+
+! Reaction index: Chemkin #173; RMG #1699
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(27); 
+! Estimated using an average for rate rule [C/H3/Cs\TwoNonDe;H_rad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 3.0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(27)          5.670000e+06 2.210     7.500    
+
+! Reaction index: Chemkin #174; RMG #1797
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(27)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #175; RMG #2022
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(27)<=>C3H5L(65)+RC10L(1)      7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #176; RMG #2185
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(23); C9H17LR(27), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(27)+RC10L(1)<=>C9H17LR(23)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #177; RMG #2196
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(17); C9H17LR(27), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(27)+RC10L(1)<=>C9H17LR(17)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #178; RMG #2297
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(27)<=>C4H7R(71)+RC10L(1)     7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #179; RMG #2495
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(10); C9H17LR(27), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(27)+RC10L(1)<=>C9H17LR(10)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #180; RMG #2605
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(27)<=>C6H11L(84)+RC10L(1)        7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #181; RMG #2862
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(27)<=>C7H13R(97)+RC10L(1)        7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #182; RMG #3145
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(26); C9H17LR(27), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(27)+RC10L(1)<=>C9H17LR(26)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #183; RMG #3154
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(21); C9H17LR(27), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(27)+RC10L(1)<=>C9H17LR(21)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #184; RMG #3272
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(27)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #185; RMG #3552
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(18); C9H17LR(27), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(27)+RC10L(1)<=>C9H17LR(18)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #186; RMG #3679
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(27)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #187; RMG #4004
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(27); C9H17LR(24), RC10L(1); 
+! Estimated using template [C/H3/Cs;C_rad/H2/Cs] for rate rule [C/H3/Cs\TwoNonDe;C_rad/H2/Cs]
+! Euclidian distance = 1.0
+! Multiplied by reaction path degeneracy 3.0
+! family: H_Abstraction
+C9H17LR(24)+RC10L(1)<=>C9H17LR(27)+RC10L(1)         1.630301e-04 4.810     8.490    
+
+! Reaction index: Chemkin #188; RMG #15
+! Template reaction: R_Recombination
+! Flux pairs: C9H17LR(25), RC10L(1); [H](11), RC10L(1); 
+! Estimated from node Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_3R!H->C_Sp-3C-2CN_Ext-3C-R_N-
+! Sp-4R!H=3C_Sp-4R!H-3C in family R_Recombination.
+[H](11)+C9H17LR(25)<=>RC10L(1)                      9.174990e+13 0.115     0.000    
+
+! Reaction index: Chemkin #189; RMG #960
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C[CH]CC(C)L(5), C5H9L(74); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)L(5)+C9H17LR(25)<=>C5H9L(74)+RC10L(1)     1.225854e+27 -4.376    3.707    
+
+! Reaction index: Chemkin #190; RMG #1146
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C[CH]CC(C)CR(6), C6H11R(63); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CC(C)CR(6)+C9H17LR(25)<=>C6H11R(63)+RC10L(1)   1.225854e+27 -4.376    3.707    
+
+! Reaction index: Chemkin #191; RMG #1363
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C[CH]L(20), C2H3L(66); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]L(20)+C9H17LR(25)<=>C2H3L(66)+RC10L(1)         1.225854e+27 -4.376    3.834    
+
+! Reaction index: Chemkin #192; RMG #1520
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C[CH]CR(12), C3H5R(72); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C[CH]CR(12)+C9H17LR(25)<=>C3H5R(72)+RC10L(1)        1.225854e+27 -4.376    3.834    
+
+! Reaction index: Chemkin #193; RMG #1593
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C6H12L(13), C9H17LR(25); C3H5R(72), C9H17LR(25); 
+! From training reaction 2938 used for Cds-CsH_Cds-HH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+C3H5R(72)+C6H12L(13)<=>C9H17LR(25)                  1.502000e+00 3.105     5.819    
+
+! Reaction index: Chemkin #194; RMG #1697
+! Template reaction: H_Abstraction
+! Flux pairs: [H](11), [H][H](325); RC10L(1), C9H17LR(25); 
+! Estimated using an average for rate rule [C/H3/Cs\TwoNonDe;H_rad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 3.0
+! family: H_Abstraction
+[H](11)+RC10L(1)<=>[H][H](325)+C9H17LR(25)          5.670000e+06 2.210     7.500    
+
+! Reaction index: Chemkin #195; RMG #1793
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C[CH]CR(12), C3H5R(83); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CR(12)+C9H17LR(25)<=>C3H5R(83)+RC10L(1)        1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #196; RMG #2018
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); [CH2]C(C)L(7), C3H5L(65); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+[CH2]C(C)L(7)+C9H17LR(25)<=>C3H5L(65)+RC10L(1)      7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #197; RMG #2183
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(23); C9H17LR(25), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(25)+RC10L(1)<=>C9H17LR(23)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #198; RMG #2194
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(17); C9H17LR(25), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(25)+RC10L(1)<=>C9H17LR(17)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #199; RMG #2293
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); [CH2]C(C)CR(4), C4H7R(71); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+[CH2]C(C)CR(4)+C9H17LR(25)<=>C4H7R(71)+RC10L(1)     7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #200; RMG #2493
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(10); C9H17LR(25), RC10L(1); 
+! Estimated using an average for rate rule [C/H/Cs3;C_rad/H2/Cs]
+! Euclidian distance = 0
+! family: H_Abstraction
+C9H17LR(25)+RC10L(1)<=>C9H17LR(10)+RC10L(1)         2.434158e-04 4.470     6.593    
+
+! Reaction index: Chemkin #201; RMG #2601
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C6H12L(13), C6H11L(84); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+C6H12L(13)+C9H17LR(25)<=>C6H11L(84)+RC10L(1)        7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #202; RMG #2858
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C7H14R(19), C7H13R(97); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_Ext-1R!H-R_4CHNS->C_Ext-4C-R_N-Sp-7R!H#4C_7R!H->C_Ext-7C-R in family Disproportionation.
+C7H14R(19)+C9H17LR(25)<=>C7H13R(97)+RC10L(1)        7.830000e+11 0.000     0.000    
+
+! Reaction index: Chemkin #203; RMG #3144
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(26); C9H17LR(25), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(25)+RC10L(1)<=>C9H17LR(26)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #204; RMG #3153
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(21); C9H17LR(25), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(25)+RC10L(1)<=>C9H17LR(21)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #205; RMG #3268
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C[CH]CC(C)L(5), C5H9L(73); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)L(5)+C9H17LR(25)<=>C5H9L(73)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #206; RMG #3551
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(18); C9H17LR(25), RC10L(1); 
+! Estimated using an average for rate rule [C/H2/NonDeC;C_rad/H2/Cs]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+C9H17LR(25)+RC10L(1)<=>C9H17LR(18)+RC10L(1)         2.163867e-03 4.290     7.536    
+
+! Reaction index: Chemkin #207; RMG #3675
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C[CH]CC(C)CR(6), C6H11R(62); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C[CH]CC(C)CR(6)+C9H17LR(25)<=>C6H11R(62)+RC10L(1)   1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #208; RMG #4005
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(27); C9H17LR(25), RC10L(1); 
+! Estimated using template [C/H3/Cs;C_rad/H2/Cs] for rate rule [C/H3/Cs\TwoNonDe;C_rad/H2/Cs]
+! Euclidian distance = 1.0
+! Multiplied by reaction path degeneracy 3.0
+! family: H_Abstraction
+C9H17LR(25)+RC10L(1)<=>C9H17LR(27)+RC10L(1)         1.630301e-04 4.810     8.490    
+
+! Reaction index: Chemkin #209; RMG #4008
+! Template reaction: H_Abstraction
+! Flux pairs: RC10L(1), C9H17LR(25); C9H17LR(24), RC10L(1); 
+! Estimated using template [C/H3/Cs;C_rad/H2/Cs] for rate rule [C/H3/Cs\TwoNonDe;C_rad/H2/Cs]
+! Euclidian distance = 1.0
+! Multiplied by reaction path degeneracy 3.0
+! family: H_Abstraction
+C9H17LR(24)+RC10L(1)<=>C9H17LR(25)+RC10L(1)         1.630301e-04 4.810     8.490    
+
+! Reaction index: Chemkin #210; RMG #724
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C8H14LR(165), C8H15LR(8); [H](11), C8H15LR(8); 
+! From training reaction 2935 used for Cds-CsH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C8H14LR(165)<=>C8H15LR(8)                   8.892000e+09 1.073     2.175    
+
+! Reaction index: Chemkin #211; RMG #1748
+! Template reaction: Disproportionation
+! Flux pairs: C8H15LR(8), C8H14LR(165); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+[H](11)+C8H15LR(8)<=>[H][H](325)+C8H14LR(165)       1.191692e+10 0.568     0.000    
+
+! Reaction index: Chemkin #212; RMG #3149
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C8H14LR(165), C9H17LR(21); [CH3](9), C9H17LR(21); 
+! From training reaction 2944 used for Cds-CsH_Cds-CsH;CsJ-HHH
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;CsJ-HHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH3](9)+C8H14LR(165)<=>C9H17LR(21)                 3.241000e+04 2.171     6.632    
+
+! Reaction index: Chemkin #213; RMG #4024
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(10)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #214; RMG #4026
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(17)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #215; RMG #4028
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(18)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #216; RMG #4030
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(21)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #217; RMG #4032
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(23)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #218; RMG #4034
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(24)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #219; RMG #4036
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(25)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #220; RMG #4038
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(26)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #221; RMG #4040
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C8H15LR(8), C8H14LR(165); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(27)<=>C8H14LR(165)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #222; RMG #723
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C8H14LR(164), C8H15LR(8); [H](11), C8H15LR(8); 
+! From training reaction 2935 used for Cds-CsH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C8H14LR(164)<=>C8H15LR(8)                   8.892000e+09 1.073     2.175    
+
+! Reaction index: Chemkin #223; RMG #1747
+! Template reaction: Disproportionation
+! Flux pairs: C8H15LR(8), C8H14LR(164); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+[H](11)+C8H15LR(8)<=>[H][H](325)+C8H14LR(164)       1.191692e+10 0.568     0.000    
+
+! Reaction index: Chemkin #224; RMG #3547
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C8H14LR(164), C9H17LR(18); [CH3](9), C9H17LR(18); 
+! From training reaction 2944 used for Cds-CsH_Cds-CsH;CsJ-HHH
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;CsJ-HHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH3](9)+C8H14LR(164)<=>C9H17LR(18)                 3.241000e+04 2.171     6.632    
+
+! Reaction index: Chemkin #225; RMG #4446
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(10)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #226; RMG #4448
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(17)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #227; RMG #4450
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(18)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #228; RMG #4452
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(21)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #229; RMG #4454
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(23)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #230; RMG #4456
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(24)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #231; RMG #4458
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(25)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #232; RMG #4460
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(26)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #233; RMG #4462
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C8H15LR(8), C8H14LR(164); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(8)+C9H17LR(27)<=>C8H14LR(164)+RC10L(1)      1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #234; RMG #642
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C8H14LR(150), C8H15LR(14); [H](11), C8H15LR(14); 
+! From training reaction 2935 used for Cds-CsH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C8H14LR(150)<=>C8H15LR(14)                  8.892000e+09 1.073     2.175    
+
+! Reaction index: Chemkin #235; RMG #1745
+! Template reaction: Disproportionation
+! Flux pairs: C8H15LR(14), C8H14LR(150); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+[H](11)+C8H15LR(14)<=>[H][H](325)+C8H14LR(150)      1.191692e+10 0.568     0.000    
+
+! Reaction index: Chemkin #236; RMG #3140
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C8H14LR(150), C9H17LR(26); [CH3](9), C9H17LR(26); 
+! From training reaction 2944 used for Cds-CsH_Cds-CsH;CsJ-HHH
+! Exact match found for rate rule [Cds-CsH_Cds-CsH;CsJ-HHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH3](9)+C8H14LR(150)<=>C9H17LR(26)                 3.241000e+04 2.171     6.632    
+
+! Reaction index: Chemkin #237; RMG #4901
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(10)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #238; RMG #4903
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(17)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #239; RMG #4905
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(18)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #240; RMG #4907
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(21)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #241; RMG #4909
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(23)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #242; RMG #4911
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(24)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #243; RMG #4913
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(25)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #244; RMG #4915
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(26)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #245; RMG #4917
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C8H15LR(14), C8H14LR(150); 
+! Estimated from node Root_Ext-1R!H-R_N-4R->O_N-Sp-5R!H=1R!H_Ext-4CHNS-R_N-6R!H->S_4CHNS->C_N-
+! Sp-6BrBrBrCCCClClClFFFIIINNNOOOPPPSiSiSi#4C_6BrCClFINOPSi->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 2.0
+C8H15LR(14)+C9H17LR(27)<=>C8H14LR(150)+RC10L(1)     1.547936e+12 0.025     0.000    
+
+! Reaction index: Chemkin #246; RMG #409
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C8H15L(111), C8H16L(16); [H](11), C8H16L(16); 
+! From training reaction 9 used for Cds-HH_Cds-CsH;HJ
+! Exact match found for rate rule [Cds-HH_Cds-CsH;HJ]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[H](11)+C8H15L(111)<=>C8H16L(16)                    3.360000e+08 1.560     0.600    
+
+! Reaction index: Chemkin #247; RMG #1739
+! Template reaction: Disproportionation
+! Flux pairs: C8H16L(16), C8H15L(111); [H](11), [H][H](325); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+[H](11)+C8H16L(16)<=>[H][H](325)+C8H15L(111)        1.225854e+27 -4.376    3.239    
+
+! Reaction index: Chemkin #248; RMG #4007
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C8H15L(111), C9H17LR(25); [CH2]R(15), C9H17LR(25); 
+! From training reaction 2938 used for Cds-CsH_Cds-HH;CsJ-CsHH
+! Exact match found for rate rule [Cds-CsH_Cds-HH;CsJ-CsHH]
+! Euclidian distance = 0
+! family: R_Addition_MultipleBond
+[CH2]R(15)+C8H15L(111)<=>C9H17LR(25)                1.502000e+00 3.105     5.819    
+
+! Reaction index: Chemkin #249; RMG #5388
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(10), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(10)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #250; RMG #5390
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(17), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(17)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #251; RMG #5392
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(18), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(18)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #252; RMG #5394
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(21), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(21)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #253; RMG #5396
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(23), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(23)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    4.474    
+
+! Reaction index: Chemkin #254; RMG #5398
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(24), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(24)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    3.707    
+
+! Reaction index: Chemkin #255; RMG #5400
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(25), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(25)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    3.707    
+
+! Reaction index: Chemkin #256; RMG #5402
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(26), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(26)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    4.138    
+
+! Reaction index: Chemkin #257; RMG #5404
+! Template reaction: Disproportionation
+! Flux pairs: C9H17LR(27), RC10L(1); C8H16L(16), C8H15L(111); 
+! Estimated from node Root_Ext-2R!H-R_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+C8H16L(16)+C9H17LR(27)<=>C8H15L(111)+RC10L(1)       1.225854e+27 -4.376    3.707    
+
+END
+

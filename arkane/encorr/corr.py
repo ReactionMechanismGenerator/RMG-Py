@@ -221,7 +221,7 @@ def assign_frequency_scale_factor(level_of_theory: Union[LevelOfTheory, Composit
 
     Sources:
         [1] I.M. Alecu, J. Zheng, Y. Zhao, D.G. Truhlar, J. Chem. Theory Comput. 2010, 6, 2872, DOI: 10.1021/ct100326h
-        [2] http://cccbdb.nist.gov/vibscalejust.asp
+        [2] https://cccbdb.nist.gov/vibscalejustx.asp
         [3] http://comp.chem.umn.edu/freqscale/190107_Database_of_Freq_Scale_Factors_v4.pdf
         [4] Calculated as described in 10.1021/ct100326h
         [5] J.A. Montgomery, M.J. Frisch, J. Chem. Phys. 1999, 110, 2822–2827, DOI: 10.1063/1.477924
