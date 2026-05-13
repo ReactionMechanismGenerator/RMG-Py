@@ -1276,7 +1276,10 @@ class Molecule(Graph):
 
     def remove_van_der_waals_bonds(self):
         """
-        Remove all van der Waals bonds.
+        Remove all van der Waals bonds. For multidentate species,
+        vdW bonds are preserved when there are still other
+        covalent bonds with the surface present. If no covalent surface bonds are present,
+        all vdW bonds are removed.
         """
         cython.declare(bond=Bond)
         if self.is_multidentate():
@@ -3053,6 +3056,7 @@ class Molecule(Graph):
         ``*2`` - double bond
         ``*3`` - triple bond
         ``*4`` - quadruple bond
+        ``*0`` - vdW bond
         """
         cython.declare(desorbed_molecules=list, desorbed_molecule=Molecule, sites_to_remove=list, adsorbed_atoms=list,
                        site=Atom, numbonds=cython.int, bonded_atom=Atom, bond=Bond, i=cython.int, j=cython.int, atom0=Atom,
@@ -3092,7 +3096,7 @@ class Molecule(Graph):
                     bonded_atom.increment_lone_pairs()
                     bonded_atom.label = '*4'
                 elif bond.is_van_der_waals():
-                    bonded_atom.label = '*5'
+                    bonded_atom.label = '*0'
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
             desorbed_molecule.remove_atom(site)
