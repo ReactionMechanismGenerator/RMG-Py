@@ -210,6 +210,11 @@ class Polymer(Species):
                  moments: Optional[List[float]] = None,
                  **kwargs,
                  ):
+        # Pop polymer-specific kwargs before passing the rest to Species.__init__
+        # — Species does not accept k_unzip/k_scission and would raise TypeError.
+        self.k_unzip = kwargs.pop('k_unzip', 0.0)
+        self.k_scission = kwargs.pop('k_scission', 0.0)
+
         super(Polymer, self).__init__(label=label, **kwargs)
 
         self.monomer = self._validate_monomer(monomer, label)
@@ -220,9 +225,6 @@ class Polymer(Species):
         self._validate_end_groups(end_groups, label)
         self.cutoff = self._validate_cutoff(cutoff, label)
         self.Mn, self.Mw, self.moments = None, None, None
-
-        self.k_unzip = kwargs.get('k_unzip', 0.0)
-        self.k_scission = kwargs.get('k_scission', 0.0)
 
         self.initial_mass_g = initial_mass * 1000.0  # convert to grams
         self.monomer_mw_g_mol = self.monomer.get_molecular_weight() * 1000.0

@@ -253,6 +253,8 @@ def polymer(label: str,
             Mw: Optional[float] = None,
             moments: Optional[List[float]] = None,
             initial_mass: float = 1.0,
+            k_scission: float = 0.0,
+            k_unzip: float = 0.0,
             ):
     """
     Helper function exposed in the input file to define a Polymer Pool.
@@ -267,6 +269,14 @@ def polymer(label: str,
         Mw (float): Weight average molecular weight (g/mol).
         moments (list): Optional list of raw moments [mu0, mu1, mu2].
         initial_mass (float): Initial mass in the reactor (kg).
+        k_scission (float): Random-scission rate constant [1/s]. Drives the
+            chain-scission moment ODE. Required for chain initiation; if
+            left at 0 the polymer is kinetically frozen.
+        k_unzip (float): Chain-end depropagation (unzip) rate constant [1/s].
+            Drives the chain-end-driven flux from the statistical tail into
+            explicit oligomers (the "Hybrid Handshake"). Required for
+            depolymerization chemistry; if 0 the polymer can only react
+            bimolecularly via radicals.
     """
     poly_obj = Polymer(
         label=label,
@@ -276,7 +286,9 @@ def polymer(label: str,
         Mn=Mn,
         Mw=Mw,
         initial_mass=initial_mass,
-        moments=moments
+        moments=moments,
+        k_scission=k_scission,
+        k_unzip=k_unzip,
     )
 
     poly_obj.creation_iteration = rmg.reaction_model.iteration_num
