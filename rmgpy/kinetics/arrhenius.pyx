@@ -2025,6 +2025,8 @@ def get_w0(actions, rxn):
                         
                         #overwrite bond order for bd1 to reflect the fact that originally there was no bond between these two atoms
                         bd1.order = 0
+                else: 
+                    raise e
 
             if act[2] + bd1.order == 0.5:
                 mol2 = None
