@@ -424,12 +424,13 @@ class TestYamlCantera1Functions:
         d = species_to_dict(self.h2)
         assert 'sites' not in d
 
-    def test_species_to_dict_transport_note_without_verbose(self):
-        """Transport 'note' is written even when verbose=False."""
+    def test_species_to_dict_transport_note_gated_by_verbose(self):
+        """Transport 'note' is only written when verbose=True."""
         self.h2.transport_data.comment = "from GRI-Mech"
         d = species_to_dict(self.h2, verbose=False)
-        assert 'note' in d['transport']
-        assert d['transport']['note'] == "from GRI-Mech"
+        assert 'note' not in d.get('transport', {})
+        d_verbose = species_to_dict(self.h2, verbose=True)
+        assert d_verbose['transport']['note'] == "from GRI-Mech"
 
 
 class TestCanteraWriter1:

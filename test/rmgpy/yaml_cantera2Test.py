@@ -619,14 +619,13 @@ class TestCanteraWriter2:
         assert len(data['surface-reactions']) == 1
 
     def test_species_to_dict_surface_sites_count(self):
-        """species_to_dict reports correct 'sites' count for surface species."""
-        # Single-site species
+        """species_to_dict reports 'sites' only for multi-site (bidentate+) surface species."""
+        # Single-site species: 'sites' key is omitted (Cantera defaults to 1)
         hx = self._create_surface_species(
             "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=11
         )
         d = species_to_dict(hx, [hx])
-        assert 'sites' in d
-        assert d['sites'] == 1
+        assert 'sites' not in d
 
         # Bidentate glyoxal adsorbed via C and O (2 X atoms)
         glyoxal_xx = self._create_surface_species(
@@ -651,13 +650,14 @@ class TestCanteraWriter2:
         d = species_to_dict(h2, [h2])
         assert 'sites' not in d
 
-    def test_species_to_dict_transport_note_without_verbose(self):
-        """Transport 'note' is written even when verbose=False."""
+    def test_species_to_dict_transport_note_gated_by_verbose(self):
+        """Transport 'note' is only written when verbose=True."""
         sp = self._create_dummy_species("H2", "[H][H]", index=1)
         sp.transport_data.comment = "from GRI-Mech"
         d = species_to_dict(sp, [sp], verbose=False)
-        assert 'note' in d['transport']
-        assert d['transport']['note'] == "from GRI-Mech"
+        assert 'note' not in d['transport']
+        d_verbose = species_to_dict(sp, [sp], verbose=True)
+        assert d_verbose['transport']['note'] == "from GRI-Mech"
 
 
 class CanteraYamlFileComparer:
