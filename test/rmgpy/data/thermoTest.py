@@ -1249,26 +1249,26 @@ multiplicity 2
         )
         groups = self.database.groups["adsorptionPt111"].entries
         # save a few things we're about to change
-        _nstarparent = groups["N*"].parent
-        _nstardata = groups["N*"].data
-        _ostardata = groups["O*"].data
+        _nstarparent = groups["NX"].parent
+        _nstardata = groups["NX"].data
+        _ostardata = groups["OX"].data
         # change the database to cause errors
-        groups["N*"].data = None
-        groups["N*"].parent = None
+        groups["NX"].data = None
+        groups["NX"].parent = None
         with pytest.raises(DatabaseError, match="Could not find an adsorption correction"):
             thermo = self.database.get_thermo_data(spec)
-        groups["N*"].data = "O*"
-        groups["O*"].data = "N*"
+        groups["NX"].data = "OX"
+        groups["OX"].data = "NX"
         with pytest.raises(DatabaseError, match="circular reference"):
             thermo = self.database.get_thermo_data(spec)
-        groups["N*"].data = "O*"
-        groups["O*"].data = "foobar"
+        groups["NX"].data = "OX"
+        groups["OX"].data = "foobar"
         with pytest.raises(DatabaseError, match="non-existing group"):
             thermo = self.database.get_thermo_data(spec)
         # Now restore the database to working order
-        groups["N*"].parent = _nstarparent
-        groups["N*"].data = _nstardata
-        groups["O*"].data = _ostardata
+        groups["NX"].parent = _nstarparent
+        groups["NX"].data = _nstardata
+        groups["OX"].data = _ostardata
 
     def test_adsorbate_thermo_generation_bidentate_weird_CO(self):
         """Test thermo generation for a bidentate adsorbate weird resonance of CO
