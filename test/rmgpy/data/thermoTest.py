@@ -631,7 +631,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert "Library" in source
         assert source["Library"] == "primaryThermoLibrary"
         assert 'ADS' in source
-        assert source['ADS']['adsorptionPt111'][0][0].label == 'O=*'
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'OX'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
         assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
@@ -646,7 +646,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
         assert len(source["GAV"]["radical"]) == 1  # there should only be one radical contribution
         assert "ADS" in source
-        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2CR)*'
+        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2CR)X'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
         assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
