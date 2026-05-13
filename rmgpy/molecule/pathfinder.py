@@ -535,3 +535,31 @@ def find_adsorbate_conjugate_delocalization_paths(atom1):
                                     if atom5.is_surface_site():
                                         paths.append([atom1, atom2, atom3, atom4, atom5, bond12, bond23, bond34, bond45])
     return paths
+
+def find_formate_delocalization_paths(atom1):
+    """
+    Find all resonance structures which have a bonding configuration X...O-C-O-X.
+    Examples:
+
+    - XOC(H)XO/XOC(H)XO, where X is the surface site. The adsorption site X
+      is always placed on the left-hand side of the adatom and every adatom
+      is bonded to only one surface site X.
+
+    In this transition atom1 and atom5 are surface sites while atom2
+    and atom4 are oxygen and atom3 is a carbon atom.
+    """
+
+    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, atom4=Vertex, atom5=Vertex, bond12=Edge, bond23=Edge, bond34=Edge, bond45=Edge)
+
+    paths = []
+    if atom1.is_surface_site():
+        for atom2, bond12 in atom1.edges.items():
+            if atom2.is_oxygen() and bond12.is_van_der_waals():
+                for atom3, bond23 in atom2.edges.items():
+                    if atom3.is_carbon():
+                        for atom4, bond34 in atom3.edges.items():
+                            if atom2 is not atom4 and atom4.is_oxygen():
+                                for atom5, bond45 in atom4.edges.items():
+                                    if atom5.is_surface_site():
+                                        paths.append([atom1, atom2, atom3, atom4, atom5, bond12, bond23, bond34, bond45])
+    return paths

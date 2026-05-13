@@ -62,3 +62,5 @@ cpdef bint is_atom_able_to_lose_lone_pair(Vertex atom)
 cpdef list find_adsorbate_delocalization_paths(Vertex atom1)
 
 cpdef list find_adsorbate_conjugate_delocalization_paths(Vertex atom1)
+
+cpdef list find_formate_delocalization_paths(Vertex atom1)
