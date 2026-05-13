@@ -1208,6 +1208,19 @@ class Molecule(Graph):
         """
         return self.has_edge(atom1, atom2)
 
+    def has_covalent_surface_bond(self):
+        """
+        Return True if any bond in this molecule connects a surface site (X) via a covalent bond.
+        """
+        cython.declare(bond=Bond)
+        for bond in self.get_all_edges():
+            if bond.is_van_der_waals():
+                continue
+            atom1, atom2 = bond.atom1, bond.atom2
+            if atom1.is_surface_site() or atom2.is_surface_site():
+                return True
+        return False
+
     def contains_surface_site(self):
         """
         Returns ``True`` iff the molecule contains an 'X' surface site.
@@ -1267,10 +1280,8 @@ class Molecule(Graph):
         """
         cython.declare(bond=Bond)
         if self.is_multidentate():
-            #bond_types =
-            #possible_bonds_with_resonance =  #TODO: Include possible nitrogen bonds
-            if any([k in ['O-X', 'C#X', 'C=X', 'C-X'] for k in self.enumerate_bonds()]):
-                pass
+            if self.has_covalent_surface_bond():
+                return #preserve the remaining vdW bonds for this structure
             else:
                 for bond in self.get_all_edges():
                     if bond.is_van_der_waals():
