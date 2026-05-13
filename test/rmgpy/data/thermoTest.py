@@ -584,33 +584,33 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         # Gas library + adsorption correction
         CH2X = rmgpy.species.Species(smiles="[CH2]=*")
         CH2X.thermo = rmgpy.thermo.NASA()
-        CH2X.thermo.comment = 'Gas phase thermo for CH2(T) from Thermo library: primaryThermoLibrary. Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111(C=*R2)'
+        CH2X.thermo.comment = 'Gas phase thermo for CH2(T) from Thermo library: primaryThermoLibrary. Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111(C=XR2)'
         source = self.database.extract_source_from_comments(CH2X)
         assert "Library" in source
         assert source["Library"] == "primaryThermoLibrary"
         assert "ADS" in source
-        assert source['ADS']['adsorptionPt111'][0][0].label == 'C=*R2'
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'C=XR2'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
         assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
         # GAV gas + adsorption correction
         CO2X = rmgpy.species.Species(smiles="O=C=O.*")
         CO2X.thermo = rmgpy.thermo.NASA()
-        CO2X.thermo.comment = 'Gas phase thermo for O=C=O from Thermo group additivity estimation: group(Cdd-OdOd). Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111((CR2)*)'
+        CO2X.thermo.comment = 'Gas phase thermo for O=C=O from Thermo group additivity estimation: group(Cdd-OdOd). Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111((CR2)X)'
         source = self.database.extract_source_from_comments(CO2X)
         assert "GAV" in source
         assert source["GAV"]["group"][0][0].label == "Cdd-OdOd"
         assert source["GAV"]["group"][0][1] == 1  # weight should be 1
         assert len(source["GAV"]["group"]) == 1  # there should only be one GAV contribution
         assert "ADS" in source
-        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2)*'
+        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2)X'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
         assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
         # Gas library + radical for HBI + adsorption correction
         CHOX = rmgpy.species.Species(smiles="O=[CH]*")
         CHOX.thermo = rmgpy.thermo.NASA()
-        CHOX.thermo.comment = 'Gas phase thermo for [CH]=O from Thermo library: primaryThermoLibrary + radical(HCdsJO). Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C-*R3)'
+        CHOX.thermo.comment = 'Gas phase thermo for [CH]=O from Thermo library: primaryThermoLibrary + radical(HCdsJO). Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C-XR3)'
         source = self.database.extract_source_from_comments(CHOX)
         assert "Library" in source
         assert source["Library"] == "primaryThermoLibrary"
@@ -619,7 +619,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
         assert len(source["GAV"]["radical"]) == 1  # there should only be one radical contribution
         assert "ADS" in source
-        assert source['ADS']['adsorptionPt111'][0][0].label == 'C-*R3'
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'C-XR3'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
         assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
@@ -631,7 +631,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert "Library" in source
         assert source["Library"] == "primaryThermoLibrary"
         assert 'ADS' in source
-        assert source['ADS']['adsorptionPt111'][0][0].label == 'O=*'
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'OX'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
         assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
@@ -646,7 +646,7 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
         assert len(source["GAV"]["radical"]) == 1  # there should only be one radical contribution
         assert "ADS" in source
-        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2CR)*'
+        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2CR)X'
         assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
         assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
@@ -1249,26 +1249,26 @@ multiplicity 2
         )
         groups = self.database.groups["adsorptionPt111"].entries
         # save a few things we're about to change
-        _nstarparent = groups["N*"].parent
-        _nstardata = groups["N*"].data
-        _ostardata = groups["O*"].data
+        _nstarparent = groups["NX"].parent
+        _nstardata = groups["NX"].data
+        _ostardata = groups["OX"].data
         # change the database to cause errors
-        groups["N*"].data = None
-        groups["N*"].parent = None
+        groups["NX"].data = None
+        groups["NX"].parent = None
         with pytest.raises(DatabaseError, match="Could not find an adsorption correction"):
             thermo = self.database.get_thermo_data(spec)
-        groups["N*"].data = "O*"
-        groups["O*"].data = "N*"
+        groups["NX"].data = "OX"
+        groups["OX"].data = "NX"
         with pytest.raises(DatabaseError, match="circular reference"):
             thermo = self.database.get_thermo_data(spec)
-        groups["N*"].data = "O*"
-        groups["O*"].data = "foobar"
+        groups["NX"].data = "OX"
+        groups["OX"].data = "foobar"
         with pytest.raises(DatabaseError, match="non-existing group"):
             thermo = self.database.get_thermo_data(spec)
         # Now restore the database to working order
-        groups["N*"].parent = _nstarparent
-        groups["N*"].data = _nstardata
-        groups["O*"].data = _ostardata
+        groups["NX"].parent = _nstarparent
+        groups["NX"].data = _nstardata
+        groups["OX"].data = _ostardata
 
     def test_adsorbate_thermo_generation_bidentate_weird_CO(self):
         """Test thermo generation for a bidentate adsorbate weird resonance of CO
