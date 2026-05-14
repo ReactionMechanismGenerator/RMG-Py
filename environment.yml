@@ -50,7 +50,7 @@ dependencies:
   - rmg::pysidt-rmg >=1.2
 
 # Python tools
-  - conda-forge::python >=3.9,<3.12  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
+  - conda-forge::python =3.11  # pinned to a single version to keep solver fast; CI rewrites this to the matrix version (see CI.yml)
   - conda-forge::setuptools <80
   - conda-forge::coverage
   - conda-forge::cython >=0.25.2,<3.1

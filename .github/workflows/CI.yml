@@ -80,6 +80,14 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v6
 
+      - name: Pin Python version for CI matrix
+        # environment.yml pins python=3.11 for fast user installs; rewrite to the
+        # matrix version here so setup-miniconda can inject the correct pin cleanly.
+        # The -i.bak / rm pattern works on both GNU sed (Linux) and BSD sed (macOS).
+        run: |
+          sed -i.bak "s/conda-forge::python =3\.11/conda-forge::python =${{ matrix.python-version }}/" environment.yml
+          rm -f environment.yml.bak
+
       - name: Setup Miniforge Python ${{ matrix.python-version }}
         uses: conda-incubator/setup-miniconda@v4
         with:
@@ -147,13 +155,13 @@ jobs:
       - name: Checkout RMG-Py
         uses: actions/checkout@v6
 
-      - name: Setup Miniforge Python 3.9
+      - name: Setup Miniforge Python 3.11
         uses: conda-incubator/setup-miniconda@v4
         with:
           environment-file: environment.yml
           miniforge-variant: Miniforge3
           miniforge-version: latest
-          python-version: 3.9
+          python-version: 3.11
           activate-environment: rmg_env
           auto-update-conda: true
           show-channel-urls: true
