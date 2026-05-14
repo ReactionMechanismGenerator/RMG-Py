@@ -9,9 +9,8 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
    RMG-Py compiles Cython extensions during installation, so your C compiler and
    conda installation must be reasonably modern or the build will fail.
 
-   **On MacOS:** Ensure your Xcode Command Line Tools are current.  If more than a year or two old, reinstall the tools::
+   **On MacOS:** Ensure your Xcode Command Line Tools are current. If they are more than a year or two old, either download the latest Command Line Tools from `Apple Developer Downloads <https://developer.apple.com/download/all/>`_ (free Apple ID required) or manually remove them and reinstall them using::
 
-       sudo rm -rf /Library/Developer/CommandLineTools
        xcode-select --install
 
    **conda version:** Ensure conda is also up to date.  To update::
