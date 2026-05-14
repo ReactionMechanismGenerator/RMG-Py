@@ -4,6 +4,35 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
+.. warning::
+
+   **Before you begin — check your build tools are up to date.**
+
+   RMG-Py compiles Cython extensions during installation, so your C compiler and
+   conda installation must be reasonably modern or the build will fail.
+
+   **On macOS:** Ensure your Xcode Command Line Tools are current.  An outdated
+   installation (more than a year or two old) will cause ``make`` to fail with a
+   ``clang: error: invalid version number`` message.  To check::
+
+       clang --version
+
+   If the reported version is older than Apple clang 13, reinstall the tools::
+
+       sudo rm -rf /Library/Developer/CommandLineTools
+       xcode-select --install
+
+   **conda version:** Ensure conda is version 24.0 or newer (run ``conda --version``
+   to check).  Older versions use a slower solver that can hang indefinitely when
+   creating the RMG environment.  To update::
+
+       conda update -n base -c conda-forge conda
+
+   If ``conda update`` does not advance the version, install a specific release
+   explicitly::
+
+       conda install -n base -c conda-forge conda=26.3
+
 #. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
 #. If your `conda` version is older than 23.10.0, manually switch the solver backend to `libmamba` (or update your conda)::
@@ -40,6 +69,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
       These are a set of packages relevant for software development which have been bundled together by Apple.
       The easiest way to install this is to simply run one of the commands in the terminal, e.g. ``git``.
       The terminal will then prompt you to install the Command Line Tools.
+      See the warning at the top of this page about keeping the tools up to date.
 
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
    appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
@@ -51,7 +81,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
    It is still possible to clone the repositories using ``https`` if you are
    unfamiliar with ``ssh``::
-   
+
     git clone https://github.com/ReactionMechanismGenerator/RMG-Py.git
     git clone https://github.com/ReactionMechanismGenerator/RMG-database.git
 
@@ -61,7 +91,10 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     cd RMG-Py
 
-#. Create the conda environment for RMG-Py::
+#. Create the conda environment for RMG-Py.
+
+   The ``environment.yml`` file pins Python 3.11, so the solver only needs to
+   consider packages for a single Python version and the solve completes quickly::
 
     conda env create -f environment.yml
 
@@ -89,10 +122,10 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
        - nodefaults
      channel_priority: strict
      custom_channels:
-       main: null
-       r: null
-       anaconda: null
-       msys2: null
+         main: null
+         r: null
+         anaconda: null
+         msys2: null
 
 #. Activate conda environment ::
 
