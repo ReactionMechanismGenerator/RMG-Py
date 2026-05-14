@@ -4,41 +4,27 @@
 Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX
 *******************************************************************************************
 
-.. warning::
-
-   **Before you begin — check your build tools are up to date.**
+#. Before you begin — check your build tools are up to date.
 
    RMG-Py compiles Cython extensions during installation, so your C compiler and
    conda installation must be reasonably modern or the build will fail.
 
-   **On macOS:** Ensure your Xcode Command Line Tools are current.  An outdated
-   installation (more than a year or two old) will cause ``make`` to fail with a
-   ``clang: error: invalid version number`` message.  To check::
-
-       clang --version
-
-   If the reported version is older than Apple clang 13, reinstall the tools::
+   **On MacOS:** Ensure your Xcode Command Line Tools are current.  If more than a year or two old, reinstall the tools::
 
        sudo rm -rf /Library/Developer/CommandLineTools
        xcode-select --install
 
-   **conda version:** Ensure conda is version 24.0 or newer (run ``conda --version``
-   to check).  Older versions use a slower solver that can hang indefinitely when
-   creating the RMG environment.  To update::
+   **conda version:** Ensure conda is also up to date.  To update::
 
        conda update -n base -c conda-forge conda
 
-   If ``conda update`` does not advance the version, install a specific release
-   explicitly::
+   If ``conda update`` does not advance the version (which can happen), install a specific release explicitly, e.g.::
 
        conda install -n base -c conda-forge conda=26.3
 
-#. Install the `conda` package manager via `miniforge`, if you do not already have it (or Anaconda), by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
+#. If you do not already have the `conda` package manager (or Anaconda) then install it via `miniforge`, by following the `Miniforge installation instructions <https://github.com/conda-forge/miniforge?tab=readme-ov-file#install>`_.
 
-#. If your `conda` version is older than 23.10.0, manually switch the solver backend to `libmamba` (or update your conda)::
 
-    conda install -n base conda-libmamba-solver
-    conda config --set solver libmamba
 
 #. There are a few system-level dependencies which are required and should not be installed via Conda. These include
    `Git <https://git-scm.com/>`_ for version control, `GNU Make <https://www.gnu.org/software/make/>`_, and the C and C++ compilers from the `GNU Compiler Collection (GCC) <https://gcc.gnu.org/>`_ for compiling RMG.
@@ -69,7 +55,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
       These are a set of packages relevant for software development which have been bundled together by Apple.
       The easiest way to install this is to simply run one of the commands in the terminal, e.g. ``git``.
       The terminal will then prompt you to install the Command Line Tools.
-      See the warning at the top of this page about keeping the tools up to date.
+      See the warning in step 1 about keeping the tools up to date.
 
 #. Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
    appropriate local directory where you want both RMG-Py and RMG-database folders to exist.
@@ -93,8 +79,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
 #. Create the conda environment for RMG-Py.
 
-   The ``environment.yml`` file pins Python 3.11, so the solver only needs to
-   consider packages for a single Python version and the solve completes quickly::
+   To create an environment called ``rmg_env`` containing all that you need for RMG, run::
 
     conda env create -f environment.yml
 
@@ -102,17 +87,13 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     conda env create -f environment.yml -n rmg_env2
 
-   If either of these commands return an error due to being unable to find the ``conda`` command,
-   try to either close and reopen your terminal to refresh your environment variables
-   or type the following command.
+   If you have a recent version of conda (``conda -V`` reports >= 26.3) then the preferred command is without the ``env`` subcommand::
 
-   If on Linux or pre-Catalina MacOS (or if you have a bash shell)::
+    conda create --file environment.yml --name rmg_env
 
-    source ~/.bashrc
-
-   If on MacOS Catalina or later (or if you have a Z shell)::
-
-    source ~/.zshrc
+   If any of these commands return an error due to being unable to find the ``conda`` command,
+   (for example if you only just installed it)
+   then close and reopen your terminal (or log out and log in again) to refresh your environment variables.
 
    NOTE: You may wish to forbid ``conda`` from installing from the Anaconda channels due to licensing restrictions.
    The ``environment.yml`` file already forbids using default channels, but you may further add the file ``.condarc`` to your RMG-Py directory (or modify the ``.condarc`` in your home directory) with the following contents before running the ``conda env create`` command: ::
@@ -152,7 +133,7 @@ Installation by Source Using Anaconda Environment for Unix-based Systems: Linux 
 
     Installing Julia and ReactionMechanismSimulator.jl (RMS) will enable all the features in RMG that require RMS-based reactors,
     as well as using ``method='ode'`` when solving the Master Equation with Arkane.
-    Note that installing RMS can cause errors when running Cantera simulations; this should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate conda environment without RMS in it.
+    Note that installing RMS has sometimes caused errors when running Cantera; this should not affect normal RMG use, but if you wish to run Cantera simulations you might need to use a separate conda environment without RMS in it.
 
     Ensure that you have modified your environment variables as described above, and then run the following: ::
 
