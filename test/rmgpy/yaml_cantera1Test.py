@@ -340,28 +340,35 @@ class TestYamlCantera1Functions:
         )
 
     def test_get_elements_block_isotopes_and_surface_site(self):
-        """get_elements_block returns isotope definitions and X with correct weights."""
-        elements_block, elements_line = get_elements_block()
+        """get_elements_block emits isotope and X definitions only when requested."""
+        from rmgpy.molecule.element import H, C, D, T, X
 
-        # elements_line should list X
+        # With D, T, X in use, the block names them with the right masses
+        elements_block, elements_line = get_elements_block({H, C, D, T, X})
         assert 'X' in elements_line
-
-        # elements_block should contain isotope symbols and X
         assert 'D' in elements_block    # H-2
         assert 'T' in elements_block    # H-3
         assert 'X' in elements_block
         assert '195.083' in elements_block  # X atomic weight
 
+        # Without isotopes / X in use, neither appears
+        elements_block, elements_line = get_elements_block({H, C})
+        assert 'X' not in elements_line
+        assert ' D ' not in elements_line and '[D' not in elements_line and ', D' not in elements_line
+        assert 'D' not in elements_block
+        assert 'T' not in elements_block
+        assert 'X' not in elements_block
+
     def test_get_phases_gas_only_has_state(self):
         """Gas-only phases block includes state with T and P."""
-        phases_block = get_phases_gas_only([self.h2, self.h])
+        phases_block = get_phases_gas_only([self.h2, self.h], 'elements: [H]')
         assert 'state:' in phases_block
         assert 'T: 300.0' in phases_block
         assert 'P: 1 atm' in phases_block
 
     def test_get_phases_gas_only_has_elements(self):
         """Gas-only phases block includes elements line."""
-        phases_block = get_phases_gas_only([self.h2])
+        phases_block = get_phases_gas_only([self.h2], 'elements: [H]')
         assert 'elements:' in phases_block
 
     def test_get_mech_dict_nonsurface_reactions_key(self):
@@ -394,6 +401,7 @@ class TestYamlCantera1Functions:
         phases_block = get_phases_with_surface(
             [self.h2, self.x, self.hx],
             surface_site_density=2.5e-9,  # mol/cm^2-equivalent SI
+            elements_line='elements: [H, X]',
         )
         # Should have two phase definitions each with state
         assert phases_block.count('state:') == 2

@@ -162,6 +162,21 @@ class ReactionModel:
         # Return the merged model
         return final_model
 
+    def get_elements(self):
+        """
+        Return the set of :class:`Element` singletons used by atoms of species
+        in this :class:`ReactionModel`. Iterates each species' first resonance
+        structure (``sp.molecule[0]``) and collects ``atom.element``. Species
+        with empty ``molecule`` are skipped.
+        """
+        elements = set()
+        for sp in self.species:
+            if not sp.molecule:
+                continue
+            for atom in sp.molecule[0].atoms:
+                elements.add(atom.element)
+        return elements
+
 
 ################################################################################
 

@@ -146,21 +146,16 @@ def save_cantera_files(rmg, config=None):
     # 2. Save Edge Model (Optional, matching ChemkinWriter logic)
     # -------------------------------------------------------------------------
     if save_edge:
+        from rmgpy.rmg.model import ReactionModel
         logging.info('Saving current model core and edge to Cantera file...')
 
         this_edge_path = os.path.join(cantera_dir,
                                       'chem_edge{0:04d}.yaml'.format(num_species))
         latest_edge_path = os.path.join(cantera_dir, 'chem_edge.yaml')
 
-        # Create a simple container object to pass to save_cantera_model
-        class MixedModel:
-            def __init__(self, species, reactions):
-                self.species = species
-                self.reactions = reactions
-
-        edge_model = MixedModel(
-            rmg.reaction_model.core.species + rmg.reaction_model.edge.species,
-            rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions
+        edge_model = ReactionModel(
+            species=rmg.reaction_model.core.species + rmg.reaction_model.edge.species,
+            reactions=rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions,
         )
 
         save_cantera_model(edge_model, this_edge_path, site_density=site_density, verbose=False)
@@ -179,12 +174,14 @@ def save_cantera_files(rmg, config=None):
 def save_cantera_model(model_container, path, site_density=None, verbose=False):
     """
     Internal helper to generate the dictionary and write the YAML file.
-    model_container must have .species and .reactions attributes (lists).
+    model_container must be a :class:`rmgpy.rmg.model.ReactionModel` (or duck-typed
+    equivalent with .species, .reactions, and .get_elements()).
     If verbose=True, species/reaction notes (SMILES, source, kinetics
     comments) are included in the output.
     """
     species_list = model_container.species
     reaction_list = model_container.reactions
+    elements_in_use = model_container.get_elements()
 
     is_plasma = False
     for sp in species_list:
@@ -193,7 +190,9 @@ def save_cantera_model(model_container, path, site_density=None, verbose=False):
             break
 
     # Generate Data
-    yaml_data = generate_cantera_data(species_list, reaction_list, is_plasma=is_plasma,
+    yaml_data = generate_cantera_data(species_list, reaction_list,
+                                      elements_in_use=elements_in_use,
+                                      is_plasma=is_plasma,
                                       site_density=site_density, verbose=verbose)
 
     # Write
@@ -201,37 +200,49 @@ def save_cantera_model(model_container, path, site_density=None, verbose=False):
         # sort_keys=False ensures 'units' comes first, then 'phases', etc.
         yaml.dump(yaml_data, f, Dumper=Dumper, sort_keys=False, default_flow_style=None)
 
-def get_elements_lists():
+def get_elements_lists(elements_in_use):
     """
-    Returns custom element definitions and the full elements list for phases.
+    Returns custom element definitions and the elements list for phases.
+
+    elements_in_use is a set of :class:`Element` singletons (typically from
+    :meth:`rmgpy.rmg.model.ReactionModel.get_elements`). Only those elements
+    are emitted; isotopes (D, T, CI, OI) and X are added only when present in
+    the set. The plasma pseudo-element 'E' is added separately by the caller
+    when ``is_plasma`` is true.
     """
-    from rmgpy.molecule.element import get_element
-    elements_list = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S',
-                     'F', 'Cl', 'Br', 'I', 'E']
-    isotopes = (('H', 2), ('H', 3), ('C', 13), ('O', 18))
+    from rmgpy.molecule.element import H, C, O, N, Ne, Ar, He, Si, S, F, Cl, Br, I, D, T, C13, O18, X
+    builtin_elements = [(H, 'H'), (C, 'C'), (O, 'O'), (N, 'N'), (Ne, 'Ne'), (Ar, 'Ar'),
+                        (He, 'He'), (Si, 'Si'), (S, 'S'), (F, 'F'), (Cl, 'Cl'), (Br, 'Br'), (I, 'I')]
+    elements_list = [symbol for element, symbol in builtin_elements if element in elements_in_use]
     custom_elements = []
-    for symbol, isotope in isotopes:
-        element = get_element(symbol, isotope=isotope)
-        chemkin_name = element.chemkin_name
-        mass = 1000 * element.mass
-        custom_elements.append({'symbol': chemkin_name, 'atomic-weight': mass})
-        elements_list.append(chemkin_name)
-    # Surface sites
-    elements_list.append('X')
-    custom_elements.append({'symbol': 'X', 'atomic-weight': 195.083})
+    for isotope in (D, T, C13, O18):
+        if isotope in elements_in_use:
+            mass = 1000 * isotope.mass
+            custom_elements.append({'symbol': isotope.chemkin_name, 'atomic-weight': mass})
+            elements_list.append(isotope.chemkin_name)
+    if X in elements_in_use:
+        elements_list.append('X')
+        custom_elements.append({'symbol': 'X', 'atomic-weight': 195.083})
     return custom_elements, elements_list
 
 def generate_cantera_data(species_list,
                           reaction_list,
+                          elements_in_use=None,
                           is_plasma=False,
                           site_density=None,
-                          search_for_additional_elements=False,
                           verbose=False,
                           ):
     """
     Converts RMG objects into a dictionary structure compatible with Cantera YAML.
     If verbose=True, species/reaction notes are included (SMILES, source, kinetics comments).
+
+    elements_in_use is a set of :class:`Element` singletons (typically from
+    :meth:`rmgpy.rmg.model.ReactionModel.get_elements`) used to size the
+    'elements' block and the per-phase elements lists. Defaults to an empty
+    set if None.
     """
+    if elements_in_use is None:
+        elements_in_use = set()
     # --- 1. Header & Units ---
     # We output everything in SI units.
     try:
@@ -272,21 +283,12 @@ def generate_cantera_data(species_list,
             gas_reactions.append(rxn)
 
     # --- 3. Phase Definitions ---
-    custom_elements, all_elements = get_elements_lists()
-    
+    custom_elements, all_elements = get_elements_lists(elements_in_use)
+
     data['elements'] = custom_elements
     elements_set = set(all_elements)
-
-    if search_for_additional_elements:
-        for spc in sorted_species:
-            if spc.molecule and len(spc.molecule) > 0:
-                if spc.is_electron():
-                    elements_set.add('E')
-                    is_plasma = True
-                else:
-                    for elem in spc.molecule[0].get_element_count().keys():
-                        if elem != 'X':
-                            elements_set.add(elem)
+    if is_plasma:
+        elements_set.add('E')
 
     phases = list()
 

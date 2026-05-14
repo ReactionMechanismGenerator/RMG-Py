@@ -92,6 +92,7 @@ def _convert_anymap_to_dict(obj):
 def write_cantera(
     spcs,
     rxns,
+    elements_in_use,
     surface_site_density=None,
     solvent=None,
     solvent_data=None,
@@ -102,6 +103,9 @@ def write_cantera(
     Writes yaml file depending on the type of system (gas-phase, catalysis).
     Writes beginning lines of yaml file, then uses yaml.dump(result_dict) to write species/reactions info.
     If verbose=True, species and reaction notes (SMILES, source, kinetics comment) are included.
+
+    elements_in_use is a set of :class:`Element` singletons. Only those elements
+    are listed in the YAML 'elements' block and 'phases.elements' lines.
     """
 
     try:
@@ -110,6 +114,8 @@ def write_cantera(
         git_head = " (git commit: {0})".format(git_head[:7])
     except Exception:
         git_head = ''
+
+    elements_block, elements_line = get_elements_block(elements_in_use)
 
     # intro to file will change depending on the presence of surface species
     is_surface = False
@@ -125,13 +131,13 @@ def write_cantera(
             spcs, rxns, solvent=solvent, solvent_data=solvent_data, verbose=verbose
         )
         phases_block = get_phases_with_surface(
-            spcs, surface_site_density, has_coverage_dependence=has_coverage_dependence
+            spcs, surface_site_density, elements_line, has_coverage_dependence=has_coverage_dependence
         )
     else:
         result_dict = get_mech_dict_nonsurface(
             spcs, rxns, solvent=solvent, solvent_data=solvent_data, verbose=verbose
         )
-        phases_block = get_phases_gas_only(spcs)
+        phases_block = get_phases_gas_only(spcs, elements_line)
 
     with open(path, "w") as f:
         # generator line
@@ -150,40 +156,44 @@ def write_cantera(
 
         f.write(phases_block)
 
-        f.write(ELEMENTS_BLOCK)
+        f.write(elements_block)
 
         yaml.dump(result_dict, stream=f, Dumper=Dumper, sort_keys=False, default_flow_style=None, width=80)
 
-def get_elements_block():
+def get_elements_block(elements_in_use):
     """
-    Returns the 'elements' section, and elements list for a phase
+    Returns the 'elements' section, and elements list for a phase.
+
+    elements_in_use is a set of :class:`Element` singletons (e.g. the ones returned by
+    :meth:`rmgpy.rmg.model.ReactionModel.get_elements`). Only elements present
+    in the set are emitted; isotopes (D, T, CI, OI) and the surface site X are
+    written to the elements block only when actually used.
     """
-    from rmgpy.molecule.element import get_element
-    elements_list = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S',
-                'F', 'Cl', 'Br', 'I']
-    isotopes = (('H', 2), ('H', 3), ('C', 13),('O', 18))
+    from rmgpy.molecule.element import H, C, O, N, Ne, Ar, He, Si, S, F, Cl, Br, I, D, T, C13, O18, X
+    builtin_elements = [(H, 'H'), (C, 'C'), (O, 'O'), (N, 'N'), (Ne, 'Ne'), (Ar, 'Ar'),
+                        (He, 'He'), (Si, 'Si'), (S, 'S'), (F, 'F'), (Cl, 'Cl'), (Br, 'Br'), (I, 'I')]
+    elements_list = [symbol for element, symbol in builtin_elements if element in elements_in_use]
     elements_block_list = ['', 'elements:']
-    for symbol, isotope in isotopes:
-        element = get_element(symbol, isotope=isotope)
-        chemkin_name = element.chemkin_name
-        mass = 1000 * element.mass
-        elements_block_list.append(f"- symbol: {chemkin_name}\n  atomic-weight: {mass:f}")
-        elements_list.append(chemkin_name)
-    # Surface sites
-    elements_list.append('X')
-    elements_block_list.append("- symbol: X\n  atomic-weight: 195.083\n\n")
+    for isotope in (D, T, C13, O18):
+        if isotope in elements_in_use:
+            mass = 1000 * isotope.mass
+            elements_block_list.append(f"- symbol: {isotope.chemkin_name}\n  atomic-weight: {mass:f}")
+            elements_list.append(isotope.chemkin_name)
+    if X in elements_in_use:
+        elements_list.append('X')
+        elements_block_list.append("- symbol: X\n  atomic-weight: 195.083\n\n")
     elements_block = '\n'.join(elements_block_list)
     elements_line = f"elements: [{', '.join(elements_list)}]"
     return elements_block, elements_line
-# For now this is not dynamic, and includes everything, so we just evaluate it 
-# once and use it for all files.
-ELEMENTS_BLOCK, ELEMENTS_LINE = get_elements_block()
 
 
-def get_phases_gas_only(spcs):
+def get_phases_gas_only(spcs, elements_line):
     """
     Returns 'phases' sections for a file
     with only gas-phase species/reactions.
+
+    elements_line is the pre-formatted ``elements: [...]`` string from
+    :func:`get_elements_block`.
     """
     sorted_species = sorted(spcs, key=lambda spcs: spcs.index)
     species_to_write = [get_species_identifier(spec) for spec in sorted_species]
@@ -196,7 +206,7 @@ def get_phases_gas_only(spcs):
 phases:
 - name: gas
   thermo: ideal-gas
-  {ELEMENTS_LINE}
+  {elements_line}
   species: [{', '.join(species_to_write)}]
   kinetics: gas
   transport: mixture-averaged
@@ -205,7 +215,7 @@ phases:
     return phases_block
 
 
-def get_phases_with_surface(spcs, surface_site_density, has_coverage_dependence=False):
+def get_phases_with_surface(spcs, surface_site_density, elements_line, has_coverage_dependence=False):
     """
     Yaml files with surface species begin with the following blocks of text,
     which includes TWO phases instead of just one.
@@ -250,7 +260,7 @@ def get_phases_with_surface(spcs, surface_site_density, has_coverage_dependence=
 phases:
 - name: gas
   thermo: ideal-gas
-  {ELEMENTS_LINE}
+  {elements_line}
   species: [{', '.join(gas_species_to_write)}]
   kinetics: gas
   reactions: [gas-reactions]
@@ -260,7 +270,7 @@ phases:
 - name: surface
   thermo: {surface_thermo}{reference_state_line}
   adjacent-phases: [gas]
-  {ELEMENTS_LINE}
+  {elements_line}
   species: [{', '.join(surface_species_to_write)}]
   kinetics: surface
   reactions: [site0-reactions]
@@ -480,9 +490,12 @@ class CanteraWriter1(object):
         if rmg.reaction_model.surface_site_density:
             surface_site_density = rmg.reaction_model.surface_site_density.value_si
 
+        core_elements = rmg.reaction_model.core.get_elements()
+
         write_cantera(
             rmg.reaction_model.core.species,
             rmg.reaction_model.core.reactions,
+            elements_in_use=core_elements,
             surface_site_density=surface_site_density,
             solvent=rmg.solvent,
             solvent_data=solvent_data,
@@ -496,6 +509,7 @@ class CanteraWriter1(object):
             write_cantera(
                 rmg.reaction_model.core.species,
                 rmg.reaction_model.core.reactions,
+                elements_in_use=core_elements,
                 surface_site_density=surface_site_density,
                 solvent=rmg.solvent,
                 solvent_data=solvent_data,
@@ -504,9 +518,11 @@ class CanteraWriter1(object):
             )
 
         if save_edge:
+            from rmgpy.rmg.model import ReactionModel
             logging.info('Saving current model core and edge to Cantera file...')
             edge_species = rmg.reaction_model.core.species + rmg.reaction_model.edge.species
             edge_reactions = rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions
+            edge_elements = ReactionModel(species=edge_species, reactions=edge_reactions).get_elements()
 
             this_edge_path = os.path.join(self.output_subdirectory,
                                           f"chem_edge{num_species:04d}.yaml")
@@ -515,6 +531,7 @@ class CanteraWriter1(object):
             write_cantera(
                 edge_species,
                 edge_reactions,
+                elements_in_use=edge_elements,
                 surface_site_density=surface_site_density,
                 solvent=rmg.solvent,
                 solvent_data=solvent_data,
@@ -529,6 +546,7 @@ class CanteraWriter1(object):
                 write_cantera(
                     edge_species,
                     edge_reactions,
+                    elements_in_use=edge_elements,
                     surface_site_density=surface_site_density,
                     solvent=rmg.solvent,
                     solvent_data=solvent_data,

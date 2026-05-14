@@ -231,10 +231,11 @@ class TestCanteraWriter2:
 
         # 2. Mock RMG Object Structure
         # The writer expects: rmg.output_directory and rmg.reaction_model.core
-        class MockCore:
+        from rmgpy.rmg.model import ReactionModel
+
+        class MockCore(ReactionModel):
             def __init__(self):
-                self.species = species
-                self.reactions = reactions
+                super().__init__(species=species, reactions=reactions)
 
         class MockModel:
             def __init__(self):
@@ -388,10 +389,11 @@ class TestCanteraWriter2:
         reaction_list = [rxn_arr]
 
         # Mock Object Structure
-        class MockCore:
+        from rmgpy.rmg.model import ReactionModel
+
+        class MockCore(ReactionModel):
             def __init__(self, s, r):
-                self.species = s
-                self.reactions = r
+                super().__init__(species=s, reactions=r)
 
         class MockModel:
             def __init__(self, core):
@@ -546,36 +548,52 @@ class TestCanteraWriter2:
         assert np.isclose(d["efficiencies"]["Ar(3)"], 0.7)
 
     def test_get_elements_block_isotopes_and_surface_site(self):
-        """get_elements_lists returns isotope definitions and X with correct weights."""
-        custom_elements, elements_list = get_elements_lists()
+        """get_elements_lists emits isotope and X definitions only when in use."""
+        from rmgpy.molecule.element import H, C, D, T, X
 
+        # With D, T, X in use: isotope and X entries appear
+        custom_elements, elements_list = get_elements_lists({H, C, D, T, X})
+        assert 'H' in elements_list
+        assert 'C' in elements_list
         assert 'X' in elements_list
         x_entry = next((e for e in custom_elements if e['symbol'] == 'X'), None)
         assert x_entry is not None
         assert np.isclose(x_entry['atomic-weight'], 195.083)
-
         symbols = [e['symbol'] for e in custom_elements]
         assert 'D' in symbols   # H-2
         assert 'T' in symbols   # H-3
         for entry in custom_elements:
             assert entry['atomic-weight'] > 0
 
-    def test_generate_cantera_data_elements_block(self):
-        """generate_cantera_data includes top-level 'elements' key with custom definitions."""
-        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
-        data = generate_cantera_data([h2], [])
+        # Without isotopes / X: no custom entries, no X in the elements list
+        custom_elements, elements_list = get_elements_lists({H, C})
+        assert custom_elements == []
+        assert 'X' not in elements_list
+        assert 'D' not in elements_list
+        assert 'T' not in elements_list
 
+    def test_generate_cantera_data_elements_block(self):
+        """generate_cantera_data emits a top-level 'elements' key whose custom entries
+        track elements_in_use: empty for plain gas, includes X when a surface site is present."""
+        from rmgpy.molecule.element import H, X
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+
+        # Gas-only H2: no isotopes, no X -> custom 'elements' list is empty.
+        data = generate_cantera_data([h2], [], elements_in_use={H})
         assert 'elements' in data
-        custom_elements = data['elements']
-        assert isinstance(custom_elements, list)
-        assert len(custom_elements) > 0
-        symbols = [e['symbol'] for e in custom_elements]
+        assert data['elements'] == []
+
+        # Surface fixture: X is in use, so it appears as a custom element.
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        data = generate_cantera_data([h2, x], [], elements_in_use={H, X})
+        symbols = [e['symbol'] for e in data['elements']]
         assert 'X' in symbols
 
     def test_generate_cantera_data_gas_phase_state(self):
         """Gas phase definition includes a 'state' block with T and P."""
+        from rmgpy.molecule.element import H
         h2 = self._create_dummy_species("H2", "[H][H]", index=1)
-        data = generate_cantera_data([h2], [])
+        data = generate_cantera_data([h2], [], elements_in_use={H})
 
         gas_phase = data['phases'][0]
         assert 'state' in gas_phase
@@ -584,13 +602,14 @@ class TestCanteraWriter2:
 
     def test_generate_cantera_data_gas_reactions_key(self):
         """Gas-only model uses top-level 'reactions' key (matching ck2yaml)."""
+        from rmgpy.molecule.element import H
         h2 = self._create_dummy_species("H2", "[H][H]", index=1)
         h = self._create_dummy_species("H", "[H]", index=2)
         rxn = Reaction(
             reactants=[h2], products=[h, h],
             kinetics=Arrhenius(A=(1e13, "s^-1"), n=0, Ea=(400, "kJ/mol"), T0=(1, "K"))
         )
-        data = generate_cantera_data([h2, h], [rxn])
+        data = generate_cantera_data([h2, h], [rxn], elements_in_use={H})
 
         gas_phase = data['phases'][0]
         assert 'reactions' not in gas_phase, "Gas-only phase should not reference reactions"
@@ -600,6 +619,7 @@ class TestCanteraWriter2:
 
     def test_generate_cantera_data_surface_phase_state_and_reactions_key(self):
         """Surface phase has 'state' and references 'surface-reactions'; data has that key."""
+        from rmgpy.molecule.element import H, X
         h2 = self._create_dummy_species("H2", "[H][H]", index=1)
         x = self._create_surface_species("X", "1 X u0 p0", index=2)
         hx = self._create_surface_species(
@@ -609,7 +629,7 @@ class TestCanteraWriter2:
             A=(1e13, "m^2/(mol*s)"), n=0, Ea=(50, "kJ/mol"), T0=(1, "K")
         )
         rxn = Reaction(reactants=[h2, x], products=[hx, hx], kinetics=kin)
-        data = generate_cantera_data([h2, x, hx], [rxn])
+        data = generate_cantera_data([h2, x, hx], [rxn], elements_in_use={H, X})
 
         surface_phase = next(p for p in data['phases'] if p['name'] == 'surface')
         assert 'state' in surface_phase

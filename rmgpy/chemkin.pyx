@@ -2120,23 +2120,32 @@ def save_transport_file(path, species):
                 ))
 
 
-def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicates=True):
+def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicates=True,
+                      elements_in_use=None):
     """
     Save a Chemkin input file to `path` on disk containing the provided lists
     of `species` and `reactions`.
     If check_for_duplicates is False then we don't check for unlabeled duplicate reactions,
     thus saving time (eg. if you are sure you've already labeled them as duplicate).
+
+    ``elements_in_use`` is a set of :class:`Element` singletons used to write the
+    ELEMENTS section. If ``None``, it is computed from ``species`` via
+    :meth:`rmgpy.rmg.model.ReactionModel.get_elements`.
     """
     # Check for duplicate
     if check_for_duplicates:
         mark_duplicate_reactions(reactions)
+
+    if elements_in_use is None:
+        from rmgpy.rmg.model import ReactionModel
+        elements_in_use = ReactionModel(species=species).get_elements()
 
     f = open(path, 'w')
 
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Elements section
-    write_elements_section(f)
+    write_elements_section(f, elements_in_use)
 
     # Species section
     f.write('SPECIES\n')
@@ -2236,20 +2245,24 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     _chemkin_reaction_count = None
 
 
-def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None, 
+def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None,
                  save_edge_species=False):
     """
     Save a Chemkin file for the current model as well as any desired output
-    species and reactions to `path`. If `save_edge_species` is True, then 
+    species and reactions to `path`. If `save_edge_species` is True, then
     a chemkin file and dictionary file for the core AND edge species and reactions
     will be saved.  It also saves verbose versions of each file.
     """
+    from rmgpy.rmg.model import ReactionModel
     if save_edge_species:
         species_list = reaction_model.core.species + reaction_model.edge.species
         rxn_list = reaction_model.core.reactions + reaction_model.edge.reactions
     else:
         species_list = reaction_model.core.species + reaction_model.output_species_list
         rxn_list = reaction_model.core.reactions + reaction_model.output_reaction_list
+
+    # Same elements list for all files (core and edge)
+    elements_in_use = ReactionModel(species=species_list).get_elements()
 
     if any([s.contains_surface_site() for s in reaction_model.core.species]):
         # it's a surface model
@@ -2277,19 +2290,23 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
                 gas_rxn_list.append(r)
 
         # We should already have marked everything as duplicates by now so use check_for_duplicates=False
-        save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False, check_for_duplicates=False)
+        save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         save_chemkin_surface_file(surface_path, surface_species_list, surface_rxn_list, verbose=False,
                                   check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
         logging.info('Saving annotated version of Chemkin files...')
-        save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True, check_for_duplicates=False)
+        save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         save_chemkin_surface_file(surface_verbose_path, surface_species_list, surface_rxn_list, verbose=True,
                                   check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
 
     else:
         # Gas phase only
-        save_chemkin_file(path, species_list, rxn_list, verbose=False, check_for_duplicates=False)
+        save_chemkin_file(path, species_list, rxn_list, verbose=False,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         logging.info('Saving annotated version of Chemkin file...')
-        save_chemkin_file(verbose_path, species_list, rxn_list, verbose=True, check_for_duplicates=False)
+        save_chemkin_file(verbose_path, species_list, rxn_list, verbose=True,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
     if dictionary_path:
         save_species_dictionary(dictionary_path, species_list)
     if transport_path:
@@ -2364,27 +2381,26 @@ def save_chemkin_files(rmg, config=None):
             shutil.copy2(this_chemkin_path, latest_chemkin_path)
 
 
-def write_elements_section(f):
+def write_elements_section(f, elements_in_use):
     """
-    Write the ELEMENTS section of the chemkin file.  This file currently lists
-    all elements and isotopes available in RMG. It may become useful in the future
-    to only include elements/isotopes present in the current RMG run. 
+    Write the ELEMENTS section of the chemkin file. Only elements present in
+    ``elements_in_use`` (a set of :class:`Element` singletons) are emitted. Isotopes
+    (D, T, CI, OI) and the surface site X are written only when actually used.
     """
+    from rmgpy.molecule.element import H, C, O, N, Ne, Ar, He, Si, S, F, Cl, Br, I, D, T, C13, O18, X
 
     s = 'ELEMENTS\n'
-
-    # map of isotope elements with chemkin-compatible element representation:
-    elements = ('H', ('H', 2), ('H', 3), 'C', ('C', 13), 'O', ('O', 18), 'N', 'Ne', 'Ar', 'He', 'Si', 'S',
-                'F', 'Cl', 'Br', 'I')
-    for el in elements:
-        if isinstance(el, tuple):
-            symbol, isotope = el
-            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-            mass = 1000 * get_element(symbol, isotope=isotope).mass
-            s += '\t{0} /{1:.3f}/\n'.format(chemkin_name, mass)
-        else:
-            s += '\t' + el + '\n'
-    s += '\tX /195.083/\n'
+    builtin_elements = [(H, 'H'), (C, 'C'), (O, 'O'), (N, 'N'), (Ne, 'Ne'), (Ar, 'Ar'),
+                        (He, 'He'), (Si, 'Si'), (S, 'S'), (F, 'F'), (Cl, 'Cl'), (Br, 'Br'), (I, 'I')]
+    for element, symbol in builtin_elements:
+        if element in elements_in_use:
+            s += f'\t{symbol}\n'
+    for isotope in (D, T, C13, O18):
+        if isotope in elements_in_use:
+            mass = 1000 * isotope.mass
+            s += f'\t{isotope.chemkin_name} /{mass:.3f}/\n'
+    if X in elements_in_use:
+        s += '\tX /195.083/\n'
     s += 'END\n\n'
 
     f.write(s)
