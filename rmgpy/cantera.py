@@ -197,15 +197,16 @@ def generate_cantera_data(species_list,
     }
 
     # --- 2. Phase Segregation (Gas vs Surface) ---
-    # Polymer reactions are element-unbalanced (Ne placeholders) and handled
-    # by the custom polymer solver, not Cantera — exclude them from reactions.
-    # Polymer *species* (moments, proxy) are kept so users can track the
-    # polymer distribution.
-    def _is_polymer_species(spc):
-        return getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False)
+    # Moment-dummy reactions are element-unbalanced (Ne placeholders) and
+    # handled by the custom polymer solver, not Cantera — exclude them.
+    # Polymer-proxy (trimer) species ARE element-balanced and their reactions
+    # with gas-phase radicals are valid Cantera chemistry — keep those so
+    # downstream consumers (e.g. the TA package) can run a real simulation.
+    def _is_moment_dummy(spc):
+        return getattr(spc, 'is_moment_dummy', False)
 
-    def _involves_polymer(rxn):
-        return any(_is_polymer_species(spc) for spc in rxn.reactants + rxn.products)
+    def _involves_moment_dummy(rxn):
+        return any(_is_moment_dummy(spc) for spc in rxn.reactants + rxn.products)
 
     gas_species, surface_species, gas_reactions, surface_reactions = list(), list(), list(), list()
 
@@ -216,7 +217,7 @@ def generate_cantera_data(species_list,
             gas_species.append(spc)
 
     for rxn in reaction_list:
-        if _involves_polymer(rxn):
+        if _involves_moment_dummy(rxn):
             continue
         if rxn.is_surface_reaction():
             surface_reactions.append(rxn)
