@@ -12,6 +12,10 @@ on:
       - stable
 jobs:
   build:
+    # Hard cap so a solver hang fails attributably instead of consuming the
+    # default 6-hour runner allotment in silence (as happened on macos-15-intel
+    # before the .conda recipe was tightened in this branch).
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
@@ -61,7 +65,23 @@ jobs:
       - name: Install Build Tools
         run: conda install python anaconda-client conda-build
 
+      - name: Show solver and runner info
+        # Small diagnostic snapshot — captures conda version, configured
+        # channels, base env contents, and runner CPU/RAM. Cheap to keep
+        # in CI and invaluable when something starts hanging again.
+        run: |
+          conda info
+          conda config --show-sources
+          conda list -n base | head -40
+          uname -a
+          sysctl hw.memsize hw.ncpu hw.physicalcpu 2>/dev/null || cat /proc/meminfo 2>/dev/null | head -3 || true
+
       - name: Build Binary
+        env:
+          # Light verbosity bump over default. Surfaces libmamba "Solver
+          # attempt: #N" markers and per-package install plans in the log
+          # without dragging in the firehose that --debug produces.
+          CONDA_VERBOSITY: "1"
         run: |
           # set a default value to the conda_token if needed (like from forks)
           : "${CONDA_TOKEN:=${{ secrets.ANACONDA_TOKEN }}}"
