@@ -2432,6 +2432,7 @@ class ChemkinWriter(object):
         super(ChemkinWriter, self).__init__()
         self.config = config
         make_output_subdirectory(output_directory, 'chemkin')
+        make_output_subdirectory(output_directory, 'cantera_from_ck')
 
     def update(self, rmg):
         if self.config is not None and not self.config.should_write(
