@@ -4,6 +4,9 @@
 # RMG-Py into binaries which can then be uploaded for access via the conda package manager
 # to use this file, you can follow the procedure shown in .github/workflows/conda_build.yml
 #
+# Variant axes (python, numpy) are pinned in .conda/conda_build_config.yaml so that
+# conda-build does not enumerate every combination from its internal defaults.
+#
 package:
   name: rmg
   version: 4.0.0.rc1
@@ -39,23 +42,21 @@ requirements:
     - conda-forge::cclib >=1.6.3,<1.9
     - conda-forge::openbabel >=3
     - conda-forge::rdkit >=2022.09.1
+    # python intentionally left loose so the CI matrix (via CONDA_PY)
+    # can pin it without a contradictory-deps error. The real variant pin
+    # lives in .conda/conda_build_config.yaml.
     - conda-forge::python >=3.9,<3.12
-    - conda-forge::setuptools <80
-    - conda-forge::coverage
-    - conda-forge::cython >=0.25.2,<3.1
+    - conda-forge::setuptools >=70,<80
+    - conda-forge::cython >=3.0,<3.1
     - conda-forge::scikit-learn
-    - conda-forge::scipy >=1.9
-    - conda-forge::numpy >=1.10.0,<2
+    - conda-forge::scipy >=1.13
+    - conda-forge::numpy >=1.24,<2
     - conda-forge::pydot
     - conda-forge::jinja2
-    - conda-forge::jupyter
     - conda-forge::pymongo
     - conda-forge::pyparsing
     - conda-forge::pyyaml
     - conda-forge::networkx
-    - conda-forge::pytest
-    - conda-forge::pytest-cov
-    - conda-forge::pytest-check
     - conda-forge::pyutilib
     - conda-forge::matplotlib >=1.5
     - conda-forge::mpmath
@@ -71,7 +72,14 @@ requirements:
     - blas=*=openblas
   run: *runtime_requirements
 test:
-  requires: *runtime_requirements
+  # Test environment automatically inherits the run requirements; only
+  # list test-only extras here so they don't constrain the build/host solve.
+  requires:
+    - conda-forge::pytest
+    - conda-forge::pytest-cov
+    - conda-forge::pytest-check
+    - conda-forge::coverage
+    - conda-forge::jupyter
   source_files:
     - 'examples/rmg/superminimal'
     - 'examples/arkane/networks/n-butanol_msc'

@@ -1,0 +1,14 @@
+# Restrict conda-build's variant matrix so the solver does not enumerate
+# python/numpy combinations from internal_defaults. The CI workflow's
+# CONDA_PY env var narrows to one of these python versions per matrix cell.
+#
+# Without this file, conda-build considers every (python, numpy) pair from
+# its internal defaults during the "Getting pinned dependencies" phase,
+# which substantially enlarges the search space the libmamba solver has
+# to traverse.
+python:
+  - 3.9
+  - 3.10
+  - 3.11
+numpy:
+  - 1.26
