@@ -72,14 +72,8 @@ requirements:
     - blas=*=openblas
   run: *runtime_requirements
 test:
-  # Test environment automatically inherits the run requirements; only
-  # list test-only extras here so they don't constrain the build/host solve.
-  requires:
-    - conda-forge::pytest
-    - conda-forge::pytest-cov
-    - conda-forge::pytest-check
-    - conda-forge::coverage
-    - conda-forge::jupyter
+  # Keep this minimal: test commands below run import checks plus two example
+  # command-line runs, and do not invoke the pytest suite.
   source_files:
     - 'examples/rmg/superminimal'
     - 'examples/arkane/networks/n-butanol_msc'
