@@ -326,8 +326,8 @@ cdef class Conformer(RMGObject):
         kg*m^2, while the principal axes have unit length.
         """
         I0 = self.get_moment_of_inertia_tensor()
-        # Since I0 is real and symmetric, diagonalization is always possible
-        I, V = np.linalg.eig(I0)
+        # I0 is real and symmetric by construction; use eigh so eigenvalues are guaranteed real.
+        I, V = np.linalg.eigh(I0)
         return I, V
 
     @cython.boundscheck(False)
