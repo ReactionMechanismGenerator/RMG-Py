@@ -89,6 +89,12 @@ jobs:
           echo "CONDA_TOKEN=$CONDA_TOKEN" >> $GITHUB_ENV
           conda config --add channels rmg
           conda config --add channels conda-forge
+          # --add prepends, so the final channel order is [conda-forge, rmg, ...].
+          # Strict priority makes the solver skip lower-priority channels entirely
+          # for any package the higher-priority channel offers, which means it
+          # won't even load old rmg/osx-64 builds of cantera/numpy/rdkit/etc.
+          # as candidates (they're shadowed by conda-forge's modern builds).
+          conda config --set channel_priority strict
           conda config --set anaconda_upload no
           CONDA_NPY=${{ matrix.numpy-version }} CONDA_PY=${{ matrix.python-version }} conda build .
 
