@@ -695,8 +695,8 @@ def get_principal_moments_of_inertia(coords, numbers=None, symbols=None):
         tuple: The corresponding principal axes.
     """
     tensor0 = get_moment_of_inertia_tensor(coords=coords, numbers=numbers, symbols=symbols)
-    # Since tensor0 is real and symmetric, diagonalization is always possible
-    principal_moments_of_inertia, axes = np.linalg.eig(tensor0)
+    # tensor0 is real and symmetric by construction; use eigh so eigenvalues are guaranteed real.
+    principal_moments_of_inertia, axes = np.linalg.eigh(tensor0)
     principal_moments_of_inertia, axes = zip(*sorted(zip(np.ndarray.tolist(principal_moments_of_inertia),
                                                          np.ndarray.tolist(axes)), reverse=True))
     return principal_moments_of_inertia, axes
