@@ -28,12 +28,9 @@ dependencies:
   - conda-forge::xlrd
   - conda-forge::xlwt
   - conda-forge::h5py
-  # keep graphviz from conda-forge; see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2750
   - conda-forge::graphviz >=12
   - conda-forge::markupsafe
   - conda-forge::psutil
-  # conda-forge not default, since default has a version information bug
-  # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
   - conda-forge::suitesparse
   # ThermoCentralDatabaseInterface fails if pyopenssl is too old. 20 is just a guess at the version number. 
@@ -60,6 +57,7 @@ dependencies:
   - conda-forge::pydot
   - conda-forge::jinja2
   - conda-forge::jupyter
+  - conda-forge::pip
   - conda-forge::pymongo
   - conda-forge::pyparsing
   - conda-forge::pyyaml
