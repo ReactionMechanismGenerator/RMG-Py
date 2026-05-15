@@ -509,9 +509,10 @@ class CanteraYamlFileComparer:
 
     def testElementsMatch(self):
         """Test that the element definitions in both YAML files match."""
-        ck2yaml_elements = sorted(self.yaml1['elements'], key=lambda e: e['symbol'])
+        assert ('elements' in self.yaml1) == ('elements' in self.yaml2), "One YAML file has 'elements' block while the other does not."
+        ck2yaml_elements = sorted(self.yaml1.get('elements', []), key=lambda e: e['symbol'])
         # Put symbol into Titlecase to match ck2yaml's formatting
-        rmg_elements = [{'symbol': e['symbol'].title(), 'atomic-weight': e['atomic-weight']} for e in self.yaml2['elements']]
+        rmg_elements = [{'symbol': e['symbol'].title(), 'atomic-weight': e['atomic-weight']} for e in self.yaml2.get('elements', [])]
         # Sort by the 'symbol' key.
         rmg_elements = sorted(rmg_elements, key=lambda e: e['symbol'])
         # Compare symbols exactly, and atomic weights approximately

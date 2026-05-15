@@ -173,16 +173,20 @@ def get_elements_block(elements_in_use):
     builtin_elements = [(H, 'H'), (C, 'C'), (O, 'O'), (N, 'N'), (Ne, 'Ne'), (Ar, 'Ar'),
                         (He, 'He'), (Si, 'Si'), (S, 'S'), (F, 'F'), (Cl, 'Cl'), (Br, 'Br'), (I, 'I')]
     elements_list = [symbol for element, symbol in builtin_elements if element in elements_in_use]
-    elements_block_list = ['', 'elements:']
+    custom_elements = []
     for isotope in (D, T, C13, O18):
         if isotope in elements_in_use:
             mass = 1000 * isotope.mass
-            elements_block_list.append(f"- symbol: {isotope.chemkin_name}\n  atomic-weight: {mass:f}")
+            custom_elements.append({'symbol': isotope.chemkin_name, 'atomic-weight': mass})
             elements_list.append(isotope.chemkin_name)
     if X in elements_in_use:
         elements_list.append('X')
-        elements_block_list.append("- symbol: X\n  atomic-weight: 195.083\n\n")
-    elements_block = '\n'.join(elements_block_list)
+        custom_elements.append({'symbol': 'X', 'atomic-weight': 195.083})
+    # Only emit the top-level 'elements:' block when there are non-builtin entries
+    if custom_elements:
+        elements_block = '\nelements:\n' + '\n'.join([f"- symbol: {e['symbol']}\n  atomic-weight: {e['atomic-weight']:f}" for e in custom_elements]) + '\n\n'
+    else:
+        elements_block = ''
     elements_line = f"elements: [{', '.join(elements_list)}]"
     return elements_block, elements_line
 

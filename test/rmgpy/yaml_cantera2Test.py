@@ -573,15 +573,14 @@ class TestCanteraWriter2:
         assert 'T' not in elements_list
 
     def test_generate_cantera_data_elements_block(self):
-        """generate_cantera_data emits a top-level 'elements' key whose custom entries
-        track elements_in_use: empty for plain gas, includes X when a surface site is present."""
+        """generate_cantera_data emits a top-level 'elements' key only when
+        non-builtin elements (isotopes, X) are in use, matching ck2yaml."""
         from rmgpy.molecule.element import H, X
         h2 = self._create_dummy_species("H2", "[H][H]", index=1)
 
-        # Gas-only H2: no isotopes, no X -> custom 'elements' list is empty.
+        # Gas-only H2: no isotopes, no X -> no top-level 'elements' block.
         data = generate_cantera_data([h2], [], elements_in_use={H})
-        assert 'elements' in data
-        assert data['elements'] == []
+        assert 'elements' not in data
 
         # Surface fixture: X is in use, so it appears as a custom element.
         x = self._create_surface_species("X", "1 X u0 p0", index=2)
@@ -743,9 +742,10 @@ class CanteraYamlFileComparer:
 
     def testElementsMatch(self):
         """Test that the element definitions in both YAML files match."""
-        ck2yaml_elements = sorted(self.yaml1['elements'], key=lambda e: e['symbol'])
+        assert ('elements' in self.yaml1) == ('elements' in self.yaml2), "One YAML file has an 'elements' block while the other does not."
+        ck2yaml_elements = sorted(self.yaml1.get('elements', []), key=lambda e: e['symbol'])
         # Put symbol into Titlecase to match ck2yaml's formatting
-        rmg_elements = [{'symbol': e['symbol'].title(), 'atomic-weight': e['atomic-weight']} for e in self.yaml2['elements']]
+        rmg_elements = [{'symbol': e['symbol'].title(), 'atomic-weight': e['atomic-weight']} for e in self.yaml2.get('elements', [])]
         rmg_elements = sorted(rmg_elements, key=lambda e: e['symbol'])
         # Compare symbols exactly, and atomic weights approximately
         assert [e['symbol'] for e in ck2yaml_elements] == [e['symbol'] for e in rmg_elements], \

@@ -285,7 +285,8 @@ def generate_cantera_data(species_list,
     # --- 3. Phase Definitions ---
     custom_elements, all_elements = get_elements_lists(elements_in_use)
 
-    data['elements'] = custom_elements
+    if custom_elements:
+        data['elements'] = custom_elements
     elements_set = set(all_elements)
     if is_plasma:
         elements_set.add('E')
