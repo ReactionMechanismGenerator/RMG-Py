@@ -20,7 +20,7 @@ END
 
 
 THERM ALL
-    300.000  1000.000  5000.000
+   300.000  1000.000  5000.000
 
 ! Thermo library: surfaceThermoPt111 Binding energy corrected by LSR () from Pt111
 X(1)                    X   1               G   100.000  5000.000 1554.81      1

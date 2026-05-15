@@ -19,7 +19,7 @@ END
 
 
 THERM ALL
-    300.000  1000.000  5000.000
+   300.000  1000.000  5000.000
 
 ! 
 ! Thermo group additivity estimation: group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R) + group(Cs-CsHHH) + gauche(Cs(CsRRR)) + other(R)
