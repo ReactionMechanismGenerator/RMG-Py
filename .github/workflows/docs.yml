@@ -28,7 +28,7 @@ jobs:
           fetch-depth: 0
 
       - name: Setup Miniforge Python 3.11
-        uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@v4
         with:
           environment-file: environment.yml
           miniforge-variant: Miniforge3
