@@ -1250,9 +1250,9 @@ def read_thermo_block(f, species_dict):
         meaningfulline, comment = remove_comment_from_line(line)
     Tmin = Tint = Tmax = None
     try:
-        Tmin = float(meaningfulline[0:9].strip())
-        Tint = float(meaningfulline[10:19].strip())
-        Tmax = float(meaningfulline[20:29].strip())
+        Tmin = float(meaningfulline[0:10].strip())
+        Tint = float(meaningfulline[10:20].strip())
+        Tmax = float(meaningfulline[20:30].strip())
         if [Tmin, Tint, Tmax] != [float(i) for i in meaningfulline.split()[0:3]]:
             logging.warning("Default temperature range line {0!r} may be badly formatted.".format(line))
             logging.warning("It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30")
@@ -2198,7 +2198,7 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
 
     # Thermodynamics section
     f.write('THERM ALL\n')
-    f.write('    300.000  1000.000  5000.000\n\n')
+    f.write('   300.000  1000.000  5000.000\n\n')
     for spec in sorted_species:
         f.write(write_thermo_entry(spec, verbose=verbose))
         f.write('\n')
