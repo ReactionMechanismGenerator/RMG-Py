@@ -63,13 +63,23 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
   <section id="installation-by-source-using-anaconda-environment-for-unix-based-systems-linux-and-mac-osx">
 <span id="anacondadeveloper"></span><h1><span class="section-number">3.3.1. </span>Installation by Source Using Anaconda Environment for Unix-based Systems: Linux and Mac OSX<a class="headerlink" href="#installation-by-source-using-anaconda-environment-for-unix-based-systems-linux-and-mac-osx" title="Permalink to this heading">¶</a></h1>
 <ol class="arabic">
-<li><p>Install the <cite>conda</cite> package manager via <cite>miniforge</cite>, if you do not already have it (or Anaconda), by following the <a class="reference external" href="https://github.com/conda-forge/miniforge?tab=readme-ov-file#install">Miniforge installation instructions</a>.</p></li>
-<li><p>If your <cite>conda</cite> version is older than 23.10.0, manually switch the solver backend to <cite>libmamba</cite> (or update your conda):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="n">conda</span><span class="o">-</span><span class="n">libmamba</span><span class="o">-</span><span class="n">solver</span>
-<span class="n">conda</span> <span class="n">config</span> <span class="o">--</span><span class="nb">set</span> <span class="n">solver</span> <span class="n">libmamba</span>
+<li><p>Before you begin — check your build tools are up to date.</p>
+<p>RMG-Py compiles Cython extensions during installation, so your C compiler and
+conda installation must be reasonably modern or the build will fail.</p>
+<p><strong>On MacOS:</strong> Ensure your Xcode Command Line Tools are current. If they are more than a year or two old, either download the latest Command Line Tools from <a class="reference external" href="https://developer.apple.com/download/all/">Apple Developer Downloads</a> (free Apple ID required) or manually remove them and reinstall them using:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">xcode</span><span class="o">-</span><span class="n">select</span> <span class="o">--</span><span class="n">install</span>
+</pre></div>
+</div>
+<p><strong>conda version:</strong> Ensure conda is also up to date.  To update:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">update</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">conda</span>
+</pre></div>
+</div>
+<p>If <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">update</span></code> does not advance the version (which can happen), install a specific release explicitly, e.g.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">install</span> <span class="o">-</span><span class="n">n</span> <span class="n">base</span> <span class="o">-</span><span class="n">c</span> <span class="n">conda</span><span class="o">-</span><span class="n">forge</span> <span class="n">conda</span><span class="o">=</span><span class="mf">26.3</span>
 </pre></div>
 </div>
 </li>
+<li><p>If you do not already have the <cite>conda</cite> package manager (or Anaconda) then install it via <cite>miniforge</cite>, by following the <a class="reference external" href="https://github.com/conda-forge/miniforge?tab=readme-ov-file#install">Miniforge installation instructions</a>.</p></li>
 <li><p>There are a few system-level dependencies which are required and should not be installed via Conda. These include
 <a class="reference external" href="https://git-scm.com/">Git</a> for version control, <a class="reference external" href="https://www.gnu.org/software/make/">GNU Make</a>, and the C and C++ compilers from the <a class="reference external" href="https://gcc.gnu.org/">GNU Compiler Collection (GCC)</a> for compiling RMG.</p>
 <p>For Linux users, you can check whether these are already installed by simply calling them via the command line, which
@@ -100,7 +110,8 @@ for your system.</p>
 <li><p>For MacOS users, the above packages can be easily obtained by installing the XCode Command Line Tools.
 These are a set of packages relevant for software development which have been bundled together by Apple.
 The easiest way to install this is to simply run one of the commands in the terminal, e.g. <code class="docutils literal notranslate"><span class="pre">git</span></code>.
-The terminal will then prompt you to install the Command Line Tools.</p></li>
+The terminal will then prompt you to install the Command Line Tools.
+See the warning in step 1 about keeping the tools up to date.</p></li>
 </ol>
 </li>
 <li><p>Install the latest versions of RMG and RMG-database through cloning the source code via Git. Make sure to start in an
@@ -124,7 +135,8 @@ unfamiliar with <code class="docutils literal notranslate"><span class="pre">ssh
 </pre></div>
 </div>
 </li>
-<li><p>Create the conda environment for RMG-Py:</p>
+<li><p>Create the conda environment for RMG-Py.</p>
+<p>To create an environment called <code class="docutils literal notranslate"><span class="pre">rmg_env</span></code> containing all that you need for RMG, run:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span>
 </pre></div>
 </div>
@@ -132,17 +144,13 @@ unfamiliar with <code class="docutils literal notranslate"><span class="pre">ssh
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">env</span> <span class="n">create</span> <span class="o">-</span><span class="n">f</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span> <span class="o">-</span><span class="n">n</span> <span class="n">rmg_env2</span>
 </pre></div>
 </div>
-<p>If either of these commands return an error due to being unable to find the <code class="docutils literal notranslate"><span class="pre">conda</span></code> command,
-try to either close and reopen your terminal to refresh your environment variables
-or type the following command.</p>
-<p>If on Linux or pre-Catalina MacOS (or if you have a bash shell):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/.</span><span class="n">bashrc</span>
+<p>If you have a recent version of conda (<code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">-V</span></code> reports &gt;= 26.3) then the preferred command is without the <code class="docutils literal notranslate"><span class="pre">env</span></code> subcommand:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">conda</span> <span class="n">create</span> <span class="o">--</span><span class="n">file</span> <span class="n">environment</span><span class="o">.</span><span class="n">yml</span> <span class="o">--</span><span class="n">name</span> <span class="n">rmg_env</span>
 </pre></div>
 </div>
-<p>If on MacOS Catalina or later (or if you have a Z shell):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="o">~/.</span><span class="n">zshrc</span>
-</pre></div>
-</div>
+<p>If any of these commands return an error due to being unable to find the <code class="docutils literal notranslate"><span class="pre">conda</span></code> command,
+(for example if you only just installed it)
+then close and reopen your terminal (or log out and log in again) to refresh your environment variables.</p>
 <p>NOTE: You may wish to forbid <code class="docutils literal notranslate"><span class="pre">conda</span></code> from installing from the Anaconda channels due to licensing restrictions.
 The <code class="docutils literal notranslate"><span class="pre">environment.yml</span></code> file already forbids using default channels, but you may further add the file <code class="docutils literal notranslate"><span class="pre">.condarc</span></code> to your RMG-Py directory (or modify the <code class="docutils literal notranslate"><span class="pre">.condarc</span></code> in your home directory) with the following contents before running the <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">env</span> <span class="pre">create</span></code> command:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">channels</span><span class="p">:</span>
@@ -150,10 +158,10 @@ The <code class="docutils literal notranslate"><span class="pre">environment.yml
   <span class="o">-</span> <span class="n">nodefaults</span>
 <span class="n">channel_priority</span><span class="p">:</span> <span class="n">strict</span>
 <span class="n">custom_channels</span><span class="p">:</span>
-  <span class="n">main</span><span class="p">:</span> <span class="n">null</span>
-  <span class="n">r</span><span class="p">:</span> <span class="n">null</span>
-  <span class="n">anaconda</span><span class="p">:</span> <span class="n">null</span>
-  <span class="n">msys2</span><span class="p">:</span> <span class="n">null</span>
+    <span class="n">main</span><span class="p">:</span> <span class="n">null</span>
+    <span class="n">r</span><span class="p">:</span> <span class="n">null</span>
+    <span class="n">anaconda</span><span class="p">:</span> <span class="n">null</span>
+    <span class="n">msys2</span><span class="p">:</span> <span class="n">null</span>
 </pre></div>
 </div>
 </li>
@@ -182,7 +190,7 @@ For MacOS users using zsh (default beginning in MacOS Catalina), these should be
 <blockquote>
 <div><p>Installing Julia and ReactionMechanismSimulator.jl (RMS) will enable all the features in RMG that require RMS-based reactors,
 as well as using <code class="docutils literal notranslate"><span class="pre">method='ode'</span></code> when solving the Master Equation with Arkane.
-Note that installing RMS can cause errors when running Cantera simulations; this should not affect normal RMG use, but if you wish to run Cantera simulations you will need to maintain a separate conda environment without RMS in it.</p>
+Note that installing RMS has sometimes caused errors when running Cantera; this should not affect normal RMG use, but if you wish to run Cantera simulations you might need to use a separate conda environment without RMS in it.</p>
 <p>Ensure that you have modified your environment variables as described above, and then run the following:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">source</span> <span class="n">install_rms</span><span class="o">.</span><span class="n">sh</span>
 </pre></div>
