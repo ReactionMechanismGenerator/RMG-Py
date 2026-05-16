@@ -47,6 +47,7 @@ from rmgpy.kinetics.arrhenius import (
     MultiArrhenius,
     MultiPDepArrhenius,
 )
+from rmgpy.kinetics.model import PDepKineticsModel
 from rmgpy.util import make_output_subdirectory
 from datetime import datetime
 from rmgpy.chemkin import get_species_identifier
@@ -359,6 +360,8 @@ def reaction_to_dicts(obj, spcs, verbose=False):
     else:
         list_of_cantera_reactions = [obj.to_cantera(use_chemkin_identifier=True)]
 
+    is_third_body = isinstance(obj.kinetics, PDepKineticsModel)
+
     for reaction in list_of_cantera_reactions:
         reaction_data = reaction.input_data
         efficiencies = getattr(obj.kinetics, "efficiencies", {})
@@ -370,6 +373,13 @@ def reaction_to_dicts(obj, spcs, verbose=False):
                 )
                 if val != 1
             }
+        elif not is_third_body:
+            # Cantera's API misidentifies a species that appears on both sides
+            # of a reaction (e.g. vacantX) as a third-body collider
+            # when there are three or more species on one side, producing a
+            # spurious 'efficiencies' entry in input_data.
+            # see https://github.com/Cantera/cantera/issues/2115
+            reaction_data.pop("efficiencies", None)
         # Convert any AnyMap objects to regular dicts before appending
         reaction_data = _convert_anymap_to_dict(reaction_data)
 

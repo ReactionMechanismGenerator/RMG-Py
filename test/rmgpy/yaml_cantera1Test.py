@@ -339,6 +339,44 @@ class TestYamlCantera1Functions:
             f"Spectator stoichiometry should not be doubled in: {eq}"
         )
 
+    def test_reaction_to_dicts_three_species_one_side_spectator(self):
+        """Spectator on both sides with 3+ stoichiometric items on a side must still drop efficiencies.
+
+        Cantera's API misidentifies a species with net-zero stoichiometry as
+        a third-body collider whenever the reaction has three or more
+        stoichiometric items on one side. Routing ct.Reaction through an
+        equation string avoids this only for the 2-each-side case. For
+        wider reactions the writer must strip the resulting spurious
+        'efficiencies' from input_data so the YAML round-trips through
+        ct.Solution.
+        """
+        ox = _make_surface_species(
+            "O_X",
+            "1 O u0 p2 c0 {2,D}\n2 X u0 p0 c0 {1,D}",
+            index=6,
+        )
+        # Recombinative H2 desorption with an adjacent O_X site as a chemically
+        # inert spectator:
+        #   2 H_X + O_X <=> H2 + O_X + 2 X    (atom balance: 2 H + O + 3 X)
+        # O_X has stoichiometry 1 on each side (net zero), so Cantera flags it
+        # as a third-body collider even though the underlying kinetics is a
+        # plain SurfaceArrhenius.
+        kin = SurfaceArrhenius(
+            A=(3.73e19, "m^2/(mol*s)"), n=0.475, Ea=(33.6, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[self.hx, self.hx, ox],
+            products=[self.h2, ox, self.x, self.x],
+            kinetics=kin,
+        )
+        species_list = self.all_surface + [ox]
+        entries = reaction_to_dicts(rxn, species_list)
+        d = entries[0]
+        assert "efficiencies" not in d, (
+            "Spurious 'efficiencies' must not appear for a SurfaceArrhenius "
+            f"reaction with a net-zero-stoichiometry spectator. Got: {d}"
+        )
+
     def test_get_elements_block_isotopes_and_surface_site(self):
         """get_elements_block emits isotope and X definitions only when requested."""
         from rmgpy.molecule.element import H, C, D, T, X
