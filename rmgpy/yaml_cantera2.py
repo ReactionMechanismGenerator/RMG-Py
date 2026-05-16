@@ -652,7 +652,8 @@ def get_reaction_equation(reaction, species_list):
         else:
             suffix = " (+ M)"
 
-    return reactants_str + suffix + " <=> " + products_str + suffix
+    arrow = " <=> " if reaction.reversible else " => "
+    return reactants_str + suffix + arrow + products_str + suffix
 
 
 def get_label(obj: Union['Species', 'Molecule'], species_list: list['Species']):
