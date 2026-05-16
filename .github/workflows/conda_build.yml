@@ -12,9 +12,7 @@ on:
       - stable
 jobs:
   build:
-    # Hard cap so a solver hang fails attributably instead of consuming the
-    # default 6-hour runner allotment in silence (as happened on macos-15-intel
-    # before the .conda recipe was tightened in this branch).
+    # Timeout to avoid waisting the default 6-hour runner allotment.
     timeout-minutes: 180
     strategy:
       fail-fast: false
@@ -44,7 +42,7 @@ jobs:
             os: macos-latest
             python-version: "3.10"
     runs-on: ${{ matrix.os }}
-    name: Build ${{ matrix.os }} Python ${{ matrix.python-version }} Numpy ${{ matrix.numpy-version }}
+    name: Conda Build ${{ matrix.os }} Python ${{ matrix.python-version }} Numpy ${{ matrix.numpy-version }}
     defaults:
       run:
         shell: bash -l {0}
@@ -66,9 +64,7 @@ jobs:
         run: conda install python anaconda-client conda-build
 
       - name: Show solver and runner info
-        # Small diagnostic snapshot — captures conda version, configured
-        # channels, base env contents, and runner CPU/RAM. Cheap to keep
-        # in CI and invaluable when something starts hanging again.
+        # Small diagnostic snapshot.
         run: |
           conda info
           conda config --show-sources
@@ -78,9 +74,6 @@ jobs:
 
       - name: Build Binary
         env:
-          # Light verbosity bump over default. Surfaces libmamba "Solver
-          # attempt: #N" markers and per-package install plans in the log
-          # without dragging in the firehose that --debug produces.
           CONDA_VERBOSITY: "1"
         run: |
           # set a default value to the conda_token if needed (like from forks)
@@ -91,9 +84,7 @@ jobs:
           conda config --add channels conda-forge
           # --add prepends, so the final channel order is [conda-forge, rmg, ...].
           # Strict priority makes the solver skip lower-priority channels entirely
-          # for any package the higher-priority channel offers, which means it
-          # won't even load old rmg/osx-64 builds of cantera/numpy/rdkit/etc.
-          # as candidates (they're shadowed by conda-forge's modern builds).
+          # for any package the higher-priority channel offers.
           conda config --set channel_priority strict
           conda config --set anaconda_upload no
           CONDA_NPY=${{ matrix.numpy-version }} CONDA_PY=${{ matrix.python-version }} conda build .
@@ -108,7 +99,7 @@ jobs:
   result:
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    name: Final Results
+    name: Conda Build Results
     needs: [build]
     steps:
       - run: exit 1
