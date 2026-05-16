@@ -33,8 +33,8 @@ dependencies:
   - conda-forge::psutil
   - conda-forge::ncurses
   - conda-forge::suitesparse
-  # ThermoCentralDatabaseInterface fails if pyopenssl is too old. 20 is just a guess at the version number. 
-  - conda-forge::pyopenssl >20
+  # ThermoCentralDatabaseInterface fails if pyopenssl is too old.
+  - conda-forge::pyopenssl >24
 
 # external software tools for chemistry
   - conda-forge::coolprop

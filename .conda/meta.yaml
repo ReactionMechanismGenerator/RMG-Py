@@ -35,7 +35,7 @@ requirements:
     - conda-forge::psutil
     - conda-forge::ncurses
     - conda-forge::suitesparse
-    - conda-forge::pyopenssl >20
+    - conda-forge::pyopenssl >24
     - conda-forge::coolprop
     - conda-forge::cantera >=3.0
     - conda-forge::mopac
