@@ -646,11 +646,16 @@ def get_reaction_equation(reaction, species_list):
 
     suffix = ""
     kin = reaction.kinetics
-    if isinstance(kin, (ThirdBody, Lindemann, Troe)):
-        if hasattr(reaction, 'specific_collider') and reaction.specific_collider:
-            suffix = " + " + get_label(reaction.specific_collider, species_list)
-        else:
-            suffix = " (+ M)"
+    collider = getattr(reaction, 'specific_collider', None)
+    if isinstance(kin, ThirdBody):
+        # Real three-body reaction: M (or specific collider) participates as a
+        # reactant on both sides without parentheses.
+        m_label = get_label(collider, species_list) if collider else "M"
+        suffix = " + " + m_label
+    elif isinstance(kin, (Lindemann, Troe)):
+        # Pressure-dependent falloff: M acts as a chaperone, written in parens.
+        m_label = get_label(collider, species_list) if collider else "M"
+        suffix = " (+" + m_label + ")"
 
     arrow = " <=> " if reaction.reversible else " => "
     return reactants_str + suffix + arrow + products_str + suffix
