@@ -583,7 +583,7 @@ def find_formate_delocalization_paths(atom1):
         for atom2, bond12 in atom1.edges.items():
             if atom2.is_oxygen() and bond12.is_van_der_waals():
                 for atom3, bond23 in atom2.edges.items():
-                    if atom3.is_carbon() and bond23.is_double():
+                    if (atom3.is_carbon() or atom3.is_nitrogen()) and bond23.is_double():
                         for atom4, bond34 in atom3.edges.items():
                             if atom2 is not atom4 and atom4.is_oxygen() and bond34.is_single():
                                 for atom5, bond45 in atom4.edges.items():
