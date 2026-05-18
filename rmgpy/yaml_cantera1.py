@@ -47,7 +47,7 @@ from rmgpy.kinetics.arrhenius import (
     MultiArrhenius,
     MultiPDepArrhenius,
 )
-from rmgpy.kinetics.falloff import ThirdBody
+from rmgpy.kinetics.falloff import Lindemann, ThirdBody, Troe
 from rmgpy.kinetics.model import PDepKineticsModel
 from rmgpy.util import make_output_subdirectory
 from datetime import datetime
@@ -345,6 +345,33 @@ def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None, v
     return result_dict
 
 
+def _build_equation_string(obj):
+    """
+    Build the reaction equation string preserving the order of reactants and
+    products as stored on the RMG Reaction object. Cantera's input_data sorts
+    reactant/product maps internally, which loses the source ordering (e.g.
+    'H + O2' instead of 'O2 + H' for HO2 formation). Match the equation
+    convention used by ck2yaml/CanteraWriter2: stoichiometry coefficients are
+    not collapsed, third-body M (or specific collider) is appended without
+    parentheses, and falloff colliders are written as '(+M)'.
+    """
+    reactants = " + ".join(r.to_chemkin() for r in obj.reactants)
+    products = " + ".join(p.to_chemkin() for p in obj.products)
+
+    suffix = ""
+    kin = obj.kinetics
+    collider = getattr(obj, "specific_collider", None)
+    if isinstance(kin, ThirdBody) and not isinstance(kin, (Lindemann, Troe)):
+        m_label = collider.to_chemkin() if collider else "M"
+        suffix = " + " + m_label
+    elif isinstance(kin, (Lindemann, Troe)):
+        m_label = collider.to_chemkin() if collider else "M"
+        suffix = " (+" + m_label + ")"
+
+    arrow = " <=> " if obj.reversible else " => "
+    return reactants + suffix + arrow + products + suffix
+
+
 def reaction_to_dicts(obj, spcs, verbose=False):
     """
     Takes an RMG reaction object (obj), returns a list of dictionaries
@@ -363,8 +390,16 @@ def reaction_to_dicts(obj, spcs, verbose=False):
 
     is_third_body = isinstance(obj.kinetics, PDepKineticsModel)
 
+    rmg_equation = _build_equation_string(obj)
+
     for reaction in list_of_cantera_reactions:
         reaction_data = reaction.input_data
+        # Cantera reorders reactant and product species (e.g. it writes
+        # 'H + O2' even when the RMG reaction has them in the order O2, H),
+        # and collapses repeated species into stoichiometric coefficients.
+        # Overwrite with an equation built from obj.reactants/products to
+        # preserve the source ordering and match ck2yaml's output style.
+        reaction_data["equation"] = rmg_equation
         # Cantera's input_data omits 'type: three-body' for plain ThirdBody
         # reactions (only Lindemann/Troe falloff get a 'type' field). Add it
         # explicitly so the YAML matches what ck2yaml emits for the same input.

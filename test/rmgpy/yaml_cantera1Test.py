@@ -158,7 +158,7 @@ class TestYamlCantera1Functions:
         entries = reaction_to_dicts(rxn, self.all_gas)
         assert len(entries) == 1
         d = entries[0]
-        assert d["equation"] == "H2(1) <=> 2 H(2)"
+        assert d["equation"] == "H2(1) <=> H(2) + H(2)"
         assert "rate-constant" in d
         assert np.isclose(d["rate-constant"]["A"], 1e13)
         assert np.isclose(d["rate-constant"]["b"], 0.5)
