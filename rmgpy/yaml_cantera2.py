@@ -636,15 +636,27 @@ def reaction_to_dict_list(reaction, species_list=None, verbose=False):
     # --- Metadata / Notes (only when verbose) ---
     if verbose:
         note_lines = list()
+        # Use the same wording as the Chemkin annotation block (and the
+        # ck2yaml-converted reference YAML) so the three outputs are
+        # mutually diffable: 'Library reaction: X' not 'Source: Library X'.
         if isinstance(reaction, TemplateReaction):
-            note_lines.append(f"Source: Template family {reaction.family}")
+            note_lines.append(f"Template reaction: {reaction.family}")
         elif isinstance(reaction, LibraryReaction):
-            note_lines.append(f"Source: Library {reaction.library}")
+            note_lines.append(f"Library reaction: {reaction.library}")
         elif isinstance(reaction, PDepReaction):
-            note_lines.append(f"Source: PDep Network #{reaction.network.index}")
+            note_lines.append(f"PDep reaction: {reaction.network}")
 
         if reaction.specific_collider:
-            note_lines.append(f"Specific collider: {reaction.specific_collider.label}")
+            note_lines.append(
+                f"Specific third body collider: {reaction.specific_collider.label}"
+            )
+
+        if getattr(reaction, "pairs", None):
+            pair_str = "Flux pairs: " + "; ".join(
+                f"{get_label(p[0], species_list)}, {get_label(p[1], species_list)}"
+                for p in reaction.pairs
+            )
+            note_lines.append(pair_str)
 
         if hasattr(kin, "comment") and kin.comment:
             # Preserve the original line structure of the kinetics comment

@@ -455,7 +455,13 @@ def reaction_to_dicts(obj, spcs, verbose=False):
             elif isinstance(obj, PDepReaction):
                 note_lines.append(f"PDep reaction: {obj.network}")
             if obj.specific_collider is not None:
-                note_lines.append(f"Specific collider: {obj.specific_collider.label}")
+                note_lines.append(f"Specific third body collider: {obj.specific_collider.label}")
+            if getattr(obj, "pairs", None):
+                pair_str = "Flux pairs: " + "; ".join(
+                    f"{get_species_identifier(p[0])}, {get_species_identifier(p[1])}"
+                    for p in obj.pairs
+                )
+                note_lines.append(pair_str)
             if obj.kinetics.comment:
                 # Preserve the original line structure of the kinetics
                 # comment (one line per source line) and right-strip each
