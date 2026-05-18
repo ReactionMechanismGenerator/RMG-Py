@@ -165,7 +165,7 @@ class TestYamlCantera1Functions:
         assert np.isclose(d["rate-constant"]["Ea"], 10e6)  # 10 kJ/mol → 1e7 J/kmol
 
     def test_reaction_to_dicts_thirdbody(self):
-        """ThirdBody: equation uses M, efficiencies map present."""
+        """ThirdBody: type is three-body, equation uses M, efficiencies map present."""
         kin = ThirdBody(
             arrheniusLow=Arrhenius(
                 A=(1e18, "cm^6/(mol^2*s)"), n=-1, Ea=(0, "J/mol"), T0=(1, "K")
@@ -177,6 +177,7 @@ class TestYamlCantera1Functions:
         )
         entries = reaction_to_dicts(rxn, self.all_gas)
         d = entries[0]
+        assert d["type"] == "three-body"
         assert "M" in d["equation"]
         assert "rate-constant" in d
         assert "efficiencies" in d

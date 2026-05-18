@@ -47,6 +47,7 @@ from rmgpy.kinetics.arrhenius import (
     MultiArrhenius,
     MultiPDepArrhenius,
 )
+from rmgpy.kinetics.falloff import ThirdBody
 from rmgpy.kinetics.model import PDepKineticsModel
 from rmgpy.util import make_output_subdirectory
 from datetime import datetime
@@ -364,6 +365,15 @@ def reaction_to_dicts(obj, spcs, verbose=False):
 
     for reaction in list_of_cantera_reactions:
         reaction_data = reaction.input_data
+        # Cantera's input_data omits 'type: three-body' for plain ThirdBody
+        # reactions (only Lindemann/Troe falloff get a 'type' field). Add it
+        # explicitly so the YAML matches what ck2yaml emits for the same input.
+        if isinstance(obj.kinetics, ThirdBody) and "type" not in reaction_data:
+            new_data = {"equation": reaction_data["equation"], "type": "three-body"}
+            for k, v in reaction_data.items():
+                if k != "equation":
+                    new_data[k] = v
+            reaction_data = new_data
         efficiencies = getattr(obj.kinetics, "efficiencies", {})
         if efficiencies:
             reaction_data["efficiencies"] = {
