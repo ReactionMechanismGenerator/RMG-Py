@@ -36,11 +36,29 @@ a yaml file that can be read by Cantera
 import os
 import shutil
 try:
-    from yaml import CDumper as Dumper
+    from yaml import CDumper as _BaseDumper
 except ImportError:
-    from yaml import Dumper
+    from yaml import Dumper as _BaseDumper
 import yaml
 import logging
+
+
+class Dumper(_BaseDumper):
+    """
+    YAML Dumper that emits multi-line strings using the literal block style
+    ('|') instead of the default double-quoted form with embedded '\\n'.
+    Used to render the multi-line 'note' field on reactions in a way that
+    mirrors ck2yaml's output.
+    """
+
+
+def _multiline_str_representer(dumper, data):
+    if "\n" in data:
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+Dumper.add_representer(str, _multiline_str_representer)
 
 from rmgpy.species import Species
 from rmgpy.kinetics.arrhenius import (
@@ -429,19 +447,27 @@ def reaction_to_dicts(obj, spcs, verbose=False):
         reaction_data = _convert_anymap_to_dict(reaction_data)
 
         if verbose:
-            note_parts = []
+            note_lines = []
             if isinstance(obj, TemplateReaction):
-                note_parts.append(f"Template reaction: {obj.family}")
+                note_lines.append(f"Template reaction: {obj.family}")
             elif isinstance(obj, LibraryReaction):
-                note_parts.append(f"Library reaction: {obj.library}")
+                note_lines.append(f"Library reaction: {obj.library}")
             elif isinstance(obj, PDepReaction):
-                note_parts.append(f"PDep reaction: {obj.network}")
+                note_lines.append(f"PDep reaction: {obj.network}")
             if obj.specific_collider is not None:
-                note_parts.append(f"Specific collider: {obj.specific_collider.label}")
+                note_lines.append(f"Specific collider: {obj.specific_collider.label}")
             if obj.kinetics.comment:
-                note_parts.append(obj.kinetics.comment.replace('\n', '; ').strip())
-            if note_parts:
-                reaction_data["note"] = " | ".join(note_parts)
+                # Preserve the original line structure of the kinetics
+                # comment (one line per source line) and right-strip each
+                # line: PyYAML refuses the '|' literal block style for any
+                # value whose lines have trailing whitespace.
+                for line in obj.kinetics.comment.strip("\n").split("\n"):
+                    note_lines.append(line.rstrip())
+            if note_lines:
+                # Trailing '\n' keeps PyYAML's literal block style ('|'
+                # rather than '|-') so the rendered note ends with a
+                # newline, matching ck2yaml's output.
+                reaction_data["note"] = "\n".join(line.rstrip() for line in note_lines) + "\n"
 
         reaction_list.append(reaction_data)
 

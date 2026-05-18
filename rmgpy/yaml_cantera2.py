@@ -35,10 +35,28 @@ import os
 import shutil
 import logging
 try:
-    from yaml import CDumper as Dumper
+    from yaml import CDumper as _BaseDumper
 except ImportError:
-    from yaml import Dumper
+    from yaml import Dumper as _BaseDumper
 import yaml
+
+
+class Dumper(_BaseDumper):
+    """
+    YAML Dumper that emits multi-line strings using the literal block style
+    ('|') instead of the default double-quoted form with embedded '\\n'.
+    Used to render the multi-line 'note' field on reactions in a way that
+    mirrors ck2yaml's output.
+    """
+
+
+def _multiline_str_representer(dumper, data):
+    if "\n" in data:
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+Dumper.add_representer(str, _multiline_str_representer)
 
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import LibraryReaction
@@ -617,24 +635,30 @@ def reaction_to_dict_list(reaction, species_list=None, verbose=False):
 
     # --- Metadata / Notes (only when verbose) ---
     if verbose:
-        note_parts = list()
+        note_lines = list()
         if isinstance(reaction, TemplateReaction):
-            note_parts.append(f"Source: Template family {reaction.family}")
+            note_lines.append(f"Source: Template family {reaction.family}")
         elif isinstance(reaction, LibraryReaction):
-            note_parts.append(f"Source: Library {reaction.library}")
+            note_lines.append(f"Source: Library {reaction.library}")
         elif isinstance(reaction, PDepReaction):
-            note_parts.append(f"Source: PDep Network #{reaction.network.index}")
-
-        if hasattr(kin, 'comment') and kin.comment:
-            clean_comment = kin.comment.replace('\n', '; ').strip()
-            if clean_comment:
-                note_parts.append(clean_comment)
+            note_lines.append(f"Source: PDep Network #{reaction.network.index}")
 
         if reaction.specific_collider:
-            note_parts.append(f"Specific collider: {reaction.specific_collider.label}")
+            note_lines.append(f"Specific collider: {reaction.specific_collider.label}")
 
-        if note_parts:
-            entry['note'] = " | ".join(note_parts)
+        if hasattr(kin, "comment") and kin.comment:
+            # Preserve the original line structure of the kinetics comment
+            # (one line per source line) and right-strip each line: PyYAML
+            # refuses the '|' literal block style for any value whose lines
+            # have trailing whitespace.
+            for line in kin.comment.strip("\n").split("\n"):
+                note_lines.append(line.rstrip())
+
+        if note_lines:
+            # Trailing '\n' keeps PyYAML's literal block style ('|' rather
+            # than '|-') so the rendered note ends with a newline, matching
+            # ck2yaml's output.
+            entry["note"] = "\n".join(line.rstrip() for line in note_lines) + "\n"
 
     return [entry]
 
