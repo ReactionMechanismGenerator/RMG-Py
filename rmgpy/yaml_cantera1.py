@@ -306,6 +306,34 @@ phases:
     return phases_block
 
 
+def _collect_reactions(rxn_list, spcs, verbose, chemkin_counter):
+    """
+    Convert a list of RMG reactions to a list of YAML reaction dicts,
+    prepending a 'Reaction index: Chemkin #N; RMG #M' line to the note of
+    each entry (in verbose mode). chemkin_counter is a single-element list
+    used as a mutable counter so calls across multiple reaction blocks
+    (e.g. gas + site0 in surface mechanisms) share a continuous Chemkin
+    numbering, matching the global counter in the Chemkin writer. For
+    MultiArrhenius/MultiPDepArrhenius reactions, which expand into several
+    YAML entries, each sub-entry gets its own Chemkin number but shares
+    the parent RMG index.
+    """
+    entries = []
+    for rmg_rxn in rxn_list:
+        rxn_entries = reaction_to_dicts(rmg_rxn, spcs, verbose=verbose)
+        for entry in rxn_entries:
+            chemkin_counter[0] += 1
+            if verbose:
+                index_line = (
+                    f"Reaction index: Chemkin #{chemkin_counter[0]}; "
+                    f"RMG #{rmg_rxn.index}"
+                )
+                existing = entry.get("note", "")
+                entry["note"] = index_line + "\n" + existing if existing else index_line + "\n"
+        entries.extend(rxn_entries)
+    return entries
+
+
 def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None, verbose=False):
     """
     For systems with surface species/reactions.
@@ -328,16 +356,9 @@ def get_mech_dict_surface(spcs, rxns, solvent="solvent", solvent_data=None, verb
     result_dict["species"] = [species_to_dict(x, all_species=spcs, verbose=verbose) for x in spcs]
 
     # separate gas and surface reactions
-
-    gas_reactions = []
-    for rmg_rxn in gas_rxns:
-        gas_reactions.extend(reaction_to_dicts(rmg_rxn, spcs, verbose=verbose))
-    result_dict["gas-reactions"] = gas_reactions
-
-    surface_reactions = []
-    for rmg_rxn in surface_rxns:
-        surface_reactions.extend(reaction_to_dicts(rmg_rxn, spcs, verbose=verbose))
-    result_dict["site0-reactions"] = surface_reactions
+    chemkin_counter = [0]
+    result_dict["gas-reactions"] = _collect_reactions(gas_rxns, spcs, verbose, chemkin_counter)
+    result_dict["site0-reactions"] = _collect_reactions(surface_rxns, spcs, verbose, chemkin_counter)
 
     return result_dict
 
@@ -355,10 +376,8 @@ def get_mech_dict_nonsurface(spcs, rxns, solvent="solvent", solvent_data=None, v
     result_dict = dict()
     result_dict["species"] = [species_to_dict(x, verbose=verbose) for x in spcs]
 
-    reactions = []
-    for rmg_rxn in rxns:
-        reactions.extend(reaction_to_dicts(rmg_rxn, spcs, verbose=verbose))
-    result_dict["reactions"] = reactions
+    chemkin_counter = [0]
+    result_dict["reactions"] = _collect_reactions(rxns, spcs, verbose, chemkin_counter)
 
     return result_dict
 

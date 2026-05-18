@@ -365,12 +365,14 @@ def generate_cantera_data(species_list,
         species_data.append(species_to_dict(sp, species_list, verbose=verbose))
     data['species'] = species_data
 
-    # Build separate reaction lists for each phase if there are two phases
-    gas_reaction_data = list()
-    for rxn in gas_reactions:
-        entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
-        if entries:
-            gas_reaction_data.extend(entries)
+    # Build separate reaction lists for each phase if there are two phases.
+    # chemkin_counter is a single-element list used as a mutable counter so
+    # the Chemkin reaction numbering in verbose notes continues unbroken
+    # across the gas and surface reaction blocks, matching the global
+    # counter in the Chemkin writer.
+    chemkin_counter = [0]
+    gas_reaction_data = _collect_reaction_entries(gas_reactions, species_list,
+                                                  verbose, chemkin_counter)
 
     if surface_species:
         data['gas-reactions'] = gas_reaction_data
@@ -378,14 +380,36 @@ def generate_cantera_data(species_list,
         data['reactions'] = gas_reaction_data
 
     if surface_reactions:
-        surface_reaction_data = list()
-        for rxn in surface_reactions:
-            entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
-            if entries:
-                surface_reaction_data.extend(entries)
-        data['surface-reactions'] = surface_reaction_data
+        data['surface-reactions'] = _collect_reaction_entries(
+            surface_reactions, species_list, verbose, chemkin_counter)
 
     return data
+
+
+def _collect_reaction_entries(rxns, species_list, verbose, chemkin_counter):
+    """
+    Convert RMG reactions to YAML reaction dicts, prepending a 'Reaction
+    index: Chemkin #N; RMG #M' line to each note (in verbose mode). For
+    MultiArrhenius/MultiPDepArrhenius reactions, which expand into several
+    YAML entries, each sub-entry gets its own Chemkin number but shares
+    the parent RMG index.
+    """
+    entries = []
+    for rxn in rxns:
+        rxn_entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
+        for entry in rxn_entries:
+            chemkin_counter[0] += 1
+            if verbose:
+                index_line = (
+                    f"Reaction index: Chemkin #{chemkin_counter[0]}; "
+                    f"RMG #{rxn.index}"
+                )
+                existing = entry.get("note", "")
+                entry["note"] = (
+                    index_line + "\n" + existing if existing else index_line + "\n"
+                )
+        entries.extend(rxn_entries)
+    return entries
 
 
 def species_to_dict(species, species_list, verbose=False):
