@@ -1262,9 +1262,9 @@ def generate_adsorbate_conjugate_resonance_structures(mol):
 
 def generate_formate_resonance_structures(mol):
     """
-    Generate all of the resonance structures formed by the shift of two
-    electrons in a conjugated pi bond system of a bidentate adsorbate
-    with a bridging atom in between.
+    Generate all resonance structures formed by the shift of two
+    electrons in a conjugated bonding system of a bidentate adsorbate
+    with a bridging atom in between, where one bond to the surface is vdW.
 
     Example [X]OC(H)O[X]: [X]~OC(H)O[X] <=> [X]OC(H)O~[X]
     (where '~' denotes a vdW bond)
@@ -1279,7 +1279,8 @@ def generate_formate_resonance_structures(mol):
             paths = pathfinder.find_formate_delocalization_paths(atom)
             for atom1, atom2, atom3, atom4, atom5, bond12, bond23, bond34, bond45 in paths:
                 if ((atom2.is_oxygen() and bond12.is_van_der_waals()) and
-                        (atom4.is_oxygen() and atom5.is_surface_site() and bond45.is_single())):
+                        (atom4.is_oxygen() and atom5.is_surface_site() and
+                         bond45.is_single() and bond23.is_double() and bond34.is_single())):
                     bond12.increment_order()
                     bond23.decrement_order()
                     bond34.increment_order()
