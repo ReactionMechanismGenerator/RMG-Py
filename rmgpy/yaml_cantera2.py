@@ -660,9 +660,6 @@ def reaction_to_dict_list(reaction, species_list=None, verbose=False):
     # --- Metadata / Notes (only when verbose) ---
     if verbose:
         note_lines = list()
-        # Use the same wording as the Chemkin annotation block (and the
-        # ck2yaml-converted reference YAML) so the three outputs are
-        # mutually diffable: 'Library reaction: X' not 'Source: Library X'.
         if isinstance(reaction, TemplateReaction):
             note_lines.append(f"Template reaction: {reaction.family}")
         elif isinstance(reaction, LibraryReaction):
@@ -683,17 +680,10 @@ def reaction_to_dict_list(reaction, species_list=None, verbose=False):
             note_lines.append(pair_str)
 
         if hasattr(kin, "comment") and kin.comment:
-            # Preserve the original line structure of the kinetics comment
-            # (one line per source line) and right-strip each line: PyYAML
-            # refuses the '|' literal block style for any value whose lines
-            # have trailing whitespace.
             for line in kin.comment.strip("\n").split("\n"):
                 note_lines.append(line.rstrip())
 
         if note_lines:
-            # Trailing '\n' keeps PyYAML's literal block style ('|' rather
-            # than '|-') so the rendered note ends with a newline, matching
-            # ck2yaml's output.
             entry["note"] = "\n".join(line.rstrip() for line in note_lines) + "\n"
 
     return [entry]
@@ -708,8 +698,7 @@ def get_reaction_equation(reaction, species_list):
     kin = reaction.kinetics
     collider = getattr(reaction, 'specific_collider', None)
     if isinstance(kin, ThirdBody):
-        # Real three-body reaction: M (or specific collider) participates as a
-        # reactant on both sides without parentheses.
+        # Real three-body reaction: M (or specific collider) without parentheses.
         m_label = get_label(collider, species_list) if collider else "M"
         suffix = " + " + m_label
     elif isinstance(kin, (Lindemann, Troe)):

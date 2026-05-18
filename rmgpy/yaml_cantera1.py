@@ -437,9 +437,9 @@ def reaction_to_dicts(obj, spcs, verbose=False):
         # Overwrite with an equation built from obj.reactants/products to
         # preserve the source ordering and match ck2yaml's output style.
         reaction_data["equation"] = rmg_equation
-        # Cantera's input_data omits 'type: three-body' for plain ThirdBody
-        # reactions (only Lindemann/Troe falloff get a 'type' field). Add it
-        # explicitly so the YAML matches what ck2yaml emits for the same input.
+        # Cantera's (v. 3.2) input_data omits 'type: three-body' for plain ThirdBody
+        # reactions (only Lindemann/Troe falloff get a 'type' field).
+        # Add it, immediately after the 'equation' field, to match the ck2yaml output.
         if isinstance(obj.kinetics, ThirdBody) and "type" not in reaction_data:
             new_data = {"equation": reaction_data["equation"], "type": "three-body"}
             for k, v in reaction_data.items():
@@ -456,7 +456,7 @@ def reaction_to_dicts(obj, spcs, verbose=False):
                 if val != 1
             }
         elif not is_third_body:
-            # Cantera's API misidentifies a species that appears on both sides
+            # Cantera's API (v. 3.2) misidentifies a species that appears on both sides
             # of a reaction (e.g. vacantX) as a third-body collider
             # when there are three or more species on one side, producing a
             # spurious 'efficiencies' entry in input_data.
@@ -482,16 +482,9 @@ def reaction_to_dicts(obj, spcs, verbose=False):
                 )
                 note_lines.append(pair_str)
             if obj.kinetics.comment:
-                # Preserve the original line structure of the kinetics
-                # comment (one line per source line) and right-strip each
-                # line: PyYAML refuses the '|' literal block style for any
-                # value whose lines have trailing whitespace.
                 for line in obj.kinetics.comment.strip("\n").split("\n"):
                     note_lines.append(line.rstrip())
             if note_lines:
-                # Trailing '\n' keeps PyYAML's literal block style ('|'
-                # rather than '|-') so the rendered note ends with a
-                # newline, matching ck2yaml's output.
                 reaction_data["note"] = "\n".join(line.rstrip() for line in note_lines) + "\n"
 
         reaction_list.append(reaction_data)
