@@ -556,10 +556,10 @@ def find_adsorbate_conjugate_delocalization_paths(atom1):
 
 def find_formate_delocalization_paths(atom1):
     """
-    Find all resonance structures which have a bonding configuration X...O-C-O-X.
+    Find all resonance structures which have a bonding configuration X~O=C-O-X.
     Examples:
 
-    - XOC(H)XO/XOC(H)XO, where X is the surface site. The adsorption site X
+    - [X]~OC(H)O[X]/[X]OC(H)O~[X], where '~' denotes a vdW bond and X is the surface site. The adsorption site X
       is always placed on the left-hand side of the adatom and every adatom
       is bonded to only one surface site X.
 
@@ -583,10 +583,10 @@ def find_formate_delocalization_paths(atom1):
         for atom2, bond12 in atom1.edges.items():
             if atom2.is_oxygen() and bond12.is_van_der_waals():
                 for atom3, bond23 in atom2.edges.items():
-                    if atom3.is_carbon():
+                    if atom3.is_carbon() and bond23.is_double():
                         for atom4, bond34 in atom3.edges.items():
-                            if atom2 is not atom4 and atom4.is_oxygen():
+                            if atom2 is not atom4 and atom4.is_oxygen() and bond34.is_single():
                                 for atom5, bond45 in atom4.edges.items():
-                                    if atom5.is_surface_site():
+                                    if atom5.is_surface_site() and bond45.is_single():
                                         paths.append([atom1, atom2, atom3, atom4, atom5, bond12, bond23, bond34, bond45])
     return paths
