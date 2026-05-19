@@ -96,7 +96,8 @@ def populate_resonance_algorithms(features=None):
             generate_clar_structures,
             generate_adsorbate_shift_down_resonance_structures,
             generate_adsorbate_shift_up_resonance_structures,
-            generate_adsorbate_conjugate_resonance_structures
+            generate_adsorbate_conjugate_resonance_structures,
+            generate_formate_resonance_structures,
         ]
     else:
         # If the molecule is aromatic, then radical resonance has already been considered
