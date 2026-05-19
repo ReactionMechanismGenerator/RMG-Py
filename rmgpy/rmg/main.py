@@ -1384,13 +1384,57 @@ class RMG(util.Subject):
                     return
                 with open(src) as f:
                     text = f.read()
+
+                def _strip_wrapped_flow_notes(value):
+                    """Remove wrapped flow ``note:`` tails without regex backtracking.
+
+                    Matches this shape in a single pass:
+                    ``...,\n    note: ...\n      ...}``
+                    and rewrites it as ``...}``.
+                    """
+                    lines = value.splitlines(keepends=True)
+                    output = []
+                    i = 0
+
+                    while i < len(lines):
+                        line = lines[i]
+                        stripped = line.rstrip("\r\n")
+                        if not stripped.endswith(",") or i + 1 >= len(lines):
+                            output.append(line)
+                            i += 1
+                            continue
+
+                        next_line = lines[i + 1]
+                        if not re.match(r'[ \t]+note:', next_line):
+                            output.append(line)
+                            i += 1
+                            continue
+
+                        j = i + 1
+                        found_closing_brace = False
+                        while j < len(lines) and re.match(r'[ \t]+', lines[j]):
+                            if '}' in lines[j]:
+                                found_closing_brace = True
+                                break
+                            j += 1
+
+                        if found_closing_brace:
+                            closing_line = lines[j]
+                            closing_suffix = closing_line[closing_line.find('}') + 1 :]
+                            output.append(stripped[:-1] + '}' + closing_suffix)
+                            i = j + 1
+                            continue
+
+                        output.append(line)
+                        i += 1
+
+                    return ''.join(output)
+
                 # Wrapped flow style: a flow mapping that wraps after a
                 # trailing ``,``, with ``note: value`` on the next line
                 # (value may itself wrap across several more-indented lines)
                 # ending in ``}``. Replace the whole tail with ``}``.
-                text = re.sub(
-                    r',[ \t]*\n[ \t]+note:[^\n}]*(?:\n[ \t]+[^\n}]*)*\}',
-                    '}', text)
+                text = _strip_wrapped_flow_notes(text)
                 # Single-line flow style: ``, note: value}`` → ``}``.
                 text = re.sub(r',[ \t]*note:[^,}]*\}', '}', text)
                 # Block style: ``  note: ...\n`` plus deeper-indented
