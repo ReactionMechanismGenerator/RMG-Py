@@ -445,7 +445,8 @@ class Atom(Vertex):
         ``False`` if it is not
         """
         cython.declare(bonded_atom=Atom)
-        for bonded_atom in self.bonds.keys():
+        # access self.edges directly to skip the bonds @property dispatch
+        for bonded_atom in self.edges:
             if bonded_atom.is_surface_site():
                 return True
         return False
@@ -456,7 +457,8 @@ class Atom(Vertex):
         ``False`` if it is not
         """
         cython.declare(bonded_atom=Atom)
-        for bonded_atom in self.bonds.keys():
+        # access self.edges directly to skip the bonds @property dispatch
+        for bonded_atom in self.edges:
             if bonded_atom.is_halogen():
                 return True
         return False
@@ -583,6 +585,7 @@ class Atom(Vertex):
         Update self.charge, according to the valence, and the
         number and types of bonds, radicals, and lone pairs.
         """
+        cython.declare(valence_electron=cython.short, order=cython.double)
         if self.is_surface_site():
             self.charge = 0
             return
@@ -590,9 +593,9 @@ class Atom(Vertex):
             self.charge = -1
             return
 
-        valence_electron = elements.PeriodicSystem.valence_electrons[self.symbol]
+        valence_electron = elements.PeriodicSystem.valence_electrons[self.element.symbol]
         order = self.get_total_bond_order()
-        self.charge = valence_electron - order - self.radical_electrons - 2 * self.lone_pairs
+        self.charge = valence_electron - int(order) - self.radical_electrons - 2 * self.lone_pairs
 
     def apply_action(self, action):
         """
@@ -628,13 +631,14 @@ class Atom(Vertex):
         This helper function is to help calculate total bond orders for an
         input atom.
 
-        Some special consideration for the order `B` bond. For atoms having 
+        Some special consideration for the order `B` bond. For atoms having
         three `B` bonds, the order for each is 4/3.0, while for atoms having other
         than three `B` bonds, the order for  each is 3/2.0
         """
+        cython.declare(bond=Bond, num_b_bond=cython.int, order=cython.double)
         num_b_bond = 0
-        order = 0
-        for bond in self.bonds.values():
+        order = 0.0
+        for bond in self.edges.values():
             if bond.is_benzene():
                 num_b_bond += 1
             else:
@@ -2389,13 +2393,13 @@ class Molecule(Graph):
         Iterate through the atoms in the structure and calculate the
         number of lone electron pairs, assuming a neutral molecule.
         """
-        cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=float)
+        cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=cython.double)
         for atom1 in self.vertices:
             if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron() or atom1.is_lithium():
                 atom1.lone_pairs = 0
             else:
                 order = atom1.get_total_bond_order()
-                atom1.lone_pairs = (elements.PeriodicSystem.valence_electrons[atom1.symbol]
+                atom1.lone_pairs = (elements.PeriodicSystem.valence_electrons[atom1.element.symbol]
                                    - atom1.radical_electrons - atom1.charge - int(order)) / 2.0
                 if atom1.lone_pairs % 1 > 0 or atom1.lone_pairs > 4:
                     logging.error("Unable to determine the number of lone pairs for "
