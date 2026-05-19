@@ -3062,9 +3062,13 @@ class Molecule(Graph):
         Return ``True`` if the adsorbate contains at least two binding sites,
         or ``False`` otherwise.
         """
-        cython.declare(atom=Atom)
-        if len([atom for atom in self.vertices if atom.is_surface_site()])>=2:
-            return True
+        cython.declare(atom=Atom, found_one=cython.bint)
+        found_one = False
+        for atom in self.atoms:
+            if atom.is_surface_site():
+                if found_one:
+                    return True
+                found_one = True
         return False
 
     def get_adatoms(self):
