@@ -625,6 +625,10 @@ def reaction_to_dict_list(reaction, species_list=None):
     else:
         logging.warning(f"Skipping reaction {equation}: Unknown kinetics type {type(kin)}")
         return []
+    
+    # Remove efficiencies dict if present but empty.
+    if 'efficiencies' in entry and not entry['efficiencies']:
+        del entry['efficiencies']
 
     # --- Coverage Dependencies ---
     if hasattr(kin, 'coverage_dependence') and kin.coverage_dependence:
