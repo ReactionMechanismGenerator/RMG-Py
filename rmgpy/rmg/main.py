@@ -1388,9 +1388,15 @@ class RMG(util.Subject):
                 # trailing ``,``, with ``note: value`` on the next line
                 # (value may itself wrap across several more-indented lines)
                 # ending in ``}``. Replace the whole tail with ``}``.
+                # CodeQL flags this as polynomial ReDoS (py/polynomial-redos);
+                # safe here because [^\n}]* and \n[ \t]+ consume disjoint
+                # characters (no alternative-path overlap) and the inner *
+                # consumes >=2 chars per iteration, so worst-case is O(N^2)
+                # rather than exponential. Inputs are RMG-generated YAML,
+                # not adversarial.
                 text = re.sub(
                     r',[ \t]*\n[ \t]+note:[^\n}]*(?:\n[ \t]+[^\n}]*)*\}',
-                    '}', text)
+                    '}', text)  # lgtm[py/polynomial-redos]
                 # Single-line flow style: ``, note: value}`` → ``}``.
                 text = re.sub(r',[ \t]*note:[^,}]*\}', '}', text)
                 # Block style: ``  note: ...\n`` plus deeper-indented
