@@ -97,7 +97,7 @@ def populate_resonance_algorithms(features=None):
             generate_adsorbate_shift_down_resonance_structures,
             generate_adsorbate_shift_up_resonance_structures,
             generate_adsorbate_conjugate_resonance_structures,
-            generate_formate_resonance_structures,
+            generate_adsorbate_formate_resonance_structures,
         ]
     else:
         # If the molecule is aromatic, then radical resonance has already been considered
@@ -125,7 +125,7 @@ def populate_resonance_algorithms(features=None):
             method_list.append(generate_adsorbate_shift_down_resonance_structures)
             method_list.append(generate_adsorbate_shift_up_resonance_structures)
             method_list.append(generate_adsorbate_conjugate_resonance_structures)
-            method_list.append(generate_formate_resonance_structures)
+            method_list.append(generate_adsorbate_formate_resonance_structures)
     return method_list
 
 
@@ -1261,7 +1261,7 @@ def generate_adsorbate_conjugate_resonance_structures(mol):
     return structures
 
 
-def generate_formate_resonance_structures(mol):
+def generate_adsorbate_formate_resonance_structures(mol):
     """
     Generate all resonance structures formed by the shift of two
     electrons in a conjugated bonding system of a bidentate adsorbate
