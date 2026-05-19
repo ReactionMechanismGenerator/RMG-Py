@@ -176,7 +176,7 @@ class Atom(Vertex):
         """
         Define a custom hash method to allow Atom objects to be used in dictionaries and sets.
         """
-        return hash(('Atom', self.symbol))
+        return hash(('Atom', self.element.symbol))
 
     def __eq__(self, other):
         """Method to test equality of two Atom objects."""
@@ -217,7 +217,7 @@ class Atom(Vertex):
     @property
     def sorting_key(self):
         """Returns a sorting key for comparing Atom objects. Read-only"""
-        return self.number, -get_vertex_connectivity_value(self), self.radical_electrons, self.lone_pairs, self.charge
+        return self.element.number, -get_vertex_connectivity_value(self), self.radical_electrons, self.lone_pairs, self.charge
 
     def equivalent(self, other, strict=True):
         """
@@ -437,7 +437,7 @@ class Atom(Vertex):
         """
         Return ``True`` if the atom represents a surface site or ``False`` if not.
         """
-        return self.symbol == 'X'
+        return self.element.symbol == 'X'
 
     def is_bonded_to_surface(self):
         """
@@ -1217,8 +1217,8 @@ class Molecule(Graph):
         Returns ``True`` iff the molecule contains an 'X' surface site.
         """
         cython.declare(atom=Atom)
-        for atom in self.atoms:
-            if atom.symbol == 'X':
+        for atom in self.vertices:
+            if atom.element.symbol == 'X':
                 return True
         return False
 
@@ -1227,25 +1227,24 @@ class Molecule(Graph):
         Returns the number of surface sites in the molecule.
         e.g. 2 for a bidentate adsorbate
         """
-        cython.declare(atom=Atom)
-        cython.declare(count=cython.int)
+        cython.declare(atom=Atom, count=cython.int)
         count = 0
-        for atom in self.atoms:
+        for atom in self.vertices:
             if atom.is_surface_site():
                 count += 1
         return count
 
     def is_surface_site(self):
         """Returns ``True`` iff the molecule is nothing but a surface site 'X'."""
-        return len(self.atoms) == 1 and self.atoms[0].is_surface_site()
+        return len(self.vertices) == 1 and self.vertices[0].is_surface_site()
 
     def is_electron(self):
         """Returns ``True`` iff the molecule is nothing but an electron 'e'."""
-        return len(self.atoms) == 1 and self.atoms[0].is_electron()
+        return len(self.vertices) == 1 and self.vertices[0].is_electron()
 
     def is_proton(self):
         """Returns ``True`` iff the molecule is nothing but a proton 'H+'."""
-        return len(self.atoms) == 1 and self.atoms[0].is_proton()
+        return len(self.vertices) == 1 and self.vertices[0].is_proton()
 
     def remove_atom(self, atom):
         """
@@ -1289,13 +1288,13 @@ class Molecule(Graph):
             if vertex.sorting_label < 0:
                 self.update_connectivity_values()
                 break
-        self.atoms.sort(reverse=True)
+        self.vertices.sort(reverse=True)
         for index, vertex in enumerate(self.vertices):
             vertex.sorting_label = index
 
     def update_charge(self):
-
-        for atom in self.atoms:
+        cython.declare(atom=Atom)
+        for atom in self.vertices:
             if not isinstance(atom, CuttingLabel):
                 atom.update_charge()
 
@@ -1552,6 +1551,7 @@ class Molecule(Graph):
         """
         Remove the labels from all atoms in the molecule.
         """
+        cython.declare(atom=Atom)
         for atom in self.vertices:
             atom.label = ''
 
@@ -1560,6 +1560,7 @@ class Molecule(Graph):
         Return :data:`True` if the molecule contains an atom with the label
         `label` and :data:`False` otherwise.
         """
+        cython.declare(atom=Atom)
         for atom in self.vertices:
             if atom.label == label: return True
         return False
@@ -1568,6 +1569,7 @@ class Molecule(Graph):
         """
         Return the atoms in the molecule that are labeled.
         """
+        cython.declare(atom=Atom, alist=list)
         alist = [atom for atom in self.vertices if atom.label == label]
         if alist == []:
             raise ValueError(
@@ -1580,6 +1582,7 @@ class Molecule(Graph):
         and the values the atoms themselves. If two or more atoms have the
         same label, the value is converted to a list of these atoms.
         """
+        cython.declare(atom=Atom, labeled=dict)
         labeled = {}
         for atom in self.vertices:
             if atom.label != '':
@@ -1599,7 +1602,7 @@ class Molecule(Graph):
         """
         cython.declare(atom=Atom, element_count=dict, symbol=str, key=str)
         element_count = {}
-        for atom in self.atoms:
+        for atom in self.vertices:
             symbol = atom.element.symbol
             if symbol in element_count:
                 element_count[symbol] += 1
@@ -1733,9 +1736,9 @@ class Molecule(Graph):
             keys = []
             atms = []
             initial_map = dict()
-            for atom in self.atoms:
+            for atom in self.vertices:
                 if atom.label and atom.label != '':
-                    L = [a for a in other.atoms if a.label == atom.label]
+                    L = [a for a in other.vertices if a.label == atom.label]
                     if L == []:
                         return False
                     elif len(L) == 1:
@@ -1940,14 +1943,14 @@ class Molecule(Graph):
         cython.declare(atom1=Atom, atom2=Atom, bond=Bond, newMol=Molecule, atoms=list, mapping=dict)
 
         new_mol = Molecule()
-        atoms = self.atoms
+        atoms = self.vertices
         mapping = {}
         for atom1 in atoms:
             atom2 = new_mol.add_atom(Atom(atom1.element))
             mapping[atom1] = atom2
 
         for atom1 in atoms:
-            for atom2 in atom1.bonds:
+            for atom2 in atom1.edges:
                 bond = Bond(mapping[atom1], mapping[atom2], 1)
                 new_mol.add_bond(bond)
         new_mol.update_atomtypes(raise_exception=raise_atomtype_exception)
@@ -2084,14 +2087,16 @@ class Molecule(Graph):
            3) the Hydrogen bond must complete a ring with at least 5 members
            4) An atom can only be hydrogen bonded to one other atom
         """
+        cython.declare(atm1=Atom, atm2=Atom, atm_cov=Atom, atm_covs=list,
+                       ONatoms=list, ONinds=list, pot_bonds=list, i=int, j=int, k=int)
         pot_bonds = []
 
-        ONatoms = [a for a in self.atoms if a.is_oxygen() or a.is_nitrogen()]
-        ONinds = [n for n, a in enumerate(self.atoms) if a.is_oxygen() or a.is_nitrogen()]
+        ONatoms = [a for a in self.vertices if a.is_oxygen() or a.is_nitrogen()]
+        ONinds = [n for n, a in enumerate(self.vertices) if a.is_oxygen() or a.is_nitrogen()]
 
-        for i, atm1 in enumerate(self.atoms):
+        for i, atm1 in enumerate(self.vertices):
             if atm1.atomtype.label == 'H0':
-                atm_covs = [q for q in atm1.bonds.keys()]
+                atm_covs = [q for q in atm1.edges.keys()]
                 if len(atm_covs) > 1:  # H is already H bonded
                     continue
                 else:
@@ -2099,7 +2104,7 @@ class Molecule(Graph):
                 if (atm_cov.is_oxygen() or atm_cov.is_nitrogen()):  # this H can be H-bonded
                     for k, atm2 in enumerate(ONatoms):
                         if all([not np.isclose(0.1, q.order) for q in
-                                atm2.bonds.values()]):  # atm2 not already H bonded
+                                atm2.edges.values()]):  # atm2 not already H bonded
                             dist = len(find_shortest_path(atm1, atm2)) - 1
                             if dist > 3:
                                 j = ONinds[k]
@@ -2119,17 +2124,18 @@ class Molecule(Graph):
         structures as without this constraint the number of possible 
         structures grows 2^n where n is the number of possible H-bonds
         """
+        cython.declare(molc=Molecule, structs=list, Hbonds=list, i=int, j=int)
         structs = []
         Hbonds = self.find_h_bonds()
         for i, bd1 in enumerate(Hbonds):
             molc = self.copy(deep=True)
-            molc.add_bond(Bond(molc.atoms[bd1[0]], molc.atoms[bd1[1]], order=0.1))
+            molc.add_bond(Bond(molc.vertices[bd1[0]], molc.vertices[bd1[1]], order=0.1))
             structs.append(molc)
             for j, bd2 in enumerate(Hbonds):
                 if j < i and bd1[0] != bd2[0] and bd1[1] != bd2[1]:
                     molc = self.copy(deep=True)
-                    molc.add_bond(Bond(molc.atoms[bd1[0]], molc.atoms[bd1[1]], order=0.1))
-                    molc.add_bond(Bond(molc.atoms[bd2[0]], molc.atoms[bd2[1]], order=0.1))
+                    molc.add_bond(Bond(molc.vertices[bd1[0]], molc.vertices[bd1[1]], order=0.1))
+                    molc.add_bond(Bond(molc.vertices[bd2[0]], molc.vertices[bd2[1]], order=0.1))
                     structs.append(molc)
 
         return structs
@@ -2138,8 +2144,8 @@ class Molecule(Graph):
         """
         removes any present hydrogen bonds from the molecule
         """
-
-        atoms = self.atoms
+        cython.declare(atoms=list, atm1=Atom, atm2=Atom, bd=Bond, i=int, j=int)
+        atoms = self.vertices
         for i, atm1 in enumerate(atoms):
             for j, atm2 in enumerate(atoms):
                 if j < i and self.has_bond(atm1, atm2):
@@ -2222,8 +2228,9 @@ class Molecule(Graph):
         """
         Returns ``True`` if the molecule is heterocyclic, or ``False`` if not.
         """
+        cython.declare(atom=Atom)
         if self.is_cyclic():
-            for atom in self.atoms:
+            for atom in self.vertices:
                 if atom.is_non_hydrogen() and not atom.is_carbon() and self.is_vertex_in_cycle(atom):
                     return True
         return False
@@ -2249,7 +2256,7 @@ class Molecule(Graph):
         """
         if self.contains_surface_site():
             return 0.01
-        if len(self.atoms) == 1:
+        if len(self.vertices) == 1:
             return 2.5 * constants.R
         else:
             return (3.5 if self.is_linear() else 4.0) * constants.R
@@ -2317,6 +2324,7 @@ class Molecule(Graph):
         return False
     
     def has_charge(self):
+        cython.declare(atom=Atom)
         for atom in self.vertices:
             if atom.charge != 0:
                 return True
@@ -2382,6 +2390,7 @@ class Molecule(Graph):
         """
         Return the atoms in the molecule that have unpaired electrons.
         """
+        cython.declare(atom=Atom, radical_atoms_list=list)
         radical_atoms_list = []
         for atom in self.vertices:
             if atom.radical_electrons > 0:
@@ -2410,6 +2419,7 @@ class Molecule(Graph):
         Iterate through the atoms in the structure and calculate the net charge
         on the overall molecule.
         """
+        cython.declare(atom=Atom)
         return sum([atom.charge for atom in self.vertices])
 
     def get_charge_span(self):
@@ -2428,7 +2438,7 @@ class Molecule(Graph):
         """
 
         saturator = Saturator()
-        saturator.saturate(self.atoms)
+        saturator.saturate(self.vertices)
         if update: self.update()
 
     def saturate_radicals(self, raise_atomtype_exception=True):
@@ -2437,7 +2447,7 @@ class Molecule(Graph):
         """
         cython.declare(added=dict, atom=Atom, i=int, H=Atom, bond=Bond)
         added = {}
-        for atom in self.atoms:
+        for atom in self.vertices:
             for i in range(atom.radical_electrons):
                 H = Atom('H', radical_electrons=0, lone_pairs=0, charge=0)
                 bond = Bond(atom, H, 1)
@@ -2465,12 +2475,12 @@ class Molecule(Graph):
         cython.declare(halogen_atom_list=list, atom=Atom, bond_to_replace_dict=dict, H_atom=Atom,
                        bonded_atom=Atom, bond_to_replace=Bond, new_bond=Bond)
         # the list of halogen atoms must be obtained before any of the halogen atoms are replaced because it changes
-        # the order of self.atoms
-        halogen_atom_list = [atom for atom in self.atoms if atom.is_halogen()]
+        # the order of self.vertices
+        halogen_atom_list = [atom for atom in self.vertices if atom.is_halogen()]
         for atom in halogen_atom_list:
             if not atom.charge == 0:
                 raise ValueError('For a given molecule {0}, a halogen atom {1} with charge {2} cannot be replaced '
-                                 'with a hydrogen atom'.format(self.to_smiles(), atom.symbol, atom.charge))
+                                 'with a hydrogen atom'.format(self.to_smiles(), atom.element.symbol, atom.charge))
             bond_to_replace_dict = self.get_bonds(atom)
             self.remove_atom(atom)
             H_atom = Atom('H', radical_electrons=atom.radical_electrons, lone_pairs=0, charge=0)
@@ -2488,9 +2498,10 @@ class Molecule(Graph):
         This method converts a list of atoms in a Molecule to a Group object.
         """
 
+        cython.declare(atom=Atom, bonded_atom=Atom, bond=Bond, group=gr.Group)
         # Create GroupAtom object for each atom in the molecule
         group_atoms = OrderedDict()  # preserver order of atoms in original container
-        for atom in self.atoms:
+        for atom in self.vertices:
             group_atoms[atom] = gr.GroupAtom(atomtype=[atom.atomtype],
                                              radical_electrons=[atom.radical_electrons],
                                              charge=[atom.charge],
@@ -2504,7 +2515,7 @@ class Molecule(Graph):
                          facet=[self.facet] if self.facet else [])
 
         # Create GroupBond for each bond between atoms in the molecule
-        for atom in self.atoms:
+        for atom in self.vertices:
             for bonded_atom, bond in atom.edges.items():
                 group.add_bond(gr.GroupBond(group_atoms[atom], group_atoms[bonded_atom], order=[bond.order]))
 
@@ -2517,7 +2528,7 @@ class Molecule(Graph):
         Performs ring perception and saves ring membership information to the Atom.props attribute.
         """
         cython.declare(atom=Atom)
-        for atom in self.atoms:
+        for atom in self.vertices:
             atom.props["inRing"] = self.is_vertex_in_cycle(atom)
 
     def count_aromatic_rings(self):
@@ -2698,7 +2709,7 @@ class Molecule(Graph):
         for ring in ring_info:
             # Map the new canonical indices back to the original RMG atom indices
             original_idx_ring = [new_order[idx] for idx in ring]
-            atom_ring = [self.atoms[idx] for idx in original_idx_ring]
+            atom_ring = [self.vertices[idx] for idx in original_idx_ring]
             
             sorted_ring = self.sort_cyclic_vertices(atom_ring)
             sssr.append(sorted_ring)
@@ -2898,9 +2909,10 @@ class Molecule(Graph):
         Uses entire range of cython's integer values to reduce chance of duplicates
         """
 
+        cython.declare(atom=Atom)
         global atom_id_counter
 
-        for atom in self.atoms:
+        for atom in self.vertices:
             atom.id = atom_id_counter
             atom_id_counter += 1
             if atom_id_counter == 2 ** 15:
@@ -2910,8 +2922,9 @@ class Molecule(Graph):
         """
         Checks to see if the atom IDs are valid in this structure
         """
-        num_atoms = len(self.atoms)
-        num_ids = len(set([atom.id for atom in self.atoms]))
+        cython.declare(atom=Atom, num_atoms=int, num_ids=int)
+        num_atoms = len(self.vertices)
+        num_ids = len(set([atom.id for atom in self.vertices]))
 
         if num_atoms == num_ids:
             # all are unique
@@ -2936,14 +2949,14 @@ class Molecule(Graph):
                 'Got a {0} object for parameter "other", when a Molecule object is required.'.format(other.__class__))
 
         # Get a set of atom indices for each molecule
-        atom_ids = set([atom.id for atom in self.atoms])
-        other_ids = set([atom.id for atom in other.atoms])
+        atom_ids = set([atom.id for atom in self.vertices])
+        other_ids = set([atom.id for atom in other.vertices])
 
         if atom_ids == other_ids:
             # If the two molecules have the same indices, then they might be identical
             # Sort the atoms by ID
-            atom_list = sorted(self.atoms, key=attrgetter('id'))
-            other_list = sorted(other.atoms, key=attrgetter('id'))
+            atom_list = sorted(self.vertices, key=attrgetter('id'))
+            other_list = sorted(other.vertices, key=attrgetter('id'))
 
             # If matching atom indices gives a valid mapping, then the molecules are fully identical
             mapping = {}
@@ -3001,7 +3014,7 @@ class Molecule(Graph):
             List(Atom): A list containing the surface site atoms in the molecule
         """
         cython.declare(atom=Atom)
-        return [atom for atom in self.atoms if atom.is_surface_site()]
+        return [atom for atom in self.vertices if atom.is_surface_site()]
 
     def is_multidentate(self):
         """
@@ -3009,7 +3022,7 @@ class Molecule(Graph):
         or ``False`` otherwise.
         """
         cython.declare(atom=Atom)
-        if len([atom for atom in self.atoms if atom.is_surface_site()])>=2:
+        if len([atom for atom in self.vertices if atom.is_surface_site()])>=2:
             return True
         return False
 
@@ -3022,8 +3035,8 @@ class Molecule(Graph):
         cython.declare(surface_site=Atom, adatoms=list)
         adatoms = []
         for surface_site in self.get_surface_sites():
-            if surface_site.bonds:
-                adatoms.extend(surface_site.bonds.keys())
+            if surface_site.edges:
+                adatoms.extend(surface_site.edges.keys())
         return adatoms
 
     def get_desorbed_molecules(self):
@@ -3049,13 +3062,13 @@ class Molecule(Graph):
         sites_to_remove = desorbed_molecule.get_surface_sites()
         adsorbed_atoms = []
         for site in sites_to_remove:
-            numbonds = len(site.bonds)
+            numbonds = len(site.edges)
             if numbonds == 0:
                 # vanDerWaals
                 pass
             else:
-                assert len(site.bonds) == 1, "Each surface site can only be bonded to 1 atom"
-                (bonded_atom, bond), = site.bonds.items()
+                assert len(site.edges) == 1, "Each surface site can only be bonded to 1 atom"
+                (bonded_atom, bond), = site.edges.items()
                 adsorbed_atoms.append(bonded_atom)
                 desorbed_molecule.remove_bond(bond)
                 if bond.is_single():
@@ -3086,7 +3099,7 @@ class Molecule(Graph):
                 try:
                     atom0 = adsorbed_atoms[i]
                     atom1 = adsorbed_atoms[j]
-                    bond = atom0.bonds[atom1]
+                    bond = atom0.edges[atom1]
                 except KeyError:
                     pass # the two adsorbed atoms are not bonded to each other
                 else:
