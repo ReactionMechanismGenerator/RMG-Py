@@ -206,6 +206,8 @@ cdef class Molecule(Graph):
 
     cpdef int number_of_surface_sites(self) except -1
 
+    cpdef bint has_covalent_surface_bond(self)
+
     cpdef bint is_surface_site(self)
 
     cpdef remove_atom(self, Atom atom)

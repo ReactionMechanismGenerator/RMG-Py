@@ -1223,13 +1223,12 @@ class Molecule(Graph):
         """
         Return True if any bond in this molecule connects a surface site (X) via a covalent bond.
         """
-        cython.declare(bond=Bond)
-        for bond in self.get_all_edges():
-            if bond.is_van_der_waals():
-                continue
-            atom1, atom2 = bond.atom1, bond.atom2
-            if atom1.is_surface_site() or atom2.is_surface_site():
-                return True
+        cython.declare(atom=Atom, bond=Bond)
+        for atom in self.atoms:
+            if atom.is_surface_site():
+                for bond in atom.bonds.values():
+                    if not bond.is_van_der_waals():
+                            return True
         return False
 
     def contains_surface_site(self):
