@@ -2924,7 +2924,8 @@ class Group(Graph):
         """
         Returns: A sample class :Molecule: from the group
         """
-
+        cython.declare(modified_group=Group, new_molecule=mol.Molecule,
+                       atom1=GroupAtom, atom2=GroupAtom, bond12=GroupBond)
         modified_group = self.copy(deep=True)
 
         # Remove all wildcards
