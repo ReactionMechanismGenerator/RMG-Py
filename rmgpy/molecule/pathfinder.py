@@ -36,7 +36,7 @@ from queue import Queue
 
 import cython
 
-from rmgpy.molecule.molecule import Atom
+from rmgpy.molecule.molecule import Atom, Bond
 from rmgpy.molecule.graph import Vertex, Edge
 
 def find_butadiene(start, end):
@@ -494,7 +494,15 @@ def find_adsorbate_delocalization_paths(atom1):
     In this transition atom1 and atom4 are surface sites while atom2 and atom3
     are carbon or nitrogen atoms.
     """
-    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, atom4=Vertex, bond12=Edge, bond23=Edge, bond34=Edge)
+    cython.declare(
+        paths=list,
+        atom2=Atom,
+        atom3=Atom,
+        atom4=Atom,
+        bond12=Bond,
+        bond23=Bond,
+        bond34=Bond,
+    )
 
     paths = []
     if atom1.is_surface_site():
@@ -521,7 +529,17 @@ def find_adsorbate_conjugate_delocalization_paths(atom1):
     and atom4 are carbon or nitrogen atoms.
     """
 
-    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, atom4=Vertex, atom5=Vertex, bond12=Edge, bond23=Edge, bond34=Edge, bond45=Edge)
+    cython.declare(
+        paths=list,
+        atom2=Atom,
+        atom3=Atom,
+        atom4=Atom,
+        atom5=Atom,
+        bond12=Bond,
+        bond23=Bond,
+        bond34=Bond,
+        bond45=Bond,
+    )
 
     paths = []
     if atom1.is_surface_site():
@@ -549,8 +567,17 @@ def find_formate_delocalization_paths(atom1):
     and atom4 are oxygen and atom3 is a carbon atom.
     """
 
-    cython.declare(paths=list, atom2=Vertex, atom3=Vertex, atom4=Vertex, atom5=Vertex, bond12=Edge, bond23=Edge, bond34=Edge, bond45=Edge)
-
+    cython.declare(
+        paths=list,
+        atom2=Atom,
+        atom3=Atom,
+        atom4=Atom,
+        atom5=Atom,
+        bond12=Bond,
+        bond23=Bond,
+        bond34=Bond,
+        bond45=Bond,
+    )
     paths = []
     if atom1.is_surface_site():
         for atom2, bond12 in atom1.edges.items():
