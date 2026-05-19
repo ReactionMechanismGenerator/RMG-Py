@@ -3098,7 +3098,7 @@ multiplicity 2
 
         assert result == [2, 1, 0]
 
-    def test_remove_van_der_waals_bonds(self):
+    def test_remove_van_der_waals_bond(self):
         """Test we can remove a van-der-Waals bond"""
         adjlist = """
 1 X  u0 p0 c0 {2,vdW}
@@ -3109,6 +3109,49 @@ multiplicity 2
         assert len(mol.get_all_edges()) == 2
         mol.remove_van_der_waals_bonds()
         assert len(mol.get_all_edges()) == 1
+
+    def test_remove_van_der_waals_bonds_bidentate(self):
+        """vdW bonds are preserved on bidentates that also have a covalent X bond, removed otherwise."""
+        # Bidentate ethyl-like fragment: one C–X covalent, one C~X vdW. The vdW should be preserved.
+        mixed = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {4,vdW}
+3 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+4 C u0 p0 c0 {2,vdW} {3,S} {7,S} {8,S} {9,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {3,S}
+7 H u0 p0 c0 {4,S}
+8 H u0 p0 c0 {4,S}
+9 H u0 p0 c0 {4,S}
+"""
+        )
+        assert mixed.has_covalent_surface_bond()
+        n_edges_before = len(mixed.get_all_edges())
+        mixed.remove_van_der_waals_bonds()
+        assert len(mixed.get_all_edges()) == n_edges_before  # nothing removed
+        assert any(bond.is_van_der_waals() for bond in mixed.get_all_edges())
+
+        # Bidentate physisorbed: both C~X bonds are vdW. All vdW bonds should be removed.
+        vdw_only = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0 {3,vdW}
+2 X u0 p0 c0 {4,vdW}
+3 C u0 p0 c0 {1,vdW} {4,S} {5,S} {6,S} {7,S}
+4 C u0 p0 c0 {2,vdW} {3,S} {8,S} {9,S} {10,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {3,S}
+7 H u0 p0 c0 {3,S}
+8 H u0 p0 c0 {4,S}
+9 H u0 p0 c0 {4,S}
+10 H u0 p0 c0 {4,S}
+"""
+        )
+        assert not vdw_only.has_covalent_surface_bond()
+        n_edges_before = len(vdw_only.get_all_edges())
+        vdw_only.remove_van_der_waals_bonds()
+        assert len(vdw_only.get_all_edges()) == n_edges_before - 2
+        assert not any(bond.is_van_der_waals() for bond in vdw_only.get_all_edges())
 
     def test_has_covalent_surface_bond(self):
         """Test Molecule.has_covalent_surface_bond() distinguishes vdW from covalent X bonds."""
