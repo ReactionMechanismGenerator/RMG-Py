@@ -3110,6 +3110,44 @@ multiplicity 2
         mol.remove_van_der_waals_bonds()
         assert len(mol.get_all_edges()) == 1
 
+    def test_has_covalent_surface_bond(self):
+        """Test Molecule.has_covalent_surface_bond() distinguishes vdW from covalent X bonds."""
+        # X present but only physisorbed via a vdW bond
+        vdw_only = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0 {2,vdW}
+2 H u0 p0 c0 {1,vdW} {3,S}
+3 H u0 p0 c0 {2,S}
+"""
+        )
+        assert not vdw_only.has_covalent_surface_bond()
+
+        # X covalently bonded (chemisorbed)
+        chemisorbed = Molecule().from_adjacency_list(
+            """
+1 H u0 p0 c0 {2,S}
+2 X u0 p0 c0 {1,S}
+"""
+        )
+        assert chemisorbed.has_covalent_surface_bond()
+
+        # Two X atoms: one vdW, one covalent
+        mixed = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0 {3,S}
+2 X u0 p0 c0 {4,vdW}
+3 C u0 p0 c0 {1,S} {4,S} {5,S} {6,S}
+4 H u0 p0 c0 {2,vdW} {3,S}
+5 H u0 p0 c0 {3,S}
+6 H u0 p0 c0 {3,S}
+"""
+        )
+        assert mixed.has_covalent_surface_bond()
+
+        # No surface sites at all
+        gas = Molecule().from_smiles("CCO")
+        assert not gas.has_covalent_surface_bond()
+
     def test_get_relevant_cycles(self):
         """
         Test the Molecule.get_relevant_cycles() raises correct error after deprecation.
