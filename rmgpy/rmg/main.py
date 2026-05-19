@@ -1305,7 +1305,11 @@ class RMG(util.Subject):
 
         self.run_model_analysis()
 
-        # generate Cantera files chem.yaml & chem_annotated.yaml in designated Cantera output folders
+        # generate Cantera files in designated Cantera output folders. The direct
+        # writers (cantera1/, cantera2/) already wrote chem_annotated{NNNN}.yaml +
+        # chem_annotated.yaml each iteration. End-of-run we also produce the
+        # notes-stripped chem.yaml (and chem_edge.yaml when present), mirroring
+        # Chemkin's chem.inp / chem_annotated.inp split, and run the comparison.
         try:
             translated_cantera_file = None
             if self.chemkin_writer_config and self.chemkin_writer_config.enabled:
@@ -1359,15 +1363,64 @@ class RMG(util.Subject):
                     if os.path.exists(annotated):
                         self.generate_cantera_files_from_chemkin(annotated)
 
-            # Strip transport notes from the non-annotated ck2yaml file to match the non-verbose RMG writers
+            def _strip_yaml_notes(src, dst):
+                """Read a YAML file, strip ``note:`` fields, and write the
+                result to *dst*. Preserves formatting (block style, key
+                ordering, etc.) — important when the source is the carefully
+                crafted ck2yaml output.
+
+                Three patterns are handled (notes are always the last key, by
+                how RMG / ck2yaml emit them):
+                  1. Block-style:        ``  note: ...`` on its own line,
+                     possibly followed by deeper-indented continuation lines
+                     (multi-line literal/folded scalars).
+                  2. Single-line flow:   ``{..., note: foo}``  → ``{...}``
+                  3. Wrapped flow:       a flow mapping that wraps with the
+                     trailing ``,`` at the end of one line and
+                     ``    note: foo}`` on the next  → drop the comma and
+                     replace with ``}`` on the prior line.
+                """
+                if not os.path.exists(src):
+                    return
+                with open(src) as f:
+                    text = f.read()
+                # Wrapped flow style: a flow mapping that wraps after a
+                # trailing ``,``, with ``note: value`` on the next line
+                # (value may itself wrap across several more-indented lines)
+                # ending in ``}``. Replace the whole tail with ``}``.
+                text = re.sub(
+                    r',[ \t]*\n[ \t]+note:[^\n}]*(?:\n[ \t]+[^\n}]*)*\}',
+                    '}', text)
+                # Single-line flow style: ``, note: value}`` → ``}``.
+                text = re.sub(r',[ \t]*note:[^,}]*\}', '}', text)
+                # Block style: ``  note: ...\n`` plus deeper-indented
+                # continuation lines.
+                text = re.sub(r'^( +)note:.*\n(?:\1 +[^\n]*\n)*', '', text, flags=re.MULTILINE)
+                with open(dst, "w") as f:
+                    f.write(text)
+
+            # Strip transport notes from the ck2yaml file so it matches the
+            # notes-stripped variants below.
             ck_chem_yaml = os.path.join(self.output_directory, "cantera_from_ck", "chem.yaml")
-            if os.path.exists(ck_chem_yaml):
-                with open(ck_chem_yaml) as f:
-                    ck_text = f.read()
-                # Remove 'note:' lines and their indented continuations (multi-line values are more-indented)
-                ck_text = re.sub(r'^( +)note:.*\n(?:\1 +[^\n]*\n)*', '', ck_text, flags=re.MULTILINE)
-                with open(ck_chem_yaml, "w") as f:
-                    f.write(ck_text)
+            _strip_yaml_notes(ck_chem_yaml, ck_chem_yaml)
+
+            # Produce notes-stripped chem.yaml / chem_edge.yaml end-of-run for
+            # each direct Cantera writer (mirrors Chemkin's chem.inp).
+            for writer_dir, writer_cfg in (
+                ("cantera1", self.cantera1_writer_config),
+                ("cantera2", self.cantera2_writer_config),
+            ):
+                if not (writer_cfg and writer_cfg.enabled):
+                    continue
+                writer_path = os.path.join(self.output_directory, writer_dir)
+                _strip_yaml_notes(
+                    os.path.join(writer_path, "chem_annotated.yaml"),
+                    os.path.join(writer_path, "chem.yaml"),
+                )
+                _strip_yaml_notes(
+                    os.path.join(writer_path, "chem_edge_annotated.yaml"),
+                    os.path.join(writer_path, "chem_edge.yaml"),
+                )
 
             # Compare translated Cantera files against directly generated Cantera files
             if translated_cantera_file and self.cantera1_writer_config and self.cantera1_writer_config.enabled:

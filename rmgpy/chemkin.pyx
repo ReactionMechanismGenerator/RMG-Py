@@ -2317,7 +2317,6 @@ def save_chemkin_files(rmg, config=None):
     """
     Save the current reaction model to a set of Chemkin files.
     """
-    verbose = config.verbose_comments if (config and config.verbose_comments is not None) else rmg.verbose_comments
     save_edge = config.save_edge if (config and config.save_edge is not None) else rmg.save_edge_species
 
     # todo: make this an attribute or method of reactionModel

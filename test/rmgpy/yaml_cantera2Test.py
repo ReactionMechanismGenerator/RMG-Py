@@ -252,8 +252,8 @@ class TestCanteraWriter2:
         mock_rmg = MockRMG(self.tmp_dir)
         save_cantera_files(mock_rmg)
 
-        yaml_file = os.path.join(self.tmp_dir, "cantera2", "chem.yaml")
-        versioned_file = os.path.join(self.tmp_dir, "cantera2", "chem0005.yaml")
+        yaml_file = os.path.join(self.tmp_dir, "cantera2", "chem_annotated.yaml")
+        versioned_file = os.path.join(self.tmp_dir, "cantera2", "chem_annotated0005.yaml")
         assert os.path.exists(yaml_file)
         assert os.path.exists(versioned_file)
 
@@ -361,8 +361,8 @@ class TestCanteraWriter2:
         mock_rmg = self._create_dummy_model()
         writer.update(mock_rmg)
 
-        versioned_file = os.path.join(cantera_dir, 'chem0002.yaml')
-        latest_file = os.path.join(cantera_dir, 'chem.yaml')
+        versioned_file = os.path.join(cantera_dir, 'chem_annotated0002.yaml')
+        latest_file = os.path.join(cantera_dir, 'chem_annotated.yaml')
 
         assert os.path.exists(versioned_file)
         assert os.path.exists(latest_file)
@@ -669,14 +669,12 @@ class TestCanteraWriter2:
         d = species_to_dict(h2, [h2])
         assert 'sites' not in d
 
-    def test_species_to_dict_transport_note_gated_by_verbose(self):
-        """Transport 'note' is only written when verbose=True."""
+    def test_species_to_dict_transport_note_always_present(self):
+        """Transport 'note' is always written when transport_data.comment is set."""
         sp = self._create_dummy_species("H2", "[H][H]", index=1)
         sp.transport_data.comment = "from GRI-Mech"
-        d = species_to_dict(sp, [sp], verbose=False)
-        assert 'note' not in d['transport']
-        d_verbose = species_to_dict(sp, [sp], verbose=True)
-        assert d_verbose['transport']['note'] == "from GRI-Mech"
+        d = species_to_dict(sp, [sp])
+        assert d['transport']['note'] == "from GRI-Mech"
 
 
 class CanteraYamlFileComparer:

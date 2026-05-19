@@ -1427,8 +1427,7 @@ def _parse_writer_config(value, default_save_interval=1):
     value : bool or dict
         ``False`` disables the writer.  ``True`` enables it with
         *default_save_interval*.  A dict may contain the keys
-        ``'saveInterval'`` (int), ``'verboseComments'`` (bool), and
-        ``'saveEdge'`` (bool).
+        ``'saveInterval'`` (int) and ``'saveEdge'`` (bool).
     default_save_interval : int
         Save interval to use when ``value`` is ``True``.
 
@@ -1441,15 +1440,21 @@ def _parse_writer_config(value, default_save_interval=1):
     if value is True:
         return WriterConfig(save_interval=default_save_interval)
     if isinstance(value, dict):
+        allowed = {'saveInterval', 'saveEdge'}
+        unknown = set(value) - allowed
+        if unknown:
+            raise InputError(
+                f"Writer config has unknown key(s) {sorted(unknown)!r}. "
+                f"Allowed keys are: {sorted(allowed)!r}."
+            )
         si = value.get('saveInterval', default_save_interval)
         return WriterConfig(
             save_interval=si,
-            verbose_comments=value.get('verboseComments', None),
             save_edge=value.get('saveEdge', None),
         )
     raise InputError(
         f"Writer config must be True, False, or a dict with keys "
-        f"'saveInterval', 'verboseComments', 'saveEdge'; got {type(value).__name__!r}"
+        f"'saveInterval', 'saveEdge'; got {type(value).__name__!r}"
     )
 
 
@@ -1460,12 +1465,10 @@ def _writer_config_to_input(cfg):
     """
     if cfg is None or not cfg.enabled:
         return False
-    has_overrides = (cfg.verbose_comments is not None or cfg.save_edge is not None)
+    has_overrides = (cfg.save_edge is not None)
     if cfg.save_interval == 1 and not has_overrides:
         return True
     parts = [f"'saveInterval': {cfg.save_interval}"]
-    if cfg.verbose_comments is not None:
-        parts.append(f"'verboseComments': {cfg.verbose_comments}")
     if cfg.save_edge is not None:
         parts.append(f"'saveEdge': {cfg.save_edge}")
     return '{' + ', '.join(parts) + '}'

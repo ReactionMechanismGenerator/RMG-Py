@@ -554,7 +554,6 @@ class TestWriterConfig:
         cfg = _parse_writer_config(True)
         assert cfg.enabled
         assert cfg.save_interval == 1
-        assert cfg.verbose_comments is None
         assert cfg.save_edge is None
 
     def test_parse_true_custom_default_interval(self):
@@ -562,16 +561,14 @@ class TestWriterConfig:
         assert cfg.save_interval == 5
 
     def test_parse_dict_full(self):
-        cfg = _parse_writer_config({'saveInterval': -1, 'verboseComments': True, 'saveEdge': False})
+        cfg = _parse_writer_config({'saveInterval': -1, 'saveEdge': False})
         assert cfg.enabled
         assert cfg.save_interval == -1
-        assert cfg.verbose_comments is True
         assert cfg.save_edge is False
 
     def test_parse_dict_partial(self):
         cfg = _parse_writer_config({'saveInterval': 3})
         assert cfg.save_interval == 3
-        assert cfg.verbose_comments is None
         assert cfg.save_edge is None
 
     def test_parse_invalid_raises(self):
@@ -624,10 +621,9 @@ class TestWriterConfig:
         assert _writer_config_to_input(cfg) is True
 
     def test_writer_config_to_input_dict(self):
-        cfg = WriterConfig(save_interval=-1, verbose_comments=True, save_edge=False)
+        cfg = WriterConfig(save_interval=-1, save_edge=False)
         result = _writer_config_to_input(cfg)
         assert "'saveInterval': -1" in result
-        assert "'verboseComments': True" in result
         assert "'saveEdge': False" in result
 
     def test_writer_config_to_input_none(self):
