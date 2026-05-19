@@ -61,14 +61,14 @@ jobs:
           activate-environment: ""
 
       - name: Install Build Tools
-        run: conda install python anaconda-client conda-build
+        run: conda install -y python anaconda-client conda-build
 
       - name: Show solver and runner info
         # Small diagnostic snapshot.
         run: |
           conda info
           conda config --show-sources
-          conda list -n base | head -40
+          conda list -n base | sed -n '1,40p'
           uname -a
           sysctl hw.memsize hw.ncpu hw.physicalcpu 2>/dev/null || cat /proc/meminfo 2>/dev/null | head -3 || true
 
