@@ -12,6 +12,8 @@ on:
       - stable
 jobs:
   build:
+    # Timeout to avoid waisting the default 6-hour runner allotment.
+    timeout-minutes: 180
     strategy:
       fail-fast: false
       matrix:
@@ -23,24 +25,24 @@ jobs:
         # for PRs just run a single build per platform to save time and resources
           - is_pr: true
             os: ubuntu-latest
-            python-version: "3.11"
+            python-version: "3.9"
           - is_pr: true
             os: ubuntu-latest
             python-version: "3.10"
           - is_pr: true
             os: macos-15-intel
-            python-version: "3.11"
+            python-version: "3.9"
           - is_pr: true
             os: macos-15-intel
             python-version: "3.10"
           - is_pr: true
             os: macos-latest
-            python-version: "3.11"
+            python-version: "3.9"
           - is_pr: true
             os: macos-latest
             python-version: "3.10"
     runs-on: ${{ matrix.os }}
-    name: Build ${{ matrix.os }} Python ${{ matrix.python-version }} Numpy ${{ matrix.numpy-version }}
+    name: Conda Build ${{ matrix.os }} Python ${{ matrix.python-version }} Numpy ${{ matrix.numpy-version }}
     defaults:
       run:
         shell: bash -l {0}
@@ -61,7 +63,18 @@ jobs:
       - name: Install Build Tools
         run: conda install python anaconda-client conda-build
 
+      - name: Show solver and runner info
+        # Small diagnostic snapshot.
+        run: |
+          conda info
+          conda config --show-sources
+          conda list -n base | head -40
+          uname -a
+          sysctl hw.memsize hw.ncpu hw.physicalcpu 2>/dev/null || cat /proc/meminfo 2>/dev/null | head -3 || true
+
       - name: Build Binary
+        env:
+          CONDA_VERBOSITY: "1"
         run: |
           # set a default value to the conda_token if needed (like from forks)
           : "${CONDA_TOKEN:=${{ secrets.ANACONDA_TOKEN }}}"
@@ -69,6 +82,10 @@ jobs:
           echo "CONDA_TOKEN=$CONDA_TOKEN" >> $GITHUB_ENV
           conda config --add channels rmg
           conda config --add channels conda-forge
+          # --add prepends, so the final channel order is [conda-forge, rmg, ...].
+          # Strict priority makes the solver skip lower-priority channels entirely
+          # for any package the higher-priority channel offers.
+          conda config --set channel_priority strict
           conda config --set anaconda_upload no
           CONDA_NPY=${{ matrix.numpy-version }} CONDA_PY=${{ matrix.python-version }} conda build .
 
@@ -82,7 +99,7 @@ jobs:
   result:
     if: ${{ always() }}
     runs-on: ubuntu-latest
-    name: Final Results
+    name: Conda Build Results
     needs: [build]
     steps:
       - run: exit 1
