@@ -1685,9 +1685,8 @@ class KineticsFamily(Database):
                     return True
             else:
                 # for all other families, forbid multi-dentate molecules with any vdW bonds
-                for atom in molecule.atoms:
-                    if atom.atomtype.label == 'Xv':
-                        return True
+                if molecule.has_vdw_surface_bond():
+                    return True
 
         return False
 

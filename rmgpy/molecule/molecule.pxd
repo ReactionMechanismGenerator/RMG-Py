@@ -208,6 +208,8 @@ cdef class Molecule(Graph):
 
     cpdef bint has_covalent_surface_bond(self)
 
+    cpdef bint has_vdw_surface_bond(self)
+
     cpdef bint is_surface_site(self)
 
     cpdef remove_atom(self, Atom atom)
