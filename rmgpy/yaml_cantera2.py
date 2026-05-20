@@ -634,6 +634,16 @@ def reaction_to_dict_list(reaction, species_list=None):
     if 'efficiencies' in entry and not entry['efficiencies']:
         del entry['efficiencies']
 
+    for rate_key in (
+        'rate-constant',
+        'high-P-rate-constant',
+        'low-P-rate-constant',
+        'sticking-coefficient',
+    ):
+        if entry.get(rate_key, {}).get('A', 0) < 0:
+            entry['negative-A'] = True
+            break
+
     # --- Coverage Dependencies ---
     if hasattr(kin, 'coverage_dependence') and kin.coverage_dependence:
         cov_deps = {}

@@ -145,6 +145,17 @@ class TestCanteraWriter2:
         assert np.isclose(data['rate-constant']['b'], 0.5)
         assert np.isclose(data['rate-constant']['Ea'], 10000.0)
 
+    def test_reaction_to_dict_negative_a_arrhenius(self):
+        """Negative Arrhenius A factors are marked for Cantera."""
+        r = self._create_dummy_species("R", "[CH2]O", index=1)
+        p = self._create_dummy_species("P", "C[O]", index=2)
+        rxn = Reaction(
+            reactants=[r], products=[p],
+            kinetics=Arrhenius(A=(-1e10, "s^-1"), n=0.5, Ea=(10, "kJ/mol"), T0=(1, "K"))
+        )
+        entries = reaction_to_dict_list(rxn, species_list=[r, p])
+        assert entries[0]['negative-A'] is True
+
     def test_reaction_to_dict_duplicates(self):
         """Test that MultiKinetics objects result in multiple YAML entries."""
         r = self._create_dummy_species("R", "[H]", index=1)
@@ -348,6 +359,21 @@ class TestCanteraWriter2:
         assert data['efficiencies'] == {"M": 5.0}
         assert 'Troe' not in data
 
+    def test_reaction_to_dict_negative_a_falloff(self):
+        """Negative high- or low-pressure A factors are marked for Cantera."""
+        r = self._create_dummy_species("R", "[H]", index=1)
+        M = self._create_dummy_species("M", "[Ar]", index=-1)
+        k_high = Arrhenius(A=(1e14, "s^-1"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K"))
+        k_low = Arrhenius(A=(-1e21, "cm^3/(mol*s)"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K"))
+        lind = Lindemann(
+            arrheniusHigh=k_high,
+            arrheniusLow=k_low,
+            efficiencies={M.molecule[0]: 5.0},
+        )
+        rxn = Reaction(reactants=[r], products=[r], kinetics=lind)
+        entries = reaction_to_dict_list(rxn, species_list=[r, M])
+        assert entries[0]['negative-A'] is True
+
     def test_cantera_writer_class_listener(self):
         """
         Test the CanteraWriter2 class directly to ensure it correctly initializes
@@ -495,6 +521,24 @@ class TestCanteraWriter2:
         assert "sticking-coefficient" in d
         assert np.isclose(d["sticking-coefficient"]["A"], 0.1)
         assert np.isclose(d["sticking-coefficient"]["Ea"], 0.0)
+
+    def test_reaction_to_dict_negative_a_sticking_coefficient(self):
+        """Negative sticking-coefficient A factors are marked for Cantera."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=3
+        )
+        kin = StickingCoefficient(
+            A=(-0.1, ""), n=0, Ea=(0, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[h2, x, x], products=[hx, hx], kinetics=kin
+        )
+
+        entries = reaction_to_dict_list(rxn, species_list=[h2, x, hx])
+
+        assert entries[0]["negative-A"] is True
 
     def test_reaction_to_dict_coverage_dependence(self):
         """Coverage-dependent kinetics: coverage-dependencies block written correctly.
