@@ -3229,6 +3229,20 @@ multiplicity 2
         gas = Molecule().from_smiles("CCO")
         assert not gas.has_vdw_surface_bond()
 
+        # An unbonded X atom counts as a vdW surface bond
+        unbonded = Molecule().from_adjacency_list(
+            """
+1 X u0 p0 c0
+2 H u0 p0 c0 {3,S}
+3 H u0 p0 c0 {2,S}
+"""
+        )
+        assert unbonded.has_vdw_surface_bond()
+
+        # vacant site alone is not a vdW surface bond
+        vacant = Molecule().from_adjacency_list("1 X u0 p0 c0")
+        assert not vacant.has_vdw_surface_bond()
+
     def test_get_relevant_cycles(self):
         """
         Test the Molecule.get_relevant_cycles() raises correct error after deprecation.

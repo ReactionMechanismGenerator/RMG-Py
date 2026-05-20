@@ -1233,14 +1233,20 @@ class Molecule(Graph):
 
     def has_vdw_surface_bond(self):
         """
-        Return True if any bond in this molecule connects a surface site (X) via a van der Waals bond.
+        Return True if any bond in this molecule connects a surface site (X)
+        via a van der Waals bond, or there's a surface site with no bonds
+        (but at least one other atom in the molecule).
         """
         cython.declare(atom=Atom, bond=Bond)
         for atom in self.atoms:
             if atom.is_surface_site():
+                if not atom.bonds:  # if there are no bonds at all
+                    if len(self.atoms) > 1:  # and there's something besides the surface site
+                        return True  # then treat as vdW bonded
                 for bond in atom.bonds.values():
                     if bond.is_van_der_waals():
                         return True
+                
         return False
 
     def contains_surface_site(self):
