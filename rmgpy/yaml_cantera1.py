@@ -189,10 +189,9 @@ def get_elements_block(elements_in_use):
     in the set are emitted; isotopes (D, T, CI, OI) and the surface site X are
     written to the elements block only when actually used.
     """
-    from rmgpy.molecule.element import H, C, O, N, Ne, Ar, He, Si, S, F, Cl, Br, I, D, T, C13, O18, X
-    builtin_elements = [(H, 'H'), (C, 'C'), (O, 'O'), (N, 'N'), (Ne, 'Ne'), (Ar, 'Ar'),
-                        (He, 'He'), (Si, 'Si'), (S, 'S'), (F, 'F'), (Cl, 'Cl'), (Br, 'Br'), (I, 'I')]
-    elements_list = [symbol for element, symbol in builtin_elements if element in elements_in_use]
+    from rmgpy.molecule.element import D, T, C13, O18, X
+    custom_singletons = {D, T, C13, O18, X}
+    elements_list = sorted(element.symbol for element in elements_in_use if element not in custom_singletons)
     custom_elements = []
     for isotope in (D, T, C13, O18):
         if isotope in elements_in_use:
@@ -423,7 +422,6 @@ def reaction_to_dicts(obj, spcs):
     else:
         list_of_cantera_reactions = [obj.to_cantera(use_chemkin_identifier=True)]
 
-    is_third_body = isinstance(obj.kinetics, PDepKineticsModel)
 
     rmg_equation = _build_equation_string(obj)
 
@@ -446,6 +444,7 @@ def reaction_to_dicts(obj, spcs):
             reaction_data = new_data
         efficiencies = getattr(obj.kinetics, "efficiencies", {})
         if efficiencies:
+            # RMG oject has efficiencies, so add them to Cantera.
             reaction_data["efficiencies"] = {
                 spcs[i].to_chemkin(): float(val)
                 for i, val in enumerate(
@@ -453,7 +452,7 @@ def reaction_to_dicts(obj, spcs):
                 )
                 if val != 1
             }
-        elif not is_third_body:
+        elif not isinstance(obj.kinetics, PDepKineticsModel):
             # Cantera's API (v. 3.2) misidentifies a species that appears on both sides
             # of a reaction (e.g. vacantX) as a third-body collider
             # when there are three or more species on one side, producing a

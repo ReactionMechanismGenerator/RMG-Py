@@ -215,11 +215,10 @@ def get_elements_lists(elements_in_use):
     the set. The plasma pseudo-element 'E' is added separately by the caller
     when ``is_plasma`` is true.
     """
-    from rmgpy.molecule.element import H, C, O, N, Ne, Ar, He, Si, S, F, Cl, Br, I, D, T, C13, O18, X
-    builtin_elements = [(H, 'H'), (C, 'C'), (O, 'O'), (N, 'N'), (Ne, 'Ne'), (Ar, 'Ar'),
-                        (He, 'He'), (Si, 'Si'), (S, 'S'), (F, 'F'), (Cl, 'Cl'), (Br, 'Br'), (I, 'I')]
-    elements_list = [symbol for element, symbol in builtin_elements if element in elements_in_use]
+    from rmgpy.molecule.element import D, T, C13, O18, X
+    custom_singletons = {D, T, C13, O18, X}
     custom_elements = []
+    elements_list = sorted(element.symbol for element in elements_in_use if element not in custom_singletons)
     for isotope in (D, T, C13, O18):
         if isotope in elements_in_use:
             mass = 1000 * isotope.mass
@@ -245,8 +244,7 @@ def generate_cantera_data(species_list,
     'elements' block and the per-phase elements lists. Defaults to an empty
     set if None.
     """
-    if elements_in_use is None:
-        elements_in_use = set()
+
     # --- 1. Header & Units ---
     # We output everything in SI units.
     try:
@@ -287,6 +285,11 @@ def generate_cantera_data(species_list,
             gas_reactions.append(rxn)
 
     # --- 3. Phase Definitions ---
+    if elements_in_use is None:
+        # more efficient to calculate it earlier, but do so here if not provided
+        from rmgpy.rmg.model import ReactionModel
+        elements_in_use = ReactionModel(species=species_list).get_elements()
+
     custom_elements, all_elements = get_elements_lists(elements_in_use)
 
     if custom_elements:
@@ -362,6 +365,7 @@ def generate_cantera_data(species_list,
 
     if surface_species:
         data['gas-reactions'] = gas_reaction_data
+        data['surface-reactions'] = []
     else:
         data['reactions'] = gas_reaction_data
 
