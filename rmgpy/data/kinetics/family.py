@@ -1655,8 +1655,7 @@ class KineticsFamily(Database):
         for struct in product_structures:
             if self.is_molecule_forbidden(struct):
                 raise ForbiddenStructureException()
-            reason = fails_species_constraints(struct)
-            if reason:
+            if (reason := fails_species_constraints(struct)):
                 raise ForbiddenStructureException(
                     "Species constraints forbids product species {0}. Please "
                     "reformulate constraints, or explicitly "
