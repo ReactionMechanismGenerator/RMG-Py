@@ -459,6 +459,30 @@ def reaction_to_dicts(obj, spcs):
             # spurious 'efficiencies' entry in input_data.
             # see https://github.com/Cantera/cantera/issues/2115
             reaction_data.pop("efficiencies", None)
+
+        # This next block is hopefully unnecessary, and probably slows us a little
+        # so maybe should be removed. For now it is here for safety.
+        for rate_key in (
+            "rate-constant",
+            "high-P-rate-constant",
+            "low-P-rate-constant",
+            "sticking-coefficient",
+        ):
+            if reaction_data.get(rate_key, {}).get("A", 0) < 0:
+                if not reaction_data.get("negative-A", False):
+                    logging.warning(
+                        "%s\n%s",
+                        "Reaction did not have the negative-A flag set to True.",
+                        yaml.dump(
+                            reaction_data,
+                            Dumper=Dumper,
+                            default_flow_style=False,
+                            sort_keys=False,
+                        ).rstrip(),
+                    )
+                reaction_data["negative-A"] = True
+                break
+
         # Convert any AnyMap objects to regular dicts before appending
         reaction_data = _convert_anymap_to_dict(reaction_data)
 

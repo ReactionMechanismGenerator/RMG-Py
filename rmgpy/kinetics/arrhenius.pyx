@@ -272,7 +272,10 @@ cdef class Arrhenius(KineticsModel):
         if arrhenius_class:
             return ct.Arrhenius(A, b, E)
         else:
-            return ct.ArrheniusRate(A, b, E)
+            rate = ct.ArrheniusRate(A, b, E)
+            if A < 0:
+                rate.allow_negative_pre_exponential_factor = True
+            return rate
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """
@@ -784,7 +787,10 @@ cdef class ArrheniusBM(KineticsModel):
         Ea = self._E0.value_si * 1000  # convert from J/mol to J/kmol
         w = self._w0.value_si * 1000  # convert from J/mol to J/kmol
 
-        return ct.BlowersMaselRate(A, b, Ea, w)
+        rate = ct.BlowersMaselRate(A, b, Ea, w)
+        if A < 0:
+            rate.allow_negative_pre_exponential_factor = True
+        return rate
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """

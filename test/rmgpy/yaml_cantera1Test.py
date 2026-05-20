@@ -43,6 +43,7 @@ from rmgpy.thermo import NASA, NASAPolynomial
 from rmgpy.transport import TransportData
 from rmgpy.kinetics import (
     Arrhenius,
+    Lindemann,
     PDepArrhenius,
     Troe,
     ThirdBody,
@@ -164,6 +165,13 @@ class TestYamlCantera1Functions:
         assert np.isclose(d["rate-constant"]["b"], 0.5)
         assert np.isclose(d["rate-constant"]["Ea"], 10e6)  # 10 kJ/mol → 1e7 J/kmol
 
+    def test_reaction_to_dicts_negative_a_arrhenius(self):
+        """Negative Arrhenius A factors are marked for Cantera."""
+        kin = Arrhenius(A=(-1e13, "s^-1"), n=0.5, Ea=(10, "kJ/mol"), T0=(1, "K"))
+        rxn = Reaction(reactants=[self.h2], products=[self.h, self.h], kinetics=kin)
+        entries = reaction_to_dicts(rxn, self.all_gas)
+        assert entries[0]["negative-A"] is True
+
     def test_reaction_to_dicts_thirdbody(self):
         """ThirdBody: type is three-body, equation uses M, efficiencies map present."""
         kin = ThirdBody(
@@ -234,6 +242,24 @@ class TestYamlCantera1Functions:
         assert "efficiencies" in d
         assert np.isclose(d["efficiencies"]["Ar(3)"], 2.0)
 
+    def test_reaction_to_dicts_negative_a_falloff(self):
+        """Falloff rates with negative high- and low-pressure A factors are marked for Cantera."""
+        kin = Lindemann(
+            arrheniusHigh=Arrhenius(
+                A=(-1e14, "s^-1"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K")
+            ),
+            arrheniusLow=Arrhenius(
+                A=(-1e20, "cm^3/(mol*s)"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K")
+            ),
+            efficiencies={self.ar.molecule[0]: 2.0},
+        )
+        rxn = Reaction(reactants=[self.h], products=[self.h], kinetics=kin)
+        entries = reaction_to_dicts(rxn, self.all_gas)
+        d = entries[0]
+        assert d["negative-A"] is True
+        assert d["low-P-rate-constant"]["A"] < 0
+        assert np.isclose(d["efficiencies"]["Ar(3)"], 2.0)
+
     # ------------------------------------------------------------------
     # reaction_to_dicts — surface kinetics
     # ------------------------------------------------------------------
@@ -270,6 +296,19 @@ class TestYamlCantera1Functions:
         assert "sticking-coefficient" in d
         assert np.isclose(d["sticking-coefficient"]["A"], 0.1)
         assert np.isclose(d["sticking-coefficient"]["Ea"], 0.0)
+
+    def test_reaction_to_dicts_negative_a_sticking_coefficient(self):
+        """Negative sticking-coefficient A factors are marked for Cantera."""
+        kin = StickingCoefficient(
+            A=(-0.1, ""), n=0, Ea=(0, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[self.h2, self.x, self.x],
+            products=[self.hx, self.hx],
+            kinetics=kin,
+        )
+        entries = reaction_to_dicts(rxn, self.all_surface)
+        assert entries[0]["negative-A"] is True
 
     def test_reaction_to_dicts_coverage_dependence(self):
         """Coverage-dependent kinetics: coverage-dependencies block present with correct units.
