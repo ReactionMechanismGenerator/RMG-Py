@@ -2386,14 +2386,12 @@ def write_elements_section(f, elements_in_use):
     ``elements_in_use`` (a set of :class:`Element` singletons) are emitted. Isotopes
     (D, T, CI, OI) and the surface site X are written only when actually used.
     """
-    from rmgpy.molecule.element import H, C, O, N, Ne, Ar, He, Si, S, F, Cl, Br, I, D, T, C13, O18, X
-
+    from rmgpy.molecule.element import D, T, C13, O18, X
     s = 'ELEMENTS\n'
-    builtin_elements = [(H, 'H'), (C, 'C'), (O, 'O'), (N, 'N'), (Ne, 'Ne'), (Ar, 'Ar'),
-                        (He, 'He'), (Si, 'Si'), (S, 'S'), (F, 'F'), (Cl, 'Cl'), (Br, 'Br'), (I, 'I')]
-    for element, symbol in builtin_elements:
-        if element in elements_in_use:
-            s += f'\t{symbol}\n'
+    custom_singletons = {D, T, C13, O18, X}
+    elements_list = sorted(e.chemkin_name for e in elements_in_use if e not in custom_singletons)
+    for element in elements_list:
+        s += f'\t{element}\n'
     for isotope in (D, T, C13, O18):
         if isotope in elements_in_use:
             mass = 1000 * isotope.mass

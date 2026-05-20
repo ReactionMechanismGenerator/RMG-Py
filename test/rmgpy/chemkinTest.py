@@ -742,8 +742,8 @@ class ChemkinTest:
 
         assert stream.getvalue().splitlines() == [
             "ELEMENTS",
-            "\tH",
             "\tC",
+            "\tH",
             "\tO",
             "END",
             "",
