@@ -46,6 +46,7 @@ from rmgpy.chemkin import (
     save_chemkin_surface_file,
     save_species_dictionary,
     save_transport_file,
+    write_elements_section,
     write_kinetics_entry,
     write_thermo_entry,
 )
@@ -61,6 +62,14 @@ from rmgpy.transport import TransportData
 from rmgpy.quantity import Quantity
 from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient
 import pytest
+
+
+def get_elements_section_lines(chemkin_text):
+    """Return the ELEMENTS block from a Chemkin file as stripped lines."""
+    lines = chemkin_text.splitlines()
+    start = lines.index("ELEMENTS")
+    end = lines.index("END", start)
+    return lines[start : end + 1]
 
 
 class ChemkinTest:
@@ -724,6 +733,41 @@ class ChemkinTest:
         assert "OX" in cov_line
         assert "-17.500" in cov_line
 
+    def test_write_elements_section_omits_unused_isotopes_and_surface_site(self):
+        """Only elements in use should be written to the ELEMENTS section."""
+        from rmgpy.molecule.element import C, H, O
+
+        stream = io.StringIO()
+        write_elements_section(stream, {C, H, O})
+
+        assert stream.getvalue().splitlines() == [
+            "ELEMENTS",
+            "\tH",
+            "\tC",
+            "\tO",
+            "END",
+            "",
+        ]
+
+    def test_write_elements_section_includes_used_isotopes_and_surface_site(self):
+        """Isotopes and X should be written when they are explicitly in use."""
+        from rmgpy.molecule.element import C13, D, H, O18, T, X
+
+        stream = io.StringIO()
+        write_elements_section(stream, {C13, D, H, O18, T, X})
+
+        assert stream.getvalue().splitlines() == [
+            "ELEMENTS",
+            "\tH",
+            "\tD /2.014/",
+            "\tT /3.016/",
+            "\tCI /13.003/",
+            "\tOI /17.999/",
+            "\tX /195.083/",
+            "END",
+            "",
+        ]
+
 
 class TestThermoReadWrite:
     def setup_class(self):
@@ -813,6 +857,36 @@ C 1 H 3 N 1 O 2 S 1 X 1
         first_line = result.splitlines()[0]
         assert "D   1" in first_line
         assert "H   1" in first_line
+
+    def test_save_chemkin_file_writes_dynamic_elements_section(self, tmp_path):
+        """save_chemkin_file should discover isotopes and not add unused X."""
+        h2 = Species().from_smiles("[H][H]")
+        h2.label = "H2"
+        h2.index = 1
+        h2.thermo = self.nasa
+
+        d = Species().from_adjacency_list("1 H u1 p0 c0 i2")
+        d.label = "D"
+        d.index = 2
+        d.thermo = self.nasa
+
+        chemkin_path = tmp_path / "chem.inp"
+        save_chemkin_file(
+            chemkin_path,
+            [h2, d],
+            [],
+            verbose=False,
+            check_for_duplicates=False,
+        )
+
+        elements_lines = get_elements_section_lines(chemkin_path.read_text())
+        assert elements_lines == [
+            "ELEMENTS",
+            "\tH",
+            "\tD /2.014/",
+            "END",
+        ]
+        assert all("X" not in line for line in elements_lines)
 
     def test_write_thermo_block_5_elem(self):
         """Test that we can write a thermo block for a species with 5 elements"""
