@@ -79,7 +79,7 @@ class UtilTest:
     def test_strip_yaml_notes_removes_single_line_flow_note(self, tmp_path):
         source = """species:
 - name: Ar
-  transport: {model: gas, geometry: atom, diameter: 3.33, well-depth: 136.5, note: RMG transport}
+  transport: {model: gas, note: RMG transport, geometry: atom, diameter: 3.33, well-depth: 136.5}
 """
         expected = """species:
 - name: Ar
@@ -92,8 +92,8 @@ class UtilTest:
         source = """species:
 - name: CH4
   transport: {model: gas, geometry: nonlinear, diameter: 3.746,
-    well-depth: 141.4,
-    note: RMG transport note}
+    note: RMG transport note,
+    well-depth: 141.4}
 """
         expected = """species:
 - name: CH4
@@ -107,9 +107,9 @@ class UtilTest:
         source = """species:
 - name: CH4
   transport: {model: gas, geometry: nonlinear, diameter: 3.746,
-    well-depth: 141.4,
     note: RMG transport note
-      with wrapped detail}
+      with wrapped detail,
+    well-depth: 141.4}
 """
         expected = """species:
 - name: CH4

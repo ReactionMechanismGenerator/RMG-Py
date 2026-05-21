@@ -114,6 +114,42 @@ class Subject(object):
                 observer.update(self)
 
 
+def _strip_wrapped_flow_yaml_notes(text):
+    """Strip wrapped flow-style YAML notes without a nested regex."""
+    lines = text.splitlines(keepends=True)
+    stripped_lines = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if (
+            stripped_lines
+            and stripped_lines[-1].rstrip().endswith(",")
+            and line.lstrip(" \t").startswith("note:")
+        ):
+            end_index = i
+            while end_index < len(lines):
+                if "}" in lines[end_index]:
+                    comma_index = stripped_lines[-1].rfind(",")
+                    brace_index = lines[end_index].find("}")
+                    stripped_lines[-1] = stripped_lines[-1][:comma_index] + lines[end_index][brace_index:]
+                    i = end_index + 1
+                    break
+                if lines[end_index].rstrip().endswith(","):
+                    i = end_index + 1
+                    break
+                end_index += 1
+            else:
+                stripped_lines.append(line)
+                i += 1
+                continue
+            continue
+
+        stripped_lines.append(line)
+        i += 1
+
+    return "".join(stripped_lines)
+
+
 def make_output_subdirectory(output_directory, folder):
     """
     Create a subdirectory `folder` in the output directory. If the folder
@@ -132,36 +168,26 @@ def strip_yaml_notes(src, dst):
     ordering, etc.) - important when the source is the carefully
     crafted ck2yaml output.
 
-    Three patterns are handled (notes are always the last key, by
-    how RMG / ck2yaml emit them):
+    Three patterns are handled:
       1. Block-style:        ``  note: ...`` on its own line,
          possibly followed by deeper-indented continuation lines
          (multi-line literal/folded scalars).
-      2. Single-line flow:   ``{..., note: foo}``  -> ``{...}``
+      2. Single-line flow:   ``{..., note: foo, ...}``  -> ``{..., ...}``
       3. Wrapped flow:       a flow mapping that wraps with the
          trailing ``,`` at the end of one line and
-         ``    note: foo}`` on the next  -> drop the comma and
-         replace with ``}`` on the prior line.
+         ``    note: foo`` on the next  -> drop the note field.
     """
     if not os.path.exists(src):
         return
     with open(src) as f:
         text = f.read()
-    # Wrapped flow style: a flow mapping that wraps after a
-    # trailing ``,``, with ``note: value`` on the next line
-    # (value may itself wrap across several more-indented lines)
-    # ending in ``}``. Replace the whole tail with ``}``.
-    # CodeQL flags this as polynomial ReDoS (py/polynomial-redos);
-    # safe here because [^\n}]* and \n[ \t]+ consume disjoint
-    # characters (no alternative-path overlap) and the inner *
-    # consumes >=2 chars per iteration, so worst-case is O(N^2)
-    # rather than exponential. Inputs are RMG-generated YAML,
-    # not adversarial.
-    text = re.sub(
-        r',[ \t]*\n[ \t]+note:[^\n}]*(?:\n[ \t]+[^\n}]*)*\}',
-        '}', text)  # lgtm[py/polynomial-redos]
-    # Single-line flow style: ``, note: value}`` -> ``}``.
-    text = re.sub(r',[ \t]*note:[^,}]*\}', '}', text)
+    # Wrapped flow style: a flow mapping that wraps after a trailing comma,
+    # with ``note: value`` on the next line.
+    text = _strip_wrapped_flow_yaml_notes(text)
+    # Single-line flow style.
+    text = re.sub(r',[ \t]*note:[^,}\n]*', '', text)
+    text = re.sub(r'(\{)[ \t]*note:[^,}\n]*,[ \t]*', r'\1', text)
+    text = re.sub(r'\{[ \t]*note:[^,}\n]*\}', '{}', text)
     # Block style: ``  note: ...\n`` plus deeper-indented
     # continuation lines.
     text = re.sub(r'^( +)note:.*\n(?:\1 +[^\n]*\n)*', '', text, flags=re.MULTILINE)
