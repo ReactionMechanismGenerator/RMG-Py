@@ -150,6 +150,59 @@ def _strip_wrapped_flow_yaml_notes(text):
     return "".join(stripped_lines)
 
 
+def _find_flow_yaml_delimiter(text, start):
+    """Find the next comma or closing brace outside quoted text."""
+    quote = None
+    i = start
+    while i < len(text):
+        char = text[i]
+        if quote:
+            if char == quote:
+                if quote == "'" and i + 1 < len(text) and text[i + 1] == "'":
+                    i += 2
+                    continue
+                quote = None
+            elif quote == '"' and char == "\\":
+                i += 2
+                continue
+        elif char in ("'", '"'):
+            quote = char
+        elif char in ",}":
+            return i
+        i += 1
+    return -1
+
+
+def _strip_single_line_flow_yaml_notes(text):
+    """Strip single-line flow-style YAML notes without splitting quoted commas."""
+    lines = text.splitlines(keepends=True)
+    stripped_lines = []
+    note_pattern = re.compile(r'([,{])[ \t]*note:')
+    for line in lines:
+        search_start = 0
+        while True:
+            match = note_pattern.search(line, search_start)
+            if not match:
+                break
+            value_start = match.end()
+            value_end = _find_flow_yaml_delimiter(line, value_start)
+            if value_end == -1:
+                break
+            delimiter = line[value_end]
+            if delimiter == ",":
+                line = line[:match.start()] + line[value_end:]
+                search_start = match.start()
+            elif match.group(1) == ",":
+                line = line[:match.start()] + line[value_end:]
+                search_start = match.start()
+            else:
+                line = line[:match.start() + 1] + line[value_end:]
+                search_start = match.start() + 1
+        stripped_lines.append(line)
+
+    return "".join(stripped_lines)
+
+
 def make_output_subdirectory(output_directory, folder):
     """
     Create a subdirectory `folder` in the output directory. If the folder
@@ -184,10 +237,7 @@ def strip_yaml_notes(src, dst):
     # Wrapped flow style: a flow mapping that wraps after a trailing comma,
     # with ``note: value`` on the next line.
     text = _strip_wrapped_flow_yaml_notes(text)
-    # Single-line flow style.
-    text = re.sub(r',[ \t]*note:[^,}\n]*', '', text)
-    text = re.sub(r'(\{)[ \t]*note:[^,}\n]*,[ \t]*', r'\1', text)
-    text = re.sub(r'\{[ \t]*note:[^,}\n]*\}', '{}', text)
+    text = _strip_single_line_flow_yaml_notes(text)
     # Block style: ``  note: ...\n`` plus deeper-indented
     # continuation lines.
     text = re.sub(r'^( +)note:.*\n(?:\1 +[^\n]*\n)*', '', text, flags=re.MULTILINE)

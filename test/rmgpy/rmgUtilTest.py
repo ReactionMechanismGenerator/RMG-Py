@@ -88,6 +88,18 @@ class UtilTest:
 
         assert self.strip_yaml_notes(tmp_path, source) == expected
 
+    def test_strip_yaml_notes_removes_single_line_flow_note_with_quoted_comma(self, tmp_path):
+        source = """species:
+- name: Ar
+  transport: {model: gas, note: 'comma here, danger!', geometry: atom, diameter: 3.33, well-depth: 136.5}
+"""
+        expected = """species:
+- name: Ar
+  transport: {model: gas, geometry: atom, diameter: 3.33, well-depth: 136.5}
+"""
+
+        assert self.strip_yaml_notes(tmp_path, source) == expected
+
     def test_strip_yaml_notes_removes_wrapped_flow_note(self, tmp_path):
         source = """species:
 - name: CH4
