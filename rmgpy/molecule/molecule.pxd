@@ -70,6 +70,10 @@ cdef class Atom(Vertex):
 
     cpdef bint is_carbon(self)
 
+    cpdef bint is_lithium(self)
+
+    cpdef bint is_nitrogen(self)
+
     cpdef bint is_oxygen(self)
 
     cpdef bint is_fluorine(self)
@@ -81,6 +85,8 @@ cdef class Atom(Vertex):
     cpdef bint is_sulfur(self)
 
     cpdef bint is_chlorine(self)
+
+    cpdef bint is_bromine(self)
 
     cpdef bint is_iodine(self)
 
@@ -108,8 +114,10 @@ cdef class Atom(Vertex):
     
     cpdef update_charge(self)
 
-    cpdef get_total_bond_order(self)
-    
+    cpdef apply_action(self, action)
+
+    cpdef double get_total_bond_order(self)
+
 ################################################################################
     
 cdef class Bond(Edge):
@@ -139,14 +147,26 @@ cdef class Bond(Edge):
     cpdef bint is_double(self) except -2
 
     cpdef bint is_triple(self) except -2
-    
+
     cpdef bint is_quadruple(self) except -2
-    
+
+    cpdef bint is_double_or_triple(self) except -2
+
     cpdef bint is_benzene(self) except -2
+
+    cpdef bint is_hydrogen_bond(self) except -2
+
+    cpdef bint is_reaction_bond(self) except -2
 
     cpdef increment_order(self)
 
     cpdef decrement_order(self)
+
+    cpdef _change_bond(self, float order)
+
+    cpdef apply_action(self, action)
+
+    cpdef double get_bde(self) except? -1
 
     cpdef str get_bond_string(self)
 
@@ -183,7 +203,9 @@ cdef class Molecule(Graph):
     cpdef bint is_proton(self)
 
     cpdef bint contains_surface_site(self)
-    
+
+    cpdef int number_of_surface_sites(self) except -1
+
     cpdef bint is_surface_site(self)
 
     cpdef remove_atom(self, Atom atom)
@@ -191,6 +213,10 @@ cdef class Molecule(Graph):
     cpdef remove_bond(self, Bond bond)
 
     cpdef remove_van_der_waals_bonds(self)
+
+    cpdef update_charge(self)
+
+    cpdef update_multiplicity(self)
 
     cpdef sort_atoms(self)
     
@@ -206,7 +232,10 @@ cdef class Molecule(Graph):
 
     cpdef Graph copy(self, bint deep=?)
 
+    cpdef Molecule to_single_bonds(self, bint raise_atomtype_exception=?)
+
     cpdef delete_hydrogens(self)
+    # connect_the_dots cannot be cpdef because it contains a closure (lambda)
 
     cpdef clear_labeled_atoms(self)
 
@@ -234,7 +263,11 @@ cdef class Molecule(Graph):
 
     cpdef from_inchi(self, str inchistr, backend=?, bint raise_atomtype_exception=?)
 
+    cpdef from_augmented_inchi(self, str aug_inchi, bint raise_atomtype_exception=?)
+
     cpdef from_smiles(self, str smilesstr, backend=?, bint raise_atomtype_exception=?)
+
+    cpdef from_smarts(self, str smartsstr, bint raise_atomtype_exception=?)
 
     cpdef from_adjacency_list(self, str adjlist, bint saturate_h=?, bint raise_atomtype_exception=?,
                               bint raise_charge_exception=?, bint check_consistency=?)
@@ -249,11 +282,21 @@ cdef class Molecule(Graph):
 
     cpdef str to_augmented_inchi_key(self, str backend=?)
 
+    cpdef str to_smarts(self)
+
     cpdef str to_smiles(self)
 
     cpdef to_adjacency_list(self, str label=?, bint remove_h=?, bint remove_lone_pairs=?, bint old_style=?)
 
+    cpdef list find_h_bonds(self)
+
+    cpdef list generate_h_bonded_structures(self)
+
+    cpdef remove_h_bonds(self)
+
     cpdef bint is_linear(self) except -2
+
+    cpdef bint is_aromatic(self) except -2
 
     cpdef bint is_heterocyclic(self) except -2
 
@@ -269,19 +312,35 @@ cdef class Molecule(Graph):
 
     cpdef bint has_lone_pairs(self) except -2
 
+    cpdef bint has_charge(self) except -2
+
     cpdef bint has_halogen(self) except -2
 
     cpdef bint is_aryl_radical(self, list aromatic_rings=?, bint save_order=?) except -2
+
+    cpdef float get_symmetry_number(self) except -1
 
     cpdef float calculate_symmetry_number(self) except -1
 
     cpdef list generate_resonance_structures(self, bint keep_isomorphic=?, bint filter_structures=?, bint save_order=?)
 
+    cpdef str get_url(self)
+
+    cpdef list get_radical_atoms(self)
+
     cpdef update_lone_pairs(self)
+
+    cpdef int get_net_charge(self)
+
+    cpdef double get_charge_span(self)
+
+    cpdef saturate_unfilled_valence(self, bint update=?)
 
     cpdef dict saturate_radicals(self, bint raise_atomtype_exception=?)
 
     cpdef replace_halogen_with_hydrogen(self, bint raise_atomtype_exception=?)
+
+    cpdef to_group(self)
 
     cpdef identify_ring_membership(self)
 
@@ -324,5 +383,9 @@ cdef class Molecule(Graph):
     cpdef tuple _merge_cycles(self, list cycle_sets)
 
     cpdef int get_max_cycle_overlap(self)
+
+    cpdef list get_nth_neighbor(self, list starting_atoms, list distance_list, list ignore_list=?, int n=?)
+
+    cpdef int get_ring_count_in_largest_fused_ring_system(self) except -1
 
 cdef atom_id_counter

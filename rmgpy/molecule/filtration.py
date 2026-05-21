@@ -159,7 +159,7 @@ def get_octet_deviation(mol, allow_expanded_octet=True):
                 elif atom.lone_pairs >= 2:
                     octet_deviation += abs(8 - val_electrons)  # octet on S p[2,3]
                     # eg [S][S], OS[O], [NH+]#[N+][S-][O-], O[S-](O)[N+]#N, S=[O+][O-]
-            for atom2, bond in atom.bonds.items():
+            for atom2, bond in atom.edges.items():
                 if atom2.is_sulfur() and bond.is_triple():
                     octet_deviation += 0.5  # penalty for S#S substructures. Often times sulfur can have a triple
                     # bond to another sulfur in a structure that obeys the octet rule, but probably shouldn't be a
@@ -186,10 +186,11 @@ def octet_filtration(mol_list, octet_deviation_list):
     charge-strained species are still kept (e.g., [NH]N=S=O <-> [NH+]#[N+][S-][O-]), we also generate during the same
     loop a charge_span_list to keep track of the charge spans. This is used for further filtering.
     """
+    min_octet_deviation = min(octet_deviation_list)
     filtered_list = []
     charge_span_list = []
     for index, mol in enumerate(mol_list):
-        if octet_deviation_list[index] == min(octet_deviation_list):
+        if octet_deviation_list[index] == min_octet_deviation:
             filtered_list.append(mol)
             charge_span_list.append(mol.get_charge_span())
 
@@ -243,7 +244,7 @@ def charge_filtration(filtered_list, charge_span_list):
             for atom in mol.vertices:
                 if atom.radical_electrons and int(atom.sorting_label) not in rad_sorting_list:
                     rad_sorting_list.append(int(atom.sorting_label))
-                for atom2, bond in atom.bonds.items():
+                for atom2, bond in atom.edges.items():
                     # check if bond is multiple, store only from one side (atom1 < atom2) for consistency
                     if atom2.sorting_label > atom.sorting_label and bond.is_double() or bond.is_triple():
                         mul_bond_sorting_list.append((int(atom.sorting_label), int(atom2.sorting_label)))
@@ -278,7 +279,7 @@ def find_unique_sites_in_charged_list(mol, rad_sorting_list, mul_bond_sorting_li
     for atom in mol.vertices:
         if atom.radical_electrons and int(atom.sorting_label) not in rad_sorting_list:
             return [mol]
-        for atom2, bond in atom.bonds.items():
+        for atom2, bond in atom.edges.items():
             if (atom2.sorting_label > atom.sorting_label and (bond.is_double() or bond.is_triple())
                     and (int(atom.sorting_label), int(atom2.sorting_label)) not in mul_bond_sorting_list
                     and not (atom.is_sulfur() and atom2.is_sulfur())):
@@ -295,13 +296,13 @@ def stabilize_charges_by_electronegativity(mol_list, allow_empty_list=False):
     to ``True`` and all structures in `mol_list` violate the electronegativity heuristic, the original `mol_list`
     is returned (examples: [C-]#[O+], CS, [NH+]#[C-], [OH+]=[N-], [C-][S+]=C violate this heuristic).
     """
-    indices_to_pop = []
+    indices_to_pop = set()
     mol_list_copy = list(mol_list)
     for i, mol in enumerate(mol_list):
         electroneg_positively_charged_atoms = electroneg_negatively_charged_atoms = 0
         for atom in mol.vertices:
             if atom.charge > 0:
-                electroneg_positively_charged_atoms += PeriodicSystem.electronegativity[atom.symbol] * abs(atom.charge)
+                electroneg_positively_charged_atoms += PeriodicSystem.electronegativity[atom.element.symbol] * abs(atom.charge)
                 if atom.is_oxygen():
                     for atom2 in atom.edges.keys():
                         if atom2.is_fluorine() and atom2.charge < 0:
@@ -312,13 +313,13 @@ def stabilize_charges_by_electronegativity(mol_list, allow_empty_list=False):
                     # [C-]#[O+] and [O-][O+]=O, which are correct structures, also get penalized here, but that's OK
                     # since they are still eventually selected as representative structures according to the rules here.
             elif atom.charge < 0:
-                electroneg_negatively_charged_atoms += PeriodicSystem.electronegativity[atom.symbol] * abs(atom.charge)
+                electroneg_negatively_charged_atoms += PeriodicSystem.electronegativity[atom.element.symbol] * abs(atom.charge)
         if electroneg_positively_charged_atoms > electroneg_negatively_charged_atoms:
             # Filter structures in which more electronegative atoms are positively charged.
             # This condition is NOT hermetic: It is possible to think of a situation where one structure has
             # several pairs of formally charged atoms, where one of the pairs isn't obeying the
             # electronegativity rule, while the sum of the pairs does.
-            indices_to_pop.append(i)
+            indices_to_pop.add(i)
     for i in reversed(range(len(mol_list))):  # pop starting from the end, so indices won't change
         if i in indices_to_pop:
             mol_list.pop(i)
@@ -333,7 +334,7 @@ def stabilize_charges_by_proximity(mol_list):
     Only keep structures that obey the charge proximity rule.
     Opposite charges will be as close as possible to one another, and vice versa.
     """
-    indices_to_pop = []
+    indices_to_pop = set()
     charge_distance_list = []  # indices match mol_list
     for i, mol in enumerate(mol_list):
         # Try finding well-defined pairs of formally-charged atoms to apply the proximity principle
@@ -352,17 +353,18 @@ def stabilize_charges_by_proximity(mol_list):
                             cumulative_similar_charge_distance += len(find_shortest_path(atom1, atom2))
         charge_distance_list.append([cumulative_opposite_charge_distance,
                                      cumulative_similar_charge_distance])
-    min_cumulative_opposite_charge_distance = min([distances[0] for distances in charge_distance_list]
-                                                  or [0])  # in Python 3 use `min(list, default=0)`
+    min_cumulative_opposite_charge_distance = min((distances[0] for distances in charge_distance_list),
+                                                  default=0)
     for i, distances in enumerate(charge_distance_list):
         # after generating the charge_distance_list, iterate through it and mark structures to pop
         if distances[0] > min_cumulative_opposite_charge_distance:
-            indices_to_pop.append(i)
-    max_cumulative_similar_charge_distance = max([distances[1] for i, distances in
-                                                  enumerate(charge_distance_list) if i not in indices_to_pop] or [0])
+            indices_to_pop.add(i)
+    max_cumulative_similar_charge_distance = max((distances[1] for i, distances in
+                                                  enumerate(charge_distance_list) if i not in indices_to_pop),
+                                                 default=0)
     for i, distances in enumerate(charge_distance_list):
         if distances[0] < max_cumulative_similar_charge_distance:
-            indices_to_pop.append(i)
+            indices_to_pop.add(i)
     for i in reversed(range(len(mol_list))):  # pop starting from the end, so indices won't change
         if i in indices_to_pop:
             mol_list.pop(i)
@@ -425,8 +427,11 @@ def mark_unreactive_structures(filtered_list, mol_list, save_order=False):
     # Make sure that the (first) original structure is always first in the list (unless it was filtered out).
     # Important whenever Species.molecule[0] is expected to be used (e.g., training reactions) after generating
     # resonance structures. However, if it was filtered out, it should be appended to the end of the list.
+    # mol_list[0] is constant across iterations, so copy it once. is_isomorphic with save_order=False can
+    # reorder atoms in either argument, so we still copy `filtered` per iteration to leave filtered_list intact.
+    original = mol_list[0].copy(deep=True)
     for index, filtered in enumerate(filtered_list):
-        if filtered.copy(deep=True).is_isomorphic(mol_list[0].copy(deep=True), save_order=save_order):
+        if filtered.copy(deep=True).is_isomorphic(original, save_order=save_order):
             filtered_list.insert(0, filtered_list.pop(index))
             break
     else:

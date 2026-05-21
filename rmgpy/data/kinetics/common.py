@@ -195,28 +195,29 @@ def ensure_independent_atom_ids(input_species, resonance=True):
     """
     ensure_species(input_species)  # do not generate resonance structures since we do so below
 
-    # Method to check that all species' atom ids are different
-    def independent_ids():
-        num_atoms = 0
-        ids = []
-        for spcs in input_species:
-            num_atoms += len(spcs.molecule[0].atoms)
-            ids.extend([atom.id for atom in spcs.molecule[0].atoms])
-        num_id = len(set(ids))
-        return num_id == num_atoms
+    # Inline check that all atom IDs across all species' first molecule are unique.
+    # Building a list then converting to set is faster than incremental set.add()
+    # because set(list) has a vectorized C path.
+    ids = []
+    for spcs in input_species:
+        atoms = spcs.molecule[0].atoms
+        ids.extend([atom.id for atom in atoms])
 
-    # If they are not all different, reassign ids and remake resonance structures
-    if not independent_ids():
+    if len(set(ids)) != len(ids):
+        # Collision: reassign IDs and remake resonance structures
         for species in input_species:
-            unreactive_mol_list = [mol for mol in species.molecule if not mol.reactive]
-            mol = [mol for mol in species.molecule if mol.reactive][0]  # Choose first reactive molecule
+            reactive_mols = []
+            unreactive_mols = []
+            for m in species.molecule:
+                (reactive_mols if m.reactive else unreactive_mols).append(m)
+            mol = reactive_mols[0]  # Choose first reactive molecule
             mol.assign_atom_ids()
             species.molecule = [mol]
             # Remake resonance structures with new labels
             if resonance:
                 species.generate_resonance_structures(keep_isomorphic=True)
-            if len(unreactive_mol_list):
-                species.molecule.extend(unreactive_mol_list)
+            if unreactive_mols:
+                species.molecule.extend(unreactive_mols)
     elif resonance:
         # IDs are already independent, generate resonance structures if needed
         for species in input_species:
