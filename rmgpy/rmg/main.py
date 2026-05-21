@@ -1363,52 +1363,10 @@ class RMG(util.Subject):
                     if os.path.exists(annotated):
                         self.generate_cantera_files_from_chemkin(annotated)
 
-            def _strip_yaml_notes(src, dst):
-                """Read a YAML file, strip ``note:`` fields, and write the
-                result to *dst*. Preserves formatting (block style, key
-                ordering, etc.) — important when the source is the carefully
-                crafted ck2yaml output.
-
-                Three patterns are handled (notes are always the last key, by
-                how RMG / ck2yaml emit them):
-                  1. Block-style:        ``  note: ...`` on its own line,
-                     possibly followed by deeper-indented continuation lines
-                     (multi-line literal/folded scalars).
-                  2. Single-line flow:   ``{..., note: foo}``  → ``{...}``
-                  3. Wrapped flow:       a flow mapping that wraps with the
-                     trailing ``,`` at the end of one line and
-                     ``    note: foo}`` on the next  → drop the comma and
-                     replace with ``}`` on the prior line.
-                """
-                if not os.path.exists(src):
-                    return
-                with open(src) as f:
-                    text = f.read()
-                # Wrapped flow style: a flow mapping that wraps after a
-                # trailing ``,``, with ``note: value`` on the next line
-                # (value may itself wrap across several more-indented lines)
-                # ending in ``}``. Replace the whole tail with ``}``.
-                # CodeQL flags this as polynomial ReDoS (py/polynomial-redos);
-                # safe here because [^\n}]* and \n[ \t]+ consume disjoint
-                # characters (no alternative-path overlap) and the inner *
-                # consumes >=2 chars per iteration, so worst-case is O(N^2)
-                # rather than exponential. Inputs are RMG-generated YAML,
-                # not adversarial.
-                text = re.sub(
-                    r',[ \t]*\n[ \t]+note:[^\n}]*(?:\n[ \t]+[^\n}]*)*\}',
-                    '}', text)  # lgtm[py/polynomial-redos]
-                # Single-line flow style: ``, note: value}`` → ``}``.
-                text = re.sub(r',[ \t]*note:[^,}]*\}', '}', text)
-                # Block style: ``  note: ...\n`` plus deeper-indented
-                # continuation lines.
-                text = re.sub(r'^( +)note:.*\n(?:\1 +[^\n]*\n)*', '', text, flags=re.MULTILINE)
-                with open(dst, "w") as f:
-                    f.write(text)
-
             # Strip transport notes from the ck2yaml file so it matches the
             # notes-stripped variants below.
             ck_chem_yaml = os.path.join(self.output_directory, "cantera_from_ck", "chem.yaml")
-            _strip_yaml_notes(ck_chem_yaml, ck_chem_yaml)
+            util.strip_yaml_notes(ck_chem_yaml, ck_chem_yaml)
 
             # Produce notes-stripped chem.yaml / chem_edge.yaml end-of-run for
             # each direct Cantera writer (mirrors Chemkin's chem.inp).
@@ -1419,11 +1377,11 @@ class RMG(util.Subject):
                 if not (writer_cfg and writer_cfg.enabled):
                     continue
                 writer_path = os.path.join(self.output_directory, writer_dir)
-                _strip_yaml_notes(
+                util.strip_yaml_notes(
                     os.path.join(writer_path, "chem_annotated.yaml"),
                     os.path.join(writer_path, "chem.yaml"),
                 )
-                _strip_yaml_notes(
+                util.strip_yaml_notes(
                     os.path.join(writer_path, "chem_edge_annotated.yaml"),
                     os.path.join(writer_path, "chem_edge.yaml"),
                 )
