@@ -46,7 +46,6 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import ChemkinError
 from rmgpy.molecule.element import get_element
-from rmgpy.molecule.util import get_element_count
 from rmgpy.quantity import Quantity, QuantityError
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
@@ -1580,7 +1579,7 @@ def write_thermo_entry(species, element_counts=None, bint verbose=True):
     cdef dict counts
     cdef list sorted_elements, elements, short_lines
     cdef bint extended_syntax
-    cdef int count, isotope
+    cdef int count, isotope, charge
     cdef str string, line, short_line, chemkin_name, symbol, elem_1, elem_2
     cdef object thermo_data
 
@@ -1608,7 +1607,12 @@ def write_thermo_entry(species, element_counts=None, bint verbose=True):
             chemkin_name = atom.element.chemkin_name
             counts[chemkin_name] = counts.get(chemkin_name, 0) + 1
     else:
-        counts = element_counts
+        counts = dict(element_counts)
+    if 'e' in counts:
+        counts['E'] = counts.pop('e')
+    charge = species.molecule[0].get_net_charge()
+    if charge != 0 and 'E' not in counts:
+        counts['E'] = -charge
 
     # Sort the element_counts dictionary so that it's C, H, Al, B, Cl, D, etc.
     # if there's any C, else Al, B, Cl, D, H, if not. This is the "Hill" system
@@ -2389,7 +2393,7 @@ def write_elements_section(f, elements_in_use):
     from rmgpy.molecule.element import D, T, C13, O18, X
     s = 'ELEMENTS\n'
     custom_singletons = {D, T, C13, O18, X}
-    elements_list = sorted(e.chemkin_name for e in elements_in_use if e not in custom_singletons)
+    elements_list = sorted(element.chemkin_name for element in elements_in_use if element not in custom_singletons)
     for element in elements_list:
         s += f'\t{element}\n'
     for isotope in (D, T, C13, O18):

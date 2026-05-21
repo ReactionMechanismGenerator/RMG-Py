@@ -134,6 +134,26 @@ class TestYamlCantera1Functions:
         assert np.isclose(d["transport"]["diameter"], 3.0)
         assert np.isclose(d["transport"]["well-depth"], 100.0)
 
+    def test_species_to_dict_charged_species_uses_electron_pseudo_element(self):
+        """Charged species composition uses Cantera's E pseudo-element."""
+        lithium_ion = Species(label="Li+", index=10)
+        lithium_ion.from_adjacency_list("1 Li u0 p0 c+1")
+        lithium_ion.thermo = _make_nasa_thermo()
+
+        d = species_to_dict(lithium_ion)
+
+        assert d["composition"] == {"E": -1.0, "Li": 1.0}
+
+    def test_species_to_dict_electron_uses_electron_pseudo_element(self):
+        """The electron species exports composition as E, not internal e."""
+        electron = Species(label="e", index=11)
+        electron.from_adjacency_list("1 e u1 p0 c-1")
+        electron.thermo = _make_nasa_thermo()
+
+        d = species_to_dict(electron)
+
+        assert d["composition"] == {"E": 1.0}
+
     def test_species_to_dict_surface_composition(self):
         """Surface species has X in composition and no transport block."""
         d = species_to_dict(self.hx)
@@ -419,7 +439,7 @@ class TestYamlCantera1Functions:
 
     def test_get_elements_block_isotopes_and_surface_site(self):
         """get_elements_block emits isotope and X definitions only when requested."""
-        from rmgpy.molecule.element import H, C, D, T, X
+        from rmgpy.molecule.element import H, C, D, T, X, e
 
         # With D, T, X in use, the block names them with the right masses
         elements_block, elements_line = get_elements_block({H, C, D, T, X})
@@ -436,6 +456,12 @@ class TestYamlCantera1Functions:
         assert 'D' not in elements_block
         assert 'T' not in elements_block
         assert 'X' not in elements_block
+
+        # The RMG electron singleton is lowercase e internally, but Cantera
+        # expects the uppercase pseudo-element E in phase element lists.
+        elements_block, elements_line = get_elements_block({H, e})
+        assert elements_block == ''
+        assert elements_line == 'elements: [E, H]'
 
     def test_get_phases_gas_only_has_state(self):
         """Gas-only phases block includes state with T and P."""

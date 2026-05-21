@@ -768,6 +768,21 @@ class ChemkinTest:
             "",
         ]
 
+    def test_write_elements_section_maps_electron_to_pseudo_element(self):
+        """The RMG electron singleton should be written as Chemkin/Cantera E, not e."""
+        from rmgpy.molecule.element import H, e
+
+        stream = io.StringIO()
+        write_elements_section(stream, {H, e})
+
+        assert stream.getvalue().splitlines() == [
+            "ELEMENTS",
+            "\tE",
+            "\tH",
+            "END",
+            "",
+        ]
+
 
 class TestThermoReadWrite:
     def setup_class(self):
@@ -887,6 +902,42 @@ C 1 H 3 N 1 O 2 S 1 X 1
             "END",
         ]
         assert all("X" not in line for line in elements_lines)
+
+    def test_save_chemkin_file_adds_electron_element_for_charged_species(self, tmp_path):
+        """Charged species require E in the ELEMENTS section even without an electron atom."""
+        from rmgpy.molecule.element import Li, e
+        from rmgpy.rmg.model import ReactionModel
+
+        lithium_ion = Species().from_adjacency_list("1 Li u0 p0 c+1")
+        lithium_ion.label = "Li+"
+        lithium_ion.index = 1
+        lithium_ion.thermo = self.nasa
+
+        assert ReactionModel(species=[lithium_ion]).get_elements() == {Li, e}
+
+        chemkin_path = tmp_path / "chem.inp"
+        save_chemkin_file(
+            chemkin_path,
+            [lithium_ion],
+            [],
+            verbose=False,
+            check_for_duplicates=False,
+        )
+
+        elements_lines = get_elements_section_lines(chemkin_path.read_text())
+        assert "\tE" in elements_lines
+        assert "\tLi" in elements_lines
+
+    def test_write_thermo_block_for_charged_species_includes_electron_count(self):
+        """Charged species thermo composition should include E: -charge."""
+        lithium_ion = Species().from_adjacency_list("1 Li u0 p0 c+1")
+        lithium_ion.thermo = self.nasa
+
+        result = write_thermo_entry(lithium_ion, verbose=False)
+
+        first_line = result.splitlines()[0]
+        assert "E  -1" in first_line
+        assert "Li  1" in first_line
 
     def test_write_thermo_block_5_elem(self):
         """Test that we can write a thermo block for a species with 5 elements"""

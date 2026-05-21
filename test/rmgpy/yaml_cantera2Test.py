@@ -593,7 +593,7 @@ class TestCanteraWriter2:
 
     def test_get_elements_block_isotopes_and_surface_site(self):
         """get_elements_lists emits isotope and X definitions only when in use."""
-        from rmgpy.molecule.element import H, C, D, T, X
+        from rmgpy.molecule.element import H, C, D, T, X, e
 
         # With D, T, X in use: isotope and X entries appear
         custom_elements, elements_list = get_elements_lists({H, C, D, T, X})
@@ -616,10 +616,16 @@ class TestCanteraWriter2:
         assert 'D' not in elements_list
         assert 'T' not in elements_list
 
+        # The RMG electron singleton is lowercase e internally, but exports as
+        # Cantera's uppercase pseudo-element E.
+        custom_elements, elements_list = get_elements_lists({H, e})
+        assert custom_elements == []
+        assert elements_list == ['E', 'H']
+
     def test_generate_cantera_data_elements_block(self):
         """generate_cantera_data emits a top-level 'elements' key only when
         non-builtin elements (isotopes, X) are in use, matching ck2yaml."""
-        from rmgpy.molecule.element import H, X
+        from rmgpy.molecule.element import H, X, e
         h2 = self._create_dummy_species("H2", "[H][H]", index=1)
 
         # Gas-only H2: no isotopes, no X -> no top-level 'elements' block.
@@ -629,8 +635,16 @@ class TestCanteraWriter2:
         # Surface fixture: X is in use, so it appears as a custom element.
         x = self._create_surface_species("X", "1 X u0 p0", index=2)
         data = generate_cantera_data([h2, x], [], elements_in_use={H, X})
-        symbols = [e['symbol'] for e in data['elements']]
+        symbols = [entry['symbol'] for entry in data['elements']]
         assert 'X' in symbols
+
+        electron = Species(label="e", index=2)
+        electron.from_adjacency_list("1 e u1 p0 c-1")
+        electron.thermo = h2.thermo
+        data = generate_cantera_data([h2, electron], [], elements_in_use={H, e}, is_plasma=True)
+        assert data['phases'][0]['elements'] == ['E', 'H']
+        electron_entry = next(sp for sp in data['species'] if sp['name'] == 'e(2)')
+        assert electron_entry['composition'] == {'E': 1}
 
     def test_generate_cantera_data_gas_phase_state(self):
         """Gas phase definition includes a 'state' block with T and P."""

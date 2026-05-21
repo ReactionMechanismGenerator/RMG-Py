@@ -175,7 +175,7 @@ def get_element(value, isotope=-1):
 # 'caesium')
 
 # electron
-e = Element(-1,   'e', 'electron'      , 5.486e-7)
+e = Element(-1,   'e', 'electron'      , 5.486e-7, chemkin_name='E')
 
 # Surface site
 X = Element(0,    'X', 'surface_site'   , 0.0)

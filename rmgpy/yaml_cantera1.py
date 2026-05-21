@@ -191,7 +191,7 @@ def get_elements_block(elements_in_use):
     """
     from rmgpy.molecule.element import D, T, C13, O18, X
     custom_singletons = {D, T, C13, O18, X}
-    elements_list = sorted(element.symbol for element in elements_in_use if element not in custom_singletons)
+    elements_list = sorted(element.chemkin_name for element in elements_in_use if element not in custom_singletons)
     custom_elements = []
     for isotope in (D, T, C13, O18):
         if isotope in elements_in_use:

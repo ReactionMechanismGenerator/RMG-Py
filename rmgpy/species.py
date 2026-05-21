@@ -448,13 +448,16 @@ class Species(object):
         for vertex in self.molecule[0].vertices:
             # The atom itself
             if not isinstance(vertex, CuttingLabel):
-                symbol = vertex.element.symbol
+                symbol = vertex.element.chemkin_name
             else: # that means this vertex is CuttingLabel
                 continue
             if symbol not in element_dict:
                 element_dict[symbol] = 1
             else:
                 element_dict[symbol] += 1
+        charge = self.molecule[0].get_net_charge()
+        if charge != 0 and 'E' not in element_dict:
+            element_dict['E'] = -charge
         if use_chemkin_identifier:
             label = self.to_chemkin()
         else:

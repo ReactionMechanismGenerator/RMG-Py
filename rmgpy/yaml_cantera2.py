@@ -87,6 +87,7 @@ SYMBOL_BY_NUMBER = {0: 'e', 1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7
                     101: 'Md', 102: 'No', 103: 'Lr', 104: 'Rf', 105: 'Db', 106: 'Sg', 107: 'Bh', 108: 'Hs', 109: 'Mt',
                     110: 'Ds', 111: 'Rg', 112: 'Cn', 113: 'Nh', 114: 'Fl', 115: 'Mc', 116: 'Lv', 117: 'Ts', 118: 'Og'}
 NUMBER_BY_SYMBOL = {value: key for key, value in SYMBOL_BY_NUMBER.items()}
+NUMBER_BY_SYMBOL['E'] = 0
 
 
 class CanteraWriter2(object):
@@ -212,13 +213,12 @@ def get_elements_lists(elements_in_use):
     elements_in_use is a set of :class:`Element` singletons (typically from
     :meth:`rmgpy.rmg.model.ReactionModel.get_elements`). Only those elements
     are emitted; isotopes (D, T, CI, OI) and X are added only when present in
-    the set. The plasma pseudo-element 'E' is added separately by the caller
-    when ``is_plasma`` is true.
+    the set.
     """
     from rmgpy.molecule.element import D, T, C13, O18, X
     custom_singletons = {D, T, C13, O18, X}
     custom_elements = []
-    elements_list = sorted(element.symbol for element in elements_in_use if element not in custom_singletons)
+    elements_list = sorted(element.chemkin_name for element in elements_in_use if element not in custom_singletons)
     for isotope in (D, T, C13, O18):
         if isotope in elements_in_use:
             mass = 1000 * isotope.mass
@@ -228,6 +228,7 @@ def get_elements_lists(elements_in_use):
         elements_list.append('X')
         custom_elements.append({'symbol': 'X', 'atomic-weight': 195.083})
     return custom_elements, elements_list
+
 
 def generate_cantera_data(species_list,
                           reaction_list,
@@ -295,7 +296,8 @@ def generate_cantera_data(species_list,
     if custom_elements:
         data['elements'] = custom_elements
     elements_set = set(all_elements)
-    if is_plasma:
+    from rmgpy.molecule.element import e
+    if is_plasma or e in elements_in_use:
         elements_set.add('E')
 
     phases = list()
@@ -414,7 +416,10 @@ def species_to_dict(species, species_list):
 
     # Composition
     mol = species.molecule[0]
-    atom_dict = dict(mol.get_element_count())
+    atom_dict = {}
+    for atom in mol.atoms:
+        symbol = atom.element.chemkin_name
+        atom_dict[symbol] = atom_dict.get(symbol, 0) + 1
 
     # Number of electrons 'E'
     # The special pseudo-element E is used in representing charged species, where it specifies
