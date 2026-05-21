@@ -27,6 +27,8 @@
 #                                                                             #
 ###############################################################################
 
+import yaml
+
 from rmgpy.util import strip_yaml_notes
 
 
@@ -34,11 +36,14 @@ class UtilTest:
     def strip_yaml_notes(self, tmp_path, source_text):
         source_path = tmp_path / "chem_annotated.yaml"
         destination_path = tmp_path / "chem.yaml"
+        yaml.safe_load(source_text)
         source_path.write_text(source_text)
 
         strip_yaml_notes(source_path, destination_path)
 
-        return destination_path.read_text()
+        result = destination_path.read_text()
+        yaml.safe_load(result)
+        return result
 
     def test_strip_yaml_notes_removes_block_style_note(self, tmp_path):
         source = """species:
