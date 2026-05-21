@@ -1588,8 +1588,13 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
     assert thermo.polynomials[1].cm2 == 0 and thermo.polynomials[1].cm1 == 0
 
     # Determine the number of each type of element in the molecule
+    # Need to use the element's chemkin name, not the element symbol, because of isotopes.
+    # so we can't just use molecule[0].get_element_count().
     if element_counts is None:
-        element_counts = get_element_count(species.molecule[0])
+        element_counts = {}
+        for atom in species.molecule[0].atoms:
+            element = atom.element.chemkin_name
+            element_counts[element] = element_counts.get(element, 0) + 1
 
     # Sort the element_counts dictionary so that it's C, H, Al, B, Cl, D, etc.
     # if there's any C, else Al, B, Cl, D, H, if not. This is the "Hill" system

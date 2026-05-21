@@ -77,7 +77,7 @@ class Element(object):
         self.name = name
         self.mass = mass
         self.isotope = isotope
-        self.chemkin_name = chemkin_name or self.name
+        self.chemkin_name = chemkin_name or self.symbol
         if symbol in {'X','L','R','e'}:
             self.cov_radius = 0
         else:

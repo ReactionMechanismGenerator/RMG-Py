@@ -791,6 +791,20 @@ C 1 H 3 N 1 O 2 S 1 X 1
         assert formula == {"H": 6, "C": 2}
         assert self.nasa.is_identical_to(thermo)
 
+    def test_write_thermo_block_for_isotope_uses_chemkin_name(self):
+        """Isotopic atoms should use their Chemkin names in thermo composition."""
+        deuterium = Species().from_adjacency_list(
+            "1 H u0 p0 c0 i2 {2,S}\n"
+            "2 H u0 p0 c0 {1,S}"
+        )
+        deuterium.thermo = self.nasa
+
+        result = write_thermo_entry(deuterium, verbose=False)
+
+        first_line = result.splitlines()[0]
+        assert "D   1" in first_line
+        assert "H   1" in first_line
+
     def test_write_thermo_block_5_elem(self):
         """Test that we can write a thermo block for a species with 5 elements"""
         species = Species().from_adjacency_list(
