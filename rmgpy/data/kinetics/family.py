@@ -1676,7 +1676,13 @@ class KineticsFamily(Database):
 
         # forbid vdw multi-dentate molecules for surface families
         if "surface" in self.label.lower() and molecule.is_multidentate():
-            if "surface_monodentate_to_vdw_bidentate" in self.label.lower():
+            allowed_vdw_families = [
+                "surface_monodentate_to_vdw_bidentate",
+                "surface_dissociation_vdw_bidentate",
+                "surface_dissociation_vdw_bidentate_beta",
+                "surface_abstraction_vdw_bidentate_beta"
+            ]
+            if any(name in self.label.lower() for name in allowed_vdw_families):
                 # Within the surface_monodentate_to_vdw_bidentate family, allow
                 # (don't forbid) vdW in multi-dentate molecules if at least one
                 # bond to the surface is covalent (not vdW).
