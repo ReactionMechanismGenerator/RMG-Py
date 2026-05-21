@@ -1290,7 +1290,7 @@ class Molecule(Graph):
         Placing hydrogens last during sorting ensures that functions with hydrogen
         removal work properly.
         """
-        cython.declare(vertex=Vertex, a=Atom, index=int)
+        cython.declare(vertex=Vertex, index=int)
         for vertex in self.vertices:
             if vertex.sorting_label < 0:
                 self.update_connectivity_values()
@@ -1325,7 +1325,7 @@ class Molecule(Graph):
         """
         Return the molecular formula for the molecule.
         """
-        cython.declare(atom=Atom, symbol=str, element_dict=dict, keys=list,
+        cython.declare(atom=Atom, symbol=str, element_dict=dict, keys=list, key=str,
                        formula=str, count=int)
 
         # Count the number of each element in the molecule
@@ -1398,7 +1398,7 @@ class Molecule(Graph):
         Return the number of atoms in molecule.  If element is given, ie. "H" or "C",
         the number of atoms of that element is returned.
         """
-        cython.declare(numAtoms=cython.int, atom=Atom)
+        cython.declare(num_atoms=cython.int, atom=Atom)
         if element is None:
             return len(self.vertices)
         else:
@@ -1480,8 +1480,8 @@ class Molecule(Graph):
         Delete all bonds, and set them again based on the Atoms' coords.
         Does not detect bond type.
         """
-        cython.declare(criticalDistance=float, i=int, atom1=Atom, atom2=Atom,
-                       bond=Bond, atoms=list, zBoundary=float)
+        cython.declare(critical_distance=float, i=cython.Py_ssize_t, atom=Atom, atom1=Atom, atom2=Atom,
+                       bond=Bond, atoms=list, sorted_atoms=list, z_boundary=float, distance_squared=float)
         # groupBond=GroupBond,
         self._fingerprint = None
 
@@ -1707,9 +1707,8 @@ class Molecule(Graph):
         while the atoms of `other` are the values). The `other` parameter must
         be a :class:`Group` object, or a :class:`TypeError` is raised.
         """
-        cython.declare(group=gr.Group, atom=Atom)
-        cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short,
-                       sulfurCount=cython.short, radicalCount=cython.short)
+        cython.declare(group=gr.Group, atom=Atom, element_count=dict, element=str, count=cython.short,
+                       result=cython.bint)
         cython.declare(L=list)
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -1783,9 +1782,7 @@ class Molecule(Graph):
         The `other` parameter must be a :class:`Group` object, or a
         :class:`TypeError` is raised.
         """
-        cython.declare(group=gr.Group, atom=Atom)
-        cython.declare(carbonCount=cython.short, nitrogenCount=cython.short, oxygenCount=cython.short,
-                       sulfurCount=cython.short, radicalCount=cython.short)
+        cython.declare(group=gr.Group, element_count=dict, element=str, count=cython.short, result=list)
 
         # It only makes sense to compare a Molecule to a Group for subgraph
         # isomorphism, so raise an exception if this is not what was requested
@@ -1947,7 +1944,7 @@ class Molecule(Graph):
         This is useful for isomorphism comparison against something that was made
         via from_xyz, which does not attempt to perceive bond orders
         """
-        cython.declare(atom1=Atom, atom2=Atom, bond=Bond, newMol=Molecule, atoms=list, mapping=dict)
+        cython.declare(atom1=Atom, atom2=Atom, bond=Bond, new_mol=Molecule, atoms=list, mapping=dict)
 
         new_mol = Molecule()
         atoms = self.vertices
@@ -2215,7 +2212,7 @@ class Molecule(Graph):
         there will be at least one 6 membered aromatic ring so this algorithm
         will not fail for fused aromatic rings.
         """
-        cython.declare(rc=list, cycle=list, atom=Atom)
+        cython.declare(rings=list, cycle=list, atom=Atom)
         rings = self.get_smallest_set_of_smallest_rings()
         if rings:
             for cycle in rings:
@@ -2409,7 +2406,7 @@ class Molecule(Graph):
         Iterate through the atoms in the structure and calculate the
         number of lone electron pairs, assuming a neutral molecule.
         """
-        cython.declare(atom1=Atom, atom2=Atom, bond12=Bond, order=cython.double)
+        cython.declare(atom1=Atom, order=cython.double)
         for atom1 in self.vertices:
             if atom1.is_hydrogen() or atom1.is_surface_site() or atom1.is_electron() or atom1.is_lithium():
                 atom1.lone_pairs = 0
@@ -3175,7 +3172,7 @@ class Molecule(Graph):
         Returns 0 if the molecule has no fused rings (only monocycles or no rings).
         """
         cython.declare(polycycles=list, sssr=list, sssr_sets=list, ring_counts=list)
-        cython.declare(polycycle=list, ring=list)
+        cython.declare(polycycle=list, poly_set=set, ring_set=set, ring_count=cython.int)
 
         polycycles = self.get_polycycles()
         if not polycycles:
