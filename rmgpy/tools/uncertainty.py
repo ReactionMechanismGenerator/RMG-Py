@@ -708,9 +708,9 @@ class Uncertainty(object):
                 # --------------------------------- add group-group correlations ---------------------------------
                 # only consider groups actually in the model to keep this a reasonable size
                 groups_in_model = []
-                if cov_group_tree_name == 'adsorptionPt111' and 'ADS' in self.all_thermo_sources:
+                if cov_group_tree_name == 'adsorptionPt111' and 'ADS' in self.all_thermo_sources and cov_group_tree_name in self.all_thermo_sources['ADS']:
                     groups_in_model = self.all_thermo_sources['ADS'][cov_group_tree_name]
-                else:
+                elif cov_group_tree_name in self.all_thermo_sources['GAV']:
                     groups_in_model = self.all_thermo_sources['GAV'][cov_group_tree_name]
                 group_items_in_model = [x.item for x in groups_in_model]
                 group_labels_in_model = [x.label for x in groups_in_model]
