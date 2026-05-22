@@ -402,13 +402,14 @@ class TestYamlCantera1Functions:
     def test_reaction_to_dicts_three_species_one_side_spectator(self):
         """Spectator on both sides with 3+ stoichiometric items on a side must still drop efficiencies.
 
-        Cantera's API misidentifies a species with net-zero stoichiometry as
+        Cantera's API (v. 3.1 and 3.2) misidentifies a species with net-zero stoichiometry as
         a third-body collider whenever the reaction has three or more
         stoichiometric items on one side. Routing ct.Reaction through an
         equation string avoids this only for the 2-each-side case. For
         wider reactions the writer must strip the resulting spurious
         'efficiencies' from input_data so the YAML round-trips through
         ct.Solution.
+        See https://github.com/Cantera/cantera/issues/2115#issuecomment-4465564540
         """
         ox = _make_surface_species(
             "O_X",
