@@ -1579,7 +1579,7 @@ def write_thermo_entry(species, element_counts=None, bint verbose=True):
     cdef dict counts
     cdef list sorted_elements, elements, short_lines
     cdef bint extended_syntax
-    cdef int count, isotope, charge
+    cdef int count, isotope, charge, electrons
     cdef str string, line, short_line, chemkin_name, symbol, elem_1, elem_2
     cdef object thermo_data
 
@@ -1608,10 +1608,19 @@ def write_thermo_entry(species, element_counts=None, bint verbose=True):
             counts[chemkin_name] = counts.get(chemkin_name, 0) + 1
     else:
         counts = dict(element_counts)
+    # Some callers pass element_counts keyed by element symbol 'e' rather than chemkin name 'E'
     if 'e' in counts:
         counts['E'] = counts.pop('e')
     charge = species.molecule[0].get_net_charge()
-    if charge != 0 and 'E' not in counts:
+    if 'E' in counts:
+        electrons = counts['E']
+        if charge == 0 and electrons != 0:
+            logging.warning(f"Species {species} has {electrons} electrons but charge 0. "
+                f"Reporting {electrons} electrons in the Chemkin composition.")
+        elif charge != 0 and electrons != -charge:
+            logging.warning(f"Species {species} has {electrons} electrons but charge {charge}. "
+                f"Reporting {-charge} electrons in the Chemkin composition.")
+    if charge != 0:
         counts['E'] = -charge
 
     # Sort the element_counts dictionary so that it's C, H, Al, B, Cl, D, etc.
@@ -1638,12 +1647,7 @@ def write_thermo_entry(species, element_counts=None, bint verbose=True):
     # Compile element count string
     extended_syntax = len(counts) > 4  # If there are more than 4 elements, use extended syntax
     elements = []
-    for key, count in counts.items():
-        if isinstance(key, tuple):
-            symbol, isotope = key
-            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-        else:
-            chemkin_name = key
+    for chemkin_name, count in counts.items():
         if extended_syntax:
             # Create a list of alternating elements and counts
             elements.extend([chemkin_name, str(count)])
