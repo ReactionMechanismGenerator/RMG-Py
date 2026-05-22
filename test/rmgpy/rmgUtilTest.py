@@ -33,16 +33,16 @@ from rmgpy.util import strip_yaml_notes
 
 
 class UtilTest:
-    def strip_yaml_notes(self, tmp_path, source_text):
+    def run_strip(self, tmp_path, source_text):
         source_path = tmp_path / "chem_annotated.yaml"
         destination_path = tmp_path / "chem.yaml"
-        yaml.safe_load(source_text)
+        yaml.safe_load(source_text)  # just to check it's valid YAML
         source_path.write_text(source_text)
-
+        yaml.safe_load(source_path.read_text())
         strip_yaml_notes(source_path, destination_path)
 
         result = destination_path.read_text()
-        yaml.safe_load(result)
+        yaml.safe_load(result)  # just to check it's valid YAML
         return result
 
     def test_strip_yaml_notes_removes_block_style_note(self, tmp_path):
@@ -60,7 +60,7 @@ class UtilTest:
   composition: {O: 2}
 """
 
-        assert self.strip_yaml_notes(tmp_path, source) == expected
+        assert self.run_strip(tmp_path, source) == expected
 
     def test_strip_yaml_notes_removes_block_style_multiline_note(self, tmp_path):
         source = """reactions:
@@ -79,7 +79,7 @@ class UtilTest:
   rate-constant: {A: 1.0e+14, b: 0.0, Ea: 15000.0}
 """
 
-        assert self.strip_yaml_notes(tmp_path, source) == expected
+        assert self.run_strip(tmp_path, source) == expected
 
     def test_strip_yaml_notes_removes_single_line_flow_note(self, tmp_path):
         source = """species:
@@ -91,7 +91,7 @@ class UtilTest:
   transport: {model: gas, geometry: atom, diameter: 3.33, well-depth: 136.5}
 """
 
-        assert self.strip_yaml_notes(tmp_path, source) == expected
+        assert self.run_strip(tmp_path, source) == expected
 
     def test_strip_yaml_notes_removes_single_line_flow_note_with_quoted_comma(self, tmp_path):
         source = """species:
@@ -103,7 +103,7 @@ class UtilTest:
   transport: {model: gas, geometry: atom, diameter: 3.33, well-depth: 136.5}
 """
 
-        assert self.strip_yaml_notes(tmp_path, source) == expected
+        assert self.run_strip(tmp_path, source) == expected
 
     def test_strip_yaml_notes_removes_wrapped_flow_note(self, tmp_path):
         source = """species:
@@ -118,7 +118,7 @@ class UtilTest:
     well-depth: 141.4}
 """
 
-        assert self.strip_yaml_notes(tmp_path, source) == expected
+        assert self.run_strip(tmp_path, source) == expected
 
     def test_strip_yaml_notes_removes_wrapped_flow_multiline_note(self, tmp_path):
         source = """species:
@@ -134,4 +134,4 @@ class UtilTest:
     well-depth: 141.4}
 """
 
-        assert self.strip_yaml_notes(tmp_path, source) == expected
+        assert self.run_strip(tmp_path, source) == expected
