@@ -551,16 +551,6 @@ class TestCanteraWriter1:
         writer = CanteraWriter1()
         assert writer is not None
 
-@pytest.mark.skip(reason="These files are out of date and have been removed.")
-class TestPreviouslyWrittenCanteraYamlGasOnly(CanteraYamlFileComparer):
-    """Tests for comparing previously written Cantera YAML files, gas-only mechanism.
-
-    These are stored in the testing data directory.
-    """
-    test_data_folder='test/rmgpy/test_data/yaml_writer_data/'
-    # generated on the fly in recent functional test
-    yaml_path_1 = os.path.join(test_data_folder, 'chemkin/chem37.yaml')
-    yaml_path_2 = os.path.join(test_data_folder, 'cantera1/chem37.yaml')
 
 class TestRecentlyGeneratedCanteraYaml1GasOnly(CanteraYamlFileComparer):
     """Tests for comparing recently generated Cantera YAML files, gas-only mechanism.
@@ -598,13 +588,16 @@ class TestRecentlyGeneratedCanteraYaml1GasOnly(CanteraYamlFileComparer):
         request.cls.yaml_path_1 = chemkin_file
         request.cls.yaml_path_2 = cantera_file
 
-@pytest.mark.skip(reason="These files are out of date and have been removed.")
-class TestPreviouslyWrittenCanteraYamlWithSurface(CanteraYamlFileComparer):
-    """Tests for comparing previously written Cantera YAML files, with surface mechanism.
+# This is kept here as an example of how to write a test comparing previously generated YAML files,
+# but the files themselves are now out of date and have been removed,
+# so the test is skipped and the class is commented out to avoid confusion.
+# @pytest.mark.skip(reason="These files are out of date and have been removed.")
+# class TestPreviouslyWrittenCanteraYamlWithSurface(CanteraYamlFileComparer):
+#     """Tests for comparing previously written Cantera YAML files.
 
-    These are stored in the testing data directory.
-    """
-    test_data_folder='test/rmgpy/test_data/yaml_writer_data/'
-    # saved by Prosper in earlier commit
-    yaml_path_1 = os.path.join(test_data_folder, 'chemkin/chem0047-gas.yaml')
-    yaml_path_2 = os.path.join(test_data_folder, 'cantera1/chem47.yaml')
+#     These are stored in the testing data directory.
+#     """
+#     test_data_folder='test/rmgpy/test_data/yaml_writer_data/'
+#     # saved by Prosper in earlier commit
+#     yaml_path_1 = os.path.join(test_data_folder, 'chemkin/chem1.yaml')
+#     yaml_path_2 = os.path.join(test_data_folder, 'cantera1/chem1.yaml')
