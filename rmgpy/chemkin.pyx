@@ -52,6 +52,7 @@ from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.species import Species
 from rmgpy.thermo import NASAPolynomial, NASA
+from rmgpy.thermo.nasa cimport NASA, NASAPolynomial
 from rmgpy.transport import TransportData
 from rmgpy.util import make_output_subdirectory
 
@@ -1568,42 +1569,55 @@ def get_species_identifier(species):
 ################################################################################
 
 
-def write_thermo_entry(species, element_counts=None, verbose=True):
+def write_thermo_entry(species, element_counts=None, bint verbose=True):
     """
     Return a string representation of the NASA model readable by Chemkin.
     To use this method you must have exactly two NASA polynomials in your
     model, and you must use the seven-coefficient forms for each.
     """
+    cdef NASA thermo
+    cdef NASAPolynomial poly_low, poly_high
+    cdef dict counts
+    cdef list sorted_elements, elements, short_lines
+    cdef bint extended_syntax
+    cdef int count, isotope
+    cdef str string, line, short_line, chemkin_name, symbol, elem_1, elem_2
+    cdef object thermo_data
 
-    thermo = species.get_thermo_data()
+    thermo_data = species.get_thermo_data()
 
-    if not isinstance(thermo, NASA):
+    if not isinstance(thermo_data, NASA):
         raise ChemkinError('Cannot generate Chemkin string for species "{0}": '
                            'Thermodynamics data must be a NASA object.'.format(species))
+    thermo = <NASA>thermo_data
 
     assert len(thermo.polynomials) == 2
-    assert thermo.polynomials[0].Tmin.value_si < thermo.polynomials[1].Tmin.value_si
-    assert thermo.polynomials[0].Tmax.value_si == thermo.polynomials[1].Tmin.value_si
-    assert thermo.polynomials[0].cm2 == 0 and thermo.polynomials[0].cm1 == 0
-    assert thermo.polynomials[1].cm2 == 0 and thermo.polynomials[1].cm1 == 0
+    poly_low = thermo.polynomials[0]
+    poly_high = thermo.polynomials[1]
+    assert poly_low.Tmin.value_si < poly_high.Tmin.value_si
+    assert poly_low.Tmax.value_si == poly_high.Tmin.value_si
+    assert poly_low.cm2 == 0 and poly_low.cm1 == 0
+    assert poly_high.cm2 == 0 and poly_high.cm1 == 0
 
     # Determine the number of each type of element in the molecule
     # Need to use the element's chemkin name, not the element symbol, because of isotopes.
     # so we can't just use molecule[0].get_element_count().
     if element_counts is None:
-        element_counts = {}
-        for atom in species.molecule[0].atoms:
-            element = atom.element.chemkin_name
-            element_counts[element] = element_counts.get(element, 0) + 1
+        counts = {}
+        for atom in species.molecule[0].vertices:
+            chemkin_name = atom.element.chemkin_name
+            counts[chemkin_name] = counts.get(chemkin_name, 0) + 1
+    else:
+        counts = element_counts
 
     # Sort the element_counts dictionary so that it's C, H, Al, B, Cl, D, etc.
     # if there's any C, else Al, B, Cl, D, H, if not. This is the "Hill" system
     # done by Molecule.get_formula
-    if 'C' in element_counts:
-        sorted_elements = sorted(element_counts, key = lambda e: {'C':'0','H':'1'}.get(e, e))
+    if 'C' in counts:
+        sorted_elements = sorted(counts, key=lambda e: {'C': '0', 'H': '1'}.get(e, e))
     else:
-        sorted_elements = sorted(element_counts)
-    element_counts = {e: element_counts[e] for e in sorted_elements}
+        sorted_elements = sorted(counts)
+    counts = {e: counts[e] for e in sorted_elements}
 
     string = ''
     # Write thermo comments
@@ -1618,9 +1632,9 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
                     string += "! {0}\n".format(line)
 
     # Compile element count string
-    extended_syntax = len(element_counts) > 4  # If there are more than 4 elements, use extended syntax
+    extended_syntax = len(counts) > 4  # If there are more than 4 elements, use extended syntax
     elements = []
-    for key, count in element_counts.items():
+    for key, count in counts.items():
         if isinstance(key, tuple):
             symbol, isotope = key
             chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
@@ -1650,31 +1664,31 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
     string += '{ident:<16}        {elem_1:<20}G{Tmin:>10.3f}{Tint:>10.3f}{Tmax:>8.2f}      1{elem_2}\n'.format(
         ident=get_species_identifier(species),
         elem_1=elem_1,
-        Tmin=thermo.polynomials[0].Tmin.value_si,
-        Tint=thermo.polynomials[1].Tmax.value_si,
-        Tmax=thermo.polynomials[0].Tmax.value_si,
+        Tmin=poly_low.Tmin.value_si,
+        Tint=poly_high.Tmax.value_si,
+        Tmax=poly_low.Tmax.value_si,
         elem_2=elem_2,
     )
 
     # Line 2
-    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    2\n'.format(thermo.polynomials[1].c0,
-                                                                                      thermo.polynomials[1].c1,
-                                                                                      thermo.polynomials[1].c2,
-                                                                                      thermo.polynomials[1].c3,
-                                                                                      thermo.polynomials[1].c4)
+    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    2\n'.format(poly_high.c0,
+                                                                                      poly_high.c1,
+                                                                                      poly_high.c2,
+                                                                                      poly_high.c3,
+                                                                                      poly_high.c4)
 
     # Line 3
-    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    3\n'.format(thermo.polynomials[1].c5,
-                                                                                      thermo.polynomials[1].c6,
-                                                                                      thermo.polynomials[0].c0,
-                                                                                      thermo.polynomials[0].c1,
-                                                                                      thermo.polynomials[0].c2)
+    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    3\n'.format(poly_high.c5,
+                                                                                      poly_high.c6,
+                                                                                      poly_low.c0,
+                                                                                      poly_low.c1,
+                                                                                      poly_low.c2)
 
     # Line 4
-    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}                   4\n'.format(thermo.polynomials[0].c3,
-                                                                                          thermo.polynomials[0].c4,
-                                                                                          thermo.polynomials[0].c5,
-                                                                                          thermo.polynomials[0].c6)
+    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}                   4\n'.format(poly_low.c3,
+                                                                                          poly_low.c4,
+                                                                                          poly_low.c5,
+                                                                                          poly_low.c6)
 
     return string
 
