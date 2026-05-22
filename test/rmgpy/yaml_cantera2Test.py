@@ -36,6 +36,7 @@ import numpy as np
 import pytest
 import yaml
 
+from rmgpy.molecule import Atom, Molecule, get_element
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import (
@@ -125,6 +126,40 @@ class TestCanteraWriter2:
         assert np.isclose(d['transport']['dipole'], 1.7) # Debye
         assert np.isclose(d['transport']['well-depth'], 100.0) # Kelvin
         assert np.isclose(d['transport']['rotational-relaxation'], 1.0)
+
+    def test_species_to_dict_warns_and_uses_charge_for_explicit_electron_mismatch(self, caplog):
+        """
+        Test that YAML species composition uses the net charge when explicit
+        electrons disagree.
+        """
+        sp = self._create_dummy_species("H2", "[H][H]", index=1)
+        sp.label = "H2minus_with_one_electron"
+        sp.molecule = [Molecule(atoms=[
+            Atom(element=get_element("H"), charge=-2, radical_electrons=0, lone_pairs=0),
+            Atom(element=get_element("e"), charge=0, radical_electrons=0, lone_pairs=0),
+        ])]
+
+        d = species_to_dict(sp, [sp])
+
+        assert d["composition"]["E"] == 2
+        assert "has 1 electrons but charge -2" in caplog.text
+        assert "Reporting 2 electrons in the Cantera YAML composition." in caplog.text
+
+    def test_species_to_dict_uses_charge_when_electrons_unspecified(self, caplog):
+        """
+        Test that YAML species composition uses the net charge without a warning
+        when no explicit electrons are present.
+        """
+        sp = self._create_dummy_species("H2", "[H][H]", index=1)
+        sp.label = "Hminus"
+        sp.molecule = [Molecule(atoms=[
+            Atom(element=get_element("H"), charge=-1, radical_electrons=0, lone_pairs=0),
+        ])]
+
+        d = species_to_dict(sp, [sp])
+
+        assert d["composition"]["E"] == 1
+        assert "electrons but charge" not in caplog.text
 
     def test_reaction_to_dict_arrhenius(self):
         """Test standard Arrhenius kinetics."""

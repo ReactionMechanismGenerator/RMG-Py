@@ -427,7 +427,15 @@ def species_to_dict(species, species_list):
     # That is, negatively charged ions will have E > 0, while positively charged ions will have E < 0.
     # https://cantera.org/3.1/userguide/creating-mechanisms.html#elemental-composition
     charge = mol.get_net_charge()
-    if 'E' not in atom_dict and charge != 0:
+    if 'E' in atom_dict:
+        electrons = atom_dict['E']
+        if charge == 0 and electrons != 0:
+            logging.warning(f"Species {species} has {electrons} electrons but charge 0. "
+                            f"Reporting {electrons} electrons in the Cantera YAML composition.")
+        elif electrons != -charge:
+            logging.warning(f"Species {species} has {electrons} electrons but charge {charge}. "
+                            f"Reporting {-charge} electrons in the Cantera YAML composition.")
+    if charge != 0:
         atom_dict['E'] = -charge
 
     # Sort composition by atomic number
