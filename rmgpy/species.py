@@ -456,7 +456,15 @@ class Species(object):
             else:
                 element_dict[symbol] += 1
         charge = self.molecule[0].get_net_charge()
-        if charge != 0 and 'E' not in element_dict:
+        if 'E' in element_dict:
+            electrons = element_dict['E']
+            if charge == 0 and electrons != 0:
+                logging.warning(f"Species {self} has {electrons} electrons but charge 0. "
+                                f"Reporting {electrons} electrons in the Cantera composition.")
+            elif electrons != -charge:
+                logging.warning(f"Species {self} has {electrons} electrons but charge {charge}. "
+                                f"Reporting {-charge} electrons in the Cantera composition.")
+        if charge != 0:
             element_dict['E'] = -charge
         if use_chemkin_identifier:
             label = self.to_chemkin()
