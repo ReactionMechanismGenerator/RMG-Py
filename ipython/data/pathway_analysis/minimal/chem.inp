@@ -20,7 +20,7 @@ END
 
 
 THERM ALL
-    300.000  1000.000  5000.000
+   300.000  1000.000  5000.000
 
 ! Thermo library: primaryThermoLibrary
 Ar                      Ar1                 G200.000   6000.000  1000.00       1

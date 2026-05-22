@@ -27,6 +27,7 @@
 #                                                                             #
 ###############################################################################
 
+import io
 import os
 
 from unittest import mock
@@ -39,6 +40,7 @@ from rmgpy.chemkin import (
     mark_duplicate_reactions,
     read_kinetics_entry,
     read_reaction_comments,
+    read_thermo_block,
     read_thermo_entry,
     save_chemkin_file,
     save_chemkin_surface_file,
@@ -143,6 +145,35 @@ class ChemkinTest:
         assert species == "C2H6"
         assert formula == {"H": 6, "C": 2}
         assert isinstance(thermo, NASA)
+
+    @mock.patch("rmgpy.chemkin.logging")
+    def test_read_thermo_block_temperature_header_columns(self, mock_logging):
+        # Per the CHEMKIN spec the default-range line is fixed-width:
+        # Tmin in cols 1-10, Tint in cols 11-20, Tmax in cols 21-30.
+        # Slot 1: 150  left-anchored (leftmost digit in col 1).
+        # Slot 2: 1000 right-anchored (rightmost digit in col 20)
+        #         '      1000' that could be misread as 100.
+        # Slot 3: 9999 right-anchored (rightmost digit in col 30).
+        header = "150             1000      9999"
+        assert len(header) == 30
+        f = io.StringIO("THERM ALL\n" + header + "\nEND\n")
+
+        read_thermo_block(f, species_dict={})
+
+        mock_logging.info.assert_any_call(
+            "Thermo file has default temperature range 150.0 to 1000.0 and 1000.0 to 9999.0"
+        )
+        for call in mock_logging.warning.call_args_list:
+            assert "badly formatted" not in call.args[0]
+
+    @mock.patch("rmgpy.chemkin.logging")
+    def test_read_thermo_block_warns_for_badly_formatted_temperature_header(self, mock_logging):
+        header = "15000000001         9999      5000"
+        f = io.StringIO("THERM ALL\n" + header + "\nEND\n")
+
+        read_thermo_block(f, species_dict={})
+
+        assert any("badly formatted" in call.args[0] for call in mock_logging.warning.call_args_list)
 
     def test_read_and_write_and_read_template_reaction_family_for_minimal_example(self):
         """
@@ -768,6 +799,20 @@ C 1 H 3 N 1 O 2 S 1 X 1
         assert species == "C2H6"
         assert formula == {"H": 6, "C": 2}
         assert self.nasa.is_identical_to(thermo)
+
+    def test_write_thermo_block_for_isotope_uses_chemkin_name(self):
+        """Isotopic atoms should use their Chemkin names in thermo composition."""
+        deuterium = Species().from_adjacency_list(
+            "1 H u0 p0 c0 i2 {2,S}\n"
+            "2 H u0 p0 c0 {1,S}"
+        )
+        deuterium.thermo = self.nasa
+
+        result = write_thermo_entry(deuterium, verbose=False)
+
+        first_line = result.splitlines()[0]
+        assert "D   1" in first_line
+        assert "H   1" in first_line
 
     def test_write_thermo_block_5_elem(self):
         """Test that we can write a thermo block for a species with 5 elements"""
