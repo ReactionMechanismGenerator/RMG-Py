@@ -73,19 +73,26 @@ class CanteraYamlFileComparer:
 
     def testKeysMatch(self):
         """Test that the top-level keys in both YAML files match, except those expected not to."""
-        # Remove keys unique to each generator. dict.pop(key, None) is a no-op
-        # when the key is absent, so it is safe to pop the union across both writers.
-        self.yaml1.pop('input-files', None)
-        self.yaml1.pop('cantera-version', None)
-        self.yaml1.pop('date', None)
-        self.yaml2.pop('cantera-version', None)
-        self.yaml2.pop('description', None)
+        # Strip header metadata that any of {ck2yaml, writer 1, writer 2} emits but
+        # the others don't. Popping from both yamls (dict.pop(key, None) is a no-op
+        # when absent) avoids per-writer special-casing and stays correct if a
+        # writer later adds or drops one of these fields.
+        metadata_keys = ('input-files', 'cantera-version', 'date', 'description')
+        for key in metadata_keys:
+            self.yaml1.pop(key, None)
+            self.yaml2.pop(key, None)
         for model in [self.yaml1, self.yaml2]:
             for phase in model['phases']:
                 for reactions_block in phase.get('reactions', []):  # for multi-phase mechanisms, reactions are under each phase
                     assert reactions_block in model, f"Expected reactions block '{reactions_block}' not found in YAML file."
                     model.pop(reactions_block, None)  # Remove reactions block to allow keys to match
-        assert self.yaml1.keys() == self.yaml2.keys(), "YAML files have different top-level keys."
+        only_in_yaml1 = set(self.yaml1) - set(self.yaml2)
+        only_in_yaml2 = set(self.yaml2) - set(self.yaml1)
+        assert not (only_in_yaml1 or only_in_yaml2), (
+            f"YAML files have different top-level keys. "
+            f"Only in yaml1 (ck2yaml): {sorted(only_in_yaml1)}; "
+            f"only in yaml2 (RMG): {sorted(only_in_yaml2)}."
+        )
 
     def testPhasesMatch(self):
         """Test that the phase definitions in both YAML files match."""
