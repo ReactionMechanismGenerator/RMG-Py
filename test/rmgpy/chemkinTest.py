@@ -166,6 +166,15 @@ class ChemkinTest:
         for call in mock_logging.warning.call_args_list:
             assert "badly formatted" not in call.args[0]
 
+    @mock.patch("rmgpy.chemkin.logging")
+    def test_read_thermo_block_warns_for_badly_formatted_temperature_header(self, mock_logging):
+        header = "15000000001         9999      5000"
+        f = io.StringIO("THERM ALL\n" + header + "\nEND\n")
+
+        read_thermo_block(f, species_dict={})
+
+        assert any("badly formatted" in call.args[0] for call in mock_logging.warning.call_args_list)
+
     def test_read_and_write_and_read_template_reaction_family_for_minimal_example(self):
         """
         This example tests if family and templates info can be correctly
