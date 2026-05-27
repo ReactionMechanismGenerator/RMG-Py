@@ -250,7 +250,7 @@ class TestUncertainty:
 
         self.uncertainty.extract_sources_from_model()
         self.uncertainty.assign_parameter_uncertainties(correlated=True)
-
+        
         src1 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH4]]  # CH4
         src2 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH3]]  # CH3
 
