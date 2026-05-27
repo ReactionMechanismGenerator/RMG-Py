@@ -237,6 +237,54 @@ class TestUncertainty:
         assert np.isclose(thermo_covariance, expected_uncorrelated_thermo_uncertainties, rtol=1e-4).all()
         assert np.isclose(kinetic_covariance, expected_uncorrelated_kinetic_uncertainties, rtol=1e-4).all()
 
+    def test_source_correlations(self):
+        # Check some examples of different species containing the same sources
+
+        # ------------------------------------------------------------------------------
+        # Make sure CH3 (Library + Radical) has a library index/value in common with CH4
+        i_CH4 = rmgpy.tools.uncertainty.get_i_thing(rmgpy.species.Species(smiles='C'), self.uncertainty.species_list)
+        assert i_CH4 >= 0
+
+        i_CH3 = rmgpy.tools.uncertainty.get_i_thing(rmgpy.species.Species(smiles='[CH3]'), self.uncertainty.species_list)
+        assert i_CH3 >= 0
+
+        self.uncertainty.extract_sources_from_model()
+        self.uncertainty.assign_parameter_uncertainties(correlated=True)
+
+        src1 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH4]]  # CH4
+        src2 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH3]]  # CH3
+
+        assert 'Library' in src1
+        assert 'Library' in src2
+        assert 'GAV' in src2
+        assert src1['Library'] == src2['Library']  # make sure they refer to the same library source
+
+        # -----------------------------------------------------------------------------
+        # Make sure CH3X (Library + GAV + Adsorption Correction) has a library index/value in common with CH4 (Library)
+        i_CH3X = rmgpy.tools.uncertainty.get_i_thing(rmgpy.species.Species(smiles='C*'), self.uncertainty.species_list)
+        assert i_CH3X == -1
+        # This is not in the model, so add it to the species list
+        CH3X = rmgpy.species.Species(smiles='C*')
+        CH3X.thermo = self.uncertainty.database.thermo.get_thermo_data(CH3X)
+        self.uncertainty.species_list.append(CH3X)
+        try:
+            i_CH3X = rmgpy.tools.uncertainty.get_i_thing(CH3X, self.uncertainty.species_list)
+            assert i_CH3X >= 0
+
+            self.uncertainty.extract_sources_from_model()
+            self.uncertainty.assign_parameter_uncertainties(correlated=True)
+
+            src1 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH4]]  # CH4
+            src2 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH3X]]  # CH3X
+
+            assert 'Library' in src1
+            assert 'Library' in src2
+            assert 'ADS' in src2
+            assert 'GAV' in src2
+            assert src1['Library'] == src2['Library']  # make sure they refer to the same library source
+        finally:
+            self.uncertainty.species_list.pop()  # remove the extra species so it doesn't affect other tests
+
     def test_local_analysis(self):
         """
         Test to run uncorrelated and then correlated local_analysis and make sure the results are expected
