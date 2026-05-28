@@ -28,7 +28,7 @@
 cimport numpy as np
 
 from rmgpy.kinetics.model cimport KineticsModel
-from rmgpy.kinetics.arrhenius cimport Arrhenius, ArrheniusEP
+from rmgpy.kinetics.arrhenius cimport Arrhenius, ArrheniusEP, ArrheniusBM
 from rmgpy.quantity cimport ScalarQuantity, ArrayQuantity
 
 ################################################################################
@@ -77,6 +77,11 @@ cdef class SurfaceArrhenius(Arrhenius):
 
 ################################################################################
 cdef class SurfaceArrheniusBEP(ArrheniusEP):
+    cdef public dict _coverage_dependence
+    pass
+
+################################################################################
+cdef class SurfaceArrheniusBM(ArrheniusBM):
     cdef public dict _coverage_dependence
     pass
 
