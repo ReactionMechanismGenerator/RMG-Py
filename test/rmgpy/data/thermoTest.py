@@ -102,6 +102,33 @@ class TestThermoDatabaseLoading:
         assert list(database.libraries.keys()) == ["copied_thermo_lib"]
         os.remove(thermo_lib_in_test_dir_path)
 
+    def test_load_unload_libraries(self):
+        """This tests loading and unloading thermo libraries"""
+
+        database = ThermoDatabase()
+        database.load_libraries(
+            path=os.path.join(settings["database.directory"], "thermo", "libraries"),
+            libraries=['primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'],
+        )
+
+        # make sure we are now using primaryThermoLibrary thermo
+        lib_thermo = database.get_thermo_data(Species(smiles="O"))  # H2O is in both libraries, first it finds it in primaryThermoLibrary
+        assert 'primaryThermoLibrary' in lib_thermo.comment
+        assert 'thermo_DFT_CCSDTF12_BAC' not in lib_thermo.comment
+
+        # unload library
+        database.unload_libraries(libraries=['primaryThermoLibrary'])
+        lib_thermo = database.get_thermo_data(Species(smiles="O"))  # now it finds it in thermo_DFT_CCSDTF12_BAC
+        assert 'thermo_DFT_CCSDTF12_BAC' in lib_thermo.comment
+        assert 'primaryThermoLibrary' not in lib_thermo.comment
+
+        # unload the other library
+        database.unload_libraries(libraries='thermo_DFT_CCSDTF12_BAC')  # test unloading with string instead of list
+
+        # because this is an empty database now with no libraries or groups, this should error out
+        with pytest.raises(KeyError):  # KeyError because no groups are loaded
+            database.get_thermo_data(Species(smiles="O"))
+
 
 class TestThermoDatabase:
     """

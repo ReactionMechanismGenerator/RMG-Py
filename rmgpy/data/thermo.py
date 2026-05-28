@@ -974,6 +974,25 @@ class ThermoDatabase(object):
                     raise DatabaseError('Library {} not found in {}... Please check if your library is '
                                         'correctly placed'.format(libraryName, path))
 
+    def unload_libraries(self, libraries=None):
+        """
+        Unload the libraries where `libraries` is a list of library names to unload.
+        If `libraries` is None, unload all libraries.
+        """
+        if isinstance(libraries, str):
+            libraries = [libraries]
+
+        if libraries is None:  # unload all
+            self.libraries = {}
+            self.library_order = []
+        else:
+            for libraryName in libraries:
+                if libraryName in self.libraries:
+                    self.libraries.pop(libraryName)
+                    self.library_order.remove(libraryName)
+                else:
+                    raise DatabaseError('Library {} not found in the current database... Please check if your library name is correct'.format(libraryName))
+
     def load_surface(self):
         """
         Load the metal database from the given `path` on disk, where `path`
