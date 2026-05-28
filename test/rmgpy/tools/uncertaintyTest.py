@@ -137,7 +137,12 @@ class TestUncertainty:
         assert grp == grp_expected
         assert rad == rad_expected
         assert other == other_expected
-        assert sorted(self.uncertainty.all_thermo_sources["Library"]) == [0, 1, 5, 13, 16]
+
+        library_indices = []
+        for source in self.uncertainty.all_thermo_sources["Library"]:
+            sp = rmgpy.species.Species(molecule=[source[1].item])
+            library_indices.append(rmgpy.tools.uncertainty.get_i_thing(sp, self.uncertainty.species_list))
+        assert sorted(library_indices) == [0, 1, 5, 13, 16]
         assert not self.uncertainty.all_thermo_sources["QM"]
 
         # Check kinetics sources
@@ -160,7 +165,7 @@ class TestUncertainty:
         rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["H_Abstraction"]])
         assert rr == H_Abstraction_rr_expected
         assert set(self.uncertainty.all_kinetic_sources["Training"].keys()) == {"Disproportionation", "H_Abstraction"}
-        assert self.uncertainty.all_kinetic_sources["Library"] == [0]
+        assert self.uncertainty.all_kinetic_sources["Library"][0][1].item.is_isomorphic(self.uncertainty.reaction_list[0])
         assert self.uncertainty.all_kinetic_sources["PDep"] == [6]
 
         # Step 3: assign and propagate uncertainties
