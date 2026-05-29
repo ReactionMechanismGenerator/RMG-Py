@@ -162,6 +162,26 @@ class ReactionModel:
         # Return the merged model
         return final_model
 
+    def get_elements(self):
+        """
+        Return the set of :class:`Element` singletons used by atoms of species
+        in this :class:`ReactionModel`. Iterates each species' first resonance
+        structure (``sp.molecule[0]``) and collects ``atom.element``. The
+        electron singleton is included when a species has nonzero net charge,
+        since Chemkin and Cantera use it for charge bookkeeping.
+        """
+        from rmgpy.molecule.element import e
+        elements = set()
+        for sp in self.species:
+            if not sp.molecule:
+                continue
+            mol = sp.molecule[0]
+            for atom in mol.atoms:
+                elements.add(atom.element)
+            if mol.get_net_charge() != 0:
+                elements.add(e)
+        return elements
+
 
 ################################################################################
 

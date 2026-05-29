@@ -100,3 +100,6 @@ class TestElement:
 
         o18 = rmgpy.molecule.element.get_element("O", isotope=18)
         assert o18.chemkin_name == "OI"
+
+        electron = rmgpy.molecule.element.get_element("e")
+        assert electron.chemkin_name == "E"

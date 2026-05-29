@@ -46,7 +46,6 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import ChemkinError
 from rmgpy.molecule.element import get_element
-from rmgpy.molecule.util import get_element_count
 from rmgpy.quantity import Quantity, QuantityError
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
@@ -1580,7 +1579,7 @@ def write_thermo_entry(species, element_counts=None, bint verbose=True):
     cdef dict counts
     cdef list sorted_elements, elements, short_lines
     cdef bint extended_syntax
-    cdef int count, isotope
+    cdef int count, isotope, charge, electrons
     cdef str string, line, short_line, chemkin_name, symbol, elem_1, elem_2
     cdef object thermo_data
 
@@ -1608,7 +1607,21 @@ def write_thermo_entry(species, element_counts=None, bint verbose=True):
             chemkin_name = atom.element.chemkin_name
             counts[chemkin_name] = counts.get(chemkin_name, 0) + 1
     else:
-        counts = element_counts
+        counts = dict(element_counts)
+    # Some callers pass element_counts keyed by element symbol 'e' rather than chemkin name 'E'
+    if 'e' in counts:
+        counts['E'] = counts.pop('e')
+    charge = species.molecule[0].get_net_charge()
+    if 'E' in counts:
+        electrons = counts['E']
+        if charge == 0 and electrons != 0:
+            logging.warning(f"Species {species} has {electrons} electrons but charge 0. "
+                f"Reporting {electrons} electrons in the Chemkin composition.")
+        elif charge != 0 and electrons != -charge:
+            logging.warning(f"Species {species} has {electrons} electrons but charge {charge}. "
+                f"Reporting {-charge} electrons in the Chemkin composition.")
+    if charge != 0:
+        counts['E'] = -charge
 
     # Sort the element_counts dictionary so that it's C, H, Al, B, Cl, D, etc.
     # if there's any C, else Al, B, Cl, D, H, if not. This is the "Hill" system
@@ -1634,12 +1647,7 @@ def write_thermo_entry(species, element_counts=None, bint verbose=True):
     # Compile element count string
     extended_syntax = len(counts) > 4  # If there are more than 4 elements, use extended syntax
     elements = []
-    for key, count in counts.items():
-        if isinstance(key, tuple):
-            symbol, isotope = key
-            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-        else:
-            chemkin_name = key
+    for chemkin_name, count in counts.items():
         if extended_syntax:
             # Create a list of alternating elements and counts
             elements.extend([chemkin_name, str(count)])
@@ -2120,23 +2128,32 @@ def save_transport_file(path, species):
                 ))
 
 
-def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicates=True):
+def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicates=True,
+                      elements_in_use=None):
     """
     Save a Chemkin input file to `path` on disk containing the provided lists
     of `species` and `reactions`.
     If check_for_duplicates is False then we don't check for unlabeled duplicate reactions,
     thus saving time (eg. if you are sure you've already labeled them as duplicate).
+
+    ``elements_in_use`` is a set of :class:`Element` singletons used to write the
+    ELEMENTS section. If ``None``, it is computed from ``species`` via
+    :meth:`rmgpy.rmg.model.ReactionModel.get_elements`.
     """
     # Check for duplicate
     if check_for_duplicates:
         mark_duplicate_reactions(reactions)
+
+    if elements_in_use is None:
+        from rmgpy.rmg.model import ReactionModel
+        elements_in_use = ReactionModel(species=species).get_elements()
 
     f = open(path, 'w')
 
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Elements section
-    write_elements_section(f)
+    write_elements_section(f, elements_in_use)
 
     # Species section
     f.write('SPECIES\n')
@@ -2236,20 +2253,24 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     _chemkin_reaction_count = None
 
 
-def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None, 
+def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None,
                  save_edge_species=False):
     """
     Save a Chemkin file for the current model as well as any desired output
-    species and reactions to `path`. If `save_edge_species` is True, then 
+    species and reactions to `path`. If `save_edge_species` is True, then
     a chemkin file and dictionary file for the core AND edge species and reactions
     will be saved.  It also saves verbose versions of each file.
     """
+    from rmgpy.rmg.model import ReactionModel
     if save_edge_species:
         species_list = reaction_model.core.species + reaction_model.edge.species
         rxn_list = reaction_model.core.reactions + reaction_model.edge.reactions
     else:
         species_list = reaction_model.core.species + reaction_model.output_species_list
         rxn_list = reaction_model.core.reactions + reaction_model.output_reaction_list
+
+    # Same elements list for all files (core and edge)
+    elements_in_use = ReactionModel(species=species_list).get_elements()
 
     if any([s.contains_surface_site() for s in reaction_model.core.species]):
         # it's a surface model
@@ -2277,19 +2298,23 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
                 gas_rxn_list.append(r)
 
         # We should already have marked everything as duplicates by now so use check_for_duplicates=False
-        save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False, check_for_duplicates=False)
+        save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         save_chemkin_surface_file(surface_path, surface_species_list, surface_rxn_list, verbose=False,
                                   check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
         logging.info('Saving annotated version of Chemkin files...')
-        save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True, check_for_duplicates=False)
+        save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         save_chemkin_surface_file(surface_verbose_path, surface_species_list, surface_rxn_list, verbose=True,
                                   check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
 
     else:
         # Gas phase only
-        save_chemkin_file(path, species_list, rxn_list, verbose=False, check_for_duplicates=False)
+        save_chemkin_file(path, species_list, rxn_list, verbose=False,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         logging.info('Saving annotated version of Chemkin file...')
-        save_chemkin_file(verbose_path, species_list, rxn_list, verbose=True, check_for_duplicates=False)
+        save_chemkin_file(verbose_path, species_list, rxn_list, verbose=True,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
     if dictionary_path:
         save_species_dictionary(dictionary_path, species_list)
     if transport_path:
@@ -2300,7 +2325,6 @@ def save_chemkin_files(rmg, config=None):
     """
     Save the current reaction model to a set of Chemkin files.
     """
-    verbose = config.verbose_comments if (config and config.verbose_comments is not None) else rmg.verbose_comments
     save_edge = config.save_edge if (config and config.save_edge is not None) else rmg.save_edge_species
 
     # todo: make this an attribute or method of reactionModel
@@ -2364,27 +2388,24 @@ def save_chemkin_files(rmg, config=None):
             shutil.copy2(this_chemkin_path, latest_chemkin_path)
 
 
-def write_elements_section(f):
+def write_elements_section(f, elements_in_use):
     """
-    Write the ELEMENTS section of the chemkin file.  This file currently lists
-    all elements and isotopes available in RMG. It may become useful in the future
-    to only include elements/isotopes present in the current RMG run. 
+    Write the ELEMENTS section of the chemkin file. Only elements present in
+    ``elements_in_use`` (a set of :class:`Element` singletons) are emitted. Isotopes
+    (D, T, CI, OI) and the surface site X are written only when actually used.
     """
-
+    from rmgpy.molecule.element import D, T, C13, O18, X
     s = 'ELEMENTS\n'
-
-    # map of isotope elements with chemkin-compatible element representation:
-    elements = ('H', ('H', 2), ('H', 3), 'C', ('C', 13), 'O', ('O', 18), 'N', 'Ne', 'Ar', 'He', 'Si', 'S',
-                'F', 'Cl', 'Br', 'I')
-    for el in elements:
-        if isinstance(el, tuple):
-            symbol, isotope = el
-            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-            mass = 1000 * get_element(symbol, isotope=isotope).mass
-            s += '\t{0} /{1:.3f}/\n'.format(chemkin_name, mass)
-        else:
-            s += '\t' + el + '\n'
-    s += '\tX /195.083/\n'
+    custom_singletons = {D, T, C13, O18, X}
+    elements_list = sorted(element.chemkin_name for element in elements_in_use if element not in custom_singletons)
+    for element in elements_list:
+        s += f'\t{element}\n'
+    for isotope in (D, T, C13, O18):
+        if isotope in elements_in_use:
+            mass = 1000 * isotope.mass
+            s += f'\t{isotope.chemkin_name} /{mass:.3f}/\n'
+    if X in elements_in_use:
+        s += '\tX /195.083/\n'
     s += 'END\n\n'
 
     f.write(s)
@@ -2416,6 +2437,7 @@ class ChemkinWriter(object):
         super(ChemkinWriter, self).__init__()
         self.config = config
         make_output_subdirectory(output_directory, 'chemkin')
+        make_output_subdirectory(output_directory, 'cantera_from_ck')
 
     def update(self, rmg):
         if self.config is not None and not self.config.should_write(

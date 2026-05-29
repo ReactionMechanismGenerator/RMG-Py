@@ -1105,7 +1105,7 @@ Setting ``generatePESDiagrams`` to ``True`` will generate potential energy surfa
 
 Setting ``saveSimulationProfiles`` to ``True`` will make RMG save csv files of the simulation in .csv files in the ``solver/`` folder.  The filename will be ``simulation_1_26.csv`` where the first number corresponds to the reaciton system, and the second number corresponds to the total number of species at the point of the simulation.  Therefore, the highest second number will indicate the latest simulation that RMG has complete while enlarging the core model.  The information inside the csv file will provide the time, reactor volume in m^3, as well as mole fractions of the individual species.
 
-Setting ``verboseComments`` to ``True`` will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.  This is a global fallback; individual writers can override it (see below).
+Setting ``verboseComments`` to ``True`` will make RMG generate output files with complete verbose commentary for the kinetic and thermo parameters (i.e. listing every rate rule that was averaged).  This is helpful for debugging what values are being averaged for the kinetics.  Note that this may produce very large files.
 
 Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.  This is a global fallback; individual writers can override it (see below).
 
@@ -1124,21 +1124,19 @@ Each accepts ``True``, ``False``, or a Python dict with optional keys:
 * ``'saveInterval'`` *(int)* — positive N writes every N iterations (iteration
   numbering starts at 0); ``-1`` writes only at the very end of the run.
   Defaults to ``1`` (every iteration) for writers that are on by default.
-* ``'verboseComments'`` *(bool, optional)* — overrides the global
-  ``verboseComments`` flag for this writer only.
 * ``'saveEdge'`` *(bool, optional)* — overrides the global ``saveEdgeSpecies``
   flag for this writer only.
 
 Examples::
 
-    # Chemkin: save only at the end, with verbose comments and edge species
-    generateChemkin={'saveInterval': -1, 'verboseComments': True, 'saveEdge': True}
+    # Chemkin: save only at the end, also writing edge species
+    generateChemkin={'saveInterval': -1, 'saveEdge': True}
 
     # RMS YAML: save every 5 iterations
     generateRMSYAML={'saveInterval': 5}
 
-    # Cantera YAML v2: save every iteration with verbose comments
-    generateCanteraYAML2={'saveInterval': 1, 'verboseComments': True, 'saveEdge': False}
+    # Cantera YAML v2: save every iteration, no edge species
+    generateCanteraYAML2={'saveInterval': 1, 'saveEdge': False}
 
 ``generateChemkin`` (default ``True``)
   Controls the Chemkin writer.  Output is written to the ``chemkin/`` folder.

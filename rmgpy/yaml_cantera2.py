@@ -35,10 +35,28 @@ import os
 import shutil
 import logging
 try:
-    from yaml import CDumper as Dumper
+    from yaml import CDumper as _BaseDumper
 except ImportError:
-    from yaml import Dumper
+    from yaml import Dumper as _BaseDumper
 import yaml
+
+
+class Dumper(_BaseDumper):
+    """
+    YAML Dumper that emits multi-line strings using the literal block style
+    ('|') instead of the default double-quoted form with embedded '\\n'.
+    Used to render the multi-line 'note' field on reactions in a way that
+    mirrors ck2yaml's output.
+    """
+
+
+def _multiline_str_representer(dumper, data):
+    if "\n" in data:
+        return dumper.represent_scalar("tag:yaml.org,2002:str", data, style="|")
+    return dumper.represent_scalar("tag:yaml.org,2002:str", data)
+
+
+Dumper.add_representer(str, _multiline_str_representer)
 
 from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import LibraryReaction
@@ -69,6 +87,7 @@ SYMBOL_BY_NUMBER = {0: 'e', 1: 'H', 2: 'He', 3: 'Li', 4: 'Be', 5: 'B', 6: 'C', 7
                     101: 'Md', 102: 'No', 103: 'Lr', 104: 'Rf', 105: 'Db', 106: 'Sg', 107: 'Bh', 108: 'Hs', 109: 'Mt',
                     110: 'Ds', 111: 'Rg', 112: 'Cn', 113: 'Nh', 114: 'Fl', 115: 'Mc', 116: 'Lv', 117: 'Ts', 118: 'Og'}
 NUMBER_BY_SYMBOL = {value: key for key, value in SYMBOL_BY_NUMBER.items()}
+NUMBER_BY_SYMBOL['E'] = 0
 
 
 class CanteraWriter2(object):
@@ -96,12 +115,14 @@ def save_cantera_files(rmg, config=None):
     """
     Save the current reaction model to a set of Cantera YAML files.
 
-    Creates:
-      1. chem{N}.yaml (where N is num species)
-      2. chem.yaml (latest copy)
-      3. chem_annotated.yaml (if verbose_comments is True)
+    Each iteration writes:
+      1. chem_annotated{N}.yaml (snapshot for this iteration, where N = num core species)
+      2. chem_annotated.yaml (latest copy)
+      3. chem_edge_annotated{N}.yaml / chem_edge_annotated.yaml if saveEdge is set
+
+    The notes-stripped variants (chem.yaml / chem_edge.yaml) are produced
+    once at end-of-run by rmgpy/rmg/main.py.
     """
-    verbose = config.verbose_comments if (config and config.verbose_comments is not None) else rmg.verbose_comments
     save_edge = config.save_edge if (config and config.save_edge is not None) else rmg.save_edge_species
 
     # Ensure subdirectory exists
@@ -121,70 +142,52 @@ def save_cantera_files(rmg, config=None):
 
     # Define paths
     this_cantera_path = os.path.join(cantera_dir,
-                                     'chem{0:04d}.yaml'.format(num_species))
-    latest_cantera_path = os.path.join(cantera_dir, 'chem.yaml')
+                                     'chem_annotated{0:04d}.yaml'.format(num_species))
+    latest_cantera_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
 
     logging.info(f"Saving current model core to Cantera file: {this_cantera_path}")
 
-    # Write the YAML file (non-verbose)
-    save_cantera_model(rmg.reaction_model.core, this_cantera_path, site_density=site_density,
-                       verbose=False)
+    save_cantera_model(rmg.reaction_model.core, this_cantera_path, site_density=site_density)
 
-    # Copy to 'chem.yaml' (The latest file)
+    # Copy to 'chem_annotated.yaml' (the latest file)
     if os.path.exists(latest_cantera_path):
         os.unlink(latest_cantera_path)
     shutil.copy2(this_cantera_path, latest_cantera_path)
-
-    # Write annotated file if verbose_comments is requested
-    if verbose:
-        annotated_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
-        logging.info(f"Saving annotated Cantera file: {annotated_path}")
-        save_cantera_model(rmg.reaction_model.core, annotated_path, site_density=site_density,
-                           verbose=True)
 
     # -------------------------------------------------------------------------
     # 2. Save Edge Model (Optional, matching ChemkinWriter logic)
     # -------------------------------------------------------------------------
     if save_edge:
+        from rmgpy.rmg.model import ReactionModel
         logging.info('Saving current model core and edge to Cantera file...')
 
         this_edge_path = os.path.join(cantera_dir,
-                                      'chem_edge{0:04d}.yaml'.format(num_species))
-        latest_edge_path = os.path.join(cantera_dir, 'chem_edge.yaml')
+                                      'chem_edge_annotated{0:04d}.yaml'.format(num_species))
+        latest_edge_path = os.path.join(cantera_dir, 'chem_edge_annotated.yaml')
 
-        # Create a simple container object to pass to save_cantera_model
-        class MixedModel:
-            def __init__(self, species, reactions):
-                self.species = species
-                self.reactions = reactions
-
-        edge_model = MixedModel(
-            rmg.reaction_model.core.species + rmg.reaction_model.edge.species,
-            rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions
+        edge_model = ReactionModel(
+            species=rmg.reaction_model.core.species + rmg.reaction_model.edge.species,
+            reactions=rmg.reaction_model.core.reactions + rmg.reaction_model.edge.reactions,
         )
 
-        save_cantera_model(edge_model, this_edge_path, site_density=site_density, verbose=False)
+        save_cantera_model(edge_model, this_edge_path, site_density=site_density)
 
         if os.path.exists(latest_edge_path):
             os.unlink(latest_edge_path)
         shutil.copy2(this_edge_path, latest_edge_path)
 
-        if verbose:
-            annotated_edge_path = os.path.join(cantera_dir, 'chem_edge_annotated.yaml')
-            logging.info(f"Saving annotated edge Cantera file: {annotated_edge_path}")
-            save_cantera_model(edge_model, annotated_edge_path, site_density=site_density,
-                               verbose=True)
 
-
-def save_cantera_model(model_container, path, site_density=None, verbose=False):
+def save_cantera_model(model_container, path, site_density=None):
     """
     Internal helper to generate the dictionary and write the YAML file.
-    model_container must have .species and .reactions attributes (lists).
-    If verbose=True, species/reaction notes (SMILES, source, kinetics
-    comments) are included in the output.
+    model_container must be a :class:`rmgpy.rmg.model.ReactionModel` (or duck-typed
+    equivalent with .species, .reactions, and .get_elements()).
+    Species/reaction notes (SMILES, source, kinetics comments) are always
+    included in the output.
     """
     species_list = model_container.species
     reaction_list = model_container.reactions
+    elements_in_use = model_container.get_elements()
 
     is_plasma = False
     for sp in species_list:
@@ -193,26 +196,56 @@ def save_cantera_model(model_container, path, site_density=None, verbose=False):
             break
 
     # Generate Data
-    yaml_data = generate_cantera_data(species_list, reaction_list, is_plasma=is_plasma,
-                                      site_density=site_density, verbose=verbose)
+    yaml_data = generate_cantera_data(species_list, reaction_list,
+                                      elements_in_use=elements_in_use,
+                                      is_plasma=is_plasma,
+                                      site_density=site_density)
 
     # Write
     with open(path, 'w') as f:
         # sort_keys=False ensures 'units' comes first, then 'phases', etc.
         yaml.dump(yaml_data, f, Dumper=Dumper, sort_keys=False, default_flow_style=None)
 
+def get_elements_lists(elements_in_use):
+    """
+    Returns custom element definitions and the elements list for phases.
+
+    elements_in_use is a set of :class:`Element` singletons (typically from
+    :meth:`rmgpy.rmg.model.ReactionModel.get_elements`). Only those elements
+    are emitted; isotopes (D, T, CI, OI) and X are added only when present in
+    the set.
+    """
+    from rmgpy.molecule.element import D, T, C13, O18, X
+    custom_singletons = {D, T, C13, O18, X}
+    custom_elements = []
+    elements_list = sorted(element.chemkin_name for element in elements_in_use if element not in custom_singletons)
+    for isotope in (D, T, C13, O18):
+        if isotope in elements_in_use:
+            mass = 1000 * isotope.mass
+            custom_elements.append({'symbol': isotope.chemkin_name, 'atomic-weight': mass})
+            elements_list.append(isotope.chemkin_name)
+    if X in elements_in_use:
+        elements_list.append('X')
+        custom_elements.append({'symbol': 'X', 'atomic-weight': 195.083})
+    return custom_elements, elements_list
+
 
 def generate_cantera_data(species_list,
                           reaction_list,
+                          elements_in_use=None,
                           is_plasma=False,
                           site_density=None,
-                          search_for_additional_elements=False,
-                          verbose=False,
                           ):
     """
     Converts RMG objects into a dictionary structure compatible with Cantera YAML.
-    If verbose=True, species/reaction notes are included (SMILES, source, kinetics comments).
+    Species/reaction notes (SMILES, source, kinetics comments) are always included.
+
+    elements_in_use is a set of :class:`Element` singletons (typically from
+    :meth:`rmgpy.rmg.model.ReactionModel.get_elements`) used to size the
+    'elements' block and the per-phase elements lists. Defaults to an empty
+    set if None.
     """
+
     # --- 1. Header & Units ---
     # We output everything in SI units.
     try:
@@ -253,19 +286,19 @@ def generate_cantera_data(species_list,
             gas_reactions.append(rxn)
 
     # --- 3. Phase Definitions ---
-    base_elements = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'F', 'Cl', 'Br', 'I', 'E']
-    elements_set = set(base_elements)
+    if elements_in_use is None:
+        # more efficient to calculate it earlier, but do so here if not provided
+        from rmgpy.rmg.model import ReactionModel
+        elements_in_use = ReactionModel(species=species_list).get_elements()
 
-    if search_for_additional_elements:
-        for spc in sorted_species:
-            if spc.molecule and len(spc.molecule) > 0:
-                if spc.is_electron():
-                    elements_set.add('E')
-                    is_plasma = True
-                else:
-                    for elem in spc.molecule[0].get_element_count().keys():
-                        if elem != 'X':
-                            elements_set.add(elem)
+    custom_elements, all_elements = get_elements_lists(elements_in_use)
+
+    if custom_elements:
+        data['elements'] = custom_elements
+    elements_set = set(all_elements)
+    from rmgpy.molecule.element import e
+    if is_plasma or e in elements_in_use:
+        elements_set.add('E')
 
     phases = list()
 
@@ -275,9 +308,10 @@ def generate_cantera_data(species_list,
         'elements': sorted(list(elements_set)),
         'species': [get_label(spc, species_list) for spc in gas_species],
         'kinetics': 'gas',
-        'reactions': 'declared-species',
     }
 
+    if surface_species:
+        gas_phase_def['reactions'] = ['gas-reactions']
     if is_plasma:
         gas_phase_def['transport'] = 'ionized-gas'
         # Plasma specific defaults
@@ -289,6 +323,7 @@ def generate_cantera_data(species_list,
     else:
         gas_phase_def['transport'] = 'mixture-averaged'
 
+    gas_phase_def['state'] = {'T': 300.0, 'P': '1 atm'}
     phases.append(gas_phase_def)
 
     if surface_species:
@@ -306,8 +341,9 @@ def generate_cantera_data(species_list,
             'elements': sorted(list(elements_set)),
             'species': [get_label(sp, species_list) for sp in surface_species],
             'kinetics': 'surface',
-            'reactions': 'declared-species',
-            'site-density': site_density or default_site_density
+            'reactions': ['surface-reactions'],
+            'site-density': site_density or default_site_density,
+            'state': {'T': 300.0, 'P': '1 atm'},
         }
         if has_coverage_dependence:
             surface_phase_def['reference-state-coverage'] = 0.11
@@ -317,38 +353,73 @@ def generate_cantera_data(species_list,
 
     species_data = list()
     for sp in species_list:
-        species_data.append(species_to_dict(sp, species_list, verbose=verbose))
+        species_data.append(species_to_dict(sp, species_list))
     data['species'] = species_data
 
-    reaction_data = list()
-    for rxn in gas_reactions:
-        entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
-        if entries:
-            reaction_data.extend(entries)
-    for rxn in surface_reactions:
-        entries = reaction_to_dict_list(rxn, species_list, verbose=verbose)
-        if entries:
-            reaction_data.extend(entries)
-    data['reactions'] = reaction_data
+    # Build separate reaction lists for each phase if there are two phases.
+    # chemkin_counter is a single-element list used as a mutable counter so
+    # the Chemkin reaction numbering in the reaction notes continues unbroken
+    # across the gas and surface reaction blocks, matching the global
+    # counter in the Chemkin writer.
+    chemkin_counter = [0]
+    gas_reaction_data = _collect_reaction_entries(gas_reactions, species_list,
+                                                  chemkin_counter)
+
+    if surface_species:
+        data['gas-reactions'] = gas_reaction_data
+        data['surface-reactions'] = []
+    else:
+        data['reactions'] = gas_reaction_data
+
+    if surface_reactions:
+        data['surface-reactions'] = _collect_reaction_entries(
+            surface_reactions, species_list, chemkin_counter)
 
     return data
 
 
-def species_to_dict(species, species_list, verbose=False):
+def _collect_reaction_entries(rxns, species_list, chemkin_counter):
+    """
+    Convert RMG reactions to YAML reaction dicts, prepending a 'Reaction
+    index: Chemkin #N; RMG #M' line to each note. For
+    MultiArrhenius/MultiPDepArrhenius reactions, which expand into several
+    YAML entries, each sub-entry gets its own Chemkin number but shares
+    the parent RMG index.
+    """
+    entries = []
+    for rxn in rxns:
+        rxn_entries = reaction_to_dict_list(rxn, species_list)
+        for entry in rxn_entries:
+            chemkin_counter[0] += 1
+            index_line = (
+                f"Reaction index: Chemkin #{chemkin_counter[0]}; "
+                f"RMG #{rxn.index}"
+            )
+            existing = entry.get("note", "")
+            entry["note"] = (
+                index_line + "\n" + existing if existing else index_line + "\n"
+            )
+        entries.extend(rxn_entries)
+    return entries
+
+
+def species_to_dict(species, species_list):
     """Convert an RMG Species object to a Cantera YAML dictionary.
-    If verbose=True, species notes (SMILES, thermo/transport comments) are included.
+    Species notes (SMILES, thermo/transport comments) are always included.
     """
 
     notes = list()
-    if verbose:
-        try:
-            notes.append(species.to_smiles())
-        except:
-            pass
+    try:
+        notes.append(species.to_smiles())
+    except:
+        pass
 
     # Composition
     mol = species.molecule[0]
-    atom_dict = dict(mol.get_element_count())
+    atom_dict = {}
+    for atom in mol.atoms:
+        symbol = atom.element.chemkin_name
+        atom_dict[symbol] = atom_dict.get(symbol, 0) + 1
 
     # Number of electrons 'E'
     # The special pseudo-element E is used in representing charged species, where it specifies
@@ -356,7 +427,15 @@ def species_to_dict(species, species_list, verbose=False):
     # That is, negatively charged ions will have E > 0, while positively charged ions will have E < 0.
     # https://cantera.org/3.1/userguide/creating-mechanisms.html#elemental-composition
     charge = mol.get_net_charge()
-    if 'E' not in atom_dict and charge != 0:
+    if 'E' in atom_dict:
+        electrons = atom_dict['E']
+        if charge == 0 and electrons != 0:
+            logging.warning(f"Species {species} has {electrons} electrons but charge 0. "
+                            f"Reporting {electrons} electrons in the Cantera YAML composition.")
+        elif electrons != -charge:
+            logging.warning(f"Species {species} has {electrons} electrons but charge {charge}. "
+                            f"Reporting {-charge} electrons in the Cantera YAML composition.")
+    if charge != 0:
         atom_dict['E'] = -charge
 
     # Sort composition by atomic number
@@ -387,6 +466,10 @@ def species_to_dict(species, species_list, verbose=False):
         },
     }
 
+    num_sites = mol.number_of_surface_sites()
+    if num_sites > 1:
+        species_entry['sites'] = num_sites
+
     # Transport (if available) - Only relevant for gas phase usually
     if species.transport_data and not species.contains_surface_site():
         td = species.transport_data
@@ -403,11 +486,11 @@ def species_to_dict(species, species_list, verbose=False):
             transport_dict['polarizability'] = td.polarizability.value_si * 1e30  # Angstrom^3
         if getattr(td, 'rotrelaxcollnum', None) and td.rotrelaxcollnum != 0.0:
             transport_dict['rotational-relaxation'] = td.rotrelaxcollnum
-        if verbose and td.comment:
+        if td.comment:
             transport_dict['note'] = td.comment.strip()
         species_entry['transport'] = transport_dict
 
-    if verbose and species.thermo and species.thermo.comment:
+    if species.thermo and species.thermo.comment:
         clean_comment = species.thermo.comment.replace('\n', '; ').strip()
         species_entry['thermo']['note'] = clean_comment
 
@@ -438,10 +521,10 @@ def species_to_dict(species, species_list, verbose=False):
     return species_entry
 
 
-def reaction_to_dict_list(reaction, species_list=None, verbose=False):
+def reaction_to_dict_list(reaction, species_list=None):
     """
     Convert an RMG Reaction object to a LIST of Cantera YAML dictionaries.
-    If verbose=True, a 'note' field is added with source and kinetics comment.
+    A 'note' field is always added with source and kinetics comment.
     """
     # Check for MultiKinetics (duplicates grouped in one RMG object)
     if isinstance(reaction.kinetics, (MultiArrhenius, MultiPDepArrhenius)):
@@ -456,7 +539,7 @@ def reaction_to_dict_list(reaction, species_list=None, verbose=False):
                 kinetics=sub_kin,
                 duplicate=True
             )
-            sub_result = reaction_to_dict_list(sub_rxn, species_list, verbose=verbose)
+            sub_result = reaction_to_dict_list(sub_rxn, species_list)
             if sub_result:
                 entries.extend(sub_result)
         return entries
@@ -559,6 +642,20 @@ def reaction_to_dict_list(reaction, species_list=None, verbose=False):
     else:
         logging.warning(f"Skipping reaction {equation}: Unknown kinetics type {type(kin)}")
         return []
+    
+    # Remove efficiencies dict if present but empty.
+    if 'efficiencies' in entry and not entry['efficiencies']:
+        del entry['efficiencies']
+
+    for rate_key in (
+        'rate-constant',
+        'high-P-rate-constant',
+        'low-P-rate-constant',
+        'sticking-coefficient',
+    ):
+        if entry.get(rate_key, {}).get('A', 0) < 0:
+            entry['negative-A'] = True
+            break
 
     # --- Coverage Dependencies ---
     if hasattr(kin, 'coverage_dependence') and kin.coverage_dependence:
@@ -575,26 +672,33 @@ def reaction_to_dict_list(reaction, species_list=None, verbose=False):
         if cov_deps:
             entry['coverage-dependencies'] = cov_deps
 
-    # --- Metadata / Notes (only when verbose) ---
-    if verbose:
-        note_parts = list()
-        if isinstance(reaction, TemplateReaction):
-            note_parts.append(f"Source: Template family {reaction.family}")
-        elif isinstance(reaction, LibraryReaction):
-            note_parts.append(f"Source: Library {reaction.library}")
-        elif isinstance(reaction, PDepReaction):
-            note_parts.append(f"Source: PDep Network #{reaction.network.index}")
+    # --- Metadata / Notes ---
+    note_lines = list()
+    if isinstance(reaction, TemplateReaction):
+        note_lines.append(f"Template reaction: {reaction.family}")
+    elif isinstance(reaction, LibraryReaction):
+        note_lines.append(f"Library reaction: {reaction.library}")
+    elif isinstance(reaction, PDepReaction):
+        note_lines.append(f"PDep reaction: {reaction.network}")
 
-        if hasattr(kin, 'comment') and kin.comment:
-            clean_comment = kin.comment.replace('\n', '; ').strip()
-            if clean_comment:
-                note_parts.append(clean_comment)
+    if reaction.specific_collider:
+        note_lines.append(
+            f"Specific third body collider: {reaction.specific_collider.label}"
+        )
 
-        if reaction.specific_collider:
-            note_parts.append(f"Specific collider: {reaction.specific_collider.label}")
+    if getattr(reaction, "pairs", None):
+        pair_str = "Flux pairs: " + "; ".join(
+            f"{get_label(p[0], species_list)}, {get_label(p[1], species_list)}"
+            for p in reaction.pairs
+        )
+        note_lines.append(pair_str)
 
-        if note_parts:
-            entry['note'] = " | ".join(note_parts)
+    if hasattr(kin, "comment") and kin.comment:
+        for line in kin.comment.strip("\n").split("\n"):
+            note_lines.append(line.rstrip())
+
+    if note_lines:
+        entry["note"] = "\n".join(line.rstrip() for line in note_lines) + "\n"
 
     return [entry]
 
@@ -606,13 +710,18 @@ def get_reaction_equation(reaction, species_list):
 
     suffix = ""
     kin = reaction.kinetics
-    if isinstance(kin, (ThirdBody, Lindemann, Troe)):
-        if hasattr(reaction, 'specific_collider') and reaction.specific_collider:
-            suffix = " + " + get_label(reaction.specific_collider, species_list)
-        else:
-            suffix = " (+ M)"
+    collider = getattr(reaction, 'specific_collider', None)
+    if isinstance(kin, ThirdBody):
+        # Real three-body reaction: M (or specific collider) without parentheses.
+        m_label = get_label(collider, species_list) if collider else "M"
+        suffix = " + " + m_label
+    elif isinstance(kin, (Lindemann, Troe)):
+        # Pressure-dependent falloff: M acts as a chaperone, written in parens.
+        m_label = get_label(collider, species_list) if collider else "M"
+        suffix = " (+" + m_label + ")"
 
-    return reactants_str + suffix + " <=> " + products_str + suffix
+    arrow = " <=> " if reaction.reversible else " => "
+    return reactants_str + suffix + arrow + products_str + suffix
 
 
 def get_label(obj: Union['Species', 'Molecule'], species_list: list['Species']):

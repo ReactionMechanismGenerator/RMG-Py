@@ -77,13 +77,15 @@ This folder is created when ``generateCanteraYAML1=True`` is set in the ``option
 
 Files generated:
 
-* ``chem{NNNN}.yaml`` — mechanism snapshot at the iteration when the core contained *NNNN*
-  species (e.g. ``chem0042.yaml``)
-* ``chem.yaml`` — copy of the latest snapshot; always reflects the current model state
-* ``chem_annotated.yaml`` — annotated version with SMILES, source, and kinetics comments
-  (written when ``verboseComments=True`` for this writer)
-* ``chem_edge{NNNN}.yaml`` / ``chem_edge.yaml`` / ``chem_edge_annotated.yaml`` — edge-model
-  equivalents (written when ``saveEdge=True``)
+* ``chem_annotated{NNNN}.yaml`` — annotated mechanism snapshot at the iteration when the
+  core contained *NNNN* species (e.g. ``chem_annotated0042.yaml``).  Includes SMILES,
+  source, and kinetics comments.
+* ``chem_annotated.yaml`` — copy of the latest annotated snapshot; always reflects the
+  current model state.
+* ``chem.yaml`` — compact, comment-free copy of the final mechanism, written only at the
+  end of the run (mirrors Chemkin's ``chem.inp`` vs ``chem_annotated.inp`` split).
+* ``chem_edge_annotated{NNNN}.yaml`` / ``chem_edge_annotated.yaml`` / ``chem_edge.yaml`` —
+  edge-model equivalents (written when ``saveEdge=True``).
 * ``comparison_report.txt`` — numerical comparison of ``chem.yaml`` against the
   ``cantera_from_ck`` translation (written at the end of the run if both writers are enabled;
   see below)
@@ -104,12 +106,14 @@ schedule).
 
 Files generated:
 
-* ``chem{NNNN}.yaml`` / ``chem.yaml`` — latest mechanism snapshot and its labelled history
-* ``chem_annotated.yaml`` — annotated version (written when ``verboseComments=True``)
-* ``chem_edge{NNNN}.yaml`` / ``chem_edge.yaml`` / ``chem_edge_annotated.yaml`` — edge-model
-  equivalents (written when ``saveEdge=True``)
+* ``chem_annotated{NNNN}.yaml`` / ``chem_annotated.yaml`` — annotated mechanism snapshots
+  (per-iteration history and latest copy), including SMILES, source, and kinetics comments.
+* ``chem.yaml`` — compact, comment-free copy of the final mechanism, written only at the
+  end of the run.
+* ``chem_edge_annotated{NNNN}.yaml`` / ``chem_edge_annotated.yaml`` / ``chem_edge.yaml`` —
+  edge-model equivalents (written when ``saveEdge=True``).
 * ``comparison_report.txt`` — numerical comparison against the ``cantera_from_ck``
-  translation (written at the end of the run if both writers are enabled)
+  translation (written at the end of the run if both writers are enabled).
 
 Comparison Reports
 ^^^^^^^^^^^^^^^^^^

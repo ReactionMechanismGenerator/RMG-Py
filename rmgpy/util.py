@@ -30,6 +30,7 @@
 import argparse
 import logging
 import os.path
+import re
 import shutil
 import time
 from functools import wraps
@@ -113,6 +114,95 @@ class Subject(object):
                 observer.update(self)
 
 
+def _strip_wrapped_flow_yaml_notes(text):
+    """Strip wrapped flow-style YAML notes without a nested regex."""
+    lines = text.splitlines(keepends=True)
+    stripped_lines = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        if (
+            stripped_lines
+            and stripped_lines[-1].rstrip().endswith(",")
+            and line.lstrip(" \t").startswith("note:")
+        ):
+            end_index = i
+            while end_index < len(lines):
+                if "}" in lines[end_index]:
+                    comma_index = stripped_lines[-1].rfind(",")
+                    brace_index = lines[end_index].find("}")
+                    stripped_lines[-1] = stripped_lines[-1][:comma_index] + lines[end_index][brace_index:]
+                    i = end_index + 1
+                    break
+                if lines[end_index].rstrip().endswith(","):
+                    i = end_index + 1
+                    break
+                end_index += 1
+            else:
+                stripped_lines.append(line)
+                i += 1
+                continue
+            continue
+
+        stripped_lines.append(line)
+        i += 1
+
+    return "".join(stripped_lines)
+
+
+def _find_flow_yaml_delimiter(text, start):
+    """Find the next comma or closing brace outside quoted text."""
+    quote = None
+    i = start
+    while i < len(text):
+        char = text[i]
+        if quote:
+            if char == quote:
+                if quote == "'" and i + 1 < len(text) and text[i + 1] == "'":
+                    i += 2
+                    continue
+                quote = None
+            elif quote == '"' and char == "\\":
+                i += 2
+                continue
+        elif char in ("'", '"'):
+            quote = char
+        elif char in ",}":
+            return i
+        i += 1
+    return -1
+
+
+def _strip_single_line_flow_yaml_notes(text):
+    """Strip single-line flow-style YAML notes without splitting quoted commas."""
+    lines = text.splitlines(keepends=True)
+    stripped_lines = []
+    note_pattern = re.compile(r'([,{])[ \t]*note:')
+    for line in lines:
+        search_start = 0
+        while True:
+            match = note_pattern.search(line, search_start)
+            if not match:
+                break
+            value_start = match.end()
+            value_end = _find_flow_yaml_delimiter(line, value_start)
+            if value_end == -1:
+                break
+            delimiter = line[value_end]
+            if delimiter == ",":
+                line = line[:match.start()] + line[value_end:]
+                search_start = match.start()
+            elif match.group(1) == ",":
+                line = line[:match.start()] + line[value_end:]
+                search_start = match.start()
+            else:
+                line = line[:match.start() + 1] + line[value_end:]
+                search_start = match.start() + 1
+        stripped_lines.append(line)
+
+    return "".join(stripped_lines)
+
+
 def make_output_subdirectory(output_directory, folder):
     """
     Create a subdirectory `folder` in the output directory. If the folder
@@ -123,6 +213,36 @@ def make_output_subdirectory(output_directory, folder):
         # The directory already exists, so delete it (and all its content!)
         shutil.rmtree(dirname)
     os.mkdir(dirname)
+
+
+def strip_yaml_notes(src, dst):
+    """Read a YAML file, strip ``note:`` fields, and write the
+    result to *dst*. Preserves formatting (block style, key
+    ordering, etc.) - important when the source is the carefully
+    crafted ck2yaml output.
+
+    Three patterns are handled:
+      1. Block-style:        ``  note: ...`` on its own line,
+         possibly followed by deeper-indented continuation lines
+         (multi-line literal/folded scalars).
+      2. Single-line flow:   ``{..., note: foo, ...}``  -> ``{..., ...}``
+      3. Wrapped flow:       a flow mapping that wraps with the
+         trailing ``,`` at the end of one line and
+         ``    note: foo`` on the next  -> drop the note field.
+    """
+    if not os.path.exists(src):
+        return
+    with open(src) as f:
+        text = f.read()
+    # Wrapped flow style: a flow mapping that wraps after a trailing comma,
+    # with ``note: value`` on the next line.
+    text = _strip_wrapped_flow_yaml_notes(text)
+    text = _strip_single_line_flow_yaml_notes(text)
+    # Block style: ``  note: ...\n`` plus deeper-indented
+    # continuation lines.
+    text = re.sub(r'^( +)note:.*\n(?:\1 +[^\n]*\n)*', '', text, flags=re.MULTILINE)
+    with open(dst, "w") as f:
+        f.write(text)
 
 
 def timefn(fn):

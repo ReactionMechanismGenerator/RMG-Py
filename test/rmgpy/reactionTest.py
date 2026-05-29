@@ -2921,6 +2921,25 @@ reactions:
             assert np.isclose(converted_obj.rate.input_data['rate-constant']['b'], ct_obj.rate.input_data['rate-constant']['b'])
             assert np.isclose(converted_obj.rate.input_data['rate-constant']['Ea'], ct_obj.rate.input_data['rate-constant']['Ea'])
 
+    def test_to_cantera_with_spectator_species(self):
+        """
+        Tests that species present on both sides are not duplicated.
+        """
+        species_by_label = {species.label: species for species in self.species_list}
+        h = species_by_label["H"]
+        h2 = species_by_label["H2"]
+        ch4 = species_by_label["CH4"]
+        rxn = Reaction(
+            reactants=[h, h, ch4],
+            products=[h2, ch4],
+            kinetics=Arrhenius(A=(1e6, "cm^6/(mol^2*s)"), n=0, Ea=(0, "kcal/mol"), T0=(1, "K")),
+        )
+
+        ct_rxn = rxn.to_cantera(self.species_list, use_chemkin_identifier=True)
+
+        assert ct_rxn.input_data["equation"] == "2 H(3) + CH4(15) <=> H2(2) + CH4(15)"
+        assert ct_rxn.input_data["equation"].count("CH4(15)") == 2
+
     def test_multi_arrhenius(self):
         """
         Tests formation of cantera reactions with MultiArrhenius kinetics.

@@ -34,6 +34,8 @@ import shutil
 import numpy as np
 import pytest
 
+from cantera_yaml_comparer import CanteraYamlFileComparer
+from rmgpy.molecule import Atom, Molecule, get_element
 from rmgpy.species import Species
 from rmgpy.reaction import Reaction
 from rmgpy.kinetics import (
@@ -53,7 +55,8 @@ from rmgpy.yaml_cantera2 import (
     save_cantera_files,
     species_to_dict,
     reaction_to_dict_list,
-    generate_cantera_data
+    generate_cantera_data,
+    get_elements_lists,
 )
 
 
@@ -123,6 +126,40 @@ class TestCanteraWriter2:
         assert np.isclose(d['transport']['well-depth'], 100.0) # Kelvin
         assert np.isclose(d['transport']['rotational-relaxation'], 1.0)
 
+    def test_species_to_dict_warns_and_uses_charge_for_explicit_electron_mismatch(self, caplog):
+        """
+        Test that YAML species composition uses the net charge when explicit
+        electrons disagree.
+        """
+        sp = self._create_dummy_species("H2", "[H][H]", index=1)
+        sp.label = "H2minus_with_one_electron"
+        sp.molecule = [Molecule(atoms=[
+            Atom(element=get_element("H"), charge=-2, radical_electrons=0, lone_pairs=0),
+            Atom(element=get_element("e"), charge=0, radical_electrons=0, lone_pairs=0),
+        ])]
+
+        d = species_to_dict(sp, [sp])
+
+        assert d["composition"]["E"] == 2
+        assert "has 1 electrons but charge -2" in caplog.text
+        assert "Reporting 2 electrons in the Cantera YAML composition." in caplog.text
+
+    def test_species_to_dict_uses_charge_when_electrons_unspecified(self, caplog):
+        """
+        Test that YAML species composition uses the net charge without a warning
+        when no explicit electrons are present.
+        """
+        sp = self._create_dummy_species("H2", "[H][H]", index=1)
+        sp.label = "Hminus"
+        sp.molecule = [Molecule(atoms=[
+            Atom(element=get_element("H"), charge=-1, radical_electrons=0, lone_pairs=0),
+        ])]
+
+        d = species_to_dict(sp, [sp])
+
+        assert d["composition"]["E"] == 1
+        assert "electrons but charge" not in caplog.text
+
     def test_reaction_to_dict_arrhenius(self):
         """Test standard Arrhenius kinetics."""
         r = self._create_dummy_species("R", "[CH2]O", index=1)
@@ -141,6 +178,17 @@ class TestCanteraWriter2:
         assert np.isclose(data['rate-constant']['A'], 1e10)
         assert np.isclose(data['rate-constant']['b'], 0.5)
         assert np.isclose(data['rate-constant']['Ea'], 10000.0)
+
+    def test_reaction_to_dict_negative_a_arrhenius(self):
+        """Negative Arrhenius A factors are marked for Cantera."""
+        r = self._create_dummy_species("R", "[CH2]O", index=1)
+        p = self._create_dummy_species("P", "C[O]", index=2)
+        rxn = Reaction(
+            reactants=[r], products=[p],
+            kinetics=Arrhenius(A=(-1e10, "s^-1"), n=0.5, Ea=(10, "kJ/mol"), T0=(1, "K"))
+        )
+        entries = reaction_to_dict_list(rxn, species_list=[r, p])
+        assert entries[0]['negative-A'] is True
 
     def test_reaction_to_dict_duplicates(self):
         """Test that MultiKinetics objects result in multiple YAML entries."""
@@ -228,10 +276,11 @@ class TestCanteraWriter2:
 
         # 2. Mock RMG Object Structure
         # The writer expects: rmg.output_directory and rmg.reaction_model.core
-        class MockCore:
+        from rmgpy.rmg.model import ReactionModel
+
+        class MockCore(ReactionModel):
             def __init__(self):
-                self.species = species
-                self.reactions = reactions
+                super().__init__(species=species, reactions=reactions)
 
         class MockModel:
             def __init__(self):
@@ -248,8 +297,8 @@ class TestCanteraWriter2:
         mock_rmg = MockRMG(self.tmp_dir)
         save_cantera_files(mock_rmg)
 
-        yaml_file = os.path.join(self.tmp_dir, "cantera2", "chem.yaml")
-        versioned_file = os.path.join(self.tmp_dir, "cantera2", "chem0005.yaml")
+        yaml_file = os.path.join(self.tmp_dir, "cantera2", "chem_annotated.yaml")
+        versioned_file = os.path.join(self.tmp_dir, "cantera2", "chem_annotated0005.yaml")
         assert os.path.exists(yaml_file)
         assert os.path.exists(versioned_file)
 
@@ -344,6 +393,21 @@ class TestCanteraWriter2:
         assert data['efficiencies'] == {"M": 5.0}
         assert 'Troe' not in data
 
+    def test_reaction_to_dict_negative_a_falloff(self):
+        """Negative high- or low-pressure A factors are marked for Cantera."""
+        r = self._create_dummy_species("R", "[H]", index=1)
+        M = self._create_dummy_species("M", "[Ar]", index=-1)
+        k_high = Arrhenius(A=(1e14, "s^-1"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K"))
+        k_low = Arrhenius(A=(-1e21, "cm^3/(mol*s)"), n=0, Ea=(10, "kJ/mol"), T0=(1, "K"))
+        lind = Lindemann(
+            arrheniusHigh=k_high,
+            arrheniusLow=k_low,
+            efficiencies={M.molecule[0]: 5.0},
+        )
+        rxn = Reaction(reactants=[r], products=[r], kinetics=lind)
+        entries = reaction_to_dict_list(rxn, species_list=[r, M])
+        assert entries[0]['negative-A'] is True
+
     def test_cantera_writer_class_listener(self):
         """
         Test the CanteraWriter2 class directly to ensure it correctly initializes
@@ -357,8 +421,8 @@ class TestCanteraWriter2:
         mock_rmg = self._create_dummy_model()
         writer.update(mock_rmg)
 
-        versioned_file = os.path.join(cantera_dir, 'chem0002.yaml')
-        latest_file = os.path.join(cantera_dir, 'chem.yaml')
+        versioned_file = os.path.join(cantera_dir, 'chem_annotated0002.yaml')
+        latest_file = os.path.join(cantera_dir, 'chem_annotated.yaml')
 
         assert os.path.exists(versioned_file)
         assert os.path.exists(latest_file)
@@ -385,10 +449,11 @@ class TestCanteraWriter2:
         reaction_list = [rxn_arr]
 
         # Mock Object Structure
-        class MockCore:
+        from rmgpy.rmg.model import ReactionModel
+
+        class MockCore(ReactionModel):
             def __init__(self, s, r):
-                self.species = s
-                self.reactions = r
+                super().__init__(species=s, reactions=r)
 
         class MockModel:
             def __init__(self, core):
@@ -491,6 +556,24 @@ class TestCanteraWriter2:
         assert np.isclose(d["sticking-coefficient"]["A"], 0.1)
         assert np.isclose(d["sticking-coefficient"]["Ea"], 0.0)
 
+    def test_reaction_to_dict_negative_a_sticking_coefficient(self):
+        """Negative sticking-coefficient A factors are marked for Cantera."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=3
+        )
+        kin = StickingCoefficient(
+            A=(-0.1, ""), n=0, Ea=(0, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(
+            reactants=[h2, x, x], products=[hx, hx], kinetics=kin
+        )
+
+        entries = reaction_to_dict_list(rxn, species_list=[h2, x, hx])
+
+        assert entries[0]["negative-A"] is True
+
     def test_reaction_to_dict_coverage_dependence(self):
         """Coverage-dependent kinetics: coverage-dependencies block written correctly.
 
@@ -541,3 +624,183 @@ class TestCanteraWriter2:
         assert "rate-constant" in d
         assert "efficiencies" in d
         assert np.isclose(d["efficiencies"]["Ar(3)"], 0.7)
+
+    def test_get_elements_block_isotopes_and_surface_site(self):
+        """get_elements_lists emits isotope and X definitions only when in use."""
+        from rmgpy.molecule.element import H, C, D, T, X, e
+
+        # With D, T, X in use: isotope and X entries appear
+        custom_elements, elements_list = get_elements_lists({H, C, D, T, X})
+        assert 'H' in elements_list
+        assert 'C' in elements_list
+        assert 'X' in elements_list
+        x_entry = next((e for e in custom_elements if e['symbol'] == 'X'), None)
+        assert x_entry is not None
+        assert np.isclose(x_entry['atomic-weight'], 195.083)
+        symbols = [e['symbol'] for e in custom_elements]
+        assert 'D' in symbols   # H-2
+        assert 'T' in symbols   # H-3
+        for entry in custom_elements:
+            assert entry['atomic-weight'] > 0
+
+        # Without isotopes / X: no custom entries, no X in the elements list
+        custom_elements, elements_list = get_elements_lists({H, C})
+        assert custom_elements == []
+        assert 'X' not in elements_list
+        assert 'D' not in elements_list
+        assert 'T' not in elements_list
+
+        # The RMG electron singleton is lowercase e internally, but exports as
+        # Cantera's uppercase pseudo-element E.
+        custom_elements, elements_list = get_elements_lists({H, e})
+        assert custom_elements == []
+        assert elements_list == ['E', 'H']
+
+    def test_generate_cantera_data_elements_block(self):
+        """generate_cantera_data emits a top-level 'elements' key only when
+        non-builtin elements (isotopes, X) are in use, matching ck2yaml."""
+        from rmgpy.molecule.element import H, X, e
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+
+        # Gas-only H2: no isotopes, no X -> no top-level 'elements' block.
+        data = generate_cantera_data([h2], [], elements_in_use={H})
+        assert 'elements' not in data
+
+        # Surface fixture: X is in use, so it appears as a custom element.
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        data = generate_cantera_data([h2, x], [], elements_in_use={H, X})
+        symbols = [entry['symbol'] for entry in data['elements']]
+        assert 'X' in symbols
+
+        electron = Species(label="e", index=2)
+        electron.from_adjacency_list("1 e u1 p0 c-1")
+        electron.thermo = h2.thermo
+        data = generate_cantera_data([h2, electron], [], elements_in_use={H, e}, is_plasma=True)
+        assert data['phases'][0]['elements'] == ['E', 'H']
+        electron_entry = next(sp for sp in data['species'] if sp['name'] == 'e(2)')
+        assert electron_entry['composition'] == {'E': 1}
+
+    def test_generate_cantera_data_gas_phase_state(self):
+        """Gas phase definition includes a 'state' block with T and P."""
+        from rmgpy.molecule.element import H
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        data = generate_cantera_data([h2], [], elements_in_use={H})
+
+        gas_phase = data['phases'][0]
+        assert 'state' in gas_phase
+        assert np.isclose(gas_phase['state']['T'], 300.0)
+        assert gas_phase['state']['P'] == '1 atm'
+
+    def test_generate_cantera_data_gas_reactions_key(self):
+        """Gas-only model uses top-level 'reactions' key (matching ck2yaml)."""
+        from rmgpy.molecule.element import H
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        h = self._create_dummy_species("H", "[H]", index=2)
+        rxn = Reaction(
+            reactants=[h2], products=[h, h],
+            kinetics=Arrhenius(A=(1e13, "s^-1"), n=0, Ea=(400, "kJ/mol"), T0=(1, "K"))
+        )
+        data = generate_cantera_data([h2, h], [rxn], elements_in_use={H})
+
+        gas_phase = data['phases'][0]
+        assert 'reactions' not in gas_phase, "Gas-only phase should not reference reactions"
+        assert 'reactions' in data
+        assert len(data['reactions']) == 1
+        assert 'gas-reactions' not in data
+
+    def test_generate_cantera_data_surface_phase_state_and_reactions_key(self):
+        """Surface phase has 'state' and references 'surface-reactions'; data has that key."""
+        from rmgpy.molecule.element import H, X
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        x = self._create_surface_species("X", "1 X u0 p0", index=2)
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=3
+        )
+        kin = SurfaceArrhenius(
+            A=(1e13, "m^2/(mol*s)"), n=0, Ea=(50, "kJ/mol"), T0=(1, "K")
+        )
+        rxn = Reaction(reactants=[h2, x], products=[hx, hx], kinetics=kin)
+        data = generate_cantera_data([h2, x, hx], [rxn], elements_in_use={H, X})
+
+        surface_phase = next(p for p in data['phases'] if p['name'] == 'surface')
+        assert 'state' in surface_phase
+        assert np.isclose(surface_phase['state']['T'], 300.0)
+        assert surface_phase['reactions'] == ['surface-reactions']
+        assert 'surface-reactions' in data
+        assert len(data['surface-reactions']) == 1
+
+    def test_species_to_dict_surface_sites_count(self):
+        """species_to_dict reports 'sites' only for multi-site (bidentate+) surface species."""
+        # Single-site species: 'sites' key is omitted (Cantera defaults to 1)
+        hx = self._create_surface_species(
+            "H_X", "1 H u0 p0 {2,S}\n2 X u0 p0 {1,S}", index=11
+        )
+        d = species_to_dict(hx, [hx])
+        assert 'sites' not in d
+
+        # Bidentate glyoxal adsorbed via C and O (2 X atoms)
+        glyoxal_xx = self._create_surface_species(
+            "glyoxalXX",
+            "1 O u0 p2 c0 {3,S} {8,S}\n"
+            "2 O u0 p2 c0 {4,D}\n"
+            "3 C u0 p0 c0 {1,S} {4,S} {5,S} {7,S}\n"
+            "4 C u0 p0 c0 {2,D} {3,S} {6,S}\n"
+            "5 H u0 p0 c0 {3,S}\n"
+            "6 H u0 p0 c0 {4,S}\n"
+            "7 X u0 p0 c0 {3,S}\n"
+            "8 X u0 p0 c0 {1,S}",
+            index=215,
+        )
+        d2 = species_to_dict(glyoxal_xx, [glyoxal_xx])
+        assert 'sites' in d2
+        assert d2['sites'] == 2
+
+    def test_species_to_dict_gas_no_sites_field(self):
+        """Gas species must not have a 'sites' field."""
+        h2 = self._create_dummy_species("H2", "[H][H]", index=1)
+        d = species_to_dict(h2, [h2])
+        assert 'sites' not in d
+
+    def test_species_to_dict_transport_note_always_present(self):
+        """Transport 'note' is always written when transport_data.comment is set."""
+        sp = self._create_dummy_species("H2", "[H][H]", index=1)
+        sp.transport_data.comment = "from GRI-Mech"
+        d = species_to_dict(sp, [sp])
+        assert d['transport']['note'] == "from GRI-Mech"
+
+
+class TestRecentlyGeneratedCanteraYaml2GasOnly(CanteraYamlFileComparer):
+    """Tests for comparing recently generated Cantera YAML files from cantera2, gas-only mechanism.
+
+    These are generated on the fly in the mainTest.py functional test and stored in the testing data directory.
+    """
+    test_data_folder = 'test/rmgpy/test_data/yaml_writer_data/'
+
+    @pytest.fixture(autouse=True, scope="class")
+    def find_recent_files(self, request):
+        """
+        Find the YAML files generated by mainTest.
+        """
+        cantera_file = os.path.join(self.test_data_folder, 'cantera2', 'from_main_test.yaml')
+        chemkin_file = os.path.join(self.test_data_folder, 'ck2yaml', 'from_main_test.yaml')
+
+        if not (os.path.exists(cantera_file) and os.path.exists(chemkin_file)):
+            # If mainTest's copy step was collected for this pytest session but the
+            # files are still missing, treat that as a failure rather than a skip —
+            # it means mainTest ran but didn't produce the expected output.
+            # (if using pytest-randomly or pytest-ordering to reorder them this will need altering).
+            main_test_collected = any(
+                item.name == "test_cantera_input_files_match_chemkin_later"
+                for item in request.session.items
+            )
+            if main_test_collected:
+                pytest.fail(
+                    "from_main_test.yaml files missing even though mainTest's "
+                    "copy step was collected — it likely failed before copying."
+                )
+            # If mainTest wasn't collected, it's likely that we're running this test
+            # in isolation, so skip without failing.
+            pytest.skip("from_main_test.yaml files not found. Run mainTest first.")
+
+        request.cls.yaml_path_1 = chemkin_file
+        request.cls.yaml_path_2 = cantera_file
