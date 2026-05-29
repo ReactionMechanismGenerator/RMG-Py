@@ -452,9 +452,9 @@ for new users to better understand the options of rmg input files</p>
     <span class="n">generatePESDiagrams</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="c1"># saves mole fraction of species in &#39;solver/&#39; to help you create plots</span>
     <span class="n">saveSimulationProfiles</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="c1"># Global fallback for verbose comments (comments on where kinetics were obtained).</span>
+    <span class="c1"># Verbose comments (controls how detailed the kinetics/thermo source comments are,</span>
+    <span class="c1"># e.g. listing every rate rule that was averaged).</span>
     <span class="c1"># Useful for debugging kinetics but increases output file size.</span>
-    <span class="c1"># Individual writers can override this with their own verboseComments key.</span>
     <span class="n">verboseComments</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="c1"># Global fallback for saving edge-species files. Uses lots of memory in output.</span>
     <span class="c1"># Helpful for seeing why some reactions are not appearing in the core model.</span>
@@ -475,12 +475,11 @@ for new users to better understand the options of rmg input files</p>
     <span class="c1"># --- Per-writer output configuration ---</span>
     <span class="c1"># Each writer accepts True/False or a dict with keys:</span>
     <span class="c1">#   &#39;saveInterval&#39;: N  (positive = every N iterations; -1 = end of run only)</span>
-    <span class="c1">#   &#39;verboseComments&#39;: True/False  (overrides the global verboseComments above)</span>
     <span class="c1">#   &#39;saveEdge&#39;: True/False  (overrides the global saveEdgeSpecies above)</span>
     <span class="c1">#</span>
     <span class="c1"># Chemkin writer: always on by default; saves every iteration.</span>
     <span class="n">generateChemkin</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-    <span class="c1"># generateChemkin={&#39;saveInterval&#39;: -1, &#39;verboseComments&#39;: True, &#39;saveEdge&#39;: True},</span>
+    <span class="c1"># generateChemkin={&#39;saveInterval&#39;: -1, &#39;saveEdge&#39;: True},</span>
     <span class="c1">#</span>
     <span class="c1"># RMS YAML writer: always on by default; saves every iteration.</span>
     <span class="n">generateRMSYAML</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -488,11 +487,11 @@ for new users to better understand the options of rmg input files</p>
     <span class="c1">#</span>
     <span class="c1"># Cantera YAML v1 writer: off by default.</span>
     <span class="n">generateCanteraYAML1</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="c1"># generateCanteraYAML1={&#39;saveInterval&#39;: -1, &#39;verboseComments&#39;: True, &#39;saveEdge&#39;: False},</span>
+    <span class="c1"># generateCanteraYAML1={&#39;saveInterval&#39;: -1, &#39;saveEdge&#39;: False},</span>
     <span class="c1">#</span>
     <span class="c1"># Cantera YAML v2 writer: off by default.</span>
     <span class="n">generateCanteraYAML2</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="c1"># generateCanteraYAML2={&#39;saveInterval&#39;: 1, &#39;verboseComments&#39;: True, &#39;saveEdge&#39;: True},</span>
+    <span class="c1"># generateCanteraYAML2={&#39;saveInterval&#39;: 1, &#39;saveEdge&#39;: True},</span>
 <span class="p">)</span>
 
 <span class="c1"># optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.</span>

@@ -125,13 +125,15 @@ extensively tested than the <code class="docutils literal notranslate"><span cla
 <code class="docutils literal notranslate"><span class="pre">saveInterval</span></code>), so the folder accumulates a history of the growing mechanism.</p>
 <p>Files generated:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">chem{NNNN}.yaml</span></code> — mechanism snapshot at the iteration when the core contained <em>NNNN</em>
-species (e.g. <code class="docutils literal notranslate"><span class="pre">chem0042.yaml</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> — copy of the latest snapshot; always reflects the current model state</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">chem_annotated.yaml</span></code> — annotated version with SMILES, source, and kinetics comments
-(written when <code class="docutils literal notranslate"><span class="pre">verboseComments=True</span></code> for this writer)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">chem_edge{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.yaml</span></code> — edge-model
-equivalents (written when <code class="docutils literal notranslate"><span class="pre">saveEdge=True</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_annotated{NNNN}.yaml</span></code> — annotated mechanism snapshot at the iteration when the
+core contained <em>NNNN</em> species (e.g. <code class="docutils literal notranslate"><span class="pre">chem_annotated0042.yaml</span></code>).  Includes SMILES,
+source, and kinetics comments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_annotated.yaml</span></code> — copy of the latest annotated snapshot; always reflects the
+current model state.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> — compact, comment-free copy of the final mechanism, written only at the
+end of the run (mirrors Chemkin’s <code class="docutils literal notranslate"><span class="pre">chem.inp</span></code> vs <code class="docutils literal notranslate"><span class="pre">chem_annotated.inp</span></code> split).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_edge_annotated{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge.yaml</span></code> —
+edge-model equivalents (written when <code class="docutils literal notranslate"><span class="pre">saveEdge=True</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> — numerical comparison of <code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> against the
 <code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code> translation (written at the end of the run if both writers are enabled;
 see below)</p></li>
@@ -151,12 +153,14 @@ it should produce valid mechanisms, it has been less extensively tested than the
 schedule).</p>
 <p>Files generated:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">chem{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> — latest mechanism snapshot and its labelled history</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">chem_annotated.yaml</span></code> — annotated version (written when <code class="docutils literal notranslate"><span class="pre">verboseComments=True</span></code>)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">chem_edge{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.yaml</span></code> — edge-model
-equivalents (written when <code class="docutils literal notranslate"><span class="pre">saveEdge=True</span></code>)</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_annotated{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_annotated.yaml</span></code> — annotated mechanism snapshots
+(per-iteration history and latest copy), including SMILES, source, and kinetics comments.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem.yaml</span></code> — compact, comment-free copy of the final mechanism, written only at the
+end of the run.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">chem_edge_annotated{NNNN}.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge_annotated.yaml</span></code> / <code class="docutils literal notranslate"><span class="pre">chem_edge.yaml</span></code> —
+edge-model equivalents (written when <code class="docutils literal notranslate"><span class="pre">saveEdge=True</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">comparison_report.txt</span></code> — numerical comparison against the <code class="docutils literal notranslate"><span class="pre">cantera_from_ck</span></code>
-translation (written at the end of the run if both writers are enabled)</p></li>
+translation (written at the end of the run if both writers are enabled).</p></li>
 </ul>
 </section>
 <section id="comparison-reports">

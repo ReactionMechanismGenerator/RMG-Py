@@ -485,6 +485,16 @@ updated.</p>
 <dd><p>Represent a generic reaction model. A reaction model consists of <cite>species</cite>,
 a list of species, and <cite>reactions</cite>, a list of reactions.</p>
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.rmg.model.ReactionModel.get_elements">
+<span class="sig-name descname"><span class="pre">get_elements</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel.get_elements" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the set of <code class="xref py py-class docutils literal notranslate"><span class="pre">Element</span></code> singletons used by atoms of species
+in this <a class="reference internal" href="#rmgpy.rmg.model.ReactionModel" title="rmgpy.rmg.model.ReactionModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactionModel</span></code></a>. Iterates each species’ first resonance
+structure (<code class="docutils literal notranslate"><span class="pre">sp.molecule[0]</span></code>) and collects <code class="docutils literal notranslate"><span class="pre">atom.element</span></code>. The
+electron singleton is included when a species has nonzero net charge,
+since Chemkin and Cantera use it for charge bookkeeping.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.rmg.model.ReactionModel.merge">
 <span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.rmg.model.ReactionModel.merge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return a new <a class="reference internal" href="#rmgpy.rmg.model.ReactionModel" title="rmgpy.rmg.model.ReactionModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">ReactionModel</span></code></a> object that is the union of this
@@ -571,6 +581,7 @@ model and <cite>other</cite>.</p>
 </ul>
 </li>
 <li><a class="reference internal" href="#rmgpy.rmg.model.ReactionModel"><code class="docutils literal notranslate"><span class="pre">ReactionModel</span></code></a><ul>
+<li><a class="reference internal" href="#rmgpy.rmg.model.ReactionModel.get_elements"><code class="docutils literal notranslate"><span class="pre">ReactionModel.get_elements()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.rmg.model.ReactionModel.merge"><code class="docutils literal notranslate"><span class="pre">ReactionModel.merge()</span></code></a></li>
 </ul>
 </li>
