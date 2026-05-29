@@ -18,7 +18,6 @@ import argparse
 import logging
 from pathlib import Path
 from typing import Any, List, Tuple, Dict
-from itertools import chain
 
 import yaml
 import numpy as np
@@ -175,21 +174,29 @@ def compare_values(val1: Any, val2: Any, path: str, atol: float = 1e-12,
 
     ### SPECIAL CASES
     # Special handling for 'elements' path - normalize to title case and sort
-    if path.split('.')[-1] == 'elements':
+    if path.endswith('elements') and val1 and val2:
         if isinstance(val1[0], str) and isinstance(val2[0], str):
+            # the elements list in a phase, eg. elements: [H, C, O, N, Ne, X]
             val1_normalized = sorted([v.title() for v in val1])
             val2_normalized = sorted([v.title() for v in val2])
             if val1_normalized != val2_normalized:
                 differences.append(f"Elements list mismatch at {path}: {val1_normalized} vs {val2_normalized}")
             return differences
         if isinstance(val1[0], dict) and isinstance(val2[0], dict):
-            for d in chain(val1, val2):
-                d['symbol'] = d['symbol'].title()
+            # The top level elements list like elements:[{symbol: D, atomic-weight: 2.014102}]
+            val1 = [dict(d, symbol=d['symbol'].title()) for d in val1]
+            val2 = [dict(d, symbol=d['symbol'].title()) for d in val2]
             val1 = sorted([d for d in val1], key=lambda x: x['symbol'])
             val2 = sorted([d for d in val2], key=lambda x: x['symbol'])
 
     if path.endswith('Troe.T1') or path.endswith('Troe.T2') or path.endswith('Troe.T3'):
-        rtol = 5e-3 # Relax tolerance due to rounding.
+        rtol = 0.005 # Relax tolerance due to rounding.
+
+    if path.endswith('rate-constant.b'):
+        atol = 0.0005  # ck rounds to 0.001
+
+    if path.endswith('rate-constant.Ea'):
+        atol = 4185/2  # ck rounds to 0.001 kcal/mol which is 4184 J/kmol
     
     ### END OF SPECIAL CASES
     
@@ -226,13 +233,13 @@ def compare_values(val1: Any, val2: Any, path: str, atol: float = 1e-12,
     
     # Handle numeric values with tolerance
     elif is_numeric(val1) and is_numeric(val2):
-        # Use numpy.allclose for comparison
+        # Use numpy.isclose for comparison
         if not np.isclose(val1, val2, atol=atol, rtol=rtol):
             # Compute the difference for reporting
-            abs_diff = abs(val1 - val2)
-            rel_diff = abs(abs_diff / val2) if val2 != 0 else float('inf')
+            diff = (val2 - val1)
+            ratio = (val2 / val1) if val1 != 0 else float('inf')
             differences.append(f"Numerical difference at {path}: {val1} vs {val2} "
-                             f"(abs_diff={abs_diff:.2e}, rel_diff={rel_diff:.2e})")
+                             f"(difference={diff:.2g}, ratio={ratio:.2g})")
     
     # Handle strings and other comparable types
     elif val1 != val2:
@@ -500,9 +507,9 @@ Examples:
     parser.add_argument("file1", help="First Cantera YAML file")
     parser.add_argument("file2", help="Second Cantera YAML file")
     parser.add_argument("--abs-tol", type=float, default=1e-11,
-                       help="Absolute tolerance for numerical comparisons (default: 1e-9)")
+                       help="Absolute tolerance for numerical comparisons (default: 1e-11)")
     parser.add_argument("--rel-tol", type=float, default=1e-3,
-                       help="Relative tolerance for numerical comparisons (default: 1e-9)")
+                       help="Relative tolerance for numerical comparisons (default: 1e-3)")
     
     args = parser.parse_args()
     
@@ -535,14 +542,11 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO, format="%(levelname)s: %(message)s")
     if len(sys.argv) == 1:
         logging.info("No arguments provided. Using default test files for demonstration.")
-        # sys.argv.extend([
-        #     "test/rmgpy/test_data/yaml_writer_data/chemkin/from_main_test.yaml",
-        #     "test/rmgpy/test_data/yaml_writer_data/cantera/from_main_test.yaml"
-        # ])
+        rmg_root = Path(__file__).resolve().parents[2]
 
         sys.argv.extend([
-            "/Users/rwest/Code/RMG-Py/testing/eg0/cantera_from_ck/chem.yaml",
-            "/Users/rwest/Code/RMG-Py/testing/eg0/cantera2/chem.yaml"
+            str(rmg_root / "testing/eg0/cantera_from_ck/chem.yaml"),
+            str(rmg_root / "testing/eg0/cantera1/chem.yaml")
         ])
 
     main()

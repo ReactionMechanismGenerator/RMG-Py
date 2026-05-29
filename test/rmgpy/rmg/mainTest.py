@@ -230,6 +230,7 @@ class TestMain:
         rmg_yaml_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
         assert os.path.exists(rmg_yaml_path), f"RMG-generated Cantera YAML file {rmg_yaml_path} not found"
         test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera1', 'from_main_test.yaml')
+        os.makedirs(os.path.dirname(test_data_cantera_target), exist_ok=True)
         shutil.copy(rmg_yaml_path, test_data_cantera_target)
 
         # Copy RMG-generated YAML 2 to test data directory
@@ -237,6 +238,7 @@ class TestMain:
         rmg_yaml_path = os.path.join(cantera_dir, 'chem_annotated.yaml')
         assert os.path.exists(rmg_yaml_path), f"RMG-generated Cantera YAML file {rmg_yaml_path} not found"
         test_data_cantera_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'cantera2', 'from_main_test.yaml')
+        os.makedirs(os.path.dirname(test_data_cantera_target), exist_ok=True)
         shutil.copy(rmg_yaml_path, test_data_cantera_target)
 
         # Copy chemkin-converted YAML to test data directory
@@ -246,6 +248,7 @@ class TestMain:
         ck_yaml_path = os.path.join(cantera_from_ck_dir, "chem_annotated.yaml")
         assert os.path.exists(ck_yaml_path), f"Chemkin-converted YAML file {ck_yaml_path} not found"
         test_data_chemkin_target = os.path.join(self.testDir, '..', 'yaml_writer_data', 'ck2yaml', 'from_main_test.yaml')
+        os.makedirs(os.path.dirname(test_data_chemkin_target), exist_ok=True)
         shutil.copy(ck_yaml_path, test_data_chemkin_target)
 
 

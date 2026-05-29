@@ -322,29 +322,48 @@ class Reaction:
         if not self.kinetics:
             raise Exception('Cantera reaction cannot be created because there was no kinetics.')
 
+        # Build an equation string from the stoichiometry dicts.
+        # Passing equation= to ct.Reaction avoids a Cantera API bug where any
+        # species present in both reactants and products dicts is misidentified
+        # as a third-body collider, corrupting input_data with spurious
+        # 'efficiencies' and doubled stoichiometry in the equation string.
+        # Third-body reaction types (ThirdBody/Troe/Lindemann) are exempt: they
+        # require the third_body= keyword and their species do not appear on
+        # both sides, so the bug does not affect them.
+        def _ct_equation(reactants, products, reversible):
+            def fmt(d):
+                return " + ".join(
+                    f"{stoich} {name}" if stoich > 1 else name
+                    for name, stoich in d.items()
+                )
+            arrow = " <=> " if reversible else " => "
+            return fmt(reactants) + arrow + fmt(products)
+
+        ct_equation = _ct_equation(ct_reactants, ct_products, self.reversible)
+
         # Create the Cantera reaction object,
         # with the correct type of kinetics object
         # but don't actually set its kinetics (we do that at the end)
         if isinstance(self.kinetics, Arrhenius):
             # Create an Elementary Reaction
             if isinstance(self.kinetics, SurfaceArrhenius):  # SurfaceArrhenius inherits from Arrhenius
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.InterfaceArrheniusRate())
+                ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.InterfaceArrheniusRate())
             else:
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
+                ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.ArrheniusRate())
         elif isinstance(self.kinetics, MultiArrhenius):
             # Return a list of elementary reactions which are duplicates
-            ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
+            ct_reaction = [ct.Reaction(equation=ct_equation, rate=ct.ArrheniusRate())
                             for arr in self.kinetics.arrhenius]
 
         elif isinstance(self.kinetics, PDepArrhenius):
-            ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
+            ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.PlogRate())
 
         elif isinstance(self.kinetics, MultiPDepArrhenius):
-            ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
+            ct_reaction = [ct.Reaction(equation=ct_equation, rate=ct.PlogRate())
                             for arr in self.kinetics.arrhenius]
 
         elif isinstance(self.kinetics, Chebyshev):
-            ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
+            ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.ChebyshevRate())
 
         elif isinstance(self.kinetics, ThirdBody):
             if ct_collider:
@@ -393,18 +412,10 @@ class Reaction:
                 )
 
         elif isinstance(self.kinetics, SurfaceArrhenius):
-            ct_reaction = ct.Reaction(
-                reactants=ct_reactants,
-                products=ct_products,
-                rate=ct.InterfaceArrheniusRate()
-            )
+            ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.InterfaceArrheniusRate())
 
         elif isinstance(self.kinetics, StickingCoefficient):
-            ct_reaction = ct.Reaction(
-                reactants=ct_reactants,
-                products=ct_products,
-                rate=ct.StickingArrheniusRate()
-            )
+            ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.StickingArrheniusRate())
 
         else:
             raise NotImplementedError(f"Unable to set cantera kinetics for {self.kinetics}")

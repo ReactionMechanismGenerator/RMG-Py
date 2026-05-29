@@ -824,12 +824,25 @@ class RMG(util.Subject):
 
         if cfg_chemkin.enabled:
             self.attach(ChemkinWriter(self.output_directory, cfg_chemkin))
+        else:
+            for stale in ("chemkin", "cantera_from_ck"):
+                stale_dir = os.path.join(self.output_directory, stale)
+                if os.path.isdir(stale_dir):
+                    shutil.rmtree(stale_dir)
         if cfg_rms.enabled:
             self.attach(RMSWriter(self.output_directory, cfg_rms))
         if cfg_cantera1.enabled:
             self.attach(CanteraWriter1(self.output_directory, cfg_cantera1))
+        else:
+            stale_dir = os.path.join(self.output_directory, "cantera1")
+            if os.path.isdir(stale_dir):
+                shutil.rmtree(stale_dir)
         if cfg_cantera2.enabled:
             self.attach(CanteraWriter2(self.output_directory, cfg_cantera2))
+        else:
+            stale_dir = os.path.join(self.output_directory, "cantera2")
+            if os.path.isdir(stale_dir):
+                shutil.rmtree(stale_dir)
         if cfg_html.enabled:
             self.attach(OutputHTMLWriter(self.output_directory, cfg_html))
 
@@ -1292,7 +1305,11 @@ class RMG(util.Subject):
 
         self.run_model_analysis()
 
-        # generate Cantera files chem.yaml & chem_annotated.yaml in designated Cantera output folders
+        # generate Cantera files in designated Cantera output folders. The direct
+        # writers (cantera1/, cantera2/) already wrote chem_annotated{NNNN}.yaml +
+        # chem_annotated.yaml each iteration. End-of-run we also produce the
+        # notes-stripped chem.yaml (and chem_edge.yaml when present), mirroring
+        # Chemkin's chem.inp / chem_annotated.inp split, and run the comparison.
         try:
             translated_cantera_file = None
             if self.chemkin_writer_config and self.chemkin_writer_config.enabled:
@@ -1345,6 +1362,29 @@ class RMG(util.Subject):
                     annotated = os.path.join(self.output_directory, "chemkin", "chem_annotated.inp")
                     if os.path.exists(annotated):
                         self.generate_cantera_files_from_chemkin(annotated)
+
+            # Strip transport notes from the ck2yaml file so it matches the
+            # notes-stripped variants below.
+            ck_chem_yaml = os.path.join(self.output_directory, "cantera_from_ck", "chem.yaml")
+            util.strip_yaml_notes(ck_chem_yaml, ck_chem_yaml)
+
+            # Produce notes-stripped chem.yaml / chem_edge.yaml end-of-run for
+            # each direct Cantera writer (mirrors Chemkin's chem.inp).
+            for writer_dir, writer_cfg in (
+                ("cantera1", self.cantera1_writer_config),
+                ("cantera2", self.cantera2_writer_config),
+            ):
+                if not (writer_cfg and writer_cfg.enabled):
+                    continue
+                writer_path = os.path.join(self.output_directory, writer_dir)
+                util.strip_yaml_notes(
+                    os.path.join(writer_path, "chem_annotated.yaml"),
+                    os.path.join(writer_path, "chem.yaml"),
+                )
+                util.strip_yaml_notes(
+                    os.path.join(writer_path, "chem_edge_annotated.yaml"),
+                    os.path.join(writer_path, "chem_edge.yaml"),
+                )
 
             # Compare translated Cantera files against directly generated Cantera files
             if translated_cantera_file and self.cantera1_writer_config and self.cantera1_writer_config.enabled:
