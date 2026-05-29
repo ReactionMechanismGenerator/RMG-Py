@@ -633,6 +633,8 @@ class LiquidReactorTest:
 
         import rmgpy.data.rmg
 
+        rmgpy.rmg.main.solvent = None
+
         rmgpy.data.rmg.database = None
         try:
             os.remove(os.path.join(cls.file_dir, "restart_from_seed.py"))
