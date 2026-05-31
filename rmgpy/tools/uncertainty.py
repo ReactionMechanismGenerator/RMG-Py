@@ -1568,6 +1568,79 @@ class Uncertainty(object):
 
         return output
 
+    def get_variance_across_x(self, sensitive_species, reaction_system_index=0, correlated=False):
+        """
+        Like local_analysis_intermediate, but a more computationally efficient way to compute variance across a range of time/temperature points
+        by computing all values at once and not keeping track of individual contributions for plotting/ranking purposes
+
+        sensitive_species is a single sensitive Species object
+
+        returns an array of variances for every time/temperature point in the sensitivity analysis
+        """
+
+        if isinstance(sensitive_species, list):
+            print('Warning: get_variance_across_x is designed to take in a single sensitive species, but got a list. Using only the first species in the list for analysis.')
+            sensitive_species = sensitive_species[0]
+
+        # 1. ------------------------- Get sensitivities --------------------------
+        csvfile_path = os.path.join(self.output_directory, 'solver', f'sensitivity_{reaction_system_index + 1}_SPC_{sensitive_species.index}.csv')
+        x, data_list = parse_csv_data(csvfile_path)  # x is usually time or temperature, depending on how the sensitivity analysis was set up
+
+        # get the sensitivities and compile a list of the species and reaction indices actually used
+        # record sensitivities for all time, so sensitivity array is #time steps x #species
+        species_sensitivity_full_array = np.zeros((len(x.data), len(self.species_list)))
+        reaction_sensitivity_full_array = np.zeros((len(x.data), len(self.reaction_list)))
+
+        # keeping track of which species/reactions are sensitive gives us a speedup in computing covariance matrices later on
+        species_used = []
+        reactions_used = []
+        for data in data_list:
+            if data.species:
+                for species in self.species_list:
+                    if species.to_chemkin() == data.species:
+                        index = self.species_list.index(species)
+                        break
+                else:
+                    raise ValueError(f'Chemkin name {data.species} of species in the CSV file does not match anything in the species list.')
+                species_sensitivity_full_array[:, index] = data.data
+                species_used.append(index)
+
+            if data.reaction:
+                rxn_index = int(data.index) - 1
+                reaction_sensitivity_full_array[:, rxn_index] = data.data
+                reactions_used.append(rxn_index)
+        species_used = sorted(species_used)
+        reactions_used = sorted(reactions_used)
+        
+        # shorten the sensitivity vectors to only the nonzero elements
+        species_sensitivity = np.zeros((len(x.data), len(species_used)))
+        reaction_sensitivity = np.zeros((len(x.data), len(reactions_used)))
+        for i in range(len(species_used)):
+            species_sensitivity[:, i] = species_sensitivity_full_array[:, species_used[i]]
+        for i in range(len(reactions_used)):
+            reaction_sensitivity[:, i] = reaction_sensitivity_full_array[:, reactions_used[i]]
+
+        # 2. ------------------------- Compute intermediate covariance --------------------------
+        # Now get the covariance matrix of the intermediate parameters (if uncorrelated, these are just covariance(G_i, G_j) or covariance(lnk_i, lnk_j)
+        Sigma_qq_thermo = self._get_intermediate_thermo_covariance_matrix(subset_indices=species_used)
+        Sigma_qq_kinetics = self._get_intermediate_kinetics_covariance_matrix(subset_indices=reactions_used)
+
+        # 3. ------------------------- Compute partial derivatives dG/dq or dlnk/dq --------------------------
+        # get the parital derivative of G or lnk with respect to intermediates (if uncorrelated, these are identity matrices)
+        dG_dq = self._get_dG_dq_matrix(subset_indices=species_used)
+        dlnkdq = self._get_dlnk_dq_matrix(subset_indices=reactions_used)
+
+        # 4. ------------------------- Multiply all matrices together to get total variance --------------------------
+        # total variance =
+        #   species_sensitivity * dG_dq * Sigma_qq_thermo * dG_dq' * species_sensitivity' +
+        #   reaction_sensitivity * dlnk_dq * Sigma_qq_kinetics * dlnk_dq' * reaction_sensitivity' +
+        total_variance = np.dot(species_sensitivity, np.dot(dG_dq, np.dot(Sigma_qq_thermo, np.dot(dG_dq.T, species_sensitivity.T)))) + \
+                         np.dot(reaction_sensitivity, np.dot(dlnkdq, np.dot(Sigma_qq_kinetics, np.dot(dlnkdq.T, reaction_sensitivity.T))))
+        total_variance = np.diag(total_variance)  # we only care about the diagonal elements, which give us the variance at each time/temperature point
+
+        return total_variance
+
+
     def get_thermo_covariance_matrix(self, g_param_engine=None):
         """
         Return the thermo covariance matrix as a numpy array.
