@@ -60,8 +60,8 @@ KINETIC_RANK_MULTIPLIERS = {
 # Use this for uniform distribution
 KINETIC_RANK_UNCERTAINTIES = {k: np.log(v) / np.sqrt(3.0) for k, v in KINETIC_RANK_MULTIPLIERS.items()}
 
-# Use this for lognormal distribution
-KINETIC_RANK_UNCERTAINTIES = {k: np.log(v) / 1.96 for k, v in KINETIC_RANK_MULTIPLIERS.items()}
+# # Use this for lognormal distribution
+# KINETIC_RANK_UNCERTAINTIES = {k: np.log(v) / 1.96 for k, v in KINETIC_RANK_MULTIPLIERS.items()}
 
 THERMO_RANK_UNCERTAINTIES = {  # THESE ARE FILLER. PLEASE UPDATE WITH BETTER UNCERTAINTIES BASED ON DATA ANALYSIS
     1: 0.1,     # Experiment/FCI
@@ -1348,12 +1348,13 @@ class Uncertainty(object):
                          number=number, fileformat=fileformat)
 
     def local_analysis(self, sensitive_species, reaction_system_index=0, correlated=False, number=10,
-                       fileformat='.png'):
+                       fileformat='.png', t=None):
         """
         Conduct local uncertainty analysis on the reaction model.
         sensitive_species is a list of sensitive Species objects
         number is the number of highest contributing uncertain parameters desired to be plotted
         fileformat can be either .png, .pdf, or .svg
+        t is the time at which to analyze the sensitivity (if None, uses the final time)
         """
         output = {}
         for sens_species in sensitive_species:
@@ -1361,6 +1362,14 @@ class Uncertainty(object):
                                         'sensitivity_{0}_SPC_{1}.csv'.format(reaction_system_index + 1,
                                                                              sens_species.index))
             time, data_list = parse_csv_data(csvfile_path)
+
+            if t is not None:  # truncate to the time of interest if specified, otherwise use the full time range
+                t_index = int(np.argmin(np.abs(time.data - t)))
+                if t_index < len(time.data) - 1:
+                    time.data = time.data[:t_index + 1]
+                    for data in data_list:
+                        data.data = data.data[:t_index + 1]
+
             # Assign uncertainties
             thermo_data_list = []
             reaction_data_list = []
