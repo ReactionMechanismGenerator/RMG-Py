@@ -1408,6 +1408,18 @@ class Molecule(Graph):
                     num_atoms += 1
             return num_atoms
 
+    def get_num_heavy_atoms(self):
+        """
+        Return the number of heavy atoms in the molecule, i.e. the number of
+        atoms that are not Hydrogen ('H') nor a surface site ('X').
+        """
+        cython.declare(num_atoms=cython.int, atom=Atom)
+        num_atoms = 0
+        for atom in self.vertices:
+            if atom.element.symbol != 'H' and atom.element.symbol != 'X':
+                num_atoms += 1
+        return num_atoms
+
     def copy(self, deep=False):
         """
         Create a copy of the current graph. If `deep` is ``True``, a deep copy

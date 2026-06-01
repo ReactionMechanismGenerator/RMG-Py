@@ -2139,6 +2139,48 @@ multiplicity 2
         assert adsorbed.number_of_surface_sites() == 1
         assert bidentate.number_of_surface_sites() == 2
 
+    def test_get_num_heavy_atoms(self):
+        """
+        Test the Molecule.get_num_heavy_atoms() method, which counts atoms
+        that are not Hydrogen ('H') nor a surface site ('X').
+        """
+        # gas-phase molecule: ethane, 2 heavy atoms (C), 6 H
+        ethane = Molecule(smiles="CC")
+        assert ethane.get_num_heavy_atoms() == 2
+
+        # water: 1 heavy atom (O), 2 H
+        water = Molecule(smiles="O")
+        assert water.get_num_heavy_atoms() == 1
+
+        # lone surface site has no heavy atoms
+        surface_site = Molecule().from_adjacency_list(
+            """
+            1 X u0 p0 c0
+            """
+        )
+        assert surface_site.get_num_heavy_atoms() == 0
+
+        # adsorbed H on a surface site: neither H nor X is heavy
+        adsorbed = Molecule().from_adjacency_list(
+            """
+            1 H u0 p0 c0 {2,S}
+            2 X u0 p0 c0 {1,S}
+            """
+        )
+        assert adsorbed.get_num_heavy_atoms() == 0
+
+        # bidentate adsorbate: 2 carbons are heavy, the H and X atoms are not
+        bidentate = Molecule().from_adjacency_list(
+            """
+            1 C u0 p0 c0 {2,D} {3,S} {4,S}
+            2 C u0 p0 c0 {1,D} {5,S} {6,S}
+            3 H u0 p0 c0 {1,S}
+            4 X u0 p0 c0 {1,S}
+            5 H u0 p0 c0 {2,S}
+            6 X u0 p0 c0 {2,S}
+            """)
+        assert bidentate.get_num_heavy_atoms() == 2
+
     def test_is_multidentate(self):
         """
         Test that we can identify a multidentate adsorbate
