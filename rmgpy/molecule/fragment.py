@@ -761,6 +761,20 @@ class Fragment(Molecule):
                         num_atoms += 1
         return num_atoms
 
+    def get_num_heavy_atoms(self):
+        """
+        Return the number of heavy atoms in the fragment, i.e. the number of
+        atoms that are not Hydrogen ('H') nor a surface site ('X'). Cutting
+        labels are not counted.
+        """
+        num_atoms = 0
+        for vertex in self.vertices:
+            if isinstance(vertex, CuttingLabel):
+                continue
+            if vertex.element.symbol != 'H' and vertex.element.symbol != 'X':
+                num_atoms += 1
+        return num_atoms
+
     # extension methods
     def from_rdkit_mol(self, rdkitmol, atom_replace_dict=None):
         """

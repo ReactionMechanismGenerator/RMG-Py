@@ -230,6 +230,8 @@ cdef class Molecule(Graph):
 
     cpdef int get_num_atoms(self, str element=?)
 
+    cpdef int get_num_heavy_atoms(self)
+
     cpdef Graph copy(self, bint deep=?)
 
     cpdef Molecule to_single_bonds(self, bint raise_atomtype_exception=?)

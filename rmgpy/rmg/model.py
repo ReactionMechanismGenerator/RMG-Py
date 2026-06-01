@@ -1739,11 +1739,11 @@ class CoreEdgeReactionModel:
                         "found in a seed mechanism or reaction "
                         "library.".format(spec.label, seed_mechanism.label)
                     )
-            if fails_species_constraints(spec):
+            reason = fails_species_constraints(spec)
+            if reason:
                 if "allowed" in rmg.species_constraints and "seed mechanisms" in rmg.species_constraints["allowed"]:
                     rmg.species_constraints["explicitlyAllowedMolecules"].extend(spec.molecule)
                 else:
-                    reason = fails_species_constraints(spec)
                     raise ForbiddenStructureException(
                         "Species constraints forbids species {0} from seed mechanism {1}."
                         " Please reformulate constraints, remove the species, or"
@@ -1867,11 +1867,11 @@ class CoreEdgeReactionModel:
                             "inert unless found in a seed mechanism or reaction "
                             "library.".format(spec.label, reaction_library.label)
                         )
-            if fails_species_constraints(spec):
+            reason = fails_species_constraints(spec)
+            if reason:
                 if "allowed" in rmg.species_constraints and "reaction libraries" in rmg.species_constraints["allowed"]:
                     rmg.species_constraints["explicitlyAllowedMolecules"].extend(spec.molecule)
                 else:
-                    reason = fails_species_constraints(spec)
                     raise ForbiddenStructureException(
                         "Species constraints forbids species {0} from reaction library "
                         "{1}. Please reformulate constraints, remove the species, or "
