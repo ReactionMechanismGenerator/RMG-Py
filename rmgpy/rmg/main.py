@@ -734,11 +734,11 @@ class RMG(util.Subject):
                         "Input species {0} is globally forbidden. You may explicitly "
                         "allow it by adding 'input species' to the `generatedSpeciesConstraints` `allowed` list.".format(spec.label)
                     )
-            if fails_species_constraints(spec):
+            reason = fails_species_constraints(spec)
+            if reason:
                 if "allowed" in self.species_constraints and "input species" in self.species_constraints["allowed"]:
                     self.species_constraints["explicitlyAllowedMolecules"].append(spec.molecule[0])
                 else:
-                    reason = fails_species_constraints(spec)
                     raise ForbiddenStructureException(
                         "Species constraints forbids input species {0}. Please "
                         "reformulate constraints, remove the species, or explicitly "
