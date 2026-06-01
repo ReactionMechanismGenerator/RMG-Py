@@ -159,6 +159,15 @@ class ThermoParameterUncertainty(object):
         The possible intermediate parameter types are:
         Library, Surface_Library, QM, Estimation, AdsorptionCorrection, or Group
         """
+
+        # explicit covariance should overrule default uncertainties when available
+        if self.other_covariances is not None:
+            # check if covariance is specified in other_covariances dict
+            sorted_labels = tuple(sorted([q_label1, q_label2]))
+            if sorted_labels in self.other_covariances:
+                return self.other_covariances[sorted_labels]
+
+
         intermediate_parameters = {
             'Library': self.dG_library,
             'Surface_Library': self.dG_surf_lib,
@@ -181,15 +190,13 @@ class ThermoParameterUncertainty(object):
         if corr_type1 is None or corr_type2 is None:
             raise ValueError(f'Could not determine the type of the correlated parameters from their labels {q_label1} and {q_label2}')
 
-        if self.other_covariances is not None:
-            # check if covariance is specified in other_covariances dict
-            sorted_labels = tuple(sorted([q_label1, q_label2]))
-            if sorted_labels in self.other_covariances:
-                return self.other_covariances[sorted_labels]
-
         if corr_type1 != corr_type2:
             return 0
         elif q_label1 == q_label2:
+            # have to check for surface site (later reformulation will allow for isomorphic check instead of this messy/incomplete string matching)
+            if q_label1 == 'Surface_Library X(1)':
+                return 0  # surface species is our zero reference by definition, so it should have no uncertainty, and thus no covariance with itself
+
             # If the two correlated parameters are exactly the same, return the variance of that parameter
             return intermediate_parameters[corr_type1] ** 2.0
         return 0
@@ -1000,6 +1007,8 @@ class Uncertainty(object):
                     entry_copy = entry.copy()
                     entry_copy['Surface_Library'] = self.species_list[entry_copy['Surface_Library']].to_chemkin()
                     dG = g_param_engine.get_uncertainty_value(entry_copy)
+                    if species.is_surface_site():
+                        dG = 0  # surface species is our zero reference by definition, so it should have no uncertainty
                 else:
                     dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
                 self.thermo_input_uncertainties.append(dG)
@@ -1141,6 +1150,8 @@ class Uncertainty(object):
                     entry_copy = entry.copy()
                     entry_copy['Surface_Library'] = self.species_list[entry_copy['Surface_Library']].to_chemkin()
                     dG = g_param_engine.get_uncertainty_value(entry_copy)
+                    if species.is_surface_site():
+                        dG = 0  # surface species is our zero reference by definition, so it should have no uncertainty
                 else:
                     dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
                 self.thermo_intermediate_uncertainties.append(dG)  # in the uncorrelated case, the intermediate is just the uncertainty value itself, since there is only one parameter that contributes to the uncertainty
@@ -1159,6 +1170,8 @@ class Uncertainty(object):
                     except IndexError:
                         label = 'Surface_Library {}'.format(self.extra_species[source['Surface_Library'] - len(self.species_list)].to_chemkin())
                     dGdq[label] = 1  # dG/dG_surf = 1, because the parameter is never scaled by anything other than 1 when it is used
+                    if species.is_surface_site():
+                        dGdq[label] = 0  # surface species is our zero reference by definition, so it should have no uncertainty
                 if 'QM' in source:
                     label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
                     dGdq[label] = 1
