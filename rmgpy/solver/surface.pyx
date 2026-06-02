@@ -432,8 +432,7 @@ cdef class SurfaceReactor(ReactionSystem):
         for i, matrix in enumerate(self.thermo_coeff_matrix):
             free_energy_coverage_corrections[i] = np.sum(matrix[:n, :].T * thermo_dep_coverage) #np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
         rxns_free_energy_change = np.matmul(self.stoi_matrix, free_energy_coverage_corrections)
-        corrected_K_eq = self.Keq.copy()
-        corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
+        corrected_K_eq = self.Keq * np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
         return corrected_K_eq
 
     @cython.boundscheck(False)
