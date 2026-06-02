@@ -417,6 +417,24 @@ cdef class SurfaceReactor(ReactionSystem):
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
 
+    def compute_thermo_coverage_corrections(self, coverages):
+        coverages_squared = coverages * coverages
+        temperature_scaled_coverages = -self.T.value_si * coverages
+        thermo_dep_coverage = np.empty((6, coverages.shape[0]), dtype=np.float64)
+        thermo_dep_coverage[0, :] = coverages
+        thermo_dep_coverage[1, :] = coverages_squared
+        thermo_dep_coverage[2, :] = coverages_squared * coverages
+        thermo_dep_coverage[3, :] = temperature_scaled_coverages
+        thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
+        thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
+        free_energy_coverage_corrections = np.empty(len(self.thermo_coeff_matrix), dtype=np.float64)
+        for i, matrix in enumerate(self.thermo_coeff_matrix):
+            free_energy_coverage_corrections[i] = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
+        rxns_free_energy_change = np.matmul(self.stoi_matrix, free_energy_coverage_corrections)
+        corrected_K_eq = copy.deepcopy(self.Keq)
+        corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
+        return corrected_K_eq
+
     @cython.boundscheck(False)
     def residual(self,
                  double t,
@@ -491,22 +509,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # Thermodynamic coverage dependence
         if self.thermo_coverage_dependence:
-            coverages_squared = coverages * coverages
-            temperature_scaled_coverages = -self.T.value_si * coverages
-            thermo_dep_coverage = np.empty((6, coverages.shape[0]), dtype=np.float64)
-            thermo_dep_coverage[0, :] = coverages
-            thermo_dep_coverage[1, :] = coverages_squared
-            thermo_dep_coverage[2, :] = coverages_squared * coverages
-            thermo_dep_coverage[3, :] = temperature_scaled_coverages
-            thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
-            thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
-            free_energy_coverage_corrections = np.empty(len(self.thermo_coeff_matrix), dtype=np.float64)
-            for i, matrix in enumerate(self.thermo_coeff_matrix):
-                free_energy_coverage_corrections[i] = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
-            rxns_free_energy_change = np.matmul(self.stoi_matrix,free_energy_coverage_corrections)
-            corrected_K_eq = copy.deepcopy(self.Keq)
-            corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
-            kr = kf / corrected_K_eq
+            kr = kf / self.compute_thermo_coverage_corrections(coverages)
 
         # Coverage dependence
         coverage_corrections = np.ones_like(kf, float)
