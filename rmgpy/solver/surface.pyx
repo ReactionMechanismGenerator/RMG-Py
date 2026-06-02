@@ -739,14 +739,33 @@ cdef class SurfaceReactor(ReactionSystem):
         for j in range(num_core_species):
             C[j] = y[j] * inv_omega[j]
 
-        if self.thermo_coverage_dependence:
+        if self.thermo_coverage_dependence or self.coverage_dependence:
             total_sites = self.surface_site_density.value_si * A
             coverages = np.where(self.species_on_surface[:num_core_species],
                                  np.maximum(y[:num_core_species] / total_sites, 0.0),
                                  0.0)
+
+        # Thermodynamic coverage dependence: the reverse rate constant is derived
+        # from the coverage-corrected equilibrium constant.
+        if self.thermo_coverage_dependence:
             kr = kf / self.compute_thermo_coverage_corrections(coverages)
         else:
             kr = self.kb
+
+        # Kinetic coverage dependence: kf (and hence kr) are scaled by a
+        # coverage-dependent factor.
+        if self.coverage_dependence:
+            coverage_corrections = np.ones_like(kf, float)
+            for i, list_of_coverage_deps in self.coverage_dependencies.items():
+                surface_site_fraction = coverages[i]
+                if surface_site_fraction <= 1e-6:
+                    continue
+                for j, a, m, E in list_of_coverage_deps:
+                    coverage_corrections[j] *= 10. ** (a * surface_site_fraction) *\
+                                                pow(surface_site_fraction, m) *\
+                                                exp(-1 * E * surface_site_fraction / (constants.R * self.T.value_si))
+            kf = kf * coverage_corrections  # corrected copy; leaves self.kf unchanged
+            kr = kr * coverage_corrections
 
         for j in range(num_core_reactions):
 
