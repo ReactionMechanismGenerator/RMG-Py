@@ -308,7 +308,10 @@ cdef class SurfaceReactor(ReactionSystem):
                     warned = True
                 self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, P)
             if rxn.reversible:
-                # ToDo: get_equilibrium_constant should be coverage dependent
+                # kb is set here from the uncorrected Keq. For reactions with
+                # thermo_coverage_dependence, kb is not used directly — residual
+                # and jacobian both compute kr = kf / compute_thermo_coverage_corrections()
+                # which applies the coverage-dependent correction to Keq at runtime.
                 self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
 
