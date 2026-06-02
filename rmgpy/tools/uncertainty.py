@@ -881,8 +881,6 @@ class Uncertainty(object):
 
         TODO: figure out if this function needs SIDT in the name, is specific to SIDTs
         """
-        from rmgpy.chemkin import load_species_dictionary
-        
 
         if self.database is None:
             raise RuntimeError('Must load database before loading covariance groups, since we need the database to find the associated libraries for the covariance groups')
@@ -890,9 +888,10 @@ class Uncertainty(object):
             self.compile_all_sources()
 
             for correlated_kinetics_tree_path in self.kinetic_covariance_rules:
-                if (correlated_kinetics_tree_path.endswith(os.sep)):  # help out the pooo user who puts a / at the end of the path
+                if (correlated_kinetics_tree_path.endswith(os.sep)):  # help out the poor user who puts a / at the end of the path
                     correlated_kinetics_tree_path = correlated_kinetics_tree_path[:-1]
                 family_name = os.path.basename(correlated_kinetics_tree_path)
+
                 if family_name in self.database.kinetics.families:
                     kineticstree = self.database.kinetics.families[family_name]
                     rmg_kinetics_tree_file = os.path.join(rmgpy.settings['database.directory'], 'kinetics', 'families', family_name, f'groups.py')
@@ -923,6 +922,8 @@ class Uncertainty(object):
 
                 # ---------------------------- add rule-rule correlations ---------------------------------
                 # only consider rules actually in the model to keep this a reasonable size
+                if 'Rate Rules' not in self.all_kinetic_sources or family_name not in self.all_kinetic_sources['Rate Rules']:
+                    continue
                 rules_in_model = self.all_kinetic_sources['Rate Rules'][family_name]
                 rule_labels_in_model = [x.label for x in rules_in_model]
 
@@ -931,11 +932,10 @@ class Uncertainty(object):
 
                 # go through upper triangle of the covariance matrix, since the other half is just the transpose
                 tolerance = 1e-12  # consider anything with covariance less than this to be uncorrelated
-                for i, index_i in enumerate(valid_rule_indices):
-                    label_i = f'Rate Rule {family_name} {rule_labels_in_model[i]}'
-                    for j in range(i, len(valid_rule_indices)):
-                        index_j = valid_rule_indices[j]
-                        label_j = f'Rate Rule {family_name} {rule_labels_in_model[j]}'
+                for index_i in valid_rule_indices:
+                    label_i = f'Rate Rule {family_name} {tree_nodes[index_i]}'
+                    for index_j in (valid_rule_indices):
+                        label_j = f'Rate Rule {family_name} {tree_nodes[index_j]}'
                         if abs(cov_data[index_i, index_j]) > tolerance:
                             covariance = cov_data[index_i, index_j]
                             self.kinetic_covariances_dict[tuple(sorted([label_i, label_j]))] = covariance
@@ -1210,6 +1210,13 @@ class Uncertainty(object):
                         dlnk[label] = dplnk
                         dlnk_dq[label] = weight  # the derivative of ln(k) with respect to the rate rule contribution
                         intermediate_source[label] = k_param_engine.get_intermediate_uncertainty_value('Rate Rules', source['Rate Rules'])
+
+                        # TODO this is a bug: adding this should not be changing things, but it is and I don't know why
+                        # should probably overwrite with covariance matrix value if exists
+                        # just to make kinetic_intermediate_uncertainties more consistent
+                        # but it won't change the computation, which calls the _get_covariance_qq function later
+                        # if self.kinetic_covariances_dict and (label, label) in self.kinetic_covariances_dict:
+                        #     intermediate_source[label] = np.sqrt(self.kinetic_covariances_dict[(label, label)])
                     for ruleEntry, trainingEntry, weight in training:
                         dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Rate Rules', corr_param=ruleEntry,
                                                                              corr_family=family)
@@ -1529,10 +1536,23 @@ class Uncertainty(object):
             thermo_contributions = np.multiply(np.dot(species_sensitivity, dG_dq), np.dot(Sigma_qq_thermo, np.dot(dG_dq.T, species_sensitivity.T)).T)
             kinetic_contributions = np.multiply(np.dot(reaction_sensitivity, dlnkdq), np.dot(Sigma_qq_kinetics, np.dot(dlnkdq.T, reaction_sensitivity.T)).T) 
 
+            missed_negative_thermo = 0
             for i in range(len(thermo_contributions)):
                 if thermo_contributions[i] < 0:
                     print(f'Warning: negative contribution to variance from {self.thermo_intermediates[i]} of {thermo_contributions[i]}. Setting contribution to 0 for plotting purposes.')
+                    missed_negative_thermo += thermo_contributions[i]
                     thermo_contributions[i] = 0
+            if missed_negative_thermo < 0:
+                print(f'Warning: total missed negative contribution to variance from thermo intermediates is {missed_negative_thermo}.')
+
+            # missed_negative_kinetic = 0
+            # for i in range(len(kinetic_contributions)):
+            #     if kinetic_contributions[i] < 0:
+            #         print(f'Warning: negative contribution to variance from {self.kinetic_intermediates[i]} of {kinetic_contributions[i]}. Setting contribution to 0 for plotting purposes.')
+            #         missed_negative_kinetic += kinetic_contributions[i]
+            #         kinetic_contributions[i] = 0
+            # if missed_negative_kinetic < 0:
+            #     print(f'Warning: total missed negative contribution to variance from kinetic intermediates is {missed_negative_kinetic}.')
 
             total_variance = np.sum(thermo_contributions) + np.sum(kinetic_contributions)
 
