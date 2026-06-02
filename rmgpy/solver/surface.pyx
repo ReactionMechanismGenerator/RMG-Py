@@ -417,20 +417,40 @@ cdef class SurfaceReactor(ReactionSystem):
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
 
-    def compute_thermo_coverage_corrections(self, coverages):
+    @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cpdef np.ndarray compute_thermo_coverage_corrections(self, np.ndarray[np.float64_t, ndim=1] coverages):
+        """
+        Return the equilibrium constants ``Keq`` corrected for thermodynamic
+        coverage dependence at the given surface ``coverages``.
+
+        For each species the free-energy correction is the sum over the (up to)
+        six polynomial terms ``coverage**k`` and ``-T*coverage**k`` weighted by the
+        per-species coefficients stored in ``thermo_coeff_matrix``. These are
+        mapped to per-reaction free-energy changes via ``stoi_matrix`` and applied
+        to ``Keq``. The corrected ``Keq`` is used to obtain a coverage-dependent
+        reverse rate constant ``kr = kf / Keq_corrected`` in both the residual and
+        the Jacobian.
+        """
+        cdef np.ndarray[np.float64_t, ndim=1] coverages_squared, temperature_scaled_coverages
+        cdef np.ndarray[np.float64_t, ndim=1] free_energy_coverage_corrections, rxns_free_energy_change, corrected_K_eq
+        cdef np.ndarray[np.float64_t, ndim=2] thermo_dep_coverage, matrix
+        cdef int i, n
+
+        n = coverages.shape[0]
         coverages_squared = coverages * coverages
         temperature_scaled_coverages = -self.T.value_si * coverages
-        thermo_dep_coverage = np.empty((6, coverages.shape[0]), dtype=np.float64)
+        thermo_dep_coverage = np.empty((6, n), dtype=np.float64)
         thermo_dep_coverage[0, :] = coverages
         thermo_dep_coverage[1, :] = coverages_squared
         thermo_dep_coverage[2, :] = coverages_squared * coverages
         thermo_dep_coverage[3, :] = temperature_scaled_coverages
         thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
         thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
-        free_energy_coverage_corrections = np.empty(len(self.thermo_coeff_matrix), dtype=np.float64)
-        n = coverages.shape[0]
-        for i, matrix in enumerate(self.thermo_coeff_matrix):
-            free_energy_coverage_corrections[i] = np.sum(matrix[:n, :].T * thermo_dep_coverage) #np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
+        free_energy_coverage_corrections = np.empty(self.thermo_coeff_matrix.shape[0], dtype=np.float64)
+        for i in range(self.thermo_coeff_matrix.shape[0]):
+            matrix = self.thermo_coeff_matrix[i]
+            free_energy_coverage_corrections[i] = np.sum(matrix[:n, :].T * thermo_dep_coverage)
         rxns_free_energy_change = np.matmul(self.stoi_matrix, free_energy_coverage_corrections)
         corrected_K_eq = self.Keq * np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
         return corrected_K_eq
