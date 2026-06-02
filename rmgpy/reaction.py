@@ -1841,6 +1841,15 @@ class Reaction:
         """
         raise NotImplementedError("generate_high_p_limit_kinetics is not implemented for all Reaction subclasses.")
 
+    def get_reverse_reaction(self):
+        assert self.kinetics is not None
+        rev_reaction = deepcopy(self)
+        tmp_reactants = rev_reaction.reactants
+        rev_reaction.reactants = rev_reaction.products
+        rev_reaction.products = tmp_reactants
+        rev_reaction.kinetics = self.generate_reverse_rate_coefficient()
+        return rev_reaction
+
 def _same_object(object1, object2, _check_identical=False, _only_check_label=False,
              _generate_initial_map=False, _strict=True, _save_order=False):
     if _only_check_label:
