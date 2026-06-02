@@ -643,14 +643,11 @@ class CoreEdgeReactionModel:
                 getattr(spc.thermo, 'thermo_coverage_dependence', None) for spc in forward.reactants)
             if (products_coverage_dependent and not reactants_coverage_dependent
                     and not isinstance(forward.kinetics, StickingCoefficient)):
-                forward = forward.get_reverse_reaction()
-                # make_new_species returns the model's canonical Species object for each
-                # structure (creating it if new), so the flipped reaction references the
-                # same Species instances the rest of the model uses, not fresh copies.
-                forward.reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0]
-                                     for reactant in forward.reactants]
-                forward.products = [self.make_new_species(product, generate_thermo=generate_thermo)[0]
-                                    for product in forward.products]
+                reverse_kinetics = forward.generate_reverse_rate_coefficient()
+                forward.reactants, forward.products = forward.products, forward.reactants
+                if forward.pairs is not None:
+                    forward.pairs = [(p, r) for r, p in forward.pairs]
+                forward.kinetics = reverse_kinetics
                 logging.debug("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
                               forward)
 
