@@ -719,6 +719,15 @@ cdef class SurfaceReactor(ReactionSystem):
         for j in range(num_core_species):
             C[j] = y[j] * inv_omega[j]
 
+        if self.thermo_coverage_dependence:
+            total_sites = self.surface_site_density.value_si * A
+            coverages = np.where(self.species_on_surface[:num_core_species],
+                                 np.maximum(y[:num_core_species] / total_sites, 0.0),
+                                 0.0)
+            kr = kf / self.compute_thermo_coverage_corrections(coverages)
+        else:
+            kr = self.kb
+
         for j in range(num_core_reactions):
 
             # ------------------------------------------------------------------
