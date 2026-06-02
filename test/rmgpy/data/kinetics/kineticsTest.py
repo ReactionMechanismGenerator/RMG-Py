@@ -672,7 +672,7 @@ class TestKineticsCommentsParsing:
         # ------------------------------------------------------------------- #
         # Source 0 comes from a kinetics library
         assert "Library" in sources[0]
-        assert sources[0]["Library"] == "GRI-Mech3.0"
+        assert sources[0]["Library"][0] == "GRI-Mech3.0"
 
         reconstructed_kinetics = self.database.kinetics.reconstruct_kinetics_from_source(reactions[0], sources[0], fix_barrier_height=True)
         A = reconstructed_kinetics.A.value_si
