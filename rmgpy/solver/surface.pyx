@@ -428,8 +428,9 @@ cdef class SurfaceReactor(ReactionSystem):
         thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
         thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
         free_energy_coverage_corrections = np.empty(len(self.thermo_coeff_matrix), dtype=np.float64)
+        n = coverages.shape[0]
         for i, matrix in enumerate(self.thermo_coeff_matrix):
-            free_energy_coverage_corrections[i] = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
+            free_energy_coverage_corrections[i] = np.sum(matrix[:n, :].T * thermo_dep_coverage) #np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
         rxns_free_energy_change = np.matmul(self.stoi_matrix, free_energy_coverage_corrections)
         corrected_K_eq = self.Keq.copy()
         corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
