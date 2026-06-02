@@ -632,17 +632,27 @@ class CoreEdgeReactionModel:
                 # we need to make sure the barrier is positive.
                 forward.fix_barrier_height(force_positive=True,solvent="")
 
-            # If any product has thermo_coverage_dependence, flip the reaction
-            # and parameterize in the reverse direction
-            if (any(getattr(spc.thermo, 'thermo_coverage_dependence', None) and spc.thermo.thermo_coverage_dependence for
-                spc in forward.products) and not isinstance(forward.kinetics, StickingCoefficient)):
-                forward = Reaction.get_reverse_reaction(forward)
-                forward.reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in
-                                     forward.reactants]
-                forward.products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in
-                                    forward.products]
+            # When a product has thermo_coverage_dependence, the reverse rate
+            # constant derived from Keq becomes coverage dependent, which
+            # can make the reverse unrealistically fast. We tend to get better rate estimates
+            # when the coverage dependence is on the reactant side, so flip it.
+            # (unless a reactant is *also* coverage dependent, or it's a sticking coefficient)
+            products_coverage_dependent = any(
+                getattr(spc.thermo, 'thermo_coverage_dependence', None) for spc in forward.products)
+            reactants_coverage_dependent = any(
+                getattr(spc.thermo, 'thermo_coverage_dependence', None) for spc in forward.reactants)
+            if (products_coverage_dependent and not reactants_coverage_dependent
+                    and not isinstance(forward.kinetics, StickingCoefficient)):
+                forward = forward.get_reverse_reaction()
+                # make_new_species returns the model's canonical Species object for each
+                # structure (creating it if new), so the flipped reaction references the
+                # same Species instances the rest of the model uses, not fresh copies.
+                forward.reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0]
+                                     for reactant in forward.reactants]
+                forward.products = [self.make_new_species(product, generate_thermo=generate_thermo)[0]
+                                    for product in forward.products]
                 logging.debug("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
-                          forward)
+                              forward)
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)

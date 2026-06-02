@@ -1842,10 +1842,19 @@ class Reaction:
         raise NotImplementedError("generate_high_p_limit_kinetics is not implemented for all Reaction subclasses.")
 
     def get_reverse_reaction(self):
+        """
+        Return a new :class:`Reaction` with the reactants and products swapped and
+        the kinetics re-parameterized in the reverse direction (via
+        :meth:`generate_reverse_rate_coefficient`). The original reaction is left
+        unmodified.
 
+        Raises :class:`ReactionError` if the reaction has no kinetics, since the
+        reverse rate coefficient cannot otherwise be derived.
+        """
         cython.declare(rev_reaction=Reaction)
 
-        assert self.kinetics is not None
+        if self.kinetics is None:
+            raise ReactionError("Cannot generate the reverse of reaction {0!r}: no kinetics defined.".format(self))
         rev_reaction = self.copy()
         rev_reaction.reactants = self.products[:]
         rev_reaction.products = self.reactants[:]
