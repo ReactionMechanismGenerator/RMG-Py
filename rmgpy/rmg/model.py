@@ -637,6 +637,10 @@ class CoreEdgeReactionModel:
             if (any(getattr(spc.thermo, 'thermo_coverage_dependence', None) and spc.thermo.thermo_coverage_dependence for
                 spc in forward.products) and not isinstance(forward.kinetics, StickingCoefficient)):
                 forward = Reaction.get_reverse_reaction(forward)
+                forward.reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in
+                                     forward.reactants]
+                forward.products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in
+                                    forward.products]
                 logging.debug("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
                           forward)
 
