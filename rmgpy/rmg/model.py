@@ -50,6 +50,7 @@ from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
 from rmgpy.kinetics import Arrhenius, KineticsData
+from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
 from rmgpy.quantity import Quantity
@@ -630,6 +631,14 @@ class CoreEdgeReactionModel:
                 # If this is going to be run through pressure dependence code,
                 # we need to make sure the barrier is positive.
                 forward.fix_barrier_height(force_positive=True,solvent="")
+
+            # If any product has thermo_coverage_dependence, flip the reaction
+            # and parameterize in the reverse direction
+            if (any(getattr(spc.thermo, 'thermo_coverage_dependence', None) and spc.thermo.thermo_coverage_dependence for
+                spc in forward.products) and not isinstance(forward.kinetics, StickingCoefficient)):
+                forward = Reaction.get_reverse_reaction(forward)
+                logging.debug("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
+                          forward)
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
