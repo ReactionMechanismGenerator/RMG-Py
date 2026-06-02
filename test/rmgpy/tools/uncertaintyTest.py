@@ -137,7 +137,12 @@ class TestUncertainty:
         assert grp == grp_expected
         assert rad == rad_expected
         assert other == other_expected
-        assert sorted(self.uncertainty.all_thermo_sources["Library"]) == [0, 1, 5, 13, 16]
+
+        library_indices = []
+        for source in self.uncertainty.all_thermo_sources["Library"]:
+            sp = rmgpy.species.Species(molecule=[source[1].item])
+            library_indices.append(rmgpy.tools.uncertainty.get_i_thing(sp, self.uncertainty.species_list))
+        assert sorted(library_indices) == [0, 1, 5, 13, 16]
         assert not self.uncertainty.all_thermo_sources["QM"]
 
         # Check kinetics sources
@@ -160,7 +165,7 @@ class TestUncertainty:
         rr = set([e.label for e in self.uncertainty.all_kinetic_sources["Rate Rules"]["H_Abstraction"]])
         assert rr == H_Abstraction_rr_expected
         assert set(self.uncertainty.all_kinetic_sources["Training"].keys()) == {"Disproportionation", "H_Abstraction"}
-        assert self.uncertainty.all_kinetic_sources["Library"] == [0]
+        assert self.uncertainty.all_kinetic_sources["Library"][0][1].item.is_isomorphic(self.uncertainty.reaction_list[0])
         assert self.uncertainty.all_kinetic_sources["PDep"] == [6]
 
         # Step 3: assign and propagate uncertainties
@@ -169,16 +174,121 @@ class TestUncertainty:
         thermo_unc = self.uncertainty.thermo_input_uncertainties
         kinetic_unc = self.uncertainty.kinetic_input_uncertainties
 
-        np.testing.assert_allclose(
-            thermo_unc,
-            [1.5, 1.5, 2.61966, 2.51994, 2.23886, 1.5, 2.30761, 2.41611, 2.61966, 2.51994, 2.61966, 2.51994, 2.61966, 1.5, 2.23886, 2.30761, 1.5, 2.61966, 2.07366, 2.19376, 2.19376, 2.30761, 1.94616, 2.07366, 2.07366],
-            rtol=1e-4,
+        expected_uncorrelated_thermo_uncertainties = np.array([1.5, 1.5, 2.61966, 2.51994, 2.23886, 1.5, 2.30761, 2.41611, 2.61966, 2.51994, 2.61966, 2.51994, 2.61966, 1.5, 2.23886, 2.30761, 1.5, 2.61966, 2.07366, 2.19376, 2.19376, 2.30761, 1.94616, 2.07366, 2.07366])
+        expected_uncorrelated_kinetic_uncertainties = np.array([0.5, 1.118, 1.9783, 1.9783, 1.5363, 0.5, 2.0, 1.5363, 1.5363, 0.5])
+        np.testing.assert_allclose(thermo_unc, expected_uncorrelated_thermo_uncertainties, rtol=1e-4)
+        np.testing.assert_allclose(kinetic_unc, expected_uncorrelated_kinetic_uncertainties, rtol=1e-4)
+
+        # ---------------------------- Now repeat for new formulation -----------------------------
+        # uncorrelated
+        self.uncertainty.assign_parameter_uncertainties(correlated=False)
+        # use covariance matrices as test
+        thermo_covariance = np.sqrt(self.uncertainty.get_thermo_covariance_matrix().diagonal())
+        kinetic_covariance = np.sqrt(self.uncertainty.get_kinetic_covariance_matrix().diagonal())
+        assert np.isclose(thermo_covariance, expected_uncorrelated_thermo_uncertainties, rtol=1e-4).all()
+        assert np.isclose(kinetic_covariance, expected_uncorrelated_kinetic_uncertainties, rtol=1e-4).all()
+
+
+        # correlated
+        self.uncertainty.assign_parameter_uncertainties(correlated=True)
+        
+        # do a spot check on some of the intermediates (dG/dq) these are derivatives, not uncertainties
+        # Thermo library example
+        assert self.uncertainty.dG_dqs[0].keys() == {'Library O(0)'}
+        assert self.uncertainty.dG_dqs[0]['Library O(0)'] == 1
+
+        # Thermo GAV example
+        assert tuple(sorted(self.uncertainty.dG_dqs[2].keys())) == ('Estimation HO2(2)', 'Group(group) O2s-OsH', 'Group(other) R', 'Group(radical) HOOJ')
+        assert self.uncertainty.dG_dqs[2]['Estimation HO2(2)'] == 1
+        assert self.uncertainty.dG_dqs[2]['Group(group) O2s-OsH'] == 2
+        assert self.uncertainty.dG_dqs[2]['Group(other) R'] == 2
+        assert self.uncertainty.dG_dqs[2]['Group(radical) HOOJ'] == 1
+
+        # Thermo library + GAV
+        assert tuple(sorted(self.uncertainty.dG_dqs[14].keys())) == ('Estimation CH3(14)', 'Group(radical) CH3', 'Library CH4(16)')
+        assert self.uncertainty.dG_dqs[14]['Estimation CH3(14)'] == 1
+        assert self.uncertainty.dG_dqs[14]['Group(radical) CH3'] == 1
+        assert self.uncertainty.dG_dqs[14]['Library CH4(16)'] == 1
+
+        # Kinetics library
+        assert self.uncertainty.dlnk_dqs[0].keys() == {'Library O(0)+H2O2(3)<=>OH(1)+HO2(2)'}
+
+        # Rate rule (exact)
+        assert tuple(sorted(self.uncertainty.dlnk_dqs[1].keys())) == ('Estimation Family CH3(14)+PC3H7(15)<=>CH4(16)+CH2CH2CH2(17)', 'Rate Rule H_Abstraction C/H3/Cs;C_methyl')
+        assert self.uncertainty.dlnk_dqs[1]['Estimation Family CH3(14)+PC3H7(15)<=>CH4(16)+CH2CH2CH2(17)'] == 1
+        assert self.uncertainty.dlnk_dqs[1]['Rate Rule H_Abstraction C/H3/Cs;C_methyl'] == 1
+        
+        # Rate rule (non-exact, multiple rule weights)
+        assert tuple(sorted(self.uncertainty.dlnk_dqs[3].keys())) == (
+            'Estimation Family C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)',
+            'Estimation Nonexact C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)',
+            'Rate Rule H_Abstraction C/H3/Cs\\H2\\Cs|O;Cd_Cd\\H2_rad/Cs',
+            'Rate Rule H_Abstraction C/H3/Cs\\H3;Cd_Cd\\H2_pri_rad',
         )
-        np.testing.assert_allclose(
-            kinetic_unc,
-            [0.5, 1.118, 1.9783, 1.9783, 1.5363, 0.5, 2.0, 1.5363, 1.5363, 0.5],
-            rtol=1e-4
-        )
+        assert self.uncertainty.dlnk_dqs[3]['Estimation Family C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)'] == 1
+        assert np.isclose(self.uncertainty.dlnk_dqs[3]['Estimation Nonexact C2H3(20)+C3H8(19)<=>C2H4(11)+PC3H7(15)'], 0.4771212547, rtol=1e-4)
+        assert self.uncertainty.dlnk_dqs[3]['Rate Rule H_Abstraction C/H3/Cs\\H2\\Cs|O;Cd_Cd\\H2_rad/Cs'] == 0.5
+        assert self.uncertainty.dlnk_dqs[3]['Rate Rule H_Abstraction C/H3/Cs\\H3;Cd_Cd\\H2_pri_rad'] == 0.5
+
+        # Training reaction
+        assert self.uncertainty.dlnk_dqs[5].keys() == {'Training H_Abstraction CH3(14)+C2H6(18)<=>CH4(16)+C2H5(12)'}
+        assert self.uncertainty.dlnk_dqs[5]['Training H_Abstraction CH3(14)+C2H6(18)<=>CH4(16)+C2H5(12)'] == 1
+
+        # PDEP
+        assert self.uncertainty.dlnk_dqs[6].keys() == {'PDep HCCO(10)(+M)<=>O(0)+C2H(8)(+M)'}
+        assert self.uncertainty.dlnk_dqs[6]['PDep HCCO(10)(+M)<=>O(0)+C2H(8)(+M)'] == 1
+
+        # correlated uncertainties should match uncorrelated, so check diagonal of covariance matrix
+        thermo_covariance = np.sqrt(self.uncertainty.get_thermo_covariance_matrix().diagonal())
+        kinetic_covariance = np.sqrt(self.uncertainty.get_kinetic_covariance_matrix().diagonal())
+        assert np.isclose(thermo_covariance, expected_uncorrelated_thermo_uncertainties, rtol=1e-4).all()
+        assert np.isclose(kinetic_covariance, expected_uncorrelated_kinetic_uncertainties, rtol=1e-4).all()
+
+    def test_source_correlations(self):
+        # Check some examples of different species containing the same sources
+
+        # ------------------------------------------------------------------------------
+        # Make sure CH3 (Library + Radical) has a library index/value in common with CH4
+        i_CH4 = rmgpy.tools.uncertainty.get_i_thing(rmgpy.species.Species(smiles='C'), self.uncertainty.species_list)
+        assert i_CH4 >= 0
+
+        i_CH3 = rmgpy.tools.uncertainty.get_i_thing(rmgpy.species.Species(smiles='[CH3]'), self.uncertainty.species_list)
+        assert i_CH3 >= 0
+
+        self.uncertainty.extract_sources_from_model()
+        self.uncertainty.assign_parameter_uncertainties(correlated=True)
+        
+        src1 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH4]]  # CH4
+        src2 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH3]]  # CH3
+
+        assert 'Library' in src1
+        assert 'Library' in src2
+        assert 'GAV' in src2
+        assert src1['Library'] == src2['Library']  # make sure they refer to the same library source
+
+        # -----------------------------------------------------------------------------
+        # Make sure CH3X (Library + GAV + Adsorption Correction) has a library index/value in common with CH4 (Library)
+        i_CH3X = rmgpy.tools.uncertainty.get_i_thing(rmgpy.species.Species(smiles='C*'), self.uncertainty.species_list)
+        assert i_CH3X == -1
+        # This is not in the model, so add it to the species list
+        CH3X = rmgpy.species.Species(smiles='C*')
+        CH3X.thermo = self.uncertainty.database.thermo.get_thermo_data(CH3X)
+        self.uncertainty.species_list.append(CH3X)
+        i_CH3X = rmgpy.tools.uncertainty.get_i_thing(CH3X, self.uncertainty.species_list)
+        assert i_CH3X >= 0
+
+        self.uncertainty.extract_sources_from_model()
+        self.uncertainty.assign_parameter_uncertainties(correlated=True)
+
+        src1 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH4]]  # CH4
+        src2 = self.uncertainty.species_sources_dict[self.uncertainty.species_list[i_CH3X]]  # CH3X
+
+        assert 'Library' in src1
+        assert 'Library' in src2
+        assert 'ADS' in src2
+        assert 'GAV' in src2
+        assert src1['Library'] == src2['Library']  # make sure they refer to the same library source
+        self.uncertainty.species_list.pop()  # remove the extra species so it doesn't affect other tests
 
     def test_local_analysis(self):
         """
@@ -302,7 +412,7 @@ class TestUncertainty:
 
         # -------------------- repeat the exact same test for new formulation --------------------------
         # uncorrelated analysis first
-        self.uncertainty.assign_intermediate_uncertainties()
+        self.uncertainty.assign_parameter_uncertainties(correlated=False)
         output = self.uncertainty.local_analysis_intermediate(sensitive_species=sensitive_species)
         total_variance, kinetic_uncertainty, thermo_uncertainty = output[sensitive_species[0]]
         assert np.isclose(total_variance, expected_uncorrelated_total_variance)
@@ -323,7 +433,7 @@ class TestUncertainty:
         assert sorted_thermo_names == expected_uncorrelated_thermo_labels
 
         # now repeat for correlated analysis
-        self.uncertainty.assign_intermediate_uncertainties(correlated=True)
+        self.uncertainty.assign_parameter_uncertainties(correlated=True)
         output = self.uncertainty.local_analysis_intermediate(sensitive_species=sensitive_species, correlated=True)
         total_variance, kinetic_uncertainty, thermo_uncertainty = output[sensitive_species[0]]
         assert np.isclose(total_variance, expected_correlated_total_variance)
@@ -359,11 +469,11 @@ class TestUncertainty:
             uncorrelated_thermo_inputs = np.array(self.uncertainty.thermo_input_uncertainties)
             uncorrelated_kinetic_inputs = np.array(self.uncertainty.kinetic_input_uncertainties)
 
-            self.uncertainty.assign_intermediate_uncertainties(correlated=False)
+            self.uncertainty.assign_parameter_uncertainties(correlated=False)
             uncorrelated_thermo_covariance = self.uncertainty.get_thermo_covariance_matrix()
             uncorrelated_kinetic_covariance = self.uncertainty.get_kinetic_covariance_matrix()
             
-            self.uncertainty.assign_intermediate_uncertainties(correlated=True)
+            self.uncertainty.assign_parameter_uncertainties(correlated=True)
             correlated_thermo_covariance = self.uncertainty.get_thermo_covariance_matrix()
             correlated_kinetic_covariance = self.uncertainty.get_kinetic_covariance_matrix()
             Sigma_ww_thermo = self.uncertainty._get_intermediate_thermo_covariance_matrix()

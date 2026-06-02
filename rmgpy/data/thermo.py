@@ -1643,7 +1643,7 @@ class ThermoDatabase(object):
         thermo.comment += f" Binding energy corrected by LSR ({'+'.join(comments)}) from {metal_to_scale_from} (H={change_in_binding_energy/1e3:+.0f}kJ/mol)"
         return thermo
 
-    def get_thermo_data_for_surface_species(self, species):
+    def get_thermo_data_for_surface_species(self, species, return_resonance_data=False):
         """
         Get the thermo data for an adsorbed species,
         by desorbing it, finding the thermo of the gas-phase
@@ -1652,6 +1652,9 @@ class ThermoDatabase(object):
         Does not apply linear scaling relationship.
         
         Returns a :class:`ThermoData` object, with no Cp0 or CpInf
+
+        option to return resonance data if return_resonance_data is True,
+        which is useful for identifying the specific molecule chosen
         """
 
         # define the comparison function to find the lowest energy
@@ -1741,7 +1744,7 @@ class ThermoDatabase(object):
                     atom.label = label
 
             # a tuple of molecule and its thermo
-            resonance_data.append((molecule, thermo))
+            resonance_data.append((molecule, thermo, gas_phase_species))
 
         # Get the enthalpy of formation of every adsorbate at 298 K and
         # determine the resonance structure with the lowest enthalpy of formation.
@@ -1751,7 +1754,7 @@ class ThermoDatabase(object):
         resonance_data = sorted(resonance_data, key=lambda x: x[1].H298.value_si)
 
         # reorder the resonance structures (molecules) by their H298
-        species.molecule = [mol for mol, thermo in resonance_data]
+        species.molecule = [mol for mol, thermo, gas_phase_species in resonance_data]
 
         thermo = resonance_data[0][1]
 
@@ -1759,6 +1762,9 @@ class ThermoDatabase(object):
             thermo.label += 'X' * len(surface_sites)
 
         find_cp0_and_cpinf(species, thermo)
+
+        if return_resonance_data is True:  # is True makes this a little more error-proof in case user accidentally provides another argument that evaluates to True
+            return thermo, resonance_data
 
         return thermo
 
@@ -2854,82 +2860,9 @@ class ThermoDatabase(object):
 
         return ring_groups, polycyclic_groups
 
-    def extract_source_from_comments(self, species):
-        """
-        `species`: A species object containing thermo data and thermo data comments
-        
-        Parses the verbose string of comments from the thermo data of the species object,
-        and extracts the thermo sources.
-
-        Returns a dictionary with keys of 'Library', 'QM', 'ADS', and/or 'GAV'.
-        Commonly, species thermo are estimated using only one of these sources.
-        However, a radical can be estimated with more than one type of source, for 
-        instance a saturated library value and a GAV HBI correction, or a QM saturated value
-        and a GAV HBI correction. Adsorbates can be estimated using a single library
-        for the adsorbate or a combination of a gas phase library for the
-        gas phase portion and an adsorption correction.
-        
-        source = {'Library': String_Name_of_Library_Used,
-                  'QM': String_of_Method_Used,
-                  'GAV': Dictionary_of_Groups_Used,
-                  'ADS': Dictionary_of_Adsorption_Group_Used,
-                  }
-                  
-        The Dictionary_of_Groups_Used looks like 
-        {'groupType':[List of tuples containing (Entry, Weight)]
-        """
-        comment = species.thermo.comment
-        tokens = comment.split()
-
-        source = {}
-
-        if comment.startswith('Thermo library'):
-            # Store name of the library source, which is the 3rd token in the comments
-            source['Library'] = tokens[2]
-
-        elif comment.startswith('QM'):
-            # Store the level of the calculation, which is the 2nd token in the comments
-            source['QM'] = tokens[1]
-
-        elif comment.startswith('Gas phase thermo'):
-            # Handle adsorption correction thermo data of the following format:
-            # Library example
-            # Gas phase thermo for C(T) from Thermo library: primaryThermoLibrary.
-            # Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(Cq*)
-
-            # GAV example
-            # Gas phase thermo for [CH]CC from Thermo group additivity estimation: group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + radical(CCJ2_triplet).
-            # Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C=*RCR3)"
-
-            comment = comment.replace(r'\n', ' ')
-            comment = comment.replace('\n', ' ')
-            if 'Adsorption correction:' not in comment:
-                raise ValueError(f'adsorption correction in unrecognized format {comment}')
-
-            # Handle the gas-phase portion first
-            gas_comment = comment.split('Adsorption correction: + ')[0].strip()
-            if gas_comment.endswith('.'):
-                gas_comment = gas_comment[:-1]  # delete the . at the end if it exists
-            gas_comment = gas_comment[gas_comment.find('from ', len('Gas phase thermo for ')) + len('from '):]
-            dummy_gas_phase_species = Species()
-            dummy_gas_phase_species.thermo = NASA()
-            dummy_gas_phase_species.thermo.comment = gas_comment
-            source = self.extract_source_from_comments(dummy_gas_phase_species)
-
-            # This is an adsorption correction
-            # comment is split into two parts: the gas phase, and the surface adsorption correction
-            ads_correction_comment = comment.split('Adsorption correction: +')[-1].strip()
-            dummy_adsorption_correction_species = Species()
-            dummy_adsorption_correction_species.thermo = NASA()
-            dummy_adsorption_correction_species.thermo.comment = ads_correction_comment
-            source['ADS'] = self.extract_source_from_comments(dummy_adsorption_correction_species)['GAV']
-
-            return source
-
-        # Check for group additivity contributions to the thermo in this species            
-
-        # The contribution of the groups can be either additive or subtracting
-        # after changes to the polycyclic algorithm
+    def _parse_gav_groups(self, comment):
+        """Extract the groups from the comment"""
+        groups = {}
 
         comment = comment.replace(' + ', ' +')
         comment = comment.replace(' - ', ' -')
@@ -2939,10 +2872,12 @@ class ThermoDatabase(object):
         # groups are still split by spaces
         comment = comment.replace(')\n+', ') +')
         comment = comment.replace(')\n-', ') -')
+        # `Thermo group additivity estimation:\nadsorptionPt111(...)` shows up in
+        # adsorbate comments - keep the trailing colon separated from the group token.
+        comment = comment.replace(':\n', ': ')
         comment = comment.replace('\n', '')
         tokens = comment.split(' ')
 
-        groups = {}
         group_types = list(self.groups.keys())
 
         regex = r"\((.*)\)"  # only hit outermost parentheses
@@ -2970,14 +2905,185 @@ class ThermoDatabase(object):
 
         if groups:
             # Indicate that group additivity is used when it is either an HBI correction
-            # onto a  thermo library or QM value, or if the entire molecule is estimated using group additivity
+            # onto a thermo library or QM value, or if the entire molecule is estimated using group additivity
             # Save the groups into the source dictionary
 
-            # Convert groups back into tuples 
+            # Convert groups back into tuples
             for groupType, groupDict in groups.items():
                 groups[groupType] = list(groupDict.items())
 
-            source['GAV'] = groups
+        return groups
+
+    def _parse_library_source(self, comment, library_species):
+        # handle the library source comment, which looks like "Thermo library: library_name"
+        # we then need to retrieve the specific library entry given the species
+        # but may have unfortunate line breaks in the middle
+
+        # trim the comment down to just the library portion so it starts with Thermo library:
+        split_loc = comment.find('Thermo library:')
+        if split_loc == -1:
+            raise ValueError(f"Expected 'Thermo library:' in comment, got {comment}")
+
+        comment = comment[split_loc:]
+
+        # library name is the token that comes immediately after 'Thermo library:'
+        assert 'Thermo library:' in comment, f"Expected 'Thermo library:' in comment, got {comment}"
+        tokens = comment.split()
+        library_name = tokens[2]
+        if library_name not in self.libraries:
+             raise DatabaseError(f"Thermo library '{library_name}' referenced in comment is not loaded. Make sure libraries match input file used to generate thermo.")
+
+        results = self.get_thermo_data_from_library(library_species, self.libraries[library_name])
+        if results is None:
+            raise DatabaseError(f"Could not find a library match for {library_species} in library {library_name}")
+
+        data, thermo_library, library_entry = results
+        return (library_name, library_entry)
+
+    def _parse_adsorption_correction(self, comment):
+        # handle the adsorption correction comment, which looks like
+        # "Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C-XR2CR3)"
+        # but may have unfortunate line breaks in the middle
+
+        # check that the number of tokens matches our expectation for an adsorption correction
+        # should be 8, maybe 9 if there was a weird line break
+        tokens = comment.split()
+        if len(tokens) not in [8, 9]:
+            raise ValueError(f"Expected 8 or 9 tokens in adsorption correction comment, got {len(tokens)}: {comment}")
+
+        ADS = self._parse_gav_groups(comment)
+
+        if len(ADS) > 1:
+            raise ValueError("Only adsorption corrections should be present in the adsorption correction portion of the comment. Found: {}".format(ADS))
+
+        return ADS
+
+    def extract_source_from_comments(self, species):
+        """
+        `species`: A species object containing thermo data and thermo data comments
+
+        Parses the verbose string of comments from the thermo data of the species object,
+        and extracts the thermo sources.
+
+        Returns a dictionary with keys of 'Library', 'QM', 'ADS', and/or 'GAV'.
+        Commonly, species thermo are estimated using only one of these sources.
+        However, a radical can be estimated with more than one type of source, for
+        instance a saturated library value and a GAV HBI correction, or a QM saturated value
+        and a GAV HBI correction. Adsorbates can be estimated using a single library
+        for the adsorbate or a combination of a gas phase library for the
+        gas phase portion and an adsorption correction.
+
+        source = {'Library': (String_Name_of_Library_Used, Library_Entry_Used),
+                  'QM': (String_of_Method_Used, Species_Used_for_QM),
+                  'GAV': Dictionary_of_Groups_Used,
+                  'ADS': Dictionary_of_Adsorption_Group_Used,
+                  }
+
+        The Dictionary_of_Groups_Used looks like
+        {'groupType':[List of tuples containing (Entry, Weight)]
+        """
+
+        # TODO: solvent, electrocat, LSR
+        source = {}
+
+        comment = species.thermo.comment
+        tokens = comment.split()
+
+        ads_correction = 'Gas phase thermo' in comment and 'Adsorption correction:' in comment
+        library = 'Thermo library' in comment
+        QM = 'QM' in tokens
+        GAV = 'Thermo group additivity estimation:' in comment  # ambiguous since ads correction looks identical to group
+
+        # the biggest thing to split on first is the adsorption correction
+        if ads_correction:
+            # The source options here are:
+            # (Library(gas-phase species), Adsorption correction)
+            # (QM(gas-phase species), Adsorption correction)
+            # (GAV(gas-phase species), Adsorption correction)
+            # (Library(gas-phase species), GAV(radical correction), Adsorption correction)
+            # (QM(gas-phase species), GAV(radical correction), Adsorption correction)
+
+            # split the comment into the gas phase thermo portion and the adsorption correction portion
+            split_loc = comment.find('Adsorption correction:')
+            if split_loc == -1:
+                raise ValueError(f"Expected 'Adsorption correction:' in comment, got {comment}")
+            gas_comment = comment[:split_loc].strip()
+            if gas_comment.endswith('.'):
+                gas_comment = gas_comment[:-1]  # the period that closed the gas-phase sentence
+            ads_correction_comment = comment[split_loc:].strip()
+            source['ADS'] = self._parse_adsorption_correction(ads_correction_comment)
+
+            # get the desorbed gas species
+            species_copy = deepcopy(species)
+            thermo, resonance_data = self.get_thermo_data_for_surface_species(species_copy, return_resonance_data=True)
+            desorbed_gas_species = resonance_data[0][2]
+
+            groups = self._parse_gav_groups(gas_comment)
+            if groups:  # (Library/QM + GAV + ADS) or (GAV + ADS)
+                source['GAV'] = groups  # handle the GAV portion
+
+                if library or QM:  # (Library/QM + GAV + ADS)
+                    # this means the library/QM species is the desorbed, saturated gas-phase version of the adsorbate
+
+                    assert desorbed_gas_species.molecule[0].is_radical(), "Method only valid for radicals."
+                    molecule = desorbed_gas_species.molecule[0]  # no need to deepcopy again since get_desorbed_molecules already does deepcopy
+                    molecule.saturate_radicals()  # note, this returns a dictionary instead of the Molecule object, but it modifies the molecule in place, so we can just ignore the returned dictionary
+                    saturated_desorbed_gas_species = Species(molecule=[molecule])
+                    saturated_desorbed_gas_species.generate_resonance_structures()
+
+                    if library:  # (Library(gas-phase species), GAV(radical correction), Adsorption correction)
+                        source['Library'] = self._parse_library_source(gas_comment, saturated_desorbed_gas_species)
+                    if QM:  # (QM(gas-phase species), GAV(radical correction), Adsorption correction)
+                        # whatever token comes immediately after 'QM' is the method used
+                        source['QM'] = (tokens[tokens.index('QM') + 1], saturated_desorbed_gas_species)
+
+            else:
+                # no groups, so this is (Library/QM + ADS)
+                # in this case, the library/QM species is the desorbed gas-phase molecule of the adsorbate
+                if library:
+                    source['Library'] = self._parse_library_source(gas_comment, desorbed_gas_species)
+                if QM:
+                    # whatever token comes immediately after 'QM' is the method used
+                    source['QM'] = (tokens[tokens.index('QM') + 1], desorbed_gas_species)
+
+        else:
+            # gas phase only, source options are:
+            # (Library)
+            # (QM)
+            # (GAV)
+            # (Library, GAV)
+            # (QM, GAV)
+            groups = self._parse_gav_groups(comment)
+            GAV = 'Thermo group additivity estimation:' in comment
+            if GAV and not groups:
+                raise ValueError("No groups were found in the comments but 'Thermo group additivity estimation:' was in the comment. Comment: {}".format(comment))
+            elif not GAV and groups:
+                if 'radical' not in groups.keys():
+                    raise ValueError("Groups were found in the comments but 'Thermo group additivity estimation:' was not in the comment. Comment: {}".format(comment))
+
+            if groups:
+                # Get groups first
+                source['GAV'] = groups
+                if library or QM:  # (Library/QM, GAV)
+                    # get the saturated species for the library source
+                    if 'radical' not in groups.keys():
+                        raise ValueError("Method only valid for radicals, but no radical groups were found. Comment: {}".format(comment))
+                    molecule = deepcopy(species.molecule[0])
+                    assert molecule.is_radical(), "Method only valid for radicals."
+                    molecule.saturate_radicals()  # note, this returns a dictionary instead of the Molecule object, but it modifies the molecule in place, so we can just ignore the returned dictionary
+                    saturated_species = Species(molecule=[molecule])
+                    saturated_species.generate_resonance_structures()
+                    if library:  # (Library, GAV)
+                        source['Library'] = self._parse_library_source(comment, saturated_species)
+                    if QM:  # (QM, GAV)
+                        # whatever token comes immediately after 'QM' is the method used
+                        source['QM'] = (tokens[tokens.index('QM') + 1], saturated_species)
+            else:  # (Library) or (QM)
+                if library:
+                    source['Library'] = self._parse_library_source(comment, species)
+                if QM:
+                    # whatever token comes immediately after 'QM' is the method used
+                    source['QM'] = (tokens[tokens.index('QM') + 1], species)
 
         # Perform a sanity check that this molecule is estimated by at least one method
         if not list(source.keys()):

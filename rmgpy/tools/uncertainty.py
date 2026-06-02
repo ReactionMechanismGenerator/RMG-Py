@@ -69,9 +69,9 @@ class ThermoParameterUncertainty(object):
             varG += self.dG_library * self.dG_library
         if 'Surface_Library' in source:
             surf_lib_varG = self.dG_surf_lib * self.dG_surf_lib
-            # covariance libraries should overrule the default uncertainties when available
+            # covariance libraries should overrule the default uncertainties when available,
             if self.other_covariances is not None:
-                label = f'Surface_Library {source["Surface_Library"]}'  # match the covariance dict label format
+                label = source["Surface_Library"][2]  # match the covariance dict label format
                 cov_label = (label, label)
                 if cov_label in self.other_covariances:
                     surf_lib_varG = self.other_covariances[cov_label]
@@ -92,26 +92,29 @@ class ThermoParameterUncertainty(object):
         """
         Obtain the partial uncertainty dG/dG_corr*dG_corr, where dG_corr is the correlated parameter
 
-        `corr_param` is the parameter identifier itself, which is a integer for QM and library parameters, or a string for group values
+        `corr_param` is the parameter identifier itself, which is
+            (method_name, species) for QM
+            (library_name, library_entry, entry_label) for library parameters
+            or a string for group values
         `corr_source_type` is a string, being either 'Library', 'QM', 'GAV', 'ADS', or 'Estimation'
         `corr_group_type` is a string used only when the source type is 'GAV' and indicates grouptype
         """
 
         if corr_source_type == 'Library':
-            if 'Library' in source:
-                if source['Library'] == corr_param:
+            if 'Library' in source:  # check if same library and index match, could do isomorphism check on the entries, but this is faster
+                if source['Library'][0] == corr_param[0] and source['Library'][1].index == corr_param[1].index:
                     # Correlated parameter is a source of the overall parameter
                     return self.dG_library
 
         elif corr_source_type == 'Surface_Library':
             if 'Surface_Library' in source:
-                if source['Surface_Library'] == corr_param:
+                if source['Surface_Library'][0] == corr_param[0] and source['Surface_Library'][1].index == corr_param[1].index:
                     # Correlated parameter is a source of the overall parameter
                     return self.dG_surf_lib
 
         elif corr_source_type == 'QM':
-            if 'QM' in source:
-                if source['QM'] == corr_param:
+            if 'QM' in source:  # here we do an isomorphism check since no index is saved for QM
+                if source['QM'][0] == corr_param[0] and source['QM'][1].is_isomorphic(corr_param[1]):
                     # Correlated parameter is a source of the overall parameter
                     return self.dG_QM
 
@@ -424,10 +427,10 @@ class Uncertainty(object):
         self.reaction_sources_dict = None
         self.all_thermo_sources = None
         self.all_kinetic_sources = None
-        self.thermo_input_uncertainties = None          # previous formulation thermo parameter uncertainties
-        self.kinetic_input_uncertainties = None         # previous formulation kinetic parameter uncertainties
-        self.thermo_intermediate_uncertainties = None   # new formulation thermo parameter uncertainties - can be dependent on each other
-        self.kinetic_intermediate_uncertainties = None  # new formulation kinetic parameter uncertainties - can be dependent on each other
+        self.thermo_input_uncertainties = None          # thermo parameter uncertainties
+        self.kinetic_input_uncertainties = None         # kinetic parameter uncertainties
+        self.dG_dqs = None                              # derivatives of Gibbs free energy with respect to underlying thermo parameters
+        self.dlnk_dqs = None                            # derivatives of ln(k) with respect to underlying kinetic parameters
         self.thermo_covariance_matrix = None            # covariance matrix of all species thermo uncertainties
         self.kinetic_covariance_matrix = None           # covariance matrix of all reaction kinetic uncertainties
         self.Sigma_ww_thermo = None                     # covariance matrix of all underlying thermo parameter uncertainties
@@ -438,9 +441,6 @@ class Uncertainty(object):
         self.thermo_covariance_libraries = thermo_covariance_libraries
         self.thermo_covariance_groups = thermo_covariance_groups
         self.thermo_covariances_dict = {}  # dictionary to store covariances from covariance libraries
-
-        # For extra species needed for correlated analysis but not in model
-        self.extra_species = []
 
         # Make output directory if it does not yet exist:
         if not os.path.exists(self.output_directory):
@@ -500,33 +500,6 @@ class Uncertainty(object):
                                                                   transport_path=transport_path,
                                                                   surface_path=surface_path)
 
-    def retrieve_saturated_species_from_list(self, species):
-        """
-        Given a radical `species`, this function retrieves the saturated species objects from a list of species objects
-        and returns the saturated species object along with a boolean that indicates if the species is not part of the model
-        (True->not in the model, False->in the model)
-        """
-
-        molecule = species.molecule[0]
-        assert molecule.is_radical(), "Method only valid for radicals."
-        saturated_struct = molecule.copy(deep=True)
-        saturated_struct.saturate_radicals()
-        for otherSpecies in self.species_list:
-            if otherSpecies.is_isomorphic(saturated_struct):
-                return otherSpecies, False
-
-        # couldn't find saturated species in the model, try libraries
-        new_spc = Species(molecule=[saturated_struct])
-        new_spc.generate_resonance_structures()
-        thermo = self.database.thermo.get_thermo_data_from_libraries(new_spc)
-
-        if thermo is not None:
-            new_spc.thermo = thermo
-            self.species_list.append(new_spc)
-            return new_spc, True
-        else:
-            raise Exception('Could not retrieve saturated species form of {0} from the species list'.format(species))
-
     def load_thermo_covariances_from_libraries(self):
         """
         This function populates the self.thermo_covariances_dict with covariance data (in units of (kcal/mol)^2) from the given covariance libraries
@@ -537,7 +510,7 @@ class Uncertainty(object):
 
         See the RMG-database/scripts/compile_BEEF_cov.ipynb Jupyter notebook for more details on how to generate these covariance libraries.
 
-        This function only adds covariance data for species that are actually in the model, (or in the extra_species as in the case of the radical/HBI correction)
+        This function only adds covariance data for species that are actually in the model, (which may still include a subset of library species that are not in the model as in the case of the radical/HBI correction)
         and only for the thermo source associated with that library. The goal is to keep the dictionary as small as possible because the lookups scale badly.
 
         Note: the covariance.npy matrix is in units of (kJ/mol)^2, but gets converted to (kcal/mol)^2 in this function to match the rest of the analysis
@@ -596,7 +569,8 @@ class Uncertainty(object):
                         try:
                             label = f'{surface_prefix}Library {self.species_list[i_sp].to_chemkin()}'
                         except IndexError:
-                            label = f'{surface_prefix}Library {self.extra_species[i_sp - len(self.species_list)].to_chemkin()}'
+                            # uses InChI now
+                            label = f'{surface_prefix}Library {self.species_list[i_sp].molecule[0].to_inchi()}'
                         lib_species.label = label
                         subset_indices.append(i_lib)
 
@@ -626,7 +600,7 @@ class Uncertainty(object):
 
         See the RMG-database/scripts/compile_BEEF_cov.ipynb Jupyter notebook for more details on how to generate these covariance libraries.
 
-        This function only adds covariance data for groups and species that are actually in the model, (or in the extra_species as in the case of the radical/HBI correction)
+        This function only adds covariance data for groups and species that are actually in the model, (which may still include a subset of library entries for species not in the model as in the case of the radical/HBI correction)
         and only for the thermo source associated with that group/library. The goal is to keep the dictionary as small as possible because the lookups scale badly.
 
         Note: the covariance.npy matrix is in units of (kJ/mol)^2, but gets converted to (kcal/mol)^2 in this function to match the rest of the analysis
@@ -752,7 +726,7 @@ class Uncertainty(object):
                             try:
                                 label = f'{surface_prefix}Library {self.species_list[i_sp].to_chemkin()}'
                             except IndexError:
-                                label = f'{surface_prefix}Library {self.extra_species[i_sp - len(self.species_list)].to_chemkin()}'
+                                label = f'{surface_prefix}Library {self.species_list[i_sp].molecule[0].to_inchi()}'
                             lib_species.label = label
                             subset_species_indices.append(i_lib)
 
@@ -772,105 +746,52 @@ class Uncertainty(object):
         Must be done after loading model and database to work.
         """
         self.species_sources_dict = {}
-        self.extra_species = []
         allowed_source_keys = {'Library', 'QM', 'GAV', 'ADS'}
         for species in self.species_list:
-            if species not in self.extra_species:
-                source = self.database.thermo.extract_source_from_comments(species)
-                unexpected_source_keys = set(source.keys()) - allowed_source_keys
-                if unexpected_source_keys:
-                    raise ValueError(
-                        f'Source of thermo must be either Library, QM, GAV, or ADS; '
-                        f'got unexpected source keys {unexpected_source_keys} for species {species.label}'
-                    )
+            source = self.database.thermo.extract_source_from_comments(species)
+            unexpected_source_keys = set(source.keys()) - allowed_source_keys
+            if unexpected_source_keys:
+                raise ValueError(
+                    f'Source of thermo must be either Library, QM, GAV, or ADS; '
+                    f'got unexpected source keys {unexpected_source_keys} for species {species.label}'
+                )
 
-                # Now prep the source data
-                # Do not alter the GAV information, but reassign QM and Library sources to the species indices that they came from
-                # Also specify the source as a Surface Library (if it has surface sites and comes from a library), for better differentiation when assigning uncertainties
-                if len(source) == 1:
-                    # The thermo came from a single source, so we know it comes from a value describing the exact species
-                    if 'Library' in source:
-                        # Use just the species index in self.species_list, for better shorter printouts when debugging
-                        source['Library'] = self.species_list.index(species)
-                        if species.contains_surface_site():
-                            source['Surface_Library'] = source.pop('Library')
-                    if 'QM' in source:
-                        source['QM'] = self.species_list.index(species)
-
-                elif len(source) == 2:
-                    # The thermo has two sources, which indicates it's an HBI correction on top of a library or QM value...
-                    # OR it is an adsorption correction with gas-phase thermo from Library/QM/GAV (no need to edit GAV source)
-                    if 'ADS' in source:
-                        # Need to retrieve the gas-phase molecule that the adsorption correction was applied to, and assign the source of the thermo to be that molecule instead of the surface species
-                        if not species.contains_surface_site():
-                            raise ValueError('Species uses adsorption correction but does not contain any surface sites')
-                        dummy_gas_species = Species()
-                        dummy_gas_species.molecule = species.molecule[0].get_desorbed_molecules()
-                        # add to species list if it's not already there, so we can reference it in the source dictionary
-                        for spc in self.species_list:
-                            if spc.is_isomorphic(dummy_gas_species):
-                                dummy_gas_species = spc
-                                break
-                        else:
-                            dummy_gas_species.thermo = self.database.thermo.get_thermo_data(dummy_gas_species)
-                            self.species_list.append(dummy_gas_species)
-                            self.extra_species.append(dummy_gas_species)
-
-                        if 'Library' in source:
-                            # Use just the species index in self.species_list, for better shorter printouts when debugging
-                            source['Library'] = self.species_list.index(dummy_gas_species)
-                        if 'QM' in source:
-                            source['QM'] = self.species_list.index(dummy_gas_species)
-                    else:
-                        # We must retrieve the original saturated molecule's thermo instead of using the radical species as the source of thermo
-                        saturated_species, ignore_spc = self.retrieve_saturated_species_from_list(species)
-
-                        if ignore_spc:  # this is saturated species that isn't in the actual model
-                            self.extra_species.append(saturated_species)
-
-                        if 'Library' in source:
-                            source['Library'] = self.species_list.index(saturated_species)
-
-                            if saturated_species.contains_surface_site():
-                                source['Surface_Library'] = source.pop('Library')  # surface species library + radical correction
-                        if 'QM' in source:
-                            source['QM'] = self.species_list.index(saturated_species)
-                elif len(source) == 3:
-                    # combination of adsorption correction, GAV (radical), and Library/ML
-
-                    if not species.contains_surface_site():
-                        raise ValueError(
-                            f'Only surface species should have 3 thermo sources (adsorption correction, GAV, and library/QM); '
-                            f'got species={species.label}, source={source}'
-                        )
-
-                    # retrieve the desorbed version of the surface species-- the thing the adsorption correction was applied to during thermo estimation
-                    dummy_gas_species = Species()
-                    dummy_gas_species.molecule = species.molecule[0].get_desorbed_molecules()
-                    saturated_species, ignore_spc = self.retrieve_saturated_species_from_list(dummy_gas_species)
-
-                    if ignore_spc:  # this is saturated species that isn't in the actual model
-                        self.extra_species.append(saturated_species)
-
-                    if 'Library' in source:
-                        source['Library'] = self.species_list.index(saturated_species)
-                    if 'QM' in source:
-                        source['QM'] = self.species_list.index(saturated_species)
+            # Prep the source data:
+            # extend the library/QM sources to include species labels specific to the model
+            # Specify the source as a Surface Library (if it has surface sites and comes from a library), for better differentiation when assigning uncertainties
+            if 'Library' in source:
+                lib_species = rmgpy.species.Species(molecule=[source["Library"][1].item])
+                label = self.get_species_label(lib_species)
+                if lib_species.contains_surface_site():
+                    extended_source = source['Library'] + (f'Surface_Library {label}',)
+                    source['Surface_Library'] = extended_source
+                    source.pop('Library')
                 else:
-                    raise Exception('Source of thermo should not use more than three sources out of ADS, QM, Library, or GAV.')
+                    extended_source = source['Library'] + (f'Library {label}',)
+                    source['Library'] = extended_source
 
-                self.species_sources_dict[species] = source
+            if 'QM' in source:
+                qm_species = source["QM"][1]
+                label = self.get_species_label(qm_species)
+                extended_source = source['QM'] + (f'QM {label}',)
+                source['QM'] = extended_source
+
+            self.species_sources_dict[species] = source
 
         self.reaction_sources_dict = {}
         for reaction in self.reaction_list:
             source = self.database.kinetics.extract_source_from_comments(reaction)
             # Prep the source data
             # Consider any library or PDep reaction to be an independent parameter for now
-            # and assign the source to the index of the reaction within self.reaction_list
             if 'Library' in source:
-                source['Library'] = self.reaction_list.index(reaction)
+                # add a label to the end of the tuple with the official name to be used to match covariances
                 if reaction.is_surface_reaction():
-                    source['Surface_Library'] = source.pop('Library')
+                    extended_source = source['Library'] + (f'Surface_Library {reaction.to_chemkin(self.species_list, kinetics=False)}',)
+                    source['Surface_Library'] = extended_source
+                    source.pop('Library')
+                else:
+                    extended_source = source['Library'] + (f'Library {reaction.to_chemkin(self.species_list, kinetics=False)}',)
+                    source['Library'] = extended_source
             elif 'PDep' in source:
                 source['PDep'] = self.reaction_list.index(reaction)
             elif 'Training' in source:
@@ -881,9 +802,6 @@ class Uncertainty(object):
             else:
                 raise Exception('Source of kinetics must be either Library, PDep, Training, or Rate Rules')
             self.reaction_sources_dict[reaction] = source
-
-        for spc in self.extra_species:
-            self.species_list.remove(spc)
 
         # -------------------- load covariance libraries ------------------------#
         self.load_thermo_covariances_from_libraries()
@@ -979,6 +897,13 @@ class Uncertainty(object):
         for family_label in all_kinetic_sources['Training'].keys():
             self.all_kinetic_sources['Training'][family_label] = list(all_kinetic_sources['Training'][family_label])
 
+    def get_species_label(self, species):
+        i_sp = get_i_thing(species, self.species_list)
+        if i_sp >= 0:
+            return self.species_list[i_sp].to_chemkin()
+        else:
+            return species.to_chemkin()
+
     def assign_parameter_uncertainties(self, g_param_engine=None, k_param_engine=None, correlated=False):
         """
         Assign uncertainties based on the sources of the species thermo and reaction kinetics.
@@ -991,57 +916,56 @@ class Uncertainty(object):
         self.thermo_input_uncertainties = []
         self.kinetic_input_uncertainties = []
 
+        self.dG_dqs = []  # a list of dictionaries to store the intermediate derivatives dG_i/dq for each parameter q that contributes to the uncertainty of species i's G
+        self.dlnk_dqs = []  # a list of dictionaries to store the intermediate derivatives dlnk_i/dq for each parameter q that contributes to the uncertainty of reaction i's k
+
         for species in self.species_list:
             if not correlated:
-                entry = self.species_sources_dict[species]
-                if 'Surface_Library' in entry:  # preconditioning for covariance
-                    # this is an ugly workaround to handle covariances: because get_uncertainty_value needs the species chemkin string to get the covariance
-                    # but the source dictionary only has the index of the surface library entry
-                    entry_copy = entry.copy()
-                    entry_copy['Surface_Library'] = self.species_list[entry_copy['Surface_Library']].to_chemkin()
-                    dG = g_param_engine.get_uncertainty_value(entry_copy)
-                else:
-                    dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
+                dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
                 self.thermo_input_uncertainties.append(dG)
             else:
                 source = self.species_sources_dict[species]
                 dG = {}
+                dG_dq = {}
                 if 'Library' in source:
                     pdG = g_param_engine.get_partial_uncertainty_value(source, 'Library', corr_param=source['Library'])
-                    try:
-                        label = 'Library {}'.format(self.species_list[source['Library']].to_chemkin())
-                    except IndexError:
-                        label = 'Library {}'.format(self.extra_species[source['Library'] - len(self.species_list)].to_chemkin())
+                    label = source['Library'][2]  # the label we added to the end of the library source tuple in extract_sources_from_model
                     dG[label] = pdG
+                    dG_dq[label] = 1  # derivative of G with respect to the library parameter is 1, since it's a direct contribution
                 if 'Surface_Library' in source:
                     pdG = g_param_engine.get_partial_uncertainty_value(source, 'Surface_Library', corr_param=source['Surface_Library'])
-                    try:
-                        label = 'Surface_Library {}'.format(self.species_list[source['Surface_Library']].to_chemkin())
-                    except IndexError:
-                        label = 'Surface_Library {}'.format(self.extra_species[source['Surface_Library'] - len(self.species_list)].to_chemkin())
+                    label = source['Surface_Library'][2]
                     dG[label] = pdG
+                    dG_dq[label] = 1  # derivative of G with respect to the surface library parameter is 1, since it's a direct contribution
                 if 'QM' in source:
                     pdG = g_param_engine.get_partial_uncertainty_value(source, 'QM', corr_param=source['QM'])
-                    label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
+                    label = source['QM'][2]
                     dG[label] = pdG
+                    dG_dq[label] = 1  # derivative of G with respect to the QM parameter is 1, since it's a direct contribution
                 if 'ADS' in source:
                     for adsGroupType, groupList in source['ADS'].items():
                         for group, weight in groupList:
                             pdG = g_param_engine.get_partial_uncertainty_value(source, 'ADS', group, adsGroupType)
                             label = 'AdsorptionCorrection({}) {}'.format(adsGroupType, group.label)
                             dG[label] = pdG
+                            if weight != 1:
+                                raise ValueError('Weight for adsorption group contribution to thermo should be 1, but got weight={weight} for {adsGroupType} in species {species}'.format(weight=weight, adsGroupType=adsGroupType, species=species))
+                            dG_dq[label] = weight  # This should be 1 because there's only one group contribution per adsorption correction
                 if 'GAV' in source:
                     for groupType, groupList in source['GAV'].items():
                         for group, weight in groupList:
                             pdG = g_param_engine.get_partial_uncertainty_value(source, 'GAV', group, groupType)
                             label = 'Group({}) {}'.format(groupType, group.label)
                             dG[label] = pdG
+                            dG_dq[label] = weight  # the derivative of G with respect to the group contribution is the weight of that group contribution to the overall G
                     # We also know if there is group additivity used, there will be uncorrelated estimation error
                     est_pdG = g_param_engine.get_partial_uncertainty_value(source, 'Estimation')
                     if est_pdG:
                         label = 'Estimation {}'.format(species.to_chemkin())
                         dG[label] = est_pdG
+                        dG_dq[label] = 1  # the derivative of G with respect to the estimation error is 1, since we add the term directly
                 self.thermo_input_uncertainties.append(dG)
+                self.dG_dqs.append(dG_dq)
 
         for reaction in self.reaction_list:
             if not correlated:
@@ -1050,6 +974,7 @@ class Uncertainty(object):
             else:
                 source = self.reaction_sources_dict[reaction]
                 dlnk = {}
+                dlnk_dq = {}
                 if 'Rate Rules' in source:
                     family = source['Rate Rules'][0]
                     source_dict = source['Rate Rules'][1]
@@ -1064,180 +989,55 @@ class Uncertainty(object):
                                                                              corr_family=family)
                         label = '{}Rate Rule {} {}'.format(surface_prefix, family, ruleEntry)
                         dlnk[label] = dplnk
-
+                        dlnk_dq[label] = weight  # the derivative of ln(k) with respect to the rate rule contribution
                     for ruleEntry, trainingEntry, weight in training:
                         dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Rate Rules', corr_param=ruleEntry,
                                                                              corr_family=family)
                         label = '{}Rate Rule {} {}'.format(surface_prefix, family, ruleEntry)
                         dlnk[label] = dplnk
+                        dlnk_dq[label] = weight  # the derivative of ln(k) with respect to the training rule contribution
+
+                    N = len(source_dict['rules']) + len(source_dict['training'])
 
                     # There is also estimation error if rate rules are used (nonexact and family contribute to this)
                     nonexact_dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Estimation Nonexact', corr_family=family)
                     if nonexact_dplnk:
                         label = 'Estimation Nonexact {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
                         dlnk[label] = nonexact_dplnk
+                        dlnk_dq[label] = np.log10(N + 1)  # the derivative of ln(k) with respect to the nonexact estimation error
 
                     family_dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Estimation Family', corr_family=family)
                     if family_dplnk:
                         label = 'Estimation Family {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
                         dlnk[label] = family_dplnk
-
+                        dlnk_dq[label] = 1  # the derivative of ln(k) with respect to the family estimation error
                 elif 'PDep' in source:
                     dplnk = k_param_engine.get_partial_uncertainty_value(source, 'PDep', source['PDep'])
                     label = 'PDep {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
                     dlnk[label] = dplnk
+                    dlnk_dq[label] = 1
 
                 elif 'Library' in source:
                     dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Library', source['Library'])
-                    label = 'Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    label = source['Library'][2]
                     dlnk[label] = dplnk
+                    dlnk_dq[label] = 1
 
                 elif 'Surface_Library' in source:
                     dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Surface_Library', source['Surface_Library'])
-                    label = 'Surface_Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
+                    label = source['Surface_Library'][2]
                     dlnk[label] = dplnk
+                    dlnk_dq[label] = 1
 
                 elif 'Training' in source:
                     dplnk = k_param_engine.get_partial_uncertainty_value(source, 'Training', source['Training'])
                     family = source['Training'][0]
                     label = 'Training {} {}'.format(family, reaction.to_chemkin(self.species_list, kinetics=False))
                     dlnk[label] = dplnk
+                    dlnk_dq[label] = 1
 
                 self.kinetic_input_uncertainties.append(dlnk)
-
-    def assign_intermediate_uncertainties(self, g_param_engine=None, k_param_engine=None, correlated=False):
-        """
-        Assign uncertainties to the intermediate parameters based on the sources of the species thermo and reaction kinetics.
-
-        This fills out the class variables thermo_intermediate_uncertainties and kinetic_intermediate_uncertainties
-        these are each list of dictionaries. For every species or reaction, it lists all the intermediate sources contributing to that parameter's uncertainty.
-
-        So for example, thermo_intermediate_uncertainties might look something like this:
-        
-        thermo_intermediate_uncertainties = [
-            {'Group(group) Cds-CdsHH': 2.0, 'Group(radical) CCJ': 1.0, 'Estimation CH(4)': 1.0},
-            {'Library CH2(5)': 1.0},
-        ]
-        The keys of the dictionaries are the label names for the intermediate parameters.
-        and the values are partial derivatives dG_i/dq_w, how the species i Gibbs uncertainty changes with the intermediate parameter w.
-        
-        This function is the new formulation's equivalent to assign_parameter_uncertainties and similarly handles both correlated and uncorrelated cases.
-        But instead of assuming all underlying parameters are independent, here we can allow for dependence as long as we have the covariance
-        """
-        if g_param_engine is None:
-            g_param_engine = ThermoParameterUncertainty(other_covariances=self.thermo_covariances_dict)
-        if k_param_engine is None:
-            k_param_engine = KineticParameterUncertainty()
-
-        self.thermo_intermediate_uncertainties = []  # store the intermediate dG_i/dq for each parameter q that contributes to the uncertainty of G_i, for use in correlated uncertainty analysis
-        self.kinetic_intermediate_uncertainties = []
-
-        for species in self.species_list:
-            if not correlated:
-                entry = self.species_sources_dict[species]
-                if 'Surface_Library' in entry:  # preconditioning for covariance
-                    # this is an ugly workaround to handle covariances: because get_uncertainty_value needs the species chemkin string to get the covariance
-                    # but the source dictionary only has the index of the surface library entry
-                    entry_copy = entry.copy()
-                    entry_copy['Surface_Library'] = self.species_list[entry_copy['Surface_Library']].to_chemkin()
-                    dG = g_param_engine.get_uncertainty_value(entry_copy)
-                else:
-                    dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
-                self.thermo_intermediate_uncertainties.append(dG)  # in the uncorrelated case, the intermediate is just the uncertainty value itself, since there is only one parameter that contributes to the uncertainty
-            else:
-                source = self.species_sources_dict[species]
-                dGdq = {}
-                if 'Library' in source:
-                    try:
-                        label = 'Library {}'.format(self.species_list[source['Library']].to_chemkin())
-                    except IndexError:
-                        label = 'Library {}'.format(self.extra_species[source['Library'] - len(self.species_list)].to_chemkin())
-                    dGdq[label] = 1  # dG/dG_lib = 1, because the parameter is never scaled by anything other than 1 when it is used
-                if 'Surface_Library' in source:
-                    try:
-                        label = 'Surface_Library {}'.format(self.species_list[source['Surface_Library']].to_chemkin())
-                    except IndexError:
-                        label = 'Surface_Library {}'.format(self.extra_species[source['Surface_Library'] - len(self.species_list)].to_chemkin())
-                    dGdq[label] = 1  # dG/dG_surf = 1, because the parameter is never scaled by anything other than 1 when it is used
-                if 'QM' in source:
-                    label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
-                    dGdq[label] = 1
-                if 'ADS' in source:
-                    for adsGroupType, groupList in source['ADS'].items():
-                        for group, weight in groupList:
-                            label = 'AdsorptionCorrection({}) {}'.format(adsGroupType, group.label)
-                            if weight != 1:
-                                raise ValueError('Weight for adsorption group contribution to thermo should be 1, but got weight={weight} for {adsGroupType} in species {species}'.format(weight=weight, adsGroupType=adsGroupType, species=species))
-                            dGdq[label] = weight  # This should be 1
-                if 'GAV' in source:
-                    for groupType, groupList in source['GAV'].items():
-                        for group, weight in groupList:
-                            label = 'Group({}) {}'.format(groupType, group.label)
-                            dGdq[label] = weight  # dG/dG_group = weight, because the group contribution is scaled by the weight when it is used in the thermo estimation
-                    # We also know if there is group additivity used, there will be uncorrelated estimation error
-                    label = 'Estimation {}'.format(species.to_chemkin())
-                    dGdq[label] = 1  # dG/dG_est = 1, because the estimation error is added on top of the group additivity value, so it is never scaled by anything other than 1 when it is used
-
-                self.thermo_intermediate_uncertainties.append(dGdq)
-
-        for reaction in self.reaction_list:
-            if not correlated:
-                dlnk = k_param_engine.get_uncertainty_value(self.reaction_sources_dict[reaction])
-                self.kinetic_intermediate_uncertainties.append(dlnk)  # in the uncorrelated case, the intermediate is just the uncertainty value itself, since there is only one parameter that contributes to the uncertainty
-            else:
-                source = self.reaction_sources_dict[reaction]
-                dlnkdq = {}
-                if 'Rate Rules' in source:
-                    family = source['Rate Rules'][0]
-                    source_dict = source['Rate Rules'][1]
-                    rules = source_dict['rules']
-                    training = source_dict['training']
-                    exact = source_dict['exact']
-                    surface_prefix = ''
-                    if reaction.is_surface_reaction():
-                        surface_prefix = 'Surface '
-                    for ruleEntry, weight in rules:
-                        label = '{}Rate Rule {} {}'.format(surface_prefix, family, ruleEntry)
-                        dlnkdq[label] = weight  # dlnk/dlnk_rule = weight, because the rate rule is scaled by the weight when it is used in the kinetics estimation
-
-                    for ruleEntry, trainingEntry, weight in training:
-                        # TODO - test that training reactions in a tree are correlated with the exact match kind of training reaction
-                        # for now, we follow the old convention of treating these as rate rules
-                        label = '{}Rate Rule {} {}'.format(surface_prefix, family, ruleEntry)  # ruleEntry should probably be the reaction equation itself
-                        dlnkdq[label] = weight  # dlnk/dlnk_training = weight, because the training entry is scaled by the weight when it is used in the kinetics estimation
-
-                    # There is also estimation error if rate rules are used
-                    # Record dlnk/dlnk_family, the derivative with respect to the family estimation uncertainty
-                    label = 'Estimation Family {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
-                    dlnkdq[label] = 1  # dlnk/dlnk_family = 1, because the family estimation uncertainty is added on top of the rate rule values, so it is never scaled by anything other than 1 when it is used
-
-                    # Record the non-exact estimation error if not an exact match for a rate rule
-                    if not exact:
-                        N = len(source_dict['rules']) + len(source_dict['training'])
-                        label = 'Estimation Nonexact {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
-                        dlnkdq[label] = np.log10(N + 1) 
-
-                elif 'PDep' in source:
-                    label = 'PDep {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
-                    dlnkdq[label] = 1.0  # dlnk/dlnk_PDep = 1, because the PDep kinetics is never scaled by anything other than 1 when it is used
-
-                elif 'Library' in source:
-                    label = 'Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
-                    dlnkdq[label] = 1.0  # dlnk/dlnk_lib = 1, because the library kinetics is never scaled by anything other than 1 when it is used
-
-                elif 'Surface_Library' in source:
-                    label = 'Surface_Library {}'.format(reaction.to_chemkin(self.species_list, kinetics=False))
-                    dlnkdq[label] = 1.0  # dlnk/dlnk_surf_lib = 1, because the surface library kinetics is never scaled by anything other than 1 when it is used
-
-                elif 'Training' in source:
-                    family = source['Training'][0]
-                    surface_prefix = ''
-                    if reaction.is_surface_reaction():
-                        surface_prefix = 'Surface '
-                    label = '{}Training {} {}'.format(surface_prefix, family, reaction.to_chemkin(self.species_list, kinetics=False))
-                    dlnkdq[label] = 1.0
-
-                self.kinetic_intermediate_uncertainties.append(dlnkdq)
+                self.dlnk_dqs.append(dlnk_dq)
 
     def sensitivity_analysis(self, initial_mole_fractions, sensitive_species, T, P, termination_time,
                              sensitivity_threshold=1e-3, number=10, fileformat='.png', initial_surface_coverages=None,
@@ -1537,14 +1337,14 @@ class Uncertainty(object):
         NxN square matrix where N is the number of species in the model,
         with the covariance between species i and j in the ith row and jth column. 
         Units are in (kcal/mol)^2.
-        Must call assign_intermediate_uncertainties first to populate the source dictionaries.
+        Must call assign_parameter_uncertainties first to populate the source dictionaries.
 
         TODO speed this up with sparse matrix multiplication?
         """
-        assert self.thermo_intermediate_uncertainties is not None, 'Must call assign_intermediate_uncertainties first'
-        assert len(self.thermo_intermediate_uncertainties) > 0, 'No thermodynamic parameters found'
-        if isinstance(self.thermo_intermediate_uncertainties[0], np.float64):
-            self.thermo_covariance_matrix = np.float_power(np.diag(self.thermo_intermediate_uncertainties), 2.0)
+        assert self.thermo_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.thermo_input_uncertainties) > 0, 'No thermodynamic parameters found'
+        if isinstance(self.thermo_input_uncertainties[0], np.float64):  # uncorrelated case
+            self.thermo_covariance_matrix = np.float_power(np.diag(self.thermo_input_uncertainties), 2.0)
             return self.thermo_covariance_matrix
 
         self.thermo_covariance_matrix = np.zeros((len(self.species_list), len(self.species_list)))
@@ -1554,10 +1354,10 @@ class Uncertainty(object):
         
         for i in range(len(self.species_list)):
             for j in range((len(self.species_list))):
-                for q in self.thermo_intermediate_uncertainties[i].keys():
-                    dG_i_dq = self.thermo_intermediate_uncertainties[i][q]
-                    for r in self.thermo_intermediate_uncertainties[j].keys():
-                        dG_j_dr = self.thermo_intermediate_uncertainties[j][r]
+                for q in self.dG_dqs[i].keys():
+                    dG_i_dq = self.dG_dqs[i][q]
+                    for r in self.dG_dqs[j].keys():
+                        dG_j_dr = self.dG_dqs[j][r]
                         self.thermo_covariance_matrix[i, j] += dG_i_dq * g_param_engine._get_covariance_qq(q, r) * dG_j_dr
 
         return self.thermo_covariance_matrix
@@ -1568,14 +1368,14 @@ class Uncertainty(object):
         MxM square matrix where M is the number of reactions in the model,
         with the covariance between reaction i and j in the ith row and jth column.
         Units are in (ln(k))^2.
-        Must call assign_intermediate_uncertainties first to populate the source dictionaries.
+        Must call assign_parameter_uncertainties first to populate the source dictionaries.
 
         TODO speed this up with sparse matrix multiplication?
         """
-        assert self.kinetic_intermediate_uncertainties is not None, 'Must call assign_intermediate_uncertainties first'
-        assert len(self.kinetic_intermediate_uncertainties) > 0, 'No kinetic parameters found'
-        if isinstance(self.kinetic_intermediate_uncertainties[0], np.float64):
-            self.kinetic_covariance_matrix = np.float_power(np.diag(self.kinetic_intermediate_uncertainties), 2.0)
+        assert self.kinetic_input_uncertainties is not None, 'Must call assign_parameter_uncertainties first'
+        assert len(self.kinetic_input_uncertainties) > 0, 'No kinetic parameters found'
+        if isinstance(self.kinetic_input_uncertainties[0], np.float64):  # uncorrelated case
+            self.kinetic_covariance_matrix = np.float_power(np.diag(self.kinetic_input_uncertainties), 2.0)
             return self.kinetic_covariance_matrix
 
         if k_param_engine is None:
@@ -1585,10 +1385,10 @@ class Uncertainty(object):
         
         for i in range(len(self.reaction_list)):
             for j in range(len(self.reaction_list)):
-                for q in self.kinetic_intermediate_uncertainties[i].keys():
-                    dlnk_i_dq = self.kinetic_intermediate_uncertainties[i][q]
-                    for r in self.kinetic_intermediate_uncertainties[j].keys():
-                        dlnk_j_dr = self.kinetic_intermediate_uncertainties[j][r]
+                for q in self.dlnk_dqs[i].keys():
+                    dlnk_i_dq = self.dlnk_dqs[i][q]
+                    for r in self.dlnk_dqs[j].keys():
+                        dlnk_j_dr = self.dlnk_dqs[j][r]
                         self.kinetic_covariance_matrix[i, j] += dlnk_i_dq * k_param_engine._get_covariance_qq(q, r) * dlnk_j_dr
 
         return self.kinetic_covariance_matrix
@@ -1597,7 +1397,7 @@ class Uncertainty(object):
         """
         Make an explicit covariance matrix of all the qs (intermediate thermo parameters, like specific groups or library entries)
 
-        Requires calling assign_intermediate_uncertainties first
+        Requires calling assign_parameter_uncertainties first
 
         if subset_indices is None, computes the full matrix.
         Otherwise, only computes the matrices relevant to the species indicated by subset_indices
@@ -1605,8 +1405,8 @@ class Uncertainty(object):
         if subset_indices is None:
             subset_indices = np.arange(len(self.species_list))
 
-        if isinstance(self.thermo_intermediate_uncertainties[0], np.float64):
-            self.Sigma_ww_thermo = np.diag(np.float_power([self.thermo_intermediate_uncertainties[i] for i in subset_indices], 2.0))
+        if isinstance(self.thermo_input_uncertainties[0], np.float64):  # uncorrelated case
+            self.Sigma_ww_thermo = np.diag(np.float_power([self.thermo_input_uncertainties[i] for i in subset_indices], 2.0))
             return self.Sigma_ww_thermo
 
         if g_param_engine is None:
@@ -1614,7 +1414,7 @@ class Uncertainty(object):
         
         self.all_thermo_intermediates = set()
         for sp_idx in subset_indices:
-            for q in self.thermo_intermediate_uncertainties[sp_idx].keys():
+            for q in self.dG_dqs[sp_idx].keys():
                 self.all_thermo_intermediates.add(q)
         self.all_thermo_intermediates = list(self.all_thermo_intermediates)
         W = len(self.all_thermo_intermediates)
@@ -1632,7 +1432,7 @@ class Uncertainty(object):
         """
         Make an explicit covariance matrix of all the qs (intermediate kinetic parameters, like specific rate rules or libraries entries)
 
-        Requires calling assign_intermediate_uncertainties first
+        Requires calling assign_parameter_uncertainties first
 
         if subset_indices is None, computes the full matrix.
         Otherwise, only computes the matrices relevant to the reactions indicated by subset_indices
@@ -1640,9 +1440,8 @@ class Uncertainty(object):
         if subset_indices is None:
             subset_indices = np.arange(len(self.reaction_list))
 
-        if isinstance(self.kinetic_intermediate_uncertainties[0], np.float64):
-            # TODO this might have to be squared
-            self.Sigma_ww_kinetics = np.diag(np.float_power([self.kinetic_intermediate_uncertainties[i] for i in subset_indices], 2.0))
+        if isinstance(self.kinetic_input_uncertainties[0], np.float64):  # uncorrelated case
+            self.Sigma_ww_kinetics = np.diag(np.float_power([self.kinetic_input_uncertainties[i] for i in subset_indices], 2.0))
             return self.Sigma_ww_kinetics
 
         if k_param_engine is None:
@@ -1650,7 +1449,7 @@ class Uncertainty(object):
 
         self.all_kinetics_intermediates = set()
         for rxn_idx in subset_indices:
-            for q in self.kinetic_intermediate_uncertainties[rxn_idx].keys():
+            for q in self.dlnk_dqs[rxn_idx].keys():
                 self.all_kinetics_intermediates.add(q)
         self.all_kinetics_intermediates = list(self.all_kinetics_intermediates)
         W = len(self.all_kinetics_intermediates)
@@ -1681,15 +1480,15 @@ class Uncertainty(object):
             subset_indices = np.arange(len(self.species_list))
 
         # return a square identity matrix if uncorrelated
-        if isinstance(self.thermo_intermediate_uncertainties[0], np.float64):
+        if isinstance(self.thermo_input_uncertainties[0], np.float64):  # uncorrelated case
             return np.eye(len(subset_indices))
 
         dGdq = np.zeros((len(subset_indices), len(self.all_thermo_intermediates)))
 
         for i, sp_idx in enumerate(subset_indices):
-            for key in self.thermo_intermediate_uncertainties[sp_idx].keys():
+            for key in self.dG_dqs[sp_idx].keys():
                 q_index = self.all_thermo_intermediates.index(key)
-                dGdq[i, q_index] = self.thermo_intermediate_uncertainties[sp_idx][key]
+                dGdq[i, q_index] = self.dG_dqs[sp_idx][key]
 
         return dGdq
     
@@ -1706,15 +1505,15 @@ class Uncertainty(object):
             subset_indices = np.arange(len(self.reaction_list))
 
         # return a square identity matrix if uncorrelated
-        if isinstance(self.kinetic_intermediate_uncertainties[0], np.float64):
+        if isinstance(self.kinetic_input_uncertainties[0], np.float64):  # uncorrelated case
             return np.eye(len(subset_indices))
 
         dlnkdq = np.zeros((len(subset_indices), len(self.all_kinetics_intermediates)))
 
         for i, rxn_idx in enumerate(subset_indices):
-            for key in self.kinetic_intermediate_uncertainties[rxn_idx].keys():
+            for key in self.dlnk_dqs[rxn_idx].keys():
                 q_index = self.all_kinetics_intermediates.index(key)
-                dlnkdq[i, q_index] = self.kinetic_intermediate_uncertainties[rxn_idx][key]
+                dlnkdq[i, q_index] = self.dlnk_dqs[rxn_idx][key]
 
         return dlnkdq
 
