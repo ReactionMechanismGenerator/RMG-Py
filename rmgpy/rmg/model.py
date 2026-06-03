@@ -648,6 +648,10 @@ class CoreEdgeReactionModel:
                 if forward.pairs is not None:
                     forward.pairs = [(p, r) for r, p in forward.pairs]
                 forward.kinetics = reverse_kinetics
+                coverage_dep_species = [spc.label for spc in forward.reactants
+                                        if spc.thermo and getattr(spc.thermo, 'thermo_coverage_dependence', None)]
+                forward.kinetics.comment += "\nReaction direction flipped due to thermo_coverage_dependence on species: {0}.".format(
+                    ", ".join(coverage_dep_species))
                 logging.debug("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
                               forward)
 
