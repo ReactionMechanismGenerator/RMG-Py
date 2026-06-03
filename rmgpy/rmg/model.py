@@ -652,7 +652,7 @@ class CoreEdgeReactionModel:
                                         if spc.thermo and getattr(spc.thermo, 'thermo_coverage_dependence', None)]
                 forward.kinetics.comment += "\nReaction direction flipped due to thermo_coverage_dependence on species: {0}.".format(
                     ", ".join(coverage_dep_species))
-                logging.debug("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
+                logging.info("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
                               forward)
 
         # Since the reaction is new, add it to the list of new reactions
