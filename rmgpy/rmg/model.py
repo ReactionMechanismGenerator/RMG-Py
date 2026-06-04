@@ -619,12 +619,12 @@ class CoreEdgeReactionModel:
             if isinstance(forward.kinetics, KineticsData):
                 forward.kinetics = forward.kinetics.to_arrhenius()
             #  correct barrier heights of estimated kinetics
-            if isinstance(forward, (TemplateReaction,DepositoryReaction)): # i.e. not LibraryReaction
+            if isinstance(forward, (TemplateReaction, DepositoryReaction)): # i.e. not LibraryReaction
                 forward.fix_barrier_height(solvent=self.solvent_name)  # also converts ArrheniusEP to Arrhenius.
             elif isinstance(forward, LibraryReaction) and forward.is_surface_reaction():
                 # do fix the library reaction barrier if this is scaled from another metal
                 if any(['Binding energy corrected by LSR' in x.thermo.comment for x in forward.reactants + forward.products]):
-                    forward.fix_barrier_height(solvent=self.solvent_name)            
+                    forward.fix_barrier_height(solvent=self.solvent_name)
             elif forward.kinetics.solute:
                 forward.apply_solvent_correction(solvent=self.solvent_name)
             if self.pressure_dependence and forward.is_unimolecular():
@@ -639,21 +639,22 @@ class CoreEdgeReactionModel:
             # (unless a reactant is *also* coverage dependent, or it's a sticking coefficient)
             products_coverage_dependent = any(
                 getattr(spc.thermo, 'thermo_coverage_dependence', None) for spc in forward.products)
-            reactants_coverage_dependent = any(
-                getattr(spc.thermo, 'thermo_coverage_dependence', None) for spc in forward.reactants)
-            if (products_coverage_dependent and not reactants_coverage_dependent
-                    and not isinstance(forward.kinetics, StickingCoefficient)):
-                reverse_kinetics = forward.generate_reverse_rate_coefficient()
-                forward.reactants, forward.products = forward.products, forward.reactants
-                if forward.pairs is not None:
-                    forward.pairs = [(p, r) for r, p in forward.pairs]
-                forward.kinetics = reverse_kinetics
-                coverage_dep_species = [spc.label for spc in forward.reactants
-                                        if spc.thermo and getattr(spc.thermo, 'thermo_coverage_dependence', None)]
-                forward.kinetics.comment += "\nReaction direction flipped due to thermo_coverage_dependence on species: {0}.".format(
-                    ", ".join(coverage_dep_species))
-                logging.info("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
-                              forward)
+            if products_coverage_dependent:
+                reactants_coverage_dependent = any(
+                    getattr(spc.thermo, 'thermo_coverage_dependence', None) for spc in forward.reactants)
+                if (not reactants_coverage_dependent
+                        and not isinstance(forward.kinetics, StickingCoefficient)):
+                    reverse_kinetics = forward.generate_reverse_rate_coefficient()
+                    forward.reactants, forward.products = forward.products, forward.reactants
+                    if forward.pairs is not None:
+                        forward.pairs = [(p, r) for r, p in forward.pairs]
+                    forward.kinetics = reverse_kinetics
+                    coverage_dep_species = [spc.label for spc in forward.reactants
+                                            if spc.thermo and getattr(spc.thermo, 'thermo_coverage_dependence', None)]
+                    forward.kinetics.comment += (f"\nReaction direction reversed due to "
+                        f"coverage-dependent thermo on species {' and '.join(coverage_dep_species)}.")
+                    logging.info("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
+                                forward)
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
