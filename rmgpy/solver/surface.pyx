@@ -43,7 +43,6 @@ cimport rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.quantity cimport ScalarQuantity
 from rmgpy.solver.base cimport ReactionSystem
-import copy
 from rmgpy.molecule import Molecule
 
 cdef class SurfaceReactor(ReactionSystem):
@@ -308,7 +307,10 @@ cdef class SurfaceReactor(ReactionSystem):
                     warned = True
                 self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, P)
             if rxn.reversible:
-                # ToDo: get_equilibrium_constant should be coverage dependent
+                # kb is set here from the uncorrected Keq. For reactions with
+                # thermo_coverage_dependence, kb is not used directly — residual
+                # and jacobian both compute kr = kf / compute_thermo_coverage_corrections()
+                # which applies the coverage-dependent correction to Keq at runtime.
                 self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
                 self.kb[j] = self.kf[j] / self.Keq[j]
 
@@ -418,6 +420,44 @@ cdef class SurfaceReactor(ReactionSystem):
                 trimolecular_threshold_rate_constant)
 
     @cython.boundscheck(False)
+    @cython.wraparound(False)
+    cpdef np.ndarray compute_thermo_coverage_corrections(self, np.ndarray[np.float64_t, ndim=1] coverages):
+        """
+        Return the equilibrium constants ``Keq`` corrected for thermodynamic
+        coverage dependence at the given surface ``coverages``.
+
+        For each species the free-energy correction is the sum over the (up to)
+        six polynomial terms ``coverage**k`` and ``-T*coverage**k`` weighted by the
+        per-species coefficients stored in ``thermo_coeff_matrix``. These are
+        mapped to per-reaction free-energy changes via ``stoi_matrix`` and applied
+        to ``Keq``. The corrected ``Keq`` is used to obtain a coverage-dependent
+        reverse rate constant ``kr = kf / Keq_corrected`` in both the residual and
+        the Jacobian.
+        """
+        cdef np.ndarray[np.float64_t, ndim=1] coverages_squared, temperature_scaled_coverages
+        cdef np.ndarray[np.float64_t, ndim=1] free_energy_coverage_corrections, rxns_free_energy_change, corrected_K_eq
+        cdef np.ndarray[np.float64_t, ndim=2] thermo_dep_coverage, matrix
+        cdef int i, n
+
+        n = coverages.shape[0]
+        coverages_squared = coverages * coverages
+        temperature_scaled_coverages = -self.T.value_si * coverages
+        thermo_dep_coverage = np.empty((6, n), dtype=np.float64)
+        thermo_dep_coverage[0, :] = coverages
+        thermo_dep_coverage[1, :] = coverages_squared
+        thermo_dep_coverage[2, :] = coverages_squared * coverages
+        thermo_dep_coverage[3, :] = temperature_scaled_coverages
+        thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
+        thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
+        free_energy_coverage_corrections = np.empty(self.thermo_coeff_matrix.shape[0], dtype=np.float64)
+        for i in range(self.thermo_coeff_matrix.shape[0]):
+            matrix = self.thermo_coeff_matrix[i]
+            free_energy_coverage_corrections[i] = np.sum(matrix[:n, :].T * thermo_dep_coverage)
+        rxns_free_energy_change = np.matmul(self.stoi_matrix, free_energy_coverage_corrections)
+        corrected_K_eq = self.Keq * np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
+        return corrected_K_eq
+
+    @cython.boundscheck(False)
     def residual(self,
                  double t,
                  np.ndarray[np.float64_t, ndim=1] N,
@@ -491,22 +531,7 @@ cdef class SurfaceReactor(ReactionSystem):
 
         # Thermodynamic coverage dependence
         if self.thermo_coverage_dependence:
-            coverages_squared = coverages * coverages
-            temperature_scaled_coverages = -self.T.value_si * coverages
-            thermo_dep_coverage = np.empty((6, coverages.shape[0]), dtype=np.float64)
-            thermo_dep_coverage[0, :] = coverages
-            thermo_dep_coverage[1, :] = coverages_squared
-            thermo_dep_coverage[2, :] = coverages_squared * coverages
-            thermo_dep_coverage[3, :] = temperature_scaled_coverages
-            thermo_dep_coverage[4, :] = temperature_scaled_coverages * coverages
-            thermo_dep_coverage[5, :] = temperature_scaled_coverages * coverages_squared
-            free_energy_coverage_corrections = np.empty(len(self.thermo_coeff_matrix), dtype=np.float64)
-            for i, matrix in enumerate(self.thermo_coeff_matrix):
-                free_energy_coverage_corrections[i] = np.diag(np.dot(matrix, thermo_dep_coverage)).sum()
-            rxns_free_energy_change = np.matmul(self.stoi_matrix,free_energy_coverage_corrections)
-            corrected_K_eq = copy.deepcopy(self.Keq)
-            corrected_K_eq *= np.exp(-1 * rxns_free_energy_change / (constants.R * self.T.value_si))
-            kr = kf / corrected_K_eq
+            kr = kf / self.compute_thermo_coverage_corrections(coverages)
 
         # Coverage dependence
         coverage_corrections = np.ones_like(kf, float)
@@ -715,6 +740,34 @@ cdef class SurfaceReactor(ReactionSystem):
         C = np.zeros_like(self.core_species_concentrations)
         for j in range(num_core_species):
             C[j] = y[j] * inv_omega[j]
+
+        if self.thermo_coverage_dependence or self.coverage_dependence:
+            total_sites = self.surface_site_density.value_si * A
+            coverages = np.where(self.species_on_surface[:num_core_species],
+                                 np.maximum(y[:num_core_species] / total_sites, 0.0),
+                                 0.0)
+
+        # Thermodynamic coverage dependence: the reverse rate constant is derived
+        # from the coverage-corrected equilibrium constant.
+        if self.thermo_coverage_dependence:
+            kr = kf / self.compute_thermo_coverage_corrections(coverages)
+        else:
+            kr = self.kb
+
+        # Kinetic coverage dependence: kf (and hence kr) are scaled by a
+        # coverage-dependent factor.
+        if self.coverage_dependence:
+            coverage_corrections = np.ones_like(kf, float)
+            for i, list_of_coverage_deps in self.coverage_dependencies.items():
+                surface_site_fraction = coverages[i]
+                if surface_site_fraction <= 1e-6:
+                    continue
+                for j, a, m, E in list_of_coverage_deps:
+                    coverage_corrections[j] *= 10. ** (a * surface_site_fraction) *\
+                                                pow(surface_site_fraction, m) *\
+                                                exp(-1 * E * surface_site_fraction / (constants.R * self.T.value_si))
+            kf = kf * coverage_corrections  # corrected copy; leaves self.kf unchanged
+            kr = kr * coverage_corrections
 
         for j in range(num_core_reactions):
 

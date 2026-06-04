@@ -143,7 +143,7 @@ cdef class Reaction:
 
     cpdef generate_pairs(self)
 
-    cpdef copy(self)
+    cpdef Reaction copy(self)
 
     cpdef ensure_species(self, bint reactant_resonance=?, bint product_resonance=?, bint save_order=?)
 
