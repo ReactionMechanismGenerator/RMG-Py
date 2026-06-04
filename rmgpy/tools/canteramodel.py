@@ -329,7 +329,7 @@ class Cantera(object):
 
             self.reaction_map[self.reaction_list.index(rxn)] = indices
 
-        self.model = ct.Solution(thermo='IdealGas', kinetics='GasKinetics',
+        self.model = ct.Solution(thermo='ideal-gas', kinetics='gas',
                                  species=ct_species, reactions=ct_reactions)
 
     def refresh_model(self):
@@ -342,7 +342,7 @@ class Cantera(object):
         ct_reactions = self.model.reactions()
         ct_species = self.model.species()
 
-        self.model = ct.Solution(thermo='IdealGas', kinetics='GasKinetics',
+        self.model = ct.Solution(thermo='ideal-gas', kinetics='gas',
                                  species=ct_species, reactions=ct_reactions)
 
     def load_chemkin_model(self, chemkin_file, transport_file=None, **kwargs):
