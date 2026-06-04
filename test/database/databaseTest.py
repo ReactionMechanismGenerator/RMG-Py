@@ -1577,7 +1577,22 @@ Origin Group AdjList:
                 output += "\n" + s.to_adjacency_list(label=s.to_smiles())
             return output
 
-        if len(sample_reactants) == 1 == len(family.forward_template.reactants):
+        expected_reactants = [str(r) for r in family.forward_template.reactants]
+        roots_with_samples = [str(k) for k in sample_reactants.keys()]
+        roots_without_samples = [r for r in expected_reactants if r not in roots_with_samples]
+        if len(sample_reactants) != len(family.forward_template.reactants):
+            # One or more reactant roots produced no usable sample molecule (every candidate was
+            # forbidden by is_molecule_forbidden, or raised UnexpectedChargeError/
+            # ImplicitBenzeneError during make_sample_molecule). Record a descriptive error so it
+            # is logged below alongside any per-sample errors, instead of raising opaquely here.
+            test1.append(
+                f"In family {family_name}, {len(roots_without_samples)} reactant root(s) produced "
+                f"no usable sample molecule: {roots_without_samples}. The family template expects "
+                f"{len(expected_reactants)} reactant(s) {expected_reactants}; only these root(s) "
+                f"yielded samples: {roots_with_samples}. Check the group definitions for the "
+                f"missing reactant root(s)."
+            )
+        elif len(sample_reactants) == 1:
             reactants = list(sample_reactants.values())[0]
             for reactant in reactants:
                 try:
@@ -1670,7 +1685,13 @@ Origin Group AdjList:
                     species = rmgpy.species.Species(index=1, molecule=[molecule])
                     species.generate_resonance_structures()
         else:
-            raise ValueError(f"Family had {len(sample_reactants)} reactants?: " f"{', '.join(map(str,sample_reactants.keys())) }")
+            # Reactant count matches the template but is not 1, 2, or 3 (RMG only supports up to
+            # trimolecular). This is not expected for any well-formed family.
+            raise ValueError(
+                f"In family {family_name}, the number of sampled reactant roots "
+                f"({len(sample_reactants)}) matches the template reactant count but is not 1, 2, "
+                f"or 3, which is unexpected: {roots_with_samples}."
+            )
 
         # print out entries skipped from exception we can't currently handle
         if skipped:
