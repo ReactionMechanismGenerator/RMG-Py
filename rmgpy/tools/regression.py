@@ -200,6 +200,10 @@ def parse_command_line_arguments():
 
 def main():
     "Returns the list of variables that failed the regression."
+    # Imported libraries can call logging.basicConfig at import time.
+    # Reset it so that only WARNING and worse are emitted.
+    logging.basicConfig(level=logging.WARNING, force=True)
+
     input_file, benchmark, tested = parse_command_line_arguments()
 
     args = read_input_file(input_file)  # casetitle, observables, setups, tol
