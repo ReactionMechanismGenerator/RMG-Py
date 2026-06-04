@@ -198,11 +198,39 @@ def parse_command_line_arguments():
     return input_file, benchmark, tested
 
 
+def configure_logging():
+    """
+    Configure the root logger so that INFO (and above) goes to stdout, while
+    WARNING and above *also* goes to stderr.
+
+    This means the full log is captured in the normal CI build output (stdout),
+    while only genuine warnings/errors land on stderr.
+    """
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+
+    # Remove any handlers installed by imported libraries.
+    for handler in root.handlers[:]:
+        root.removeHandler(handler)
+
+    formatter = logging.Formatter('%(levelname)s: %(message)s')
+
+    # INFO and above -> stdout (captured in the normal CI log).
+    stdout_handler = logging.StreamHandler(sys.stdout)
+    stdout_handler.setLevel(logging.INFO)
+    stdout_handler.setFormatter(formatter)
+    root.addHandler(stdout_handler)
+
+    # WARNING and above -> stderr (so CI flags/annotates them via regression.py.err).
+    stderr_handler = logging.StreamHandler(sys.stderr)
+    stderr_handler.setLevel(logging.WARNING)
+    stderr_handler.setFormatter(formatter)
+    root.addHandler(stderr_handler)
+
+
 def main():
     "Returns the list of variables that failed the regression."
-    # Imported libraries can call logging.basicConfig at import time.
-    # Reset it so that only WARNING and worse are emitted.
-    logging.basicConfig(level=logging.WARNING, force=True)
+    configure_logging()
 
     input_file, benchmark, tested = parse_command_line_arguments()
 
