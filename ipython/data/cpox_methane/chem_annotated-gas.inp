@@ -1,0 +1,544 @@
+ELEMENTS
+	H
+	D /2.014/
+	T /3.016/
+	C
+	CI /13.003/
+	O
+	OI /17.999/
+	N
+	Ne
+	Ar
+	He
+	Si
+	S
+	F
+	Cl
+	Br
+	I
+	X /195.083/
+END
+
+SPECIES
+    Ar                  ! Ar
+    Ne                  ! Ne
+    N2                  ! N2
+    CH4(2)              ! CH4(2)
+    O2(3)               ! O2(3)
+    CO2(4)              ! CO2(4)
+    H2O(5)              ! H2O(5)
+    H2(6)               ! H2(6)
+    CO(7)               ! CO(7)
+    C2H6(8)             ! C2H6(8)
+    CH2O(9)             ! CH2O(9)
+    CH3(10)             ! CH3(10)
+    C3H8(11)            ! C3H8(11)
+    H(12)               ! H(12)
+    C2H5(13)            ! C2H5(13)
+    CH3OH(14)           ! CH3OH(14)
+    HCO(15)             ! HCO(15)
+    CH3CHO(16)          ! CH3CHO(16)
+    OH(17)              ! OH(17)
+    C2H4(18)            ! C2H4(18)
+    CH3CH(19)           ! CH3CH(19)
+    CH3OO(20)           ! CH3OO(20)
+END
+
+
+
+THERM ALL
+   300.000  1000.000  5000.000
+
+! Thermo library: primaryThermoLibrary
+Ar                      Ar  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 4.37967000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 4.37967000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+Ne                      Ne  1               G   200.000  6000.000 1000.00      1
+ 2.50000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00 0.00000000E+00    2
+-7.45375000E+02 3.35532000E+00 2.50000000E+00 0.00000000E+00 0.00000000E+00    3
+ 0.00000000E+00 0.00000000E+00-7.45375000E+02 3.35532000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+N2                      N   2               G   200.000  6000.000 1000.00      1
+ 2.95258000E+00 1.39690000E-03-4.92632000E-07 7.86010000E-11-4.60755000E-15    2
+-9.23949000E+02 5.87189000E+00 3.53101000E+00-1.23661000E-04-5.02999000E-07    3
+ 2.43531000E-09-1.40881000E-12-1.04698000E+03 2.96747000E+00                   4
+
+! Thermo library: primaryThermoLibrary
+CH4(2)                  C   1H   4          G   100.000  5000.000 1084.12      1
+ 9.08259430E-01 1.14540962E-02-4.57174412E-06 8.29193029E-10-5.66316007E-14    2
+-9.71997168E+03 1.39931301E+01 4.20541633E+00-5.35558620E-03 2.51123688E-05    3
+-2.13763364E-08 5.97526027E-12-1.01619434E+04-9.21283218E-01                   4
+
+! Thermo library: primaryThermoLibrary
+O2(3)                   O   2               G   100.000  5000.000 1074.55      1
+ 3.15382081E+00 1.67804371E-03-7.69974236E-07 1.51275462E-10-1.08782414E-14    2
+-1.04081728E+03 6.16755832E+00 3.53732243E+00-1.21571647E-03 5.31620254E-06    3
+-4.89446434E-09 1.45846258E-12-1.03858849E+03 4.68368183E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+CO2(4)                  C   1O   2          G   100.000  5000.000  978.22      1
+ 4.67427416E+00 2.60962879E-03-9.85683184E-07 1.95712276E-10-1.49834931E-14    2
+-4.89512168E+04-2.11077406E+00 3.28084453E+00 2.50185640E-03 8.08192142E-06    3
+-1.20510369E-08 4.66542684E-12-4.84008303E+04 6.00081438E+00                   4
+
+! Thermo library: primaryThermoLibrary
+H2O(5)                  H   2O   1          G   100.000  5000.000 1130.23      1
+ 2.84325454E+00 2.75107882E-03-7.81027793E-07 1.07242789E-10-5.79385325E-15    2
+-2.99586146E+04 5.91039666E+00 4.05763524E+00-7.87929225E-04 2.90875322E-06    3
+-1.47516271E-09 2.12832915E-13-3.02815866E+04-3.11361934E-01                   4
+
+! Thermo library: primaryThermoLibrary
+H2(6)                   H   2               G   100.000  5000.000 1959.07      1
+ 2.78818509E+00 5.87615921E-04 1.59022130E-07-5.52762536E-11 4.34328120E-15    2
+-5.96155632E+02 1.12618494E-01 3.43536393E+00 2.12711953E-04-2.78628671E-07    3
+ 3.40270013E-10-7.76039045E-14-1.03135983E+03-3.90841661E+00                   4
+
+! Thermo library: primaryThermoLibrary
+CO(7)                   C   1O   1          G   100.000  5000.000 1571.64      1
+ 2.91306239E+00 1.64658456E-03-6.88618210E-07 1.21038081E-10-7.84023563E-15    2
+-1.41808823E+04 6.71048256E+00 3.56838006E+00-8.52126340E-04 2.48917989E-06    3
+-1.56331226E-09 3.13595852E-13-1.42842549E+04 3.57912151E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+C2H6(8)                 C   2H   6          G   100.000  5000.000 1012.42      1
+ 2.82845780E+00 1.73040987E-02-6.73336647E-06 1.23742590E-09-8.65681088E-14    2
+-1.19977975E+04 5.93825672E+00 3.72239865E+00 1.65077010E-03 3.44177937E-05    3
+-3.76861352E-08 1.24451983E-11-1.15575904E+04 4.68245945E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+CH2O(9)                 C   1H   2O   1     G   100.000  5000.000 1070.44      1
+ 2.21174394E+00 7.94262445E-03-3.34191224E-06 6.28467142E-10-4.40427951E-14    2
+-1.42974541E+04 1.13047879E+01 4.12927444E+00-4.08397173E-03 2.03227934E-05    3
+-1.83522494E-08 5.37968433E-12-1.44294638E+04 3.22419750E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+CH3(10)                 C   1H   3          G   100.000  5000.000  697.61      1
+ 3.09511290E+00 5.55429655E-03-1.88158709E-06 3.13334630E-10-2.05194840E-14    2
+ 1.65426189E+04 4.20297326E+00 3.96043207E+00 5.92926692E-04 8.78580229E-06    3
+-9.88037299E-09 3.63237783E-12 1.64218817E+04 3.39861761E-01                   4
+
+! Thermo library: DFT_QCI_thermo
+C3H8(11)                C   3H   8          G   100.000  5000.000  990.00      1
+ 5.60451848E+00 2.19526774E-02-8.22069003E-06 1.50101249E-09-1.05633081E-13    2
+-1.58394533E+04-6.22689747E+00 3.06333162E+00 1.29218175E-02 3.47019889E-05    3
+-4.70929096E-08 1.71376767E-11-1.43905776E+04 1.07836665E+01                   4
+
+! Thermo library: primaryThermoLibrary
+H(12)                   H   1               G   100.000  5000.000 4879.80      1
+ 4.28461071E+00-1.45494649E-03 4.44804306E-07-6.04359642E-11 3.07921551E-15    2
+ 2.37230923E+04-1.18931307E+01 2.50000000E+00-3.01680531E-12 3.74582141E-15    3
+-1.50856878E-18 1.86626471E-22 2.54742178E+04-4.44972899E-01                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+C2H5(13)                C   2H   5          G   100.000  5000.000 1006.87      1
+ 3.53785970E+00 1.37310796E-02-5.29559811E-06 9.71471485E-10-6.80280075E-14    2
+ 1.26351580E+04 5.15538097E+00 3.68745362E+00 3.06903728E-03 2.55868151E-05    3
+-2.94070110E-08 9.94048651E-12 1.31153653E+04 6.96689071E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+CH3OH(14)               C   1H   4O   1     G   100.000  5000.000 1035.75      1
+ 2.79182744E+00 1.15828112E-02-4.51553413E-06 8.21210187E-10-5.67066120E-14    2
+-2.57211607E+04 9.41070357E+00 3.84006541E+00 1.38238147E-03 1.91668527E-05    3
+-2.01570364E-08 6.39109354E-12-2.56083089E+04 5.90976964E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+HCO(15)                 C   1H   1O   1     G   100.000  5000.000 1112.10      1
+ 3.05135670E+00 4.11707280E-03-1.75586905E-06 3.29303911E-10-2.29174920E-14    2
+ 3.93008152E+03 7.67467218E+00 4.05936488E+00-1.73847366E-03 9.14984065E-06    3
+-8.01135179E-09 2.25738698E-12 3.84377614E+03 3.32449412E+00                   4
+
+! Thermo library: DFT_QCI_thermo
+CH3CHO(16)              C   2H   4O   1     G   100.000  5000.000 1028.81      1
+ 4.08563839E+00 1.39061205E-02-5.59370236E-06 1.04609279E-09-7.38738642E-14    2
+-2.20391342E+04 3.76801799E+00 3.57992412E+00 5.18983303E-03 2.26897556E-05    3
+-2.73742720E-08 9.28480001E-12-2.13697374E+04 8.96971515E+00                   4
+
+! Thermo library: primaryThermoLibrary
+OH(17)                  H   1O   1          G   100.000  5000.000 1145.76      1
+ 3.07193724E+00 6.04019839E-04-1.39805930E-08-2.13440813E-11 2.48061367E-15    2
+ 3.57938792E+03 4.57801469E+00 3.51456839E+00 2.92734292E-05-5.32150598E-07    3
+ 1.01947521E-09-3.85939405E-13 3.41425418E+03 2.10434756E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+C2H4(18)                C   2H   4          G   100.000  5000.000  979.36      1
+ 3.55666148E+00 1.10626517E-02-4.17013598E-06 7.85573786E-10-5.70050038E-14    2
+ 4.32044177E+03 2.17688329E+00 3.97470131E+00-4.75826458E-03 4.16777352E-05    3
+-4.51383971E-08 1.54221033E-11 4.91540809E+03 3.62436102E+00                   4
+
+! Thermo library: DFT_QCI_thermo
+CH3CH(19)               C   2H   4          G   100.000  5000.000  960.81      1
+ 4.30486414E+00 9.43069145E-03-3.27558933E-06 5.95122108E-10-4.27307267E-14    2
+ 4.07091457E+04 1.84203490E+00 3.82362693E+00-9.09524648E-04 3.21380397E-05    3
+-3.73480103E-08 1.33090621E-11 4.13713807E+04 7.10947614E+00                   4
+
+! Thermo library: thermo_DFT_CCSDTF12_BAC
+CH3OO(20)               C   1H   3O   2     G   100.000  5000.000 1031.34      1
+ 4.35019035E+00 1.07183820E-02-4.26218191E-06 7.89585637E-10-5.53852350E-14    2
+-3.09796253E+02 4.08946553E+00 3.58601551E+00 6.15340433E-03 1.33272147E-05    3
+-1.76585177E-08 6.13226209E-12 2.48233263E+02 9.74093531E+00                   4
+
+END
+
+
+
+REACTIONS    KCAL/MOLE   MOLES
+
+! Reaction index: Chemkin #1; RMG #23
+! Library reaction: BurkeH2O2inArHe
+! Flux pairs: H2(6), H(12); H2(6), H(12); 
+H2(6)+M<=>H(12)+H(12)+M                             4.577e+19 -1.400    104.380  
+CO(7)/1.90/ H2O(5)/12.00/ H2(6)/2.50/ CO2(4)/3.80/ Ar/0.00/ 
+
+! Reaction index: Chemkin #2; RMG #24
+! Library reaction: BurkeH2O2inArHe
+! Flux pairs: H2(6), H(12); Ar, Ar; Ar, H(12); 
+Ar+H2(6)<=>Ar+H(12)+H(12)                           5.840000e+18 -1.100    104.380  
+
+! Reaction index: Chemkin #3; RMG #21
+! Library reaction: BurkeH2O2inArHe
+! Flux pairs: OH(17), H2O(5); H2(6), H(12); 
+OH(17)+H2(6)<=>H(12)+H2O(5)                         2.160000e+08 1.510     3.430    
+
+! Reaction index: Chemkin #4; RMG #30
+! Library reaction: BurkeH2O2inArHe
+! Flux pairs: H2O(5), H(12); H2O(5), OH(17); 
+H2O(5)+M<=>H(12)+OH(17)+M                           6.064e+27 -3.322    120.790  
+H2(6)/3.00/ H2O(5)/0.00/ CO(7)/1.90/ CO2(4)/3.80/ O2(3)/1.50/ N2/2.00/ 
+
+! Reaction index: Chemkin #5; RMG #31
+! Library reaction: BurkeH2O2inArHe
+! Flux pairs: H2O(5), H2O(5); H2O(5), H(12); H2O(5), OH(17); 
+H2O(5)+H2O(5)<=>H(12)+OH(17)+H2O(5)                 1.006000e+26 -2.440    120.180  
+
+! Reaction index: Chemkin #6; RMG #45
+! Library reaction: BurkeH2O2inArHe
+! Flux pairs: OH(17), O2(3); OH(17), H2(6); 
+OH(17)+OH(17)<=>O2(3)+H2(6)                         2.000000e+11 0.510     50.500   
+
+! Reaction index: Chemkin #7; RMG #51
+! Template reaction: R_Recombination
+! Flux pairs: CH3(10), CH4(2); H(12), CH4(2); 
+! Matched reaction 57 H + CH3 <=> CH4 in R_Recombination/training
+! This reaction matched rate rule [Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_N-2CNO->O]
+! family: R_Recombination
+H(12)+CH3(10)<=>CH4(2)                              1.930000e+14 0.000     0.270    
+
+! Reaction index: Chemkin #8; RMG #55
+! Template reaction: R_Recombination
+! Flux pairs: CH3(10), C2H6(8); CH3(10), C2H6(8); 
+! Matched reaction 9 CH3 + CH3 <=> C2H6 in R_Recombination/training
+! This reaction matched rate rule [Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing]
+! family: R_Recombination
+CH3(10)+CH3(10)<=>C2H6(8)                           9.450000e+14 -0.538    0.135    
+
+! Reaction index: Chemkin #9; RMG #56
+! Template reaction: R_Recombination
+! Flux pairs: C2H5(13), C2H6(8); H(12), C2H6(8); 
+! Matched reaction 58 H + C2H5 <=> C2H6-2 in R_Recombination/training
+! This reaction matched rate rule [Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_N-Sp-3R!H=2CCNNOO_N-2CNO->O_3R!H->C_Sp-3C-2CN]
+! family: R_Recombination
+H(12)+C2H5(13)<=>C2H6(8)                            1.000000e+14 0.000     0.000    
+
+! Reaction index: Chemkin #10; RMG #57
+! Template reaction: 1,2_Insertion_CO
+! Flux pairs: CO(7), CH2O(9); H2(6), CH2O(9); 
+! Matched reaction 2 H2 + CO <=> CH2O in 1,2_Insertion_CO/training
+! This reaction matched rate rule [CO;H2]
+! family: 1,2_Insertion_CO
+H2(6)+CO(7)<=>CH2O(9)                               2.890000e+09 1.160     82.100   
+
+! Reaction index: Chemkin #11; RMG #58
+! Template reaction: R_Recombination
+! Flux pairs: HCO(15), CH2O(9); H(12), CH2O(9); 
+! Matched reaction 63 H + CHO <=> CH2O in R_Recombination/training
+! This reaction matched rate rule [Root_1R->H_N-2R->S_N-2CHNO->H_N-2CNO-inRing_Ext-2CNO-R_Sp-3R!H=2CCNNOO_3R!H->O]
+! family: R_Recombination
+H(12)+HCO(15)<=>CH2O(9)                             4.680000e+10 0.000     -4.530   
+
+! Reaction index: Chemkin #12; RMG #62
+! Template reaction: R_Recombination
+! Flux pairs: C2H5(13), C3H8(11); CH3(10), C3H8(11); 
+! Matched reaction 10 CH3 + C2H5 <=> C3H8 in R_Recombination/training
+! This reaction matched rate rule [Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_Sp-3R!H-2R_3R!H->C_2R->C]
+! family: R_Recombination
+CH3(10)+C2H5(13)<=>C3H8(11)                         1.230000e+15 -0.562    0.021    
+
+! Reaction index: Chemkin #13; RMG #64
+! Template reaction: Birad_R_Recombination
+! Flux pairs: H(12), C2H5(13); CH3CH(19), C2H5(13); 
+! Estimated using an average for rate rule [H_rad;Birad]
+! Euclidian distance = 0
+! family: Birad_R_Recombination
+H(12)+CH3CH(19)<=>C2H5(13)                          1.000000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #14; RMG #65
+! Template reaction: R_Addition_MultipleBond
+! Flux pairs: C2H4(18), C2H5(13); H(12), C2H5(13); 
+! Matched reaction 2541 H + C2H4 <=> C2H5-2 in R_Addition_MultipleBond/training
+! This reaction matched rate rule [Cds-HH_Cds-HH;HJ]
+! family: R_Addition_MultipleBond
+H(12)+C2H4(18)<=>C2H5(13)                           4.620000e+08 1.640     1.010    
+
+! Reaction index: Chemkin #15; RMG #68
+! Template reaction: R_Recombination
+! Flux pairs: OH(17), CH3OH(14); CH3(10), CH3OH(14); 
+! Matched reaction 73 CH3 + OH <=> CH4O in R_Recombination/training
+! This reaction matched rate rule [Root_N-1R->H_N-1CNOS->N_1COS->O_2R->C]
+! family: R_Recombination
+OH(17)+CH3(10)<=>CH3OH(14)                          6.030000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #16; RMG #72
+! Template reaction: R_Addition_COm
+! Flux pairs: CO(7), HCO(15); H(12), HCO(15); 
+! Matched reaction 4 H + CO <=> CHO in R_Addition_COm/training
+! This reaction matched rate rule [COm;H_rad]
+! family: R_Addition_COm
+H(12)+CO(7)<=>HCO(15)                               1.180000e+11 0.000     2.720    
+
+! Reaction index: Chemkin #17; RMG #73
+! Template reaction: 1,2_Insertion_CO
+! Flux pairs: CO(7), CH3CHO(16); CH4(2), CH3CHO(16); 
+! Matched reaction 3 CH4 + CO <=> C2H4O in 1,2_Insertion_CO/training
+! This reaction matched rate rule [CO;C_methane]
+! family: 1,2_Insertion_CO
+CO(7)+CH4(2)<=>CH3CHO(16)                           6.560000e+04 2.860     86.900   
+
+! Reaction index: Chemkin #18; RMG #76
+! Template reaction: R_Recombination
+! Flux pairs: HCO(15), CH3CHO(16); CH3(10), CH3CHO(16); 
+! Matched reaction 71 CH3 + CHO <=> C2H4O in R_Recombination/training
+! This reaction matched rate rule [Root_N-1R->H_N-1CNOS->N_N-1COS->O_1CS->C_N-1C-inRing_Ext-2R-R_N-Sp-3R!H-2R_3R!H->O]
+! family: R_Recombination
+HCO(15)+CH3(10)<=>CH3CHO(16)                        1.810000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #19; RMG #84
+! Template reaction: R_Recombination
+! Flux pairs: CH3OO(20), CH3(10); CH3OO(20), O2(3); 
+! Matched reaction 0 CH3O2 <=> O2 + CH3 in R_Recombination/training
+! This reaction matched rate rule [Root_N-1R->H_N-1CNOS->N_1COS->O_Ext-1O-R_2R->C_3R!H->O]
+! family: R_Recombination
+CH3OO(20)<=>O2(3)+CH3(10)                           1.090000e+14 0.250     33.300   
+
+! Reaction index: Chemkin #20; RMG #86
+! Template reaction: intra_H_migration
+! Flux pairs: CH3OO(20), OH(17); CH3OO(20), CH2O(9); 
+! From training reaction 240 used for R3H_SS_O;O_rad_out;Cs_H_out_2H
+! Exact match found for rate rule [R3H_SS_O;O_rad_out;Cs_H_out_2H]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 3.0
+! family: intra_H_migration
+CH3OO(20)<=>OH(17)+CH2O(9)                          4.710000e+08 1.450     42.270   
+
+! Reaction index: Chemkin #21; RMG #125
+! Template reaction: CO_Disproportionation
+! Flux pairs: H(12), H2(6); HCO(15), CO(7); 
+! Matched reaction 0 HCO + H <=> CO + H2 in CO_Disproportionation/training
+! This reaction matched rate rule [Root_N-4R->N_4BrCClFHIOPSSi->H]
+! family: CO_Disproportionation
+H(12)+HCO(15)<=>H2(6)+CO(7)                         9.030000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #22; RMG #128
+! Template reaction: H_Abstraction
+! Flux pairs: CH4(2), CH3(10); H(12), H2(6); 
+! Matched reaction 186 CH4b + H <=> CH3_p1 + H2_p in H_Abstraction/training
+! This reaction matched rate rule [H2;C_methyl]
+! family: H_Abstraction
+H(12)+CH4(2)<=>H2(6)+CH3(10)                        4.100000e+03 3.156     8.755    
+
+! Reaction index: Chemkin #23; RMG #129
+! Template reaction: H_Abstraction
+! Flux pairs: C2H6(8), C2H5(13); H(12), H2(6); 
+! Matched reaction 210 C2H6 + H <=> C2H5b + H2_p in H_Abstraction/training
+! This reaction matched rate rule [H2;C_rad/H2/Cs\H3]
+! family: H_Abstraction
+H(12)+C2H6(8)<=>H2(6)+C2H5(13)                      1.150000e+08 1.900     7.530    
+
+! Reaction index: Chemkin #24; RMG #131
+! Template reaction: H_Abstraction
+! Flux pairs: HCO(15), CH2O(9); H2(6), H(12); 
+! Matched reaction 309 H2 + HCO_r3 <=> CH2O + H in H_Abstraction/training
+! This reaction matched rate rule [H2;CO_pri_rad]
+! family: H_Abstraction
+H2(6)+HCO(15)<=>H(12)+CH2O(9)                       1.800000e+06 2.000     48.940   
+
+! Reaction index: Chemkin #25; RMG #134
+! Template reaction: Disproportionation
+! Flux pairs: H(12), H2(6); C2H5(13), C2H4(18); 
+! Matched reaction 4 H + C2H5 <=> H2 + C2H4 in Disproportionation/training
+! This reaction matched rate rule [Root_4R->H_Sp-2R!H-1R!H_2R!H-u1_N-1R!H->O_1CN->C_2R!H->C]
+! family: Disproportionation
+H(12)+C2H5(13)<=>H2(6)+C2H4(18)                     1.083000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #26; RMG #135
+! Template reaction: H_Abstraction
+! Flux pairs: CH3CH(19), C2H5(13); H2(6), H(12); 
+! Estimated using an average for rate rule [H2;Y_1centerbirad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+H2(6)+CH3CH(19)<=>H(12)+C2H5(13)                    2.317758e+11 0.750     21.325   
+
+! Reaction index: Chemkin #27; RMG #186
+! Template reaction: CO_Disproportionation
+! Flux pairs: CH3(10), CH4(2); HCO(15), CO(7); 
+! Matched reaction 3 HCO + CH3 <=> CO + CH4 in CO_Disproportionation/training
+! This reaction matched rate rule [Root_N-4R->N_N-4BrCClFHIOPSSi->H_4CO->C]
+! family: CO_Disproportionation
+HCO(15)+CH3(10)<=>CO(7)+CH4(2)                      4.000000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #28; RMG #189
+! Template reaction: H_Abstraction
+! Flux pairs: C2H6(8), C2H5(13); CH3(10), CH4(2); 
+! Matched reaction 215 C2H6 + CH3_r3 <=> C2H5b + CH4 in H_Abstraction/training
+! This reaction matched rate rule [C_methane;C_rad/H2/Cs\H3]
+! family: H_Abstraction
+CH3(10)+C2H6(8)<=>CH4(2)+C2H5(13)                   3.500000e+01 3.440     10.384   
+
+! Reaction index: Chemkin #29; RMG #191
+! Template reaction: H_Abstraction
+! Flux pairs: HCO(15), CH2O(9); CH4(2), CH3(10); 
+! Matched reaction 318 HCO_r3 + CH4b <=> CH2O + CH3_p1 in H_Abstraction/training
+! This reaction matched rate rule [C_methane;CO_pri_rad]
+! family: H_Abstraction
+HCO(15)+CH4(2)<=>CH2O(9)+CH3(10)                    7.280000e+03 2.850     34.250   
+
+! Reaction index: Chemkin #30; RMG #194
+! Template reaction: H_Abstraction
+! Flux pairs: OH(17), H2O(5); CH4(2), CH3(10); 
+! Matched reaction 188 CH4b + OH <=> CH3_p1 + H2O_p in H_Abstraction/training
+! This reaction matched rate rule [C_methane;O_pri_rad]
+! family: H_Abstraction
+OH(17)+CH4(2)<=>H2O(5)+CH3(10)                      1.000000e+06 2.182     2.506    
+
+! Reaction index: Chemkin #31; RMG #195
+! Template reaction: Disproportionation
+! Flux pairs: CH3(10), CH4(2); C2H5(13), C2H4(18); 
+! Matched reaction 5 CH3_r1 + C2H5 <=> CH4 + C2H4 in Disproportionation/training
+! This reaction matched rate rule [Root_N-4R->H_4CNOS-u1_N-1R!H->O_N-4CNOS->O_4CNS->C_1CNS->C_Sp-2R!H-1C_2R!H->C]
+! family: Disproportionation
+CH3(10)+C2H5(13)<=>CH4(2)+C2H4(18)                  6.570000e+14 -0.680    0.000    
+
+! Reaction index: Chemkin #32; RMG #196
+! Template reaction: H_Abstraction
+! Flux pairs: CH3CH(19), C2H5(13); CH4(2), CH3(10); 
+! Estimated using an average for rate rule [C_methane;Y_1centerbirad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 4.0
+! family: H_Abstraction
+CH4(2)+CH3CH(19)<=>CH3(10)+C2H5(13)                 2.006512e+11 0.833     15.521   
+
+! Reaction index: Chemkin #33; RMG #251
+! Template reaction: CO_Disproportionation
+! Flux pairs: OH(17), H2O(5); HCO(15), CO(7); 
+! Estimated from node Root_N-4R->N_N-4BrCClFHIOPSSi->H_N-4CO->C in family CO_Disproportionation.
+OH(17)+HCO(15)<=>H2O(5)+CO(7)                       3.010000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #34; RMG #254
+! Template reaction: H_Abstraction
+! Flux pairs: C2H6(8), C2H5(13); OH(17), H2O(5); 
+! Matched reaction 212 C2H6 + OH <=> C2H5b + H2O_p in H_Abstraction/training
+! This reaction matched rate rule [O_pri;C_rad/H2/Cs\H3]
+! family: H_Abstraction
+OH(17)+C2H6(8)<=>H2O(5)+C2H5(13)                    1.610000e+06 2.224     0.741    
+
+! Reaction index: Chemkin #35; RMG #256
+! Template reaction: H_Abstraction
+! Flux pairs: CH2O(9), HCO(15); OH(17), H2O(5); 
+! Matched reaction 367 OH_p23 + CH2O <=> H2O + HCO_r3 in H_Abstraction/training
+! This reaction matched rate rule [O_pri;CO_pri_rad]
+! family: H_Abstraction
+OH(17)+CH2O(9)<=>H2O(5)+HCO(15)                     3.440000e+09 1.180     -0.450   
+
+! Reaction index: Chemkin #36; RMG #260
+! Template reaction: Disproportionation
+! Flux pairs: OH(17), H2O(5); C2H5(13), C2H4(18); 
+! Matched reaction 13 HO + C2H5 <=> H2O + C2H4 in Disproportionation/training
+! This reaction matched rate rule [Root_N-4R->H_4CNOS-u1_N-1R!H->O_4CNOS->O_Sp-2R!H-1CNS_1CNS->C_2R!H->C]
+! family: Disproportionation
+OH(17)+C2H5(13)<=>H2O(5)+C2H4(18)                   7.230000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #37; RMG #261
+! Template reaction: H_Abstraction
+! Flux pairs: C2H5(13), CH3CH(19); OH(17), H2O(5); 
+! Estimated using template [Xrad_H;O_pri_rad] for rate rule [C_rad_H;O_pri_rad]
+! Euclidian distance = 1.0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+OH(17)+C2H5(13)<=>H2O(5)+CH3CH(19)                  6.000000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #38; RMG #316
+! Template reaction: CO_Disproportionation
+! Flux pairs: C2H5(13), C2H6(8); HCO(15), CO(7); 
+! Matched reaction 12 C2H5 + HCO <=> C2H6 + CO in CO_Disproportionation/training
+! This reaction matched rate rule [Root_N-4R->N_N-4BrCClFHIOPSSi->H_Ext-4CO-R_5R!H->C_Sp-5C-4CO_4CO->C]
+! family: CO_Disproportionation
+HCO(15)+C2H5(13)<=>CO(7)+C2H6(8)                    4.300000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #39; RMG #318
+! Template reaction: CO_Disproportionation
+! Flux pairs: HCO(15), CH2O(9); HCO(15), CO(7); 
+! Matched reaction 5 HCO + HCO_Y <=> CO + CH2O in CO_Disproportionation/training
+! This reaction matched rate rule [Root_N-4R->N_N-4BrCClFHIOPSSi->H_Ext-4CO-R_N-5R!H->C_5BrClFINOPSSi->O_4CO->C_N-Sp-5O-4C]
+! family: CO_Disproportionation
+HCO(15)+HCO(15)<=>CO(7)+CH2O(9)                     1.800000e+13 0.000     0.000    
+
+! Reaction index: Chemkin #40; RMG #322
+! Template reaction: CO_Disproportionation
+! Flux pairs: CH3CH(19), C2H5(13); HCO(15), CO(7); 
+! Estimated from node Root_N-4R->N_N-4BrCClFHIOPSSi->H_Ext-4CO-R_5R!H->C_Sp-5C-4CO_4CO->C in family CO_Disproportionation.
+HCO(15)+CH3CH(19)<=>CO(7)+C2H5(13)                  4.309140e+13 -0.000    0.000    
+
+! Reaction index: Chemkin #41; RMG #357
+! Template reaction: H_Abstraction
+! Flux pairs: HCO(15), CH2O(9); C2H6(8), C2H5(13); 
+! Matched reaction 325 HCO_r3 + C2H6 <=> CH2O + C2H5 in H_Abstraction/training
+! This reaction matched rate rule [C/H3/Cs\H3;CO_pri_rad]
+! family: H_Abstraction
+HCO(15)+C2H6(8)<=>CH2O(9)+C2H5(13)                  4.692000e+04 2.720     38.240   
+
+! Reaction index: Chemkin #42; RMG #360
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(13), C2H6(8); C2H5(13), C2H4(18); 
+! Matched reaction 6 C2H5 + C2H5-2 <=> C2H6 + C2H4 in Disproportionation/training
+! This reaction matched rate rule [Root_N-4R->H_4CNOS-u1_N-1R!H->O_N-4CNOS->O_Ext-4CNS-R_N-Sp-5R!H#4CCCNNNSSS_N-2R!H->S_N-5R!H->O_Sp-5CS-4CCNSS_1CNS->C]
+! family: Disproportionation
+C2H5(13)+C2H5(13)<=>C2H4(18)+C2H6(8)                6.900000e+13 -0.350    0.000    
+
+! Reaction index: Chemkin #43; RMG #361
+! Template reaction: H_Abstraction
+! Flux pairs: CH3CH(19), C2H5(13); C2H6(8), C2H5(13); 
+! Estimated using an average for rate rule [C/H3/Cs\H3;Y_1centerbirad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 6.0
+! family: H_Abstraction
+CH3CH(19)+C2H6(8)<=>C2H5(13)+C2H5(13)               1.157245e+11 0.933     12.427   
+
+! Reaction index: Chemkin #44; RMG #397
+! Template reaction: Disproportionation
+! Flux pairs: HCO(15), C2H4(18); C2H5(13), CH2O(9); 
+! Estimated from node Root_N-4R->H_4CNOS-u1_N-1R!H->O_N-4CNOS->O_Ext-4CNS-R_N-Sp-5R!H#4CCCNNNSSS_N-2R!H->S_5R!H->O_1CNS->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+HCO(15)+C2H5(13)<=>CH2O(9)+C2H4(18)                 8.670000e+12 0.000     0.000    
+
+! Reaction index: Chemkin #45; RMG #404
+! Template reaction: H_Abstraction
+! Flux pairs: CH3CH(19), C2H5(13); CH2O(9), HCO(15); 
+! Estimated using an average for rate rule [CO_pri;Y_1centerbirad]
+! Euclidian distance = 0
+! Multiplied by reaction path degeneracy 2.0
+! family: H_Abstraction
+CH2O(9)+CH3CH(19)<=>HCO(15)+C2H5(13)                5.012624e+10 0.285     1.380    
+
+! Reaction index: Chemkin #46; RMG #456
+! Template reaction: Disproportionation
+! Flux pairs: C2H5(13), C2H5(13); CH3CH(19), C2H4(18); 
+! Estimated from node Root_N-4R->H_N-4CNOS-u1_N-1R!H->O_Sp-2R!H-1CNS_1CNS->C_2R!H->C in family Disproportionation.
+! Multiplied by reaction path degeneracy 3.0
+CH3CH(19)+C2H5(13)<=>C2H4(18)+C2H5(13)              9.030000e+13 0.000     0.000    
+
+END
+

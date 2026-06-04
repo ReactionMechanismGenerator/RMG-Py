@@ -29,6 +29,7 @@
 
 import os
 
+import pandas as pd
 import numpy as np
 import warnings
 
@@ -159,6 +160,15 @@ class ThermoParameterUncertainty(object):
         The possible intermediate parameter types are:
         Library, Surface_Library, QM, Estimation, AdsorptionCorrection, or Group
         """
+
+        # explicit covariance should overrule default uncertainties when available
+        if self.other_covariances is not None:
+            # check if covariance is specified in other_covariances dict
+            sorted_labels = tuple(sorted([q_label1, q_label2]))
+            if sorted_labels in self.other_covariances:
+                return self.other_covariances[sorted_labels]
+
+
         intermediate_parameters = {
             'Library': self.dG_library,
             'Surface_Library': self.dG_surf_lib,
@@ -181,15 +191,13 @@ class ThermoParameterUncertainty(object):
         if corr_type1 is None or corr_type2 is None:
             raise ValueError(f'Could not determine the type of the correlated parameters from their labels {q_label1} and {q_label2}')
 
-        if self.other_covariances is not None:
-            # check if covariance is specified in other_covariances dict
-            sorted_labels = tuple(sorted([q_label1, q_label2]))
-            if sorted_labels in self.other_covariances:
-                return self.other_covariances[sorted_labels]
-
         if corr_type1 != corr_type2:
             return 0
         elif q_label1 == q_label2:
+            # have to check for surface site (later reformulation will allow for isomorphic check instead of this messy/incomplete string matching)
+            if q_label1 == 'Surface_Library X(1)':
+                return 0  # surface species is our zero reference by definition, so it should have no uncertainty, and thus no covariance with itself
+
             # If the two correlated parameters are exactly the same, return the variance of that parameter
             return intermediate_parameters[corr_type1] ** 2.0
         return 0
@@ -532,7 +540,7 @@ class Uncertainty(object):
         This function populates the self.thermo_covariances_dict with covariance data (in units of (kcal/mol)^2) from the given covariance libraries
 
         For each library, it expects:
-        1. a covariance.npy file containing the thermo covariance matrix and 
+        1. a covariance.csv file containing the thermo covariance matrix and
         2. a species_dictionary.txt file containing the species corresponding to the covariance data. In the same order.
 
         See the RMG-database/scripts/compile_BEEF_cov.ipynb Jupyter notebook for more details on how to generate these covariance libraries.
@@ -540,7 +548,7 @@ class Uncertainty(object):
         This function only adds covariance data for species that are actually in the model, (or in the extra_species as in the case of the radical/HBI correction)
         and only for the thermo source associated with that library. The goal is to keep the dictionary as small as possible because the lookups scale badly.
 
-        Note: the covariance.npy matrix is in units of (kJ/mol)^2, but gets converted to (kcal/mol)^2 in this function to match the rest of the analysis
+        Note: the covariance.csv matrix is in units of (kJ/mol)^2, but gets converted to (kcal/mol)^2 in this function to match the rest of the analysis
         """
         from rmgpy.chemkin import load_species_dictionary
         if self.database is None:
@@ -550,9 +558,10 @@ class Uncertainty(object):
                 library_name = os.path.basename(cov_lib)
                 if library_name in self.database.thermo.libraries:
                     library = self.database.thermo.libraries[library_name]
+                    library_entry_labels = [entry.label for entry in library.entries.values()]
                 else:
                     raise ValueError(f'Thermo covariance library {library_name} not found in the loaded database')
-                covariance_file = os.path.join(cov_lib, 'covariance.npy')
+                covariance_file = os.path.join(cov_lib, 'covariance.csv')
                 covariance_species = os.path.join(cov_lib, 'species_dictionary.txt')
 
                 if not os.path.isfile(covariance_file):
@@ -572,7 +581,11 @@ class Uncertainty(object):
                         warnings.warn(f'Thermo covariance library {cov_lib} is older than the thermo library {library_name}, which may mean the covariance data is out of date and not consistent with the current library data')
 
                 # Load covariance data and species
-                cov_data = np.load(covariance_file) / 4.184 / 4.184  # convert from (kJ/mol)^2 to (kcal/mol)^2
+                df = pd.read_csv(covariance_file)
+                cov_labels = df.columns.values
+                if any(cov_labels != library_entry_labels):
+                    raise ValueError(f'Covariance library {cov_lib} contains labels {cov_labels} that are not in the associated thermo library {library_name}, which has labels {library_entry_labels}. The covariance data and thermo library data must be consistent with each other.')
+                cov_data = np.array(df) / 4.184 / 4.184  # convert from (kJ/mol)^2 to (kcal/mol)^2
                 cov_species_dict = load_species_dictionary(covariance_species)
                 cov_specs = [item for _, item in cov_species_dict.items()]
                 
@@ -619,7 +632,7 @@ class Uncertainty(object):
         This function populates the self.thermo_covariances_dict with covariance data (in units of (kcal/mol)^2) from the given covariance group trees
 
         For each group tree, it expects:
-        1. a covariance.npy file containing the thermo covariance matrix, 
+        1. a covariance.csv file containing the thermo covariance matrix,
         2. a groups.py file containing the group definitions for the covariance data, in the same order as covariance.npy, and
         3. (optional) a species_dictionary.txt file containing the species in an associated library containing the training data.
            For example, the adsorptionPt111 correction tree uses the same species as surfaceThermoPt111, so it includes a species_dictionary.txt file to be able to get correlations with that library.
@@ -629,7 +642,7 @@ class Uncertainty(object):
         This function only adds covariance data for groups and species that are actually in the model, (or in the extra_species as in the case of the radical/HBI correction)
         and only for the thermo source associated with that group/library. The goal is to keep the dictionary as small as possible because the lookups scale badly.
 
-        Note: the covariance.npy matrix is in units of (kJ/mol)^2, but gets converted to (kcal/mol)^2 in this function to match the rest of the analysis
+        Note: the covariance.csv matrix is in units of (kJ/mol)^2, but gets converted to (kcal/mol)^2 in this function to match the rest of the analysis
         """
         from rmgpy.chemkin import load_species_dictionary
         # assumes there might also be covariances associated with library entries
@@ -658,7 +671,7 @@ class Uncertainty(object):
                     else:
                         raise ValueError(f'Associated library {library_name} for covariance group {cov_group_tree_name} not found in the loaded database')
 
-                covariance_file = os.path.join(cov_group_tree, 'covariance.npy')
+                covariance_file = os.path.join(cov_group_tree, 'covariance.csv')
                 if not os.path.isfile(covariance_file):
                     raise ValueError(f'Thermo covariance file {covariance_file} not found in {cov_group_tree}')
                 group_database_file = os.path.join(cov_group_tree, 'groups.py')
@@ -684,7 +697,9 @@ class Uncertainty(object):
                             warnings.warn(f'Thermo covariance group tree {cov_group_tree} is older than the associated library {associated_library.label}, which may mean the covariance data is out of date and not consistent with the current library data')
 
                 # load data
-                cov_data = np.load(covariance_file) / 4.184 / 4.184  # convert from (kJ/mol)^2 to (kcal/mol)^2
+                df = pd.read_csv(covariance_file)
+                cov_data = np.array(df) / 4.184 / 4.184  # convert from (kJ/mol)^2 to (kcal/mol)^2
+                cov_data_labels = df.columns.values
                 group_database = rmgpy.data.thermo.ThermoGroups()
                 group_database.load(group_database_file)
 
@@ -696,6 +711,9 @@ class Uncertainty(object):
 
                 group_items = [x.item for _, x in group_database.entries.items()]
                 group_labels = [x.label for _, x in group_database.entries.items()]
+                if any(cov_data_labels[:len(group_labels)] != group_labels):
+                    raise ValueError(f'Covariance group tree {cov_group_tree} contains labels {cov_data_labels} that are not consistent with the group labels {group_labels} in the associated RMG group tree {cov_group_tree_name}. The covariance data and group definitions must be consistent with each other.')
+
                 n_groups = len(group_items)
                 n_mols = len(cov_specs)
                 if cov_data.shape[0] != n_groups + n_mols:
@@ -708,12 +726,13 @@ class Uncertainty(object):
                 # --------------------------------- add group-group correlations ---------------------------------
                 # only consider groups actually in the model to keep this a reasonable size
                 groups_in_model = []
-                if cov_group_tree_name == 'adsorptionPt111' and 'ADS' in self.all_thermo_sources:
+                if cov_group_tree_name == 'adsorptionPt111' and 'ADS' in self.all_thermo_sources and cov_group_tree_name in self.all_thermo_sources['ADS']:
                     groups_in_model = self.all_thermo_sources['ADS'][cov_group_tree_name]
-                else:
+                elif cov_group_tree_name in self.all_thermo_sources['GAV']:
                     groups_in_model = self.all_thermo_sources['GAV'][cov_group_tree_name]
+
                 group_items_in_model = [x.item for x in groups_in_model]
-                group_labels_in_model = [x.label for x in groups_in_model]
+                group_labels_in_model = [x.label for x in groups_in_model]  # order of these two not guaranteed
 
                 # get labels through isomorphism with the groups in the model, so it doesn't matter if names change, it matches structure
                 valid_group_indices = [i for i in range(n_groups) if get_i_thing(group_items[i], group_items_in_model) >= 0]
@@ -1000,6 +1019,8 @@ class Uncertainty(object):
                     entry_copy = entry.copy()
                     entry_copy['Surface_Library'] = self.species_list[entry_copy['Surface_Library']].to_chemkin()
                     dG = g_param_engine.get_uncertainty_value(entry_copy)
+                    if species.is_surface_site():
+                        dG = 0  # surface species is our zero reference by definition, so it should have no uncertainty
                 else:
                     dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
                 self.thermo_input_uncertainties.append(dG)
@@ -1141,6 +1162,8 @@ class Uncertainty(object):
                     entry_copy = entry.copy()
                     entry_copy['Surface_Library'] = self.species_list[entry_copy['Surface_Library']].to_chemkin()
                     dG = g_param_engine.get_uncertainty_value(entry_copy)
+                    if species.is_surface_site():
+                        dG = 0  # surface species is our zero reference by definition, so it should have no uncertainty
                 else:
                     dG = g_param_engine.get_uncertainty_value(self.species_sources_dict[species])
                 self.thermo_intermediate_uncertainties.append(dG)  # in the uncorrelated case, the intermediate is just the uncertainty value itself, since there is only one parameter that contributes to the uncertainty
@@ -1159,6 +1182,8 @@ class Uncertainty(object):
                     except IndexError:
                         label = 'Surface_Library {}'.format(self.extra_species[source['Surface_Library'] - len(self.species_list)].to_chemkin())
                     dGdq[label] = 1  # dG/dG_surf = 1, because the parameter is never scaled by anything other than 1 when it is used
+                    if species.is_surface_site():
+                        dGdq[label] = 0  # surface species is our zero reference by definition, so it should have no uncertainty
                 if 'QM' in source:
                     label = 'QM {}'.format(self.species_list[source['QM']].to_chemkin())
                     dGdq[label] = 1
@@ -1494,7 +1519,7 @@ class Uncertainty(object):
 
             for i in range(len(thermo_contributions)):
                 if thermo_contributions[i] < 0:
-                    print(f'Warning: negative contribution to variance from {self.all_thermo_intermediates[i]} of {thermo_contributions[i]}. Setting contribution to 0 for plotting purposes.')
+                    # print(f'Warning: negative contribution to variance from {self.all_thermo_intermediates[i]} of {thermo_contributions[i]}. Setting contribution to 0 for plotting purposes.')
                     thermo_contributions[i] = 0
 
             total_variance = np.sum(thermo_contributions) + np.sum(kinetic_contributions)
