@@ -547,7 +547,7 @@ class Cantera(object):
                 pressure.append(cantera_reactor.thermo.P)
                 
                 if self.surface:
-                    species_data.append(np.concatenate((cantera_reactor.thermo[species_names_list].X, rsurf.kinetics.coverages)))
+                    species_data.append(np.concatenate((cantera_reactor.thermo[species_names_list].X, rsurf.coverages)))
                     N_gas = len(cantera_reactor.thermo[species_names_list].X)
                 else:
                     species_data.append(cantera_reactor.thermo[species_names_list].X)
