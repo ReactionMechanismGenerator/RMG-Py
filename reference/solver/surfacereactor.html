@@ -112,6 +112,20 @@ k_j is the rate parameter for the jth core reaction.</p>
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.compute_thermo_coverage_corrections">
+<span class="sig-name descname"><span class="pre">compute_thermo_coverage_corrections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">coverages</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.compute_thermo_coverage_corrections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the equilibrium constants <code class="docutils literal notranslate"><span class="pre">Keq</span></code> corrected for thermodynamic
+coverage dependence at the given surface <code class="docutils literal notranslate"><span class="pre">coverages</span></code>.</p>
+<p>For each species the free-energy correction is the sum over the (up to)
+six polynomial terms <code class="docutils literal notranslate"><span class="pre">coverage**k</span></code> and <code class="docutils literal notranslate"><span class="pre">-T*coverage**k</span></code> weighted by the
+per-species coefficients stored in <code class="docutils literal notranslate"><span class="pre">thermo_coeff_matrix</span></code>. These are
+mapped to per-reaction free-energy changes via <code class="docutils literal notranslate"><span class="pre">stoi_matrix</span></code> and applied
+to <code class="docutils literal notranslate"><span class="pre">Keq</span></code>. The corrected <code class="docutils literal notranslate"><span class="pre">Keq</span></code> is used to obtain a coverage-dependent
+reverse rate constant <code class="docutils literal notranslate"><span class="pre">kr</span> <span class="pre">=</span> <span class="pre">kf</span> <span class="pre">/</span> <span class="pre">Keq_corrected</span></code> in both the residual and
+the Jacobian.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.solver.SurfaceReactor.convert_initial_keys_to_species_objects">
 <span class="sig-name descname"><span class="pre">convert_initial_keys_to_species_objects</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">species_dict</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.solver.SurfaceReactor.convert_initial_keys_to_species_objects" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert the initial_gas_mole_fractions and initial_surface_coverages dictionaries
@@ -358,6 +372,7 @@ and <cite>dydt</cite> attributes.</p>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.advance"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.advance()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.compute_network_variables"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.compute_network_variables()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.compute_rate_derivative"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.compute_rate_derivative()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.compute_thermo_coverage_corrections"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.compute_thermo_coverage_corrections()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.convert_initial_keys_to_species_objects"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.convert_initial_keys_to_species_objects()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.generate_rate_coefficients"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.generate_rate_coefficients()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.solver.SurfaceReactor.generate_reactant_product_indices"><code class="docutils literal notranslate"><span class="pre">SurfaceReactor.generate_reactant_product_indices()</span></code></a></li>
