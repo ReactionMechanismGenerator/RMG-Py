@@ -291,7 +291,6 @@ class ObservablesTestCase(object):
         conditions_broken = []
         variables_failed = []
 
-        print('{0} Comparison'.format(self))
         # Check the species profile observables
         if 'species' in self.observables:
             if self.old_sim.surface_species_list:
@@ -400,7 +399,6 @@ class ObservablesTestCase(object):
 
             return variables_failed
         else:
-            print('')
             print('✅ All Observables varied by less than {0:.3f} on average between old model and '
                   'new model in all conditions!'.format(tol))
             print('')
