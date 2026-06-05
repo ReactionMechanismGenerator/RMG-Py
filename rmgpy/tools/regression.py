@@ -198,13 +198,16 @@ def parse_command_line_arguments():
     return input_file, benchmark, tested
 
 
-def configure_logging():
+def configure_logging(quiet=False):
     """
-    Configure the root logger so that INFO (and above) goes to stdout, while
-    WARNING and above *also* goes to stderr.
+    Configure the root logger so that INFO (and above) goes to stdout
+    (unless quiet=True),
+    while WARNING and above *also* goes to stderr.
 
-    This means the full log is captured in the normal CI build output (stdout),
+    This means the full log is output (stdout),
     while only genuine warnings/errors land on stderr.
+    In the CI context, run with quiet=True to make 
+    annotations less verbose.
     """
     root = logging.getLogger()
     root.setLevel(logging.INFO)
@@ -215,11 +218,12 @@ def configure_logging():
 
     formatter = logging.Formatter('%(levelname)s: %(message)s')
 
-    # INFO and above -> stdout (captured in the normal CI log).
-    stdout_handler = logging.StreamHandler(sys.stdout)
-    stdout_handler.setLevel(logging.INFO)
-    stdout_handler.setFormatter(formatter)
-    root.addHandler(stdout_handler)
+    if not quiet:
+        # INFO and above -> stdout (captured in the normal CI log).
+        stdout_handler = logging.StreamHandler(sys.stdout)
+        stdout_handler.setLevel(logging.INFO)
+        stdout_handler.setFormatter(formatter)
+        root.addHandler(stdout_handler)
 
     # WARNING and above -> stderr (so CI flags/annotates them via regression.py.err).
     stderr_handler = logging.StreamHandler(sys.stderr)
@@ -230,7 +234,7 @@ def configure_logging():
 
 def main():
     "Returns the list of variables that failed the regression."
-    configure_logging()
+    configure_logging(quiet=True)  # set quiet=False if you want more info.
 
     input_file, benchmark, tested = parse_command_line_arguments()
 
