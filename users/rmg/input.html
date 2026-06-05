@@ -345,6 +345,13 @@ be set as <code class="docutils literal notranslate"><span class="pre">True</spa
 <span class="p">)</span>
 </pre></div>
 </div>
+<p>For long lists of initial core species, you can specify a coreSpeciesList, shown below:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">coreSpeciesList</span><span class="p">(</span>
+    <span class="n">species_dictionary_file</span><span class="o">=</span><span class="s2">&quot;path/to/your/species_dictionary.txt&quot;</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>This specifies the path for an RMG-formatted <a class="reference internal" href="output.html#the-chemkin-folder"><span class="std std-ref">species dictionary</span></a> from which additional species will be loaded. Note that RMG will complain if any species in the input file is duplicated in the species dictionary. All species are assumed to be reactive.</p>
 </section>
 <section id="forbidden-structures">
 <span id="id2"></span><h2><span class="section-number">4.4. </span>Forbidden Structures<a class="headerlink" href="#forbidden-structures" title="Permalink to this heading">¶</a></h2>
