@@ -328,7 +328,7 @@ For long lists of initial core species, you can specify a coreSpeciesList, shown
         species_dictionary_file="path/to/your/species_dictionary.txt"
     )
 
-This specifies the path for an RMG-formatted :ref:`species dictionary <the_chemkin_folder>` from which additional species will be loaded. Note that RMG will complain if any species in the input file is duplicated in the species dictionary.
+This specifies the path for an RMG-formatted :ref:`species dictionary <the_chemkin_folder>` from which additional species will be loaded. Note that RMG will complain if any species in the input file is duplicated in the species dictionary. All species are assumed to be reactive.
 
 .. _forbidden_structures:
 
