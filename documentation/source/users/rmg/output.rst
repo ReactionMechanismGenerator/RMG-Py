@@ -17,6 +17,9 @@ You will see that a sucessfully executed RMG job will create multiple output fil
 ``/species``
 ``RMG.log``
 
+
+.. _the_chemkin_folder:
+
 ------------------
 The Chemkin Folder
 ------------------ 
