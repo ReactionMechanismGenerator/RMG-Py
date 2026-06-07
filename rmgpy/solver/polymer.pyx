@@ -415,7 +415,14 @@ class HybridPolymerSystem(ReactionSystem):
 
         cdef int n_core = self.num_core_species
         cdef int n_rxn = len(core_reactions) + len(edge_reactions)
+        # Flag end-group (terminal) reactions so their proxy rate scales by
+        # chain-end density (mu0) instead of monomer-unit density (mu1). Iterate
+        # in the SAME order that builds kf/kb and the ir/ip arrays
+        # (generate_rate_coefficients below) so the index matches r_idx.
         self.is_end_group_reaction = np.zeros(n_rxn, dtype=np.int8)
+        for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
+            if getattr(rxn, "is_end_group_reaction", False):
+                self.is_end_group_reaction[i] = 1
         if n_core <= 0:
             raise ValueError(f"Solver received an empty core species list (n_core={n_core}).")
 

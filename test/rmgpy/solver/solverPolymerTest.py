@@ -230,6 +230,58 @@ class TestHybridPolymerReactor:
         assert dn_dt[1] > 0.0
         assert dn_dt[2] < 0.0
 
+    def test_end_group_reaction_scales_by_mu0_not_mu1(self):
+        """
+        A proxy reaction flagged ``is_end_group_reaction`` must scale by chain-end
+        density (mu0); an unflagged proxy reaction scales by monomer-unit density
+        (mu1). End-group reactions occur at chain ends, so their rate is set by the
+        number of ends (mu0), not the number of repeat units (mu1).
+
+        Verified on a reactant-proxy reaction, where get_reaction_rates yields
+        rate = kf * moment / V_poly (the [THE HIJACK] block, polymer.pyx ~1262).
+        With mu0 != mu1 the flagged rate is smaller by exactly mu0/mu1. This pins
+        the wiring of the previously-dead is_end_group_reaction flag.
+        """
+        Proxy = _spc("CCCC", "poly")      # pool proxy (label == pool.label)
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        Prod = _spc("[CH3]", "P")         # gas product sink
+
+        core_species = [Proxy, Mu0, Mu1, Mu2, Prod]
+        gas_species_mask = np.array([False, False, False, False, True], dtype=bool)
+
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0    # mu0 != mu1 so the two scalings differ
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+        initial_polymer_moments = {"poly": (mu0, mu1, mu2)}
+
+        def _proxy_rate(flag):
+            rxn = Reaction(
+                reactants=[Proxy], products=[Prod],
+                kinetics=Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+                reversible=False,
+            )
+            rxn.is_end_group_reaction = flag
+            rs = HybridPolymerSystem(
+                T=800.0, P=1.0e5, initial_mole_fractions={Prod: 0.0}, V_poly=1.0,
+                polymer_pools=[pool], mass_transfer=[],
+                gas_species_mask=gas_species_mask.copy(), constant_gas_volume=False,
+                initial_polymer_moments=initial_polymer_moments, termination=[],
+            )
+            rs.initialize_model(core_species, [rxn], [], [])
+            return rs.get_reaction_rates(rs.y)[0], rxn.get_rate_coefficient(800.0, 1.0e5)
+
+        rate_mu1, kf = _proxy_rate(False)   # default: mu1 scaling
+        rate_mu0, _ = _proxy_rate(True)     # flagged: mu0 scaling
+
+        assert np.isclose(rate_mu1, kf * mu1 / 1.0)
+        assert np.isclose(rate_mu0, kf * mu0 / 1.0)
+        assert np.isclose(rate_mu0 / rate_mu1, mu0 / mu1)
+
     def test_random_scission_moment_derivatives(self):
         """
         Random backbone scission must satisfy the analytic discrete-bond
