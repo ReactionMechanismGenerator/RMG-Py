@@ -826,7 +826,25 @@ class Polymer(Species):
                 f"in the method-of-moments model, so the reaction is rejected."
             )
 
-        new_poly = self._create_reacted_copy_logic(reacted_proxy)
+        if klass == PolymerClass.END_MOD:
+            # End-group modification (e.g. terminal radical activation, CH3->CH2.)
+            # leaves the chain intact: the degree of polymerization, and therefore
+            # the moment-tracked chain-length distribution, is unchanged. The
+            # method-of-moments model abstracts chain-end activation into k_unzip
+            # (dmu1/dt = -k_unzip*mu0, scaling with the chain-end count mu0), so we
+            # fold the product back into the parent pool with moments and mass
+            # preserved rather than spawning a distinct activated-chain population
+            # (which would double-count k_unzip and cannot be represented anyway,
+            # since an activated end-cap is di-radical: stitch site + activation).
+            #
+            # Without this, _create_reacted_copy_logic's raw wing-matching diverges
+            # from classify_structure's heavy-view matcher, mis-routes the END_MOD
+            # product into a scission branch where it fails the mono-radical
+            # end-group assertion, returns None, and the product leaks to the gas
+            # phase as a spurious small molecule (a mass-balance leak).
+            new_poly = self.copy(deep=True)
+        else:
+            new_poly = self._create_reacted_copy_logic(reacted_proxy)
         if new_poly is None:
             return None
         proxy_spec = new_poly.get_proxy_species()

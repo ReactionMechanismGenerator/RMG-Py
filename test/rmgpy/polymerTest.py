@@ -726,6 +726,44 @@ PS_1
         small = Molecule(smiles="CC")  # no head/tail wing subgraphs
         assert p.create_reacted_copy(small) is None
 
+    def test_create_reacted_copy_end_mod_folds_to_parent(self):
+        """
+        An END_MOD product (intact chain, terminal end-group radical-activated,
+        e.g. CH3 -> CH2.) must NOT leak to the gas phase. In the method-of-moments
+        model chain-end activation is abstracted into k_unzip (dmu1/dt = -k_unzip*mu0),
+        so an end-group modification leaves the chain-length distribution unchanged:
+        create_reacted_copy folds it back into the parent pool (self.copy) with
+        moments and mass preserved.
+
+        Regression: previously create_reacted_copy returned None for END_MOD
+        products. Its raw wing-matching (find_subgraph_isomorphisms) diverges from
+        classify_structure's heavy-view matcher and missed the degenerate [H] tail
+        wing, mis-routing the product into the head-only scission-tail branch; the
+        extracted fragment then carried 2 radicals (the activation radical plus the
+        scission cut) and failed the mono-radical end-group assertion -> None. The
+        None then left the product Molecule in place, registering it as a spurious
+        gas-phase species (a mass leak).
+        """
+        p = self.polymer_1.copy()
+        reacted_proxy = p.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(p, reacted_proxy)
+
+        # Sanity: the construction really is an END_MOD product.
+        probe = reacted_proxy.copy(deep=True)
+        probe.clear_labeled_atoms()
+        probe.update()
+        assert polymer.classify_structure(Species(molecule=[probe]), p)[0] == PolymerClass.END_MOD
+
+        new_p = p.create_reacted_copy(reacted_proxy)
+        assert new_p is not None                  # no leak to gas
+        assert isinstance(new_p, Polymer)
+        assert new_p.label == p.label             # same pool identity (folded to parent)
+        assert new_p.feature_monomer is None      # backbone unchanged
+        # Moments / mass preserved (folded to parent, NOT halved like a scission).
+        assert np.isclose(new_p.Mn, p.Mn)
+        assert np.isclose(new_p.Mw, p.Mw)
+        assert np.allclose(new_p.moments, p.moments)
+
     def test_backbone_group_property(self):
         """
         Test that backbone_group generates a correctly relaxed pattern and caches it.
@@ -2174,6 +2212,30 @@ def abstract_h_from_center_backbone(mol):
             mol.update_multiplicity()
             return c
     raise ValueError("Could not find a center-backbone carbon with an explicit H to abstract.")
+
+
+def radicalize_head_end_group(p, mol):
+    """
+    Turn an intact baseline proxy into an END_MOD product by abstracting an H
+    from the *head terminal end-group* (e.g. CH3 -> CH2.), leaving both backbone
+    wings intact. Mirrors the construction used by the END_MOD classification
+    tests. Mutates ``mol`` in place and returns the modified end-group atom.
+    """
+    head_wings = p._wing_groups("head")
+    tail_wings = p._wing_groups("tail")
+    monomer_group = p.backbone_group
+    _, details = polymer._analyze_wing_matches(mol, head_wings, tail_wings, monomer_group)
+    heavy_to_full = details["heavy_to_full_map"]
+    head_heavy_atoms = details["head_match"]["atoms"]
+    mon_heavy_count = sum(1 for ga in monomer_group.atoms if not ga.is_hydrogen())
+    end_group_heavy, _ = polymer._slice_wing(head_heavy_atoms, mon_heavy_count)
+    target_full = heavy_to_full[list(end_group_heavy)[0]]
+    h_atom = next(n for n in target_full.bonds if n.is_hydrogen())
+    mol.remove_bond(mol.get_bond(target_full, h_atom))
+    mol.remove_atom(h_atom)
+    target_full.radical_electrons = 1
+    mol.update_multiplicity()
+    return target_full
 
 
 class TestPolymerAdditionalCoverage:
