@@ -2634,6 +2634,25 @@ class TestHandshakeStructures:
             f"got {type(product_list[0])}"
         )
 
+    def test_handshake_end_mod_flags_end_group_reaction(self):
+        """
+        After the handshake an END_MOD product makes is_end_group_reaction(products)
+        True — exactly what make_new_reaction uses to set
+        Reaction.is_end_group_reaction (mu0 chain-end scaling in the solver). A
+        baseline (non-terminal) product leaves it False (default mu1 scaling).
+        """
+        from rmgpy.polymer import is_end_group_reaction
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+        products = [end_mod]
+        self._handshake(products, [self.ps])
+        assert isinstance(products[0], Polymer)
+        assert is_end_group_reaction(products) is True
+
+        base = [self.ps.baseline_proxy.molecule[0].copy(deep=True)]
+        self._handshake(base, [self.ps])
+        assert is_end_group_reaction(base) is False
+
     # ------------------------------------------------------------------
     # 2. Head-scission fragment → scission_tail Polymer
     # ------------------------------------------------------------------
