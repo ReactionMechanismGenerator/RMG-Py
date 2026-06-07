@@ -618,6 +618,12 @@ class Polymer(Species):
         if mu0 <= 1e-20 or mu1 <= 1e-20 or mu2 <= 1e-20:
             return 0.0
 
+        if mu1 < mu0:
+            # Unrealizable state (μ1 ≥ μ0 always holds for a k≥1 distribution).
+            # Kept consistent with the solver's _safe_mu3_from_mu012 guard so
+            # post-processing never amplifies an out-of-cone moment vector.
+            return 0.0
+
         # Log-Lagrange Extrapolation: ln(mu3) = 3*ln(mu2) - 3*ln(mu1) + ln(mu0),
         # assuming that the 'curvature' of the distribution in log-space is constant.
         try:

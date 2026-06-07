@@ -230,6 +230,152 @@ class TestHybridPolymerReactor:
         assert dn_dt[1] > 0.0
         assert dn_dt[2] < 0.0
 
+    def test_random_scission_moment_derivatives(self):
+        """
+        Random backbone scission must satisfy the analytic discrete-bond
+        (Ziff-McGrady) moment closure (see docs/multi_pool_design.md §5):
+
+            dmu0/dt = k_s * (mu1 - mu0)     (one new chain per bond broken)
+            dmu1/dt = 0                     (monomer units conserved -> mass balance)
+            dmu2/dt = (k_s/3) * (mu1 - mu3)
+
+        with the log-Lagrange closure mu3 = mu0 * (mu2/mu1)**3.
+
+        Regression guards:
+        - The very first implementation used ``+k_s*mu1*(mu3/mu1 - mu2)`` for
+          dmu2/dt (dimensionally inconsistent, wrong sign).
+        - The mu0 source MUST be ``k_s*(mu1 - mu0)``, not ``k_s*mu1``. The bare
+          +k_s*mu1 form lets mu0 grow past mu1, the moment state leaves the
+          realizable cone, and the mu3 closure blows up to a DASSL singularity
+          (see ~/Projects/EPDM/polymer_branch_scission_handoff.md, BUG 1).
+        """
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "Mu0")
+        Mu1 = _spc("C=O", "Mu1")
+        Mu2 = _spc("C#N", "Mu2")
+
+        core_species = [Inert, Mu0, Mu1, Mu2]
+        gas_species_mask = np.array([True, False, False, False], dtype=bool)
+
+        k_s = 0.3
+        pool = PolymerPoolConfig(
+            label="poly",
+            xs=2,
+            explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3),
+            monomer_poly_index=None,
+            k_scission=k_s,
+            k_unzip=0.0,  # isolate scission; no handshake/unzip flux
+            tail_kinetics=None,
+        )
+
+        # V_poly=1 so moles-of-moment == concentration of moment.
+        V_poly = 1.0
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0  # mean DP=5, polydisperse
+        initial_polymer_moments = {"poly": (mu0, mu1, mu2)}
+
+        rxn_system = HybridPolymerSystem(
+            T=800.0,
+            P=1.0e5,
+            initial_mole_fractions={Inert: 1.0},
+            V_poly=V_poly,
+            polymer_pools=[pool],
+            mass_transfer=[],
+            gas_species_mask=gas_species_mask,
+            constant_gas_volume=False,
+            initial_polymer_moments=initial_polymer_moments,
+            termination=[],
+        )
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        dn_dt = rxn_system.residual(0.0, rxn_system.y, np.zeros_like(rxn_system.y))[0]
+
+        mu3 = mu0 * (mu2 / mu1) ** 3  # log-Lagrange closure used by the solver
+
+        expected_dmu0 = k_s * (mu1 - mu0) * V_poly
+        expected_dmu1 = 0.0
+        expected_dmu2 = k_s * (mu1 - mu3) / 3.0 * V_poly
+
+        assert np.isclose(dn_dt[1], expected_dmu0, rtol=1e-9)
+        assert np.isclose(dn_dt[2], expected_dmu1, atol=1e-12)
+        assert np.isclose(dn_dt[3], expected_dmu2, rtol=1e-9)
+        # mu0 source is self-limiting: positive while mu0 < mu1, so it can never
+        # drive mu0 past mu1 (realizability preserved).
+        assert dn_dt[1] > 0.0
+        # mu3 dominates mu1 for a polydisperse pool, so mu2 narrows (decreases).
+        assert dn_dt[3] < 0.0
+
+    def test_mu3_closure_realizability_guard(self):
+        """
+        The log-Lagrange mu3 closure must not amplify an out-of-cone moment
+        state. For a valid k>=1 distribution mu1 >= mu0 always; if mu1 < mu0 the
+        closure returns 0.0 instead of (mu2/mu1)**3 * mu0, which would otherwise
+        explode to a DASSL singularity (handoff BUG 1).
+        """
+        from rmgpy.solver.polymer import _safe_mu3_from_mu012
+        # Realizable: returns the finite log-Lagrange value.
+        assert _safe_mu3_from_mu012(1.0, 5.0, 30.0) > 0.0
+        # Unrealizable (mu1 < mu0): guarded to 0.0 rather than ~4e14.
+        assert _safe_mu3_from_mu012(21.17, 0.0139, 380.5) == 0.0
+
+    def test_scission_moment_trajectory_stays_realizable(self):
+        """
+        Integration regression for the EPDM scission blow-up (handoff BUG 1).
+
+        A scission-dominated pool must keep its moment trajectory inside the
+        realizable cone (mu1 >= mu0 >= 0, all finite) for the whole run, and mass
+        (mu1) must be conserved. Forward-Euler integration of the moment ODEs
+        (no reactions) is enough to expose the original failure: with the buggy
+        dmu0 = k_s*mu1 source, mu0 grows without bound and crosses mu1 within ~1
+        time constant, after which the mu3 closure explodes (the DASSL IDID=-6
+        singularity the EPDM deck hit). The fixed dmu0 = k_s*(mu1 - mu0) form is
+        self-limiting and keeps mu0 <= mu1.
+        """
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "Mu0")
+        Mu1 = _spc("C=O", "Mu1")
+        Mu2 = _spc("C#N", "Mu2")
+        core_species = [Inert, Mu0, Mu1, Mu2]
+        gas_species_mask = np.array([True, False, False, False], dtype=bool)
+
+        k_s = 1.0
+        V_poly = 1.0
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=k_s, k_unzip=0.0, tail_kinetics=None,
+        )
+        mu0_0, mu1_0, mu2_0 = 1.0, 5.0, 30.0
+        rxn_system = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=V_poly,
+            polymer_pools=[pool], mass_transfer=[], gas_species_mask=gas_species_mask,
+            constant_gas_volume=False,
+            initial_polymer_moments={"poly": (mu0_0, mu1_0, mu2_0)}, termination=[],
+        )
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        y = rxn_system.y.copy()
+        dt = 2.0e-3
+        n_steps = 5000  # t = 10, i.e. 10 scission time constants (1/k_s)
+        i0, i1, i2 = 1, 2, 3
+        for step in range(n_steps):
+            dn_dt = rxn_system.residual(step * dt, y, np.zeros_like(y))[0]
+            y = y + dt * dn_dt
+            mu0, mu1, mu2 = y[i0] / V_poly, y[i1] / V_poly, y[i2] / V_poly
+            assert np.all(np.isfinite(y)), f"non-finite state at step {step}"
+            assert mu0 >= -1e-9, f"mu0 negative at step {step}: {mu0}"
+            assert mu2 >= -1e-9, f"mu2 negative at step {step}: {mu2}"
+            # The realizability invariant the bug violated:
+            assert mu1 + 1e-9 >= mu0, f"mu1 < mu0 (unrealizable) at step {step}: mu0={mu0} mu1={mu1}"
+
+        mu0_f, mu1_f, mu2_f = y[i0] / V_poly, y[i1] / V_poly, y[i2] / V_poly
+        # Scission conserves mass (mu1).
+        assert np.isclose(mu1_f, mu1_0, rtol=1e-6)
+        # Ran toward completion: nearly all chains reduced to monomers (mu0 -> mu1).
+        assert mu0_f > 0.9 * mu1_0
+        # Distribution narrowed: mu2 fell from 30 toward mu1 (=5).
+        assert mu2_f < mu2_0 and mu2_f < 10.0
+
     def test_validate_configuration_rejects_moment_in_stoichiometry(self):
         """
         validate_configuration should fail if a moment index appears in reaction stoichiometry.

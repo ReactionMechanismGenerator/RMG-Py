@@ -129,8 +129,16 @@ class MassTransferConfig:
 # ======================================================================================
 
 def _safe_mu3_from_mu012(mu0: float, mu1: float, mu2: float) -> float:
-    """Log-Lagrange closure."""
+    """Log-Lagrange closure μ3 = μ0·(μ2/μ1)³, with a realizability guard.
+
+    A valid chain-length distribution (k ≥ 1) always satisfies μ1 ≥ μ0. If
+    solver noise or a bad source term pushes the state out of the realizable
+    cone, the (μ2/μ1)³ extrapolation can explode into a DASSL singularity, so
+    we return 0.0 (no closure contribution) rather than amplifying garbage.
+    """
     if mu0 <= SMALL_EPS or mu1 <= SMALL_EPS or mu2 <= SMALL_EPS:
+        return 0.0
+    if mu1 < mu0:  # unrealizable: more chains than monomer units
         return 0.0
     with np.errstate(divide="raise", invalid="raise", over="raise"):
         try:
@@ -992,9 +1000,21 @@ class HybridPolymerSystem(ReactionSystem):
                     self.T.value_si, self.P.value_si, mu0, mu1, mu2, mu3)
             else:
                 if pool.k_scission > 0:
-                    dmu0_dt += pool.k_scission * mu1
+                    # Random backbone scission, discrete-bond (Ziff-McGrady)
+                    # convention: a chain of length k has (k-1) breakable bonds,
+                    # so the distribution's breakable-bond count is (mu1 - mu0):
+                    #   dμ0/dt = k_s·(μ1 − μ0)     (one new chain per bond broken)
+                    #   dμ1/dt = 0                 (monomer units / mass conserved)
+                    #   dμ2/dt = (k_s/3)·(μ1 − μ3)
+                    # See docs/multi_pool_design.md §5. The μ0 term MUST carry the
+                    # −μ0 depletion part: with the bare +k_s·μ1 form μ0 grows past
+                    # μ1, the state leaves the realizable cone (μ1 ≥ μ0 always for a
+                    # k≥1 distribution), and the μ3 closure blows up to a DASSL
+                    # singularity. The (μ1 − μ0) form self-limits (rate → 0 as the
+                    # pool reaches all-monomer) and structurally keeps μ0 ≤ μ1.
+                    dmu0_dt += pool.k_scission * (mu1 - mu0)
                     if np.isfinite(mu3):
-                         dmu2_dt += pool.k_scission * mu1 * (mu3 / max(mu1, SMALL_EPS) - mu2)
+                        dmu2_dt += pool.k_scission * (mu1 - mu3) / 3.0
 
                 if pool.k_unzip > 0:
                     r_events = pool.k_unzip * mu0
