@@ -957,9 +957,16 @@ class Polymer(Species):
                 self._assert_end_group(new_tail, want_label='*2')
             except ValueError:
                 return None
+            # A scission product is a NEW, shorter chain population that starts
+            # EMPTY (initial_mass=0 -> zero moments) and is filled by reaction
+            # flux during the run; random scission ~halves the chain length, so
+            # its Mn/Mw are halved. Seed identically to _scission_head below.
+            # (Previously this copied the PARENT's full moments, which both
+            # duplicated mass — contradicting initial_mass=0 — and discarded the
+            # Mn/Mw halving, since passing `moments` makes __init__ derive Mn/Mw
+            # from it and ignore the halved values.)
             new_Mn = self.Mn / 2.0 if self.Mn else None
             new_Mw = self.Mw / 2.0 if self.Mw else None
-            new_moments = self.moments.copy() if self.moments is not None else None
             return Polymer(label=f"{self.label}_scission_tail",
                            monomer=self.monomer,
                            feature_monomer=None,
@@ -968,7 +975,7 @@ class Polymer(Species):
                            Mn=new_Mn,
                            Mw=new_Mw,
                            initial_mass=0.0,
-                           moments=new_moments,
+                           moments=None,
                            )
 
         if tail_atoms:

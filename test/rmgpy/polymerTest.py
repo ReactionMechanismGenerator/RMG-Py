@@ -693,8 +693,13 @@ PS_1
         labels = {a.label for a in new_tail.atoms if a.label}
         assert labels == {"*2"}
         assert new_tail.get_radical_count() == 1
-        assert np.isclose(new_p.Mn, p.Mn)
-        assert np.isclose(new_p.Mw, p.Mw)
+        # A scission product is a new, ~half-length chain population: Mn/Mw are
+        # halved and the pool starts empty (zero moments), matching _scission_head.
+        # (This previously asserted Mn/Mw == parent, which copied the parent's
+        # full distribution into a zero-mass fragment — a mass-duplication bug.)
+        assert np.isclose(new_p.Mn, p.Mn / 2.0)
+        assert np.isclose(new_p.Mw, p.Mw / 2.0)
+        assert np.allclose(new_p.moments, 0.0)
 
     def test_create_reacted_copy_tail_scission_returns_scission_head_polymer(self):
         """
