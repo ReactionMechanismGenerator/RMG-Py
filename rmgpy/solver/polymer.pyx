@@ -484,6 +484,12 @@ class HybridPolymerSystem(ReactionSystem):
                 else:
                     print(f"WARNING: Could not locate mu1 species for pool {pool.label}. Polymer chemistry will be inert.")
 
+        # Enforce the moment-isolation invariant and pool/mass-transfer index
+        # sanity now that gas_species_mask and the reaction index tables are
+        # populated. Moments must evolve only via the tail block, never through
+        # generic reaction stoichiometry.
+        self.validate_configuration()
+
         self._scratch_C_gas = np.zeros(n_core, float)
         self._scratch_C_poly = np.zeros(n_core, float)
         self._scratch_dn_dt = np.zeros(n_core, float)
@@ -568,7 +574,7 @@ class HybridPolymerSystem(ReactionSystem):
                 gas_lbl = core_species[mt.gas_index].label if 0 <= mt.gas_index < len(core_species) else "???"
                 poly_lbl = core_species[mt.poly_index].label if 0 <= mt.poly_index < len(core_species) else "???"
                 print(f"  {gas_lbl} (gas, idx={mt.gas_index}) <-> {poly_lbl} (poly, idx={mt.poly_index})  "
-                      f"kla={mt.kla:.2e}")
+                      f"kLa={mt.kLa:.2e}")
 
         print(f"\n{'=' * w}\n")
 
