@@ -2811,14 +2811,17 @@ class TestPolymerRegistration:
             expected = f'PS{suffix}'
             assert expected in labels, f"Missing moment dummy '{expected}' in new_species_list"
 
-    def test_moment_dummies_are_nonreactive_he(self):
-        """Moment dummies must be non-reactive Species with He placeholder molecules."""
+    def test_moment_dummies_are_nonreactive_ne(self):
+        """Moment dummies must be non-reactive Species with [Ne] placeholder
+        molecules (see CoreEdgeReactionModel._register_polymer, which uses
+        from_smiles('[Ne]'); the Cantera writer also documents the Ne
+        placeholder convention)."""
         self.model._register_polymer(self.ps, generate_thermo=False)
         for spc in self.model.new_species_list:
             if spc.label.startswith('PS_mu'):
                 assert spc.reactive is False
                 assert spc.index == -1
-                assert spc.molecule[0].get_formula() == 'He'
+                assert spc.molecule[0].get_formula() == 'Ne'
 
     def test_duplicate_polymer_returns_existing(self):
         """Registering the same Polymer twice must return the first copy (is_new=False)."""
