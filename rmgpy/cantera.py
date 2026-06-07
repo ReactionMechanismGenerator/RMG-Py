@@ -199,14 +199,22 @@ def generate_cantera_data(species_list,
     # --- 2. Phase Segregation (Gas vs Surface) ---
     # Moment-dummy reactions are element-unbalanced (Ne placeholders) and
     # handled by the custom polymer solver, not Cantera — exclude them.
-    # Polymer-proxy (trimer) species ARE element-balanced and their reactions
-    # with gas-phase radicals are valid Cantera chemistry — keep those so
-    # downstream consumers (e.g. the TA package) can run a real simulation.
+    # Most polymer-proxy (trimer) reactions ARE element-balanced (modification,
+    # H-abstraction, unzip) and are valid Cantera chemistry, so we keep them.
+    # The exception is chain-fragment-size-changing reactions such as
+    # parent-proxy -> *_scission_tail/_scission_head, where the daughter proxy
+    # is a DIFFERENT-SIZE stand-in: those are element-unbalanced and would make
+    # ct.Solution reject the whole mechanism via Reaction::checkBalance. Their
+    # mass is accounted for by the moment/handshake bookkeeping in the polymer
+    # solver, not by Cantera, so drop any unbalanced polymer-proxy reaction.
     def _is_moment_dummy(spc):
         return getattr(spc, 'is_moment_dummy', False)
 
     def _involves_moment_dummy(rxn):
         return any(_is_moment_dummy(spc) for spc in rxn.reactants + rxn.products)
+
+    def _involves_polymer_proxy(rxn):
+        return any(getattr(spc, 'is_polymer_proxy', False) for spc in rxn.reactants + rxn.products)
 
     gas_species, surface_species, gas_reactions, surface_reactions = list(), list(), list(), list()
 
@@ -216,13 +224,25 @@ def generate_cantera_data(species_list,
         else:
             gas_species.append(spc)
 
+    n_dropped_unbalanced = 0
     for rxn in reaction_list:
         if _involves_moment_dummy(rxn):
+            continue
+        if _involves_polymer_proxy(rxn) and not rxn.is_balanced():
+            n_dropped_unbalanced += 1
+            logging.debug("Excluding element-unbalanced polymer-proxy reaction "
+                          "from Cantera export: %s", rxn)
             continue
         if rxn.is_surface_reaction():
             surface_reactions.append(rxn)
         else:
             gas_reactions.append(rxn)
+
+    if n_dropped_unbalanced:
+        logging.info("Cantera export: dropped %d element-unbalanced polymer-proxy "
+                     "reaction(s) (e.g. parent->scission fragment); these are "
+                     "handled by the polymer moment solver, not Cantera.",
+                     n_dropped_unbalanced)
 
     # --- 3. Phase Definitions ---
     base_elements = ['H', 'C', 'O', 'N', 'Ne', 'Ar', 'He', 'Si', 'S', 'F', 'Cl', 'Br', 'I', 'E']

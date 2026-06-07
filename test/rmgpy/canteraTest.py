@@ -261,6 +261,50 @@ class TestCanteraWriter:
         assert "three-body" in ct_r2.reaction_type or "ThreeBody" in ct_r2.reaction_type
         assert np.isclose(ct_r2.third_body.efficiencies["Ar"], 0.7)
 
+    def test_generate_cantera_data_drops_unbalanced_polymer_proxy_reaction(self):
+        """
+        Element-unbalanced polymer-proxy reactions (e.g. a parent proxy reacting
+        to a DIFFERENT-SIZE scission fragment, parent -> *_scission_tail) must be
+        excluded from the Cantera export. Otherwise Cantera's Reaction::checkBalance
+        rejects the entire mechanism and ct.Solution() raises. Balanced proxy
+        reactions and ordinary reactions must be kept.
+
+        Regression for the EPDM scission deck (handoff BUG 2): the writer used to
+        keep ALL polymer-proxy reactions on the assumption they balance, which is
+        false for the size-changing scission_tail/scission_head daughters.
+        """
+        # Parent proxy (C3) reacting to a larger proxy (C5): element-unbalanced.
+        parent = self._create_dummy_species("parent", "CCC", index=1)
+        parent.is_polymer_proxy = True
+        tail = self._create_dummy_species("scission_tail", "CCCCC", index=2)
+        tail.is_polymer_proxy = True
+        h = self._create_dummy_species("H", "[H]", index=3)
+        hh = self._create_dummy_species("H2", "[H][H]", index=4)
+
+        unbalanced = Reaction(
+            reactants=[h, parent], products=[hh, tail],
+            kinetics=Arrhenius(A=(1e10, "cm^3/(mol*s)"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+        )
+        assert not unbalanced.is_balanced()  # sanity: this really is unbalanced
+
+        # Ordinary, balanced reaction (no polymer proxy) must survive untouched.
+        r = self._create_dummy_species("R", "[CH2]O", index=5)
+        p = self._create_dummy_species("P", "C[O]", index=6)
+        normal = Reaction(
+            reactants=[r], products=[p],
+            kinetics=Arrhenius(A=(1e10, "s^-1"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+        )
+        assert normal.is_balanced()
+
+        species = [parent, tail, h, hh, r, p]
+        data = generate_cantera_data(species, [unbalanced, normal], is_plasma=False)
+
+        equations = [d['equation'] for d in data.get('reactions', [])]
+        # The unbalanced proxy reaction is dropped; the ordinary one is kept.
+        assert not any('scission_tail' in eq for eq in equations)
+        assert "R(5) <=> P(6)" in equations
+        assert len(equations) == 1
+
     def test_reaction_to_dict_pdep_arrhenius(self):
         """Test Pressure-Dependent Arrhenius (PLOG) structure."""
         r = self._create_dummy_species("R", "[CH2]O", index=1)
