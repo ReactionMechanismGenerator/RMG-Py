@@ -484,6 +484,13 @@ class Polymer(Species):
         other._baseline_proxy = self._baseline_proxy.copy(deep=True) if self._baseline_proxy else None
         other._feature_proxy = self._feature_proxy.copy(deep=True) if self._feature_proxy else None
         other._fingerprint = self._fingerprint
+        # Attributes set in __init__ that __new__ bypasses — must be carried over,
+        # else a copied Polymer loses its identity flag (is_polymer) and, worse,
+        # its degradation kinetics (k_scission/k_unzip would silently reset to 0).
+        other.k_scission = self.k_scission
+        other.k_unzip = self.k_unzip
+        other.is_polymer = True
+        other._cached_backbone_group = None
         return other
 
     @staticmethod

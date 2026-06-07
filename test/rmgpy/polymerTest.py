@@ -297,6 +297,24 @@ PS_1
         assert self.polymer_1.label == poly_cp.label
         assert self.polymer_1.index == poly_cp.index
 
+    def test_copy_preserves_identity_and_kinetics(self):
+        """
+        copy() uses __new__ (bypassing __init__) and must explicitly carry over
+        the attributes __init__ sets. Regression: it used to drop `is_polymer`
+        (so _handshake_structures re-processed copied polymers) and, worse, the
+        degradation kinetics k_scission/k_unzip (silently reset to 0).
+        """
+        p = Polymer(
+            label='PE', monomer='[CH2][CH2]', end_groups=['[CH3]', '[H]'],
+            cutoff=3, Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+            k_scission=2.5, k_unzip=0.7,
+        )
+        for c in (p.copy(), p.copy(deep=True)):
+            assert isinstance(c, Polymer)
+            assert getattr(c, 'is_polymer', False) is True
+            assert c.k_scission == 2.5
+            assert c.k_unzip == 0.7
+
     def test_fingerprint_property(self):
         """Test that the fingerprint property works"""
         assert self.polymer_1.fingerprint == "Polymer_C08H08N00O00S00_EG-C01H03N00O00S00_C00H01N00O00S00_3"
