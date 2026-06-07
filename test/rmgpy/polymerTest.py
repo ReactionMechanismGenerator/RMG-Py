@@ -726,6 +726,39 @@ PS_1
         small = Molecule(smiles="CC")  # no head/tail wing subgraphs
         assert p.create_reacted_copy(small) is None
 
+    def test_create_reacted_copy_stamps_reacted_class(self):
+        """
+        create_reacted_copy stamps the classification verdict on the returned
+        polymer (``_reacted_class``) so the polymer handshake can flag END_MOD
+        reactions for mu0 (chain-end) scaling in the solver.
+        """
+        p = self.polymer_1.copy()
+        # END_MOD product (terminal radical-activated) -> stamped END_MOD.
+        end_mod = p.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(p, end_mod)
+        new_end = p.create_reacted_copy(end_mod)
+        assert new_end._reacted_class == PolymerClass.END_MOD
+        # Unreacted baseline proxy -> stamped BASELINE.
+        baseline = p.baseline_proxy.molecule[0].copy(deep=True)
+        new_base = p.create_reacted_copy(baseline)
+        assert new_base._reacted_class == PolymerClass.BASELINE
+
+    def test_is_end_group_reaction_helper(self):
+        """
+        is_end_group_reaction(products) is True iff some product Polymer was
+        classified END_MOD. Non-Polymer products and unstamped polymers are
+        ignored (default mu1 scaling).
+        """
+        from rmgpy.polymer import is_end_group_reaction
+        p = self.polymer_1
+        end = p.copy(); end._reacted_class = PolymerClass.END_MOD
+        feat = p.copy(); feat._reacted_class = PolymerClass.FEATURE
+        plain = Molecule(smiles="CC")
+        assert is_end_group_reaction([end, plain]) is True
+        assert is_end_group_reaction([feat, plain]) is False
+        assert is_end_group_reaction([plain]) is False
+        assert is_end_group_reaction([p.copy()]) is False  # no _reacted_class set
+
     def test_create_reacted_copy_end_mod_folds_to_parent(self):
         """
         An END_MOD product (intact chain, terminal end-group radical-activated,

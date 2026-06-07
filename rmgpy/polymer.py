@@ -847,6 +847,10 @@ class Polymer(Species):
             new_poly = self._create_reacted_copy_logic(reacted_proxy)
         if new_poly is None:
             return None
+        # Stamp the classification verdict so the polymer handshake can flag
+        # END_MOD reactions for chain-end (mu0) scaling in the solver. Read by
+        # is_end_group_reaction(products); a transient generation-time marker.
+        new_poly._reacted_class = klass
         proxy_spec = new_poly.get_proxy_species()
         for mol in proxy_spec.molecule:
             mol.clear_labeled_atoms()
@@ -1373,6 +1377,21 @@ class PolymerClass(str, Enum):
     # --- Chain Breaking/Linking States ---
     SCISSION = 'SCISSION'    # Only 1 wing found; chain broke (e.g., [X-O]-W)
     CROSSLINK = 'CROSSLINK'  # >2 wings found; bi-molecular polymer recombination
+
+
+def is_end_group_reaction(products) -> bool:
+    """
+    True iff this reaction's products mark it as an end-group (terminal)
+    modification — i.e. some product :class:`Polymer` was classified ``END_MOD``
+    by :meth:`Polymer.create_reacted_copy` (which stamps ``_reacted_class``).
+
+    End-group reactions occur at chain ends, so the polymer hybrid solver scales
+    them by chain-end density (mu0) rather than monomer-unit density (mu1).
+    Non-Polymer products and polymers without a stamped verdict are ignored,
+    leaving the default mu1 scaling.
+    """
+    return any(getattr(p, '_reacted_class', None) == PolymerClass.END_MOD
+               for p in products if isinstance(p, Polymer))
 
 
 MatchMapping = Mapping[Any, Any]
