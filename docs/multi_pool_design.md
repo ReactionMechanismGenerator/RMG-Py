@@ -3,7 +3,7 @@
 **Branch:** `polymer`
 **Status:** Design complete, implementation in progress
 **Companion doc:** `~/Code/TA/PRD.md` (consumer of the output sidecar)
-**Last updated:** 2026-05-10
+**Last updated:** 2026-06-07 (reconciled with implementation: scission/unzip moment ODEs specified in §5; the §7 in-place CVODES-resize design was NOT built — spawning uses per-iteration solver rebuild; §10 limitations expanded)
 
 ---
 
@@ -20,7 +20,7 @@ We need **dynamic multi-pool spawning**: detect the emergence of a structurally 
 | 1 | Spawn trigger | Auto-detect from product structure (no user pre-declaration) |
 | 2 | Detection algorithm | Hybrid: classify-against-all-pools first; novel-monomer discovery fallback |
 | 3 | Subgraph isomorphism backend | RMG-native `find_subgraph_isomorphisms`, fingerprint-gated by element formula. RDKit only as documented fallback if benchmarks show RMG's pure-Python iso is intractable for the auto-detect inner loop. |
-| 4 | Spawn timing | Between RMG iterations only. Queue spawn intents during iteration; drain + reinit solver state vector before next `simulate()` |
+| 4 | Spawn timing | Between RMG iterations only. Queue spawn intents during iteration; drain → register daughter `_muN` species; solver is rebuilt on the next iteration (no in-place reinit — see §7) |
 | 5 | Conservation | Event-spawn instantiation from triggering product (B.μₖ = N · DPᵏ); ongoing transfer reactions use Schulz-Flory closure |
 | 6 | Runaway guard | (a) similarity-merge to existing pool first, (b) mass-flux gate ≥1% over N iters, (c) `max_pools` cap (default 5, configurable) |
 | 7 | Daughter end_groups | Inherit parent's. Char-precursor edge differences are a known phase-1 limitation. |
@@ -36,7 +36,7 @@ These match the PRD §6.2.
 | `rmgpy/polymer.py` | `Polymer` class, `classify_structure()`, `_analyze_wing_matches()`, `process_polymer_candidates()` | Extend: classify-against-all-pools loop; add novel-monomer discovery; spawn-intent generation |
 | `rmgpy/rmg/polymer_input.py` | `polymer()`, `polymer_phase()`, `hybridPolymerReactor()` input directives | Add optional `max_pools=5` and `mass_flux_threshold=0.01` knobs to `polymer()`. Pool registry (currently 1) becomes a list. |
 | `rmgpy/rmg/model.py` | Core-model iteration; `is_polymer_proxy` propagation | Drain spawn-intent queue between iterations; instantiate new `Polymer` objects; register with reaction_model |
-| `rmgpy/solver/polymer.pyx` | `HybridPolymerSystem`; state-vector layout; `mu_indices` per pool | State-vector resize hook; allocate μ slots for new pools; reinit CVODES on resize. Implement Schulz-Flory closure helpers for transfer reactions. |
+| `rmgpy/solver/polymer.pyx` | `HybridPolymerSystem`; state-vector layout; `mu_indices` per pool | Per-pool moment ODEs (scission/unzip, §5) + closure helpers. Moment indices resolved by label in `initialize_model`; new pools picked up on solver rebuild (no in-place resize). |
 | `rmgpy/data/kinetics/family.py` | Reaction generation; polymer-proxy contagion | Pass *all* live pools to `process_polymer_candidates` (not just one) so contagion classifies against the full pool registry |
 | `rmgpy/yml.py` (Cantera writer) | Cantera YAML emission | Loop over pool registry to emit `<label>_muN` pseudo-species; emit sidecar `polymer_pools.json` |
 | `rmgpy/chemkin.py` | Chemkin writer | Same pool loop for chem.inp emission |
@@ -185,8 +185,11 @@ The signature is a canonical SMARTS or RMG `Group` adjacency-list hash. Trailing
 21.        "triggering_dp": intent.triggering_dp,
 22.        "mass_flux_at_spawn": current_motif_flux(intent.monomer),
 23.    }
-24. solver_reinit(state, len(state))
-25. queued_spawn_intents.clear()
+24. # NO in-place CVODES resize (see §7). The new pool registers its
+25. #   _mu0/_mu1/_mu2 dummy core species; the next RMG iteration rebuilds
+26. #   the reaction system and initialize_model() resolves the new pool's
+27. #   moment indices from the (now larger) core-species list by label.
+28. queued_spawn_intents.clear()
 ```
 
 ## 5. Conservation invariants
@@ -212,6 +215,37 @@ dA.μ₂/dt -= r · ⟨DP²_A⟩         where ⟨DP²_A⟩ = (Schulz-Flory clos
 
 **Volatile sink:**
 - The volatile product is a regular (non-pool) species with its own ODE. Its mass flux is `r · m_volatile` (g/s), accounted for by the standard species ODE.
+
+**Per-pool degradation source terms (`k_scission`, `k_unzip`) — added 2026-06-07.**
+These are the lumped homopolymer-degradation knobs applied directly to each pool's
+moments (distinct from family-generated reactions). They MUST be implemented exactly
+as below; the implementation lives in `solver/polymer.pyx` and is unit-tested.
+
+Random backbone scission, discrete-bond (Ziff–McGrady) convention — a chain of
+length k has (k−1) breakable bonds, so the distribution's breakable-bond count is
+(μ1−μ0):
+```
+dμ0/dt = +k_scission · (μ1 − μ0)     # one new chain per bond broken; SELF-LIMITING
+dμ1/dt =  0                          # mass (monomer units) conserved
+dμ2/dt =  (k_scission / 3) · (μ1 − μ3)
+```
+The `(μ1 − μ0)` form is mandatory: the naive `+k_scission·μ1` lets μ0 grow past μ1,
+the state leaves the realizable cone (μ1 ≥ μ0 always holds for a k≥1 distribution),
+and the μ3 closure then explodes to a DASSL singularity. With `(μ1 − μ0)` the rate
+→ 0 as the pool reaches all-monomer, structurally preserving μ0 ≤ μ1.
+
+Chain-end depropagation (unzip) — each chain loses one monomer unit per event:
+```
+dμ0/dt =  0
+dμ1/dt = -k_unzip · μ0               # released monomer added to the gas-phase species
+dμ2/dt = -k_unzip · (2μ1 − μ0)
+```
+
+Safety net: both the solver closure (`_safe_mu3_from_mu012`) and the post-processing
+closure (`get_closing_moment`) return a bounded 0.0 when `μ1 < μ0`, so a transient
+out-of-cone state cannot amplify into a singularity. An opt-in
+`debug_check_realizability` flag on `HybridPolymerSystem` logs (once per pool) when a
+moment state violates μ1≥μ0≥0 or μ0·μ2≥μ1².
 
 **Mass-conservation invariant (test assertion):**
 
@@ -287,13 +321,19 @@ RMG iteration N:
        — solver runs to ODE termination criteria
   5. End of iteration: if spawn_intents non-empty:
        a. Drain intents, append new pools to registry
-       b. Resize state vector (append 3 zero entries per spawn)
-       c. Initialize new μ-slots from triggering events
-       d. Call HybridPolymerSystem.reinit_solver(new_state) — fresh CVODES init
-  6. Iteration N+1 begins
+       b. Register each new pool's _mu0/_mu1/_mu2 dummy core species
+       c. Seed daughter moments from the triggering event (B.μk = N·DPᵏ)
+  6. Iteration N+1: RMG rebuilds the reaction system; the larger core-species
+     list yields a larger y0 and a freshly-constructed CVODES. The new pool's
+     moment indices are resolved by label in initialize_model().
 ```
 
-Critical: `reinit_solver` must reset the integrator's internal state (Jacobian, history) — CVODES has a `CVodeReInit` for this. Without it, the solver's stored state size mismatches the new state vector and we segfault.
+**Implementation note (reconciled 2026-06-07):** there is NO in-place state-vector
+resize and no `CVodeReInit` — `reinit_solver`/`solver_reinit` do not exist. Spawning
+relies on RMG's existing per-iteration teardown: the spawned pool's `_muN` dummy
+species enter the core list, and the next `initialize_model()` builds a fresh solver
+of the correct size. This is simpler than an in-place resize and avoids the
+size-mismatch/segfault hazard the original design contemplated.
 
 ## 8. Test strategy
 
@@ -339,7 +379,7 @@ The existing `examples/rmg/polystyrene/input.py` must still produce the same out
 5. **`similarity_merge`** — implement; unit test on near-duplicate motifs. Commit.
 6. **Mass-flux gate** — implement rolling accumulator; unit test. Commit.
 7. **Spawn-intent generation in `process_polymer_candidates`** — wire phases A–E. Synthetic unit test starts passing partial assertions. Commit.
-8. **State-vector resize + solver reinit** — `polymer.pyx` changes; CVODES reinit hook. Synthetic test expands to assert moment-trajectory continuity across spawn. Commit.
+8. **Solver picks up new pools on rebuild** — daughter `_muN` species register; `initialize_model` resolves their indices by label on the next iteration (no in-place resize/CVODES reinit — that approach was dropped). Synthetic test asserts moment continuity across spawn. Commit.
 9. **Schulz-Flory closure helpers** — implement; unit test against analytic Schulz-Flory chains. Commit.
 10. **Sidecar JSON writer** — `yml.py` and/or `chemkin.py` extension. Synthetic test asserts JSON round-trip. Commit.
 11. **Family.py contagion update** — pass full pool registry. Existing tests must still pass. Commit.
@@ -356,6 +396,15 @@ Each numbered step is its own commit. The synthetic unit test from step 1 acts a
 3. Schulz-Flory closure is exact only for free-radical chain-growth polymerization. Phenolic resin is step-growth — Flory's `2-1/μ₀` form applies. Closure functions documented inline; alternative closures (log-normal) are pluggable but not phase-1.
 4. `max_pools` cap is hard. After cap reached, would-be-spawned products are still tagged `is_polymer_proxy=True` and tracked as explicit oligomers; their moments are not separately accounted. Acceptable for phase 1; phase 2 may add cap-relaxation under user override.
 5. The cantera writer emits `<label>_muN` as pseudo-species. Cantera does not "understand" them — they are decorative in YAML and meaningful only via the sidecar. TA's loader filters them out before constructing a Cantera `Solution`.
+6. **Crosslink / chain–chain coupling is not modeled.** A reaction whose product is a crosslink (>2 intact wings, i.e. two chains joined) is *rejected* (`PolymerCrosslinkError` → the reaction is discarded) rather than represented, because the single-distribution-per-pool moment model has no coupling term. This conserves mass but drops char-forming coupling chemistry — a phase-2 item.
+7. **Gas/polymer classification is purely topological** (wing count). There is no volatility/MW check, so a small volatile that happens to contain an [end-group + monomer] subgraph can be retained as a polymer fragment. Acceptable for phase 1; revisit with a size/boiling-point gate.
+8. **The proxy is a fixed single-buffer trimer** (`[Head]–O–O–O–[Tail]`), with no length knob — `cutoff`/`x_s` set the solver's explicit/tail boundary, NOT the proxy length. Interior chemistry and thermo are therefore taken from a center monomer that sits one monomer from a real chain end; for short repeat units this may let end effects leak in.
+9. **Cantera export drops element-unbalanced polymer-proxy reactions** (the size-changing `*_scission_tail/_scission_head` daughters) so `ct.Solution` doesn't reject the mechanism via `checkBalance`. Their mass is carried by the moment solver + `polymer_pools.json` sidecar, not by Cantera — the TA consumer must rely on the sidecar for that flux.
+10. **Scission daughters seed as EMPTY pools** (`moments=None`, `initial_mass=0` → zero moments, halved Mn/Mw) and fill via reaction flux. They do NOT inherit the parent's distribution (that would duplicate mass).
+
+> NOTE (§4.4 mass-flux gate): NOT YET ACTIVE. `_estimate_relative_flux` is a `0.5`
+> stub, so spawning is currently gated only by `max_pools` + similarity-merge. The
+> rolling-window `MassFluxAccumulator` is implemented but not wired into the live path.
 
 ## 11. Open items for follow-up
 

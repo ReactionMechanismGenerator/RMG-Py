@@ -1891,7 +1891,7 @@ class SpawnIntent:
     Mirrors the ``polymer_pools.json`` sidecar schema entries (design doc §6).
     Created during product classification when a structurally novel chain
     population is detected; drained between RMG iterations to grow the pool
-    registry and resize the solver state vector.
+    registry (the solver is rebuilt on the next iteration — no in-place resize).
     """
 
     parent_pool: 'Polymer'
@@ -2121,8 +2121,9 @@ def process_polymer_candidates_multipool(
         :attr:`PolymerClass.DISCARD`). All survivors are tagged with
         ``is_polymer_proxy``.
     spawn_intents : list of :class:`SpawnIntent`
-        Queued spawn requests to drain between RMG iterations (state-vector
-        resize + solver reinit happens there, design doc §4.5).
+        Queued spawn requests to drain between RMG iterations (the daughter
+        pools register `_muN` dummy species and the solver is rebuilt on the
+        next iteration — no in-place resize; design doc §4.5/§7).
     """
     processed: List['Species'] = []
     spawn_intents: List[SpawnIntent] = []
@@ -2337,8 +2338,11 @@ def drain_spawn_intents(
     n-th daughter of a given parent across all calls gets ``<parent>_d{n}``,
     preventing collisions when the registry grows across iterations.
 
-    State-vector resize and the corresponding ``CVodeReInit`` on the Cython
-    solver side consume this list as a separate step.
+    NOTE: there is no in-place state-vector resize or ``CVodeReInit``. The
+    daughter pools' ``_muN`` dummy species are registered with the reaction
+    model; the next RMG iteration rebuilds the solver and
+    ``HybridPolymerSystem.initialize_model`` resolves their moment indices by
+    label. (The ``mu_indices`` computed here are only used for the sidecar JSON.)
     """
     taken: Set[str] = {p.label for p in (existing_pools or [])}
     # μ_index allocator: next free slot is one past the max index any
