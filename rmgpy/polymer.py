@@ -119,6 +119,27 @@ from rmgpy.thermo import Wilhoit, NASA, ThermoData
 LABELS_1, LABELS_2 = ('1', '*1'), ('2', '*2')
 
 
+class PolymerCrosslinkError(Exception):
+    """
+    Raised when a polymer reaction product is a crosslink / chain-coupling
+    structure (>2 intact monomer wings, i.e. two chains joined into one).
+
+    The method-of-moments solver tracks a single chain-length distribution per
+    pool and has no representation for chain-chain coupling (which removes a
+    chain from the population and merges two distributions). Such reactions are
+    therefore *rejected* rather than letting the coupled product fall through to
+    a spurious gas-phase species, which would silently break the polymer mass
+    balance. Caught in :meth:`CoreEdgeReactionModel.make_new_reaction`, which
+    discards the reaction.
+
+    Note: this deliberately does NOT subclass ValueError/RuntimeError so it is
+    not swallowed by the ``except (RuntimeError, ValueError)`` guard in
+    :func:`rmgpy.data.kinetics.family._handshake_structures`; it must propagate
+    up to ``make_new_reaction``.
+    """
+    pass
+
+
 class Polymer(Species):
     """
     A class representing a polymer distribution (Polymer Pool).
@@ -776,7 +797,28 @@ class Polymer(Species):
         """
         Wrapper that ensures any generated polymer fragment is sanitized
         (labels stripped, proxy tagged) before returning to the RMG engine.
+
+        Raises:
+            PolymerCrosslinkError: if the product is a crosslink / chain-coupling
+                structure (>2 intact wings). Chain-chain coupling is not
+                representable in the method-of-moments model, so the caller
+                discards the whole reaction instead of leaking the coupled
+                product into the gas phase as a spurious small molecule.
         """
+        # Guard: reject chain-chain coupling (crosslink) products up front.
+        # Without this they fall through _create_reacted_copy_logic to None and
+        # get silently registered as gas-phase species, breaking mass balance.
+        probe = reacted_proxy.copy(deep=True)
+        probe.clear_labeled_atoms()
+        probe.update()
+        klass, _ = classify_structure(Species(molecule=[probe]), self)
+        if klass == PolymerClass.CROSSLINK:
+            raise PolymerCrosslinkError(
+                f"Reaction product is a crosslink/chain-coupling structure for "
+                f"pool '{self.label}'; chain-chain coupling is not representable "
+                f"in the method-of-moments model, so the reaction is rejected."
+            )
+
         new_poly = self._create_reacted_copy_logic(reacted_proxy)
         if new_poly is None:
             return None

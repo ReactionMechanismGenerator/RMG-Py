@@ -1752,6 +1752,63 @@ class TestPolymerClassification:
         p_class, details = polymer.classify_structure(Species(molecule=[crosslink_mol]), self.p)
         assert p_class == polymer.PolymerClass.CROSSLINK
 
+    def _build_crosslink_mol(self):
+        """Build a >2-wing crosslink molecule by joining two baseline chains
+        at heavy atoms (after freeing valence). Same construction as
+        test_branch_crosslink_bimolecular, factored out for reuse."""
+        crosslink_mol = self.ref_baseline_mol.copy(deep=True)
+        second_chain = self.ref_baseline_mol.copy(deep=True)
+        mapping = {}
+        for atom in second_chain.atoms:
+            new_atom = atom.copy()
+            crosslink_mol.add_atom(new_atom)
+            mapping[atom] = new_atom
+        for atom1 in second_chain.atoms:
+            for atom2, bond in atom1.edges.items():
+                if id(atom1) < id(atom2):
+                    crosslink_mol.add_bond(Bond(mapping[atom1], mapping[atom2], bond.order))
+        a1 = next(a for a in crosslink_mol.atoms if not a.is_hydrogen())
+        h1 = next(n for n in a1.edges if n.is_hydrogen())
+        crosslink_mol.remove_bond(crosslink_mol.get_bond(a1, h1))
+        crosslink_mol.remove_atom(h1)
+        a2 = next(mapping[a] for a in second_chain.atoms if not a.is_hydrogen())
+        h2 = next(n for n in a2.edges if n.is_hydrogen())
+        crosslink_mol.remove_bond(crosslink_mol.get_bond(a2, h2))
+        crosslink_mol.remove_atom(h2)
+        crosslink_mol.add_bond(Bond(a1, a2, order=1))
+        crosslink_mol.update_multiplicity()
+        return crosslink_mol
+
+    def test_create_reacted_copy_rejects_crosslink(self):
+        """
+        A crosslink / chain-coupling product (>2 wings) must raise
+        PolymerCrosslinkError, NOT silently return None.
+
+        Regression guard: previously _create_reacted_copy_logic fell through to
+        None for crosslinks, so the coupled chain was registered as a spurious
+        gas-phase molecule (a silent mass leak). create_reacted_copy now rejects
+        it so make_new_reaction can discard the whole reaction.
+        """
+        crosslink_mol = self._build_crosslink_mol()
+        # sanity: this really is a crosslink
+        assert polymer.classify_structure(
+            Species(molecule=[crosslink_mol.copy(deep=True)]), self.p
+        )[0] == polymer.PolymerClass.CROSSLINK
+
+        with pytest.raises(polymer.PolymerCrosslinkError):
+            self.p.create_reacted_copy(crosslink_mol)
+
+    def test_handshake_structures_propagates_crosslink_rejection(self):
+        """
+        The crosslink rejection must propagate through _handshake_structures
+        (i.e. NOT be swallowed by its ``except (RuntimeError, ValueError)``
+        guard), so that make_new_reaction sees it and discards the reaction.
+        """
+        from rmgpy.data.kinetics.family import _handshake_structures
+        crosslink_mol = self._build_crosslink_mol()
+        with pytest.raises(polymer.PolymerCrosslinkError):
+            _handshake_structures([crosslink_mol], [self.p])
+
     def test_branch_scission_single_wing(self):
         """
         Tests a severed polymer chain containing exactly one terminal end-cap.

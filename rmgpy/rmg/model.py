@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import Polymer
+from rmgpy.polymer import Polymer, PolymerCrosslinkError
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -631,7 +631,14 @@ class CoreEdgeReactionModel:
             # out of the kinetic model as gas-phase molecules.
             polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
             if polymer_reactants:
-                _handshake_structures(forward.products, polymer_reactants)
+                try:
+                    _handshake_structures(forward.products, polymer_reactants)
+                except PolymerCrosslinkError as e:
+                    # Chain-chain coupling is not representable in the method-of-
+                    # moments model; discard the reaction rather than leak the
+                    # coupled product as a gas-phase species.
+                    logging.debug("Rejecting crosslink polymer reaction %s: %s", forward, e)
+                    return None, False
                 # Handshake replaced some Molecule objects in forward.products
                 # with Polymer objects, so forward.pairs references stale objects.
                 # Invalidate pairs so they are regenerated later.
@@ -673,6 +680,12 @@ class CoreEdgeReactionModel:
                     forward.pairs = None
 
                 products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
+            except PolymerCrosslinkError as e:
+                # Chain-chain coupling is not representable in the method-of-
+                # moments model; discard the reaction rather than leak the
+                # coupled product as a gas-phase species.
+                logging.debug("Rejecting crosslink polymer reaction %s: %s", forward, e)
+                return None, False
             except:
                 logging.error(f"Error when making species in reaction {forward} from {forward.family}")
                 raise
