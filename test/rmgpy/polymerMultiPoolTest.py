@@ -199,6 +199,32 @@ class TestProcessPolymerCandidatesMultiPool:
         )
         assert len(processed) == 1
 
+    def test_unknown_against_all_pools_stays_polymer_not_gas(self, parent_polymer, monkeypatch):
+        """An UNKNOWN classification (intact backbone, no clean pool match) must
+        be kept as a polymer proxy, NOT leaked to the gas phase via motif
+        discovery. This unifies the multipool semantics with the single-pool
+        process_polymer_candidates (classification != GAS -> polymer proxy).
+        """
+        import rmgpy.polymer as polymer_mod
+        from rmgpy.polymer import process_polymer_candidates_multipool, PolymerClass
+        from rmgpy.species import Species
+
+        cand = Species(smiles="CCCCCC")  # structure irrelevant; class is forced below
+        # Force every pool comparison to return UNKNOWN (intact backbone, unmatched).
+        monkeypatch.setattr(polymer_mod, "classify_structure",
+                            lambda c, p, **kw: (PolymerClass.UNKNOWN, {}))
+
+        processed, intents = process_polymer_candidates_multipool(
+            candidates=[cand],
+            reaction_model=None,
+            pool_registry=[parent_polymer],
+        )
+        assert intents == [], "UNKNOWN must not spawn a new pool"
+        assert cand in processed, "UNKNOWN intact-backbone product must be kept"
+        assert getattr(cand, "is_polymer_proxy", False) is True, (
+            "UNKNOWN must stay in the polymer phase, not be tagged gas"
+        )
+
     def test_novel_motif_spawns_one_pool(self, parent_polymer):
         from rmgpy.polymer import process_polymer_candidates_multipool
         from rmgpy.species import Species

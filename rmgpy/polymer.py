@@ -2131,6 +2131,7 @@ def process_polymer_candidates_multipool(
         # Phase A: classify against every existing pool, take the first non-trivial hit.
         matched_pool: Optional['Polymer'] = None
         matched_class: Optional[PolymerClass] = None
+        saw_unknown = False  # intact backbone (>=2 wings) but no clean pool match
         for pool in pool_registry:
             try:
                 klass, _ = classify_structure(cand, pool)
@@ -2140,6 +2141,8 @@ def process_polymer_candidates_multipool(
                 matched_pool = pool
                 matched_class = klass
                 break
+            if klass == PolymerClass.UNKNOWN:
+                saw_unknown = True
 
         if matched_pool is not None:
             _tag_polymer_proxy(cand, is_proxy=(matched_class != PolymerClass.GAS))
@@ -2147,7 +2150,18 @@ def process_polymer_candidates_multipool(
                 processed.append(cand)
             continue
 
-        # Phase B: novel-monomer discovery.
+        # No clean pool match. An UNKNOWN classification means an intact backbone
+        # (>=2 wings) that simply didn't match a pool's exact structure — it is
+        # still structurally a polymer, so keep it in the polymer phase instead of
+        # risking a leak to gas via Phase B. This unifies the semantics with the
+        # single-pool process_polymer_candidates (classification != GAS -> proxy).
+        if saw_unknown:
+            _tag_polymer_proxy(cand, is_proxy=True)
+            processed.append(cand)
+            continue
+
+        # Phase B: novel-monomer discovery (only for candidates that were GAS
+        # against every pool, i.e. not chain-like w.r.t. any existing pool).
         mol = cand.molecule[0] if getattr(cand, "molecule", None) else None
         if mol is None:
             continue
