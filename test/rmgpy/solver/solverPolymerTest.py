@@ -590,6 +590,92 @@ class TestHybridPolymerReactor:
         assert abs(rxn_system.y[1] - 1.0e-3) < 1e-12
         assert abs(rxn_system.y[4] - 5.0e-4) < 1e-12
 
+    def test_spawn_rebuild_round_trip_preserves_moments(self):
+        """
+        Integration round-trip: a daughter pool produced by drain_spawn_intents
+        (the Python iteration-boundary hook) must survive the solver rebuild. The
+        rebuilt HybridPolymerSystem resolves BOTH the parent and the spawned
+        daughter by label, carries the parent's moments across unchanged (moment
+        continuity), and places the daughter's event-seeded moments (mu_k = N*DP^k)
+        at its own state-vector slots.
+
+        Closes the gap flagged in TestDrainSpawnIntents ("the Cython solver-reinit
+        half follows separately and consumes the Polymer objects produced here")
+        and the spawn->rebuild round-trip promised by docs/multi_pool_design.md.
+        There is no in-place CVodeReInit: spawning works by registering the
+        daughter's _muN dummy species and rebuilding the solver, which resolves
+        moment indices by label.
+        """
+        from rmgpy.polymer import Polymer, SpawnIntent, drain_spawn_intents
+
+        # --- Parent pool, pre-spawn solver (v1) -----------------------------
+        parent = Polymer(label="PE", monomer="[CH2][CH2]", end_groups=["[H]", "[H]"],
+                         cutoff=3, Mn=1000.0, Mw=2500.0, initial_mass=1.0)
+        parent.mu_indices = (1, 2, 3)
+
+        Inert = _spc("N#N", "N2")
+        P_mu0 = _spc("CO", "PE_mu0"); P_mu1 = _spc("C=O", "PE_mu1"); P_mu2 = _spc("C#N", "PE_mu2")
+        for s in (P_mu0, P_mu1, P_mu2):
+            s.reactive = False
+        core_v1 = [Inert, P_mu0, P_mu1, P_mu2]
+        gas_v1 = np.array([True, False, False, False], dtype=bool)
+
+        parent_moments = (1.0e-3, 8.0e-3, 7.0e-2)
+        rs1 = HybridPolymerSystem(
+            T=900.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0e-3,
+            polymer_pools=[PolymerPoolConfig(label="PE", xs=3,
+                                             explicit_dp_to_species_index={}, mu_indices=(1, 2, 3))],
+            gas_species_mask=gas_v1.copy(),
+            initial_polymer_moments={"PE": parent_moments},
+        )
+        rs1.initialize_model(core_v1, [], [], [])
+        # Parent state carried out of the pre-spawn solver.
+        carried = (float(rs1.y[1]), float(rs1.y[2]), float(rs1.y[3]))
+        assert abs(carried[0] - parent_moments[0]) < 1e-12
+
+        # --- Spawn a daughter at the iteration boundary ---------------------
+        N, DP = 2.0e-4, 5
+        intent = SpawnIntent(parent_pool=parent, monomer=parent.backbone_group,
+                             end_groups=["[H]", "[H]"], triggering_dp=DP, triggering_moles=N)
+        daughter = drain_spawn_intents([intent], iteration=1, existing_pools=[parent])[0]
+        assert daughter.label == "PE_d1"
+        assert np.allclose(daughter.moments, [N, N * DP, N * DP * DP])
+
+        # --- Rebuild solver (v2) with parent + daughter ---------------------
+        # The daughter registers _muN dummy species labelled "<label>_muK";
+        # the rebuilt solver resolves them by label.
+        D_mu0 = _spc("CC", "PE_d1_mu0"); D_mu1 = _spc("C=C", "PE_d1_mu1"); D_mu2 = _spc("C#C", "PE_d1_mu2")
+        for s in (D_mu0, D_mu1, D_mu2):
+            s.reactive = False
+        core_v2 = [Inert, P_mu0, P_mu1, P_mu2, D_mu0, D_mu1, D_mu2]
+        gas_v2 = np.array([True, False, False, False, False, False, False], dtype=bool)
+
+        rs2 = HybridPolymerSystem(
+            T=900.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0e-3,
+            polymer_pools=[
+                PolymerPoolConfig(label="PE", xs=3, explicit_dp_to_species_index={}, mu_indices=(1, 2, 3)),
+                PolymerPoolConfig(label="PE_d1", xs=3, explicit_dp_to_species_index={}, mu_indices=(4, 5, 6)),
+            ],
+            gas_species_mask=gas_v2.copy(),
+            initial_polymer_moments={"PE": carried, "PE_d1": tuple(float(m) for m in daughter.moments)},
+        )
+        rs2.initialize_model(core_v2, [], [], [])
+
+        # Both pools resolved by label.
+        assert int(rs2.pool_mu0_indices[0]) == 1
+        assert int(rs2.pool_mu0_indices[1]) == 4
+        # Parent moments unchanged across the rebuild (continuity).
+        assert abs(rs2.y[1] - carried[0]) < 1e-12
+        assert abs(rs2.y[2] - carried[1]) < 1e-12
+        assert abs(rs2.y[3] - carried[2]) < 1e-12
+        # Daughter's event-seeded moments (N*DP^k) land at its own slots.
+        assert rs2.y[4] == pytest.approx(N)
+        assert rs2.y[5] == pytest.approx(N * DP)
+        assert rs2.y[6] == pytest.approx(N * DP * DP)
+        # The rebuilt RHS evaluates cleanly (finite, no NaN).
+        dn = rs2.residual(0.0, rs2.y, np.zeros_like(rs2.y))[0]
+        assert np.all(np.isfinite(dn))
+
     def test_initialization_subtracts_explicit_from_total_moments(self):
         """
         If initial_polymer_moments are provided (Total) along with explicit species,
