@@ -270,6 +270,7 @@ class HybridPolymerSystem(ReactionSystem):
         pdep_collision_reaction_indices: Optional[np.ndarray] = None,
         pdep_collider_kinetics: Optional[List] = None,
         collider_efficiencies: Optional[np.ndarray] = None,
+        debug_check_realizability: bool = False,
     ):
         super().__init__(termination=termination,
                          sensitive_species=sensitive_species,
@@ -300,6 +301,14 @@ class HybridPolymerSystem(ReactionSystem):
         self.pdep_collider_kinetics = pdep_collider_kinetics if pdep_collider_kinetics is not None else []
         self.collider_efficiencies = collider_efficiencies if collider_efficiencies is not None else np.array([[]], float)
         self.initial_polymer_moments = initial_polymer_moments or {}
+
+        # Opt-in moment-realizability diagnostic (off by default; zero cost when
+        # off). When on, the residual logs ONCE per pool if its moment state
+        # leaves the realizable cone (μ1≥μ0≥0, μ0·μ2≥μ1²) — a fast way to localize
+        # a bad moment source term. It only logs (never raises): the μ3 closure
+        # already degrades gracefully on out-of-cone states.
+        self.debug_check_realizability = bool(debug_check_realizability)
+        self._realizability_warned = set()
         self.initial_explicit_species = initial_explicit_species or {}
         self.polymer_species_labels = set(polymer_species_labels) if polymer_species_labels else set()
 
@@ -995,6 +1004,20 @@ class HybridPolymerSystem(ReactionSystem):
             mu1 = mu1_mol / V_poly
             mu2 = mu2_mol / V_poly
             mu3 = _safe_mu3_from_mu012(mu0, mu1, mu2)
+
+            if self.debug_check_realizability and pool.label not in self._realizability_warned:
+                # Use raw (pre-clamp) moles so negatives are caught too. All terms
+                # are extensive, so the inequalities are scale-invariant in V_poly.
+                raw0, raw1, raw2 = y[idx_mu0], y[idx_mu1], y[idx_mu2]
+                if (raw0 < -1e-9 or raw1 < -1e-9 or raw2 < -1e-9
+                        or raw1 + 1e-9 < raw0
+                        or raw0 * raw2 + 1e-9 < raw1 * raw1):
+                    self._realizability_warned.add(pool.label)
+                    logging.warning(
+                        "Polymer pool '%s' moment state left the realizable cone "
+                        "(mu0=%.6g, mu1=%.6g, mu2=%.6g; require mu1>=mu0>=0 and "
+                        "mu0*mu2>=mu1^2). The mu3 closure is guarded, but a moment "
+                        "source term is likely wrong.", pool.label, raw0, raw1, raw2)
 
             dmu0_dt = 0.0
             dmu1_dt = 0.0

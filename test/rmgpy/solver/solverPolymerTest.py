@@ -376,6 +376,58 @@ class TestHybridPolymerReactor:
         # Distribution narrowed: mu2 fell from 30 toward mu1 (=5).
         assert mu2_f < mu2_0 and mu2_f < 10.0
 
+    def test_debug_realizability_check_logs_not_raises(self, caplog):
+        """
+        The opt-in realizability diagnostic must LOG (never raise) when a pool's
+        moment state leaves the realizable cone (here mu1 < mu0), and must stay
+        silent when the flag is off. (handoff: a debug realizability assertion to
+        localize moment-source bugs in one run.)
+        """
+        import logging
+
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "Mu0")
+        Mu1 = _spc("C=O", "Mu1")
+        Mu2 = _spc("C#N", "Mu2")
+        core_species = [Inert, Mu0, Mu1, Mu2]
+        gas_species_mask = np.array([True, False, False, False], dtype=bool)
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+
+        def build(flag):
+            rs = HybridPolymerSystem(
+                T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0,
+                polymer_pools=[pool], mass_transfer=[], gas_species_mask=gas_species_mask,
+                constant_gas_volume=False,
+                # mu1 (0.1) < mu0 (5.0): unrealizable.
+                initial_polymer_moments={"poly": (5.0, 0.1, 0.2)}, termination=[],
+                debug_check_realizability=flag,
+            )
+            rs.initialize_model(core_species, [], [], [])
+            return rs
+
+        # Flag off: silent through init + residual.
+        with caplog.at_level(logging.WARNING):
+            rs_off = build(False)
+            rs_off.residual(0.0, rs_off.y, np.zeros_like(rs_off.y))
+        assert not any("realizable cone" in r.getMessage() for r in caplog.records)
+
+        # Flag on: warns (exactly once, even across repeated residual calls) and
+        # never raises. The first warning fires inside initialize_model's own
+        # residual call, so capture across the whole build.
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            rs_on = build(True)
+            out = rs_on.residual(0.0, rs_on.y, np.zeros_like(rs_on.y))
+            rs_on.residual(0.0, rs_on.y, np.zeros_like(rs_on.y))  # still must not re-log
+        assert out is not None
+        warnings = [r for r in caplog.records if "realizable cone" in r.getMessage()]
+        assert len(warnings) == 1, f"expected exactly one realizability warning, got {len(warnings)}"
+
     def test_validate_configuration_rejects_moment_in_stoichiometry(self):
         """
         validate_configuration should fail if a moment index appears in reaction stoichiometry.
