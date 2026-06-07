@@ -126,6 +126,7 @@ class Reaction:
                  comment='',
                  is_forward=None,
                  allow_max_rate_violation=False,
+                 is_end_group_reaction=False,
                  ):
         self.index = index
         self.label = label
@@ -147,6 +148,10 @@ class Reaction:
         self.k_effective_cache = {}
         self.is_forward = is_forward
         self.allow_max_rate_violation = allow_max_rate_violation
+        # Set by the polymer handshake (rmgpy.rmg.model.make_new_reaction) when a
+        # product classifies END_MOD; the polymer hybrid solver then scales this
+        # reaction by chain-end density (mu0) instead of monomer-unit density (mu1).
+        self.is_end_group_reaction = is_end_group_reaction
 
     def __repr__(self):
         """

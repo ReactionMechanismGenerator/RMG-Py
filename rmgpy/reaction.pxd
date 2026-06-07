@@ -63,6 +63,7 @@ cdef class Reaction:
     cdef public dict k_effective_cache
     cdef public bint is_forward
     cdef public bint allow_max_rate_violation
+    cdef public bint is_end_group_reaction
     cdef public object rank
 
     cpdef bint is_isomerization(self)

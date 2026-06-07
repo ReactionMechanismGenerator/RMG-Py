@@ -784,6 +784,15 @@ class TestReaction:
         )
         self.reaction4_pairs = [(PO3, HOPO2), (H2, H_atom)]
 
+    def test_is_end_group_reaction_default_and_kwarg(self):
+        """
+        Reaction carries an ``is_end_group_reaction`` flag (default False) used by
+        the polymer hybrid solver to scale terminal/end-group reactions by chain-end
+        density (mu0) instead of monomer-unit density (mu1).
+        """
+        assert Reaction().is_end_group_reaction is False
+        assert Reaction(is_end_group_reaction=True).is_end_group_reaction is True
+
     def test_is_isomerization(self):
         """
         Test the Reaction.is_isomerization() method.
