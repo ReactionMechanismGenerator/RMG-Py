@@ -1655,8 +1655,7 @@ class KineticsFamily(Database):
         for struct in product_structures:
             if self.is_molecule_forbidden(struct):
                 raise ForbiddenStructureException()
-            reason = fails_species_constraints(struct)
-            if reason:
+            if (reason := fails_species_constraints(struct)):
                 raise ForbiddenStructureException(
                     "Species constraints forbids product species {0}. Please "
                     "reformulate constraints, or explicitly "
@@ -1676,11 +1675,17 @@ class KineticsFamily(Database):
             return True
 
         # forbid vdw multi-dentate molecules for surface families
-        if "surface" in self.label.lower():
-            if molecule.get_num_atoms('X') > 1:
-                for atom in molecule.atoms:
-                    if atom.atomtype.label == 'Xv':
-                        return True
+        if "surface" in self.label.lower() and molecule.is_multidentate():
+            if "vdwbidentate" in self.label.lower():
+                # Within vdWBidentate families, allow vdW in
+                # multi-dentate molecules if at least one bond to the surface
+                # is covalent.
+                if not molecule.has_covalent_surface_bond():
+                    return True
+            else:
+                # for all other families, forbid multi-dentate molecules with any vdW bonds
+                if molecule.has_vdw_surface_bond():
+                    return True
 
         return False
 

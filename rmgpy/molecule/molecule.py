@@ -67,7 +67,7 @@ from rmgpy.molecule.fragment import CuttingLabel
 def _skip_first(in_tuple):
     return in_tuple[1:]
 
-bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5}
+bond_orders = {'S': 1, 'D': 2, 'T': 3, 'B': 1.5, 'vdW': 0}
 
 globals().update({
     'bond_orders': bond_orders,
@@ -1219,6 +1219,36 @@ class Molecule(Graph):
         """
         return self.has_edge(atom1, atom2)
 
+    def has_covalent_surface_bond(self):
+        """
+        Return True if any bond in this molecule connects a surface site (X) via a covalent bond.
+        """
+        cython.declare(atom=Atom, bond=Bond)
+        for atom in self.atoms:
+            if atom.is_surface_site():
+                for bond in atom.bonds.values():
+                    if not bond.is_van_der_waals():
+                            return True
+        return False
+
+    def has_vdw_surface_bond(self):
+        """
+        Return True if any bond in this molecule connects a surface site (X)
+        via a van der Waals bond, or there's a surface site with no bonds
+        (but at least one other atom in the molecule).
+        """
+        cython.declare(atom=Atom, bond=Bond)
+        for atom in self.atoms:
+            if atom.is_surface_site():
+                if not atom.bonds:  # if there are no bonds at all
+                    if len(self.atoms) > 1:  # and there's something besides the surface site
+                        return True  # then treat as vdW bonded
+                for bond in atom.bonds.values():
+                    if bond.is_van_der_waals():
+                        return True
+                
+        return False
+
     def contains_surface_site(self):
         """
         Returns ``True`` iff the molecule contains an 'X' surface site.
@@ -1273,9 +1303,14 @@ class Molecule(Graph):
 
     def remove_van_der_waals_bonds(self):
         """
-        Remove all van der Waals bonds.
+        Remove all van der Waals bonds. For multidentate species,
+        vdW bonds are preserved when there are still other
+        covalent bonds with the surface present. If no covalent surface bonds are present,
+        all vdW bonds are removed.
         """
         cython.declare(bond=Bond)
+        if self.has_covalent_surface_bond():
+            return # preserve any vdW bonds if there's also a covalent X
         for bond in self.get_all_edges():
             if bond.is_van_der_waals():
                 self.remove_bond(bond)
@@ -3048,9 +3083,13 @@ class Molecule(Graph):
         Return ``True`` if the adsorbate contains at least two binding sites,
         or ``False`` otherwise.
         """
-        cython.declare(atom=Atom)
-        if len([atom for atom in self.vertices if atom.is_surface_site()])>=2:
-            return True
+        cython.declare(atom=Atom, found_one=cython.bint)
+        found_one = False
+        for atom in self.atoms:
+            if atom.is_surface_site():
+                if found_one:
+                    return True
+                found_one = True
         return False
 
     def get_adatoms(self):
@@ -3076,6 +3115,7 @@ class Molecule(Graph):
         ``*2`` - double bond
         ``*3`` - triple bond
         ``*4`` - quadruple bond
+        ``*0`` - vdW bond
         """
         cython.declare(desorbed_molecules=list, desorbed_molecule=Molecule, sites_to_remove=list, adsorbed_atoms=list,
                        site=Atom, numbonds=cython.int, bonded_atom=Atom, bond=Bond, i=cython.int, j=cython.int, atom0=Atom,
@@ -3114,6 +3154,8 @@ class Molecule(Graph):
                     bonded_atom.increment_radical()
                     bonded_atom.increment_lone_pairs()
                     bonded_atom.label = '*4'
+                elif bond.is_van_der_waals():
+                    bonded_atom.label = '*0'
                 else:
                     raise NotImplementedError("Can't remove surface bond of type {}".format(bond.order))
             desorbed_molecule.remove_atom(site)
