@@ -26,7 +26,7 @@ The below list is a summary. For a complete list of all changes, see the `Offici
 
 - New Features
     - Introduced an auto-database feature and a new YAML file writer
-    - Introduced multi-part Uncertainty analysis suite, including covariance matrix exports and quadrature integration
+    - Extended uncertainty analysis suite to export covariance matrices, import detailed correlations from RMG libraries, and add uncertainties in quadrature
     - Added comprehensive surface sensitivity features for `SurfaceReactor`
     - Added support for coverage-dependent thermochemistry and kinetics for surface catalysis
     - Added an Arkane xTB Electronic Structure Software (ESS) adapter
