@@ -509,7 +509,8 @@ the bond order with the surface:
 <code class="docutils literal notranslate"><span class="pre">*1</span></code> - single bond
 <code class="docutils literal notranslate"><span class="pre">*2</span></code> - double bond
 <code class="docutils literal notranslate"><span class="pre">*3</span></code> - triple bond
-<code class="docutils literal notranslate"><span class="pre">*4</span></code> - quadruple bond</p>
+<code class="docutils literal notranslate"><span class="pre">*4</span></code> - quadruple bond
+<code class="docutils literal notranslate"><span class="pre">*0</span></code> - vdW bond</p>
 </dd></dl>
 
 <dl class="py method">
@@ -711,6 +712,12 @@ by an bond, or <code class="docutils literal notranslate"><span class="pre">Fals
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.has_covalent_surface_bond">
+<span class="sig-name descname"><span class="pre">has_covalent_surface_bond</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.has_covalent_surface_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if any bond in this molecule connects a surface site (X) via a covalent bond.</p>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.has_edge">
 <span class="sig-name descname"><span class="pre">has_edge</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertex1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">vertex2</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.has_edge" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <code class="docutils literal notranslate"><span class="pre">True</span></code> if vertices <cite>vertex1</cite> and <cite>vertex2</cite> are connected
@@ -729,6 +736,14 @@ or <code class="docutils literal notranslate"><span class="pre">False</span></co
 <span class="sig-name descname"><span class="pre">has_lone_pairs</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.has_lone_pairs" title="Permalink to this definition">¶</a></dt>
 <dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the molecule contains at least one lone electron pair,
 or <code class="docutils literal notranslate"><span class="pre">False</span></code> otherwise.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="rmgpy.molecule.Molecule.has_vdw_surface_bond">
+<span class="sig-name descname"><span class="pre">has_vdw_surface_bond</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.has_vdw_surface_bond" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if any bond in this molecule connects a surface site (X)
+via a van der Waals bond, or there’s a surface site with no bonds
+(but at least one other atom in the molecule).</p>
 </dd></dl>
 
 <dl class="py method">
@@ -955,7 +970,10 @@ this removal.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="rmgpy.molecule.Molecule.remove_van_der_waals_bonds">
 <span class="sig-name descname"><span class="pre">remove_van_der_waals_bonds</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#rmgpy.molecule.Molecule.remove_van_der_waals_bonds" title="Permalink to this definition">¶</a></dt>
-<dd><p>Remove all van der Waals bonds.</p>
+<dd><p>Remove all van der Waals bonds. For multidentate species,
+vdW bonds are preserved when there are still other
+covalent bonds with the surface present. If no covalent surface bonds are present,
+all vdW bonds are removed.</p>
 </dd></dl>
 
 <dl class="py method">
@@ -1289,9 +1307,11 @@ number of lone electron pairs, assuming a neutral molecule.</p>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.get_url"><code class="docutils literal notranslate"><span class="pre">Molecule.get_url()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.has_atom"><code class="docutils literal notranslate"><span class="pre">Molecule.has_atom()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.has_bond"><code class="docutils literal notranslate"><span class="pre">Molecule.has_bond()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Molecule.has_covalent_surface_bond"><code class="docutils literal notranslate"><span class="pre">Molecule.has_covalent_surface_bond()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.has_edge"><code class="docutils literal notranslate"><span class="pre">Molecule.has_edge()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.has_halogen"><code class="docutils literal notranslate"><span class="pre">Molecule.has_halogen()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.has_lone_pairs"><code class="docutils literal notranslate"><span class="pre">Molecule.has_lone_pairs()</span></code></a></li>
+<li><a class="reference internal" href="#rmgpy.molecule.Molecule.has_vdw_surface_bond"><code class="docutils literal notranslate"><span class="pre">Molecule.has_vdw_surface_bond()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.has_vertex"><code class="docutils literal notranslate"><span class="pre">Molecule.has_vertex()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.identify_ring_membership"><code class="docutils literal notranslate"><span class="pre">Molecule.identify_ring_membership()</span></code></a></li>
 <li><a class="reference internal" href="#rmgpy.molecule.Molecule.inchi"><code class="docutils literal notranslate"><span class="pre">Molecule.inchi</span></code></a></li>
