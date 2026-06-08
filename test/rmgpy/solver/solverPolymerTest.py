@@ -357,6 +357,60 @@ class TestHybridPolymerReactor:
         # mu3 dominates mu1 for a polydisperse pool, so mu2 narrows (decreases).
         assert dn_dt[3] < 0.0
 
+    def test_residual_stays_finite_for_extreme_moment_states(self):
+        """
+        Resurrection robustness (handoff item): the polymer moment RHS must never
+        emit NaN/Inf, even for out-of-cone or overflow-broad moment states. A
+        non-finite dn_dt surfaces in the solver as 'nans in moles' -> DASxError ->
+        model resurrection, which fails UNRECOVERABLY ('invalid_objects could not
+        be filled') when the cause is the core moment dynamics rather than a
+        promotable edge species (solver/base.pyx ~748-782).
+
+        Two guards keep the RHS bounded: _safe_mu3_from_mu012 returns 0.0 outside
+        the realizable cone (mu1<mu0) and for degenerate moments, and Inf on
+        log-overflow; the scission dmu2 term is then gated by np.isfinite(mu3)
+        (polymer.pyx ~1052). This test pins BOTH so a future refactor can't
+        silently reintroduce the unrecoverable failure.
+        """
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        core_species = [Inert, Mu0, Mu1, Mu2]
+        gas_species_mask = np.array([True, False, False, False], dtype=bool)
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.3, k_unzip=0.1, tail_kinetics=None,  # exercise both moment terms
+        )
+        rxn_system = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[], gas_species_mask=gas_species_mask,
+            constant_gas_volume=False, initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            termination=[],
+        )
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        # (mu0, mu1, mu2) moles. V_poly=1 so moles == concentration.
+        pathological_states = [
+            (1.0, 5.0, 30.0),         # normal/realizable
+            (21.17, 0.0139, 380.5),   # cone violation mu1 < mu0 (handoff BUG 1 state)
+            (0.0, 5.0, 30.0),         # mu0 = 0
+            (1.0e-3, 1.0, 1.0e120),   # broad distribution -> mu3 closure overflows to Inf
+            (1.0e100, 1.0e100, 1.0e300),  # all-huge near double-max
+            (-1.0, -2.0, -3.0),       # negatives (clamped by max(0,.))
+            (0.0, 0.0, 0.0),          # fully degenerate
+        ]
+        for mu0, mu1, mu2 in pathological_states:
+            y = rxn_system.y.copy()
+            y[1], y[2], y[3] = mu0, mu1, mu2
+            dn_dt = rxn_system.residual(0.0, y, np.zeros_like(y))[0]
+            assert np.all(np.isfinite(dn_dt)), (
+                f"Non-finite dn_dt for moment state (mu0,mu1,mu2)=({mu0},{mu1},{mu2}): {dn_dt}. "
+                "This would trigger an unrecoverable model resurrection."
+            )
+
     def test_mu3_closure_realizability_guard(self):
         """
         The log-Lagrange mu3 closure must not amplify an out-of-cone moment
