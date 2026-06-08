@@ -25,7 +25,8 @@ The below list is a summary. For a complete list of all changes, see the `Offici
     - Removed deprecated `imp.load_source` calls and eliminated unreachable code segments
 
 - New Features
-    - Introduced an auto-database feature and a new YAML file writer
+    - Introduced an automated database selection feature
+    - Added a new YAML file writer
     - Extended uncertainty analysis suite to export covariance matrices, import detailed correlations from RMG libraries, and add uncertainties in quadrature
     - Added comprehensive surface sensitivity features for `SurfaceReactor`
     - Added support for coverage-dependent thermochemistry and kinetics for surface catalysis
