@@ -526,6 +526,7 @@ class HybridPolymerSystem(ReactionSystem):
         ir_arr = self.reactant_indices
         ip_arr = self.product_indices
         n_unstamped = 0
+        n_unresolvable = 0
         for i in range(n_rxn):
             src = -1
             for slot in range(3):
@@ -551,6 +552,20 @@ class HybridPolymerSystem(ReactionSystem):
             if self.reaction_flux_archetype[i] == FLUX_NONE and (src != -1 or dst != -1):
                 self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
                 n_unstamped += 1
+            if (self.reaction_flux_archetype[i] in (FLUX_MIGRATION, FLUX_SCISSION_FRAGMENT)
+                    and (src == -1 or dst == -1)):
+                # A stamped cross-pool archetype needs BOTH pools resolved in
+                # the solver (e.g. scission daughters are registered as core
+                # Polymer species but have no pool config yet). Demote to the
+                # legacy mu1-only transfer so the parent drain is never
+                # silently zeroed (mass would otherwise be duplicated).
+                self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
+                n_unresolvable += 1
+        if n_unresolvable:
+            logging.warning(
+                "%d reactions stamped MIGRATION/SCISSION_FRAGMENT could not "
+                "resolve both solver pools (src/dst); demoted to legacy "
+                "mu1-only moment flux (UNRESOLVED).", n_unresolvable)
         if n_unstamped:
             logging.warning(
                 "%d proxy-touching reactions arrived without a polymer_flux_archetype "
@@ -771,6 +786,31 @@ class HybridPolymerSystem(ReactionSystem):
         return (unimolecular_threshold_rate_constant,
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
+
+    def _chain_bundle(self, int pool_idx, y, double V_poly, bint end_group):
+        """
+        Expected (chains, units, units^2) carried by ONE picked chain of pool
+        ``pool_idx``: (1, E[k], E[k^2]). end_group=True -> uniform chain pick
+        (rate ~ mu0): (1, mu1/mu0, mu2/mu0). Otherwise length-biased pick
+        (rate ~ mu1): (1, mu2/mu1, mu3/mu1) with the guarded mu3 closure.
+        Returns (b0, b1, b2, mu2_ok); b0 == 0.0 means the pool is too empty to
+        move a chain (denominator below SMALL_EPS) -- caller skips the term.
+        mu2_ok False means apply b0/b1 but skip the mu2 component (mu3 = inf).
+        """
+        idx0, idx1, idx2 = self.polymer_pools[pool_idx].mu_indices
+        mu0 = max(0.0, y[idx0]) / V_poly
+        mu1 = max(0.0, y[idx1]) / V_poly
+        mu2 = max(0.0, y[idx2]) / V_poly
+        if end_group:
+            if mu0 <= SMALL_EPS:
+                return 0.0, 0.0, 0.0, False
+            return 1.0, mu1 / mu0, mu2 / mu0, True
+        if mu1 <= SMALL_EPS:
+            return 0.0, 0.0, 0.0, False
+        mu3 = _safe_mu3_from_mu012(mu0, mu1, mu2)
+        if np.isfinite(mu3):
+            return 1.0, mu2 / mu1, mu3 / mu1, True
+        return 1.0, mu2 / mu1, 0.0, False
 
     @cython.boundscheck(False)
     def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y,
@@ -999,11 +1039,13 @@ class HybridPolymerSystem(ReactionSystem):
             core_rxn = r_idx < n_rxn
 
             # 3. Apply Fluxes to Reactants (core reactions only -- edge
-            #    reactions are diagnostic-only, matching simple.pyx)
+            #    reactions are diagnostic-only, matching simple.pyx).
+            #    proxy_activity stays UNGATED on purpose: it feeds proxy
+            #    similarity/spawn diagnostics, which want edge flux too.
+            #    Pool MOMENT flux is handled once per reaction in section 5.
             if self.is_pool_proxy[r0]:
                 proxy_activity[r0] += abs_flux
                 if core_rxn:
-                    dn_dt[self.polymer_pools[p0_pool_idx].mu_indices[1]] -= r_mol_s
                     self.core_species_consumption_rates[r0] += rf
                     self.core_species_production_rates[r0] += rr
             elif core_rxn:
@@ -1013,7 +1055,6 @@ class HybridPolymerSystem(ReactionSystem):
                 if self.is_pool_proxy[r1]:
                     proxy_activity[r1] += abs_flux
                     if core_rxn:
-                        dn_dt[self.polymer_pools[p1_pool_idx].mu_indices[1]] -= r_mol_s
                         self.core_species_consumption_rates[r1] += rf
                         self.core_species_production_rates[r1] += rr
                 elif core_rxn:
@@ -1023,7 +1064,7 @@ class HybridPolymerSystem(ReactionSystem):
                 # if you ever allow polymer in r2, mirror the same logic; otherwise keep as-is
                 dn_dt[r2] -= r_mol_s
 
-            # 4. Apply Fluxes to Products
+            # 4. Apply Fluxes to Products (same core_rxn gate as section 3)
             for p_slot in range(3):
                 p_idx_tmp = ip[r_idx, p_slot]
                 if p_idx_tmp == -1:
@@ -1033,8 +1074,6 @@ class HybridPolymerSystem(ReactionSystem):
                     if self.is_pool_proxy[p_idx_tmp]:
                         proxy_activity[p_idx_tmp] += abs_flux
                         if core_rxn:
-                            pool_idx = self.species_to_pool_indices[p_idx_tmp]
-                            dn_dt[self.polymer_pools[pool_idx].mu_indices[1]] += r_mol_s
                             self.core_species_production_rates[p_idx_tmp] += rf
                             self.core_species_consumption_rates[p_idx_tmp] += rr
                     elif core_rxn:
@@ -1042,6 +1081,86 @@ class HybridPolymerSystem(ReactionSystem):
                         dn_dt[p_idx_tmp] += r_mol_s
                 else:
                     self.edge_species_rates[p_idx_tmp - n_core] += rate
+
+            # 5. Pool moment flux -- archetype dispatch (core reactions only).
+            #    Spec: docs/superpowers/specs/2026-06-09-proxy-moment-flux-
+            #    apportionment-design.md. SAME_POOL and NONE apply nothing:
+            #    fold-back flux is net-zero by construction, so skipping avoids
+            #    roundoff and closure calls.
+            if core_rxn:
+                arch = self.reaction_flux_archetype[r_idx]
+                if arch == FLUX_MIGRATION:
+                    src = self.reaction_src_pool[r_idx]
+                    dst = self.reaction_dst_pool[r_idx]
+                    if src != -1 and dst != -1 and src != dst:
+                        # Per-direction bundles: forward moves A-statistics
+                        # chains A->B, reverse moves B-statistics chains B->A.
+                        # Each direction is guarded by its OWN source pool.
+                        for ev_rate, from_pool, to_pool in (
+                                (rf, src, dst), (rr, dst, src)):
+                            if ev_rate <= 0.0:
+                                continue
+                            ev_mol = ev_rate * V_rxn
+                            b0, b1, b2, mu2_ok = self._chain_bundle(
+                                from_pool, y, V_poly,
+                                self.is_end_group_reaction[r_idx])
+                            if b0 == 0.0:
+                                continue
+                            f_idx = self.polymer_pools[from_pool].mu_indices
+                            t_idx = self.polymer_pools[to_pool].mu_indices
+                            dn_dt[f_idx[0]] -= ev_mol * b0
+                            dn_dt[f_idx[1]] -= ev_mol * b1
+                            dn_dt[t_idx[0]] += ev_mol * b0
+                            dn_dt[t_idx[1]] += ev_mol * b1
+                            if mu2_ok:
+                                dn_dt[f_idx[2]] -= ev_mol * b2
+                                dn_dt[t_idx[2]] += ev_mol * b2
+                elif arch == FLUX_SCISSION_FRAGMENT:
+                    src = self.reaction_src_pool[r_idx]
+                    dst = self.reaction_dst_pool[r_idx]
+                    if src != -1 and dst != -1 and src != dst:
+                        s_idx = self.polymer_pools[src].mu_indices
+                        d_idx = self.polymer_pools[dst].mu_indices
+                        mu0_p = max(0.0, y[s_idx[0]]) / V_poly
+                        mu1_p = max(0.0, y[s_idx[1]]) / V_poly
+                        mu2_p = max(0.0, y[s_idx[2]]) / V_poly
+                        ok = mu1_p > SMALL_EPS
+                        if ok and r_mol_s < 0.0:
+                            # Net reverse = coupling bookkeeping; it depletes
+                            # the DAUGHTER, so guard its moments too. (Stated
+                            # approximation: parent statistics, sign-flipped.)
+                            if (max(0.0, y[d_idx[0]]) / V_poly <= SMALL_EPS or
+                                    max(0.0, y[d_idx[1]]) / V_poly <= SMALL_EPS):
+                                ok = False
+                        if ok:
+                            # Complement-stays-in-parent accounting: parent
+                            # mu0 net 0 (chain broke, complement remains);
+                            # fragment (uniform cut of a length-biased chain:
+                            # E[a] = E[n]/2, E[a^2] = E[n^2]/3) moves to the
+                            # daughter. mu1 conserves exactly per reaction.
+                            e_n = mu2_p / mu1_p
+                            dn_dt[s_idx[1]] -= r_mol_s * e_n / 2.0
+                            dn_dt[d_idx[0]] += r_mol_s
+                            dn_dt[d_idx[1]] += r_mol_s * e_n / 2.0
+                            mu3_p = _safe_mu3_from_mu012(mu0_p, mu1_p, mu2_p)
+                            if np.isfinite(mu3_p):
+                                e_n2 = mu3_p / mu1_p
+                                dn_dt[s_idx[2]] -= r_mol_s * (2.0 / 3.0) * e_n2
+                                dn_dt[d_idx[2]] += r_mol_s * e_n2 / 3.0
+                elif arch == FLUX_UNRESOLVED:
+                    # Legacy mu1-only transfer (pre-apportionment behavior),
+                    # replicated exactly: -r per reactant proxy, +r per
+                    # product proxy.
+                    if self.is_pool_proxy[r0]:
+                        dn_dt[self.polymer_pools[p0_pool_idx].mu_indices[1]] -= r_mol_s
+                    if r1 != -1 and self.is_pool_proxy[r1]:
+                        dn_dt[self.polymer_pools[p1_pool_idx].mu_indices[1]] -= r_mol_s
+                    for p_slot in range(3):
+                        p_idx_tmp = ip[r_idx, p_slot]
+                        if (p_idx_tmp != -1 and p_idx_tmp < n_core
+                                and self.is_pool_proxy[p_idx_tmp]):
+                            pool_idx = self.species_to_pool_indices[p_idx_tmp]
+                            dn_dt[self.polymer_pools[pool_idx].mu_indices[1]] += r_mol_s
 
         # 7. Network Leaks
         for j in range(inet.shape[0]):

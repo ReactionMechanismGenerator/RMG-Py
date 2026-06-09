@@ -45,6 +45,41 @@ def _spc(smiles: str, label: str) -> Species:
     return s
 
 
+def _two_pool_species():
+    """Species + mask for a two-pool system: A (mu 1-3), B (mu 5-7), gas G at 8."""
+    sp = {
+        "A": _spc("CCCC", "A"),
+        "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"), "A_mu2": _spc("C#N", "A_mu2"),
+        "B": _spc("CCCCC", "B"),
+        "B_mu0": _spc("CCO", "B_mu0"), "B_mu1": _spc("CC=O", "B_mu1"), "B_mu2": _spc("CC#N", "B_mu2"),
+        "G": _spc("[CH3]", "G"),
+    }
+    core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"],
+            sp["B"], sp["B_mu0"], sp["B_mu1"], sp["B_mu2"], sp["G"]]
+    mask = np.array([False] * 8 + [True], dtype=bool)
+    return sp, core, mask
+
+
+def _two_pool_rs(rxn, core, mask, mom_a, mom_b):
+    pool_a = PolymerPoolConfig(label="A", xs=2, explicit_dp_to_species_index={},
+                               mu_indices=(1, 2, 3), monomer_poly_index=None,
+                               k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+    pool_b = PolymerPoolConfig(label="B", xs=2, explicit_dp_to_species_index={},
+                               mu_indices=(5, 6, 7), monomer_poly_index=None,
+                               k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+    rs = HybridPolymerSystem(
+        T=800.0, P=1.0e5, initial_mole_fractions={core[8]: 0.0}, V_poly=1.0,
+        polymer_pools=[pool_a, pool_b], mass_transfer=[],
+        gas_species_mask=mask.copy(), constant_gas_volume=False,
+        initial_polymer_moments={"A": mom_a, "B": mom_b}, termination=[],
+    )
+    rs.initialize_model(core, [rxn], [], [])
+    return rs
+
+_KIN = dict(kinetics=Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+            reversible=False)
+
+
 class TestHybridPolymerReactor:
     def test_phase_pure_gas_reaction_molar_balance(self):
         """
@@ -588,6 +623,51 @@ class TestHybridPolymerReactor:
         assert rs.reaction_src_pool[1] == -1
         assert rs.reaction_dst_pool[1] == -1
 
+    def test_stamped_scission_without_daughter_pool_demotes_to_legacy(self):
+        """
+        A reaction stamped SCISSION_FRAGMENT whose polymer product is NOT a
+        solver pool (e.g. a scission daughter registered as a species before
+        its pool spawns) must demote to UNRESOLVED at initialize_model and
+        apply the legacy mu1 drain -- otherwise the parent is never drained
+        while the explicit daughter species still gains moles (duplication).
+        """
+        Proxy = _spc("CCCC", "poly")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        Daughter = _spc("CCC", "poly_scission_tail")   # core species, NO pool
+
+        core_species = [Proxy, Mu0, Mu1, Mu2, Daughter]
+        gas_species_mask = np.array([False] * 5, dtype=bool)
+
+        rxn = Reaction(reactants=[Proxy], products=[Daughter], **_KIN)
+        rxn.polymer_flux_archetype = 3   # stamped SCISSION_FRAGMENT
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=gas_species_mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (mu0, mu1, mu2)}, termination=[],
+        )
+        rs.initialize_model(core_species, [rxn], [], [])
+
+        import rmgpy.solver.polymer as sp
+        assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED  # demoted
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * mu1                       # site-scaled by mu1, V_poly=1
+        assert np.isclose(dn_dt[2], -r)    # parent mu1 drained (legacy)
+        assert np.isclose(dn_dt[4], +r)    # explicit daughter gains
+        # mass moved, not duplicated
+        assert np.isclose(dn_dt[2] + dn_dt[4], 0.0, atol=1e-12)
+
     def test_validate_configuration_rejects_moment_in_stoichiometry(self):
         """
         validate_configuration should fail if a moment index appears in reaction stoichiometry.
@@ -862,3 +942,193 @@ class TestHybridPolymerReactor:
         assert rs.core_species_production_rates[0] == 0.0
         assert rs.edge_reaction_rates[0] > 0.0          # diagnostics still flow
         assert rs.edge_species_rates[0] > 0.0
+
+    def test_migration_moves_whole_chain_bundle(self):
+        """
+        MIGRATION (archetype 2): one event moves a whole length-biased chain
+        from pool A to pool B: bundle (1, mu2/mu1, mu3/mu1) with the
+        log-Lagrange closure mu3 = mu0*(mu2/mu1)**3. A loses exactly what B
+        gains (conservation by construction).
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 2
+        mu0a, mu1a, mu2a = 1.0, 5.0, 30.0
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * mu1a                       # site-scaled by A's mu1, V_poly=1
+        mu3a = mu0a * (mu2a / mu1a) ** 3    # 216.0
+        b1 = mu2a / mu1a                    # 6.0
+        b2 = mu3a / mu1a                    # 43.2
+
+        assert np.isclose(dn_dt[1], -r * 1.0)        # A mu0
+        assert np.isclose(dn_dt[2], -r * b1)         # A mu1
+        assert np.isclose(dn_dt[3], -r * b2)         # A mu2
+        assert np.isclose(dn_dt[5], +r * 1.0)        # B mu0
+        assert np.isclose(dn_dt[6], +r * b1)         # B mu1
+        assert np.isclose(dn_dt[7], +r * b2)         # B mu2
+        assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-14)
+        assert np.isclose(dn_dt[2] + dn_dt[6], 0.0, atol=1e-14)
+        assert np.isclose(dn_dt[3] + dn_dt[7], 0.0, atol=1e-14)
+
+    def test_migration_reverse_leg_uses_target_pool_statistics(self):
+        """
+        Per-direction MIGRATION bundles: the reverse (rr) leg must move
+        B-statistics chains B->A, not A-statistics. Pool stats are chosen
+        distinguishable (b_A=(1,6,43.2) vs b_B=(1,2.5,7.8125)) so a
+        wrong-source bundle fails loudly. Also pins the rf/rr volume-factor
+        identity: at b0=1 on both legs, the net mu0 flux must equal the
+        legacy net molar rate (rf-rr)*V_rxn.
+        """
+        sp, core, mask = _two_pool_species()
+        # reversible=False so generate_rate_coefficients needs no thermo
+        # (kb=0); the reverse leg is then driven by overriding rs.kb directly.
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 2
+        mu_a = (1.0, 5.0, 30.0)
+        mu_b = (2.0, 4.0, 10.0)
+        rs = _two_pool_rs(rxn, core, mask, mu_a, mu_b)
+        rs.kb[0] = 0.6
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        rf = kf * mu_a[1]               # 2.0 * 5 = 10 (site-scaled by A mu1)
+        rr = 0.6 * mu_a[1]              # kb * C(proxyB)=1, then *= site -> 3.0
+        mu3_a = mu_a[0] * (mu_a[2] / mu_a[1]) ** 3   # 216.0
+        mu3_b = mu_b[0] * (mu_b[2] / mu_b[1]) ** 3   # 31.25
+        bA1, bA2 = mu_a[2] / mu_a[1], mu3_a / mu_a[1]    # 6.0, 43.2
+        bB1, bB2 = mu_b[2] / mu_b[1], mu3_b / mu_b[1]    # 2.5, 7.8125
+
+        assert np.isclose(dn_dt[1], -(rf - rr))              # == legacy net (b0=1)
+        assert np.isclose(dn_dt[2], -rf * bA1 + rr * bB1)    # -52.5
+        assert np.isclose(dn_dt[3], -rf * bA2 + rr * bB2)    # -408.5625
+        assert np.isclose(dn_dt[5], +(rf - rr))
+        assert np.isclose(dn_dt[6], +rf * bA1 - rr * bB1)
+        assert np.isclose(dn_dt[7], +rf * bA2 - rr * bB2)
+
+    def test_end_group_migration_uses_uniform_chain_bundle(self):
+        """
+        A mu0-scaled (is_end_group_reaction) MIGRATION picks chains uniformly:
+        bundle (1, mu1/mu0, mu2/mu0), and the rate itself scales by mu0.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 2
+        rxn.is_end_group_reaction = True
+        mu0a, mu1a, mu2a = 1.0, 5.0, 30.0
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * mu0a                    # site-scaled by mu0, not mu1
+        assert np.isclose(dn_dt[1], -r * 1.0)
+        assert np.isclose(dn_dt[2], -r * mu1a / mu0a)        # -10
+        assert np.isclose(dn_dt[3], -r * mu2a / mu0a)        # -60
+        assert np.isclose(dn_dt[5], +r * 1.0)
+        assert np.isclose(dn_dt[6], +r * mu1a / mu0a)
+        assert np.isclose(dn_dt[7], +r * mu2a / mu0a)
+
+    def test_scission_fragment_complement_stays_in_parent(self):
+        """
+        SCISSION_FRAGMENT (archetype 3), complement-stays accounting: parent
+        (0, -r*mu2/(2 mu1), -r*(2/3)*mu3/mu1); daughter (+r, +r*mu2/(2 mu1),
+        +r*mu3/(3 mu1)). mu1 conserves exactly; total mu0 +r per event; total
+        mu2 drops by r*mu3/(3 mu1).
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 3
+        mu0a, mu1a, mu2a = 1.0, 5.0, 30.0
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (0.1, 0.2, 0.5))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * mu1a
+        mu3a = mu0a * (mu2a / mu1a) ** 3    # 216.0
+        e_n = mu2a / mu1a                   # 6.0
+        e_n2 = mu3a / mu1a                  # 43.2
+
+        assert np.isclose(dn_dt[1], 0.0, atol=1e-14)             # parent mu0
+        assert np.isclose(dn_dt[2], -r * e_n / 2.0)              # parent mu1
+        assert np.isclose(dn_dt[3], -r * (2.0 / 3.0) * e_n2)     # parent mu2
+        assert np.isclose(dn_dt[5], +r)                          # daughter mu0
+        assert np.isclose(dn_dt[6], +r * e_n / 2.0)              # daughter mu1
+        assert np.isclose(dn_dt[7], +r * e_n2 / 3.0)             # daughter mu2
+        assert np.isclose(dn_dt[2] + dn_dt[6], 0.0, atol=1e-14)  # mu1 conserved
+        assert np.isclose(dn_dt[3] + dn_dt[7], -r * e_n2 / 3.0)  # mu2 destroyed
+        assert np.isclose(dn_dt[8], +r)                          # gas co-product G
+
+    def test_same_pool_reaction_leaves_moments_untouched(self):
+        """
+        SAME_POOL (archetype 1): fold-back means net-zero pool moment flux —
+        the dispatch skips pool writes entirely. Gas co-species still flow.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        assert np.allclose(dn_dt[1:4], 0.0, atol=1e-14)   # A moments untouched
+        assert np.allclose(dn_dt[5:8], 0.0, atol=1e-14)   # B untouched
+        assert np.isclose(dn_dt[8], kf * 5.0)             # gas G produced
+
+    def test_unresolved_applies_legacy_mu1_flux(self):
+        """UNRESOLVED (archetype 4) replicates the pre-apportionment behavior:
+        whole event flux on mu1 only (reactant pool -r, product pool +r)."""
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 4
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * 5.0
+        assert np.isclose(dn_dt[2], -r)                   # A mu1 only
+        assert np.isclose(dn_dt[6], +r)                   # B mu1 only
+        assert np.allclose([dn_dt[1], dn_dt[3], dn_dt[5], dn_dt[7]], 0.0, atol=1e-14)
+
+    def test_bundle_guard_empty_source_pool_no_nan(self):
+        """
+        An empty source pool (all moments zero) must produce zero flux and no
+        NaN: the site scaling already zeroes the rate, and the bundle guard
+        prevents the 0/0 in mu2/mu1.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 2
+        rs = _two_pool_rs(rxn, core, mask, (0.0, 0.0, 0.0), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.all(np.isfinite(dn_dt))
+        assert np.allclose(dn_dt[1:8], 0.0, atol=1e-14)
+
+    def test_bundle_guard_mu3_overflow_skips_mu2_component_only(self):
+        """
+        When the mu3 closure overflows to inf (huge mu2), MIGRATION still
+        applies the mu0/mu1 bundle components and skips ONLY mu2 (mirrors the
+        scission-ODE finiteness gate).
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 2
+        mu0a, mu1a, mu2a = 1.0, 5.0, 1.0e120
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * mu1a
+        assert np.all(np.isfinite(dn_dt))
+        assert np.isclose(dn_dt[1], -r)                       # mu0 applied
+        assert np.isclose(dn_dt[2], -r * mu2a / mu1a)         # mu1 applied
+        assert dn_dt[3] == 0.0                                # mu2 skipped
+        assert dn_dt[7] == 0.0
