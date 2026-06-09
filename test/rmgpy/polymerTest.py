@@ -2726,6 +2726,33 @@ class TestHandshakeStructures:
         self._handshake(base, [self.ps])
         assert is_end_group_reaction(base) is False
 
+    def test_handshake_products_classify_flux_archetype(self):
+        """
+        After the handshake, classify_reaction_flux_archetype (the classifier
+        make_new_reaction delegates to when stamping
+        Reaction.polymer_flux_archetype) returns SAME_POOL for fold-back
+        products and SCISSION_FRAGMENT for scission fragments.
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        # Baseline fold-back -> SAME_POOL
+        base = [self.ps.baseline_proxy.molecule[0].copy(deep=True)]
+        self._handshake(base, [self.ps])
+        assert isinstance(base[0], Polymer)
+        assert (classify_reaction_flux_archetype([self.ps], base)
+                == PolymerFluxArchetype.SAME_POOL)
+
+        # Head-wing-only fragment -> scission_tail Polymer -> SCISSION_FRAGMENT
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert frag is not None
+        prods = [frag]
+        self._handshake(prods, [self.ps])
+        assert isinstance(prods[0], Polymer)
+        assert (classify_reaction_flux_archetype([self.ps], prods)
+                == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
     # ------------------------------------------------------------------
     # 2. Head-scission fragment → scission_tail Polymer
     # ------------------------------------------------------------------

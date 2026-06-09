@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import Polymer, PolymerCrosslinkError, is_end_group_reaction
+from rmgpy.polymer import Polymer, PolymerCrosslinkError, is_end_group_reaction, classify_reaction_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -642,6 +642,8 @@ class CoreEdgeReactionModel:
                 # Flag end-group (terminal) modifications so the polymer solver
                 # scales them by chain-end density (mu0) instead of mu1.
                 forward.is_end_group_reaction = is_end_group_reaction(forward.products)
+                forward.polymer_flux_archetype = int(
+                    classify_reaction_flux_archetype(reactants, forward.products))
                 # Handshake replaced some Molecule objects in forward.products
                 # with Polymer objects, so forward.pairs references stale objects.
                 # Invalidate pairs so they are regenerated later.
@@ -681,6 +683,8 @@ class CoreEdgeReactionModel:
                 if polymer_reactants:
                     _handshake_structures(forward.products, polymer_reactants)
                     forward.is_end_group_reaction = is_end_group_reaction(forward.products)
+                    forward.polymer_flux_archetype = int(
+                        classify_reaction_flux_archetype(reactants, forward.products))
                     forward.pairs = None
 
                 products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
