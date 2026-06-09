@@ -6,7 +6,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.19: https://docutils.sourceforge.io/" />
 
-    <title>18. Release Notes &#8212; RMG-Py 4.0.0.rc1 Documentation</title>
+    <title>18. Release Notes &#8212; RMG-Py 4.0.0 Documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
     <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
     
@@ -46,7 +46,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
           <a href="faq.html" title="17. Frequently Asked Questions"
              accesskey="P">previous</a> |</li>
   <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">4.0.0.rc1 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">4.0.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" accesskey="U">RMG User’s Guide</a> &#187;</li>
@@ -61,35 +61,87 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
             
   <section id="release-notes">
 <span id="releasenotes"></span><h1><span class="section-number">18. </span>Release Notes<a class="headerlink" href="#release-notes" title="Permalink to this heading">¶</a></h1>
-<section id="rmg-py-version-4-0-0-rc1">
-<h2><span class="section-number">18.1. </span>RMG-Py Version 4.0.0.rc1<a class="headerlink" href="#rmg-py-version-4-0-0-rc1" title="Permalink to this heading">¶</a></h2>
-<aside class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 8)</p>
-<p>Title underline too short.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RMG</span><span class="o">-</span><span class="n">Py</span> <span class="n">Version</span> <span class="mf">4.0.0</span><span class="o">.</span><span class="n">rc1</span>
-<span class="o">====================</span>
-</pre></div>
-</div>
-</aside>
-<p>Date: April 24, 2026</p>
-<p>TODO: fill out</p>
+<section id="rmg-py-version-4-0-0">
+<h2><span class="section-number">18.1. </span>RMG-Py Version 4.0.0<a class="headerlink" href="#rmg-py-version-4-0-0" title="Permalink to this heading">¶</a></h2>
+<p>Date: June 10, 2026</p>
+<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/compare/3.3.0...4.0.0">Official RMG-Py Release Page</a>.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>New Features</dt><dd><ul>
+<li><p>Introduced an automated database selection feature</p></li>
+<li><p>Extended uncertainty analysis suite to export covariance matrices, import detailed correlations from RMG libraries, and add uncertainties in quadrature</p></li>
+<li><p>Added comprehensive surface sensitivity features for <cite>SurfaceReactor</cite></p></li>
+<li><p>Added support for coverage-dependent thermochemistry and kinetics for surface catalysis</p></li>
+<li><p>Added new YAML file writers for Cantera</p></li>
+<li><p>Added an Arkane xTB Electronic Structure Software (ESS) adapter</p></li>
+<li><p>Implemented a species constraint setting for specifying the maximum number of fused rings allowed</p></li>
+<li><p>Added ability to specify core species list from an external dictionary for model initialization</p></li>
+<li><p>Added support for Van der Waals bonds in adsorbates (eg. adsorbed bidentate formate)</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Software Improvements</dt><dd><ul>
+<li><p>Upgraded core dependencies to Cantera 3 and Python 3.11/updated ecosystem</p></li>
+<li><p>Optimizations to Cython declarations and molecule module structures</p></li>
+<li><p>Jupyter Notebooks updated to interface with Reaction Mechanism Simulator (RMS) using <cite>juliacall</cite></p></li>
+<li><p>Enhanced CI pipelines and improved conda building</p></li>
+<li><p>Incremental Cython builds restored in the Makefile for faster developer compilation</p></li>
+<li><p>Improvements to Chemkin file I/O including isotope handling and THERM line formatting</p></li>
+<li><p>Changed Arkane orthonormalization when projecting out rotors from vibrational modes</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Bug Fixes</dt><dd><ul>
+<li><p>Fixed duplicate reactions from identical templates being erroneously added to mechanisms</p></li>
+<li><p>Fixed energy correction calculations in pressure-dependent reactions and ensured consistency of transition state $E_0$ values in Arkane output files</p></li>
+<li><p>Corrected constant-species index mapping in <cite>SimpleReactor</cite></p></li>
+<li><p>Improved RDKit <cite>GetSSSR</cite> non-determinism</p></li>
+<li><p>Removed deprecated <cite>imp.load_source</cite> calls and eliminated unreachable code segments</p></li>
+<li><p>Fixed coverage-dependent thermodynamics and kinetics in surface reactors</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 </section>
-<section id="rmg-database-version-4-0-0-rc1">
-<h2><span class="section-number">18.2. </span>RMG-Database Version 4.0.0.rc1<a class="headerlink" href="#rmg-database-version-4-0-0-rc1" title="Permalink to this heading">¶</a></h2>
-<aside class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 14)</p>
-<p>Title underline too short.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RMG</span><span class="o">-</span><span class="n">Database</span> <span class="n">Version</span> <span class="mf">4.0.0</span><span class="o">.</span><span class="n">rc1</span>
-<span class="o">==========================</span>
-</pre></div>
-</div>
-</aside>
-<p>Date: April 24, 2026</p>
-<p>TODO: fill out</p>
+<section id="rmg-database-version-4-0-0">
+<h2><span class="section-number">18.2. </span>RMG-Database Version 4.0.0<a class="headerlink" href="#rmg-database-version-4-0-0" title="Permalink to this heading">¶</a></h2>
+<p>Date: June 10, 2026</p>
+<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-database/compare/3.3.0...4.0.0">Official RMG-Database Release Page</a>.</p>
+<ul class="simple">
+<li><dl class="simple">
+<dt>Features</dt><dd><ul>
+<li><p>Expanded datasets with a new Formic Acid library and example coverage-dependent thermo libraries</p></li>
+<li><p>Added data for electrocatalytic $text{CO}_2$ reduction ($text{CO}_2text{RR}$) kinetics and adsorbates</p></li>
+<li><p>Added BEEF uncertainty covariance data support</p></li>
+<li><p>Implemented new surface nitrogen reaction families, BEP rules, and NOx chemistry for $text{Pt}(111)$</p></li>
+<li><p>Introduced a <cite>recommended_libraries.yml</cite> configuration file</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="simple">
+<dt>Bugfixes</dt><dd><ul>
+<li><p>Fixed incorrect entry details in the <cite>Glarborg/C2</cite> database</p></li>
+<li><p>Fixed thermodynamic discontinuity issues found in the formic acid dataset</p></li>
+<li><p>Corrected temperature minimum settings ($T_{min}$) from 300 K to 298 K in NASA polynomials for $text{CO}_2text{RR}$ adsorbates on $text{Ag}(111)$</p></li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
 </section>
 <section id="rmg-py-version-3-3-0">
 <h2><span class="section-number">18.3. </span>RMG-Py Version 3.3.0<a class="headerlink" href="#rmg-py-version-3-3-0" title="Permalink to this heading">¶</a></h2>
 <p>Date: July 10, 2025</p>
+<aside class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 5); <em><a href="#id1">backlink</a></em></p>
+<p>Duplicate explicit target name: “official rmg-py release page”.</p>
+</aside>
 <p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0">Official RMG-Py Release Page</a>.</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -128,6 +180,10 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <section id="rmg-database-version-3-3-0">
 <h2><span class="section-number">18.4. </span>RMG-Database Version 3.3.0<a class="headerlink" href="#rmg-database-version-3-3-0" title="Permalink to this heading">¶</a></h2>
 <p>Date: July 10, 2025</p>
+<aside class="system-message">
+<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 5); <em><a href="#id2">backlink</a></em></p>
+<p>Duplicate explicit target name: “official rmg-database release page”.</p>
+</aside>
 <p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0">Official RMG-Database Release Page</a>.</p>
 <ul class="simple">
 <li><dl class="simple">
@@ -2287,8 +2343,8 @@ presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</p></l
     <h3><a href="../../contents.html">Table of Contents</a></h3>
     <ul>
 <li><a class="reference internal" href="#">18. Release Notes</a><ul>
-<li><a class="reference internal" href="#rmg-py-version-4-0-0-rc1">18.1. RMG-Py Version 4.0.0.rc1</a></li>
-<li><a class="reference internal" href="#rmg-database-version-4-0-0-rc1">18.2. RMG-Database Version 4.0.0.rc1</a></li>
+<li><a class="reference internal" href="#rmg-py-version-4-0-0">18.1. RMG-Py Version 4.0.0</a></li>
+<li><a class="reference internal" href="#rmg-database-version-4-0-0">18.2. RMG-Database Version 4.0.0</a></li>
 <li><a class="reference internal" href="#rmg-py-version-3-3-0">18.3. RMG-Py Version 3.3.0</a></li>
 <li><a class="reference internal" href="#rmg-database-version-3-3-0">18.4. RMG-Database Version 3.3.0</a></li>
 <li><a class="reference internal" href="#rmg-py-version-3-2-0">18.5. RMG-Py Version 3.2.0</a></li>
@@ -2393,7 +2449,7 @@ presence of ethene: realistic pathways from C5H5 to naphthalene” (2016)</p></l
           <a href="faq.html" title="17. Frequently Asked Questions"
              >previous</a> |</li>
   <li><a href="https://rmg.mit.edu/">RMG</a> &raquo;</li>
-  <li><a href="../../index.html">4.0.0.rc1 Documentation</a> &raquo;</li>
+  <li><a href="../../index.html">4.0.0 Documentation</a> &raquo;</li>
 
           <li class="nav-item nav-item-1"><a href="../index.html" >User’s Guide</a> &#187;</li>
           <li class="nav-item nav-item-2"><a href="index.html" >RMG User’s Guide</a> &#187;</li>
