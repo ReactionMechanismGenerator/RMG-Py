@@ -153,6 +153,19 @@ UNRESOLVED) happens once in `initialize_model` while filling the arrays —
 the RHS hot loop never branches on it, and the one-time warning is trivial
 there.
 
+**Unresolvable-pool demotion (added during implementation review):** a
+reaction stamped MIGRATION or SCISSION_FRAGMENT whose src or dst pool cannot
+be resolved in the solver (`== -1`) is also demoted to UNRESOLVED at
+`initialize_model`, with its own aggregate warning. This is reachable today:
+scission daughters are registered as core Polymer *species* but never become
+solver *pools* (pool configs come only from the input file), so e.g.
+`H + epdm <=> H2 + epdm_scission_tail` resolves dst = −1. Without the
+demotion the dispatch would skip and the parent drain would be silently
+zeroed while the explicit daughter species still gains moles — duplicating
+mass. The demotion restores the legacy µ1 transfer for exactly these shapes.
+(src == dst is NOT demoted: that skip is the intended SAME_POOL-equivalent
+treatment.)
+
 Follow-up if the |R| == 2 warning fires often on real decks (e.g. radical
 transfer between chains in different pools): `create_reacted_copy` lineage
 can in principle resolve which reactant each product came from; out of scope
