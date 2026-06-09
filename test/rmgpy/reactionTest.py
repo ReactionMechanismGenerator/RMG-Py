@@ -793,6 +793,18 @@ class TestReaction:
         assert Reaction().is_end_group_reaction is False
         assert Reaction(is_end_group_reaction=True).is_end_group_reaction is True
 
+    def test_polymer_flux_archetype_default_and_kwarg(self):
+        """
+        Reaction carries a ``polymer_flux_archetype`` int (default 0 = NONE)
+        stamped by the polymer handshake; the hybrid solver dispatches pool
+        moment flux on it (values mirror rmgpy.polymer.PolymerFluxArchetype).
+        """
+        from rmgpy.polymer import PolymerFluxArchetype
+
+        assert Reaction().polymer_flux_archetype == int(PolymerFluxArchetype.NONE)
+        assert (Reaction(polymer_flux_archetype=PolymerFluxArchetype.SCISSION_FRAGMENT)
+                .polymer_flux_archetype == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
     def test_is_isomerization(self):
         """
         Test the Reaction.is_isomerization() method.

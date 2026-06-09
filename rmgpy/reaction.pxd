@@ -64,6 +64,7 @@ cdef class Reaction:
     cdef public bint is_forward
     cdef public bint allow_max_rate_violation
     cdef public bint is_end_group_reaction
+    cdef public int polymer_flux_archetype
     cdef public object rank
 
     cpdef bint is_isomerization(self)

@@ -127,6 +127,7 @@ class Reaction:
                  is_forward=None,
                  allow_max_rate_violation=False,
                  is_end_group_reaction=False,
+                 polymer_flux_archetype=0,
                  ):
         self.index = index
         self.label = label
@@ -152,6 +153,13 @@ class Reaction:
         # product classifies END_MOD; the polymer hybrid solver then scales this
         # reaction by chain-end density (mu0) instead of monomer-unit density (mu1).
         self.is_end_group_reaction = is_end_group_reaction
+        # Pool moment-flux archetype (int values of
+        # rmgpy.polymer.PolymerFluxArchetype), stamped by the polymer handshake
+        # in rmgpy.rmg.model.make_new_reaction. 0 = NONE. Like
+        # is_end_group_reaction it is NOT serialized in __reduce__; the solver
+        # remaps unstamped proxy-touching reactions to UNRESOLVED at
+        # initialize_model (legacy mu1 flux), so restarts stay correct-but-loud.
+        self.polymer_flux_archetype = polymer_flux_archetype
 
     def __repr__(self):
         """
