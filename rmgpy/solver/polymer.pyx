@@ -559,6 +559,11 @@ class HybridPolymerSystem(ReactionSystem):
                 # Polymer species but have no pool config yet). Demote to the
                 # legacy mu1-only transfer so the parent drain is never
                 # silently zeroed (mass would otherwise be duplicated).
+                # src == dst is deliberately NOT demoted: for that shape
+                # (fold-back proxy product + non-pool daughter) the dispatch
+                # skip and the legacy transfer produce identical pool flux
+                # (reactant -r and fold-back +r cancel on the same mu1), so
+                # demotion would change nothing.
                 self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
                 n_unresolvable += 1
         if n_unresolvable:
@@ -1092,6 +1097,8 @@ class HybridPolymerSystem(ReactionSystem):
                 if arch == FLUX_MIGRATION:
                     src = self.reaction_src_pool[r_idx]
                     dst = self.reaction_dst_pool[r_idx]
+                    # -1 cannot reach here (init demotes unresolved pools to
+                    # UNRESOLVED); the checks are defensive only.
                     if src != -1 and dst != -1 and src != dst:
                         # Per-direction bundles: forward moves A-statistics
                         # chains A->B, reverse moves B-statistics chains B->A.
@@ -1118,9 +1125,17 @@ class HybridPolymerSystem(ReactionSystem):
                 elif arch == FLUX_SCISSION_FRAGMENT:
                     src = self.reaction_src_pool[r_idx]
                     dst = self.reaction_dst_pool[r_idx]
+                    # -1 cannot reach here (init demotes unresolved pools).
+                    # src == dst (fold-back + non-pool daughter) is skipped:
+                    # outcome-identical to the legacy transfer (see the init
+                    # demotion comment).
                     if src != -1 and dst != -1 and src != dst:
                         s_idx = self.polymer_pools[src].mu_indices
                         d_idx = self.polymer_pools[dst].mu_indices
+                        # Length-biased parent-chain statistics; mirrors
+                        # _chain_bundle's non-end-group branch (kept inline
+                        # because the scission factors 1/2, 2/3, 1/3 differ
+                        # per moment and per side).
                         mu0_p = max(0.0, y[s_idx[0]]) / V_poly
                         mu1_p = max(0.0, y[s_idx[1]]) / V_poly
                         mu2_p = max(0.0, y[s_idx[2]]) / V_poly

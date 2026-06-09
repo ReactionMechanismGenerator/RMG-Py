@@ -572,12 +572,12 @@ class TestHybridPolymerReactor:
     def test_flux_archetype_constants_match_enum(self):
         """The solver's mirror constants must equal PolymerFluxArchetype."""
         from rmgpy.polymer import PolymerFluxArchetype
-        import rmgpy.solver.polymer as sp
-        assert sp.FLUX_NONE == int(PolymerFluxArchetype.NONE) == 0
-        assert sp.FLUX_SAME_POOL == int(PolymerFluxArchetype.SAME_POOL) == 1
-        assert sp.FLUX_MIGRATION == int(PolymerFluxArchetype.MIGRATION) == 2
-        assert sp.FLUX_SCISSION_FRAGMENT == int(PolymerFluxArchetype.SCISSION_FRAGMENT) == 3
-        assert sp.FLUX_UNRESOLVED == int(PolymerFluxArchetype.UNRESOLVED) == 4
+        import rmgpy.solver.polymer as solver_mod
+        assert solver_mod.FLUX_NONE == int(PolymerFluxArchetype.NONE) == 0
+        assert solver_mod.FLUX_SAME_POOL == int(PolymerFluxArchetype.SAME_POOL) == 1
+        assert solver_mod.FLUX_MIGRATION == int(PolymerFluxArchetype.MIGRATION) == 2
+        assert solver_mod.FLUX_SCISSION_FRAGMENT == int(PolymerFluxArchetype.SCISSION_FRAGMENT) == 3
+        assert solver_mod.FLUX_UNRESOLVED == int(PolymerFluxArchetype.UNRESOLVED) == 4
 
     def test_unstamped_proxy_reaction_remaps_to_unresolved(self):
         """
@@ -615,11 +615,11 @@ class TestHybridPolymerReactor:
         )
         rs.initialize_model(core_species, [proxy_rxn, gas_rxn], [], [])
 
-        import rmgpy.solver.polymer as sp
-        assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED
+        import rmgpy.solver.polymer as solver_mod
+        assert rs.reaction_flux_archetype[0] == solver_mod.FLUX_UNRESOLVED
         assert rs.reaction_src_pool[0] == 0
         assert rs.reaction_dst_pool[0] == -1        # gas-only products
-        assert rs.reaction_flux_archetype[1] == sp.FLUX_NONE  # pure-gas stays NONE
+        assert rs.reaction_flux_archetype[1] == solver_mod.FLUX_NONE  # pure-gas stays NONE
         assert rs.reaction_src_pool[1] == -1
         assert rs.reaction_dst_pool[1] == -1
 
@@ -657,8 +657,8 @@ class TestHybridPolymerReactor:
         )
         rs.initialize_model(core_species, [rxn], [], [])
 
-        import rmgpy.solver.polymer as sp
-        assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED  # demoted
+        import rmgpy.solver.polymer as solver_mod
+        assert rs.reaction_flux_archetype[0] == solver_mod.FLUX_UNRESOLVED  # demoted
 
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
