@@ -605,6 +605,12 @@ class TestFragment:
         assert fragment.get_num_atoms(element="C") == 2
         assert fragment.get_num_atoms(element="H") == 4
 
+    def test_fragment_get_num_heavy_atoms(self):
+        # [CH2]CR has 2 heavy atoms (C), 3 H, and 1 cutting label (R)
+        fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("[CH2]CR")
+
+        assert fragment.get_num_heavy_atoms() == 2
+
     def test_fragment_to_smiles(self):
         adj = """1 C u0 p0 c0 {2,S} {3,S} {4,S} {5,S}
 2 R u0 p0 c0 {1,S}
@@ -747,7 +753,7 @@ class TestFragment:
 
     def test_to_rdkit_mol(self):
         fragment = rmgpy.molecule.fragment.Fragment().from_smiles_like_string("CCR")
-        rdmol, _ = fragment.to_rdkit_mol()
+        rdmol, _ = fragment.to_rdkit_mol(remove_h=False, return_mapping=True)
 
         assert rdmol.GetNumAtoms() == 8
 

@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -56,6 +56,7 @@ cdef class NASAPolynomial(HeatCapacityModel):
 cdef class NASA(HeatCapacityModel):
 
     cdef public NASAPolynomial poly1, poly2, poly3
+    cdef public dict _thermo_coverage_dependence
     
     cpdef NASAPolynomial select_polynomial(self, double T)
 

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -39,6 +39,9 @@ import time
 from copy import deepcopy
 
 import numpy as np
+
+from pysidt import read_nodes, MultiTargetSingleEvalSubgraphIsomorphicDecisionTree
+from pysidt.utils import find_shortest_paths
 
 import rmgpy.constants as constants
 import rmgpy.molecule
@@ -467,7 +470,7 @@ def is_ring_partial_matched(ring, matched_group):
     else:
         submol_ring, _ = convert_ring_to_sub_molecule(ring)
         sssr = submol_ring.get_smallest_set_of_smallest_rings()
-        sssr_grp = matched_group.get_smallest_set_of_smallest_rings()
+        sssr_grp = matched_group.make_sample_molecule().get_smallest_set_of_smallest_rings()
         if sorted([len(sr) for sr in sssr]) == sorted([len(sr_grp) for sr_grp in sssr_grp]):
             return False
         else:
@@ -483,7 +486,7 @@ def bicyclic_decomposition_for_polyring(polyring):
     """
 
     submol, _ = convert_ring_to_sub_molecule(polyring)
-    sssr = submol.get_deterministic_sssr()
+    sssr = submol.get_smallest_set_of_smallest_rings()
 
     ring_pair_with_common_atoms_list = []
     ring_occurances_dict = {}
@@ -555,7 +558,7 @@ def split_bicyclic_into_single_rings(bicyclic_submol):
     Splits a given bicyclic submolecule into two individual single 
     ring submolecules (a list of `Molecule`s ).
     """
-    sssr = bicyclic_submol.get_deterministic_sssr()
+    sssr = bicyclic_submol.get_smallest_set_of_smallest_rings()
 
     return [convert_ring_to_sub_molecule(sssr[0])[0],
             convert_ring_to_sub_molecule(sssr[1])[0]]
@@ -857,6 +860,8 @@ class ThermoDatabase(object):
         self.libraries = {}
         self.surface = {}
         self.groups = {}
+        self.sidts = {}
+        self.sidt_taggings_and_decompositions = {}
         self.adsorption_groups = "adsorptionPt111"
         self.library_order = []
         self.local_context = {
@@ -883,6 +888,7 @@ class ThermoDatabase(object):
             'depository': self.depository,
             'libraries': self.libraries,
             'groups': self.groups,
+            'sidts': self.sidts,
             'library_order': self.library_order,
             'surface' : self.surface,
         }
@@ -895,6 +901,7 @@ class ThermoDatabase(object):
         self.depository = d['depository']
         self.libraries = d['libraries']
         self.groups = d['groups']
+        self.sidts = d['sidts']
         self.library_order = d['library_order']
         self.surface = d['surface']
 
@@ -909,6 +916,7 @@ class ThermoDatabase(object):
             self.depository = {}
         self.load_libraries(os.path.join(path, 'libraries'), libraries)
         self.load_groups(os.path.join(path, 'groups'))
+        self.load_sidts(os.path.join(path,'sidt'))
         if surface:
             self.load_surface()
 
@@ -966,6 +974,25 @@ class ThermoDatabase(object):
                     raise DatabaseError('Library {} not found in {}... Please check if your library is '
                                         'correctly placed'.format(libraryName, path))
 
+    def unload_libraries(self, libraries=None):
+        """
+        Unload the libraries where `libraries` is a list of library names to unload.
+        If `libraries` is None, unload all libraries.
+        """
+        if isinstance(libraries, str):
+            libraries = [libraries]
+
+        if libraries is None:  # unload all
+            self.libraries = {}
+            self.library_order = []
+        else:
+            for libraryName in libraries:
+                if libraryName in self.libraries:
+                    self.libraries.pop(libraryName)
+                    self.library_order.remove(libraryName)
+                else:
+                    raise DatabaseError('Library {} not found in the current database... Please check if your library name is correct'.format(libraryName))
+
     def load_surface(self):
         """
         Load the metal database from the given `path` on disk, where `path`
@@ -1004,6 +1031,72 @@ class ThermoDatabase(object):
 
         self.record_ring_generic_nodes()
         self.record_polycylic_generic_nodes()
+        
+    def load_sidts(self, path):
+        """
+        Load thermo SIDTs from the given `path` on disk, where `path`
+        points to the top-level folder of the thermo database.
+        """
+        logging.info('Loading thermodynamics SIDTs from {0}...'.format(path))
+        categories = [
+            "Pt111_monodentate_adsorption_corrections",
+            "Pt111_bidentate_adsorption_corrections",
+            "Pt111_vdw_adsorption_corrections",
+        ]
+        
+        def add_monodentate_tag(m):
+            for a in m.atoms:
+                if a.is_surface_site():
+                    adatom = list(a.bonds.keys())[0]
+                    adatom.label = "*"
+                    break
+        
+        def add_bidentate_tag(m):
+            structs = []
+            sites = m.get_surface_sites()
+            s1 = sites[0]
+            s2 = sites[1]
+            paths = find_shortest_paths(s1,s2)
+            path = paths[0]
+            for a in path:
+                a.label = "*"
+
+        def add_vdw_tag(m):
+            for a in m.atoms:
+                if a.is_surface_site():
+                    a.label = "*"
+                    break
+        
+        def multidentate_decomposition(m):
+            structs = []
+            sites = m.get_surface_sites()
+            for tup in itertools.combinations(sites,2):
+                s1 = tup[0]
+                s2 = tup[1]
+                paths = find_shortest_paths(s1,s2)
+                path = paths[0]
+                inds = []
+                for p in path:
+                    inds.append(m.atoms.index(p))
+                mol = m.copy(deep=True)
+                for ind in inds:
+                    mol.atoms[ind].label = "*"
+                structs.append(mol)
+        
+            return structs
+        
+        self.sidt_taggings_and_decompositions = {
+            "Pt111_monodentate_adsorption_corrections": add_monodentate_tag,
+            "Pt111_bidentate_adsorption_corrections": add_bidentate_tag,
+            "Pt111_vdw_adsorption_corrections": add_vdw_tag,
+            "Pt111_multidentate_adsorption_corrections": multidentate_decomposition, #special
+        }
+        
+        for category in categories:
+            if os.path.exists(os.path.join(path,category+".json")):
+                nodes = read_nodes(os.path.join(path,category+".json"))
+                tree = MultiTargetSingleEvalSubgraphIsomorphicDecisionTree(nodes=nodes)
+                self.sidts[category] = tree
 
     def save(self, path):
         """
@@ -1293,7 +1386,7 @@ class ThermoDatabase(object):
         if species.contains_surface_site():
             try:
                 thermo0 = self.get_thermo_data_for_surface_species(species)
-                metal_to_scale_from = self.adsorption_groups.split('adsorption')[-1]
+                metal_to_scale_from = self.adsorption_groups.split('adsorption')[-1].replace("SIDT","",1)
                 if metal_to_scale_from != metal_to_scale_to:
                     thermo0 = self.correct_binding_energy(thermo0, species, metal_to_scale_from=metal_to_scale_from, metal_to_scale_to=metal_to_scale_to)  # group adsorption values come from Pt111
                 return thermo0
@@ -1683,81 +1776,133 @@ class ThermoDatabase(object):
             molecule ([Molecule]): the molecule to apply the thermo correction
             surface_sites ([list([Atom])]): a list of the surface site atoms in the molecule
         """
-
         number_of_surface_sites = len(surface_sites)
+        
+        if "SIDT" not in self.adsorption_groups: 
+            matches = []
+            for atom in surface_sites:
+                labeled_atoms = {'*': atom}
+                node = adsorption_groups.descend_tree(molecule, labeled_atoms)
+                if node is None: 
+                    # no match, so try the next surface site
+                    continue
+                while node is not None and node.data is None:
+                    node = node.parent
+                if node is None:
+                    # no data, so try the next surface site
+                    continue
+                data = node.data
+                comment = node.label
+                loop_count = 0
+                while isinstance(data, str):
+                    loop_count += 1
+                    if loop_count > 100:
+                        raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
+                                        f" reference may exist. Last node was {node.label} pointing to group called {data} in "
+                                        f"database {adsorption_groups.label}")
 
-        matches = []
-        for atom in surface_sites:
-            labeled_atoms = {'*': atom}
-            node = adsorption_groups.descend_tree(molecule, labeled_atoms)
-            if node is None: 
-                # no match, so try the next surface site
-                continue
-            while node is not None and node.data is None:
-                node = node.parent
-            if node is None:
-                # no data, so try the next surface site
-                continue
-            data = node.data
-            comment = node.label
-            loop_count = 0
-            while isinstance(data, str):
-                loop_count += 1
-                if loop_count > 100:
-                    raise DatabaseError("Maximum iterations reached while following thermo group data pointers. A circular"
-                                    f" reference may exist. Last node was {node.label} pointing to group called {data} in "
-                                    f"database {adsorption_groups.label}")
-
-                for entry in adsorption_groups.entries.values():
-                    if entry.label == data:
-                        data = entry.data
-                        comment = entry.label
-                        break
+                    for entry in adsorption_groups.entries.values():
+                        if entry.label == data:
+                            data = entry.data
+                            comment = entry.label
+                            break
+                    else:
+                        raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
+                                        f"in database {adsorption_groups.label}")
+                data.comment = f'{adsorption_groups.label}({comment})'
+                group_surface_sites = node.item.get_surface_sites()
+                if len(group_surface_sites) == number_of_surface_sites:
+                    # all the surface sites are accounted for so add the adsorption group and return
+                    add_thermo_data(adsorption_thermo, data, group_additivity=True)
+                    return True
                 else:
-                    raise DatabaseError(f"Node {node.label} points to a non-existing group called {data} "
-                                    f"in database {adsorption_groups.label}")
-            data.comment = f'{adsorption_groups.label}({comment})'
-            group_surface_sites = node.item.get_surface_sites()
-            if len(group_surface_sites) == number_of_surface_sites:
-                # all the surface sites are accounted for so add the adsorption group and return
-                add_thermo_data(adsorption_thermo, data, group_additivity=True)
-                return True
-            else:
-                # we have not found a full match yet, so append and keep looking
-                matches.append((len(group_surface_sites),data))
-        
-        if len(matches) == 0:
-            raise DatabaseError(f"Could not find an adsorption correction in {adsorption_groups.label} for {molecule}")
-        matches.sort(key = lambda x: -x[0])
-        # sort the matches by descending number of surface sites
-        corrections_applied = 0
-        # start a counter for the number of corrections applied
-        for number_of_group_sites, data in matches:
-            if number_of_surface_sites - number_of_group_sites < 0:
-                # too many sites in this group, skip to the next one
-                continue
-            if not corrections_applied:
-                # this is the first correction, so add H298, S298, and Cp
-                add_thermo_data(adsorption_thermo, data, group_additivity=True)
-            else:
-                # We have already corrected S298 and Cp, so we only want to correct H298
-                adsorption_thermo.H298.value_si += data.H298.value_si
-                adsorption_thermo.comment += ' + H298({0})'.format(data.comment)
-            corrections_applied += 1
-            number_of_surface_sites -= number_of_group_sites
-            if number_of_surface_sites <= 0:
-                # we have corrected for all the sites
-                if number_of_surface_sites < 0:
-                    adsorption_thermo.comment += ' WARNING(Too many adsorption corrections were added to the thermo!'
-                    adsorption_thermo.comment += 'The H298 is very likely understimated as a result!)'
-                break
-        
-        if number_of_surface_sites > 0:
-            adsorption_thermo.comment += ' WARNING({} surface sites were unaccounted for with adsorption corrections!'.format(number_of_surface_sites)
-            adsorption_thermo.comment += 'The H298 is very likely overestimated as a result!)'
+                    # we have not found a full match yet, so append and keep looking
+                    matches.append((len(group_surface_sites),data))
+            
+            if len(matches) == 0:
+                raise DatabaseError(f"Could not find an adsorption correction in {adsorption_groups.label} for {molecule}")
+            matches.sort(key = lambda x: -x[0])
+            # sort the matches by descending number of surface sites
+            corrections_applied = 0
+            # start a counter for the number of corrections applied
+            for number_of_group_sites, data in matches:
+                if number_of_surface_sites - number_of_group_sites < 0:
+                    # too many sites in this group, skip to the next one
+                    continue
+                if not corrections_applied:
+                    # this is the first correction, so add H298, S298, and Cp
+                    add_thermo_data(adsorption_thermo, data, group_additivity=True)
+                else:
+                    # We have already corrected S298 and Cp, so we only want to correct H298
+                    adsorption_thermo.H298.value_si += data.H298.value_si
+                    adsorption_thermo.comment += ' + H298({0})'.format(data.comment)
+                corrections_applied += 1
+                number_of_surface_sites -= number_of_group_sites
+                if number_of_surface_sites <= 0:
+                    # we have corrected for all the sites
+                    if number_of_surface_sites < 0:
+                        adsorption_thermo.comment += ' WARNING(Too many adsorption corrections were added to the thermo!'
+                        adsorption_thermo.comment += 'The H298 is very likely understimated as a result!)'
+                    break
+            
+            if number_of_surface_sites > 0:
+                adsorption_thermo.comment += ' WARNING({} surface sites were unaccounted for with adsorption corrections!'.format(number_of_surface_sites)
+                adsorption_thermo.comment += 'The H298 is very likely overestimated as a result!)'
 
-        return True
-
+            return True
+        else:
+            if number_of_surface_sites == 1:
+                if len(molecule.split()) == 1:
+                    self.sidt_taggings_and_decompositions["Pt111_monodentate_adsorption_corrections"](molecule)
+                    root = self.sidts["Pt111_monodentate_adsorption_corrections"].nodes["Root"]
+                    data, unc, tr = self.sidts["Pt111_monodentate_adsorption_corrections"].evaluate(molecule,trace=True,estimate_uncertainty=True)
+                else:
+                    self.sidt_taggings_and_decompositions["Pt111_vdw_adsorption_corrections"](molecule)
+                    data, unc, tr = self.sidts["Pt111_vdw_adsorption_corrections"].evaluate(molecule,trace=True,estimate_uncertainty=True)
+            elif number_of_surface_sites == 2:
+                self.sidt_taggings_and_decompositions["Pt111_bidentate_adsorption_corrections"](molecule)
+                data, unc, tr = self.sidts["Pt111_bidentate_adsorption_corrections"].evaluate(molecule,trace=True,estimate_uncertainty=True)
+            else: # >2 surface sites
+                data = None
+                sts = self.sidt_taggings_and_decompositions["Pt111_multidentate_adsorption_corrections"](molecule)
+                Nsts = 0
+                for st in sts:
+                    if data is None:
+                        dE = self.sidts["Pt111_bidentate_adsorption_corrections"].evaluate(st)
+                    else:
+                        dE = self.sidts["Pt111_bidentate_adsorption_corrections"].evaluate(st)
+                    
+                    if dE is not None:
+                        if data is None:
+                            data = dE
+                        else:
+                            data += dE
+                        Nsts += 1
+                        
+                data /= Nsts
+                unc = [275.3710444584647,
+                        35.06003505844255,
+                        9.443946756077908,
+                        12.96897559887163,
+                        16.813134867837555,
+                        20.353756412672936,
+                        26.25846562429047,
+                        30.888440606215646,
+                        38.49498107527693] #based on tridentate data
+                tr = "estimators not designed to handle >2 adsorption sites corrections errors may be very high"
+            
+            molecule.clear_labeled_atoms()
+            
+            adsorption_thermo.H298.value_si += data[0]*1000.0 #kJ/mol
+            adsorption_thermo.H298.uncertainty_si += unc[0]*1000.0
+            adsorption_thermo.S298.value_si += data[1] #J/(mol*K)
+            adsorption_thermo.S298.uncertainty_si += unc[1]
+            adsorption_thermo.Cpdata.value_si += data[2:] #J/(mol*K)
+            adsorption_thermo.Cpdata.uncertainty_si += unc[2:]
+            adsorption_thermo.comment += f'{self.adsorption_groups}({tr})'
+            
+            return True 
+    
     def get_thermo_data_from_libraries(self, species, training_set=None):
         """
         Return the thermodynamic parameters for a given :class:`Species`
@@ -2716,15 +2861,18 @@ class ThermoDatabase(object):
         Parses the verbose string of comments from the thermo data of the species object,
         and extracts the thermo sources.
 
-        Returns a dictionary with keys of either 'Library', 'QM', and/or 'GAV'.
+        Returns a dictionary with keys of 'Library', 'QM', 'ADS', and/or 'GAV'.
         Commonly, species thermo are estimated using only one of these sources.
         However, a radical can be estimated with more than one type of source, for 
         instance a saturated library value and a GAV HBI correction, or a QM saturated value
-        and a GAV HBI correction.  
+        and a GAV HBI correction. Adsorbates can be estimated using a single library
+        for the adsorbate or a combination of a gas phase library for the
+        gas phase portion and an adsorption correction.
         
         source = {'Library': String_Name_of_Library_Used,
                   'QM': String_of_Method_Used,
-                  'GAV': Dictionary_of_Groups_Used 
+                  'GAV': Dictionary_of_Groups_Used,
+                  'ADS': Dictionary_of_Adsorption_Group_Used,
                   }
                   
         The Dictionary_of_Groups_Used looks like 
@@ -2743,14 +2891,56 @@ class ThermoDatabase(object):
             # Store the level of the calculation, which is the 2nd token in the comments
             source['QM'] = tokens[1]
 
+        elif comment.startswith('Gas phase thermo'):
+            # Handle adsorption correction thermo data of the following format:
+            # Library example
+            # Gas phase thermo for C(T) from Thermo library: primaryThermoLibrary.
+            # Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(Cq*)
+
+            # GAV example
+            # Gas phase thermo for [CH]CC from Thermo group additivity estimation: group(Cs-CsCsHH) + group(Cs-CsHHH) + group(Cs-CsHHH) + radical(CCJ2_triplet).
+            # Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C=*RCR3)"
+
+            comment = comment.replace(r'\n', ' ')
+            comment = comment.replace('\n', ' ')
+            if 'Adsorption correction:' not in comment:
+                raise ValueError(f'adsorption correction in unrecognized format {comment}')
+
+            # Handle the gas-phase portion first
+            gas_comment = comment.split('Adsorption correction: + ')[0].strip()
+            if gas_comment.endswith('.'):
+                gas_comment = gas_comment[:-1]  # delete the . at the end if it exists
+            gas_comment = gas_comment[gas_comment.find('from ', len('Gas phase thermo for ')) + len('from '):]
+            dummy_gas_phase_species = Species()
+            dummy_gas_phase_species.thermo = NASA()
+            dummy_gas_phase_species.thermo.comment = gas_comment
+            source = self.extract_source_from_comments(dummy_gas_phase_species)
+
+            # This is an adsorption correction
+            # comment is split into two parts: the gas phase, and the surface adsorption correction
+            ads_correction_comment = comment.split('Adsorption correction: +')[-1].strip()
+            dummy_adsorption_correction_species = Species()
+            dummy_adsorption_correction_species.thermo = NASA()
+            dummy_adsorption_correction_species.thermo.comment = ads_correction_comment
+            source['ADS'] = self.extract_source_from_comments(dummy_adsorption_correction_species)['GAV']
+
+            return source
+
         # Check for group additivity contributions to the thermo in this species            
 
-        # The contribution of the groups can be either additive or substracting
+        # The contribution of the groups can be either additive or subtracting
         # after changes to the polycyclic algorithm
 
         comment = comment.replace(' + ', ' +')
         comment = comment.replace(' - ', ' -')
-        tokens = comment.split()
+
+        # Sometimes chemkin splits the comment with newlines
+        # this allows us to get rid of newlines while ensuring separate
+        # groups are still split by spaces
+        comment = comment.replace(')\n+', ') +')
+        comment = comment.replace(')\n-', ') -')
+        comment = comment.replace('\n', '')
+        tokens = comment.split(' ')
 
         groups = {}
         group_types = list(self.groups.keys())

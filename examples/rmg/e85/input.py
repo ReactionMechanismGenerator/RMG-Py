@@ -4,7 +4,7 @@ database(
     reactionLibraries = [],
     seedMechanisms = ['GRI-Mech3.0'],
     kineticsDepositories = ['training'],
-    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O'],
+    kineticsFamilies = ['!Intra_Disproportionation','!Substitution_O', '!surface'],
     kineticsEstimator = 'rate rules',
 )
 
@@ -87,5 +87,9 @@ options(
     units='si',
     generateOutputHTML=False,
     generatePlots=False,
+    generateChemkin={'saveInterval': 5, 'saveEdge': True},
+    generateRMSYAML={'saveInterval': 5},
+    generateCanteraYAML1={'saveInterval': 5},
+    generateCanteraYAML2={'saveInterval': 5},
 )
 

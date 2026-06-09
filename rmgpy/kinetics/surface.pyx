@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -299,7 +299,10 @@ cdef class StickingCoefficient(KineticsModel):
         b = self._n.value_si
         E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
 
-        return ct.StickingArrheniusRate(A, b, E)
+        rate = ct.StickingArrheniusRate(A, b, E)
+        if A < 0:
+            rate.allow_negative_pre_exponential_factor = True
+        return rate
 
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
@@ -654,7 +657,10 @@ cdef class SurfaceArrhenius(Arrhenius):
 
         b = self._n.value_si
         E = self._Ea.value_si * 1000  # convert from J/mol to J/kmol
-        return ct.InterfaceArrheniusRate(A, b, E)
+        rate = ct.InterfaceArrheniusRate(A, b, E)
+        if A < 0:
+            rate.allow_negative_pre_exponential_factor = True
+        return rate
 
     def set_cantera_kinetics(self, ct_reaction, species_list):
         """

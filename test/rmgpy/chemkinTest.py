@@ -27,6 +27,7 @@
 #                                                                             #
 ###############################################################################
 
+import io
 import os
 
 from unittest import mock
@@ -39,11 +40,14 @@ from rmgpy.chemkin import (
     mark_duplicate_reactions,
     read_kinetics_entry,
     read_reaction_comments,
+    read_thermo_block,
     read_thermo_entry,
     save_chemkin_file,
     save_chemkin_surface_file,
     save_species_dictionary,
     save_transport_file,
+    write_elements_section,
+    write_kinetics_entry,
     write_thermo_entry,
 )
 from rmgpy.chemkin import _remove_line_breaks, _process_duplicate_reactions
@@ -58,6 +62,14 @@ from rmgpy.transport import TransportData
 from rmgpy.quantity import Quantity
 from rmgpy.kinetics.surface import SurfaceArrhenius, StickingCoefficient
 import pytest
+
+
+def get_elements_section_lines(chemkin_text):
+    """Return the ELEMENTS block from a Chemkin file as stripped lines."""
+    lines = chemkin_text.splitlines()
+    start = lines.index("ELEMENTS")
+    end = lines.index("END", start)
+    return lines[start : end + 1]
 
 
 class ChemkinTest:
@@ -142,6 +154,35 @@ class ChemkinTest:
         assert species == "C2H6"
         assert formula == {"H": 6, "C": 2}
         assert isinstance(thermo, NASA)
+
+    @mock.patch("rmgpy.chemkin.logging")
+    def test_read_thermo_block_temperature_header_columns(self, mock_logging):
+        # Per the CHEMKIN spec the default-range line is fixed-width:
+        # Tmin in cols 1-10, Tint in cols 11-20, Tmax in cols 21-30.
+        # Slot 1: 150  left-anchored (leftmost digit in col 1).
+        # Slot 2: 1000 right-anchored (rightmost digit in col 20)
+        #         '      1000' that could be misread as 100.
+        # Slot 3: 9999 right-anchored (rightmost digit in col 30).
+        header = "150             1000      9999"
+        assert len(header) == 30
+        f = io.StringIO("THERM ALL\n" + header + "\nEND\n")
+
+        read_thermo_block(f, species_dict={})
+
+        mock_logging.info.assert_any_call(
+            "Thermo file has default temperature range 150.0 to 1000.0 and 1000.0 to 9999.0"
+        )
+        for call in mock_logging.warning.call_args_list:
+            assert "badly formatted" not in call.args[0]
+
+    @mock.patch("rmgpy.chemkin.logging")
+    def test_read_thermo_block_warns_for_badly_formatted_temperature_header(self, mock_logging):
+        header = "15000000001         9999      5000"
+        f = io.StringIO("THERM ALL\n" + header + "\nEND\n")
+
+        read_thermo_block(f, species_dict={})
+
+        assert any("badly formatted" in call.args[0] for call in mock_logging.warning.call_args_list)
 
     def test_read_and_write_and_read_template_reaction_family_for_minimal_example(self):
         """
@@ -665,6 +706,83 @@ class ChemkinTest:
         os.remove(chemkin_save_path)
         os.remove(dictionary_save_path)
 
+    def test_write_kinetics_entry_with_coverage_dependence(self):
+        """Test that write_kinetics_entry correctly writes COV lines for surface reactions
+        with coverage-dependent kinetics."""
+        s_ox = Species().from_smiles("O=[*]")
+        s_ox.label = "OX"
+
+        kinetics = SurfaceArrhenius(
+            A=(7.39e19, "cm^2/(mol*s)"),
+            n=0.0,
+            Ea=(18.475, "kcal/mol"),
+            T0=(1, "K"),
+            coverage_dependence={s_ox: {"a": 0.0, "m": 0.0, "E": (-17.5, "kcal/mol")}},
+        )
+
+        rxn = Reaction(
+            reactants=[s_ox],
+            products=[s_ox],
+            kinetics=kinetics,
+        )
+
+        result = write_kinetics_entry(rxn, species_list=[s_ox])
+
+        assert "COV" in result
+        cov_line = [line for line in result.splitlines() if "COV" in line][0]
+        assert "OX" in cov_line
+        assert "-17.500" in cov_line
+
+    def test_write_elements_section_omits_unused_isotopes_and_surface_site(self):
+        """Only elements in use should be written to the ELEMENTS section."""
+        from rmgpy.molecule.element import C, H, O
+
+        stream = io.StringIO()
+        write_elements_section(stream, {C, H, O})
+
+        assert stream.getvalue().splitlines() == [
+            "ELEMENTS",
+            "\tC",
+            "\tH",
+            "\tO",
+            "END",
+            "",
+        ]
+
+    def test_write_elements_section_includes_used_isotopes_and_surface_site(self):
+        """Isotopes and X should be written when they are explicitly in use."""
+        from rmgpy.molecule.element import C13, D, H, O18, T, X
+
+        stream = io.StringIO()
+        write_elements_section(stream, {C13, D, H, O18, T, X})
+
+        assert stream.getvalue().splitlines() == [
+            "ELEMENTS",
+            "\tH",
+            "\tD /2.014/",
+            "\tT /3.016/",
+            "\tCI /13.003/",
+            "\tOI /17.999/",
+            "\tX /195.083/",
+            "END",
+            "",
+        ]
+
+    def test_write_elements_section_maps_electron_to_pseudo_element(self):
+        """The RMG electron singleton should be written as Chemkin/Cantera E, not e."""
+        from rmgpy.molecule.element import H, e
+
+        stream = io.StringIO()
+        write_elements_section(stream, {H, e})
+
+        assert stream.getvalue().splitlines() == [
+            "ELEMENTS",
+            "\tE",
+            "\tH",
+            "END",
+            "",
+        ]
+
 
 class TestThermoReadWrite:
     def setup_class(self):
@@ -740,6 +858,86 @@ C 1 H 3 N 1 O 2 S 1 X 1
         assert species == "C2H6"
         assert formula == {"H": 6, "C": 2}
         assert self.nasa.is_identical_to(thermo)
+
+    def test_write_thermo_block_for_isotope_uses_chemkin_name(self):
+        """Isotopic atoms should use their Chemkin names in thermo composition."""
+        deuterium = Species().from_adjacency_list(
+            "1 H u0 p0 c0 i2 {2,S}\n"
+            "2 H u0 p0 c0 {1,S}"
+        )
+        deuterium.thermo = self.nasa
+
+        result = write_thermo_entry(deuterium, verbose=False)
+
+        first_line = result.splitlines()[0]
+        assert "D   1" in first_line
+        assert "H   1" in first_line
+
+    def test_save_chemkin_file_writes_dynamic_elements_section(self, tmp_path):
+        """save_chemkin_file should discover isotopes and not add unused X."""
+        h2 = Species().from_smiles("[H][H]")
+        h2.label = "H2"
+        h2.index = 1
+        h2.thermo = self.nasa
+
+        d = Species().from_adjacency_list("1 H u1 p0 c0 i2")
+        d.label = "D"
+        d.index = 2
+        d.thermo = self.nasa
+
+        chemkin_path = tmp_path / "chem.inp"
+        save_chemkin_file(
+            chemkin_path,
+            [h2, d],
+            [],
+            verbose=False,
+            check_for_duplicates=False,
+        )
+
+        elements_lines = get_elements_section_lines(chemkin_path.read_text())
+        assert elements_lines == [
+            "ELEMENTS",
+            "\tH",
+            "\tD /2.014/",
+            "END",
+        ]
+        assert all("X" not in line for line in elements_lines)
+
+    def test_save_chemkin_file_adds_electron_element_for_charged_species(self, tmp_path):
+        """Charged species require E in the ELEMENTS section even without an electron atom."""
+        from rmgpy.molecule.element import Li, e
+        from rmgpy.rmg.model import ReactionModel
+
+        lithium_ion = Species().from_adjacency_list("1 Li u0 p0 c+1")
+        lithium_ion.label = "Li+"
+        lithium_ion.index = 1
+        lithium_ion.thermo = self.nasa
+
+        assert ReactionModel(species=[lithium_ion]).get_elements() == {Li, e}
+
+        chemkin_path = tmp_path / "chem.inp"
+        save_chemkin_file(
+            chemkin_path,
+            [lithium_ion],
+            [],
+            verbose=False,
+            check_for_duplicates=False,
+        )
+
+        elements_lines = get_elements_section_lines(chemkin_path.read_text())
+        assert "\tE" in elements_lines
+        assert "\tLi" in elements_lines
+
+    def test_write_thermo_block_for_charged_species_includes_electron_count(self):
+        """Charged species thermo composition should include E: -charge."""
+        lithium_ion = Species().from_adjacency_list("1 Li u0 p0 c+1")
+        lithium_ion.thermo = self.nasa
+
+        result = write_thermo_entry(lithium_ion, verbose=False)
+
+        first_line = result.splitlines()[0]
+        assert "E  -1" in first_line
+        assert "Li  1" in first_line
 
     def test_write_thermo_block_5_elem(self):
         """Test that we can write a thermo block for a species with 5 elements"""

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -188,9 +188,17 @@ class Arkane(object):
             pass
         chemkin_file = os.path.join(self.output_directory, 'chem.inp')
 
+        # Collect elements used by any species with a known structure so the
+        # ELEMENTS block lists only what's actually present.
+        elements_in_use = set()
+        for job in self.job_list:
+            if isinstance(job, ThermoJob) and job.species.molecule:
+                for atom in job.species.molecule[0].atoms:
+                    elements_in_use.add(atom.element)
+
         # write the chemkin files and run the thermo and then kinetics jobs
         with open(chemkin_file, 'w') as f:
-            write_elements_section(f)
+            write_elements_section(f, elements_in_use)
 
             f.write('SPECIES\n\n')
 

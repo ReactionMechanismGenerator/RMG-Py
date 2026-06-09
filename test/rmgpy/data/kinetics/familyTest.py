@@ -72,6 +72,7 @@ class TestFamily:
                 "R_Addition_COm",
                 "R_Recombination",
                 'Surface_Proton_Electron_Reduction_Alpha',
+                'Surface_Dissociation_Charge_Separation',
             ],
         )
         cls.family = cls.database.families["intra_H_migration"]
@@ -290,6 +291,59 @@ multiplicity 2
             mapping[atom] = products[0].get_labeled_atoms(label)[0]
 
         assert expected_product.is_isomorphic(products[0], mapping)
+
+    def test_surface_dissociation_charge_separation(self):
+        """
+        Test that the Surface_Dissociation_Charge_Separation family identifies
+        reatants and labels them and reacts them properly, and check that the
+        products are reacted to form the reactants again.
+        """
+        family = self.database.families["Surface_Dissociation_Charge_Separation"]
+        expected_reactants = [
+            Molecule().from_adjacency_list(
+                """
+1 X  u0  p0 c0  {2,S}
+2 N  u0  p0 c+1  {1,S} {3,D} {4,S}
+3 O  u0  p2 c0  {2,D}
+4 O  u0  p3 c-1  {2,S}
+        """
+            ),
+            Molecule().from_adjacency_list("1 X  u0 p0 c0"),
+        ]
+        expected_products = [
+            Molecule().from_adjacency_list(
+                """
+1 X  u0 p0 c0 {2,S}
+2 N  u0 p1 c0 {1,S} {3,D}
+3 O  u0 p2 c0 {2,D}
+        """
+            ),
+            Molecule().from_adjacency_list(
+                """
+1 X  u0 p0 c0 {2,D}
+2 O  u0 p2 c0 {1,D}
+        """
+            ),
+        ]
+
+        labeled_rxn = Reaction(reactants=expected_reactants, products=expected_products)
+        family.add_atom_labels_for_reaction(labeled_rxn)
+
+        fam_products = family.apply_recipe([m.molecule[0] for m in labeled_rxn.reactants])
+        assert len(fam_products) == 2
+        assert expected_products[0].is_isomorphic(fam_products[0])
+        assert expected_products[1].is_isomorphic(fam_products[1])
+
+        fam_reactants = family.apply_recipe(fam_products, forward=False)
+        assert len(fam_reactants) == 2
+        assert expected_reactants[0].is_isomorphic(fam_reactants[0])
+        assert expected_reactants[1].is_isomorphic(fam_reactants[1])
+
+        fam_product_species = [Species(molecule=[p]) for p in fam_products]
+        fam_reactant_species = [Species(molecule=[r]) for r in fam_reactants]
+
+        fam_rxn = Reaction(reactants=fam_reactant_species, products=fam_product_species)
+        assert fam_rxn.is_isomorphic(labeled_rxn)
 
     def test_h_abstraction(self):
         """

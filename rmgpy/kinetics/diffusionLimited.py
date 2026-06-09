@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -34,7 +34,6 @@ import numpy as np
 
 import rmgpy.constants as constants
 from rmgpy.molecule.fragment import Fragment
-from rmgpy.species import Species
 
 def _to_molecule(obj):
     """Return plain Molecule; accept Molecule or (Molecule, mapping) tuple."""
@@ -113,6 +112,8 @@ class DiffusionLimited(object):
         (ie. forward direction if forward=True [default] or reverse if forward=False)
         Returns the rate coefficient k_diff in m3/mol/s.
         """
+        from rmgpy.species import Species
+
         if forward:
             reacting = reaction.reactants
         else:

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -124,9 +124,7 @@ cdef class ThirdBody(PDepKineticsModel):
         """
         Sets the kinetics and efficiencies for a cantera `ThreeBodyReaction` object
         """
-        import cantera as ct
-        assert isinstance(ct_reaction, ct.ThreeBodyReaction), "Must be a Cantera ThreeBodyReaction object"
-        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        ct_reaction.third_body.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
         self.arrheniusLow.set_cantera_kinetics(ct_reaction, species_list)
 
 ################################################################################
@@ -226,7 +224,7 @@ cdef class Lindemann(PDepKineticsModel):
         """
         import cantera as ct
         assert isinstance(ct_reaction.rate, ct.LindemannRate), "Must have a Cantera LindemannRate attribute"
-        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        ct_reaction.third_body.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
         ct_reaction.rate = self.to_cantera_kinetics() 
         
 
@@ -238,7 +236,12 @@ cdef class Lindemann(PDepKineticsModel):
 
         high_rate = self.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
         low_rate = self.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
-        return ct.LindemannRate(low=low_rate, high=high_rate)
+        rate = ct.LindemannRate()
+        if high_rate.pre_exponential_factor < 0 or low_rate.pre_exponential_factor < 0:
+            rate.allow_negative_pre_exponential_factor = True
+        rate.high_rate = high_rate
+        rate.low_rate = low_rate
+        return rate
 
 
 ################################################################################
@@ -398,7 +401,7 @@ cdef class Troe(PDepKineticsModel):
         """
         import cantera as ct
         assert isinstance(ct_reaction.rate, ct.TroeRate), "Must have a Cantera TroeRate attribute"
-        ct_reaction.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
+        ct_reaction.third_body.efficiencies = PDepKineticsModel.get_cantera_efficiencies(self, species_list)
         ct_reaction.rate = self.to_cantera_kinetics() 
 
     def to_cantera_kinetics(self): 
@@ -417,4 +420,10 @@ cdef class Troe(PDepKineticsModel):
         
         high = self.arrheniusHigh.to_cantera_kinetics(arrhenius_class=True)
         low = self.arrheniusLow.to_cantera_kinetics(arrhenius_class=True)
-        return ct.TroeRate(high=high, low=low, falloff_coeffs=falloff)
+        rate = ct.TroeRate()
+        if high.pre_exponential_factor < 0 or low.pre_exponential_factor < 0:
+            rate.allow_negative_pre_exponential_factor = True
+        rate.high_rate = high
+        rate.low_rate = low
+        rate.falloff_coeffs = falloff
+        return rate

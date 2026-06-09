@@ -34,7 +34,7 @@ This module contains unit tests of the rmgpy.species module.
 
 from rmgpy.species import Species
 from rmgpy.transport import TransportData
-from rmgpy.molecule import Molecule
+from rmgpy.molecule import Atom, Molecule, get_element
 from rmgpy.thermo import ThermoData
 from rmgpy.statmech import (
     Conformer,
@@ -458,23 +458,25 @@ Thermo library: primaryThermoLibrary
 
         rmg_ct_species = rmg_species.to_cantera(use_chemkin_identifier=True)
 
-        ct_species = ct.Species.fromCti(
-            """species(name=u'Ar',
-        atoms='Ar:1',
-        thermo=(NASA([200.00, 1000.00],
-                     [ 2.50000000E+00,  0.00000000E+00,  0.00000000E+00,
-                       0.00000000E+00,  0.00000000E+00, -7.45375000E+02,
-                       4.37967000E+00]),
-                NASA([1000.00, 6000.00],
-                     [ 2.50000000E+00,  0.00000000E+00,  0.00000000E+00,
-                       0.00000000E+00,  0.00000000E+00, -7.45375000E+02,
-                       4.37967000E+00])),
-        transport=gas_transport(geom='atom',
-                                diam=3.33,
-                                well_depth=136.501,
-                                dipole=2.0,
-                                polar=1.0,
-                                rot_relax=15.0))"""
+        ct_species = ct.Species.from_yaml(
+            """
+            name: Ar
+            composition: {Ar: 1}
+            thermo:
+              model: NASA7
+              temperature-ranges: [200.00, 1000.00, 6000.00]
+              data:
+              - [2.50000000E+00, 0.00000000E+00, 0.00000000E+00, 0.00000000E+00, 0.00000000E+00, -7.45375000E+02, 4.37967000E+00]
+              - [2.50000000E+00, 0.00000000E+00, 0.00000000E+00, 0.00000000E+00, 0.00000000E+00, -7.45375000E+02, 4.37967000E+00]
+            transport:
+              model: gas
+              geometry: atom
+              diameter: 3.33
+              well-depth: 136.501
+              dipole: 2.0
+              polarizability: 1.0
+              rotational-relaxation: 15.0
+            """
         )
         assert type(rmg_ct_species) == type(ct_species)
         assert rmg_ct_species.name == ct_species.name
@@ -482,6 +484,38 @@ Thermo library: primaryThermoLibrary
         assert rmg_ct_species.size == ct_species.size
         assert type(rmg_ct_species.thermo) == type(ct_species.thermo)
         assert type(rmg_ct_species.transport) == type(ct_species.transport)
+
+    def test_to_cantera_warns_and_uses_charge_for_explicit_electron_mismatch(self, caplog):
+        """
+        Test that a charged Cantera species composition uses the net charge when
+        explicit electrons disagree.
+        """
+        mol = Molecule(atoms=[
+            Atom(element=get_element("H"), charge=-1, radical_electrons=0, lone_pairs=0),
+            Atom(element=get_element("e"), charge=-1, radical_electrons=0, lone_pairs=0),
+        ])
+        species = Species(label="H2minus_with_one_electron", molecule=[mol])
+
+        ct_species = species.to_cantera()
+
+        assert ct_species.composition["E"] == 2
+        assert "has 1 electrons but charge -2" in caplog.text
+        assert "Reporting 2 electrons in the Cantera composition." in caplog.text
+
+    def test_to_cantera_uses_charge_when_electrons_unspecified(self, caplog):
+        """
+        Test that a charged Cantera species composition uses the net charge
+        without a warning when no explicit electrons are present.
+        """
+        mol = Molecule(atoms=[
+            Atom(element=get_element("H"), charge=-1, radical_electrons=0, lone_pairs=0),
+        ])
+        species = Species(label="Hminus", molecule=[mol])
+
+        ct_species = species.to_cantera()
+
+        assert ct_species.composition["E"] == 1
+        assert "electrons but charge" not in caplog.text
 
     def test_get_transport_data(self):
         """

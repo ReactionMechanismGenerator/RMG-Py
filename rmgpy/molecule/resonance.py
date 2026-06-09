@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -96,7 +96,8 @@ def populate_resonance_algorithms(features=None):
             generate_clar_structures,
             generate_adsorbate_shift_down_resonance_structures,
             generate_adsorbate_shift_up_resonance_structures,
-            generate_adsorbate_conjugate_resonance_structures
+            generate_adsorbate_conjugate_resonance_structures,
+            generate_adsorbate_formate_resonance_structures,
         ]
     else:
         # If the molecule is aromatic, then radical resonance has already been considered
@@ -124,6 +125,7 @@ def populate_resonance_algorithms(features=None):
             method_list.append(generate_adsorbate_shift_down_resonance_structures)
             method_list.append(generate_adsorbate_shift_up_resonance_structures)
             method_list.append(generate_adsorbate_conjugate_resonance_structures)
+            method_list.append(generate_adsorbate_formate_resonance_structures)
     return method_list
 
 
@@ -777,7 +779,7 @@ def generate_aryne_resonance_structures(mol):
                    i=cython.int, j=cython.int, bond_orders=str, new_orders=str,
                    ind=cython.int, bond=Edge, new_mol=Graph)
 
-    rings = mol.get_relevant_cycles()
+    rings = mol.get_smallest_set_of_smallest_rings()
     rings = [ring for ring in rings if len(ring) == 6]
 
     new_mol_list = []
@@ -1256,4 +1258,44 @@ def generate_adsorbate_conjugate_resonance_structures(mol):
                                     pass
                                 else:
                                     structures.append(structure)
+    return structures
+
+
+def generate_adsorbate_formate_resonance_structures(mol):
+    """
+    Generate all resonance structures formed by the shift of two
+    electrons in a conjugated bonding system of a bidentate adsorbate
+    with a bridging atom in between, where one bond to the surface is vdW.
+
+    Example [X]OC(H)O[X]: [X]~OC(H)O[X] <=> [X]OC(H)O~[X]
+    (where '~' denotes a vdW bond)
+    """
+    cython.declare(structures=list, paths=list, index=cython.int, structure=Graph)
+    cython.declare(atom=Vertex, atom1=Vertex, atom2=Vertex, atom3=Vertex, atom4=Vertex, atom5=Vertex, bond12=Edge, bond23=Edge, bond34=Edge, bond45=Edge)
+    cython.declare(v1=Vertex, v2=Vertex)
+
+    structures = []
+    if mol.is_multidentate():
+        for atom in mol.vertices:
+            paths = pathfinder.find_formate_delocalization_paths(atom)
+            for atom1, atom2, atom3, atom4, atom5, bond12, bond23, bond34, bond45 in paths:
+                if ((atom2.is_oxygen() and bond12.is_van_der_waals()) and
+                        (atom4.is_oxygen() and atom5.is_surface_site() and
+                         bond45.is_single() and bond23.is_double() and bond34.is_single())):
+                    bond12.increment_order()
+                    bond23.decrement_order()
+                    bond34.increment_order()
+                    bond45.decrement_order()
+                    structure = mol.copy(deep=True)
+                    bond12.decrement_order()
+                    bond23.increment_order()
+                    bond34.decrement_order()
+                    bond45.increment_order()
+                    try:
+                        structure.update_atomtypes(log_species=False)
+                    except AtomTypeError:
+                        pass
+                    else:
+                        structures.append(structure)
+
     return structures

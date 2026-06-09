@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -147,7 +147,12 @@ class Geometry(object):
         """
         Import rmg molecule and create rdkit molecule with the same atom labeling.
         """
-        return self.molecule.to_rdkit_mol(remove_h=False, return_mapping=True)
+        # sanitize="partial" is used to allow molecules to fail RDKit's bond order and implicit
+        # hydrogen assignments, and possibly also RDKit's aromaticity perception, while still
+        # generating a molecule. This can happen because RMG uses partial bond orders and atom
+        # types that RDKit doesn't understand, though RDKit can still generate coordinates for
+        # the molecule, which is really all that's needed here.
+        return self.molecule.to_rdkit_mol(remove_h=False, return_mapping=True, sanitize="partial")
 
     def rd_embed(self, rdmol, num_conf_attempts):
         """

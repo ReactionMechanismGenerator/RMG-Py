@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -27,8 +27,26 @@
 #                                                                             #
 ###############################################################################
 
+import sys
+
 from setuptools import setup
-    
+
+# On macOS, conda-forge Python bakes duplicate -Wl,-rpath flags into its sysconfig data,
+# which causes every compiled extension to have duplicate LC_RPATH Mach-O load commands
+# that macOS rejects on import.  Deduplicate the linker flags here, before Cython
+# generates any .so files, so they are built clean.  This patches the live dict that
+# setuptools reads during build_ext, keeping the conda env itself untouched.
+if sys.platform == 'darwin':
+    import sysconfig as _sysconfig
+    _cv = _sysconfig.get_config_vars()
+    for _k in ('LDFLAGS', 'LDSHARED', 'BLDSHARED', 'PY_LDFLAGS'):
+        _v = _cv.get(_k) or ''
+        if _v:
+            _seen: set = set()
+            _cv[_k] = ' '.join(x for x in _v.split() if not (x in _seen or _seen.add(x)))
+            if _v != _cv[_k]:
+                print(f"Deduplicated {_k} from '{_v}' to '{_cv[_k]}'")
+
 try:
     from Cython.Build import cythonize
     from Cython.Compiler import Options
@@ -146,7 +164,7 @@ setup(
     author='William H. Green and the RMG Team',
     author_email='rmg_dev@mit.edu',
     url='https://reactionmechanismgenerator.github.io',
-    python_requires='>=3.9,<3.10',
+    python_requires='>=3.9,<3.12',
     packages=find_packages(where='.', include=["rmgpy*"]) + find_packages(where='.', include=["arkane*"]),
     scripts=scripts,
     entry_points={

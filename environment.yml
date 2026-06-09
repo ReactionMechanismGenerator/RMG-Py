@@ -11,21 +11,14 @@
 # - other software we maintain which RMG depends on
 # + some other categories (see below)
 #
-# Changelog:
-# - May 15, 2023 Added this changelog, added inline documentation,
-#   made dependency list more explicit (@JacksonBurns).
-# - October 16, 2023 Switched RDKit and descripatastorus to conda-forge,
-#   moved diffeqpy to pip and (temporarily) removed chemprop
-# - April 17, 2024 Limit versions of cclib at advice of maintainers.
-# - August 4, 2024 Restricted pyrms to <2
-# - May 14, 2024 Removed diffeqpy by switching to call SciMLBase and Sundials using JuliaCall
-# - March 15, 2024 - started migration to Python 3.9
-# - April 14, 2025 Removed Julia dependencies, now considered optional
-#
+# ======================================================================
+# !! WHEN UPDATING THIS FILE REMEMBER TO ALSO UPDATE .conda/meta.yaml !!
+# ======================================================================
 name: rmg_env
 channels:
   - conda-forge
   - rmg
+  - nodefaults
 dependencies:
 # System-level dependencies - we could install these at the OS level
 # but by installing them in the conda environment we get better control
@@ -34,39 +27,37 @@ dependencies:
   - conda-forge::ffmpeg >= 7
   - conda-forge::xlrd
   - conda-forge::xlwt
-  - conda-forge::h5py
+  - conda-forge::h5py >=3.10
   - conda-forge::graphviz >=12
   - conda-forge::markupsafe
   - conda-forge::psutil
-  # conda-forge not default, since default has a version information bug
-  # (see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2421)
   - conda-forge::ncurses
   - conda-forge::suitesparse
-  # see https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2750
-  - conda-forge::graphviz 
-  # ThermoCentralDatabaseInterface fails if pyopenssl is too old. 20 is just a guess at the version number. 
-  - conda-forge::pyopenssl >20
+  # ThermoCentralDatabaseInterface fails if pyopenssl is too old.
+  - conda-forge::pyopenssl >24
 
 # external software tools for chemistry
   - conda-forge::coolprop
-  - conda-forge::cantera =2.6
+  - conda-forge::cantera >=3.0
   - conda-forge::mopac
   # see https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2639#issuecomment-2050292972
   - conda-forge::cclib >=1.6.3,<1.9
   - conda-forge::openbabel >= 3
-  - conda-forge::rdkit >=2022.09.1
+  - conda-forge::rdkit >=2024
+  - rmg::pysidt-rmg >=1.2
 
 # Python tools
-  - conda-forge::python >=3.9  # leave as GEQ so that GitHub actions can add EQ w/o breaking (contradictory deps)
-  - conda-forge::setuptools <80
+  - conda-forge::python =3.11  # pinned to a single version to keep solver fast; CI rewrites this to the matrix version (see CI.yml)
+  - conda-forge::setuptools >=70,<80
   - conda-forge::coverage
-  - conda-forge::cython >=0.25.2,<3.1
-  - conda-forge::scikit-learn
-  - conda-forge::scipy >=1.9
-  - conda-forge::numpy >=1.10.0,<2
+  - conda-forge::cython >=3.0,<3.1
+  - conda-forge::scikit-learn >=1.3
+  - conda-forge::scipy >=1.13
+  - conda-forge::numpy >=1.24,<2
   - conda-forge::pydot
   - conda-forge::jinja2
   - conda-forge::jupyter
+  - conda-forge::pip
   - conda-forge::pymongo
   - conda-forge::pyparsing
   - conda-forge::pyyaml
@@ -75,15 +66,14 @@ dependencies:
   - conda-forge::pytest-cov
   - conda-forge::pytest-check
   - conda-forge::pyutilib
-  - conda-forge::matplotlib >=1.5
+  - conda-forge::matplotlib >=3.5
   - conda-forge::mpmath
-  - conda-forge::pandas
+  - conda-forge::pandas >=2
   - conda-forge::gprof2dot
   - conda-forge::numdifftools
   # bug in quantities, see:
   # https://github.com/ReactionMechanismGenerator/RMG-Py/pull/2694#issuecomment-2489286263
   - conda-forge::quantities !=0.16.0,!=0.16.1
-  - conda-forge::ringdecomposerlib-python
 
 # packages we maintain
   - rmg::pydas >=1.0.3
@@ -96,7 +86,7 @@ dependencies:
 # optional dependencies for using ReactionMechanismSimulator
 # remove the leading '#' to install the required dependencies
 # or simply run `install_rms.sh` which will handle this for you
-  # - conda-forge::pyjuliacall
+  # - conda-forge::pyjuliacall<0.9.35
 
 # additional packages that are required, but not specified here (and why)
   # pydqed, pydas, mopac, and likely others require a fortran compiler (specifically gfortran)

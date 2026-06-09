@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -127,16 +127,6 @@ cdef class Graph(object):
     cpdef bint _is_chain_in_cycle(self, list chain) except -2
 
     cpdef list get_all_cyclic_vertices(self)
-    
-    cpdef list get_all_polycyclic_vertices(self)
-    
-    cpdef list get_polycycles(self)
-    
-    cpdef list get_monocycles(self)
-    
-    cpdef tuple get_disparate_cycles(self)
-
-    cpdef tuple _merge_cycles(self, list cycle_sets)
 
     cpdef list get_all_cycles(self, Vertex starting_vertex)
 
@@ -146,13 +136,7 @@ cdef class Graph(object):
 
     cpdef list _explore_cycles_recursively(self, list chain, list cycles)
 
-    cpdef list get_smallest_set_of_smallest_rings(self)
-
-    cpdef list get_relevant_cycles(self)
-
     cpdef list sort_cyclic_vertices(self, list vertices)
-
-    cpdef int get_max_cycle_overlap(self)
     
     cpdef list get_largest_ring(self, Vertex vertex)
     

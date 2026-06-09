@@ -48,9 +48,9 @@ at the command line will print the documentation from ``util.py``, which is repr
 	  -P, --postprocess     postprocess profiling statistics from previous
 	                        [failed] run; does not run the simulation
 	  -t DD:HH:MM:SS, --walltime DD:HH:MM:SS
-	                        set the maximum execution time
+	                        set the maximum execution time (overrides input.py if provided)
 	  -i MAXITER, --maxiter MAXITER
-	                        set the maximum number of RMG iterations
+	                        set the maximum number of RMG iterations (overrides input.py if provided)
 	  -n MAXPROC, --maxproc MAXPROC
 	                        max number of processes used during reaction
 	                        generation
@@ -73,7 +73,7 @@ Run with multiprocessing for reaction generation and QMTP::
 
     python rmg.py -n <Max number of processes allowed> input.py 
 
-Run with setting a limit on the maximum execution time::
+Run with setting a limit on the maximum execution time (if specified, then the command-line value overrides any value read from ``input.py``)::
 
 	python rmg.py -t <DD:HH:MM:SS> input.py
 

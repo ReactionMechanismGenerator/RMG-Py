@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -53,6 +53,8 @@ cdef class GroupAtom(Vertex):
     cdef public list reg_dim_r
     cdef public list reg_dim_site
     cdef public list reg_dim_morphology
+    cdef public list reg_dim_ncoord
+    cdef public list reg_dim_p
     
     cpdef Vertex copy(self)
 

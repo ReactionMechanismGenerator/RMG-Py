@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -73,11 +73,12 @@ cdef class Configuration(object):
         if self.sum_states is not None: string += 'sum_states={0}, '.format(self.sum_states)
         string += 'active_k_rotor={0}, '.format(self.active_k_rotor)
         string += 'active_j_rotor={0}, '.format(self.active_j_rotor)
+        if self.energy_correction != 0.0: string += 'energy_correction={0}, '.format(self.energy_correction)
         string += ')'
         return string
 
     property E0:
-        """The ground-state energy of the configuration in J/mol."""
+        """The ground-state energy of the configuration in J/mol. Applies the energy_correction."""
         def __get__(self):
             return sum([float(spec.conformer.E0.value_si) for spec in self.species]) + self.energy_correction 
 

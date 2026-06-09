@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -695,8 +695,8 @@ def get_principal_moments_of_inertia(coords, numbers=None, symbols=None):
         tuple: The corresponding principal axes.
     """
     tensor0 = get_moment_of_inertia_tensor(coords=coords, numbers=numbers, symbols=symbols)
-    # Since tensor0 is real and symmetric, diagonalization is always possible
-    principal_moments_of_inertia, axes = np.linalg.eig(tensor0)
+    # tensor0 is real and symmetric by construction; use eigh so eigenvalues are guaranteed real.
+    principal_moments_of_inertia, axes = np.linalg.eigh(tensor0)
     principal_moments_of_inertia, axes = zip(*sorted(zip(np.ndarray.tolist(principal_moments_of_inertia),
                                                          np.ndarray.tolist(axes)), reverse=True))
     return principal_moments_of_inertia, axes

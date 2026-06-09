@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -35,8 +35,9 @@ import itertools
 
 import numdifftools as nd
 import numpy as np
-from scipy import integrate as inte
 from scipy import interpolate
+from scipy.integrate import simpson
+
 from sklearn import linear_model
 from sklearn.preprocessing import PolynomialFeatures
 
@@ -614,7 +615,7 @@ class HinderedRotorClassicalND(Mode):
             Imat[coords] = f(*rphis[np.array(coords)])
         
         for i in range(len(self.pivots)):
-            Imat = inte.simps(Imat, rphis)
+            Imat = simpson(Imat, rphis)
             
         intg = Imat
         

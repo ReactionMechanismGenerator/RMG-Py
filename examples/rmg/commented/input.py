@@ -217,25 +217,50 @@ options(
     generateOutputHTML=True,
     # generates plots of the RMG's performance statistics. Not helpful if you just want a model.
     generatePlots=False,
+    # generates potential energy surface diagrams for pressure dependent networks in the model.
+    generatePESDiagrams=False,
     # saves mole fraction of species in 'solver/' to help you create plots
     saveSimulationProfiles=False,
-    # gets RMG to output comments on where kinetics were obtained in the chemkin file.
-    # useful for debugging kinetics but increases memory usage of the chemkin output file
+    # Verbose comments (controls how detailed the kinetics/thermo source comments are,
+    # e.g. listing every rate rule that was averaged).
+    # Useful for debugging kinetics but increases output file size.
     verboseComments=False,
-    # gets RMG to generate edge species chemkin files. Uses lots of memory in output.
-    # Helpful for seeing why some reaction are not appearing in core model.
+    # Global fallback for saving edge-species files. Uses lots of memory in output.
+    # Helpful for seeing why some reactions are not appearing in the core model.
+    # Individual writers can override this with their own saveEdge key.
     saveEdgeSpecies=False,
-    # Sets a time limit in the form DD:HH:MM:SS after which the RMG job will stop. Useful for profiling on jobs that
-    # do not converge.
-    # wallTime = '00:00:00',
-    # Forces RMG to import library reactions as reversible (default). Otherwise, if set to True, RMG will import library
-    # reactions while keeping the reversibility as as.
+    # Sets a time limit in the form DD:HH:MM:SS after (or shortly before) which the RMG job will stop.
+    # Useful for profiling on jobs that do not converge.
+    wallTime = '00:00:00:00',
+    # If keepIrreversible=False (default) forces RMG to import library reactions as reversible.
+    # If set to True, RMG will import library reactions while keeping the reversibility as specified.
     keepIrreversible=False,
     # Allows families with three products to react in the diverse direction (default).
     trimolecularProductReversible=True,
     # Allows a seed to be saved every n iterations.
     # The default of -1 causes the iteration to only be saved at the end of the RMG job
-    saveSeedModulus=-1
+    saveSeedModulus=-1,
+    #
+    # --- Per-writer output configuration ---
+    # Each writer accepts True/False or a dict with keys:
+    #   'saveInterval': N  (positive = every N iterations; -1 = end of run only)
+    #   'saveEdge': True/False  (overrides the global saveEdgeSpecies above)
+    #
+    # Chemkin writer: always on by default; saves every iteration.
+    generateChemkin=True,
+    # generateChemkin={'saveInterval': -1, 'saveEdge': True},
+    #
+    # RMS YAML writer: always on by default; saves every iteration.
+    generateRMSYAML=True,
+    # generateRMSYAML={'saveInterval': -1},
+    #
+    # Cantera YAML v1 writer: off by default.
+    generateCanteraYAML1=False,
+    # generateCanteraYAML1={'saveInterval': -1, 'saveEdge': False},
+    #
+    # Cantera YAML v2 writer: off by default.
+    generateCanteraYAML2=False,
+    # generateCanteraYAML2={'saveInterval': 1, 'saveEdge': True},
 )
 
 # optional module allows for correction to unimolecular reaction rates at low pressures and/or temperatures.
@@ -248,8 +273,8 @@ pressureDependence(
     minimumNumberOfGrains=250,
     # the conditions for the rate to be output over
     # parameter order is: low_value, high_value, units, internal points
-    temperatures=(300, 2200, 'K', 2),
-    pressures=(0.01, 100, 'bar', 3),
+    temperatures=(300, 2200, 'K', 10),
+    pressures=(0.01, 100, 'bar', 10),
     # The two options for interpolation are 'PDepArrhenius' (no extra arguments) and
     # 'Chebyshev' which is followed by the number of basis sets in
     # Temperature and Pressure. These values must be less than the number of
@@ -258,6 +283,11 @@ pressureDependence(
     # turns off pressure dependence for molecules with number of atoms greater than the number specified below
     # this is due to faster internal rate of energy transfer for larger molecules
     maximumAtoms=15,
+    # (optional) list of networks that have been thoroughly studied and should not be expanded
+    # by RMG. This is useful when you have a detailed mechanism for a specific network (e.g., from
+    # a seed mechanism or reaction library) and don't want RMG to add its own estimates which may
+    # make the model worse. Specify networks by their chemical formula, e.g., ['CH2O2', 'C2H6']
+    # completedNetworks=['CH2O2'],
 )
 
 # optional block adds constraints on what RMG can output.
@@ -285,8 +315,6 @@ generatedSpeciesConstraints(
     # If this is false or missing, RMG will throw an error if the more less-stable form of O2 is entered
     # which doesn't react in the RMG system. normally input O2 as triplet with SMILES [O][O]
     # allowSingletO2=False,
-    # maximum allowed number of non-normal isotope atoms:
-    # maximumIsotopicAtoms=2,
 )
 
 # optional block allows thermo to be estimated through quantum calculations

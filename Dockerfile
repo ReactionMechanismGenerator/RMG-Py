@@ -1,5 +1,5 @@
 # Parent Image
-FROM ubuntu:latest
+FROM condaforge/miniforge3:latest
 
 # Install Bash shell
 RUN ln -snf /bin/bash /bin/sh
@@ -32,12 +32,6 @@ RUN wget -qO- https://install.julialang.org | sh -s -- --yes --default-channel 1
     /root/.juliaup/bin/juliaup list && \
     rm -rf /root/.juliaup/downloads /root/.juliaup/tmp
 ENV PATH="/root/.juliaup/bin:$PATH"
-
-# Install conda
-RUN wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh && \
-    bash Miniconda3-latest-Linux-x86_64.sh -b -p /miniconda && \
-    rm Miniconda3-latest-Linux-x86_64.sh
-ENV PATH="/miniconda/bin:$PATH"
 
 # Set Bash as the default shell for following commands
 SHELL ["/bin/bash", "-c"]
@@ -83,9 +77,11 @@ RUN make
 # setting this env variable fixes an issue with Julia precompilation on Windows
 ENV JULIA_CPU_TARGET="x86-64,haswell,skylake,broadwell,znver1,znver2,znver3,cascadelake,icelake-client,cooperlake,generic"
 ENV RMS_BRANCH=${RMS_Branch}
+ENV RMS_INSTALLER=continuous
 # Usually this is set automatically, but we're not actually running
 # in an active conda environment when building the Docker so we need to set it manually
 ENV PYTHON_JULIAPKG_PROJECT="/miniconda/envs/rmg_env/julia_env"
+ENV JULIA_PYTHONCALL_EXE="/miniconda/envs/rmg_env/bin/python"
 RUN source install_rms.sh
 
 # RMG-Py should now be installed and ready - trigger precompilation and test run
@@ -94,7 +90,7 @@ RUN python rmg.py examples/rmg/rms_constant_V/input.py
 RUN rm -rf examples/rmg/rms_constant_V/* && \
     git checkout -- examples/rmg/rms_constant_V/
 
-# when running this image, open an interactive bash terminal inside the conda environment
-RUN conda init
-RUN echo "conda activate rmg_env" >> ~/.bashrc
+# when running this image, open an interactive bash terminal inside the rmg_env conda environment
+RUN sed -i 's/conda activate base/conda activate rmg_env/' ~/.bashrc
 ENTRYPOINT ["/bin/bash", "--login"]
+

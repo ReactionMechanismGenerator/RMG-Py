@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -1062,7 +1062,7 @@ METHODS1 = {
     'processToSpeciesNetworks': 'process_to_species_networks',
     'processPdepNetworks': 'process_pdep_networks',
     'processReactionsToSpecies': 'process_reactions_to_species',
-    'generateCanteraFiles': 'generate_cantera_files',
+    'generateCanteraFiles': 'generate_cantera_files_from_chemkin',
     'initializeReactionThresholdAndReactFlags': 'initialize_reaction_threshold_and_react_flags',
     'updateReactionThresholdAndReactFlags': 'update_reaction_threshold_and_react_flags',
     'saveEverything': 'save_everything',
@@ -1796,7 +1796,6 @@ ARGUMENTS2 = {
     # rmgpy.tools.isotopes
     'useOriginalReactions': 'use_original_reactions',
     'kineticIsotopeEffect': 'kinetic_isotope_effect',
-    'maximumIsotopicAtoms': 'maximum_isotopic_atoms',
     # rmgpy.tools.loader
     'generateImages': 'generate_images',
     'useJava': 'use_java',

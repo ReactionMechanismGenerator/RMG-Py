@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -1092,10 +1092,13 @@ def get_confidence_intervals(x: np.ndarray,
         weights = np.eye(n)
 
     e = y - ypred  # Residuals
-    sigma2 = e.T @ weights @ e / (n - p)  # MSE
+    dof = n - p
+    if dof <= 0:
+        return np.full(p, np.nan), np.full((p, p), np.nan)
+    sigma2 = e.T @ weights @ e / dof  # MSE
     cov = sigma2 * np.linalg.inv(x.T @ weights @ x)  # covariance matrix
     se = np.sqrt(np.diag(cov))  # standard error
-    tdist = distributions.t.ppf(1 - alpha / 2, n - p)  # student-t
+    tdist = distributions.t.ppf(1 - alpha / 2, dof)  # student-t
     ci = tdist * se  # confidence interval half-width
     return ci, cov
 
@@ -1103,6 +1106,7 @@ def get_confidence_intervals(x: np.ndarray,
 def _covariance_to_correlation(cov: np.ndarray) -> np.ndarray:
     """Convert (unscaled) covariance matrix to correlation matrix"""
     v = np.sqrt(np.diag(cov))
-    corr = cov / np.outer(v, v)
+    with np.errstate(divide='ignore', invalid='ignore'):
+        corr = cov / np.outer(v, v)
     corr[cov == 0] = 0
     return corr

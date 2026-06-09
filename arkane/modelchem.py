@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -285,7 +285,8 @@ _valid_software_names = {
     'orca': ('orca',),
     'terachem': ('terachem',),
     'mopac': ('mopac',),
-    'psi4': ('psi4',)
+    'psi4': ('psi4',),
+    'xtb': ('xtb',)
 }
 _software_ids = {_name: _id for _id, _names in _valid_software_names.items() for _name in _names}
 

@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -26,6 +26,7 @@
 ###############################################################################
 
 from .graph cimport Vertex, Edge, Graph
+from .molecule cimport Atom, Bond, Molecule
 
 cpdef list find_butadiene(Vertex start, Vertex end)
 
@@ -62,3 +63,5 @@ cpdef bint is_atom_able_to_lose_lone_pair(Vertex atom)
 cpdef list find_adsorbate_delocalization_paths(Vertex atom1)
 
 cpdef list find_adsorbate_conjugate_delocalization_paths(Vertex atom1)
+
+cpdef list find_formate_delocalization_paths(Vertex atom1)

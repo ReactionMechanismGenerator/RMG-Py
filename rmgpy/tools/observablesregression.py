@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -131,12 +131,14 @@ class ObservablesTestCase(object):
         old_species_list, old_reaction_list = load_chemkin_file(
             old_chemkin_path,
             old_species_dict_path,
-            old_transport_path
+            old_transport_path,
+            use_chemkin_names = True
         )
         new_species_list, new_reaction_list = load_chemkin_file(
             new_chemkin_path,
             new_species_dict_path,
-            new_transport_path
+            new_transport_path,
+            use_chemkin_names = True
         )
 
         old_surface_species_list = None
@@ -173,14 +175,14 @@ class ObservablesTestCase(object):
             self.old_sim.load_model()
             self.new_sim.load_model()
         else:
-            self.old_sim.load_chemkin_model(old_chemkin_path,
-                                            transport_file=old_transport_path,
-                                            surface_file=old_surface_chemkin_path,
-                                            quiet=True)
-            self.new_sim.load_chemkin_model(new_chemkin_path,
-                                            transport_file=new_transport_path,
-                                            surface_file=new_surface_chemkin_path,
-                                            quiet=True)
+            surface_args_old = {}
+            surface_args_new = {}
+            if surface:
+                surface_args_old["surface_file"] = old_surface_chemkin_path
+                surface_args_new["surface_file"] = new_surface_chemkin_path
+
+            self.old_sim.load_chemkin_model(old_chemkin_path, old_transport_path, quiet=True, **surface_args_old)
+            self.new_sim.load_chemkin_model(new_chemkin_path, new_transport_path, quiet=True, **surface_args_new)
 
     def __str__(self):
         """
@@ -289,7 +291,6 @@ class ObservablesTestCase(object):
         conditions_broken = []
         variables_failed = []
 
-        print('{0} Comparison'.format(self))
         # Check the species profile observables
         if 'species' in self.observables:
             if self.old_sim.surface_species_list:
@@ -398,7 +399,6 @@ class ObservablesTestCase(object):
 
             return variables_failed
         else:
-            print('')
             print('✅ All Observables varied by less than {0:.3f} on average between old model and '
                   'new model in all conditions!'.format(tol))
             print('')

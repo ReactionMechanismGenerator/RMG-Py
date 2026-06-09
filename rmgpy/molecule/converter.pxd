@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -29,7 +29,7 @@ cimport rmgpy.molecule.molecule as mm
 cimport rmgpy.molecule.element as elements
 
 
-cpdef to_rdkit_mol(mm.Molecule mol, bint remove_h=*, bint return_mapping=*, bint sanitize=*, bint save_order=?)
+cpdef to_rdkit_mol(mm.Molecule mol, bint remove_h=*, bint return_mapping=*, object sanitize=*, bint save_order=?, bint ignore_bond_orders=?)
 
 cpdef mm.Molecule from_rdkit_mol(mm.Molecule mol, object rdkitmol, bint raise_atomtype_exception=?)
 

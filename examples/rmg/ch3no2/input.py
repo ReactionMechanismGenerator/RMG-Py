@@ -80,8 +80,13 @@ model(
 )
 
 simulator(atol=1e-16,rtol=1e-8)
+
 options(
     units='si',
     generateOutputHTML=False,
     generatePlots=False,
+    # Large model: write output every 5 iterations to reduce I/O
+    generateChemkin={'saveInterval': 5, 'saveEdge': False},
+    generateRMSYAML={'saveInterval': 5},
+    generateCanteraYAML2={'saveInterval': 10, 'saveEdge': True},
 )

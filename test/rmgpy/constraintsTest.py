@@ -83,7 +83,6 @@ class TestFailsSpeciesConstraints:
         rmgpy.rmg.input.rmg = None
 
         mol = Molecule(smiles="C")
-
         assert not fails_species_constraints(mol)
 
         mock_logging.debug.assert_called_with("Species constraints could not be found.")
@@ -210,9 +209,11 @@ class TestFailsSpeciesConstraints:
         self.rmg.species_constraints["maximumHeavyAtoms"] = 6
 
         assert not fails_species_constraints(mol_1site)
+
         assert not fails_species_constraints(mol_2site)
 
         assert fails_species_constraints(mol_3site_vdW)
+
         assert fails_species_constraints(mol_3site)
 
         self.rmg.species_constraints["maximumCarbonAtoms"] = max_carbon
@@ -233,12 +234,35 @@ class TestFailsSpeciesConstraints:
     def test_heavy_constraint(self):
         """
         Test that we can constrain the max number of heavy atoms.
+
+        Hydrogens and surface sites ('X') are not counted as heavy atoms.
         """
         mol1 = Molecule(smiles="CCO")
+        assert mol1.get_num_heavy_atoms() == 3
         assert not fails_species_constraints(mol1)
 
         mol2 = Molecule(smiles="CCN=O")
+        assert mol2.get_num_heavy_atoms() == 4
         assert fails_species_constraints(mol2)
+
+        # An adsorbate: neither the hydrogens nor the surface site 'X' are
+        # heavy atoms, so this ethoxy fragment has only 3 heavy atoms
+        # (2 C + 1 O) and passes the maximumHeavyAtoms=3 constraint.
+        adsorbate = Molecule().from_adjacency_list(
+            """
+1 C u0 p0 c0 {2,S} {4,S} {5,S} {6,S}
+2 C u0 p0 c0 {1,S} {3,S} {7,S} {8,S}
+3 O u0 p2 c0 {2,S} {9,S}
+4 H u0 p0 c0 {1,S}
+5 H u0 p0 c0 {1,S}
+6 H u0 p0 c0 {1,S}
+7 H u0 p0 c0 {2,S}
+8 H u0 p0 c0 {2,S}
+9 X u0 p0 c0 {3,S}
+"""
+        )
+        assert adsorbate.get_num_heavy_atoms() == 3
+        assert not fails_species_constraints(adsorbate)
 
     def test_radical_constraint(self):
         """

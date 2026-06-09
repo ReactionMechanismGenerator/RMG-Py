@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -43,6 +43,7 @@ from collections import OrderedDict
 from copy import deepcopy
 
 import numpy as np
+from scipy.optimize import OptimizeWarning
 from sklearn.model_selection import KFold
 
 from rmgpy import settings
@@ -1654,8 +1655,12 @@ class KineticsFamily(Database):
         for struct in product_structures:
             if self.is_molecule_forbidden(struct):
                 raise ForbiddenStructureException()
-            if fails_species_constraints(struct):
-                raise ForbiddenStructureException()
+            if (reason := fails_species_constraints(struct)):
+                raise ForbiddenStructureException(
+                    "Species constraints forbids product species {0}. Please "
+                    "reformulate constraints, or explicitly "
+                    "allow it. Reason: {1}".format(struct, reason)
+                )
 
         return product_structures
 
@@ -1670,11 +1675,17 @@ class KineticsFamily(Database):
             return True
 
         # forbid vdw multi-dentate molecules for surface families
-        if "surface" in self.label.lower():
-            if molecule.get_num_atoms('X') > 1:
-                for atom in molecule.atoms:
-                    if atom.atomtype.label == 'Xv':
-                        return True
+        if "surface" in self.label.lower() and molecule.is_multidentate():
+            if "vdwbidentate" in self.label.lower():
+                # Within vdWBidentate families, allow vdW in
+                # multi-dentate molecules if at least one bond to the surface
+                # is covalent.
+                if not molecule.has_covalent_surface_bond():
+                    return True
+            else:
+                # for all other families, forbid multi-dentate molecules with any vdW bonds
+                if molecule.has_vdw_surface_bond():
+                    return True
 
         return False
 
@@ -2702,7 +2713,8 @@ class KineticsFamily(Database):
                 template_reactants = [x.item for x in template.reactants]
         else:
             template_reactants = [x.item for x in template.reactants]
-
+        if (num_reactants := len(reactants0)) != (num_template := len(template_reactants)):
+            raise ValueError(f"Reaction has {num_reactants} reactants but template has {num_template} reactants.")
         if len(reactants0) == 1:
             molecule = reactants0[0]
             mappings = self._match_reactant_to_template(molecule, template_reactants[0])
@@ -2738,7 +2750,7 @@ class KineticsFamily(Database):
             reactant_structures = [molecule_a, molecule_b, molecule_c]
             num_mappings = len(mappings_a) * len(mappings_b) * len(mappings_c)
         else:
-            raise IndexError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
+            raise ValueError('You have {0} reactants, which is unexpected!'.format(len(reactants)))
 
         for mapping in mappings:
             try:
@@ -3287,7 +3299,7 @@ class KineticsFamily(Database):
             template_rxn_map = self.get_reaction_matches(rxns=rxns, thermo_database=thermo_database, remove_degeneracy=True,
                                                          fix_labels=True, exact_matches_only=True, get_reverse=True)
             self.make_tree_nodes(template_rxn_map=template_rxn_map, obj=obj, T=T, nprocs=nprocs - 1, depth=0,
-                                 min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max)
+                                 min_splitable_entry_num=min_splitable_entry_num, min_rxns_to_spawn=min_rxns_to_spawn,extension_iter_max=extension_iter_max, extension_iter_item_cap=extension_iter_item_cap)
         else:
             def rxnkey(rxn):
                 c = 0
@@ -3673,19 +3685,22 @@ class KineticsFamily(Database):
 
                 uncertainties[rxn] = self.rules.entries[entry.label][0].data.uncertainty
 
-
                 L = list(set(template_rxn_map[entry.label]) - set(rxns_test))
 
                 if L != []:
                     if isinstance(L[0].kinetics, Arrhenius):
                         kinetics = ArrheniusBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
-                        if kinetics.E0.value_si < 0.0 or len(L) == 1:
+                        # These conditions (eg. n>5) for rejecting the BM fit should correspond
+                        # to those in _marke_rule, and those just below:
+                        if len(L) == 1 or kinetics.E0.value_si < 0.0 or abs(kinetics.n.value_si) > 5.0:
                             kinetics = average_kinetics([r.kinetics for r in L])
                         else:
                             kinetics = kinetics.to_arrhenius(rxn.get_enthalpy_of_reaction(298.))
                     else:
                         kinetics = ArrheniusChargeTransferBM().fit_to_reactions(L, recipe=self.forward_recipe.actions)
-                        if kinetics.E0.value_si < 0.0 or len(L) == 1:
+                        # These conditions (eg. n>5) for rejecting the BM fit should correspond
+                        # to those in _marke_rule, and those just above:
+                        if len(L) == 1 or kinetics.E0.value_si < 0.0 or abs(kinetics.n.value_si) > 5.0:
                             kinetics = average_kinetics([r.kinetics for r in L])
                         else:
                             kinetics = kinetics.to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.))
@@ -4432,8 +4447,9 @@ class KineticsFamily(Database):
             [Family_Label, {'template': originalTemplate,
                             'degeneracy': degeneracy,
                             'exact': boolean_exact?,
-                            'rules': a list of (original rate rule entry, weight in average)
-                            'training': a list of (original rate rule entry associated with training entry, original training entry, weight in average)}]
+                            'rules': a list of (original rate rule entry, weight in average),
+                            'training': a list of (original rate rule entry associated with training entry, original training entry, weight in average),
+                            'autogenerated': boolean for whether kinetics come from autogenerated subgraph isomorphic decision tree}]
 
 
         where Exact is a boolean of whether the rate is an exact match, Template is
@@ -4447,6 +4463,7 @@ class KineticsFamily(Database):
         rules = None
         training_entries = None
         degeneracy = 1
+        autogenerated = False
 
         training_reaction_pattern = r'Matched reaction\s*(\d+).*in.*training'
         degeneracy_pattern = r'Multiplied by reaction path degeneracy\s*(\d+)'
@@ -4486,7 +4503,9 @@ class KineticsFamily(Database):
         autogen_node_matches = re.search(autogen_node_search_pattern, full_comment_string)
         template_matches = re.search(template_pattern, full_comment_string)
         if autogen_node_matches is not None:  # autogenerated trees
+            autogenerated = True
             template_str = autogen_node_matches.group(1).split('Multiplied by reaction path degeneracy')[0].strip()
+            template_str = template_str.split('in family')[0].strip()
             tokens = template_str.split()
             if len(tokens) == 2:  # The node was probably split because wordwrap was turned off
                 assert len(template_str) > 115, 'The node name is too short to have been broken up by the chemkin writer'
@@ -4501,7 +4520,7 @@ class KineticsFamily(Database):
             raise ValueError(f'Could not find rate rule in comments for reaction {reaction}.')
         rules, training_entries = self.get_sources_for_template(template)
         source_dict = {'template': template, 'degeneracy': degeneracy, 'exact': exact_rule,
-                       'rules': rules, 'training': training_entries}
+                       'rules': rules, 'training': training_entries, 'autogenerated': autogenerated}
 
         # Source of the kinetics is from rate rules
         return False, [self.label, source_dict]
@@ -4590,79 +4609,15 @@ def _make_rule(rr):
     for i, rxn in enumerate(rxns):
         rxn.rank = ranks[i]
     rxns = np.array(rxns)
-    rs = np.array([r for r in rxns if type(r.kinetics) != KineticsModel])
+    rs = np.array([r for r in rxns if type(r.kinetics) is not KineticsModel]) # KineticsModel is the base class with no data.
     n = len(rs)
-    if n > 0 and isinstance(rs[0].kinetics, Marcus):
+    if n == 0:
+        return None
+
+    if isinstance(rs[0].kinetics, Marcus):
         kin = average_kinetics([r.kinetics for r in rs])
         return kin
     data_mean = np.mean(np.log([r.kinetics.get_rate_coefficient(Tref) for r in rs]))
-    if n > 0:
-        if isinstance(rs[0].kinetics, Arrhenius):
-            arr = ArrheniusBM
-        else:
-            arr = ArrheniusChargeTransferBM
-        if n > 1:
-            kin = arr().fit_to_reactions(rs, recipe=recipe)
-        if n == 1 or kin.E0.value_si < 0.0:
-            kin = average_kinetics([r.kinetics for r in rs])
-            #kin.comment = "Only one reaction or Arrhenius BM fit bad. Instead averaged from {} reactions.".format(n)
-            if n == 1:
-                kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
-            else:
-                dlnks = np.array([
-                    np.log(
-                            average_kinetics([r.kinetics for r in rs[list(set(range(len(rs))) - {i})]]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-                        ) for i, rxn in enumerate(rs)
-                    ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-                varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
-                # weighted average calculations
-                ws = 1.0 / varis
-                V1 = ws.sum()
-                V2 = (ws ** 2).sum()
-                mu = np.dot(ws, dlnks) / V1
-                s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
-                kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
-        else:
-            if n == 1:
-                kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
-            else:
-                if isinstance(rs[0].kinetics, Arrhenius):
-                    dlnks = np.array([
-                        np.log(
-                            arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
-                    .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
-                    .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-                ) for i, rxn in enumerate(rs)
-            ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-                else:
-                    dlnks = np.array([
-                        np.log(
-                            arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
-                            .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(Tref))
-                            .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-                        ) for i, rxn in enumerate(rs)
-                    ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-                varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
-                # weighted average calculations
-                ws = 1.0 / varis
-                V1 = ws.sum()
-                V2 = (ws ** 2).sum()
-                mu = np.dot(ws, dlnks) / V1
-                s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
-                kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
-        
-        #site solute parameters
-        site_datas = [get_site_solute_data(rxn) for rxn in rxns]
-        site_datas = [sdata for sdata in site_datas if sdata is not None]
-        if len(site_datas) > 0:
-            site_data = SoluteTSData()
-            for sdata in site_datas:
-                site_data += sdata
-            site_data = site_data * (1.0/len(site_datas))
-            kin.solute = site_data
-        return kin
-    else:
-        return None
 
     if isinstance(rs[0].kinetics, Arrhenius):
         arr = ArrheniusBM
@@ -4670,20 +4625,30 @@ def _make_rule(rr):
         arr = ArrheniusChargeTransferBM
     if n > 1:
         kin = arr().fit_to_reactions(rs, recipe=recipe)
-    if n == 1 or kin.E0.value_si < 0.0:
+
+    # If you update the following conditions, also update the cross_validate function.
+    if n == 1 or kin.E0.value_si < 0.0 or abs(kin.n.value_si) > 5.0:
+        if n > 1: #we have an ArrheniusBM
+            if kin.E0.value_si < 0.0:
+                reason = "E0<0"
+            elif abs(kin.n.value_si) > 5.0:
+                reason = "abs(n)>5"
+            else:
+                reason = "?"
+
         # still run it through the averaging function when n=1 to standardize the units and run checks
         kin = average_kinetics([r.kinetics for r in rs])
+
         if n == 1:
             kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
-            kin.comment = f"Only one reaction rate: {rs[0]!s}"
         else:
-            kin.comment = f"Blowers-Masel fit was bad (E0<0) so instead averaged from {n} reactions."
+            kin.comment = f"Blowers-Masel fit was bad ({reason}) so instead averaged from {n} reactions."
             dlnks = np.array([
                 np.log(
-                        average_kinetics([r.kinetics for r in rs[list(set(range(len(rs))) - {i})]]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                        average_kinetics([r.kinetics for r in np.delete(rs, i)]).get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
                     ) for i, rxn in enumerate(rs)
                 ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
+            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * constants.R * Tref)) ** 2
             # weighted average calculations
             ws = 1.0 / varis
             V1 = ws.sum()
@@ -4691,32 +4656,42 @@ def _make_rule(rr):
             mu = np.dot(ws, dlnks) / V1
             s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
             kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
-    else: # Blowers-Masel fit was good
-        if isinstance(rs[0].kinetics, Arrhenius):
-            dlnks = np.array([
-                np.log(
-                    arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
-                    .to_arrhenius(rxn.get_enthalpy_of_reaction(298.))
-                    .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-                ) for i, rxn in enumerate(rs)
-            ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-        else: # SurfaceChargeTransfer or ArrheniusChargeTransfer
-            dlnks = np.array([
-                np.log(
-                    arr().fit_to_reactions(rs[list(set(range(len(rs))) - {i})], recipe=recipe)
-                    .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(298.))
-                    .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
-                ) for i, rxn in enumerate(rs)
-            ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
-        varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * 8.314 * Tref)) ** 2
-        # weighted average calculations
-        ws = 1.0 / varis
-        V1 = ws.sum()
-        V2 = (ws ** 2).sum()
-        mu = np.dot(ws, dlnks) / V1
-        s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
-        kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
-
+    else:
+        if n == 1:
+            kin.uncertainty = RateUncertainty(mu=0.0, var=(np.log(fmax) / 2.0) ** 2, N=1, Tref=Tref, data_mean=data_mean, correlation=label)
+        else:
+            if isinstance(rs[0].kinetics, Arrhenius):
+                with warnings.catch_warnings():
+                    # Jackknife refits use sparse samples and only consume fitted rates, not covariance estimates.
+                    warnings.filterwarnings(
+                        "ignore",
+                        message="Covariance of the parameters could not be estimated",
+                        category=OptimizeWarning,
+                    )
+                    dlnks = np.array([
+                        np.log(
+                            arr().fit_to_reactions(np.delete(rs, i), recipe=recipe)
+                            .to_arrhenius(rxn.get_enthalpy_of_reaction(Tref))
+                            .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                        ) for i, rxn in enumerate(rs)
+                    ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+            else:
+                dlnks = np.array([
+                    np.log(
+                        arr().fit_to_reactions(np.delete(rs, i), recipe=recipe)
+                        .to_arrhenius_charge_transfer(rxn.get_enthalpy_of_reaction(Tref))
+                        .get_rate_coefficient(T=Tref) / rxn.get_rate_coefficient(T=Tref)
+                    ) for i, rxn in enumerate(rs)
+                ])  # 1) fit to set of reactions without the current reaction (k)  2) compute log(kfit/kactual) at Tref
+            varis = (np.array([rank_accuracy_map[rxn.rank].value_si for rxn in rs]) / (2.0 * constants.R * Tref)) ** 2
+            # weighted average calculations
+            ws = 1.0 / varis
+            V1 = ws.sum()
+            V2 = (ws ** 2).sum()
+            mu = np.dot(ws, dlnks) / V1
+            s = np.sqrt(np.dot(ws, (dlnks - mu) ** 2) / (V1 - V2 / V1))
+            kin.uncertainty = RateUncertainty(mu=mu, var=s ** 2, N=n, Tref=Tref, data_mean=data_mean, correlation=label)
+    
     #site solute parameters
     site_datas = [get_site_solute_data(rxn) for rxn in rxns]
     site_datas = [sdata for sdata in site_datas if sdata is not None]
@@ -4727,6 +4702,8 @@ def _make_rule(rr):
         site_data = site_data * (1.0/len(site_datas))
         kin.solute = site_data
     return kin
+
+
 
 def _spawn_tree_process(family, template_rxn_map, obj, T, nprocs, depth, min_splitable_entry_num, min_rxns_to_spawn, extension_iter_max, extension_iter_item_cap):
     parent_conn, child_conn = mp.Pipe()
@@ -4829,7 +4806,7 @@ def average_kinetics(kinetics_list):
             beta=(beta,"1/m"),
             wr=(wr * 0.001, "kJ/mol"),
             wp=(wp * 0.001, "kJ/mol"),
-            comment="Averaged from {} reactions.".format(len(kinetics_list)),
+            comment=f"Averaged from {len(kinetics_list)} rate expressions.",
             )
     elif isinstance(kinetics, SurfaceChargeTransfer):
         averaged_kinetics = SurfaceChargeTransfer(
@@ -4839,6 +4816,7 @@ def average_kinetics(kinetics_list):
             alpha=alpha,
             V0=(V0,'V'),
             Ea=(Ea * 0.001, "kJ/mol"),
+            comment=f"Averaged from {len(kinetics_list)} rate expressions.",
             )
     elif isinstance(kinetics, ArrheniusChargeTransfer):
         averaged_kinetics = ArrheniusChargeTransfer(
@@ -4848,6 +4826,7 @@ def average_kinetics(kinetics_list):
             alpha=alpha,
             V0=(V0,'V'),
             Ea=(Ea * 0.001, "kJ/mol"),
+            comment=f"Averaged from {len(kinetics_list)} rate expressions.",
             )
     else:
         averaged_kinetics = Arrhenius(

@@ -102,6 +102,33 @@ class TestThermoDatabaseLoading:
         assert list(database.libraries.keys()) == ["copied_thermo_lib"]
         os.remove(thermo_lib_in_test_dir_path)
 
+    def test_load_unload_libraries(self):
+        """This tests loading and unloading thermo libraries"""
+
+        database = ThermoDatabase()
+        database.load_libraries(
+            path=os.path.join(settings["database.directory"], "thermo", "libraries"),
+            libraries=['primaryThermoLibrary', 'thermo_DFT_CCSDTF12_BAC'],
+        )
+
+        # make sure we are now using primaryThermoLibrary thermo
+        lib_thermo = database.get_thermo_data(Species(smiles="O"))  # H2O is in both libraries, first it finds it in primaryThermoLibrary
+        assert 'primaryThermoLibrary' in lib_thermo.comment
+        assert 'thermo_DFT_CCSDTF12_BAC' not in lib_thermo.comment
+
+        # unload library
+        database.unload_libraries(libraries=['primaryThermoLibrary'])
+        lib_thermo = database.get_thermo_data(Species(smiles="O"))  # now it finds it in thermo_DFT_CCSDTF12_BAC
+        assert 'thermo_DFT_CCSDTF12_BAC' in lib_thermo.comment
+        assert 'primaryThermoLibrary' not in lib_thermo.comment
+
+        # unload the other library
+        database.unload_libraries(libraries='thermo_DFT_CCSDTF12_BAC')  # test unloading with string instead of list
+
+        # because this is an empty database now with no libraries or groups, this should error out
+        with pytest.raises(KeyError):  # KeyError because no groups are loaded
+            database.get_thermo_data(Species(smiles="O"))
+
 
 class TestThermoDatabase:
     """
@@ -528,6 +555,127 @@ longDistanceInteraction_cyclic(o_OH_OH) + ring(Benzene)
         assert "GAV" in source
         assert source["GAV"]["ring"][0][1] == -1  # the weight of benzene contribution should be -1
         assert source["GAV"]["group"][0][1] == 2  # weight of the group(Cs-CsCsHH) conbtribution should be 2
+
+        # Check extract source from comment with tricky group(labelA)\n+ group(labelB) case (newline instead of space to split)
+        tricky_newline_plus_sp = Species(smiles="[O]C(O)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)C(F)(F)F")
+        tricky_newline_plus_sp.thermo = NASA()
+        tricky_newline_plus_sp.thermo.comment = 'Thermo group additivity estimation: group(O2s-CsH) + group(O2s-CsH) + group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) +\nlongDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) +\nlongDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) +\nlongDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCsCsFF) +\nlongDistanceInteraction_noncyclic(Cs(F)2-Cs(F)) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2)\n+ group(CsCsCsFF) + longDistanceInteraction_noncyclic(Cs(F)2-Cs(F)2) + longDistanceInteraction_noncyclic(CsF2-CsF2-CsF2) + group(CsCFOO) +\ngroup(CsCsFFF) + longDistanceInteraction_noncyclic(Cs(F)3-Cs(F)2) + longDistanceInteraction_noncyclic(Cs(F)3-R-Cs(F)2) + radical(O2sj(Cs-F1sO2sCs))'
+        source = self.database.extract_source_from_comments(tricky_newline_plus_sp)
+        assert source['GAV']['group'][0][0].label == "O2s-CsH"
+        assert source['GAV']['group'][0][1] == 2
+        assert source['GAV']['group'][1][0].label == "CsCsCsFF"
+        assert source['GAV']['group'][1][1] == 6
+        assert source['GAV']['group'][2][0].label == "CsCFOO"
+        assert source['GAV']['group'][2][1] == 1
+        assert source['GAV']['group'][3][0].label == "CsCsFFF"
+        assert source['GAV']['group'][3][1] == 1
+        assert source['GAV']['longDistanceInteraction_noncyclic'][0][0].label == "Cs(F)2-Cs(F)2"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][0][1] == 10
+        assert source['GAV']['longDistanceInteraction_noncyclic'][1][0].label == "CsF2-CsF2-CsF2"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][1][1] == 9
+        assert source['GAV']['longDistanceInteraction_noncyclic'][2][0].label == "Cs(F)2-Cs(F)"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][2][1] == 1
+        assert source['GAV']['longDistanceInteraction_noncyclic'][3][0].label == "Cs(F)3-Cs(F)2"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][3][1] == 1
+        assert source['GAV']['longDistanceInteraction_noncyclic'][4][0].label == "Cs(F)3-R-Cs(F)2"
+        assert source['GAV']['longDistanceInteraction_noncyclic'][4][1] == 1
+        assert source['GAV']['radical'][0][0].label == "O2sj(Cs-F1sO2sCs)"
+        assert source['GAV']['radical'][0][1] == 1
+
+        # check extract source from comment with newline through group name
+        newline_sp = Species(smiles="[O]OC(C#N)(C)C")
+        newline_sp.thermo = NASA()
+        newline_sp.thermo.comment = 'Thermo group additivity estimation: group(O2s-OsCs) + group(O2s-OsH) + group(N3t-(Cs)Ct) + group(Cs-(Cds-Cds)CsCsOs) + group(Cs-CsHHH) + group(Cs-\nCsHHH) + group(Ct-N3tCs) + radical(C3COOJ)'
+        source = self.database.extract_source_from_comments(newline_sp)
+        assert "GAV" in source
+        assert source['GAV']['group'][0][0].label == "O2s-OsCs"
+        assert source['GAV']['group'][1][0].label == "O2s-OsH"
+        assert source['GAV']['group'][2][0].label == "N3t-(Cs)Ct"
+        assert source['GAV']['group'][3][0].label == "Cs-(Cds-Cds)CsCsOs"
+        assert source['GAV']['group'][4][0].label == "Cs-CsHHH"
+        assert source['GAV']['group'][5][0].label == "Ct-N3tCs"
+        assert source["GAV"]["radical"][0][0].label == "C3COOJ"
+        assert source["GAV"]["radical"][0][1] == 1
+        assert all(source['GAV']['group'][x][1] == 1 for x in [0, 1, 2, 3, 5])
+        assert source['GAV']['group'][4][1] == 2
+        
+        # ------------------------------- Surface Examples ---------------------------
+        # Surface library only
+        OX = rmgpy.species.Species(smiles="O=*")
+        OX.thermo = rmgpy.thermo.NASA()
+        OX.thermo.comment = 'Thermo library: surfaceThermoPt111'
+        source = self.database.extract_source_from_comments(OX)
+        assert "Library" in source
+        assert source["Library"] == "surfaceThermoPt111"
+
+        # Gas library + adsorption correction
+        CH2X = rmgpy.species.Species(smiles="[CH2]=*")
+        CH2X.thermo = rmgpy.thermo.NASA()
+        CH2X.thermo.comment = 'Gas phase thermo for CH2(T) from Thermo library: primaryThermoLibrary. Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111(C=XR2)'
+        source = self.database.extract_source_from_comments(CH2X)
+        assert "Library" in source
+        assert source["Library"] == "primaryThermoLibrary"
+        assert "ADS" in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'C=XR2'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
+
+        # GAV gas + adsorption correction
+        CO2X = rmgpy.species.Species(smiles="O=C=O.*")
+        CO2X.thermo = rmgpy.thermo.NASA()
+        CO2X.thermo.comment = 'Gas phase thermo for O=C=O from Thermo group additivity estimation: group(Cdd-OdOd). Adsorption correction: + Thermo group additivity estimation:\nadsorptionPt111((CR2)X)'
+        source = self.database.extract_source_from_comments(CO2X)
+        assert "GAV" in source
+        assert source["GAV"]["group"][0][0].label == "Cdd-OdOd"
+        assert source["GAV"]["group"][0][1] == 1  # weight should be 1
+        assert len(source["GAV"]["group"]) == 1  # there should only be one GAV contribution
+        assert "ADS" in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2)X'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
+
+        # Gas library + radical for HBI + adsorption correction
+        CHOX = rmgpy.species.Species(smiles="O=[CH]*")
+        CHOX.thermo = rmgpy.thermo.NASA()
+        CHOX.thermo.comment = 'Gas phase thermo for [CH]=O from Thermo library: primaryThermoLibrary + radical(HCdsJO). Adsorption correction: + Thermo group additivity estimation: adsorptionPt111(C-XR3)'
+        source = self.database.extract_source_from_comments(CHOX)
+        assert "Library" in source
+        assert source["Library"] == "primaryThermoLibrary"
+        assert "GAV" in source
+        assert source["GAV"]["radical"][0][0].label == "HCdsJO"
+        assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
+        assert len(source["GAV"]["radical"]) == 1  # there should only be one radical contribution
+        assert "ADS" in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'C-XR3'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
+
+        # Also test that the database is retrieving and assembling comments correctly
+        # Here we use the extremely limited test database already available in memory
+        OX_comment = self.database.get_thermo_data(OX).comment
+        OX.thermo.comment = OX_comment  # set the comment to be the generated comment
+        source = self.database.extract_source_from_comments(OX)
+        assert "Library" in source
+        assert source["Library"] == "primaryThermoLibrary"
+        assert 'ADS' in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == 'OX'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
+
+        # an example with a radical and a library and an adsorption correction
+        CH2CHCH_ads = rmgpy.species.Species(smiles="[CH]C=C.*")
+        CH2CHCH_ads.thermo = self.database.get_thermo_data(CH2CHCH_ads)
+        source = self.database.extract_source_from_comments(CH2CHCH_ads)
+        assert "Library" in source
+        assert source["Library"] == "DFT_QCI_thermo"
+        assert "GAV" in source
+        assert source["GAV"]["radical"][0][0].label == "AllylJ2_triplet"
+        assert source["GAV"]["radical"][0][1] == 1  # weight should be 1
+        assert len(source["GAV"]["radical"]) == 1  # there should only be one radical contribution
+        assert "ADS" in source
+        assert source['ADS']['adsorptionPt111'][0][0].label == '(CR2CR)X'
+        assert source['ADS']['adsorptionPt111'][0][1] == 1  # weight should be 1
+        assert len(source['ADS']['adsorptionPt111']) == 1  # there should only be one adsorption contribution
 
     def test_species_thermo_generation_hbi_library(self):
         """Test thermo generation for species objects for HBI correction on library value.
@@ -1128,26 +1276,26 @@ multiplicity 2
         )
         groups = self.database.groups["adsorptionPt111"].entries
         # save a few things we're about to change
-        _nstarparent = groups["N*"].parent
-        _nstardata = groups["N*"].data
-        _ostardata = groups["O*"].data
+        _nstarparent = groups["NX"].parent
+        _nstardata = groups["NX"].data
+        _ostardata = groups["OX"].data
         # change the database to cause errors
-        groups["N*"].data = None
-        groups["N*"].parent = None
+        groups["NX"].data = None
+        groups["NX"].parent = None
         with pytest.raises(DatabaseError, match="Could not find an adsorption correction"):
             thermo = self.database.get_thermo_data(spec)
-        groups["N*"].data = "O*"
-        groups["O*"].data = "N*"
+        groups["NX"].data = "OX"
+        groups["OX"].data = "NX"
         with pytest.raises(DatabaseError, match="circular reference"):
             thermo = self.database.get_thermo_data(spec)
-        groups["N*"].data = "O*"
-        groups["O*"].data = "foobar"
+        groups["NX"].data = "OX"
+        groups["OX"].data = "foobar"
         with pytest.raises(DatabaseError, match="non-existing group"):
             thermo = self.database.get_thermo_data(spec)
         # Now restore the database to working order
-        groups["N*"].parent = _nstarparent
-        groups["N*"].data = _nstardata
-        groups["O*"].data = _ostardata
+        groups["NX"].parent = _nstarparent
+        groups["NX"].data = _nstardata
+        groups["OX"].data = _ostardata
 
     def test_adsorbate_thermo_generation_bidentate_weird_CO(self):
         """Test thermo generation for a bidentate adsorbate weird resonance of CO
@@ -2102,11 +2250,11 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
         The test molecule is bicyclic, we expect is_bicyclic()
         returns True.
         """
-        smiles = "C1=CCC2C1=C2"
-        mol = Molecule().from_smiles(smiles)
-        polyring = mol.get_disparate_cycles()[1][0]
-
-        assert is_bicyclic(polyring)
+        for smiles in ["C1=CCC2C1=C2", "C1=CC2C=CC1=CC2", "C1=CC2C=CC=1C=C2"]:
+            mol = Molecule().from_smiles(smiles)
+            polyrings = mol.get_disparate_cycles()[1]
+            assert len(polyrings) == 1
+            assert is_bicyclic(polyrings[0])
 
     def test_is_bicyclic2(self):
         """
@@ -2271,6 +2419,32 @@ class TestMolecularManipulationInvolvedInThermoEstimation:
         aromatic_bond_num_in_bicyclics = sorted(aromatic_bond_num_in_bicyclics)
         expected_aromatic_bond_num_in_bicyclics = [0, 0, 0]
         assert aromatic_bond_num_in_bicyclics == expected_aromatic_bond_num_in_bicyclics
+
+    def test_deterministic_bicyclic_decomposition(self):
+        """
+        Test that the decomposition of a polyring into bicyclics and then into single rings
+        is deterministic. This is important because the thermo estimation depends on the
+        order of the rings. Currently this is not guaranteed, so if this test fails, we
+        just skip it. 
+        
+        See https://github.com/ReactionMechanismGenerator/RMG-Py/issues/2562
+        """
+        mol = Molecule(smiles="C1=CC2C=CC=1C=C2")
+        polyrings = mol.get_disparate_cycles()[1]
+        assert len(polyrings) == 1
+        assert rmgpy.data.thermo.is_bicyclic(polyrings[0])
+        polyring = polyrings[0]
+        submol = rmgpy.data.thermo.convert_ring_to_sub_molecule(polyring)[0]
+        rings = rmgpy.data.thermo.split_bicyclic_into_single_rings(submol)
+        assert len(rings) == 2
+        ring_smiles = [ring.to_smiles() for ring in rings]
+        for smiles in ring_smiles:
+            assert smiles in ["C1C=CC=C=C1", "C1C=CCC=C1"]
+        # Ensure that the order is the same every time
+        try:
+            assert ring_smiles == ["C1C=CC=C=C1", "C1C=CCC=C1"]
+        except AssertionError as e:
+            pytest.skip(f"Skipping because not yet deterministic (#2562): {e}")
 
     def test_combine_cycles(self):
         """

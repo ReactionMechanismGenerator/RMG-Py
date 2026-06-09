@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -35,6 +35,7 @@ import gc
 import itertools
 import logging
 import os
+import re
 
 import numpy as np
 
@@ -49,6 +50,7 @@ from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
 from rmgpy.kinetics import Arrhenius, KineticsData
+from rmgpy.kinetics.surface import StickingCoefficient
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
 from rmgpy.quantity import Quantity
@@ -161,6 +163,26 @@ class ReactionModel:
         # Return the merged model
         return final_model
 
+    def get_elements(self):
+        """
+        Return the set of :class:`Element` singletons used by atoms of species
+        in this :class:`ReactionModel`. Iterates each species' first resonance
+        structure (``sp.molecule[0]``) and collects ``atom.element``. The
+        electron singleton is included when a species has nonzero net charge,
+        since Chemkin and Cantera use it for charge bookkeeping.
+        """
+        from rmgpy.molecule.element import e
+        elements = set()
+        for sp in self.species:
+            if not sp.molecule:
+                continue
+            mol = sp.molecule[0]
+            for atom in mol.atoms:
+                elements.add(atom.element)
+            if mol.get_net_charge() != 0:
+                elements.add(e)
+        return elements
+
 
 ################################################################################
 
@@ -248,6 +270,27 @@ class CoreEdgeReactionModel:
             """
             )
         ]
+        self.completed_pdep_networks = set()
+
+    def add_completed_pdep_network(self, formula):
+        """
+        Add a completed pressure-dependent network formula to the set.
+        """
+        # turn C2H4 into {'C':2,'H':4}
+        if not isinstance(formula, str):
+            raise TypeError("Expected string for formula, got {0}".format(formula.__class__))
+        pattern = r'([A-Z][a-z]?)(\d*)'
+        element_count = {}
+
+        for match in re.finditer(pattern, formula):
+            element = match.group(1)
+            count = int(match.group(2)) if match.group(2) else 1
+            element_count[element] = count
+        # must be hashable and match what is done in add_reaction_to_unimolecular_networks
+        key = tuple(sorted(element_count.items()))
+        self.completed_pdep_networks.add(key)
+        logging.info(f"Added {formula} to list of completed PDep networks that will not be further explored.")
+
 
     def check_for_existing_species(self, molecule):
         """
@@ -343,10 +386,11 @@ class CoreEdgeReactionModel:
         spec.molecular_weight = Quantity(spec.molecule[0].get_molecular_weight() * 1000.0, "amu")
 
         if generate_thermo:
-            self.generate_thermo(spec)
+            # Rename from thermo library label only if no user-provided label exists yet.
+            self.generate_thermo(spec, rename=not bool(spec.label))
 
         # If the species still does not have a label, set initial label as the SMILES
-        # This may change later after getting thermo in self.generate_thermo()
+        # (applies when generate_thermo is False, or when no library match was found)
         if not spec.label:
             spec.label = spec.smiles
 
@@ -394,6 +438,12 @@ class CoreEdgeReactionModel:
         in the reaction database are iterated over to check if a reaction was overlooked
         (a reaction with a different "family" key as the parameter reaction).
 
+        Note, this function assumes RMG is making the mechanism through its main loop,
+        where all forward duplicates from a family are found in a single enlarge step.
+        If you artificially construct your own a core-edge model and forget to include a
+        duplicate from the same family, but then try to add the missing reaction from
+        the reverse direction, this function will find the existing forward reaction and
+        assume you've already found all the duplicates.
         """
 
         # Make sure the reactant and product lists are sorted before performing the check
@@ -421,10 +471,27 @@ class CoreEdgeReactionModel:
                 if isinstance(family_obj, KineticsLibrary) or isinstance(family_obj, KineticsFamily):
                     if not rxn.duplicate:
                         return True, rxn0
+                    elif (rxn.duplicate and rxn0.duplicate and isinstance(rxn, TemplateReaction)
+                          and isinstance(rxn0, TemplateReaction) and rxn.template is not None
+                          and rxn0.template is not None
+                          and frozenset(rxn.template) == frozenset(rxn0.template)):
+                        # Both reactions are duplicates (different templates for same species pair),
+                        # but they use the same template - so this is a true duplicate that should
+                        # not be added again
+                        return True, rxn0
                 else:
                     return True, rxn0
             elif isinstance(family_obj, KineticsFamily) and rxn_id == rxn_id0[::-1] and are_identical_species_references(rxn, rxn0):
                 if not rxn.duplicate:
+                    return True, rxn0
+                elif rxn.duplicate and rxn0.duplicate:
+                    # The new reaction is a duplicate proposed from the reverse direction.
+                    # Template labels differ between forward and reverse, so template
+                    # comparison is not applicable here. Since the forward reaction is
+                    # already in the model, the reverse direction is already accounted for.
+                    # This assumes all forward duplicates have been found, which they will be
+                    # be during an RMG run, but might not be if you artificially construct your own
+                    # core edge reaction model
                     return True, rxn0
 
         # Now check seed mechanisms
@@ -501,7 +568,7 @@ class CoreEdgeReactionModel:
                 reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
                 products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
             except:
-                logging.error(f"Error when making species in reaction {forward:s} from {forward.family:s}")
+                logging.error(f"Error when making species in reaction {forward} from {forward.family}")
                 raise
 
         if forward.specific_collider is not None:
@@ -552,18 +619,42 @@ class CoreEdgeReactionModel:
             if isinstance(forward.kinetics, KineticsData):
                 forward.kinetics = forward.kinetics.to_arrhenius()
             #  correct barrier heights of estimated kinetics
-            if isinstance(forward, (TemplateReaction,DepositoryReaction)): # i.e. not LibraryReaction
+            if isinstance(forward, (TemplateReaction, DepositoryReaction)): # i.e. not LibraryReaction
                 forward.fix_barrier_height(solvent=self.solvent_name)  # also converts ArrheniusEP to Arrhenius.
             elif isinstance(forward, LibraryReaction) and forward.is_surface_reaction():
                 # do fix the library reaction barrier if this is scaled from another metal
                 if any(['Binding energy corrected by LSR' in x.thermo.comment for x in forward.reactants + forward.products]):
-                    forward.fix_barrier_height(solvent=self.solvent_name)            
+                    forward.fix_barrier_height(solvent=self.solvent_name)
             elif forward.kinetics.solute:
                 forward.apply_solvent_correction(solvent=self.solvent_name)
             if self.pressure_dependence and forward.is_unimolecular():
                 # If this is going to be run through pressure dependence code,
                 # we need to make sure the barrier is positive.
                 forward.fix_barrier_height(force_positive=True,solvent="")
+
+            # When a product has thermo_coverage_dependence, the reverse rate
+            # constant derived from Keq becomes coverage dependent, which
+            # can make the reverse unrealistically fast. We tend to get better rate estimates
+            # when the coverage dependence is on the reactant side, so flip it.
+            # (unless a reactant is *also* coverage dependent, or it's a sticking coefficient)
+            products_coverage_dependent = any(
+                getattr(spc.thermo, 'thermo_coverage_dependence', None) for spc in forward.products)
+            if products_coverage_dependent:
+                reactants_coverage_dependent = any(
+                    getattr(spc.thermo, 'thermo_coverage_dependence', None) for spc in forward.reactants)
+                if (not reactants_coverage_dependent
+                        and not isinstance(forward.kinetics, StickingCoefficient)):
+                    reverse_kinetics = forward.generate_reverse_rate_coefficient()
+                    forward.reactants, forward.products = forward.products, forward.reactants
+                    if forward.pairs is not None:
+                        forward.pairs = [(p, r) for r, p in forward.pairs]
+                    forward.kinetics = reverse_kinetics
+                    coverage_dep_species = [spc.label for spc in forward.reactants
+                                            if spc.thermo and getattr(spc.thermo, 'thermo_coverage_dependence', None)]
+                    forward.kinetics.comment += (f"\nReaction direction reversed due to "
+                        f"coverage-dependent thermo on species {' and '.join(coverage_dep_species)}.")
+                    logging.info("Flipped reaction to reverse direction due to thermo_coverage_dependence on product: %s",
+                                forward)
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
@@ -1673,14 +1764,15 @@ class CoreEdgeReactionModel:
                         "found in a seed mechanism or reaction "
                         "library.".format(spec.label, seed_mechanism.label)
                     )
-            if fails_species_constraints(spec):
+            reason = fails_species_constraints(spec)
+            if reason:
                 if "allowed" in rmg.species_constraints and "seed mechanisms" in rmg.species_constraints["allowed"]:
                     rmg.species_constraints["explicitlyAllowedMolecules"].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException(
                         "Species constraints forbids species {0} from seed mechanism {1}."
                         " Please reformulate constraints, remove the species, or"
-                        " explicitly allow it.".format(spec.label, seed_mechanism.label)
+                        " explicitly allow it. Reason: {2}".format(spec.label, seed_mechanism.label, reason)
                     )
 
         for spec in edge_species_to_move+self.new_species_list:
@@ -1800,14 +1892,15 @@ class CoreEdgeReactionModel:
                             "inert unless found in a seed mechanism or reaction "
                             "library.".format(spec.label, reaction_library.label)
                         )
-            if fails_species_constraints(spec):
+            reason = fails_species_constraints(spec)
+            if reason:
                 if "allowed" in rmg.species_constraints and "reaction libraries" in rmg.species_constraints["allowed"]:
                     rmg.species_constraints["explicitlyAllowedMolecules"].extend(spec.molecule)
                 else:
                     raise ForbiddenStructureException(
                         "Species constraints forbids species {0} from reaction library "
                         "{1}. Please reformulate constraints, remove the species, or "
-                        "explicitly allow it.".format(spec.label, reaction_library.label)
+                        "explicitly allow it. Reason: {2}".format(spec.label, reaction_library.label, reason)
                     )
 
         for spec in self.new_species_list:
@@ -1892,6 +1985,20 @@ class CoreEdgeReactionModel:
         products.sort()
 
         source = tuple(reactants)
+
+        if len(reactants) == 1:
+            elements = reactants[0].molecule[0].get_element_count()
+        elif len(products) == 1:
+            elements = products[0].molecule[0].get_element_count()
+        else:
+            raise ValueError("Unimolecular reaction networks can only be formed for unimolecular reactions or isomerizations.")
+        # make a hashable key from the elements dict
+        elements_key = tuple(sorted(elements.items()))
+        if elements_key in self.completed_pdep_networks:
+            formula = ''.join(f'{el}{count}' if count>1 else el for el, count in elements_key)
+            logging.info(f"Not adding reaction {newReaction} to unimolecular networks because the network for {formula} is marked as completed.")
+            return
+
 
         # Only search for a network if we don't specify it as a parameter
         if network is None:

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -44,7 +44,7 @@ import rmgpy.pdep.network
 import rmgpy.reaction
 from rmgpy.constants import R
 from rmgpy.data.kinetics.library import LibraryReaction
-from rmgpy.exceptions import PressureDependenceError, NetworkError
+from rmgpy.exceptions import PressureDependenceError, NetworkError, InvalidMicrocanonicalRateError
 from rmgpy.pdep import Configuration
 from rmgpy.rmg.react import react_species
 from rmgpy.statmech import Conformer
@@ -96,6 +96,7 @@ class PDepReaction(rmgpy.reaction.Reaction):
                                self.specific_collider,
                                self.network,
                                self.kinetics,
+                               self.network_kinetics,
                                self.reversible,
                                self.transition_state,
                                self.duplicate,
@@ -431,9 +432,14 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             ind = isomer_spcs.index(self.source[0])
             b[ind] = -1.0  # flux at source
         else:
-            b = -b / b.sum()  # 1.0 flux from source
+            total_source_flux = b.sum()
+            if total_source_flux == 0:
+                return None
+            b = -b / total_source_flux  # 1.0 flux from source
 
         if len(b) == 1:
+            if A[0, 0] == 0:
+                return None
             return np.array([b[0] / A[0, 0]])
 
         con = np.linalg.cond(A)
@@ -788,25 +794,21 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         # Log the network being updated
         logging.info("Updating {0!s}".format(self))
 
-        E0 = []
         # Generate states data for unimolecular isomers and reactants if necessary
         for isomer in self.isomers:
             spec = isomer.species[0]
             if not spec.has_statmech():
                 spec.generate_statmech()
-            E0.append(spec.conformer.E0.value_si)
         for reactants in self.reactants:
             for spec in reactants.species:
                 if not spec.has_statmech():
                     spec.generate_statmech()
-                E0.append(spec.conformer.E0.value_si)
         # Also generate states data for any path reaction reactants, so we can
         # always apply the ILT method in the direction the kinetics are known
         for reaction in self.path_reactions:
             for spec in reaction.reactants:
                 if not spec.has_statmech():
                     spec.generate_statmech()
-                E0.append(spec.conformer.E0.value_si)
         # While we don't need the frequencies for product channels, we do need
         # the E0, so create a conformer object with the E0 for the product
         # channel species if necessary
@@ -814,12 +816,12 @@ class PDepNetwork(rmgpy.pdep.network.Network):
             for spec in products.species:
                 if spec.conformer is None:
                     spec.conformer = Conformer(E0=spec.get_thermo_data().E0)
-                E0.append(spec.conformer.E0.value_si)
 
-        # Use the average E0 as the reference energy (`energy_correction`) for the network
+        # Use the lowest E0 as the reference energy (`energy_correction`) for the network
         # The `energy_correction` will be added to the free energies and enthalpies for each
         # configuration in the network.
-        energy_correction = -np.array(E0).mean()
+        energy_correction = -min(sum(spec.conformer.E0.value_si for spec in stationary_point.species)
+                                 for stationary_point in self.reactants + self.isomers + self.products)
         for spec in self.reactants + self.products + self.isomers:
             spec.energy_correction = energy_correction
         self.energy_correction = energy_correction
@@ -872,11 +874,20 @@ class PDepNetwork(rmgpy.pdep.network.Network):
         if output_directory:
             job.save_input_file(
                 os.path.join(output_directory, 'pdep', 'network{0:d}_{1:d}.py'.format(self.index, len(self.isomers))))
+            if getattr(pdep_settings, 'generate_PES_diagrams', False):
+                job.draw(os.path.join(output_directory, 'pdep'), filename_stem=f'network{self.index:d}_{len(self.isomers):d}', file_format='pdf')
 
         # Calculate the rate coefficients
         self.initialize(Tmin, Tmax, Pmin, Pmax, maximum_grain_size, minimum_grain_count, active_j_rotor, active_k_rotor,
                         rmgmode)
-        K = self.calculate_rate_coefficients(Tlist, Plist, method)
+        try:
+            K = self.calculate_rate_coefficients(Tlist, Plist, method)
+        except InvalidMicrocanonicalRateError:
+            if output_directory:
+                filename_stem = f'network{self.index:d}_{len(self.isomers):d}'
+                job.draw(output_directory, filename_stem=filename_stem, file_format='pdf')
+                logging.info(f"Network {self.index} has been drawn and saved as {filename_stem}.pdf in {output_directory} to aid debugging.")
+            raise
 
         # Generate PDepReaction objects
         configurations = []

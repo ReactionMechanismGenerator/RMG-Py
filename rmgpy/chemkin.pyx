@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -46,12 +46,12 @@ from rmgpy.data.kinetics.family import TemplateReaction
 from rmgpy.data.kinetics.library import LibraryReaction
 from rmgpy.exceptions import ChemkinError
 from rmgpy.molecule.element import get_element
-from rmgpy.molecule.util import get_element_count
-from rmgpy.quantity import Quantity
+from rmgpy.quantity import Quantity, QuantityError
 from rmgpy.reaction import Reaction
 from rmgpy.rmg.pdep import PDepNetwork, PDepReaction
 from rmgpy.species import Species
 from rmgpy.thermo import NASAPolynomial, NASA
+from rmgpy.thermo.nasa cimport NASA, NASAPolynomial
 from rmgpy.transport import TransportData
 from rmgpy.util import make_output_subdirectory
 
@@ -397,7 +397,7 @@ def _read_kinetics_reaction(line, species_dict, Aunits, Aunits_surf, Eunits):
             # this identifies reactions like 'H+H+M=H2+M' as opposed to 'H+H(+M)=H2(+M)' as identified above
             third_body = True
         elif reactant not in species_dict:
-            raise ChemkinError('Unexpected reactant "{0}" in reaction {1}.'.format(reactant, reaction))
+            raise ChemkinError('Unexpected reactant "{0}" in reaction line {1}.'.format(reactant, line))
         else:
             reactant_species = species_dict[reactant]
             if not reactant_species.reactive:
@@ -501,7 +501,7 @@ def _read_kinetics_line(line, reaction, species_dict, Eunits, kunits, klow_units
         tokens = case_preserved_tokens[1].split()
         cov_dep_species = species_dict[tokens[0].strip()]
         Ea = Quantity(float(tokens[3]), Eunits)
-        k.coverage_dependence[cov_dep_species] = {'a':float(tokens[1]), 'm':float(tokens[2]), 'E':Ea}
+        k.coverage_dependence[cov_dep_species] = {'a': Quantity(float(tokens[1])), 'm': Quantity(float(tokens[2])), 'E': Ea}
 
     elif 'LOW' in line:
         # Low-pressure-limit Arrhenius parameters
@@ -1180,8 +1180,8 @@ def read_species_block(f, species_dict, species_aliases, species_list):
     tokens_upper = line.upper().split()
     first_token = tokens.pop(0)
     first_token = tokens_upper.pop(0)  # pop from both lists
-    assert first_token in ['SPECIES', 'SPEC', 'SITE']  # should be first token in first line
-    # Build list of species identifiers
+    assert first_token.startswith('SPEC') or first_token.startswith('SITE'), f"'{line}' should begin with SPECIES or SITE statement."
+     # Build list of species identifiers
     while 'END' not in tokens_upper:
         line = f.readline()
         # If the line contains only one species, and also contains
@@ -1206,6 +1206,8 @@ def read_species_block(f, species_dict, species_aliases, species_list):
         token_upper = token.upper()
         if token_upper in ['SPECIES', 'SPEC', 'SITE']:
             continue  # there may be more than one SPECIES statement
+        if re.match(r'^SITE/', token_upper):
+            continue # could be a named surface like SITE/SURF1/
         if token_upper == 'END':
             break
 
@@ -1248,9 +1250,9 @@ def read_thermo_block(f, species_dict):
         meaningfulline, comment = remove_comment_from_line(line)
     Tmin = Tint = Tmax = None
     try:
-        Tmin = float(meaningfulline[0:9].strip())
-        Tint = float(meaningfulline[10:19].strip())
-        Tmax = float(meaningfulline[20:29].strip())
+        Tmin = float(meaningfulline[0:10].strip())
+        Tint = float(meaningfulline[10:20].strip())
+        Tmax = float(meaningfulline[20:30].strip())
         if [Tmin, Tint, Tmax] != [float(i) for i in meaningfulline.split()[0:3]]:
             logging.warning("Default temperature range line {0!r} may be badly formatted.".format(line))
             logging.warning("It should have Tmin in columns 1-10, Tmid in columns 11-20, and Tmax in columns 21-30")
@@ -1403,6 +1405,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         '{0}^3/({1}*{2})'.format(volume_units, molecule_units, time_units),  # Second-order
         '{0}^6/({1}^2*{2})'.format(volume_units, molecule_units, time_units),  # Third-order
         '{0}^9/({1}^3*{2})'.format(volume_units, molecule_units, time_units),  # Fourth-order
+        f"{volume_units}^12/({molecule_units}^4*{time_units})",  # Fifth-order
     ]
 
     Aunits_surf = [
@@ -1410,6 +1413,7 @@ def read_reactions_block(f, species_dict, read_comments=True):
         's^-1'.format(time_units),  # First-order
         '{0}^2/({1}*{2})'.format(area_units, molecule_units, time_units),  # Second-order
         '{0}^4/({1}^2*{2})'.format(area_units, molecule_units, time_units),  # Third-order
+        '{0}^6/({1}^3*{2})'.format(area_units, molecule_units, time_units),  # Fourth-order
     ]
     Eunits = energy_units
 
@@ -1479,10 +1483,13 @@ def read_reactions_block(f, species_dict, read_comments=True):
             reaction = read_reaction_comments(reaction, comments, read=read_comments)
         except ChemkinError as e:
             if "Skip reaction!" in str(e):
-                logging.warning("Skipping the reaction {0!r}".format(kinetics))
+                logging.warning("Skipping the reaction {0!r} because of {e!s}".format(kinetics))
                 continue
             else:
                 raise
+        except QuantityError as e:
+            logging.warning(f"Skipping the reaction {kinetics!r} due to units error: {e}")
+            continue
         reaction_list.append(reaction)
 
     return reaction_list
@@ -1561,37 +1568,69 @@ def get_species_identifier(species):
 ################################################################################
 
 
-def write_thermo_entry(species, element_counts=None, verbose=True):
+def write_thermo_entry(species, element_counts=None, bint verbose=True):
     """
     Return a string representation of the NASA model readable by Chemkin.
     To use this method you must have exactly two NASA polynomials in your
     model, and you must use the seven-coefficient forms for each.
     """
+    cdef NASA thermo
+    cdef NASAPolynomial poly_low, poly_high
+    cdef dict counts
+    cdef list sorted_elements, elements, short_lines
+    cdef bint extended_syntax
+    cdef int count, isotope, charge, electrons
+    cdef str string, line, short_line, chemkin_name, symbol, elem_1, elem_2
+    cdef object thermo_data
 
-    thermo = species.get_thermo_data()
+    thermo_data = species.get_thermo_data()
 
-    if not isinstance(thermo, NASA):
+    if not isinstance(thermo_data, NASA):
         raise ChemkinError('Cannot generate Chemkin string for species "{0}": '
                            'Thermodynamics data must be a NASA object.'.format(species))
+    thermo = <NASA>thermo_data
 
     assert len(thermo.polynomials) == 2
-    assert thermo.polynomials[0].Tmin.value_si < thermo.polynomials[1].Tmin.value_si
-    assert thermo.polynomials[0].Tmax.value_si == thermo.polynomials[1].Tmin.value_si
-    assert thermo.polynomials[0].cm2 == 0 and thermo.polynomials[0].cm1 == 0
-    assert thermo.polynomials[1].cm2 == 0 and thermo.polynomials[1].cm1 == 0
+    poly_low = thermo.polynomials[0]
+    poly_high = thermo.polynomials[1]
+    assert poly_low.Tmin.value_si < poly_high.Tmin.value_si
+    assert poly_low.Tmax.value_si == poly_high.Tmin.value_si
+    assert poly_low.cm2 == 0 and poly_low.cm1 == 0
+    assert poly_high.cm2 == 0 and poly_high.cm1 == 0
 
     # Determine the number of each type of element in the molecule
+    # Need to use the element's chemkin name, not the element symbol, because of isotopes.
+    # so we can't just use molecule[0].get_element_count().
     if element_counts is None:
-        element_counts = get_element_count(species.molecule[0])
+        counts = {}
+        for atom in species.molecule[0].vertices:
+            chemkin_name = atom.element.chemkin_name
+            counts[chemkin_name] = counts.get(chemkin_name, 0) + 1
+    else:
+        counts = dict(element_counts)
+    # Some callers pass element_counts keyed by element symbol 'e' rather than chemkin name 'E'
+    if 'e' in counts:
+        counts['E'] = counts.pop('e')
+    charge = species.molecule[0].get_net_charge()
+    if 'E' in counts:
+        electrons = counts['E']
+        if charge == 0 and electrons != 0:
+            logging.warning(f"Species {species} has {electrons} electrons but charge 0. "
+                f"Reporting {electrons} electrons in the Chemkin composition.")
+        elif charge != 0 and electrons != -charge:
+            logging.warning(f"Species {species} has {electrons} electrons but charge {charge}. "
+                f"Reporting {-charge} electrons in the Chemkin composition.")
+    if charge != 0:
+        counts['E'] = -charge
 
     # Sort the element_counts dictionary so that it's C, H, Al, B, Cl, D, etc.
     # if there's any C, else Al, B, Cl, D, H, if not. This is the "Hill" system
     # done by Molecule.get_formula
-    if 'C' in element_counts:
-        sorted_elements = sorted(element_counts, key = lambda e: {'C':'0','H':'1'}.get(e, e))
+    if 'C' in counts:
+        sorted_elements = sorted(counts, key=lambda e: {'C': '0', 'H': '1'}.get(e, e))
     else:
-        sorted_elements = sorted(element_counts)
-    element_counts = {e: element_counts[e] for e in sorted_elements}
+        sorted_elements = sorted(counts)
+    counts = {e: counts[e] for e in sorted_elements}
 
     string = ''
     # Write thermo comments
@@ -1606,14 +1645,9 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
                     string += "! {0}\n".format(line)
 
     # Compile element count string
-    extended_syntax = len(element_counts) > 4  # If there are more than 4 elements, use extended syntax
+    extended_syntax = len(counts) > 4  # If there are more than 4 elements, use extended syntax
     elements = []
-    for key, count in element_counts.items():
-        if isinstance(key, tuple):
-            symbol, isotope = key
-            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-        else:
-            chemkin_name = key
+    for chemkin_name, count in counts.items():
         if extended_syntax:
             # Create a list of alternating elements and counts
             elements.extend([chemkin_name, str(count)])
@@ -1638,31 +1672,31 @@ def write_thermo_entry(species, element_counts=None, verbose=True):
     string += '{ident:<16}        {elem_1:<20}G{Tmin:>10.3f}{Tint:>10.3f}{Tmax:>8.2f}      1{elem_2}\n'.format(
         ident=get_species_identifier(species),
         elem_1=elem_1,
-        Tmin=thermo.polynomials[0].Tmin.value_si,
-        Tint=thermo.polynomials[1].Tmax.value_si,
-        Tmax=thermo.polynomials[0].Tmax.value_si,
+        Tmin=poly_low.Tmin.value_si,
+        Tint=poly_high.Tmax.value_si,
+        Tmax=poly_low.Tmax.value_si,
         elem_2=elem_2,
     )
 
     # Line 2
-    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    2\n'.format(thermo.polynomials[1].c0,
-                                                                                      thermo.polynomials[1].c1,
-                                                                                      thermo.polynomials[1].c2,
-                                                                                      thermo.polynomials[1].c3,
-                                                                                      thermo.polynomials[1].c4)
+    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    2\n'.format(poly_high.c0,
+                                                                                      poly_high.c1,
+                                                                                      poly_high.c2,
+                                                                                      poly_high.c3,
+                                                                                      poly_high.c4)
 
     # Line 3
-    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    3\n'.format(thermo.polynomials[1].c5,
-                                                                                      thermo.polynomials[1].c6,
-                                                                                      thermo.polynomials[0].c0,
-                                                                                      thermo.polynomials[0].c1,
-                                                                                      thermo.polynomials[0].c2)
+    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}{4:< 15.8E}    3\n'.format(poly_high.c5,
+                                                                                      poly_high.c6,
+                                                                                      poly_low.c0,
+                                                                                      poly_low.c1,
+                                                                                      poly_low.c2)
 
     # Line 4
-    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}                   4\n'.format(thermo.polynomials[0].c3,
-                                                                                          thermo.polynomials[0].c4,
-                                                                                          thermo.polynomials[0].c5,
-                                                                                          thermo.polynomials[0].c6)
+    string += '{0:< 15.8E}{1:< 15.8E}{2:< 15.8E}{3:< 15.8E}                   4\n'.format(poly_low.c3,
+                                                                                          poly_low.c4,
+                                                                                          poly_low.c5,
+                                                                                          poly_low.c6)
 
     return string
 
@@ -1865,7 +1899,7 @@ def write_kinetics_entry(reaction, species_list, verbose=True, java_library=Fals
         for species, cov_params in kinetics.coverage_dependence.items():
             label = get_species_identifier(species)
             string += f'    COV / {label:<41} '
-            string += f"{cov_params['a']:<9.3g} {cov_params['m']:<9.3g} {cov_params['E'].value_si/4184.:<9.3f} /\n"
+            string += f"{cov_params['a'].value_si:<9.3g} {cov_params['m'].value_si:<9.3g} {cov_params['E'].value_si/4184.:<9.3f} /\n"
 
     if isinstance(kinetics, (_kinetics.ThirdBody, _kinetics.Lindemann, _kinetics.Troe)):
         # Write collider efficiencies
@@ -2094,23 +2128,32 @@ def save_transport_file(path, species):
                 ))
 
 
-def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicates=True):
+def save_chemkin_file(path, species, reactions, verbose=True, check_for_duplicates=True,
+                      elements_in_use=None):
     """
     Save a Chemkin input file to `path` on disk containing the provided lists
     of `species` and `reactions`.
     If check_for_duplicates is False then we don't check for unlabeled duplicate reactions,
     thus saving time (eg. if you are sure you've already labeled them as duplicate).
+
+    ``elements_in_use`` is a set of :class:`Element` singletons used to write the
+    ELEMENTS section. If ``None``, it is computed from ``species`` via
+    :meth:`rmgpy.rmg.model.ReactionModel.get_elements`.
     """
     # Check for duplicate
     if check_for_duplicates:
         mark_duplicate_reactions(reactions)
+
+    if elements_in_use is None:
+        from rmgpy.rmg.model import ReactionModel
+        elements_in_use = ReactionModel(species=species).get_elements()
 
     f = open(path, 'w')
 
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Elements section
-    write_elements_section(f)
+    write_elements_section(f, elements_in_use)
 
     # Species section
     f.write('SPECIES\n')
@@ -2168,7 +2211,7 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     sorted_species = sorted(species, key=lambda species: species.index)
 
     # Species section
-    surface_name = None
+    surface_name = 'SURF0' # Some ck2yaml versions (Cantera 3.1) require a name.
     if surface_name:
         f.write('SITE/{}/'.format(surface_name))
     else:
@@ -2191,7 +2234,7 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
 
     # Thermodynamics section
     f.write('THERM ALL\n')
-    f.write('    300.000  1000.000  5000.000\n\n')
+    f.write('   300.000  1000.000  5000.000\n\n')
     for spec in sorted_species:
         f.write(write_thermo_entry(spec, verbose=verbose))
         f.write('\n')
@@ -2210,20 +2253,24 @@ def save_chemkin_surface_file(path, species, reactions, verbose=True, check_for_
     _chemkin_reaction_count = None
 
 
-def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None, 
+def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, transport_path=None,
                  save_edge_species=False):
     """
     Save a Chemkin file for the current model as well as any desired output
-    species and reactions to `path`. If `save_edge_species` is True, then 
+    species and reactions to `path`. If `save_edge_species` is True, then
     a chemkin file and dictionary file for the core AND edge species and reactions
     will be saved.  It also saves verbose versions of each file.
     """
+    from rmgpy.rmg.model import ReactionModel
     if save_edge_species:
         species_list = reaction_model.core.species + reaction_model.edge.species
         rxn_list = reaction_model.core.reactions + reaction_model.edge.reactions
     else:
         species_list = reaction_model.core.species + reaction_model.output_species_list
         rxn_list = reaction_model.core.reactions + reaction_model.output_reaction_list
+
+    # Same elements list for all files (core and edge)
+    elements_in_use = ReactionModel(species=species_list).get_elements()
 
     if any([s.contains_surface_site() for s in reaction_model.core.species]):
         # it's a surface model
@@ -2251,29 +2298,34 @@ def save_chemkin(reaction_model, path, verbose_path, dictionary_path=None, trans
                 gas_rxn_list.append(r)
 
         # We should already have marked everything as duplicates by now so use check_for_duplicates=False
-        save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False, check_for_duplicates=False)
+        save_chemkin_file(gas_path, gas_species_list, gas_rxn_list, verbose=False,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         save_chemkin_surface_file(surface_path, surface_species_list, surface_rxn_list, verbose=False,
                                   check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
         logging.info('Saving annotated version of Chemkin files...')
-        save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True, check_for_duplicates=False)
+        save_chemkin_file(gas_verbose_path, gas_species_list, gas_rxn_list, verbose=True,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         save_chemkin_surface_file(surface_verbose_path, surface_species_list, surface_rxn_list, verbose=True,
                                   check_for_duplicates=False, surface_site_density=reaction_model.surface_site_density)
 
     else:
         # Gas phase only
-        save_chemkin_file(path, species_list, rxn_list, verbose=False, check_for_duplicates=False)
+        save_chemkin_file(path, species_list, rxn_list, verbose=False,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
         logging.info('Saving annotated version of Chemkin file...')
-        save_chemkin_file(verbose_path, species_list, rxn_list, verbose=True, check_for_duplicates=False)
+        save_chemkin_file(verbose_path, species_list, rxn_list, verbose=True,
+                          check_for_duplicates=False, elements_in_use=elements_in_use)
     if dictionary_path:
         save_species_dictionary(dictionary_path, species_list)
     if transport_path:
         save_transport_file(transport_path, species_list)
 
 
-def save_chemkin_files(rmg):
+def save_chemkin_files(rmg, config=None):
     """
     Save the current reaction model to a set of Chemkin files.
     """
+    save_edge = config.save_edge if (config and config.save_edge is not None) else rmg.save_edge_species
 
     # todo: make this an attribute or method of reactionModel
     is_surface_model = any([s.contains_surface_site() for s in rmg.reaction_model.core.species])
@@ -2308,7 +2360,7 @@ def save_chemkin_files(rmg):
             os.unlink(latest_chemkin_path)
         shutil.copy2(this_chemkin_path, latest_chemkin_path)
 
-    if rmg.save_edge_species:
+    if save_edge:
         logging.info('Saving current model core and edge to Chemkin file...')
         this_chemkin_path = os.path.join(rmg.output_directory, 'chemkin',
                                          'chem_edge{0:04d}.inp'.format(len(rmg.reaction_model.core.species)))
@@ -2317,7 +2369,7 @@ def save_chemkin_files(rmg):
         latest_dictionary_path = os.path.join(rmg.output_directory, 'chemkin', 'species_edge_dictionary.txt')
         latest_transport_path = None
         save_chemkin(rmg.reaction_model, this_chemkin_path, latest_chemkin_verbose_path, latest_dictionary_path,
-                     latest_transport_path, rmg.save_edge_species)
+                     latest_transport_path, save_edge)
 
         if is_surface_model:
             paths = []
@@ -2336,27 +2388,24 @@ def save_chemkin_files(rmg):
             shutil.copy2(this_chemkin_path, latest_chemkin_path)
 
 
-def write_elements_section(f):
+def write_elements_section(f, elements_in_use):
     """
-    Write the ELEMENTS section of the chemkin file.  This file currently lists
-    all elements and isotopes available in RMG. It may become useful in the future
-    to only include elements/isotopes present in the current RMG run. 
+    Write the ELEMENTS section of the chemkin file. Only elements present in
+    ``elements_in_use`` (a set of :class:`Element` singletons) are emitted. Isotopes
+    (D, T, CI, OI) and the surface site X are written only when actually used.
     """
-
+    from rmgpy.molecule.element import D, T, C13, O18, X
     s = 'ELEMENTS\n'
-
-    # map of isotope elements with chemkin-compatible element representation:
-    elements = ('H', ('H', 2), ('H', 3), 'C', ('C', 13), 'O', ('O', 18), 'N', 'Ne', 'Ar', 'He', 'Si', 'S',
-                'F', 'Cl', 'Br', 'I')
-    for el in elements:
-        if isinstance(el, tuple):
-            symbol, isotope = el
-            chemkin_name = get_element(symbol, isotope=isotope).chemkin_name
-            mass = 1000 * get_element(symbol, isotope=isotope).mass
-            s += '\t{0} /{1:.3f}/\n'.format(chemkin_name, mass)
-        else:
-            s += '\t' + el + '\n'
-    s += '\tX /195.083/\n'
+    custom_singletons = {D, T, C13, O18, X}
+    elements_list = sorted(element.chemkin_name for element in elements_in_use if element not in custom_singletons)
+    for element in elements_list:
+        s += f'\t{element}\n'
+    for isotope in (D, T, C13, O18):
+        if isotope in elements_in_use:
+            mass = 1000 * isotope.mass
+            s += f'\t{isotope.chemkin_name} /{mass:.3f}/\n'
+    if X in elements_in_use:
+        s += '\tX /195.083/\n'
     s += 'END\n\n'
 
     f.write(s)
@@ -2384,9 +2433,14 @@ class ChemkinWriter(object):
     rmg.detach(listener)
     
     """
-    def __init__(self, output_directory=''):
+    def __init__(self, output_directory='', config=None):
         super(ChemkinWriter, self).__init__()
+        self.config = config
         make_output_subdirectory(output_directory, 'chemkin')
+        make_output_subdirectory(output_directory, 'cantera_from_ck')
 
     def update(self, rmg):
-        save_chemkin_files(rmg)
+        if self.config is not None and not self.config.should_write(
+                rmg.reaction_model.iteration_num, rmg.is_final_save):
+            return
+        save_chemkin_files(rmg, config=self.config)

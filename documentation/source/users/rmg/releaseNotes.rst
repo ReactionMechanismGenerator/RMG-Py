@@ -4,11 +4,64 @@
 Release Notes
 *************
 
+RMG-Py Version 4.0.0
+====================
+Date: June 10, 2026
+
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Py Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/compare/3.3.0...4.0.0>`_.
+
+- New Features
+    - Introduced an automated database selection feature
+    - Extended uncertainty analysis suite to export covariance matrices, import detailed correlations from RMG libraries, and add uncertainties in quadrature
+    - Added comprehensive surface sensitivity features for `SurfaceReactor`
+    - Added support for coverage-dependent thermochemistry and kinetics for surface catalysis
+    - Added new YAML file writers for Cantera
+    - Added an Arkane xTB Electronic Structure Software (ESS) adapter
+    - Implemented a species constraint setting for specifying the maximum number of fused rings allowed
+    - Added ability to specify core species list from an external dictionary for model initialization
+    - Added support for Van der Waals bonds in adsorbates (eg. adsorbed bidentate formate)
+    
+- Software Improvements
+    - Upgraded core dependencies to Cantera 3 and Python 3.11/updated ecosystem
+    - Optimizations to Cython declarations and molecule module structures
+    - Jupyter Notebooks updated to interface with Reaction Mechanism Simulator (RMS) using `juliacall`
+    - Enhanced CI pipelines and improved conda building
+    - Incremental Cython builds restored in the Makefile for faster developer compilation
+    - Improvements to Chemkin file I/O including isotope handling and THERM line formatting
+    - Changed Arkane orthonormalization when projecting out rotors from vibrational modes
+
+- Bug Fixes
+    - Fixed duplicate reactions from identical templates being erroneously added to mechanisms
+    - Fixed energy correction calculations in pressure-dependent reactions and ensured consistency of transition state $E_0$ values in Arkane output files
+    - Corrected constant-species index mapping in `SimpleReactor`
+    - Improved RDKit `GetSSSR` non-determinism
+    - Removed deprecated `imp.load_source` calls and eliminated unreachable code segments
+    - Fixed coverage-dependent thermodynamics and kinetics in surface reactors
+
+
+RMG-Database Version 4.0.0
+==========================
+Date: June 10, 2026
+
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Database Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/compare/3.3.0...4.0.0>`_.
+
+- Features
+    - Expanded datasets with a new Formic Acid library and example coverage-dependent thermo libraries
+    - Added data for electrocatalytic $\text{CO}_2$ reduction ($\text{CO}_2\text{RR}$) kinetics and adsorbates
+    - Added BEEF uncertainty covariance data support
+    - Implemented new surface nitrogen reaction families, BEP rules, and NOx chemistry for $\text{Pt}(111)$
+    - Introduced a `recommended_libraries.yml` configuration file
+
+- Bugfixes
+    - Fixed incorrect entry details in the `Glarborg/C2` database
+    - Fixed thermodynamic discontinuity issues found in the formic acid dataset
+    - Corrected temperature minimum settings ($T_{min}$) from 300 K to 298 K in NASA polynomials for $\text{CO}_2\text{RR}$ adsorbates on $\text{Ag}(111)$
+
 RMG-Py Version 3.3.0
 ====================
 Date: July 10, 2025
 
-The below list is a summary. For a complete list of all changes, see the `Official Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0>`_.
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Py Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0>`_.
 
 - Software Improvements
     - RMG-Py now uses Python 3.9
@@ -33,7 +86,7 @@ RMG-Database Version 3.3.0
 ==========================
 Date: July 10, 2025
 
-The below list is a summary. For a complete list of all changes, see the `Official Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0>`_.
+The below list is a summary. For a complete list of all changes, see the `Official RMG-Database Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0>`_.
 
 - Features
     - Electrochemistry with Lithium

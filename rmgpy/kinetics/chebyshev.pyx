@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -193,7 +193,7 @@ cdef class Chebyshev(PDepKineticsModel):
             raise KineticsError("The master equation data needs more temperature and pressure data "
                                 "points than are placed into Chebyshev polynomial. Currently, the "
                                 "data has {0} temperatures and the polynomial is set to have {1}. "
-                                "The data has {2} pressures and the polynomial is set ot have {3}"
+                                "The data has {2} pressures and the polynomial is set to have {3}"
                                 "".format(nT, degreeT, nP, degreeP))
         elif nT < 1.25 * degreeT or nP < 1.25 * degreeP:
             logging.warning('This Chebyshev fitting has few degrees of freedom and may not be '

@@ -204,16 +204,91 @@ The last section is specifying that RMG is estimating kinetics of reactions from
 	kineticsEstimator = 'rate rules'
 
 
-The following is an example of a database block, based on above chosen libraries and options::
+.. _auto_library_selection:
+
+Automatic Library and Family Selection
+--------------------------------------
+Instead of manually listing every library, you can let RMG choose the appropriate
+thermo libraries, kinetics libraries, transport libraries, seed mechanisms, and
+kinetics families automatically based on the species and reactor conditions in your
+input file. Use the ``'auto'`` keyword in any library field::
 
 	database(
-		thermoLibraries = ['primaryThermoLibrary', 'GRI-Mech3.0'],
-		reactionLibraries = [('Glarborg/C3',False)],
-		seedMechanisms = ['GRI-Mech3.0'],
+		thermoLibraries = 'auto',
+		reactionLibraries = 'auto',
+		transportLibraries = 'auto',
+		seedMechanisms = 'auto',
+		kineticsFamilies = 'auto',
 		kineticsDepositories = ['training'],
-		kineticsFamilies = 'defult',
 		kineticsEstimator = 'rate rules',
 	)
+
+When ``'auto'`` is specified, RMG analyzes the initial species and reactor
+conditions to detect the chemistry present (e.g., nitrogen, sulfur, oxygen,
+halogens, surface, liquid phase) and selects the relevant library sets.
+The triggered sets and their corresponding libraries are logged at the start
+of the RMG run.
+
+.. note::
+	Non-reactive species (those declared with ``reactive=False``, such as bath
+	gases) are skipped during chemistry detection and will not trigger any
+	chemistry sets on their own. For example, using N\ :sub:`2` purely as a
+	bath gas will not pull in the nitrogen library — the nitrogen set is
+	triggered only when a reactive species containing nitrogen is present.
+
+**Mixing manual and auto selection.** You can combine user-specified libraries
+with ``'auto'`` in a list. The position of ``'auto'`` controls the priority:
+libraries before it have higher priority, libraries after it have lower::
+
+	thermoLibraries = ['myCustomLib', 'auto']
+
+	thermoLibraries = ['auto', 'myFallbackLib']
+
+If a library you listed manually also appears in the auto-selected set, it will
+not be added twice. It keeps the position you gave it, and the auto-selected
+copy is skipped.
+
+**PAH libraries and the ``<PAH_libs>`` keyword.**
+The auto-selection splits high-temperature C/H chemistry into two tiers:
+
+* **CH_pyrolysis_core** — fundamental high-T radical and small-molecule chemistry
+  (e.g., acetylene initiation, alkane cracking). Always included when carbon is
+  present and the maximum reactor temperature is at least 800 K.
+* **PAH_formation** — aromatic ring formation, naphthalene pathways (CPD + HACA),
+  and larger PAH growth. This is a large set (~70 kinetics libraries) that can
+  significantly increase model size and generation time.
+
+For **pure C/H pyrolysis** (no oxygen in any input species), both tiers are
+included automatically — PAH formation is expected in such systems.
+
+For **oxygenated systems** (any species contains O, including oxygenated fuels
+like ethanol or DME), only CH_pyrolysis_core is included by default because
+PAH chemistry is typically a minor pathway. If you know your system forms
+significant amounts of aromatics (e.g., fuel-rich partial oxidation), you can
+explicitly request the PAH libraries by adding the ``'<PAH_libs>'`` keyword
+to any library field::
+
+	database(
+		thermoLibraries = ['auto', '<PAH_libs>'],
+		reactionLibraries = ['auto', '<PAH_libs>'],
+		seedMechanisms = 'auto',
+		transportLibraries = 'auto',
+		kineticsFamilies = 'auto',
+	)
+
+The ``'<PAH_libs>'`` keyword is consumed during processing (it does not appear
+in the final library list) — it only serves as a signal to include the
+PAH_formation set. It can be placed anywhere in the list; its position does
+not affect library priority.
+
+**Previewing the selection.** A Jupyter notebook is provided at
+:file:`ipython/auto_library_selection.ipynb` that lets you preview exactly which
+libraries and families RMG would choose for a given input file, without running
+the full job.
+
+.. note::
+	The ``'auto'`` keyword is opt-in. If you do not use it you must list every library explicitly.
+
 
 .. _species_list:
 
@@ -246,6 +321,14 @@ The following is an example of a typical species item, based on methane using SM
 			1 C 0
 			"""
 	)
+
+For long lists of initial core species, you can specify a coreSpeciesList, shown below::
+
+    coreSpeciesList(
+        species_dictionary_file="path/to/your/species_dictionary.txt"
+    )
+
+This specifies the path for an RMG-formatted :ref:`species dictionary <the_chemkin_folder>` from which additional species will be loaded. Note that RMG will complain if any species in the input file is duplicated in the species dictionary. All species are assumed to be reactive.
 
 .. _forbidden_structures:
 
@@ -879,6 +962,39 @@ to turn off pressure dependence for all molecules larger than the given number
 of atoms (16 in the above example).
 
 
+Completed Pressure-Dependent Networks
+--------------------------------------
+
+Sometimes you have a pressure-dependent network that has been studied in great 
+detail and included in a seed mechanism or reaction library (such as CH2O2), 
+and you don't want RMG to add additional reactions to that network. Adding 
+RMG's estimates to a thoroughly studied network will likely make your model 
+worse, as the original authors would have included any important reactions.
+
+You can specify that certain networks should not be expanded further using the
+``completedNetworks`` parameter within the ``pressureDependence()`` block. This 
+parameter takes a list of chemical formulas identifying the networks that should 
+be considered complete. For example::
+
+    pressureDependence(
+        method='modified strong collision',
+        maximumGrainSize=(0.5,'kcal/mol'),
+        minimumNumberOfGrains=250,
+        temperatures=(300,2000,'K',8),
+        pressures=(0.01,100,'bar',5),
+        interpolation=('Chebyshev', 6, 4),
+        maximumAtoms=16,
+        completedNetworks=['CH2O2'],
+    )
+
+Multiple networks can be specified in the list::
+
+    completedNetworks=['CH2O2', 'C2H6'],
+
+When a network is marked as completed, RMG will not add any new reactions to it,
+though reactions already present in seed mechanisms will still be used.
+
+
 .. _uncertaintyanalysis:
 
 Uncertainty Analysis
@@ -965,12 +1081,17 @@ Miscellaneous options::
         units='si',
         generateOutputHTML=True,
         generatePlots=False,
+        generatePESDiagrams=False,
         saveSimulationProfiles=True,
         verboseComments=False,
         saveEdgeSpecies=True,
         keepIrreversible=True,
         trimolecularProductReversible=False,
-        saveSeedModulus=-1
+        saveSeedModulus=-1,
+        generateChemkin=True,
+        generateRMSYAML=True,
+        generateCanteraYAML1=False,
+        generateCanteraYAML2=False,
     )
 
 The ``name`` field is the name of any generated seed mechanisms
@@ -981,22 +1102,94 @@ Setting ``saveSeedToDatabase`` to ``True`` tells RMG (if generating a seed) to a
 
 The ``units`` field is set to ``si``.  Currently there are no other unit options.
 
-Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.  It will save a visualized
-HTML file for your model containing all the species and reactions.  Turning this feature off by setting it to ``False`` may save memory if running large jobs.
+Setting ``generateOutputHTML`` to ``True`` will let RMG know that you want to save 2-D images (png files in the local ``species`` folder) of all species in the generated core model.
+It will save a visualized HTML file for your model containing all the species and reactions. 
+Turning this feature off by setting it to ``False`` may save memory if running large jobs.
+It can be configured using a dictionary of settings in place of the ``True`` statement, as described below.
 
 Setting ``generatePlots`` to ``True`` will generate a number of plots describing the statistics of the RMG job, including the reaction model core and edge size and memory use versus  execution time. These will be placed in the output directory in the plot/ folder.
 
+Setting ``generatePESDiagrams`` to ``True`` will generate potential energy surface diagrams for each pressure dependent network in the model.  These diagrams will be saved in the ``pdep/`` folder in the output directory. Only applicable if pressure dependence is enabled.
+
 Setting ``saveSimulationProfiles`` to ``True`` will make RMG save csv files of the simulation in .csv files in the ``solver/`` folder.  The filename will be ``simulation_1_26.csv`` where the first number corresponds to the reaciton system, and the second number corresponds to the total number of species at the point of the simulation.  Therefore, the highest second number will indicate the latest simulation that RMG has complete while enlarging the core model.  The information inside the csv file will provide the time, reactor volume in m^3, as well as mole fractions of the individual species.
 
-Setting ``verboseComments`` to ``True`` will make RMG generate chemkin files with complete verbose commentary for the kinetic and thermo parameters.  This will be helpful in debugging what values are being averaged for the kinetics.  Note that this may produce very large files.
+Setting ``verboseComments`` to ``True`` will make RMG generate output files with complete verbose commentary for the kinetic and thermo parameters (i.e. listing every rate rule that was averaged).  This is helpful for debugging what values are being averaged for the kinetics.  Note that this may produce very large files.
 
-Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.
+Setting ``saveEdgeSpecies`` to ``True`` will make RMG generate chemkin files of the edge reactions in addition to the core model in files such as ``chem_edge.inp`` and ``chem_edge_annotated.inp`` files located inside the ``chemkin`` folder.  These files will be helpful in viewing RMG's estimate for edge reactions and seeing if certain reactions one expects are actually in the edge or not.  This is a global fallback; individual writers can override it (see below).
 
 Setting ``keepIrreversible`` to ``True`` will make RMG import library reactions as is, whether they are reversible or irreversible in the library. Otherwise, if ``False`` (default value), RMG will force all library reactions to be reversible, and will assign the forward rate from the relevant library.
 
 Setting ``trimolecularProductReversible`` to ``False`` will not allow families with three products to react in the reverse direction. Default is ``True``.
 
 Setting ``saveSeedModulus`` to ``-1`` will only save the seed from the last iteration at the end of an RMG job. Alternatively, the seed can be saved every ``n`` iterations by setting ``saveSeedModulus`` to ``n``.
+
+Per-writer Output Configuration
+--------------------------------
+
+Each of the following options controls a separate output-format writer.
+Each accepts ``True``, ``False``, or a Python dict with optional keys:
+
+* ``'saveInterval'`` *(int)* — positive N writes every N iterations (iteration
+  numbering starts at 0); ``-1`` writes only at the very end of the run.
+  Defaults to ``1`` (every iteration) for writers that are on by default.
+* ``'saveEdge'`` *(bool, optional)* — overrides the global ``saveEdgeSpecies``
+  flag for this writer only.
+
+Examples::
+
+    # Chemkin: save only at the end, also writing edge species
+    generateChemkin={'saveInterval': -1, 'saveEdge': True}
+
+    # RMS YAML: save every 5 iterations
+    generateRMSYAML={'saveInterval': 5}
+
+    # Cantera YAML v2: save every iteration, no edge species
+    generateCanteraYAML2={'saveInterval': 1, 'saveEdge': False}
+
+``generateChemkin`` (default ``True``)
+  Controls the Chemkin writer.  Output is written to the ``chemkin/`` folder.
+  When enabled, Cantera's ``ck2yaml`` converter is also run at the end of the
+  job to produce a ``cantera_from_ck/`` folder — see :ref:`output`.
+
+``generateRMSYAML`` (default ``True``)
+  Controls the RMS YAML writer.  Output is written to the ``rms/`` folder.
+
+``generateCanteraYAML1`` (default ``False``) *(beta)*
+  Controls the *direct* Cantera YAML v1 writer.  Output is written to the
+  ``cantera1/`` folder.  Unlike the ``cantera_from_ck`` route (which converts
+  a Chemkin file via ``ck2yaml``), this writer constructs the YAML directly
+  from RMG's internal Python objects without going through Chemkin at all.
+  It runs at every iteration (or on the configured schedule) so you get a
+  history of the growing mechanism.
+
+  .. warning::
+
+     This writer is in **beta**.  The output should be valid Cantera YAML, but
+     it has been less extensively tested than the established
+     ``cantera_from_ck`` route.  If both this writer and the Chemkin writer
+     are enabled, a ``comparison_report.txt`` is generated at the end of the
+     run comparing the two outputs numerically.  Please report discrepancies
+     on the `RMG-Py issue tracker
+     <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`_.
+
+``generateCanteraYAML2`` (default ``False``) *(beta)*
+  Controls the *direct* Cantera YAML v2 writer.  Output is written to the
+  ``cantera2/`` folder.  Like ``generateCanteraYAML1``, this writer bypasses
+  the Chemkin intermediate, but instead uses the Cantera Python API
+  (``ct.Solution``) to construct and serialise the mechanism.  It also runs
+  at every iteration (or on the configured schedule).
+
+  .. warning::
+
+     This writer is in **beta**.  It has been less extensively tested than the
+     established ``cantera_from_ck`` route.  When enabled alongside the Chemkin
+     writer, a ``comparison_report.txt`` is generated at the end of the run.
+     Please report discrepancies on the `RMG-Py issue tracker
+     <https://github.com/ReactionMechanismGenerator/RMG-Py/issues>`_.
+
+``generateOutputHTML`` (default ``False``)
+  Controls the HTML species-visualisation writer.  Output is written to the
+  ``species/`` folder.  Accepts ``True``/``False`` or the same dict format.
 
 Species Constraints
 =====================
@@ -1018,7 +1211,7 @@ all of RMG's reaction families. ::
         maximumRadicalElectrons=2,
         maximumSingletCarbenes=1,
         maximumCarbeneRadicals=0,
-        maximumIsotopicAtoms=2,
+        maximumFusedRingSystemSize=3,
         allowSingletO2 = False,
         speciesCuttingThreshold=20,
     )
@@ -1027,6 +1220,10 @@ An additional flag ``allowed`` can be set to allow species
 from either the input file, seed mechanisms, or reaction libraries to bypass these constraints.
 Note that this should be done with caution, since the constraints will still apply to subsequent
 products that form.
+
+``maximumFusedRingSystemSize`` is the maximum number of SSSR rings allowed within any single
+fused ring system in the species (i.e., it counts rings in both fused systems, which share edges,
+and spirocyclic systems, which share a single atom).
 
 By default, the ``allowSingletO2`` flag is set to ``False``.  See :ref:`representing_oxygen` for more information.
 

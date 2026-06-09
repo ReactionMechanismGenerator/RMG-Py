@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -322,79 +322,100 @@ class Reaction:
         if not self.kinetics:
             raise Exception('Cantera reaction cannot be created because there was no kinetics.')
 
+        # Build an equation string from the stoichiometry dicts.
+        # Passing equation= to ct.Reaction avoids a Cantera API bug where any
+        # species present in both reactants and products dicts is misidentified
+        # as a third-body collider, corrupting input_data with spurious
+        # 'efficiencies' and doubled stoichiometry in the equation string.
+        # Third-body reaction types (ThirdBody/Troe/Lindemann) are exempt: they
+        # require the third_body= keyword and their species do not appear on
+        # both sides, so the bug does not affect them.
+        def _ct_equation(reactants, products, reversible):
+            def fmt(d):
+                return " + ".join(
+                    f"{stoich} {name}" if stoich > 1 else name
+                    for name, stoich in d.items()
+                )
+            arrow = " <=> " if reversible else " => "
+            return fmt(reactants) + arrow + fmt(products)
+
+        ct_equation = _ct_equation(ct_reactants, ct_products, self.reversible)
+
         # Create the Cantera reaction object,
         # with the correct type of kinetics object
         # but don't actually set its kinetics (we do that at the end)
         if isinstance(self.kinetics, Arrhenius):
             # Create an Elementary Reaction
             if isinstance(self.kinetics, SurfaceArrhenius):  # SurfaceArrhenius inherits from Arrhenius
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.InterfaceArrheniusRate())
+                ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.InterfaceArrheniusRate())
             else:
-                ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
+                ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.ArrheniusRate())
         elif isinstance(self.kinetics, MultiArrhenius):
             # Return a list of elementary reactions which are duplicates
-            ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ArrheniusRate())
+            ct_reaction = [ct.Reaction(equation=ct_equation, rate=ct.ArrheniusRate())
                             for arr in self.kinetics.arrhenius]
 
         elif isinstance(self.kinetics, PDepArrhenius):
-            ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
+            ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.PlogRate())
 
         elif isinstance(self.kinetics, MultiPDepArrhenius):
-            ct_reaction = [ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.PlogRate())
+            ct_reaction = [ct.Reaction(equation=ct_equation, rate=ct.PlogRate())
                             for arr in self.kinetics.arrhenius]
 
         elif isinstance(self.kinetics, Chebyshev):
-            ct_reaction = ct.Reaction(reactants=ct_reactants, products=ct_products, rate=ct.ChebyshevRate())
+            ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.ChebyshevRate())
 
         elif isinstance(self.kinetics, ThirdBody):
-            if ct_collider is not None:
-                ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products, third_body=ct_collider)
+            if ct_collider:
+                ct_reaction = ct.Reaction(reactants=ct_reactants,
+                                          products=ct_products,
+                                          third_body=ct_collider,
+                                          rate=ct.ArrheniusRate(),
+                                          )
             else:
-                ct_reaction = ct.ThreeBodyReaction(reactants=ct_reactants, products=ct_products)
+                ct_reaction = ct.Reaction(reactants=ct_reactants,
+                                          products=ct_products,
+                                          third_body="M",
+                                          rate=ct.ArrheniusRate(),
+                                          )
 
         elif isinstance(self.kinetics, Troe):
-            if ct_collider is not None:
-                ct_reaction = ct.FalloffReaction(
+            if ct_collider:
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
-                    tbody=ct_collider,
+                    third_body=ct_collider,
                     rate=ct.TroeRate()
                 )
             else:
-                ct_reaction = ct.FalloffReaction(
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
+                    third_body="M",
                     rate=ct.TroeRate()
                 )
 
         elif isinstance(self.kinetics, Lindemann):
-            if ct_collider is not None:
-                ct_reaction = ct.FalloffReaction(
+            if ct_collider:
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
-                    tbody=ct_collider,
+                    third_body=ct_collider,
                     rate=ct.LindemannRate()
                 )
             else:
-                ct_reaction = ct.FalloffReaction(
+                ct_reaction = ct.Reaction(
                     reactants=ct_reactants,
                     products=ct_products,
+                    third_body="M",
                     rate=ct.LindemannRate()
                 )
 
         elif isinstance(self.kinetics, SurfaceArrhenius):
-            ct_reaction = ct.InterfaceReaction(
-                reactants=ct_reactants,
-                products=ct_products,
-                rate=ct.InterfaceArrheniusRate()
-            )
+            ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.InterfaceArrheniusRate())
 
         elif isinstance(self.kinetics, StickingCoefficient):
-            ct_reaction = ct.Reaction(
-                reactants=ct_reactants,
-                products=ct_products,
-                rate=ct.StickingArrheniusRate()
-            )
+            ct_reaction = ct.Reaction(equation=ct_equation, rate=ct.StickingArrheniusRate())
 
         else:
             raise NotImplementedError(f"Unable to set cantera kinetics for {self.kinetics}")
@@ -415,9 +436,20 @@ class Reaction:
         # Now we set the kinetics.
         self.kinetics.set_cantera_kinetics(ct_reaction, species_list)
 
+        # Coverage dependencies are not handled by set_cantera_kinetics; set them here.
+        # Cantera's coverage_dependencies E is in J/kmol; RMG's value_si is J/mol.
+        if hasattr(self.kinetics, 'coverage_dependence') and self.kinetics.coverage_dependence:
+            cov_deps = {}
+            for sp, params in self.kinetics.coverage_dependence.items():
+                sp_label = sp.to_chemkin() if use_chemkin_identifier else sp.label
+                cov_deps[sp_label] = {
+                    'a': params['a'].value_si,
+                    'm': params['m'].value_si,
+                    'E': params['E'].value_si * 1000,  # J/mol → J/kmol
+                }
+            ct_reaction.rate.coverage_dependencies = cov_deps
+
         return ct_reaction
-
-
 
     def get_url(self):
         """
@@ -1439,7 +1471,7 @@ class Reaction:
         from rmgpy.molecule.element import element_list
         from rmgpy.molecule.fragment import CuttingLabel, Fragment
 
-        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Graph, atom=Vertex, element=Element,
+        cython.declare(reactant_elements=dict, product_elements=dict, molecule=Molecule, atom=Atom, element=Element,
                        reactants_net_charge=cython.int, products_net_charge=cython.int)
 
         reactant_elements = {}

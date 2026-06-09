@@ -2,7 +2,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -714,7 +714,8 @@ cdef class ReactionSystem(DASx):
         if sensitivity:
             time_array = []
             norm_sens_array = [[] for spec in self.sensitive_species]
-            RTP = constants.R * self.T.value_si / self.P.value_si
+            if not self.constant_volume:
+                RTP = constants.R * self.T.value_si / self.P.value_si
             # identify sensitive species indices
             sens_species_indices = np.array([species_index[spec] for spec in self.sensitive_species],
                                                int)  # index within core_species list of the sensitive species

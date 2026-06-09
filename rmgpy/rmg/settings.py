@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -139,3 +139,41 @@ class SimulatorSettings(object):
         self.rtol = rtol
         self.sens_atol = sens_atol
         self.sens_rtol = sens_rtol
+
+
+class WriterConfig:
+    """
+    Configuration for a single output-format writer.
+
+    Attributes
+    ----------
+    save_interval : int
+        How often to write output.  Positive N = every N iterations (0-indexed
+        iteration numbers, so iteration 0 is always included).  -1 = end of run
+        only.  0 = disabled entirely.
+    save_edge : bool or None
+        Per-writer override for saving edge species.  None means fall back to
+        the global ``rmg.save_edge_species``.
+    """
+
+    def __init__(self, save_interval=1, save_edge=None):
+        self.save_interval = save_interval
+        self.save_edge = save_edge
+        self._last_write = -1
+
+    @property
+    def enabled(self):
+        return self.save_interval != 0
+
+    def should_write(self, iteration_num, is_final):
+        """Return True if the writer should produce output right now."""
+        if not self.enabled:
+            return False
+        if self.save_interval == -1:
+            return is_final
+        if is_final:
+            return self._last_write != iteration_num
+        result = (iteration_num % self.save_interval == 0)
+        if result:
+            self._last_write = iteration_num
+        return result

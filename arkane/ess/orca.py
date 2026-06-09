@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -116,7 +116,7 @@ class OrcaLog(ESSAdapter):
         for (_, _, files) in os.walk(os.path.dirname(self.path)):
             for file_ in files:
                 if file_.endswith('.hess'):
-                    hess_files.append(file_)
+                    hess_files.append(os.path.join(os.path.dirname(self.path), file_))
             break
         if len(hess_files) == 1:
             hess_file = hess_files[0]

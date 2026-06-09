@@ -21,7 +21,7 @@ jobs:
     steps:
       - run: echo 'The triggering workflow passed'
       - name: 'Download regression_summary artifact'
-        uses: actions/github-script@v6
+        uses: actions/github-script@v9
         with:
           script: |
             let allArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
@@ -51,10 +51,10 @@ jobs:
           sed -i '1d' summary.txt
 
       - name: Write summary to pull request as a comment
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@v3
         with:
-          filePath: summary.txt
-          pr_number: ${{ env.PR_NUMBER }}
+          file-path: summary.txt
+          pr-number: ${{ env.PR_NUMBER }}
 
       - name: Report the github.event.workflow_run as json
         if: ${{ failure() }}

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -102,9 +102,12 @@ def ess_factory(fullpath: str,
                 elif 'terachem' in line:
                     ess_name = 'TeraChemLog'
                     break
+                elif 'x t b' in line or 'xtb version' in line:
+                    ess_name = 'XTBLog'
+                    break
                 line = f.readline().lower()
     if ess_name is None:
         raise InputError(f'The file at {fullpath} could not be identified as a '
-                         f'Gaussian, Molpro, Orca, Psi4, QChem, or TeraChem log file.')
+                         f'Gaussian, Molpro, Orca, Psi4, QChem, TeraChem, or xTB log file.')
 
     return _registered_ess_adapters[ess_name](path=fullpath, check_for_errors=check_for_errors, scratch_directory=scratch_directory)

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -1093,7 +1093,7 @@ def to_adjacency_list(atoms, multiplicity, metal='', facet='', label=None, group
                 # numbers if doesn't work
                 try:
                     adjlist += bond.get_order_str()
-                except ValueError:
+                except (ValueError, TypeError):
                     adjlist += str(bond.get_order_num())
             adjlist += '}'
 

@@ -1,4 +1,4 @@
-SITE   SDEN/2.9430E-09/ ! mol/cm^2
+SITE/SURF0/   SDEN/2.9430E-09/ ! mol/cm^2
     X(1)                ! X(1)
     H*(10)              ! H*(10)
     O*(11)              ! O*(11)
@@ -20,7 +20,7 @@ END
 
 
 THERM ALL
-    300.000  1000.000  5000.000
+   300.000  1000.000  5000.000
 
 ! Thermo library: surfaceThermoPt111 Binding energy corrected by LSR () from Pt111
 X(1)                    X   1               G   100.000  5000.000 1554.81      1

@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -1317,14 +1317,16 @@ $(document).ready(function() {
     f.close()
 
 
-def save_output(rmg):
+def save_output(rmg, save_edge=None):
     """
     Save the current reaction model to a pretty HTML file.
     """
+    if save_edge is None:
+        save_edge = rmg.save_edge_species
     logging.info('Saving current model core to HTML file...')
     save_output_html(os.path.join(rmg.output_directory, 'output.html'), rmg.reaction_model, 'core')
 
-    if rmg.save_edge_species:
+    if save_edge:
         logging.info('Saving current model edge to HTML file...')
         save_output_html(os.path.join(rmg.output_directory, 'output_edge.html'), rmg.reaction_model, 'edge')
 
@@ -1351,9 +1353,14 @@ class OutputHTMLWriter(object):
 
     """
 
-    def __init__(self, output_directory=''):
+    def __init__(self, output_directory='', config=None):
         super(OutputHTMLWriter, self).__init__()
+        self.config = config
         make_output_subdirectory(output_directory, 'species')
 
     def update(self, rmg):
-        save_output(rmg)
+        if self.config is not None and not self.config.should_write(
+                rmg.reaction_model.iteration_num, rmg.is_final_save):
+            return
+        save_edge = self.config.save_edge if (self.config and self.config.save_edge is not None) else rmg.save_edge_species
+        save_output(rmg, save_edge=save_edge)

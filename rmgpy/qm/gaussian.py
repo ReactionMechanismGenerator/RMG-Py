@@ -4,7 +4,7 @@
 #                                                                             #
 # RMG - Reaction Mechanism Generator                                          #
 #                                                                             #
-# Copyright (c) 2002-2023 Prof. William H. Green (whgreen@mit.edu),           #
+# Copyright (c) 2002-2026 Prof. William H. Green (whgreen@mit.edu),           #
 # Prof. Richard H. West (r.west@neu.edu) and the RMG Team (rmg_dev@mit.edu)   #
 #                                                                             #
 # Permission is hereby granted, free of charge, to any person obtaining a     #
@@ -27,12 +27,12 @@
 #                                                                             #
 ###############################################################################
 
-import distutils.spawn
 import itertools
 import logging
 import os
 import re
 from subprocess import Popen
+import shutil
 
 import cclib
 
@@ -55,7 +55,7 @@ class Gaussian:
 
     for exe in executablesToTry:
         try:
-            executable_path = distutils.spawn.find_executable(exe)
+            executable_path = shutil.which(exe)
         except:
             executable_path = None
         if executable_path is not None:
