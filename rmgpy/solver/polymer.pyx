@@ -71,6 +71,15 @@ SMALL_EPS = 1e-30
 LN_EXP_OVERFLOW_GUARD = 700.0
 TAIL_CONC_MIN = 1e-9  # Minimum concentration (mol/m^3) to actuate handshake
 
+# Pool moment-flux archetypes. Mirror of rmgpy.polymer.PolymerFluxArchetype
+# (not imported to avoid a solver->polymer module cycle); equality is pinned
+# by test_flux_archetype_constants_match_enum.
+FLUX_NONE = 0
+FLUX_SAME_POOL = 1
+FLUX_MIGRATION = 2
+FLUX_SCISSION_FRAGMENT = 3
+FLUX_UNRESOLVED = 4
+
 
 # ======================================================================================
 # DATA CONFIGURATION
@@ -423,6 +432,16 @@ class HybridPolymerSystem(ReactionSystem):
         for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
             if getattr(rxn, "is_end_group_reaction", False):
                 self.is_end_group_reaction[i] = 1
+
+        # Per-reaction pool moment-flux archetype (spec 2026-06-09). Same
+        # chain(core, edge) order as is_end_group_reaction so indices match
+        # r_idx in the residual.
+        self.reaction_flux_archetype = np.zeros(n_rxn, dtype=np.int8)
+        self.reaction_src_pool = np.full(n_rxn, -1, dtype=np.int32)
+        self.reaction_dst_pool = np.full(n_rxn, -1, dtype=np.int32)
+        for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
+            self.reaction_flux_archetype[i] = int(getattr(rxn, "polymer_flux_archetype", 0))
+
         if n_core <= 0:
             raise ValueError(f"Solver received an empty core species list (n_core={n_core}).")
 
@@ -499,6 +518,44 @@ class HybridPolymerSystem(ReactionSystem):
                     self.pool_mu1_indices[pool_i] = cfg_idx
                 else:
                     print(f"WARNING: Could not locate mu1 species for pool {pool.label}. Polymer chemistry will be inert.")
+
+        # Resolve per-reaction source/target pools from species indices (no
+        # label matching), and remap unstamped proxy-touching reactions
+        # (archetype NONE, e.g. unpickled) to UNRESOLVED so legacy mu1 flux
+        # applies instead of silently dropping pool moment flux.
+        ir_arr = self.reactant_indices
+        ip_arr = self.product_indices
+        n_unstamped = 0
+        for i in range(n_rxn):
+            src = -1
+            for slot in range(3):
+                ridx = ir_arr[i, slot]
+                if ridx != -1 and ridx < n_core and self.species_to_pool_indices[ridx] != -1:
+                    src = self.species_to_pool_indices[ridx]
+                    break
+            dst = -1
+            for slot in range(3):
+                pidx = ip_arr[i, slot]
+                if pidx != -1 and pidx < n_core:
+                    pool_j = self.species_to_pool_indices[pidx]
+                    if pool_j != -1:
+                        if pool_j != src:
+                            dst = pool_j  # prefer the cross-pool product
+                            break
+                        # pool_j == src here: keep the same-pool fold-back only
+                        # as a fallback while no cross-pool product was found.
+                        if dst == -1:
+                            dst = pool_j
+            self.reaction_src_pool[i] = src
+            self.reaction_dst_pool[i] = dst
+            if self.reaction_flux_archetype[i] == FLUX_NONE and (src != -1 or dst != -1):
+                self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
+                n_unstamped += 1
+        if n_unstamped:
+            logging.warning(
+                "%d proxy-touching reactions arrived without a polymer_flux_archetype "
+                "stamp; applying legacy mu1-only pool moment flux for them.",
+                n_unstamped)
 
         # Enforce the moment-isolation invariant and pool/mass-transfer index
         # sanity now that gas_species_mask and the reaction index tables are

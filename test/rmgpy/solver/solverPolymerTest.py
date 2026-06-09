@@ -534,6 +534,60 @@ class TestHybridPolymerReactor:
         warnings = [r for r in caplog.records if "realizable cone" in r.getMessage()]
         assert len(warnings) == 1, f"expected exactly one realizability warning, got {len(warnings)}"
 
+    def test_flux_archetype_constants_match_enum(self):
+        """The solver's mirror constants must equal PolymerFluxArchetype."""
+        from rmgpy.polymer import PolymerFluxArchetype
+        import rmgpy.solver.polymer as sp
+        assert sp.FLUX_NONE == int(PolymerFluxArchetype.NONE) == 0
+        assert sp.FLUX_SAME_POOL == int(PolymerFluxArchetype.SAME_POOL) == 1
+        assert sp.FLUX_MIGRATION == int(PolymerFluxArchetype.MIGRATION) == 2
+        assert sp.FLUX_SCISSION_FRAGMENT == int(PolymerFluxArchetype.SCISSION_FRAGMENT) == 3
+        assert sp.FLUX_UNRESOLVED == int(PolymerFluxArchetype.UNRESOLVED) == 4
+
+    def test_unstamped_proxy_reaction_remaps_to_unresolved(self):
+        """
+        A proxy-touching reaction arriving with the default archetype 0 (NONE)
+        — e.g. restored from a pickle, which does not serialize the stamp —
+        must be remapped to UNRESOLVED at initialize_model so the solver
+        applies legacy mu1 flux instead of silently dropping pool moment flux.
+        Pure-gas reactions must stay NONE.
+        """
+        Proxy = _spc("CCCC", "poly")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        A = _spc("C", "A")
+        B = _spc("[CH3]", "B")
+
+        core_species = [Proxy, Mu0, Mu1, Mu2, A, B]
+        gas_species_mask = np.array([False, False, False, False, True, True], dtype=bool)
+
+        kin = Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K"))
+        proxy_rxn = Reaction(reactants=[Proxy], products=[B], kinetics=kin, reversible=False)
+        gas_rxn = Reaction(reactants=[A], products=[B], kinetics=kin, reversible=False)
+        assert proxy_rxn.polymer_flux_archetype == 0  # unstamped
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={A: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=gas_species_mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)}, termination=[],
+        )
+        rs.initialize_model(core_species, [proxy_rxn, gas_rxn], [], [])
+
+        import rmgpy.solver.polymer as sp
+        assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED
+        assert rs.reaction_src_pool[0] == 0
+        assert rs.reaction_dst_pool[0] == -1        # gas-only products
+        assert rs.reaction_flux_archetype[1] == sp.FLUX_NONE  # pure-gas stays NONE
+        assert rs.reaction_src_pool[1] == -1
+        assert rs.reaction_dst_pool[1] == -1
+
     def test_validate_configuration_rejects_moment_in_stoichiometry(self):
         """
         validate_configuration should fail if a moment index appears in reaction stoichiometry.
