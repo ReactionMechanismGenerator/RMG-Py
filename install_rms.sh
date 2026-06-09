@@ -114,7 +114,7 @@ export JULIA_PYTHONCALL_EXE="$CONDA_PREFIX/bin/python"
 export PYTHON_JULIAPKG_EXE="$(which julia)"
 export PYTHON_JULIAPKG_PROJECT="$CONDA_PREFIX/julia_env"
 
-conda install -y conda-forge::pyjuliacall
+conda install -y 'conda-forge::pyjuliacall<0.9.35'
 
 echo "Environment variables referencing JULIA:"
 env | grep JULIA
