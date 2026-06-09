@@ -833,3 +833,32 @@ class TestHybridPolymerReactor:
 
         assert abs(y0_mu0 - 10.0) < 1e-9
         assert abs(y0_mu1 - 100.0) < 1e-9
+
+    def test_edge_reaction_fluxes_are_diagnostic_only(self):
+        """
+        Edge reactions (all-core reactants, edge product) must not perturb the
+        integrated core state: dn_dt and consumption/production stay zero, while
+        edge_reaction_rates / edge_species_rates carry the diagnostic flux.
+        Matches simple.pyx semantics (core ODE = core reactions only).
+        """
+        A = _spc("C", "A")        # core gas reactant
+        E = _spc("[CH3]", "E")    # edge product
+
+        kin = Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K"))
+        edge_rxn = Reaction(reactants=[A], products=[E], kinetics=kin, reversible=False)
+
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={A: 1.0}, V_poly=1.0,
+            polymer_pools=[], mass_transfer=[],
+            gas_species_mask=np.array([True], dtype=bool), constant_gas_volume=False,
+            termination=[],
+        )
+        rs.initialize_model([A], [], [E], [edge_rxn])
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        assert dn_dt[0] == 0.0                          # A untouched by edge rxn
+        assert rs.core_species_consumption_rates[0] == 0.0
+        assert rs.core_species_production_rates[0] == 0.0
+        assert rs.edge_reaction_rates[0] > 0.0          # diagnostics still flow
+        assert rs.edge_species_rates[0] > 0.0

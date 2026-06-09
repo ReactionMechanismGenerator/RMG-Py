@@ -996,25 +996,30 @@ class HybridPolymerSystem(ReactionSystem):
             else:
                 self.edge_reaction_rates[r_idx - n_rxn] = rate
 
-            # 3. Apply Fluxes to Reactants
+            core_rxn = r_idx < n_rxn
+
+            # 3. Apply Fluxes to Reactants (core reactions only -- edge
+            #    reactions are diagnostic-only, matching simple.pyx)
             if self.is_pool_proxy[r0]:
-                dn_dt[self.polymer_pools[p0_pool_idx].mu_indices[1]] -= r_mol_s
                 proxy_activity[r0] += abs_flux
-                self.core_species_consumption_rates[r0] += rf
-                self.core_species_production_rates[r0] += rr
-            else:
+                if core_rxn:
+                    dn_dt[self.polymer_pools[p0_pool_idx].mu_indices[1]] -= r_mol_s
+                    self.core_species_consumption_rates[r0] += rf
+                    self.core_species_production_rates[r0] += rr
+            elif core_rxn:
                 dn_dt[r0] -= r_mol_s
 
             if r1 != -1:
                 if self.is_pool_proxy[r1]:
-                    dn_dt[self.polymer_pools[p1_pool_idx].mu_indices[1]] -= r_mol_s
                     proxy_activity[r1] += abs_flux
-                    self.core_species_consumption_rates[r1] += rf
-                    self.core_species_production_rates[r1] += rr
-                else:
+                    if core_rxn:
+                        dn_dt[self.polymer_pools[p1_pool_idx].mu_indices[1]] -= r_mol_s
+                        self.core_species_consumption_rates[r1] += rf
+                        self.core_species_production_rates[r1] += rr
+                elif core_rxn:
                     dn_dt[r1] -= r_mol_s
 
-            if r2 != -1:
+            if r2 != -1 and core_rxn:
                 # if you ever allow polymer in r2, mirror the same logic; otherwise keep as-is
                 dn_dt[r2] -= r_mol_s
 
@@ -1026,12 +1031,13 @@ class HybridPolymerSystem(ReactionSystem):
 
                 if p_idx_tmp < n_core:
                     if self.is_pool_proxy[p_idx_tmp]:
-                        pool_idx = self.species_to_pool_indices[p_idx_tmp]
-                        dn_dt[self.polymer_pools[pool_idx].mu_indices[1]] += r_mol_s
                         proxy_activity[p_idx_tmp] += abs_flux
-                        self.core_species_production_rates[p_idx_tmp] += rf
-                        self.core_species_consumption_rates[p_idx_tmp] += rr
-                    else:
+                        if core_rxn:
+                            pool_idx = self.species_to_pool_indices[p_idx_tmp]
+                            dn_dt[self.polymer_pools[pool_idx].mu_indices[1]] += r_mol_s
+                            self.core_species_production_rates[p_idx_tmp] += rf
+                            self.core_species_consumption_rates[p_idx_tmp] += rr
+                    elif core_rxn:
                         # feature polymer species (e.g., PS_rad, scission oligomer, etc.) stays explicit
                         dn_dt[p_idx_tmp] += r_mol_s
                 else:
