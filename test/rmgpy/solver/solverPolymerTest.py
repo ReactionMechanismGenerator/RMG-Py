@@ -1132,3 +1132,135 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[2], -r * mu2a / mu1a)         # mu1 applied
         assert dn_dt[3] == 0.0                                # mu2 skipped
         assert dn_dt[7] == 0.0
+
+    def test_scission_monodisperse_limit_closed_form(self):
+        """
+        Monodisperse pool (PDI=1, mu_j = N*k^j): the mu3 closure is exact
+        (mu3 = N*k^3), so SCISSION_FRAGMENT has closed-form derivatives:
+        parent (0, -r*k/2, -r*(2/3)*k^2), daughter (+r, +r*k/2, +r*k^2/3).
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 3
+        N, k = 2.0, 5.0
+        rs = _two_pool_rs(rxn, core, mask, (N, N * k, N * k * k), (0.1, 0.2, 0.5))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * (N * k)                                  # site-scaled by mu1
+
+        assert np.isclose(dn_dt[1], 0.0, atol=1e-14)
+        assert np.isclose(dn_dt[2], -r * k / 2.0)
+        assert np.isclose(dn_dt[3], -r * (2.0 / 3.0) * k * k)
+        assert np.isclose(dn_dt[5], +r)
+        assert np.isclose(dn_dt[6], +r * k / 2.0)
+        assert np.isclose(dn_dt[7], +r * k * k / 3.0)
+
+    def test_apportionment_trajectory_conserves_mu1_and_stays_realizable(self):
+        """
+        Forward-Euler trajectory with a SCISSION_FRAGMENT reaction A -> B + G:
+        total monomer units (mu1_A + mu1_B) stay constant (the gas co-product
+        G tracks events, not units), total chain count mu0_A + mu0_B grows,
+        and both pools stay in the realizable cone (mu1 >= mu0 >= 0).
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 3
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 50.0, 3000.0), (0.0, 0.0, 0.0))
+
+        y = rs.y.copy()
+        mu1_total0 = y[2] + y[6]
+        mu0_total0 = y[1] + y[5]
+        # Step sizing: parent mu1 drains at ~kf*mu2/2 = 3000/s initially, so
+        # keep t_total = 2e-3 s (~12% of parent mu1) to stay far from the
+        # depletion overshoot regime that forward Euler handles poorly.
+        dt = 1e-5
+        for _ in range(200):
+            dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+            assert np.all(np.isfinite(dn_dt))
+            y = y + dt * dn_dt
+            for i0, i1 in ((1, 2), (5, 6)):
+                assert y[i1] >= -1e-9                  # mu1 >= 0
+                assert y[i1] - y[i0] >= -1e-6          # mu1 >= mu0 (cone)
+        assert np.isclose(y[2] + y[6], mu1_total0, rtol=1e-9)   # units conserved
+        assert y[1] + y[5] > mu0_total0                          # chains created
+
+    def test_scission_mu2_overdrain_stays_finite_and_warns(self, caplog):
+        """
+        A high-PDI parent makes the closure-estimated mu3 huge; the resulting
+        parent mu2 drain can overshoot in an explicit step. The residual must
+        stay finite when evaluated at the resulting negative-mu2 state (reads
+        are max(0,.)-clamped), and debug_check_realizability must log the cone
+        violation rather than raise.
+        """
+        import logging as _logging
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 3
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 1000.0), (0.1, 0.2, 0.5))
+        rs.debug_check_realizability = True
+
+        y = rs.y.copy()
+        dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+        assert np.all(np.isfinite(dn_dt))
+        # Overshoot mu2 negative with one huge explicit step, then re-evaluate.
+        y2 = y + 1e3 * dn_dt
+        assert y2[3] < 0.0, "test setup: expected a mu2 overshoot"
+        with caplog.at_level(_logging.WARNING):
+            dn_dt2 = rs.residual(0.0, y2, np.zeros_like(y2))[0]
+        assert np.all(np.isfinite(dn_dt2))
+        assert any("realizable cone" in rec.message for rec in caplog.records)
+
+    def test_scission_net_reverse_guard_on_empty_daughter(self):
+        """
+        SCISSION_FRAGMENT with net-reverse flux (r < 0) depletes the DAUGHTER;
+        with an empty daughter the dispatch must skip entirely (no negative
+        moments manufactured) and stay finite.
+
+        Net-reverse is achieved by zeroing kf[0] and setting kb[0] while
+        injecting G moles (y[8]=1.0) so that rr = kb*_C(B)*_C(G)*site > 0.
+        With no G present the gas _C(G)=0 and rr=0 — the G injection is the
+        minimal change needed to reach the r<0 branch. Note _KIN builds the
+        reaction with reversible=False (so initialization leaves kb=0); the
+        kb array is patched directly on the solver to bypass that without
+        needing thermo for Keq.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 3
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (0.0, 0.0, 0.0))
+        # Force net-reverse: zero forward (kf) and inject a reverse rate (kb).
+        rs.kf[0] = 0.0
+        rs.kb[0] = 0.6   # arbitrary nonzero -- only the sign of the net rate matters
+        # Inject G moles so _C(G) = n_G/V_gas > 0 and rr > 0.
+        y = rs.y.copy()
+        y[8] = 1.0
+        # Verify net-reverse before the main assertion.
+        dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+        assert np.all(np.isfinite(dn_dt))
+        assert np.allclose(dn_dt[1:8], 0.0, atol=1e-14)   # all pool moments untouched
+
+    def test_scission_mu3_overflow_skips_mu2_components(self):
+        """
+        The SCISSION_FRAGMENT branch independently guards its mu2 components
+        on mu3 finiteness (the migration branch has its own gate inside
+        _chain_bundle): with a mu2 huge enough to overflow the closure, the
+        mu0/mu1 scission terms still apply and BOTH mu2 components are
+        skipped.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 3
+        mu0a, mu1a, mu2a = 1.0, 5.0, 1.0e120
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (0.1, 0.2, 0.5))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * mu1a
+        e_n = mu2a / mu1a
+        assert np.all(np.isfinite(dn_dt))
+        assert np.isclose(dn_dt[2], -r * e_n / 2.0)   # parent mu1 applied
+        assert np.isclose(dn_dt[5], +r)               # daughter mu0 applied
+        assert np.isclose(dn_dt[6], +r * e_n / 2.0)   # daughter mu1 applied
+        assert dn_dt[3] == 0.0                        # parent mu2 skipped
+        assert dn_dt[7] == 0.0                        # daughter mu2 skipped
