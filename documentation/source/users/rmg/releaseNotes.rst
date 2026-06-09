@@ -10,28 +10,28 @@ Date: June 10, 2026
 
 The below list is a summary. For a complete list of all changes, see the `Official RMG-Py Release Page <https://github.com/ReactionMechanismGenerator/RMG-Py/compare/3.3.0...4.0.0>`_.
 
-- Software Improvements
-    - Upgraded core dependencies to Cantera 3 and Python 3.11/updated ecosystem
-    - Optimizations to Cython declarations and molecule module structures
-    - Incremental Cython builds restored in the Makefile for faster developer compilation
-    - Jupyter Notebooks updated to interface with Reaction Mechanism Simulator (RMS) using `juliacall`
-    - Enhanced CI pipelines with updated macOS runner images, Node.js 24 actions, Miniforge
-
-- Bug Fixes
-    - Improved RDKit `GetSSSR` non-determinism
-    - Fixed duplicate reactions from identical templates being erroneously added to mechanisms
-    - Fixed error handling for pressure-dependent reaction deep-copies and $E_0$ energy corrections
-    - Corrected constant-species index mapping in `SimpleReactor`
-    - Removed deprecated `imp.load_source` calls and eliminated unreachable code segments
-
 - New Features
     - Introduced an automated database selection feature
-    - Added a new YAML file writer
     - Extended uncertainty analysis suite to export covariance matrices, import detailed correlations from RMG libraries, and add uncertainties in quadrature
     - Added comprehensive surface sensitivity features for `SurfaceReactor`
     - Added support for coverage-dependent thermochemistry and kinetics for surface catalysis
+    - Added a new YAML file writer
     - Added an Arkane xTB Electronic Structure Software (ESS) adapter
     - Implemented a species constraint setting for specifying the maximum number of fused rings allowed
+
+- Software Improvements
+    - Upgraded core dependencies to Cantera 3 and Python 3.11/updated ecosystem
+    - Optimizations to Cython declarations and molecule module structures
+    - Jupyter Notebooks updated to interface with Reaction Mechanism Simulator (RMS) using `juliacall`
+    - Enhanced CI pipelines with updated macOS runner images, Node.js 24 actions, Miniforge
+    - Incremental Cython builds restored in the Makefile for faster developer compilation
+
+- Bug Fixes
+    - Fixed duplicate reactions from identical templates being erroneously added to mechanisms
+    - Fixed error handling for pressure-dependent reaction deep-copies and $E_0$ energy corrections
+    - Corrected constant-species index mapping in `SimpleReactor`
+    - Improved RDKit `GetSSSR` non-determinism
+    - Removed deprecated `imp.load_source` calls and eliminated unreachable code segments
 
 
 RMG-Database Version 4.0.0
@@ -41,16 +41,16 @@ Date: June 10, 2026
 The below list is a summary. For a complete list of all changes, see the `Official RMG-Database Release Page <https://github.com/ReactionMechanismGenerator/RMG-database/compare/3.3.0...4.0.0>`_.
 
 - Features
-    - Added data for electrocatalytic $\text{CO}_2$ reduction ($\text{CO}_2\text{RR}$) kinetics and adsorbates
-    - Implemented new surface nitrogen reaction families, BEP rules, and NOx chemistry for $\text{Pt}(111)$
-    - Added BEEF uncertainty covariance data support
     - Expanded datasets with a new Formic Acid library and example coverage-dependent thermo libraries
+    - Added data for electrocatalytic $\text{CO}_2$ reduction ($\text{CO}_2\text{RR}$) kinetics and adsorbates
+    - Added BEEF uncertainty covariance data support
+    - Implemented new surface nitrogen reaction families, BEP rules, and NOx chemistry for $\text{Pt}(111)$
     - Introduced a `recommended_libraries.yml` configuration file
 
 - Bugfixes
+    - Fixed incorrect entry details in the `Glarborg/C2` database
     - Fixed thermodynamic discontinuity issues found in the formic acid dataset
     - Corrected temperature minimum settings ($T_{min}$) from 300 K to 298 K in NASA polynomials for $\text{CO}_2\text{RR}$ adsorbates on $\text{Ag}(111)$
-    - Fixed incorrect entry details in the `Glarborg/C2` database
 
 RMG-Py Version 3.3.0
 ====================
