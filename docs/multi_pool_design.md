@@ -261,6 +261,31 @@ M_volatile(t) = Σ_volatiles n(spc, t) · m(spc)
 
 Invariant: `d(M_polymer + M_volatile)/dt = 0` to numerical tolerance (1e-9 for unit test, 1e-6 for integration test).
 
+### 5.1 Discrete-reaction moment apportionment (flux archetypes)
+
+Every proxy-touching reaction is stamped at generation time with a flux
+archetype (`rmgpy.polymer.PolymerFluxArchetype`, carried on
+`Reaction.polymer_flux_archetype` and resolved to solver arrays at
+`initialize_model`). The residual dispatches pool moment flux on it:
+
+| Archetype | Pool moment flux per net event rate r |
+|---|---|
+| SAME_POOL | none (fold-back is net-zero by construction) |
+| MIGRATION | whole-chain bundle (1, E[k], E[k²]) per direction: forward rf moves source-pool statistics, reverse rr moves target-pool statistics. µ1-scaled reactions pick length-biased chains (E[k]=µ2/µ1, E[k²]=µ3/µ1, guarded closure); µ0-scaled end-group reactions pick uniformly (µ1/µ0, µ2/µ0). |
+| SCISSION_FRAGMENT | complement-stays-in-parent: parent (0, −r·µ2/(2µ1), −r·(2/3)·µ3/µ1), daughter (+r, +r·µ2/(2µ1), +r·µ3/(3µ1)). Conserves µ1 exactly and adds one chain per event, independent of whether head/tail/both reactions were generated. |
+| UNRESOLVED | legacy µ1-only transfer + one-time warning. Fallback for unstamped reactions (e.g. restored from pickles) AND for stamped MIGRATION/SCISSION_FRAGMENT whose src/dst pool cannot be resolved in the solver (e.g. scission daughters registered as species before their pool exists) — demoting preserves the parent drain instead of silently zeroing it. |
+
+Edge reactions are diagnostic-only (matching `simple.pyx`): their fluxes never
+enter `dn_dt` or the consumption/production accumulators.
+
+**Input hygiene:** the phenomenological `k_scission` coexists with
+family-generated scission reactions as a chemically distinct (thermal random)
+channel. A `k_scission` fitted to bulk degradation data that already includes
+radical chemistry double-counts — specify the thermal-only rate.
+
+Full derivations and decision rationale:
+`docs/superpowers/specs/2026-06-09-proxy-moment-flux-apportionment-design.md`.
+
 ## 6. Sidecar JSON schema
 
 Path: `<output_dir>/polymer_pools.json` alongside `chem.yaml`.
