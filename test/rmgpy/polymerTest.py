@@ -759,6 +759,79 @@ PS_1
         assert is_end_group_reaction([plain]) is False
         assert is_end_group_reaction([p.copy()]) is False  # no _reacted_class set
 
+    def test_classify_reaction_flux_archetype(self):
+        """
+        classify_reaction_flux_archetype(reactants, products) drives the solver's
+        per-reaction pool moment apportionment (spec 2026-06-09):
+        SCISSION product -> SCISSION_FRAGMENT; single cross-pool polymer product
+        -> MIGRATION; fold-backs -> SAME_POOL; no polymers -> NONE; ambiguous or
+        end-initiated-scission shapes -> UNRESOLVED (legacy mu1 flux + warning).
+        """
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        gas = Molecule(smiles="CC")
+
+        # No polymer on either side -> NONE
+        assert classify_reaction_flux_archetype([gas], [gas]) == PolymerFluxArchetype.NONE
+
+        # Fold-back (same label as the reactant pool) -> SAME_POOL
+        fold = p.copy()
+        fold._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p], [fold, gas])
+                == PolymerFluxArchetype.SAME_POOL)
+
+        # Single cross-pool polymer product -> MIGRATION
+        other = p.copy()
+        other.label = "other_pool"
+        other._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p], [other, gas])
+                == PolymerFluxArchetype.MIGRATION)
+
+        # SCISSION-stamped product -> SCISSION_FRAGMENT
+        sc = p.copy()
+        sc.label = f"{p.label}_scission_head"
+        sc._reacted_class = PolymerClass.SCISSION
+        assert (classify_reaction_flux_archetype([p], [sc, gas])
+                == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+        # End-initiated scission (SCISSION + END_MOD product) -> UNRESOLVED:
+        # the uniform-cut bundle assumptions don't hold near a chain end.
+        end = p.copy()
+        end._reacted_class = PolymerClass.END_MOD
+        assert (classify_reaction_flux_archetype([p], [sc, end])
+                == PolymerFluxArchetype.UNRESOLVED)
+
+        # Two polymer products with a cross-pool member -> UNRESOLVED
+        assert (classify_reaction_flux_archetype([p], [other, fold])
+                == PolymerFluxArchetype.UNRESOLVED)
+
+        # Inter-chain (two reactant pools, each product folds back) -> SAME_POOL
+        q = p.copy()
+        q.label = "second_pool"
+        fold_q = q.copy()
+        fold_q._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p, q], [fold, fold_q])
+                == PolymerFluxArchetype.SAME_POOL)
+
+        # Cross-pool product with TWO reactant pools (ambiguous source) -> UNRESOLVED
+        assert (classify_reaction_flux_archetype([p, q], [other])
+                == PolymerFluxArchetype.UNRESOLVED)
+
+        # Polymer reactant, all-gas products -> UNRESOLVED (no flux rule)
+        assert (classify_reaction_flux_archetype([p], [gas])
+                == PolymerFluxArchetype.UNRESOLVED)
+
+        # Warn-once: UNRESOLVED causes above logged exactly one warning per
+        # distinct (reason, detail) key.
+        assert len(polymer_mod._flux_archetype_warned) == 4
+        n_before = len(polymer_mod._flux_archetype_warned)
+        classify_reaction_flux_archetype([p, q], [other])  # repeat call
+        assert len(polymer_mod._flux_archetype_warned) == n_before
+
     def test_create_reacted_copy_end_mod_folds_to_parent(self):
         """
         An END_MOD product (intact chain, terminal end-group radical-activated,

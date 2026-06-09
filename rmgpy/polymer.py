@@ -97,13 +97,14 @@ In short:
 
 import datetime
 import json
+import logging
 import os
 
 import numpy as np
 from collections import defaultdict
 from copy import deepcopy
 from dataclasses import dataclass, field
-from enum import Enum
+from enum import Enum, IntEnum
 from typing import Any, Dict, List, Mapping, Optional, Set, Tuple, Union
 
 from rmgpy.exceptions import InputError
@@ -1392,6 +1393,81 @@ def is_end_group_reaction(products) -> bool:
     """
     return any(getattr(p, '_reacted_class', None) == PolymerClass.END_MOD
                for p in products if isinstance(p, Polymer))
+
+
+class PolymerFluxArchetype(IntEnum):
+    """
+    Per-reaction pool moment-flux archetype, stamped at generation time on
+    ``Reaction.polymer_flux_archetype`` and dispatched by the polymer hybrid
+    solver's residual. See
+    docs/superpowers/specs/2026-06-09-proxy-moment-flux-apportionment-design.md.
+    """
+    NONE = 0               # no proxy involvement
+    SAME_POOL = 1          # product folds back into the reactant pool (net-zero)
+    MIGRATION = 2          # whole chain migrates to a different pool
+    SCISSION_FRAGMENT = 3  # chain cut; fragment to daughter, complement stays
+    UNRESOLVED = 4         # ambiguous/unstamped: solver applies legacy mu1 flux
+
+
+_flux_archetype_warned = set()
+
+
+def _warn_unresolved_archetype(reason: str, detail: tuple) -> None:
+    """Log each distinct UNRESOLVED-archetype cause once (not per reaction)."""
+    key = (reason, detail)
+    if key not in _flux_archetype_warned:
+        _flux_archetype_warned.add(key)
+        logging.warning(
+            "Polymer flux archetype UNRESOLVED (%s): %s -- the solver will "
+            "apply legacy mu1-only moment flux for this reaction shape.",
+            reason, detail)
+
+
+def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetype:
+    """
+    Classify a reaction's pool moment-flux archetype from its (handshaked)
+    reactant and product lists. Product Polymers carry ``_reacted_class``
+    stamped by :meth:`Polymer.create_reacted_copy`; pool identity is the
+    Polymer label (the same key the solver's ``initialize_model`` uses to
+    map species to pools).
+    """
+    reactant_pools = {r.label for r in reactants if isinstance(r, Polymer)}
+    product_polymers = [p for p in products if isinstance(p, Polymer)]
+    if not reactant_pools and not product_polymers:
+        return PolymerFluxArchetype.NONE
+
+    if any(getattr(p, '_reacted_class', None) == PolymerClass.SCISSION
+           for p in product_polymers):
+        if is_end_group_reaction(products):
+            # End-initiated scission: the SCISSION_FRAGMENT bundle assumes a
+            # length-biased chain pick and a uniform cut position; an
+            # end-group-scaled scission violates both (uniform-by-chain pick,
+            # cut near the chain end) and would overestimate daughter Mn.
+            _warn_unresolved_archetype(
+                "end-initiated scission",
+                tuple(sorted(p.label for p in product_polymers)))
+            return PolymerFluxArchetype.UNRESOLVED
+        return PolymerFluxArchetype.SCISSION_FRAGMENT
+
+    if not product_polymers:
+        # Polymer reactant but no polymer product (e.g. full conversion to
+        # gas). No flux rule exists for this shape; the solver-level phase
+        # check skips such core reactions anyway, so flag it loudly.
+        _warn_unresolved_archetype(
+            "polymer reactant with no polymer product",
+            tuple(sorted(reactant_pools)))
+        return PolymerFluxArchetype.UNRESOLVED
+
+    cross_pool = [p for p in product_polymers if p.label not in reactant_pools]
+    if not cross_pool:
+        return PolymerFluxArchetype.SAME_POOL
+    if (len(product_polymers) == 1 and len(cross_pool) == 1
+            and len(reactant_pools) == 1):
+        return PolymerFluxArchetype.MIGRATION
+    _warn_unresolved_archetype(
+        "ambiguous cross-pool shape",
+        tuple(sorted(p.label for p in product_polymers)))
+    return PolymerFluxArchetype.UNRESOLVED
 
 
 MatchMapping = Mapping[Any, Any]
