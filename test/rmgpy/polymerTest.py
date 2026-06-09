@@ -832,6 +832,30 @@ PS_1
         classify_reaction_flux_archetype([p, q], [other])  # repeat call
         assert len(polymer_mod._flux_archetype_warned) == n_before
 
+    def test_demote_flipped_polymer_archetype(self):
+        """
+        apply_kinetics_to_reaction flips reactions in place when the kinetics
+        are estimated in reverse; the stamped archetype then encodes reversed
+        parent/daughter roles. demote_flipped_polymer_archetype must reset any
+        polymer-touching reaction to UNRESOLVED (role-agnostic legacy flux)
+        and leave pure-gas reactions alone.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.rmg.model import demote_flipped_polymer_archetype
+        from rmgpy.polymer import PolymerFluxArchetype
+
+        p = self.polymer_1.copy()
+        gas = Species(molecule=[Molecule(smiles="CC")])
+
+        rxn = Reaction(reactants=[gas], products=[p],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.SCISSION_FRAGMENT))
+        demote_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+
+        gas_rxn = Reaction(reactants=[gas], products=[gas])
+        demote_flipped_polymer_archetype(gas_rxn)
+        assert gas_rxn.polymer_flux_archetype == int(PolymerFluxArchetype.NONE)
+
     def test_create_reacted_copy_end_mod_folds_to_parent(self):
         """
         An END_MOD product (intact chain, terminal end-group radical-activated,
