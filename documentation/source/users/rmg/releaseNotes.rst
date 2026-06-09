@@ -15,23 +15,28 @@ The below list is a summary. For a complete list of all changes, see the `Offici
     - Extended uncertainty analysis suite to export covariance matrices, import detailed correlations from RMG libraries, and add uncertainties in quadrature
     - Added comprehensive surface sensitivity features for `SurfaceReactor`
     - Added support for coverage-dependent thermochemistry and kinetics for surface catalysis
-    - Added a new YAML file writer
+    - Added new YAML file writers for Cantera
     - Added an Arkane xTB Electronic Structure Software (ESS) adapter
     - Implemented a species constraint setting for specifying the maximum number of fused rings allowed
-
+    - Added ability to specify core species list from an external dictionary for model initialization
+    - Added support for Van der Waals bonds in adsorbates (eg. adsorbed bidentate formate)
+    
 - Software Improvements
     - Upgraded core dependencies to Cantera 3 and Python 3.11/updated ecosystem
     - Optimizations to Cython declarations and molecule module structures
     - Jupyter Notebooks updated to interface with Reaction Mechanism Simulator (RMS) using `juliacall`
-    - Enhanced CI pipelines with updated macOS runner images, Node.js 24 actions, Miniforge
+    - Enhanced CI pipelines and improved conda building
     - Incremental Cython builds restored in the Makefile for faster developer compilation
+    - Improvements to Chemkin file I/O including isotope handling and THERM line formatting
+    - Changed Arkane orthonormalization when projecting out rotors from vibrational modes
 
 - Bug Fixes
     - Fixed duplicate reactions from identical templates being erroneously added to mechanisms
-    - Fixed error handling for pressure-dependent reaction deep-copies and $E_0$ energy corrections
+    - Fixed energy correction calculations in pressure-dependent reactions and ensured consistency of transition state $E_0$ values in Arkane output files
     - Corrected constant-species index mapping in `SimpleReactor`
     - Improved RDKit `GetSSSR` non-determinism
     - Removed deprecated `imp.load_source` calls and eliminated unreachable code segments
+    - Fixed coverage-dependent thermodynamics and kinetics in surface reactors
 
 
 RMG-Database Version 4.0.0
