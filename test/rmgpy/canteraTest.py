@@ -371,6 +371,73 @@ class TestCanteraWriter:
         assert any("dropped 1 element-unbalanced" in rec.getMessage()
                    for rec in caplog.records) # counted like a scission drop
 
+    def test_generate_cantera_data_returns_reaction_index_map(self):
+        """The optional reaction index map gives, per retained RMG reaction,
+        its entry indices in data['reactions'] (chem.yaml order); dropped
+        (unbalanced-proxy) reactions are absent from the map. Needed by the
+        polymer moments artifact (cantera.index is authoritative: the consumer
+        zeroes the multiplier at that index)."""
+        parent = self._create_dummy_species("parent", "CCC", index=1)
+        parent.is_polymer_proxy = True
+        tail = self._create_dummy_species("scission_tail", "CCCCC", index=2)
+        tail.is_polymer_proxy = True
+        h = self._create_dummy_species("H", "[H]", index=3)
+        hh = self._create_dummy_species("H2", "[H][H]", index=4)
+        r = self._create_dummy_species("R", "[CH2]O", index=5)
+        p = self._create_dummy_species("P", "C[O]", index=6)
+
+        dropped = Reaction(
+            reactants=[h, parent], products=[hh, tail],
+            kinetics=Arrhenius(A=(1e10, "cm^3/(mol*s)"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+        )
+        kept1 = Reaction(
+            reactants=[r], products=[p],
+            kinetics=Arrhenius(A=(1e10, "s^-1"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+        )
+        kept2 = Reaction(
+            reactants=[h, h], products=[hh],
+            kinetics=Arrhenius(A=(1e10, "cm^3/(mol*s)"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+        )
+
+        species = [parent, tail, h, hh, r, p]
+        reactions = [dropped, kept1, kept2]
+
+        data, index_map = generate_cantera_data(species, reactions,
+                                                return_reaction_index_map=True)
+
+        assert id(dropped) not in index_map
+        assert index_map[id(kept1)] == [0]
+        assert index_map[id(kept2)] == [1]
+        # indices really point at the right entries
+        assert "R(5)" in data["reactions"][0]["equation"]
+        assert "H2(4)" in data["reactions"][1]["equation"]
+        # default call signature unchanged
+        data_only = generate_cantera_data(species, reactions)
+        assert data_only["reactions"] == data["reactions"]
+
+    def test_reaction_index_map_multi_entry_reaction(self):
+        """A MultiArrhenius reaction expands to several YAML entries; the map
+        must list ALL of its indices (the consumer zeroes every one)."""
+        from rmgpy.kinetics import MultiArrhenius
+        r = self._create_dummy_species("R", "[CH2]O", index=5)
+        p = self._create_dummy_species("P", "C[O]", index=6)
+        multi = Reaction(
+            reactants=[r], products=[p],
+            kinetics=MultiArrhenius(arrhenius=[
+                Arrhenius(A=(1e10, "s^-1"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+                Arrhenius(A=(1e8, "s^-1"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+            ]),
+        )
+        single = Reaction(
+            reactants=[p], products=[r],
+            kinetics=Arrhenius(A=(1e10, "s^-1"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+        )
+        data, index_map = generate_cantera_data([r, p], [multi, single],
+                                                return_reaction_index_map=True)
+        assert index_map[id(multi)] == [0, 1]
+        assert index_map[id(single)] == [2]
+        assert len(data["reactions"]) == 3
+
     def test_reaction_to_dict_pdep_arrhenius(self):
         """Test Pressure-Dependent Arrhenius (PLOG) structure."""
         r = self._create_dummy_species("R", "[CH2]O", index=1)

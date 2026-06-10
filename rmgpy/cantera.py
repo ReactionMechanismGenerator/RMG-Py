@@ -178,9 +178,14 @@ def generate_cantera_data(species_list,
                           is_plasma=False,
                           site_density=None,
                           search_for_additional_elements=False,
+                          return_reaction_index_map=False,
                           ):
     """
     Converts RMG objects into a dictionary structure compatible with Cantera YAML.
+
+    If return_reaction_index_map is True, returns (data, {id(rxn): [entry indices]})
+    for reactions actually emitted into data['reactions']. The map keys are
+    transient id()s — consume the map while the Reaction objects are alive.
     """
     # --- 1. Header & Units ---
     # We output everything in SI units.
@@ -306,16 +311,17 @@ def generate_cantera_data(species_list,
     data['species'] = species_data
 
     reaction_data = list()
-    for rxn in gas_reactions:
+    reaction_index_map = {}
+    for rxn in gas_reactions + surface_reactions:
         entries = reaction_to_dict_list(rxn, species_list)
         if entries:
-            reaction_data.extend(entries)
-    for rxn in surface_reactions:
-        entries = reaction_to_dict_list(rxn, species_list)
-        if entries:
+            start = len(reaction_data)
+            reaction_index_map[id(rxn)] = list(range(start, start + len(entries)))
             reaction_data.extend(entries)
     data['reactions'] = reaction_data
 
+    if return_reaction_index_map:
+        return data, reaction_index_map
     return data
 
 
