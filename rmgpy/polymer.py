@@ -2692,8 +2692,160 @@ def write_polymer_pools_sidecar(
     return path
 
 
-def compile_polymer_reaction_entries(*args, **kwargs):
-    raise NotImplementedError  # implemented in the reaction-compiler task
+# Archetype int -> versioned term-type name (docs/polymer_moments_format.md §3).
+ARCHETYPE_TERM_NAMES = {
+    int(PolymerFluxArchetype.SAME_POOL): "same_pool/1",
+    int(PolymerFluxArchetype.MIGRATION): "migration/1",
+    int(PolymerFluxArchetype.SCISSION_FRAGMENT): "scission_fragment/1",
+    int(PolymerFluxArchetype.UNRESOLVED): "legacy_mu1/1",
+    int(PolymerFluxArchetype.DISCRETE_CHIP): "discrete_chip/1",
+}
+
+_ARRHENIUS_A_UNITS = {1: "s^-1", 2: "m^3/(mol*s)", 3: "m^6/(mol^2*s)"}
+
+
+def _resolve_reaction_pools(rxn, pool_set):
+    """Mirror the solver's src/dst pool resolution (polymer.pyx:535-556):
+    src = first reactant slot in a configured pool; dst = first cross-pool
+    product, falling back to the same-pool fold-back product."""
+    src = None
+    for s in rxn.reactants:
+        b = _species_base_label(s)
+        if b in pool_set:
+            src = b
+            break
+    dst = None
+    for s in rxn.products:
+        b = _species_base_label(s)
+        if b not in pool_set:
+            continue
+        if b != src:
+            dst = b
+            break
+        if dst is None:
+            dst = b
+    return src, dst
+
+
+def compile_polymer_reaction_entries(core_reactions, core_species,
+                                     configured_pool_labels,
+                                     cantera_index_map=None):
+    """Compile stamped proxy-touching core reactions into schema-2.0
+    ``reactions[]`` entries (docs/polymer_moments_format.md §3).
+
+    Mirrors the solver's init-time pool resolution and demotions
+    (rmgpy/solver/polymer.pyx:527-588): the artifact describes what the
+    oracle DOES, including legacy/unresolved fallbacks (design spec Q3).
+
+    Parameters
+    ----------
+    cantera_index_map : dict, optional
+        ``{id(rxn): [entry indices in chem.yaml's reactions list]}`` from
+        ``rmgpy.cantera.generate_cantera_data(..., return_reaction_index_map=True)``.
+        Reactions absent from the map are emitted with ``cantera: null``
+        (the unbalanced-proxy filter dropped them) and MUST carry kinetics.
+    """
+    from rmgpy.cantera import get_reaction_equation
+    from rmgpy.kinetics import Arrhenius as _Arrhenius
+
+    cantera_index_map = cantera_index_map or {}
+    pool_set = set(configured_pool_labels)
+    entries = []
+    dropped_counters: Dict[tuple, int] = {}
+
+    NONE_ = int(PolymerFluxArchetype.NONE)
+    MIG = int(PolymerFluxArchetype.MIGRATION)
+    SCI = int(PolymerFluxArchetype.SCISSION_FRAGMENT)
+    UNR = int(PolymerFluxArchetype.UNRESOLVED)
+    CHIP = int(PolymerFluxArchetype.DISCRETE_CHIP)
+
+    for rxn in core_reactions:
+        arch = int(getattr(rxn, "polymer_flux_archetype", 0))
+        src, dst = _resolve_reaction_pools(rxn, pool_set)
+        if arch == NONE_ and src is None and dst is None:
+            continue  # ordinary chemistry — Cantera handles it untouched
+
+        # Mirror solver demotions (polymer.pyx:557-578).
+        unresolved = False
+        if arch == NONE_:
+            arch, unresolved = UNR, True
+        elif arch == UNR:
+            unresolved = True
+        elif arch in (MIG, SCI) and (src is None or dst is None):
+            arch, unresolved = UNR, True
+        elif arch == CHIP and src is None:
+            arch, unresolved = UNR, True
+
+        equation = get_reaction_equation(rxn, core_species)
+        indices = cantera_index_map.get(id(rxn))
+        if indices:
+            if len(indices) > 1:
+                logging.warning(
+                    "Polymer artifact: reaction %s maps to %d Cantera entries; "
+                    "emitting the first index. The consumer must zero ALL "
+                    "duplicate entries (see format doc §4 step 0).",
+                    equation, len(indices))
+            cantera = {"index": int(indices[0]), "equation": equation}
+            entry_id = f"r{int(indices[0])}"
+        else:
+            cantera = None
+            family = str(getattr(rxn, "family", None)
+                         or getattr(rxn, "library", None) or "rxn")
+            key = (family, equation)
+            occurrence = dropped_counters.get(key, 0)
+            dropped_counters[key] = occurrence + 1
+            entry_id = f"d{family}:{equation}:{occurrence}"
+
+        kin = getattr(rxn, "kinetics", None)
+        # Fix 2: use exact type check so SurfaceArrhenius (and other
+        # subclasses) fall through to kinetics=None instead of emitting
+        # volumetrically wrong units via _ARRHENIUS_A_UNITS.
+        if type(kin) is _Arrhenius:
+            # Fix 1: fold T0 into A to match the T0=1 convention used by
+            # both Cantera's ArrheniusRate and the artifact consumer.
+            # Mirrors Arrhenius.to_cantera_kinetics (arrhenius.pyx:259-262):
+            #   A_folded = A.value_si / T0.value_si ** n.value_si
+            kinetics = {
+                "A": float(kin.A.value_si / (kin.T0.value_si ** kin.n.value_si)),
+                "n": float(kin.n.value_si),
+                "Ea": float(kin.Ea.value_si),
+                "units": {"A": _ARRHENIUS_A_UNITS.get(len(rxn.reactants), "SI"),
+                          "Ea": "J/mol"},
+                "reversible": bool(rxn.reversible),
+            }
+        else:
+            kinetics = None
+            # Fix 3: warn for ALL non-Arrhenius entries (retained or dropped).
+            # Retained entries still carry kinetics=null; consumers needing
+            # reversibility must treat them as reversible because chem.yaml
+            # always writes <=> even for irreversible reactions.
+            logging.warning(
+                "Polymer artifact: reaction %s has non-Arrhenius kinetics "
+                "(%s); entry carries kinetics=null (no A/n/Ea and no "
+                "reversible flag — consumers needing reversibility must "
+                "treat it as reversible, matching chem.yaml).",
+                equation, type(kin).__name__)
+
+        entry = {
+            "id": entry_id,
+            "cantera": cantera,
+            "kinetics": kinetics,
+            "reactants": [_artifact_species_label(s) for s in rxn.reactants],
+            "products": [_artifact_species_label(s) for s in rxn.products],
+            "proxy_reactants": [_artifact_species_label(s) for s in rxn.reactants
+                                if _species_base_label(s) in pool_set],
+            "proxy_products": [_artifact_species_label(s) for s in rxn.products
+                               if _species_base_label(s) in pool_set],
+            "scaling": "mu0" if getattr(rxn, "is_end_group_reaction", False) else "mu1",
+            "src_pool": src,
+            "dst_pool": dst,
+            "archetype": ARCHETYPE_TERM_NAMES[arch],
+            "unresolved": unresolved,
+        }
+        if arch == CHIP:
+            entry["params"] = {"a": int(getattr(rxn, "polymer_chip_units", 0))}
+        entries.append(entry)
+    return entries
 
 
 def build_polymer_moments_artifact(*args, **kwargs):
