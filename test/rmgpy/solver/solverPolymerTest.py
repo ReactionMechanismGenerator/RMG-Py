@@ -1686,7 +1686,6 @@ class TestIntegratedSpawnGateTripwire:
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
         return sp, rs, dn_dt
 
-    @pytest.mark.xfail(strict=True, reason="change (a) pending: gross arrays proxy-only")
     def test_numerator_half_ordinary_species_gross_is_real(self):
         """Numerator half (the regression that would have caught the
         born-dead class): the ordinary product R has a NONZERO gross entry
@@ -1729,7 +1728,6 @@ class TestIntegratedSpawnGateTripwire:
             max(0.0, prod_r) * (float(rs.y[2]) / float(rs.y[1])) * 28.0, rel=1e-12)
         assert g_r > 0.0
 
-    @pytest.mark.xfail(strict=True, reason="spawn_gate_flux_snapshot pending: Task 3 implements it with change (a)")
     def test_denominator_half_proxy_net_rerouted_gross_nonzero(self):
         """Denominator half: the canonical proxy's net dn_dt contribution is
         ~= 0 (the apportionment reroutes proxy flux to pool moments) while
@@ -1743,3 +1741,63 @@ class TestIntegratedSpawnGateTripwire:
         e_n, mw = pool_stats["A"]
         assert proxy_total == pytest.approx(gross["A"] * e_n * mw, rel=1e-12)
         assert proxy_total > 0.0
+
+
+class TestSpawnGateFluxSnapshot:
+    """spawn_gate_flux_snapshot() unit pins (spec §4.1): 3-tuple shape,
+    all-core gross coverage, engine-attributed proxy event-mass total, and
+    the E[n]*MW calibration (spec §7.6 / decision 3)."""
+
+    def test_snapshot_three_tuple_covers_all_core_species(self):
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0, 5.0, 30.0), monomer_mw_g_mol=28.0)
+
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        gross, pool_stats, proxy_total = rs.spawn_gate_flux_snapshot()
+
+        # gross: EVERY core species by label, max(0, production) — moment
+        # dummies and the untouched gas species carry explicit zeros.
+        assert set(gross.keys()) == {"A", "A_mu0", "A_mu1", "A_mu2", "R", "G"}
+        assert gross["A_mu0"] == 0.0 and gross["A_mu1"] == 0.0 and gross["A_mu2"] == 0.0
+        assert gross["G"] == 0.0
+        assert gross["R"] == pytest.approx(
+            max(0.0, float(rs.core_species_production_rates[4])), rel=1e-12)
+        assert gross["R"] > 0.0
+        assert gross["A"] > 0.0
+        # pool_stats: pool label -> (E[n], monomer MW), live E[n] = mu1/mu0.
+        assert set(pool_stats.keys()) == {"A"}
+        e_n, mw = pool_stats["A"]
+        assert e_n == pytest.approx(5.0)
+        assert mw == pytest.approx(28.0)
+        # proxy_event_mass_total: engine-attributed CANONICAL PROXIES only
+        # (species_to_pool_indices + is_pool_proxy); attributing the
+        # ordinary R is the python ledger's job (spec §4.1).
+        assert proxy_total == pytest.approx(gross["A"] * 5.0 * 28.0, rel=1e-12)
+
+    def test_snapshot_e_n_calibration_dominates_fragment_mw(self):
+        """Spec §7.6 (decision 3): one mole of representative production is
+        one mole of EVENTS; the mass entering the motif class per event is a
+        chain's worth (E[n]*monomer_MW), not the representative fragment's
+        own MW. With parent-pool E[n]=60 and a ~3-monomer-sized
+        representative (hexane vs C2H4 repeat unit) the calibrated
+        event-mass must read ~20x a fragment-MW accounting."""
+        sp, core, mask = _one_pool_gate_species(rep_smiles="CCCCCC")
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        # E[n] = 60; realizable: mu0*mu2 = 3700 >= mu1^2 = 3600.
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0, 60.0, 3700.0), monomer_mw_g_mol=28.0)
+
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        gross, pool_stats, _ = rs.spawn_gate_flux_snapshot()
+
+        prod = float(rs.core_species_production_rates[4])
+        assert prod > 0.0
+        e_n, mw = pool_stats["A"]
+        g_r = gross["R"] * e_n * mw  # the gate's representative g_i (spec §3)
+        assert g_r == pytest.approx(prod * 60.0 * 28.0, rel=1e-12)
+        rep_mw_g_mol = sp["R"].molecule[0].get_molecular_weight() * 1000.0  # ~86.18
+        ratio = g_r / (prod * rep_mw_g_mol)
+        assert ratio == pytest.approx(60.0 * 28.0 / rep_mw_g_mol, rel=1e-12)
+        assert 15.0 < ratio < 25.0, "E[n]-calibrated mass must read ~20x the fragment-MW accounting"

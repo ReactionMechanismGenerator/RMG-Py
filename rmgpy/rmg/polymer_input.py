@@ -804,12 +804,25 @@ class PolymerPool(object):
         # 3. Resolve Monomer Index
         monomer_idx = spc_map.get(self.monomer)
 
+        # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot
+        #    (spec 2026-06-10 §3, same idiom as Polymer.monomer_mw_g_mol).
+        #    Best-effort: 0.0 (-> the gate defers) when the monomer Species
+        #    carries no resolvable structure.
+        monomer_mw_g_mol = 0.0
+        mol_list = getattr(self.monomer, "molecule", None)
+        if mol_list:
+            try:
+                monomer_mw_g_mol = mol_list[0].get_molecular_weight() * 1000.0
+            except Exception:
+                monomer_mw_g_mol = 0.0
+
         return PolymerPoolConfig(
             label=self.label,
             xs=self.xs,
             explicit_dp_to_species_index=explicit_indices,
             mu_indices=mu_idxs,
             monomer_poly_index=monomer_idx,
+            monomer_mw_g_mol=monomer_mw_g_mol,
             k_scission=self.k_scission,
             k_unzip=self.k_unzip
         )

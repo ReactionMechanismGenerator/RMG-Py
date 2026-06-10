@@ -98,6 +98,13 @@ class PolymerPoolConfig:
     mu_indices: Tuple[int, int, int]
     monomer_poly_index: Optional[int] = None
 
+    # Monomer (repeat-unit) molecular weight [g/mol]. Consumed by
+    # spawn_gate_flux_snapshot (E[n]*MW event-mass calibration, spec
+    # 2026-06-10-mass-flux-spawn-gate-design.md §3). Default 0.0 zeroes the
+    # pool's snapshot contribution (honest degradation: the spawn gate
+    # defers; nothing is fabricated).
+    monomer_mw_g_mol: float = 0.0
+
     # Kinetics Parameters
     k_scission: float = 0.0
 
@@ -802,6 +809,80 @@ class HybridPolymerSystem(ReactionSystem):
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
 
+    def spawn_gate_flux_snapshot(self):
+        """Engine half of the mass-flux spawn gate.
+
+        Spec: docs/superpowers/specs/2026-06-10-mass-flux-spawn-gate-design.md
+        §3/§4.1 (AMENDED). The engine cannot attribute representatives (it
+        has no ledger), so the split is: the engine reads arrays, the
+        python-side gate does ledger-dependent attribution. Returns a
+        3-tuple ``(gross, pool_stats, proxy_event_mass_total)``:
+
+        1. ``gross``: dict core-species label ->
+           ``max(0, core_species_production_rates[i])`` for ALL core species
+           (ordinary species have real entries since change (a), spec §4.6).
+           Labels are ``Species.label`` verbatim (the same labels the ledger
+           records at absorption); a duplicate label would overwrite — core
+           labels are unique in practice (make_new_species suffixes).
+        2. ``pool_stats``: dict pool label -> ``(E_n, monomer_mw_g_mol)``
+           with ``E_n = y[mu1]/y[mu0] if y[mu0] > SMALL_EPS else 0.0`` (the
+           tail_mean guard idiom; errs toward deferral — mu0 exhausted ->
+           g_i = 0 -> the gate defers).
+        3. ``proxy_event_mass_total``: float — sum of
+           ``gross_j * E_n[pool(j)] * mw[pool(j)]`` over CANONICAL pool
+           proxies (``species_to_pool_indices[j] != -1 and is_pool_proxy[j]``
+           — the engine CAN attribute those).
+
+        GROSS production, never net dn_dt: canonical proxies have
+        dn_dt ~= 0 BY DESIGN (the archetype apportionment reroutes their
+        flux to pool moments) and ordinary species net to ~0 at steady
+        state. E[n] is read LIVE from the state vector (never
+        recorded-and-stale). All terms are polymer-phase volumetric, so
+        V_poly cancels in any fraction of these numbers. Pure read of
+        already-maintained state — no bookkeeping here beyond change (a)'s
+        residual writes.
+        """
+        gross = {}
+        pool_stats = {}
+        proxy_event_mass_total = 0.0
+        stp = getattr(self, "species_to_pool_indices", None)
+        prod = getattr(self, "core_species_production_rates", None)
+        y = getattr(self, "y", None)
+        if stp is None or prod is None or y is None:
+            return gross, pool_stats, proxy_event_mass_total
+        n_core = self.num_core_species
+        # Live per-pool stats.
+        n_pools = len(self.polymer_pools)
+        e_n_by_pool = [0.0] * n_pools
+        for p in range(n_pools):
+            i0 = self.pool_mu0_indices[p]
+            i1 = self.pool_mu1_indices[p]
+            if i0 < 0 or i1 < 0:
+                continue
+            mu0 = y[i0]
+            mu1 = y[i1]
+            e_n_by_pool[p] = mu1 / mu0 if mu0 > SMALL_EPS else 0.0
+        for p in range(n_pools):
+            pool = self.polymer_pools[p]
+            mw = float(getattr(pool, "monomer_mw_g_mol", 0.0) or 0.0)
+            pool_stats[pool.label] = (e_n_by_pool[p], mw)
+        # index -> label for CORE species (species_index covers core+edge).
+        labels = {}
+        for spc, idx in self.species_index.items():
+            if idx < n_core:
+                labels[idx] = spc.label
+        for i in range(n_core):
+            label = labels.get(i)
+            if label is None:
+                continue
+            g = max(0.0, float(prod[i]))
+            gross[label] = g
+            p = stp[i]
+            if p >= 0 and self.is_pool_proxy[i]:
+                e_n, mw = pool_stats[self.polymer_pools[p].label]
+                proxy_event_mass_total += g * e_n * mw
+        return gross, pool_stats, proxy_event_mass_total
+
     def _chain_bundle(self, int pool_idx, y, double V_poly, bint end_group):
         """
         Expected (chains, units, units^2) carried by ONE picked chain of pool
@@ -1086,6 +1167,14 @@ class HybridPolymerSystem(ReactionSystem):
                     self.core_species_production_rates[r0] += rr
             elif core_rxn:
                 dn_dt[r0] -= r_mol_s
+                # Change (a) (spec 2026-06-10 mass-flux-spawn-gate s3.1/s4.6):
+                # gross bookkeeping for ORDINARY core species too (simple.pyx
+                # parity), so absorbed-representative production has a real
+                # record for spawn_gate_flux_snapshot(). Cost-gated on the
+                # EPDM deck (<= ~5% wall-clock; fallback: ledger-tracked-only
+                # writes via a flag array).
+                self.core_species_consumption_rates[r0] += rf
+                self.core_species_production_rates[r0] += rr
 
             if r1 != -1:
                 if self.is_pool_proxy[r1]:
@@ -1095,10 +1184,16 @@ class HybridPolymerSystem(ReactionSystem):
                         self.core_species_production_rates[r1] += rr
                 elif core_rxn:
                     dn_dt[r1] -= r_mol_s
+                    self.core_species_consumption_rates[r1] += rf
+                    self.core_species_production_rates[r1] += rr
 
             if r2 != -1 and core_rxn:
-                # if you ever allow polymer in r2, mirror the same logic; otherwise keep as-is
+                # r2 is always ordinary today (mirror the proxy logic above
+                # if polymer is ever allowed in r2); change (a) gross writes
+                # apply as for any ordinary reactant.
                 dn_dt[r2] -= r_mol_s
+                self.core_species_consumption_rates[r2] += rf
+                self.core_species_production_rates[r2] += rr
 
             # 4. Apply Fluxes to Products (same core_rxn gate as section 3)
             for p_slot in range(3):
@@ -1115,6 +1210,10 @@ class HybridPolymerSystem(ReactionSystem):
                     elif core_rxn:
                         # feature polymer species (e.g., PS_rad, scission oligomer, etc.) stays explicit
                         dn_dt[p_idx_tmp] += r_mol_s
+                        # Change (a): gross bookkeeping for ordinary products
+                        # (simple.pyx parity; see the reactant-side comment).
+                        self.core_species_production_rates[p_idx_tmp] += rf
+                        self.core_species_consumption_rates[p_idx_tmp] += rr
                 else:
                     self.edge_species_rates[p_idx_tmp - n_core] += rate
 
