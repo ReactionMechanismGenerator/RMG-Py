@@ -2721,6 +2721,16 @@ def process_polymer_candidates_multipool(
                 end_groups=list(parent_for_intent.end_groups),
                 triggering_product=cand,
                 triggering_dp=triggering_dp,
+                # TODO(polymer running-log item #14): `amount` is never
+                # assigned anywhere, so this is ALWAYS the placeholder
+                # 1.0 mol. Named consumer: drain_spawn_intents seeds the
+                # daughter pool's initial moments from it (mu_k = N * DP^k,
+                # see N/DP in drain_spawn_intents) — every gate-path spawned
+                # pool currently starts with a fictional mu0 = 1.0 mol of
+                # chains. Honest seeding (candidate source: the triggering
+                # reaction's snapshot flux x a dt-scale — needs its own
+                # chemistry decision) is the NEXT physics item; do not trust
+                # mid-run gate-path pool masses until it lands.
                 triggering_moles=float(getattr(cand, "amount", 1.0)),
                 mass_flux_at_spawn=gate_statistic,
             )
