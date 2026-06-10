@@ -2657,6 +2657,13 @@ def write_polymer_pools_sidecar(
     output_dir: str,
     iteration: int = 0,
     filename: str = POLYMER_POOLS_SIDECAR_FILENAME,
+    core_species=None,
+    core_reactions=None,
+    configured_pool_labels=None,
+    condensed_species=None,
+    monomer_routing_by_pool=None,
+    cantera_index_map=None,
+    rmg_commit=None,
 ) -> str:
     """Emit ``polymer_pools.json`` alongside ``chem.yaml`` (design doc §6).
 
@@ -2674,18 +2681,45 @@ def write_polymer_pools_sidecar(
         RMG iteration number. Recorded in the sidecar header.
     filename : str
         Override the default basename. Defaults to ``polymer_pools.json``.
+    core_species : list of Species, optional
+        Live core species list — used to populate ``phase_species`` on each
+        pool block and ``condensed_species`` in the conventions envelope.
+        ``core_species``/``monomer_routing_by_pool`` are populated by the
+        live-run hook in ``save_everything``; legacy callers omit them, which
+        yields ``phase_species: []`` and ``monomer_routing: null`` per pool.
+    core_reactions : list of Reaction, optional
+        Live core reactions list — compiled into the ``reactions[]`` block.
+    configured_pool_labels : list of str, optional
+        Solver-configured pool labels (may be a subset of pool_registry).
+        Defaults to the label of every pool in pool_registry.
+    condensed_species : list of Species, optional
+        Condensed-phase core species (gas_species_mask == False). Used to
+        populate ``conventions.condensed_species``.
+    monomer_routing_by_pool : dict, optional
+        ``{pool_label: routing_label_string}`` for monomer-in-poly routing.
+        The caller must pass CONDENSED-phase labels (appended unchecked).
+    cantera_index_map : dict, optional
+        ``{id(rxn): [cantera indices]}`` from
+        ``generate_cantera_data(..., return_reaction_index_map=True)``.
+    rmg_commit : str, optional
+        Override the auto-detected git SHA.
 
     Returns
     -------
     str
         Absolute path of the written file.
     """
-    payload = {
-        "schema_version": POLYMER_POOLS_SIDECAR_SCHEMA_VERSION,
-        "generated_at": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
-        "rmg_iteration": int(iteration),
-        "pools": [_serialize_pool_for_sidecar(p) for p in pool_registry],
-    }
+    payload = build_polymer_moments_artifact(
+        pool_registry,
+        core_species=core_species,
+        core_reactions=core_reactions,
+        configured_pool_labels=configured_pool_labels,
+        condensed_species=condensed_species,
+        monomer_routing_by_pool=monomer_routing_by_pool,
+        cantera_index_map=cantera_index_map,
+        iteration=iteration,
+        rmg_commit=rmg_commit,
+    )
     path = os.path.join(output_dir, filename)
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, indent=2, default=str)
@@ -2848,8 +2882,79 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
     return entries
 
 
-def build_polymer_moments_artifact(*args, **kwargs):
-    raise NotImplementedError  # implemented in the artifact-builder task
+def build_polymer_moments_artifact(pool_registry,
+                                   core_species=None,
+                                   core_reactions=None,
+                                   configured_pool_labels=None,
+                                   condensed_species=None,
+                                   monomer_routing_by_pool=None,
+                                   cantera_index_map=None,
+                                   iteration=0,
+                                   rmg_commit=None):
+    """Assemble the full schema-2.0 polymer moments artifact payload.
+
+    Normative contract: docs/polymer_moments_format.md. The payload mirrors
+    the HybridPolymerSystem oracle, including its init-time demotions —
+    ``configured_pool_labels`` must be the SOLVER-configured pools (which can
+    be a subset of ``pool_registry``: spawned daughters are registry pools
+    without solver configs and run as ordinary species).
+
+    ``core_species``/``monomer_routing`` are populated by
+    ``build_polymer_moments_artifact`` in the live run (legacy callers omit
+    them → ``phase_species: []``, ``monomer_routing: null``). The caller must
+    pass a CONDENSED-phase routing label (it is appended to phase_species
+    unchecked by ``_serialize_pool_for_sidecar``).
+    """
+    if configured_pool_labels is None:
+        configured_pool_labels = [getattr(p, "label", "") for p in pool_registry]
+    monomer_routing_by_pool = monomer_routing_by_pool or {}
+
+    pools = [
+        _serialize_pool_for_sidecar(
+            p,
+            core_species=core_species,
+            monomer_routing=monomer_routing_by_pool.get(getattr(p, "label", "")),
+        )
+        for p in pool_registry
+    ]
+    reactions = compile_polymer_reaction_entries(
+        core_reactions or [], core_species or [],
+        configured_pool_labels, cantera_index_map)
+
+    conventions = {
+        "format_doc": "docs/polymer_moments_format.md (polymer_moments_format/2.0)",
+        "moment_basis": "extensive mol, DP basis (mu1 = moles of repeat units)",
+        "volumes": {
+            "V_poly": "constant, consumer-supplied [m^3]",
+            "V_gas": "ideal gas, dynamic: V_gas = n_gas*R*T/P (1.0 m^3 floor when n_gas <= 0)",
+        },
+        "configured_pools": list(configured_pool_labels),
+        "condensed_species": sorted(_artifact_species_label(s)
+                                    for s in (condensed_species or [])),
+        "site_scaling": ("site = max(0, mu_scaling)/V_poly read from the first proxy "
+                         "reactant's pool; multiplies ONCE; scales rf AND rr"),
+        "chip_site_throttle": ("site = min(max(0,mu0), max(0,mu1)/a)/V_poly when "
+                               "archetype=discrete_chip/1 and scaling=mu0 and a>0"),
+        "kb_recipe": ("kb = kf/Keq; Keq(T) = (P0/(R*T))^dn_gas * exp(-dG0/(R*T)), "
+                      "P0 = 1e5 Pa, dG0 from chem.yaml NASA thermo"),
+        "mu3_closure": "log_lagrange/1",
+        "invariants": {
+            "discrete_subset": ("sum_pools(mu1) + sum_chip_species(a_i * n_i) is "
+                                "invariant over the discrete-reaction subset only"),
+            "with_unzip": ("add + n(monomer_routing) per pool with an active unzip "
+                           "channel (unzip moves units from mu1 into that species)"),
+        },
+    }
+
+    return {
+        "schema_version": POLYMER_POOLS_SIDECAR_SCHEMA_VERSION,
+        "generated_at": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
+        "rmg_commit": rmg_commit if rmg_commit is not None else _get_rmg_commit(),
+        "rmg_iteration": int(iteration),
+        "conventions": conventions,
+        "pools": pools,
+        "reactions": reactions,
+    }
 
 
 def schulz_flory_mu2(mu0: float, mu1: float) -> float:

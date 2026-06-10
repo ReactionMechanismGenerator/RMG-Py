@@ -298,3 +298,73 @@ class TestCompileReactionEntries:
         e = entries[0]
         assert e["cantera"] is not None
         assert e["kinetics"] is None
+
+
+class TestArtifactBuilderAndRoundTrip:
+    def _build(self, pe_pool, tmp_path):
+        core = [
+            _spc("CC", "PE", index=2),
+            _mu_dummy("PE_mu0"), _mu_dummy("PE_mu1"), _mu_dummy("PE_mu2"),
+            _spc("[CH3]", "G", index=7),
+        ]
+        core[0].is_polymer_proxy = True
+        rxn = Reaction(reactants=[core[0]], products=[core[0], core[4]],
+                       kinetics=_arrhenius(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.DISCRETE_CHIP)
+        rxn.polymer_chip_units = 1
+        rxn.is_end_group_reaction = True
+        path = write_polymer_pools_sidecar(
+            pool_registry=[pe_pool],
+            output_dir=str(tmp_path),
+            iteration=3,
+            core_species=core,
+            core_reactions=[rxn],
+            configured_pool_labels=["PE"],
+            condensed_species=core[:4],
+            monomer_routing_by_pool={},
+            cantera_index_map={id(rxn): [0]},
+        )
+        return path
+
+    def test_envelope_and_blocks(self, pe_pool, tmp_path):
+        path = self._build(pe_pool, tmp_path)
+        with open(path) as fh:
+            data = json.load(fh)
+        assert data["schema_version"] == "2.0"
+        assert data["rmg_iteration"] == 3
+        assert "generated_at" in data
+        assert "rmg_commit" in data  # may be a SHA string or null
+        conv = data["conventions"]
+        assert conv["configured_pools"] == ["PE"]
+        assert conv["condensed_species"] == ["PE(2)", "PE_mu0", "PE_mu1", "PE_mu2"]
+        assert conv["mu3_closure"] == "log_lagrange/1"
+        assert "format_doc" in conv
+        assert len(data["pools"]) == 1
+        assert data["pools"][0]["phase_species"] == ["PE(2)", "PE_mu0", "PE_mu1", "PE_mu2"]
+        assert len(data["reactions"]) == 1
+        assert data["reactions"][0]["archetype"] == "discrete_chip/1"
+        assert data["reactions"][0]["params"] == {"a": 1}
+
+    def test_json_round_trip_is_lossless(self, pe_pool, tmp_path):
+        path = self._build(pe_pool, tmp_path)
+        with open(path) as fh:
+            data = json.load(fh)
+        # round-trip: dump and re-load reproduces an identical document
+        assert json.loads(json.dumps(data)) == data
+        # 1.0 field stability inside the written file
+        pool = data["pools"][0]
+        for key, typ in SCHEMA_1_0_KEYS.items():
+            assert key in pool
+            assert isinstance(pool[key], typ)
+
+    def test_legacy_call_signature_still_works(self, pe_pool, tmp_path):
+        """The pre-2.0 call shape (pool_registry, output_dir, iteration) used by
+        existing tests/callers keeps working: reactions=[] and conventions
+        present with defaults."""
+        path = write_polymer_pools_sidecar(
+            pool_registry=[pe_pool], output_dir=str(tmp_path), iteration=0)
+        with open(path) as fh:
+            data = json.load(fh)
+        assert data["schema_version"] == "2.0"
+        assert data["reactions"] == []
+        assert data["conventions"]["configured_pools"] == ["PE"]

@@ -2054,11 +2054,12 @@ class RMG(util.Subject):
         # Notify registered listeners:
         self.notify()
 
-        # Emit the polymer_pools.json sidecar alongside the chemkin / cantera
-        # outputs so the TA-side mechanism loader (~/Code/TA) can pick up
-        # pool semantics. See docs/multi_pool_design.md §6.
+        # Emit the polymer_pools.json sidecar (schema 2.0) alongside the
+        # chemkin / cantera outputs so the TA-side mechanism loader
+        # (~/Code/TA) can pick up pool semantics + compiled flux terms.
+        # Normative contract: docs/polymer_moments_format.md.
         try:
-            from rmgpy.polymer import Polymer, write_polymer_pools_sidecar
+            from rmgpy.polymer import Polymer, write_polymer_pools_sidecar, _artifact_species_label
             pool_registry = [
                 s for s in (
                     self.reaction_model.core.species
@@ -2070,13 +2071,58 @@ class RMG(util.Subject):
             if pool_registry and self.output_directory:
                 chemkin_dir = os.path.join(self.output_directory, "chemkin")
                 target_dir = chemkin_dir if os.path.isdir(chemkin_dir) else self.output_directory
+
+                core_species = self.reaction_model.core.species
+                core_reactions = self.reaction_model.core.reactions
+
+                # Cantera index map: recompute the exact filter/ordering the
+                # CanteraWriter listener (notify() above) just used on the
+                # same core — same inputs, same map.
+                cantera_index_map = None
+                try:
+                    from rmgpy.cantera import generate_cantera_data
+                    _, cantera_index_map = generate_cantera_data(
+                        core_species, core_reactions,
+                        return_reaction_index_map=True)
+                except Exception as e:
+                    logging.warning(
+                        "polymer_pools.json: cantera index map unavailable (%s); "
+                        "all reaction entries will be emitted cantera-null.", e)
+
+                # Solver-configured pools / phase mask / monomer routing from
+                # the live hybrid reactor (HybridPolymerSystem IS the reaction
+                # system; polymer_pools and gas_species_mask are direct attrs).
+                # gas_species_mask: True=gas, False=condensed/polymer.
+                configured = condensed = None
+                routing = {}
+                for system in (self.reaction_systems or []):
+                    pools_cfg = getattr(system, "polymer_pools", None)
+                    if not pools_cfg:
+                        continue
+                    configured = [p.label for p in pools_cfg]
+                    mask = getattr(system, "gas_species_mask", None)
+                    if mask is not None and len(mask) == len(core_species):
+                        condensed = [core_species[i]
+                                     for i in range(len(core_species)) if not mask[i]]
+                    for p in pools_cfg:
+                        idx = p.monomer_poly_index
+                        if idx is not None and 0 <= idx < len(core_species):
+                            routing[p.label] = _artifact_species_label(core_species[idx])
+                    break
+
                 write_polymer_pools_sidecar(
                     pool_registry=pool_registry,
                     output_dir=target_dir,
                     iteration=getattr(self.reaction_model, "iteration_num", 0),
+                    core_species=core_species,
+                    core_reactions=core_reactions,
+                    configured_pool_labels=configured,
+                    condensed_species=condensed,
+                    monomer_routing_by_pool=routing,
+                    cantera_index_map=cantera_index_map,
                 )
         except Exception as e:
-            logging.warning(f"Failed to write polymer_pools.json sidecar: {e}")
+            logging.warning(f"Failed to write polymer_pools.json sidecar: {e}", exc_info=True)
 
         self.save_profiler_info()
 
