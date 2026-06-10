@@ -67,23 +67,72 @@ it. This change replaces the stub with a real, honest gate.
 
 ## 3. The fraction
 
-For proxy species `i` mapped to pool `p(i)` (via the engine's
-`species_to_pool_indices`):
+For a species `i` attributed to pool `P`:
 
 ```
-g_i = max(0, core_species_production_rates[i]) * E[n]_p(i) * monomer_MW_p(i)
+g_i(P) = max(0, core_species_production_rates[i]) * E[n]_P * monomer_MW_P
 
-E[n]_p = y[mu1]_p / y[mu0]_p   if y[mu0]_p > SMALL_EPS, else 0.0
+E[n]_P = y[mu1]_P / y[mu0]_P   if y[mu0]_P > SMALL_EPS, else 0.0
 
-fraction(motif) = sum_{i in representatives(motif)} g_i
-                  / sum_{all proxy i} g_i
+numerator(motif) = sum_{(i, P_i) in representatives(motif)} g_i(P_i)
+
+denominator = sum_{canonical pool proxies j} g_j(pool(j))
+            + sum_{DEDUPED representatives (i, P_i) across the ledger} g_i(P_i)
+
+fraction(motif) = numerator(motif) / denominator
 ```
 
-- **Gross, not net.** The numerator reads
-  `core_species_production_rates` — the gross production array maintained
-  for proxy species at `rmgpy/solver/polymer.pyx:1082-1117` precisely so
-  diagnostics survive the moment rerouting. Never `dn_dt`-derived net rates
-  (see decision 3).
+**Attribution rules (AMENDED 2026-06-10 after plan-author probe — see §3.1):**
+
+- **Canonical pool proxies** (exactly one per configured pool,
+  `is_pool_proxy`, label-matched at polymer.pyx:478-485) attribute to their
+  own pool via the engine's `species_to_pool_indices`.
+- **Representatives are ORDINARY absorbed species** — the engine has no
+  pool mapping for them. Each representative is recorded in the ledger as a
+  `(species_label, parent_pool_label)` pair, where the parent pool is the
+  pool that absorbed the candidate (for Phase-D deferred candidates: the
+  pool that would parent its spawn intent — currently `pool_registry[0]`;
+  if multi-parent attribution ever lands, this follows it). E[n] and
+  monomer_MW are read LIVE from that pool's stats in the same snapshot
+  (live freshness kept; the wrong-mapping hole closed).
+- **Multi-motif double-counting is a stated decision, not emergent:** E[n]
+  is the absorbing pool's chain statistics, used as the event-mass
+  calibration for THAT motif's attribution; a species absorbed into pool P
+  contributes its gross production to EVERY motif-entry that lists it as a
+  representative, with P's E[n]. A species legitimately carrying two motifs
+  (decoration + backbone) double-counts across the two gate evaluations —
+  accepted, because the two motifs are competing for DIFFERENT pool slots
+  and each should see the mass.
+- **The denominator dedups:** a species appearing in multiple motif entries
+  is counted ONCE in the denominator. Including all canonical proxies plus
+  all deduped ledger representatives makes each motif's numerator a subset
+  of denominator terms, so each fraction ∈ [0,1] (the pinned property);
+  the SUM of fractions across motifs may exceed 1 — accepted, per the
+  double-counting decision above.
+
+### 3.1 Why representatives need change (a) — the born-dead hole
+
+The original spec sourced representative flux via `species_to_pool_indices`
+and the proxy-only gross arrays. Plan-author probing proved that is
+identically zero in production: `is_pool_proxy` marks only the ONE
+canonical proxy per pool, and the gross arrays are maintained ONLY inside
+the `is_pool_proxy` branches (polymer.pyx:1082-1117) — absorbed
+representatives are ordinary species with `dn_dt` writes only. A gate built
+on that returns zero for every motif under all production conditions: not
+conservative — broken, with green tests (the §7 fabricated-snapshot suite
+cannot see it). **Change (a):** the polymer residual maintains gross
+production/consumption for ALL core species (mirroring `simple.pyx`'s
+per-species bookkeeping), so representative production — which is real;
+unlike canonical proxies their flux is NOT rerouted to moments — has a
+production-side record. Cost-gated per §4.6.
+
+- **Gross, not net.** Both sums read `core_species_production_rates`.
+  For canonical proxies the gross arrays exist precisely so diagnostics
+  survive the moment rerouting (polymer.pyx:1082-1117); for ordinary
+  species (representatives) they are maintained by change (a) (§3.1/§4.6).
+  Never `dn_dt`-derived net rates (see decision 3) — net is rerouted-to-≈0
+  for proxies and consumption-cancelled at steady state for ordinary
+  species.
 - **E[n] calibration.** One mole of representative production is one mole of
   *events*; the mass entering the motif class per event is a chain's worth
   (~E[n]·monomer_MW), not the proxy fragment's ~3·monomer_MW. Using proxy MW
@@ -97,13 +146,15 @@ fraction(motif) = sum_{i in representatives(motif)} g_i
   finiteness. `SMALL_EPS` is the EXISTING solver constant
   (`rmgpy/solver/polymer.pyx:70`), and the guard is the exact idiom already
   used for `tail_mean` at polymer.pyx:1343 — no new constant.
-- **Denominator = total polymer-derived gross event-mass** (same form summed
-  over ALL proxy species). Immune to the two failures of a net-dµ1 form:
+- **Denominator = total polymer-derived gross event-mass** (canonical
+  proxies + deduped ledger representatives, per the formula block above).
+  Immune to the two failures of a net-dµ1 form:
   transfer chemistry double-counting (parent loss + daughter gain ≈ 2×) and
   SAME_POOL chemistry netting to zero (a deck doing furious modification
   chemistry with slow net degradation would otherwise have a near-zero
-  denominator and wave trace motifs through). Fraction ∈ [0,1] by
-  construction: "this motif's share of polymer-derived gross production."
+  denominator and wave trace motifs through). Each motif's fraction ∈ [0,1]
+  by construction: "this motif's share of polymer-derived gross
+  production."
 - **Units.** `core_species_production_rates` entries are volumetric
   (mol/m³-phase/s); every term in both sums is polymer-phase, so V_poly
   cancels. No volume plumbing.
@@ -112,13 +163,30 @@ fraction(motif) = sum_{i in representatives(motif)} g_i
 
 ### 4.1 Engine snapshot (`rmgpy/solver/polymer.pyx` — `make` before tests)
 
-New method on `HybridPolymerSystem`, `spawn_gate_flux_snapshot()`:
-returns `(per_species, total)` where `per_species` maps core-species label →
-`g_i` for every species with `species_to_pool_indices[i] != -1` and
-`is_pool_proxy[i]`, computed from `core_species_production_rates`,
-`pool_mu0_indices`/`pool_mu1_indices`, live `y`, and each pool's
-`monomer_MW`; `total = sum(per_species.values())`. Pure read of
-already-maintained state; no new bookkeeping inside the residual.
+New method on `HybridPolymerSystem`, `spawn_gate_flux_snapshot()` —
+AMENDED: the engine cannot attribute representatives (it has no ledger), so
+the engine/python split is: the engine reads arrays, the gate does
+ledger-dependent attribution. Returns a 3-tuple:
+
+1. `gross`: dict core-species label → `max(0, core_species_production_rates[i])`
+   for ALL core species (label via the species↔index mapping the engine
+   already holds; requires change (a), §4.6, for ordinary species to be
+   nonzero).
+2. `pool_stats`: dict pool label → `(E_n, monomer_mw_g_mol)` with the
+   SMALL_EPS guard applied to E_n (per-pool, from
+   `pool_mu0_indices`/`pool_mu1_indices` and live `y`).
+3. `proxy_event_mass_total`: float — `Σ g_j(pool(j))` over canonical
+   proxies (the engine CAN attribute those, via `species_to_pool_indices`).
+
+The gate (python side) computes representative `g_i(P_i)` as
+`gross[label] · E_n[parent_pool] · mw[parent_pool]`, the numerator per
+motif, and `denominator = proxy_event_mass_total + Σ deduped representative
+g_i`. Pool monomer MW reaches the engine via a new
+`PolymerPoolConfig.monomer_mw_g_mol` field (default 0.0 → g=0 → defer,
+honest degradation), plumbed in `polymer_input.py::to_config` with the same
+`get_molecular_weight()*1000` idiom as `Polymer.monomer_mw_g_mol`
+(polymer.py:261). Beyond change (a), no new bookkeeping inside the
+residual.
 
 ### 4.2 main.py stash
 
@@ -132,8 +200,9 @@ infrastructure the §2.2 upgrade would reuse.
 ### 4.3 Motif ledger (attribute on `CoreEdgeReactionModel`)
 
 `reaction_model.polymer_motif_ledger`: a list of entries
-`{motif: Group, representatives: [species labels], accumulator records,
-last_recorded_iteration: int, spawned: bool}`.
+`{motif: Group, representatives: [(species_label, parent_pool_label)],
+accumulator records, last_recorded_iteration: int, spawned: bool}` — the
+parent-pool label recorded at absorption per §3's attribution rules.
 
 - **Lookup is by Group isomorphism** (the same matching `similarity_merge`
   uses), not a canonical string key — sidesteps Group canonicalization; the
@@ -160,9 +229,11 @@ At a candidate's arrival in Phase D, with the candidate's discovered motif:
    matches the spawned pool first; assert-log if hit).
 3. **One record per motif per RMG iteration:** if
    `entry.last_recorded_iteration < current_iteration`, compute
-   `fraction(motif)` from the stashed snapshot over `entry.representatives`
-   and `record()` it; otherwise do NOT record — same-iteration burst
-   arrivals re-check the gate against the existing window only.
+   `fraction(motif)` per §3 — numerator from `gross` × the recorded
+   parent-pool's `pool_stats`, denominator =
+   `proxy_event_mass_total` + deduped representative event-mass across the
+   ledger — and `record()` it; otherwise do NOT record — same-iteration
+   burst arrivals re-check the gate against the existing window only.
    Representatives absent from the snapshot (absorbed this iteration, not
    yet simulated) contribute 0 to the numerator — stated, not incidental. (Multiple
    same-motif candidates routinely land in one `enlarge()` pass and would
@@ -176,9 +247,10 @@ At a candidate's arrival in Phase D, with the candidate's discovered motif:
 5. Spawn if statistic ≥ `mass_flux_threshold`; on spawn, mark
    `spawned=True` and stamp `SpawnIntent.mass_flux_at_spawn` with the real
    statistic.
-6. Either way, append the arriving candidate's label to
-   `entry.representatives` (it is absorbed as a proxy variant and will
-   carry rates in the next snapshot).
+6. Either way, append `(candidate_label, parent_pool_label)` to
+   `entry.representatives` (the candidate is absorbed as an ordinary
+   explicit species; with change (a) its gross production is recorded from
+   the next simulation onward).
 
 The RMG iteration counter is plumbed alongside the snapshot stash (the
 accumulator's `record(..., iteration=...)` argument already exists).
@@ -190,6 +262,27 @@ No snapshot stashed (`polymer_flux_snapshot is None`: iteration 0, or
 logged. The `0.5` constant and the `reaction_model is None → 0.5` special
 case are DELETED. Tests that exercise Phase E supply a fabricated snapshot
 and a pre-populated ledger; no production code path fakes a number.
+
+### 4.6 Change (a): gross arrays for all core species — cost-gated
+
+The polymer residual's sections 3/4 (reactant/product flux application)
+gain gross production/consumption writes for ordinary (non-proxy) core
+species, mirroring `simple.pyx`'s per-species bookkeeping (reactants:
+`consumption += rf, production += rr`; products: `production += rf,
+consumption += rr`; core reactions only, same gate as the existing
+branches). This is the first change since the apportionment work that adds
+unconditional per-species writes back into the residual hot loop, so it is
+COST-GATED, decided on measured data, not assumption:
+
+- **Measure before committing:** EPDM deck wall-clock, before vs after
+  (same machine, same session, ≥2 runs each). The simple.pyx precedent
+  says this is almost certainly fine — but simple.pyx's residual does not
+  also carry the moment dispatch.
+- **Acceptance:** slowdown within run-to-run noise (≤ ~5% wall-clock).
+- **Fallback if it bites:** maintain gross writes only for LEDGER-TRACKED
+  species (a per-species flag array set from the ledger at
+  `initialize_model`) — narrower, uglier, bounded. The spec prefers the
+  unconditional form for simplicity and simple.pyx parity.
 
 ## 5. `triggering_moles` — named-consumer limitation (in scope: the TODO; out of scope: the fix)
 
@@ -236,17 +329,40 @@ and the §2.2 upgrade trigger verbatim. The §8 "NOT YET ACTIVE" limitation note
 
 ## 7. Tests
 
-1. **Tripwire (mechanism pin, two assertions):** engine-integrated test —
-   after a solve with apportioned (non-UNRESOLVED) reactions touching a
-   proxy representative: (a) the snapshot numerator for that species equals
-   `max(0, core_species_production_rates[i]) · E[n] · monomer_MW`
-   recomputed INDEPENDENTLY in the test from the same engine arrays — pins
-   the formula to the gross array by identity, not magnitude; (b) the same
-   species' net `dn_dt` contribution is ≈ 0 (the apportionment routes proxy
-   flux to pool moments). Assertion (b) is the actual tripwire: it is only
-   true of the gross array and dies if the numerator is ever rewired to net
-   rates. The polymer.pyx:1082-1117 citation in §3 is informational; the
-   test asserts the mechanism, not the address.
+**Standing convention (the deliverable of the 2026-06-10 review pass,
+recorded in the running log):** every laundered-quantity fix ships a test
+that FAILS in the live path until the quantity is real. Fabricated-input
+tests prove formula correctness; they cannot prove the live path sources
+the quantity — twice now (the 0.5 gate, the born-dead representative flux)
+a green fabricated-input suite hid an identically-zero production value.
+This convention applies to the remaining spawn/seeding items (#14
+`triggering_moles` seeding) without per-spec rediscovery.
+
+1. **Integrated tripwire (live path, two halves, RED-FIRST).** An
+   integrated solve on a real `HybridPolymerSystem` — NOT a fabricated
+   snapshot. Fixture: a pool with apportioned (non-UNRESOLVED) reactions
+   where at least one product is an ordinary (non-canonical-proxy) core
+   species standing in for an absorbed representative (representative
+   status is a python/ledger concept; to the solver it is any ordinary
+   species produced by pool-touching chemistry — no multi-iteration RMG run
+   needed). After the solve:
+   - **Numerator half (the regression that would have caught this class):**
+     that ordinary species has a NONZERO `gross` entry in
+     `spawn_gate_flux_snapshot()`, equal to
+     `max(0, core_species_production_rates[i])` recomputed independently
+     from the engine arrays, and its `g_i` under its parent pool's
+     `pool_stats` equals `gross · E[n] · monomer_MW`. **This half MUST be
+     written and confirmed RED against current HEAD before change (a) is
+     implemented** — ordinary species have no gross writes today. That red
+     run is the proof the fix is real, and a gate to executing the rest of
+     the plan.
+   - **Denominator half:** the canonical proxy's net `dn_dt` contribution
+     is ≈ 0 (the apportionment reroutes proxy flux to pool moments) while
+     its gross entry is nonzero — the assertion that is only true of the
+     gross array and dies if the denominator path is ever rewired to net
+     rates.
+   The polymer.pyx line citations in §3 are informational; the test asserts
+   the mechanism, not the address.
 2. **Spawn-timing per the §2.4 floor:** novel motif, first arrival defers;
    fabricated snapshots; assert BOTH branches of the floor arithmetic — a
    ≥ N×-bar motif spawns at its second arrival's iteration, an
@@ -293,7 +409,11 @@ simply becomes real). Defaults retained: `mass_flux_threshold=0.01`,
 
 ## 9. Affected files
 
-- `rmgpy/solver/polymer.pyx` — `spawn_gate_flux_snapshot()` (run `make`).
+- `rmgpy/solver/polymer.pyx` — `spawn_gate_flux_snapshot()`; change (a)
+  gross writes for ordinary species in residual sections 3/4 (cost-gated,
+  §4.6); `PolymerPoolConfig.monomer_mw_g_mol` field (run `make`).
+- `rmgpy/solver/polymer_input.py` (or wherever `to_config` lives — plan
+  pins the exact path) — monomer MW plumb into `PolymerPoolConfig`.
 - `rmgpy/rmg/main.py` — snapshot + iteration stash after `simulate()`.
 - `rmgpy/rmg/model.py` — ledger attribute init; pass iteration/snapshot into
   the spawn pass.
