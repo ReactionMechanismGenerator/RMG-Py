@@ -272,7 +272,19 @@ species, mirroring `simple.pyx`'s per-species bookkeeping (reactants:
 consumption += rr`; core reactions only, same gate as the existing
 branches). This is the first change since the apportionment work that adds
 unconditional per-species writes back into the residual hot loop, so it is
-COST-GATED, decided on measured data, not assumption:
+COST-GATED, decided on measured data, not assumption.
+
+**Scope correction (adversarial review of `31acdfa89`):** these arrays are
+NOT purely diagnostic — `simulate()` (base.pyx ~879-966) consumes
+production/consumption for the OPT-IN branching/dynamics/surface-to-core
+criteria (`toleranceBranchReactionToCore`, finite
+`toleranceMoveEdgeReaction*`). The change never alters the RHS
+(dn_dt/moments/edge rates bit-identical — that is what the conservation
+gate asserts), but on decks enabling those tolerances, model-enlargement
+decisions for ordinary polymer-deck species now use real values instead of
+zeros — i.e. polymer decks gain standard simple.pyx semantics there.
+Alignment, not regression; stated here so it is never discovered as a
+surprise. Current decks (EPDM) leave those tolerances off.
 
 - **Measure before committing:** EPDM deck wall-clock, before vs after
   (same machine, same session, ≥2 runs each). The simple.pyx precedent
