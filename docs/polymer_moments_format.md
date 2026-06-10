@@ -96,6 +96,11 @@ parameters only; the equations live here and only here.
 - For retained entries with composite kinetics, `kinetics` may be `null`; the
   consumer then takes rates from Cantera and must treat the reaction as
   reversible (chem.yaml prints `<=>` unconditionally).
+- **Caveat (ordinary reactions):** chem.yaml prints every equation as `<=>`
+  and carries no reversibility marker; reactions WITHOUT an artifact entry
+  therefore run reversible in every consumer of the file (Cantera, the
+  reference runner). Artifact-listed entries are exempt — their
+  `kinetics.reversible` restores the generating solver's behavior.
 
 ## 4. Rate-evaluation recipe (normative; oracle: `polymer.pyx:922-1261`)
 
