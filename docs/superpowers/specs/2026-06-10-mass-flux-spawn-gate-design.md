@@ -45,9 +45,20 @@ it. This change replaces the stub with a real, honest gate.
    variants have `dn_dt ≈ 0` BY DESIGN, the apportionment routes their flux
    to pool moments; a net-rate gate would be born dead and silently never
    spawn — see the tripwire test, §7.1).
-4. **First sighting can never spawn.** Zero prior representatives → zero
-   numerator → defer. Earliest spawn is the second arrival, ≥1 iteration
-   later. Verified consequence scope: scission-daughter pools (the Polymer
+4. **First sighting can never spawn — and the floor is steeper than one
+   iteration.** At first arrival (iteration k) the entry has zero
+   representatives → record 0, defer. The k-arrival only carries a
+   simulated rate from iteration k+1 onward, so the first REAL fraction
+   enters the window at the second arrival's iteration (k+1 at the
+   earliest). With the sum/N statistic the exact floor is: **earliest spawn
+   is the second arrival's iteration, and only if that single record is
+   itself ≥ N× the bar; an exactly-at-bar motif needs real records filling
+   the window, spawning at its N-th recording iteration** (k+3 for N=3 with
+   arrivals every iteration; ~1.5× the bar spawns at k+2). Re-checks happen
+   only at arrivals (decision 2), so arrival gaps stretch the floor
+   further. Spawn-timing tests encode this arithmetic — NOT the looser
+   "second sighting spawns" — so the bar is never "fixed" by loosening.
+   Verified consequence scope: scission-daughter pools (the Polymer
    handshake in `make_new_reaction`, model.py:625-656) and input-file pools
    do NOT route through this gate, so the EPDM end-to-end baseline is
    expected to be a no-op (verified by test, §7.8, not assumed). Three unit
@@ -187,35 +198,60 @@ and a pre-populated ledger; no production code path fakes a number.
 value is always the placeholder 1.0. Its consumer is
 `drain_spawn_intents` (`rmgpy/polymer.py:3123`): it seeds the daughter
 pool's initial moments (`mu0 = N`, `mu1 = N·DP`, `mu2 = N·DP²`). Every
-mid-run spawned pool is therefore currently seeded with mu0 = 1.0 mol of
-chains — a physically enormous fiction. Removing the field is not possible
-(it has a real consumer); fixing the seeding is a separate design item
-(candidate source: the triggering reaction's snapshot flux × dt-scale; needs
-its own chemistry decision). This change: (a) replaces the bare `getattr`
-with an explicit named-consumer TODO comment at the construction site
-stating "placeholder 1.0 mol seeds daughter moments in
-drain_spawn_intents — see <running-log item>"; (b) records the item in the
-polymer running log. No behavior change to seeding here.
+mid-run GATE-PATH spawned pool is therefore currently seeded with
+mu0 = 1.0 mol of chains — a physically enormous fiction, the same defect
+class this change exists to kill, and larger in physical consequence than
+the 0.5 gate (a wrongly-spawned pool wastes compute; a wrongly-seeded pool
+injects fictional mass into the conservation accounting).
+
+**Scope of the defect (verified):** Path-B (gate-path) spawns only. Path-C
+scission daughters are constructed with `moments=None, initial_mass=0.0`,
+registered via `_register_polymer` (which seeds no moments), and never
+receive engine pool config — their reactions demote to UNRESOLVED. The
+EPDM baseline therefore carries no mu0-fiction (§7.8 verifies correctness,
+not bug-for-bug).
+
+**Sequencing (explicit):** the gate shipped here is correct in isolation;
+a gate-path spawned pool's STATE remains known-fictional pending the
+seeding item. Nobody should trust mid-run gate-path pool masses until both
+land. The running-log item is filed as the next physics item — not a
+someday-TODO — with candidate source: the triggering reaction's snapshot
+flux × a dt-scale (needs its own chemistry decision).
+
+Removing the field is not possible (real consumer). This change: (a)
+replaces the bare `getattr` with an explicit named-consumer TODO comment at
+the construction site stating "placeholder 1.0 mol seeds daughter moments
+in drain_spawn_intents — see <running-log item>"; (b) records the item in
+the polymer running log as above. No behavior change to seeding here.
 
 ## 6. Doc amendment (`docs/multi_pool_design.md`, same change)
 
 §4.4 is rewritten to state: the arrival-driven rule (decision 2 wording),
 the gross-production E[n]-calibrated fraction (§3 formula verbatim incl.
 the ε-clamp direction sentence), the one-record-per-iteration rule and
-sum/N window statistic, the first-sighting-defers consequence, honest
-degradation (§4.5), the restart consequence (§4.3), and the §2.2 upgrade
-trigger verbatim. The §8 "NOT YET ACTIVE" limitation note is removed.
+sum/N window statistic, the spawn-floor arithmetic (decision 4 verbatim:
+second arrival's iteration only at ≥ N× the bar, N-th recording iteration
+at the bar), honest degradation (§4.5), the restart consequence (§4.3),
+and the §2.2 upgrade trigger verbatim. The §8 "NOT YET ACTIVE" limitation note is removed.
 
 ## 7. Tests
 
-1. **Tripwire (gross-array pin):** engine-integrated test — after a solve
-   with apportioned (non-UNRESOLVED) reactions, a proxy-variant
-   representative must yield a NONZERO numerator via
-   `spawn_gate_flux_snapshot()`. Dies if the numerator is ever rewired to
-   net rates (whose proxy entries are ≈0 by design).
-2. **Second-sighting spawns:** novel motif, first arrival defers; fabricated
-   snapshot giving above-bar fraction; arrivals on later iterations spawn
-   once sum/N clears the bar.
+1. **Tripwire (mechanism pin, two assertions):** engine-integrated test —
+   after a solve with apportioned (non-UNRESOLVED) reactions touching a
+   proxy representative: (a) the snapshot numerator for that species equals
+   `max(0, core_species_production_rates[i]) · E[n] · monomer_MW`
+   recomputed INDEPENDENTLY in the test from the same engine arrays — pins
+   the formula to the gross array by identity, not magnitude; (b) the same
+   species' net `dn_dt` contribution is ≈ 0 (the apportionment routes proxy
+   flux to pool moments). Assertion (b) is the actual tripwire: it is only
+   true of the gross array and dies if the numerator is ever rewired to net
+   rates. The polymer.pyx:1082-1117 citation in §3 is informational; the
+   test asserts the mechanism, not the address.
+2. **Spawn-timing per the §2.4 floor:** novel motif, first arrival defers;
+   fabricated snapshots; assert BOTH branches of the floor arithmetic — a
+   ≥ N×-bar motif spawns at its second arrival's iteration, an
+   exactly-at-bar motif defers until its N-th recording iteration. (Not the
+   looser "second sighting spawns".)
 3. **Trace motif stays deferred** across many arrivals (below-bar fraction).
 4. **Re-baselined first-sighting tests:** `test_novel_motif_spawns_one_pool`,
    `test_iteration_boundary_pass_spawns_and_registers`,
@@ -232,8 +268,10 @@ trigger verbatim. The §8 "NOT YET ACTIVE" limitation note is removed.
 7. **ε-clamp direction:** mu0 < ε with tiny mu1 → fraction underestimates →
    defers (asserts direction, not just finiteness).
 8. **EPDM end-to-end no-op:** rerun the EPDM fixture; spawn behavior,
-   species/reaction counts, and sidecar content unchanged (its only daughter
-   pool is the Path-C scission handshake, which bypasses this gate).
+   species/reaction counts, and sidecar content unchanged. Its only
+   daughter pool is the Path-C scission handshake, which bypasses this gate
+   AND the `triggering_moles` seeding (verified, §5) — so this asserts
+   correctness, not a bug-for-bug match.
 9. **Ledger isomorphism lookup:** same motif Group with permuted atom
    ordering must hit one ledger entry (pins the isomorphism-not-string-key
    choice).
