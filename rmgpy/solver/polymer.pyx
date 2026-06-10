@@ -561,18 +561,19 @@ class HybridPolymerSystem(ReactionSystem):
                     and (src == -1 or dst == -1))
                     or (self.reaction_flux_archetype[i] == FLUX_DISCRETE_CHIP
                         and src == -1)):
-                # A stamped cross-pool archetype needs BOTH pools resolved in
-                # the solver (e.g. scission daughters are registered as core
-                # Polymer species but have no pool config yet). Demote to the
-                # legacy mu1-only transfer so the parent drain is never
-                # silently zeroed (mass would otherwise be duplicated).
+                # A stamped archetype needs its pool(s) resolved in the
+                # solver: MIGRATION/SCISSION_FRAGMENT need BOTH src and dst
+                # (e.g. scission daughters are registered as core Polymer
+                # species but have no pool config yet); DISCRETE_CHIP needs
+                # only src (no dst: complement folds back to the same pool
+                # and the chip is a plain gas species). Demote to the legacy
+                # mu1-only transfer so the parent drain is never silently
+                # zeroed (mass would otherwise be duplicated).
                 # src == dst is deliberately NOT demoted: for that shape
                 # (fold-back proxy product + non-pool daughter) the dispatch
                 # skip and the legacy transfer produce identical pool flux
                 # (reactant -r and fold-back +r cancel on the same mu1), so
                 # demotion would change nothing.
-                # DISCRETE_CHIP needs only src (no dst: complement folds back
-                # to the same pool and the chip is a plain gas species).
                 self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
                 n_unresolvable += 1
         if n_unresolvable:
@@ -1171,6 +1172,50 @@ class HybridPolymerSystem(ReactionSystem):
                                 e_n2 = mu3_p / mu1_p
                                 dn_dt[s_idx[2]] -= r_mol_s * (2.0 / 3.0) * e_n2
                                 dn_dt[d_idx[2]] += r_mol_s * e_n2 / 3.0
+                elif arch == FLUX_DISCRETE_CHIP:
+                    # Discrete chip (spec 2026-06-10 §5): an end-anchored cut
+                    # ejects a stamped a-unit chip to the gas phase; the
+                    # complement folds back into the SAME pool, so mu0 is
+                    # unchanged and there is no dst pool. Closure-free: only
+                    # E[n] (an exact ratio of tracked moments) is needed --
+                    # no _safe_mu3_from_mu012 call, no mu2_ok branch. The
+                    # bundle and the rate scaling key on the same stored flag,
+                    # so they cannot disagree by construction. The chip
+                    # species itself gains/loses moles through the standard
+                    # gas dn_dt path (section 4) -- no special handling here.
+                    src = self.reaction_src_pool[r_idx]
+                    # src == -1 cannot reach here (init demotes); defensive.
+                    if src != -1:
+                        chip_a = float(self.reaction_chip_units[r_idx])
+                        b0, b1, _b2, _mu2_ok = self._chain_bundle(
+                            src, y, V_poly, self.is_end_group_reaction[r_idx])
+                        if b0 != 0.0:
+                            s_idx = self.polymer_pools[src].mu_indices
+                            chip_e_n = b1
+                            if rf > 0.0:
+                                # Forward (ejection): Delta n = -a,
+                                # Delta n^2 = -(2aE[n] - a^2). Clamp the mu2
+                                # decrement at >= 0: 2aE[n] - a^2 < 0 is
+                                # impossible per-chain (n >= a always) but
+                                # reachable in expectation when the pool mean
+                                # length has decayed toward chip size; by
+                                # then the moment description is marginal.
+                                rf_mol = rf * V_rxn
+                                dn_dt[s_idx[1]] -= rf_mol * chip_a
+                                chip_dmu2 = 2.0 * chip_a * chip_e_n - chip_a * chip_a
+                                if chip_dmu2 > 0.0:
+                                    dn_dt[s_idx[2]] -= rf_mol * chip_dmu2
+                            if rr > 0.0:
+                                # Reverse (re-attachment) -- EXACT extension
+                                # form, NOT the forward sign-flip:
+                                # (n+a)^2 - n^2 = +(2aE[n] + a^2). E[n] on the
+                                # same single pool (the re-formed chain
+                                # extends a parent-statistics chain by a).
+                                # Unconditionally positive: no clamp.
+                                rr_mol = rr * V_rxn
+                                dn_dt[s_idx[1]] += rr_mol * chip_a
+                                dn_dt[s_idx[2]] += rr_mol * (
+                                    2.0 * chip_a * chip_e_n + chip_a * chip_a)
                 elif arch == FLUX_UNRESOLVED:
                     # Legacy mu1-only transfer (pre-apportionment behavior),
                     # replicated exactly: -r per reactant proxy, +r per

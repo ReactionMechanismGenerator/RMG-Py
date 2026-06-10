@@ -675,7 +675,9 @@ class TestHybridPolymerReactor:
         resolve to a solver pool (src == -1) demotes to UNRESOLVED at
         initialize_model -- the same aggregate unresolvable-pool demotion path
         as MIGRATION/SCISSION_FRAGMENT (chip needs only src; there is no dst:
-        the complement folds back and the chip is a gas species).
+        the complement folds back and the chip is a gas species). In practice
+        src == -1 arises when the chipped pool is a daughter Polymer species
+        that is in the core but not yet in the solver's pool configs.
         """
         Proxy = _spc("CCCC", "poly")
         Mu0 = _spc("CO", "poly_mu0")
@@ -1172,6 +1174,115 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[2], -r * mu2a / mu1a)         # mu1 applied
         assert dn_dt[3] == 0.0                                # mu2 skipped
         assert dn_dt[7] == 0.0
+
+    def test_discrete_chip_monodisperse_closed_form_both_picks(self):
+        """
+        Spec test 10: monodisperse pool (mu_j = N*L^j) -> E[n] = L under BOTH
+        picks (uniform mu1/mu0 == length-biased mu2/mu1 == L on monodisperse),
+        so the chip drain has the same closed form for either flag value:
+        dmu0 = 0, dmu1 = -r*a, dmu2 = -r*(2aL - a^2). Only the rate's site
+        scaling differs (mu0 vs mu1). The chip species flows through the
+        standard gas path (+r).
+        """
+        N, L, a = 2.0, 10.0, 3
+        for end_group in (False, True):
+            sp, core, mask = _two_pool_species()
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+            rxn.polymer_flux_archetype = 5
+            rxn.polymer_chip_units = a
+            rxn.is_end_group_reaction = end_group
+            rs = _two_pool_rs(rxn, core, mask, (N, N * L, N * L * L), (0.1, 0.2, 0.5))
+
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+            kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+            r = kf * (N if end_group else N * L)          # site scaling per flag
+            assert np.isclose(dn_dt[1], 0.0, atol=1e-14), end_group   # mu0
+            assert np.isclose(dn_dt[2], -r * a), end_group            # mu1
+            assert np.isclose(dn_dt[3], -r * (2.0 * a * L - a * a)), end_group
+            assert np.allclose(dn_dt[5:8], 0.0, atol=1e-14)           # pool B idle
+            assert np.isclose(dn_dt[8], +r)                           # chip gas
+
+    def test_discrete_chip_uses_scaling_consistent_e_n(self):
+        """
+        Spec test 11 (decision D5): polydisperse pool (1, 5, 30) separates the
+        picks -- uniform E[n] = mu1/mu0 = 5, length-biased E[n] = mu2/mu1 = 6.
+        The mu2 drain must use the E[n] matching the reaction's rate-scaling
+        flag; pairing a mu0 rate with length-biased E[n] (or vice versa)
+        fails this test loudly.
+        """
+        a = 1
+        for end_group, e_n, site in ((False, 6.0, 5.0), (True, 5.0, 1.0)):
+            sp, core, mask = _two_pool_species()
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+            rxn.polymer_flux_archetype = 5
+            rxn.polymer_chip_units = a
+            rxn.is_end_group_reaction = end_group
+            rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (0.1, 0.2, 0.5))
+
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+            kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+            r = kf * site
+            assert np.isclose(dn_dt[2], -r * a), end_group
+            assert np.isclose(dn_dt[3], -r * (2.0 * a * e_n - a * a)), end_group
+
+    def test_discrete_chip_clamp_regime_skips_mu2_write(self):
+        """
+        Spec test 12: a >= 2*E[n] makes 2aE[n] - a^2 <= 0 -- impossible
+        per-chain (n >= a) but reachable in expectation for a pool whose mean
+        length decayed toward chip size. The forward mu2 decrement is clamped
+        (write skipped), mu1 still drains, RHS finite.
+        """
+        a = 13   # length-biased E[n] = 6 -> 2*13*6 - 169 = -13 < 0
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 5
+        rxn.polymer_chip_units = a
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (0.1, 0.2, 0.5))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        r = kf * 5.0                                  # mu1-scaled
+        assert np.all(np.isfinite(dn_dt))
+        assert np.isclose(dn_dt[2], -r * a)           # mu1 still drains
+        assert dn_dt[3] == 0.0                        # mu2 write skipped
+        assert np.isclose(dn_dt[1], 0.0, atol=1e-14)  # mu0 untouched
+
+    def test_discrete_chip_reverse_leg_exact_extension_form(self):
+        """
+        Spec test 14: the reverse leg is the EXACT extension form
+        Delta(n^2) = (n+a)^2 - n^2 = +(2aE[n] + a^2): dmu1 = +rr*a,
+        dmu2 = +rr*(2aE[n] + a^2) -- PLUS a^2, not the forward sign-flip
+        (which would subtract it) -- and never clamps, even at a >= 2*E[n]
+        where the forward leg would. Driven via the rs.kb override with
+        kf = 0 and injected chip moles.
+        """
+        a = 13                                # forward would clamp here
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 5
+        rxn.polymer_chip_units = a
+        rxn.is_end_group_reaction = True      # uniform pick: E[n] = mu1/mu0 = 5
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (0.1, 0.2, 0.5))
+        rs.kf[0] = 0.0                        # silence the forward leg
+        rs.kb[0] = 0.4                        # drive the reverse leg directly
+
+        y = rs.y.copy()
+        y[8] = 1.0                            # inject chip (G) moles
+
+        dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+
+        # G is the only gas species with moles -> C_G = P/(R*T) exactly.
+        c_g = 1.0e5 / (constants.R * 800.0)
+        site = 1.0                            # mu0 of pool A (flag True)
+        rr = 0.4 * 1.0 * c_g * site           # kb * C(fold-back proxy)=1 * C(G) * site
+        e_n = 5.0
+        assert np.isclose(dn_dt[1], 0.0, atol=1e-14)              # mu0 untouched
+        assert np.isclose(dn_dt[2], +rr * a)                      # exact form
+        assert np.isclose(dn_dt[3], +rr * (2.0 * a * e_n + a * a))  # +a^2, no clamp
+        assert np.isclose(dn_dt[8], -rr)      # chip consumed via standard path
 
     def test_scission_monodisperse_limit_closed_form(self):
         """
