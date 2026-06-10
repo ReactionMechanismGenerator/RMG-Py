@@ -305,6 +305,72 @@ class TestCanteraWriter:
         assert "R(5) <=> P(6)" in equations
         assert len(equations) == 1
 
+    def test_generate_cantera_data_keeps_balanced_chip_reaction(self):
+        """
+        Spec test 17: a sub-shape-(b) chip reaction's fold-back is a
+        structurally MODIFIED END_MOD image, so proxy -> modified-proxy + chip
+        can be atom-exact. Balanced (b)-shapes must SURVIVE the
+        unbalanced-proxy filter (it keys on is_balanced(), not on "is a proxy
+        scission").
+        """
+        parent = self._create_dummy_species("parent", "CCC", index=1)
+        parent.is_polymer_proxy = True
+        fold_b = self._create_dummy_species("parent_mod", "[CH2]CC", index=2)
+        fold_b.is_polymer_proxy = True
+        h = self._create_dummy_species("H", "[H]", index=3)
+
+        chip_rxn_b = Reaction(
+            reactants=[parent], products=[fold_b, h],
+            kinetics=Arrhenius(A=(1e13, "s^-1"), n=0, Ea=(300, "kJ/mol"), T0=(1, "K")),
+        )
+        chip_rxn_b.polymer_flux_archetype = 5
+        chip_rxn_b.polymer_chip_units = 0
+        assert chip_rxn_b.is_balanced()   # sanity: (b)-shapes can balance
+
+        species = [parent, fold_b, h]
+        data = generate_cantera_data(species, [chip_rxn_b], is_plasma=False)
+        equations = [d['equation'] for d in data.get('reactions', [])]
+        assert len(equations) == 1
+        assert any('parent_mod' in eq for eq in equations)
+
+    def test_generate_cantera_data_drops_overbalanced_chip_reaction(self, caplog):
+        """
+        Spec test 17b: a sub-shape-(a) chip reaction's fold-back is an
+        UNMODIFIED parent copy, so it reads proxy -> proxy + chip:
+        over-balanced by the chip mass (the spec-A2 cap-mass drift made
+        visible at the species-balance level). It must be dropped and counted
+        exactly like a registered unbalanced scission.
+        """
+        import logging as _logging
+
+        parent = self._create_dummy_species("parent", "CCC", index=1)
+        parent.is_polymer_proxy = True
+        chip = self._create_dummy_species("chip", "C", index=2)
+
+        chip_rxn_a = Reaction(
+            reactants=[parent], products=[parent, chip],
+            kinetics=Arrhenius(A=(1e13, "s^-1"), n=0, Ea=(300, "kJ/mol"), T0=(1, "K")),
+        )
+        chip_rxn_a.polymer_flux_archetype = 5
+        chip_rxn_a.polymer_chip_units = 1
+        assert not chip_rxn_a.is_balanced()   # over-balanced by the chip
+
+        r = self._create_dummy_species("R", "[CH2]O", index=3)
+        p = self._create_dummy_species("P", "C[O]", index=4)
+        normal = Reaction(
+            reactants=[r], products=[p],
+            kinetics=Arrhenius(A=(1e10, "s^-1"), n=0, Ea=(0, "J/mol"), T0=(1, "K")),
+        )
+
+        species = [parent, chip, r, p]
+        with caplog.at_level(_logging.INFO):
+            data = generate_cantera_data(species, [chip_rxn_a, normal], is_plasma=False)
+        equations = [d['equation'] for d in data.get('reactions', [])]
+        assert "R(3) <=> P(4)" in equations
+        assert len(equations) == 1            # chip (a)-shape dropped
+        assert any("dropped 1 element-unbalanced" in rec.getMessage()
+                   for rec in caplog.records) # counted like a scission drop
+
     def test_reaction_to_dict_pdep_arrhenius(self):
         """Test Pressure-Dependent Arrhenius (PLOG) structure."""
         r = self._create_dummy_species("R", "[CH2]O", index=1)
