@@ -94,13 +94,22 @@ parameters only; the equations live here and only here.
 - `unresolved: true` entries (legacy-µ1 emissions, including solver-demoted
   stamps) MUST be integrated; consumers MAY warn.
 - For retained entries with composite kinetics, `kinetics` may be `null`; the
-  consumer then takes rates from Cantera and must treat the reaction as
-  reversible (chem.yaml prints `<=>` unconditionally).
-- **Caveat (ordinary reactions):** chem.yaml prints every equation as `<=>`
-  and carries no reversibility marker; reactions WITHOUT an artifact entry
-  therefore run reversible in every consumer of the file (Cantera, the
-  reference runner). Artifact-listed entries are exempt — their
-  `kinetics.reversible` restores the generating solver's behavior.
+  consumer then takes rates from Cantera. In post-fix chem.yaml the equation
+  arrow records reversibility (`=>` irreversible, `<=>` reversible), so the
+  consumer reads reversibility from the arrow — composite-kinetics retained
+  entries no longer need a treat-as-reversible assumption. (In PRE-FIX files,
+  written before the cantera `=>`-for-irreversible fix, every equation is
+  `<=>`, so such an entry must still be treated as reversible.)
+- **Caveat (ordinary reactions):** post-fix chem.yaml records reversibility in
+  the equation arrow (`=>` irreversible, `<=>` reversible), so reactions
+  WITHOUT an artifact entry round-trip their reversibility faithfully in every
+  consumer of the file (Cantera, the reference runner, the numpy consumer).
+  *Legacy:* chem.yaml files written by RMG BEFORE this fix print every equation
+  as `<=>` with no separate reversibility marker, so an originally-irreversible
+  ordinary reaction in such a file runs reversible in every consumer.
+  Artifact-listed entries are exempt either way — their `kinetics.reversible`
+  restores the generating solver's behavior (and now agrees with the arrow in
+  post-fix files).
 
 ## 4. Rate-evaluation recipe (normative; oracle: `polymer.pyx:922-1261`)
 

@@ -626,7 +626,16 @@ def get_reaction_equation(reaction, species_list):
         else:
             suffix = " (+ M)"
 
-    return reactants_str + suffix + " <=> " + products_str + suffix
+    # The arrow is the ONLY reversibility channel in the Cantera YAML
+    # (reaction_to_dict_list emits no separate `reversible:` key), and Cantera's
+    # parser treats `=>` as irreversible and `<=>` as reversible. Mirror
+    # rxn.reversible so Cantera matches the generating RMG model exactly:
+    # for irreversible reactions RMG sets kb=0 (solver/polymer.pyx:783-785),
+    # whereas `<=>` would make Cantera synthesize a spurious kb=kf/Keq. This
+    # follows the Chemkin writer precedent (chemkin.pyx:1721,1743).
+    arrow = " <=> " if reaction.reversible else " => "
+
+    return reactants_str + suffix + arrow + products_str + suffix
 
 
 def get_label(obj: Union['Species', 'Molecule'], species_list: list['Species']):

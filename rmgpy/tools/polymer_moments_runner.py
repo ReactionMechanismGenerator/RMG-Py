@@ -24,17 +24,20 @@ Oracle equivalence to the *generating RMG run* is:
 
 * **Exact** for the time-grid machinery, moment channels, and mass-transfer.
 
-* **Approximate for ordinary gas chemistry:** chem.yaml prints every reaction
-  equation as ``<=>`` (``rmgpy/cantera.py get_reaction_equation`` hard-codes
-  the bidirectional arrow) and carries no reversibility marker outside the
-  artifact.  Reactions that have NO artifact entry (i.e. not proxy-touching)
-  therefore run *reversible* in every consumer of the same chem.yaml file —
-  Cantera, the reference runner, and the TA numpy consumer alike.  This is
-  consistent across all three consumers but may diverge from the generating
-  RMG run for reactions that were originally marked irreversible.  This is a
-  pre-existing export limitation; a warning is emitted at runtime when any
-  such reaction is present.  The fix (emit ``=>`` for irreversible reactions)
-  is a chemistry-semantics decision deferred to the project owner.
+* **Exact for ordinary gas chemistry (post-fix chem.yaml):** chem.yaml now
+  records reversibility in the equation arrow (``rmgpy/cantera.py
+  get_reaction_equation`` emits ``=>`` for irreversible reactions, ``<=>``
+  otherwise), so reactions with NO artifact entry (i.e. not proxy-touching)
+  round-trip their reversibility faithfully from the arrow in every consumer —
+  Cantera, the reference runner, and the TA numpy consumer alike.  The
+  artifact's ``kinetics.reversible`` restoration for listed entries now
+  agrees with the arrow and is kept as belt-and-braces.
+
+  **Legacy caveat:** chem.yaml files written by RMG *before* this exporter fix
+  carry an all-``<=>`` arrow and no separate reversibility marker, so an
+  originally-irreversible ordinary (non-artifact-listed) reaction in such a
+  file runs *reversible* in every consumer.  A warning is emitted at runtime
+  when a non-artifact-listed reaction is present so old files are flagged.
 """
 
 import argparse
@@ -162,22 +165,27 @@ def _restamp_and_extend(artifact, species, reactions):
         rxn.is_end_group_reaction = (e["scaling"] == "mu0")
         rxn.polymer_chip_units = int(e.get("params", {}).get("a", 0))
         if e["kinetics"] is not None:
-            # Oracle-faithful reversibility: chem.yaml equations always print
-            # '<=>' (rmgpy/cantera.py get_reaction_equation), so the arrow
-            # cannot distinguish irreversible RMG reactions. The artifact's
-            # kinetics.reversible records what the generating solver used.
+            # Belt-and-braces reversibility for listed entries: post-fix
+            # chem.yaml records reversibility in the equation arrow
+            # (rmgpy/cantera.py get_reaction_equation emits '=>'/'<=>'), so this
+            # now AGREES with the parsed arrow. The artifact's
+            # kinetics.reversible records what the generating solver used and is
+            # retained as a defence-in-depth restore (and recovers reversibility
+            # from PRE-FIX all-'<=>' chem.yaml files for listed entries).
             rxn.reversible = bool(e["kinetics"]["reversible"])
-    # Warn about ordinary (non-artifact) reactions that cannot have their
-    # reversibility restored (chem.yaml unconditionally prints '<=>').
+    # Non-artifact (ordinary) reactions get their reversibility from the arrow
+    # in post-fix chem.yaml. Warn only so that PRE-FIX all-'<=>' files — where
+    # such a reaction would silently run reversible — are flagged.
     n_unrestamped = len(reactions) - len(restamped_indices)
     if n_unrestamped > 0:
         logging.warning(
             "polymer_moments_runner: %d chem.yaml reaction(s) have no artifact "
-            "entry; chem.yaml records every equation as '<=>', so any originally-"
-            "irreversible ordinary reaction runs REVERSIBLE here — identical to "
-            "what Cantera/TA see from the same file, but NOT necessarily the "
-            "generating RMG run (pre-existing export limitation, see module "
-            "docstring).",
+            "entry; their reversibility comes from the equation arrow "
+            "('=>'/'<=>'). Post-fix chem.yaml round-trips this faithfully, but a "
+            "PRE-FIX file (written before the cantera '=>'-for-irreversible fix) "
+            "records every equation as '<=>', so an originally-irreversible "
+            "ordinary reaction in such a file would run REVERSIBLE here (see "
+            "module docstring).",
             n_unrestamped,
         )
     return all_reactions

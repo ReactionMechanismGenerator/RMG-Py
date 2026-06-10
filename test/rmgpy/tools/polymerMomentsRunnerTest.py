@@ -92,21 +92,20 @@ class TestChemYamlLoader:
         assert len(reactions) == 1
         rxn = reactions[0]
         assert rxn.kinetics.A.value_si == pytest.approx(5.0)
-        # chem.yaml prints '<=>' unconditionally (rmgpy/cantera.py
-        # get_reaction_equation hard-codes ' <=> '), so the raw loader cannot
-        # recover RMG irreversibility from the arrow — it reads reversible=True.
-        # The artifact's kinetics.reversible restores it during restamping, but
-        # ONLY for proxy-touching reactions; an ordinary gas reaction carries no
-        # artifact entry and stays reversible (the oracle treats it that way too,
-        # and a reversible Arrhenius with no thermo on products is just <=> with
-        # Keq from thermo). This deck's gas reaction has no proxy involvement, so
-        # restamping is a no-op for it.
-        assert rxn.reversible is True
+        # chem.yaml now records reversibility in the equation arrow
+        # (rmgpy/cantera.py get_reaction_equation emits '=>' for irreversible
+        # reactions, '<=>' otherwise), so the raw loader recovers RMG
+        # irreversibility straight from the arrow — this fixture's gas_rxn is
+        # reversible=False, so it round-trips reversible=False without any
+        # artifact help. (_parse_equation in the runner handles '=>'.) The
+        # artifact's kinetics.reversible restoration remains as belt-and-braces
+        # for proxy-touching entries and now agrees with the arrow.
+        assert rxn.reversible is False
         with open(art_path) as fh:
             artifact = json.load(fh)
         assert artifact["reactions"] == []  # G->C1 is ordinary chemistry
         _restamp_and_extend(artifact, species, reactions)
-        assert rxn.reversible is True  # unchanged: no artifact entry to restore
+        assert rxn.reversible is False  # unchanged: arrow already irreversible
         # thermo round-trips (needed for Keq on reversible decks)
         assert species[0].thermo is not None
         assert species[0].get_free_energy(800.0) == pytest.approx(

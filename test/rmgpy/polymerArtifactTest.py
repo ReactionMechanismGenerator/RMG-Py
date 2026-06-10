@@ -145,7 +145,7 @@ class TestCompileReactionEntries:
         assert len(entries) == 1
         e = entries[0]
         assert e["id"] == "r4"
-        assert e["cantera"] == {"index": 4, "equation": "A(1) <=> B(5)"}
+        assert e["cantera"] == {"index": 4, "equation": "A(1) => B(5)"}
         assert e["archetype"] == "migration/1"
         assert e["src_pool"] == "A" and e["dst_pool"] == "B"
         assert e["scaling"] == "mu1"
