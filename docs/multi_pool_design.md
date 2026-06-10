@@ -192,6 +192,9 @@ The signature is a canonical SMARTS or RMG `Group` adjacency-list hash. Trailing
 28. queued_spawn_intents.clear()
 ```
 
+Chip events never queue a spawn intent: `surge_chip_products` replaces the
+SCISSION daughter at stamping time, upstream of this iteration-boundary hook.
+
 ## 5. Conservation invariants
 
 For every reaction `A_chain -> B_chain + volatile`, where `A_chain` is in pool A and `B_chain` is in pool B:
@@ -273,7 +276,8 @@ archetype (`rmgpy.polymer.PolymerFluxArchetype`, carried on
 | SAME_POOL | none (fold-back is net-zero by construction) |
 | MIGRATION | whole-chain bundle (1, E[k], E[k²]) per direction: forward rf moves source-pool statistics, reverse rr moves target-pool statistics. µ1-scaled reactions pick length-biased chains (E[k]=µ2/µ1, E[k²]=µ3/µ1, guarded closure); µ0-scaled end-group reactions pick uniformly (µ1/µ0, µ2/µ0). |
 | SCISSION_FRAGMENT | complement-stays-in-parent: parent (0, −r·µ2/(2µ1), −r·(2/3)·µ3/µ1), daughter (+r, +r·µ2/(2µ1), +r·µ3/(3µ1)). Conserves µ1 exactly and adds one chain per event, independent of whether head/tail/both reactions were generated. |
-| UNRESOLVED | legacy µ1-only transfer + one-time warning. Fallback for unstamped reactions (e.g. restored from pickles) AND for stamped MIGRATION/SCISSION_FRAGMENT whose src/dst pool cannot be resolved in the solver (e.g. scission daughters registered as species before their pool exists) — demoting preserves the parent drain instead of silently zeroing it. |
+| DISCRETE_CHIP | end-anchored cut ejects a stamped `a`-unit discrete chip (`Reaction.polymer_chip_units`, `a = round(chip_MW/monomer_MW)`, a = 0 legal); the complement folds back into the SAME pool. Per direction: forward (0, −rf·a, −rf·max(0, 2a·E[n]−a²)) with the µ2 decrement clamped at ≥ 0; reverse uses the EXACT extension form (0, +rr·a, +rr·(2a·E[n]+a²)) — plus a², never clamped. E[n] is scaling-aware (µ1/µ0 when µ0-scaled, µ2/µ1 when µ1-scaled — the rate scaling is the sampling measure). Closure-free (no µ3). The chip species flows through the standard gas path; exact invariant: d/dt[Σ_pools µ1 + Σ_chips a_i·n_i] = 0. µ0-scaled chips with a > 0 additionally throttle their site scaling in exhaustion — site = min(µ0, µ1/a)/V_poly — a counting-inequality bound (every chain with n ≥ a holds at least a units, so donatable ends ≤ µ1/a always), which makes µ1 decay at worst exponentially instead of running linearly negative once the pool's units exhaust. |
+| UNRESOLVED | legacy µ1-only transfer + one-time warning. Fallback for unstamped reactions (e.g. restored from pickles) AND for stamped MIGRATION/SCISSION_FRAGMENT whose src/dst pool (or DISCRETE_CHIP whose src pool) cannot be resolved in the solver (e.g. scission daughters registered as species before their pool exists) — demoting preserves the parent drain instead of silently zeroing it. |
 
 Edge reactions are diagnostic-only (matching `simple.pyx`): their fluxes never
 enter `dn_dt` or the consumption/production accumulators.
@@ -285,6 +289,29 @@ radical chemistry double-counts — specify the thermal-only rate.
 
 Full derivations and decision rationale:
 `docs/superpowers/specs/2026-06-09-proxy-moment-flux-apportionment-design.md`.
+
+**Discreteness gate + chip surgery (2026-06-10).** `classify_structure`
+rejects backbone impostors in the wing_count ≥ 2 branch (one-sided heavy-atom
+bound: keep iff heavy ≥ proxy_heavy − round(0.35·proxy_heavy); reason
+`backbone_impostor`). Flag-true (µ0-scaled) scission shapes are rewritten at
+stamping time by `surge_chip_products` into [discrete chip,
+CHIP-stamped fold-back] — no `_scission` pool is ever spawned for a chip
+event (the surgery replaces the daughter before the spawn-candidate pass).
+Infeasible surgery stamps UNRESOLVED, never SCISSION_FRAGMENT.
+
+**Liveness (partially live, not dormant):** the flag fires today only for
+shapes with an END_MOD product alongside the scission piece — those route
+DISCRETE_CHIP immediately. Single-step end-anchored cuts (eliminations,
+retro-ene) are mis-scaled µ1 today and route SCISSION_FRAGMENT until the
+end-anchor detector item lands (tripwire warning
+"probable mis-scaled end-anchored cut" gives the census). CHIP archetypes in
+logs are expected, not a bug.
+
+**Dormant knob:** `discrete_dp_threshold` (per pool, default 4) is parsed and
+stored but has NO behavioral use under the fixed trimer proxy: the backbone
+gate is proxy-relative, scission routing keys on `is_end_group_reaction`, and
+the conditional DP backstop (reclassify-toward-chip when proxy repeat-count >
+threshold AND piece DP < threshold) only activates for longer proxies.
 
 ## 6. Sidecar JSON schema
 
@@ -422,10 +449,27 @@ Each numbered step is its own commit. The synthetic unit test from step 1 acts a
 4. `max_pools` cap is hard. After cap reached, would-be-spawned products are still tagged `is_polymer_proxy=True` and tracked as explicit oligomers; their moments are not separately accounted. Acceptable for phase 1; phase 2 may add cap-relaxation under user override.
 5. The cantera writer emits `<label>_muN` as pseudo-species. Cantera does not "understand" them — they are decorative in YAML and meaningful only via the sidecar. TA's loader filters them out before constructing a Cantera `Solution`.
 6. **Crosslink / chain–chain coupling is not modeled.** A reaction whose product is a crosslink (>2 intact wings, i.e. two chains joined) is *rejected* (`PolymerCrosslinkError` → the reaction is discarded) rather than represented, because the single-distribution-per-pool moment model has no coupling term. This conserves mass but drops char-forming coupling chemistry — a phase-2 item.
-7. **Gas/polymer classification is purely topological** (wing count). There is no volatility/MW check, so a small volatile that happens to contain an [end-group + monomer] subgraph can be retained as a polymer fragment. Acceptable for phase 1; revisit with a size/boiling-point gate.
+7. **Gas/polymer classification is purely topological** (wing count). There is no volatility/MW check, so a small volatile that happens to contain an [end-group + monomer] subgraph can be retained as a polymer fragment. Acceptable for phase 1; revisit with a size/boiling-point gate. *Partially addressed 2026-06-10:* the discreteness gate rejects backbone impostors (heavy-atom bound) and DISCRETE_CHIP tracks end-cut fragments discretely; true volatility (Tb vs reactor T) remains a mass-transfer-layer item.
 8. **The proxy is a fixed single-buffer trimer** (`[Head]–O–O–O–[Tail]`), with no length knob — `cutoff`/`x_s` set the solver's explicit/tail boundary, NOT the proxy length. Interior chemistry and thermo are therefore taken from a center monomer that sits one monomer from a real chain end; for short repeat units this may let end effects leak in.
 9. **Cantera export drops element-unbalanced polymer-proxy reactions** (the size-changing `*_scission_tail/_scission_head` daughters) so `ct.Solution` doesn't reject the mechanism via `checkBalance`. Their mass is carried by the moment solver + `polymer_pools.json` sidecar, not by Cantera — the TA consumer must rely on the sidecar for that flux.
 10. **Scission daughters seed as EMPTY pools** (`moments=None`, `initial_mass=0` → zero moments, halved Mn/Mw) and fill via reaction flux. They do NOT inherit the parent's distribution (that would duplicate mass).
+11. **Chip fold-back ignores the new chain end created by the cut** (a
+    potential unzip initiator) — the same approximation END_MOD fold-back
+    already makes everywhere; end-specific kinetics belong to k_unzip/END_MOD
+    chemistry, not a spawned pool. (A1)
+12. **End-group mass drift on chips** (chip carries the old cap, parent image
+    keeps both) is sub-monomer and consistent with existing µ-accounting;
+    shape-(a)'s Cantera overbalance is this same drift made visible at the
+    species-balance level — dropped from the export and counted, like
+    registered scissions. (A2)
+13. **True volatility (Tb vs reactor T) is out of scope** — mass-transfer
+    layer, phase 2; see also the end-anchor detector follow-up in §11. (A3)
+14. **The legacy UNRESOLVED path has the same latent exhaustion structure**
+    for µ0-scaled reactions (rate ∝ µ0, drains µ1, µ0 untouched) as an
+    unthrottled chip — documented, NOT fixed: the UNRESOLVED contract is
+    bit-exact legacy behavior, and the end-anchor detector (§11) migrates
+    exactly these reactions to DISCRETE_CHIP, where the exhaustion throttle
+    protects them. The unprotected population shrinks by design. (A4)
 
 > NOTE (§4.4 mass-flux gate): NOT YET ACTIVE. `_estimate_relative_flux` is a `0.5`
 > stub, so spawning is currently gated only by `max_pools` + similarity-merge. The
@@ -433,6 +477,17 @@ Each numbered step is its own commit. The synthetic unit test from step 1 acts a
 
 ## 11. Open items for follow-up
 
+- **End-anchor detector** (scoped 2026-06-10, deliberately deferred): extend
+  `is_end_group_reaction` determination to template/site anchoring (reacted
+  site in the cap or cap-adjacent unit, from template-labeled atoms before
+  `clear_labeled_atoms`). Chemistry-visible: flips affected reactions
+  µ1 → µ0 scaling (rate × E[n], 2–4 orders of magnitude) — needs its own
+  EPDM delta analysis, reaction by reaction. Acceptance criteria: (a) the
+  tripwire census on real decks drops to ~zero; (b) the EPDM delta is
+  explained reaction-by-reaction. The seam is engineered so the detector
+  touches only detection + re-scaling: routing, bundles, and solver tests
+  downstream of the flag are already correct (CHIP activates with zero
+  solver changes).
 - Benchmark `discover_repeat_motif` on the carbon-phenol case; decide on RDKit fallback yes/no with data.
 - Decide on rate-rule heuristics for inter-pool transfer reactions when family.py doesn't naturally produce them.
 - TA loader implementation (TA repo's Phase 2) — proceed in parallel against this contract.
