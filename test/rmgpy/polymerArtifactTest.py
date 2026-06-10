@@ -113,6 +113,45 @@ class TestPoolBlockSchema2:
         assert d["monomer_routing"] == "ethylene(5)"
         assert "ethylene(5)" in d["phase_species"]
 
+    def test_bookkeeping_species_is_proxy_plus_mu_dummies(self, pe_pool):
+        """bookkeeping_species = the pool proxy + the three µ-dummies, exactly,
+        as a subset of phase_species preserving its relative order."""
+        core = [
+            _spc("CC", "PE", index=2),          # proxy
+            _mu_dummy("PE_mu0"), _mu_dummy("PE_mu1"), _mu_dummy("PE_mu2"),
+            _spc("[CH3]", "G", index=7),        # gas — in neither list
+            _mu_dummy("OTHER_mu0"),             # other pool's dummy
+        ]
+        d = _serialize_pool_for_sidecar(pe_pool, core_species=core)
+        assert d["bookkeeping_species"] == ["PE(2)", "PE_mu0", "PE_mu1", "PE_mu2"]
+        # subset invariant + same relative order as phase_species
+        assert set(d["bookkeeping_species"]) <= set(d["phase_species"])
+        positions = [d["phase_species"].index(s) for s in d["bookkeeping_species"]]
+        assert positions == sorted(positions)
+
+    def test_routed_monomer_is_phase_but_not_bookkeeping(self, pe_pool):
+        """The routed condensed monomer is real condensed: it appears in
+        phase_species but NOT in bookkeeping_species."""
+        core = [
+            _spc("CC", "PE", index=2),
+            _mu_dummy("PE_mu0"), _mu_dummy("PE_mu1"), _mu_dummy("PE_mu2"),
+        ]
+        d = _serialize_pool_for_sidecar(pe_pool, core_species=core,
+                                        monomer_routing="ethylene(5)")
+        assert "ethylene(5)" in d["phase_species"]
+        assert "ethylene(5)" not in d["bookkeeping_species"]
+        assert d["bookkeeping_species"] == ["PE(2)", "PE_mu0", "PE_mu1", "PE_mu2"]
+
+    def test_bookkeeping_species_always_present(self, pe_pool):
+        """The key exists even without core_species (empty phase_species), and
+        a routing-only pool block keeps it empty (routing is real condensed)."""
+        d = _serialize_pool_for_sidecar(pe_pool)
+        assert d["phase_species"] == []
+        assert d["bookkeeping_species"] == []
+        d = _serialize_pool_for_sidecar(pe_pool, monomer_routing="ethylene(5)")
+        assert d["phase_species"] == ["ethylene(5)"]
+        assert d["bookkeeping_species"] == []
+
 
 def _arrhenius(A=(2.0, "s^-1")):
     return Arrhenius(A=A, n=0.0, Ea=(0.0, "J/mol"), T0=(1.0, "K"))

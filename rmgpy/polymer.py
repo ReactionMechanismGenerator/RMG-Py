@@ -2728,15 +2728,25 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
                   "units": {"A": "s^-1", "Ea": "J/mol"}},
     }
     phase_species: List[str] = []
+    bookkeeping_species: List[str] = []
     if core_species:
         member_bases = {pool.label, f"{pool.label}_mu0", f"{pool.label}_mu1",
                         f"{pool.label}_mu2"}
         for spc in core_species:
             if _species_base_label(spc) in member_bases:
-                phase_species.append(_artifact_species_label(spc))
+                artifact_label = _artifact_species_label(spc)
+                phase_species.append(artifact_label)
+                # Everything THIS branch collects is bookkeeping by
+                # construction: the pool's canonical proxy (concentration
+                # pinned to 1.0 by the site-scaling rule) and the three
+                # µ-dummies (carry ~0 mol; host the moments). Real condensed
+                # entries (routed monomer below; explicit-DP chains) never
+                # come through this branch — no name/suffix re-classification.
+                bookkeeping_species.append(artifact_label)
     if monomer_routing and monomer_routing not in phase_species:
         phase_species.append(monomer_routing)
     d["phase_species"] = phase_species
+    d["bookkeeping_species"] = bookkeeping_species
     d["monomer_routing"] = monomer_routing
     d["mu3_closure"] = "log_lagrange/1"
     return d
