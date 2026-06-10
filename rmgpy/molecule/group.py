@@ -586,6 +586,10 @@ class GroupAtom(Vertex):
         if 'inRing' in self.props and 'inRing' in group.props:
             if self.props['inRing'] != group.props['inRing']:
                 return False
+        
+        if self.label != group.label:
+            return False
+        
         # Otherwise the two atom groups are equivalent
         return True
 
@@ -669,6 +673,10 @@ class GroupAtom(Vertex):
                 return False
         elif 'inRing' not in self.props and 'inRing' in group.props:
             return False
+        
+        if self.label != group.label:
+            return False
+        
         # Otherwise self is in fact a specific case of other
         return True
 
