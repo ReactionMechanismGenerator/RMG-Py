@@ -1038,6 +1038,26 @@ class HybridPolymerSystem(ReactionSystem):
                     # Note: We use the *mapped* index from the pool, ensuring we grab the real state variable
                     site = max(0.0, y[moment_idx]) / V_poly
 
+                    # Exhaustion throttle (spec 2026-06-10 s5 AMENDMENT): a
+                    # mu0-scaled DISCRETE_CHIP drains mu1 but never mu0, so
+                    # its rate would not self-limit -- mu1 would run linearly
+                    # negative past exhaustion while chips keep being created.
+                    # Counting inequality (not a heuristic): every chain with
+                    # n >= a holds at least a units, so donatable ends are
+                    # bounded by mu1/a always. Throttling the SITE (not
+                    # write-gating the mu1 leg, which would duplicate mass)
+                    # gives dmu1/dt >= -kf*mu1 globally; it multiplies BOTH
+                    # directions by design. a = 0 chips (drain nothing) and
+                    # mu1-scaled chips (already self-limiting) are exempt.
+                    if (self.reaction_flux_archetype[r_idx] == FLUX_DISCRETE_CHIP
+                            and self.is_end_group_reaction[r_idx]
+                            and self.reaction_chip_units[r_idx] > 0):
+                        mu_idx = self.polymer_pools[target_pool_idx].mu_indices
+                        site = min(
+                            max(0.0, y[mu_idx[0]]),
+                            max(0.0, y[mu_idx[1]]) / float(self.reaction_chip_units[r_idx]),
+                        ) / V_poly
+
                     rf *= site
                     rr *= site
 
@@ -1176,9 +1196,12 @@ class HybridPolymerSystem(ReactionSystem):
                     # Discrete chip (spec 2026-06-10 §5): an end-anchored cut
                     # ejects a stamped a-unit chip to the gas phase; the
                     # complement folds back into the SAME pool, so mu0 is
-                    # unchanged and there is no dst pool. Closure-free: only
-                    # E[n] (an exact ratio of tracked moments) is needed --
-                    # no _safe_mu3_from_mu012 call, no mu2_ok branch. The
+                    # unchanged and there is no dst pool. Closure-free in
+                    # effect: only E[n] (an exact ratio of tracked moments)
+                    # is consumed -- b2/mu2_ok are ignored here, so no mu2_ok
+                    # branch is needed. (For mu1-scaled chips _chain_bundle's
+                    # length-biased path still computes the mu3 closure
+                    # internally; its output is unused by this branch.) The
                     # bundle and the rate scaling key on the same stored flag,
                     # so they cannot disagree by construction. The chip
                     # species itself gains/loses moles through the standard

@@ -1257,15 +1257,19 @@ class TestHybridPolymerReactor:
         dmu2 = +rr*(2aE[n] + a^2) -- PLUS a^2, not the forward sign-flip
         (which would subtract it) -- and never clamps, even at a >= 2*E[n]
         where the forward leg would. Driven via the rs.kb override with
-        kf = 0 and injected chip moles.
+        kf = 0 and injected chip moles. The site magnitude is the spec 5
+        exhaustion-throttle value min(mu0, mu1/a) (amendment 2026-06-10),
+        derived from the fixture moments -- so this test also pins that the
+        throttle multiplies the reverse leg.
         """
         a = 13                                # forward would clamp here
+        mu_a = (1.0, 5.0, 30.0)
         sp, core, mask = _two_pool_species()
         rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
         rxn.polymer_flux_archetype = 5
         rxn.polymer_chip_units = a
         rxn.is_end_group_reaction = True      # uniform pick: E[n] = mu1/mu0 = 5
-        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (0.1, 0.2, 0.5))
+        rs = _two_pool_rs(rxn, core, mask, mu_a, (0.1, 0.2, 0.5))
         rs.kf[0] = 0.0                        # silence the forward leg
         rs.kb[0] = 0.4                        # drive the reverse leg directly
 
@@ -1276,13 +1280,103 @@ class TestHybridPolymerReactor:
 
         # G is the only gas species with moles -> C_G = P/(R*T) exactly.
         c_g = 1.0e5 / (constants.R * 800.0)
-        site = 1.0                            # mu0 of pool A (flag True)
+        # Exhaustion throttle (spec 5 amendment 2026-06-10): the mu0-scaled
+        # chip site is min(mu0, mu1/a), and it multiplies BOTH directions --
+        # here mu1/a = 5/13 < mu0 = 1, so the reverse leg is throttled too.
+        site = min(mu_a[0], mu_a[1] / a)
         rr = 0.4 * 1.0 * c_g * site           # kb * C(fold-back proxy)=1 * C(G) * site
         e_n = 5.0
         assert np.isclose(dn_dt[1], 0.0, atol=1e-14)              # mu0 untouched
         assert np.isclose(dn_dt[2], +rr * a)                      # exact form
         assert np.isclose(dn_dt[3], +rr * (2.0 * a * e_n + a * a))  # +a^2, no clamp
         assert np.isclose(dn_dt[8], -rr)      # chip consumed via standard path
+
+    def test_discrete_chip_exhaustion_trajectory_throttles(self):
+        """
+        Spec test 12b (exhaustion-throttle amendment 2026-06-10): a mu0-scaled
+        chip rate is constant in mu1 unthrottled (rate ~ mu0, which chip
+        events never drain), so past unit exhaustion mu1 would run linearly
+        negative while chip moles keep being created. With the throttle,
+        mu1 decays at worst exponentially and never crosses zero, chip
+        production slows in lockstep, the FULL cone (mu1 >= 0 AND
+        mu0*mu2 >= mu1^2) holds throughout, and Sum(mu1) + a*n_chip is
+        conserved at every step.
+        """
+        a = 3
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 5
+        rxn.polymer_chip_units = a
+        rxn.is_end_group_reaction = True
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (0.0, 0.0, 0.0))
+
+        y = rs.y.copy()
+        invariant0 = y[2] + a * y[8]          # Sum(mu1) + a*n_chip
+        # kf = 2/s, so UNTHROTTLED dynamics drain mu1 at kf*mu0*a = 6/s
+        # CONSTANT, crossing zero at t ~ 0.83 s and reaching -19 by t = 4 s.
+        # Forward Euler well past exhaustion: dt*kf = 0.01 (stable).
+        dt = 0.005
+        chip_increments = []
+        for _ in range(800):                  # t = 4 s
+            dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+            assert np.all(np.isfinite(dn_dt))
+            y = y + dt * dn_dt
+            chip_increments.append(dt * dn_dt[8])
+            assert y[2] >= 0.0                              # mu1 never crosses zero
+            if y[2] > 1e-12:
+                assert y[1] * y[3] >= y[2] ** 2 * (1.0 - 1e-9)   # full cone
+            assert dn_dt[8] >= 0.0                          # chip moles nondecreasing
+        # Production decays in lockstep with mu1 (exponential, not constant).
+        assert chip_increments[-1] < 1e-2 * chip_increments[0]
+        assert np.isclose(y[2] + a * y[8], invariant0, rtol=1e-9, atol=1e-12)
+
+    def test_discrete_chip_throttle_direct_rhs_regimes(self):
+        """
+        Spec 5 amendment, direct-RHS pins. Throttled regime (mu1 < a*mu0):
+        site = mu1/a, so dmu1/dt = -kf*(mu1/a)*a = -kf*mu1 EXACTLY -- not
+        -kf*mu0*a, which would be 3x larger here. Healthy regime
+        (mu1 >> a*mu0): site = mu0, byte-identical to the pre-throttle path.
+        """
+        a = 3
+        kf = None
+        for mom_a, site in (((1.0, 1.0, 2.0), 1.0 / 3.0),    # throttled: min(1, 1/3)
+                            ((1.0, 50.0, 3000.0), 1.0)):     # healthy:  min(1, 50/3)
+            sp, core, mask = _two_pool_species()
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+            rxn.polymer_flux_archetype = 5
+            rxn.polymer_chip_units = a
+            rxn.is_end_group_reaction = True
+            rs = _two_pool_rs(rxn, core, mask, mom_a, (0.1, 0.2, 0.5))
+
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+            assert np.isclose(dn_dt[2], -kf * site * a), mom_a   # mu1 drain
+            assert np.isclose(dn_dt[8], +kf * site), mom_a       # chip production
+            if site < mom_a[0]:
+                # Throttled identity: dmu1/dt = -kf*mu1 exactly.
+                assert np.isclose(dn_dt[2], -kf * mom_a[1])
+                assert not np.isclose(dn_dt[2], -kf * mom_a[0] * a)
+
+    def test_discrete_chip_zero_unit_chip_exempt_from_throttle(self):
+        """
+        Spec 5 amendment: a = 0 chips drain nothing, so they are exempt from
+        the throttle (no mu1/a division, no rate reduction): the chip species
+        rate stays kf*mu0 even when mu1 is small relative to mu0.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 5
+        rxn.polymer_chip_units = 0
+        rxn.is_end_group_reaction = True
+        rs = _two_pool_rs(rxn, core, mask, (2.0, 1.0, 1.0), (0.1, 0.2, 0.5))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        assert np.all(np.isfinite(dn_dt))
+        assert np.isclose(dn_dt[8], +kf * 2.0)        # chip rate kf*mu0, unthrottled
+        assert np.isclose(dn_dt[2], 0.0, atol=1e-14)  # a = 0 drains no units
+        assert np.isclose(dn_dt[3], 0.0, atol=1e-14)  # and no mu2
 
     def test_scission_monodisperse_limit_closed_form(self):
         """
