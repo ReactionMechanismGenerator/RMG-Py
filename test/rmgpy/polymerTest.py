@@ -1806,6 +1806,41 @@ class TestPolymerClassification:
         assert p_class == polymer.PolymerClass.GAS
         assert details["reason"] == "too_few_atoms_for_monomer"
 
+    def test_discreteness_gate_rejects_backbone_impostor(self):
+        """
+        Discreteness gate (spec 2026-06-10 §3.1): a wing_count >= 2 candidate
+        far smaller than the baseline proxy is a backbone impostor, not a
+        chain image. Bibenzyl (14 heavy atoms) genuinely matches both PS wing
+        subgraphs today but sits below the one-sided bound
+        proxy_heavy - round(0.35*proxy_heavy) = 25 - 9 = 16 -> GAS.
+        """
+        impostor = Molecule(smiles="c1ccccc1CCc1ccccc1")  # bibenzyl, 14 heavy
+        p_class, details = polymer.classify_structure(
+            Species(molecule=[impostor]), self.p)
+        assert p_class == polymer.PolymerClass.GAS
+        assert details["reason"] == "backbone_impostor"
+
+    def test_discreteness_gate_keeps_modified_proxy_images(self):
+        """
+        Tolerance pin, pass side (one-sided on purpose): legitimately LARGER
+        images (+1 side group, -2 H => 27 heavy) and modestly SMALLER images
+        (lost center phenyl => 19 heavy >= bound 16) must NOT gas-classify as
+        impostors.
+        """
+        bigger = Molecule(smiles="CC(CC(C)=C(CC(C)c1ccccc1)c1ccccc1)c1ccccc1")
+        p_class, details = polymer.classify_structure(
+            Species(molecule=[bigger]), self.p)
+        assert details["num_disjoint_wings"] == 2  # actually reached the gate
+        assert details["reason"] != "backbone_impostor"
+        assert p_class != polymer.PolymerClass.GAS
+
+        smaller = Molecule(smiles="CC(CCCC(C)c1ccccc1)c1ccccc1")  # 19 heavy
+        p_class, details = polymer.classify_structure(
+            Species(molecule=[smaller]), self.p)
+        assert details["num_disjoint_wings"] == 2  # actually reached the gate
+        assert details["reason"] != "backbone_impostor"
+        assert p_class != polymer.PolymerClass.GAS
+
     # =========================================================================
     # BRANCH A: INTACT BACKBONE (>= 2 WINGS)
     # =========================================================================

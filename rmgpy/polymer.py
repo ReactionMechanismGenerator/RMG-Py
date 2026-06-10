@@ -1627,6 +1627,29 @@ def classify_structure(species: 'Species',
         if wing_count > 2:
             return PolymerClass.CROSSLINK, {**base_details, "reason": "more_than_two_wings_found"}
 
+        # 1.5 Discreteness gate: backbone impostor rejection (spec 2026-06-10
+        # docs/superpowers/specs/2026-06-10-discreteness-gate-discrete-chip-design.md
+        # §3.1). A genuine 2-wing candidate is an image of the baseline proxy
+        # REPRESENTATION; a small molecule that merely contains both wing
+        # subgraphs (e.g. bibenzyl against a PS proxy) sits far below it in
+        # heavy atoms. One-sided on purpose: legitimate images can be larger
+        # (FEATURE side groups) or modestly smaller (H loss, side-group
+        # elimination). Heavy atoms, not MW: H-insensitive, and a lost side
+        # group is a known heavy-atom delta.
+        # No upper ceiling (spec §10-V3, verified 2026-06-10): polymer+polymer
+        # coupling cannot deliver a >=2x-proxy candidate here -- a coupling
+        # product carries >2 wings and returns CROSSLINK above, and
+        # create_reacted_copy raises PolymerCrosslinkError for it upstream
+        # (polymer.py create_reacted_copy crosslink guard) and make_new_reaction
+        # discards the reaction, so coupled shapes never reach this gate.
+        proxy_heavy = sum(
+            1 for a in original_polymer.baseline_proxy.molecule[0].atoms
+            if not a.is_hydrogen())
+        cand_heavy = sum(
+            1 for a in species.molecule[0].atoms if not a.is_hydrogen())
+        if cand_heavy < proxy_heavy - round(0.35 * proxy_heavy):
+            return PolymerClass.GAS, {**base_details, "reason": "backbone_impostor"}
+
         # 2. Baseline Check (Is it the exact unreacted proxy?)
         # Evaluates: [X-O]-O-[O-Y]
         if original_polymer.baseline_proxy.is_isomorphic(species):
