@@ -1049,6 +1049,7 @@ class HybridPolymerSystem(ReactionSystem):
                     # gives dmu1/dt >= -kf*mu1 globally; it multiplies BOTH
                     # directions by design. a = 0 chips (drain nothing) and
                     # mu1-scaled chips (already self-limiting) are exempt.
+                    # (mirrored in get_reaction_rates' hijack block -- keep in sync)
                     if (self.reaction_flux_archetype[r_idx] == FLUX_DISCRETE_CHIP
                             and self.is_end_group_reaction[r_idx]
                             and self.reaction_chip_units[r_idx] > 0):
