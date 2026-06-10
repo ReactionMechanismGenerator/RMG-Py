@@ -27,6 +27,8 @@
 #                                                                             #
 ###############################################################################
 
+import dataclasses
+
 import numpy as np
 import pytest
 
@@ -78,6 +80,52 @@ def _two_pool_rs(rxn, core, mask, mom_a, mom_b):
 
 _KIN = dict(kinetics=Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
             reversible=False)
+
+
+def _gate_pool_config(monomer_mw_g_mol=28.0):
+    """PolymerPoolConfig for the spawn-gate fixtures.
+
+    ``monomer_mw_g_mol`` is added by the mass-flux-spawn-gate change (spec
+    2026-06-10 §4.1). The field-presence guard below is deliberate RED-FIRST
+    scaffolding, NOT a compatibility shim: it lets the Task-1 integrated
+    tripwire run on pre-change HEAD and die at the GROSS-ARRAY assertion
+    (the born-dead mechanism, spec §3.1) instead of at fixture construction.
+    Once the field lands, the guard always takes the kwargs branch.
+    """
+    kwargs = dict(label="A", xs=2, explicit_dp_to_species_index={},
+                  mu_indices=(1, 2, 3), monomer_poly_index=None)
+    if any(f.name == "monomer_mw_g_mol"
+           for f in dataclasses.fields(PolymerPoolConfig)):
+        kwargs["monomer_mw_g_mol"] = monomer_mw_g_mol
+    return PolymerPoolConfig(**kwargs)
+
+
+def _one_pool_gate_species(rep_smiles="CCO"):
+    """Species + mask for the one-pool spawn-gate fixture: canonical proxy A
+    at 0, A_mu0/1/2 at 1-3, ordinary POLYMER-PHASE species R at 4 (stands in
+    for an absorbed representative — representative status is a python/ledger
+    concept; to the solver it is ANY ordinary species produced by
+    pool-touching chemistry), gas G at 5."""
+    sp = {
+        "A": _spc("CCCC", "A"),
+        "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"), "A_mu2": _spc("C#N", "A_mu2"),
+        "R": _spc(rep_smiles, "R"),
+        "G": _spc("[CH3]", "G"),
+    }
+    core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["R"], sp["G"]]
+    mask = np.array([False] * 5 + [True], dtype=bool)
+    return sp, core, mask
+
+
+def _one_pool_gate_rs(rxn, core, mask, moments, monomer_mw_g_mol=28.0):
+    rs = HybridPolymerSystem(
+        T=800.0, P=1.0e5, initial_mole_fractions={core[5]: 0.0}, V_poly=1.0,
+        polymer_pools=[_gate_pool_config(monomer_mw_g_mol)], mass_transfer=[],
+        gas_species_mask=mask.copy(), constant_gas_volume=False,
+        initial_polymer_moments={"A": moments}, termination=[],
+    )
+    rs.initialize_model(core, [rxn], [], [])
+    return rs
 
 
 class TestHybridPolymerReactor:
@@ -1602,3 +1650,96 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[6], +r * e_n / 2.0)   # daughter mu1 applied
         assert dn_dt[3] == 0.0                        # parent mu2 skipped
         assert dn_dt[7] == 0.0                        # daughter mu2 skipped
+
+
+class TestIntegratedSpawnGateTripwire:
+    """Spec §7.1 — INTEGRATED live-path tripwire, two halves, RED-FIRST.
+
+    A real HybridPolymerSystem integrated solve (the apportionment-trajectory
+    forward-Euler idiom), NOT a fabricated snapshot. The SAME_POOL reaction
+    A -> A + R is apportioned (non-UNRESOLVED) pool-touching chemistry whose
+    product R is an ordinary (non-canonical-proxy) core species. The
+    numerator half MUST fail on pre-change-(a) HEAD: gross arrays are
+    maintained only in is_pool_proxy branches today (spec §3.1) — that red
+    run is the proof the fix is real and the gate to executing the rest of
+    the plan. The polymer.pyx line citations in spec §3 are informational;
+    these tests assert the MECHANISM, not the address.
+    """
+
+    @staticmethod
+    def _solve():
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1  # SAME_POOL: apportioned, non-UNRESOLVED
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0, 5.0, 30.0), monomer_mw_g_mol=28.0)
+        # Short integrated solve (the trajectory-test idiom): evolve the
+        # engine state, then evaluate the residual AT the evolved state so
+        # the gross arrays hold the last evaluation — exactly what
+        # spawn_gate_flux_snapshot() reads after a production simulate().
+        y = rs.y.copy()
+        dt = 1e-4
+        for _ in range(50):
+            dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+            assert np.all(np.isfinite(dn_dt))
+            y = y + dt * dn_dt
+        rs.y[:] = y
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        return sp, rs, dn_dt
+
+    @pytest.mark.xfail(strict=True, reason="change (a) pending: gross arrays proxy-only")
+    def test_numerator_half_ordinary_species_gross_is_real(self):
+        """Numerator half (the regression that would have caught the
+        born-dead class): the ordinary product R has a NONZERO gross entry
+        in the snapshot, equal to max(0, core_species_production_rates[R])
+        recomputed independently from the engine arrays, and
+        g_R = gross * E[n] * monomer_MW under its parent pool's pool_stats.
+        """
+        sp, rs, dn_dt = self._solve()
+        i_r = 4
+        # LIVENESS PIN — must come BEFORE the red assertion. R must be
+        # chemically ALIVE (nonzero net production) so the red below can
+        # only mean "alive but no gross record" — never "fixture dead".
+        # A dead fixture (archetype eats the reaction, phase gate, wrong
+        # index) would zero prod_r too and launder the wrong failure as
+        # the born-dead proof. xfail(strict) cannot tell those apart;
+        # this assertion can.
+        assert float(dn_dt[i_r]) > 0.0, (
+            "FIXTURE BROKEN, not a valid red: representative R has zero "
+            "net production - fix the fixture before trusting the red"
+        )
+        prod_r = float(rs.core_species_production_rates[i_r])
+        # THE red assertion: fails on pre-change-(a) HEAD because ordinary
+        # core species get dn_dt writes only — no gross record exists.
+        assert prod_r > 0.0, (
+            "ordinary core species R has no gross production record: the "
+            "gross arrays are proxy-only (spec §3.1 born-dead hole; "
+            "change (a) pending)"
+        )
+        # Independent recompute: irreversible reaction, V_poly = V_rxn = 1
+        # -> R's gross production must equal its net dn_dt exactly.
+        assert prod_r == pytest.approx(float(dn_dt[i_r]), rel=1e-12)
+
+        gross, pool_stats, proxy_total = rs.spawn_gate_flux_snapshot()
+        assert gross["R"] == pytest.approx(max(0.0, prod_r), rel=1e-12)
+        e_n, mw = pool_stats["A"]
+        assert e_n == pytest.approx(float(rs.y[2]) / float(rs.y[1]), rel=1e-12)
+        assert mw == pytest.approx(28.0)
+        g_r = gross["R"] * e_n * mw
+        assert g_r == pytest.approx(
+            max(0.0, prod_r) * (float(rs.y[2]) / float(rs.y[1])) * 28.0, rel=1e-12)
+        assert g_r > 0.0
+
+    @pytest.mark.xfail(strict=True, reason="spawn_gate_flux_snapshot pending: Task 3 implements it with change (a)")
+    def test_denominator_half_proxy_net_rerouted_gross_nonzero(self):
+        """Denominator half: the canonical proxy's net dn_dt contribution is
+        ~= 0 (the apportionment reroutes proxy flux to pool moments) while
+        its gross entry is nonzero — an assertion that is only true of the
+        GROSS array and dies if the denominator path is ever rewired to net
+        rates."""
+        sp, rs, dn_dt = self._solve()
+        assert dn_dt[0] == pytest.approx(0.0, abs=1e-14)
+        gross, pool_stats, proxy_total = rs.spawn_gate_flux_snapshot()
+        assert gross["A"] > 0.0
+        e_n, mw = pool_stats["A"]
+        assert proxy_total == pytest.approx(gross["A"] * e_n * mw, rel=1e-12)
+        assert proxy_total > 0.0
