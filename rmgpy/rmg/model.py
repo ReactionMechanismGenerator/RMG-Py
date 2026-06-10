@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import Polymer, PolymerCrosslinkError, PolymerFluxArchetype, is_end_group_reaction, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, is_end_group_reaction, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -227,6 +227,18 @@ class CoreEdgeReactionModel:
         self.index_species_dict = {}
         self.save_edge_species = False
         self.iteration_num = 0
+        # Mass-flux spawn-gate state (multi-pool §4.4, spec 2026-06-10): the
+        # motif ledger + trailing-window accumulator live on the reaction
+        # model. In-memory ONLY — an RMG restart resets windows and deferred
+        # motifs re-earn their bar (correct-but-loud, same philosophy as
+        # unstamped-reaction demotion). main.py stashes the 3-tuple
+        # polymer_flux_snapshot (gross, pool_stats, proxy_event_mass_total)
+        # plus the iteration it was taken at right after each polymer
+        # simulate(); it stays None for non-polymer systems.
+        self.polymer_motif_ledger = []
+        self.polymer_flux_accumulator = MassFluxAccumulator()
+        self.polymer_flux_snapshot = None
+        self.polymer_flux_snapshot_iteration = -1
         self.thermo_tol_keep_spc_in_edge = np.inf
         self.Gfmax = np.inf
         self.Gmax = np.inf
@@ -416,6 +428,7 @@ class CoreEdgeReactionModel:
             candidates=proxy,
             reaction_model=self,
             pool_registry=pool_registry,
+            iteration=getattr(self, "iteration_num", 0),
         )
         if not intents:
             return

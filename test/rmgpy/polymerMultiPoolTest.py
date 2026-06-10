@@ -75,6 +75,50 @@ def parent_polymer():
 
 
 # ---------------------------------------------------------------------------
+# Spawn-gate test scaffolding (spec 2026-06-10-mass-flux-spawn-gate-design.md)
+# ---------------------------------------------------------------------------
+
+class _GateModel:
+    """Bare reaction-model stand-in carrying the spawn-gate state the gate
+    reads off the real CoreEdgeReactionModel (spec §4.3): the motif ledger,
+    the stashed 3-tuple flux snapshot, and the shared accumulator."""
+
+    def __init__(self, window=3):
+        from rmgpy.polymer import MassFluxAccumulator
+
+        self.polymer_motif_ledger = []
+        self.polymer_flux_accumulator = MassFluxAccumulator(window=window)
+        self.polymer_flux_snapshot = None
+
+
+# pool_stats with E[n]=1, MW=1 make a representative's g equal its gross
+# entry — fabricated-snapshot arithmetic reads off directly.
+_PE_STATS = {"PE": (1.0, 1.0)}
+
+
+def _phenolic(label):
+    """A fresh phenolic-trimer arrival (novel motif w.r.t. the PE parent)."""
+    from rmgpy.species import Species
+
+    s = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+    s.label = label
+    return s
+
+
+def _gate_pass(model, parent, cand, iteration, threshold=0.01):
+    """One Phase A-E pass for a single candidate against one parent pool."""
+    from rmgpy.polymer import process_polymer_candidates_multipool
+
+    return process_polymer_candidates_multipool(
+        candidates=[cand],
+        reaction_model=model,
+        pool_registry=[parent],
+        mass_flux_threshold=threshold,
+        iteration=iteration,
+    )
+
+
+# ---------------------------------------------------------------------------
 # discover_repeat_motif
 # ---------------------------------------------------------------------------
 
@@ -205,6 +249,152 @@ class TestMassFluxAccumulator:
 # process_polymer_candidates_multipool — end-to-end behavior
 # ---------------------------------------------------------------------------
 
+class TestSpawnGateBehavior:
+    """The live Phase-D mass-flux gate (spec 2026-06-10 §4.4/§7.2-7.5/7.10).
+
+    Snapshots are fabricated 3-tuples per spec §4.5: tests exercising Phase E
+    supply a fabricated snapshot and a pre-populated ledger; production code
+    never fakes a number. With _PE_STATS (E[n]=1, MW=1) a representative's g
+    equals its gross entry, so fraction = gross / (proxy_total + rep_total).
+    """
+
+    def test_spike_spawns_at_second_arrival_iteration(self, parent_polymer):
+        """Spec §7.2 branch 1 (floor arithmetic, decision 4): first sighting
+        can never spawn; a single record >= window x bar clears the gate at
+        the SECOND arrival's iteration."""
+        model = _GateModel(window=3)
+
+        # First arrival (iteration 1): zero representatives -> record 0, defer.
+        model.polymer_flux_snapshot = ({}, dict(_PE_STATS), 1.0)
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_1"), iteration=1)
+        assert intents == [], "First sighting can never spawn"
+        entry = model.polymer_motif_ledger[0]
+        assert entry.representatives == [("phen_1", "PE")]
+        assert entry.spawned is False
+
+        # Second arrival (iteration 2): the first arrival now carries flux.
+        # fraction = 0.5/(0.5+0.5) = 0.5 >= 3 x the 0.01 bar -> statistic
+        # 0.5/3 clears the gate.
+        model.polymer_flux_snapshot = ({"phen_1": 0.5}, dict(_PE_STATS), 0.5)
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_2"), iteration=2)
+        assert len(intents) == 1, "a >= window x bar motif spawns at its 2nd arrival's iteration"
+        assert intents[0].mass_flux_at_spawn == pytest.approx(0.5 / 3.0)
+        assert entry.spawned is True
+        assert entry.representatives == [("phen_1", "PE"), ("phen_2", "PE")]
+
+    def test_exactly_at_bar_defers_until_nth_recording_iteration(self, parent_polymer):
+        """Spec §7.2 branch 2: an exactly-at-bar motif needs real records
+        filling the window — spawn at the window-th REAL recording iteration
+        (k+3 for window=3 with arrivals every iteration), NOT at second
+        sighting."""
+        model = _GateModel(window=3)
+        bar = 0.01
+
+        # Arrival 1 (iteration 1): no representatives -> record 0.0, defer.
+        model.polymer_flux_snapshot = ({}, dict(_PE_STATS), 1.0)
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_1"), iteration=1, threshold=bar)
+        assert intents == []
+
+        # The motif persists at EXACTLY the bar from here on:
+        # fraction = 0.01/(0.99+0.01) = 0.01.
+        model.polymer_flux_snapshot = ({"phen_1": 0.01}, dict(_PE_STATS), 0.99)
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_2"), iteration=2, threshold=bar)
+        assert intents == [], "window sum 0.01 / 3 is below the bar"
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_3"), iteration=3, threshold=bar)
+        assert intents == [], "window sum 0.02 / 3 is below the bar"
+
+        # Arrival 4 (iteration 4): window holds iterations 2,3,4 (the
+        # iteration-1 zero evicted) -> sum 0.03 / 3 == bar -> spawn.
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_4"), iteration=4, threshold=bar)
+        assert len(intents) == 1, "exactly-at-bar spawns at its window-th real recording iteration"
+        assert intents[0].mass_flux_at_spawn == pytest.approx(bar)
+
+    def test_trace_motif_stays_deferred_across_many_arrivals(self, parent_polymer):
+        """Spec §7.3: a persistent below-bar motif (0.1% of gross event-mass
+        vs the 1% bar) never spawns, however many arrivals it produces."""
+        model = _GateModel(window=3)
+        model.polymer_flux_snapshot = ({}, dict(_PE_STATS), 1.0)
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_0"), iteration=0)
+        assert intents == []
+        for it in range(1, 8):
+            # fraction = 0.001/(0.999+0.001) = 0.001 at every arrival.
+            model.polymer_flux_snapshot = ({"phen_0": 0.001}, dict(_PE_STATS), 0.999)
+            _, intents = _gate_pass(model, parent_polymer, _phenolic(f"phen_{it}"), iteration=it)
+            assert intents == [], f"trace motif must stay deferred (iteration {it})"
+        entry = model.polymer_motif_ledger[0]
+        assert entry.spawned is False
+        assert len(entry.representatives) == 8
+        assert all(pool == "PE" for (_, pool) in entry.representatives)
+
+    def test_same_iteration_burst_records_once_and_defers(self, parent_polymer):
+        """Spec §7.5: three same-iteration arrivals at an ABOVE-bar fraction
+        (0.02 > 0.01) still defer — the window holds ONE record, sum/N =
+        0.02/3 < bar — and the ledger must hold all three representatives."""
+        from rmgpy.polymer import MotifLedgerEntry, discover_repeat_motif
+
+        model = _GateModel(window=3)
+        seed = _phenolic("phen_seed")
+        motif = discover_repeat_motif(seed.molecule[0])
+        assert motif is not None
+        model.polymer_motif_ledger.append(MotifLedgerEntry(
+            motif=motif, accumulator_key="motif-0",
+            representatives=[("phen_seed", "PE")],
+        ))
+        # fraction = 0.02/(0.98+0.02) = 0.02.
+        model.polymer_flux_snapshot = ({"phen_seed": 0.02}, dict(_PE_STATS), 0.98)
+
+        for n in range(3):
+            _, intents = _gate_pass(model, parent_polymer, _phenolic(f"phen_burst_{n}"), iteration=5)
+            assert intents == [], "above-bar single record must still defer (sum/N)"
+
+        assert len(model.polymer_motif_ledger) == 1
+        entry = model.polymer_motif_ledger[0]
+        assert model.polymer_flux_accumulator.window_occupancy("motif-0") == 1, (
+            "three same-iteration arrivals must produce ONE window record"
+        )
+        assert entry.representatives == [
+            ("phen_seed", "PE"), ("phen_burst_0", "PE"),
+            ("phen_burst_1", "PE"), ("phen_burst_2", "PE")]
+
+    def test_spawned_flag_skips_gate_without_new_records(self, parent_polymer):
+        """Spec §7.10: after a spawn, a later same-motif arrival does not
+        re-run the gate (record count unchanged, no new intent)."""
+        model = _GateModel(window=3)
+
+        model.polymer_flux_snapshot = ({}, dict(_PE_STATS), 1.0)
+        _gate_pass(model, parent_polymer, _phenolic("phen_1"), iteration=1)
+        model.polymer_flux_snapshot = ({"phen_1": 0.5}, dict(_PE_STATS), 0.5)
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_2"), iteration=2)
+        assert len(intents) == 1
+        entry = model.polymer_motif_ledger[0]
+        assert entry.spawned is True
+        occupancy_before = model.polymer_flux_accumulator.window_occupancy(entry.accumulator_key)
+
+        # In production Phase A would classify this arrival against the new
+        # pool; here the registry was not extended, so it reaches the gate
+        # and must hit the spawned-flag (assert-log) skip.
+        _, intents = _gate_pass(model, parent_polymer, _phenolic("phen_3"), iteration=3)
+        assert intents == [], "a spawned motif must never re-spawn"
+        assert model.polymer_flux_accumulator.window_occupancy(entry.accumulator_key) == occupancy_before, (
+            "the spawned-flag skip must not record (gate not re-run)"
+        )
+
+    def test_no_snapshot_defers_honestly(self, parent_polymer):
+        """Spec §4.5/§7: no stashed snapshot (iteration 0 path) -> fraction
+        0.0 -> defer; the entry still records the zero (zero-filled window),
+        and the candidate is absorbed as a proxy variant."""
+        model = _GateModel(window=3)
+        assert model.polymer_flux_snapshot is None
+
+        processed, intents = _gate_pass(model, parent_polymer, _phenolic("phen_1"), iteration=0)
+        assert intents == [], "no snapshot must defer, never fabricate"
+        assert len(processed) == 1, "deferred candidate is absorbed as a proxy variant"
+        assert getattr(processed[0], "is_polymer_proxy", False) is True
+        entry = model.polymer_motif_ledger[0]
+        assert model.polymer_flux_accumulator.window_occupancy(entry.accumulator_key) == 1
+        assert model.polymer_flux_accumulator.flux(entry.accumulator_key) == 0.0
+
+
 class TestMotifLedger:
     """Group-isomorphism motif ledger + amended fraction math
     (spec 2026-06-10 §3/§4.3)."""
@@ -324,19 +514,34 @@ class TestProcessPolymerCandidatesMultiPool:
         )
 
     def test_novel_motif_spawns_one_pool(self, parent_polymer):
-        from rmgpy.polymer import process_polymer_candidates_multipool
+        """Second sighting (spec §7.4 re-baseline): first sighting can never
+        spawn, so the ledger is pre-populated with a prior representative
+        (recorded with its parent pool, spec §4.3) carrying 50% of gross
+        event-mass in a fabricated 3-tuple snapshot — statistic 0.5/3 clears
+        the default 0.01 bar at this arrival."""
+        from rmgpy.polymer import (MotifLedgerEntry, discover_repeat_motif,
+                                   process_polymer_candidates_multipool)
         from rmgpy.species import Species
 
         # A phenolic 3-mer is structurally distinct from PE — must spawn.
-        # NB: a real phenolic 3-mer is a complex adj-list; we use a SMILES proxy
-        #     and let the implementation handle motif discovery. The test will
-        #     fail concretely with a 'cannot construct chain' message until the
-        #     production code knows how to handle this case.
         phenolic_chain = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+        phenolic_chain.label = "phenolic_2nd"
+
+        model = _GateModel(window=3)
+        motif = discover_repeat_motif(phenolic_chain.molecule[0])
+        assert motif is not None
+        model.polymer_motif_ledger.append(MotifLedgerEntry(
+            motif=motif, accumulator_key="motif-0",
+            representatives=[("phenolic_1st", "PE")],
+        ))
+        # fraction = 0.5/(0.5+0.5) = 0.5.
+        model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PE": (1.0, 1.0)}, 0.5)
+
         processed, intents = process_polymer_candidates_multipool(
             candidates=[phenolic_chain],
-            reaction_model=None,
+            reaction_model=model,
             pool_registry=[parent_polymer],
+            iteration=1,
         )
         assert len(intents) == 1, (
             f"Phenolic novel motif should spawn one pool; got {len(intents)}"
@@ -345,22 +550,8 @@ class TestProcessPolymerCandidatesMultiPool:
         assert intent.parent_pool is parent_polymer
         assert intent.monomer is not None
         assert intent.triggering_dp >= 2
-
-    def test_mass_flux_below_threshold_defers_spawn(self, parent_polymer):
-        """Even a novel motif should not spawn if its mass flux is below the gate."""
-        from rmgpy.polymer import process_polymer_candidates_multipool
-        from rmgpy.species import Species
-
-        # Single tiny-flux candidate — should not trigger spawn.
-        phenolic = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
-        processed, intents = process_polymer_candidates_multipool(
-            candidates=[phenolic],
-            reaction_model=None,
-            pool_registry=[parent_polymer],
-            mass_flux_threshold=0.99,  # impossible threshold
-        )
-        assert intents == [], (
-            "Mass flux below threshold must defer spawning"
+        assert intent.mass_flux_at_spawn == pytest.approx(0.5 / 3.0), (
+            "mass_flux_at_spawn must carry the REAL gate statistic"
         )
 
     def test_max_pools_cap_blocks_additional_spawn(self, parent_polymer):
@@ -485,7 +676,22 @@ class TestReactionModelIntegration:
         # Synthetic phenolic-trimer candidate; tagged polymer-proxy so the
         # integration helper picks it up.
         phenolic = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+        phenolic.label = "phenolic_2nd"
         phenolic.is_polymer_proxy = True
+
+        # Second sighting (spec §7.4 re-baseline): pre-populate the model's
+        # motif ledger and stash a fabricated 3-tuple snapshot in which the
+        # first arrival's representative (parent pool PS, recorded at
+        # absorption) carries 50% of the gross event-mass -> statistic 0.5/3
+        # clears the default 0.01 bar at this arrival.
+        from rmgpy.polymer import MotifLedgerEntry, discover_repeat_motif
+        motif = discover_repeat_motif(phenolic.molecule[0])
+        assert motif is not None
+        model.polymer_motif_ledger.append(MotifLedgerEntry(
+            motif=motif, accumulator_key="motif-0",
+            representatives=[("phenolic_1st", "PS")],
+        ))
+        model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PS": (1.0, 1.0)}, 0.5)
 
         model._apply_multipool_spawn_pass([phenolic])
 
@@ -530,15 +736,30 @@ class TestMultiPoolPipelineEndToEnd:
         parent_polymer.mu_indices = (0, 1, 2)
 
         # A candidate that is structurally novel relative to the PE parent
-        # (a phenolic 3-mer surrogate) — should trigger a spawn intent.
+        # (a phenolic 3-mer surrogate). Second sighting (spec §7.4
+        # re-baseline): the gate needs a prior representative carrying
+        # snapshot flux — first sighting can never spawn.
         novel = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+        novel.label = "phenolic_2nd"
+
+        from rmgpy.polymer import MotifLedgerEntry, discover_repeat_motif
+        gate_model = _GateModel(window=3)
+        motif = discover_repeat_motif(novel.molecule[0])
+        assert motif is not None
+        gate_model.polymer_motif_ledger.append(MotifLedgerEntry(
+            motif=motif, accumulator_key="motif-0",
+            representatives=[("phenolic_1st", "PE")],
+        ))
+        gate_model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PE": (1.0, 1.0)}, 0.5)
 
         processed, intents = process_polymer_candidates_multipool(
             candidates=[novel],
-            reaction_model=None,
+            reaction_model=gate_model,
             pool_registry=[parent_polymer],
+            iteration=1,
         )
         assert len(intents) == 1, "Novel product must produce one spawn intent"
+        assert intents[0].mass_flux_at_spawn == pytest.approx(0.5 / 3.0)
 
         fake = _FakeReactionModel()
         spawned = apply_spawn_intents(

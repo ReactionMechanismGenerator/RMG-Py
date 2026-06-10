@@ -2588,26 +2588,6 @@ def discover_repeat_motif(
     return best[2] if best else None
 
 
-def _estimate_relative_flux(
-    candidate: 'Species',
-    pool_registry: List['Polymer'],
-    reaction_model: Any,
-) -> float:
-    """Estimate the fraction of polymer-derived mass flowing into ``candidate``.
-
-    Phase-1 simplification: when ``reaction_model`` is ``None`` (unit-test
-    path) return 0.5, so the spawn gate is exercised by the threshold knob
-    without needing a full reaction-rate integrator. The real implementation,
-    used during an RMG run, will integrate reaction rates and species
-    molecular weights over the trailing window via :class:`MassFluxAccumulator`
-    (design doc §4.4).
-    """
-    if reaction_model is None:
-        return 0.5
-    # TODO(multi-pool §4.4): real flux calculation against reaction_model
-    return 0.5
-
-
 def process_polymer_candidates_multipool(
     candidates: List['Species'],
     reaction_model: Any,
@@ -2639,6 +2619,12 @@ def process_polymer_candidates_multipool(
         pools register `_muN` dummy species and the solver is rebuilt on the
         next iteration — no in-place resize; design doc §4.5/§7).
     """
+    # The shared accumulator lives on the reaction model (alongside the
+    # motif ledger and the stashed snapshot, spec 2026-06-10 §4.3); an
+    # explicitly-passed accumulator (test injection) wins.
+    if flux_accumulator is None and reaction_model is not None:
+        flux_accumulator = getattr(reaction_model, "polymer_flux_accumulator", None)
+
     processed: List['Species'] = []
     spawn_intents: List[SpawnIntent] = []
 
@@ -2692,9 +2678,29 @@ def process_polymer_candidates_multipool(
             processed.append(cand)
             continue
 
-        # Phase D: gates — relative flux and max_pools cap.
-        relative_flux = _estimate_relative_flux(cand, pool_registry, reaction_model)
-        if relative_flux < mass_flux_threshold:
+        # Phase D: gates — mass-flux spawn gate (design doc §4.4, spec
+        # 2026-06-10) and max_pools cap.
+        spawn_ok, gate_statistic, ledger_entry = _evaluate_spawn_gate(
+            cand=cand,
+            motif=motif,
+            reaction_model=reaction_model,
+            iteration=iteration,
+            flux_accumulator=flux_accumulator,
+            mass_flux_threshold=mass_flux_threshold,
+        )
+        # Either way, the arriving candidate becomes a representative of its
+        # motif (spec §4.4 step 6): it is absorbed as a proxy variant and is
+        # the handle a future snapshot attributes flux to. Recorded as a
+        # (species_label, parent_pool_label) pair — the parent pool that
+        # would parent its spawn intent (currently pool_registry[0]; if
+        # multi-parent attribution ever lands, this follows it), per the
+        # spec-§3 attribution rules.
+        cand_label = getattr(cand, "label", "") or ""
+        parent_pool_label = pool_registry[0].label if pool_registry else ""
+        if (ledger_entry is not None and cand_label
+                and all(lbl != cand_label for (lbl, _) in ledger_entry.representatives)):
+            ledger_entry.representatives.append((cand_label, parent_pool_label))
+        if not spawn_ok:
             _tag_polymer_proxy(cand, is_proxy=True)
             processed.append(cand)
             continue
@@ -2716,9 +2722,11 @@ def process_polymer_candidates_multipool(
                 triggering_product=cand,
                 triggering_dp=triggering_dp,
                 triggering_moles=float(getattr(cand, "amount", 1.0)),
-                mass_flux_at_spawn=relative_flux,
+                mass_flux_at_spawn=gate_statistic,
             )
         )
+        if ledger_entry is not None:
+            ledger_entry.spawned = True
         _tag_polymer_proxy(cand, is_proxy=True)
         processed.append(cand)
 
