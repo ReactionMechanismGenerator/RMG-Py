@@ -1801,3 +1801,61 @@ class TestSpawnGateFluxSnapshot:
         ratio = g_r / (prod * rep_mw_g_mol)
         assert ratio == pytest.approx(60.0 * 28.0 / rep_mw_g_mol, rel=1e-12)
         assert 15.0 < ratio < 25.0, "E[n]-calibrated mass must read ~20x the fragment-MW accounting"
+
+    def test_snapshot_mu0_exhaustion_defers_not_inflates(self):
+        """Spec §7.7: mu0 <= SMALL_EPS with tiny mu1 -> pool_stats E[n]
+        clamps to 0 -> g_i = 0 -> the gate DEFERS. Asserts the deferral
+        DIRECTION, not just finiteness: the naive mu1/mu0 would explode
+        toward +inf and wave the motif through. Note the amended split:
+        gross itself stays nonzero (it is the raw production record); the
+        zeroing lives in pool_stats.
+        """
+        from rmgpy.polymer import (MassFluxAccumulator, MotifLedgerEntry,
+                                   Polymer, discover_repeat_motif,
+                                   process_polymer_candidates_multipool)
+
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        # mu0 exhausted (0 <= SMALL_EPS), mu1 tiny but nonzero.
+        rs = _one_pool_gate_rs(rxn, core, mask, (0.0, 1e-25, 1e-20))
+
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        snapshot = rs.spawn_gate_flux_snapshot()
+        gross, pool_stats, proxy_total = snapshot
+
+        assert gross["A"] > 0.0, (
+            "gross production is nonzero — only the E[n] clamp zeroes g_i"
+        )
+        assert pool_stats["A"][0] == 0.0, "E[n] must clamp to 0 under SMALL_EPS"
+        assert pool_stats["A"][1] == pytest.approx(28.0)
+        assert proxy_total == 0.0
+
+        # Feed the engine snapshot to the gate: the exhausted pool must DEFER.
+        parent = Polymer(label="PE", monomer="[CH2][CH2]", end_groups=["[H]", "[H]"],
+                         cutoff=3, Mn=1000.0, Mw=2500.0, initial_mass=1.0)
+        cand = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+        cand.label = "phenolic_arrival"
+        motif = discover_repeat_motif(cand.molecule[0])
+        assert motif is not None
+
+        class _Model:
+            pass
+
+        model = _Model()
+        model.polymer_motif_ledger = [MotifLedgerEntry(
+            motif=motif, accumulator_key="motif-0",
+            representatives=[("R", "A")],  # parent pool "A" recorded at absorption
+        )]
+        model.polymer_flux_snapshot = snapshot
+
+        _, intents = process_polymer_candidates_multipool(
+            candidates=[cand],
+            reaction_model=model,
+            pool_registry=[parent],
+            iteration=2,
+            flux_accumulator=MassFluxAccumulator(window=3),
+        )
+        assert intents == [], (
+            "a mu0-exhausted pool must defer the spawn (epsilon errs toward deferral)"
+        )
