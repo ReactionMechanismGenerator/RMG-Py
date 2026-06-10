@@ -29,6 +29,7 @@
 This module contains functions for writing of Chemkin input files.
 """
 
+import hashlib
 import logging
 import math
 import os.path
@@ -1493,9 +1494,18 @@ def read_reactions_block(f, species_dict, read_comments=True):
 def get_species_identifier(species):
     """
     Return a string identifier for the provided `species` that can be used in a
-    Chemkin file. Although the Chemkin format allows up to 16 characters for a
-    species identifier, this function uses a maximum of 10 to ensure that all
-    reaction equations fit in the maximum limit of 52 characters.
+    Chemkin file. The identifier is at most 16 characters (the Chemkin column
+    limit). For indexed species the label and index are combined; if that
+    exceeds 16 chars the chemical formula is tried, then a bare index.
+
+    For index-less species (``species.index == -1``, e.g. polymer moment
+    dummies) whose raw label fits in 16 chars the label is returned unchanged.
+    Labels longer than 16 chars are deterministically compressed to exactly
+    16 chars as ``<stem>-<6hex>[<suffix>]`` where the 6-hex field is a prefix
+    of the MD5 digest of the full label and ``<suffix>`` is the ``_mu<N>``
+    tail if present (preserving human readability). Collisions are silent (no
+    guard in the Chemkin writers); the 6-hex width gives a birthday bound of
+    roughly 8 000 same-stem labels, sufficient for current polymer scales.
     """
     label = species.label
     # Special case for inert colliders - just use the label if possible
@@ -1512,8 +1522,37 @@ def get_species_identifier(species):
             if len(label) <= 16:
                 return label
             else:
-                logging.warning('Species label is longer than 16 characters and will break CHEMKIN 2.0')
-                return label
+                # Compress to a deterministic 16-char identifier instead of
+                # overflowing the fixed-column Chemkin THERMO format (long
+                # polymer moment-dummy labels like 'epdm_scission_tail_mu0'
+                # used to shift the element block and break load_chemkin_file).
+                # Keep a readable '_muN+' tail when present; disambiguate the
+                # truncated stem with a 6-hex-char MD5 digest of the full label.
+                #
+                # Layout:  <stem>-<6hex>[<suffix>]  == exactly 16 chars
+                #   stem   = label[:16 - len(suffix) - 7]   (7 = 1 dash + 6 hex)
+                #   suffix = '_mu<digits>' tail if present, otherwise ''
+                #
+                # Collision risk: birthday bound ~8k same-stem labels at 6 hex
+                # (vs ~300 at the previous 4-hex width). Collisions are SILENT --
+                # the Chemkin writers do not detect duplicate identifiers, so two
+                # species would share one SPECIES/THERMO entry (corrupt mechanism).
+                # This is an accepted limitation at current polymer scales
+                # (typically <500 moment dummies); detectable only via digest width.
+                digest = hashlib.md5(label.encode()).hexdigest()[:6]
+                match = re.search(r'(_mu[0-9]+)$', label)
+                suffix = match.group(1) if match else ''
+                stem_len = 16 - len(suffix) - 7
+                if stem_len < 1:
+                    # Pathologically long suffix: drop suffix preservation and
+                    # use a plain stem+digest form (stem=label[:9], 9+1+6=16).
+                    ident = '{0}-{1}'.format(label[:9], digest)
+                else:
+                    stem = label[:stem_len]
+                    ident = '{0}-{1}{2}'.format(stem, digest, suffix)
+                logging.warning('Species label %r is longer than 16 characters; '
+                                'using compressed Chemkin identifier %r.', label, ident)
+                return ident
         else:
             # try the chemical formula if the species label is not present
             if len(species.molecule) > 0:

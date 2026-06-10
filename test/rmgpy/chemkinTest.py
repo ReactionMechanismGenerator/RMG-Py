@@ -1003,3 +1003,102 @@ class TestReadReactionComments:
                 comment.strip(),
                 new_comment.strip(),
             )
+
+
+class TestLongLabelSpeciesIdentifier:
+    """Regression for the >16-char moment-dummy Chemkin identifier overflow.
+
+    Moment dummies are created with index = -1 (rmgpy/rmg/model.py), so
+    get_species_identifier used to return the raw label even when longer than
+    16 characters, overflowing the fixed-column THERMO format and breaking
+    load_chemkin_file on the EPDM artifact (ValueError: could not convert
+    string to float: 'E+0').
+    """
+
+    @staticmethod
+    def _mu_dummy(label):
+        from rmgpy.molecule import Molecule
+        spc = Species(label=label, reactive=False)
+        spc.molecule = [Molecule().from_smiles("[Ne]")]
+        spc.index = -1
+        spc.is_moment_dummy = True
+        return spc
+
+    @staticmethod
+    def _ne_thermo():
+        poly_low = NASAPolynomial(
+            coeffs=[2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 3.35532],
+            Tmin=(200.0, "K"), Tmax=(1000.0, "K"))
+        poly_high = NASAPolynomial(
+            coeffs=[2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 3.35532],
+            Tmin=(1000.0, "K"), Tmax=(6000.0, "K"))
+        return NASA(polynomials=[poly_low, poly_high],
+                    Tmin=(200.0, "K"), Tmax=(6000.0, "K"))
+
+    def test_long_label_is_compressed_to_16_chars(self):
+        spc = self._mu_dummy("epdm_scission_tail_mu0")
+        ident = get_species_identifier(spc)
+        assert len(ident) <= 16
+        assert ident.endswith("_mu0")  # readable moment tail preserved
+
+    def test_short_labels_unchanged(self):
+        spc = self._mu_dummy("epdm_mu0")
+        assert get_species_identifier(spc) == "epdm_mu0"
+
+    def test_distinct_long_labels_get_distinct_identifiers(self):
+        labels = ["epdm_scission_tail_mu0", "epdm_scission_head_mu0",
+                  "epdm_scission_tail_mu1", "epdm_scission_tail_mu2"]
+        idents = [get_species_identifier(self._mu_dummy(l)) for l in labels]
+        assert len(set(idents)) == len(labels)
+        assert all(len(i) <= 16 for i in idents)
+
+    def test_identifier_is_deterministic(self):
+        a = get_species_identifier(self._mu_dummy("epdm_scission_tail_mu0"))
+        b = get_species_identifier(self._mu_dummy("epdm_scission_tail_mu0"))
+        assert a == b
+
+    def test_multi_digit_moment_tail_preserved(self):
+        """_mu<digits> regex must match multi-digit moments (e.g. _mu10)."""
+        spc = self._mu_dummy("epdm_scission_tail_mu10")
+        ident = get_species_identifier(spc)
+        assert len(ident) <= 16
+        assert ident.endswith("_mu10"), (
+            "Multi-digit moment tail '_mu10' should be preserved in compressed "
+            "identifier; got {!r}".format(ident)
+        )
+
+    def test_near_collision_pair_distinct_with_6hex(self):
+        """Widening the digest from 4 to 6 hex chars must resolve the
+        reviewer-reported collision between epdm_scission_70_mu0 and
+        epdm_scission_306_mu0 (both mapped to 'epdm_sc-ae04_mu0' at 4 hex).
+        With 6 hex the digests are ae04c7 vs ae0420 — distinct."""
+        spc_70 = self._mu_dummy("epdm_scission_70_mu0")
+        spc_306 = self._mu_dummy("epdm_scission_306_mu0")
+        ident_70 = get_species_identifier(spc_70)
+        ident_306 = get_species_identifier(spc_306)
+        assert ident_70 != ident_306, (
+            "Near-collision pair should get distinct identifiers with 6-hex "
+            "digest; both got {!r}".format(ident_70)
+        )
+        assert len(ident_70) <= 16
+        assert len(ident_306) <= 16
+
+    def test_chemkin_roundtrip_with_long_moment_dummy_labels(self, tmpdir):
+        """save_chemkin_file + save_species_dictionary then load_chemkin_file
+        must succeed with >16-char moment-dummy labels (EPDM failure mode)."""
+        long_dummy = self._mu_dummy("epdm_scission_tail_mu0")
+        long_dummy.thermo = self._ne_thermo()
+        short_dummy = self._mu_dummy("epdm_mu0")
+        short_dummy.thermo = self._ne_thermo()
+        species = [long_dummy, short_dummy]
+
+        chem_path = os.path.join(str(tmpdir), "chem.inp")
+        dict_path = os.path.join(str(tmpdir), "species_dictionary.txt")
+        save_chemkin_file(chem_path, species, [], verbose=False, check_for_duplicates=False)
+        save_species_dictionary(dict_path, species)
+
+        loaded_species, loaded_reactions = load_chemkin_file(chem_path, dict_path)
+        assert len(loaded_species) == 2
+        labels = {s.label for s in loaded_species}
+        # the compressed identifier round-trips as the species label
+        assert any(l.endswith("_mu0") and len(l) <= 16 for l in labels)
