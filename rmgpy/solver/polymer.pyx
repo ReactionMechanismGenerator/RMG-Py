@@ -1245,7 +1245,10 @@ class HybridPolymerSystem(ReactionSystem):
                 elif arch == FLUX_UNRESOLVED:
                     # Legacy mu1-only transfer (pre-apportionment behavior),
                     # replicated exactly: -r per reactant proxy, +r per
-                    # product proxy.
+                    # product proxy. NOTE: mu0-scaled shapes here share the
+                    # chip exhaustion structure but are deliberately NOT
+                    # throttled (bit-exact legacy contract; see
+                    # docs/multi_pool_design.md limitation 14 / spec A4).
                     if self.is_pool_proxy[r0]:
                         dn_dt[self.polymer_pools[p0_pool_idx].mu_indices[1]] -= r_mol_s
                     if r1 != -1 and self.is_pool_proxy[r1]:

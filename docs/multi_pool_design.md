@@ -311,7 +311,7 @@ logs are expected, not a bug.
 stored but has NO behavioral use under the fixed trimer proxy: the backbone
 gate is proxy-relative, scission routing keys on `is_end_group_reaction`, and
 the conditional DP backstop (reclassify-toward-chip when proxy repeat-count >
-threshold AND piece DP < threshold) only activates for longer proxies.
+threshold AND piece DP < threshold) only activates for longer proxies; NO backstop code exists today — the condition is specified for the future longer-proxy work and its dormancy is pinned by `test_backstop_dormant_under_trimer_proxy`.
 
 ## 6. Sidecar JSON schema
 
