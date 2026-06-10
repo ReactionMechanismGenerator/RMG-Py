@@ -1378,6 +1378,33 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[2], 0.0, atol=1e-14)  # a = 0 drains no units
         assert np.isclose(dn_dt[3], 0.0, atol=1e-14)  # and no mu2
 
+    def test_discrete_chip_throttle_diagnostic_rate_parity(self):
+        """
+        Spec 5 amendment, diagnostic-path parity: get_reaction_rates (the
+        [THE HIJACK] block feeding get_edge_reaction_rates) must apply the
+        SAME exhaustion throttle as the residual's site scaling. mu0 = 1,
+        mu1 = 1, a = 3 is throttled (mu1/a = 1/3 < mu0), so the diagnostic
+        rate is kf*min(mu0, mu1/a) = kf/3 -- NOT the unthrottled kf*mu0 --
+        and equals what the residual's dmu1/(-a) implies.
+        """
+        a = 3
+        mom_a = (1.0, 1.0, 2.0)               # throttled: min(1, 1/3) = 1/3
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 5
+        rxn.polymer_chip_units = a
+        rxn.is_end_group_reaction = True
+        rs = _two_pool_rs(rxn, core, mask, mom_a, (0.1, 0.2, 0.5))
+
+        rate = rs.get_reaction_rates(rs.y)[0]
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        site = min(mom_a[0], mom_a[1] / a)
+        assert np.isclose(rate, kf * site)                # throttled, not kf*mu0
+        assert not np.isclose(rate, kf * mom_a[0])
+        assert np.isclose(rate, dn_dt[2] / (-a))          # parity with residual
+
     def test_scission_monodisperse_limit_closed_form(self):
         """
         Monodisperse pool (PDI=1, mu_j = N*k^j): the mu3 closure is exact

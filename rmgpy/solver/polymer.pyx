@@ -1202,8 +1202,10 @@ class HybridPolymerSystem(ReactionSystem):
                     # branch is needed. (For mu1-scaled chips _chain_bundle's
                     # length-biased path still computes the mu3 closure
                     # internally; its output is unused by this branch.) The
-                    # bundle and the rate scaling key on the same stored flag,
-                    # so they cannot disagree by construction. The chip
+                    # bundle and the rate scaling key on the same stored flag;
+                    # in the throttled exhaustion regime the rate measure is
+                    # donor-limited while the pick stays population-based --
+                    # accepted approximation, see spec s5 amendment. The chip
                     # species itself gains/loses moles through the standard
                     # gas dn_dt path (section 4) -- no special handling here.
                     src = self.reaction_src_pool[r_idx]
@@ -1551,6 +1553,26 @@ class HybridPolymerSystem(ReactionSystem):
                     moment_idx = self.pool_mu0_indices[p0_pool_idx]
 
                 site = max(0.0, y[moment_idx]) / V_poly
+
+                # Exhaustion throttle -- parity with the residual's exhaustion
+                # throttle (spec 2026-06-10 s5 AMENDMENT): the diagnostic rate
+                # must not report a flux the residual refuses to deliver for a
+                # mu0-scaled DISCRETE_CHIP past unit exhaustion. Same condition
+                # and formula as the residual's section-2 site scaling; here
+                # moment_idx is already the resolved mu0 index (end-group
+                # branch above), and the mu1 index is resolved with the same
+                # pool_mu1_indices override as the default branch.
+                if (self.reaction_flux_archetype[r_idx] == FLUX_DISCRETE_CHIP
+                        and self.is_end_group_reaction[r_idx]
+                        and self.reaction_chip_units[r_idx] > 0):
+                    mu1_idx = self.polymer_pools[p0_pool_idx].mu_indices[1]
+                    if self.pool_mu1_indices[p0_pool_idx] != -1:
+                        mu1_idx = self.pool_mu1_indices[p0_pool_idx]
+                    site = min(
+                        max(0.0, y[moment_idx]),
+                        max(0.0, y[mu1_idx]) / float(self.reaction_chip_units[r_idx]),
+                    ) / V_poly
+
                 rf *= site
                 rr *= site
 
