@@ -79,6 +79,7 @@ FLUX_SAME_POOL = 1
 FLUX_MIGRATION = 2
 FLUX_SCISSION_FRAGMENT = 3
 FLUX_UNRESOLVED = 4
+FLUX_DISCRETE_CHIP = 5
 
 
 # ======================================================================================
@@ -439,8 +440,12 @@ class HybridPolymerSystem(ReactionSystem):
         self.reaction_flux_archetype = np.zeros(n_rxn, dtype=np.int8)
         self.reaction_src_pool = np.full(n_rxn, -1, dtype=np.int32)
         self.reaction_dst_pool = np.full(n_rxn, -1, dtype=np.int32)
+        # Stamped chip repeat-unit counts (spec 2026-06-10 §4.3); same
+        # chain(core, edge) order so the index matches r_idx in the residual.
+        self.reaction_chip_units = np.zeros(n_rxn, dtype=np.int32)
         for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
             self.reaction_flux_archetype[i] = int(getattr(rxn, "polymer_flux_archetype", 0))
+            self.reaction_chip_units[i] = int(getattr(rxn, "polymer_chip_units", 0))
 
         if n_core <= 0:
             raise ValueError(f"Solver received an empty core species list (n_core={n_core}).")
@@ -552,8 +557,10 @@ class HybridPolymerSystem(ReactionSystem):
             if self.reaction_flux_archetype[i] == FLUX_NONE and (src != -1 or dst != -1):
                 self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
                 n_unstamped += 1
-            if (self.reaction_flux_archetype[i] in (FLUX_MIGRATION, FLUX_SCISSION_FRAGMENT)
-                    and (src == -1 or dst == -1)):
+            if ((self.reaction_flux_archetype[i] in (FLUX_MIGRATION, FLUX_SCISSION_FRAGMENT)
+                    and (src == -1 or dst == -1))
+                    or (self.reaction_flux_archetype[i] == FLUX_DISCRETE_CHIP
+                        and src == -1)):
                 # A stamped cross-pool archetype needs BOTH pools resolved in
                 # the solver (e.g. scission daughters are registered as core
                 # Polymer species but have no pool config yet). Demote to the
@@ -564,12 +571,14 @@ class HybridPolymerSystem(ReactionSystem):
                 # skip and the legacy transfer produce identical pool flux
                 # (reactant -r and fold-back +r cancel on the same mu1), so
                 # demotion would change nothing.
+                # DISCRETE_CHIP needs only src (no dst: complement folds back
+                # to the same pool and the chip is a plain gas species).
                 self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
                 n_unresolvable += 1
         if n_unresolvable:
             logging.warning(
-                "%d reactions stamped MIGRATION/SCISSION_FRAGMENT could not "
-                "resolve both solver pools (src/dst); demoted to legacy "
+                "%d reactions stamped MIGRATION/SCISSION_FRAGMENT/DISCRETE_CHIP "
+                "could not resolve their solver pool(s); demoted to legacy "
                 "mu1-only moment flux (UNRESOLVED).", n_unresolvable)
         if n_unstamped:
             logging.warning(

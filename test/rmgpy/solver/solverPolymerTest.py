@@ -578,6 +578,7 @@ class TestHybridPolymerReactor:
         assert solver_mod.FLUX_MIGRATION == int(PolymerFluxArchetype.MIGRATION) == 2
         assert solver_mod.FLUX_SCISSION_FRAGMENT == int(PolymerFluxArchetype.SCISSION_FRAGMENT) == 3
         assert solver_mod.FLUX_UNRESOLVED == int(PolymerFluxArchetype.UNRESOLVED) == 4
+        assert solver_mod.FLUX_DISCRETE_CHIP == int(PolymerFluxArchetype.DISCRETE_CHIP) == 5
 
     def test_unstamped_proxy_reaction_remaps_to_unresolved(self):
         """
@@ -667,6 +668,45 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[4], +r)    # explicit daughter gains
         # mass moved, not duplicated
         assert np.isclose(dn_dt[2] + dn_dt[4], 0.0, atol=1e-12)
+
+    def test_stamped_chip_without_src_pool_demotes_to_unresolved(self):
+        """
+        Spec test 15: a reaction stamped DISCRETE_CHIP whose reactant does not
+        resolve to a solver pool (src == -1) demotes to UNRESOLVED at
+        initialize_model -- the same aggregate unresolvable-pool demotion path
+        as MIGRATION/SCISSION_FRAGMENT (chip needs only src; there is no dst:
+        the complement folds back and the chip is a gas species).
+        """
+        Proxy = _spc("CCCC", "poly")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        A = _spc("C", "A_gas")
+        B = _spc("[CH3]", "B_gas")
+        core = [Proxy, Mu0, Mu1, Mu2, A, B]
+        mask = np.array([False] * 4 + [True, True], dtype=bool)
+
+        rxn = Reaction(reactants=[A], products=[B], **_KIN)   # no pool reactant
+        rxn.polymer_flux_archetype = 5
+        rxn.polymer_chip_units = 2
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={A: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)}, termination=[],
+        )
+        rs.initialize_model(core, [rxn], [], [])
+
+        import rmgpy.solver.polymer as sp
+        assert rs.reaction_src_pool[0] == -1
+        assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED   # demoted
+        assert rs.reaction_chip_units[0] == 2    # array filled regardless
 
     def test_validate_configuration_rejects_moment_in_stoichiometry(self):
         """
