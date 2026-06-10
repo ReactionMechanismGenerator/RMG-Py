@@ -72,6 +72,13 @@ jobs:
           uname -a
           sysctl hw.memsize hw.ncpu hw.physicalcpu 2>/dev/null || cat /proc/meminfo 2>/dev/null | head -3 || true
 
+      - name: Configure Auto-upload
+        if: >
+          (github.event_name == 'push' && github.ref == 'refs/heads/stable') ||
+          (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/stable')
+        run: |
+          conda config --set anaconda_upload yes
+
       - name: Build Binary
         env:
           CONDA_VERBOSITY: "1"
@@ -86,15 +93,7 @@ jobs:
           # Strict priority makes the solver skip lower-priority channels entirely
           # for any package the higher-priority channel offers.
           conda config --set channel_priority strict
-          conda config --set anaconda_upload no
-          CONDA_NPY=${{ matrix.numpy-version }} CONDA_PY=${{ matrix.python-version }} conda build .
-
-      - name: Upload Built Binaries
-        if: >
-          (github.event_name == 'push' && github.ref == 'refs/heads/stable') ||
-          (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/stable')
-        run: |
-          anaconda -t ${{ secrets.ANACONDA_TOKEN }} upload $(conda build --output)
+          CONDA_NPY=${{ matrix.numpy-version }} CONDA_PY=${{ matrix.python-version }} conda build --token $CONDA_TOKEN --user rmg .
 
   result:
     if: ${{ always() }}
