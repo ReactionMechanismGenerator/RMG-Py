@@ -2534,6 +2534,14 @@ def process_polymer_candidates_multipool(
 
 
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION = "2.0"
+# Rate-recipe revision marker, emitted as conventions["recipe_revision"].
+# Bump rule: assign a NEW date whenever the RATE RECIPE changes — site
+# scaling, the chip exhaustion throttle, the kb/Keq recipe, or channel /
+# flux-archetype algebra — independent of
+# POLYMER_POOLS_SIDECAR_SCHEMA_VERSION, which governs artifact SHAPE only.
+# Downstream consumers (TA) hard-fail on unknown values, so bumping this is
+# a consumer-coordination event, not a cosmetic edit.
+POLYMER_RATE_RECIPE_REVISION = "2026-06-10"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
@@ -3005,6 +3013,7 @@ def build_polymer_moments_artifact(pool_registry,
 
     conventions = {
         "format_doc": "docs/polymer_moments_format.md (polymer_moments_format/2.0)",
+        "recipe_revision": POLYMER_RATE_RECIPE_REVISION,
         "moment_basis": "extensive mol, DP basis (mu1 = moles of repeat units)",
         "volumes": {
             "V_poly": "constant, consumer-supplied [m^3]",

@@ -11,6 +11,7 @@ from rmgpy.kinetics import Arrhenius, MultiArrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.polymer import (
     POLYMER_POOLS_SIDECAR_SCHEMA_VERSION,
+    POLYMER_RATE_RECIPE_REVISION,
     Polymer,
     PolymerFluxArchetype,
     _serialize_pool_for_sidecar,
@@ -345,6 +346,19 @@ class TestArtifactBuilderAndRoundTrip:
         assert len(data["reactions"]) == 1
         assert data["reactions"][0]["archetype"] == "discrete_chip/1"
         assert data["reactions"][0]["params"] == {"a": 1}
+
+    def test_recipe_revision_emitted_in_conventions(self, pe_pool, tmp_path):
+        """conventions.recipe_revision marks the RATE-RECIPE revision (site
+        scaling, chip throttle, kb recipe, channel/flux algebra) independently
+        of schema_version (shape). TA hard-fails on unknown values, so an
+        accidental constant bump must fail here too: assert the literal."""
+        path = self._build(pe_pool, tmp_path)
+        with open(path) as fh:
+            data = json.load(fh)
+        assert data["conventions"]["recipe_revision"] == POLYMER_RATE_RECIPE_REVISION
+        assert data["conventions"]["recipe_revision"] == "2026-06-10"
+        # shape version is untouched by the recipe marker
+        assert data["schema_version"] == "2.0"
 
     def test_json_round_trip_is_lossless(self, pe_pool, tmp_path):
         path = self._build(pe_pool, tmp_path)
