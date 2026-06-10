@@ -3502,6 +3502,70 @@ class TestMakeNewReactionPolymer:
         assert result_rxn.pairs is not None
         assert len(result_rxn.pairs) == max(len(result_rxn.reactants), len(result_rxn.products))
 
+    def _make_chip_template_reaction(self):
+        """
+        Proxy -> [cap+unit fragment, END_MOD image]: handshakes into the live
+        chip shape (b) (SCISSION piece + END_MOD fold-back), per the probed
+        recipe in the 2026-06-10 spec work. Fragment MW 134.2 -> a = 1.
+        """
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.kinetics import Arrhenius
+
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+        return TemplateReaction(
+            reactants=[proxy_mol],
+            products=[frag, end_mod],
+            family='R_Recombination',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1e13, 's^-1'), n=0.0, Ea=(50.0, 'kcal/mol')),
+            pairs=[(proxy_mol, frag), (proxy_mol, end_mod)],
+        )
+
+    def test_make_new_reaction_chip_stamps_and_never_queues(self):
+        """
+        Spec test 7 (+3b's flag-survival rider at the model level): a chip
+        event through make_new_reaction stamps DISCRETE_CHIP with
+        polymer_chip_units = 1, keeps the STORED is_end_group_reaction True
+        (the surgery removed the END_MOD member, so a recompute would flip
+        it -- nothing recomputes), registers NO _scission_* daughter, and the
+        iteration-boundary spawn pass finds nothing to spawn (never-queue:
+        surgery replaced the daughter before the candidates pass).
+        """
+        from rmgpy.polymer import PolymerFluxArchetype
+
+        rxn = self._make_chip_template_reaction()
+        result_rxn, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False,
+            generate_kinetics=False,
+        )
+        assert result_rxn is not None
+
+        # Stamps: archetype, chip units, stored-flag survival.
+        assert result_rxn.is_end_group_reaction is True
+        assert (result_rxn.polymer_flux_archetype
+                == int(PolymerFluxArchetype.DISCRETE_CHIP))
+        assert result_rxn.polymer_chip_units == 1
+
+        # Products: a discrete chip + the PS fold-back; no scission daughter.
+        labels = [getattr(p, 'label', '') for p in result_rxn.products]
+        assert not any('_scission' in lbl for lbl in labels)
+        assert any(isinstance(p, Polymer) and p.label == 'PS'
+                   for p in result_rxn.products)
+
+        # Never-queue: no _scission_* Polymer registered...
+        assert not any('_scission' in s.label for s in self.model.new_species_list)
+        # ...and the spawn pass has nothing to drain (no daughter pools appear).
+        self.model._apply_multipool_spawn_pass(self.model.new_species_list)
+        assert not any('_scission' in s.label for s in self.model.new_species_list)
+        pools = [s for s in self.model.new_species_list if isinstance(s, Polymer)]
+        assert pools  # the parent pool must be present (guards vacuous all())
+        assert all(p.label == 'PS' for p in pools)
+
 
 class TestEnlargePolymerPipeline:
     """

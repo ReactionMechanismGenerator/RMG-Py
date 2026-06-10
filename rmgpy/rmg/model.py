@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import Polymer, PolymerCrosslinkError, PolymerFluxArchetype, is_end_group_reaction, classify_reaction_flux_archetype
+from rmgpy.polymer import Polymer, PolymerCrosslinkError, PolymerFluxArchetype, is_end_group_reaction, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -642,10 +642,15 @@ class CoreEdgeReactionModel:
                 # Flag end-group (terminal) modifications so the polymer solver
                 # scales them by chain-end density (mu0) instead of mu1.
                 forward.is_end_group_reaction = is_end_group_reaction(forward.products)
-                forward.polymer_flux_archetype = int(
-                    classify_reaction_flux_archetype(reactants, forward.products))
+                # Chip product surgery + archetype stamping (spec 2026-06-10
+                # §4.2): MUST run after the stored is_end_group_reaction flag
+                # and before make_new_species registers the products, so the
+                # SCISSION daughter is replaced before any spawn-candidate or
+                # registration pass can see it (never-queue).
+                stamp_polymer_flux_archetype(forward, reactants, polymer_reactants)
                 # Handshake replaced some Molecule objects in forward.products
-                # with Polymer objects, so forward.pairs references stale objects.
+                # with Polymer objects (and chip surgery may have swapped them
+                # again), so forward.pairs references stale objects.
                 # Invalidate pairs so they are regenerated later.
                 forward.pairs = None
 
@@ -683,8 +688,8 @@ class CoreEdgeReactionModel:
                 if polymer_reactants:
                     _handshake_structures(forward.products, polymer_reactants)
                     forward.is_end_group_reaction = is_end_group_reaction(forward.products)
-                    forward.polymer_flux_archetype = int(
-                        classify_reaction_flux_archetype(reactants, forward.products))
+                    # Same surgery + stamping as the is_forward branch.
+                    stamp_polymer_flux_archetype(forward, reactants, polymer_reactants)
                     forward.pairs = None
 
                 products = [self.make_new_species(product, generate_thermo=generate_thermo)[0] for product in forward.products]
