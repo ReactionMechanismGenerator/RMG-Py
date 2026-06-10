@@ -2931,15 +2931,15 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
             }
         else:
             kinetics = None
-            # Fix 3: warn for ALL non-Arrhenius entries (retained or dropped).
-            # Retained entries still carry kinetics=null; consumers needing
-            # reversibility must treat them as reversible because chem.yaml
-            # always writes <=> even for irreversible reactions.
+            # Warn for ALL non-Arrhenius entries (retained or dropped).
+            # Retained entries still carry kinetics=null; consumers take
+            # reversibility from the chem.yaml equation arrow (=> means
+            # irreversible — get_reaction_equation mirrors rxn.reversible).
             logging.warning(
                 "Polymer artifact: reaction %s has non-Arrhenius kinetics "
-                "(%s); entry carries kinetics=null (no A/n/Ea and no "
-                "reversible flag — consumers needing reversibility must "
-                "treat it as reversible, matching chem.yaml).",
+                "(%s); entry carries kinetics=null (no A/n/Ea) — consumers "
+                "take its rate AND reversibility from chem.yaml (the "
+                "equation arrow mirrors rxn.reversible).",
                 equation, type(kin).__name__)
 
         entry = {
