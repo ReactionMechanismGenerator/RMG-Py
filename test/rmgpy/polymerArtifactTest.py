@@ -16,6 +16,7 @@ from rmgpy.polymer import (
     _serialize_pool_for_sidecar,
     build_polymer_moments_artifact,
     compile_polymer_reaction_entries,
+    derive_condensed_species,
     write_polymer_pools_sidecar,
 )
 from rmgpy.reaction import Reaction
@@ -368,3 +369,119 @@ class TestArtifactBuilderAndRoundTrip:
         assert data["schema_version"] == "2.0"
         assert data["reactions"] == []
         assert data["conventions"]["configured_pools"] == ["PE"]
+
+
+class _FakePool:
+    """Minimal stand-in for PolymerPoolConfig (label + index fields only)."""
+    def __init__(self, label, mu_indices=(), explicit_dp_to_species_index=None,
+                 monomer_poly_index=None):
+        self.label = label
+        self.mu_indices = mu_indices
+        self.explicit_dp_to_species_index = explicit_dp_to_species_index or {}
+        self.monomer_poly_index = monomer_poly_index
+
+
+class TestDeriveCondensedSpecies:
+    """conventions.condensed_species must MIRROR THE ORACLE (the live solver's
+    final-core gas_species_mask). derive_condensed_species is keyed on the
+    SOLVER-CONFIGURED pools (the engine's polymer_pools), which the
+    save_everything hook resolves off system.solver — NOT the full Polymer
+    registry. A daughter pool spawned mid-run but never solver-configured (e.g.
+    epdm_scission_tail, which the EPDM run runs as ordinary GAS species and
+    whose scission stamp the solver DEMOTES to legacy/UNRESOLVED) is NOT passed
+    here and so is NOT reported condensed."""
+
+    def _epdm_like_core(self):
+        # Final core: epdm proxy + epdm_mu0/1/2 (the ONE configured pool, all
+        # condensed) interleaved with gaseous N2 / H(1), plus the spawned
+        # epdm_scission_tail family which the solver ran as ordinary GAS species
+        # (its pool was never solver-configured).
+        core = [
+            _spc("[CH2]CC([CH2])C", "epdm", index=2),
+            _mu_dummy("epdm_mu0"), _mu_dummy("epdm_mu1"), _mu_dummy("epdm_mu2"),
+            _spc("N#N", "N2", index=4),
+            _spc("[H]", "H", index=1),
+            _spc("[CH2]CC([CH2])C", "epdm_scission_tail", index=9),
+            _mu_dummy("epdm_scission_tail_mu0"),
+            _mu_dummy("epdm_scission_tail_mu1"),
+            _mu_dummy("epdm_scission_tail_mu2"),
+        ]
+        # Only 'epdm' is solver-configured (matches the live engine's
+        # polymer_pools == ['epdm']); epdm_scission_tail is a registry pool
+        # without a solver config.
+        configured_pools = [_FakePool("epdm", mu_indices=(1, 2, 3))]
+        return core, configured_pools
+
+    def test_mask_shorter_than_core_falls_back_to_configured_derivation(self):
+        """Mask sized to the constructor-era core (4), final core is 10. The
+        stale mask is ignored; membership is derived from the CONFIGURED pools
+        only — the spawned scission_tail family stays GAS (oracle truth)."""
+        core, pools = self._epdm_like_core()
+        stale_mask = [False, False, False, False]  # 4 entries, core is 10
+        condensed = derive_condensed_species(core, pools, stale_mask)
+        labels = [s.label for s in condensed]
+        # ONLY the configured epdm pool's proxy + moments.
+        assert labels == ["epdm", "epdm_mu0", "epdm_mu1", "epdm_mu2"]
+        assert "epdm_scission_tail" not in labels  # spawned, unconfigured -> gas
+        assert "N2" not in labels and "H" not in labels
+
+    def test_absent_mask_falls_back_to_configured_derivation(self):
+        """No mask at all (blueprint surfaced None) → derive from CONFIGURED
+        pools; the unconfigured daughter is NOT condensed."""
+        core, pools = self._epdm_like_core()
+        condensed = derive_condensed_species(core, pools, None)
+        labels = [s.label for s in condensed]
+        assert "epdm" in labels
+        assert "epdm_scission_tail" not in labels
+        assert "N2" not in labels and "H" not in labels
+
+    def test_matching_mask_honored_verbatim(self):
+        """A length-matched mask is the oracle's verdict: honored verbatim. The
+        configured-pool derivation agrees with it (epdm condensed), and the
+        spawned scission_tail family the mask leaves as GAS stays GAS."""
+        core, pools = self._epdm_like_core()
+        import numpy as np
+        # False=condensed, True=gas. Solver mask: epdm members (0-3) condensed,
+        # everything else (incl. the spawned scission_tail family 6-9) gas.
+        mask = np.array([False, False, False, False, True, True,
+                         True, True, True, True], dtype=bool)
+        condensed = derive_condensed_species(core, pools, mask)
+        labels = [s.label for s in condensed]
+        assert labels == ["epdm", "epdm_mu0", "epdm_mu1", "epdm_mu2"]
+        assert "epdm_scission_tail" not in labels   # gas in the oracle mask
+        assert "epdm_scission_tail_mu0" not in labels
+        assert "N2" not in labels and "H" not in labels
+
+    def test_mask_marks_nonpool_condensed_is_honored(self):
+        """A length-matched mask can mark a non-pool species condensed (e.g. a
+        solvent species the consumer treats as condensed); that verdict is
+        honored verbatim even though pool derivation would not add it."""
+        core, pools = self._epdm_like_core()
+        import numpy as np
+        # Mark index 4 (N2) condensed via the mask, on top of the epdm pool.
+        mask = np.array([False, False, False, False, False, True,
+                         True, True, True, True], dtype=bool)
+        condensed = derive_condensed_species(core, pools, mask)
+        labels = [s.label for s in condensed]
+        assert "N2" in labels                       # honored from the mask
+        assert set(labels) >= {"epdm", "epdm_mu0", "epdm_mu1", "epdm_mu2"}
+        assert "epdm_scission_tail" not in labels   # still gas
+
+    def test_explicit_and_monomer_indices_are_condensed(self):
+        """Explicit-oligomer and routed-monomer indices count as condensed in
+        the derived fallback (mirrors polymer.pyx:502-516)."""
+        core = [
+            _spc("CC", "P", index=2),
+            _mu_dummy("P_mu0"), _mu_dummy("P_mu1"), _mu_dummy("P_mu2"),
+            _spc("[CH3]", "G", index=7),
+            _spc("CCC", "P_dp3", index=8),
+            _spc("[CH2]CC", "monomer_in_poly", index=9),
+        ]
+        pools = [_FakePool("P", mu_indices=(1, 2, 3),
+                           explicit_dp_to_species_index={3: 5},
+                           monomer_poly_index=6)]
+        condensed = derive_condensed_species(core, pools, mask=None)
+        labels = [s.label for s in condensed]
+        assert set(labels) == {"P", "P_mu0", "P_mu1", "P_mu2",
+                               "P_dp3", "monomer_in_poly"}
+        assert "G" not in labels

@@ -2552,6 +2552,88 @@ def _species_base_label(spc) -> str:
     return getattr(spc, "label", "").partition('(')[0]
 
 
+def derive_condensed_species(core_species, pools_cfg, mask=None):
+    """Resolve the condensed-phase subset of ``core_species`` for the artifact.
+
+    ``conventions.condensed_species`` (docs/polymer_moments_format.md §4 step 2,
+    §8) MUST mirror the live solver's final-core phase membership (the oracle).
+    The solver only marks a species condensed for pools it has CONFIGURED
+    (``HybridPolymerSystem.polymer_pools``); a daughter pool spawned mid-run but
+    never solver-configured (e.g. ``epdm_scission_tail``) runs its proxies as
+    ordinary GAS species. So ``pools_cfg`` must be the CONFIGURED pools — the
+    caller (the save_everything hook) passes the live engine's
+    ``polymer_pools``, falling back to the full registry only when no engine is
+    resolvable (direct/test invocation).
+
+    Two complementary sources are UNIONED:
+
+    1. The solver's ``gas_species_mask`` (True=gas, False=condensed), honored
+       VERBATIM when it matches ``len(core_species)`` — the authoritative oracle
+       phase verdict (rmgpy/solver/polymer.pyx:478-516). When the mask is absent
+       or length-mismatched (e.g. a constructor-era mask sized to a smaller
+       core, or the blueprint surfacing ``None``), only source 2 is used.
+    2. Label/index membership derived from ``pools_cfg`` the same way the solver
+       builds its mask: a core species is condensed iff its base label (RMG
+       ``(N)`` suffix stripped) matches a pool's proxy label or
+       ``{label}_mu0/_mu1/_mu2``, or its index is a pool's explicit-oligomer /
+       moment / routed-monomer index. Keyed on the CONFIGURED pools, this
+       reproduces exactly what the solver mask would have marked — so when the
+       mask IS present they agree, and when it is missing this is a faithful
+       reconstruction (NOT an over-broad registry union).
+
+    Parameters
+    ----------
+    core_species : list of Species
+        The FINAL core species list.
+    pools_cfg : iterable, optional
+        The solver-CONFIGURED pool objects, exposing ``label`` (and optionally
+        ``mu_indices``, ``explicit_dp_to_species_index``, ``monomer_poly_index``).
+        Accepts both solver ``PolymerPoolConfig`` and ``Polymer`` registry
+        entries. Do NOT pass spawned-but-unconfigured daughter pools here: the
+        oracle does not phase-resolve them as condensed.
+    mask : sequence of bool, optional
+        The solver's ``gas_species_mask``. Honored verbatim when
+        ``len(mask) == len(core_species)``.
+
+    Returns
+    -------
+    list of Species
+        The condensed-phase core species, in core order.
+    """
+    n = len(core_species)
+    condensed_idx = set()
+
+    # Source 1: authoritative final-core mask (when length-matched).
+    if mask is not None and len(mask) == n:
+        condensed_idx.update(i for i in range(n) if not mask[i])
+
+    # Source 2: pool membership — mirror polymer.pyx:478-516. Catches pools
+    # spawned mid-run that the solver mask never marked condensed.
+    for pool in (pools_cfg or []):
+        label = getattr(pool, "label", None)
+        if label:
+            member_bases = {label, f"{label}_mu0", f"{label}_mu1", f"{label}_mu2"}
+            for i in range(n):
+                if _species_base_label(core_species[i]) in member_bases:
+                    condensed_idx.add(i)
+        explicit_map = getattr(pool, "explicit_dp_to_species_index", None) or {}
+        for idx in explicit_map.values():
+            if isinstance(idx, int) and 0 <= idx < n:
+                condensed_idx.add(idx)
+        # mu_indices may be a (mu0,mu1,mu2) tuple of core indices (solver config
+        # or Polymer.mu_indices) — a dict form carries no core indices, skip it.
+        mu_indices = getattr(pool, "mu_indices", None)
+        if isinstance(mu_indices, (tuple, list)):
+            for idx in mu_indices:
+                if isinstance(idx, int) and 0 <= idx < n:
+                    condensed_idx.add(idx)
+        mono_idx = getattr(pool, "monomer_poly_index", None)
+        if isinstance(mono_idx, int) and 0 <= mono_idx < n:
+            condensed_idx.add(mono_idx)
+
+    return [core_species[i] for i in range(n) if i in condensed_idx]
+
+
 def _get_rmg_commit():
     """Best-effort git SHA of the emitting RMG-Py checkout (envelope field)."""
     try:

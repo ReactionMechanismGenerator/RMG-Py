@@ -2059,7 +2059,8 @@ class RMG(util.Subject):
         # (~/Code/TA) can pick up pool semantics + compiled flux terms.
         # Normative contract: docs/polymer_moments_format.md.
         try:
-            from rmgpy.polymer import Polymer, write_polymer_pools_sidecar, _artifact_species_label
+            from rmgpy.polymer import (Polymer, write_polymer_pools_sidecar,
+                                       _artifact_species_label, derive_condensed_species)
             pool_registry = [
                 s for s in (
                     self.reaction_model.core.species
@@ -2089,26 +2090,63 @@ class RMG(util.Subject):
                         "polymer_pools.json: cantera index map unavailable (%s); "
                         "all reaction entries will be emitted cantera-null.", e)
 
-                # Solver-configured pools / phase mask / monomer routing from
-                # the live hybrid reactor (HybridPolymerSystem IS the reaction
-                # system; polymer_pools and gas_species_mask are direct attrs).
-                # gas_species_mask: True=gas, False=condensed/polymer.
-                configured = condensed = None
+                # Phase mask / monomer routing from the live hybrid reactor.
+                # self.reaction_systems holds the HybridPolymerReactor BLUEPRINT,
+                # whose runnable HybridPolymerSystem engine (the one carrying the
+                # final-core gas_species_mask and the per-pool index config) is
+                # rebuilt per iteration and parked on `system.solver`. Resolve the
+                # authoritative solver first, then fall back to the system itself
+                # for the test/runner case where the HybridPolymerSystem IS the
+                # reaction system. gas_species_mask: True=gas, False=condensed.
+                #
+                # ORACLE TRUTH (docs/polymer_moments_format.md §2): the artifact
+                # MUST mirror the live solver engine. configured_pools is the
+                # ENGINE's polymer_pools labels — NOT pool_registry. A daughter
+                # pool SPAWNED mid-run (e.g. epdm_scission_tail) lives in the
+                # registry but is NOT a solver config: the solver runs its proxies
+                # as ordinary species (no site scaling, no conc:=1.0 rule) and
+                # DEMOTES stamps whose src/dst pool is unconfigured. condensed_species
+                # is likewise the engine's FINAL gas_species_mask verbatim (False=
+                # condensed); the spawned daughter's proxies/µ-dummies are GAS in
+                # that mask and must NOT be reported condensed. derive_condensed_species
+                # is only the FALLBACK when the engine mask is unavailable/length-
+                # mismatched, and is then keyed on the CONFIGURED pools (not the
+                # full registry) so the fallback mirrors the same demotion.
+                configured = None
                 routing = {}
+                solver_mask = None
+                engine_pools_cfg = None
                 for system in (self.reaction_systems or []):
-                    pools_cfg = getattr(system, "polymer_pools", None)
+                    engine = getattr(system, "solver", None) or system
+                    pools_cfg = getattr(engine, "polymer_pools", None)
                     if not pools_cfg:
                         continue
-                    configured = [p.label for p in pools_cfg]
-                    mask = getattr(system, "gas_species_mask", None)
-                    if mask is not None and len(mask) == len(core_species):
-                        condensed = [core_species[i]
-                                     for i in range(len(core_species)) if not mask[i]]
+                    engine_pools_cfg = pools_cfg
+                    solver_mask = getattr(engine, "gas_species_mask", None)
                     for p in pools_cfg:
-                        idx = p.monomer_poly_index
+                        idx = getattr(p, "monomer_poly_index", None)
                         if idx is not None and 0 <= idx < len(core_species):
                             routing[p.label] = _artifact_species_label(core_species[idx])
                     break
+
+                if engine_pools_cfg is not None:
+                    # Authoritative: the live solver's configured pools.
+                    configured = [getattr(p, "label", "") for p in engine_pools_cfg] or None
+                    configured_pools_cfg = engine_pools_cfg
+                else:
+                    # No live engine (direct/test invocation): fall back to the
+                    # full registry. build_polymer_moments_artifact's own default
+                    # would do the same; passing it explicitly keeps the fallback
+                    # condensed-species derivation keyed on the SAME pool set.
+                    configured = [getattr(p, "label", "") for p in pool_registry] or None
+                    configured_pools_cfg = pool_registry
+
+                # condensed_species: the engine's final-core mask is honored
+                # verbatim when length-matched; otherwise derive membership from
+                # the CONFIGURED pools only (mirrors the solver's mask, which
+                # never marks unconfigured-daughter proxies condensed).
+                condensed = derive_condensed_species(
+                    core_species, configured_pools_cfg, solver_mask)
 
                 write_polymer_pools_sidecar(
                     pool_registry=pool_registry,
