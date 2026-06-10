@@ -103,6 +103,10 @@ Definitions: `V_poly` = constant consumer input; `V_gas = n_gas·R·T/P`
 (ideal gas over the *gas-phase* species — those NOT in
 `conventions.condensed_species`; floor `V_gas = 1.0 m³` when `n_gas ≤ 0`).
 Pool moments are extensive mol; intensive µ ≡ y[µ]/V_poly clamped at ≥ 0.
+**`R = 8.314472 J/(mol·K)`** — the oracle's `rmgpy.constants.R`
+(CODATA-2006), used in `V_gas`, `kf`, `Keq`, and mass transfer alike. Do
+NOT substitute the 2018-SI exact value (8.31446261815324): the 1.13e-6
+relative offset shifts every gas-phase term off the oracle.
 
 0. **Disable every listed retained reaction in Cantera:** for each entry with
    `cantera != null`, `Kinetics.set_multiplier(0, cantera.index)`. (Equation
