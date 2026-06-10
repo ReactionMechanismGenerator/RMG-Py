@@ -16,9 +16,12 @@ reachable shapes, residual (e) from the moment-flux apportionment work
 purely topologically (wing count). Two failure modes:
 
 1. **Backbone impostors.** A small molecule that accidentally contains both
-   [end-group + monomer] wing subgraphs (e.g. propane/butane against PE with
-   CH3 caps) classifies as an intact-backbone polymer image and its mass is
-   captured by the pool.
+   [end-group + monomer] wing subgraphs classifies as an intact-backbone
+   polymer image and its mass is captured by the pool. (Verified live case:
+   bibenzyl double-wing-matches the PS proxy today. The original item-#5
+   example — propane/butane vs PE — turned out on probing to classify via the
+   wing_count == 1 scission path instead, where the §3.2 routing governs it;
+   see §10-V6.)
 2. **Small fragments as pools.** A scission piece of literal DP ~1-2 folded
    into pool bookkeeping adds µ0 = 1 with tiny µ1, crashing Mn; monomer/dimer
    yields are headline pyrolysis outputs that should be explicit species.
@@ -71,7 +74,10 @@ tol = round(0.35 * heavy_atoms(baseline_proxy))
   side-group elimination). Heavy atoms, not MW: H-insensitive, and a lost
   side group is a known heavy-atom delta.
 - The exact tolerance is not delicate: an impostor that matched both wings
-  sits far below 0.65× of the proxy (propane: 3 heavy atoms vs PE-proxy 8).
+  sits far below 0.65× of the proxy (bibenzyl: 14 heavy atoms vs the
+  PS-proxy bound of 16; see §10-V6 — a head-wing+tail-wing directly-joined
+  molecule is mathematically never below the bound, so the gate targets
+  accidental overlap matches like this one).
 - **No ceiling**, contingent on verification (see §10-V3) that
   polymer+polymer coupling cannot reach this branch (CROSSLINK rejection
   upstream raises `PolymerCrosslinkError` in `create_reacted_copy` before
@@ -408,3 +414,11 @@ Verified against code during design (2026-06-10):
 - **V5:** the "polymer reactant with no polymer product → UNRESOLVED" guard
   already exists (polymer.py:1453-1460, tested) — tier 1 of the classifier
   interaction needed no new work.
+- **V6 (probed 2026-06-10, plan-authoring):** propane/butane/pentane against
+  CH3-capped PE classify SCISSION (wing_count 1), not 2-wing — the original
+  item-#5 impostor example was wrong. The smallest 2-wing alkane (hexane)
+  sits above the PE bound, and a head-wing+tail-wing directly-joined molecule
+  is never below the 0.35 bound. The verified live impostor is **bibenzyl vs
+  the PS proxy** (double-wing-matches today, classifies UNKNOWN; 14 heavy <
+  bound 16) — the §8 test 1 pair is built on it, with probed pass-side
+  candidates (27-heavy +CH3/−2H image; 19-heavy lost-phenyl image).
