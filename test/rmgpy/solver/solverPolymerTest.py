@@ -1466,8 +1466,9 @@ class TestHybridPolymerReactor:
                 assert y[mu1_i] - y[mu0_i] >= -1e-9    # cone: mu1 >= mu0
         assert np.isclose(y[2] + y[6] + a1 * y[8] + a2 * y[9], invariant0,
                           rtol=1e-12)
-        assert np.isclose(y[1], 1.0)          # chain counts unchanged
-        assert np.isclose(y[5], 1.0)
+        # DISCRETE_CHIP writes no mu0 leg, so chain counts are bit-exact.
+        assert np.isclose(y[1], 1.0, rtol=0, atol=1e-14)
+        assert np.isclose(y[5], 1.0, rtol=0, atol=1e-14)
         assert y[8] > 0.0 and y[9] > 0.0      # both chips accumulated
 
     def test_scission_monodisperse_limit_closed_form(self):
