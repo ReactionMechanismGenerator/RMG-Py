@@ -1019,6 +1019,27 @@ class RMG(util.Subject):
                                 self.make_seed_mech()  # Just in case the user wants to restart from this
                             raise
 
+                        # Mass-flux spawn-gate snapshot (multi-pool §4.4, spec
+                        # 2026-06-10): read the 3-tuple (gross for all core
+                        # species, pool_stats, proxy_event_mass_total) off the
+                        # ENGINE — `system.solver`, never the
+                        # HybridPolymerReactor blueprint (the established
+                        # blueprint-vs-engine gotcha) — and stash on the
+                        # reaction model for the Phase-D gate. Stays None for
+                        # non-polymer systems (honest degradation: the gate
+                        # defers). This stash + the motif ledger are the
+                        # shared infrastructure the spec-§2.2 iteration-
+                        # boundary re-check upgrade would reuse.
+                        engine = getattr(reaction_system, "solver", None) or reaction_system
+                        if callable(getattr(engine, "spawn_gate_flux_snapshot", None)):
+                            try:
+                                self.reaction_model.polymer_flux_snapshot = engine.spawn_gate_flux_snapshot()
+                                self.reaction_model.polymer_flux_snapshot_iteration = self.reaction_model.iteration_num
+                            except Exception as exc:
+                                self.reaction_model.polymer_flux_snapshot = None
+                                logging.warning(
+                                    "Polymer spawn-gate snapshot failed (all spawns will defer): %s", exc)
+
                         self.rmg_memories[index].add_t_conv_N(t, x, len(obj))
                         self.rmg_memories[index].generate_cond()
                         log_conditions(self.rmg_memories, index)
