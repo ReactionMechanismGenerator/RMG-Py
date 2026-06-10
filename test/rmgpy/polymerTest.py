@@ -918,6 +918,45 @@ PS_1
                 if "probable mis-scaled end-anchored cut" in r.getMessage()]
         assert len(hits) == 1                                   # warn-once
 
+    def test_discrete_dp_threshold_config_field(self):
+        """
+        discrete_dp_threshold (spec 2026-06-10 §6, decisions D7/D8): per-pool
+        config knob, default 4 (monomer through trimer explicit), DORMANT
+        under the fixed trimer proxy -- no behavioral use yet. Stored on the
+        Polymer, survives copy(), overridable per pool.
+        """
+        assert self.polymer_1.discrete_dp_threshold == 4
+        assert self.polymer_1.copy().discrete_dp_threshold == 4
+        p = Polymer(label='PE_thresh', monomer='[CH2][CH2]',
+                    end_groups=['[H]', '[H]'], cutoff=3,
+                    Mn=1000.0, Mw=2500.0, initial_mass=1.0,
+                    discrete_dp_threshold=6)
+        assert p.discrete_dp_threshold == 6
+
+    def test_backstop_dormant_under_trimer_proxy(self):
+        """
+        Spec test 16 / decision D8: the conditional DP backstop ("mu1-scaled
+        cut producing literal DP < threshold -> exact-a accounting") applies
+        ONLY when the proxy repeat-count exceeds discrete_dp_threshold. The
+        fixed trimer proxy (3 units) never exceeds the default threshold (4),
+        so a mu1-scaled mid-cut keeps routing SCISSION_FRAGMENT regardless of
+        literal piece DP. No backstop code exists yet -- this pins the
+        routing so adding it later cannot silently activate on trimer decks
+        (unconditional, it would route ALL mid-chain scission to chip and
+        kill mu0 growth/Mn halving).
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        assert p.discrete_dp_threshold == 4          # >= 3 proxy repeat units
+        gas = Molecule(smiles="CC")
+        piece = p.copy()
+        piece.label = f"{p.label}_scission_tail"
+        piece._reacted_class = PolymerClass.SCISSION
+        piece._source_molecule = Molecule(smiles="CCC(C)c1ccccc1")  # DP ~1 piece
+        assert (classify_reaction_flux_archetype([p], [piece, gas])
+                == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
     def test_demote_flipped_polymer_archetype(self):
         """
         apply_kinetics_to_reaction flips reactions in place when the kinetics

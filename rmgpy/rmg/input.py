@@ -255,6 +255,7 @@ def polymer(label: str,
             initial_mass: float = 1.0,
             k_scission: float = 0.0,
             k_unzip: float = 0.0,
+            discrete_dp_threshold: int = 4,
             ):
     """
     Helper function exposed in the input file to define a Polymer Pool.
@@ -277,6 +278,11 @@ def polymer(label: str,
             explicit oligomers (the "Hybrid Handshake"). Required for
             depolymerization chemistry; if 0 the polymer can only react
             bimolecularly via radicals.
+        discrete_dp_threshold (int): Chains with literal DP below this are
+            candidates for discrete (explicit-species) tracking instead of
+            pool moments. Default 4. DORMANT under the fixed trimer proxy
+            (see docs/multi_pool_design.md §5.1) -- reserved for the
+            conditional DP backstop with longer proxies.
     """
     poly_obj = Polymer(
         label=label,
@@ -289,6 +295,7 @@ def polymer(label: str,
         moments=moments,
         k_scission=k_scission,
         k_unzip=k_unzip,
+        discrete_dp_threshold=discrete_dp_threshold,
     )
 
     poly_obj.creation_iteration = rmg.reaction_model.iteration_num

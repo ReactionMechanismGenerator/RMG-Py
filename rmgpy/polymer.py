@@ -236,6 +236,15 @@ class Polymer(Species):
         # — Species does not accept k_unzip/k_scission and would raise TypeError.
         self.k_unzip = kwargs.pop('k_unzip', 0.0)
         self.k_scission = kwargs.pop('k_scission', 0.0)
+        # Discreteness threshold (spec 2026-06-10 §6, D7/D8): chains with
+        # literal DP < threshold are candidates for discrete tracking. Default
+        # 4 = monomer..trimer explicit. DORMANT under the fixed trimer proxy:
+        # the backbone gate is proxy-relative (D2), scission routing keys on
+        # is_end_group_reaction (D3), and the conditional DP backstop (D8)
+        # activates only when the proxy repeat-count exceeds this threshold
+        # (a 3-unit proxy never does). Defined-but-documented beats undefined
+        # intent; no behavioral use yet.
+        self.discrete_dp_threshold = kwargs.pop('discrete_dp_threshold', 4)
 
         super(Polymer, self).__init__(label=label, **kwargs)
 
@@ -490,6 +499,7 @@ class Polymer(Species):
         # its degradation kinetics (k_scission/k_unzip would silently reset to 0).
         other.k_scission = self.k_scission
         other.k_unzip = self.k_unzip
+        other.discrete_dp_threshold = getattr(self, 'discrete_dp_threshold', 4)
         other.is_polymer = True
         other._cached_backbone_group = None
         return other

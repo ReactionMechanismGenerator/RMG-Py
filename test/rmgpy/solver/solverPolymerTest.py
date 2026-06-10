@@ -1405,6 +1405,71 @@ class TestHybridPolymerReactor:
         assert not np.isclose(rate, kf * mom_a[0])
         assert np.isclose(rate, dn_dt[2] / (-a))          # parity with residual
 
+    def test_discrete_chip_trajectory_conserves_units_and_cone(self):
+        """
+        Spec test 13 -- the exact conservation invariant (closed system,
+        chip reactions only): d/dt [ Sigma_pools mu1 + Sigma_chips a_i*n_i ]
+        = 0, chip moles weighted by the STAMPED unit count (not raw moles).
+        Multi-chip generalization of the single-reaction invariant already
+        pinned by test_discrete_chip_exhaustion_trajectory_throttles: TWO
+        chip reactions with DIFFERENT unit counts on DIFFERENT pools (a = 3,
+        mu0-scaled on A; a = 5, mu1-scaled on B) ejecting DISTINCT chip
+        species -- the invariant only closes if each chip is weighted by its
+        own a_i. Over a chip-only forward-Euler trajectory: the weighted
+        invariant is constant to roundoff, mu0 never changes for either pool
+        (chain counts preserved), and both pools stay in the realizable cone
+        (mu1 >= mu0 >= 0).
+        """
+        sp, core, mask = _two_pool_species()
+        g2 = _spc("[CH2]C", "G2")
+        sp["G2"] = g2
+        core = core + [g2]
+        mask = np.append(mask, True)
+        a1, a2 = 3, 5
+        rxn1 = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn1.polymer_flux_archetype = 5
+        rxn1.polymer_chip_units = a1
+        rxn1.is_end_group_reaction = True     # mu0-scaled, uniform pick
+        rxn2 = Reaction(reactants=[sp["B"]], products=[sp["B"], sp["G2"]], **_KIN)
+        rxn2.polymer_flux_archetype = 5
+        rxn2.polymer_chip_units = a2
+        rxn2.is_end_group_reaction = False    # mu1-scaled, length-biased pick
+
+        pool_a = PolymerPoolConfig(label="A", xs=2, explicit_dp_to_species_index={},
+                                   mu_indices=(1, 2, 3), monomer_poly_index=None,
+                                   k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        pool_b = PolymerPoolConfig(label="B", xs=2, explicit_dp_to_species_index={},
+                                   mu_indices=(5, 6, 7), monomer_poly_index=None,
+                                   k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={sp["G"]: 0.0, sp["G2"]: 0.0},
+            V_poly=1.0, polymer_pools=[pool_a, pool_b], mass_transfer=[],
+            gas_species_mask=mask, constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 50.0, 3000.0),
+                                     "B": (1.0, 50.0, 3000.0)},
+            termination=[],
+        )
+        rs.initialize_model(core, [rxn1, rxn2], [], [])
+
+        y = rs.y.copy()
+        invariant0 = y[2] + y[6] + a1 * y[8] + a2 * y[9]   # Sum(mu1) + Sum(a_i*n_i)
+        # rxn1: r = kf*mu0 = 2/s -> dmu1_A = -6/s; rxn2: dmu1_B/dt =
+        # -kf*a2*mu1_B = -10*mu1_B/s (self-limiting). 200 * 1e-4 s drains
+        # ~0.12 of A and ~18% of B: far from depletion, forward Euler safe.
+        dt = 1e-4
+        for _ in range(200):
+            dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+            assert np.all(np.isfinite(dn_dt))
+            y = y + dt * dn_dt
+            for mu0_i, mu1_i in ((1, 2), (5, 6)):
+                assert y[mu0_i] >= -1e-12              # mu0 >= 0
+                assert y[mu1_i] - y[mu0_i] >= -1e-9    # cone: mu1 >= mu0
+        assert np.isclose(y[2] + y[6] + a1 * y[8] + a2 * y[9], invariant0,
+                          rtol=1e-12)
+        assert np.isclose(y[1], 1.0)          # chain counts unchanged
+        assert np.isclose(y[5], 1.0)
+        assert y[8] > 0.0 and y[9] > 0.0      # both chips accumulated
+
     def test_scission_monodisperse_limit_closed_form(self):
         """
         Monodisperse pool (PDI=1, mu_j = N*k^j): the mu3 closure is exact
