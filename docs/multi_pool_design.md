@@ -148,16 +148,97 @@ Strict isomorphism handles the trivial duplicate case. Edit-distance ≤ 1 catch
 
 ### 4.4 Mass-flux gate
 
-```
-state: per-motif accumulator updated during reaction generation
-       motif_flux[motif_signature] = sum of |product moles produced via reactions yielding this motif|
-                                   over the trailing N RMG iterations (default N=3)
+**ACTIVE** (spec `docs/superpowers/specs/2026-06-10-mass-flux-spawn-gate-design.md`,
+as AMENDED 2026-06-10). The gate is a minimum-significance bar keeping
+trivial/transient motifs from spawning pools — noise suppression, NOT slot
+ranking: an important motif arriving after `max_pools` fills is a different
+feature (ranking/eviction), out of scope until a real deck hits the cap with
+a significant motif locked out.
 
-mass_flux_gate(motif, threshold):
-    return motif_flux[motif.signature] / total_polymer_derived_mass >= threshold
+**Arrival-driven re-evaluation.** Deferred candidates are never re-presented
+(`new_species_list` contains only new species), so the gate re-checks a motif
+only when a NEW candidate carrying it arrives. Arrivals are themselves the
+relevant signal — a channel that matters keeps generating distinct
+motif-carrying products — and a deferred motif's mass still flows through the
+parent pool's accounting (absorbed as proxy variants), so the cost of the
+known blind spot (flux grows while arrivals are quiet) is statistical
+distinction, not mass conservation. The iteration-boundary ledger re-check is
+the documented upgrade; **upgrade trigger:** a real deck shows a deferred
+motif's flux growing while its arrivals are quiet.
+
+**Recorded quantity** — snapshot-attributed gross mass-flux fraction. The
+engine snapshot (`HybridPolymerSystem.spawn_gate_flux_snapshot()`) is a
+3-tuple `(gross, pool_stats, proxy_event_mass_total)`: `gross` maps EVERY
+core-species label to `max(0, core_species_production_rates[i])` (ordinary
+species have real gross records — the residual's sections 3/4 maintain
+production/consumption for ALL core species, simple.pyx parity, since
+change (a)); `pool_stats` maps pool label to `(E[n], monomer_MW)`;
+`proxy_event_mass_total` is the engine-attributed canonical-proxy sum.
+Representatives are ORDINARY absorbed species, recorded in the ledger as
+`(species_label, parent_pool_label)` pairs — the parent pool that absorbed
+the candidate, recorded at absorption (currently `pool_registry[0]` for
+gate-path candidates):
+
+```
+g_i(P) = max(0, core_species_production_rates[i]) * E[n]_P * monomer_MW_P
+
+E[n]_P = y[mu1]_P / y[mu0]_P   if y[mu0]_P > SMALL_EPS, else 0.0
+
+numerator(motif) = sum_{(i, P_i) in representatives(motif)} g_i(P_i)
+
+denominator = proxy_event_mass_total
+            + sum_{DEDUPED representatives (i, P_i) across the ledger} g_i(P_i)
+
+fraction(motif) = numerator(motif) / denominator
 ```
 
-The signature is a canonical SMARTS or RMG `Group` adjacency-list hash. Trailing-N rolling window prevents a single transient peak from triggering a spawn.
+Gross, never net: canonical proxies have `dn_dt ≈ 0` BY DESIGN (the archetype
+apportionment reroutes their flux to pool moments) and ordinary species net
+to ≈0 at steady state; the gross arrays exist precisely so diagnostics
+survive that rerouting. E[n] is read LIVE from engine state at snapshot time
+(never recorded-and-stale). When `mu0 <= SMALL_EPS`, `E[n]` is 0 and
+`g_i = 0`: the ε-clamp errs toward deferral — the inflating direction (`mu1`
+large while `mu0 ≈ 0`) is effectively unreachable inside the realizability
+cone. **The denominator dedups:** a species appearing in multiple motif
+entries counts ONCE in the denominator, so each motif's numerator is a
+subset of denominator terms and each fraction is in [0, 1] by construction.
+**Multi-motif double-counting is a stated decision, not emergent:** a
+species legitimately carrying two motifs contributes its gross production to
+EVERY motif-entry numerator that lists it (the motifs compete for DIFFERENT
+pool slots), so the SUM of fractions across motifs may exceed 1 — accepted.
+All terms are polymer-phase volumetric: V_poly cancels, no volume plumbing.
+
+**Ledger and window.** Motifs live in `reaction_model.polymer_motif_ledger`
+(`MotifLedgerEntry`); lookup is by Group **isomorphism** (the
+`similarity_merge` matching idiom), never a canonical string key. One record
+per motif per RMG iteration: same-iteration burst arrivals re-check the gate
+against the existing window only — otherwise "windowed over N iterations"
+silently becomes "windowed over N arrivals". Representatives absent from the
+snapshot (absorbed this iteration, not yet simulated) contribute 0 to the
+numerator — stated, not incidental. The gate statistic is the window sum
+divided by the FIXED window length N (zero-filled): a single-snapshot spike
+must be N× the bar to clear it; a channel persisting at fraction f for N
+iterations reads f.
+
+**Spawn-floor arithmetic.** First sighting can never spawn (zero
+representatives → record 0, defer). The earliest spawn is the second
+arrival's iteration, and only if that single record is itself ≥ N× the bar;
+an exactly-at-bar motif needs real records filling the window, spawning at
+its N-th recording iteration (k+3 for N=3 with arrivals every iteration;
+~1.5× the bar spawns at k+2). Re-checks happen only at arrivals, so arrival
+gaps stretch the floor further.
+
+**Honest degradation.** No snapshot stashed (iteration 0, or no polymer
+reaction system) → fraction 0.0 → defer, logged at INFO with the statistic,
+the bar, and the window occupancy. No production code path fakes a number.
+
+**Restart consequence (correct-but-loud).** The ledger is in-memory state on
+the reaction model — not serialized. An RMG restart resets windows and
+deferred motifs re-earn their bar: graceful, conservative, logged (same
+philosophy as unstamped-reaction demotion).
+
+Scission-daughter pools (the Path-C handshake in `make_new_reaction`) and
+input-file pools do NOT route through this gate.
 
 ### 4.5 Spawn drain (in `model.py` between iterations)
 
@@ -477,10 +558,6 @@ Each numbered step is its own commit. The synthetic unit test from step 1 acts a
     bit-exact legacy behavior, and the end-anchor detector (§11) migrates
     exactly these reactions to DISCRETE_CHIP, where the exhaustion throttle
     protects them. The unprotected population shrinks by design. (A4)
-
-> NOTE (§4.4 mass-flux gate): NOT YET ACTIVE. `_estimate_relative_flux` is a `0.5`
-> stub, so spawning is currently gated only by `max_pools` + similarity-merge. The
-> rolling-window `MassFluxAccumulator` is implemented but not wired into the live path.
 
 ## 11. Open items for follow-up
 
