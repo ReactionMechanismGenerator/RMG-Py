@@ -832,6 +832,56 @@ PS_1
         classify_reaction_flux_archetype([p, q], [other])  # repeat call
         assert len(polymer_mod._flux_archetype_warned) == n_before
 
+    def test_classify_chip_product_returns_discrete_chip(self):
+        """
+        A CHIP-stamped product polymer (left by surge_chip_products' fold-back)
+        short-circuits to DISCRETE_CHIP BEFORE the SCISSION branch. Order
+        matters (spec 2026-06-10 §4.1): after the (b)-surgery the product list
+        has no END_MOD member, so the SCISSION branch's internal
+        is_end_group_reaction(products) recompute would return False and
+        misroute; the CHIP check must win even alongside a SCISSION member.
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        chip_gas = Molecule(smiles="CC")
+        fold = p.copy()
+        fold._reacted_class = PolymerClass.CHIP
+        assert (classify_reaction_flux_archetype([p], [chip_gas, fold])
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+        # Defensive order pin: CHIP beats a co-present SCISSION stamp.
+        sc = p.copy()
+        sc.label = f"{p.label}_scission_head"
+        sc._reacted_class = PolymerClass.SCISSION
+        assert (classify_reaction_flux_archetype([p], [sc, fold])
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+    def test_flag_false_one_unit_piece_routes_scission_fragment(self):
+        """
+        Discriminator regression (spec 2026-06-10 test 2, decision D3): a
+        mu1-scaled (flag-false) cut whose represented piece is ONE repeat unit
+        must still route SCISSION_FRAGMENT. On a 3-unit proxy a u1-u2 cut (the
+        image of EVERY interior backbone bond) yields 1- and 2-unit pieces --
+        literal piece size is a representation artifact and must never be a
+        routing input. Guards against reintroducing piece-size routing.
+        """
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        gas = Molecule(smiles="CC")
+        piece = p.copy()
+        piece.label = f"{p.label}_scission_tail"
+        piece._reacted_class = PolymerClass.SCISSION
+        # Represented piece: cap + ONE styrene unit (10 heavy atoms).
+        # Provisional: _source_molecule is not read by the classifier yet;
+        # Task 4's chip surgery grounds it as a real attribute.
+        piece._source_molecule = Molecule(smiles="CCC(C)c1ccccc1")
+        assert (classify_reaction_flux_archetype([p], [piece, gas])
+                == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
     def test_demote_flipped_polymer_archetype(self):
         """
         apply_kinetics_to_reaction flips reactions in place when the kinetics

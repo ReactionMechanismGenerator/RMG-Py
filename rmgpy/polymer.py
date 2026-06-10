@@ -1378,6 +1378,9 @@ class PolymerClass(str, Enum):
     # --- Chain Breaking/Linking States ---
     SCISSION = 'SCISSION'    # Only 1 wing found; chain broke (e.g., [X-O]-W)
     CROSSLINK = 'CROSSLINK'  # >2 wings found; bi-molecular polymer recombination
+    CHIP = 'CHIP'            # Fold-back parent copy left by DISCRETE_CHIP product
+                             # surgery (surge_chip_products, spec 2026-06-10 §4.2).
+                             # Never produced by classify_structure itself.
 
 
 def is_end_group_reaction(products) -> bool:
@@ -1399,14 +1402,21 @@ class PolymerFluxArchetype(IntEnum):
     """
     Per-reaction pool moment-flux archetype, stamped at generation time on
     ``Reaction.polymer_flux_archetype`` and dispatched by the polymer hybrid
-    solver's residual. See
-    docs/superpowers/specs/2026-06-09-proxy-moment-flux-apportionment-design.md.
+    solver's residual. The solver reads the STORED reaction flags; nothing
+    downstream may recompute them from product stamps (chip surgery re-stamps
+    products). See
+    docs/superpowers/specs/2026-06-09-proxy-moment-flux-apportionment-design.md
+    and docs/superpowers/specs/2026-06-10-discreteness-gate-discrete-chip-design.md
+    (DISCRETE_CHIP).
     """
     NONE = 0               # no proxy involvement
     SAME_POOL = 1          # product folds back into the reactant pool (net-zero)
     MIGRATION = 2          # whole chain migrates to a different pool
     SCISSION_FRAGMENT = 3  # chain cut; fragment to daughter, complement stays
     UNRESOLVED = 4         # ambiguous/unstamped: solver applies legacy mu1 flux
+    DISCRETE_CHIP = 5      # end-anchored cut ejects a stamped a-unit discrete
+                           # chip; complement folds back to the SAME pool
+                           # (spec 2026-06-10). Mirror: solver FLUX_DISCRETE_CHIP.
 
 
 _flux_archetype_warned = set()
@@ -1427,24 +1437,37 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
     """
     Classify a reaction's pool moment-flux archetype from its (handshaked)
     reactant and product lists. Product Polymers carry ``_reacted_class``
-    stamped by :meth:`Polymer.create_reacted_copy`; pool identity is the
-    Polymer label (the same key the solver's ``initialize_model`` uses to
-    map species to pools).
+    stamped by :meth:`Polymer.create_reacted_copy` (or re-stamped by chip
+    product surgery, spec 2026-06-10 §4.2); pool identity is the Polymer
+    label (the same key the solver's ``initialize_model`` uses to map
+    species to pools).
     """
     reactant_pools = {r.label for r in reactants if isinstance(r, Polymer)}
     product_polymers = [p for p in products if isinstance(p, Polymer)]
     if not reactant_pools and not product_polymers:
         return PolymerFluxArchetype.NONE
 
+    if any(getattr(p, '_reacted_class', None) == PolymerClass.CHIP
+           for p in product_polymers):
+        # Chip product surgery (surge_chip_products) already rewrote this
+        # product list to [discrete chip, CHIP-stamped fold-back]. This check
+        # MUST precede the SCISSION branch: after the (b)-surgery there is no
+        # END_MOD member left, so is_end_group_reaction(products) would
+        # recompute False and misroute. The solver reads the STORED Reaction
+        # flag; nothing downstream may recompute it from product stamps.
+        return PolymerFluxArchetype.DISCRETE_CHIP
+
     if any(getattr(p, '_reacted_class', None) == PolymerClass.SCISSION
            for p in product_polymers):
         if is_end_group_reaction(products):
-            # End-initiated scission: the SCISSION_FRAGMENT bundle assumes a
-            # length-biased chain pick and a uniform cut position; an
-            # end-group-scaled scission violates both (uniform-by-chain pick,
-            # cut near the chain end) and would overestimate daughter Mn.
+            # Unsurged end-initiated scission: chip product surgery
+            # (surge_chip_products, spec 2026-06-10 §4.2) was either not
+            # attempted or infeasible for this shape. Surged shapes never
+            # reach here (the CHIP branch above short-circuits). UNRESOLVED,
+            # never SCISSION_FRAGMENT: uniform-cut statistics near a chain
+            # end are wrong AND the chip mass would go unaccounted.
             _warn_unresolved_archetype(
-                "end-initiated scission",
+                "unsurged end-initiated scission",
                 tuple(sorted(p.label for p in product_polymers)))
             return PolymerFluxArchetype.UNRESOLVED
         return PolymerFluxArchetype.SCISSION_FRAGMENT
