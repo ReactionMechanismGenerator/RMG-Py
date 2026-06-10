@@ -124,7 +124,15 @@ concentrations. The recipe the consumer must implement:
    in `proxy_reactants` as concentration 1.0**; gas species use `C = n/V_gas`,
    condensed species `C = n/V_poly`.
 3. Multiply both directions by the site density
-   `max(0, µ_scaling)/V_poly` — µ1, or µ0 when `scaling == "mu0"`.
+   `max(0, µ_scaling)/V_poly` — µ1, or µ0 when `scaling == "mu0"` —
+   **except for chip entries**
+   (`archetype == "discrete_chip/1" ∧ scaling == "mu0" ∧ a > 0`), where the
+   site is the exhaustion-throttled
+   `min(max(0, µ0), max(0, µ1)/a)/V_poly` (the chip-spec's 2026-06-10
+   amendment: µ1/a is a counting upper bound on donatable chain ends;
+   without it the consumer's µ1 runs negative in exhaustion — exactly the
+   TGA tail regime — and diverges from the oracle). No schema change: `a`
+   is already carried per entry.
    **Pinned to the oracle (`polymer.pyx:981-1033`):** the moment is read
    from the **first proxy reactant's pool** (reactant-slot priority order),
    it multiplies **once** even when `proxy_reactants` has two entries

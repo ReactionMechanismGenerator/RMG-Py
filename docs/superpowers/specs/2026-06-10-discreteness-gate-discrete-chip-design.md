@@ -255,6 +255,43 @@ parent: dmu0 += 0
   size. Clamp the µ2 decrement at ≥ 0 (skip the write); by that regime the
   pool is near-exhausted and the moment description is marginal anyway. The
   reverse term below is unconditionally positive — no clamp.
+- **Exhaustion throttle (AMENDMENT 2026-06-10, adversarial-review finding):**
+  DISCRETE_CHIP is the only stamped archetype that decouples the drained
+  moment (µ1) from the rate-scaling moment (µ0 — which chip events
+  deliberately never drain, per D4). Unthrottled, the µ0-scaled rate is
+  constant in µ1: after the pool's units exhaust, µ1 runs linearly negative
+  while chip moles keep being created — silent physical mass creation and a
+  permanent cone exit (µ1 < 0 < µ0). Write-gating the µ1 leg alone would
+  recreate mass duplication (chips produced at full rate, no drain), so the
+  **rate itself throttles**, in the section-2 site scaling, for
+  `archetype == DISCRETE_CHIP ∧ scaling == mu0 ∧ a > 0`:
+
+  ```
+  site = min(max(0, µ0), max(0, µ1)/a) / V_poly
+  ```
+
+  This is a **counting inequality, not a heuristic**: every chain with
+  n ≥ a contributes at least a units to µ1, so #{chains long enough to
+  donate} ≤ µ1/a always — the throttle is "eligible ends = min(all ends,
+  an upper bound on donatable ends)". Throttled regime:
+  dµ1/dt = −kf·(µ1/a)·a = −kf·µ1 exactly; unthrottled regime has
+  µ0 < µ1/a so the bound dµ1/dt ≥ −kf·µ1 holds globally — µ1 decays at
+  worst exponentially and never crosses zero. Because the throttle lives in
+  the site scaling it **multiplies both directions** (the reverse
+  re-attachment leg also throttles in exhaustion — acceptable: a
+  near-zero-unit pool is a degenerate regime, and this is consistent with
+  the existing src-density-both-directions convention; stated here so the
+  asymmetry is not later read as a bug) and conservation stays exact at
+  every instant (chip production and µ1 drain scale together; the
+  Σµ1 + Σa·n invariant is unaffected). Interaction with the µ2 clamp: in
+  the throttled regime E[n] = µ1/µ0 < a, so once E[n] < a/2 the clamp
+  engages and µ2 writes stop while µ1 decays — the exhaustion test asserts
+  the FULL cone (µ1 ≥ 0 AND µ0·µ2 ≥ µ1²), not just µ1 non-negativity.
+  a = 0 chips are exempt (they drain nothing); µ1-scaled chips already
+  self-limit exponentially and are untouched. A hard cutoff at µ1 < a·µ0
+  was rejected: discontinuous, and it fires on the *mean*, freezing a
+  polydisperse pool whose tail still has donatable chains, while the
+  throttle drains it at the parcel-limited rate.
 - The chip itself gains/loses moles through the **standard gas-species
   dn_dt path** — no special handling.
 - **Reverse leg — NOT the sign-flip of the forward.** Extending a chain by a:
@@ -351,6 +388,12 @@ Solver (`test/rmgpy/solver/solverPolymerTest.py`):
     µ1/µ0 — asserts the dispatch reads the right bundle per flag).
 12. Clamp regime: degenerate pool with a ≥ 2·E[n] → µ2 write skipped, RHS
     finite.
+12b. **Exhaustion trajectory (throttle amendment):** µ0-scaled chip reaction
+    integrated past unit exhaustion — µ1 decays exponentially toward 0,
+    never crosses zero, chip production rate → 0 in lockstep, and the FULL
+    cone holds throughout (µ1 ≥ 0 AND µ0·µ2 ≥ µ1², not just µ1
+    non-negativity — the µ2 channel is where a residual throttle/clamp
+    inconsistency would hide). Also asserts Σµ1 + a·n_chip constant.
 13. Conservation trajectory: Σ_pools µ1 + Σ a_i·n_i constant over a chip-only
     forward-Euler trajectory; cone preserved.
 14. Reverse-leg test (rs.kb override trick, kf = 0): expects the exact
@@ -399,6 +442,14 @@ Approximations (one line each goes to `multi_pool_design.md`):
   species-balance level — the two statements agree by construction.
 - **A3:** Out of scope: true volatility (Tb vs reactor T) — mass-transfer
   layer, phase 2; the detector item (§9).
+- **A4 (added with the exhaustion-throttle amendment):** the legacy
+  UNRESOLVED path has the same latent structure for µ0-scaled reactions
+  (rate ∝ µ0, drains µ1, µ0 untouched) — documented, NOT fixed. The
+  UNRESOLVED contract is bit-exact legacy behavior (that is what keeps the
+  pre-existing test population untouched), and the detector item (§9)
+  migrates exactly these reactions to DISCRETE_CHIP, where the throttle
+  protects them. The unprotected population shrinks by design; changing it
+  now would silently break the back-compat property.
 
 Verified against code during design (2026-06-10):
 - **V1:** `is_end_group_reaction` = `any(p._reacted_class == END_MOD ...)`
