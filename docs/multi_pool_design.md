@@ -315,6 +315,13 @@ threshold AND piece DP < threshold) only activates for longer proxies; NO backst
 
 ## 6. Sidecar JSON schema
 
+> **SUPERSEDED for schema ≥ 2.0:** the sidecar is now schema 2.0 — envelope,
+> pool additions, compiled `reactions[]` flux terms, and `conventions` are
+> normatively specified in `docs/polymer_moments_format.md`. The block below
+> documents the original 1.0 field set, which 2.0 preserves verbatim (note:
+> the per-pool `current_moments` object sketched here was never emitted; the
+> 2.0 field is `moments`, a `[mu0, mu1, mu2]` list).
+
 Path: `<output_dir>/polymer_pools.json` alongside `chem.yaml`.
 
 ```jsonc
