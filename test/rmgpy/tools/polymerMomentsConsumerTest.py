@@ -271,3 +271,49 @@ class TestTwoPoolSufficiency:
                                     P=P_PA, V_poly=V_POLY, nasa=nasa)
         _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
         np.testing.assert_allclose(mine, oracle, rtol=1e-7, atol=1e-12)
+
+
+class TestMassTransferCrossCheck:
+    def test_evaporation_both_sides_nonzero(self):
+        """Spec §9 test 2b: nonzero kLa with BOTH C_poly and C_gas nonzero, on
+        top of the two-pool reaction deck — the consumer's J = kLa(Cp - K*Cg)
+        is validated against the solver's, end to end."""
+        sp, core, mask = _two_pool_setup()
+        # dissolved species D (condensed, not pool-mapped) <-> gas G
+        d = _spc("CC=O", "D", index=11)
+        core = core + [d]
+        mask = np.append(mask, False)  # D is condensed
+
+        mig = Reaction(reactants=[sp["A"]], products=[sp["B"]],
+                       kinetics=_kin1(), reversible=False)
+        mig.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        rxns = [mig]
+
+        mt = MassTransferConfig(gas_index=8, poly_index=9, K=2.0, kLa=5.0)
+        rs = HybridPolymerSystem(
+            T=T_K, P=P_PA,
+            initial_mole_fractions={core[8]: 0.05, d: 0.0},
+            V_poly=V_POLY,
+            polymer_pools=_pools_ab(), mass_transfer=[mt],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0), "B": (2.0, 4.0, 10.0)},
+            termination=[])
+        rs.initialize_model(core, rxns, [], [])
+        y0 = rs.y.copy()
+        y0[9] = 0.02  # dissolved D moles: condensed side nonzero too
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        artifact = build_polymer_moments_artifact(
+            _registry_ab(), core_species=core, core_reactions=rxns,
+            configured_pool_labels=["A", "B"],
+            condensed_species=core[:8] + [d], cantera_index_map={})
+        artifact = json.loads(json.dumps(artifact))
+        consumer = ArtifactConsumer(
+            artifact, [_yaml_label(s) for s in core], P=P_PA, V_poly=V_POLY,
+            mass_transfer=[{"gas": "G(9)", "poly": "D(11)", "K": 2.0, "kLa": 5.0}])
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-9, atol=1e-12)
+        # the transfer really moved mass and conserved the pair total
+        assert mine[-1, 9] != pytest.approx(y0[9])
+        np.testing.assert_allclose(mine[:, 8] + mine[:, 9],
+                                   y0[8] + y0[9], rtol=1e-9)
