@@ -876,11 +876,47 @@ PS_1
         piece.label = f"{p.label}_scission_tail"
         piece._reacted_class = PolymerClass.SCISSION
         # Represented piece: cap + ONE styrene unit (10 heavy atoms).
-        # Provisional: _source_molecule is not read by the classifier yet;
-        # Task 4's chip surgery grounds it as a real attribute.
+        # _source_molecule is grounded by create_reacted_copy since Task 4
+        # (chip surgery / tripwire read it); fabricated here for the shape.
         piece._source_molecule = Molecule(smiles="CCC(C)c1ccccc1")
         assert (classify_reaction_flux_archetype([p], [piece, gas])
                 == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+    def test_tripwire_warns_once_for_wing_confined_mu1_piece(self, caplog):
+        """
+        Spec test 5 (§4.4): a mu1-scaled (flag-false) scission whose
+        represented piece is end-confined (piece <= wing + at most 1 repeat
+        unit by heavy atoms) logs the probable-mis-scaled-end-cut warning
+        exactly once. Diagnostics only -- routing stays SCISSION_FRAGMENT.
+        The census sets the priority of the end-anchor detector follow-up.
+        """
+        import logging as _logging
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+        polymer_mod._chip_tripwire_warned.clear()
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+
+        p = self.polymer_1
+        gas = Molecule(smiles="CC")
+        piece = p.copy()
+        piece.label = f"{p.label}_scission_tail"
+        piece._reacted_class = PolymerClass.SCISSION
+        # cap (1 heavy) + 1 unit (8 heavy) + stitch CH3 = 10 heavy
+        #   <= max_cap_heavy(1) + 2*monomer_heavy(2*8) = 17 -> end-confined.
+        piece._source_molecule = Molecule(smiles="CCC(C)c1ccccc1")
+
+        with caplog.at_level(_logging.WARNING):
+            arch = classify_reaction_flux_archetype([p], [piece, gas])
+        assert arch == PolymerFluxArchetype.SCISSION_FRAGMENT  # never routes
+        hits = [r for r in caplog.records
+                if "probable mis-scaled end-anchored cut" in r.getMessage()]
+        assert len(hits) == 1
+
+        with caplog.at_level(_logging.WARNING):
+            classify_reaction_flux_archetype([p], [piece, gas])  # repeat
+        hits = [r for r in caplog.records
+                if "probable mis-scaled end-anchored cut" in r.getMessage()]
+        assert len(hits) == 1                                   # warn-once
 
     def test_demote_flipped_polymer_archetype(self):
         """
@@ -2861,6 +2897,145 @@ class TestHandshakeStructures:
         assert isinstance(prods[0], Polymer)
         assert (classify_reaction_flux_archetype([self.ps], prods)
                 == PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+    def test_surge_chip_sub_shape_b_live_end_mod_fold_back(self):
+        """
+        Spec test 3b -- the only flag-true shape live today: products =
+        [SCISSION piece, END_MOD fold-back]. Surgery demotes the chip back to
+        a discrete Molecule (undoing its handshake conversion), re-stamps the
+        END_MOD fold-back CHIP, and returns a = round(134.2/104.15) = 1.
+        Flag-stability rider: the recompute over surged products flips to
+        False (END_MOD member gone) -- which is exactly why nothing downstream
+        may recompute the flag from product stamps.
+        """
+        from rmgpy.polymer import (PolymerFluxArchetype, is_end_group_reaction,
+                                   classify_reaction_flux_archetype,
+                                   surge_chip_products)
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert frag is not None
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+
+        products = [frag.copy(deep=True), end_mod]
+        self._handshake(products, [self.ps])
+        assert products[0]._reacted_class == PolymerClass.SCISSION
+        assert products[1]._reacted_class == PolymerClass.END_MOD
+        assert is_end_group_reaction(products) is True  # the stored flag's value
+
+        a = surge_chip_products(products, self.ps)
+
+        assert a == 1
+        assert isinstance(products[0], Molecule)          # chip demoted
+        assert not isinstance(products[0], Polymer)
+        assert products[0].get_formula() == frag.get_formula()
+        assert products[1]._reacted_class == PolymerClass.CHIP
+        # Recompute now flips -- pins the no-recompute rule.
+        assert is_end_group_reaction(products) is False
+        assert (classify_reaction_flux_archetype([self.ps], products)
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+    def test_surge_chip_sub_shape_a_macro_daughter(self):
+        """
+        Spec test 3 -- sub-shape (a) (dormant today, live when the end-anchor
+        detector lands): the SCISSION-stamped Polymer is the MACRO daughter
+        and the chip is the single discrete co-product. Surgery replaces the
+        daughter with parent.copy(deep=True) stamped CHIP; the chip stays
+        as-is; a stamps from the chip's MW ratio.
+        """
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype,
+                                   surge_chip_products)
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        prods = [frag]
+        self._handshake(prods, [self.ps])
+        daughter = prods[0]
+        assert isinstance(daughter, Polymer)
+        assert daughter._reacted_class == PolymerClass.SCISSION
+
+        chip = Molecule(smiles="C=Cc1ccccc1")   # styrene, 104.15 g/mol -> a = 1
+        products = [daughter, chip]
+        a = surge_chip_products(products, self.ps)
+
+        assert a == 1
+        fold = products[0]
+        assert isinstance(fold, Polymer)
+        assert fold.label == self.ps.label                # PARENT pool fold-back
+        assert fold._reacted_class == PolymerClass.CHIP
+        assert products[1] is chip                        # chip untouched, discrete
+        assert (classify_reaction_flux_archetype([self.ps], products)
+                == PolymerFluxArchetype.DISCRETE_CHIP)
+
+    def test_surge_chip_infeasible_stamps_unresolved_never_scission(self):
+        """
+        Spec test 4: surgery-infeasible flag-true scission shapes stamp
+        UNRESOLVED + warn-once via stamp_polymer_flux_archetype -- NEVER
+        SCISSION_FRAGMENT (uniform-cut statistics near an end + unaccounted
+        chip mass). Two infeasible shapes: (b) without a demotable source
+        molecule, and (a) without a discrete co-product.
+        """
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+
+        # Infeasible (b): SCISSION chip with no _source_molecule.
+        sc = self.ps.copy()
+        sc.label = "PS_scission_tail"
+        sc._reacted_class = PolymerClass.SCISSION
+        end = self.ps.copy()
+        end._reacted_class = PolymerClass.END_MOD
+        rxn = Reaction(reactants=[self.ps], products=[sc, end],
+                       is_end_group_reaction=True)
+        stamp_polymer_flux_archetype(rxn, [self.ps], [self.ps])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+        assert rxn.polymer_chip_units == 0
+
+        # Infeasible (a): flag-true scission shape, no discrete co-product.
+        sc2 = self.ps.copy()
+        sc2.label = "PS_scission_head"
+        sc2._reacted_class = PolymerClass.SCISSION
+        rxn2 = Reaction(reactants=[self.ps], products=[sc2],
+                        is_end_group_reaction=True)
+        stamp_polymer_flux_archetype(rxn2, [self.ps], [self.ps])
+        assert rxn2.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+
+        # Warn-once: repeating an already-warned shape adds no registry entry.
+        n = len(polymer_mod._flux_archetype_warned)
+        stamp_polymer_flux_archetype(rxn2, [self.ps], [self.ps])
+        assert len(polymer_mod._flux_archetype_warned) == n
+
+    def test_surge_chip_a_zero_bare_cap_ejection(self):
+        """
+        Spec test 6: a = 0 chips are legal (bare end-cap ejection, e.g. CH3
+        loss): surgery succeeds and returns 0 (NOT None) -- the archetype
+        fires with zero mu1/mu2 drain, net pool effect ~ SAME_POOL.
+        """
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype,
+                                   surge_chip_products)
+
+        sc = self.ps.copy()
+        sc.label = "PS_scission_tail"
+        sc._reacted_class = PolymerClass.SCISSION
+        sc._source_molecule = Molecule(smiles="C")   # CH4 cap image, 16 g/mol
+        end = self.ps.copy()
+        end._reacted_class = PolymerClass.END_MOD
+        products = [sc, end]
+
+        a = surge_chip_products(products, self.ps)
+
+        assert a == 0
+        assert a is not None                         # 0 != infeasible
+        assert isinstance(products[0], Molecule)
+        assert products[1]._reacted_class == PolymerClass.CHIP
+        assert (classify_reaction_flux_archetype([self.ps], products)
+                == PolymerFluxArchetype.DISCRETE_CHIP)
 
     # ------------------------------------------------------------------
     # 2. Head-scission fragment → scission_tail Polymer

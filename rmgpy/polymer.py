@@ -852,6 +852,12 @@ class Polymer(Species):
         # END_MOD reactions for chain-end (mu0) scaling in the solver. Read by
         # is_end_group_reaction(products); a transient generation-time marker.
         new_poly._reacted_class = klass
+        # Keep the sanitized reacted fragment so chip product surgery
+        # (surge_chip_products, spec 2026-06-10 §4.2) can demote a SCISSION
+        # chip back to a discrete Molecule and size chips by MW. Transient
+        # generation-time marker like _reacted_class (deliberately not carried
+        # by Polymer.copy()).
+        new_poly._source_molecule = probe
         proxy_spec = new_poly.get_proxy_species()
         for mol in proxy_spec.molecule:
             mol.clear_labeled_atoms()
@@ -1433,6 +1439,25 @@ def _warn_unresolved_archetype(reason: str, detail: tuple) -> None:
             reason, detail)
 
 
+_chip_tripwire_warned = set()
+
+
+def _warn_probable_end_cut(detail) -> None:
+    """
+    Diagnostics-only census (spec 2026-06-10 §4.4): warn once per distinct
+    piece when a mu1-scaled scission's represented piece is end-confined.
+    Never affects routing. The accumulated count on real decks measures how
+    much chemistry waits on the end-anchor detector follow-up item.
+    """
+    if detail not in _chip_tripwire_warned:
+        _chip_tripwire_warned.add(detail)
+        logging.warning(
+            "Polymer scission piece %s is end-confined (wing + <=1 repeat "
+            "unit) but the reaction is mu1-scaled: probable mis-scaled "
+            "end-anchored cut; routed SCISSION_FRAGMENT pending the "
+            "end-anchor detector item.", detail)
+
+
 def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetype:
     """
     Classify a reaction's pool moment-flux archetype from its (handshaked)
@@ -1470,6 +1495,25 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
                 "unsurged end-initiated scission",
                 tuple(sorted(p.label for p in product_polymers)))
             return PolymerFluxArchetype.UNRESOLVED
+        # Tripwire diagnostic (spec 2026-06-10 §4.4): structure is used for
+        # DIAGNOSTICS only, never routing. "wing + at most 1 repeat unit"
+        # (not "wing only") so cap+1-unit pieces -- plausibly the most common
+        # single-step end cuts -- are counted. Heavy-atom bound:
+        # max(cap heavy) + 2 * monomer heavy (wing = cap + 1 unit, plus 1).
+        parent = next((r for r in reactants if isinstance(r, Polymer)), None)
+        piece = next(
+            (p for p in product_polymers
+             if getattr(p, '_reacted_class', None) == PolymerClass.SCISSION),
+            None)
+        src_mol = getattr(piece, '_source_molecule', None) if piece is not None else None
+        if parent is not None and src_mol is not None:
+            piece_heavy = sum(1 for a in src_mol.atoms if not a.is_hydrogen())
+            mon_heavy = sum(1 for a in parent.monomer.atoms if not a.is_hydrogen())
+            cap_heavy = max(
+                sum(1 for a in eg.atoms if not a.is_hydrogen())
+                for eg in parent.end_groups)
+            if piece_heavy <= cap_heavy + 2 * mon_heavy:
+                _warn_probable_end_cut(piece.label)
         return PolymerFluxArchetype.SCISSION_FRAGMENT
 
     if not product_polymers:
@@ -1491,6 +1535,115 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
         "ambiguous cross-pool shape",
         tuple(sorted(p.label for p in product_polymers)))
     return PolymerFluxArchetype.UNRESOLVED
+
+
+def surge_chip_products(products, parent: 'Polymer') -> Optional[int]:
+    """
+    Chip product surgery (spec 2026-06-10 §4.2): rewrite a flag-true
+    (end-group-scaled) scission-shaped product list IN PLACE into the
+    canonical DISCRETE_CHIP end state [discrete chip Molecule, CHIP-stamped
+    fold-back Polymer], and return the chip's repeat-unit count
+    ``a = round(chip_MW / parent.monomer_mw_g_mol)``. ``a == 0`` is legal
+    (bare cap ejection) and distinct from the infeasible return ``None``.
+
+    Sub-shapes (chip identification = the smaller piece; the cut POSITION is
+    already known from the reaction's stored is_end_group_reaction flag):
+
+    (b) END_MOD fold-back present -- the only flag-true shape live today:
+        the SCISSION-stamped Polymer is the chip. Demote it back to its
+        sanitized source Molecule (undoing the handshake conversion) and
+        re-stamp the existing END_MOD fold-back as CHIP. Applying (a) here
+        would replace the chip with a second fold-back -- losing the chip
+        and double-folding the parent.
+    (a) no END_MOD product (dormant until the end-anchor detector item):
+        the SCISSION-stamped Polymer is the MACRO daughter; the chip is the
+        single non-Polymer co-product (already discrete -- the handshake left
+        it a Molecule). Replace the daughter with ``parent.copy(deep=True)``
+        stamped ``PolymerClass.CHIP``.
+
+    Returns ``None`` WITHOUT modifying ``products`` when the shape is not a
+    feasible chip shape (no/ambiguous scission piece, chip unrepresentable or
+    not the smaller piece, missing source molecule). The caller
+    (stamp_polymer_flux_archetype) then stamps UNRESOLVED -- never
+    SCISSION_FRAGMENT.
+    """
+    product_polymers = [p for p in products if isinstance(p, Polymer)]
+    scissions = [p for p in product_polymers
+                 if getattr(p, '_reacted_class', None) == PolymerClass.SCISSION]
+    end_mods = [p for p in product_polymers
+                if getattr(p, '_reacted_class', None) == PolymerClass.END_MOD]
+    if len(scissions) != 1:
+        return None  # not a chip shape, or ambiguous piece identification
+    daughter = scissions[0]
+    proxy_mw = parent.baseline_proxy.molecule[0].get_molecular_weight()
+
+    if end_mods:
+        # --- sub-shape (b): SCISSION piece = chip, END_MOD = fold-back ---
+        if len(end_mods) != 1:
+            return None
+        chip_src = getattr(daughter, '_source_molecule', None)
+        if chip_src is None:
+            return None  # cannot demote: handshake source unavailable
+        if chip_src.get_molecular_weight() >= proxy_mw:
+            return None  # "chip" is not the smaller piece
+        chip_mol = chip_src.copy(deep=True)
+        chip_mol.clear_labeled_atoms()
+        for i, p in enumerate(products):
+            if p is daughter:
+                products[i] = chip_mol
+                break
+        end_mods[0]._reacted_class = PolymerClass.CHIP
+        chip_mw_g = chip_mol.get_molecular_weight() * 1000.0
+        return int(round(chip_mw_g / parent.monomer_mw_g_mol))
+
+    # --- sub-shape (a): SCISSION piece = macro daughter, chip discrete ---
+    chips = [p for p in products
+             if not isinstance(p, Polymer) and isinstance(p, Molecule)]
+    if len(chips) != 1:
+        return None  # chip absent or ambiguous
+    chip_mol = chips[0]
+    daughter_src = getattr(daughter, '_source_molecule', None)
+    ref_mw = (daughter_src.get_molecular_weight()
+              if daughter_src is not None else proxy_mw)
+    if chip_mol.get_molecular_weight() >= ref_mw:
+        return None  # the discrete co-product is not the smaller piece
+    fold = parent.copy(deep=True)
+    fold._reacted_class = PolymerClass.CHIP
+    for i, p in enumerate(products):
+        if p is daughter:
+            products[i] = fold
+            break
+    chip_mw_g = chip_mol.get_molecular_weight() * 1000.0
+    return int(round(chip_mw_g / parent.monomer_mw_g_mol))
+
+
+def stamp_polymer_flux_archetype(forward, reactants, polymer_reactants) -> None:
+    """
+    Stamp ``forward.polymer_flux_archetype`` (and ``polymer_chip_units``)
+    AFTER the handshake and AFTER ``forward.is_end_group_reaction`` is stored.
+    Called from both make_new_reaction stamping branches (rmgpy/rmg/model.py).
+
+    Flag-true shapes run chip product surgery FIRST so the classifier sees
+    the surged product list (its CHIP branch precedes the SCISSION
+    recompute). An infeasible flag-true scission shape stamps UNRESOLVED +
+    warn-once -- never SCISSION_FRAGMENT (spec 2026-06-10 §4.2).
+    """
+    chip_a = None
+    if forward.is_end_group_reaction and len(polymer_reactants) == 1:
+        chip_a = surge_chip_products(forward.products, polymer_reactants[0])
+    if chip_a is not None:
+        forward.polymer_chip_units = chip_a
+    elif forward.is_end_group_reaction and any(
+            getattr(p, '_reacted_class', None) == PolymerClass.SCISSION
+            for p in forward.products if isinstance(p, Polymer)):
+        _warn_unresolved_archetype(
+            "infeasible chip surgery",
+            tuple(sorted(getattr(p, 'label', '?') for p in forward.products
+                         if isinstance(p, Polymer))))
+        forward.polymer_flux_archetype = int(PolymerFluxArchetype.UNRESOLVED)
+        return
+    forward.polymer_flux_archetype = int(
+        classify_reaction_flux_archetype(reactants, forward.products))
 
 
 MatchMapping = Mapping[Any, Any]
