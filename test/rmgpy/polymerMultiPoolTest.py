@@ -175,6 +175,31 @@ class TestMassFluxAccumulator:
         acc = MassFluxAccumulator(window=3)
         assert acc.flux("never_recorded") == 0.0
 
+    def test_gate_statistic_divides_by_fixed_window_length(self):
+        """Spec §7.11: sum/N with zero-filled semantics — one record divides
+        by the FIXED window N, not the record count, so a single-snapshot
+        spike must be N x the bar to clear the gate."""
+        from rmgpy.polymer import MassFluxAccumulator
+
+        acc = MassFluxAccumulator(window=3)
+        acc.record("m", 0.06, iteration=4)
+        assert acc.gate_statistic("m") == pytest.approx(0.02)
+        acc.record("m", 0.03, iteration=5)
+        assert acc.gate_statistic("m") == pytest.approx(0.03)
+        assert acc.gate_statistic("never_recorded") == 0.0
+
+    def test_gate_statistic_evicts_at_window_edge(self):
+        """Spec §7.11: records older than window iterations relative to the
+        latest recording iteration are evicted from the statistic."""
+        from rmgpy.polymer import MassFluxAccumulator
+
+        acc = MassFluxAccumulator(window=3)
+        acc.record("m", 0.09, iteration=1)
+        acc.record("m", 0.03, iteration=2)
+        acc.record("m", 0.03, iteration=4)   # cutoff 4-3+1=2: evicts iteration 1
+        assert acc.window_occupancy("m") == 2
+        assert acc.gate_statistic("m") == pytest.approx(0.02)
+
 
 # ---------------------------------------------------------------------------
 # process_polymer_candidates_multipool — end-to-end behavior

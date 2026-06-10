@@ -2260,6 +2260,17 @@ class MassFluxAccumulator:
             return 0.0
         return sum(m for (_, m) in self._records[motif_key])
 
+    def gate_statistic(self, motif_key: str) -> float:
+        """Window sum divided by the FIXED window length (zero-filled
+        semantics, spec 2026-06-10 §4.4 step 4): a single-snapshot spike must
+        be ``window``x the bar to clear the gate; a channel persisting at
+        fraction f for ``window`` iterations reads f."""
+        return self.flux(motif_key) / float(self.window)
+
+    def window_occupancy(self, motif_key: str) -> int:
+        """Number of records currently in the rolling window."""
+        return len(self._records.get(motif_key, []))
+
 
 def _bfs_grow_heavy_subset(
     start: 'Atom',
