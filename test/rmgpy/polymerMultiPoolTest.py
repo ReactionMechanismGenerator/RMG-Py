@@ -205,6 +205,79 @@ class TestMassFluxAccumulator:
 # process_polymer_candidates_multipool — end-to-end behavior
 # ---------------------------------------------------------------------------
 
+class TestMotifLedger:
+    """Group-isomorphism motif ledger + amended fraction math
+    (spec 2026-06-10 §3/§4.3)."""
+
+    def test_ledger_lookup_is_group_isomorphism_not_string_key(self):
+        """Spec §7.9: the same motif Group with permuted atom ordering must
+        hit ONE ledger entry — pins the isomorphism-not-string-key choice."""
+        from rmgpy.molecule.group import Group
+        from rmgpy.polymer import MotifLedgerEntry, _ledger_lookup
+
+        g1 = Group().from_adjacency_list("""
+1 C u0 {2,S}
+2 C u0 {1,S} {3,S}
+3 O u0 {2,S}
+""")
+        # Same motif, permuted atom ordering.
+        g2 = Group().from_adjacency_list("""
+1 O u0 {2,S}
+2 C u0 {1,S} {3,S}
+3 C u0 {2,S}
+""")
+        entry = MotifLedgerEntry(motif=g1, accumulator_key="motif-0")
+        ledger = [entry]
+        assert _ledger_lookup(ledger, g2) is entry, (
+            "permuted atom ordering must resolve to the same ledger entry "
+            "(Group isomorphism, not a canonical string key)"
+        )
+        assert _ledger_lookup(ledger, Group().from_adjacency_list("""
+1 C u0 {2,S}
+2 C u0 {1,S}
+""")) is None, "a structurally different motif must miss"
+
+    def test_denominator_dedups_shared_representative_numerators_do_not(self):
+        """Spec §3 (amended): a species appearing in multiple motif entries
+        counts ONCE in the denominator (deduped), while EVERY motif-entry
+        numerator that lists it sees its mass — the stated multi-motif
+        double-counting decision (the two motifs compete for DIFFERENT pool
+        slots). Each fraction stays in [0,1] (numerators are subsets of
+        denominator terms); the SUM across motifs may exceed 1 — accepted."""
+        from rmgpy.molecule.group import Group
+        from rmgpy.polymer import MotifLedgerEntry, _spawn_gate_fraction
+
+        g1 = Group().from_adjacency_list("""
+1 C u0 {2,S}
+2 C u0 {1,S} {3,S}
+3 O u0 {2,S}
+""")
+        g2 = Group().from_adjacency_list("""
+1 C u0 {2,S}
+2 C u0 {1,S}
+""")
+        e1 = MotifLedgerEntry(motif=g1, accumulator_key="motif-0",
+                              representatives=[("X", "PE")])
+        e2 = MotifLedgerEntry(motif=g2, accumulator_key="motif-1",
+                              representatives=[("X", "PE"), ("Y", "PE")])
+        ledger = [e1, e2]
+        # pool_stats PE: E[n]=2, MW=5 -> g_X = 0.3*10 = 3.0, g_Y = 0.1*10 = 1.0;
+        # engine-attributed canonical-proxy total = 6.0.
+        snapshot = ({"X": 0.3, "Y": 0.1}, {"PE": (2.0, 5.0)}, 6.0)
+
+        # Denominator = proxies (6) + DEDUPED reps (g_X + g_Y = 4) = 10 —
+        # X appears in two entries but counts once.
+        assert _spawn_gate_fraction(e1, ledger, snapshot) == pytest.approx(3.0 / 10.0)
+        assert _spawn_gate_fraction(e2, ledger, snapshot) == pytest.approx(4.0 / 10.0)
+
+        # A representative whose recorded parent pool has no stats defers
+        # (g = 0, the deferral direction); a missing snapshot defers.
+        e3 = MotifLedgerEntry(motif=g1, accumulator_key="motif-2",
+                              representatives=[("Z", "NOPOOL")])
+        assert _spawn_gate_fraction(e3, ledger + [e3], snapshot) == pytest.approx(0.0)
+        assert _spawn_gate_fraction(e1, ledger, None) == 0.0
+
+
 class TestProcessPolymerCandidatesMultiPool:
     """Multi-pool aware product classification + spawn-intent generation."""
 

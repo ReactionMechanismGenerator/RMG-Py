@@ -2272,6 +2272,187 @@ class MassFluxAccumulator:
         return len(self._records.get(motif_key, []))
 
 
+@dataclass
+class MotifLedgerEntry:
+    """Per-motif spawn-gate ledger entry (design doc §4.4; spec 2026-06-10
+    §4.3, AMENDED).
+
+    Lives in ``reaction_model.polymer_motif_ledger`` — in-memory ONLY (an RMG
+    restart resets windows and deferred motifs re-earn their bar:
+    correct-but-loud, same philosophy as unstamped-reaction demotion).
+    Lookup is by Group isomorphism (:func:`_ledger_lookup`), never a canonical
+    string key. ``representatives`` are ``(species_label, parent_pool_label)``
+    pairs — the parent pool recorded at absorption (for Phase-D deferred
+    candidates: the pool that would parent the spawn intent, currently
+    ``pool_registry[0]``; if multi-parent attribution ever lands, this
+    follows it). E[n]/monomer_MW for a representative are read LIVE from that
+    pool's stats in the snapshot — live freshness kept, the wrong-mapping
+    hole closed. ``accumulator_key`` is the opaque per-entry id used with
+    :class:`MassFluxAccumulator`.
+    """
+
+    motif: Group
+    accumulator_key: str
+    representatives: List[Tuple[str, str]] = field(default_factory=list)
+    last_recorded_iteration: int = -1
+    spawned: bool = False
+
+
+def _ledger_lookup(
+    ledger: List[MotifLedgerEntry],
+    motif: Group,
+) -> Optional[MotifLedgerEntry]:
+    """Find the entry whose motif Group is isomorphic to ``motif``.
+
+    Same matching idiom as :func:`similarity_merge` — sidesteps Group
+    canonicalization. The ledger is ``max_pools``-scale, so the O(n)
+    isomorphism scan is fine.
+    """
+    for entry in ledger:
+        try:
+            if motif.is_isomorphic(entry.motif):
+                return entry
+        except (NotImplementedError, AttributeError, ValueError):
+            continue
+    return None
+
+
+def _snapshot_event_mass(
+    snapshot: Tuple[Dict[str, float], Dict[str, Tuple[float, float]], float],
+    species_label: str,
+    parent_pool_label: str,
+) -> float:
+    """g_i for one representative per spec §3 (amended):
+    ``gross[label] * E[n]_parent * monomer_MW_parent``, with the E[n]/MW pair
+    read from the snapshot's ``pool_stats`` for the parent pool RECORDED AT
+    ABSORPTION. Labels absent from ``gross`` (absorbed this iteration, not
+    yet simulated) and parent pools absent from ``pool_stats`` contribute 0
+    — stated, not incidental; both err toward deferral."""
+    gross, pool_stats, _ = snapshot
+    e_n, mw = pool_stats.get(parent_pool_label, (0.0, 0.0))
+    return gross.get(species_label, 0.0) * e_n * mw
+
+
+def _spawn_gate_fraction(
+    entry: MotifLedgerEntry,
+    ledger: List[MotifLedgerEntry],
+    snapshot: Optional[Tuple[Dict[str, float], Dict[str, Tuple[float, float]], float]],
+) -> float:
+    """fraction(motif) per spec §3 (AMENDED), from a stashed engine snapshot.
+
+    ``snapshot`` is the 3-tuple from
+    ``HybridPolymerSystem.spawn_gate_flux_snapshot()``:
+    ``(gross, pool_stats, proxy_event_mass_total)``.
+
+        numerator   = sum of g_i over THIS entry's (label, parent_pool) pairs
+        denominator = proxy_event_mass_total
+                      + sum of g_i over DEDUPED representatives across the
+                        WHOLE ledger (a species in multiple motif entries
+                        counts ONCE here, keyed by species label)
+
+    Numerators are subsets of denominator terms, so each motif's fraction is
+    in [0,1]; the SUM across motifs may exceed 1 (the stated multi-motif
+    double-counting decision — competing for different pool slots). No
+    snapshot (iteration 0, or no polymer reaction system) or an empty
+    denominator -> 0.0: honest degradation, the gate defers; no production
+    code path fakes a number.
+    """
+    if not snapshot:
+        return 0.0
+    try:
+        _, _, proxy_event_mass_total = snapshot
+    except (TypeError, ValueError):
+        return 0.0
+    numerator = sum(
+        _snapshot_event_mass(snapshot, lbl, pool_lbl)
+        for (lbl, pool_lbl) in entry.representatives
+    )
+    deduped: Dict[str, str] = {}
+    for e in ledger:
+        for (lbl, pool_lbl) in e.representatives:
+            deduped.setdefault(lbl, pool_lbl)
+    representative_total = sum(
+        _snapshot_event_mass(snapshot, lbl, pool_lbl)
+        for lbl, pool_lbl in deduped.items()
+    )
+    denominator = float(proxy_event_mass_total) + representative_total
+    if denominator <= 0.0:
+        return 0.0
+    return numerator / denominator
+
+
+def _evaluate_spawn_gate(
+    cand: 'Species',
+    motif: Group,
+    reaction_model: Any,
+    iteration: int,
+    flux_accumulator: Optional[MassFluxAccumulator],
+    mass_flux_threshold: float,
+) -> Tuple[bool, float, Optional[MotifLedgerEntry]]:
+    """Mass-flux spawn gate (design doc §4.4; spec 2026-06-10 §4.4).
+
+    Arrival-driven: runs only when a NEW candidate carrying ``motif`` reaches
+    Phase D (deferred candidates are never re-presented). Records at most ONE
+    snapshot-attributed gross mass-flux fraction per motif per RMG iteration
+    — same-iteration burst arrivals re-check the existing window only,
+    otherwise "windowed over N iterations" silently becomes "windowed over N
+    arrivals". The gate statistic is the window sum divided by the FIXED
+    window length (zero-filled): a single-snapshot spike must be window x the
+    bar to clear it.
+
+    Returns ``(spawn, statistic, entry)``. ``entry`` is ``None`` when there
+    is no reaction model / accumulator to hold gate state (bare unit-test
+    path) — then the candidate defers with statistic 0.0.
+    """
+    cand_label = getattr(cand, "label", "") or repr(cand)
+    if reaction_model is None or flux_accumulator is None:
+        logging.info(
+            "Polymer spawn gate: no reaction-model gate state available; "
+            "deferring spawn for %s (statistic 0.0 < bar %.4g).",
+            cand_label, mass_flux_threshold,
+        )
+        return False, 0.0, None
+
+    ledger = getattr(reaction_model, "polymer_motif_ledger", None)
+    if ledger is None:
+        ledger = []
+        reaction_model.polymer_motif_ledger = ledger
+
+    entry = _ledger_lookup(ledger, motif)
+    if entry is None:
+        entry = MotifLedgerEntry(motif=motif, accumulator_key=f"motif-{len(ledger)}")
+        ledger.append(entry)
+
+    if entry.spawned:
+        # Should be unreachable: Phase A classifies arrivals against the
+        # spawned pool first. Assert-log; never re-run the gate.
+        logging.warning(
+            "Polymer spawn gate: arrival %s hit already-spawned ledger entry "
+            "%s — Phase A should have classified it against the spawned pool.",
+            cand_label, entry.accumulator_key,
+        )
+        return False, 0.0, entry
+
+    snapshot = getattr(reaction_model, "polymer_flux_snapshot", None)
+    if entry.last_recorded_iteration < iteration:
+        fraction = _spawn_gate_fraction(entry, ledger, snapshot)
+        flux_accumulator.record(entry.accumulator_key, fraction, iteration)
+        entry.last_recorded_iteration = iteration
+
+    statistic = flux_accumulator.gate_statistic(entry.accumulator_key)
+    spawn = statistic >= mass_flux_threshold
+    if not spawn:
+        logging.info(
+            "Polymer spawn gate: deferring spawn for %s — statistic %.4g < "
+            "bar %.4g (window %d/%d records%s).",
+            cand_label, statistic, mass_flux_threshold,
+            flux_accumulator.window_occupancy(entry.accumulator_key),
+            flux_accumulator.window,
+            "" if snapshot is not None else "; no flux snapshot stashed",
+        )
+    return spawn, statistic, entry
+
+
 def _bfs_grow_heavy_subset(
     start: 'Atom',
     size: int,
