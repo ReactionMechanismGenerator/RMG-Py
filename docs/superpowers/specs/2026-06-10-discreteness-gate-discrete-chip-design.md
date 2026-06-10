@@ -292,6 +292,14 @@ parent: dmu0 += 0
   was rejected: discontinuous, and it fires on the *mean*, freezing a
   polydisperse pool whose tail still has donatable chains, while the
   throttle drains it at the parcel-limited rate.
+  **Accepted approximation (re-review finding D-4):** in the throttled
+  regime the effective rate measure becomes donor-limited (chains with
+  n ≥ a, conditional mean ≥ a) while the µ2 bundle still uses the
+  population pick E[n] = µ1/µ0 < a — so µ2 is under-drained (the clamp
+  engages) and PDI biases high in exhaustion. The bias is one-sided INTO
+  the cone (µ2 too high over-satisfies µ0·µ2 ≥ µ1²) and touches no
+  conserved quantity; the exact conditional mean is unrecoverable from
+  three moments, so no better estimator exists at this closure order.
 - The chip itself gains/loses moles through the **standard gas-species
   dn_dt path** — no special handling.
 - **Reverse leg — NOT the sign-flip of the forward.** Extending a chain by a:
