@@ -186,6 +186,17 @@ class TestIntegratedSpawnGateTripwire:
         """
         sp, rs, dn_dt = self._solve()
         i_r = 4
+        # LIVENESS PIN — must come BEFORE the red assertion. R must be
+        # chemically ALIVE (nonzero net production) so the red below can
+        # only mean "alive but no gross record" — never "fixture dead".
+        # A dead fixture (archetype eats the reaction, phase gate, wrong
+        # index) would zero prod_r too and launder the wrong failure as
+        # the born-dead proof. xfail(strict) cannot tell those apart;
+        # this assertion can.
+        assert float(dn_dt[i_r]) > 0.0, (
+            "FIXTURE BROKEN, not a valid red: representative R has zero "
+            "net production - fix the fixture before trusting the red"
+        )
         prod_r = float(rs.core_species_production_rates[i_r])
         # THE red assertion: fails on pre-change-(a) HEAD because ordinary
         # core species get dn_dt writes only — no gross record exists.
@@ -230,7 +241,7 @@ class TestIntegratedSpawnGateTripwire:
 ```
 
   Expected: **2 failed.**
-  - `test_numerator_half_ordinary_species_gross_is_real` MUST fail at the `assert prod_r > 0.0` line with the "gross arrays are proxy-only" message (prod_r is 0.0 on HEAD — ordinary species have no gross writes). **This specific failure is the gate to the rest of the plan.** If it fails anywhere else (fixture error, phase disqualification) — fix the fixture until the failure is the gross assertion. If it PASSES — STOP THE PLAN and report: the amendment's premise (spec §3.1) would be contradicted by the live code.
+  - `test_numerator_half_ordinary_species_gross_is_real` MUST fail at the `assert prod_r > 0.0` line with the "gross arrays are proxy-only" message, AND the traceback MUST show execution got PAST the liveness pin (`dn_dt[i_r] > 0.0` passed — R is alive). A failure AT the liveness pin means the fixture is broken, not a valid red: fix the fixture, never proceed on it. **The alive-but-no-gross-record failure is the gate to the rest of the plan**, and the controller (mother session) inspects this traceback BY HAND before Task 2 starts — implementer say-so is not sufficient (this checkpoint exists because green/red without inspected reasons is how the born-dead hole survived two specs). If the test PASSES — STOP THE PLAN and report: the amendment's premise (spec §3.1) would be contradicted by the live code.
   - `test_denominator_half_proxy_net_rerouted_gross_nonzero` fails with `AttributeError: ... 'spawn_gate_flux_snapshot'` (the method does not exist until Task 3); its `dn_dt[0] ≈ 0` assertion passes before that.
 
 - [ ] **Mark both tests xfail (strict) so the suite stays green while preserving the red proof.** Two Edits:
@@ -330,6 +341,10 @@ BEFORE_2 = <m:ss.ss from before_2/time.log>
 ```
 
   Sanity: the two runs should agree within run-to-run noise (~±5%). If they differ wildly, the machine is loaded — rerun until two consistent baselines exist; the cost gate is meaningless against a noisy baseline.
+
+  NOTE: `before_1/chemkin/polymer_pools.json` doubles as the CONSERVATION
+  REFERENCE for Task 3's conservation gate — do not clean these run dirs
+  until the plan completes.
 
 No commit (nothing in-repo changed).
 
@@ -722,10 +737,36 @@ cd ~/runs/RMG/epdm_gate_cost_2026-06-10/after_2 && /usr/bin/time -v ~/anaconda3/
 
   Expected: two wall-clock lines (record as AFTER_1/AFTER_2) and `1` from each completion grep.
 
+- [ ] **CONSERVATION GATE (rider, non-optional — speed was never the risk on this change; silent mass drift is).** Change (a) adds DIAGNOSTIC writes only (production/consumption arrays); it must not perturb `dn_dt` or the moment flux by one bit. Assert that at deck level by comparing the AFTER run's final state to the BEFORE run's:
+
+```
+~/anaconda3/envs/rmg_env/bin/python - << 'EOF'
+import json
+import numpy as np
+b = json.load(open('/home/alon/runs/RMG/epdm_gate_cost_2026-06-10/before_1/chemkin/polymer_pools.json'))
+a = json.load(open('/home/alon/runs/RMG/epdm_gate_cost_2026-06-10/after_1/chemkin/polymer_pools.json'))
+pb = {p['label']: p for p in b['pools']}
+pa = {p['label']: p for p in a['pools']}
+assert set(pb) == set(pa), (set(pb), set(pa))
+for lbl in pb:
+    mb, ma = np.array(pb[lbl]['moments']), np.array(pa[lbl]['moments'])
+    assert np.allclose(mb, ma, rtol=1e-12, atol=0.0), (lbl, mb, ma)
+    # mass terms: mu1*MW identical, routed-monomer identical when present
+    for k in ('monomer_mw_g_mol', 'mn_g_mol', 'mw_g_mol', 'initial_mass_g', 'monomer_routing'):
+        assert pb[lbl].get(k) == pa[lbl].get(k), (lbl, k)
+sb = sum(p['moments'][1] * p['monomer_mw_g_mol'] for p in b['pools'])
+sa = sum(p['moments'][1] * p['monomer_mw_g_mol'] for p in a['pools'])
+assert abs(sb - sa) <= 1e-12 * max(abs(sb), 1.0), (sb, sa)
+print(f"CONSERVATION GATE PASS: pools identical, sum(mu1*MW) {sb:.6e} == {sa:.6e}")
+EOF
+```
+
+  Expected: `CONSERVATION GATE PASS ...`. Also confirm the named conservation tests in the solver-suite run above passed (they assert the Σµ1 + Σa·n_chip invariant and scission mass closure on trajectories): `test_discrete_chip_trajectory_conserves_units_and_cone`, `test_scission_moment_trajectory_stays_realizable`. **Any drift here = STOP, do not commit** — the .pyx edit touched more than diagnostics; diff sections 3/4 against the plan's code verbatim before anything else.
+
 - [ ] **COST DECISION (spec §4.6 — decided on measured data, not assumption):**
   - Compute `mean(AFTER_1, AFTER_2) / mean(BEFORE_1, BEFORE_2)`.
-  - **Accept** if ≤ 1.05 (slowdown within ~5% / run-to-run noise): proceed to the commit step, and record all four numbers + the ratio in the commit message.
-  - **Fallback decision point if it bites (> 1.05):** STOP — do NOT commit the unconditional form. The documented fallback is gross writes only for LEDGER-TRACKED species: a per-species `int8` flag array on the engine (proxies always set; OR'd with the labels present in `reaction_model.polymer_motif_ledger` representatives, plumbed through `initialize_model`), gating the new section-3/4 writes. Implement it, `make`, re-run the solver tests (the tripwire's R must then be made ledger-tracked in the fixture via the plumb), re-time, and report the numbers to Alon before continuing the plan. The spec prefers the unconditional form for simplicity and simple.pyx parity — switch only on measured evidence.
+  - **Accept** if ≤ 1.05 (slowdown within ~5% / run-to-run noise) AND the conservation gate above passed — the merge gate is BOTH, not wall-clock alone: proceed to the commit step, and record all four numbers + the ratio in the commit message.
+  - **Fallback decision point if it bites (> 1.05):** STOP — do NOT commit the unconditional form. The documented fallback is gross writes only for LEDGER-TRACKED species: a per-species `int8` flag array on the engine (proxies always set; OR'd with the labels present in `reaction_model.polymer_motif_ledger` representatives, plumbed through `initialize_model`), gating the new section-3/4 writes. Implement it, `make`, re-run the solver tests (the tripwire's R must then be made ledger-tracked in the fixture via the plumb), re-time, re-run the conservation gate, and report the numbers to Alon before continuing the plan. The spec prefers the unconditional form for simplicity and simple.pyx parity — switch only on measured evidence.
 
 - [ ] **Commit** (fill in the measured numbers):
 

@@ -278,11 +278,18 @@ COST-GATED, decided on measured data, not assumption:
   (same machine, same session, ≥2 runs each). The simple.pyx precedent
   says this is almost certainly fine — but simple.pyx's residual does not
   also carry the moment dispatch.
-- **Acceptance:** slowdown within run-to-run noise (≤ ~5% wall-clock).
-- **Fallback if it bites:** maintain gross writes only for LEDGER-TRACKED
-  species (a per-species flag array set from the ledger at
+- **Acceptance is a DUAL gate:** (i) slowdown within run-to-run noise
+  (≤ ~5% wall-clock), AND (ii) a CONSERVATION gate — change (a) adds
+  diagnostic writes only, so the EPDM deck's final pool moments (and
+  Σµ1·MW across pools) must be IDENTICAL (rtol 1e-12) between the before
+  and after timing runs. Speed was never the risk on this change; silent
+  mass drift is — a conservation regression in the hot loop would surface
+  as slow drift the per-task functional tests cannot catch.
+- **Fallback if the wall-clock bites:** maintain gross writes only for
+  LEDGER-TRACKED species (a per-species flag array set from the ledger at
   `initialize_model`) — narrower, uglier, bounded. The spec prefers the
-  unconditional form for simplicity and simple.pyx parity.
+  unconditional form for simplicity and simple.pyx parity. The
+  conservation gate applies to the fallback too.
 
 ## 5. `triggering_moles` — named-consumer limitation (in scope: the TODO; out of scope: the fix)
 
@@ -355,7 +362,13 @@ This convention applies to the remaining spawn/seeding items (#14
      written and confirmed RED against current HEAD before change (a) is
      implemented** — ordinary species have no gross writes today. That red
      run is the proof the fix is real, and a gate to executing the rest of
-     the plan.
+     the plan. **Pin the reason, not just the redness:** a LIVENESS
+     assertion (`dn_dt[i] > 0` for the same species) must precede the
+     gross assertion inside the test body, so the red can only mean
+     "chemically alive but no gross record" — never "fixture dead".
+     xfail(strict) cannot distinguish those; the inner assertion can. The
+     red traceback is inspected BY HAND (controller, not implementer
+     say-so) before any production code lands.
    - **Denominator half:** the canonical proxy's net `dn_dt` contribution
      is ≈ 0 (the apportionment reroutes proxy flux to pool moments) while
      its gross entry is nonzero — the assertion that is only true of the
