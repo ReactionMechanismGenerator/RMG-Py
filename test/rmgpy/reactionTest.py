@@ -805,6 +805,22 @@ class TestReaction:
         assert (Reaction(polymer_flux_archetype=PolymerFluxArchetype.SCISSION_FRAGMENT)
                 .polymer_flux_archetype == PolymerFluxArchetype.SCISSION_FRAGMENT)
 
+    def test_polymer_chip_units_default_and_kwarg(self):
+        """
+        Reaction carries ``polymer_chip_units`` (default 0): the repeat-unit
+        count of the discrete chip ejected by a DISCRETE_CHIP reaction,
+        stamped by chip product surgery at generation time. Like
+        is_end_group_reaction / polymer_flux_archetype it is deliberately NOT
+        serialized in __reduce__ -- unstamped arrivals demote at solver init.
+        """
+        import pickle
+
+        assert Reaction().polymer_chip_units == 0
+        assert Reaction(polymer_chip_units=2).polymer_chip_units == 2
+
+        round_trip = pickle.loads(pickle.dumps(Reaction(polymer_chip_units=2)))
+        assert round_trip.polymer_chip_units == 0
+
     def test_is_isomerization(self):
         """
         Test the Reaction.is_isomerization() method.

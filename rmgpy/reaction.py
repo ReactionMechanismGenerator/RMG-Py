@@ -128,6 +128,7 @@ class Reaction:
                  allow_max_rate_violation=False,
                  is_end_group_reaction=False,
                  polymer_flux_archetype=0,
+                 polymer_chip_units=0,
                  ):
         self.index = index
         self.label = label
@@ -160,6 +161,12 @@ class Reaction:
         # remaps unstamped proxy-touching reactions to UNRESOLVED at
         # initialize_model (legacy mu1 flux), so restarts stay correct-but-loud.
         self.polymer_flux_archetype = polymer_flux_archetype
+        # Repeat-unit count of the discrete chip for DISCRETE_CHIP reactions
+        # (a = round(chip_MW / monomer_MW), a == 0 legal), stamped by chip
+        # product surgery in rmgpy.polymer.stamp_polymer_flux_archetype via
+        # make_new_reaction. Like the two fields above it is NOT serialized in
+        # __reduce__; the solver demotes unstamped arrivals at initialize_model.
+        self.polymer_chip_units = polymer_chip_units
 
     def __repr__(self):
         """
