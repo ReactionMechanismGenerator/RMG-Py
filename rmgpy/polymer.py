@@ -2935,8 +2935,9 @@ def build_polymer_moments_artifact(pool_registry,
                          "reactant's pool; multiplies ONCE; scales rf AND rr"),
         "chip_site_throttle": ("site = min(max(0,mu0), max(0,mu1)/a)/V_poly when "
                                "archetype=discrete_chip/1 and scaling=mu0 and a>0"),
-        "kb_recipe": ("kb = kf/Keq; Keq(T) = (P0/(R*T))^dn_gas * exp(-dG0/(R*T)), "
-                      "P0 = 1e5 Pa, dG0 from chem.yaml NASA thermo"),
+        "kb_recipe": ("kb = kf/Keq; Keq(T) = (P0/(R*T))^dn * exp(-dG0/(R*T)), "
+                      "P0 = 1e5 Pa, dG0 from chem.yaml NASA thermo; dn counts "
+                      "ALL species incl. condensed/proxy (format doc s4 step 1)"),
         "mu3_closure": "log_lagrange/1",
         "invariants": {
             "discrete_subset": ("sum_pools(mu1) + sum_chip_species(a_i * n_i) is "
