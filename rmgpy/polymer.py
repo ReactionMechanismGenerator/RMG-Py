@@ -2533,14 +2533,46 @@ def process_polymer_candidates_multipool(
     return processed, spawn_intents
 
 
-POLYMER_POOLS_SIDECAR_SCHEMA_VERSION = "1.0"
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION = "2.0"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
-def _serialize_pool_for_sidecar(pool: 'Polymer') -> Dict[str, Any]:
+def _artifact_species_label(spc) -> str:
+    """chem.yaml species name for ``spc`` — must match rmgpy.cantera.get_label:
+    ``label(index)`` when index > 0, bare label otherwise (µ-dummies have
+    index = -1 and appear bare in chem.yaml)."""
+    index = getattr(spc, "index", -1)
+    label = getattr(spc, "label", "")
+    return f"{label}({index})" if index > 0 else label
+
+
+def _species_base_label(spc) -> str:
+    """Strip the RMG ``(N)`` index suffix — the solver's pool-membership rule
+    (rmgpy/solver/polymer.pyx:478-485 uses label.partition('(')[0])."""
+    return getattr(spc, "label", "").partition('(')[0]
+
+
+def _get_rmg_commit():
+    """Best-effort git SHA of the emitting RMG-Py checkout (envelope field)."""
+    try:
+        import subprocess
+        repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        out = subprocess.run(["git", "-C", repo, "rev-parse", "HEAD"],
+                             capture_output=True, text=True, timeout=5)
+        if out.returncode == 0:
+            return out.stdout.strip()
+    except Exception:
+        pass
+    return None
+
+
+def _serialize_pool_for_sidecar(pool: 'Polymer',
+                                core_species: Optional[List['Species']] = None,
+                                monomer_routing: Optional[str] = None) -> Dict[str, Any]:
     """Convert a :class:`Polymer` instance to a JSON-serialisable dict.
 
-    Schema: see ``docs/multi_pool_design.md`` §6.
+    Schema 2.0: 1.0 fields (docs/multi_pool_design.md §6) preserved verbatim;
+    additions per docs/polymer_moments_format.md §2.
     """
     monomer_smiles = ""
     monomer_adj_list = ""
@@ -2573,7 +2605,7 @@ def _serialize_pool_for_sidecar(pool: 'Polymer') -> Dict[str, Any]:
         except Exception:
             mu_indices = None
 
-    return {
+    d = {
         "label": getattr(pool, "label", ""),
         "monomer_smiles": monomer_smiles,
         "monomer_adj_list": monomer_adj_list,
@@ -2588,6 +2620,36 @@ def _serialize_pool_for_sidecar(pool: 'Polymer') -> Dict[str, Any]:
         "spawn_event_metadata": spawn_metadata,
         "mu_indices": mu_indices,
     }
+
+    # --- schema 2.0 additions (field names pinned by TA's loader,
+    #     ~/Code/TA/ta/mechanism.py) ---
+    moments = getattr(pool, "moments", None)
+    d["moments"] = [float(m) for m in moments] if moments is not None else None
+    d["monomer_mw_g_mol"] = (float(pool.monomer_mw_g_mol)
+                             if getattr(pool, "monomer_mw_g_mol", None) is not None else None)
+    d["mn_g_mol"] = float(pool.Mn) if getattr(pool, "Mn", None) is not None else None
+    d["mw_g_mol"] = float(pool.Mw) if getattr(pool, "Mw", None) is not None else None
+    d["initial_mass_g"] = (float(pool.initial_mass_g)
+                           if getattr(pool, "initial_mass_g", None) is not None else None)
+    d["channels"] = {
+        "scission": {"A": float(getattr(pool, "k_scission", 0.0)), "n": 0.0, "Ea": 0.0,
+                     "units": {"A": "s^-1", "Ea": "J/mol"}},
+        "unzip": {"A": float(getattr(pool, "k_unzip", 0.0)), "n": 0.0, "Ea": 0.0,
+                  "units": {"A": "s^-1", "Ea": "J/mol"}},
+    }
+    phase_species: List[str] = []
+    if core_species:
+        member_bases = {pool.label, f"{pool.label}_mu0", f"{pool.label}_mu1",
+                        f"{pool.label}_mu2"}
+        for spc in core_species:
+            if _species_base_label(spc) in member_bases:
+                phase_species.append(_artifact_species_label(spc))
+    if monomer_routing and monomer_routing not in phase_species:
+        phase_species.append(monomer_routing)
+    d["phase_species"] = phase_species
+    d["monomer_routing"] = monomer_routing
+    d["mu3_closure"] = "log_lagrange/1"
+    return d
 
 
 def write_polymer_pools_sidecar(
@@ -2628,6 +2690,14 @@ def write_polymer_pools_sidecar(
     with open(path, "w", encoding="utf-8") as fh:
         json.dump(payload, fh, indent=2, default=str)
     return path
+
+
+def compile_polymer_reaction_entries(*args, **kwargs):
+    raise NotImplementedError  # implemented in the reaction-compiler task
+
+
+def build_polymer_moments_artifact(*args, **kwargs):
+    raise NotImplementedError  # implemented in the artifact-builder task
 
 
 def schulz_flory_mu2(mu0: float, mu1: float) -> float:
