@@ -2190,3 +2190,92 @@ class TestAllowUnpairedReferenceStateKnobPlumb:
         # this test cheap while making a silent kwarg drop impossible.
         src = inspect.getsource(hybrid_polymer_reactor)
         assert "allow_unpaired_reference_state=allow_unpaired_reference_state" in src
+
+
+class TestThermoReferenceStateEpdmShaped:
+    """Spec §8.2/§8.3 -- the EPDM shape stays quantitatively clean.
+
+    Fixture geometry mirrors the real deck (T = 1000 K): proxy C15H32
+    (212.41 g/mol, GAV), same-length radical C15H31 (211.41 g/mol, GAV,
+    gas-classified + proxy-tagged), H/H2 library. Counterparty window =
+    70 (pool monomer) + 10 = 80 g/mol: Erad is inside (|dMW| = 1.0), H/H2
+    far outside (|dMW| >= 209)."""
+
+    @staticmethod
+    def _build():
+        c15h32 = "CCC(C)CCCC(C)CCCC(C)C"
+        c15h31 = "CCC(C)CCCC(C)CCCC(C)[CH2]"
+        sp = {
+            "E": _spc(c15h32, "E"),
+            "E_mu0": _spc("CO", "E_mu0"), "E_mu1": _spc("C=O", "E_mu1"), "E_mu2": _spc("C#N", "E_mu2"),
+            "Erad": _spc(c15h31, "Erad"),
+            "H": _spc("[H]", "H"), "H2": _spc("[H][H]", "H2"),
+        }
+        for k in ("E", "Erad"):
+            sp[k].thermo = _trivial_nasa(_GAV_COMMENT)
+        for k in ("E_mu0", "E_mu1", "E_mu2", "H", "H2"):
+            sp[k].thermo = _trivial_nasa(_LIB_COMMENT)
+        # The §2 shape: the same-length abstraction radical is gas-CLASSIFIED
+        # but proxy-TAGGED (the chain-variant judgment the spawn-pass
+        # machinery stamps in production; family.py:1657 -> model.py:486 ->
+        # multipool re-classification).
+        sp["Erad"].is_polymer_proxy = True
+        core = [sp["E"], sp["E_mu0"], sp["E_mu1"], sp["E_mu2"],
+                sp["Erad"], sp["H"], sp["H2"]]
+        mask = np.array([False] * 4 + [True, True, True], dtype=bool)
+        rxn = Reaction(
+            reactants=[sp["E"], sp["H"]], products=[sp["Erad"], sp["H2"]],
+            kinetics=Arrhenius(A=(1.0e3, "m^3/(mol*s)"), n=0.0,
+                               Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+            reversible=True)
+        pool = dataclasses.replace(_gate_pool_config(monomer_mw_g_mol=70.0),
+                                   label="E")
+        rs = HybridPolymerSystem(
+            T=1000.0, P=1.0e5,
+            initial_mole_fractions={sp["H"]: 0.01, sp["H2"]: 0.0},
+            V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"E": (1.0, 5.0, 30.0)}, termination=[],
+        )
+        rs.initialize_model(core, [rxn], [], [])
+        return rs
+
+    def test_max_u_below_benign_ceiling(self, caplog):
+        """Spec §8.2: the boundary-crossing H-abstraction pair comes in at
+        the paired-cancellation scale -- max U <= 0.33 + margin ASSERTED
+        (not just 'no exception'); in fact 1.5*log10(212.41/211.41) =
+        0.0031 decades. The census is empty."""
+        import logging
+        with caplog.at_level(logging.WARNING):
+            rs = self._build()
+        assert rs.reference_state_max_decades <= 0.33 + 0.1
+        assert rs.reference_state_max_decades == pytest.approx(0.0031, abs=0.002)
+        assert rs.reference_state_census == []
+        assert not any("THERMO REFERENCE-STATE CENSUS" in r.getMessage()
+                       for r in caplog.records)
+
+    def test_zero_provenance_warnings(self, caplog):
+        """Spec §8.3 green assertion that PINS the narrow counterparty
+        scope: the reaction genuinely mixes library (H, H2) and GAV (E,
+        Erad) provenance, but H/H2 sit far outside the one-monomer MW
+        window, so the sensor must stay SILENT. The broad 'all
+        co-participants' definition would warn here -- and on all 26 EPDM
+        reactions on day one (the false-positive storm spec §5.3 forbids)."""
+        import logging
+        from rmgpy.solver.polymer import _thermo_provenance
+        with caplog.at_level(logging.WARNING):
+            rs = self._build()
+        # LIVENESS PINS -- BEFORE the silence assertion, so silence cannot
+        # be the silence of a dead pass: (a) the tripwire ran and visited
+        # the reaction (the same 0.0031 the sibling test pins); (b) the
+        # provenance classifier genuinely sees the library/GAV mix on the
+        # fixture's comment strings -- the sensor stays silent on SCOPE
+        # (H/H2 outside the MW window), not on blindness.
+        assert rs.reference_state_max_decades == pytest.approx(0.0031, abs=0.002)
+        probe_lib, probe_gav = _spc("C", "PL"), _spc("CC", "PG")
+        probe_lib.thermo = _trivial_nasa(_LIB_COMMENT)
+        probe_gav.thermo = _trivial_nasa(_GAV_COMMENT)
+        assert _thermo_provenance(probe_lib) == "library"
+        assert _thermo_provenance(probe_gav) == "gav"
+        assert not any("THERMO REFERENCE-STATE PROVENANCE" in r.getMessage()
+                       for r in caplog.records)
