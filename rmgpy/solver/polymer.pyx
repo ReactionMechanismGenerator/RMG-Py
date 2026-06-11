@@ -254,6 +254,116 @@ def _discrete_gamma_fallback(target: int, xs: int, k: float, theta: float) -> fl
 
 
 # ======================================================================================
+# THERMO REFERENCE-STATE TRIPWIRE (spec 2026-06-11)
+# ======================================================================================
+
+# Standard-state constants for the unpaired reference-state magnitude U.
+# P0 is the NASA-polynomial gas standard pressure; C0 = 1 mol/m^3 is the
+# standard concentration that makes log10(P0/(R*T*C0)) dimensionless -- at
+# 1000 K the term is 1.08 decades. Omit C0 in a re-derivation in other units
+# and the formula merely LOOKS wrong (spec §5.1).
+REFERENCE_STATE_P0 = 1.0e5      # Pa
+REFERENCE_STATE_C0 = 1.0        # mol/m^3
+# Bounds (spec §6 -- chemistry decisions on record, not defaults): census
+# above the measured benign ceiling (0.33 decades + small-margin items);
+# refuse with a wide margin below the pathological floor (~10 decades),
+# grounded in bimodality plus the §5.2 sign argument. The 0.5-3.0 band is
+# deliberately wide and deliberately EMPTY on today's measurements; anything
+# that ever lands in it is news AND the trigger to compute rotation into U
+# properly (spec §5.2 escalation, on record in multi_pool_design.md §5.2).
+REFERENCE_STATE_CENSUS_DECADES = 0.5
+REFERENCE_STATE_REFUSE_DECADES = 3.0
+# Chain-scale window slack on top of the largest pool monomer MW. ONE window
+# (max pool monomer MW + slack) serves BOTH the physically-melt class
+# tag-branch gate (spec §5.1, C3-amended) and the §5.3 provenance
+# counterparty predicate -- one definition, two uses, so the class and the
+# sensor cannot drift apart.
+REFERENCE_STATE_MW_SLACK_G_MOL = 10.0
+
+
+def _sackur_tetrode_s_trans(mw_kg_mol, T):
+    """Exact Sackur-Tetrode translational entropy [J/mol/K] of an ideal gas
+    of molar mass ``mw_kg_mol`` [kg/mol] at ``T`` [K] and P = REFERENCE_STATE_P0."""
+    m = mw_kg_mol / constants.Na
+    return constants.R * (
+        math.log((2.0 * constants.pi * m * constants.kB * T / constants.h ** 2) ** 1.5
+                 * constants.kB * T / REFERENCE_STATE_P0) + 2.5)
+
+
+def _unpaired_reference_decades(reactant_melt_mws, product_melt_mws, T):
+    """Unpaired reference-state magnitude U [decades] for one reversible
+    reaction (spec 2026-06-11 §5.1):
+
+        U = |sum_prod,melt S_trans - sum_react,melt S_trans| / (R ln10)
+            + |dn_melt| * log10(P0 / (R*T*C0))
+
+    Inputs are the molar masses [kg/mol] of the PHYSICALLY-MELT participants
+    (condensed-mask OR is_polymer_proxy-tagged with chain-scale MW -- spec
+    §5.1, C3-amended) on each side, multiplicity
+    included; gas participants are excluded because their gas reference
+    state is simply CORRECT. Paired same-mass chains cancel in the signed
+    sum exactly as they do in the real thermo -- no pairing optimization is
+    needed. Translational-only BY DESIGN: the measured U distribution is
+    bimodal with a four-decade gap (benign <= 0.33, pathological >= ~10), so
+    the omitted bounded rotational term (+1.6-3.1 decades, same sign where
+    it matters) cannot flip a decision against the §6 thresholds. Escalation
+    trigger (spec §5.2): a census entry in the 1-5 decade band means rotation
+    must be computed into U properly."""
+    s_sum = 0.0
+    for mw in product_melt_mws:
+        s_sum += _sackur_tetrode_s_trans(mw, T)
+    for mw in reactant_melt_mws:
+        s_sum -= _sackur_tetrode_s_trans(mw, T)
+    dn_melt = len(product_melt_mws) - len(reactant_melt_mws)
+    return (abs(s_sum) / (constants.R * math.log(10.0))
+            + abs(dn_melt) * math.log10(
+                REFERENCE_STATE_P0 / (constants.R * T * REFERENCE_STATE_C0)))
+
+
+def _assert_chain_scale_melt_member(label, mw_kg_mol, gas_classified, window_kg_mol):
+    """Cannot-happen leak guard (spec §5.1, C3 amendment 2026-06-11), called
+    for every species entering the melt sum. A gas-classified species can be
+    physically-melt ONLY via the tag branch, whose chain-scale MW conjunct
+    (MW >= max pool monomer + slack) is part of the CLASS DEFINITION -- so a
+    gas-classified member below the window cannot reach the sum through the
+    amended gate. A tagged below-window species being EXCLUDED by the gate is
+    expected and silent (the family.py:1657 over-tagging fingerprint, H2 on
+    every proxy-touching reaction); the raise here fires only if such a
+    species REACHES the sum (a future refactor recomputing membership without
+    the conjunct), converting the mistake into a loud CLASSIFICATION error
+    instead of a silently-large U and a misattributed reference-state
+    refusal. Condensed-branch members (gas_classified=False; pool-configured
+    by input) are exempt from the gate and from this guard."""
+    if gas_classified and mw_kg_mol < window_kg_mol:
+        raise ValueError(
+            "THERMO REFERENCE-STATE TRIPWIRE (classification leak): the "
+            "is_polymer_proxy tag includes a non-chain species in the melt "
+            f"sum ({label}, MW = {mw_kg_mol * 1000.0:.2f} g/mol < chain-scale "
+            f"window {window_kg_mol * 1000.0:.2f} g/mol); physically-melt "
+            "class definition violated -- this is a classification leak, NOT "
+            "a thermo problem; do not respond by touching reference states. "
+            "See the proxy-tag propagation chain (family.py) and the "
+            "invariant section of docs/multi_pool_design.md.")
+
+
+def _thermo_provenance(spc):
+    """Classify a species' thermo source from its comment: 'library', 'gav',
+    or None (no thermo / unrecognized -- never warned on). Substrings pinned
+    against rmgpy/data/thermo.py: 'Thermo library: <label>' (:1818) and
+    'Thermo group additivity estimation: ...' (:232/:2237; gav_keywords
+    :2845). 'Thermo library' is checked FIRST: an HBI radical estimated from
+    a library parent ('Thermo library: X + radical(Y)') classifies 'library',
+    which is correct -- a library-parent HBI resolves through the same parent
+    and PRESERVES the structural cancellation (spec §2)."""
+    comment = getattr(getattr(spc, "thermo", None), "comment", "") or ""
+    if "Thermo library" in comment:
+        return "library"
+    if "group additivity" in comment:
+        return "gav"
+    return None
+
+
+# ======================================================================================
 # SOLVER CLASS
 # ======================================================================================
 
@@ -288,6 +398,7 @@ class HybridPolymerSystem(ReactionSystem):
         pdep_collider_kinetics: Optional[List] = None,
         collider_efficiencies: Optional[np.ndarray] = None,
         debug_check_realizability: bool = False,
+        allow_unpaired_reference_state: bool = False,
     ):
         super().__init__(termination=termination,
                          sensitive_species=sensitive_species,
@@ -326,6 +437,17 @@ class HybridPolymerSystem(ReactionSystem):
         # already degrades gracefully on out-of-cone states.
         self.debug_check_realizability = bool(debug_check_realizability)
         self._realizability_warned = set()
+
+        # Thermo reference-state tripwire (spec 2026-06-11 §7). The override
+        # is the deck author's CONSCIOUS assertion that their thermo handles
+        # unpaired reference states -- the eventual per-deck switch-on point
+        # for full melt consistency. Census/diagnostics are repopulated by
+        # _reference_state_tripwire on every initialize_model rebuild:
+        # reference_state_census = [(str(rxn), U)] for U > census bound;
+        # reference_state_max_decades = max U over reversible core reactions.
+        self.allow_unpaired_reference_state = bool(allow_unpaired_reference_state)
+        self.reference_state_census = []
+        self.reference_state_max_decades = 0.0
         self.initial_explicit_species = initial_explicit_species or {}
         self.polymer_species_labels = set(polymer_species_labels) if polymer_species_labels else set()
 
@@ -389,6 +511,164 @@ class HybridPolymerSystem(ReactionSystem):
         if overlap:
             raise ValueError(f"Configuration Error: Moment indices {overlap} appear in reaction stoichiometry. "
                              f"Moments must evolve only via tail_kinetics.")
+
+    def _reference_state_tripwire(self, core_species, core_reactions):
+        """Build-time thermo reference-state tripwire (spec 2026-06-11).
+
+        Invariant (docs/multi_pool_design.md §5.2): per species, per reaction
+        side, the thermo reference state must match the phase residence.
+        Today every species carries the gas reference UNIFORMLY, so
+        boundary-crossing reactions between same-mass chains cancel exactly
+        -- and the cancellation is STRUCTURAL (HBI saturates the radical onto
+        the same GAV parent the proxy runs on). The danger is the PARTIAL
+        fix: a melt correction applied to the condensed set alone injects up
+        to ~11.6 decades into every boundary-crossing Keq. This pass
+        measures, per reversible CORE reaction, the unpaired reference-state
+        magnitude U over the physically-melt participants (condensed
+        gas_species_mask OR is_polymer_proxy-tagged with chain-scale MW --
+        spec §5.1, C3-amended), logs a census above
+        REFERENCE_STATE_CENSUS_DECADES, refuses above
+        REFERENCE_STATE_REFUSE_DECADES (unless
+        allow_unpaired_reference_state -- the census still logs), and warns
+        on mixed library-vs-GAV thermo provenance among chain-scale
+        counterparties (the spec-§5.3 decoupling fingerprint that U, being
+        MW-only, is structurally blind to). Cost: ~|core reactions|
+        Sackur-Tetrode evaluations per rebuild -- nil.
+        """
+        cdef int n_core = self.num_core_species
+        T = self.T.value_si
+        self.reference_state_census = []
+        self.reference_state_max_decades = 0.0
+
+        mask = self.gas_species_mask
+
+        # ONE chain-scale window (spec §5.1 C3 amendment + §5.3): largest
+        # configured pool monomer MW + slack, in kg/mol. Shared by BOTH the
+        # physically-melt class gate (tag branch, below) and the provenance
+        # counterparty predicate (i) -- one definition, two uses, so the
+        # class and the sensor cannot drift apart. Predicate (ii) (sharing
+        # the proxy's saturated parent) was REJECTED as the cheap-at-init
+        # test: it needs graph saturation + isomorphism per gas species per
+        # rebuild; (i) is a float compare on data already in hand.
+        chain_window_kg = (max((float(p.monomer_mw_g_mol) for p in self.polymer_pools),
+                               default=0.0)
+                           + REFERENCE_STATE_MW_SLACK_G_MOL) / 1000.0
+
+        is_melt = [False] * n_core
+        mws = [0.0] * n_core
+        for i in range(n_core):
+            spc = core_species[i]
+            mol_list = getattr(spc, "molecule", None)
+            mws[i] = mol_list[0].get_molecular_weight() if mol_list else 0.0
+            # Physically-melt CLASS (spec §5.1, C3-AMENDED): the condensed
+            # branch (pool-configured by input) unconditionally; the tag
+            # branch only at chain-scale MW. The MW conjunct is part of the
+            # class DEFINITION, not bolted onto the provenance set:
+            # family.py:1657 blanket-tags every structure of a
+            # proxy-touching reaction (including H2), so a raw tag-read
+            # would be correct only by spawn-pass ordering -- the structural
+            # gate cannot be broken by a lifecycle reordering the way a
+            # tag-read can. A stale tag on a below-window species simply
+            # FAILS the conjunct and is excluded: expected and silent (its
+            # gas reference state is CORRECT).
+            is_melt[i] = ((not mask[i])
+                          or (bool(getattr(spc, "is_polymer_proxy", False))
+                              and mws[i] >= chain_window_kg))
+
+        offenders = []
+        for rxn in core_reactions:
+            if not getattr(rxn, "reversible", False):
+                continue
+            j = self.reaction_index[rxn]
+            r_idx = [int(k) for k in self.reactant_indices[j] if 0 <= k < n_core]
+            p_idx = [int(k) for k in self.product_indices[j] if 0 <= k < n_core]
+            melt_r = [k for k in r_idx if is_melt[k]]
+            melt_p = [k for k in p_idx if is_melt[k]]
+            if not melt_r and not melt_p:
+                continue  # all-gas reaction: gas reference uniformly correct
+
+            # Leak self-assertion (spec §5.1 C3 amendment): cannot-happen
+            # guard on every species entering the melt sum. A gas-classified
+            # member can only be here via the tag branch, whose MW conjunct
+            # is enforced in the gate above; if a below-window species ever
+            # reaches this point (a future refactor recomputing membership
+            # without the conjunct), raise the CLASSIFICATION error loudly
+            # instead of computing a large U and misattributing it to thermo.
+            for k in melt_r + melt_p:
+                _assert_chain_scale_melt_member(
+                    core_species[k].label, mws[k], bool(mask[k]),
+                    chain_window_kg)
+
+            u = _unpaired_reference_decades(
+                [mws[k] for k in melt_r], [mws[k] for k in melt_p], T)
+            if u > self.reference_state_max_decades:
+                self.reference_state_max_decades = u
+            if u > REFERENCE_STATE_CENSUS_DECADES:
+                self.reference_state_census.append((str(rxn), u))
+                logging.warning(
+                    "THERMO REFERENCE-STATE CENSUS: reaction %s: U = %.2f "
+                    "decades at T = %.1f K (above the %.1f-decade census "
+                    "bound; see the invariant section of "
+                    "docs/multi_pool_design.md).",
+                    rxn, u, T, REFERENCE_STATE_CENSUS_DECADES)
+            if u > REFERENCE_STATE_REFUSE_DECADES:
+                offenders.append((rxn, u))
+
+            # Provenance sensor (spec §5.3): counterparty set = melt
+            # participants + gas participants inside the shared chain-scale
+            # MW window of a melt participant. Deliberately NARROW: small
+            # co-reactants (H2, CH4, every abstraction partner) legitimately
+            # take library thermo while chains take GAV -- sweeping them in
+            # would warn on every healthy deck (alarm fatigue re-arming the
+            # exact landmine this sensor guards).
+            melt_set = set(melt_r) | set(melt_p)
+            counterparties = set(melt_set)
+            for k in set(r_idx) | set(p_idx):
+                if k in melt_set:
+                    continue
+                if any(abs(mws[k] - mws[m]) <= chain_window_kg for m in melt_set):
+                    counterparties.add(k)
+            examples = {}
+            for k in sorted(counterparties):
+                prov = _thermo_provenance(core_species[k])
+                if prov is not None and prov not in examples:
+                    examples[prov] = core_species[k].label
+            if "library" in examples and "gav" in examples:
+                logging.warning(
+                    "THERMO REFERENCE-STATE PROVENANCE: mixed thermo "
+                    "provenance among chain-scale counterparties in reaction "
+                    "%s (library: %s; group additivity: %s) -- the structural "
+                    "cancellation that keeps gas-reference thermo safe on "
+                    "melt chains may be broken for this pair; see the "
+                    "invariant section of docs/multi_pool_design.md.",
+                    rxn, examples["library"], examples["gav"])
+
+        if offenders:
+            if self.allow_unpaired_reference_state:
+                logging.warning(
+                    "THERMO REFERENCE-STATE TRIPWIRE: "
+                    "allow_unpaired_reference_state=True: bypassing the "
+                    "reference-state refusal for %d reaction(s); max U = "
+                    "%.2f decades. The deck author asserts the thermo "
+                    "handles the melt reference state.",
+                    len(offenders), self.reference_state_max_decades)
+            else:
+                lines = "\n".join(
+                    f"  {rxn}: U = {u:.2f} decades" for rxn, u in offenders)
+                raise ValueError(
+                    "THERMO REFERENCE-STATE TRIPWIRE: this deck has "
+                    f"{len(offenders)} reversible core reaction(s) with an "
+                    "unpaired reference-state term (U > "
+                    f"{REFERENCE_STATE_REFUSE_DECADES} decades) at "
+                    f"T = {T:.1f} K:\n{lines}\n"
+                    "Do NOT fix this by applying a melt correction to the "
+                    "condensed set alone -- that injects the full mismatch "
+                    "into every boundary-crossing Keq (decapping kb by up to "
+                    "~12 orders of magnitude). See the thermo reference-state "
+                    "invariant section of docs/multi_pool_design.md. If the "
+                    "deck's thermo genuinely handles the melt reference "
+                    "state, set allow_unpaired_reference_state=True on the "
+                    "reactor.")
 
     def get_const_spc_indices(self, core_species):
         """Identify indices of constant species."""
@@ -599,6 +879,14 @@ class HybridPolymerSystem(ReactionSystem):
         # populated. Moments must evolve only via the tail block, never through
         # generic reaction stoichiometry.
         self.validate_configuration()
+
+        # Thermo reference-state tripwire (spec 2026-06-11 §7): runs AFTER
+        # the archetype demotion pass and validate_configuration (masks,
+        # pool membership and archetypes are final here) and BEFORE
+        # generate_rate_coefficients computes any kb from Keq -- refusal
+        # gates SOLVING. Re-runs on every rebuild, so spawned daughters are
+        # checked automatically.
+        self._reference_state_tripwire(core_species, core_reactions)
 
         self._scratch_C_gas = np.zeros(n_core, float)
         self._scratch_C_poly = np.zeros(n_core, float)

@@ -1951,7 +1951,6 @@ class TestThermoReferenceStateTripwire:
     so the red can only mean "check absent", never "fixture dead".
     """
 
-    @pytest.mark.xfail(strict=True, reason="tripwire pending: initialize_model has no reference-state check (spec 2026-06-11 §7)")
     def test_refusal_on_genuine_unpaired_reference_state(self):
         """Spec §8.1: a genuine unpaired reaction (melt chain <=> all-gas
         products, reversible) must REFUSE at initialize_model with the
@@ -1983,7 +1982,6 @@ class TestThermoReferenceStateTripwire:
             _refstate_rs(core, [rxn], mask,
                          [_gate_pool_config()], {"A": (1.0, 5.0, 30.0)})
 
-    @pytest.mark.xfail(strict=True, reason="provenance sensor pending (spec 2026-06-11 §5.3)")
     def test_mixed_provenance_chain_counterparty_warns(self, caplog):
         """Spec §8.4: one melt-class species takes library thermo while its
         chain-scale counterparty takes GAV -> the mixed-provenance warning
@@ -2034,3 +2032,121 @@ class TestThermoReferenceStateTripwire:
             "went unwarned (the spec-§5.3 decoupling-fingerprint sensor is "
             "absent)"
         )
+
+    def test_melt_sum_leak_guard_raises_classification_error(self):
+        """Spec §5.1 C3 amendment: the cannot-happen leak guard inside the
+        melt-sum accumulation. Under the amended class a tagged below-window
+        species fails the MW conjunct and is EXCLUDED by the gate -- expected
+        and silent (the family.py:1657 over-tagging fingerprint, H2 on every
+        proxy-touching reaction); the raise is only for such a species
+        REACHING the melt sum. Because the gate and the guard share ONE
+        window definition, the violation is structurally unreachable through
+        public paths -- so the raise is pinned by calling the helper directly
+        with a hand-built violating member (documented bypass, per the C3
+        amendment)."""
+        from rmgpy.solver.polymer import _assert_chain_scale_melt_member
+        # Valid members never raise: a condensed-branch member (gate-exempt,
+        # pool-configured by input -- any MW, even below the window) and a
+        # chain-scale tag-branch member (MW above the window).
+        _assert_chain_scale_melt_member("M1", 0.016043, False, 0.038)
+        _assert_chain_scale_melt_member("Erad", 0.211407, True, 0.080)
+        # The hand-built violation: a gas-classified (tag-branch) member
+        # below the window inside the melt sum. The message must steer the
+        # operator to CLASSIFICATION, never to reference states.
+        with pytest.raises(ValueError, match="classification leak, NOT a thermo problem"):
+            _assert_chain_scale_melt_member("H2", 0.002016, True, 0.038)
+        with pytest.raises(ValueError, match="non-chain species in the melt sum"):
+            _assert_chain_scale_melt_member("H2", 0.002016, True, 0.038)
+
+    def test_unpaired_decades_formula_pins_spec_numbers(self):
+        """Spec §5.1/§2 pinned numerically against the production helper:
+        the C15H32 EPDM proxy gives S_trans/(R ln10) = 10.49 decades at
+        1000 K plus the C0 term 1.08 -> a genuine melt-chain => all-gas
+        reaction carries U = 11.57 (the §2 measurement, exact); the
+        same-mass C15H32/C15H31 melt pair collapses to 0.0031 decades (the
+        structural cancellation, <= the spec's 0.03)."""
+        from rmgpy.solver.polymer import _unpaired_reference_decades
+        mw_chain = Molecule().from_smiles("CCC(C)CCCC(C)CCCC(C)C").get_molecular_weight()
+        mw_rad = Molecule().from_smiles("CCC(C)CCCC(C)CCCC(C)[CH2]").get_molecular_weight()
+        u_unpaired = _unpaired_reference_decades([mw_chain], [], 1000.0)
+        assert u_unpaired == pytest.approx(11.571, abs=0.01)
+        u_paired = _unpaired_reference_decades([mw_chain], [mw_rad], 1000.0)
+        assert u_paired == pytest.approx(0.0031, abs=0.001)
+        assert u_paired < 0.03
+
+    def test_census_fires_above_half_decade_not_below(self, caplog):
+        """Spec §8.5/§6: census at U > 0.5 and not below. Two melt<=>melt
+        reactions in one build (Dn_melt = 0, so U = 1.5*log10(MW ratio),
+        T-independent): CH4 => C2H6 gives U = 0.409 (below; silent) and
+        CH4 => C4H10 gives U = 0.839 (above; census, no refusal)."""
+        import logging
+        m1, m2, m4, g = (_spc("C", "M1"), _spc("CC", "M2"),
+                         _spc("CCCC", "M4"), _spc("[H][H]", "G"))
+        for s in (m1, m2, m4, g):
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [m1, m2, m4, g]
+        mask = np.array([False, False, False, True], dtype=bool)
+        rxn_below = Reaction(reactants=[m1], products=[m2], **_REV_KIN)
+        rxn_above = Reaction(reactants=[m1], products=[m4], **_REV_KIN)
+        with caplog.at_level(logging.WARNING):
+            rs = _refstate_rs(core, [rxn_below, rxn_above], mask, [], {})
+        census = [r for r in caplog.records
+                  if "THERMO REFERENCE-STATE CENSUS" in r.getMessage()]
+        assert len(census) == 1
+        assert "M4" in census[0].getMessage()
+        assert len(rs.reference_state_census) == 1
+        assert rs.reference_state_census[0][1] == pytest.approx(0.839, abs=0.002)
+        # reference_state_max_decades tracks ALL reversible melt-touching
+        # reactions (census bound or not); here the max is the 0.839 case.
+        assert rs.reference_state_max_decades == pytest.approx(0.839, abs=0.002)
+
+    def test_refusal_fires_above_three_decades_not_below(self, caplog):
+        """Spec §8.5/§6: refusal at U > 3.0 and not below. melt CH4 => melt
+        C91H184 (MW 1278.4) gives U = 1.5*log10(1278.42/16.043) = 2.852
+        (census only, builds); melt CH4 => melt C120H242 (MW 1685.2) gives
+        U = 1.5*log10(1685.21/16.043) = 3.032 (> 3.0, refuses). The census
+        is emitted even on the refusing build (spec §7: census regardless
+        of pass/fail)."""
+        import logging
+
+        def _build(n_carbons):
+            m1 = _spc("C", "M1")
+            big = _spc("C" * n_carbons, "BIG")
+            g = _spc("[H][H]", "G")
+            for s in (m1, big, g):
+                s.thermo = _trivial_nasa(_GAV_COMMENT)
+            core = [m1, big, g]
+            mask = np.array([False, False, True], dtype=bool)
+            rxn = Reaction(reactants=[m1], products=[big], **_REV_KIN)
+            return _refstate_rs(core, [rxn], mask, [], {})
+
+        with caplog.at_level(logging.WARNING):
+            rs = _build(91)
+        assert rs.reference_state_max_decades == pytest.approx(2.852, abs=0.005)
+        assert any("THERMO REFERENCE-STATE CENSUS" in r.getMessage()
+                   for r in caplog.records)
+
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            with pytest.raises(ValueError, match="unpaired reference-state"):
+                _build(120)
+        assert any("THERMO REFERENCE-STATE CENSUS" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_override_knob_builds_and_still_logs_census(self, caplog):
+        """Spec §8.1/§7: the SAME genuine-unpaired fixture as the refusal
+        test builds with allow_unpaired_reference_state=True; the census and
+        the explicit bypass warning are still emitted (the override silences
+        ONLY the refusal)."""
+        import logging
+        sp, core, mask = _refstate_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G1"], sp["G2"]], **_REV_KIN)
+        with caplog.at_level(logging.WARNING):
+            rs = _refstate_rs(core, [rxn], mask, [_gate_pool_config()],
+                              {"A": (1.0, 5.0, 30.0)},
+                              rs_kwargs={"allow_unpaired_reference_state": True})
+        assert rs.reference_state_max_decades > 3.0
+        assert any("THERMO REFERENCE-STATE CENSUS" in r.getMessage()
+                   for r in caplog.records)
+        assert any("allow_unpaired_reference_state=True" in r.getMessage()
+                   for r in caplog.records)
