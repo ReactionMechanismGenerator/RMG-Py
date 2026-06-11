@@ -132,3 +132,6 @@ examples/**/output*.html
 examples/**/restart_from_seed.py
 examples/**/seed/filters
 examples/**/statistics.xls
+
+# superpowers working artifacts (specs/plans) are never tracked — hook rule 2026-06-11
+docs/superpowers/
