@@ -1269,6 +1269,7 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
                            sensitivity: Optional[Union[List[str], str, List[Species]]] = None,
                            sensitivityThreshold: float = 1e-3,
                            constant_gas_volume: bool = False,
+                           allow_unpaired_reference_state: bool = False,
                            sensitivityTemperature: Optional[Union[float, Quantity]] = None,
                            sensitivityPressure: Optional[Union[float, Quantity]] = None,
                            ):
@@ -1301,6 +1302,11 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         sensitivityThreshold (float): The cutoff threshold for sensitivity analysis. Default is 1e-3.
         constant_gas_volume (bool): If True, the gas phase volume remains fixed at its initial value.
                                     If False (default), the gas volume expands/contracts isobarically.
+        allow_unpaired_reference_state (bool): If True, bypass the build-time refusal on reversible
+                                    reactions whose thermo reference-state term is unpaired
+                                    (U > 3 decades); the census is still logged. The deck author
+                                    asserts their thermo handles the melt reference state. See the
+                                    invariant section of docs/multi_pool_design.md.
         sensitivityTemperature (Optional[Union[float, Quantity]]): Temperature at which to perform
                                                                    sensitivity analysis. If None, uses reactor T.
         sensitivityPressure (Optional[Union[float, Quantity]]): Pressure at which to perform
@@ -1417,6 +1423,7 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         sensitivity=sensitive_species,
         sensitivityThreshold=sensitivityThreshold,
         constant_gas_volume=constant_gas_volume,
+        allow_unpaired_reference_state=allow_unpaired_reference_state,
         sens_conditions=sens_conditions,
     )
 

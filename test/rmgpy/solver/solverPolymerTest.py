@@ -2150,3 +2150,43 @@ class TestThermoReferenceStateTripwire:
                    for r in caplog.records)
         assert any("allow_unpaired_reference_state=True" in r.getMessage()
                    for r in caplog.records)
+
+
+class TestAllowUnpairedReferenceStateKnobPlumb:
+    """Spec §7/§10 -- the override knob's exact path: input.py
+    hybrid_polymer_reactor -> HybridPolymerReactor -> to_solver_object ->
+    HybridPolymerSystem kwarg. Mirrors the constant_gas_volume pattern (the
+    spec's named 'strict_phase_check pattern' does not exist in the code --
+    plan contradiction C1; debug_check_realizability has no input plumb)."""
+
+    @staticmethod
+    def _reactor(**kwargs):
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import HybridPolymerReactor, PolymerPhase
+        a = _spc("CCCC", "A")
+        phase = PolymerPhase(density=Quantity(1000.0, "kg/m^3"), initial_moments={},
+                             initial_explicit={a: 1.0}, pools=[], mass_transfer=[])
+        return a, HybridPolymerReactor(
+            temperature=(800.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles={a: 1.0}, polymerPhase=phase,
+            terminationTime=(1.0, "s"), **kwargs)
+
+    def test_to_solver_object_passes_knob(self):
+        a, reactor = self._reactor(allow_unpaired_reference_state=True)
+        solver = reactor.to_solver_object([a], [], [], [])
+        assert solver.allow_unpaired_reference_state is True
+
+    def test_knob_default_false_and_input_function_carries_it(self):
+        import inspect
+        a, reactor = self._reactor()
+        solver = reactor.to_solver_object([a], [], [], [])
+        assert solver.allow_unpaired_reference_state is False
+        from rmgpy.rmg.input import hybrid_polymer_reactor
+        sig = inspect.signature(hybrid_polymer_reactor)
+        assert "allow_unpaired_reference_state" in sig.parameters
+        assert sig.parameters["allow_unpaired_reference_state"].default is False
+        # Static pin of the forwarding line: executing hybrid_polymer_reactor
+        # needs module-global rmg/species_dict state, so the source pin keeps
+        # this test cheap while making a silent kwarg drop impossible.
+        src = inspect.getsource(hybrid_polymer_reactor)
+        assert "allow_unpaired_reference_state=allow_unpaired_reference_state" in src

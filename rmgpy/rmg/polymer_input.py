@@ -69,6 +69,12 @@ class HybridPolymerReactor(ReactionSystem):
                                               initial value calculated from T, P, and initial gas moles.
                                               If False (default), the gas volume expands/contracts
                                               isobarically to maintain constant Pressure.
+        allow_unpaired_reference_state (bool, optional): If True, bypass the build-time refusal on
+                                              reversible reactions whose thermo reference-state term
+                                              is unpaired (U > 3 decades); the census is still
+                                              logged. The deck author asserts their thermo handles
+                                              the melt reference state. See the invariant section
+                                              of docs/multi_pool_design.md.
     """
     def __init__(self,
                  temperature,
@@ -82,6 +88,7 @@ class HybridPolymerReactor(ReactionSystem):
                  sensitivityThreshold: float = 1e-3,
                  sens_conditions: Optional[Dict[str, Union[float, Quantity]]] = None,
                  constant_gas_volume: bool = False,
+                 allow_unpaired_reference_state: bool = False,
                  n_sims=1,
                  ):
         ReactionSystem.__init__(self)
@@ -116,6 +123,7 @@ class HybridPolymerReactor(ReactionSystem):
         self.sensitivityThreshold = sensitivityThreshold
         self.sens_conditions = sens_conditions
         self.constant_gas_volume = constant_gas_volume
+        self.allow_unpaired_reference_state = allow_unpaired_reference_state
         self.n_sims = n_sims
         self.const_spc_names = []
         self.solver = None
@@ -383,6 +391,7 @@ class HybridPolymerReactor(ReactionSystem):
             pdep_collision_reaction_indices=pdep_collision_indices,
             pdep_collider_kinetics=pdep_kinetics,
             collider_efficiencies=collider_eff,
+            allow_unpaired_reference_state=self.allow_unpaired_reference_state,
         )
 
         solver.V = (V_gas0 if V_gas0 is not None else 0.0) + V_poly
