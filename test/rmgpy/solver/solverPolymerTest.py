@@ -1941,6 +1941,66 @@ class TestSpawnGateFluxSnapshot:
             rs.spawn_gate_flux_snapshot()
 
 
+class TestAttributionTrustFloor:
+    """Attribution trust floor (item #14a, spec 2026-06-11 §3): the spawn-gate
+    snapshot distrusts E[n] = mu1/mu0 for pools whose mu0 sits in the
+    integrator-noise band (SMALL_EPS, max(SMALL_EPS, 100 * atol_mu0)].
+    SMALL_EPS keeps its realizability job everywhere else — two constants,
+    two jobs (T3 exhibits the divergence directly).
+    """
+
+    # _one_pool_gate_rs initializes with the base default atol=1e-16
+    # (vector atol_array = np.ones(neq) * 1e-16, base.pyx:390), so the
+    # trust floor is max(1e-30, 100 * 1e-16) = 1e-14 on every slot.
+    TRUST_FLOOR = 100.0 * 1e-16
+
+    @pytest.mark.xfail(strict=True,
+                       reason="RED until the attribution trust floor lands "
+                              "(item #14a Task 2): mu0 in the noise band "
+                              "passes the SMALL_EPS guard and mu1/mu0 "
+                              "launders a huge E[n] into pool_stats")
+    def test_band_mu0_zeroes_snapshot_e_n(self):
+        """T1 (band explosion, spec §6): a pool with mu0 inside
+        (SMALL_EPS, K*atol] MUST report E[n] = 0.0 in pool_stats."""
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        # mu0 = 1e-20 (in the band); mu1 = 1e-12 -> raw E[n] = 1e8 (absurd).
+        # Realizable: mu0*mu2 = 1e-23 >= mu1^2 = 1e-24.
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0e-20, 1.0e-12, 1.0e-3))
+
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+
+        # LIVENESS PINS — BEFORE the red assertion (tripwire discipline):
+        # (1) mu0 genuinely ABOVE SMALL_EPS: it passes the OLD guard, so the
+        #     red below can only mean "trust floor absent", never
+        #     "fixture dead / mu0 exhausted".
+        mu0 = float(rs.y[1])
+        assert mu0 == pytest.approx(1.0e-20) and mu0 > 1.0e-30, (
+            "FIXTURE BROKEN, not a valid red: mu0 must sit ABOVE SMALL_EPS"
+        )
+        # (2) the raw ratio is genuinely huge — far beyond any physical
+        #     chain length — so zeroing it is a TRUST verdict, not noise.
+        raw_ratio = float(rs.y[2]) / mu0
+        assert raw_ratio == pytest.approx(1.0e8) and raw_ratio > 1.0e6, (
+            "FIXTURE BROKEN, not a valid red: raw mu1/mu0 must be absurdly "
+            "large for the band-explosion red to mean anything"
+        )
+        # (3) the band sits below the tolerance-anchored floor.
+        assert mu0 < self.TRUST_FLOOR
+
+        gross, pool_stats, proxy_total = rs.spawn_gate_flux_snapshot()
+        # THE red assertion: pre-change HEAD returns the laundered 1e8.
+        assert pool_stats["A"][0] == 0.0, (
+            "noise-band mu0 passed the attribution guard: E[n] = mu1/mu0 "
+            "laundered into pool_stats (trust floor absent)"
+        )
+        # The zeroed pool contributes nothing to the proxy denominator
+        # either, and gross stays a raw production record.
+        assert proxy_total == 0.0
+        assert gross["A"] > 0.0
+
+
 class TestThermoReferenceStateTripwire:
     """Build-time thermo reference-state tripwire (spec 2026-06-11 §§5-8).
 
