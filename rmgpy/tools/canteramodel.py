@@ -150,29 +150,23 @@ class CanteraCondition(object):
 
 def generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_list, surface_mol_frac_list=None, Tlist=None, Plist=None, Vlist=None):
     """
-    Creates a list of cantera conditions from from the arguments provided.
+    Creates a list of cantera conditions from the arguments provided.
 
-    ======================= ====================================================
-    Argument                Description
-    ======================= ====================================================
-    `reactor_type_list`        A list of strings of the cantera reactor type. List of supported types below:
-        IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
-        IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
-        IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor
-                            for ideal gas mixtures (the same as RMG's SimpleReactor)
+    ======================== ====================================================
+    Argument                 Description
+    ======================== ====================================================
+    `reactor_type_list`      A list of strings of the cantera reactor type. List of supported types below:
+                               - IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
+                               - IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+                               - IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor for ideal gas mixtures (same as RMG's SimpleReactor)
+    `reaction_time_list`     A tuple object giving the ([list of reaction times], units)
+    `mol_frac_list`          A list of molfrac dictionaries with species object keys and mole fraction values
+    `surface_mol_frac_list`  A list of molfrac dictionaries with surface species object keys and mole fraction values
+    `Tlist`                  A tuple giving the ([list of initial temperatures], units)
+    `Plist`                  A tuple giving the ([list of initial pressures], units)
+    `Vlist`                  A tuple giving the ([list of initial specific volumes], units)
 
-    `reaction_time_list`      A tuple object giving the ([list of reaction times], units)
-    `mol_frac_list`           A list of molfrac dictionaries with species object keys
-                           and mole fraction values
-    `surface_mol_frac_list`   A list of molfrac dictionaries with surface species object keys
-                           and mole fraction values
-    To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
-    `T0List`                A tuple giving the ([list of initial temperatures], units)
-    'P0List'                A tuple giving the ([list of initial pressures], units)
-    'V0List'                A tuple giving the ([list of initial specific volumes], units)
-
-
-    This saves all the reaction conditions into the Cantera class.
+    Note: To specify the system for an ideal gas, you must define 2 of the following 3 parameters: `Tlist`, `Plist`, `Vlist`
     """
 
     def convert_to_quantity_list(input_list):
@@ -286,23 +280,21 @@ class Cantera(object):
     def generate_conditions(self, reactor_type_list, reaction_time_list, mol_frac_list, surface_mol_frac_list=None, Tlist=None, Plist=None, Vlist=None):
         """
         This saves all the reaction conditions into the Cantera class.
-        ======================= ====================================================
-        Argument                Description
-        ======================= ====================================================
-        `reactor_type_list`        A list of strings of the cantera reactor type. List of supported types below:
-            IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
-            IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
-            IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor 
-                                for ideal gas mixtures (the same as RMG's SimpleReactor)
+        ======================== ====================================================
+        Argument                 Description
+        ======================== ====================================================
+        `reactor_type_list`      A list of strings of the cantera reactor type. List of supported types below:
+                                   - IdealGasReactor: A constant volume, zero-dimensional reactor for ideal gas mixtures
+                                   - IdealGasConstPressureReactor: A homogeneous, constant pressure, zero-dimensional reactor for ideal gas mixtures
+                                   - IdealGasConstPressureTemperatureReactor: A homogenous, constant pressure and constant temperature, zero-dimensional reactor for ideal gas mixtures (same as RMG's SimpleReactor)
+        `reaction_time_list`     A tuple object giving the ([list of reaction times], units)
+        `mol_frac_list`          A list of molfrac dictionaries with species object keys and mole fraction values
+        `surface_mol_frac_list`  A list of molfrac dictionaries with surface species object keys and mole fraction values
+        `Tlist`                  A tuple giving the ([list of initial temperatures], units)
+        `Plist`                  A tuple giving the ([list of initial pressures], units)
+        `Vlist`                  A tuple giving the ([list of initial specific volumes], units)
 
-        `reaction_time_list`      A tuple object giving the ([list of reaction times], units)
-        `mol_frac_list`           A list of molfrac dictionaries with species object keys
-                               and mole fraction values
-        `surface_mol_frac_list`   A list of molfrac dictionaries with surface species object keys and mole fraction values
-        To specify the system for an ideal gas, you must define 2 of the following 3 parameters:
-        `T0List`                A tuple giving the ([list of initial temperatures], units)
-        'P0List'                A tuple giving the ([list of initial pressures], units)
-        'V0List'                A tuple giving the ([list of initial specific volumes], units)
+        Note: To specify the system for an ideal gas, you must define 2 of the following 3 parameters: `Tlist`, `Plist`, `Vlist`
         """
 
         self.conditions = generate_cantera_conditions(reactor_type_list, reaction_time_list, mol_frac_list, surface_mol_frac_list, Tlist, Plist, Vlist)
