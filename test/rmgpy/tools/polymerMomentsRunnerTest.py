@@ -3,6 +3,7 @@
 
 import csv
 import json
+import logging
 import os
 
 import numpy as np
@@ -229,3 +230,106 @@ class TestValidation:
                 artifact, species, reactions,
                 T0=800.0, P=1.0e5, V_poly=1.0,
                 initial_moles={"NOSUCHSPECIES": 1.0}, mass_transfer_spec=[])
+
+
+class TestReferenceStateTripwireConsumerWorld:
+    """The thermo reference-state tripwire (polymer.pyx _reference_state_tripwire)
+    derives per-species MW from spc.molecule[0]. Consumer-world species built by
+    the runner's _species_from_yaml carry molecule == [] (label + NASA thermo
+    only), so every MW comes out 0.0 and any reversible melt-touching reaction
+    sends mw=0 into _sackur_tetrode_s_trans -> math.log(0) -> ValueError. The
+    base ``deck`` fixture dodges this (its sole reaction is irreversible and
+    all-gas), so this deck adds the missing shape: a balanced REVERSIBLE
+    H-abstraction touching condensed chain species."""
+
+    @pytest.fixture
+    def reversible_melt_deck(self, tmp_path):
+        """The ``deck`` fixture plus two condensed chain-scale species (PR =
+        pentadecyl C15H31, PH = pentadecane C15H32) on a balanced reversible
+        H-abstraction PR + CH4 <=> PH + CH3. Benign by construction: the melt
+        participants sit one on each side at (near-)equal chain mass, so the
+        unpaired reference-state magnitude U is ~0.003 decades — far below the
+        0.5-decade census bound. A correct tripwire must stay SILENT here."""
+        n2 = _spc("N#N", "N2", index=1)
+        g = _spc("[CH3]", "G", index=2)
+        g2 = _spc("C", "C1", index=3)
+        pr = _spc("[CH2]CCCCCCCCCCCCCC", "PR")  # C15H31, condensed chain radical
+        ph = _spc("CCCCCCCCCCCCCCC", "PH")      # C15H32, condensed chain parent
+        mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+        core = [n2, g, g2, pr, ph] + mus
+        gas_rxn = Reaction(reactants=[g], products=[g2],
+                           kinetics=Arrhenius(A=(5.0, "1/s"), n=0.0,
+                                              Ea=(10.0, "kJ/mol"), T0=(1.0, "K")),
+                           reversible=False)
+        melt_rxn = Reaction(reactants=[pr, g2], products=[ph, g],
+                            kinetics=Arrhenius(A=(1.0e3, "m^3/(mol*s)"), n=0.0,
+                                               Ea=(20.0, "kJ/mol"), T0=(1.0, "K")),
+                            reversible=True)
+        data, index_map = generate_cantera_data(core, [gas_rxn, melt_rxn],
+                                                return_reaction_index_map=True)
+        chem_path = os.path.join(str(tmp_path), "chem.yaml")
+        with open(chem_path, "w") as fh:
+            yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+
+        pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                       k_scission=1.0, k_unzip=0.0)
+        artifact = build_polymer_moments_artifact(
+            [pool], core_species=core, core_reactions=[gas_rxn, melt_rxn],
+            configured_pool_labels=["poly"],
+            condensed_species=mus + [pr, ph],
+            cantera_index_map=index_map)
+        art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+        with open(art_path, "w") as fh:
+            json.dump(artifact, fh, indent=2, default=str)
+        return chem_path, art_path
+
+    @pytest.mark.xfail(strict=True,
+                       reason="item 15 residual (iii): tripwire derives MW from "
+                              "molecule[]; consumer-world species crash "
+                              "_sackur_tetrode_s_trans with math domain error")
+    def test_tripwire_runs_silently_on_consumer_world_species(
+            self, reversible_melt_deck, caplog):
+        chem_path, art_path = reversible_melt_deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        species, reactions = load_chem_yaml(chem_path)
+
+        # --- liveness pins (must hold BEFORE the act; a dead fixture cannot
+        # produce this red) ---
+        # 1. consumer-world species: structure does not cross the artifact
+        #    boundary, so every species carries molecule == [].
+        assert all(s.molecule == [] for s in species)
+        # 2. the melt-touching reaction round-trips reversible=True from the
+        #    '<=>' arrow.
+        rev = [r for r in reactions if r.reversible]
+        assert len(rev) == 1
+        melt_rxn = rev[0]
+        assert sorted(s.label for s in melt_rxn.reactants) == ["C1(3)", "PR"]
+        assert sorted(s.label for s in melt_rxn.products) == ["G(2)", "PH"]
+        # 3. both chain species are in the artifact's condensed set, which is
+        #    exactly what build_system_from_artifact turns into the
+        #    gas_species_mask (mask False == condensed/melt class).
+        condensed = set(artifact["conventions"]["condensed_species"])
+        assert {"PR", "PH"} <= condensed
+
+        # --- act: the runner's system-build path runs initialize_model, which
+        # runs _reference_state_tripwire. This deck is benign (melt chain mass
+        # paired across the reaction), so the tripwire must complete WITHOUT
+        # raising and stay silent — silence, not absence.
+        with caplog.at_level(logging.WARNING):
+            rs, core, all_rxns = build_system_from_artifact(
+                artifact, species, reactions,
+                T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+        assert not any("THERMO REFERENCE-STATE" in rec.getMessage()
+                       for rec in caplog.records)
+        # the tripwire ran on this rebuild and saw the condensed species: the
+        # paired chain masses keep U far below the 0.5-decade census bound
+        # (REFERENCE_STATE_CENSUS_DECADES).
+        idx = {s.label: i for i, s in enumerate(core)}
+        assert not rs.gas_species_mask[idx["PR"]]
+        assert not rs.gas_species_mask[idx["PH"]]
+        assert rs.reference_state_max_decades < 0.5
