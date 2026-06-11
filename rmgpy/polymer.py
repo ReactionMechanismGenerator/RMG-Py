@@ -2367,6 +2367,14 @@ def _spawn_gate_fraction(
         _snapshot_event_mass(snapshot, lbl, pool_lbl)
         for (lbl, pool_lbl) in entry.representatives
     )
+    # First-seen-pool-wins is a DELIBERATE simplification, not an accident:
+    # per spec §3, a species is absorbed into exactly ONE pool and carries
+    # that pool's E[n] calibration everywhere it appears, so all of a
+    # label's ledger records share one parent_pool_label today and
+    # setdefault is exact. If multi-parent attribution ever lands, this
+    # dedup must pick per-pool terms consistently with the numerator or the
+    # fraction's [0,1] pin breaks (a numerator g_i(P2) could exceed its
+    # denominator counterpart g_i(P1)).
     deduped: Dict[str, str] = {}
     for e in ledger:
         for (lbl, pool_lbl) in e.representatives:

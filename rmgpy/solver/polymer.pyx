@@ -822,8 +822,11 @@ class HybridPolymerSystem(ReactionSystem):
            ``max(0, core_species_production_rates[i])`` for ALL core species
            (ordinary species have real entries since change (a), spec §4.6).
            Labels are ``Species.label`` verbatim (the same labels the ledger
-           records at absorption); a duplicate label would overwrite — core
-           labels are unique in practice (make_new_species suffixes).
+           records at absorption). Duplicate core labels RAISE ValueError —
+           uniqueness is NOT enforced on the standard non-RMS path
+           (model.py's dedup is gated on edge.phase_system), and silent
+           overwrite would misattribute gate flux; the main.py caller turns
+           the raise into warn + None snapshot -> the gate defers.
         2. ``pool_stats``: dict pool label -> ``(E_n, monomer_mw_g_mol)``
            with ``E_n = y[mu1]/y[mu0] if y[mu0] > SMALL_EPS else 0.0`` (the
            tail_mean guard idiom; errs toward deferral — mu0 exhausted ->
@@ -876,6 +879,18 @@ class HybridPolymerSystem(ReactionSystem):
             if label is None:
                 continue
             g = max(0.0, float(prod[i]))
+            if label in gross:
+                # Label uniqueness is NOT an enforced invariant on the
+                # standard (non-RMS) path: model.py's dedup loop is gated on
+                # edge.phase_system ("!!! Not maintained when
+                # require_rms=False?"). A duplicate key would silently
+                # misattribute gate flux. Raise instead: the main.py stash
+                # wraps this call, logs a warning and leaves the snapshot
+                # None -> the gate defers honestly (spec §4.5).
+                raise ValueError(
+                    f"duplicate core species label {label!r} in "
+                    f"spawn_gate_flux_snapshot(); spawn-gate attribution "
+                    f"would be unreliable")
             gross[label] = g
             p = stp[i]
             if p >= 0 and self.is_pool_proxy[i]:

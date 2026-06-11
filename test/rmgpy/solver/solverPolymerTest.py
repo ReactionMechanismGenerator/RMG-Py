@@ -1859,3 +1859,18 @@ class TestSpawnGateFluxSnapshot:
         assert intents == [], (
             "a mu0-exhausted pool must defer the spawn (epsilon errs toward deferral)"
         )
+
+    def test_duplicate_core_label_raises_not_masks(self):
+        """Label uniqueness is NOT enforced on the standard non-RMS path
+        (model.py's dedup loop is gated on edge.phase_system) — a duplicate
+        core label must RAISE, never silently overwrite: an overwritten
+        gross entry would misattribute spawn-gate flux without any signal.
+        The main.py stash turns the raise into warn + None snapshot, so the
+        gate defers honestly (spec section 4.5)."""
+        sp, core, mask = _one_pool_gate_species()
+        sp["G"].label = "R"  # collide the gas species with the ordinary R
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0, 5.0, 30.0))
+        with pytest.raises(ValueError, match="duplicate core species label"):
+            rs.spawn_gate_flux_snapshot()
