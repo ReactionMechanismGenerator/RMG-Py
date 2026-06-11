@@ -28,6 +28,7 @@
 ###############################################################################
 
 import dataclasses
+import math
 
 import numpy as np
 import pytest
@@ -37,6 +38,7 @@ from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.reaction import Reaction
 from rmgpy.species import Species
+from rmgpy.thermo import NASA, NASAPolynomial
 
 from rmgpy.solver.polymer import HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig
 
@@ -80,6 +82,69 @@ def _two_pool_rs(rxn, core, mask, mom_a, mom_b):
 
 _KIN = dict(kinetics=Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
             reversible=False)
+
+# Reversible kinetics for the thermo reference-state tripwire fixtures (spec
+# 2026-06-11): the tripwire keys on rxn.reversible; _KIN is reversible=False.
+_REV_KIN = dict(kinetics=Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+                reversible=True)
+
+# Provenance comment strings, pinned against rmgpy/data/thermo.py (:232/:1818/
+# :2237/:2845) and a real EPDM chem_annotated.inp.
+_GAV_COMMENT = "Thermo group additivity estimation: group(Cs-CsHHH) + group(Cs-CsHHH)"
+_LIB_COMMENT = "Thermo library: primaryThermoLibrary"
+
+
+def _trivial_nasa(comment=""):
+    """Minimal valid NASA thermo (Ne-like constant 2.5R heat capacity) so
+    reversible fixtures survive generate_rate_coefficients' Keq path on ANY
+    head (identical thermo on both sides -> finite Keq, no explosion). The
+    ``comment`` carries the provenance string the tripwire's sensor reads.
+    The tripwire's U itself never reads thermo -- it is MW-only by design."""
+    poly = NASAPolynomial(coeffs=[2.5, 0.0, 0.0, 0.0, 0.0, -745.375, 3.35],
+                          Tmin=(200, "K"), Tmax=(6000, "K"))
+    return NASA(polynomials=[poly], Tmin=(200, "K"), Tmax=(6000, "K"), comment=comment)
+
+
+def _sackur_tetrode_decades(mw_kg_mol, T):
+    """Test-local exact Sackur-Tetrode S_trans at P0 = 1e5 Pa, in decades
+    (S/(R ln10)). INDEPENDENT recompute for liveness pins -- deliberately not
+    imported from production code, so a broken production formula cannot
+    vouch for itself."""
+    m = mw_kg_mol / constants.Na
+    s = constants.R * (math.log((2.0 * math.pi * m * constants.kB * T / constants.h ** 2) ** 1.5
+                                * constants.kB * T / 1.0e5) + 2.5)
+    return s / (constants.R * math.log(10.0))
+
+
+def _refstate_pool_species(thermo_comment=_GAV_COMMENT):
+    """One-pool fixture for the reference-state tripwire: melt proxy A
+    (butane) at 0, mu dummies 1-3, gas products G1 (CH4) and G2 (propene) at
+    4-5. A <=> G1 + G2 is mass-balanced (58.12 = 16.04 + 42.08). All species
+    carry trivial NASA thermo (see _trivial_nasa)."""
+    sp = {
+        "A": _spc("CCCC", "A"),
+        "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"), "A_mu2": _spc("C#N", "A_mu2"),
+        "G1": _spc("C", "G1"), "G2": _spc("C=CC", "G2"),
+    }
+    for s in sp.values():
+        s.thermo = _trivial_nasa(thermo_comment)
+    core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["G1"], sp["G2"]]
+    mask = np.array([False] * 4 + [True, True], dtype=bool)
+    return sp, core, mask
+
+
+def _refstate_rs(core, rxns, mask, pools, moments, rs_kwargs=None):
+    """Build + initialize a HybridPolymerSystem for the tripwire fixtures.
+    core[-1] must be a gas species (it seeds initial_mole_fractions)."""
+    rs = HybridPolymerSystem(
+        T=800.0, P=1.0e5, initial_mole_fractions={core[-1]: 0.0}, V_poly=1.0,
+        polymer_pools=pools, mass_transfer=[],
+        gas_species_mask=mask.copy(), constant_gas_volume=False,
+        initial_polymer_moments=moments, termination=[],
+        **(rs_kwargs or {}),
+    )
+    rs.initialize_model(core, rxns, [], [])
+    return rs
 
 
 def _gate_pool_config(monomer_mw_g_mol=28.0):
@@ -1874,3 +1939,98 @@ class TestSpawnGateFluxSnapshot:
         rs = _one_pool_gate_rs(rxn, core, mask, (1.0, 5.0, 30.0))
         with pytest.raises(ValueError, match="duplicate core species label"):
             rs.spawn_gate_flux_snapshot()
+
+
+class TestThermoReferenceStateTripwire:
+    """Build-time thermo reference-state tripwire (spec 2026-06-11 §§5-8).
+
+    RED-FIRST discipline: the refusal and provenance tests below were written
+    and confirmed FAILING on pre-change HEAD for their PINNED reasons (refusal:
+    initialize_model completes without ValueError; provenance: warning absent)
+    before the check landed. The liveness pins come BEFORE each red assertion
+    so the red can only mean "check absent", never "fixture dead".
+    """
+
+    @pytest.mark.xfail(strict=True, reason="tripwire pending: initialize_model has no reference-state check (spec 2026-06-11 §7)")
+    def test_refusal_on_genuine_unpaired_reference_state(self):
+        """Spec §8.1: a genuine unpaired reaction (melt chain <=> all-gas
+        products, reversible) must REFUSE at initialize_model with the
+        cliff-sign ValueError."""
+        sp, core, mask = _refstate_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G1"], sp["G2"]], **_REV_KIN)
+
+        # LIVENESS PIN -- BEFORE the red assertion. The fixture must actually
+        # cross the phase boundary with chain-scale U: reversible, melt
+        # reactant, all-gas products, and an INDEPENDENTLY recomputed
+        # U = S_trans(A)/(R ln10) + log10(P0/(R*T*C0)) above the 3.0-decade
+        # refuse bound (computed: 9.404 + 1.177 = 10.58). A failure HERE
+        # means the fixture is dead, not a valid red.
+        assert rxn.reversible
+        assert not mask[0] and mask[4] and mask[5]
+        mw_a = sp["A"].molecule[0].get_molecular_weight()
+        u_expected = (_sackur_tetrode_decades(mw_a, 800.0)
+                      + math.log10(1.0e5 / (constants.R * 800.0 * 1.0)))
+        assert u_expected > 3.0, (
+            "FIXTURE BROKEN, not a valid red: independently recomputed U "
+            f"({u_expected:.2f}) is not above the refuse bound"
+        )
+
+        # THE red assertion: on pre-change HEAD initialize_model COMPLETES
+        # (verified live: the Keq path survives on the trivial NASA thermo,
+        # kb finite) -- no tripwire exists to refuse. The match string pins
+        # the pinned reason; an unrelated ValueError cannot launder a pass.
+        with pytest.raises(ValueError, match="unpaired reference-state"):
+            _refstate_rs(core, [rxn], mask,
+                         [_gate_pool_config()], {"A": (1.0, 5.0, 30.0)})
+
+    @pytest.mark.xfail(strict=True, reason="provenance sensor pending (spec 2026-06-11 §5.3)")
+    def test_mixed_provenance_chain_counterparty_warns(self, caplog):
+        """Spec §8.4: one melt-class species takes library thermo while its
+        chain-scale counterparty takes GAV -> the mixed-provenance warning
+        must fire. The counterparty is the §2 decoupling shape: a
+        gas-classified but proxy-TAGGED same-mass radical (butyl 57.11 vs
+        butane 58.12 g/mol, inside the one-monomer window 28+10), so the pair
+        is mass-paired (U = 1.5*log10(58.12/57.11) = 0.011 -- no census, no
+        refusal) and ONLY the sensor can speak. The small gas H also takes
+        library thermo and must NOT matter (outside the window)."""
+        import logging
+        sp = {
+            "A": _spc("CCCC", "A"),
+            "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"), "A_mu2": _spc("C#N", "A_mu2"),
+            "B": _spc("[CH2]CCC", "B"),
+            "H": _spc("[H]", "H"),
+        }
+        sp["A"].thermo = _trivial_nasa(_LIB_COMMENT)   # melt proxy: library
+        sp["B"].thermo = _trivial_nasa(_GAV_COMMENT)   # chain counterparty: GAV
+        sp["H"].thermo = _trivial_nasa(_LIB_COMMENT)   # small gas: library
+        for k in ("A_mu0", "A_mu1", "A_mu2"):
+            sp[k].thermo = _trivial_nasa(_LIB_COMMENT)
+        # gas-CLASSIFIED, proxy-TAGGED, chain-scale (57.11 >= window
+        # 28 + 10 = 38 from the pool config below): physically-melt via the
+        # tag branch of the C3-AMENDED spec-§5.1 class (tag AND MW >= window)
+        sp["B"].is_polymer_proxy = True
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["B"], sp["H"]]
+        mask = np.array([False] * 4 + [True, True], dtype=bool)
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["H"]], **_REV_KIN)
+
+        # LIVENESS PINS: the pair is mass-paired (inside the counterparty
+        # window) and the build must SUCCEED on any head -- only the warning
+        # distinguishes pre/post-change.
+        mw_a = sp["A"].molecule[0].get_molecular_weight() * 1000.0
+        mw_b = sp["B"].molecule[0].get_molecular_weight() * 1000.0
+        assert abs(mw_a - mw_b) <= 28.0 + 10.0
+        # amended-class pin (spec §5.1 C3): B must clear the chain-scale
+        # window, or it would not be physically-melt at all and the sensor
+        # would have no melt-vs-counterparty pair to warn on
+        assert mw_b >= 28.0 + 10.0
+        with caplog.at_level(logging.WARNING):
+            _refstate_rs(core, [rxn], mask,
+                         [_gate_pool_config()], {"A": (1.0, 5.0, 30.0)})
+
+        # THE red assertion: pre-change HEAD emits no provenance warning.
+        assert any("THERMO REFERENCE-STATE PROVENANCE" in r.getMessage()
+                   for r in caplog.records), (
+            "mixed library-vs-GAV provenance among chain-scale counterparties "
+            "went unwarned (the spec-§5.3 decoupling-fingerprint sensor is "
+            "absent)"
+        )
