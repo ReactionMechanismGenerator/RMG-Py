@@ -394,6 +394,121 @@ gate is proxy-relative, scission routing keys on `is_end_group_reaction`, and
 the conditional DP backstop (reclassify-toward-chip when proxy repeat-count >
 threshold AND piece DP < threshold) only activates for longer proxies; NO backstop code exists today — the condition is specified for the future longer-proxy work and its dormancy is pinned by `test_backstop_dormant_under_trimer_proxy`.
 
+### 5.2 Thermo reference-state invariant + tripwire (2026-06-11)
+
+> **Invariant (normative): per species, per reaction side, the thermo
+> reference state must match the phase residence.**
+
+**Corollary — why the CURRENT treatment is valid.** Every species today
+carries the gas reference state UNIFORMLY (a Polymer's thermo is its trimer
+proxy's gas-phase GAV; there is no condensed-phase/solvation correction
+anywhere in the polymer path). The single thermo-sensitive live path is Keq
+(`kb = kf/Keq` for reversible pool-touching reactions, polymer.pyx
+`generate_rate_coefficients`); the same NASA polynomials are exported in
+chem.yaml and consumed verbatim by TA's identical Keq recipe — one treatment
+serves both consumers. Measured on the EPDM deck (2026-06-11, T = 1000 K):
+26 of 28 reversible reactions cross the phase boundary, each carrying a
+latent per-reaction reference-state term of |log₁₀ F_ref| = 11.57 decades —
+which cancels almost exactly (residual ≤ 0.03 decades) because the phase
+split cuts through chemically-identical same-mass pairs (`epdm(2)`
+condensed; its same-length C₁₅H₃₁ abstraction radical gas-classified) and
+BOTH carry full gas translational entropy in their NASA polynomials. 11.57
+decades is the latent mismatch between phase classification and thermo
+reference, currently neutralized by pairwise cancellation — **not** a
+current error in kb. The current deck is correct.
+
+**The cancellation is structural, not coincidental.**
+`estimate_radical_thermo_via_hbi` (rmgpy/data/thermo.py) saturates the
+radical and runs the SAME stable-thermo estimator on the saturated structure
+— which for the abstraction radical IS the trimer molecule the proxy's GAV
+runs on. No library carries a C15 branched alkane, so both sides resolve
+through the same GAV evaluation of the same parent; the radical differs only
+by local HBI ΔS + symmetry. The two reference states track each other by
+construction under thermo-library changes, with ONE named decoupling
+scenario: a future library that hits the saturated parent or the radical
+directly, but not both — exactly the fingerprint (mixed library-vs-GAV
+provenance among chain-scale counterparties) the provenance sensor warns on.
+
+**The partial-fix cliff.** Violating the invariant uniformly is safe;
+violating it PARTIALLY injects up to ~11.6 decades into Keq. The
+catastrophic edit is the *well-intentioned* one: a competent person sees a
+gas reference on a condensed species and "fixes" it for the condensed set
+alone, decapping kb on every boundary-crossing reaction (1e-5 → ~1e6 s⁻¹).
+**The gas reference state on a condensed chain is load-bearing, not a bug to
+fix in isolation.** Any melt-reference work must move the WHOLE
+physically-melt class (and its gas-classified same-mass counterparties)
+consistently — that is the full melt-consistency item, deliberately deferred
+(rejected as negative expected value while no deck has genuine unpaired
+volatilization chemistry), gated on the census below, and switched on
+per-deck via `allow_unpaired_reference_state` only after the thermo actually
+handles it.
+
+**The tripwire** (`_reference_state_tripwire`, `rmgpy/solver/polymer.pyx`;
+runs inside `initialize_model` after the archetype demotion pass, before any
+kb is computed, on every rebuild — spawned daughters are checked
+automatically). Per reversible CORE reaction, over the *physically-melt*
+participants: condensed (`gas_species_mask` False) unconditionally, OR
+`is_polymer_proxy`-tagged AND at chain-scale MW — at or above the SAME
+window the provenance sensor uses (largest pool monomer MW + 10 g/mol
+slack; one definition, two uses). The MW conjunct is part of the CLASS
+definition: a stale blanket tag on a small gas species (H₂ on every
+proxy-touching reaction — the family.py over-tagging fingerprint) simply
+fails the conjunct and is excluded, silently and correctly; a
+`_assert_chain_scale_melt_member` leak guard raises a loud CLASSIFICATION
+error if such a species ever reaches the melt sum, so a future membership
+refactor can never misattribute the leak as a thermo refusal.
+
+```
+U = |Σ_products,melt S_trans(M_i, T) − Σ_reactants,melt S_trans(M_i, T)| / (R·ln10)
+    + |Δn_melt| · log10(P°/(R·T·C°))        [decades]
+```
+
+with S_trans the exact Sackur–Tetrode translational entropy from MW at the
+system T (evaluated at P° = 1e5 Pa) and **C° = 1 mol/m³** the standard
+concentration that makes the logarithm's argument dimensionless — at 1000 K
+the C° term is 1.08 decades; omit C° in a re-derivation in other units and
+the formula merely looks wrong. Paired same-mass chains cancel in the signed
+sum exactly as they do in the real thermo; no pairing optimization is
+needed.
+
+- **Census-log at U > 0.5** (above the measured benign ceiling of 0.33):
+  `THERMO REFERENCE-STATE CENSUS` warnings plus the engine's
+  `reference_state_census` / `reference_state_max_decades` attributes. The
+  census is the readiness sensor and the requirements log (which reaction
+  classes, how many decades) for the eventual melt-reference work.
+- **Refuse at U > 3.0**: `ValueError` listing the offending reactions and
+  carrying the cliff sign inline. Override: input-file knob
+  `allow_unpaired_reference_state=True` (`hybridPolymerReactor` argument) —
+  the deck author's conscious assertion; the census still logs. Deferred
+  hook on record: when the override is first used on a real deck, surface it
+  to downstream consumers as an additive `conventions` key in the artifact
+  (no `recipe_revision` bump for the flag itself); until then the TA
+  handoff-back notes it.
+- **Provenance sensor:** warns (`THERMO REFERENCE-STATE PROVENANCE`) on
+  mixed library-vs-GAV thermo provenance among *chain-scale counterparties*
+  — melt participants plus gas participants whose MW lies within ~one
+  monomer (largest pool monomer MW + 10 g/mol slack) of a melt participant
+  in the same reaction. Deliberately NARROW: H₂'s reference state is simply
+  correct and its provenance is irrelevant to the invariant; sweeping small
+  co-reactants in would warn on all 26 healthy EPDM reactions on day one —
+  a false-positive storm whose alarm fatigue would re-arm the landmine.
+
+**Rotation is omitted from U — robust by bimodality, escalation on record.**
+The measured U distribution is bimodal with a four-decade gap (benign
+≤ 0.33, pathological ≥ ~10, nothing between), and the bounded rotational
+term (+1.6–3.1 decades) has the same sign where it matters (for Δn_melt ≠ 0
+an extra whole species' worth of S_trans and S_rot ADD; sign disagreement is
+possible only in the near-cancelling regime where both are tiny), so it
+cannot flip a decision against the bounds. **Escalation trigger:** if a
+census ever populates the 1–5 decade band, that is the trigger to compute
+rotation into U properly (two-sided bracket: refuse on translational-only,
+census on translational + worst-case rotational). The 0.5–3.0 band is
+deliberately wide and deliberately empty on today's measurements; anything
+that ever lands in it is news.
+
+Full measurement + decision record:
+`docs/superpowers/specs/2026-06-11-thermo-reference-state-tripwire-design.md`.
+
 ## 6. Sidecar JSON schema
 
 > **SUPERSEDED for schema ≥ 2.0:** the sidecar is now schema 2.0 — envelope,
@@ -558,6 +673,17 @@ Each numbered step is its own commit. The synthetic unit test from step 1 acts a
     bit-exact legacy behavior, and the end-anchor detector (§11) migrates
     exactly these reactions to DISCRETE_CHIP, where the exhaustion throttle
     protects them. The unprotected population shrinks by design. (A4)
+15. **Thermo reference states are uniformly gas, including on condensed
+    chains** — valid by the structural pairwise cancellation documented in
+    §5.2, and guarded by the build-time tripwire (census U > 0.5 / refuse
+    U > 3.0 / provenance sensor). Fixing the reference state for the
+    condensed set ALONE is the catastrophic edit (~11.6 decades into every
+    boundary-crossing Keq) — read §5.2 before touching polymer thermo. Full
+    melt consistency is deliberately deferred until a deck has genuine
+    unpaired volatilization chemistry (the census is the readiness sensor).
+    Interacts with A3 unchanged: a proxy-tagged species that is genuinely
+    volatile is a classification question for that item, not this one.
+    (2026-06-11)
 
 ## 11. Open items for follow-up
 
