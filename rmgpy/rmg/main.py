@@ -1033,7 +1033,17 @@ class RMG(util.Subject):
                         engine = getattr(reaction_system, "solver", None) or reaction_system
                         if callable(getattr(engine, "spawn_gate_flux_snapshot", None)):
                             try:
-                                self.reaction_model.polymer_flux_snapshot = engine.spawn_gate_flux_snapshot()
+                                # Census enrichment (item #14a): the engine
+                                # has no ledger, so the stash passes per-pool
+                                # motif counts (ledger entries with >=1
+                                # representative attributed to the pool) for
+                                # the SPAWN-GATE ATTRIBUTION CENSUS line.
+                                motif_counts = {}
+                                for _entry in (getattr(self.reaction_model, "polymer_motif_ledger", None) or []):
+                                    for _pl in {pl for (_lbl, pl) in getattr(_entry, "representatives", [])}:
+                                        motif_counts[_pl] = motif_counts.get(_pl, 0) + 1
+                                self.reaction_model.polymer_flux_snapshot = engine.spawn_gate_flux_snapshot(
+                                    motif_counts_by_pool=motif_counts)
                                 self.reaction_model.polymer_flux_snapshot_iteration = self.reaction_model.iteration_num
                             except Exception as exc:
                                 self.reaction_model.polymer_flux_snapshot = None

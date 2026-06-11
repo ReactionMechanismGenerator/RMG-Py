@@ -68,6 +68,19 @@ from rmgpy.solver.base import ReactionSystem
 
 
 SMALL_EPS = 1e-30
+# Attribution trust floor multiplier (item #14a, spec 2026-06-11 §2/§3):
+# trust = max(SMALL_EPS, ATTRIBUTION_TRUST_K * atol_mu0). K = 100 buys ~two
+# decades of separation between the integrator's own error budget (the atol
+# on the pool's mu0 slot) and what the spawn-gate snapshot will TRUST as an
+# E[n] denominator — a margin decision on record (like the thermo bounds),
+# not a default. Tolerance-anchored on purpose: any absolute mole constant
+# is wrong across deck scales (a ~10 mg TGA sample at Mn ~1e4-1e5 g/mol puts
+# a whole physical deck's mu0 at ~1e-10-1e-9 mol). SMALL_EPS itself is
+# untouched and keeps its job as the solver's REALIZABILITY clamp; ONLY the
+# gate snapshot's attribution distrusts the band between them — the gate
+# deliberately distrusts what the solver still legally computes (two
+# constants, two jobs).
+ATTRIBUTION_TRUST_K = 100.0
 LN_EXP_OVERFLOW_GUARD = 700.0
 TAIL_CONC_MIN = 1e-9  # Minimum concentration (mol/m^3) to actuate handshake
 
@@ -1097,7 +1110,7 @@ class HybridPolymerSystem(ReactionSystem):
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
 
-    def spawn_gate_flux_snapshot(self):
+    def spawn_gate_flux_snapshot(self, motif_counts_by_pool=None):
         """Engine half of the mass-flux spawn gate.
 
         Spec: docs/superpowers/specs/2026-06-10-mass-flux-spawn-gate-design.md
@@ -1116,9 +1129,21 @@ class HybridPolymerSystem(ReactionSystem):
            overwrite would misattribute gate flux; the main.py caller turns
            the raise into warn + None snapshot -> the gate defers.
         2. ``pool_stats``: dict pool label -> ``(E_n, monomer_mw_g_mol)``
-           with ``E_n = y[mu1]/y[mu0] if y[mu0] > SMALL_EPS else 0.0`` (the
-           tail_mean guard idiom; errs toward deferral — mu0 exhausted ->
-           g_i = 0 -> the gate defers).
+           with ``E_n = y[mu1]/y[mu0] if y[mu0] > trust else 0.0`` where
+           ``trust = max(SMALL_EPS, ATTRIBUTION_TRUST_K * atol_mu0)`` is the
+           ATTRIBUTION TRUST FLOOR (item #14a): mu0 at or below the
+           integrator's own noise floor cannot substantiate a mass
+           attribution, so the band (SMALL_EPS, trust] zeroes E_n (the band
+           defers) and logs a ``SPAWN-GATE ATTRIBUTION CENSUS`` warning once
+           per snapshot per pool. atol_mu0 is the pool's mu0-slot entry when
+           the tolerance is a vector, the scalar atol otherwise. mu0
+           exhausted (<= SMALL_EPS) still defers SILENTLY (unchanged). The
+           solver's own E[n] consumers and the residual keep SMALL_EPS
+           realizability semantics — errs toward deferral either way.
+           ``motif_counts_by_pool`` (optional dict pool label -> int) lets
+           the main.py stash report in the census line how many ledger
+           motifs currently attribute to the zeroed pool (the engine has no
+           ledger; the caller does).
         3. ``proxy_event_mass_total``: float — sum of
            ``gross_j * E_n[pool(j)] * mw[pool(j)]`` over CANONICAL pool
            proxies (``species_to_pool_indices[j] != -1 and is_pool_proxy[j]``
@@ -1142,9 +1167,16 @@ class HybridPolymerSystem(ReactionSystem):
         if stp is None or prod is None or y is None:
             return gross, pool_stats, proxy_event_mass_total
         n_core = self.num_core_species
-        # Live per-pool stats.
+        # Live per-pool stats, gated by the ATTRIBUTION TRUST FLOOR
+        # (item #14a, spec 2026-06-11 §2/§3): per-pool mu0-slot atol when
+        # the tolerance is a vector (the floor is PER-POOL — a deck mixing
+        # large and trace pools gets per-pool trust, a feature), scalar atol
+        # otherwise. atol_array unavailable (snapshot before
+        # initialize_model) -> atol_mu0 = 0 -> the floor degenerates to
+        # SMALL_EPS (pre-floor behavior, honest).
         n_pools = len(self.polymer_pools)
         e_n_by_pool = [0.0] * n_pools
+        atol_arr = getattr(self, "atol_array", None)
         for p in range(n_pools):
             i0 = self.pool_mu0_indices[p]
             i1 = self.pool_mu1_indices[p]
@@ -1152,7 +1184,40 @@ class HybridPolymerSystem(ReactionSystem):
                 continue
             mu0 = y[i0]
             mu1 = y[i1]
-            e_n_by_pool[p] = mu1 / mu0 if mu0 > SMALL_EPS else 0.0
+            if atol_arr is None:
+                atol_mu0 = 0.0
+            elif np.ndim(atol_arr) == 0:
+                atol_mu0 = float(atol_arr)
+            elif i0 < len(atol_arr):
+                atol_mu0 = float(atol_arr[i0])
+            else:
+                atol_mu0 = float(np.max(atol_arr))
+            trust = max(SMALL_EPS, ATTRIBUTION_TRUST_K * atol_mu0)
+            if mu0 > trust:
+                e_n_by_pool[p] = mu1 / mu0
+            elif mu0 > SMALL_EPS:
+                # The distrust band (SMALL_EPS, trust]: integrator-noise-
+                # scale mu0. Zero-out is the honest measurement ("this pool
+                # cannot substantiate any mass attribution this iteration"),
+                # drags the window statistic down, and preserves the
+                # subsystem asymmetry: under-attribution defers, never
+                # falsely spawns. The census line is the greppable reason a
+                # deck's spawns mysteriously defer AND the standing sensor
+                # for the floor ever biting legitimate chemistry (the
+                # rejected-absolute-constant failure mode, made observable).
+                n_motifs = 0
+                if motif_counts_by_pool:
+                    n_motifs = int(motif_counts_by_pool.get(
+                        self.polymer_pools[p].label, 0))
+                logging.warning(
+                    "SPAWN-GATE ATTRIBUTION CENSUS: pool %s mu0=%.6e is in "
+                    "the distrust band (SMALL_EPS=%.0e < mu0 <= trust "
+                    "floor=%.6e = max(SMALL_EPS, %.0f * atol_mu0=%.6e)); "
+                    "E[n] attribution zeroed for this snapshot; ledger "
+                    "motifs attributed to this pool: %d.",
+                    self.polymer_pools[p].label, mu0, SMALL_EPS, trust,
+                    ATTRIBUTION_TRUST_K, atol_mu0, n_motifs)
+            # mu0 <= SMALL_EPS: exhausted/empty -> 0.0 silently (unchanged).
         for p in range(n_pools):
             pool = self.polymer_pools[p]
             mw = float(getattr(pool, "monomer_mw_g_mol", 0.0) or 0.0)

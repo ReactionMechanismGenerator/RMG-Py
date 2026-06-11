@@ -28,6 +28,7 @@
 ###############################################################################
 
 import dataclasses
+import logging
 import math
 
 import numpy as np
@@ -1954,11 +1955,6 @@ class TestAttributionTrustFloor:
     # trust floor is max(1e-30, 100 * 1e-16) = 1e-14 on every slot.
     TRUST_FLOOR = 100.0 * 1e-16
 
-    @pytest.mark.xfail(strict=True,
-                       reason="RED until the attribution trust floor lands "
-                              "(item #14a Task 2): mu0 in the noise band "
-                              "passes the SMALL_EPS guard and mu1/mu0 "
-                              "launders a huge E[n] into pool_stats")
     def test_band_mu0_zeroes_snapshot_e_n(self):
         """T1 (band explosion, spec §6): a pool with mu0 inside
         (SMALL_EPS, K*atol] MUST report E[n] = 0.0 in pool_stats."""
@@ -1999,6 +1995,152 @@ class TestAttributionTrustFloor:
         # either, and gross stays a raw production record.
         assert proxy_total == 0.0
         assert gross["A"] > 0.0
+
+    def test_two_constants_two_jobs_divergence(self):
+        """T3 (spec §6): on the SAME band state the snapshot reports
+        E[n] = 0 while the solver's own E[n] machinery (and the residual)
+        still compute with SMALL_EPS realizability semantics — the gate
+        distrusts what the solver still legally computes."""
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0e-20, 1.0e-12, 1.0e-3))
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.all(np.isfinite(dn_dt))  # the solver legally evaluates
+
+        # Solver-side E[n]: _chain_bundle's uniform pick keeps the SMALL_EPS
+        # realizability guard — mu0 = 1e-20 is NOT "too empty to move a
+        # chain" (b0 = 1) and b1 is the raw 1e8 ratio, legally computed.
+        b0, b1, b2, mu2_ok = rs._chain_bundle(0, rs.y, 1.0, True)
+        assert b0 == 1.0
+        assert b1 == pytest.approx(1.0e8)
+
+        # Gate-side: the snapshot distrusts the SAME state.
+        _, pool_stats, _ = rs.spawn_gate_flux_snapshot()
+        assert pool_stats["A"][0] == 0.0
+
+    def test_all_pools_in_band_fraction_zero_no_nan(self):
+        """T4 (spec §6): every pool in the band -> motif numerator AND the
+        whole denominator collapse to zero -> _spawn_gate_fraction returns
+        0.0 via the polymer.py:2387 `denominator <= 0.0` guard — fraction
+        0.0, defer, no NaN. The deep-conversion TGA-tail regime, pinned
+        end-to-end."""
+        from rmgpy.polymer import (MotifLedgerEntry, _spawn_gate_fraction,
+                                   discover_repeat_motif)
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0e-20, 1.0e-12, 1.0e-3))
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        snapshot = rs.spawn_gate_flux_snapshot()
+        gross, pool_stats, proxy_total = snapshot
+        assert gross["R"] > 0.0           # flux exists...
+        assert pool_stats["A"][0] == 0.0  # ...but the only pool is distrusted
+        assert proxy_total == 0.0
+
+        cand = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+        motif = discover_repeat_motif(cand.molecule[0])
+        assert motif is not None
+        entry = MotifLedgerEntry(motif=motif, accumulator_key="motif-0",
+                                 representatives=[("R", "A")])
+        fraction = _spawn_gate_fraction(entry, [entry], snapshot)
+        assert not math.isnan(fraction)
+        assert fraction == 0.0
+
+    def test_dying_pool_trajectory_phases_to_zero_before_small_eps(self):
+        """T5 (spec §6): a pool draining monotonically through the band
+        records fractions that collapse to 0 while mu0 is still decades
+        ABOVE SMALL_EPS, and the sum/3 window statistic shows phased decay
+        (zero records mix in as the pool crosses the floor) — decay through
+        the window, not a cliff at SMALL_EPS."""
+        from rmgpy.polymer import (MassFluxAccumulator, MotifLedgerEntry,
+                                   _spawn_gate_fraction, discover_repeat_motif)
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+        # Cycle 1 starts trusted: mu0 = 1e-6 >> trust floor 1e-14, E[n] = 50.
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0e-6, 5.0e-5, 3.0e-3))
+
+        cand = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+        motif = discover_repeat_motif(cand.molecule[0])
+        entry = MotifLedgerEntry(motif=motif, accumulator_key="motif-0",
+                                 representatives=[("R", "A")])
+        acc = MassFluxAccumulator(window=3)
+
+        # mu0 ladder: trusted, then three band states — ALL above SMALL_EPS.
+        mu0_ladder = [1.0e-6, 1.0e-16, 1.0e-18, 1.0e-20]
+        fractions, stats = [], []
+        for it, mu0 in enumerate(mu0_ladder, start=1):
+            rs.y[1] = mu0
+            # band mu1 = 1e-12 -> raw ratio up to 1e8 (would have exploded
+            # pre-floor); trusted cycle keeps the physical E[n] = 50.
+            rs.y[2] = mu0 * 50.0 if it == 1 else 1.0e-12
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+            assert float(rs.y[1]) > 1.0e-30  # NEVER reaches SMALL_EPS
+            snapshot = rs.spawn_gate_flux_snapshot()
+            f = _spawn_gate_fraction(entry, [entry], snapshot)
+            acc.record(entry.accumulator_key, f, it)
+            fractions.append(f)
+            stats.append(acc.gate_statistic(entry.accumulator_key))
+
+        # Cycle 1 (trusted): a genuine nonzero fraction in (0, 1].
+        assert 0.0 < fractions[0] <= 1.0
+        # Cycles 2-4 (band): fractions collapse to EXACTLY 0 long BEFORE
+        # mu0 <= SMALL_EPS.
+        assert fractions[1:] == [0.0, 0.0, 0.0]
+        # Window statistic: phased decay — monotone nonincreasing, holding
+        # f1/3 while the trusted record remains in the window, reaching 0
+        # only when it ages out. No cliff at the floor: the trusted record
+        # must SURVIVE in the window through cycles 2-3 (a band entry that
+        # wiped the history would show [f1/3, 0, 0, 0] and is ruled out).
+        assert stats[0] == pytest.approx(fractions[0] / 3.0)
+        assert stats[1] == pytest.approx(stats[0])
+        assert stats[2] == pytest.approx(stats[0])
+        assert all(s2 <= s1 + 1e-15 for s1, s2 in zip(stats, stats[1:]))
+        assert stats[-1] == 0.0
+
+    def test_census_line_once_per_snapshot_and_silent_when_trusted(self, caplog):
+        """T6 (spec §6): the band pool emits EXACTLY ONE
+        SPAWN-GATE ATTRIBUTION CENSUS warning per snapshot, carrying pool
+        label / mu0 / trust floor / motif count; a trusted-mu0 build emits
+        none; an EXHAUSTED pool (mu0 <= SMALL_EPS) emits none either —
+        distinguishable from genuinely-zero flux."""
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
+        rxn.polymer_flux_archetype = 1
+
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0e-20, 1.0e-12, 1.0e-3))
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        with caplog.at_level(logging.WARNING):
+            caplog.clear()
+            rs.spawn_gate_flux_snapshot(motif_counts_by_pool={"A": 2})
+        census = [r for r in caplog.records
+                  if "SPAWN-GATE ATTRIBUTION CENSUS" in r.getMessage()]
+        assert len(census) == 1  # once per snapshot per pool
+        msg = census[0].getMessage()
+        assert "pool A" in msg
+        assert "1.000000e-20" in msg  # mu0
+        assert "1.000000e-14" in msg  # trust floor = 100 * atol 1e-16
+        assert "motifs attributed to this pool: 2" in msg
+
+        # Trusted mu0: silent.
+        rs2 = _one_pool_gate_rs(rxn, core, mask, (1.0, 5.0, 30.0))
+        rs2.residual(0.0, rs2.y, np.zeros_like(rs2.y))
+        with caplog.at_level(logging.WARNING):
+            caplog.clear()
+            rs2.spawn_gate_flux_snapshot()
+        assert not any("SPAWN-GATE ATTRIBUTION CENSUS" in r.getMessage()
+                       for r in caplog.records)
+
+        # Exhausted mu0 (<= SMALL_EPS): silent too — deferral was already
+        # honest there; the census marks ONLY the distrust band.
+        rs3 = _one_pool_gate_rs(rxn, core, mask, (0.0, 1e-25, 1e-20))
+        rs3.residual(0.0, rs3.y, np.zeros_like(rs3.y))
+        with caplog.at_level(logging.WARNING):
+            caplog.clear()
+            rs3.spawn_gate_flux_snapshot()
+        assert not any("SPAWN-GATE ATTRIBUTION CENSUS" in r.getMessage()
+                       for r in caplog.records)
 
 
 class TestThermoReferenceStateTripwire:
