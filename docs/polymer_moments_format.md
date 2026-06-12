@@ -253,6 +253,19 @@ this artifact follow a recipe the consumer does not implement); accept its
 absence in artifacts written before this marker existed (treat as the
 pre-marker recipe).
 
+Consumer guidance — melt-class reconstruction is fail-loud-incomplete: a
+consumer rebuilding the physically-melt class (the `is_polymer_proxy` tags)
+from `reactions[]` entries recovers it ONLY for participants of entry-listed
+reactions. Tags whose generation-world source is not an entry-listed reaction
+(explicit-oligomer reactions, spawned unconfigured daughter proxies,
+edge-reaction tag sources) are lost, and the loss is FAIL-LOUD: the thermo
+reference-state tripwire refuses (U ≈ 11 decades, false-unpaired chains) on a
+deck whose generation run was silent — never a silent acceptance. Diagnose
+such a consumer-only REFUSAL as a melt-classification divergence (compare the
+consumer's reconstructed melt class against the generating run's), not as a
+thermo problem — do not respond by touching reference states. This paragraph
+exists so the next such refusal is not misdiagnosed.
+
 ## 9. Conservation invariants (assertable, per-channel qualified)
 
 Over the discrete-reaction subset only (no channels active):

@@ -52,6 +52,7 @@ import numpy as np
 import yaml
 
 from rmgpy.kinetics import Arrhenius
+from rmgpy.molecule.element import get_element
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction
 from rmgpy.solver.polymer import (
@@ -88,6 +89,16 @@ def _species_from_yaml(entry):
                       Tmax=(float(tranges[-1]), "K"))
     spc = Species(label=name, thermo=thermo)
     spc.molecule = []  # consumer-world species: label + thermo only
+    # Structure does not cross the artifact boundary, so MW must come from
+    # artifact fields too: the chem.yaml elemental composition. The solver's
+    # thermo reference-state tripwire reads this species-level quantity.
+    mw_kg_mol = 0.0
+    for symbol, count in (entry.get("composition") or {}).items():
+        if symbol == "E":
+            continue  # electron count: negligible mass; not a get_element symbol
+        mw_kg_mol += get_element(symbol).mass * float(count)  # .mass is kg/mol
+    if mw_kg_mol > 0.0:
+        spc.molecular_weight = (mw_kg_mol, "kg/mol")
     return spc
 
 
@@ -164,6 +175,44 @@ def _restamp_and_extend(artifact, species, reactions):
         rxn.polymer_flux_archetype = arch
         rxn.is_end_group_reaction = (e["scaling"] == "mu0")
         rxn.polymer_chip_units = int(e.get("params", {}).get("a", 0))
+        # Physically-melt classification, like MW, must cross the artifact
+        # boundary: the reference-state tripwire's tag branch reads
+        # is_polymer_proxy, which generation world stamps by blanket-tagging
+        # every participant of a proxy-touching reaction (family.py:1657).
+        # Reproduce that fingerprint from the artifact's proxy_* fields; the
+        # tripwire's chain-scale MW conjunct (part of the class DEFINITION)
+        # filters out small co-participants (H2, H...) identically to
+        # generation world.
+        #
+        # MEMBERSHIP DIVERGENCE (known, fail-loud). This reconstruction is
+        # NOT equivalent to generation-world membership:
+        #   restorable    -- tags whose source is an ENTRY-LISTED reaction
+        #                    (participants of artifact reactions[] entries
+        #                    with non-empty proxy_* fields), i.e. exactly the
+        #                    fingerprint above.
+        #   NOT restorable -- three divergence classes whose tag source never
+        #                    reaches the artifact: (1) explicit-oligomer
+        #                    reactions (oligomer participants are not pool
+        #                    proxies, so no entry is compiled), (2) spawned
+        #                    UNCONFIGURED daughter proxies (registry pools
+        #                    without solver configs; their reactions are not
+        #                    entry-listed under configured_pools), and
+        #                    (3) edge-reaction tag sources (only CORE
+        #                    reactions compile to entries).
+        # Direction is FAIL-LOUD: a chain-scale species that loses its tag
+        # here is treated as gas, unpairs its condensed counterparty, and the
+        # tripwire REFUSES (U ~ 11.4 decades) on chemistry the generation-
+        # world tripwire scored 0.0 -- a spurious refusal, never a silent
+        # acceptance. (Silent pair-down would require a generation run that
+        # used allow_unpaired_reference_state AND a non-family pool-touching
+        # reaction: contrived.) The robust alternative -- a per-species
+        # is_polymer_proxy flag carried IN the artifact -- is a schema
+        # addition awaiting a design decision; until then, diagnose a
+        # consumer-only refusal as melt-classification divergence (see
+        # docs/polymer_moments_format.md §8), not as a thermo problem.
+        if e.get("proxy_reactants") or e.get("proxy_products"):
+            for s in rxn.reactants + rxn.products:
+                s.is_polymer_proxy = True
         if e["kinetics"] is not None:
             # Belt-and-braces reversibility for listed entries: post-fix
             # chem.yaml records reversibility in the equation arrow
@@ -223,6 +272,11 @@ def build_system_from_artifact(artifact, species, reactions,
             explicit_dp_to_species_index={},
             mu_indices=mu_idx,
             monomer_poly_index=idx[routing] if routing else None,
+            # The tripwire's ONE chain-scale window (and the spawn-gate
+            # snapshot) consume this; without it the consumer-world window
+            # collapses to the bare slack and the tag-branch class drifts
+            # from generation world.
+            monomer_mw_g_mol=float(p.get("monomer_mw_g_mol") or 0.0),
             k_scission=float(p["channels"]["scission"]["A"]),
             k_unzip=float(p["channels"]["unzip"]["A"]),
         ))

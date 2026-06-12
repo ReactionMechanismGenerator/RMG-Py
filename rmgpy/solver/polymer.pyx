@@ -571,8 +571,22 @@ class HybridPolymerSystem(ReactionSystem):
         mws = [0.0] * n_core
         for i in range(n_core):
             spc = core_species[i]
+            # Input contract: consumer-world species carry no structure
+            # (molecule == []); MW arrives via the species-level
+            # molecular_weight quantity, populated by the runner from the
+            # artifact's composition. Prefer it (value_si is kg/molecule);
+            # the structure branch below is a defensive fallback (normally
+            # unreachable: the molecular_weight property lazily derives from
+            # the structure when one exists -- species.py:278-282 -- so the
+            # quantity path above short-circuits it).
             mol_list = getattr(spc, "molecule", None)
-            mws[i] = mol_list[0].get_molecular_weight() if mol_list else 0.0
+            mw_q = getattr(spc, "molecular_weight", None)
+            if mw_q is not None and mw_q.value_si > 0.0:
+                mws[i] = mw_q.value_si * constants.Na
+            elif mol_list:
+                mws[i] = mol_list[0].get_molecular_weight()
+            else:
+                mws[i] = 0.0
             # Physically-melt CLASS (spec §5.1, C3-AMENDED): the condensed
             # branch (pool-configured by input) unconditionally; the tag
             # branch only at chain-scale MW. The MW conjunct is part of the
@@ -608,6 +622,22 @@ class HybridPolymerSystem(ReactionSystem):
             # without the conjunct), raise the CLASSIFICATION error loudly
             # instead of computing a large U and misattributing it to thermo.
             for k in melt_r + melt_p:
+                # Log-domain guard (input contract): a melt participant with
+                # no resolvable molar mass would send mw <= 0 into
+                # _sackur_tetrode_s_trans's math.log. A melt chain with no
+                # structure is the tripwire's MAIN case (consumer world), not
+                # an edge case -- never skip it silently, and never let a raw
+                # 'math domain error' escape.
+                if mws[k] <= 0.0:
+                    raise ValueError(
+                        "THERMO REFERENCE-STATE TRIPWIRE (input contract): no "
+                        f"molar mass available for melt participant "
+                        f"'{core_species[k].label}' (molecule list empty and "
+                        "species-level molecular_weight unset); consumer-world "
+                        "species must carry molecular_weight populated from "
+                        "the artifact's composition/mw fields -- this is an "
+                        "input-contract violation, NOT a thermo problem; do "
+                        "not respond by touching reference states.")
                 _assert_chain_scale_melt_member(
                     core_species[k].label, mws[k], bool(mask[k]),
                     chain_window_kg)

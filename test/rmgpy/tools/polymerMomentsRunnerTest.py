@@ -285,10 +285,6 @@ class TestReferenceStateTripwireConsumerWorld:
             json.dump(artifact, fh, indent=2, default=str)
         return chem_path, art_path
 
-    @pytest.mark.xfail(strict=True,
-                       reason="item 15 residual (iii): tripwire derives MW from "
-                              "molecule[]; consumer-world species crash "
-                              "_sackur_tetrode_s_trans with math domain error")
     def test_tripwire_runs_silently_on_consumer_world_species(
             self, reversible_melt_deck, caplog):
         chem_path, art_path = reversible_melt_deck
@@ -333,3 +329,165 @@ class TestReferenceStateTripwireConsumerWorld:
         assert not rs.gas_species_mask[idx["PR"]]
         assert not rs.gas_species_mask[idx["PH"]]
         assert rs.reference_state_max_decades < 0.5
+
+    @pytest.fixture
+    def entry_listed_melt_deck(self, tmp_path):
+        """A deck whose artifact HAS a ``reactions[]`` entry (unlike
+        ``reversible_melt_deck``, whose melt reaction has no pool participant
+        and so compiles to zero entries). The EPDM-shaped reversible capture
+
+            PR + C2H5 <=> poly        (C15H31 + C2H5 -> C17H36, balanced)
+
+        has the POOL PROXY itself as a product, so the artifact compiler
+        (rmgpy/polymer.py compile_polymer_reaction_entries) emits an entry,
+        and the runner's _restamp_and_extend tag restoration + window plumbing
+        are both LIVE on this deck:
+
+        * PR (C15H31, 211.4 g/mol) is a GAS chain-scale counterparty: it is in
+          the entry's reactants but NOT in proxy_reactants/proxy_products, so
+          its physically-melt membership in the consumer world exists ONLY via
+          the runner's blanket tag restoration. Paired against the condensed
+          proxy (240.5 g/mol) it keeps U ~ 0.08 decades -> SILENT.
+        * C2H5 (29.1 g/mol) sits in the bare-slack..window MW band: above the
+          10 g/mol bare slack the chain window degrades to if the
+          monomer_mw_g_mol plumb is deleted, below the real window
+          (pool monomer C2H4 28.05 + 10 = 38.05 g/mol). With the plumb intact
+          the tag-branch MW conjunct excludes it; without it, C2H5 enters the
+          melt sum and U blows up to ~10 decades -> refusal."""
+        n2 = _spc("N#N", "N2", index=1)
+        et = _spc("C[CH2]", "C2H5")              # ethyl, 29.06 g/mol: band species
+        pr = _spc("[CH2]CCCCCCCCCCCCCC", "PR")   # C15H31, GAS chain radical
+        proxy = _spc("CCCCCCCCCCCCCCCCC", "poly")  # C17H36 pool-proxy species
+        mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+        core = [n2, et, pr, proxy] + mus
+        melt_rxn = Reaction(reactants=[pr, et], products=[proxy],
+                            kinetics=Arrhenius(A=(1.0e3, "m^3/(mol*s)"), n=0.0,
+                                               Ea=(20.0, "kJ/mol"), T0=(1.0, "K")),
+                            reversible=True)
+        data, index_map = generate_cantera_data(core, [melt_rxn],
+                                                return_reaction_index_map=True)
+        chem_path = os.path.join(str(tmp_path), "chem.yaml")
+        with open(chem_path, "w") as fh:
+            yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+
+        pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                       k_scission=1.0, k_unzip=0.0)
+        artifact = build_polymer_moments_artifact(
+            [pool], core_species=core, core_reactions=[melt_rxn],
+            configured_pool_labels=["poly"],
+            condensed_species=mus + [proxy],
+            cantera_index_map=index_map)
+        art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+        with open(art_path, "w") as fh:
+            json.dump(artifact, fh, indent=2, default=str)
+        return chem_path, art_path
+
+    def test_entry_listed_tag_and_window_restorations_keep_tripwire_silent(
+            self, entry_listed_melt_deck, caplog):
+        """Pins BOTH consumer-world restorations on a live entry-listed deck:
+        (1) _restamp_and_extend's is_polymer_proxy tag restoration gives the
+        gas chain counterparty PR its melt membership (neuter it -> PR drops
+        out of the melt sum, the condensed proxy is unpaired, U ~ 11.4 ->
+        refusal); (2) the pools[].monomer_mw_g_mol -> PolymerPoolConfig plumb
+        keeps the ONE chain-scale window at monomer MW + slack (delete it ->
+        the window degrades to the bare 10 g/mol slack, the tagged band
+        species C2H5 enters the melt sum, U ~ 10 -> refusal)."""
+        chem_path, art_path = entry_listed_melt_deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        species, reactions = load_chem_yaml(chem_path)
+        by_label = {s.label: s for s in species}
+
+        def mw_g_mol(label):
+            # species-level quantity value_si is kg/molecule (species.py)
+            return by_label[label].molecular_weight.value_si * 6.02214179e23 * 1000.0
+
+        # --- liveness pins (must hold BEFORE the act) ---
+        # 1. the melt reaction IS entry-listed (proxy product 'poly' resolves
+        #    a configured pool), unlike the zero-entry reversible_melt_deck.
+        assert len(artifact["reactions"]) >= 1
+        entry = artifact["reactions"][0]
+        assert entry["cantera"]["equation"] == "PR + C2H5 <=> poly"
+        # 2. PR appears ONLY via reactants, never in the proxy_* lists, and is
+        #    NOT in the condensed set: its melt membership in the consumer
+        #    world exists ONLY via the runner's tag restoration.
+        assert "PR" in entry["reactants"]
+        assert "PR" not in entry["proxy_reactants"] + entry["proxy_products"]
+        assert entry["proxy_products"] == ["poly"]
+        condensed = set(artifact["conventions"]["condensed_species"])
+        assert "PR" not in condensed and "poly" in condensed
+        # 3. window band pins, numeric and self-checking: the REAL chain
+        #    window is pool monomer MW + 10 g/mol slack (polymer.pyx
+        #    REFERENCE_STATE_MW_SLACK_G_MOL); the bare-slack degraded window
+        #    is 10 g/mol. PR must clear the real window (chain-scale);
+        #    C2H5 must sit strictly INSIDE the bare-slack..window band.
+        monomer_mw = artifact["pools"][0]["monomer_mw_g_mol"]
+        assert monomer_mw == pytest.approx(28.05, abs=0.1)
+        real_window = monomer_mw + 10.0
+        assert mw_g_mol("PR") > real_window
+        assert 10.0 < mw_g_mol("C2H5") < real_window
+
+        # --- act: build runs initialize_model -> _reference_state_tripwire.
+        # PR's restored tag pairs it against the condensed proxy (U ~ 0.08);
+        # the plumbed window excludes C2H5. The build must complete SILENTLY.
+        with caplog.at_level(logging.WARNING):
+            rs, core, all_rxns = build_system_from_artifact(
+                artifact, species, reactions,
+                T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+        assert not any("THERMO REFERENCE-STATE" in rec.getMessage()
+                       for rec in caplog.records)
+        idx = {s.label: i for i, s in enumerate(core)}
+        # PR stayed GAS in the mask: its melt-class membership came from the
+        # restored tag, not the condensed branch.
+        assert rs.gas_species_mask[idx["PR"]]
+        assert not rs.gas_species_mask[idx["poly"]]
+        # the tripwire DID sum melt participants on this reaction (max U is
+        # the PR-vs-proxy translational mismatch, nonzero but far below the
+        # 0.5-decade census bound).
+        assert 0.0 < rs.reference_state_max_decades < 0.5
+
+    def test_species_from_yaml_populates_mw_from_composition(self):
+        """The runner sources MW the way every consumer-world computation
+        sources data: from artifact fields. C15H32 hand-computes to
+        15*12.011 + 32*1.00794 = 212.42 g/mol."""
+        from rmgpy.tools.polymer_moments_runner import _species_from_yaml
+        spc = _species_from_yaml({"name": "PH", "composition": {"C": 15, "H": 32}})
+        assert spc.molecule == []
+        assert spc.molecular_weight is not None
+        mw_g_mol = spc.molecular_weight.value_si * 6.02214179e23 * 1000.0
+        assert mw_g_mol == pytest.approx(212.41, abs=0.1)
+
+    def test_unresolvable_melt_mw_raises_contract_violation(self):
+        """Defense-in-depth log-domain guard: a melt participant whose MW
+        cannot be resolved (molecule == [] AND species-level
+        molecular_weight unset) on a reversible reaction must raise the
+        tripwire's input-contract ValueError naming the species -- never a
+        bare 'math domain error', and never a silent skip (a melt chain
+        with no structure is the tripwire's main case)."""
+        from rmgpy.solver.polymer import HybridPolymerSystem
+        rows = [NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, -745.375, 3.35532],
+                               Tmin=(tmin, "K"), Tmax=(tmax, "K"))
+                for tmin, tmax in ((200.0, 1000.0), (1000.0, 6000.0))]
+        ghost = Species(label="GHOST")
+        ghost.molecule = []  # no structure, no molecular_weight: unresolvable
+        ghost.thermo = NASA(polynomials=rows, Tmin=(200.0, "K"), Tmax=(6000.0, "K"))
+        gas = _spc("[CH3]", "G")
+        core = [ghost, gas]
+        mask = np.array([False, True], dtype=bool)  # GHOST is condensed/melt
+        rxn = Reaction(reactants=[ghost], products=[gas],
+                       kinetics=Arrhenius(A=(1.0, "1/s"), n=0.0,
+                                          Ea=(10.0, "kJ/mol"), T0=(1.0, "K")),
+                       reversible=True)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={gas: 0.0}, V_poly=1.0,
+            polymer_pools=[], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={}, termination=[])
+        with pytest.raises(ValueError, match="THERMO REFERENCE-STATE TRIPWIRE") as exc:
+            rs.initialize_model(core, [rxn], [], [])
+        assert "GHOST" in str(exc.value)
+        assert "math domain error" not in str(exc.value)
