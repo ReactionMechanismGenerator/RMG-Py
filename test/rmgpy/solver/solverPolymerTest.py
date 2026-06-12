@@ -3045,3 +3045,49 @@ class TestPhaseGateFluxCensus:
         assert float(np.asarray(rs.edge_reaction_rates_ungated)[0]) > 0.0
         # product-site ghost-flux suppression: no activity lands on A.
         assert float(np.asarray(rs.core_species_rates)[0]) == 0.0
+
+
+class TestPhaseGateStaticCensus:
+    """Spec 2026-06-12 SS3(e) STATIC half (amendment A1): a reaction whose
+    species each reached core on OTHER channels' flux sits core-resident and
+    gate-zeroed without ever crossing the edge on its own flux (the third
+    route -- proven live by the 13 EPDM Gate-A recombinations). Gate
+    verdicts for core reactions are STATIC (masks + event type, no rates),
+    so the census enumerates them once per initialize_model, zero residual
+    cost."""
+
+    def test_static_census_announces_core_gated_reaction_per_rebuild(
+            self, caplog):
+        """T11: B2-shaped reaction placed directly in core_reactions with
+        every participant in core (the third-route end state by
+        construction). Liveness pins: kinetics alive (kf > 0) and the gate
+        verdict genuinely zero under the masks -- the census line can only
+        mean the init-time enumeration ran."""
+        sp = _gate17_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["G"]]
+        mask = [False, False, False, False, True, True]
+        with caplog.at_level(logging.WARNING):
+            rs = _gate17_rs(core, mask, [rxn])
+        lines = _census_lines(caplog)
+        assert len(lines) == 1, lines
+        msg = lines[0]
+        assert "gate=B" in msg
+        assert "static (core, init-time)" in msg
+        assert "no prospectively-condensed product" in msg
+        # pre-demotion NONE(0) -> post-demotion UNRESOLVED(4): the proxy-
+        # touching unstamped reaction is remapped by the init pass; the
+        # static payload carries both ends of the stamp thread.
+        assert "pre-demotion=0" in msg
+        assert "post-demotion=4" in msg
+        # liveness + ownership: kinetics alive, the GATE owns the zero
+        assert float(rs.kf[0]) > 0.0
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert float(np.asarray(rs.core_reaction_rates)[0]) == 0.0
+        # once per rebuild: a SECOND initialize_model re-announces; the same
+        # build never repeats (the enumeration runs exactly once per init).
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            rs.initialize_model(list(core), [rxn], [], [])
+        assert len(_census_lines(caplog)) == 1

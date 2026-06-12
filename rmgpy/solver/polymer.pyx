@@ -1041,6 +1041,11 @@ class HybridPolymerSystem(ReactionSystem):
         # sanity now that gas_species_mask and the reaction index tables are
         # populated. Moments must evolve only via the tail block, never through
         # generic reaction stoichiometry.
+        # RIDER R2 static half (spec SS3(e)): once per rebuild by
+        # construction -- the enumeration runs exactly once per
+        # initialize_model; no keying set needed.
+        self._static_phase_gate_census(core_species, core_reactions)
+
         self.validate_configuration()
 
         # Thermo reference-state tripwire (spec 2026-06-11 §7): runs AFTER
@@ -1338,6 +1343,63 @@ class HybridPolymerSystem(ReactionSystem):
                 tol_move_to_core, decisive,
                 int(self.reaction_pre_demotion_archetype[idx]),
                 int(self.reaction_flux_archetype[idx]), fam)
+
+    def _static_phase_gate_census(self, core_species, core_reactions):
+        """RIDER R2 static half (item 17, spec 2026-06-12 SS3(e), amendment
+        A1): enumerate CORE reactions whose phase-gate verdict is zero and
+        announce each once per rebuild. Covers reactions that arrive
+        core-gated without crossing the edge on their own flux: the third
+        route (independent species promotion -- each participant promoted on
+        other channels' flux) and legacy/restart cores. Gate verdicts for
+        core rows are STATIC -- masks + event type only, no rates -- so this
+        runs at init with zero residual cost; the kinetics loop's bare
+        continue for core-gated rows survives untouched. The gate
+        classification below MUST mirror residual section 6 (the
+        prospective-mask gates) -- keep in sync."""
+        n_core = self.num_core_species
+        ir = self.reactant_indices
+        ip = self.product_indices
+        mask = self.gas_species_mask
+        pmask = self.prospective_gas_mask
+        for i in range(len(core_reactions)):
+            r0, r1, r2 = ir[i, 0], ir[i, 1], ir[i, 2]
+            # Defensive parity with the residual's reactant skips (core
+            # reactions have all-core participants by construction).
+            if r0 == -1 or r0 >= n_core:
+                continue
+            if (r1 != -1 and r1 >= n_core) or (r2 != -1 and r2 >= n_core):
+                continue
+            is_poly_event = ((not mask[r0])
+                             or (r1 != -1 and not mask[r1])
+                             or (r2 != -1 and not mask[r2]))
+            has_condensed_prod = False
+            condensed_labels = []
+            for slot in range(3):
+                p = ip[i, slot]
+                if p == -1:
+                    continue
+                if not pmask[p]:
+                    has_condensed_prod = True
+                    if p < n_core:
+                        condensed_labels.append(core_species[p].label)
+            if (not is_poly_event) and has_condensed_prod:
+                code = 1
+            elif is_poly_event and not has_condensed_prod:
+                code = 2
+            else:
+                continue
+            rxn = core_reactions[i]
+            decisive = (", ".join(condensed_labels) if code == 1
+                        else "no prospectively-condensed product")
+            fam = (getattr(rxn, "family", None)
+                   or getattr(rxn, "label", "") or type(rxn).__name__)
+            logging.warning(
+                "PHASE-GATE FLUX CENSUS: reaction %s gate=%s static (core, "
+                "init-time); decisive=%s; archetype pre-demotion=%d "
+                "post-demotion=%d family=%s",
+                rxn, "A" if code == 1 else "B", decisive,
+                int(self.reaction_pre_demotion_archetype[i]),
+                int(self.reaction_flux_archetype[i]), fam)
 
     def spawn_gate_flux_snapshot(self, motif_counts_by_pool=None):
         """Engine half of the mass-flux spawn gate.
