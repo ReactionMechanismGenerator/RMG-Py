@@ -2589,21 +2589,11 @@ class TestUmbrellaPhaseGateParity:
         return sp, rs_edge, rs_core
 
     @pytest.mark.parametrize("case", [
-        pytest.param("B1_head", marks=pytest.mark.xfail(
-            strict=True,
-            reason="pre-17 HEAD: _check_prod's has_edge_prod exemption waves "
-                   "the maskless edge product through Gate B -- edge 10.0 vs "
-                   "core 0.0 (census probe 1, re-pinned at HEAD 4d667f1af)")),
+        "B1_head",
         "B1_configured",
-        pytest.param("B2_allgas", marks=pytest.mark.xfail(
-            strict=True,
-            reason="pre-17 HEAD: same exemption on the fold-back-less chip "
-                   "-- edge 2.0 vs core 0.0 (census probe 3b)")),
+        "B2_allgas",
         "A_head",
-        pytest.param("A_armed", marks=pytest.mark.xfail(
-            strict=True,
-            reason="pre-17 HEAD: Gate A checks only CORE products -- edge "
-                   "30.068 vs core 0.0 (census probe 2, armed shape)")),
+        "A_armed",
     ])
     def test_umbrella_parity_edge_rate_equals_core_rate(self, case):
         sp, rs_edge, rs_core = self._build_pair(case)
@@ -2713,3 +2703,70 @@ class TestProspectiveMask:
         # the diverging species is NAMED
         with pytest.raises(ValueError, match=r"X"):
             rs.initialize_model(list(core), [], [sp["G"]], [rxn])
+
+
+class TestPhaseGateNonRegression:
+    """Spec 2026-06-12 SS3(c) precision pins: the rewrite kills ONLY the
+    has_edge_prod phase bypass. The reverse-rate concentration-availability
+    hole (:1494-1499 -- vanilla simple.pyx parity, Z6) and the chip
+    exhaustion throttle (mask-free, edge-inclusive by construction) must be
+    provably untouched."""
+
+    def test_reverse_rate_hole_for_edge_products_untouched(self):
+        """An edge product has no concentration in y, so the reverse rate is
+        UNCOMPUTABLE (not phase-forbidden): rr stays 0 however large kb is.
+        Control: the same doctored kb IS live when the product sits in core
+        with state -- proving the pin is not vacuous."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = [False, False, False, False, True]
+        rxn = Reaction(reactants=[sp["X"]], products=[sp["G"]], **_KIN)
+        rs = _gate17_rs(core, mask, [], edge_spcs=[sp["G"]], rxns_edge=[rxn])
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        rate_before = float(np.asarray(rs.edge_reaction_rates)[0])
+        assert rate_before > 0.0  # liveness: ungated gas->gas edge flux
+        rs.kb[0] = 1.0e6  # doctor the reverse coefficient
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert float(np.asarray(rs.edge_reaction_rates)[0]) == \
+            pytest.approx(rate_before, rel=1e-12)
+        # control: product in CORE (gas) with nonzero state -> kb is live
+        rs2 = _gate17_rs(core + [sp["G"]], mask + [True], [rxn])
+        y2 = rs2.y.copy()
+        y2[5] = 0.5  # give G concentration so rr = kb*C(G) > 0
+        rs2.residual(0.0, y2, np.zeros_like(y2))
+        fwd_only = float(np.asarray(rs2.core_reaction_rates)[0])
+        rs2.kb[0] = 1.0e6
+        rs2.residual(0.0, y2, np.zeros_like(y2))
+        assert float(np.asarray(rs2.core_reaction_rates)[0]) < fwd_only
+
+    def test_chip_throttle_edge_core_symmetry_pinned(self):
+        """T8: probe 3's HEAD values pinned -- the canonical DISCRETE_CHIP
+        (fold-back proxy product) is throttled identically at edge and core
+        (2.0 == 2.0), and mu0 = 0 exhausts both to 0.0. The throttle never
+        reads any mask; item 17 must not change it (its config-flip cousin
+        Z4 is item 16's)."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = [False, False, False, False, True]
+
+        def chip_rxn():
+            r = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]],
+                         **_KIN)
+            r.is_end_group_reaction = True
+            r.polymer_flux_archetype = 5  # DISCRETE_CHIP
+            r.polymer_chip_units = 2
+            return r
+
+        for moments, expected in (((1.0, 5.0, 30.0), 2.0),
+                                  ((0.0, 5.0, 30.0), 0.0)):
+            rs_e = _gate17_rs(core, mask, [], edge_spcs=[sp["G"]],
+                              rxns_edge=[chip_rxn()],
+                              moments={"A": moments})
+            rs_c = _gate17_rs(core + [sp["G"]], mask + [True], [chip_rxn()],
+                              moments={"A": moments})
+            rs_e.residual(0.0, rs_e.y, np.zeros_like(rs_e.y))
+            rs_c.residual(0.0, rs_c.y, np.zeros_like(rs_c.y))
+            e = float(np.asarray(rs_e.edge_reaction_rates)[0])
+            c = float(np.asarray(rs_c.core_reaction_rates)[0])
+            assert e == pytest.approx(expected, abs=1e-12)
+            assert c == pytest.approx(expected, abs=1e-12)

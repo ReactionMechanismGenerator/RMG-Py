@@ -1445,6 +1445,16 @@ class HybridPolymerSystem(ReactionSystem):
         n_rxn = len(self.core_reaction_rates)
         n_edge = len(self.edge_species_rates)
 
+        # Item 17 (spec 2026-06-12 SS3(b)): combined-length raise mirroring
+        # the gas_species_mask raise above -- the product gates below index
+        # prospective_gas_mask with raw product slots (core AND edge).
+        if (self.prospective_gas_mask is None
+                or self.prospective_gas_mask.shape[0] != n_core + n_edge):
+            raise ValueError(
+                f"State/Prospective-mask mismatch: n_core+n_edge="
+                f"{n_core + n_edge}, prospective="
+                f"{None if self.prospective_gas_mask is None else self.prospective_gas_mask.shape[0]}")
+
         # 1. Lazy Allocation (Safety check)
         if self._scratch_C_gas is None or len(self._scratch_C_gas) != n_core:
             self._scratch_C_gas = np.zeros(n_core, float)
@@ -1468,6 +1478,7 @@ class HybridPolymerSystem(ReactionSystem):
         C_poly[:] = 0.0
 
         mask = self.gas_species_mask
+        pmask = self.prospective_gas_mask  # gate-input only (rider R3)
         C_gas[mask] = np.maximum(0.0, y[mask]) / V_gas
         C_poly[~mask] = np.maximum(0.0, y[~mask]) / V_poly
 
@@ -1545,35 +1556,45 @@ class HybridPolymerSystem(ReactionSystem):
             prods_phase_ok = True
             has_edge_prod = False
             has_any_prod = False
-            has_poly_core_prod = False
-            has_gas_core_prod = False
+            has_condensed_prod = False
+            gate_code = 0  # 0 = open, 1 = Gate A, 2 = Gate B
 
+            # PROSPECTIVE-MASK GATES (item 17, spec 2026-06-12 SS3(c)). The
+            # phase verdict for EVERY product, core or edge alike, is
+            # prospective_gas_mask[p]; for p < n_core it is bit-identical to
+            # mask[p] by rider R1 (core-prefix parity raise at init), so
+            # CORE-product behavior is unchanged by construction. The old
+            # has_edge_prod PHASE bypass (maskless edge product -> exempt)
+            # is dead: it is what let enlargement promote on flux the
+            # post-promotion model zeroes (the umbrella invariant's mask
+            # projection). has_edge_prod survives ONLY for the reverse-rate
+            # concentration-availability hole below (:rr block) -- an edge
+            # product has no state in y, so rr is UNCOMPUTABLE there; that
+            # is simple.pyx parity (Z6), not a phase verdict.
             def _check_prod(p):
-                nonlocal prods_phase_ok, has_edge_prod, has_any_prod, has_poly_core_prod, has_gas_core_prod
+                nonlocal has_edge_prod, has_any_prod, has_condensed_prod
                 if p == -1:
                     return
                 has_any_prod = True
-                if p < n_core:
-                    if mask[p]:
-                        has_gas_core_prod = True
-                        # gas-event cannot make polymer
-                        if (not is_poly_event) and (not mask[p]):  # unreachable but kept for clarity
-                            prods_phase_ok = False
-                    else:
-                        has_poly_core_prod = True
-                        if (not is_poly_event):
-                            # gas event but polymer product -> disallow
-                            prods_phase_ok = False
-                else:
+                if p >= n_core:
                     has_edge_prod = True
+                if not pmask[p]:
+                    has_condensed_prod = True
 
             _check_prod(p0)
-            if prods_phase_ok: _check_prod(p1)
-            if prods_phase_ok: _check_prod(p2)
+            _check_prod(p1)
+            _check_prod(p2)
 
-            if prods_phase_ok and is_poly_event:
-                if (not has_poly_core_prod) and (not has_edge_prod):
-                    prods_phase_ok = False
+            if (not is_poly_event) and has_condensed_prod:
+                # Gate A: a gas event with ANY prospectively-condensed
+                # product (core or edge) is zeroed.
+                prods_phase_ok = False
+                gate_code = 1
+            elif is_poly_event and (not has_condensed_prod):
+                # Gate B: a poly event with NO prospectively-condensed
+                # product (core or edge) is zeroed.
+                prods_phase_ok = False
+                gate_code = 2
 
             if not prods_phase_ok:
                 continue
