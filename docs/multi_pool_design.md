@@ -21,7 +21,7 @@ We need **dynamic multi-pool spawning**: detect the emergence of a structurally 
 | 2 | Detection algorithm | Hybrid: classify-against-all-pools first; novel-monomer discovery fallback |
 | 3 | Subgraph isomorphism backend | RMG-native `find_subgraph_isomorphisms`, fingerprint-gated by element formula. RDKit only as documented fallback if benchmarks show RMG's pure-Python iso is intractable for the auto-detect inner loop. |
 | 4 | Spawn timing | Between RMG iterations only. Queue spawn intents during iteration; drain → register daughter `_muN` species; solver is rebuilt on the next iteration (no in-place reinit — see §7) |
-| 5 | Conservation | Event-spawn instantiation from triggering product (B.μₖ = N · DPᵏ); ongoing transfer reactions use Schulz-Flory closure |
+| 5 | Conservation | Daughters spawn honest-empty (μ = [0,0,0], item #14a uniform-t=0: the sidecar's `pools[].moments` are t=0 initial conditions, not snapshots); ongoing transfer reactions use Schulz-Flory closure |
 | 6 | Runaway guard | (a) similarity-merge to existing pool first, (b) mass-flux gate ≥1% over N iters, (c) `max_pools` cap (default 5, configurable) |
 | 7 | Daughter end_groups | Inherit parent's. Char-precursor edge differences are a known phase-1 limitation. |
 | 8 | Output contract | Pseudo-species `<pool_label>_mu0/1/2` in chemkin and cantera + sidecar `polymer_pools.json` (single source of truth for pool metadata) |
@@ -94,7 +94,7 @@ OUTPUT: classified_candidates,          # mapping product -> (pool, polymer_clas
 36.        end_groups=parent.end_groups,        # phase-1 inheritance
 37.        triggering_product=product,
 38.        triggering_dp=count_motif_in(product, motif),
-39.        triggering_moles=stoichiometric_amount_of(product),
+39.        # (no moles field — daughters spawn honest-empty, μ=[0,0,0]; item #14a)
 40.    ))
 41. return classified_candidates, spawn_intents
 ```
@@ -255,15 +255,16 @@ input-file pools do NOT route through this gate.
 10.    # Allocate state-vector slots
 11.    mu0_idx, mu1_idx, mu2_idx = state_vector_allocate(3)
 12.    new_pool.mu_indices = (mu0_idx, mu1_idx, mu2_idx)
-13.    # Initialize moments from triggering event
-14.    state[mu0_idx] = intent.triggering_moles
-15.    state[mu1_idx] = intent.triggering_moles * intent.triggering_dp
-16.    state[mu2_idx] = intent.triggering_moles * intent.triggering_dp ** 2
-17.    # Record sidecar metadata
-18.    new_pool.spawn_metadata = {
-19.        "spawn_iteration": current_iteration,
-20.        "triggering_product_smiles": intent.triggering_product.smiles,
-21.        "triggering_dp": intent.triggering_dp,
+13.    # Honest-empty seeding (item #14a): a daughter contains nothing at
+14.    state[mu0_idx] = 0.0           # spawn. The sidecar's pools[].moments
+15.    state[mu1_idx] = 0.0           # are t=0 initial conditions; nothing
+16.    state[mu2_idx] = 0.0           # seeds from the triggering event.
+17.    # Record sidecar metadata (spawn_iteration is a pool attribute,
+18.    #  serialized as the entry's top-level "spawn_iteration" field)
+19.    new_pool.spawn_iteration = current_iteration
+20.    new_pool.spawn_metadata = {
+21.        "triggering_product_smiles": intent.triggering_product.smiles,
+22.        "triggering_dp": intent.triggering_dp,
 22.        "mass_flux_at_spawn": current_motif_flux(intent.monomer),
 23.    }
 24. # NO in-place CVODES resize (see §7). The new pool registers its
@@ -294,7 +295,7 @@ dA.μ₂/dt -= r · ⟨DP²_A⟩         where ⟨DP²_A⟩ = (Schulz-Flory clos
 ```
 
 **Moment effect on B (source):**
-- If B is being created in this event: B.μₖ = N · DPᵏ_product (event-spawn rule).
+- If B is being created in this event: B starts honest-empty (B.μₖ = 0, item #14a) and gains flux like any A→B transfer below.
 - If B is gaining flux from an A→B transfer: dB.μ₀/dt += r; dB.μ₁/dt += r · ⟨DP_A⟩; dB.μ₂/dt += r · ⟨DP²_A⟩.
 
 **Volatile sink:**
@@ -550,9 +551,7 @@ Path: `<output_dir>/polymer_pools.json` alongside `chem.yaml`.
       "spawn_iteration": 7,
       "spawn_event_metadata": {
         "triggering_product_smiles": "...",
-        "triggering_reaction_index": 314,
         "triggering_dp": 4,
-        "triggering_moles": 1.42e-5,
         "mass_flux_at_spawn": 0.0123
       },
       "mu_indices": {"mu0_idx": 41, "mu1_idx": 42, "mu2_idx": 43},
@@ -577,7 +576,8 @@ RMG iteration N:
   5. End of iteration: if spawn_intents non-empty:
        a. Drain intents, append new pools to registry
        b. Register each new pool's _mu0/_mu1/_mu2 dummy core species
-       c. Seed daughter moments from the triggering event (B.μk = N·DPᵏ)
+       c. Seed daughter moments honest-empty (μ = [0,0,0], item #14a; the
+          sidecar's pools[].moments are t=0 initial conditions)
   6. Iteration N+1: RMG rebuilds the reaction system; the larger core-species
      list yields a larger y0 and a freshly-constructed CVODES. The new pool's
      moment indices are resolved by label in initialize_model().

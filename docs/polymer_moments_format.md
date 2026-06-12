@@ -41,7 +41,8 @@ solver state-vector indices from the generating run).
 
 | Field | Type | Meaning |
 |---|---|---|
-| `moments` | `[µ0, µ1, µ2]` floats \| null | pool state at generation time, **extensive mol, DP basis** (µ1 = moles of repeat units) |
+| `moments` | `[µ0, µ1, µ2]` floats \| null | the pool's **initial conditions at t = 0 of the simulated experiment** (normative — see the provenance paragraphs below this table; item #14a), **extensive mol, DP basis** (µ1 = moles of repeat units). Input-declared pools: the input-derived state; spawned pools: `[0, 0, 0]` honest-empty |
+| `moments_provenance` | `"input_declared"` \| `"spawned_empty"` | where the `moments` initial conditions come from (see below). **Additive** key — consumers must tolerate its absence in artifacts written before this revision |
 | `monomer_mw_g_mol` | float | repeat-unit MW [g/mol] |
 | `mn_g_mol`, `mw_g_mol` | float \| null | number-/weight-average MW at generation time |
 | `initial_mass_g` | float \| null | as configured (grams) |
@@ -55,6 +56,34 @@ A pool listed here is **solver-configured** iff its `label` appears in
 `conventions.configured_pools`. Non-configured pools (spawned daughters) are
 inert containers: their proxies behave as ordinary species (no site scaling,
 no concentration-1.0 rule, no channels integration by the oracle).
+
+**Moments are initial conditions (normative; item #14a, 2026-06-12).**
+`pools[].moments` is the pool's state at **t = 0 of the simulated
+experiment** — not a generation-end snapshot. The reference runner replays
+the oracle from t = 0 and seeds exactly these values (its
+`--initial-moments` flag overrides them for continuation runs).
+`moments_provenance` records the origin:
+
+- `"input_declared"` — the pool was declared in the input file; the moments
+  are the input-derived t = 0 state.
+- `"spawned_empty"` — the pool was created mid-run (gate-path daughter or
+  scission tail); at t = 0 of any consumer experiment it contains nothing,
+  so `[0, 0, 0]` is the physically correct initial condition, not a hole.
+
+**The honest-zero property:** after this revision, a zero in the moments
+slot is always an initial condition, never a contradiction — `[0, 0, 0]` +
+`"spawned_empty"` is a statement of fact, distinguishable from a missing
+value by the provenance field itself.
+
+**Dead-channel limitation (consumer guidance):** a spawned pool's channel
+can be promoted at generation time and then demoted/gas-masked by the phase
+gate, leaving its species at exactly 0.0 for the entire generating
+trajectory (the `epdm_scission_tail` archetype: the gate skips the pool's
+only reaction). For such a pool `[0, 0, 0]` is simultaneously the t = 0
+truth and the generation-end truth; the artifact deliberately does not
+distinguish the two. Diagnose an unexpectedly inert spawned pool as a
+melt-classification / phase-gate divergence (see the consumer-guidance
+paragraph in §8), not as missing moments data.
 
 ## 3. `reactions[]`
 
