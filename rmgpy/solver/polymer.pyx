@@ -398,6 +398,7 @@ class HybridPolymerSystem(ReactionSystem):
         mass_transfer: Optional[List[MassTransferConfig]] = None,
         polymer_species_labels=None,
         gas_species_mask: Optional[np.ndarray] = None,
+        prospective_gas_mask: Optional[np.ndarray] = None,
         constant_gas_volume: bool = False,
         V_gas0: Optional[float] = None,
         initial_polymer_moments: Optional[Dict[str, Tuple[float, float, float]]] = None,
@@ -434,6 +435,19 @@ class HybridPolymerSystem(ReactionSystem):
         self.polymer_pools = list(polymer_pools)
         self.mass_transfer = list(mass_transfer) if mass_transfer else []
         self.gas_species_mask = gas_species_mask
+        # Item 17 (spec 2026-06-12 SS3(a)/(b)): stage-1 seed for the
+        # prospective mask over chain(core, edge), normally computed by
+        # to_solver_object with the SAME config-keyed classifier as
+        # gas_species_mask (one classifier, longer list). Stored as a seed;
+        # initialize_model rebuilds self.prospective_gas_mask on EVERY call.
+        # RIDER R3: prospective_gas_mask is GATE-INPUT ONLY -- nothing but
+        # the residual product gates (and riders R1/R2, which verify and
+        # report them) may read it; gas_species_mask stays the sole source
+        # of truth for every other phase behavior (concentrations, volumes,
+        # validation, the thermo tripwire's melt class, the artifact mask
+        # harvest).
+        self._prospective_gas_mask_seed = prospective_gas_mask
+        self.prospective_gas_mask = None
         self.const_spc_names = const_spc_names or []
         self.const_spc_indices = None
         self.sens_conditions = sens_conditions
@@ -740,6 +754,75 @@ class HybridPolymerSystem(ReactionSystem):
                     conditions[species_dict[label]] = value
         self.sens_conditions = conditions
 
+    def _apply_pool_phase_overrides(self, mask_arr, species_list,
+                                    record_indices):
+        """Stage 2 of the two-stage phase classifier (item 17, spec
+        2026-06-12 SS3(a)): the per-pool config-label override pass, factored
+        so ONE code path serves both masks. Run with
+        (gas_species_mask, core_species, record_indices=True) -- behavior
+        bit-identical to the historical inline pass, including the index
+        bookkeeping (species_to_pool_indices / is_pool_proxy /
+        pool_mu1_indices / pool_mu0_indices and the mu1 fallback) -- and
+        with (prospective_gas_mask, chain(core, edge),
+        record_indices=False), where ONLY mask writes happen (the index
+        arrays are core-sized; an edge match must never write them)."""
+        n_core = self.num_core_species
+        n_total = len(species_list)
+        for pool_i, pool in enumerate(self.polymer_pools):
+            for i in range(n_total):
+                base_label = species_list[i].label.partition('(')[0]
+                if base_label == pool.label:
+                    mask_arr[i] = False
+                    if record_indices:
+                        self.species_to_pool_indices[i] = pool_i
+                        self.is_pool_proxy[i] = 1
+                    break
+            mu1_target_label = f"{pool.label}_mu1"
+            for i in range(n_total):
+                # Handle RMG renaming: "PS_mu1(2)" -> "PS_mu1"
+                base_label = species_list[i].label.partition('(')[0]
+                if base_label == mu1_target_label:
+                    if record_indices:
+                        self.pool_mu1_indices[pool_i] = i
+                    mask_arr[i] = False  # Ensure it's poly phase
+
+            mu0_target_label = f"{pool.label}_mu0"
+            for i in range(n_total):
+                base_label = species_list[i].label.partition('(')[0]
+                if base_label == mu0_target_label:
+                    if record_indices:
+                        self.pool_mu0_indices[pool_i] = i
+                    mask_arr[i] = False
+
+            # map explicit oligomers
+            for dp, idx in pool.explicit_dp_to_species_index.items():
+                if 0 <= idx < n_core:
+                    if record_indices:
+                        self.species_to_pool_indices[idx] = pool_i
+                    mask_arr[idx] = False
+
+            # map the moment indices
+            for idx in pool.mu_indices:
+                if 0 <= idx < n_core:
+                    if record_indices:
+                        self.species_to_pool_indices[idx] = pool_i
+                    mask_arr[idx] = False
+
+            # map monomer-in-poly if used
+            if pool.monomer_poly_index is not None and 0 <= pool.monomer_poly_index < n_core:
+                if record_indices:
+                    self.species_to_pool_indices[pool.monomer_poly_index] = pool_i
+                mask_arr[pool.monomer_poly_index] = False
+
+            if record_indices and self.pool_mu1_indices[pool_i] == -1:
+                # Fallback: Try to use the config index if label lookup failed
+                # (This catches cases where renaming didn't happen as expected)
+                cfg_idx = pool.mu_indices[1]
+                if 0 <= cfg_idx < n_core:
+                    self.pool_mu1_indices[pool_i] = cfg_idx
+                else:
+                    print(f"WARNING: Could not locate mu1 species for pool {pool.label}. Polymer chemistry will be inert.")
+
     def initialize_model(self, core_species, core_reactions, edge_species, edge_reactions,
                       surface_species=None, surface_reactions=None, pdep_networks=None,
                       atol=1e-16, rtol=1e-8, sensitivity=False, sens_atol=1e-6, sens_rtol=1e-4,
@@ -805,54 +888,82 @@ class HybridPolymerSystem(ReactionSystem):
         self.species_to_pool_indices = np.full(n_core, -1, dtype=np.int32)
         self.is_pool_proxy = np.zeros(n_core, dtype=np.int8)
         self.pool_mu1_indices.fill(-1)
-        for pool_i, pool in enumerate(self.polymer_pools):
-            for i in range(n_core):
-                base_label = core_species[i].label.partition('(')[0]
-                if base_label == pool.label:
-                    self.gas_species_mask[i] = False
-                    self.species_to_pool_indices[i] = pool_i
-                    self.is_pool_proxy[i] = 1
-                    break
-            mu1_target_label = f"{pool.label}_mu1"
-            for i in range(n_core):
-                # Handle RMG renaming: "PS_mu1(2)" -> "PS_mu1"
-                base_label = core_species[i].label.partition('(')[0]
-                if base_label == mu1_target_label:
-                    self.pool_mu1_indices[pool_i] = i
-                    self.gas_species_mask[i] = False  # Ensure it's poly phase
+        self._apply_pool_phase_overrides(self.gas_species_mask, core_species,
+                                         record_indices=True)
 
-            mu0_target_label = f"{pool.label}_mu0"
-            for i in range(n_core):
-                base_label = core_species[i].label.partition('(')[0]
-                if base_label == mu0_target_label:
-                    self.pool_mu0_indices[pool_i] = i
-                    self.gas_species_mask[i] = False
+        # --- prospective_gas_mask (item 17, spec 2026-06-12 SS3(a)) -------
+        # A SECOND array over chain(core, edge), never a resize of
+        # gas_species_mask (SS3(b): the core size is load-bearing -- six hard
+        # raises, ~10 length-coupled consumers and two silent fallbacks key
+        # on it). Stage 1 = the blueprint classifier seed (combined-list
+        # get_gas_mask, passed by to_solver_object); stage 2 = the SAME
+        # per-pool override pass run on the combined list (label-keyed
+        # writes scan core+edge; index-keyed writes land identically in the
+        # core prefix). NEVER polymer-identity shortcuts: probed INCONSISTENT
+        # with the post-promotion mask (spec SS2).
+        n_edge_spc = len(edge_species) if edge_species is not None else 0
+        combined_species = list(core_species) + (list(edge_species)
+                                                 if edge_species else [])
+        seed = self._prospective_gas_mask_seed
+        if seed is not None and len(seed) == n_core + n_edge_spc:
+            self.prospective_gas_mask = np.asarray(seed, dtype=bool).copy()
+        else:
+            if seed is not None:
+                # Engine-reuse path (polymer_input.py:176-180): a
+                # constructor-era seed can be sized for a previous build's
+                # edge. Loud fallback, never a crash; R1 below still proves
+                # the core prefix every build. At HEAD config the fallback
+                # is verdict-identical to a fresh stage-1 seed: every
+                # species stage 1 classifies condensed is input-configured
+                # into core (premise A3), and stage 2 re-applies pool labels
+                # on the CURRENT combined list.
+                logging.warning(
+                    "PROSPECTIVE-MASK SEED STALE: stage-1 seed length %d != "
+                    "n_core + n_edge = %d; rebuilding prospective mask from "
+                    "the fallback (core mask + edge defaults GAS).",
+                    len(seed), n_core + n_edge_spc)
+            # Fallback path (direct solver construction without the
+            # blueprint seed -- tests, polymer_moments_runner). Stated
+            # premise, not an implication (amendment A3): edge species
+            # default prospectively-GAS here, which would diverge from
+            # production stage 1 only for an edge species stage 1 classifies
+            # condensed -- unreachable today, because get_gas_mask's registry
+            # draws only from input-configured objects and all of those live
+            # in core_species (the mass-transfer raises index the CORE-sized
+            # mask). Fixtures express a prospectively-condensed EDGE species
+            # through configured pool labels (stage 2) -- exactly how
+            # production daughters become condensed under item 16.
+            self.prospective_gas_mask = np.concatenate([
+                np.asarray(self.gas_species_mask, dtype=bool).copy(),
+                np.ones(n_edge_spc, dtype=bool)])
+        self._apply_pool_phase_overrides(self.prospective_gas_mask,
+                                         combined_species,
+                                         record_indices=False)
 
-            # map explicit oligomers
-            for dp, idx in pool.explicit_dp_to_species_index.items():
-                if 0 <= idx < n_core:
-                    self.species_to_pool_indices[idx] = pool_i
-                    self.gas_species_mask[idx] = False
-
-            # map the moment indices
-            for idx in pool.mu_indices:
-                if 0 <= idx < n_core:
-                    self.species_to_pool_indices[idx] = pool_i
-                    self.gas_species_mask[idx] = False
-
-            # map monomer-in-poly if used
-            if pool.monomer_poly_index is not None and 0 <= pool.monomer_poly_index < n_core:
-                self.species_to_pool_indices[pool.monomer_poly_index] = pool_i
-                self.gas_species_mask[pool.monomer_poly_index] = False
-
-            if self.pool_mu1_indices[pool_i] == -1:
-                # Fallback: Try to use the config index if label lookup failed
-                # (This catches cases where renaming didn't happen as expected)
-                cfg_idx = pool.mu_indices[1]
-                if 0 <= cfg_idx < n_core:
-                    self.pool_mu1_indices[pool_i] = cfg_idx
-                else:
-                    print(f"WARNING: Could not locate mu1 species for pool {pool.label}. Polymer chemistry will be inert.")
+        # RIDER R1 -- core-prefix parity tripwire (spec SS3(d)). The
+        # architecture's central claim ("the prospective mask is the real
+        # mask evaluated early") made self-verifying: the gates may use
+        # prospective[p] uniformly for all p precisely BECAUSE this prefix
+        # is proven equal, every build. Raise, never warn. Re-runs on every
+        # rebuild, so spawned daughters and config changes are re-checked.
+        if not np.array_equal(
+                np.asarray(self.prospective_gas_mask[:n_core], dtype=bool),
+                np.asarray(self.gas_species_mask, dtype=bool)):
+            diverging = [
+                f"index {i} ({core_species[i].label}): core mask says "
+                f"{'GAS' if self.gas_species_mask[i] else 'CONDENSED'}, "
+                f"prospective says "
+                f"{'GAS' if self.prospective_gas_mask[i] else 'CONDENSED'}"
+                for i in range(n_core)
+                if bool(self.prospective_gas_mask[i])
+                != bool(self.gas_species_mask[i])]
+            raise ValueError(
+                "PROSPECTIVE-MASK TRIPWIRE: prospective_gas_mask core prefix "
+                "diverges from gas_species_mask: " + "; ".join(diverging)
+                + ". First suspect: duplicate-label fallback disablement in "
+                "the combined get_gas_mask call (a duplicate label present "
+                "only in the edge disables the label fallback for the "
+                "combined list -- polymer_input.py:609-612).")
 
         # Resolve per-reaction source/target pools from species indices (no
         # label matching), and remap unstamped proxy-touching reactions

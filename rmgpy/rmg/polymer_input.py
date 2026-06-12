@@ -276,6 +276,14 @@ class HybridPolymerReactor(ReactionSystem):
             new_mask[:len(gas_mask)] = gas_mask
             gas_mask = new_mask
 
+        # Item 17 (spec 2026-06-12 SS3(a)) stage-1 prospective seed: the SAME
+        # config-keyed classifier over chain(core, edge) -- same function,
+        # same phase object, longer list; no second classifier exists to
+        # drift. The solver's stage-2 pass + rider R1 (core-prefix parity
+        # raise) complete the construction at initialize_model time.
+        prospective_seed = self.polymerPhase.get_gas_mask(
+            list(core_species) + list(edge_species))
+
         # 3. Calculate Initial Gas Volume (Headspace)
         # Logic: Sum MOLES of species that are actually in the gas phase.
         total_gas_moles = 0.0
@@ -379,6 +387,7 @@ class HybridPolymerReactor(ReactionSystem):
             mass_transfer=mt_configs,
             polymer_species_labels=poly_labels,
             gas_species_mask=gas_mask,
+            prospective_gas_mask=prospective_seed,
             constant_gas_volume=self.constant_gas_volume,
             V_gas0=V_gas0,
             initial_polymer_moments=self.polymerPhase.initial_moments,

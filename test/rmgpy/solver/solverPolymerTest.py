@@ -2625,3 +2625,91 @@ class TestUmbrellaPhaseGateParity:
             f"post-promotion core rate {core_rate}")
         assert edge_rate == pytest.approx(self.EXPECTED[case],
                                           rel=1e-9, abs=1e-12)
+
+
+class TestProspectiveMask:
+    """Spec 2026-06-12 §3(a)/(b)/(d) — the prospective mask is the real mask
+    evaluated early, and R1 makes that claim self-verifying every build."""
+
+    def test_prospective_mask_prefix_and_length_contract(self):
+        """T3: mixed core+edge build -- prospective_gas_mask has length
+        n_core + n_edge, its core prefix equals gas_species_mask elementwise
+        (R1's green half), edge species default prospectively-GAS in
+        fallback mode (A3), and a configured pool label in the EDGE flips
+        the prospective verdict while gas_species_mask stays core-sized and
+        untouched (R3: second array, never a resize)."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["G_mu0"], sp["G_mu1"], sp["G_mu2"]]
+        mask = [False, False, False, False, True, False, False, False]
+        edge = [sp["G"], sp["Y"]]
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        rs = _gate17_rs(core, mask, [], edge_spcs=edge, rxns_edge=[rxn],
+                        pools=(("A", (1, 2, 3)), ("G", (5, 6, 7))))
+        n_core = rs.num_core_species
+        pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        gm = np.asarray(rs.gas_species_mask, dtype=bool)
+        assert pm.shape[0] == n_core + len(edge)
+        assert gm.shape[0] == n_core  # R3: never a resize
+        assert np.array_equal(pm[:n_core], gm)
+        # stage 2 over the combined list: configured pool label G lives in
+        # the EDGE -- prospectively condensed; unconfigured edge Y stays gas.
+        assert pm[n_core + 0] == False  # G: configured -> condensed
+        assert pm[n_core + 1] == True   # Y: fallback default GAS (A3)
+
+    def test_stale_stage1_seed_falls_back_loudly(self, caplog):
+        """Engine-reuse pin (plan-level decision): a constructor seed sized
+        for a DIFFERENT edge list must not crash initialize_model
+        (polymer_input.py:176-180 reuses engines across simulate calls);
+        it logs PROSPECTIVE-MASK SEED STALE: and takes the documented
+        fallback, and R1 still proves the prefix."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = np.array([False, False, False, False, True], dtype=bool)
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        cfg = PolymerPoolConfig(label="A", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None)
+        # Seed sized for n_core + 3 edge species; build with ONE edge species.
+        stale_seed = np.concatenate([mask, np.ones(3, dtype=bool)])
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_gas_mask=stale_seed)
+        with caplog.at_level(logging.WARNING):
+            rs.initialize_model(list(core), [], [sp["G"]], [rxn])
+        assert any("PROSPECTIVE-MASK SEED STALE:" in r.getMessage()
+                   for r in caplog.records)
+        pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        assert pm.shape[0] == rs.num_core_species + 1
+        assert np.array_equal(pm[:rs.num_core_species],
+                              np.asarray(rs.gas_species_mask, dtype=bool))
+
+    def test_divergent_seed_prefix_raises_tripwire(self):
+        """T4: a doctored stage-1 seed whose core prefix disagrees with
+        gas_species_mask on ONE index (a non-pool species, so stage 2 cannot
+        repair it) must make initialize_model RAISE with the
+        PROSPECTIVE-MASK TRIPWIRE: sentinel naming that species -- the raise
+        is live, not decorative (R1 is raise-never-warn)."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = np.array([False, False, False, False, True], dtype=bool)
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        cfg = PolymerPoolConfig(label="A", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None)
+        doctored = np.concatenate([mask, np.ones(1, dtype=bool)])
+        doctored[4] = False  # X: gas in the real mask, condensed in the seed
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_gas_mask=doctored)
+        with pytest.raises(ValueError, match="PROSPECTIVE-MASK TRIPWIRE:"):
+            rs.initialize_model(list(core), [], [sp["G"]], [rxn])
+        # the diverging species is NAMED
+        with pytest.raises(ValueError, match=r"X"):
+            rs.initialize_model(list(core), [], [sp["G"]], [rxn])
