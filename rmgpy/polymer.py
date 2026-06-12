@@ -2221,7 +2221,6 @@ class SpawnIntent:
     end_groups: List[str]
     triggering_product: Optional['Species'] = None
     triggering_dp: int = 0
-    triggering_moles: float = 0.0
     triggering_reaction_index: Optional[int] = None
     mass_flux_at_spawn: float = 0.0
 
@@ -2729,17 +2728,6 @@ def process_polymer_candidates_multipool(
                 end_groups=list(parent_for_intent.end_groups),
                 triggering_product=cand,
                 triggering_dp=triggering_dp,
-                # TODO(polymer running-log item #14): `amount` is never
-                # assigned anywhere, so this is ALWAYS the placeholder
-                # 1.0 mol. Named consumer: drain_spawn_intents seeds the
-                # daughter pool's initial moments from it (mu_k = N * DP^k,
-                # see N/DP in drain_spawn_intents) — every gate-path spawned
-                # pool currently starts with a fictional mu0 = 1.0 mol of
-                # chains. Honest seeding (candidate source: the triggering
-                # reaction's snapshot flux x a dt-scale — needs its own
-                # chemistry decision) is the NEXT physics item; do not trust
-                # mid-run gate-path pool masses until it lands.
-                triggering_moles=float(getattr(cand, "amount", 1.0)),
                 mass_flux_at_spawn=gate_statistic,
             )
         )
@@ -2876,11 +2864,16 @@ def _get_rmg_commit():
 
 def _serialize_pool_for_sidecar(pool: 'Polymer',
                                 core_species: Optional[List['Species']] = None,
-                                monomer_routing: Optional[str] = None) -> Dict[str, Any]:
+                                monomer_routing: Optional[str] = None,
+                                spawned: bool = False) -> Dict[str, Any]:
     """Convert a :class:`Polymer` instance to a JSON-serialisable dict.
 
     Schema 2.0: 1.0 fields (docs/multi_pool_design.md §6) preserved verbatim;
     additions per docs/polymer_moments_format.md §2.
+
+    ``spawned`` is set by ``build_polymer_moments_artifact``'s
+    ``_pool_is_spawned``; direct callers serializing spawned pools must
+    pass ``True``.
     """
     monomer_smiles = ""
     monomer_adj_list = ""
@@ -2967,6 +2960,22 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
     d["bookkeeping_species"] = bookkeeping_species
     d["monomer_routing"] = monomer_routing
     d["mu3_closure"] = "log_lagrange/1"
+
+    # --- moments provenance (item #14a, amended 2026-06-12: uniform-t=0) ---
+    # pools[].moments are the pool's INITIAL CONDITIONS at t=0 of the
+    # simulated experiment, normatively (docs/polymer_moments_format.md s2):
+    #   input_declared — declared in the input file; the moments are the
+    #                    input-derived t=0 state (the values this serializer
+    #                    has always passed through, unchanged);
+    #   spawned_empty  — created mid-run (gate-path drain or scission-tail
+    #                    registry creation); at t=0 of any consumer
+    #                    experiment the pool contains nothing, so [0,0,0] is
+    #                    the honest initial condition, not a hole.
+    # The moments emission above is deliberately untouched: this field is
+    # ADDITIVE (no recipe_revision bump — generation-time semantics, not
+    # rate recipe), and no emitted value changes for any pool that exists
+    # today.
+    d["moments_provenance"] = "spawned_empty" if spawned else "input_declared"
     return d
 
 
@@ -3223,15 +3232,38 @@ def build_polymer_moments_artifact(pool_registry,
     pass a CONDENSED-phase routing label (it is appended to phase_species
     unchecked by ``_serialize_pool_for_sidecar``).
     """
-    if configured_pool_labels is None:
+    if not configured_pool_labels:
         configured_pool_labels = [getattr(p, "label", "") for p in pool_registry]
     monomer_routing_by_pool = monomer_routing_by_pool or {}
+    # input-vs-spawned for moments_provenance (item #14a amended, spec s4):
+    # Path-C scission tails carry NO spawn markers on the pool object (the
+    # serializer defaults their spawn_event_metadata to {'source':'input'}),
+    # so the PRIMARY signal is the configured set — the live save_everything
+    # hook plumbs the engine's polymer_pools, which at HEAD is exactly the
+    # input-declared set (compile_polymer_phase is the only config creator).
+    # Object spawn-markers are the SECONDARY signal: they keep drained
+    # daughters honest in legacy default-label calls, where
+    # configured_pool_labels defaults to ALL registry labels. Known
+    # limitation of that legacy default: a markerless Path-C scission tail
+    # classifies "input_declared" there (its moments are honest [0,0,0]
+    # regardless; the live main.py path passes the configured labels and
+    # classifies it "spawned_empty"). Item-16
+    # coupling (spec s7): when spawned pools gain solver configs this fork
+    # must be re-confirmed, not inherited silently.
+    configured_set = {str(lbl) for lbl in configured_pool_labels}
+
+    def _pool_is_spawned(p):
+        if getattr(p, "label", "") not in configured_set:
+            return True
+        return bool(getattr(p, "spawn_metadata", None)) or \
+            getattr(p, "parent_pool_label", None) is not None
 
     pools = [
         _serialize_pool_for_sidecar(
             p,
             core_species=core_species,
             monomer_routing=monomer_routing_by_pool.get(getattr(p, "label", "")),
+            spawned=_pool_is_spawned(p),
         )
         for p in pool_registry
     ]
@@ -3356,18 +3388,33 @@ def drain_spawn_intents(
         # as distinct from the parent (which shares monomer + end_groups +
         # cutoff and would otherwise hash to the same fingerprint).
         new_pool._fingerprint = f"{parent.fingerprint}_daughter-{new_label}"
-        # Event-spawn initialisation (design doc §5): μ_k = N · DP^k.
-        N = float(intent.triggering_moles)
-        DP = float(intent.triggering_dp)
-        new_pool.moments = np.array([N, N * DP, N * DP * DP], dtype=np.float64)
+        # Honest-empty seeding (item #14a, amended 2026-06-12 uniform-t=0):
+        # a just-spawned daughter genuinely contains nothing, and the
+        # artifact's pools[].moments are INITIAL CONDITIONS at t=0 of the
+        # simulated experiment — so mu = [0, 0, 0] is the physically correct
+        # seed, exactly unifying with the Path-C scission-tail convention
+        # (initial_mass=0 -> zero moments). Nothing recomputes moments at
+        # emission: the sidecar passes pool.moments through verbatim. NOTE:
+        # the Polymer(...) constructor above derives interim moments from
+        # Mn/Mw/initial_mass=0.001 (spec section-7 ruling: KEPT — the
+        # constant parameterizes only that derivation and never reaches the
+        # artifact); this assignment overrides them. Mn/Mw stay the
+        # PARENT's, as lineage metadata only (no DP is derived from them).
+        new_pool.moments = np.zeros(3, dtype=np.float64)
         new_pool.parent_pool_label = parent.label
         new_pool.spawn_iteration = iteration
         new_pool.end_groups_str = list(intent.end_groups)
         new_pool.mu_indices = (next_idx, next_idx + 1, next_idx + 2)
         next_idx += 3
         new_pool.spawn_metadata = {
+            # triggering_dp is motif METADATA (repeats per proxy-scale
+            # triggering molecule — repeats-per-chain is genuinely useful);
+            # it is NEVER a moment multiplier (item #14a section 2: a
+            # quantity measured on a proxy-scale object is representation,
+            # not chemistry — nothing multiplies it anywhere).
+            # triggering_moles is deleted outright: never emitted by any
+            # real deck (clean-delete compat ruling, spec section 2).
             "triggering_dp": int(intent.triggering_dp),
-            "triggering_moles": N,
             "mass_flux_at_spawn": float(intent.mass_flux_at_spawn),
         }
         tp = intent.triggering_product

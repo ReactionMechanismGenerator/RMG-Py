@@ -607,7 +607,6 @@ class TestRegisterSpawnedPools:
             monomer=parent_polymer.backbone_group,
             end_groups=["[H]", "[H]"],
             triggering_dp=3,
-            triggering_moles=1.0e-5,
         )
         new_pools = drain_spawn_intents([intent], iteration=4)
         fake = _FakeReactionModel()
@@ -630,7 +629,6 @@ class TestRegisterSpawnedPools:
             monomer=parent_polymer.backbone_group,
             end_groups=["[H]", "[H]"],
             triggering_dp=3,
-            triggering_moles=1.0e-5,
         )
         fake = _FakeReactionModel()
 
@@ -882,7 +880,6 @@ class TestDrainSpawnIntents:
             end_groups=["[H]", "[H]"],
             triggering_product=None,
             triggering_dp=4,
-            triggering_moles=1.42e-5,
             mass_flux_at_spawn=0.05,
         )
 
@@ -908,14 +905,16 @@ class TestDrainSpawnIntents:
             monomer=parent_polymer.backbone_group,
             end_groups=["[H]", "[H]"],
             triggering_dp=4,
-            triggering_moles=1.42e-5,
             mass_flux_at_spawn=0.07,
         )
         spawned = drain_spawn_intents([intent], iteration=11)[0]
 
         meta = spawned.spawn_metadata
         assert meta["triggering_dp"] == 4
-        assert meta["triggering_moles"] == pytest.approx(1.42e-5)
+        # Clean delete (item #14a, spec section 2): the key was never
+        # emitted by any real deck; daughters seed mu=[0,0,0] — pools[].
+        # moments in the artifact are t=0 initial conditions.
+        assert "triggering_moles" not in meta
         assert meta["mass_flux_at_spawn"] == pytest.approx(0.07)
 
     def test_allocates_contiguous_mu_indices_after_existing(self, parent_polymer):
@@ -932,7 +931,6 @@ class TestDrainSpawnIntents:
             monomer=parent_polymer.backbone_group,
             end_groups=["[H]", "[H]"],
             triggering_dp=3,
-            triggering_moles=1.0e-5,
         )
 
         spawned = drain_spawn_intents(
@@ -941,24 +939,25 @@ class TestDrainSpawnIntents:
 
         assert spawned.mu_indices == (3, 4, 5)
 
-    def test_initialises_daughter_moments_from_event(self, parent_polymer):
-        """B.μ_k = N·DP^k from the triggering event (design doc §5)."""
+    def test_seeds_daughter_moments_honest_empty(self, parent_polymer):
+        """Item #14a (uniform-t=0): spawn-time seeding is DEAD. Daughters
+        start mu = [0,0,0] (unifying with the Path-C scission-tail
+        convention) — the physically correct t=0 initial condition, which
+        the artifact passes through verbatim. Mn/Mw stay the parent's
+        (lineage metadata only; nothing derives a DP from them)."""
         from rmgpy.polymer import SpawnIntent, drain_spawn_intents
 
-        N = 1.42e-5
-        DP = 4
         intent = SpawnIntent(
             parent_pool=parent_polymer,
             monomer=parent_polymer.backbone_group,
             end_groups=["[H]", "[H]"],
-            triggering_dp=DP,
-            triggering_moles=N,
+            triggering_dp=4,
         )
         spawned = drain_spawn_intents([intent], iteration=0)[0]
 
-        assert spawned.moments[0] == pytest.approx(N)
-        assert spawned.moments[1] == pytest.approx(N * DP)
-        assert spawned.moments[2] == pytest.approx(N * DP * DP)
+        assert list(spawned.moments) == [0.0, 0.0, 0.0]
+        assert spawned.Mn == pytest.approx(parent_polymer.Mn)
+        assert spawned.Mw == pytest.approx(parent_polymer.Mw)
 
     def test_subsequent_calls_avoid_label_collisions(self, parent_polymer):
         """Two drain calls for the same parent must produce distinct labels.
@@ -974,7 +973,6 @@ class TestDrainSpawnIntents:
             monomer=parent_polymer.backbone_group,
             end_groups=["[H]", "[H]"],
             triggering_dp=3,
-            triggering_moles=1.0e-5,
         )
 
         first = drain_spawn_intents([intent], iteration=7,
@@ -998,10 +996,11 @@ class TestSpawnIntentShape:
             end_groups=["[H]", "[H]"],
             triggering_product=None,
             triggering_dp=4,
-            triggering_moles=1.42e-5,
         )
         # Mirrors the polymer_pools.json schema (see design doc §6).
         assert intent.parent_pool is parent_polymer
         assert intent.triggering_dp == 4
-        assert intent.triggering_moles == pytest.approx(1.42e-5)
+        # Clean delete (item #14a): the moles fiction is gone from the
+        # intent; daughters spawn honest-empty (uniform-t=0).
+        assert not hasattr(intent, "triggering_moles")
         assert intent.end_groups == ["[H]", "[H]"]

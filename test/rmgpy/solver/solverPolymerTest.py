@@ -940,8 +940,8 @@ class TestHybridPolymerReactor:
         (the Python iteration-boundary hook) must survive the solver rebuild. The
         rebuilt HybridPolymerSystem resolves BOTH the parent and the spawned
         daughter by label, carries the parent's moments across unchanged (moment
-        continuity), and places the daughter's event-seeded moments (mu_k = N*DP^k)
-        at its own state-vector slots.
+        continuity), and places the daughter's honest-empty moments ([0,0,0],
+        item #14a) at its own state-vector slots.
 
         Closes the gap flagged in TestDrainSpawnIntents ("the Cython solver-reinit
         half follows separately and consumes the Polymer objects produced here")
@@ -978,12 +978,17 @@ class TestHybridPolymerReactor:
         assert abs(carried[0] - parent_moments[0]) < 1e-12
 
         # --- Spawn a daughter at the iteration boundary ---------------------
-        N, DP = 2.0e-4, 5
+        # Honest-empty seeding (item #14a uniform-t=0): daughters start
+        # mu = [0, 0, 0]; pools[].moments in the artifact are t=0 initial
+        # conditions. triggering_dp survives as spawn METADATA only.
+        DP = 5
         intent = SpawnIntent(parent_pool=parent, monomer=parent.backbone_group,
-                             end_groups=["[H]", "[H]"], triggering_dp=DP, triggering_moles=N)
+                             end_groups=["[H]", "[H]"], triggering_dp=DP)
         daughter = drain_spawn_intents([intent], iteration=1, existing_pools=[parent])[0]
         assert daughter.label == "PE_d1"
-        assert np.allclose(daughter.moments, [N, N * DP, N * DP * DP])
+        assert np.allclose(daughter.moments, [0.0, 0.0, 0.0])
+        assert daughter.spawn_metadata["triggering_dp"] == DP
+        assert "triggering_moles" not in daughter.spawn_metadata
 
         # --- Rebuild solver (v2) with parent + daughter ---------------------
         # The daughter registers _muN dummy species labelled "<label>_muK";
@@ -1012,10 +1017,10 @@ class TestHybridPolymerReactor:
         assert abs(rs2.y[1] - carried[0]) < 1e-12
         assert abs(rs2.y[2] - carried[1]) < 1e-12
         assert abs(rs2.y[3] - carried[2]) < 1e-12
-        # Daughter's event-seeded moments (N*DP^k) land at its own slots.
-        assert rs2.y[4] == pytest.approx(N)
-        assert rs2.y[5] == pytest.approx(N * DP)
-        assert rs2.y[6] == pytest.approx(N * DP * DP)
+        # Daughter's honest-empty moments land at its own slots.
+        assert rs2.y[4] == 0.0
+        assert rs2.y[5] == 0.0
+        assert rs2.y[6] == 0.0
         # The rebuilt RHS evaluates cleanly (finite, no NaN).
         dn = rs2.residual(0.0, rs2.y, np.zeros_like(rs2.y))[0]
         assert np.all(np.isfinite(dn))

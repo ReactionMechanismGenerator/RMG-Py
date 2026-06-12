@@ -3,7 +3,6 @@
 (spec: docs/superpowers/specs/2026-06-10-polymer-moments-artifact-design.md;
 format doc: docs/polymer_moments_format.md)."""
 
-import dataclasses
 import json
 
 import pytest
@@ -557,30 +556,15 @@ class TestSpawnedPoolMoments:
         """A gate-path-shaped daughter via the LIVE drain path (registry
         level; never solver-configured)."""
         from rmgpy.polymer import SpawnIntent, drain_spawn_intents
-        kwargs = {}
-        if any(f.name == "triggering_moles"
-               for f in dataclasses.fields(SpawnIntent)):
-            # Pre-change shape: mirror the live Phase-E placeholder
-            # (polymer.py:2742, getattr(cand, "amount", 1.0) -> always 1.0).
-            # RED-FIRST scaffolding (the _gate_pool_config precedent) — once
-            # the field is deleted this branch never runs.
-            kwargs["triggering_moles"] = 1.0
         intent = SpawnIntent(
             parent_pool=pe_pool,
             monomer=pe_pool.monomer,
             end_groups=["[H]", "[H]"],
             triggering_dp=4,
-            **kwargs,
         )
         return drain_spawn_intents([intent], iteration=7,
                                    existing_pools=[pe_pool])[0]
 
-    @pytest.mark.xfail(strict=True,
-                       reason="RED until the spawn-time fiction dies (item "
-                              "#14a Task 3, uniform-t=0 amendment): the "
-                              "drained daughter's entry carries the "
-                              "[1.0, 4.0, 16.0] spawn-time fiction and no "
-                              "moments_provenance field")
     def test_spawned_daughter_entry_is_empty_at_t0(self, pe_pool):
         """T2 (amended, spec section 6; absorbs T7): the drained daughter's
         entry carries moments == [0, 0, 0] AND
@@ -615,3 +599,35 @@ class TestSpawnedPoolMoments:
         )
         # RED assertion 2 (the provenance field).
         assert entry.get("moments_provenance") == "spawned_empty"
+
+    def test_schema_stability_and_additive_provenance(self, pe_pool):
+        """T9 (spec section 6, amended values): the 1.0 stability contract
+        holds on BOTH entry kinds; moments_provenance is additive
+        ("input_declared" | "spawned_empty"); configured emission is
+        BYTE-IDENTICAL pass-through of the pool object's moments (t=0
+        initial conditions); spawn_event_metadata remains a dict — the
+        triggering_moles inner-key delete is contract-clean (never emitted
+        by any real deck, spec section 2)."""
+        daughter = self._drained_daughter(pe_pool)
+        payload = build_polymer_moments_artifact(
+            [pe_pool, daughter], configured_pool_labels=["PE"])
+        by_label = {p["label"]: p for p in payload["pools"]}
+        for entry in by_label.values():
+            for key, typ in SCHEMA_1_0_KEYS.items():
+                assert key in entry, f"1.0 key {key!r} missing"
+                assert isinstance(entry[key], typ), f"1.0 key {key!r} type"
+        assert by_label["PE"]["moments_provenance"] == "input_declared"
+        # Byte-identical pass-through for the input-declared pool (the
+        # emitter's moments source is untouched by item #14a).
+        assert by_label["PE"]["moments"] == [float(m) for m in pe_pool.moments]
+        d_entry = by_label[daughter.label]
+        assert d_entry["moments_provenance"] == "spawned_empty"
+        assert d_entry["moments"] == [0.0, 0.0, 0.0]
+        assert isinstance(d_entry["spawn_event_metadata"], dict)
+        assert "triggering_moles" not in d_entry["spawn_event_metadata"]
+        # Legacy default-labels call: the daughter still reads spawned via
+        # its object spawn-markers (the secondary signal).
+        legacy = build_polymer_moments_artifact([pe_pool, daughter])
+        legacy_by = {p["label"]: p for p in legacy["pools"]}
+        assert legacy_by["PE"]["moments_provenance"] == "input_declared"
+        assert legacy_by[daughter.label]["moments_provenance"] == "spawned_empty"
