@@ -568,6 +568,17 @@ cdef class ReactionSystem(DASx):
 
         return surface_species, surface_reactions
 
+    def _phase_gate_flux_census(self, core_species, edge_species,
+                                edge_reactions, char_rate, tol_move_to_core):
+        """No-op hook: phase-gate flux census (polymer item 17, spec
+        2026-06-12 SS3(e) dynamic half). HybridPolymerSystem overrides this
+        with the gate-zeroed-edge-flux census; every other reactor pays one
+        no-op call per accepted snapshot. Plain def on the cdef class -- no
+        base.pxd change; the Python-MRO override is reachable from inside
+        cpdef simulate (compile-proven; precedent:
+        get_threshold_rate_constants)."""
+        pass
+
     @cython.boundscheck(False)
     cpdef simulate(self, list core_species, list core_reactions, list edge_species,
                    list edge_reactions, list surface_species, list surface_reactions,
@@ -822,6 +833,17 @@ cdef class ReactionSystem(DASx):
             core_species_rate_ratios = np.abs(self.core_species_rates / char_rate)
             edge_species_rate_ratios = np.abs(self.edge_species_rates / char_rate)
             network_leak_rate_ratios = np.abs(self.network_leak_rates / char_rate)
+
+            # Phase-gate flux census hook (polymer item 17, spec 2026-06-12
+            # SS3(e)). Census staleness is a FEATURE (amendment A2): the hook
+            # reads the ungated arrays from the most recent residual
+            # evaluation -- EXACTLY the staleness of the
+            # self.edge_species_rates snapshot the enlargement ratios above
+            # are formed from. Do NOT move this onto accepted-state-only
+            # plumbing: that would break parity with the audited quantity.
+            self._phase_gate_flux_census(core_species, edge_species,
+                                         edge_reactions, char_rate,
+                                         tol_move_to_core)
             num_edge_reactions = self.num_edge_reactions
             core_reaction_rates = self.core_reaction_rates
             product_indices = self.product_indices

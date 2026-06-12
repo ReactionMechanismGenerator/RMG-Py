@@ -859,6 +859,15 @@ class HybridPolymerSystem(ReactionSystem):
         for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
             self.reaction_flux_archetype[i] = int(getattr(rxn, "polymer_flux_archetype", 0))
             self.reaction_chip_units[i] = int(getattr(rxn, "polymer_chip_units", 0))
+        # Item 17 (spec 2026-06-12 SS3(e)): generation-time stamps, captured
+        # AFTER the stamp-read loop and BEFORE the init demotion pass
+        # (:NONE->UNRESOLVED + unresolvable stamped shapes) mutates the
+        # array in place. For reactions flip-demoted at GENERATION time
+        # (demote_flipped_polymer_archetype mutates the object itself),
+        # "pre-demotion" deliberately means pre-SOLVER-demotion: the
+        # captured value is legitimately UNRESOLVED and the census reports
+        # it as such.
+        self.reaction_pre_demotion_archetype = self.reaction_flux_archetype.copy()
 
         if n_core <= 0:
             raise ValueError(f"Solver received an empty core species list (n_core={n_core}).")
@@ -1046,6 +1055,22 @@ class HybridPolymerSystem(ReactionSystem):
         self._scratch_C_poly = np.zeros(n_core, float)
         self._scratch_dn_dt = np.zeros(n_core, float)
         self._scratch_proxy_activity = np.zeros(n_core, float)
+
+        # RIDER R2 dynamic half (item 17, spec 2026-06-12 SS3(e)): the edge
+        # counterfactual -- what enlargement WOULD have seen absent the
+        # gates. Ungated rows mirror their real writes; gate-zeroed edge
+        # rows carry their counterfactual here and ONLY here. Warn-once
+        # keying (gate_code, edge reaction index) clears per engine rebuild
+        # = per RMG iteration: a persistent gated channel re-announces once
+        # per iteration, deliberately (correct-but-loud; measured ~14
+        # lines/iteration on the reference EPDM deck).
+        self.edge_reaction_gate_code = np.zeros(self.num_edge_reactions,
+                                                dtype=np.int8)
+        self.edge_reaction_rates_ungated = np.zeros(self.num_edge_reactions,
+                                                    float)
+        self.edge_species_rates_ungated = np.zeros(self.num_edge_species,
+                                                   float)
+        self._phase_gate_census_emitted = set()
 
         self.get_const_spc_indices(core_species)
         self.set_initial_conditions()
@@ -1250,6 +1275,69 @@ class HybridPolymerSystem(ReactionSystem):
         return (unimolecular_threshold_rate_constant,
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
+
+    def _phase_gate_flux_census(self, core_species, edge_species,
+                                edge_reactions, char_rate, tol_move_to_core):
+        """RIDER R2 dynamic half (item 17, spec 2026-06-12 SS3(e)): emit one
+        census line per (gate, edge reaction) per engine rebuild when the
+        UNGATED ratio would have cleared the enlargement bar -- the
+        species-level quantity base.pyx:1046 actually tests. Lives in
+        simulate() via the base hook because tol_move_to_core is a simulate
+        local and char_rate exists only per accepted snapshot; reads the
+        most recent residual evaluation's arrays with EXACTLY the staleness
+        of the enlargement read it audits (amendment A2 -- a feature).
+        String assembly happens here (python level, once per emission),
+        never in the residual."""
+        if char_rate == 0.0:
+            return  # the base.pyx singularity path owns the no-flux case
+        gate_codes = getattr(self, "edge_reaction_gate_code", None)
+        if gate_codes is None:
+            return
+        n_core = self.num_core_species
+        n_core_rxn = self.num_core_reactions
+        ip = self.product_indices
+        for j in range(gate_codes.shape[0]):
+            code = int(gate_codes[j])
+            if code == 0:
+                continue
+            key = (code, j)
+            if key in self._phase_gate_census_emitted:
+                continue
+            best_ratio = 0.0
+            best_label = "<none>"
+            condensed_labels = []
+            for slot in range(3):
+                p = ip[n_core_rxn + j, slot]
+                if p == -1:
+                    continue
+                if not self.prospective_gas_mask[p]:
+                    condensed_labels.append(
+                        edge_species[p - n_core].label if p >= n_core
+                        else core_species[p].label)
+                if p >= n_core:
+                    ratio = abs(self.edge_species_rates_ungated[p - n_core]) \
+                        / char_rate
+                    if ratio > best_ratio:
+                        best_ratio = ratio
+                        best_label = edge_species[p - n_core].label
+            if best_ratio <= tol_move_to_core:
+                continue
+            self._phase_gate_census_emitted.add(key)
+            rxn = edge_reactions[j]
+            idx = n_core_rxn + j
+            decisive = (", ".join(condensed_labels) if code == 1
+                        else "no prospectively-condensed product")
+            fam = (getattr(rxn, "family", None)
+                   or getattr(rxn, "label", "") or type(rxn).__name__)
+            logging.warning(
+                "PHASE-GATE FLUX CENSUS: reaction %s gate=%s "
+                "ungated_ratio=%.6e via edge species %s "
+                "(tol_move_to_core=%.3e); decisive=%s; archetype "
+                "pre-demotion=%d post-demotion=%d family=%s",
+                rxn, "A" if code == 1 else "B", best_ratio, best_label,
+                tol_move_to_core, decisive,
+                int(self.reaction_pre_demotion_archetype[idx]),
+                int(self.reaction_flux_archetype[idx]), fam)
 
     def spawn_gate_flux_snapshot(self, motif_counts_by_pool=None):
         """Engine half of the mass-flux spawn gate.
@@ -1496,6 +1584,9 @@ class HybridPolymerSystem(ReactionSystem):
         self.core_reaction_rates[:] = 0.0
         self.edge_reaction_rates[:] = 0.0
         self.edge_species_rates[:] = 0.0
+        self.edge_reaction_gate_code[:] = 0
+        self.edge_reaction_rates_ungated[:] = 0.0
+        self.edge_species_rates_ungated[:] = 0.0
         self.core_species_consumption_rates[:] = 0.0
         self.core_species_production_rates[:] = 0.0
         self.network_leak_rates[:] = 0.0
@@ -1596,8 +1687,23 @@ class HybridPolymerSystem(ReactionSystem):
                 prods_phase_ok = False
                 gate_code = 2
 
+            gated = False
             if not prods_phase_ok:
-                continue
+                if r_idx >= n_rxn:
+                    # RIDER R2 dynamic half: record the gate verdict and fall
+                    # through the EXISTING rate computation (pool mapping,
+                    # _C, site scaling, throttle; the rr hole applies as
+                    # usual) with every REAL write suppressed -- the zeros in
+                    # edge_reaction_rates/edge_species_rates ARE the
+                    # consistency point; the counterfactual lands only in
+                    # the *_ungated arrays.
+                    self.edge_reaction_gate_code[r_idx - n_rxn] = gate_code
+                    gated = True
+                else:
+                    # Core-gated rows keep the bare continue: zero residual
+                    # cost. Their loudness is the STATIC census at
+                    # initialize_model (spec SS3(e) static half).
+                    continue
 
             # 1. Map Reactants to Polymer Pools  (MOVED UP before _C)
             p0_pool_idx = self.species_to_pool_indices[r0]
@@ -1680,18 +1786,29 @@ class HybridPolymerSystem(ReactionSystem):
 
             if r_idx < n_rxn:
                 self.core_reaction_rates[r_idx] = rate
+            elif gated:
+                # counterfactual only -- the real entry stays 0 (the
+                # consistency point enlargement reads).
+                self.edge_reaction_rates_ungated[r_idx - n_rxn] = rate
             else:
                 self.edge_reaction_rates[r_idx - n_rxn] = rate
+                self.edge_reaction_rates_ungated[r_idx - n_rxn] = rate
 
             core_rxn = r_idx < n_rxn
 
             # 3. Apply Fluxes to Reactants (core reactions only -- edge
             #    reactions are diagnostic-only, matching simple.pyx).
             #    proxy_activity stays UNGATED on purpose: it feeds proxy
-            #    similarity/spawn diagnostics, which want edge flux too.
+            #    similarity/spawn diagnostics, which want edge flux too --
+            #    except gate-zeroed edge rows, suppressed just below (T9).
             #    Pool MOMENT flux is handled once per reaction in section 5.
             if self.is_pool_proxy[r0]:
-                proxy_activity[r0] += abs_flux
+                if not gated:
+                    # Ghost-flux suppression (spec SS3(e)/T9): a gate-zeroed
+                    # edge row's |flux| is judged unphysical under core
+                    # semantics and must not feed spawn/similarity
+                    # diagnostics.
+                    proxy_activity[r0] += abs_flux
                 if core_rxn:
                     self.core_species_consumption_rates[r0] += rf
                     self.core_species_production_rates[r0] += rr
@@ -1708,7 +1825,8 @@ class HybridPolymerSystem(ReactionSystem):
 
             if r1 != -1:
                 if self.is_pool_proxy[r1]:
-                    proxy_activity[r1] += abs_flux
+                    if not gated:
+                        proxy_activity[r1] += abs_flux
                     if core_rxn:
                         self.core_species_consumption_rates[r1] += rf
                         self.core_species_production_rates[r1] += rr
@@ -1733,7 +1851,8 @@ class HybridPolymerSystem(ReactionSystem):
 
                 if p_idx_tmp < n_core:
                     if self.is_pool_proxy[p_idx_tmp]:
-                        proxy_activity[p_idx_tmp] += abs_flux
+                        if not gated:
+                            proxy_activity[p_idx_tmp] += abs_flux
                         if core_rxn:
                             self.core_species_production_rates[p_idx_tmp] += rf
                             self.core_species_consumption_rates[p_idx_tmp] += rr
@@ -1745,7 +1864,9 @@ class HybridPolymerSystem(ReactionSystem):
                         self.core_species_production_rates[p_idx_tmp] += rf
                         self.core_species_consumption_rates[p_idx_tmp] += rr
                 else:
-                    self.edge_species_rates[p_idx_tmp - n_core] += rate
+                    self.edge_species_rates_ungated[p_idx_tmp - n_core] += rate
+                    if not gated:
+                        self.edge_species_rates[p_idx_tmp - n_core] += rate
 
             # 5. Pool moment flux -- archetype dispatch (core reactions only).
             #    Spec: docs/superpowers/specs/2026-06-09-proxy-moment-flux-

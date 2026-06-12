@@ -2770,3 +2770,278 @@ class TestPhaseGateNonRegression:
             c = float(np.asarray(rs_c.core_reaction_rates)[0])
             assert e == pytest.approx(expected, abs=1e-12)
             assert c == pytest.approx(expected, abs=1e-12)
+
+
+def _gate17_simulate(rs, core, rxns_core, edge_spcs, rxns_edge,
+                     tol_move_to_core=1.0e-3, t_end=1.0e-6):
+    """Drive a gate-17 fixture through a REAL simulate() -- the hook's only
+    habitat (tol_move_to_core is a simulate local, base.pyx:635; char_rate
+    exists only per accepted snapshot)."""
+    from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
+    from rmgpy.solver.base import TerminationTime
+    rs.termination.append(TerminationTime((t_end, "s")))
+    ms = ModelSettings(tol_keep_in_edge=0.0,
+                       tol_move_to_core=tol_move_to_core,
+                       tol_interrupt_simulation=1.0e8)
+    rs.simulate(list(core), list(rxns_core), list(edge_spcs),
+                list(rxns_edge), [], [],
+                model_settings=ms, simulator_settings=SimulatorSettings())
+
+
+def _census_lines(caplog):
+    return [r.getMessage() for r in caplog.records
+            if "PHASE-GATE FLUX CENSUS:" in r.getMessage()]
+
+
+class TestPhaseGateFluxCensus:
+    """Spec 2026-06-12 SS3(e) dynamic half -- any flux the gates zero at edge
+    must emit a census line when it would have cleared the enlargement bar:
+    correct-but-loud. The hook reads the same edge_species_rates-snapshot
+    staleness as the enlargement read it audits (amendment A2 -- a feature;
+    do not 'fix' onto accepted-state-only plumbing)."""
+
+    def _b1_with_driver(self, archetype=None):
+        """Gated B1 channel (A -> G, edge) + a slow pure-gas core driver
+        X -> Y so char_rate > 0 (without it the base.pyx:839 singularity
+        path owns the step and the hook correctly defers)."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["Y"]]
+        mask = [False, False, False, False, True, True]
+        gated = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        if archetype is not None:
+            gated.polymer_flux_archetype = archetype
+        driver = Reaction(
+            reactants=[sp["X"]], products=[sp["Y"]],
+            kinetics=Arrhenius(A=(1.0e-3, "1/s"), n=0.0,
+                               Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+            reversible=False)
+        rs = _gate17_rs(core, mask, [driver], edge_spcs=[sp["G"]],
+                        rxns_edge=[gated])
+        return sp, core, driver, gated, rs
+
+    def test_census_fires_with_payload_and_warn_once_key(self, caplog):
+        """T5 (base): exactly one census line per build however many
+        accepted steps; gate code B; the ungated ratio matches the
+        hand-computed species ratio; a second build re-announces (warn-once
+        is per engine rebuild = per RMG iteration, deliberately)."""
+        import re
+        sp, core, driver, gated, rs = self._b1_with_driver()
+        with caplog.at_level(logging.WARNING):
+            _gate17_simulate(rs, core, [driver], [sp["G"]], [gated])
+        lines = _census_lines(caplog)
+        assert len(lines) == 1, lines
+        msg = lines[0]
+        assert "gate=B" in msg
+        assert "no prospectively-condensed product" in msg
+        assert "tol_move_to_core" in msg
+        # hand-computed t~0 ratio: ungated G rate = kf*mu1/V_poly = 10.0;
+        # char_rate = sqrt(2) * (1e-3 / V_gas), V_gas = R*800/1e5.
+        v_gas = constants.R * 800.0 / 1.0e5
+        expected_ratio = 10.0 / (np.sqrt(2.0) * 1.0e-3 / v_gas)
+        ratio = float(re.search(r"ungated_ratio=([0-9.eE+-]+)", msg).group(1))
+        assert ratio == pytest.approx(expected_ratio, rel=1e-2)
+        # the species carrying the ratio is named
+        assert "G" in msg
+        # warn-once across steps, re-announce per rebuild:
+        caplog.clear()
+        sp2, core2, driver2, gated2, rs2 = self._b1_with_driver()
+        with caplog.at_level(logging.WARNING):
+            _gate17_simulate(rs2, core2, [driver2], [sp2["G"]], [gated2])
+        assert len(_census_lines(caplog)) == 1
+
+    def test_census_payload_carries_predemotion_stamp(self, caplog):
+        """T5 (stamp-divergence variant): a reaction stamped
+        SCISSION_FRAGMENT(3) with unresolvable dst is demoted to
+        UNRESOLVED(4) by the init pass AND Gate-B zeroed; the census payload
+        shows pre-demotion 3 / post-demotion 4 -- the stamp thread proven
+        end-to-end on the live path (spec SS7(iv))."""
+        sp, core, driver, gated, rs = self._b1_with_driver(archetype=3)
+        # liveness: the solver did demote (edge reaction index n_rxn + 0)
+        assert int(np.asarray(rs.reaction_flux_archetype)[1]) == 4
+        with caplog.at_level(logging.WARNING):
+            _gate17_simulate(rs, core, [driver], [sp["G"]], [gated])
+        lines = _census_lines(caplog)
+        assert len(lines) == 1, lines
+        assert "pre-demotion=3" in lines[0]
+        assert "post-demotion=4" in lines[0]
+
+    def test_census_gate_a_variant_names_decisive_product(self, caplog):
+        """T5 (Gate-A variant, armed shape A): X(gas) -> G(edge) with a
+        configured G pool -- prospective Gate A zeroes at edge; the census
+        line carries gate=A and the prospectively-condensed product label."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["Y"], sp["G_mu0"], sp["G_mu1"], sp["G_mu2"]]
+        mask = [False, False, False, False, True, True, False, False, False]
+        gated = Reaction(reactants=[sp["X"]], products=[sp["G"]], **_KIN)
+        driver = Reaction(
+            reactants=[sp["X"]], products=[sp["Y"]],
+            kinetics=Arrhenius(A=(1.0e-3, "1/s"), n=0.0,
+                               Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+            reversible=False)
+        rs = _gate17_rs(core, mask, [driver], edge_spcs=[sp["G"]],
+                        rxns_edge=[gated],
+                        pools=(("A", (1, 2, 3)), ("G", (6, 7, 8))))
+        with caplog.at_level(logging.WARNING):
+            _gate17_simulate(rs, core, [driver], [sp["G"]], [gated])
+        lines = _census_lines(caplog)
+        assert len(lines) == 1, lines
+        assert "gate=A" in lines[0]
+        assert "G" in lines[0]
+
+    def test_census_gate_a_core_product_decisive_label(self, caplog):
+        """T5 (Gate-A variant, decisive product CORE-resident): X(gas) ->
+        A(core pool proxy) + G(edge) -- the prospectively-condensed product
+        that decides Gate A lives in CORE, so the census must resolve its
+        label through core_species (threaded via the base hook) instead of
+        printing an opaque core_index=N."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["Y"]]
+        mask = [False, False, False, False, True, True]
+        gated = Reaction(reactants=[sp["X"]], products=[sp["A"], sp["G"]],
+                         **_KIN)
+        driver = Reaction(
+            reactants=[sp["X"]], products=[sp["Y"]],
+            kinetics=Arrhenius(A=(1.0e-3, "1/s"), n=0.0,
+                               Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+            reversible=False)
+        rs = _gate17_rs(core, mask, [driver], edge_spcs=[sp["G"]],
+                        rxns_edge=[gated])
+        with caplog.at_level(logging.WARNING):
+            _gate17_simulate(rs, core, [driver], [sp["G"]], [gated])
+        lines = _census_lines(caplog)
+        assert len(lines) == 1, lines
+        msg = lines[0]
+        assert "gate=A" in msg
+        # the decisive core product is named by LABEL, never by index
+        assert "decisive=A;" in msg
+        assert "core_index=" not in msg
+
+    def test_census_silent_on_clean_shapes(self, caplog):
+        """T6: canonical chip (probe 3), demoted-but-ungated (probe 4) and
+        shape A @ HEAD config (probe 2) emit ZERO census lines through a
+        real simulate(), and their edge rates keep the HEAD values
+        (2.0 / 10.0 / 30.068) -- the consistent-silent-at-HEAD pin for shape
+        A that item 16 will flip to the armed expectation. Silence here is
+        owned by gate_code == 0 (clean shapes), NOT by a dead char_rate:
+        the proxy-touching rows feed proxy_activity into core_species_rates
+        (measured chip-case char_rate = 4.0); only the pure-gas shape-A row
+        has char_rate == 0. The fourth case is the converse pin: a GATED B1
+        row whose only flux the gate zeroes leaves char_rate == 0, and the
+        hook defers silently to the base.pyx singularity path -- the
+        char_rate == 0 guard is load-bearing, not decorative."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = [False, False, False, False, True]
+        chip = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]],
+                        **_KIN)
+        chip.is_end_group_reaction = True
+        chip.polymer_flux_archetype = 5
+        chip.polymer_chip_units = 2
+        demoted = Reaction(reactants=[sp["A"]],
+                           products=[sp["R17"], sp["G"]], **_KIN)
+        demoted.polymer_flux_archetype = 3  # dst unresolvable -> UNRESOLVED
+        gas_a = Reaction(reactants=[sp["X"]], products=[sp["G"]], **_KIN)
+        gated_b1 = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        cases = [
+            (chip, core, mask, 2.0, 0),
+            (demoted,
+             [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+              sp["R17"]],
+             [False, False, False, False, True, False], 10.0, 0),
+            (gas_a, core, mask, 2.0e5 / (constants.R * 800.0), 0),
+            # gated row, char_rate == 0: gate B zeroes the only flux, the
+            # suppressed proxy_activity leaves core_species_rates all-zero,
+            # so the hook must defer WITHOUT a census line even though the
+            # gate code is live and the counterfactual is huge.
+            (gated_b1, core, mask, 0.0, 2),
+        ]
+        for rxn, c, m, expected, expected_gate in cases:
+            caplog.clear()
+            rs = _gate17_rs(list(c), list(m), [], edge_spcs=[sp["G"]],
+                            rxns_edge=[rxn])
+            with caplog.at_level(logging.WARNING):
+                _gate17_simulate(rs, list(c), [], [sp["G"]], [rxn])
+            assert _census_lines(caplog) == []
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+            assert float(np.asarray(rs.edge_reaction_rates)[0]) == \
+                pytest.approx(expected, rel=1e-3)
+            assert int(np.asarray(rs.edge_reaction_gate_code)[0]) == \
+                expected_gate
+            if expected_gate:
+                # liveness for the deference pin: gated, counterfactual
+                # alive, and char_rate genuinely 0 (no core flux at all).
+                assert float(np.asarray(
+                    rs.edge_reaction_rates_ungated)[0]) > 0.0
+                assert not np.any(np.asarray(rs.core_species_rates))
+
+    def test_counterfactual_purity(self):
+        """T9: R2 observes, never leaks into state. On the gated B1 fixture
+        the consistency point (edge_reaction_rates == 0, no
+        edge_species_rates contribution) holds, the ungated arrays carry
+        exactly the counterfactual, and the parent proxy's
+        core_species_rates (proxy_activity-derived) excludes the gated
+        |flux| -- ghost flux must not feed spawn/similarity diagnostics."""
+        sp, core, driver, gated, rs = self._b1_with_driver()
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert float(np.asarray(rs.edge_reaction_rates)[0]) == 0.0
+        assert float(np.asarray(rs.edge_species_rates)[0]) == 0.0
+        assert int(np.asarray(rs.edge_reaction_gate_code)[0]) == 2
+        assert float(np.asarray(rs.edge_reaction_rates_ungated)[0]) == \
+            pytest.approx(10.0)
+        assert float(np.asarray(rs.edge_species_rates_ungated)[0]) == \
+            pytest.approx(10.0)
+        # ghost-flux suppression: proxy A (index 0) carries NO activity from
+        # the gated edge row (residual section 11 reports
+        # proxy_activity/V_poly for proxies).
+        assert float(np.asarray(rs.core_species_rates)[0]) == 0.0
+
+    def test_counterfactual_purity_r1_site_bimolecular(self):
+        """T9 (r1 site): X(gas) + A(pool proxy) -> Y + G, all products
+        prospectively gas, is Gate-B zeroed at edge. The proxy sits at the
+        SECOND reactant slot, so this pins the r1-site proxy_activity
+        suppression in residual section 3 -- the r0-site test above never
+        reaches it. A's core_species_rates (proxy_activity-derived) must
+        stay 0 while the counterfactual proves the row alive."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["Y"]]
+        mask = [False, False, False, False, True, True]
+        gated = Reaction(reactants=[sp["X"], sp["A"]],
+                         products=[sp["Y"], sp["G"]], **_KIN)
+        rs = _gate17_rs(core, mask, [], edge_spcs=[sp["G"]],
+                        rxns_edge=[gated])
+        # fixture-shape pins: proxy A really is r1, gate really is B
+        assert int(np.asarray(rs.reactant_indices)[0, 1]) == 0
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert int(np.asarray(rs.edge_reaction_gate_code)[0]) == 2
+        assert float(np.asarray(rs.edge_reaction_rates)[0]) == 0.0
+        assert float(np.asarray(rs.edge_species_rates)[0]) == 0.0
+        # liveness: the suppression is judged on a LIVE counterfactual,
+        # not a dead row (kf * C_X * mu1-site > 0).
+        assert float(np.asarray(rs.edge_reaction_rates_ungated)[0]) > 0.0
+        # r1-site ghost-flux suppression: no spawn/similarity activity on A.
+        assert float(np.asarray(rs.core_species_rates)[0]) == 0.0
+
+    def test_counterfactual_purity_product_site_core_proxy(self):
+        """T9 (product site): X(gas) -> A(CORE pool proxy) + G(edge) is
+        Gate-A zeroed at edge (gas event, prospectively-condensed core
+        product). The proxy appears ONLY as a product, so this pins the
+        p_idx_tmp-site proxy_activity suppression in residual section 4."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = [False, False, False, False, True]
+        gated = Reaction(reactants=[sp["X"]], products=[sp["A"], sp["G"]],
+                         **_KIN)
+        rs = _gate17_rs(core, mask, [], edge_spcs=[sp["G"]],
+                        rxns_edge=[gated])
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert int(np.asarray(rs.edge_reaction_gate_code)[0]) == 1
+        assert float(np.asarray(rs.edge_reaction_rates)[0]) == 0.0
+        assert float(np.asarray(rs.edge_species_rates)[0]) == 0.0
+        # liveness: counterfactual = kf * C_X > 0 (pure-gas rate law).
+        assert float(np.asarray(rs.edge_reaction_rates_ungated)[0]) > 0.0
+        # product-site ghost-flux suppression: no activity lands on A.
+        assert float(np.asarray(rs.core_species_rates)[0]) == 0.0
