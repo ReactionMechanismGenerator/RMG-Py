@@ -3,6 +3,7 @@
 (spec: docs/superpowers/specs/2026-06-10-polymer-moments-artifact-design.md;
 format doc: docs/polymer_moments_format.md)."""
 
+import dataclasses
 import json
 
 import pytest
@@ -538,3 +539,79 @@ class TestDeriveCondensedSpecies:
         assert set(labels) == {"P", "P_mu0", "P_mu1", "P_mu2",
                                "P_dp3", "monomer_in_poly"}
         assert "G" not in labels
+
+
+class TestSpawnedPoolMoments:
+    """Item #14a consumer 2, AMENDED 2026-06-12 (uniform-t=0, spec section 4):
+    pools[].moments are the pool's INITIAL CONDITIONS at t=0 of the simulated
+    experiment, normatively. A spawned daughter genuinely contains nothing at
+    t=0, so its entry carries [0, 0, 0] (the physically correct initial
+    condition, not a hole) plus moments_provenance == "spawned_empty";
+    input-declared pools keep their input-derived moments plus
+    "input_declared". The spawn-time [N, N*DP, N*DP^2] fiction dies at the
+    source, and the quantity it fed (a generation-end Sigma-bookkeeping
+    estimate) is never emitted at all."""
+
+    @staticmethod
+    def _drained_daughter(pe_pool):
+        """A gate-path-shaped daughter via the LIVE drain path (registry
+        level; never solver-configured)."""
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+        kwargs = {}
+        if any(f.name == "triggering_moles"
+               for f in dataclasses.fields(SpawnIntent)):
+            # Pre-change shape: mirror the live Phase-E placeholder
+            # (polymer.py:2742, getattr(cand, "amount", 1.0) -> always 1.0).
+            # RED-FIRST scaffolding (the _gate_pool_config precedent) — once
+            # the field is deleted this branch never runs.
+            kwargs["triggering_moles"] = 1.0
+        intent = SpawnIntent(
+            parent_pool=pe_pool,
+            monomer=pe_pool.monomer,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=4,
+            **kwargs,
+        )
+        return drain_spawn_intents([intent], iteration=7,
+                                   existing_pools=[pe_pool])[0]
+
+    @pytest.mark.xfail(strict=True,
+                       reason="RED until the spawn-time fiction dies (item "
+                              "#14a Task 3, uniform-t=0 amendment): the "
+                              "drained daughter's entry carries the "
+                              "[1.0, 4.0, 16.0] spawn-time fiction and no "
+                              "moments_provenance field")
+    def test_spawned_daughter_entry_is_empty_at_t0(self, pe_pool):
+        """T2 (amended, spec section 6; absorbs T7): the drained daughter's
+        entry carries moments == [0, 0, 0] AND
+        moments_provenance == "spawned_empty". Assertion order PINNED
+        (single-reason discipline): the moments-value assertion FIRST — the
+        hand-inspected red dies on the fiction values [1.0, 4.0, 16.0]
+        specifically — the provenance-field assertion SECOND (confirmed as
+        the second red by temporary reorder during the hand-inspection)."""
+        daughter = self._drained_daughter(pe_pool)
+        payload = build_polymer_moments_artifact(
+            [pe_pool, daughter],
+            configured_pool_labels=["PE"],  # daughter NOT solver-configured
+        )
+        entry = next(p for p in payload["pools"] if p["label"] == daughter.label)
+
+        # LIVENESS PINS — BEFORE the red assertions (tripwire discipline):
+        # the daughter came through the LIVE drain path and its entry
+        # resolved with lineage intact (a pin failure = broken fixture,
+        # never a valid red).
+        assert daughter.label == "PE_d1"
+        assert entry["parent_pool"] == "PE"
+        assert entry["spawn_event_metadata"]["triggering_dp"] == 4
+        # The daughter keeps the parent's Mn/Mw (lineage metadata; nothing
+        # derives a DP from them anymore).
+        assert daughter.Mn == pytest.approx(pe_pool.Mn)
+
+        # RED assertion 1 (the fiction): a spawned pool contains NOTHING at
+        # t=0. Pre-change actual: [1.0, 4.0, 16.0] = [N*DP^0, N*DP^1,
+        # N*DP^2] from the never-assigned placeholder N=1.0, DP=4.
+        assert entry["moments"] == [0.0, 0.0, 0.0], (
+            "spawned-pool artifact moments still carry the spawn-time fiction"
+        )
+        # RED assertion 2 (the provenance field).
+        assert entry.get("moments_provenance") == "spawned_empty"
