@@ -2486,3 +2486,142 @@ class TestThermoReferenceStateEpdmShaped:
         assert _thermo_provenance(probe_gav) == "gav"
         assert not any("THERMO REFERENCE-STATE PROVENANCE" in r.getMessage()
                        for r in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# Item 17 (spec 2026-06-12): phase-gate / enlargement consistency fixtures.
+# Ported from /tmp/census_probe.py (the Q0 census probes) — same species,
+# same kinetics, same moments; two solver builds per case (E = product in
+# edge, C = product promoted to core).
+# ---------------------------------------------------------------------------
+
+def _gate17_species():
+    """Census-probe species set. Pool A (proxy + mu0/1/2), inert gas seed X,
+    gas driver target Y, product-under-test G, would-be pool-G mu dummies,
+    ordinary condensed R."""
+    return {
+        "A": _spc("CCCC", "A"),
+        "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
+        "A_mu2": _spc("C#N", "A_mu2"),
+        "X": _spc("N#N", "X"),
+        "Y": _spc("C", "Y"),
+        "G": _spc("[CH3]", "G"),
+        "G_mu0": _spc("CCO", "G_mu0"), "G_mu1": _spc("CC=O", "G_mu1"),
+        "G_mu2": _spc("CC#N", "G_mu2"),
+        "R17": _spc("CCCO", "R17"),
+    }
+
+
+def _gate17_rs(core, mask, rxns_core, edge_spcs=(), rxns_edge=(),
+               pools=(("A", (1, 2, 3)),), moments=None):
+    """Build + initialize a HybridPolymerSystem for the item-17 fixtures.
+
+    ``pools`` is a tuple of (label, mu_indices) — the §5 config-state axis:
+    adding ("G", ...) is the solver-level expression of an item-16 daughter
+    config (spec §3(a) stage-2 labels)."""
+    moments = moments if moments is not None else {
+        lbl: (1.0, 5.0, 30.0) for lbl, _ in pools}
+    mask_arr = np.array(mask, dtype=bool)
+    seed_idx = int(np.where(mask_arr)[0][0])
+    pool_cfgs = [PolymerPoolConfig(label=lbl, xs=2,
+                                   explicit_dp_to_species_index={},
+                                   mu_indices=mu, monomer_poly_index=None)
+                 for lbl, mu in pools]
+    rs = HybridPolymerSystem(
+        T=800.0, P=1.0e5, initial_mole_fractions={core[seed_idx]: 1.0},
+        V_poly=1.0, polymer_pools=pool_cfgs, mass_transfer=[],
+        gas_species_mask=mask_arr, constant_gas_volume=False,
+        initial_polymer_moments=moments, termination=[])
+    rs.initialize_model(list(core), list(rxns_core), list(edge_spcs),
+                        list(rxns_edge))
+    return rs
+
+
+class TestUmbrellaPhaseGateParity:
+    """Spec 2026-06-12 §5 — THE umbrella invariant, one test:
+
+        promotion-time flux must equal post-promotion flux under FULL
+        post-promotion semantics (mask + config).
+
+    Item 17 delivers the mask projection; item 16 RE-RUNS this exact
+    parameterized test under engine-created configs (the parameterization
+    axis IS 16's activation stage). xfail(strict=True) rows are the
+    promoted-then-zeroed census shapes, RED at pre-17 HEAD for their pinned
+    reasons; the §3(c) gate rewrite (Task 3) removes the marks."""
+
+    # Post-17 expected common rate per case (edge == core == this).
+    EXPECTED = {
+        "B1_head": 0.0,                       # parity via zero
+        "B1_configured": 10.0,                # parity via flux (probe Cp)
+        "B2_allgas": 0.0,                     # zero, census-loud (Task 4)
+        "A_head": 2.0e5 / (constants.R * 800.0),   # 30.068... ungated
+        "A_armed": 0.0,                       # Gate A, armed shape
+    }
+
+    def _build_pair(self, case):
+        sp = _gate17_species()
+        pools = [("A", (1, 2, 3))]
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = [False, False, False, False, True]
+        g_configured = case in ("B1_configured", "A_armed")
+        if g_configured:
+            core = core + [sp["G_mu0"], sp["G_mu1"], sp["G_mu2"]]
+            mask = mask + [False, False, False]
+            pools.append(("G", (5, 6, 7)))
+        if case.startswith("B1"):
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        elif case == "B2_allgas":
+            # Probe 3b: fold-back-less DISCRETE_CHIP — genuinely all-gas
+            # products. Throttled site = min(mu0, mu1/2)/V_poly = 1.0.
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+            rxn.is_end_group_reaction = True
+            rxn.polymer_flux_archetype = 5  # DISCRETE_CHIP
+            rxn.polymer_chip_units = 2
+        else:  # A-shaped: gas event
+            rxn = Reaction(reactants=[sp["X"]], products=[sp["G"]], **_KIN)
+        rs_edge = _gate17_rs(core, mask, [], edge_spcs=[sp["G"]],
+                             rxns_edge=[rxn], pools=pools)
+        # Post-promotion build: G in core. Condensed iff a G config exists
+        # (the prospective verdict item 16 will create; HEAD daughters run
+        # as ordinary gas — the probed B1 truth).
+        rs_core = _gate17_rs(core + [sp["G"]], mask + [not g_configured],
+                             [rxn], pools=pools)
+        return sp, rs_edge, rs_core
+
+    @pytest.mark.parametrize("case", [
+        pytest.param("B1_head", marks=pytest.mark.xfail(
+            strict=True,
+            reason="pre-17 HEAD: _check_prod's has_edge_prod exemption waves "
+                   "the maskless edge product through Gate B -- edge 10.0 vs "
+                   "core 0.0 (census probe 1, re-pinned at HEAD 4d667f1af)")),
+        "B1_configured",
+        pytest.param("B2_allgas", marks=pytest.mark.xfail(
+            strict=True,
+            reason="pre-17 HEAD: same exemption on the fold-back-less chip "
+                   "-- edge 2.0 vs core 0.0 (census probe 3b)")),
+        "A_head",
+        pytest.param("A_armed", marks=pytest.mark.xfail(
+            strict=True,
+            reason="pre-17 HEAD: Gate A checks only CORE products -- edge "
+                   "30.068 vs core 0.0 (census probe 2, armed shape)")),
+    ])
+    def test_umbrella_parity_edge_rate_equals_core_rate(self, case):
+        sp, rs_edge, rs_core = self._build_pair(case)
+        # Liveness pins FIRST (the red can only mean "edge evaluation uses
+        # different semantics than core", never "dead fixture"): kinetics
+        # alive at T, and the pool site factor alive for poly events.
+        assert float(rs_edge.kf[0]) > 0.0
+        if case.startswith(("B1", "B2")):
+            assert float(rs_edge.y[2]) > 0.0  # pool A mu1 site factor
+        else:
+            assert float(rs_edge.y[4]) > 0.0  # gas reactant X
+        rs_edge.residual(0.0, rs_edge.y, np.zeros_like(rs_edge.y))
+        rs_core.residual(0.0, rs_core.y, np.zeros_like(rs_core.y))
+        edge_rate = float(np.asarray(rs_edge.edge_reaction_rates)[0])
+        core_rate = float(np.asarray(rs_core.core_reaction_rates)[0])
+        # THE UMBRELLA INVARIANT — this assertion dies first, by design.
+        assert edge_rate == pytest.approx(core_rate, abs=1e-12), (
+            f"umbrella parity broken for {case}: edge rate {edge_rate} vs "
+            f"post-promotion core rate {core_rate}")
+        assert edge_rate == pytest.approx(self.EXPECTED[case],
+                                          rel=1e-9, abs=1e-12)
