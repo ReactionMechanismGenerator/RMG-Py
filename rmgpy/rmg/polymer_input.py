@@ -276,11 +276,18 @@ class HybridPolymerReactor(ReactionSystem):
             new_mask[:len(gas_mask)] = gas_mask
             gas_mask = new_mask
 
-        # Item 17 (spec 2026-06-12 SS3(a)) stage-1 prospective seed: the SAME
-        # config-keyed classifier over chain(core, edge) -- same function,
-        # same phase object, longer list; no second classifier exists to
-        # drift. The solver's stage-2 pass + rider R1 (core-prefix parity
-        # raise) complete the construction at initialize_model time.
+        # Item 17 (spec 2026-06-12 SS3(a), A5-2) stage-1 prospective seed: the
+        # SAME config-keyed classifier over chain(core, edge) -- same
+        # function, same phase object, longer list; no second classifier
+        # exists to drift. A5-2: this build-frozen seed went STALE on the
+        # engine-reuse path (the engine outlives the edge list that produced
+        # the seed), so it is now only a one-time first-build hint; the
+        # AUTHORITATIVE production source is the classifier handle passed below
+        # (prospective_classifier=self.polymerPhase.get_gas_mask), which the
+        # solver re-runs over the LIVE chain(core, edge) on every
+        # initialize_model. The solver's stage-2 pass + rider R1 (core-prefix
+        # parity raise) + R1-EDGE (edge-suffix provenance raise) complete and
+        # verify the construction at initialize_model time.
         prospective_seed = self.polymerPhase.get_gas_mask(
             list(core_species) + list(edge_species))
 
@@ -388,6 +395,15 @@ class HybridPolymerReactor(ReactionSystem):
             polymer_species_labels=poly_labels,
             gas_species_mask=gas_mask,
             prospective_gas_mask=prospective_seed,
+            # A5-2: the authoritative production source for stage 1 -- the
+            # solver re-runs this over the LIVE chain(core, edge) on every
+            # initialize_model (base.pyx:simulate already calls
+            # initialize_model with the live edge), so the frozen seed above
+            # can never go stale and silently demote the build to the
+            # edge-defaults-GAS fallback. Production builds are held to the
+            # stage-1 contract (allow_default_prospective_edge left default
+            # False -> R1-EDGE raises if the fallback ever fires here).
+            prospective_classifier=self.polymerPhase.get_gas_mask,
             constant_gas_volume=self.constant_gas_volume,
             V_gas0=V_gas0,
             initial_polymer_moments=self.polymerPhase.initial_moments,

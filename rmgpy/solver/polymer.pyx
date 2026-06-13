@@ -399,6 +399,8 @@ class HybridPolymerSystem(ReactionSystem):
         polymer_species_labels=None,
         gas_species_mask: Optional[np.ndarray] = None,
         prospective_gas_mask: Optional[np.ndarray] = None,
+        prospective_classifier=None,
+        allow_default_prospective_edge: bool = False,
         constant_gas_volume: bool = False,
         V_gas0: Optional[float] = None,
         initial_polymer_moments: Optional[Dict[str, Tuple[float, float, float]]] = None,
@@ -448,6 +450,23 @@ class HybridPolymerSystem(ReactionSystem):
         # harvest).
         self._prospective_gas_mask_seed = prospective_gas_mask
         self.prospective_gas_mask = None
+        # Item 17 A5-2 (spec 2026-06-12 SS3(a)/(d)): the §3(a) staging fix.
+        # _prospective_classifier is a CALLABLE f(species_list) -> bool array
+        # (the bound polymerPhase.get_gas_mask), plumbed onto the engine by
+        # to_solver_object so initialize_model can re-run stage-1 over the
+        # LIVE chain(core, edge) on EVERY call (base.pyx:simulate already
+        # re-runs initialize_model with the live edge, so no reactor-level
+        # trigger is needed). Used for CLASSIFICATION ONLY -- R3-clean, never a
+        # phase verdict for any core behavior. None on direct-test/runner
+        # construction. _allow_default_prospective_edge is the opt-in flag that
+        # marks a build as legitimately fallback-permitted (direct-test/runner
+        # with no blueprint phase object); R1-EDGE raises iff a build is NOT so
+        # flagged AND its prospective edge suffix was default-filled.
+        # _prospective_edge_provenance is the per-build int8 marker over the
+        # edge entries (1 = stage-1-classified, 0 = default-filled).
+        self._prospective_classifier = prospective_classifier
+        self._allow_default_prospective_edge = bool(allow_default_prospective_edge)
+        self._prospective_edge_provenance = None
         self.const_spc_names = const_spc_names or []
         self.const_spc_indices = None
         self.sens_conditions = sens_conditions
@@ -914,37 +933,54 @@ class HybridPolymerSystem(ReactionSystem):
         combined_species = list(core_species) + (list(edge_species)
                                                  if edge_species else [])
         seed = self._prospective_gas_mask_seed
-        if seed is not None and len(seed) == n_core + n_edge_spc:
+        # A5-2 (spec 2026-06-12 SS3(a) REDESIGNED): stage-1 precedence, in
+        # order. The edge-provenance marker records HOW the edge suffix was
+        # produced (1 = stage-1-classified, 0 = default-filled) so R1-EDGE can
+        # raise on a production fallback R1's core-prefix check is blind to.
+        edge_provenance = np.ones(n_edge_spc, dtype=np.int8)
+        if self._prospective_classifier is not None:
+            # (1) PRODUCTION PATH: rebuild stage 1 against the LIVE
+            # chain(core, edge) via the plumbed classifier handle
+            # (polymerPhase.get_gas_mask over the CURRENT lists -- no frozen
+            # seed to go stale). The edge suffix is genuinely classified, so
+            # provenance stays all-1.
+            stage1 = np.asarray(
+                self._prospective_classifier(combined_species), dtype=bool)
+            if stage1.shape[0] != n_core + n_edge_spc:
+                raise ValueError(
+                    "PROSPECTIVE-MASK CLASSIFIER: prospective_classifier "
+                    "returned length %d for a chain(core, edge) of length %d."
+                    % (stage1.shape[0], n_core + n_edge_spc))
+            self.prospective_gas_mask = stage1.copy()
+        elif seed is not None and len(seed) == n_core + n_edge_spc:
+            # (2) DIRECT-TEST SEED PATH: a full doctored seed supplied at
+            # construction (e.g. R1's T4). The seed IS a stage-1 product by
+            # contract, so provenance is stage-1-classified.
             self.prospective_gas_mask = np.asarray(seed, dtype=bool).copy()
         else:
+            # (3) FALLBACK -- genuine last resort, direct-test/runner only.
+            # Edge defaults prospectively-GAS; the edge suffix provenance is
+            # default-filled (0), so R1-EDGE raises unless the build is flagged
+            # allow_default_prospective_edge. The PROSPECTIVE-MASK SEED STALE
+            # warning is retained ONLY for back-compat when a stale seed was
+            # present (a production build never reaches here -- classifier
+            # present => branch 1).
             if seed is not None:
-                # Engine-reuse path (polymer_input.py:176-180): a
-                # constructor-era seed can be sized for a previous build's
-                # edge. Loud fallback, never a crash; R1 below still proves
-                # the core prefix every build. At HEAD config the fallback
-                # is verdict-identical to a fresh stage-1 seed: every
-                # species stage 1 classifies condensed is input-configured
-                # into core (premise A3), and stage 2 re-applies pool labels
-                # on the CURRENT combined list.
                 logging.warning(
                     "PROSPECTIVE-MASK SEED STALE: stage-1 seed length %d != "
                     "n_core + n_edge = %d; rebuilding prospective mask from "
                     "the fallback (core mask + edge defaults GAS).",
                     len(seed), n_core + n_edge_spc)
-            # Fallback path (direct solver construction without the
-            # blueprint seed -- tests, polymer_moments_runner). Stated
-            # premise, not an implication (amendment A3): edge species
-            # default prospectively-GAS here, which would diverge from
-            # production stage 1 only for an edge species stage 1 classifies
-            # condensed -- unreachable today, because get_gas_mask's registry
-            # draws only from input-configured objects and all of those live
-            # in core_species (the mass-transfer raises index the CORE-sized
-            # mask). Fixtures express a prospectively-condensed EDGE species
-            # through configured pool labels (stage 2) -- exactly how
-            # production daughters become condensed under item 16.
+            # Stated premise, not an implication (amendment A3): edge species
+            # default prospectively-GAS here. Fixtures express a
+            # prospectively-condensed EDGE species through configured pool
+            # labels (stage 2) -- exactly how production daughters become
+            # condensed under item 16.
             self.prospective_gas_mask = np.concatenate([
                 np.asarray(self.gas_species_mask, dtype=bool).copy(),
                 np.ones(n_edge_spc, dtype=bool)])
+            edge_provenance = np.zeros(n_edge_spc, dtype=np.int8)
+        self._prospective_edge_provenance = edge_provenance
         self._apply_pool_phase_overrides(self.prospective_gas_mask,
                                          combined_species,
                                          record_indices=False)
@@ -973,6 +1009,34 @@ class HybridPolymerSystem(ReactionSystem):
                 "the combined get_gas_mask call (a duplicate label present "
                 "only in the edge disables the label fallback for the "
                 "combined list -- polymer_input.py:609-612).")
+
+        # RIDER R1-EDGE -- edge-suffix provenance guard (item 17 A5-2, spec
+        # SS3(d); DISTINCT from R1 by construction). R1's core-prefix check
+        # CANNOT see the §3(a) staging defect: when a build falls through to
+        # edge-defaults-GAS, the core PREFIX still matches gas_species_mask
+        # verbatim (the fallback copies it), so R1 passes green while the edge
+        # SUFFIX is silently default-filled. A PRODUCTION build (not flagged
+        # allow_default_prospective_edge) whose edge suffix came from defaults
+        # means the live-edge stage-1 rebuild never fired -- the latent no-op
+        # A5-2 exists to kill. Raise, never warn. The legitimate last-resort
+        # fallback (direct-test/runner, no blueprint phase) is opt-in via the
+        # flag. Runs at the same point R1 does, every rebuild.
+        if (not self._allow_default_prospective_edge
+                and self._prospective_edge_provenance is not None
+                and self._prospective_edge_provenance.shape[0] > 0
+                and not np.all(self._prospective_edge_provenance)):
+            n_default = int(np.count_nonzero(
+                self._prospective_edge_provenance == 0))
+            raise ValueError(
+                "PROSPECTIVE-MASK PROVENANCE: fallback fired during a "
+                "production enlargement: %d edge entries, %d default-filled; "
+                "a production build must classify the live edge via stage-1 "
+                "(prospective_classifier over chain(core, edge)) -- the "
+                "rebuild trigger missed an edge-list change, or no classifier "
+                "handle was plumbed onto the engine. Direct-test/runner "
+                "construction that legitimately needs the fallback must set "
+                "allow_default_prospective_edge=True."
+                % (self._prospective_edge_provenance.shape[0], n_default))
 
         # Resolve per-reaction source/target pools from species indices (no
         # label matching), and remap unstamped proxy-touching reactions

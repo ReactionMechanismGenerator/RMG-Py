@@ -309,7 +309,14 @@ def build_system_from_artifact(artifact, species, reactions,
         V_poly=float(V_poly),
         polymer_pools=pools, mass_transfer=mt_configs,
         gas_species_mask=mask, constant_gas_volume=False,
-        initial_polymer_moments=moments0, termination=[])
+        initial_polymer_moments=moments0, termination=[],
+        # Item 17 A5-2: the runner is a direct (no-blueprint-phase) construction
+        # -- a legitimate last-resort prospective-mask fallback. Flag it so the
+        # R1-EDGE provenance guard does not raise on a default-filled edge
+        # suffix. (The runner passes edge_species=[] today, so its edge suffix
+        # is empty and provenance is vacuously clean even without the flag, but
+        # set it explicitly for clarity and to cover non-empty edges.)
+        allow_default_prospective_edge=True)
     with contextlib.redirect_stdout(io.StringIO()):  # mute the mapping banner
         rs.initialize_model(core, all_reactions, [], [])
     return rs, core, all_reactions

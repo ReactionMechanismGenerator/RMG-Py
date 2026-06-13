@@ -1093,6 +1093,10 @@ class TestHybridPolymerReactor:
             polymer_pools=[], mass_transfer=[],
             gas_species_mask=np.array([True], dtype=bool), constant_gas_volume=False,
             termination=[],
+            # Item 17 A5-2: direct (no-blueprint-phase) build with a non-empty
+            # edge -- a legitimate last-resort fallback; flag it so R1-EDGE does
+            # not raise on the default-filled edge suffix.
+            allow_default_prospective_edge=True,
         )
         rs.initialize_model([A], [], [E], [edge_rxn])
 
@@ -2512,6 +2516,19 @@ def _gate17_species():
     }
 
 
+def _stage1_classifier(species_list):
+    """Item 17 A5-2 fixture stage-1 classifier: f(species_list) -> bool array
+    (True = gas). Stands in for the bound polymerPhase.get_gas_mask on the
+    production live-edge path -- it classifies the product-under-test G as
+    CONDENSED by label (exactly as get_gas_mask condenses a registered pool
+    member), and everything else GAS. The KEY property the armed-row mutation
+    proof rests on: G's condensed verdict here comes from STAGE 1 (this
+    classifier), NOT from a stage-2 pool-label override -- so wiring None
+    (forced fallback) genuinely flips edge G to GAS and breaks the umbrella
+    parity, the way the stale-seed fallback silently would in production."""
+    return np.array([s.label != "G" for s in species_list], dtype=bool)
+
+
 def _gate17_rs(core, mask, rxns_core, edge_spcs=(), rxns_edge=(),
                pools=(("A", (1, 2, 3)),), moments=None):
     """Build + initialize a HybridPolymerSystem for the item-17 fixtures.
@@ -2531,7 +2548,14 @@ def _gate17_rs(core, mask, rxns_core, edge_spcs=(), rxns_edge=(),
         T=800.0, P=1.0e5, initial_mole_fractions={core[seed_idx]: 1.0},
         V_poly=1.0, polymer_pools=pool_cfgs, mass_transfer=[],
         gas_species_mask=mask_arr, constant_gas_volume=False,
-        initial_polymer_moments=moments, termination=[])
+        initial_polymer_moments=moments, termination=[],
+        # Item 17 A5-2: a direct-test build with no blueprint phase object is
+        # a legitimate last-resort fallback -- flag it so R1-EDGE (the
+        # edge-suffix provenance guard) does not raise on its default-filled
+        # edge. (Fixtures express prospectively-condensed edge species via
+        # configured pool labels in stage 2; the production live-edge stage-1
+        # path is exercised by the classifier-wired fixtures in T12/T13.)
+        allow_default_prospective_edge=True)
     rs.initialize_model(list(core), list(rxns_core), list(edge_spcs),
                         list(rxns_edge))
     return rs
@@ -2662,12 +2686,20 @@ class TestProspectiveMask:
                                 mu_indices=(1, 2, 3), monomer_poly_index=None)
         # Seed sized for n_core + 3 edge species; build with ONE edge species.
         stale_seed = np.concatenate([mask, np.ones(3, dtype=bool)])
+        # A5-2 re-pin: with a stale seed, no classifier, and a non-empty edge,
+        # the build takes the edge-defaults-GAS fallback (branch 3) -- a
+        # default-filled edge suffix that R1-EDGE would RAISE on for a
+        # production build. This is a legitimate direct-test fallback, so it
+        # is flagged allow_default_prospective_edge=True; the back-compat
+        # PROSPECTIVE-MASK SEED STALE warning is still emitted (a stale seed
+        # was present) and the fallback is taken (no provenance raise).
         rs = HybridPolymerSystem(
             T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
             V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
             gas_species_mask=mask.copy(), constant_gas_volume=False,
             initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
-            prospective_gas_mask=stale_seed)
+            prospective_gas_mask=stale_seed,
+            allow_default_prospective_edge=True)
         with caplog.at_level(logging.WARNING):
             rs.initialize_model(list(core), [], [sp["G"]], [rxn])
         assert any("PROSPECTIVE-MASK SEED STALE:" in r.getMessage()
@@ -3091,3 +3123,396 @@ class TestPhaseGateStaticCensus:
         with caplog.at_level(logging.WARNING):
             rs.initialize_model(list(core), [rxn], [], [])
         assert len(_census_lines(caplog)) == 1
+
+
+# ---------------------------------------------------------------------------
+# Item 17 Task 5A (spec 2026-06-12 A5-2/A5-3): live-edge stage-1 + R1-EDGE
+# edge-suffix provenance guard. T12 (production fallback RAISES) is the
+# live-path tripwire confirmed RED on HEAD f13e4ce52 (where the guard does
+# not exist and the production build silently falls back); T13 is the armed-
+# rows fail-under-forced-fallback mutation proof. Skeletons per plan 5A.1 --
+# the `...` halves are filled by the implementer against the 5A.2 knob.
+# ---------------------------------------------------------------------------
+
+
+class TestProspectiveEdgeProvenance:
+    """Spec 2026-06-12 SS3(d) R1-EDGE (A5-2): R1's core-prefix check CANNOT
+    see the staging defect -- under the edge-defaults-GAS fallback the core
+    PREFIX still matches gas_species_mask exactly (the fallback copies it
+    verbatim), so R1 passes green while the edge SUFFIX is silently
+    default-filled. A separate guard fires on the part R1 is structurally
+    blind to: a PRODUCTION build (not flagged as a legitimate test-fallback)
+    whose prospective edge classification came from defaults must RAISE."""
+
+    def _prod_build_kwargs(self, core, mask, cfg):
+        # A "production-shaped" build is one NOT flagged
+        # allow_default_prospective_edge=True (i.e. built from a blueprint
+        # phase handle, the live path). Tests express that by passing a phase
+        # classifier handle (set below) and leaving the flag default-False.
+        # initial_mole_fractions is a MANDATORY positional on the HEAD
+        # constructor (polymer.pyx:391) -- seed the first gas-masked core
+        # species, exactly as the landed _gate17_rs fixture does, so the build
+        # reaches initialize_model (the provenance raise site) instead of
+        # dying at __init__.
+        seed_idx = int(np.where(np.asarray(mask, dtype=bool))[0][0])
+        return dict(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[seed_idx]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg],
+            mass_transfer=[], gas_species_mask=mask.copy(),
+            constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[])
+
+    def test_production_fallback_raises_provenance(self):
+        """T12: a production-shaped build (live-edge classifier handle present,
+        allow_default_prospective_edge default-False) that is forced to
+        default-fill the edge suffix -- the exact shape that fired
+        PROSPECTIVE-MASK SEED STALE on the live Task-6 run -- RAISES with the
+        PROSPECTIVE-MASK PROVENANCE: sentinel naming the default-filled edge
+        count. Liveness pin before the raise: the edge list is genuinely
+        non-empty AND carries a prospectively-condensed edge species (the G
+        product under a configured G pool), so the raise can only mean 'the
+        production path consumed defaults', never 'empty edge / nothing to
+        classify'."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["G_mu0"], sp["G_mu1"], sp["G_mu2"]]
+        mask = np.array([False, False, False, False, True,
+                         False, False, False], dtype=bool)
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        cfg = PolymerPoolConfig(label="A", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None)
+        # Build with a CLASSIFIER HANDLE present (production path), but force
+        # the fallback (no live-edge stage-1 result available) -- e.g. by
+        # constructing with a stale/absent seed AND no live classifier wired,
+        # the implementer's chosen "force fallback on a production build" knob
+        # (see 5A.2). The edge carries G (prospectively condensed via the G
+        # pool config in stage 2), so default-filling it is a real provenance
+        # violation.
+        # Liveness: edge non-empty, G prospectively condensed once classified.
+        rs = HybridPolymerSystem(
+            **self._prod_build_kwargs(core, mask, cfg),
+            # production marker: NOT allow_default_prospective_edge
+        )
+        # the implementer wires the production classifier handle + the forced-
+        # fallback knob per 5A.2; with it absent on a production build the
+        # guard must raise.
+        with pytest.raises(ValueError, match="PROSPECTIVE-MASK PROVENANCE:"):
+            rs.initialize_model(list(core), [], [sp["G"]], [rxn])
+
+    def test_live_edge_stage1_does_not_raise(self):
+        """T12 green counterpart: a production build whose prospective edge
+        suffix came from the LIVE-EDGE stage-1 classifier (provenance all
+        stage-1-classified) does NOT raise -- the guard fires only on
+        default-fill, not on a legitimately-classified edge."""
+        # Production live-edge path: a classifier handle is wired (the bound-
+        # method stand-in _stage1_classifier, classifying G condensed by label
+        # exactly as polymerPhase.get_gas_mask classifies a registered pool
+        # member), allow_default_prospective_edge default-False. The solver
+        # re-runs stage 1 over the live chain(core, edge) at initialize_model.
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = np.array([False, False, False, False, True], dtype=bool)
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        cfg = PolymerPoolConfig(label="A", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None)
+        rs = HybridPolymerSystem(
+            **self._prod_build_kwargs(core, mask, cfg),
+            prospective_classifier=_stage1_classifier)  # production marker
+        # No raise: the edge suffix was classified by the live-edge stage-1.
+        rs.initialize_model(list(core), [], [sp["G"]], [rxn])
+        n_core = rs.num_core_species
+        pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        # provenance all stage-1-classified, no default-fill
+        assert np.all(np.asarray(rs._prospective_edge_provenance) == 1)
+        # the edge suffix equals a fresh classifier call over chain(core, edge)
+        fresh = np.asarray(_stage1_classifier(list(core) + [sp["G"]]),
+                           dtype=bool)
+        assert np.array_equal(pm[n_core:], fresh[n_core:])
+        assert bool(pm[-1]) is False  # G classified CONDENSED by stage-1
+
+    def test_flagged_test_fallback_does_not_raise(self):
+        """T12 green counterpart: a build FLAGGED
+        allow_default_prospective_edge=True (direct-test/runner construction
+        with no blueprint phase object -- e.g. polymer_moments_runner) does
+        NOT raise even with default-filled edges. This is the legitimate
+        last-resort fallback (spec SS3(a)/SS3(d))."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = np.array([False, False, False, False, True], dtype=bool)
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        cfg = PolymerPoolConfig(label="A", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg],
+            mass_transfer=[], gas_species_mask=mask.copy(),
+            constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            allow_default_prospective_edge=True)
+        # No raise: the flag marks this build as legitimately fallback-permitted.
+        rs.initialize_model(list(core), [], [sp["G"]], [rxn])
+        pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        assert pm.shape[0] == rs.num_core_species + 1
+        assert bool(pm[-1]) is True  # edge G default GAS, permitted under flag
+
+
+class TestArmedRowsExerciseStage1:
+    """Spec 2026-06-12 SS5/A5-3 acceptance gate: the two ARMED parity rows
+    (B1_configured, A_armed) PASS with the real A5-2 live-edge stage-1 mask AND
+    go RED under forced fallback (edge-defaults-GAS). Without this proof the
+    armed rows could pass vacuously (parity-via-zero by accident) the way the
+    live EPDM deck 'passed' by luck.
+
+    Design note (why NOT TestUmbrellaPhaseGateParity._build_pair): there the
+    edge G is condensed by a STAGE-2 pool-label override (a configured "G"
+    pool), which runs identically whether stage-1 fell back or not -- so
+    forcing the fallback would NOT flip G and the mutation proof would be
+    vacuous. These fixtures instead source G's condensed verdict from STAGE 1
+    (the wired classifier), with NO G pool, so wiring the classifier to None
+    genuinely flips edge G to GAS. The post-promotion core build condenses G
+    via a direct mask bit (the verdict item 16's promotion would record),
+    matching the EXPECTED armed values (B1_configured 10.0, A_armed 0.0)."""
+
+    def _build_armed_pair(self, case, live):
+        """Build the (edge, core) pair for an armed case. ``live`` selects the
+        EDGE build's stage-1 source: True wires the live-edge classifier
+        (production path, G classified condensed by stage 1); False forces the
+        edge-defaults-GAS fallback (classifier None) -- flagged permitted so
+        the build itself does not raise, isolating the parity break to the
+        lost gate verdict, not a provenance raise."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+        mask = [False, False, False, False, True]
+        if case == "B1_configured":  # poly event A -> G
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        else:  # A_armed: gas event X -> G
+            rxn = Reaction(reactants=[sp["X"]], products=[sp["G"]], **_KIN)
+        cfg = PolymerPoolConfig(label="A", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None)
+        rs_edge = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=np.array(mask, dtype=bool),
+            constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_classifier=(_stage1_classifier if live else None),
+            allow_default_prospective_edge=(not live))
+        rs_edge.initialize_model(list(core), [], [sp["G"]], [rxn])
+        # Post-promotion core build: G promoted to core CONDENSED (the
+        # prospective verdict item 16 records). No G pool; the mask bit carries
+        # the verdict. allow_default_prospective_edge via _gate17_rs.
+        rs_core = _gate17_rs(core + [sp["G"]], mask + [False], [rxn])
+        return rs_edge, rs_core
+
+    @pytest.mark.parametrize("case", ["B1_configured", "A_armed"])
+    def test_armed_row_red_under_forced_fallback(self, case):
+        """Force the edge-defaults-GAS fallback on the armed parity pair: the
+        edge G, classified condensed by stage 1 on the live path, instead
+        defaults GAS, so Gate B (B1_configured) / Gate A (A_armed) never fires
+        at edge and the umbrella parity (edge rate == post-promotion core rate)
+        BREAKS.
+
+        B1_configured (poly event A -> G): in the post-promotion core build G
+        is condensed, so Gate B PASSES and the core rate is the armed flux
+        (10.0). Under the forced fallback the edge G defaults GAS, so Gate B
+        ZEROES the edge rate (0.0). 10.0 != 0.0 -- parity broken.
+
+        A_armed (gas event X -> G): in the core build G is condensed, so Gate A
+        ZEROES the core rate (0.0). Under the forced fallback the edge G
+        defaults GAS, so Gate A does NOT fire and the edge rate is the ungated
+        30.068... 30.068 != 0.0 -- parity broken."""
+        rs_edge, rs_core = self._build_armed_pair(case, live=False)
+        # liveness: the forced-fallback edge G really did default GAS (stage-1
+        # would have condensed it), so the break is the lost gate verdict.
+        pm = np.asarray(rs_edge.prospective_gas_mask, dtype=bool)
+        assert bool(pm[-1]) is True  # edge G default GAS (fallback)
+        rs_edge.residual(0.0, rs_edge.y, np.zeros_like(rs_edge.y))
+        rs_core.residual(0.0, rs_core.y, np.zeros_like(rs_core.y))
+        edge_rate = float(np.asarray(rs_edge.edge_reaction_rates)[0])
+        core_rate = float(np.asarray(rs_core.core_reaction_rates)[0])
+        # THE PROOF: under forced fallback the armed flux verdict is lost ->
+        # parity is BROKEN (the vacuous-pass guard).
+        assert edge_rate != pytest.approx(core_rate, abs=1e-9), (
+            f"armed row {case} did NOT break under forced fallback "
+            f"(edge {edge_rate} vs core {core_rate}) -- the mutation proof is "
+            f"vacuous; G's condensed verdict is not stage-1-sourced")
+
+    @pytest.mark.parametrize("case", ["B1_configured", "A_armed"])
+    def test_armed_row_green_with_live_stage1(self, case):
+        """Counterpart: with the real A5-2 live-edge stage-1 mask (classifier
+        wired), the armed rows PASS -- edge rate == post-promotion core rate ==
+        the expected armed value (B1_configured 10.0, A_armed 0.0). Closes the
+        green-RED-green cycle in ONE class and proves the verdict is genuinely
+        stage-1-sourced (provenance all 1, no default-fill)."""
+        rs_edge, rs_core = self._build_armed_pair(case, live=True)
+        assert np.all(np.asarray(rs_edge._prospective_edge_provenance) == 1)
+        pm = np.asarray(rs_edge.prospective_gas_mask, dtype=bool)
+        assert bool(pm[-1]) is False  # edge G classified CONDENSED by stage-1
+        rs_edge.residual(0.0, rs_edge.y, np.zeros_like(rs_edge.y))
+        rs_core.residual(0.0, rs_core.y, np.zeros_like(rs_core.y))
+        edge_rate = float(np.asarray(rs_edge.edge_reaction_rates)[0])
+        core_rate = float(np.asarray(rs_core.core_reaction_rates)[0])
+        assert edge_rate == pytest.approx(core_rate, abs=1e-12)
+        assert edge_rate == pytest.approx(
+            TestUmbrellaPhaseGateParity.EXPECTED[case], rel=1e-9, abs=1e-12)
+
+
+class TestLiveEdgeRebuildWidensR1RaiseSurface:
+    """Spec 2026-06-12 §3(d) R1 raise-surface change (A5-review refinement):
+    the A5-2 live-edge stage-1 rebuild WIDENS R1's core-prefix tripwire surface
+    to label-fallback + edge-collision decks, where the OLD stale path (which
+    copied gas_species_mask verbatim into the prospective prefix) could never
+    raise. Intended loudness; EPDM-clean (0 tripwire lines on the live Task-6
+    run -- every poly member is id-registered, no label-fallback core members,
+    no edge label collisions).
+
+    The reviewer's divergence vector: a CORE poly member condensed ONLY via
+    label fallback (id mismatch -- a copied species whose id() is not in
+    get_gas_mask's registry but whose label is) PLUS a duplicate of that label
+    in the EDGE. get_gas_mask's label_fallback_safe (polymer_input.py:634-637)
+    is computed PER-LIST, so the edge duplicate disables the fallback for the
+    combined chain(core, edge) call: the core member that condensed in the
+    core-only call (gas_species_mask) flips GAS in the combined prefix, the
+    prospective core prefix diverges, and R1 RAISES. The old stale path was
+    structurally incapable of this -- it copied gas_species_mask verbatim."""
+
+    def _phase_and_pieces(self):
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import PolymerPhase, PolymerPool
+        mono = _spc("CCCC", "MON")        # the registered pool monomer
+        mono_copy = _spc("CCCC", "MON")   # SAME label, DIFFERENT id -> label
+        #                                   fallback only (id not in registry)
+        mu0 = _spc("CO", "A_mu0")
+        mu1 = _spc("C=O", "A_mu1")
+        mu2 = _spc("C#N", "A_mu2")
+        x = _spc("N#N", "X")              # inert gas seed
+        edge_dup = _spc("C", "MON")       # duplicate label ONLY in the edge
+        g = _spc("[CH3]", "G")
+        pool_in = PolymerPool(label="A", xs=2, monomer=mono, explicit_map={},
+                              mu_species=[mu0, mu1, mu2])
+        phase = PolymerPhase(density=Quantity(900.0, "kg/m^3"),
+                             initial_moments={"A": (1.0, 5.0, 30.0)},
+                             initial_explicit={}, pools=[pool_in])
+        core = [mono_copy, mu0, mu1, mu2, x]
+        return phase, core, edge_dup, g
+
+    def test_get_gas_mask_diverges_per_list_under_collision(self):
+        """The narrow invariant the reviewer probed: get_gas_mask(core) and
+        get_gas_mask(chain(core, edge))[:n_core] DIVERGE under the collision --
+        the core member that condensed via label fallback in the core-only call
+        flips GAS in the combined call (fallback disabled by the edge dup)."""
+        phase, core, edge_dup, g = self._phase_and_pieces()
+        core_only = np.asarray(phase.get_gas_mask(core), dtype=bool)
+        combined = np.asarray(phase.get_gas_mask(core + [edge_dup, g]),
+                              dtype=bool)
+        n_core = len(core)
+        # core-only: index 0 (MON copy) condensed via label fallback
+        assert bool(core_only[0]) is False
+        # combined: edge dup disables the fallback -> index 0 flips GAS
+        assert bool(combined[0]) is True
+        assert not np.array_equal(core_only, combined[:n_core])
+
+    def test_r1_raises_on_label_fallback_plus_edge_collision(self):
+        """The live-edge rebuild makes R1 capable of raising on this deck: the
+        production prospective_classifier (the real bound phase.get_gas_mask)
+        recomputes stage-1 over chain(core, edge), the core prefix flips at MON,
+        and R1 raises PROSPECTIVE-MASK TRIPWIRE: naming the diverging member.
+        Liveness: gas_species_mask is the genuine core-only get_gas_mask (MON
+        condensed), so the raise is the lost-condensation divergence, not a
+        doctored seed (the way T4 injects one)."""
+        phase, core, edge_dup, g = self._phase_and_pieces()
+        gas_mask = np.asarray(phase.get_gas_mask(core), dtype=bool)
+        assert bool(gas_mask[0]) is False  # MON condensed in the static mask
+        cfg = PolymerPoolConfig(label="A", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None)
+        rxn = Reaction(reactants=[core[0]], products=[g], **_KIN)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=gas_mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            # production marker: real bound classifier, fallback NOT permitted
+            prospective_classifier=phase.get_gas_mask)
+        with pytest.raises(ValueError, match="PROSPECTIVE-MASK TRIPWIRE:"):
+            rs.initialize_model(list(core), [], [edge_dup, g], [rxn])
+        # the diverging member (MON) is NAMED in the raise
+        with pytest.raises(ValueError, match=r"MON"):
+            rs.initialize_model(list(core), [], [edge_dup, g], [rxn])
+
+
+class TestProspectiveClassifierLengthGuard:
+    """Spec 2026-06-12 §3(a): the live-edge stage-1 rebuild defensively checks
+    that the plumbed prospective_classifier returns an array sized to
+    chain(core, edge). A classifier returning the wrong length RAISES
+    PROSPECTIVE-MASK CLASSIFIER: -- and production get_gas_mask never trips it
+    (it returns len(input) by construction). Both halves pinned so the guard is
+    proven live AND proven free of false-positives on the real classifier."""
+
+    def _core_pieces(self):
+        a = _spc("CCCC", "A")
+        mu0 = _spc("CO", "A_mu0")
+        mu1 = _spc("C=O", "A_mu1")
+        mu2 = _spc("C#N", "A_mu2")
+        x = _spc("N#N", "X")
+        g = _spc("[CH3]", "G")
+        core = [a, mu0, mu1, mu2, x]
+        mask = np.array([False, False, False, False, True], dtype=bool)
+        cfg = PolymerPoolConfig(label="A", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None)
+        rxn = Reaction(reactants=[a], products=[g], **_KIN)
+        return core, mask, cfg, rxn, g
+
+    def test_wrong_length_classifier_raises(self):
+        """A classifier returning len(input) - 1 (a wrong-length array) makes
+        the live-edge rebuild RAISE PROSPECTIVE-MASK CLASSIFIER:, not silently
+        mis-size the prospective mask."""
+        core, mask, cfg, rxn, g = self._core_pieces()
+
+        def bad_classifier(species_list):
+            return np.ones(len(species_list) - 1, dtype=bool)
+
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_classifier=bad_classifier)
+        with pytest.raises(ValueError, match="PROSPECTIVE-MASK CLASSIFIER:"):
+            rs.initialize_model(list(core), [], [g], [rxn])
+
+    def test_production_get_gas_mask_returns_input_length_no_false_positive(
+            self):
+        """The real production classifier (bound phase.get_gas_mask) returns an
+        array of len(input) for any chain(core, edge), so the length guard is a
+        no-op on the production path -- it never false-positives. Pinned via the
+        classifier directly AND through a full build that does NOT raise the
+        length guard."""
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import PolymerPhase, PolymerPool
+        core, mask, cfg, rxn, g = self._core_pieces()
+        pool_in = PolymerPool(label="A", xs=2, monomer=core[0],
+                              explicit_map={},
+                              mu_species=[core[1], core[2], core[3]])
+        phase = PolymerPhase(density=Quantity(900.0, "kg/m^3"),
+                             initial_moments={"A": (1.0, 5.0, 30.0)},
+                             initial_explicit={}, pools=[pool_in])
+        combined_input = list(core) + [g]
+        out = np.asarray(phase.get_gas_mask(combined_input))
+        assert out.shape[0] == len(combined_input)  # exactly len(input)
+        # full build through the live-edge rebuild: no CLASSIFIER length raise
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=np.asarray(phase.get_gas_mask(core), dtype=bool),
+            constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_classifier=phase.get_gas_mask)
+        rs.initialize_model(list(core), [], [g], [rxn])
+        pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        assert pm.shape[0] == rs.num_core_species + 1
