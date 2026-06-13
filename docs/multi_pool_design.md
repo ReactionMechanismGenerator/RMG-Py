@@ -510,6 +510,45 @@ that ever lands in it is news.
 Full measurement + decision record:
 `docs/superpowers/specs/2026-06-11-thermo-reference-state-tripwire-design.md`.
 
+### 5.3 Phase-gate / enlargement consistency — the prospective mask (2026-06-12)
+
+**Invariant (umbrella, item 17 mask projection):** promotion-time flux ==
+post-promotion flux under full post-promotion semantics. Implementation:
+`prospective_gas_mask`, a SECOND boolean array over `chain(core, edge)`
+rebuilt on every `initialize_model` by the identical two-stage classifier
+(stage 1 `PolymerPhase.get_gas_mask` over the combined list, seeded by
+`to_solver_object`; stage 2 the factored per-pool override pass). The
+residual's product gates consult it for EVERY product — the old
+edge-product exemption (`has_edge_prod` phase bypass) is dead; the
+reverse-rate concentration-availability skip for edge products remains
+(simple.pyx parity, not a phase verdict).
+
+Riders: **R1** — the core prefix must equal `gas_species_mask` on every
+build; divergence raises `PROSPECTIVE-MASK TRIPWIRE:` (never warns).
+**R2** — gate-zeroed flux is loud: the dynamic half computes the ungated
+counterfactual for gate-zeroed edge rows and emits a
+`PHASE-GATE FLUX CENSUS:` warning from a `simulate()` hook when the ungated
+ratio clears `tol_move_to_core` (warn-once per (gate, reaction) per engine
+rebuild; payload: gate A|B, carrying edge species, decisive prospective
+verdicts, pre-/post-demotion archetype stamps); the static half enumerates
+gate-zeroed CORE reactions at init (`static (core, init-time)` marker) —
+covering independent-species-promotion and legacy/restart cores. **R3** —
+`prospective_gas_mask` is gate-input ONLY; `gas_species_mask` keeps its
+size, meaning and every consumer (incl. the §5.2 tripwire's melt class).
+
+Consequence on the EPDM reference deck: the baseline re-pinned DELIBERATELY
+at the measured collapse 26 sp/28 rxn → 8 sp/0 rxn (A5 — the honest core is
+the 8 seed species and ZERO reactions; every reaction the deck generates is
+edge, none clears the enlargement bar, and even H₂ is sub-bar; full
+attribution in the item-17 spec §4.2). The ~14
+Gate-B census lines/iteration on that deck are MELT-CLASS signal (item 18:
+physically melt-resident C15 macroradicals misclassified gas), not
+volatilization signal — the B2 volatilization bundle is queued behind the
+melt-class fix on the census count remaining AFTER it.
+
+Full decision record:
+`docs/superpowers/specs/2026-06-12-phase-gate-enlargement-consistency-design.md`.
+
 ## 6. Sidecar JSON schema
 
 > **SUPERSEDED for schema ≥ 2.0:** the sidecar is now schema 2.0 — envelope,

@@ -440,8 +440,8 @@ class TestDeriveCondensedSpecies:
     SOLVER-CONFIGURED pools (the engine's polymer_pools), which the
     save_everything hook resolves off system.solver — NOT the full Polymer
     registry. A daughter pool spawned mid-run but never solver-configured (e.g.
-    epdm_scission_tail, which the EPDM run runs as ordinary GAS species and
-    whose scission stamp the solver DEMOTES to legacy/UNRESOLVED) is NOT passed
+    epdm_scission_tail, which post-item-17 never reaches core at all (its
+    producing channel is Gate-B zeroed at edge, census-announced) is NOT passed
     here and so is NOT reported condensed."""
 
     def _epdm_like_core(self):
@@ -449,6 +449,14 @@ class TestDeriveCondensedSpecies:
         # condensed) interleaved with gaseous N2 / H(1), plus the spawned
         # epdm_scission_tail family which the solver ran as ordinary GAS species
         # (its pool was never solver-configured).
+        # NOTE (item 17, 2026-06-12): this encodes the OLD baseline's SHAPE.
+        # Post-17 the live EPDM run never promotes the tail family (the
+        # baseline re-pinned 26/28 -> 8/0; A5 measured, H2 also sub-bar), but
+        # the emitter must keep handling cores of this shape -- they still
+        # arrive via legacy/
+        # restart artifacts AND via the third route (independent species
+        # promotion, spec 2026-06-12 SS3(e)). RETAINED as legacy-core
+        # coverage; the sibling fixture below mirrors the NEW baseline.
         core = [
             _spc("[CH2]CC([CH2])C", "epdm", index=2),
             _mu_dummy("epdm_mu0"), _mu_dummy("epdm_mu1"), _mu_dummy("epdm_mu2"),
@@ -538,6 +546,51 @@ class TestDeriveCondensedSpecies:
         assert set(labels) == {"P", "P_mu0", "P_mu1", "P_mu2",
                                "P_dp3", "monomer_in_poly"}
         assert "G" not in labels
+
+    def test_registry_pool_with_proxy_absent_from_core_emits_empty_lists(
+            self, tmp_path):
+        """Item 17 sibling fixture (spec SS4.3/SS7(i)): the NEW EPDM baseline
+        shape -- tail pool in the registry, proxy + mu-dummies NOT in core.
+        The entry survives emission with empty phase/bookkeeping lists (the
+        documented absent-from-core shape, its first live instance), t=0
+        moments, and no reactions[] reference. Probe-derived expected
+        values (/tmp/probe_artifact_registry_pool.py, re-run green at HEAD
+        4d667f1af)."""
+        import json as _json
+        from rmgpy.polymer import (Polymer, write_polymer_pools_sidecar,
+                                   derive_condensed_species)
+        parent = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                         end_groups=["[CH3]", "[H]"], cutoff=5,
+                         Mn=3000.0, Mw=10000.0, initial_mass=1.0)
+        tail = Polymer(label="PS_scission_tail", monomer="[CH2][CH]c1ccccc1",
+                       feature_monomer=None, end_groups=["[CH3]", "[H]"],
+                       cutoff=5, Mn=parent.Mn / 2.0, Mw=parent.Mw / 2.0,
+                       initial_mass=0.0, moments=None)
+        core = [
+            _spc("N#N", "N2", index=4), _spc("[H]", "H", index=1), parent,
+            _mu_dummy("PS_mu0"), _mu_dummy("PS_mu1"), _mu_dummy("PS_mu2"),
+            _spc("[H][H]", "[H][H]", index=40),
+        ]
+        mask = [True, True, False, False, False, False, True]
+        configured = [_FakePool("PS", mu_indices=(3, 4, 5))]
+        condensed = derive_condensed_species(core, configured, mask)
+        write_polymer_pools_sidecar(
+            pool_registry=[parent, tail], output_dir=str(tmp_path),
+            iteration=9, core_species=core, core_reactions=[],
+            configured_pool_labels=["PS"], condensed_species=condensed,
+            monomer_routing_by_pool={}, cantera_index_map=None)
+        with open(tmp_path / "polymer_pools.json") as fh:
+            data = _json.load(fh)
+        assert [p["label"] for p in data["pools"]] == \
+            ["PS", "PS_scission_tail"]
+        entry = data["pools"][1]
+        assert entry["phase_species"] == []
+        assert entry["bookkeeping_species"] == []
+        assert entry["moments"] == [0.0, 0.0, 0.0]
+        assert entry["moments_provenance"] == "spawned_empty"
+        assert entry["monomer_routing"] is None
+        assert data["reactions"] == []
+        assert "PS_scission_tail" not in data["conventions"]["condensed_species"]
 
 
 class TestSpawnedPoolMoments:

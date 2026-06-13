@@ -75,14 +75,20 @@ slot is always an initial condition, never a contradiction — `[0, 0, 0]` +
 `"spawned_empty"` is a statement of fact, distinguishable from a missing
 value by the provenance field itself.
 
-**Dead-channel limitation (consumer guidance):** a spawned pool's channel
-can be promoted at generation time and then demoted/gas-masked by the phase
-gate, leaving its species at exactly 0.0 for the entire generating
-trajectory (the `epdm_scission_tail` archetype: the gate skips the pool's
-only reaction). For such a pool `[0, 0, 0]` is simultaneously the t = 0
-truth and the generation-end truth; the artifact deliberately does not
-distinguish the two. Diagnose an unexpectedly inert spawned pool as a
-melt-classification / phase-gate divergence (see the consumer-guidance
+**Dead core channels are census-announced (consumer guidance):** a core
+reaction whose phase-gate verdict is zero is announced by a
+`PHASE-GATE FLUX CENSUS: ... static (core, init-time)` warning on every
+engine build (item 17, spec 2026-06-12 §3(e)); a gate-zeroed EDGE channel
+whose ungated flux would clear the enlargement bar is announced by the same
+sentinel with its ungated ratio. Promotion-on-phantom-flux no longer arises
+(the gates evaluate the prospective mask at edge time), but dead core
+channels CAN still appear in NEW artifacts via independent species promotion
+(each participant reaching core on other channels' flux) and via
+legacy/restart cores — for such a pool `[0, 0, 0]` is simultaneously the
+t = 0 truth and the generation-end truth, the artifact deliberately does not
+distinguish the two, and the census line is the place that says so. Diagnose
+an unexpectedly inert spawned pool by its census lines (typically a
+melt-classification / phase-gate divergence — see the consumer-guidance
 paragraph in §8), not as missing moments data.
 
 ## 3. `reactions[]`
