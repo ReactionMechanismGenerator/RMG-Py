@@ -549,6 +549,46 @@ melt-class fix on the census count remaining AFTER it.
 Full decision record:
 `docs/superpowers/specs/2026-06-12-phase-gate-enlargement-consistency-design.md`.
 
+### 5.4 FEATURE mid-chain radicals: refuse-not-leak + guards (item 18, 2026-06-13)
+
+The Gate-B census of §5.3 is melt-class signal: physically-melt C15 macroradicals
+misclassified gas. Item 18 acts on the worst of these. A mid-chain H-abstraction
+produces a same-length radical (classified `FEATURE`) that beta-scissions
+(chain-shortening). When the moment handshake cannot conservingly represent it
+(`create_reacted_copy` returns None → the radical would leak to gas, stamp UNRESOLVED,
+and fabricate MW-weighted backbone mass at `r·(chain_MW − monomer_MW)`), item 18
+**REFUSES** the reaction instead of leaking: a new no-raise `Reaction.polymer_refused`
+flag is set at generation (stamp) time, captured into the solver, and the solver
+suppresses that reaction's ENTIRE flux contribution so NO mass is fabricated. The
+reaction stays in the edge/model — **"stamp-but-keep"**, forward-compatible with item 20.
+
+This is **deferred, not missing.** The route-don't-refuse upgrade — a QSSA flux-conduit
+that routes a FEATURE radical's beta-scission FRAGMENT SPECTRUM via the existing
+SCISSION_FRAGMENT/DISCRETE_CHIP archetypes — is **item 20**, gated on a diene-faithful
+proxy (item 20) plus the phenomenological-reconciliation item (item 19). A loud refusal
+census is the PRIORITY SIGNAL for item 20, not a defect.
+
+**Guard 2 — refuse census + QSSA-validity classifier.** The solver builds a
+`refused_reaction_census` (one entry per refused reaction) and emits a warn-once log line
+per refused reaction with the sentinel `FEATURE-RADICAL REFUSED CENSUS:`. Each entry
+carries the radical class (`eliminating` vs `accumulating`) and the refuse reason
+(`conduit-deferred` vs `qssa-invalid`). The classifier `is_qssa_eliminating_radical(mol)`
+(`rmgpy/polymer.py`) returns eliminating iff the radical is NOT resonance-stabilized
+(resonance-structure count ≤ 1); allylic (resonance-stabilized) radicals are accumulating
+→ QSSA-invalid. This is the decision procedure **item 20 inherits** to split route
+(eliminating, fast beta-scission, valid QSSA) vs refuse (accumulating); in item 18 BOTH
+branches refuse (the conduit is deferred), distinguished only by reason in the census. On
+the current saturated EPDM proxy every refusal is eliminating/conduit-deferred — the
+accumulating/allylic case requires a diene the proxy lacks.
+
+**Guard 1 — double-count tripwire.** The solver builds a `double_count_census` and emits a
+warn-once log with the sentinel `DOUBLE-COUNT TRIPWIRE:` when a pool has BOTH an explicit
+beta-scission/chip reaction (archetype SCISSION_FRAGMENT or DISCRETE_CHIP) sourced from it
+AND nonzero phenomenological `k_scission`/`k_unzip` — the §5.1 input-hygiene hazard made
+loud. Severity in item 18 is **census-loud only** (warn, no refuse); the refuse-vs-warn
+cliff is calibrated by item 19's magnitude probe. DORMANT on the current EPDM deck (no
+explicit scission/chip survives the §5.3 collapse to 8 sp / 0 rxn).
+
 ## 6. Sidecar JSON schema
 
 > **SUPERSEDED for schema ≥ 2.0:** the sidecar is now schema 2.0 — envelope,
@@ -723,9 +763,33 @@ Each numbered step is its own commit. The synthetic unit test from step 1 acts a
     Interacts with A3 unchanged: a proxy-tagged species that is genuinely
     volatile is a classification question for that item, not this one.
     (2026-06-11)
+16. **FEATURE mid-chain radical beta-scission is REFUSED, not routed** — when
+    the moment handshake cannot conservingly represent a same-length `FEATURE`
+    radical, item 18 sets the no-raise `Reaction.polymer_refused` flag at stamp
+    time and the solver suppresses that reaction's entire flux (no MW-weighted
+    backbone mass fabricated; the reaction stays in the model, "stamp-but-keep").
+    This is DEFERRED, not missing: the route-don't-refuse QSSA flux-conduit
+    (emit the fragment spectrum via SCISSION_FRAGMENT/DISCRETE_CHIP) is item 20,
+    gated on a diene-faithful proxy (item 20) + phenomenological reconciliation
+    (item 19). The `FEATURE-RADICAL REFUSED CENSUS:` line is the priority signal
+    for item 20. See §5.4. (2026-06-13)
+17. **Double-count co-presence is census-loud only, not refused** — a pool
+    carrying BOTH an explicit beta-scission/chip reaction and nonzero
+    `k_scission`/`k_unzip` trips the `DOUBLE-COUNT TRIPWIRE:` warn (Guard 1, §5.4),
+    but item 18 does NOT refuse on it; the refuse-vs-warn cliff is calibrated by
+    item 19's magnitude probe. Dormant on the current EPDM deck. (2026-06-13)
 
 ## 11. Open items for follow-up
 
+- **Deferred conduit — route-don't-refuse for FEATURE radicals** (item 20):
+  the QSSA flux-conduit that routes a FEATURE radical's beta-scission FRAGMENT
+  SPECTRUM via the existing SCISSION_FRAGMENT/DISCRETE_CHIP archetypes instead
+  of refusing it (§5.4). Gated on a diene-faithful proxy (item 20) AND
+  phenomenological reconciliation (item 19). Inherits the
+  `is_qssa_eliminating_radical` classifier as its route-vs-refuse decision
+  procedure: eliminating radicals route, accumulating (allylic, QSSA-invalid)
+  radicals still refuse. The `FEATURE-RADICAL REFUSED CENSUS:` count on a real
+  diene deck is the priority/requirements signal for this item.
 - **End-anchor detector** (scoped 2026-06-10, deliberately deferred): extend
   `is_end_group_reaction` determination to template/site anchoring (reacted
   site in the cap or cap-adjacent unit, from template-labeled atoms before

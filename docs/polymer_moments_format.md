@@ -301,6 +301,21 @@ consumer's reconstructed melt class against the generating run's), not as a
 thermo problem — do not respond by touching reference states. This paragraph
 exists so the next such refusal is not misdiagnosed.
 
+### FEATURE mid-chain radicals: refused, not routed (item 18)
+
+A mid-chain H-abstraction produces a same-length radical (classified `FEATURE`) that
+beta-scissions (chain-shortening). When the handshake cannot conservingly represent it,
+item 18 REFUSES the reaction (no-raise `Reaction.polymer_refused` flag, set at stamp time
+and captured by the solver, which suppresses the reaction's entire flux contribution) so no
+MW-weighted backbone mass is fabricated. The reaction stays in the model ("stamp-but-keep").
+Each refusal emits a `FEATURE-RADICAL REFUSED CENSUS:` log line tagged with the radical class
+(`eliminating`/`accumulating`) and reason (`conduit-deferred`/`qssa-invalid`).
+
+This is **deferred, not missing**: the route-don't-refuse upgrade — a QSSA flux-conduit that
+emits the radical's beta-scission fragment spectrum via the SCISSION_FRAGMENT/DISCRETE_CHIP
+archetypes — is **item 20**, gated on a diene-faithful proxy (item 20) and the phenomenological-
+reconciliation item (item 19). The refusal census is the priority signal for item 20, not a defect.
+
 ## 9. Conservation invariants (assertable, per-channel qualified)
 
 Over the discrete-reaction subset only (no channels active):
