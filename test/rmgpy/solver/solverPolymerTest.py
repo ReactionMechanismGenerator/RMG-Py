@@ -781,7 +781,44 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[2], -r)    # parent mu1 drained (legacy)
         assert np.isclose(dn_dt[4], +r)    # explicit daughter gains
         # mass moved, not duplicated
+        # NOTE (item 18): this invariant is MOLAR, not MW-weighted, so it cannot
+        # see the FEATURE-radical mass leak (pool debited 1 monomer-unit vs gas
+        # gaining full chain MW). See
+        # test_refused_feature_abstraction_conserves_backbone_mass for the
+        # MW-weighted conservation gate.
         assert np.isclose(dn_dt[2] + dn_dt[4], 0.0, atol=1e-12)
+
+    def test_refused_feature_abstraction_conserves_backbone_mass(self):
+        import numpy as np
+        from rmgpy.reaction import Reaction
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.solver.polymer import HybridPolymerSystem, PolymerPoolConfig
+        Proxy = _spc("CCC(C)CCCC(C)CCCC(C)C", "epdm")
+        Mu0 = _spc("CO", "epdm_mu0"); Mu1 = _spc("C=O", "epdm_mu1"); Mu2 = _spc("C#N", "epdm_mu2")
+        Macro = _spc("CCC(C)CCC[C](C)CCCC(C)C", "epdm_macroradical")
+        H = _spc("[H]", "H"); H2 = _spc("[H][H]", "H2")
+        macro_mw = Macro.molecule[0].get_molecular_weight() * 1000.0
+        core = [Proxy, Mu0, Mu1, Mu2, Macro, H, H2]
+        mask = np.array([False, False, False, False, False, True, True], dtype=bool)  # macro condensed -> past Gate B
+        mono_mw = Proxy.molecule[0].get_molecular_weight() * 1000.0 / 3
+        rxn = Reaction(reactants=[Proxy, H], products=[Macro, H2],
+                       kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+                       reversible=False)
+        rxn.polymer_flux_archetype = 4          # UNRESOLVED
+        rxn.polymer_refused = True              # set by Task 3 in production; direct here to isolate the suppression
+        pool = PolymerPoolConfig(label="epdm", xs=2, explicit_dp_to_species_index={},
+                                 mu_indices=(1, 2, 3), monomer_poly_index=None,
+                                 k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+                                 monomer_mw_g_mol=mono_mw)
+        rs = HybridPolymerSystem(T=800.0, P=1.0e5, initial_mole_fractions={H: 1.0}, V_poly=1.0,
+                                 polymer_pools=[pool], mass_transfer=[], gas_species_mask=mask.copy(),
+                                 constant_gas_volume=False, initial_polymer_moments={"epdm": (1.0, 50.0, 3000.0)},
+                                 termination=[])
+        rs.initialize_model(core, [rxn], [], [])
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        i = {s.label: k for k, s in enumerate(core)}
+        net = dn[i["epdm_mu1"]] * mono_mw + dn[i["epdm_macroradical"]] * macro_mw
+        assert np.isclose(net, 0.0, atol=1e-6), f"backbone mass not conserved: {net:.4e} g/s fabricated"
 
     def test_stamped_chip_without_src_pool_demotes_to_unresolved(self):
         """

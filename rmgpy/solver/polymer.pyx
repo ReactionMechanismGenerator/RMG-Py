@@ -866,6 +866,16 @@ class HybridPolymerSystem(ReactionSystem):
             if getattr(rxn, "is_end_group_reaction", False):
                 self.is_end_group_reaction[i] = 1
 
+        # item 18: capture the Task-3 refusal stamp in the SAME chain(core, edge)
+        # order so self.reaction_refused[r_idx] aligns with the residual's r_idx
+        # exactly like is_end_group_reaction. A refused FEATURE-radical reaction's
+        # whole flux is suppressed in the residual so it fabricates no MW-weighted
+        # backbone mass (stamp-but-keep: it stays in the edge/model).
+        self.reaction_refused = np.zeros(n_rxn, dtype=np.int8)
+        for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
+            if getattr(rxn, "polymer_refused", False):
+                self.reaction_refused[i] = 1
+
         # Per-reaction pool moment-flux archetype (spec 2026-06-09). Same
         # chain(core, edge) order as is_end_group_reaction so indices match
         # r_idx in the residual.
@@ -1921,6 +1931,16 @@ class HybridPolymerSystem(ReactionSystem):
                 self.edge_reaction_rates_ungated[r_idx - n_rxn] = rate
 
             core_rxn = r_idx < n_rxn
+
+            if core_rxn and self.reaction_refused[r_idx]:
+                # item 18: a refused FEATURE-radical reaction must contribute NO
+                # flux (stamp-but-keep): skip all reactant/product/moment writes
+                # so no MW-weighted backbone mass is fabricated. Mass fabrication
+                # occurs only in CORE (the UNRESOLVED leg + the section-4 gas
+                # credit); edge reactions are diagnostic-only and non-fabricating,
+                # so they are intentionally NOT touched here (keeps item-17's edge
+                # phase-gate census / counterfactual unchanged -- see scope note).
+                continue
 
             # 3. Apply Fluxes to Reactants (core reactions only -- edge
             #    reactions are diagnostic-only, matching simple.pyx).
