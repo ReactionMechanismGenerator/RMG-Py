@@ -3792,3 +3792,12 @@ class TestEnlargePolymerPipeline:
             assert expected in core_labels, (
                 f"Moment dummy '{expected}' should be in core after polymer promotion"
             )
+
+
+def test_is_qssa_eliminating_radical_distinguishes_allylic():
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import is_qssa_eliminating_radical
+    saturated = Molecule().from_smiles("CCC(C)CCC[C](C)CCCC(C)C")  # C15 mid-chain
+    allylic = Molecule().from_smiles("CC=C(C)[CH]CC")              # Probe F dominant allylic (faithful analog), resonance count 2
+    assert is_qssa_eliminating_radical(saturated) is True    # resonance count 1 -> eliminating
+    assert is_qssa_eliminating_radical(allylic) is False     # resonance count >1 -> accumulating

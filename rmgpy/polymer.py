@@ -1414,6 +1414,18 @@ def is_end_group_reaction(products) -> bool:
                for p in products if isinstance(p, Polymer))
 
 
+def is_qssa_eliminating_radical(mol):
+    """True if a radical-bearing molecule is QSSA-ELIMINATING (fast beta-scission,
+    not resonance-stabilized) -> conduit-representable; False if ACCUMULATING
+    (resonance-stabilized, e.g. allylic) -> QSSA-invalid. Probe F: allylic k_beta
+    is 3-4 orders slower; resonance count is the in-codebase signal. Runs once per
+    FEATURE reaction at generation, never in the RHS."""
+    from rmgpy.molecule.resonance import generate_resonance_structures
+    if not mol.is_radical():
+        return True  # not a radical: not the accumulating case
+    return len(generate_resonance_structures(mol.copy(deep=True))) <= 1
+
+
 class PolymerFluxArchetype(IntEnum):
     """
     Per-reaction pool moment-flux archetype, stamped at generation time on
