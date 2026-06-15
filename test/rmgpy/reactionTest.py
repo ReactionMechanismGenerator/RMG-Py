@@ -821,6 +821,23 @@ class TestReaction:
         round_trip = pickle.loads(pickle.dumps(Reaction(polymer_chip_units=2)))
         assert round_trip.polymer_chip_units == 0
 
+    def test_polymer_refused_fields_default_false_and_settable(self):
+        """
+        Reaction carries ``polymer_refused`` / ``polymer_refused_accumulating``
+        flags (default False, set later via attribute assignment) used by the
+        polymer hybrid solver for radical conservation (refuse-not-leak). Like
+        is_end_group_reaction they are deliberately NOT serialized in
+        __reduce__ -- the solver re-derives them at initialize_model.
+        """
+        from rmgpy.reaction import Reaction
+        rxn = Reaction()
+        assert rxn.polymer_refused is False
+        assert rxn.polymer_refused_accumulating is False
+        rxn.polymer_refused = True
+        rxn.polymer_refused_accumulating = True
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is True
+
     def test_is_isomerization(self):
         """
         Test the Reaction.is_isomerization() method.

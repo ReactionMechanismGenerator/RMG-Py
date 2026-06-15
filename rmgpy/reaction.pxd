@@ -64,6 +64,8 @@ cdef class Reaction:
     cdef public bint is_forward
     cdef public bint allow_max_rate_violation
     cdef public bint is_end_group_reaction
+    cdef public bint polymer_refused
+    cdef public bint polymer_refused_accumulating
     cdef public int polymer_flux_archetype
     cdef public int polymer_chip_units
     cdef public object rank

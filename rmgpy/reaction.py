@@ -154,6 +154,16 @@ class Reaction:
         # product classifies END_MOD; the polymer hybrid solver then scales this
         # reaction by chain-end density (mu0) instead of monomer-unit density (mu1).
         self.is_end_group_reaction = is_end_group_reaction
+        # Radical-conservation flags for the polymer hybrid solver
+        # (item 18, refuse-not-leak). Set later via attribute assignment by
+        # refuse detection at stamp time, not passed to the constructor.
+        # polymer_refused suppresses a mass-fabricating flux at the solver RHS;
+        # polymer_refused_accumulating feeds the refused-reaction census that
+        # distinguishes eliminating vs accumulating radicals. Like
+        # is_end_group_reaction they are deliberately NOT serialized in
+        # __reduce__; the solver re-derives them at initialize_model.
+        self.polymer_refused = False
+        self.polymer_refused_accumulating = False
         # Pool moment-flux archetype (int values of
         # rmgpy.polymer.PolymerFluxArchetype), stamped by the polymer handshake
         # in rmgpy.rmg.model.make_new_reaction. 0 = NONE. Like
