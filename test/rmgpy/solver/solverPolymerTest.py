@@ -820,6 +820,35 @@ class TestHybridPolymerReactor:
         net = dn[i["epdm_mu1"]] * mono_mw + dn[i["epdm_macroradical"]] * macro_mw
         assert np.isclose(net, 0.0, atol=1e-6), f"backbone mass not conserved: {net:.4e} g/s fabricated"
 
+    def test_refused_census_distinguishes_eliminating_and_accumulating(self):
+        import numpy as np
+        from rmgpy.reaction import Reaction
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.solver.polymer import HybridPolymerSystem, PolymerPoolConfig
+        Proxy = _spc("CCC(C)CCCC(C)CCCC(C)C", "epdm")
+        Mu0 = _spc("CO", "epdm_mu0"); Mu1 = _spc("C=O", "epdm_mu1"); Mu2 = _spc("C#N", "epdm_mu2")
+        SatRad = _spc("CCC(C)CCC[C](C)CCCC(C)C", "sat_macro")
+        AllylRad = _spc("CCC(C)CCCC=C[C](C)CCC(C)CC", "allyl_macro")
+        H = _spc("[H]", "H"); H2 = _spc("[H][H]", "H2")
+        core = [Proxy, Mu0, Mu1, Mu2, SatRad, AllylRad, H, H2]
+        mask = np.array([False, False, False, False, False, False, True, True], dtype=bool)
+        kin = Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K"))
+        r1 = Reaction(reactants=[Proxy, H], products=[SatRad, H2], kinetics=kin, reversible=False)
+        r1.polymer_flux_archetype = 4; r1.polymer_refused = True; r1.polymer_refused_accumulating = False
+        r2 = Reaction(reactants=[Proxy, H], products=[AllylRad, H2], kinetics=kin, reversible=False)
+        r2.polymer_flux_archetype = 4; r2.polymer_refused = True; r2.polymer_refused_accumulating = True
+        pool = PolymerPoolConfig(label="epdm", xs=2, explicit_dp_to_species_index={}, mu_indices=(1, 2, 3),
+                                 monomer_poly_index=None, k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(T=800.0, P=1.0e5, initial_mole_fractions={H: 1.0}, V_poly=1.0,
+                                 polymer_pools=[pool], mass_transfer=[], gas_species_mask=mask.copy(),
+                                 constant_gas_volume=False, initial_polymer_moments={"epdm": (1.0, 50.0, 3000.0)},
+                                 termination=[])
+        rs.initialize_model(core, [r1, r2], [], [])
+        census = rs.refused_reaction_census
+        assert len(census) == 2
+        assert any(c["radical_class"] == "eliminating" and c["reason"] == "conduit-deferred" for c in census)
+        assert any(c["radical_class"] == "accumulating" and c["reason"] == "qssa-invalid" for c in census)
+
     def test_stamped_chip_without_src_pool_demotes_to_unresolved(self):
         """
         Spec test 15: a reaction stamped DISCRETE_CHIP whose reactant does not

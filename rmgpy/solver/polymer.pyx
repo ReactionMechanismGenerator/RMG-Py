@@ -876,6 +876,27 @@ class HybridPolymerSystem(ReactionSystem):
             if getattr(rxn, "polymer_refused", False):
                 self.reaction_refused[i] = 1
 
+        # item 18 (T3): correct-but-loud census of refused FEATURE-radical
+        # reactions, tagged by radical class (eliminating vs accumulating) and
+        # refuse reason (conduit-deferred vs qssa-invalid). Built once per
+        # rebuild over the SAME chain(core, edge) order as the capture above so
+        # reaction_refused[i] aligns. Changes NO flux/state -- it only reports
+        # (mirrors the thermo reference_state_census posture). Helpers are
+        # function-local imports to avoid a solver->polymer module cycle.
+        from rmgpy.polymer import _warn_once_refused, _reaction_census_label
+        self.refused_reaction_census = []
+        for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
+            if not self.reaction_refused[i]:
+                continue
+            accumulating = bool(getattr(rxn, "polymer_refused_accumulating", False))
+            entry = {
+                "reaction": _reaction_census_label(rxn),
+                "radical_class": "accumulating" if accumulating else "eliminating",
+                "reason": "qssa-invalid" if accumulating else "conduit-deferred",
+            }
+            self.refused_reaction_census.append(entry)
+            _warn_once_refused(entry)
+
         # Per-reaction pool moment-flux archetype (spec 2026-06-09). Same
         # chain(core, edge) order as is_end_group_reaction so indices match
         # r_idx in the residual.

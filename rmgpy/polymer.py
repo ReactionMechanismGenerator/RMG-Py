@@ -1461,6 +1461,25 @@ def _warn_unresolved_archetype(reason: str, detail: tuple) -> None:
             reason, detail)
 
 
+_refused_census_warned = set()
+
+
+def _warn_once_refused(entry: dict) -> None:
+    """Log each distinct refused-FEATURE-radical reaction once (correct-but-loud)."""
+    key = (entry["reaction"], entry["reason"])
+    if key not in _refused_census_warned:
+        _refused_census_warned.add(key)
+        logging.warning(
+            "FEATURE-RADICAL REFUSED CENSUS: %s -- %s radical refused (%s); "
+            "no flux applied (stamp-but-keep). Deferred to item 20's conduit.",
+            entry["reaction"], entry["radical_class"], entry["reason"])
+
+
+def _reaction_census_label(rxn) -> str:
+    """Stable label for a refused reaction's census entry."""
+    return str(rxn)
+
+
 _chip_tripwire_warned = set()
 
 
