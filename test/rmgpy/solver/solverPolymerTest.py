@@ -890,6 +890,117 @@ class TestHybridPolymerReactor:
         assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED   # demoted
         assert rs.reaction_chip_units[0] == 2    # array filled regardless
 
+    def test_double_count_tripwire_fires_on_copresence_and_dormant_otherwise(self):
+        """
+        item 18 (T2): a pool carrying BOTH an explicit, surviving beta-scission/
+        chip reaction sourced from it AND a nonzero phenomenological k_scission/
+        k_unzip double-counts chain degradation. initialize_model must census it
+        (correct-but-loud, warn-once; severity calibrated by item 19) and must be
+        DORMANT when the phenomenological constant is present but no surviving
+        explicit scission/chip is sourced from the pool.
+
+        DISCRETE_CHIP (archetype 5) is used for the explicit reaction because it
+        needs only src resolved (not dst) and so survives the demotion loop when
+        its reactant maps to the pool.
+        """
+        import rmgpy.solver.polymer as sp
+
+        def _build(pool_a_k_scission, with_chip):
+            spx, core, mask = _two_pool_species()
+            # Pool A's proxy species is matched by base_label == pool.label, so
+            # rename both proxy and pool to 'epdm' for them to bind.
+            spx["A"].label = "epdm"
+            # Chip reaction: reactant sp["A"] resolves to pool A (src == 0).
+            # Complement folds back to A; chip ejects gas G. DISCRETE_CHIP needs
+            # only src, so this survives demotion.
+            rxn = Reaction(reactants=[spx["A"]], products=[spx["A"], spx["G"]], **_KIN)
+            rxn.polymer_flux_archetype = 5   # DISCRETE_CHIP
+            rxn.polymer_chip_units = 1
+            pool_a = PolymerPoolConfig(
+                label="epdm", xs=2, explicit_dp_to_species_index={},
+                mu_indices=(1, 2, 3), monomer_poly_index=None,
+                k_scission=pool_a_k_scission, k_unzip=0.0, tail_kinetics=None)
+            pool_b = PolymerPoolConfig(
+                label="B", xs=2, explicit_dp_to_species_index={},
+                mu_indices=(5, 6, 7), monomer_poly_index=None,
+                k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+            rxns = [rxn] if with_chip else []
+            rs = HybridPolymerSystem(
+                T=800.0, P=1.0e5, initial_mole_fractions={core[8]: 0.0}, V_poly=1.0,
+                polymer_pools=[pool_a, pool_b], mass_transfer=[],
+                gas_species_mask=mask.copy(), constant_gas_volume=False,
+                initial_polymer_moments={"epdm": (1.0, 5.0, 30.0), "B": (1.0, 5.0, 30.0)},
+                termination=[])
+            rs.initialize_model(core, rxns, [], [])
+            return rs
+
+        # CO-PRESENCE: pool 'epdm' has k_scission=1.0 AND a surviving DISCRETE_CHIP
+        rs_copresent = _build(1.0, with_chip=True)
+        # Verify the chip survived demotion (still archetype 5, src == pool epdm).
+        assert rs_copresent.reaction_flux_archetype[0] == sp.FLUX_DISCRETE_CHIP
+        assert rs_copresent.reaction_src_pool[0] == 0   # pool 'epdm' index
+        assert len(rs_copresent.double_count_census) >= 1
+        assert any(c["pool"] == "epdm" for c in rs_copresent.double_count_census)
+
+        # DORMANT: same pool k_scission=1.0 but NO explicit scission/chip reaction.
+        rs_clean = _build(1.0, with_chip=False)
+        assert rs_clean.double_count_census == []
+
+    def test_double_count_tripwire_dormant_when_scission_reaction_demoted(self):
+        """
+        item 18 (T6 hardening): the EPDM-faithful complement to the co-presence
+        case. A pool ('epdm') carries k_scission=1.0 AND an explicit DISCRETE_CHIP
+        reaction IS present -- but the chip's reactant does NOT resolve to the pool
+        (src == -1, an unmapped gas reactant), so the src/dst-resolution loop
+        DEMOTES it to UNRESOLVED (archetype 4) BEFORE the census is built. The
+        demoted reaction's pool index therefore never enters scission_src_pools,
+        so the tripwire must stay DORMANT even though k_scission > 0.
+
+        This pins the load-bearing post-demotion placement of the census against
+        regression: the sibling co-presence test proves "survived demotion ->
+        fires"; this proves the complementary "demoted -> does NOT fire". (If the
+        census were built BEFORE the demotion loop, this would falsely fire.)
+        """
+        import rmgpy.solver.polymer as sp
+
+        spx, core, mask = _two_pool_species()
+        # Rename pool A's proxy + config to 'epdm' (proxy binds by base_label).
+        spx["A"].label = "epdm"
+        # Chip reaction whose reactant is the UNMAPPED gas 'G' (mask True, no
+        # pool config): species_to_pool_indices -> -1, so src stays -1 and the
+        # DISCRETE_CHIP demotes to UNRESOLVED per polymer.pyx:1107-1122. Same
+        # demotion mechanism as test_stamped_chip_without_src_pool_demotes_to_unresolved.
+        rxn = Reaction(reactants=[spx["G"]], products=[spx["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 5   # DISCRETE_CHIP
+        rxn.polymer_chip_units = 1
+        # Pool 'epdm' still carries k_scission=1.0 so the k-guard would pass --
+        # the ONLY reason the census stays empty is that the chip demoted.
+        pool_a = PolymerPoolConfig(
+            label="epdm", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=1.0, k_unzip=0.0, tail_kinetics=None)
+        pool_b = PolymerPoolConfig(
+            label="B", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(5, 6, 7), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[8]: 0.0}, V_poly=1.0,
+            polymer_pools=[pool_a, pool_b], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"epdm": (1.0, 5.0, 30.0), "B": (1.0, 5.0, 30.0)},
+            termination=[])
+        rs.initialize_model(core, [rxn], [], [])
+
+        # Demotion-proof: assert the fixture GENUINELY demoted so the test isn't
+        # vacuous (it must not stay empty merely because the chip never resolved
+        # to a scission/chip archetype in the first place).
+        assert rs.reaction_src_pool[0] == -1                          # unresolved src
+        assert rs.reaction_flux_archetype[0] == sp.FLUX_UNRESOLVED    # demoted (archetype 4)
+
+        # Payoff: even though pool 'epdm' has k_scission=1.0, the DEMOTED chip
+        # does NOT trip the double-count tripwire -- census stays dormant.
+        assert rs.double_count_census == []
+
     def test_validate_configuration_rejects_moment_in_stoichiometry(self):
         """
         validate_configuration should fail if a moment index appears in reaction stoichiometry.

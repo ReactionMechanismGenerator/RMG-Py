@@ -1480,6 +1480,24 @@ def _reaction_census_label(rxn) -> str:
     return str(rxn)
 
 
+_double_count_warned = set()
+
+
+def _warn_once_double_count(entry: dict) -> None:
+    """Log each distinct double-count pool once (correct-but-loud). Severity is
+    census-loud only (no refuse) in item 18; the refuse-vs-warn cliff is
+    calibrated by item 19's magnitude probe."""
+    key = (entry["pool"],)
+    if key not in _double_count_warned:
+        _double_count_warned.add(key)
+        logging.warning(
+            "DOUBLE-COUNT TRIPWIRE: pool '%s' has BOTH explicit beta-scission/chip "
+            "reactions AND nonzero phenomenological k_scission=%.3e / k_unzip=%.3e -- "
+            "chain degradation may be double-counted. (Severity calibrated by item 19; "
+            "census-only in item 18.)",
+            entry["pool"], entry["k_scission"], entry["k_unzip"])
+
+
 _chip_tripwire_warned = set()
 
 

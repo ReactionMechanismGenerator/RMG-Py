@@ -883,7 +883,7 @@ class HybridPolymerSystem(ReactionSystem):
         # reaction_refused[i] aligns. Changes NO flux/state -- it only reports
         # (mirrors the thermo reference_state_census posture). Helpers are
         # function-local imports to avoid a solver->polymer module cycle.
-        from rmgpy.polymer import _warn_once_refused, _reaction_census_label
+        from rmgpy.polymer import _warn_once_refused, _reaction_census_label, _warn_once_double_count
         self.refused_reaction_census = []
         for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
             if not self.reaction_refused[i]:
@@ -1131,6 +1131,29 @@ class HybridPolymerSystem(ReactionSystem):
                 "%d proxy-touching reactions arrived without a polymer_flux_archetype "
                 "stamp; applying legacy mu1-only pool moment flux for them.",
                 n_unstamped)
+
+        # item 18 (T2): double-count tripwire. A pool carrying BOTH a surviving
+        # explicit beta-scission/chip reaction sourced from it (archetype
+        # SCISSION_FRAGMENT or DISCRETE_CHIP) AND a nonzero phenomenological
+        # k_scission/k_unzip double-counts chain degradation: the explicit
+        # chemistry and the phenomenological stand-in both model the same chain
+        # break. Census it (correct-but-loud, warn-once). Placement is
+        # load-bearing: AFTER the demotion loop completes, so it scans the FINAL
+        # archetypes -- a reaction demoted to UNRESOLVED above is no longer
+        # explicit scission and must NOT trip the tripwire. Diagnostic-only:
+        # changes NO flux/state. Default severity is census-loud (warn only; NO
+        # refuse-cliff -- severity is calibrated later by item 19).
+        self.double_count_census = []
+        scission_src_pools = set()
+        for r_dc in range(n_rxn):
+            if self.reaction_flux_archetype[r_dc] in (FLUX_SCISSION_FRAGMENT, FLUX_DISCRETE_CHIP):
+                if self.reaction_src_pool[r_dc] >= 0:
+                    scission_src_pools.add(self.reaction_src_pool[r_dc])
+        for p_idx, pool in enumerate(self.polymer_pools):
+            if (pool.k_scission > 0.0 or pool.k_unzip > 0.0) and p_idx in scission_src_pools:
+                entry = {"pool": pool.label, "k_scission": pool.k_scission, "k_unzip": pool.k_unzip}
+                self.double_count_census.append(entry)
+                _warn_once_double_count(entry)
 
         # Enforce the moment-isolation invariant and pool/mass-transfer index
         # sanity now that gas_species_mask and the reaction index tables are
