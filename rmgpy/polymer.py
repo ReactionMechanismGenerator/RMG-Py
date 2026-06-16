@@ -1666,6 +1666,61 @@ def stamp_polymer_flux_archetype(forward, reactants, polymer_reactants) -> None:
         return
     forward.polymer_flux_archetype = int(
         classify_reaction_flux_archetype(reactants, forward.products))
+    # Refuse detection (item 18, spec section 4): a reaction stamped UNRESOLVED
+    # because a polymer reactant produced no polymer product -- where a
+    # non-polymer (gas) product structurally classifies FEATURE against a
+    # polymer reactant's pool -- is a mid-chain radical the handshake dropped to
+    # gas (mass-fabricating in core). FLAG it refused; keep the reaction and its
+    # products untouched (stamp-but-keep). NEVER raise here: raising would
+    # trigger the discard path. The infeasible-chip-surgery UNRESOLVED above
+    # returns early and never reaches this check (correct: that is an
+    # end-scission shape, not a FEATURE-radical-lost-to-gas).
+    if forward.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED):
+        lost = _chain_radical_lost_to_gas(forward, polymer_reactants)
+        if lost is not None:
+            forward.polymer_refused = True
+            forward.polymer_refused_accumulating = (
+                not is_qssa_eliminating_radical(lost))
+
+
+def _chain_radical_lost_to_gas(forward, polymer_reactants):
+    """Return the gas-product :class:`Molecule` that a polymer reactant dropped to
+    gas (``create_reacted_copy`` returned ``None``) and that carries CHAIN-SCALE
+    mass -- i.e. a backbone radical the solver's UNRESOLVED single-monomer-debit
+    fabricates mass for (spec section 4), else ``None``. The conservation bug
+    fires for ANY chain-scale gas product on the UNRESOLVED "polymer reactant, no
+    polymer product" leg, not only ``classify_structure == FEATURE`` -- the
+    FEATURE/DISCARD split is a positional artifact of the 3-unit proxy (center vs
+    cap-adjacent monomer), not chemistry, so both leak the same MW-211 C15
+    backbone radical and fabricate the same mass. Mechanism-keyed, not
+    label-keyed: dropping the FEATURE check avoids re-introducing the
+    under-inclusive trap one label at a time.
+
+    Size gate: a species is chain-scale iff its MW >= one monomer-unit plus the
+    chain-window slack (the SAME ``REFERENCE_STATE_MW_SLACK_G_MOL`` the solver's
+    ``chain_window_kg`` uses). Genuinely-small fragments (H2, CH4, small radicals;
+    MW within one monomer + slack) fall below threshold and are NOT refused -- the
+    single-monomer-debit accounts for those leaks correctly. Polymer products are
+    skipped, which correctly excludes the conserving pool->pool case (e.g.
+    ``epdm_scission_tail``).
+
+    Imported function-locally: there is a documented solver->polymer import cycle
+    (``polymer.pyx`` avoids importing ``polymer.py`` at module level), so the
+    constant must be pulled in at call time (generation time), not module import.
+
+    The handshake leaves the leaked radical a plain ``Molecule``; the returned
+    value is the ``Molecule`` (the downstream ``is_qssa_eliminating_radical``
+    probe needs a ``Molecule``)."""
+    from rmgpy.solver.polymer import REFERENCE_STATE_MW_SLACK_G_MOL
+    for poly in polymer_reactants:               # Polymer instances
+        threshold = poly.monomer_mw_g_mol + REFERENCE_STATE_MW_SLACK_G_MOL
+        for prod in forward.products:
+            if isinstance(prod, Polymer):
+                continue
+            mol = prod.molecule[0] if isinstance(prod, Species) else prod
+            if mol.get_molecular_weight() * 1000.0 >= threshold:
+                return mol
+    return None
 
 
 MatchMapping = Mapping[Any, Any]

@@ -3801,3 +3801,189 @@ def test_is_qssa_eliminating_radical_distinguishes_allylic():
     allylic = Molecule().from_smiles("CC=C(C)[CH]CC")              # Probe F dominant allylic (faithful analog), resonance count 2
     assert is_qssa_eliminating_radical(saturated) is True    # resonance count 1 -> eliminating
     assert is_qssa_eliminating_radical(allylic) is False     # resonance count >1 -> accumulating
+
+
+def test_feature_abstraction_is_flagged_refused_not_leaked():
+    """A FEATURE mid-chain radical that the handshake dropped to a gas product
+    (UNRESOLVED, mass-fabricating) must be FLAGGED ``polymer_refused`` at stamp
+    time -- without raising and without discarding the reaction (item 18)."""
+    from rmgpy.polymer import Polymer, stamp_polymer_flux_archetype
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)  # is_polymer_proxy
+    macro = Molecule().from_smiles("CCC(C)CCC[C](C)CCCC(C)C")  # leaked FEATURE radical (Molecule, as at real stamp site)
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    # reactants contain the Polymer directly (Polymer IS a Species); the leaked
+    # FEATURE radical product is a plain Molecule (handshake left it un-converted).
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), macro])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    # stamp-but-keep: the reaction is kept (products unchanged), only flags added.
+    assert rxn.products == [Species(molecule=[h2]), macro] or macro in rxn.products
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False   # saturated -> eliminating
+
+
+def test_same_pool_polymer_reaction_is_not_refused():
+    """A normal SAME_POOL reaction with a real polymer product must NOT be
+    flagged refused (guards against false-firing of the refuse detector)."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, PolymerClass,
+                               stamp_polymer_flux_archetype,
+                               PolymerFluxArchetype)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # A FEATURE-modified polymer product in the SAME pool: a handshake-converted
+    # fold-back (Polymer, same label, stamped FEATURE) -> SAME_POOL, never
+    # UNRESOLVED. The gas co-product (H2) must NOT be misread as a lost radical.
+    product = epdm.copy()
+    product._reacted_class = PolymerClass.FEATURE
+    assert isinstance(product, Polymer)
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), product])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    assert rxn.polymer_flux_archetype != int(PolymerFluxArchetype.UNRESOLVED)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_unresolved_non_feature_gas_product_helper_declines():
+    """An UNRESOLVED reaction (polymer reactant, no polymer product) whose gas
+    product is a genuinely-small fragment -- CH4 (MW ~16 g/mol, well below the
+    chain-scale threshold monomer ~70 + slack 10 ~= 80) -- must NOT be refused:
+    the solver's single-monomer-debit accounts for sub-monomer leaks correctly.
+    This exercises the widened, mechanism-keyed refuse-detection helper's full
+    decline path: unlike the SAME_POOL guard, the UNRESOLVED branch IS reached,
+    the helper runs its complete loop over gas products, finds none at chain
+    scale, and correctly returns None. NOTE: post-widening the decline is by the
+    SIZE gate, not the old FEATURE-label check (item 18 Task 3 follow-up)."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, stamp_polymer_flux_archetype,
+                               PolymerFluxArchetype)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # CH4 (~16 g/mol) is far below the chain-scale threshold -> not refused.
+    ch4 = Molecule().from_smiles("C")
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    # Polymer reactant + only-gas products (no polymer product) -> UNRESOLVED.
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), Species(molecule=[ch4])])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    # The UNRESOLVED branch IS reached (this is what makes the helper run, unlike
+    # the SAME_POOL guard which short-circuits before detection).
+    assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+    # Helper ran the full loop, found nothing at chain scale, and declined.
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_feature_allylic_radical_lost_to_gas_is_refused_accumulating():
+    """An UNRESOLVED reaction that leaks a FEATURE radical which is ALSO an
+    accumulating (allylic, resonance-stabilized) radical must be flagged
+    ``polymer_refused`` with ``polymer_refused_accumulating is True`` -- exercising
+    the accumulating branch at the stamp site (item 18 Task 3)."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, stamp_polymer_flux_archetype,
+                               is_qssa_eliminating_radical)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # A backbone-sized EPDM macroradical bearing an internal C=C with the radical
+    # allylic to it: large enough to classify FEATURE against epdm, and
+    # resonance-stabilized so it is accumulating (not QSSA-eliminating). The small
+    # Probe F analog CC=C(C)[CH]CC is too small (classifies SCISSION, not FEATURE),
+    # so a backbone-length allylic radical is required for an end-to-end refuse.
+    allylic = Molecule().from_smiles("CCC(C)CCCC=C[C](C)CCC(C)CC")
+    assert is_qssa_eliminating_radical(allylic) is False  # accumulating
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), allylic])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is True
+
+
+def test_discard_chain_radical_lost_to_gas_is_refused():
+    """A DISCARD (buffer_monomer_modified) backbone radical dropped to gas on the
+    UNRESOLVED leg must now be FLAGGED ``polymer_refused`` -- the widened,
+    mechanism-keyed predicate refuses ANY chain-scale gas radical, not only
+    classify_structure==FEATURE (item 18 Task 3 follow-up). The FEATURE/DISCARD
+    split is a positional artifact of the 3-unit proxy (center vs cap-adjacent
+    monomer), not chemistry; both leak the same MW-211 C15 backbone radical and
+    fabricate the same mass under the solver's UNRESOLVED single-monomer-debit.
+    This is the regression-lock for the widening: it FAILS under the old
+    FEATURE-only predicate (DISCARD was not refused) and PASSES after."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, classify_structure, PolymerClass,
+                               stamp_polymer_flux_archetype)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # A C15 backbone radical that classifies DISCARD (not FEATURE) against epdm --
+    # the cap-adjacent proxy position. Same MW (211.41) as the FEATURE radical.
+    macro = Molecule().from_smiles("CC[C](C)CCCC(C)CCCC(C)C")
+    macro.update()
+    # Sanity: this is genuinely DISCARD, not FEATURE, so it would have been missed
+    # by the old label-keyed predicate.
+    klass, _ = classify_structure(Species(molecule=[macro]), epdm)
+    assert klass == PolymerClass.DISCARD
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), macro])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    # Chain-scale (MW 211 >> monomer 70 + slack 10) -> refused even though DISCARD.
+    assert rxn.polymer_refused is True
+
+
+def test_small_radical_lost_to_gas_conserves_not_refused():
+    """A genuinely small fragment radical (propyl, MW ~43 < monomer+slack ~80) on
+    the same UNRESOLVED leg must NOT be refused: the solver's single-monomer-debit
+    accounts for sub-monomer leaks correctly, so the size gate declines (item 18
+    Task 3 follow-up). Complements the CH4 helper-decline test with a radical."""
+    import rmgpy.polymer as polymer_mod
+    polymer_mod._flux_archetype_warned.clear()
+    from rmgpy.polymer import (Polymer, stamp_polymer_flux_archetype,
+                               PolymerFluxArchetype)
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    propyl = Molecule().from_smiles("CC[CH2]")  # ~43 g/mol, below chain-scale gate
+    propyl.update()
+    h = Molecule().from_smiles("[H]")
+    h2 = Molecule().from_smiles("[H][H]")
+    rxn = Reaction(reactants=[epdm, Species(molecule=[h])],
+                   products=[Species(molecule=[h2]), Species(molecule=[propyl])])
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+    assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
