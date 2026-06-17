@@ -1819,8 +1819,8 @@ Origin Group AdjList:
                     )
                     failed = True
 
-                # enthalpy: jump normalized by Cp/R (equivalent fractional temperature error)
-                if abs((h_low - h_high) / cp_low) > 0.001:
+                # enthalpy: jump normalized by Cp/R (equivalent fractional temperature error).
+                if abs((h_low - h_high) / (abs(cp_low) + 1e-4)) > 0.001:
                     logging.error(
                         f"Thermo library {library_name} entry {entry.label}: enthalpy is "
                         f"discontinuous by {abs(h_low - h_high) * R * t_switch / 1000:.4g} kJ/mol at the "
@@ -1830,7 +1830,7 @@ Origin Group AdjList:
                     failed = True
 
                 # entropy: jump normalized by (|S/R| + Cp/R)
-                if abs((s_low - s_high) / (abs(s_low) + cp_low)) > 0.001:
+                if abs((s_low - s_high) / (abs(s_low) + abs(cp_low) + 1e-4)) > 0.001:
                     logging.error(
                         f"Thermo library {library_name} entry {entry.label}: entropy is "
                         f"discontinuous by {abs(s_low - s_high) * R:.4g} J/mol/K at the switch-over "
