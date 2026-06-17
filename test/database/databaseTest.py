@@ -1772,15 +1772,18 @@ Origin Group AdjList:
     def check_library_thermo_nasa_continuity(self, library_name, library):
         """
         Check that every multi-segment NASA polynomial in a thermo library is
-        continuous in enthalpy and entropy at each switch-over temperature
-        between adjacent polynomial segments. A discontinuity (dislocation)
-        indicates an error in the NASA coefficients.
+        continuous in heat capacity, enthalpy, and entropy at each switch-over
+        temperature between adjacent polynomial segments. A discontinuity
+        (dislocation) indicates an error in the NASA coefficients.
 
-        Absolute tolerances are used (1 kJ/mol for enthalpy, 1 J/mol/K for
-        entropy)
+        The continuity criteria match Cantera's ``NasaPoly2::validate``,
+        evaluated on the dimensionless reduced properties (Cp/R, H/RT, S/R)::
+
+            heat capacity:  |delta(Cp/R)| / (|Cp/R| + 1e-4)  > 0.01
+            enthalpy:       |delta(H/RT)| / (Cp/R)           > 0.001
+            entropy:        |delta(S/R)|  / (|S/R| + Cp/R)   > 0.001
         """
-        h_tol = 1000.0  # J/mol (1 kJ/mol) maximum allowed enthalpy jump
-        s_tol = 1.0  # J/mol/K maximum allowed entropy jump
+        R = rmgpy.constants.R
         failed = False
         for entry in library.entries.values():
             data = entry.data
@@ -1789,8 +1792,6 @@ Origin Group AdjList:
             polynomials = data.polynomials
             # walk each adjacent pair of polynomial segments
             for poly_low, poly_high in zip(polynomials[:-1], polynomials[1:]):
-                # the switch-over temperature is the shared boundary
-                # (poly_low.Tmax == poly_high.Tmin).
                 t_switch = poly_low.Tmax.value_si
                 if t_switch != poly_high.Tmin.value_si:
                     logging.error(
@@ -1800,21 +1801,39 @@ Origin Group AdjList:
                     )
                     failed = True
 
-                h_diff = abs(poly_low.get_enthalpy(t_switch) - poly_high.get_enthalpy(t_switch))
-                if h_diff > h_tol:
+                # dimensionless reduced properties from each adjacent segment.
+                cp_low = poly_low.get_heat_capacity(t_switch) / R
+                cp_high = poly_high.get_heat_capacity(t_switch) / R
+                h_low = poly_low.get_enthalpy(t_switch) / (R * t_switch)
+                h_high = poly_high.get_enthalpy(t_switch) / (R * t_switch)
+                s_low = poly_low.get_entropy(t_switch) / R
+                s_high = poly_high.get_entropy(t_switch) / R
+
+                # heat capacity: relative 1% discontinuity in Cp/R
+                if abs((cp_low - cp_high) / (abs(cp_low) + 1e-4)) > 0.01:
                     logging.error(
-                        f"Thermo library {library_name} entry {entry.label}: enthalpy is "
-                        f"discontinuous by {h_diff / 1000:.4g} kJ/mol at the switch-over "
+                        f"Thermo library {library_name} entry {entry.label}: heat capacity is "
+                        f"discontinuous by {abs(cp_low - cp_high) * R:.4g} J/mol/K at the switch-over "
                         f"temperature T={t_switch:.1f} K. This indicates an error in the "
                         f"NASA polynomial coefficients."
                     )
                     failed = True
 
-                s_diff = abs(poly_low.get_entropy(t_switch) - poly_high.get_entropy(t_switch))
-                if s_diff > s_tol:
+                # enthalpy: jump normalized by Cp/R (equivalent fractional temperature error)
+                if abs((h_low - h_high) / cp_low) > 0.001:
+                    logging.error(
+                        f"Thermo library {library_name} entry {entry.label}: enthalpy is "
+                        f"discontinuous by {abs(h_low - h_high) * R * t_switch / 1000:.4g} kJ/mol at the "
+                        f"switch-over temperature T={t_switch:.1f} K. This indicates an error in the "
+                        f"NASA polynomial coefficients."
+                    )
+                    failed = True
+
+                # entropy: jump normalized by (|S/R| + Cp/R)
+                if abs((s_low - s_high) / (abs(s_low) + cp_low)) > 0.001:
                     logging.error(
                         f"Thermo library {library_name} entry {entry.label}: entropy is "
-                        f"discontinuous by {s_diff:.4g} J/mol/K at the switch-over "
+                        f"discontinuous by {abs(s_low - s_high) * R:.4g} J/mol/K at the switch-over "
                         f"temperature T={t_switch:.1f} K. This indicates an error in the "
                         f"NASA polynomial coefficients."
                     )
