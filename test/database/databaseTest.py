@@ -51,6 +51,7 @@ from rmgpy.molecule.atomtype import ATOMTYPES
 from rmgpy.molecule.pathfinder import find_shortest_path
 from rmgpy.quantity import ScalarQuantity
 from rmgpy.kinetics.model import KineticsModel
+from rmgpy.thermo import NASA
 
 # allow asserts to 'fail' and then continue - this test file relies on a lot
 # of asserts in each test and we want them all to run
@@ -241,6 +242,11 @@ class TestDatabase:
                     assert self.check_surface_thermo_libraries_have_surface_attributes(
                         library_name, library
                     ), "Thermo surface libraries {0}: Entry has metal attributes?".format(library_name)
+
+            with check:
+                assert self.check_library_thermo_nasa_continuity(
+                    library_name, library
+                ), "Thermo library {0}: NASA polynomials continuous at switch-over T?".format(library_name)
         
         with check:
             assert len(self.database.thermo.sidts) > 0, "SIDT thermochemistry models did not load?"
@@ -1762,6 +1768,58 @@ Origin Group AdjList:
             if failed:
                 raise ValueError("Error occured in databaseTest. Please check log warnings for all error messages.")
         return True
+
+    def check_library_thermo_nasa_continuity(self, library_name, library):
+        """
+        Check that every multi-segment NASA polynomial in a thermo library is
+        continuous in enthalpy and entropy at each switch-over temperature
+        between adjacent polynomial segments. A discontinuity (dislocation)
+        indicates an error in the NASA coefficients.
+
+        Absolute tolerances are used (1 kJ/mol for enthalpy, 1 J/mol/K for
+        entropy)
+        """
+        h_tol = 1000.0  # J/mol (1 kJ/mol) maximum allowed enthalpy jump
+        s_tol = 1.0  # J/mol/K maximum allowed entropy jump
+        failed = False
+        for entry in library.entries.values():
+            data = entry.data
+            if not isinstance(data, NASA):
+                continue
+            polynomials = data.polynomials
+            # walk each adjacent pair of polynomial segments
+            for poly_low, poly_high in zip(polynomials[:-1], polynomials[1:]):
+                # the switch-over temperature is the shared boundary
+                # (poly_low.Tmax == poly_high.Tmin).
+                t_switch = poly_low.Tmax.value_si
+                if t_switch != poly_high.Tmin.value_si:
+                    logging.error(
+                        f"Thermo library {library_name} entry {entry.label}: switch-over "
+                        f"temperature T={t_switch:.1f} K is not shared between adjacent "
+                        f"polynomial segments."
+                    )
+                    failed = True
+
+                h_diff = abs(poly_low.get_enthalpy(t_switch) - poly_high.get_enthalpy(t_switch))
+                if h_diff > h_tol:
+                    logging.error(
+                        f"Thermo library {library_name} entry {entry.label}: enthalpy is "
+                        f"discontinuous by {h_diff / 1000:.4g} kJ/mol at the switch-over "
+                        f"temperature T={t_switch:.1f} K. This indicates an error in the "
+                        f"NASA polynomial coefficients."
+                    )
+                    failed = True
+
+                s_diff = abs(poly_low.get_entropy(t_switch) - poly_high.get_entropy(t_switch))
+                if s_diff > s_tol:
+                    logging.error(
+                        f"Thermo library {library_name} entry {entry.label}: entropy is "
+                        f"discontinuous by {s_diff:.4g} J/mol/K at the switch-over "
+                        f"temperature T={t_switch:.1f} K. This indicates an error in the "
+                        f"NASA polynomial coefficients."
+                    )
+                    failed = True
+        return not failed
 
     def general_check_nodes_found_in_tree(self, group_name, group):
         """
