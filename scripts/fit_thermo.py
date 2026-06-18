@@ -745,6 +745,34 @@ try:
 except ImportError:
     print("Black is not installed. Skipping formatting.")
 
+# %% [markdown]
+# ## Differences between the NEW and original entries
+#
+# Plot the change (NEW − original) in H, S and G as a function of temperature, up
+# to 2500 K. The `NASA` object selects the correct polynomial piece for each T, so
+# these curves span both pieces of each entry. By construction H and S match at
+# 298 K (so the H and S differences start near zero there); they drift apart at
+# higher T because the two entries use different Cp shapes.
+
 # %%
+T_diff = np.linspace(T_REF, TMAX_PLOT, 300)
+dH = np.array([(thermo_new.get_enthalpy(T) - thermo0.get_enthalpy(T)) / KCAL for T in T_diff])
+dS = np.array([(thermo_new.get_entropy(T) - thermo0.get_entropy(T)) / CAL for T in T_diff])
+dG = np.array([((thermo_new.get_enthalpy(T) - T * thermo_new.get_entropy(T))
+                - (thermo0.get_enthalpy(T) - T * thermo0.get_entropy(T))) / KCAL for T in T_diff])
+
+fig, axes = plt.subplots(1, 3, figsize=(15, 4))
+for ax, y, ylabel in zip(
+    axes,
+    (dH, dS, dG),
+    ("ΔH [kcal/mol]", "ΔS [cal/mol/K]", "ΔG [kcal/mol]"),
+):
+    ax.plot(T_diff, y, color="C3", lw=1.8)
+    ax.axhline(0.0, color="grey", ls=":", lw=1)
+    ax.set_xlabel("T [K]")
+    ax.set_ylabel(ylabel)
+fig.suptitle("NEW − original (USC-mech) differences vs. T", fontsize=11)
+fig.tight_layout()
+plt.show()
 
 # %%
