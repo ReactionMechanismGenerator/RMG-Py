@@ -40,43 +40,42 @@ from rmgpy.tools.data import GenericData
 from rmgpy.tools.plot import parse_csv_data, plot_sensitivity, ReactionSensitivityPlot, ThermoSensitivityPlot
 
 
-# This represents the ratio k_max/k_0 for a reaction if using a uniform distribution for uncertainty
-# or the the ratio k_95/k_0 where k_95 is the 95% confidence bound for a lognormal distribution.
-KINETIC_RANK_MULTIPLIERS = {
-    1: 1.2,     # Experiment/FCI
-    2: 1.5,     # W4/HEAT with very good (2-d if necessary) rotors
-    3: 2.0,     # CCSD(T)-F12/cc-PVnZ with n>2 or CCSD(T)-F12/CBS with good (2-d if necessary) rotors
-    4: 3.0,     # CCSD(T)-F12/DZ, with good (2-d if necessary) rotors
-    5: 5.0,     # CBS-QB3 with 1-d rotors
-    6: 7.5,     # Double-hybrid DFT with 1-D rotors
-    7: 10.0,    # Hybrid DFT (w/ dispersion) (rotors if necessary)
-    8: 30,      # B3LYP & lower DFT (rotors if necessary)
-    9: 100,     # Direct Estimate/Guess
-    10: 1000,   # Average of Rates
-    11: 10000,  # General Estimate (Never used in generation)
-    0: 10000,   # General Estimate (Never used in generation)
-}
-
-# Use this for uniform distribution
-KINETIC_RANK_UNCERTAINTIES = {k: np.log(v) / np.sqrt(3.0) for k, v in KINETIC_RANK_MULTIPLIERS.items()}
-
-# # Use this for lognormal distribution
-# KINETIC_RANK_UNCERTAINTIES = {k: np.log(v) / 1.96 for k, v in KINETIC_RANK_MULTIPLIERS.items()}
-
-THERMO_RANK_UNCERTAINTIES = {  # THESE ARE FILLER. PLEASE UPDATE WITH BETTER UNCERTAINTIES BASED ON DATA ANALYSIS
-    1: 0.1,     # Experiment/FCI
-    2: 0.2,     # W4/HEAT with very good (2-d if necessary) rotors
-    3: 0.3,     # CCSD(T)-F12/cc-PVnZ with n>2 or CCSD(T)-F12/CBS with good (2-d if necessary) rotors
-    4: 0.5,     # CCSD(T)-F12/DZ, with good (2-d if necessary) rotors
-    5: 0.8,     # CBS-QB3 with 1-d rotors
-    6: 1.0,     # Double-hybrid DFT with 1-D rotors
-    7: 1.5,     # Hybrid DFT (w/ dispersion) (rotors if necessary)
-    8: 2.0,     # B3LYP & lower DFT (rotors if necessary)
-    9: 2.5,     # Direct Estimate/Guess
-    10: 3.0,    # Average of Rates
+# f uncertainty factors, where f = log10(kmax/k0)
+KINETIC_F_UNCERTAINTY_FACTORS = {
+    1: 0.05,    # Experiment/FCI
+    2: 0.1,     # W4/HEAT with very good (2-d if necessary) rotors
+    3: 0.2,     # CCSD(T)-F12/cc-PVnZ with n>2 or CCSD(T)-F12/CBS with good (2-d if necessary) rotors
+    4: 0.3,     # CCSD(T)-F12/DZ, with good (2-d if necessary) rotors
+    5: 0.5,     # CBS-QB3 with 1-d rotors
+    6: 0.7,     # Double-hybrid DFT with 1-D rotors
+    7: 1.0,     # Hybrid DFT (w/ dispersion) (rotors if necessary)
+    8: 1.2,     # B3LYP & lower DFT (rotors if necessary)
+    9: 1.5,     # Direct Estimate/Guess
+    10: 2.0,    # Average of Rates
     11: 3.0,    # General Estimate (Never used in generation)
     0: 3.0,     # General Estimate (Never used in generation)
 }
+KINETIC_RANK_MULTIPLIERS = {k: np.float_power(10.0, f) for k, f in KINETIC_F_UNCERTAINTY_FACTORS.items()}
+# Use this for uniform distribution
+# KINETIC_RANK_UNCERTAINTIES = {k: np.log(v) / np.sqrt(3.0) for k, v in KINETIC_RANK_MULTIPLIERS.items()}
+# # Use this for lognormal distribution
+KINETIC_RANK_UNCERTAINTIES = {k: np.log(v) / 1.96 for k, v in KINETIC_RANK_MULTIPLIERS.items()}
+
+THERMO_U_95 = {
+    1: 0.1,     # Experiment/FCI
+    2: 0.2,     # W4/HEAT with very good (2-d if necessary) rotors
+    3: 0.5,     # CCSD(T)-F12/cc-PVnZ with n>2 or CCSD(T)-F12/CBS with good (2-d if necessary) rotors
+    4: 1.5,     # CCSD(T)-F12/DZ, with good (2-d if necessary) rotors
+    5: 3.1,     # CBS-QB3 with 1-d rotors
+    6: 8.0,     # Double-hybrid DFT with 1-D rotors
+    7: 12.0,    # Hybrid DFT (w/ dispersion) (rotors if necessary)
+    8: 18.0,    # B3LYP & lower DFT (rotors if necessary)
+    9: 20.0,    # Direct Estimate/Guess
+    10: 22.0,   # Average of Rates
+    11: 24.0,   # General Estimate (Never used in generation)
+    0: 24.0,    # General Estimate (Never used in generation)
+}
+THERMO_RANK_UNCERTAINTIES = {k: u / 1.96 for k, u in THERMO_U_95.items()}  # convert 95% confidence interval to standard deviation assuming normal distribution
 
 
 class ThermoParameterUncertainty(object):
