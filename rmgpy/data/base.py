@@ -1066,11 +1066,10 @@ class Database(object):
             else:
                 return root
         else:
-            # Multiple children match - sort by node label for deterministic selection
-            next_node.sort(key=lambda n: n.label)
-            # logging.warning('For {0}, a node {1} with overlapping children {2} was encountered '
-            #                 'in tree with top level nodes {3}. Assuming the first match is the '
-            #                 'better one.'.format(structure, root, next, self.top))
+            # Multiple children match - pick the first in tree order.
+            # The tree is constructed deterministically, so this is deterministic.
+            # (Sorting by label can pick the wrong node when siblings overlap,
+            # e.g. Nitrites sorts before Nitro but Nitro is the intended match.)
             return self.descend_tree(structure, atoms, next_node[0], strict)
 
     def are_siblings(self, node, node_other):

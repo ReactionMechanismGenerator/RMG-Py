@@ -1334,39 +1334,6 @@ class Molecule(Graph):
         for index, vertex in enumerate(self.vertices):
             vertex.sorting_label = index
 
-    def sort_vertices(self, save_order=False):
-        """
-        Sort the vertices in the molecule using chemical properties as a tiebreaker.
-        Overrides Graph.sort_vertices to ensure deterministic ordering for atoms
-        with identical connectivity values.
-        """
-        if save_order:
-            self.ordered_vertices = self.vertices[:]
-
-        for vertex in self.vertices:
-            if vertex.sorting_label < 0:
-                break
-        else:
-            return
-
-        self.update_connectivity_values()
-
-        # Build sort keys without closures (Cython compatibility)
-        sort_keys = []
-        for vertex in self.vertices:
-            conn = -256*vertex.connectivity1 - 16*vertex.connectivity2 - vertex.connectivity3
-            sort_key = getattr(vertex, 'sorting_key', None)
-            if sort_key is not None:
-                sort_keys.append((conn, sort_key))
-            else:
-                sort_keys.append((conn, ()))
-
-        # Sort by pairing vertices with their sort keys, then reorder
-        paired = sorted(zip(sort_keys, self.vertices))
-        self.vertices = [v for _, v in paired]
-        for index, vertex in enumerate(self.vertices):
-            vertex.sorting_label = index
-
     def update_charge(self):
         cython.declare(atom=Atom)
         for atom in self.vertices:
