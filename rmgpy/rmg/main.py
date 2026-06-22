@@ -1110,7 +1110,7 @@ class RMG(util.Subject):
                         # These should be Species or Network objects
                         logging.info("")
 
-                        objects_to_enlarge = list(set(objects_to_enlarge))
+                        objects_to_enlarge = sorted(set(objects_to_enlarge), key=lambda o: o.label)
 
                         # Add objects to enlarge to the core first
                         for objectToEnlarge in objects_to_enlarge:
@@ -1927,7 +1927,7 @@ class RMG(util.Subject):
             rspcs = self.process_reactions_to_species([k for k in obj if isinstance(k, Reaction)])
             spcs = {k for k in obj if isinstance(k, Species)} | rspcs
             nworks, pspcs = self.process_pdep_networks([k for k in obj if isinstance(k, PDepNetwork)])
-            spcs = list(spcs - pspcs)  # avoid duplicate species
+            spcs = sorted(spcs - pspcs, key=lambda s: s.label)  # avoid duplicate species, sort deterministically
             return spcs + nworks
         else:
             raise TypeError("improper call, obj input was incorrect")

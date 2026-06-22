@@ -53,12 +53,12 @@ model(
     toleranceMoveToCore=0.01,
     toleranceKeepInEdge=0.001,
     toleranceInterruptSimulation=1e8,
-    maximumEdgeSpecies=10000,
+    maximumEdgeSpecies=300,
     minCoreSizeForPrune=10,
     minSpeciesExistIterationsForPrune=2,
     maxNumObjsPerIter=3,
     filterReactions=True,
-    maxNumSpecies=35,
+    maxNumSpecies=15,
 )
 
 options(
