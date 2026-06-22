@@ -324,7 +324,7 @@ def combine_cycles(cycle1, cycle2):
     """
     set1 = set(cycle1)
     set2 = set(cycle2)
-    return list(set1.union(set2))
+    return sorted(set1.union(set2))
 
 
 def is_aromatic_ring(submol):
