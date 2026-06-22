@@ -1110,7 +1110,13 @@ class RMG(util.Subject):
                         # These should be Species or Network objects
                         logging.info("")
 
-                        objects_to_enlarge = sorted(set(objects_to_enlarge), key=lambda o: o.label)
+                        # objects_to_enlarge can contain Species, Network, or tuples (PDepNetwork, Species)
+                        # Sort deterministically: by label for objects with .label, by first element for tuples
+                        def _sort_key(obj):
+                            if isinstance(obj, tuple):
+                                return (1, getattr(obj[0], 'label', str(obj[0])))
+                            return (0, getattr(obj, 'label', str(obj)))
+                        objects_to_enlarge = sorted(set(objects_to_enlarge), key=_sort_key)
 
                         # Add objects to enlarge to the core first
                         for objectToEnlarge in objects_to_enlarge:
