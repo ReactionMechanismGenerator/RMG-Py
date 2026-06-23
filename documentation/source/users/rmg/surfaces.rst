@@ -388,7 +388,7 @@ The species "N_X" and "H_X" are the coverage dependent species in this example, 
 
 Coverage block in thermodynamics libraries
 ------------------------------------------
-Coverage dependent parameters can be added to a thermodynamics library by specifying a dictionary in the "Thermo_coverage_dependence" field, with the chemstring of the species for which the thermodynamics depends on as the keys. Nested within those dictionaries
+Coverage dependent parameters can be added to a thermodynamics library by specifying a dictionary in the "Thermo_coverage_dependence" field, with the adjacency list of the species for which the thermodynamics depends on as the keys. Nested within those dictionaries
 are a dictionary containing which model to use (only "polynomial" is supported), and the enthalpy and entropy coefficients::
 
     entry(
