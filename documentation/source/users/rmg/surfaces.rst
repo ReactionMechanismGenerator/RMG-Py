@@ -423,7 +423,7 @@ are a dictionary containing which model to use (only "polynomial" is supported),
         Calculated by Kirk Badger at Brown University using statistical mechanics methods implemented in
         Franklin Goldsmith's thermo_kinetics_scripts repository in the new_workflow folder:
 
-        https://github.com/franklingoldsmith/thermo_kinetics_scripts/tree/main/new_workflow
+        https://github.com/franklingoldsmith/thermo_kinetics_scripts/tree/acee9b28228abc4491bd15d264f21897d9adf0ff/new_workflow
 
         DFT calculations were performed with Quantum Espresso using PAW pseudopotentals and the BEEF-vdW
         functional for an optimized 3x3x4 supercell with the bottom 2 layers fixed. The following settings
