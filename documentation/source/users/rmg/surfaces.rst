@@ -434,8 +434,6 @@ are a dictionary containing which model to use (only "polynomial" is supported),
         facet = "111",
     )
 
-The species "N_X" and "H_X" are the coverage dependent species in this example, and they also happen to be species partaking in this reaction. However, any species that are listed in the species dictionary can also be used. 
-
 
 Examples
 =========
