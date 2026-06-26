@@ -746,6 +746,7 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
                 k_scission=spc.k_scission,
                 k_unzip=spc.k_unzip,
                 proxy_species=spc,
+                monomer_product=getattr(spc, 'monomer_product_species', None),
             )
             pools.append(pool)
         else:
@@ -800,6 +801,7 @@ class PolymerPool(object):
                  k_scission: float = 0.0,
                  k_unzip: float = 0.0,
                  proxy_species: Optional[Species] = None,
+                 monomer_product: Optional[Species] = None,
                  ):
         self.label = label
         self.xs = xs
@@ -809,6 +811,9 @@ class PolymerPool(object):
         self.k_scission = k_scission
         self.k_unzip = k_unzip
         self.proxy_species = proxy_species
+        # Real reactive species (e.g. styrene) that chain-unzip releases into the
+        # melt. Distinct from `monomer` (the repeat-unit Molecule used for mass).
+        self.monomer_product = monomer_product
 
     def to_config(self, spc_map):
         """
@@ -836,7 +841,16 @@ class PolymerPool(object):
             raise ValueError(f"Pool {self.label}: Moment species {e} missing from core list.")
 
         # 3. Resolve Monomer Index
-        monomer_idx = spc_map.get(self.monomer)
+        # The released-monomer target must be a real core Species. `self.monomer`
+        # is the repeat-unit Molecule (never a key in the Species-keyed spc_map),
+        # so resolve from `monomer_product` when provided.
+        monomer_idx = None
+        if self.monomer_product is not None:
+            monomer_idx = spc_map.get(self.monomer_product)
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {self.label}: monomer_product {self.monomer_product} not in core species; "
+                    f"cannot wire unzip-to-monomer release.")
 
         # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot
         #    (spec 2026-06-10 §3, same idiom as Polymer.monomer_mw_g_mol).

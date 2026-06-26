@@ -230,12 +230,15 @@ class Polymer(Species):
                  Mw: Optional[float] = None,
                  initial_mass: float = 1.0,
                  moments: Optional[List[float]] = None,
+                 k_unzip: float = 0.0,
+                 k_scission: float = 0.0,
                  **kwargs,
                  ):
-        # Pop polymer-specific kwargs before passing the rest to Species.__init__
-        # — Species does not accept k_unzip/k_scission and would raise TypeError.
-        self.k_unzip = kwargs.pop('k_unzip', 0.0)
-        self.k_scission = kwargs.pop('k_scission', 0.0)
+        # k_unzip/k_scission are named parameters, so they never appear in kwargs;
+        # assign them directly. discrete_dp_threshold (below) is popped from kwargs
+        # before Species.__init__, which does not accept it and would raise TypeError.
+        self.k_unzip = k_unzip
+        self.k_scission = k_scission
         # Discreteness threshold (spec 2026-06-10 §6, D7/D8): chains with
         # literal DP < threshold are candidates for discrete tracking. Default
         # 4 = monomer..trimer explicit. DORMANT under the fixed trimer proxy:

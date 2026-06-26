@@ -1267,6 +1267,36 @@ class HybridPolymerSystem(ReactionSystem):
             for i in unassigned:
                 print(f"  {core_species[i].label:<30} {i:<7} {self.y0[i]:>13.4e}")
 
+        # --- Phase / Volume summary (DEBUG) ---
+        n_gas_species = int(np.sum(self.gas_species_mask))
+        n_poly_species = len(core_species) - n_gas_species
+        n_gas_moles = float(np.sum(self.y0[:len(core_species)][self.gas_species_mask]))
+        n_poly_moles = float(np.sum(self.y0[:len(core_species)][~self.gas_species_mask]))
+        n_gas_via_residual = float(np.sum(self.y0[:len(core_species)] * self.gas_species_mask))
+        print(f"\n--- Phase / Volume summary (DEBUG) ---")
+        print(f"  T.value_si = {self.T.value_si}  P.value_si = {self.P.value_si}  "
+              f"R = {constants.R}  constant_gas_volume = {self.constant_gas_volume}  V_gas0 = {self.V_gas0}")
+        print(f"  n_gas (mask*y0 sum) = {n_gas_via_residual:.6e} mol   "
+              f"ideal V_gas = {constants.R*self.T.value_si*n_gas_via_residual/self.P.value_si:.6e} m^3")
+        print(f"  V_gas = {self.V_gas:.6e} m^3   V_poly = {self.V_poly:.6e} m^3   V = {self.V:.6e} m^3")
+        print(f"  gas species: {n_gas_species} (sum y0 = {n_gas_moles:.6e} mol)   "
+              f"poly species: {n_poly_species} (sum y0 = {n_poly_moles:.6e} mol)")
+        print(f"  {'GAS Species':<30} {'Index':<7} {'y0':>13}")
+        for i in range(len(core_species)):
+            if self.gas_species_mask[i] and self.y0[i] != 0.0:
+                print(f"  {core_species[i].label:<30} {i:<7} {self.y0[i]:>13.4e}")
+        # largest-magnitude initial gas concentration (collapse check)
+        if self.V_gas > 0:
+            cmax = 0.0
+            cmax_lbl = "-"
+            for i in range(len(core_species)):
+                if self.gas_species_mask[i]:
+                    c = abs(self.y0[i]) / self.V_gas
+                    if c > cmax:
+                        cmax = c
+                        cmax_lbl = core_species[i].label
+            print(f"  max |C_gas0| = {cmax:.4e} mol/m^3  ({cmax_lbl})")
+
         # --- Mass transfer ---
         if self.mass_transfer:
             print(f"\n--- Mass Transfer ---")
@@ -1373,10 +1403,23 @@ class HybridPolymerSystem(ReactionSystem):
     def generate_rate_coefficients(self, core_reactions, edge_reactions):
         for rxn in itertools.chain(core_reactions, edge_reactions):
             j = self.reaction_index[rxn]
-            self.kf[j] = rxn.get_rate_coefficient(self.T.value_si, self.P.value_si)
+            kf = rxn.get_rate_coefficient(self.T.value_si, self.P.value_si)
+            # Guard against non-finite forward coefficients (e.g. extreme PLOG/Troe
+            # extrapolation) so a single bad reaction cannot poison the residual.
+            self.kf[j] = kf if np.isfinite(kf) else 0.0
             if rxn.reversible:
-                self.Keq[j] = rxn.get_equilibrium_constant(self.T.value_si)
-                self.kb[j] = self.kf[j] / self.Keq[j]
+                Keq = rxn.get_equilibrium_constant(self.T.value_si)
+                # When Keq under/overflows (thermo at extreme T for large fragments),
+                # kb = kf/Keq -> inf, and inf * 0 (zero product conc) = NaN, which
+                # crashes DASPK ("nans in moles"). Treat such degenerate reverse
+                # directions as irreversible rather than emitting a non-finite kb.
+                if (not np.isfinite(Keq)) or Keq <= 0.0:
+                    self.Keq[j] = np.inf
+                    self.kb[j] = 0.0
+                else:
+                    kb = self.kf[j] / Keq
+                    self.Keq[j] = Keq
+                    self.kb[j] = kb if np.isfinite(kb) else 0.0
             else:
                 self.kb[j] = 0.0
                 self.Keq[j] = np.inf
@@ -1785,9 +1828,11 @@ class HybridPolymerSystem(ReactionSystem):
 
                     Peff = P_val * np.sum(self.collider_efficiencies[i] * y_gas / sum_y_gas)
 
-                    self.kf[j] = self.pdep_collider_kinetics[i].get_rate_coefficient(T_val, Peff)
-                    if self.Keq[j] != np.inf:
-                        self.kb[j] = self.kf[j] / self.Keq[j]
+                    kf_j = self.pdep_collider_kinetics[i].get_rate_coefficient(T_val, Peff)
+                    self.kf[j] = kf_j if np.isfinite(kf_j) else 0.0
+                    if self.Keq[j] != np.inf and self.Keq[j] > 0.0:
+                        kb_j = self.kf[j] / self.Keq[j]
+                        self.kb[j] = kb_j if np.isfinite(kb_j) else 0.0
             else:
                 pass
 
@@ -2353,6 +2398,21 @@ class HybridPolymerSystem(ReactionSystem):
         for i in range(n_core):
             if self.is_pool_proxy[i]:
                 self.core_species_rates[i] = proxy_activity[i] / V_poly
+
+        # --- DEBUG: report first non-finite / blow-up in residual ---
+        if not getattr(self, '_dbg_reported', False):
+            if (not np.isfinite(V_gas)) or (not np.all(np.isfinite(dn_dt))):
+                self._dbg_reported = True
+                bad = np.where(~np.isfinite(dn_dt))[0]
+                print(f"\n[POLY-DBG] NON-FINITE in residual at t={t:.3e}")
+                print(f"[POLY-DBG]   V_gas={V_gas:.6e} V_poly={V_poly:.6e} "
+                      f"n_gas={float(np.sum(y[:n_core][mask])):.6e}")
+                cg = C_gas[mask]
+                print(f"[POLY-DBG]   max|C_gas|={float(np.max(np.abs(cg))) if cg.size else 0.0:.4e} "
+                      f"max|dn_dt finite|={float(np.max(np.abs(dn_dt[np.isfinite(dn_dt)]))) if np.any(np.isfinite(dn_dt)) else 0.0:.4e}")
+                print(f"[POLY-DBG]   non-finite dn_dt indices (first 10): {list(bad[:10])}")
+                for bi in bad[:10]:
+                    print(f"[POLY-DBG]     idx {bi}: y={y[bi]:.4e} gas={bool(mask[bi])}")
 
         return (dn_dt - dydt), 1
 

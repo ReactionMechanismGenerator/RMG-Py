@@ -2457,7 +2457,14 @@ class RMG_Memory(object):
         the resulting condition is added to the end of condition_list
         """
         if self.condition_list == []:
-            self.condition_list.append({key: value[0] for key, value in self.Ranges.items()})
+            seed_cond = {key: value[0] for key, value in self.Ranges.items()}
+            # Ranges["P"] is stored in log-space (see __init__), so the seed
+            # condition must be exponentiated back to real pressure, exactly as
+            # the sampled (non-seed) branch does below. Without this the first
+            # iteration runs at ln(P) Pa instead of P Pa.
+            if "P" in seed_cond:
+                seed_cond["P"] = np.exp(seed_cond["P"])
+            self.condition_list.append(seed_cond)
             self.scaled_condition_list.append({key: 0.0 for key, value in self.Ranges.items()})
         elif len(self.condition_list[0]) == 0:
             pass
