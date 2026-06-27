@@ -342,6 +342,13 @@ class HybridPolymerReactor(ReactionSystem):
         # 5. Convert Input Objects -> Solver Configs
         # Pass spc_map to avoid re-searching the list
         pool_configs = [p.to_config(spc_map) for p in self.polymerPhase.pools]
+        # Auto-register scission/spawn daughter pools (proxy_reaction_reality_rules.md
+        # Layer 2): daughters are registered as core Polymer species + _muN dummies by
+        # _register_polymer, but polymerPhase.pools never grows at runtime. Derive
+        # their pool configs from the live core species so their stamped
+        # SCISSION_FRAGMENT/MIGRATION flux resolves instead of demoting to UNRESOLVED.
+        static_pool_labels = {p.label for p in self.polymerPhase.pools}
+        pool_configs += derive_daughter_pool_configs(core_species, spc_map, static_pool_labels)
         mt_configs = [mt.to_config(spc_map) for mt in self.polymerPhase.mass_transfer]
 
         # Validate indices consistent with get_gas_mask()
@@ -934,6 +941,66 @@ class PolymerPool(object):
             k_scission=self.k_scission,
             k_unzip=self.k_unzip
         )
+
+
+def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
+    """
+    Build a :class:`PolymerPoolConfig` for each daughter Polymer registered as a
+    core species but not covered by a static deck pool.
+
+    A scission tail or spawn-intent (``<parent>_d{n}``) daughter is registered by
+    ``CoreEdgeReactionModel._register_polymer`` as a core Polymer species plus its
+    own ``_mu0`` / ``_mu1`` / ``_mu2`` moment-dummy species -- but ``pool_configs``
+    is built only from the static deck list ``polymerPhase.pools``. Without a pool
+    config the daughter's species map to ``-1`` in ``species_to_pool_indices``, so
+    a stamped SCISSION_FRAGMENT / MIGRATION reaction targeting it demotes to
+    UNRESOLVED (``polymer.pyx`` "could not resolve their solver pool(s)"). Deriving
+    the config from the registered core species closes that gap uniformly for both
+    daughter paths; the solver binds the pool by label on the next rebuild.
+
+    Daughters spawn honest-empty (no explicit oligomers); only label + xs +
+    moment indices are needed for the solver to resolve the pool.
+
+    Labels use the solver's binding convention: RMG appends a ``(N)`` index to
+    registered species labels (a proxy displays as ``PS(2)`` while its dummies
+    stay the clean ``PS_mu0``), and ``_apply_pool_phase_overrides`` binds on
+    ``label.partition('(')[0] == pool.label``. So the derived pool label and the
+    moment-dummy lookup both use the ``(``-stripped base label.
+    """
+    from rmgpy.polymer import Polymer
+
+    def base(label):
+        return label.partition('(')[0]
+
+    static = set(existing_pool_labels)
+    # Base-label -> core index, using the same '('-stripping the solver binds with.
+    base_to_index = {}
+    for spc in core_species:
+        base_to_index.setdefault(base(spc.label), spc_map[spc])
+
+    configs = []
+    seen = set()
+    for spc in core_species:
+        if not isinstance(spc, Polymer):
+            continue
+        b = base(spc.label)
+        if b in static or b in seen:
+            # Static deck pool's proxy (never re-derived) or a base already
+            # configured (the proxy plus its index-suffixed copies).
+            continue
+        mu_indices = tuple(base_to_index.get(f"{b}_mu{k}") for k in (0, 1, 2))
+        if any(i is None for i in mu_indices):
+            # Daughter registered without its full moment-dummy triplet in the
+            # core map; skip rather than build an unresolvable pool.
+            continue
+        seen.add(b)
+        configs.append(PolymerPoolConfig(
+            label=b,
+            xs=spc.cutoff,
+            explicit_dp_to_species_index={},
+            mu_indices=mu_indices,
+        ))
+    return configs
 
 
 class MassTransfer(object):

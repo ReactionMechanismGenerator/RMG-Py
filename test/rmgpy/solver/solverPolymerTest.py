@@ -2580,6 +2580,99 @@ class TestAllowUnpairedReferenceStateKnobPlumb:
         assert "allow_unpaired_reference_state=allow_unpaired_reference_state" in src
 
 
+class TestDaughterPoolRegistration:
+    """Stage 1 (proxy_reaction_reality_rules.md Layer 2): a scission/spawn
+    daughter Polymer registered as a core species (with its _mu0/_mu1/_mu2
+    dummies) must be auto-registered as a solver pool by to_solver_object, so a
+    stamped SCISSION_FRAGMENT/MIGRATION reaction targeting it resolves its pool
+    instead of demoting to UNRESOLVED ("could not resolve their solver pool(s)").
+    The deck list polymerPhase.pools never grows at runtime, so to_solver_object
+    derives the daughter config from the live core species themselves."""
+
+    @staticmethod
+    def _moment_dummy(label):
+        s = _spc("[Ne]", label)
+        s.reactive = False
+        s.is_moment_dummy = True
+        return s
+
+    def test_to_solver_object_registers_core_daughter_as_pool(self):
+        """STAGE 1 / CYCLE 3 (integration): a daughter Polymer in core_species
+        but absent from the static deck pool list must appear as a solver pool
+        after to_solver_object."""
+        from rmgpy.quantity import Quantity
+        from rmgpy.polymer import Polymer
+        from rmgpy.rmg.polymer_input import HybridPolymerReactor, PolymerPhase
+
+        a = _spc("CCCC", "A")
+        daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                           end_groups=["[CH3]", "[H]"], cutoff=3,
+                           Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+        mu0 = self._moment_dummy("PS_d1_mu0")
+        mu1 = self._moment_dummy("PS_d1_mu1")
+        mu2 = self._moment_dummy("PS_d1_mu2")
+        core = [a, daughter, mu0, mu1, mu2]
+
+        phase = PolymerPhase(density=Quantity(1050.0, "kg/m^3"), initial_moments={},
+                             initial_explicit={a: 1.0}, pools=[], mass_transfer=[])
+        reactor = HybridPolymerReactor(
+            temperature=(1000.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles={a: 1.0}, polymerPhase=phase, terminationTime=(0.1, "s"))
+
+        solver = reactor.to_solver_object(core, [], [], [])
+
+        labels = {p.label for p in solver.polymer_pools}
+        assert "PS_d1" in labels
+
+    def test_derived_daughter_config_resolves_scission_instead_of_demoting(self):
+        """STAGE 1 / CYCLE 4 (payoff): the positive counterpart to
+        test_stamped_scission_without_daughter_pool_demotes_to_legacy. A stamped
+        SCISSION_FRAGMENT parent->daughter reaction whose daughter pool is
+        DERIVED by derive_daughter_pool_configs must resolve BOTH src and dst and
+        stay SCISSION_FRAGMENT -- not demote to UNRESOLVED. Closes the '2
+        reactions could not resolve their solver pool(s)' gap."""
+        import rmgpy.solver.polymer as solver_mod
+        from rmgpy.polymer import Polymer
+        from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+        Proxy = _spc("CCCC", "PS")                      # static parent pool proxy
+        PMu0 = _spc("CO", "PS_mu0"); PMu1 = _spc("C=O", "PS_mu1"); PMu2 = _spc("C#N", "PS_mu2")
+        daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                           end_groups=["[CH3]", "[H]"], cutoff=3,
+                           Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+        DMu0 = self._moment_dummy("PS_d1_mu0")
+        DMu1 = self._moment_dummy("PS_d1_mu1")
+        DMu2 = self._moment_dummy("PS_d1_mu2")
+        core = [Proxy, PMu0, PMu1, PMu2, daughter, DMu0, DMu1, DMu2]
+        spc_map = {s: i for i, s in enumerate(core)}
+        gas_mask = np.array([False] * 8, dtype=bool)
+
+        rxn = Reaction(reactants=[Proxy], products=[daughter], **_KIN)
+        rxn.polymer_flux_archetype = solver_mod.FLUX_SCISSION_FRAGMENT  # stamped 3
+
+        parent = PolymerPoolConfig(
+            label="PS", xs=3, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+        # The daughter config is DERIVED (not hand-fed) -- the unit under test.
+        derived = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+        assert [c.label for c in derived] == ["PS_d1"]
+
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={}, V_poly=1.0,
+            polymer_pools=[parent] + derived, mass_transfer=[],
+            gas_species_mask=gas_mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"PS": (1.0, 5.0, 30.0), "PS_d1": (0.0, 0.0, 0.0)},
+            termination=[],
+        )
+        rs.initialize_model(core, [rxn], [], [])
+
+        # Resolved, NOT demoted: both the parent (src) and derived daughter (dst)
+        # pools resolve, so the scission kernel applies instead of legacy mu1-only.
+        assert rs.reaction_flux_archetype[0] == solver_mod.FLUX_SCISSION_FRAGMENT
+
+
 class TestThermoReferenceStateEpdmShaped:
     """Spec §8.2/§8.3 -- the EPDM shape stays quantitatively clean.
 

@@ -4079,3 +4079,104 @@ def test_compile_polymer_phase_no_warning_when_consistent(caplog):
     disagreement = [r.getMessage() for r in caplog.records
                     if r.levelno >= logging.WARNING and "initialMoles" in r.getMessage()]
     assert disagreement == [], disagreement
+
+
+# ---------------------------------------------------------------------------
+# Stage 1: daughter-pool registration (proxy_reaction_reality_rules.md Layer 2)
+#
+# A scission/spawn daughter Polymer is registered as a core species (with its
+# own _mu0/_mu1/_mu2 dummies) by _register_polymer, but pool_configs is built
+# only from the static deck list polymerPhase.pools -- so the daughter's
+# species map to -1 and its stamped SCISSION_FRAGMENT/MIGRATION flux demotes to
+# UNRESOLVED ("could not resolve their solver pool(s)"). Registration derives a
+# PolymerPoolConfig for each such daughter from the core species themselves.
+# ---------------------------------------------------------------------------
+
+def _moment_dummy(label):
+    """A moment-dummy Species exactly as _register_polymer injects it."""
+    s = Species(label=label, reactive=False)
+    s.molecule = [Molecule().from_smiles("[Ne]")]
+    s.is_moment_dummy = True
+    return s
+
+
+def test_derive_daughter_pool_config_binds_moment_dummies():
+    """STAGE 1 / CYCLE 1 (tracer): a daughter Polymer registered as a core
+    species (with its auto-created _mu0/_mu1/_mu2 dummies) must yield a
+    PolymerPoolConfig that binds those dummies by index, so the solver resolves
+    the daughter's pool instead of demoting its scission/migration flux to
+    UNRESOLVED. Mirrors what _register_polymer leaves in core after a scission
+    or spawn-intent daughter is registered."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    mu0 = _moment_dummy("PS_d1_mu0")
+    mu1 = _moment_dummy("PS_d1_mu1")
+    mu2 = _moment_dummy("PS_d1_mu2")
+    core = [daughter, mu0, mu1, mu2]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    cfg = configs[0]
+    assert cfg.label == "PS_d1"
+    assert cfg.xs == 3                  # from daughter.cutoff
+    assert tuple(cfg.mu_indices) == (1, 2, 3)   # PS_d1_mu0/_mu1/_mu2 core indices
+
+
+def test_derive_daughter_pool_configs_skips_static_and_incomplete():
+    """STAGE 1 / CYCLE 2: the root proxy (a Polymer in core whose label IS a
+    static deck pool) must NOT be re-derived (else it is double-configured), and
+    a daughter missing part of its _muN triplet is skipped rather than yielding an
+    unresolvable pool. Only the complete, non-static daughter gets a config."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    def _poly(label):
+        return Polymer(label=label, monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+
+    root = _poly("PS")                 # static deck pool's proxy, lives in core
+    good = _poly("PS_d1")              # complete daughter -> one config
+    incomplete = _poly("PS_d2")        # missing _mu2 -> skipped
+    core = [
+        root, _moment_dummy("PS_mu0"), _moment_dummy("PS_mu1"), _moment_dummy("PS_mu2"),
+        good, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"), _moment_dummy("PS_d1_mu2"),
+        incomplete, _moment_dummy("PS_d2_mu0"), _moment_dummy("PS_d2_mu1"),  # no PS_d2_mu2
+    ]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert [c.label for c in configs] == ["PS_d1"]
+
+
+def test_derive_daughter_pool_config_uses_base_label_with_index_suffix():
+    """STAGE 1 / CYCLE 5 (hardening): RMG appends a "(N)" index to registered
+    species labels (the proxy displays as "PS(2)" while its dummies stay the
+    clean "PS_mu0"). A daughter whose proxy label acquired such an index
+    ("PS_d1(9)") still has clean "PS_d1_muN" dummies. The derived config must use
+    the '('-stripped base label -- both to FIND the clean dummies and so the
+    solver (which binds on label.partition('(')[0] == pool.label) can resolve the
+    pool. Keying off the raw label drops the daughter (looks for the nonexistent
+    "PS_d1(9)_mu0")."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1(9)", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    core = [
+        daughter,
+        _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"), _moment_dummy("PS_d1_mu2"),
+    ]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    # Config label is the clean base so the solver's base_label match binds it.
+    assert configs[0].label == "PS_d1"
+    assert tuple(configs[0].mu_indices) == (1, 2, 3)
