@@ -348,6 +348,12 @@ Invariant: `d(M_polymer + M_volatile)/dt = 0` to numerical tolerance (1e-9 for u
 
 ### 5.1 Discrete-reaction moment apportionment (flux archetypes)
 
+> **See also [`proxy_reaction_reality_rules.md`](proxy_reaction_reality_rules.md)** for
+> *which* proxy reactions are stamped and *in which direction* (the reality rules /
+> orientation that feed this apportionment). Known issue: stamping fires only on a
+> `Polymer` *reactant*, so most proxy-as-product reactions arrive unstamped and fall to
+> legacy mu1-only flux instead of these kernels — the orientation rule (R3 there) is the fix.
+
 Every proxy-touching reaction is stamped at generation time with a flux
 archetype (`rmgpy.polymer.PolymerFluxArchetype`, carried on
 `Reaction.polymer_flux_archetype` and resolved to solver arrays at
@@ -550,6 +556,12 @@ Full decision record:
 `docs/superpowers/specs/2026-06-12-phase-gate-enlargement-consistency-design.md`.
 
 ### 5.4 FEATURE mid-chain radicals: refuse-not-leak + guards (item 18, 2026-06-13)
+
+> **Successor design:** [`proxy_reaction_reality_rules.md`](proxy_reaction_reality_rules.md)
+> Layer 2 (item 20) replaces *refuse* with *represent* — spawn a lumped **feature pool**
+> (zero initial conc, keyed by feature-type signature, not position) and route flux
+> `parent → feature → products`, conserving μ1. This closes the same daughter-pool
+> registration gap as the "UNRESOLVED" archetype reactions.
 
 The Gate-B census of §5.3 is melt-class signal: physically-melt C15 macroradicals
 misclassified gas. Item 18 acts on the worst of these. A mid-chain H-abstraction

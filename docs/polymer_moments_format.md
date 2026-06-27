@@ -75,6 +75,19 @@ slot is always an initial condition, never a contradiction — `[0, 0, 0]` +
 `"spawned_empty"` is a statement of fact, distinguishable from a missing
 value by the provenance field itself.
 
+**mu0 single source of truth (`input_declared` pools).** For a pool declared
+in the input file, `µ0` (moles of chains) is set from
+`initialMoles[proxy]` — the value the solver actually integrates as `y0`.
+This is authoritative. The deck's `initial_mass` + `Mn`/`Mw` are a redundant
+second statement of the same loading (`initial_mass/Mn` = moles of chains);
+they MUST agree with `initialMoles`. When they disagree,
+`compile_polymer_phase` (a) honors `initialMoles`, (b) reconciles the pool's
+moments to it so the emitted `moments` here MIRROR the solver-integrated
+state (the serializer passes `Polymer.moments` through verbatim), and
+(c) emits a `logging.warning` naming the pool and both `µ0` values. So the
+`moments` reported in this slot are always the moments the oracle integrates,
+never the `initial_mass`-implied state the run did not simulate.
+
 **Dead core channels are census-announced (consumer guidance):** a core
 reaction whose phase-gate verdict is zero is announced by a
 `PHASE-GATE FLUX CENSUS: ... static (core, init-time)` warning on every
