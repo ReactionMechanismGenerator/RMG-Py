@@ -4869,7 +4869,10 @@ def _handshake_structures(structure_list, polymer_reactants):
     It mutates structure_list in-place: if an entry can be interpreted
     as a polymer-derived fragment/modification, it replaces that entry with the
     corresponding Polymer returned by create_reacted_copy().
+    Returns True iff at least one entry was replaced by a Polymer (the list is
+    still mutated in place regardless of the return value).
     """
+    replaced = False
     for i, item in enumerate(structure_list):
         if hasattr(item, 'is_polymer') and item.is_polymer:
             continue
@@ -4882,9 +4885,10 @@ def _handshake_structures(structure_list, polymer_reactants):
         for polymer_obj in polymer_reactants:
             try:
                 new_polymer = polymer_obj.create_reacted_copy(mol)
-
                 if new_polymer:
                     structure_list[i] = new_polymer
+                    replaced = True
                     break
             except (RuntimeError, ValueError):
                 pass
+    return replaced

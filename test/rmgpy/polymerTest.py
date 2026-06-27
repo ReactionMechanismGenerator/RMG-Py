@@ -3313,6 +3313,37 @@ class TestHandshakeStructures:
         assert sym >= 1
 
 
+class TestHandshakeRelabelFlag:
+    """Tests that _handshake_structures returns a bool indicating relabeling."""
+
+    def test_handshake_structures_returns_true_when_it_relabels(self):
+        """_handshake_structures must report relabeling so make_new_reaction can
+        gate the real-ΔH BM pre-conversion (spec §4.2)."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.molecule import Molecule
+        ps = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                     end_groups=['[CH3]', '[H]'], cutoff=3,
+                     Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        # A scission-tail fragment Molecule the proxy can reinterpret as a Polymer.
+        frag = Molecule().from_smiles('CC(CC(CC(C)c1ccccc1)c1ccccc1)c1ccccc1')
+        products = [frag]
+        relabeled = _handshake_structures(products, [ps])
+        assert relabeled is True
+        from rmgpy.polymer import Polymer as _P
+        assert isinstance(products[0], _P)
+
+    def test_handshake_structures_returns_false_when_nothing_relabels(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.molecule import Molecule
+        ps = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                     end_groups=['[CH3]', '[H]'], cutoff=3,
+                     Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        small = [Molecule().from_smiles('O=C=O')]  # CO2: not a polymer fragment
+        relabeled = _handshake_structures(small, [ps])
+        assert relabeled is False
+        assert isinstance(small[0], Molecule)
+
+
 class TestPolymerRegistration:
     """
     Tests for Polymer registration in the CoreEdgeReactionModel:
