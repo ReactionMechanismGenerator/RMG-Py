@@ -4211,3 +4211,153 @@ def test_derive_daughter_pool_config_uses_base_label_with_index_suffix():
     # Config label is the clean base so the solver's base_label match binds it.
     assert configs[0].label == "PS_d1"
     assert tuple(configs[0].mu_indices) == (1, 2, 3)
+
+
+# ---------------------------------------------------------------------------
+# Task 5: End-to-end scission tracer — Ea from REAL products, not pool proxy
+# ---------------------------------------------------------------------------
+
+
+class TestScissionRealDHrxnEndToEnd:
+    """
+    End-to-end pin: PS(2) retro-ene scission through make_new_reaction must
+    yield an Arrhenius Ea computed from the REAL atom-balanced products
+    (C9H10 + C16H18, ΔH ≈ 48 kcal/mol, Ea ≈ 72 kcal/mol), NOT from the
+    moment-pool-relabeled representative (C32H34, ΔH ≈ 81 kcal/mol, Ea ≈ 94
+    kcal/mol).
+
+    Verified empirically before writing:
+      - Proxy C25H28; products C9H10 + C16H18 sum to C25H28 ✓
+      - _handshake_structures([C16H18, ...], [PS]) → True; C16H18 → PS_scission_tail ✓
+      - real_dH ≈ 202.6 kJ/mol; pool_dH ≈ 337.3 kJ/mol (Δ ≈ +32 kcal/mol) ✓
+      - BM Ea(real) ≈ 300 kJ/mol; BM Ea(pool) ≈ 395 kJ/mol ✓
+    """
+
+    @classmethod
+    def setup_class(cls):
+        import os
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase
+        from rmgpy.rmg.main import RMG
+        rmg = RMG()
+        rmg.database = RMGDatabase()
+        rmg.database.load_thermo(os.path.join(settings["database.directory"], "thermo"))
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        self.model = CoreEdgeReactionModel()
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        self.model._register_polymer(self.ps, generate_thermo=True)
+
+    def test_scission_Ea_uses_real_products_not_pool(self):
+        """
+        PS(2) retro-ene scission: Arrhenius Ea must come from the real
+        atom-balanced C9H10+C16H18 thermo, not from the relabeled C32H34 pool
+        proxy thermo.
+
+        Assertion (A): Ea ≈ bm.get_activation_energy(real_dH)   [within 1%]
+        Assertion (B): real_dH ≠ pool_dH by > 40 kJ/mol, and
+                       Ea is NOT close to bm.get_activation_energy(pool_dH).
+        Without (B) the test would pass vacuously even on the unfixed code.
+        """
+        from rmgpy.data.kinetics.family import TemplateReaction, _handshake_structures
+        from rmgpy.kinetics import ArrheniusBM, Arrhenius
+
+        # Empirically verified real Retroene products for PS proxy (C25H28):
+        #   C9H10 (alpha-methylstyrene) + C16H18 (PS tail) = C25H28 ✓
+        # C16H18 = CC(CC=C1C=CC=CC1)C1=CC=CC=C1 (vinyl-ended PS-dimer tail)
+        C9H10_SMILES = 'C=C(C)C1=CC=CC=C1'
+        C16H18_SMILES = 'CC(CC=C1C=CC=CC1)C1=CC=CC=C1'
+
+        # BM parameters representative of the Retroene family
+        bm_params = dict(
+            A=(1.293332e12, 's^-1'), n=0.0,
+            w0=(968.0, 'kJ/mol'), E0=(182.946, 'kJ/mol'),
+        )
+
+        # --- Independent real_dH (mirrors _polymer_real_dHrxn estimation path) ---
+        def _H(smiles):
+            spc = Species(molecule=[Molecule().from_smiles(smiles)])
+            spc.generate_resonance_structures()
+            self.model.generate_thermo(spc)
+            return spc.get_enthalpy(298)
+
+        H_c9h10 = _H(C9H10_SMILES)
+        H_c16h18 = _H(C16H18_SMILES)
+        H_proxy = self.ps.get_enthalpy(298)
+        real_dH = H_c9h10 + H_c16h18 - H_proxy          # J/mol
+        expected_Ea = ArrheniusBM(**bm_params).get_activation_energy(real_dH)  # J/mol
+
+        # --- Build and run make_new_reaction ---
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        rxn = TemplateReaction(
+            reactants=[proxy_mol],
+            products=[
+                Molecule().from_smiles(C16H18_SMILES),  # relabels → PS_scission_tail
+                Molecule().from_smiles(C9H10_SMILES),   # stays as alpha-methylstyrene
+            ],
+            kinetics=ArrheniusBM(**bm_params),
+            family='Retroene',
+            is_forward=True,
+        )
+        result, is_new = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=True, generate_kinetics=True,
+        )
+
+        assert result is not None, "make_new_reaction returned None unexpectedly"
+        assert isinstance(result.kinetics, Arrhenius), (
+            f"Expected Arrhenius kinetics after BM pre-conversion, "
+            f"got {type(result.kinetics).__name__}"
+        )
+
+        Ea = result.kinetics.Ea.value_si
+
+        # (A) Ea is based on real atom-balanced products (rtol=0.01 covers the
+        #     minor H0-clamp step that fix_barrier_height may apply on top).
+        assert np.isclose(Ea, expected_Ea, rtol=0.01), (
+            f"Ea = {Ea / 4184:.2f} kcal/mol but expected ~{expected_Ea / 4184:.2f} kcal/mol "
+            f"(from real C9H10+C16H18 thermo, real_dH = {real_dH / 4184:.2f} kcal/mol); "
+            f"BM conversion likely used polluted pool thermo instead of real products."
+        )
+
+        # (B) Non-vacuousness: recover pool_dH from result.products (the
+        #     handshake-relabeled C32H34 PS_scission_tail polymer carries thermo
+        #     after make_new_reaction with generate_thermo=True).
+        pool_tail = next(
+            (p for p in result.products if isinstance(p, Polymer)), None
+        )
+        assert pool_tail is not None, (
+            "Expected a Polymer product (PS_scission_tail) in result.products"
+        )
+        c9h10_prod = next(
+            (p for p in result.products if not isinstance(p, Polymer)), None
+        )
+        assert c9h10_prod is not None, (
+            "Expected a non-Polymer product (alpha-methylstyrene) in result.products"
+        )
+        pool_dH = (pool_tail.get_enthalpy(298) + c9h10_prod.get_enthalpy(298)
+                   - H_proxy)
+        pool_Ea = ArrheniusBM(**bm_params).get_activation_energy(pool_dH)
+
+        # The dHrxn values must differ by at least 40 kJ/mol (~9.5 kcal/mol)
+        # so the test WOULD FAIL on code that used pool thermo for BM conversion.
+        assert abs(real_dH - pool_dH) > 40_000, (
+            f"real_dH ({real_dH / 4184:.2f} kcal/mol) and "
+            f"pool_dH ({pool_dH / 4184:.2f} kcal/mol) are unexpectedly similar "
+            f"(Δ = {abs(real_dH - pool_dH) / 4184:.2f} kcal/mol); "
+            "test cannot distinguish real-product thermo from pool thermo."
+        )
+        assert not np.isclose(Ea, pool_Ea, rtol=0.01), (
+            f"Ea = {Ea / 4184:.2f} kcal/mol is too close to pool Ea = "
+            f"{pool_Ea / 4184:.2f} kcal/mol; the BM pre-conversion should use "
+            "real atom-balanced products, not the relabeled pool proxy."
+        )
