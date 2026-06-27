@@ -951,3 +951,45 @@ class TestEnlarge:
         import shutil
 
         shutil.rmtree(cls.dirname)
+
+
+# ---------------------------------------------------------------------------
+# Helper and test class for Task 2: _convert_bm_kinetics_with_dHrxn
+# ---------------------------------------------------------------------------
+
+import copy
+
+import numpy as np
+from rmgpy.thermo import ThermoData
+from rmgpy.kinetics import ArrheniusBM
+from rmgpy.reaction import Reaction
+
+
+def _spc_with_h298(smiles, h298_kJ):
+    s = Species(molecule=[Molecule().from_smiles(smiles)])
+    s.thermo = ThermoData(
+        Tdata=([300, 400, 500, 600, 800, 1000, 1500], "K"),
+        Cpdata=([50, 60, 70, 80, 95, 105, 120], "J/(mol*K)"),
+        H298=(h298_kJ, "kJ/mol"), S298=(300.0, "J/(mol*K)"),
+        Cp0=(33.2578, "J/(mol*K)"), CpInf=(232.805, "J/(mol*K)"))
+    return s
+
+
+class TestPolymerBMRealDHrxn:
+    def test_convert_bm_matches_fix_barrier_height(self):
+        cerm = CoreEdgeReactionModel()
+        r = _spc_with_h298("CCO", 50.0)
+        p1 = _spc_with_h298("C=CO", 120.0)
+        p2 = _spc_with_h298("[H][H]", 0.0)
+        bm = ArrheniusBM(A=(1.293332e12, "s^-1"), n=0.0,
+                         w0=(968.0, "kJ/mol"), E0=(182.946, "kJ/mol"))
+        rxn_ours = Reaction(reactants=[r], products=[p1, p2], kinetics=copy.deepcopy(bm))
+        rxn_ref = Reaction(reactants=[r], products=[p1, p2], kinetics=copy.deepcopy(bm))
+        dH = rxn_ref.get_enthalpy_of_reaction(298)
+        cerm._convert_bm_kinetics_with_dHrxn(rxn_ours, dH)
+        rxn_ref.fix_barrier_height()
+        from rmgpy.kinetics import Arrhenius
+        assert isinstance(rxn_ours.kinetics, Arrhenius)
+        assert np.isclose(rxn_ours.kinetics.A.value_si, rxn_ref.kinetics.A.value_si, rtol=1e-12)
+        assert np.isclose(rxn_ours.kinetics.n.value_si, rxn_ref.kinetics.n.value_si, rtol=1e-12)
+        assert np.isclose(rxn_ours.kinetics.Ea.value_si, rxn_ref.kinetics.Ea.value_si, rtol=1e-10)

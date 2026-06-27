@@ -50,7 +50,7 @@ from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
 from rmgpy.display import display
 from rmgpy.exceptions import ForbiddenStructureException
-from rmgpy.kinetics import Arrhenius, KineticsData
+from rmgpy.kinetics import Arrhenius, KineticsData, ArrheniusBM
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
@@ -782,6 +782,25 @@ class CoreEdgeReactionModel:
 
         # Return newly created reaction
         return forward, True
+
+    def _convert_bm_kinetics_with_dHrxn(self, reaction, dHrxn298):
+        """Convert a reaction's ArrheniusBM kinetics to Arrhenius using the REAL
+        atom-balanced reaction enthalpy ``dHrxn298`` (J/mol at 298 K).
+
+        Mirrors the ArrheniusBM branch of Reaction.fix_barrier_height
+        (rmgpy/reaction.py:1075-1085) EXACTLY -- the ONLY difference is the
+        enthalpy source (real products here vs the moment-pool-relabeled
+        products fix_barrier_height would read). Pinned by a parity test.
+        """
+        Ea = reaction.kinetics.E0.value_si  # intrinsic barrier height E0
+        reaction.kinetics = reaction.kinetics.to_arrhenius(dHrxn298)
+        if reaction.kinetics.Ea.value_si < 0.0 and reaction.kinetics.Ea.value_si < Ea:
+            Ea = min(0.0, Ea)
+            reaction.kinetics.comment += "\nEa raised from {0:.1f} to {1:.1f} kJ/mol.".format(
+                reaction.kinetics.Ea.value_si / 1000., Ea / 1000.)
+            logging.info("For reaction {0!s} Ea raised from {1:.1f} to {2:.1f} kJ/mol.".format(
+                reaction, reaction.kinetics.Ea.value_si / 1000., Ea / 1000.))
+            reaction.kinetics.Ea.value_si = Ea
 
     def make_new_pdep_reaction(self, forward):
         """
