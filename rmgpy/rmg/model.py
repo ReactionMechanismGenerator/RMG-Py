@@ -632,6 +632,8 @@ class CoreEdgeReactionModel:
         """
 
         # Determine the proper species objects for all reactants and products
+        real_products_snapshot = None
+        relabeled = False
         if forward.family and forward.is_forward:
             reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
 
@@ -644,8 +646,9 @@ class CoreEdgeReactionModel:
             # out of the kinetic model as gas-phase molecules.
             polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
             if polymer_reactants:
+                real_products_snapshot = [p.copy(deep=True) for p in forward.products]
                 try:
-                    _handshake_structures(forward.products, polymer_reactants)
+                    relabeled = _handshake_structures(forward.products, polymer_reactants)
                 except PolymerCrosslinkError as e:
                     # Chain-chain coupling is not representable in the method-of-
                     # moments model; discard the reaction rather than leak the
@@ -699,7 +702,8 @@ class CoreEdgeReactionModel:
                 # then convert product Molecules before they are registered.
                 polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
                 if polymer_reactants:
-                    _handshake_structures(forward.products, polymer_reactants)
+                    real_products_snapshot = [p.copy(deep=True) for p in forward.products]
+                    relabeled = _handshake_structures(forward.products, polymer_reactants)
                     forward.is_end_group_reaction = is_end_group_reaction(forward.products)
                     # Same surgery + stamping as the is_forward branch.
                     stamp_polymer_flux_archetype(forward, reactants, polymer_reactants)
@@ -763,6 +767,22 @@ class CoreEdgeReactionModel:
 
             if isinstance(forward.kinetics, KineticsData):
                 forward.kinetics = forward.kinetics.to_arrhenius()
+            # Polymer real-ΔH BM pre-conversion (spec 2026-06-27 §3-§5). The
+            # handshake relabeled the routing products to moment-pool proxies,
+            # whose thermo would pollute the BM->Arrhenius Ea. Convert here using
+            # the REAL atom-balanced products so fix_barrier_height (next) sees a
+            # plain Arrhenius and no-ops its BM branch. reaction.py is untouched.
+            if relabeled and isinstance(forward.kinetics, ArrheniusBM):
+                try:
+                    real_dHrxn = self._polymer_real_dHrxn(reactants, real_products_snapshot)
+                except Exception as e:
+                    logging.warning(
+                        "Polymer real-ΔH estimation failed for reaction %s (family %s): "
+                        "%s; falling back to routing-product enthalpy (Ea may be polluted).",
+                        forward, getattr(forward, 'family', None), e)
+                    real_dHrxn = None
+                if real_dHrxn is not None:
+                    self._convert_bm_kinetics_with_dHrxn(forward, real_dHrxn)
             #  correct barrier heights of estimated kinetics
             if isinstance(forward, (TemplateReaction,DepositoryReaction)): # i.e. not LibraryReaction
                 forward.fix_barrier_height(solvent=self.solvent_name)  # also converts ArrheniusEP to Arrhenius.

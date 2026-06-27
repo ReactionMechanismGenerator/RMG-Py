@@ -1035,3 +1035,164 @@ class TestPolymerRealDHrxnEstimation:
         ref.generate_resonance_structures()
         self.cerm.generate_thermo(ref)
         assert np.isclose(spc.get_enthalpy(298), ref.get_enthalpy(298), rtol=1e-6)
+
+
+class TestMakeNewReactionBMGate:
+    """
+    Guard/skip tests: the BM pre-conversion gate must NOT over-fire.
+
+    (c) Non-polymer reaction with ArrheniusBM: polymer_reactants is empty,
+        so real_products_snapshot / relabeled stay at defaults; our block
+        never runs.  Spy count == 0.
+
+    (d1) Polymer reaction where _handshake_structures returns False (small
+         gas products CO2 that cannot become polymer objects): relabeled
+         stays False; gate skips.  Spy count == 0.
+    """
+
+    @classmethod
+    def setup_class(cls):
+        import os
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase
+        from rmgpy.data.thermo import NASA, NASAPolynomial
+        from rmgpy.rmg.main import RMG
+        from rmgpy.polymer import Polymer
+
+        rmg = RMG()
+        rmg.database = RMGDatabase()
+        rmg.database.load_thermo(os.path.join(settings["database.directory"], "thermo"))
+
+        cls.cerm = CoreEdgeReactionModel()
+        cls.ps = Polymer(
+            label='PSGate',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        cls.cerm._register_polymer(cls.ps, generate_thermo=False)
+        # Inject fake thermo so fix_barrier_height can call get_enthalpy on the
+        # polymer reactant (Polymer objects have no real thermo by default).
+        fake_thermo = NASA(
+            polynomials=[
+                NASAPolynomial(
+                    coeffs=[3.5, 0.0, 0.0, 0.0, 0.0, -1000.0, 5.0],
+                    Tmin=(200.0, 'K'), Tmax=(1000.0, 'K')
+                ),
+                NASAPolynomial(
+                    coeffs=[3.5, 0.0, 0.0, 0.0, 0.0, -1000.0, 5.0],
+                    Tmin=(1000.0, 'K'), Tmax=(6000.0, 'K')
+                ),
+            ],
+            Tmin=(200.0, 'K'),
+            Tmax=(6000.0, 'K'),
+        )
+        cls.ps.thermo = fake_thermo
+
+    def test_non_polymer_bm_reaction_untouched(self):
+        """(c) Non-polymer ArrheniusBM reaction: pre-conversion must not fire."""
+        from rmgpy.kinetics import ArrheniusBM
+
+        # Install spy
+        called = {"n": 0}
+        orig = self.cerm._convert_bm_kinetics_with_dHrxn
+        def spy(*args, **kwargs):
+            called["n"] += 1
+            return orig(*args, **kwargs)
+        self.cerm._convert_bm_kinetics_with_dHrxn = spy
+
+        try:
+            rxn = TemplateReaction(
+                reactants=[Molecule().from_smiles('CCO')],
+                products=[Molecule().from_smiles('C=CO'), Molecule().from_smiles('[H][H]')],
+                family='Retroene',
+                is_forward=True,
+                kinetics=ArrheniusBM(
+                    A=(1.0e12, 's^-1'), n=0.0,
+                    w0=(968.0, 'kJ/mol'), E0=(150.0, 'kJ/mol'),
+                ),
+            )
+            result, is_new = self.cerm.make_new_reaction(
+                rxn,
+                check_existing=False,
+                generate_thermo=True,
+                generate_kinetics=True,
+            )
+            assert result is not None, "make_new_reaction returned None unexpectedly"
+            assert called["n"] == 0, (
+                f"_convert_bm_kinetics_with_dHrxn called {called['n']} time(s); "
+                "expected 0 for non-polymer reaction"
+            )
+        finally:
+            self.cerm._convert_bm_kinetics_with_dHrxn = orig
+
+    def test_unrelabeled_polymer_bm_stays_on_generic_path(self):
+        """(d1) Polymer reaction where handshake does NOT relabel: pre-conversion skipped."""
+        from rmgpy.kinetics import ArrheniusBM
+        from rmgpy.polymer import Polymer
+
+        # Fresh model so state from (c) doesn't interfere
+        cerm2 = CoreEdgeReactionModel()
+        ps2 = Polymer(
+            label='PSGate2',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[CH3]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        cerm2._register_polymer(ps2, generate_thermo=False)
+        # Inject fake thermo so fix_barrier_height can get enthalpy
+        from rmgpy.data.thermo import NASA, NASAPolynomial
+        fake_thermo = NASA(
+            polynomials=[
+                NASAPolynomial(
+                    coeffs=[3.5, 0.0, 0.0, 0.0, 0.0, -1000.0, 5.0],
+                    Tmin=(200.0, 'K'), Tmax=(1000.0, 'K')
+                ),
+                NASAPolynomial(
+                    coeffs=[3.5, 0.0, 0.0, 0.0, 0.0, -1000.0, 5.0],
+                    Tmin=(1000.0, 'K'), Tmax=(6000.0, 'K')
+                ),
+            ],
+            Tmin=(200.0, 'K'),
+            Tmax=(6000.0, 'K'),
+        )
+        ps2.thermo = fake_thermo
+
+        # Install spy on cerm2
+        called = {"n": 0}
+        orig = cerm2._convert_bm_kinetics_with_dHrxn
+        def spy(*args, **kwargs):
+            called["n"] += 1
+            return orig(*args, **kwargs)
+        cerm2._convert_bm_kinetics_with_dHrxn = spy
+
+        proxy_mol = ps2.baseline_proxy.molecule[0].copy(deep=True)
+        # CO2: _handshake_structures returns False (cannot become a polymer fragment)
+        co2 = Molecule().from_smiles('O=C=O')
+        rxn = TemplateReaction(
+            reactants=[proxy_mol],
+            products=[co2],
+            family='Retroene',
+            is_forward=True,
+            kinetics=ArrheniusBM(
+                A=(1.0e12, 's^-1'), n=0.0,
+                w0=(968.0, 'kJ/mol'), E0=(150.0, 'kJ/mol'),
+            ),
+        )
+        result, is_new = cerm2.make_new_reaction(
+            rxn,
+            check_existing=False,
+            generate_thermo=True,
+            generate_kinetics=True,
+        )
+        assert result is not None, "make_new_reaction returned None unexpectedly"
+        assert called["n"] == 0, (
+            f"_convert_bm_kinetics_with_dHrxn called {called['n']} time(s); "
+            "expected 0 for unrelabeled polymer reaction"
+        )
