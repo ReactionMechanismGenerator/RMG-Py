@@ -3987,3 +3987,95 @@ def test_small_radical_lost_to_gas_conserves_not_refused():
     assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
     assert rxn.polymer_refused is False
     assert rxn.polymer_refused_accumulating is False
+
+
+def _build_compile_inputs(moles, initial_mass=1.0, Mn=5000.0, Mw=6000.0,
+                          label="PS", monomer="[CH2][CH]c1ccccc1"):
+    """Build the (blueprint, initial_moles, species_dict) triple that
+    ``compile_polymer_phase`` consumes, with the pool's stated loading
+    (``initial_mass``/``Mn``) decoupled from the reactor's ``initialMoles``
+    (``moles``) so the two mu0 sources can be made to agree or disagree.
+
+    Returns ``(blueprint, initial_moles, species_dict, poly)`` where ``poly``
+    is the Polymer object (the ``spc`` inside compile_polymer_phase's loop).
+    """
+    from rmgpy.rmg.polymer_input import PolymerPhaseBlueprint
+    from rmgpy.species import Species
+
+    poly = Polymer(label=label, monomer=monomer, end_groups=['[CH3]', '[H]'],
+                   cutoff=3, Mn=Mn, Mw=Mw, initial_mass=initial_mass)
+    species_dict = {
+        label: poly,
+        f"{label}_mu0": Species().from_smiles("CO"),
+        f"{label}_mu1": Species().from_smiles("C=O"),
+        f"{label}_mu2": Species().from_smiles("C#N"),
+    }
+    for suffix in ("_mu0", "_mu1", "_mu2"):
+        species_dict[f"{label}{suffix}"].label = f"{label}{suffix}"
+    blueprint = PolymerPhaseBlueprint(label=label, species=[label], solvent=label)
+    initial_moles = {poly: moles}
+    return blueprint, initial_moles, species_dict, poly
+
+
+def test_compile_polymer_phase_reconciles_moments_to_initial_moles():
+    """CYCLE 1 (tracer): compile_polymer_phase must make the Polymer object's
+    .moments (what the sidecar serializes) AGREE with the solver-integrated
+    initial_moments (derived from initialMoles), even when the pool's stated
+    initial_mass/Mn implies a different mu0.
+
+    Deck states initial_mass=1 kg, Mn=5000 -> mu0 = 1000/5000 = 0.2, but the
+    reactor's initialMoles gives moles=0.01. The solver integrates 0.01; the
+    sidecar (Polymer.moments) must report the same, not the 0.2-based moments.
+    """
+    from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+    blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+
+    # Pre-condition: the distribution-derived moments disagree with initialMoles.
+    assert poly.moments[0] == pytest.approx(0.2, rel=1e-6)
+
+    phase = compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+    solver_moments = np.asarray(phase.initial_moments[poly.label], dtype=float)
+    # The solver integrates moles=0.01 as mu0.
+    assert solver_moments[0] == pytest.approx(0.01, rel=1e-9)
+    # The reconciled Polymer.moments (sidecar source) must equal the solver's.
+    assert np.allclose(np.asarray(poly.moments, dtype=float), solver_moments)
+
+
+def test_compile_polymer_phase_warns_on_mu0_disagreement(caplog):
+    """CYCLE 2: when the initial_mass/Mn-implied chain count disagrees with
+    initialMoles[proxy], compile_polymer_phase must emit a clear warning that
+    names the pool, both mu0 values, and which one the solver uses."""
+    import logging
+    from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+    blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+
+    with caplog.at_level(logging.WARNING):
+        compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+    warnings = [r.getMessage() for r in caplog.records
+                if r.levelno >= logging.WARNING]
+    assert any("PS" in m for m in warnings), warnings
+    joined = " ".join(warnings)
+    assert "0.2" in joined          # initial_mass/Mn-implied mu0
+    assert "0.01" in joined         # initialMoles mu0 (what the solver uses)
+    assert "initialMoles" in joined
+
+
+def test_compile_polymer_phase_no_warning_when_consistent(caplog):
+    """CYCLE 2 (negative): once the deck is consistent (initial_mass/Mn ==
+    initialMoles), NO disagreement warning fires."""
+    import logging
+    from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+    # initial_mass=1 kg, Mn=5000 -> implied mu0 = 0.2; set moles to match.
+    blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.2)
+
+    with caplog.at_level(logging.WARNING):
+        compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+    disagreement = [r.getMessage() for r in caplog.records
+                    if r.levelno >= logging.WARNING and "initialMoles" in r.getMessage()]
+    assert disagreement == [], disagreement

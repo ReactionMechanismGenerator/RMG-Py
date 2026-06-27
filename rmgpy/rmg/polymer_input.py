@@ -28,6 +28,7 @@
 ###############################################################################
 
 import itertools
+import logging
 import numpy as np
 from typing import Dict, List, Optional, Union
 
@@ -610,11 +611,28 @@ class PolymerPhase(object):
                 if hasattr(spc, 'label') and spc.label:
                     poly_labels.add(spc.label)
 
-        # A. Explicit Initials — only register species that are genuinely
-        #    polymer-phase (moment dummies, proxies, explicit oligomers).
-        #    initial_explicit can also contain gas-phase species like N2.
+        # A. Explicit Initials — register only species that are genuinely
+        #    polymer-phase. initial_explicit also holds gas-phase solvents and
+        #    dissolved gases (e.g. N2).
+        #
+        #    The is_polymer_proxy tag MUST NOT be used as the discriminator
+        #    here: family.py:1657 blanket-stamps it onto EVERY structure of a
+        #    proxy-touching reaction, and model.py:486 propagates the tag to the
+        #    Species. A gas solvent that merely reacts with the proxy therefore
+        #    acquires is_polymer_proxy=True during reaction generation -- AFTER
+        #    the build-time gas_species_mask was computed but BEFORE the solver
+        #    rebuilds the prospective mask. Keying section A on that mutable tag
+        #    makes the SAME core species (e.g. N2) classify GAS at build and
+        #    CONDENSED at simulate, which is exactly the divergence RIDER R1
+        #    (solver/polymer.pyx) raises on.
+        #
+        #    is_moment_dummy is set once at species creation (model.py:387) and
+        #    is never propagated, so it is the stable polymer-phase marker.
+        #    Genuine proxies / monomers / explicit oligomers / mu-species are
+        #    registered structurally in sections B/C below and condensed by the
+        #    pool-label override pass, independent of the mutable tag.
         for spc in self.initial_explicit.keys():
-            if getattr(spc, 'is_moment_dummy', False) or getattr(spc, 'is_polymer_proxy', False):
+            if getattr(spc, 'is_moment_dummy', False):
                 register(spc)
 
         # B. Pool Definitions
@@ -655,22 +673,29 @@ class PolymerPhaseBlueprint(object):
                  species: List[str],
                  solvent: str,
                  density: Union[float, tuple] = (1000.0, 'kg/m^3'),
+                 mass_transfer: Optional[List['MassTransfer']] = None,
                  ):
         self.label = label
         self.species_labels = species
         self.solvent_label = solvent
         self.density = density
+        self.mass_transfer = mass_transfer or list()
 
 
 def polymer_phase(label: str,
                   species: List[str],
                   solvent: str,
-                  density: Union[float, tuple] = (1000.0, 'kg/m^3')):
+                  density: Union[float, tuple] = (1000.0, 'kg/m^3'),
+                  mass_transfer: Optional[List['MassTransfer']] = None):
     """
     Input file helper to define the polymer phase contents.
     Returns a blueprint that hybrid_polymer_reactor will compile into a real PolymerPhase.
+
+    Args:
+        mass_transfer (Optional[List[MassTransfer]]): MassTransfer objects describing
+            gas <-> polymer-melt transport for dissolved species. Defaults to an empty list.
     """
-    return PolymerPhaseBlueprint(label, species, solvent, density)
+    return PolymerPhaseBlueprint(label, species, solvent, density, mass_transfer)
 
 
 def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
@@ -693,6 +718,13 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
         if label not in species_dict:
             raise ValueError(f"PolymerPhase species '{label}' not defined in species block.")
         phase_species_set.add(species_dict[label])
+
+    # B2. Validate Mass Transfer definitions
+    mass_transfer = blueprint.mass_transfer or list()
+    for mt in mass_transfer:
+        if not isinstance(mt, MassTransfer):
+            raise ValueError(
+                f"PolymerPhase mass_transfer must contain MassTransfer objects, got {type(mt).__name__}.")
 
     # C. Compile State
     initial_moments = {}
@@ -734,6 +766,33 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
 
             initial_moments[spc.label] = (mu0, mu1, mu2)
 
+            # --- Single source of truth for the t=0 moment state ---
+            # initialMoles[proxy] is authoritative for mu0: it is what the
+            # solver actually integrates as y0. The Polymer object's .moments,
+            # by contrast, are what write_polymer_pools_sidecar serializes
+            # (it reads Polymer.moments). If we leave .moments at its
+            # distribution-derived value (initial_mass/Mn), the sidecar would
+            # report a t=0 state the solver never simulated. Reconcile here so
+            # the report MIRRORS the engine: the sidecar reports exactly the
+            # moments the solver integrates.
+            spc.moments = np.array([mu0, mu1, mu2], dtype=np.float64)
+
+            # Warn if the pool's stated loading (initial_mass/Mn) implies a
+            # different chain count (mu0) than initialMoles. Both are valid
+            # ways to state the t=0 amount, but they must agree; if they don't,
+            # the solver silently honors initialMoles and the initial_mass +
+            # Mn/Mw in the deck misrepresent the simulated state.
+            initial_mass_g = getattr(spc, 'initial_mass_g', None)
+            if initial_mass_g and spc.Mn:
+                mu0_from_mass = initial_mass_g / spc.Mn
+                if abs(mu0_from_mass - mu0) > 1e-6 * max(abs(mu0_from_mass), abs(mu0)):
+                    logging.warning(
+                        "Polymer pool '%s': initial_mass/Mn implies mu0=%g chains, but "
+                        "initialMoles gives mu0=%g. These disagree; the solver integrates "
+                        "the initialMoles value (mu0=%g) and the sidecar mirrors it. "
+                        "Reconcile initial_mass/Mn/Mw with initialMoles in the input deck.",
+                        spc.label, mu0_from_mass, mu0, mu0)
+
             # Create Pool Config
             # Note: Using the species itself as the placeholder for moments (Integration Test Hack)
             # In production, this needs distinct dummy species.
@@ -758,7 +817,8 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
         density=rho,
         initial_moments=initial_moments,
         initial_explicit=initial_explicit,
-        pools=pools
+        pools=pools,
+        mass_transfer=mass_transfer
     )
 
 

@@ -3693,3 +3693,71 @@ class TestProspectiveClassifierLengthGuard:
         rs.initialize_model(list(core), [], [g], [rxn])
         pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
         assert pm.shape[0] == rs.num_core_species + 1
+
+
+class TestGasMaskInvariantToProxyTagContamination:
+    """Regression (polystyrene reactive deck, 2026-06-26): a CORE gas solvent
+    (N2) must keep the SAME phase verdict from get_gas_mask before AND after
+    reaction generation stamps is_polymer_proxy onto it.
+
+    Mechanism the deck actually hits (NOT label-duplication -- the live deck has
+    zero duplicate core/edge labels and label_fallback stays enabled): family.py
+    :1657 blanket-tags EVERY structure of a proxy-touching reaction with
+    is_polymer_proxy, and model.py:486 propagates the tag to the Species. The
+    solvent N2 reacts with the C25 PS proxy during initial-reaction generation,
+    so the SAME core N2 object that was is_polymer_proxy=False at build time
+    (gas_species_mask built GAS) becomes is_polymer_proxy=True by the time the
+    solver rebuilds the prospective mask. If get_gas_mask registers
+    initial_explicit species on the mutable is_polymer_proxy tag, N2 flips
+    CONDENSED at simulate time, the prospective core prefix diverges from
+    gas_species_mask, and RIDER R1 raises. The verdict for a core species must
+    be invariant to this tag flip; is_moment_dummy (set once at creation, never
+    propagated) is the stable polymer-phase marker.
+    """
+
+    def _phase_and_core(self):
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import PolymerPhase, PolymerPool
+        proxy = _spc("CCCC", "PS")          # pool proxy / monomer
+        mu0 = _spc("CO", "PS_mu0")
+        mu1 = _spc("C=O", "PS_mu1")
+        mu2 = _spc("C#N", "PS_mu2")
+        for m in (mu0, mu1, mu2):
+            m.is_moment_dummy = True
+        n2 = _spc("N#N", "N2")              # gas solvent in initial_explicit
+        pool = PolymerPool(label="PS", xs=3, monomer=proxy, explicit_map={},
+                           mu_species=[mu0, mu1, mu2])
+        phase = PolymerPhase(density=Quantity(1050.0, "kg/m^3"),
+                             initial_moments={"PS": (1.0, 5.0, 30.0)},
+                             initial_explicit={n2: 0.99}, pools=[pool])
+        core = [proxy, mu0, mu1, mu2, n2]   # N2 at index 4
+        return phase, core, n2
+
+    def test_solvent_verdict_invariant_to_proxy_tag(self):
+        """N2 is GAS at build (tag False) and MUST stay GAS after the proxy tag
+        is stamped on it at simulate time. On the buggy code the tagged N2 is
+        registered by get_gas_mask section A and flips CONDENSED."""
+        phase, core, n2 = self._phase_and_core()
+        clean = np.asarray(phase.get_gas_mask(core), dtype=bool)
+        assert bool(clean[4]) is True  # N2 classified GAS at build
+
+        # Simulate-time contamination (family.py:1657 -> model.py:486).
+        n2.is_polymer_proxy = True
+        contaminated = np.asarray(phase.get_gas_mask(core), dtype=bool)
+        assert bool(contaminated[4]) is True  # N2 MUST stay GAS
+        assert np.array_equal(clean, contaminated)
+
+    def test_core_prefix_invariant_with_contaminated_edge_appended(self):
+        """The R1 invariant directly: get_gas_mask(core)[N2] == get_gas_mask(
+        chain(core, edge))[N2] even after the proxy tag is stamped on N2 and
+        edge species (incl. a duplicate label) are appended. The combined-list
+        core prefix must not diverge from the core-only mask for the solvent."""
+        phase, core, n2 = self._phase_and_core()
+        n2.is_polymer_proxy = True  # contaminated, as at simulate time
+        edge_dup_a = _spc("CC", "FRAG")
+        edge_dup_b = _spc("CCC", "FRAG")  # duplicate edge label (red herring)
+        core_only = np.asarray(phase.get_gas_mask(core), dtype=bool)
+        combined = np.asarray(
+            phase.get_gas_mask(core + [edge_dup_a, edge_dup_b]), dtype=bool)
+        assert bool(core_only[4]) is True
+        assert np.array_equal(core_only, combined[:len(core)])
