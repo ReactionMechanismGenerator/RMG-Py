@@ -802,6 +802,42 @@ class CoreEdgeReactionModel:
                 reaction, reaction.kinetics.Ea.value_si / 1000., Ea / 1000.))
             reaction.kinetics.Ea.value_si = Ea
 
+    def _thermo_for_snapshot_product(self, product):
+        """Return a Species carrying thermo for a snapshot product (a deep copy
+        of a pre-handshake product, Molecule or Species).
+
+        Reuse existing thermo if the snapshot is a Species already carrying it;
+        otherwise estimate via the SAME path normal generation uses
+        (clear_labeled_atoms -> generate_resonance_structures -> generate_thermo)
+        on a TRANSIENT, non-registered Species (no model side effects, the real
+        fragment is never registered).
+        """
+        if isinstance(product, Species):
+            if product.has_thermo():
+                return product
+            product.molecule[0].clear_labeled_atoms()
+            spc = product
+        else:  # Molecule
+            product.clear_labeled_atoms()
+            spc = Species(molecule=[product])
+        spc.generate_resonance_structures()
+        self.generate_thermo(spc)
+        return spc
+
+    def _polymer_real_dHrxn(self, reactants, real_products_snapshot):
+        """Real atom-balanced ΔH298 (J/mol at 298 K) for a polymer reaction whose
+        routing products were relabeled. ``reactants`` are registered Species
+        (carry thermo). ``real_products_snapshot`` are deep copies of the
+        pre-handshake products (Molecule or Species, thermo preserved if present).
+        """
+        dHrxn = 0.0
+        for reactant in reactants:
+            dHrxn -= reactant.get_enthalpy(298)
+        for product in real_products_snapshot:
+            spc = self._thermo_for_snapshot_product(product)
+            dHrxn += spc.get_enthalpy(298)
+        return dHrxn
+
     def make_new_pdep_reaction(self, forward):
         """
         Make a new pressure-dependent reaction based on a list of `reactants` and a

@@ -993,3 +993,45 @@ class TestPolymerBMRealDHrxn:
         assert np.isclose(rxn_ours.kinetics.A.value_si, rxn_ref.kinetics.A.value_si, rtol=1e-12)
         assert np.isclose(rxn_ours.kinetics.n.value_si, rxn_ref.kinetics.n.value_si, rtol=1e-12)
         assert np.isclose(rxn_ours.kinetics.Ea.value_si, rxn_ref.kinetics.Ea.value_si, rtol=1e-10)
+
+    def test_real_dHrxn_reuses_existing_species_thermo(self):
+        """When snapshot products are Species carrying thermo, _polymer_real_dHrxn
+        reuses it (no estimation) -> deterministic ΔH, DB-free."""
+        cerm = CoreEdgeReactionModel()
+        react = _spc_with_h298("CCO", 50.0)            # reactant H298 = 50 kJ/mol
+        prod1 = _spc_with_h298("C=CO", 120.0)          # real product H298 = 120 kJ/mol
+        prod2 = _spc_with_h298("[H][H]", 0.0)          # real product H298 = 0 kJ/mol
+        dH = cerm._polymer_real_dHrxn([react], [prod1, prod2])
+        # ΔH = (120 + 0) - 50 = 70 kJ/mol = 70000 J/mol
+        assert np.isclose(dH, 70000.0, rtol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# Task 3: _thermo_for_snapshot_product estimation path (DB-backed)
+# ---------------------------------------------------------------------------
+
+
+class TestPolymerRealDHrxnEstimation:
+    @classmethod
+    def setup_class(cls):
+        import os
+        from rmgpy import settings
+        from rmgpy.data.rmg import RMGDatabase
+        from rmgpy.rmg.main import RMG
+        rmg = RMG()
+        rmg.database = RMGDatabase()
+        rmg.database.load_thermo(os.path.join(settings["database.directory"], "thermo"))
+        cls.cerm = CoreEdgeReactionModel()
+
+    def test_estimation_path_matches_independent_estimate(self):
+        from rmgpy.molecule import Molecule
+        # real product as a bare Molecule (no thermo) -> forces estimation
+        styrene = Molecule().from_smiles("C=Cc1ccccc1")
+        snap = [styrene.copy(deep=True)]
+        spc = self.cerm._thermo_for_snapshot_product(snap[0])
+        assert spc.has_thermo()
+        # independent estimate of the same molecule via the model thermo path
+        ref = Species(molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+        ref.generate_resonance_structures()
+        self.cerm.generate_thermo(ref)
+        assert np.isclose(spc.get_enthalpy(298), ref.get_enthalpy(298), rtol=1e-6)
