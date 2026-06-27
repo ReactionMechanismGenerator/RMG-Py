@@ -10,10 +10,22 @@ database(
 )
 
 # 2. Species Definitions
+# N2 must be reactive so it gets thermo from primaryThermoLibrary: it is a third-body
+# collider in the NOx2018 library reactions and the polymer-phase solvent, and barrier
+# fixing / pressure dependence need its thermo. maximumNitrogenAtoms=0 keeps it inert.
 species(
     label='N2',
-    reactive=False,
+    reactive=True,
     structure=SMILES("N#N")
+)
+
+# Inert bath gas: pressure dependence requires at least one nonreacting species.
+# Held at ~0 mol in the reactor so it supplies the bath-gas reference without
+# changing the composition.
+species(
+    label='Ar',
+    reactive=False,
+    structure=SMILES("[Ar]")
 )
 
 # 3. Polymer Definition
@@ -40,8 +52,9 @@ hybridPolymerReactor(
     temperature=(1000.0, 'K'),
     pressure=(1.0, 'bar'),
     initialMoles={
-        'N2': 0.99, 
-        'PS': 0.01, 
+        'N2': 0.99,
+        'PS': 0.01,
+        'Ar': 1e-10,  # inert bath-gas reference for pressure dependence; ~0 mol = no effect on composition
     },
     polymerPhase=pp,
     terminationTime=(0.1, 's'),
