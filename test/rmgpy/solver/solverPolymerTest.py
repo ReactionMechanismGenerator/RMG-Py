@@ -2800,19 +2800,27 @@ def _stage1_classifier(species_list):
 
 
 def _gate17_rs(core, mask, rxns_core, edge_spcs=(), rxns_edge=(),
-               pools=(("A", (1, 2, 3)),), moments=None):
+               pools=(("A", (1, 2, 3)),), moments=None, k_unzip=0.0):
     """Build + initialize a HybridPolymerSystem for the item-17 fixtures.
 
     ``pools`` is a tuple of (label, mu_indices) — the §5 config-state axis:
     adding ("G", ...) is the solver-level expression of an item-16 daughter
-    config (spec §3(a) stage-2 labels)."""
+    config (spec §3(a) stage-2 labels).
+
+    ``k_unzip`` (default 0.0, no-op for the existing callers) arms the lumped
+    chain-end unzip channel on every pool. With ``monomer_poly_index=None`` it
+    drains ONLY the moment coordinates (dμ1/dt -= k_unzip·μ0,
+    dμ2/dt -= k_unzip·(2μ1−μ0)) and releases no real species — i.e. it loads the
+    moment-dummy core positions with large, known fluxes while leaving every
+    real species rate untouched. That is exactly the char_rate dimensional bug."""
     moments = moments if moments is not None else {
         lbl: (1.0, 5.0, 30.0) for lbl, _ in pools}
     mask_arr = np.array(mask, dtype=bool)
     seed_idx = int(np.where(mask_arr)[0][0])
     pool_cfgs = [PolymerPoolConfig(label=lbl, xs=2,
                                    explicit_dp_to_species_index={},
-                                   mu_indices=mu, monomer_poly_index=None)
+                                   mu_indices=mu, monomer_poly_index=None,
+                                   k_unzip=k_unzip)
                  for lbl, mu in pools]
     rs = HybridPolymerSystem(
         T=800.0, P=1.0e5, initial_mole_fractions={core[seed_idx]: 1.0},
@@ -3093,6 +3101,96 @@ def _gate17_simulate(rs, core, rxns_core, edge_spcs, rxns_edge,
 def _census_lines(caplog):
     return [r.getMessage() for r in caplog.records
             if "PHASE-GATE FLUX CENSUS:" in r.getMessage()]
+
+
+class TestCharRateMomentDummyExclusion:
+    """Fix #2a (2026-06-27): the enlargement characteristic flux
+    ``char_rate = sqrt(Σ core_species_rates²)`` (base.pyx:822) must be an L2
+    norm over REAL species production rates only. Moment-dummy core positions
+    (PS_mu0/_mu1/_mu2, ``is_moment_dummy``) carry moment-COORDINATE derivatives
+    (e.g. μ2 under k_unzip), not molar species fluxes, and mixing them into the
+    norm is a dimensional bug: the lumped channel scales char_rate ~linearly in
+    k_unzip and buries family chemistry below tol_move_to_core, leaving the core
+    empty. char_rate must exclude moment dummies; the real monomer-release flux
+    stays (2a, NOT 2b — we do not delete real species chemistry to force
+    promotion)."""
+
+    def _b1_with_unzip(self, k_unzip):
+        """The census B1 fixture (A→G gated edge + slow gas driver X→Y so
+        char_rate>0) with the chain-end unzip armed on pool A. Unzip drains
+        μ1/μ2 only (monomer_poly_index=None) → the A_mu1/A_mu2 core positions
+        carry large fluxes; every REAL species rate (X, Y, A) is unchanged."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["Y"]]
+        mask = [False, False, False, False, True, True]
+        gated = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
+        driver = Reaction(
+            reactants=[sp["X"]], products=[sp["Y"]],
+            kinetics=Arrhenius(A=(1.0e-3, "1/s"), n=0.0,
+                               Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+            reversible=False)
+        rs = _gate17_rs(core, mask, [driver], edge_spcs=[sp["G"]],
+                        rxns_edge=[gated], k_unzip=k_unzip)
+        return sp, core, driver, gated, rs
+
+    def test_moment_dummy_flux_does_not_deflate_enlargement_ratio(self, caplog):
+        """RED→GREEN tracer: arm k_unzip so the moment-dummy μ2 derivative
+        (≈ −9·k_unzip) dwarfs the real gas-driver flux. The census ungated_ratio
+        for the gated product G is edge_rate/char_rate; with the bug, the moment
+        dummies inflate char_rate and crush the ratio ~400×. After 2a, char_rate
+        is the real-species-only L2 norm (X,Y driver) and the ratio matches the
+        SAME hand-computed value as the unzip-free fixture:
+            ungated G rate = kf·μ1/V_poly = 10.0
+            char_rate (real only) = sqrt(2)·(1e-3 / V_gas), V_gas = R·800/1e5."""
+        import re
+        sp, core, driver, gated, rs = self._b1_with_unzip(k_unzip=1.0)
+        with caplog.at_level(logging.WARNING):
+            _gate17_simulate(rs, core, [driver], [sp["G"]], [gated])
+        lines = _census_lines(caplog)
+        assert len(lines) == 1, lines
+        v_gas = constants.R * 800.0 / 1.0e5
+        expected_ratio = 10.0 / (np.sqrt(2.0) * 1.0e-3 / v_gas)
+        ratio = float(re.search(r"ungated_ratio=([0-9.eE+-]+)",
+                                lines[0]).group(1))
+        assert ratio == pytest.approx(expected_ratio, rel=2e-2), (
+            f"char_rate still mixes moment-coordinate flux: ungated_ratio="
+            f"{ratio:.4g}, expected real-only {expected_ratio:.4g}")
+
+    def test_include_mask_excludes_pool_mu_indices(self):
+        """Populate guard (the seam that silently breaks as the core grows):
+        after initialize_model the mask spans the core index space and is False
+        at exactly the pool moment-coordinate positions, True for real species.
+        Uses mu_indices (the copy-proof authority) -- NOT is_moment_dummy, which
+        Species.copy() drops (species.py:784), so a flag-only mask would go
+        live-inert on copied core dummies."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["Y"]]
+        mask = [False, False, False, False, True, True]
+        rs = _gate17_rs(core, mask, [], pools=(("A", (1, 2, 3)),))
+        m = np.asarray(rs._char_rate_include_mask, dtype=bool)
+        assert m.shape == (len(core),)
+        # moment-coordinate positions excluded; real species (proxy A, gas X/Y)
+        # included -- the monomer-release yardstick survives (2a, not 2b).
+        assert list(m) == [True, False, False, False, True, True]
+
+    def test_include_mask_honors_is_moment_dummy_flag(self):
+        """The mask also drops any position flagged is_moment_dummy even when it
+        is NOT a registered pool mu_index -- the union honors the contract's
+        named identifier. (mu_indices is the robust primary; the flag is the
+        belt-and-suspenders for a flagged dummy outside an active pool.)"""
+        sp = _gate17_species()
+        # R17 is an ordinary condensed species, not in any pool's mu_indices;
+        # flag it a moment dummy and it must drop out of the yardstick.
+        sp["R17"].is_moment_dummy = True
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["R17"]]
+        mask = [False, False, False, False, True, False]
+        rs = _gate17_rs(core, mask, [], pools=(("A", (1, 2, 3)),))
+        m = np.asarray(rs._char_rate_include_mask, dtype=bool)
+        # index 5 (R17) excluded via the flag; indices 1-3 via mu_indices.
+        assert list(m) == [True, False, False, False, True, False]
 
 
 class TestPhaseGateFluxCensus:

@@ -147,6 +147,11 @@ cdef class ReactionSystem(DASx):
         self.max_edge_species_rate_ratios = None
         self.max_network_leak_rate_ratios = None
 
+        # Optional core-species include-mask for the characteristic flux
+        # (fix #2a). None = include every core species (no-op default). The
+        # polymer solver overrides it to drop moment-dummy positions.
+        self._char_rate_include_mask = None
+
         #for managing prunable edge species
         self.prunable_species = []
         self.prunable_networks = []
@@ -818,8 +823,22 @@ cdef class ReactionSystem(DASx):
             snapshot.extend(y_core_species)
             self.snapshots.append(snapshot)
 
-            # Get the characteristic flux
-            char_rate = sqrt(np.sum(self.core_species_rates * self.core_species_rates))
+            # Get the characteristic flux. This L2 norm is the yardstick the
+            # edge->core enlargement ratios are normalized against (lines below),
+            # so it MUST be a norm of genuine molar species fluxes. When a
+            # reactor supplies an include-mask (fix #2a, polymer solver), exclude
+            # the masked-out core positions -- the polymer moment dummies, whose
+            # "rate" is a moment-coordinate derivative (e.g. d mu2/dt under unzip)
+            # in incompatible units, not a species production rate. Excluding
+            # them keeps the real monomer-release flux as the characteristic
+            # scale (2a) rather than letting the lumped moment channel bury the
+            # family chemistry. Default mask (None) includes every species, so
+            # SimpleReactor and every other reactor are byte-identical.
+            if self._char_rate_include_mask is None:
+                char_rate = sqrt(np.sum(self.core_species_rates * self.core_species_rates))
+            else:
+                char_rate_real_rates = self.core_species_rates[self._char_rate_include_mask]
+                char_rate = sqrt(np.sum(char_rate_real_rates * char_rate_real_rates))
 
             if char_rate > max_char_rate:
                 max_char_rate = char_rate

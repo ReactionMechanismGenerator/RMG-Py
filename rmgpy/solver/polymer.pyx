@@ -950,6 +950,35 @@ class HybridPolymerSystem(ReactionSystem):
         self._apply_pool_phase_overrides(self.gas_species_mask, core_species,
                                          record_indices=True)
 
+        # Characteristic-flux include-mask (fix #2a, 2026-06-27). The base
+        # enlargement char_rate is an L2 norm over core_species_rates; the
+        # moment-coordinate positions (PS_mu0/_mu1/_mu2) carry moment
+        # derivatives (the residual writes dn_dt[mu_indices] = dmu*_dt), not
+        # molar species fluxes, and contaminate that norm: the lumped k_unzip
+        # channel scales char_rate ~linearly in k_unzip and buries family
+        # chemistry below tol_move_to_core, leaving the core empty.
+        #
+        # Authority = the pool mu_indices, NOT is_moment_dummy alone. Species
+        # carry an is_moment_dummy flag (set in model.py when the dummies are
+        # created), but Species.copy() (species.py:784) does NOT preserve it,
+        # so a copied core dummy reads False and an is_moment_dummy-only mask
+        # would be silently live-inert. mu_indices are integer core positions
+        # the solver binds itself from the pool configs -- copy-proof and
+        # exactly the positions the residual treats as moment coordinates. We
+        # union with the flag too (cheap; covers any flagged dummy outside an
+        # active pool's mu_indices). Everything real -- the proxy, the solvent,
+        # the monomer-release routing species -- stays True: we drop bookkeeping
+        # coordinates, NOT real chemistry (2a, not 2b). Rebuilt every
+        # initialize_model (per RMG iteration) so it tracks the live core.
+        include_mask = np.array(
+            [not getattr(core_species[i], "is_moment_dummy", False)
+             for i in range(n_core)], dtype=bool)
+        for pool in self.polymer_pools:
+            for idx in pool.mu_indices:
+                if 0 <= idx < n_core:
+                    include_mask[idx] = False
+        self._char_rate_include_mask = include_mask
+
         # --- prospective_gas_mask (item 17, spec 2026-06-12 SS3(a)) -------
         # A SECOND array over chain(core, edge), never a resize of
         # gas_species_mask (SS3(b): the core size is load-bearing -- six hard
