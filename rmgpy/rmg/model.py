@@ -634,6 +634,8 @@ class CoreEdgeReactionModel:
         # Determine the proper species objects for all reactants and products
         real_products_snapshot = None
         relabeled = False
+        polymer_ea_pre = None
+        polymer_real_H0 = None
         if forward.family and forward.is_forward:
             reactants = [self.make_new_species(reactant, generate_thermo=generate_thermo)[0] for reactant in forward.reactants]
 
@@ -783,6 +785,18 @@ class CoreEdgeReactionModel:
                     real_dHrxn = None
                 if real_dHrxn is not None:
                     self._convert_bm_kinetics_with_dHrxn(forward, real_dHrxn)
+                    # I-1 (spec §8 / Task 7): stash the real-product Ea + H0 floor so
+                    # the downstream pool-sourced endothermicity clamp in fix_barrier_height
+                    # cannot re-pollute Ea.
+                    polymer_ea_pre = forward.kinetics.Ea.value_si
+                    try:
+                        polymer_real_H0 = self._polymer_real_H0(reactants, real_products_snapshot)
+                    except Exception as e:
+                        logging.warning(
+                            "Polymer real-H0 estimation failed for reaction %s (family %s): "
+                            "%s; downstream pool H0 clamp left uncorrected.",
+                            forward, getattr(forward, 'family', None), e)
+                        polymer_real_H0 = None
             #  correct barrier heights of estimated kinetics
             if isinstance(forward, (TemplateReaction,DepositoryReaction)): # i.e. not LibraryReaction
                 forward.fix_barrier_height(solvent=self.solvent_name)  # also converts ArrheniusEP to Arrhenius.
@@ -796,6 +810,31 @@ class CoreEdgeReactionModel:
                 # If this is going to be run through pressure dependence code,
                 # we need to make sure the barrier is positive.
                 forward.fix_barrier_height(force_positive=True,solvent="")
+
+            if polymer_real_H0 is not None and isinstance(forward.kinetics, Arrhenius):
+                # I-1 (spec §8 / Task 7): post-fix_barrier_height real-product correction.
+                # fix_barrier_height's endothermicity clamp reads pool-relabeled products and
+                # may have raised Ea to a pool-sourced H0 floor.  Replay ONLY the monotonic
+                # floors that fix_barrier_height applies, but from real (pre-handshake) thermo:
+                #   (a) H0 clamp: if real H0 >= 0 and ea_pre < real H0, floor = real H0
+                #   (b) force_positive: if pressure_dependence + unimolecular, floor = 0
+                # If the result differs from what fix_barrier_height produced, correct it.
+                ea_correct = polymer_ea_pre
+                if polymer_real_H0 >= 0 and ea_correct < polymer_real_H0:
+                    ea_correct = polymer_real_H0
+                if self.pressure_dependence and forward.is_unimolecular() and ea_correct < 0:
+                    ea_correct = 0.0
+                if abs(forward.kinetics.Ea.value_si - ea_correct) > 1e-6:
+                    polluted = forward.kinetics.Ea.value_si
+                    forward.kinetics.Ea.value_si = ea_correct
+                    forward.kinetics.comment += (
+                        "\nEa correction (polymer real-product H0): {0:.1f} -> {1:.1f} kJ/mol "
+                        "(downstream clamp had used relabeled pool-product endothermicity).".format(
+                            polluted / 1000., ea_correct / 1000.))
+                    logging.info(
+                        "For reaction %s, Ea corrected from %.1f to %.1f kJ/mol "
+                        "(pool-product H0 clamp reverted to real-product result).",
+                        forward, polluted / 1000., ea_correct / 1000.)
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
@@ -849,14 +888,37 @@ class CoreEdgeReactionModel:
         routing products were relabeled. ``reactants`` are registered Species
         (carry thermo). ``real_products_snapshot`` are deep copies of the
         pre-handshake products (Molecule or Species, thermo preserved if present).
+
+        Side effect: entries in ``real_products_snapshot`` are replaced in-place with
+        the thermo-bearing Species objects created by ``_thermo_for_snapshot_product``.
+        This allows downstream callers (e.g. ``_polymer_real_H0``) to call
+        ``_thermo_for_snapshot_product`` on the same list without re-processing the
+        underlying Molecule objects (which can fail on repeated resonance-structure
+        generation).
         """
         dHrxn = 0.0
         for reactant in reactants:
             dHrxn -= reactant.get_enthalpy(298)
-        for product in real_products_snapshot:
+        for i, product in enumerate(real_products_snapshot):
             spc = self._thermo_for_snapshot_product(product)
+            real_products_snapshot[i] = spc  # upgrade Molecule -> Species with thermo
             dHrxn += spc.get_enthalpy(298)
         return dHrxn
+
+    def _polymer_real_H0(self, reactants, real_products_snapshot):
+        """Real atom-balanced 0 K reaction enthalpy H0 (J/mol) for a relabeled polymer
+        reaction, mirroring the H0 term in Reaction.fix_barrier_height (reaction.py:1073-1074)
+        EXACTLY, but from the real (pre-handshake) products instead of the moment-pool proxies.
+        Reuses the same thermo-bearing snapshot Species as _polymer_real_dHrxn."""
+        def _E0(spec):
+            td = spec.get_thermo_data()
+            return td.E0.value_si if td.E0 is not None else td.to_wilhoit().E0.value_si
+        H0 = 0.0
+        for reactant in reactants:
+            H0 -= _E0(reactant)
+        for product in real_products_snapshot:
+            H0 += _E0(self._thermo_for_snapshot_product(product))
+        return H0
 
     def make_new_pdep_reaction(self, forward):
         """

@@ -4321,8 +4321,11 @@ class TestScissionRealDHrxnEndToEnd:
 
         Ea = result.kinetics.Ea.value_si
 
-        # (A) Ea is based on real atom-balanced products (rtol=0.01 covers the
-        #     minor H0-clamp step that fix_barrier_height may apply on top).
+        # (A) Ea is based on real atom-balanced products. The pool-sourced H0 clamp
+        #     was a residual channel (spec §8 / Task 7); for this PS case it fires by
+        #     only ~0.3 kJ/mol (pool_H0 barely above ea_pre), so rtol=0.01 still holds
+        #     both before and after the Task 7 correction. The clamp is now closed
+        #     structurally (Task 7: _polymer_real_H0 correction post fix_barrier_height).
         assert np.isclose(Ea, expected_Ea, rtol=0.01), (
             f"Ea = {Ea / 4184:.2f} kcal/mol but expected ~{expected_Ea / 4184:.2f} kcal/mol "
             f"(from real C9H10+C16H18 thermo, real_dH = {real_dH / 4184:.2f} kcal/mol); "
@@ -4361,6 +4364,103 @@ class TestScissionRealDHrxnEndToEnd:
             f"{pool_Ea / 4184:.2f} kcal/mol; the BM pre-conversion should use "
             "real atom-balanced products, not the relabeled pool proxy."
         )
+
+    def test_pool_H0_clamp_does_not_repollute_Ea(self):
+        """I-1 (spec §8 / Task 7): after the real-ΔH pre-conversion, fix_barrier_height's
+        pool-sourced endothermicity H0 clamp must NOT raise Ea. The final Ea must equal the
+        real-product result (ea_pre), not the pool H0 floor.
+
+        BM params engineered so pool H0 clamp fires (ea_pre < pool_H0 by ~16.7 kJ/mol)
+        but real H0 clamp would NOT (ea_pre > real_H0 by ~86.7 kJ/mol).
+        Without the Task 7 correction, final Ea = pool_H0 (RED); with correction,
+        final Ea = ea_pre (GREEN).
+
+        BM params: E0=165.0 kJ/mol, w0=968.0 kJ/mol → ea_pre ≈ 283.8 kJ/mol
+        pool_H0 ≈ 300.4 kJ/mol (from PS_scission_tail + alpha-methylstyrene E0 vs proxy)
+        real_H0 ≈ 197.0 kJ/mol (from C16H18 + C9H10 E0 vs proxy)
+        Margin: ea_pre - real_H0 ≈ 86.7 kJ/mol, pool_H0 - ea_pre ≈ 16.7 kJ/mol
+        """
+        from rmgpy.data.kinetics.family import TemplateReaction
+        from rmgpy.kinetics import ArrheniusBM, Arrhenius
+
+        C9H10_SMILES = 'C=C(C)C1=CC=CC=C1'
+        C16H18_SMILES = 'CC(CC=C1C=CC=CC1)C1=CC=CC=C1'
+
+        # BM params tuned so pool H0 clamp fires (~16.7 kJ/mol margin), real H0 clamp does not
+        bm_E0_kJ = 165.0
+        bm_params = dict(A=(1.293332e12, 's^-1'), n=0.0, w0=(968.0, 'kJ/mol'), E0=(bm_E0_kJ, 'kJ/mol'))
+
+        # --- Compute ea_pre, real_H0, pool_H0 independently (non-circular) ---
+        def _make_spc(smiles):
+            spc = Species(molecule=[Molecule().from_smiles(smiles)])
+            spc.generate_resonance_structures()
+            self.model.generate_thermo(spc)
+            return spc
+
+        def _E0(spec):
+            td = spec.get_thermo_data()
+            return td.E0.value_si if td.E0 is not None else td.to_wilhoit().E0.value_si
+
+        c9h10_spc = _make_spc(C9H10_SMILES)
+        c16h18_spc = _make_spc(C16H18_SMILES)
+
+        real_dH = (c9h10_spc.get_enthalpy(298) + c16h18_spc.get_enthalpy(298)
+                   - self.ps.get_enthalpy(298))
+        ea_pre = ArrheniusBM(**bm_params).get_activation_energy(real_dH)
+
+        real_H0 = _E0(c9h10_spc) + _E0(c16h18_spc) - _E0(self.ps)
+
+        # --- Run make_new_reaction with the tuned BM params ---
+        proxy_mol = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        rxn = TemplateReaction(
+            reactants=[proxy_mol],
+            products=[
+                Molecule().from_smiles(C16H18_SMILES),
+                Molecule().from_smiles(C9H10_SMILES),
+            ],
+            kinetics=ArrheniusBM(**bm_params),
+            family='Retroene',
+            is_forward=True,
+        )
+        result, _ = self.model.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=True, generate_kinetics=True,
+        )
+
+        # Compute pool_H0 from the actual pool products in result (mirrors fix_barrier_height)
+        def _E0_spc(spc):
+            td = spc.get_thermo_data()
+            return td.E0.value_si if td.E0 is not None else td.to_wilhoit().E0.value_si
+
+        pool_H0 = (sum(_E0_spc(p) for p in result.products)
+                   - sum(_E0_spc(r) for r in result.reactants))
+
+        ea_final = result.kinetics.Ea.value_si
+
+        # Verify the engineered setup is correct (margins)
+        assert pool_H0 - ea_pre > 5_000, (
+            f"Setup check: pool_H0 ({pool_H0/1000:.2f} kJ/mol) should exceed "
+            f"ea_pre ({ea_pre/1000:.2f} kJ/mol) by >5 kJ/mol; actual margin "
+            f"{(pool_H0-ea_pre)/1000:.3f} kJ/mol"
+        )
+        assert ea_pre - real_H0 > 5_000, (
+            f"Setup check: ea_pre ({ea_pre/1000:.2f} kJ/mol) should exceed "
+            f"real_H0 ({real_H0/1000:.2f} kJ/mol) by >5 kJ/mol; actual margin "
+            f"{(ea_pre-real_H0)/1000:.3f} kJ/mol"
+        )
+
+        # Core assertions: Ea must equal ea_pre (real-product result), NOT pool_H0
+        assert abs(ea_final - ea_pre) < 1_000, (
+            f"Ea {ea_final/1000:.2f} kJ/mol should equal real-product ea_pre "
+            f"{ea_pre/1000:.2f} kJ/mol "
+            f"(difference = {abs(ea_final-ea_pre)/1000:.3f} kJ/mol). "
+            f"pool_H0={pool_H0/1000:.2f} kJ/mol — did the pool H0 clamp re-pollute Ea?"
+        )
+        assert ea_final < pool_H0 - 5_000, (
+            f"Ea {ea_final/1000:.2f} kJ/mol must NOT be clamped to pool H0 "
+            f"{pool_H0/1000:.2f} kJ/mol "
+            f"(margin = {(pool_H0-ea_final)/1000:.2f} kJ/mol)"
+        )
+
 
 # Task 6 (non-scission relabel coverage): assessed and skipped — the chip helper's
 # end_mod is a radicalized proxy (C25H27•) whose real vs pool ΔH gap (~150 kJ/mol)
