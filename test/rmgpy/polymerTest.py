@@ -4361,3 +4361,9 @@ class TestScissionRealDHrxnEndToEnd:
             f"{pool_Ea / 4184:.2f} kcal/mol; the BM pre-conversion should use "
             "real atom-balanced products, not the relabeled pool proxy."
         )
+
+# Task 6 (non-scission relabel coverage): assessed and skipped — the chip helper's
+# end_mod is a radicalized proxy (C25H27•) whose real vs pool ΔH gap (~150 kJ/mol)
+# is driven by radical-vs-closed-shell enthalpy, not by the polymer relabeling the
+# fix targets; forcing ArrheniusBM onto that scaffold would be artificially misleading.
+# The scission path (Task 5) provides the load-bearing coverage for the relabeled gate.
