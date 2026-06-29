@@ -3952,3 +3952,96 @@ class TestGasMaskInvariantToProxyTagContamination:
             phase.get_gas_mask(core + [edge_dup_a, edge_dup_b]), dtype=bool)
         assert bool(core_only[4]) is True
         assert np.array_equal(core_only, combined[:len(core)])
+
+
+class TestCondensedEdgeDaughterBases:
+    """Spec 2026-06-29 -- the pure-Python qualifying predicate that decides
+    which edge Polymer daughters get prospectively condensed. Policy lives in
+    PolymerPhase (testable with no Cython rebuild); the solver only applies it
+    (Task 2). The moment-triplet + is_moment_dummy check is load-bearing;
+    is_polymer_proxy is over-stamped and must never qualify a species alone."""
+
+    @staticmethod
+    def _phase(pool_labels=()):
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import PolymerPhase, PolymerPool
+        pools = [PolymerPool(label=lbl, xs=2, monomer=_spc("CCCC", lbl),
+                             explicit_map={}, mu_species=[])
+                 for lbl in pool_labels]
+        return PolymerPhase(density=Quantity(1000.0, "kg/m^3"),
+                            initial_moments={}, initial_explicit={},
+                            pools=pools, mass_transfer=[])
+
+    @staticmethod
+    def _daughter(label):
+        from rmgpy.polymer import Polymer
+        d = Polymer(label=label, monomer="[CH2][CH]c1ccccc1", Mn=100.0, Mw=200.0)
+        d.is_polymer_proxy = True
+        return d
+
+    @staticmethod
+    def _dummy(owner_label, k):
+        # production convention: dummy label = {owner.label}_mu{k}
+        s = _spc("CO", f"{owner_label}_mu{k}")
+        s.is_moment_dummy = True
+        return s
+
+    def _triplet(self, owner_label):
+        return [self._dummy(owner_label, k) for k in (0, 1, 2)]
+
+    def test_qualifies_paren_less_production_daughter(self):
+        # real PS shape: daughter PS_scission_tail_2 + PS_scission_tail_2_mu0/1/2
+        phase = self._phase()
+        d = self._daughter("PS_scission_tail_2")
+        combined = [d] + self._triplet("PS_scission_tail_2")
+        assert phase.get_condensed_edge_daughter_bases(combined) == {"PS_scission_tail_2"}
+
+    def test_qualifies_parenthesized_daughter_as_base(self):
+        # production dummy convention for a parenthesized daughter: D(2) +
+        # D(2)_mu0/1/2 -> both normalize to base 'D' -> qualifies as 'D'
+        phase = self._phase()
+        d = self._daughter("D(2)")
+        combined = [d] + self._triplet("D(2)")
+        assert phase.get_condensed_edge_daughter_bases(combined) == {"D"}
+
+    def test_excludes_static_proxy_by_base(self):
+        # static_pool_labels = {"PS"}; candidate PS(2) + PS(2)_mu0/1/2 ->
+        # base 'PS' is a static deck pool -> excluded
+        phase = self._phase(pool_labels=("PS",))
+        d = self._daughter("PS(2)")
+        combined = [d] + self._triplet("PS(2)")
+        assert phase.get_condensed_edge_daughter_bases(combined) == set()
+
+    def test_rejects_incomplete_triplet(self):
+        phase = self._phase()
+        d = self._daughter("PS_scission_tail_2")
+        combined = [d, self._dummy("PS_scission_tail_2", 0),
+                    self._dummy("PS_scission_tail_2", 1)]   # missing _mu2
+        assert phase.get_condensed_edge_daughter_bases(combined) == set()
+
+    def test_rejects_dummy_missing_moment_flag(self):
+        phase = self._phase()
+        d = self._daughter("PS_scission_tail_2")
+        m0 = _spc("CO", "PS_scission_tail_2_mu0")   # NO is_moment_dummy set
+        combined = [d, m0, self._dummy("PS_scission_tail_2", 1),
+                    self._dummy("PS_scission_tail_2", 2)]
+        assert phase.get_condensed_edge_daughter_bases(combined) == set()
+
+    def test_rejects_non_polymer_even_with_sticky_proxy_stamp(self):
+        phase = self._phase()
+        # (a) a plain Species sharing the daughter shape -- not a Polymer
+        non_poly = _spc("C=Cc1ccccc1", "PS_scission_tail_2")
+        combined_a = [non_poly] + self._triplet("PS_scission_tail_2")
+        assert phase.get_condensed_edge_daughter_bases(combined_a) == set()
+        # (b) the reachable over-stamp hazard: an ORDINARY Species carrying a
+        # sticky is_polymer_proxy=True plus a complete moment triplet must NOT
+        # qualify, because it is not a Polymer. A non-proxy Polymer is not a
+        # meaningful fixture here: Polymer construction stamps the proxy flag and
+        # Species.is_polymer_proxy latches true. Sticky ordinary species are the
+        # reachable over-stamp hazard. This pins the safety property: raw
+        # is_polymer_proxy alone never condenses an edge daughter -- the daughter
+        # must be a Polymer AND have the full moment triplet.
+        sticky = _spc("CCO", "OTH")
+        sticky.is_polymer_proxy = True
+        combined_b = [sticky] + self._triplet("OTH")
+        assert phase.get_condensed_edge_daughter_bases(combined_b) == set()

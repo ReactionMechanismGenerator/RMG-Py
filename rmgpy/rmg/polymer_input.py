@@ -39,6 +39,12 @@ from rmgpy.solver.polymer import HybridPolymerSystem, MassTransferConfig, Polyme
 from rmgpy.species import Species
 
 
+def _base_label(label):
+    """Polymer base label = everything before the first '(' (strips the
+    proxy multiplicity / index suffix, e.g. 'PS(2)' -> 'PS')."""
+    return label.partition("(")[0]
+
+
 class HybridPolymerReactor(ReactionSystem):
     """
     A biphasic reactor input specification for polymer pyrolysis and degradation simulations.
@@ -671,6 +677,49 @@ class PolymerPhase(object):
                 mask[i] = False
 
         return mask
+
+    def get_condensed_edge_daughter_bases(self, combined_species) -> set:
+        """Return the set of BASE labels of qualifying polymer daughters in
+        ``combined_species`` (chain(core, edge)). A species qualifies iff it is
+        a Polymer, is_polymer_proxy, its base is NOT a static-deck pool label,
+        and a complete {base}_mu0/_mu1/_mu2 moment-dummy triplet (each with
+        is_moment_dummy=True) is present in combined_species.
+
+        Spec 2026-06-29. Recomputed by the solver over the LIVE combined list on
+        every initialize_model (callable, never a frozen set) -- mirrors
+        prospective_classifier so it cannot go stale on the engine-reuse path.
+        The solver restricts APPLICATION to edge slots; this predicate is
+        base-level. is_moment_dummy is the stable marker; is_polymer_proxy is
+        over-stamped (family.py:1657) and never gates alone."""
+        from rmgpy.polymer import Polymer  # local: avoids an import cycle
+
+        static_pool_labels = {p.label for p in self.pools}
+
+        # Index the confirmed moment-dummy universe: (base, k) present iff a
+        # species labelled "{base}_mu{k}" carries is_moment_dummy=True.
+        present = {}
+        for spc in combined_species:
+            label = getattr(spc, "label", None)
+            if not label:
+                continue
+            for k in (0, 1, 2):
+                suffix = "_mu%d" % k
+                if label.endswith(suffix) and getattr(spc, "is_moment_dummy", False):
+                    raw = label[:-len(suffix)]
+                    present[(_base_label(raw), k)] = True
+
+        qualifying = set()
+        for spc in combined_species:
+            if not isinstance(spc, Polymer):
+                continue
+            if not getattr(spc, "is_polymer_proxy", False):
+                continue
+            base = _base_label(spc.label)
+            if base in static_pool_labels:
+                continue
+            if all(present.get((base, k), False) for k in (0, 1, 2)):
+                qualifying.add(base)
+        return qualifying
 
 
 class PolymerPhaseBlueprint(object):
