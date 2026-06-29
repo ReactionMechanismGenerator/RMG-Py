@@ -400,6 +400,7 @@ class HybridPolymerSystem(ReactionSystem):
         gas_species_mask: Optional[np.ndarray] = None,
         prospective_gas_mask: Optional[np.ndarray] = None,
         prospective_classifier=None,
+        prospective_condensed_edge_daughter_classifier=None,
         allow_default_prospective_edge: bool = False,
         constant_gas_volume: bool = False,
         V_gas0: Optional[float] = None,
@@ -465,6 +466,13 @@ class HybridPolymerSystem(ReactionSystem):
         # _prospective_edge_provenance is the per-build int8 marker over the
         # edge entries (1 = stage-1-classified, 0 = default-filled).
         self._prospective_classifier = prospective_classifier
+        # Spec 2026-06-29: callable f(combined_species) -> set of qualifying
+        # daughter BASE labels (the bound PolymerPhase.get_condensed_edge_daughter_bases),
+        # plumbed by to_solver_object. Re-run over the LIVE chain(core, edge) in
+        # initialize_model on EVERY call (never a frozen set -> cannot go stale
+        # on the engine-reuse path). None on direct-test/runner construction.
+        self.prospective_condensed_edge_daughter_classifier = \
+            prospective_condensed_edge_daughter_classifier
         self._allow_default_prospective_edge = bool(allow_default_prospective_edge)
         self._prospective_edge_provenance = None
         self.const_spc_names = const_spc_names or []
@@ -1044,6 +1052,28 @@ class HybridPolymerSystem(ReactionSystem):
         self._apply_pool_phase_overrides(self.prospective_gas_mask,
                                          combined_species,
                                          record_indices=False)
+
+        # Edge-daughter prospective condensed-mask (spec 2026-06-29). After the
+        # stage-2 override, BEFORE R1: flip qualifying EDGE daughters CONDENSED
+        # so Gate B (is_poly_event AND not has_condensed_prod) does not zero
+        # their real scission flux. The classifier is re-run over the LIVE
+        # combined list here (callable, never a frozen set). EDGE slots only --
+        # R1 (next) re-verifies the core prefix is untouched. LOUD on failure:
+        # a raising classifier must NOT silently default the daughter to GAS
+        # (that would re-hide Gate B).
+        if self.prospective_condensed_edge_daughter_classifier is not None:
+            try:
+                condensed_bases = \
+                    self.prospective_condensed_edge_daughter_classifier(combined_species)
+            except Exception:
+                logging.error(
+                    "EDGE-DAUGHTER CONDENSED-MASK: classifier raised while "
+                    "building prospective_gas_mask (n_core=%d, n_edge=%d); not "
+                    "defaulting to GAS.", n_core, n_edge_spc)
+                raise
+            for i in range(n_core, n_core + n_edge_spc):
+                if combined_species[i].label.partition('(')[0] in condensed_bases:
+                    self.prospective_gas_mask[i] = False
 
         # RIDER R1 -- core-prefix parity tripwire (spec SS3(d)). The
         # architecture's central claim ("the prospective mask is the real

@@ -418,6 +418,10 @@ class HybridPolymerReactor(ReactionSystem):
             # stage-1 contract (allow_default_prospective_edge left default
             # False -> R1-EDGE raises if the fallback ever fires here).
             prospective_classifier=self.polymerPhase.get_gas_mask,
+            # Spec 2026-06-29: the live edge-daughter condensed-mask predicate.
+            # Bound method re-run over chain(core, edge) every initialize_model
+            # (callable, never frozen -> no stale-set hazard).
+            prospective_condensed_edge_daughter_classifier=self.polymerPhase.get_condensed_edge_daughter_bases,
             constant_gas_volume=self.constant_gas_volume,
             V_gas0=V_gas0,
             initial_polymer_moments=self.polymerPhase.initial_moments,

@@ -4045,3 +4045,118 @@ class TestCondensedEdgeDaughterBases:
         sticky.is_polymer_proxy = True
         combined_b = [sticky] + self._triplet("OTH")
         assert phase.get_condensed_edge_daughter_bases(combined_b) == set()
+
+
+def _condensed_edge_stub(bases):
+    """Stand-in for the bound PolymerPhase.get_condensed_edge_daughter_bases on
+    the solver application path (Task 2): returns a fixed base-label set,
+    ignoring the live list. Isolates the .pyx APPLY logic from the predicate
+    (predicate correctness is pinned in TestCondensedEdgeDaughterBases)."""
+    def _classify(combined_species):
+        return set(bases)
+    return _classify
+
+
+class TestEdgeDaughterCondensedMaskApply:
+    """Spec 2026-06-29 -- the solver-side APPLY pass. A passed-in classifier
+    (callable, never frozen) is re-run over the live combined list every
+    initialize_model; qualifying EDGE slots flip CONDENSED in
+    prospective_gas_mask, after the stage-2 override and before the R1
+    core-prefix tripwire. Edge slots only -- core prefix parity (R1) holds."""
+
+    @staticmethod
+    def _build(core, mask, edge_spcs, classifier):
+        cfg = PolymerPoolConfig(label="A", xs=2, explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None,
+                                k_unzip=0.0)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[-1]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=np.asarray(mask, dtype=bool).copy(),
+            constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_condensed_edge_daughter_classifier=classifier,
+            # direct-test build: no blueprint phase -> permit the default edge
+            # fill so R1-EDGE does not raise; the condensed-mask pass then flips
+            # the qualifying edge slot CONDENSED on top of that GAS default.
+            allow_default_prospective_edge=True)
+        rs.initialize_model(list(core), [], list(edge_spcs), [])
+        return rs
+
+    def _core_and_mask(self):
+        # core: A (melt proxy), A_mu0..2 (dummies), G (gas seed). mask: gas=True
+        core = [_spc("CCCC", "A"), _spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
+                _spc("C#N", "A_mu2"), _spc("[CH3]", "G")]
+        mask = [False, False, False, False, True]
+        return core, mask
+
+    def test_qualifying_edge_daughter_flips_condensed_others_gas(self):
+        core, mask = self._core_and_mask()
+        d = _spc("C=Cc1ccccc1", "D(2)")     # qualifying edge daughter, base "D"
+        other = _spc("CCO", "OTH")          # non-qualifying edge gas species
+        rs = self._build(core, mask, [d, other], _condensed_edge_stub({"D"}))
+        n_core = len(core)
+        pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        assert bool(pm[n_core]) is False        # D(2) edge slot -> CONDENSED
+        assert bool(pm[n_core + 1]) is True     # OTH edge slot -> still GAS
+        # core prefix bit-identical to gas_species_mask (R1 holds, no core write)
+        assert np.array_equal(pm[:n_core],
+                              np.asarray(rs.gas_species_mask, dtype=bool))
+
+    def test_classifier_is_live_not_frozen_across_edge_growth(self):
+        """MANDATORY staleness regression. Build/init with edge_A (no daughter
+        'D'), then re-run initialize_model with edge_B that introduces D(2). A
+        constructor-FROZEN set computed at build time would miss D; the live
+        callable, re-run over the larger combined list, flips it CONDENSED.
+        This is the bug the authors already hit with the frozen prospective
+        seed (polymer_input.py:283-291)."""
+        core, mask = self._core_and_mask()
+        d = _spc("C=Cc1ccccc1", "D(2)")
+        rs = self._build(core, mask, [], _condensed_edge_stub({"D"}))  # edge_A: empty
+        # edge_A had no D -> nothing condensed beyond the core
+        pm_a = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        assert pm_a.shape[0] == len(core)               # no edge yet
+        # edge_B introduces D(2); same solver object, larger edge
+        rs.initialize_model(list(core), [], [d], [])
+        pm_b = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        assert bool(pm_b[len(core)]) is False           # D(2) now CONDENSED
+
+    def test_classifier_failure_is_loud_no_gas_default(self):
+        """A raising classifier must propagate, never silently leave the
+        daughter GAS (which would re-hide Gate B)."""
+        core, mask = self._core_and_mask()
+        d = _spc("C=Cc1ccccc1", "D(2)")
+
+        def _boom(combined_species):
+            raise RuntimeError("classifier exploded")
+
+        with pytest.raises(RuntimeError, match="classifier exploded"):
+            self._build(core, mask, [d], _boom)
+
+
+class TestCondensedEdgeDaughterClassifierPlumb:
+    """Spec 2026-06-29 -- the wiring path: to_solver_object must pass the bound
+    PolymerPhase.get_condensed_edge_daughter_bases into the solver as the
+    prospective_condensed_edge_daughter_classifier, so production builds run
+    the real predicate over the live edge (not a stub)."""
+
+    @staticmethod
+    def _reactor():
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import HybridPolymerReactor, PolymerPhase
+        a = _spc("CCCC", "A")
+        phase = PolymerPhase(density=Quantity(1000.0, "kg/m^3"), initial_moments={},
+                             initial_explicit={a: 1.0}, pools=[], mass_transfer=[])
+        return a, phase, HybridPolymerReactor(
+            temperature=(800.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles={a: 1.0}, polymerPhase=phase,
+            terminationTime=(1.0, "s"))
+
+    def test_to_solver_object_passes_bound_predicate(self):
+        a, phase, reactor = self._reactor()
+        solver = reactor.to_solver_object([a], [], [], [])
+        clf = solver.prospective_condensed_edge_daughter_classifier
+        assert clf is not None
+        # bound method of THIS phase's get_condensed_edge_daughter_bases
+        assert clf.__self__ is phase
+        assert clf.__func__.__name__ == "get_condensed_edge_daughter_bases"
