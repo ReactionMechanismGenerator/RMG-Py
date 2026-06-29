@@ -2217,6 +2217,8 @@ def get_input(name):
     if rmg:
         if name == 'species_constraints':
             return rmg.species_constraints
+        elif name == 'polymer_constraints':
+            return rmg.polymer_constraints
         elif name == 'quantum_mechanics':
             return rmg.quantum_mechanics
         elif name == 'ml_estimator':
