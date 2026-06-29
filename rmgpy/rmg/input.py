@@ -1725,6 +1725,66 @@ def generated_species_constraints(**kwargs):
         rmg.species_constraints[key] = value
 
 
+BOUNDING_CONSTRAINT_KEYS = {
+    'maximumCarbonAtoms',
+    'maximumOxygenAtoms',
+    'maximumNitrogenAtoms',
+    'maximumSiliconAtoms',
+    'maximumSulfurAtoms',
+    'maximumSurfaceSites',
+    'maximumSurfaceBondOrder',
+    'maximumHeavyAtoms',
+    'maximumRadicalElectrons',
+    'maximumSingletCarbenes',
+    'maximumCarbeneRadicals',
+}
+
+
+def generate_polymer_constraints(**kwargs):
+    valid_constraints = [
+        'allowed',
+        'maximumCarbonAtoms',
+        'maximumOxygenAtoms',
+        'maximumNitrogenAtoms',
+        'maximumSiliconAtoms',
+        'maximumSulfurAtoms',
+        'maximumSurfaceSites',
+        'maximumSurfaceBondOrder',
+        'maximumHeavyAtoms',
+        'maximumRadicalElectrons',
+        'maximumSingletCarbenes',
+        'maximumCarbeneRadicals',
+        'allowSingletO2',
+        'speciesCuttingThreshold',
+    ]
+
+    # NOTE: 'allowed', 'allowSingletO2', and 'speciesCuttingThreshold' are accepted only for
+    # whitelist parity with generatedSpeciesConstraints -- they are NO-OPS on the polymer path.
+    # _evaluate_constraints (explicitlyAllowedMolecules), pass_cutting_threshold, and the
+    # allowSingletO2 handling all read the global species_constraints, never polymer_constraints.
+    # Only the maximum* BOUNDING_CONSTRAINT_KEYS actually bound polymer/proxy species.
+    for key in kwargs:
+        if key not in valid_constraints:
+            raise InputError('Invalid polymer species constraint {0!r}.'.format(key))
+
+    # A present block must actually bound: at least one BOUNDING_CONSTRAINT_KEYS member
+    # with a finite (non -1) value. Otherwise it would suppress the unbounded warning
+    # without bounding the runaway. Use the explicit set, NOT a 'maximum*' string-prefix.
+    has_finite_bound = any(
+        key in BOUNDING_CONSTRAINT_KEYS and value != -1 for key, value in kwargs.items()
+    )
+    if not has_finite_bound:
+        raise InputError(
+            'generatePolymerConstraints requires at least one finite maximum* constraint; '
+            'omit the block to preserve the current unbounded polymer bypass.'
+        )
+
+    if rmg.polymer_constraints is None:
+        rmg.polymer_constraints = {}
+    for key, value in kwargs.items():
+        rmg.polymer_constraints[key] = value
+
+
 def thermo_central_database(host,
                             port,
                             username,
@@ -1887,6 +1947,7 @@ def read_input_file(path, rmg0):
         'pressureDependence': pressure_dependence,
         'options': options,
         'generatedSpeciesConstraints': generated_species_constraints,
+        'generatePolymerConstraints': generate_polymer_constraints,
         'thermoCentralDatabase': thermo_central_database,
         'uncertainty': uncertainty,
         'restartFromSeed': restart_from_seed,
@@ -2183,6 +2244,14 @@ def save_input_file(path, rmg):
     if rmg.species_constraints:
         f.write('generatedSpeciesConstraints(\n')
         for constraint, value in sorted(list(rmg.species_constraints.items()), key=lambda constraint: constraint[0]):
+            if value is not None:
+                f.write('    {0} = {1},\n'.format(constraint, value))
+        f.write(')\n\n')
+
+    # Polymer Constraints
+    if rmg.polymer_constraints:
+        f.write('generatePolymerConstraints(\n')
+        for constraint, value in sorted(list(rmg.polymer_constraints.items()), key=lambda constraint: constraint[0]):
             if value is not None:
                 f.write('    {0} = {1},\n'.format(constraint, value))
         f.write(')\n\n')

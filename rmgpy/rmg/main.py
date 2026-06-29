@@ -53,7 +53,7 @@ import rmgpy.util as util
 from rmgpy import settings
 from rmgpy.cantera import CanteraWriter
 from rmgpy.chemkin import ChemkinWriter
-from rmgpy.constraints import fails_species_constraints
+from rmgpy.constraints import fails_species_constraints, reset_polymer_warning
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
@@ -467,7 +467,9 @@ class RMG(util.Subject):
                 logging.info("Adding rate rules from training set in kinetics families...")
                 # Temporarily remove species constraints for the training reactions
                 copy_species_constraints = copy.copy(self.species_constraints)
+                copy_polymer_constraints = copy.copy(self.polymer_constraints)
                 self.species_constraints = {}
+                self.polymer_constraints = None
                 for family in self.database.kinetics.families.values():
                     if not family.auto_generated:
                         family.add_rules_from_training(thermo_database=self.database.thermo)
@@ -485,6 +487,7 @@ class RMG(util.Subject):
                             f.write("\n")
 
                 self.species_constraints = copy_species_constraints
+                self.polymer_constraints = copy_polymer_constraints
             else:
                 logging.info("Training set explicitly not added to rate rules in kinetics families...")
             logging.info("Filling in rate rules in kinetics families by averaging...")
@@ -502,6 +505,9 @@ class RMG(util.Subject):
 
         # Save initialization time
         self.initialization_time = time.time()
+
+        # Reset the once-per-run unbounded-polymer warning.
+        reset_polymer_warning()
 
         # Log start timestamp
         logging.info("RMG execution initiated at " + time.asctime() + "\n")
@@ -1339,11 +1345,13 @@ class RMG(util.Subject):
                 )
                 # Temporarily remove species constraints for the training reactions
                 self.species_constraints, speciesConstraintsCopy = {}, self.species_constraints
+                self.polymer_constraints, polymerConstraintsCopy = None, self.polymer_constraints
                 for family in self.database.kinetics.families.values():
                     if not family.auto_generated:
                         family.add_rules_from_training(thermo_database=self.database.thermo)
                         family.fill_rules_by_averaging_up(verbose=True)
                 self.species_constraints = speciesConstraintsCopy
+                self.polymer_constraints = polymerConstraintsCopy
 
             for correlated in correlation:
                 uncertainty.assign_parameter_uncertainties(correlated=correlated)

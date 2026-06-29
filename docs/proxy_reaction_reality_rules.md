@@ -195,6 +195,13 @@ stamp the physical direction with the correct archetype so it uses the §5.1 ker
   `multi_pool_design.md` and the `get_gas_mask` fix that keys phase off `is_moment_dummy`)
   must not leak the polymer-scoped constraints or pool identity onto ordinary coreactants.
 
+**`generatePolymerConstraints` is a bounding fuse, not the sticky-tag cure.** It replaces the
+unconditional polymer-proxy constraint bypass with a finite, opt-in polymer constraint set, bounding
+model size for proxy-stamped species. It does NOT fix the `is_polymer_proxy` sticky-contamination
+(the `family.py` blanket-stamp): leaked ordinary products in the C8 → polymer-cap window remain
+admitted. A finite cap makes that bloat bounded, never infinite. The blanket-stamp source fix
+(`family.py:1657-1659` + the sibling stamp sites) is a separately-tracked item.
+
 ## Cross-references
 - [`multi_pool_design.md`](multi_pool_design.md): §4.2–4.3 (motif discovery / similarity_merge),
   §5.1 (flux archetypes + kernels), §5.4 (item-18 refuse — superseded by Layer 2), §5.3
