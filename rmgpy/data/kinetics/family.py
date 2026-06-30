@@ -1606,7 +1606,8 @@ class KineticsFamily(Database):
         # Return the product structures
         return product_structures
 
-    def _generate_product_structures(self, reactant_structures, maps, forward, relabel_atoms=True):
+    def _generate_product_structures(self, reactant_structures, maps, forward, relabel_atoms=True,
+                                     apply_species_constraints=True):
         """
         For a given set of `reactant_structures` and a given set of `maps`,
         generate and return the corresponding product structures. The
@@ -1617,6 +1618,13 @@ class KineticsFamily(Database):
         returns a list of the product structures.
         If ``relabel_atoms`` is ``True``, product atom labels of reversible families
         will be reversed to assist in identifying forbidden structures.
+        If ``apply_species_constraints`` is ``True`` (the default), products that exceed the
+        user's model-growth size limits are rejected via ``fails_species_constraints`` (which
+        covers both ``generatedSpeciesConstraints`` and, for polymer-proxy species,
+        ``generatePolymerConstraints``). This is relaxed (``False``) only when regenerating an
+        already-existing reaction to count its degeneracy, where the throwaway products must not
+        be filtered by any model-growth size limit. Family-specific forbidden structures
+        (``is_molecule_forbidden``) are always enforced regardless of this flag.
         """
 
         # Clear any previous atom labeling from all reactant structures
@@ -1657,13 +1665,14 @@ class KineticsFamily(Database):
             if any(spc.is_polymer_proxy for spc in reactant_structures + product_structures):
                 for spc in reactant_structures + product_structures:
                     spc.is_polymer_proxy = True
-            reason = fails_species_constraints(struct)
-            if reason:
-                raise ForbiddenStructureException(
-                    "Species constraints forbids product species {0}. Please "
-                    "reformulate constraints, or explicitly "
-                    "allow it. Reason: {1}".format(struct, reason)
-                )
+            if apply_species_constraints:
+                reason = fails_species_constraints(struct)
+                if reason:
+                    raise ForbiddenStructureException(
+                        "Species constraints forbids product species {0}. Please "
+                        "reformulate constraints, or explicitly "
+                        "allow it. Reason: {1}".format(struct, reason)
+                    )
 
         return product_structures
 
@@ -1927,7 +1936,8 @@ class KineticsFamily(Database):
         reactions = []
         for combo in molecule_combos:
             reactions.extend(self._generate_reactions(combo, products=reaction.products, forward=True,
-                                                      prod_resonance=resonance, react_non_reactive=True))
+                                                      prod_resonance=resonance, react_non_reactive=True,
+                                                      apply_species_constraints=False))
 
         # remove degenerate reactions
         reactions = find_degenerate_reactions(reactions, same_reactants, template=reaction.template,
@@ -1945,7 +1955,8 @@ class KineticsFamily(Database):
         return reactions[0].degeneracy
 
     def _generate_reactions(self, reactants, products=None, forward=True, prod_resonance=True,
-                            react_non_reactive=False, delete_labels=True, relabel_atoms=True):
+                            react_non_reactive=False, delete_labels=True, relabel_atoms=True,
+                            apply_species_constraints=True):
         """
         Generate a list of all the possible reactions of this family between
         the list of `reactants`. The number of reactants provided must match
@@ -1969,6 +1980,12 @@ class KineticsFamily(Database):
             delete_labels:      Delete the labeled atoms from each generated reaction (optional).
                                 Default is ``True``, atom labels are deleted.
             relabel_atoms (bool, optional)   Whether to reverse product atom labels of reversible families.
+            apply_species_constraints:       Flag to filter products that exceed model-growth size limits
+                                (generatedSpeciesConstraints and, for polymer-proxy species,
+                                generatePolymerConstraints) (optional). Default is ``True``. Set ``False``
+                                only by calculate_degeneracy so that counting the degeneracy of an existing
+                                reaction (regenerated forward) is not blocked by model-growth size limits.
+                                Family forbidden structures are always enforced regardless of this flag.
 
         Returns:
             List of all reactions containing Molecule objects with the
@@ -2026,7 +2043,8 @@ class KineticsFamily(Database):
                             product_structures = self._generate_product_structures(reactant_structures,
                                                                                    [mapping],
                                                                                    forward,
-                                                                                   relabel_atoms)
+                                                                                   relabel_atoms,
+                                                                                   apply_species_constraints=apply_species_constraints)
                         except ForbiddenStructureException:
                             pass
                         else:
@@ -2069,7 +2087,8 @@ class KineticsFamily(Database):
                                     product_structures = self._generate_product_structures(reactant_structures,
                                                                                            [map_b, map_a],
                                                                                            forward,
-                                                                                           relabel_atoms)
+                                                                                           relabel_atoms,
+                                                                                           apply_species_constraints=apply_species_constraints)
                                 except ForbiddenStructureException:
                                     pass
                                 else:
@@ -2093,7 +2112,8 @@ class KineticsFamily(Database):
                                         product_structures = self._generate_product_structures(reactant_structures,
                                                                                                [map_a, map_b],
                                                                                                forward,
-                                                                                               relabel_atoms)
+                                                                                               relabel_atoms,
+                                                                                               apply_species_constraints=apply_species_constraints)
                                     except ForbiddenStructureException:
                                         pass
                                     else:
@@ -2147,7 +2167,8 @@ class KineticsFamily(Database):
                             product_structures = self._generate_product_structures(reactant_structures,
                                                                                    [map_a, map_b, map_c],
                                                                                    forward,
-                                                                                   relabel_atoms)
+                                                                                   relabel_atoms,
+                                                                                   apply_species_constraints=apply_species_constraints)
                         except ForbiddenStructureException:
                             pass
                         else:
@@ -2212,7 +2233,8 @@ class KineticsFamily(Database):
                             product_structures = self._generate_product_structures(reactant_structures,
                                                                                    [map_a, map_b, map_c],
                                                                                    forward,
-                                                                                   relabel_atoms)
+                                                                                   relabel_atoms,
+                                                                                   apply_species_constraints=apply_species_constraints)
                         except ForbiddenStructureException:
                             pass
                         else:
@@ -2258,7 +2280,8 @@ class KineticsFamily(Database):
                                                     _reactantStructures,
                                                     _maps,
                                                     forward,
-                                                    relabel_atoms)
+                                                    relabel_atoms,
+                                                    apply_species_constraints=apply_species_constraints)
                                             except ForbiddenStructureException:
                                                 pass
                                             else:

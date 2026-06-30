@@ -1044,6 +1044,116 @@ class TestKinetics:
         rxn.degeneracy = family.calculate_degeneracy(rxn)
         assert rxn.degeneracy == 1
 
+    def test_calculate_degeneracy_relaxes_species_constraints(self):
+        """
+        Generic RMG-core regression: calculate_degeneracy recomputes the degeneracy of an
+        existing reaction by regenerating it FORWARD. For a reaction whose forward product
+        exceeds a model-growth species constraint (e.g. a reverse-direction scission of a
+        non-own_reverse family like R_Recombination), the regenerated forward product would
+        trip fails_species_constraints -> ForbiddenStructureException -> 0 reactions ->
+        KineticsError. Degeneracy counting uses throwaway reactions and must NOT re-apply
+        model-growth species constraints. With maximumCarbonAtoms=1, methyl + ethyl <=>
+        propane (forward product propane has 3 C > 1) must still yield degeneracy 1.
+        """
+        import rmgpy.rmg.input
+        from rmgpy.rmg.main import RMG
+        from rmgpy.data.rmg import get_db
+
+        family = get_db("kinetics").families["R_Recombination"]
+        assert not family.own_reverse
+
+        def build_rxn():
+            methyl = Species(molecule=[Molecule().from_smiles("[CH3]")])
+            ethyl = Species(molecule=[Molecule().from_smiles("[CH2]C")])
+            propane = Species(molecule=[Molecule().from_smiles("CCC")])
+            for s in (methyl, ethyl, propane):
+                s.generate_resonance_structures(keep_isomorphic=True)
+            r = TemplateReaction(reactants=[methyl, ethyl], products=[propane], family="R_Recombination")
+            # The modeled origin is a reverse (scission) reaction; note calculate_degeneracy ignores
+            # is_forward and always regenerates forward, so the over-limit forward product is the trigger.
+            r.is_forward = False
+            return r
+
+        # Ground truth: degeneracy with NO constraint set at all.
+        unconstrained = family.calculate_degeneracy(build_rxn())
+
+        # With a constraint the forward product violates, relaxation must yield the SAME degeneracy
+        # (not a crash, and not an inflated count).
+        saved_rmg = rmgpy.rmg.input.rmg
+        rmgpy.rmg.input.rmg = RMG()
+        try:
+            rmgpy.rmg.input.generated_species_constraints(maximumCarbonAtoms=1)
+            constrained = family.calculate_degeneracy(build_rxn())
+        finally:
+            rmgpy.rmg.input.rmg = saved_rmg
+
+        assert unconstrained == 1
+        assert constrained == unconstrained
+
+    def test_calculate_degeneracy_relaxes_species_constraints_large_recombination(self):
+        """
+        Real-reaction regression (from the polystyrene B2 crash, de-polymerized to a pure
+        generic case): a large R_Recombination whose forward product has 34 carbons must
+        still get its degeneracy counted under maximumCarbonAtoms=30 instead of raising a
+        KineticsError.
+        """
+        import rmgpy.rmg.input
+        from rmgpy.rmg.main import RMG
+        from rmgpy.data.rmg import get_db
+
+        family = get_db("kinetics").families["R_Recombination"]
+
+        def build_rxn():
+            r1 = Species(molecule=[Molecule().from_smiles("C=C(CC(C[CH]c1ccccc1)c1ccccc1)c1ccccc1")])
+            r2 = Species(molecule=[Molecule().from_smiles("[CH2]C(C)c1ccccc1")])
+            product = Species(molecule=[Molecule().from_smiles("C=C(CC(CC(CC(C)c1ccccc1)c1ccccc1)c1ccccc1)c1ccccc1")])
+            for s in (r1, r2, product):
+                s.generate_resonance_structures(keep_isomorphic=True)
+            assert product.molecule[0].get_num_atoms("C") > 30  # forward product exceeds the constraint
+            r = TemplateReaction(reactants=[r1, r2], products=[product], family="R_Recombination")
+            r.is_forward = False
+            return r
+
+        # Ground truth: degeneracy with NO constraint set.
+        unconstrained = family.calculate_degeneracy(build_rxn())
+
+        # With maximumCarbonAtoms=30 (product has >30 C), relaxation must yield the SAME degeneracy.
+        saved_rmg = rmgpy.rmg.input.rmg
+        rmgpy.rmg.input.rmg = RMG()
+        try:
+            rmgpy.rmg.input.generated_species_constraints(maximumCarbonAtoms=30)
+            constrained = family.calculate_degeneracy(build_rxn())
+        finally:
+            rmgpy.rmg.input.rmg = saved_rmg
+
+        assert unconstrained >= 1
+        assert constrained == unconstrained
+
+    def test_species_constraints_still_applied_during_model_growth(self):
+        """
+        Boundary guard for the degeneracy-constraint relaxation: the relaxation must happen
+        ONLY inside calculate_degeneracy's throwaway regeneration. Normal forward model-growth
+        generation must STILL filter products that exceed the constraint. methyl + ethyl ->
+        propane (3 C) under maximumCarbonAtoms=1 must produce ZERO reactions.
+        """
+        import rmgpy.rmg.input
+        from rmgpy.rmg.main import RMG
+        from rmgpy.data.rmg import get_db
+
+        family = get_db("kinetics").families["R_Recombination"]
+        methyl = Molecule().from_smiles("[CH3]")
+        ethyl = Molecule().from_smiles("[CH2]C")
+
+        saved_rmg = rmgpy.rmg.input.rmg
+        rmgpy.rmg.input.rmg = RMG()
+        try:
+            rmgpy.rmg.input.generated_species_constraints(maximumCarbonAtoms=1)
+            reactions = family.generate_reactions([methyl, ethyl])
+        finally:
+            rmgpy.rmg.input.rmg = saved_rmg
+
+        assert reactions == []
+
     def test_generate_reactions_from_families_with_resonance(self):
         """Test that we can generate reactions from families with resonance structures"""
         reactants = [
