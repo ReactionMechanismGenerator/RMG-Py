@@ -972,17 +972,25 @@ class PolymerPool(object):
                     f"Pool {self.label}: monomer_product {self.monomer_product} not in core species; "
                     f"cannot wire unzip-to-monomer release.")
 
-        # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot
-        #    (spec 2026-06-10 §3, same idiom as Polymer.monomer_mw_g_mol).
-        #    Best-effort: 0.0 (-> the gate defers) when the monomer Species
-        #    carries no resolvable structure.
+        # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot AND the
+        #    reference-state tripwire chain_window (spec 2026-06-10 §3, same idiom
+        #    as Polymer.monomer_mw_g_mol). self.monomer is normally a Molecule (the
+        #    polymer() input helper / Polymer._validate_monomer), but may be a
+        #    Species when resolved from species_dict; handle BOTH. A Species carries
+        #    a .molecule list; a Molecule answers get_molecular_weight() directly.
+        #    Reading only the Species idiom left monomer_mw_g_mol=0 for Molecule
+        #    monomers, collapsing chain_window to the slack and leaking small gas
+        #    fragments into the melt reference-state sum. Best-effort: 0.0 (-> the
+        #    gate defers) when no resolvable structure.
         monomer_mw_g_mol = 0.0
         mol_list = getattr(self.monomer, "molecule", None)
-        if mol_list:
-            try:
+        try:
+            if mol_list:
                 monomer_mw_g_mol = mol_list[0].get_molecular_weight() * 1000.0
-            except Exception:
-                monomer_mw_g_mol = 0.0
+            elif self.monomer is not None and hasattr(self.monomer, "get_molecular_weight"):
+                monomer_mw_g_mol = self.monomer.get_molecular_weight() * 1000.0
+        except Exception:
+            monomer_mw_g_mol = 0.0
 
         return PolymerPoolConfig(
             label=self.label,
@@ -1047,11 +1055,17 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
             # core map; skip rather than build an unresolvable pool.
             continue
         seen.add(b)
+        # Carry the daughter's own monomer MW [g/mol] (same repeat unit as the
+        # parent; the daughter Polymer computed it in __init__). Omitting it left
+        # the config at 0.0, which drags max(monomer_mw over pools) -> 0 and
+        # collapses the reference-state tripwire chain_window to the bare slack,
+        # leaking small gas scission fragments into the melt sum.
         configs.append(PolymerPoolConfig(
             label=b,
             xs=spc.cutoff,
             explicit_dp_to_species_index={},
             mu_indices=mu_indices,
+            monomer_mw_g_mol=float(getattr(spc, "monomer_mw_g_mol", 0.0) or 0.0),
         ))
     return configs
 

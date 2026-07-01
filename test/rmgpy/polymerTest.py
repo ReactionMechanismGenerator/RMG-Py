@@ -4158,6 +4158,46 @@ def test_derive_daughter_pool_config_binds_moment_dummies():
     assert tuple(cfg.mu_indices) == (1, 2, 3)   # PS_d1_mu0/_mu1/_mu2 core indices
 
 
+def test_derive_daughter_pool_config_populates_monomer_mw():
+    """The reference-state tripwire's chain_window = max(monomer_mw over pools) +
+    slack. A derived daughter pool config that omits monomer_mw_g_mol (leaving it
+    0.0) drags that max to 0 -> chain_window collapses to the 10 g/mol slack ->
+    small gas scission fragments (over-tagged is_polymer_proxy) leak into the melt
+    reference-state sum (the U=11.3 PS tripwire). The derived config must carry the
+    daughter's own monomer MW (g/mol)."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"), _moment_dummy("PS_d1_mu2")]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    assert configs[0].monomer_mw_g_mol == pytest.approx(daughter.monomer_mw_g_mol, rel=1e-9)
+    assert configs[0].monomer_mw_g_mol > 100.0   # styrene-scale, not the 0.0 default
+
+
+def test_pool_to_config_populates_monomer_mw_from_molecule_monomer():
+    """PolymerPool.monomer is a Molecule (Polymer._validate_monomer / the polymer()
+    input helper builds PolymerPool with monomer=spc.monomer, a Molecule). to_config
+    historically read it as a Species (getattr(self.monomer,'molecule')[0]) -> None ->
+    monomer_mw_g_mol=0, collapsing the tripwire chain_window. The config must carry the
+    real monomer MW regardless of whether monomer is a Molecule or a Species."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")   # styrene ~104.15 g/mol, a MOLECULE
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={}, mu_species=mu)
+    spc_map = {s: i for i, s in enumerate(mu)}
+
+    cfg = pool.to_config(spc_map)
+
+    assert cfg.monomer_mw_g_mol == pytest.approx(104.15, abs=1.0)
+
+
 def test_derive_daughter_pool_configs_skips_static_and_incomplete():
     """STAGE 1 / CYCLE 2: the root proxy (a Polymer in core whose label IS a
     static deck pool) must NOT be re-derived (else it is double-configured), and
