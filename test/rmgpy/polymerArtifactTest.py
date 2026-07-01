@@ -214,6 +214,27 @@ class TestCompileReactionEntries:
         assert e["scaling"] == "mu0"
         assert e["src_pool"] == "A" and e["dst_pool"] == "A"  # fold-back
 
+    def test_volatile_ejection_entry_carries_eject_units(self):
+        """A VOLATILE_EJECTION reaction (polymer A -> discrete volatile +
+        cross-pool polymer B) serializes archetype ``volatile_ejection/1`` with
+        ``params: {"eject_units": <a>}`` -- the FRACTIONAL source-monomer-
+        equivalents that leave as volatile (mirrors the DISCRETE_CHIP a-param)."""
+        core = _two_pool_core()
+        # reactant A (pool), products: cross-pool B + discrete gas G
+        rxn = Reaction(reactants=[core[0]], products=[core[4], core[8]],
+                       kinetics=_arrhenius(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = 1.135
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["A", "B"],
+            cantera_index_map={id(rxn): [4]})
+        e = entries[0]
+        assert e["archetype"] == "volatile_ejection/1"
+        assert e["params"]["eject_units"] == pytest.approx(1.135)
+        assert set(e["params"].keys()) == {"eject_units"}
+        assert e["src_pool"] == "A" and e["dst_pool"] == "B"
+        assert e["unresolved"] is False
+
     def test_dropped_reaction_is_cantera_null_and_carries_kinetics(self):
         core = _two_pool_core()
         rxn = Reaction(reactants=[core[8], core[0]], products=[core[9], core[4]],

@@ -784,11 +784,14 @@ PS_1
         assert (classify_reaction_flux_archetype([p], [fold, gas])
                 == PolymerFluxArchetype.SAME_POOL)
 
-        # Single cross-pool polymer product -> MIGRATION
+        # Single cross-pool polymer product, NO non-polymer co-product (pure
+        # whole-chain relabel) -> MIGRATION. (A cross-pool product WITH a
+        # discrete mass-carrying co-product is VOLATILE_EJECTION -- see
+        # test_classify_volatile_ejection_new_archetype.)
         other = p.copy()
         other.label = "other_pool"
         other._reacted_class = PolymerClass.FEATURE
-        assert (classify_reaction_flux_archetype([p], [other, gas])
+        assert (classify_reaction_flux_archetype([p], [other])
                 == PolymerFluxArchetype.MIGRATION)
 
         # SCISSION-stamped product -> SCISSION_FRAGMENT
@@ -856,6 +859,137 @@ PS_1
         sc._reacted_class = PolymerClass.SCISSION
         assert (classify_reaction_flux_archetype([p], [sc, fold])
                 == PolymerFluxArchetype.DISCRETE_CHIP)
+
+    def test_classify_volatile_ejection_new_archetype(self):
+        """
+        polymer_A -> discrete volatile + cross-pool polymer_B is a MASS-LOSING
+        VOLATILE_EJECTION, NOT a mass-conserving MIGRATION: the discrete
+        non-polymer co-product carries mass off the chain, so the chain must
+        lose it (spec: depolymerization / volatile-ejection archetype). Before
+        this fix, the classifier filtered products to Polymers only, ignored
+        the volatile, and mislabeled the shape MIGRATION (whole-chain relabel,
+        mass-conserving) -- the volatile's mass was never debited.
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        p = self.polymer_1
+        volatile = Molecule(smiles="C=C(C)c1ccccc1")  # alpha-methylstyrene
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p], [volatile, dst])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        # Product order must not matter.
+        assert (classify_reaction_flux_archetype([p], [dst, volatile])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+
+    def test_classify_pure_relabel_still_migration(self):
+        """
+        A pure relabel (single cross-pool polymer product, NO non-polymer
+        product) is unchanged: still MIGRATION. Only the shape with a discrete
+        mass-carrying co-product becomes VOLATILE_EJECTION.
+        """
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        p = self.polymer_1
+        dst = p.copy()
+        dst.label = "other_pool"
+        dst._reacted_class = PolymerClass.FEATURE
+        assert (classify_reaction_flux_archetype([p], [dst])
+                == PolymerFluxArchetype.MIGRATION)
+
+    def test_stamp_volatile_ejection_units_fractional(self):
+        """
+        VOLATILE_EJECTION stamps ``polymer_eject_units`` = (discrete volatile
+        MW g/mol) / (source pool monomer_mw_g_mol) as a FRACTIONAL value.
+        alpha-methylstyrene (C9H10, 118.18) off a styrene pool
+        (C8H8, 104.15) => ~1.135; it must NOT be rounded to 1.0.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+        p = self.polymer_1
+        volatile = Molecule(smiles="C=C(C)c1ccccc1")  # alpha-methylstyrene C9H10
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.FEATURE
+        rxn = Reaction(reactants=[p], products=[volatile, dst])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = (volatile.get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+        assert rxn.polymer_eject_units == pytest.approx(1.135, abs=0.01)
+        # NOT rounded to an integer number of monomer-equivalents.
+        assert abs(rxn.polymer_eject_units - 1.0) > 0.1
+
+    def test_stamp_volatile_ejection_sums_multiple_volatiles(self):
+        """
+        Multiple discrete volatile products sum: ``polymer_eject_units`` =
+        (sum of their MW g/mol) / source monomer_mw_g_mol.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+        p = self.polymer_1
+        v1 = Molecule(smiles="C=C(C)c1ccccc1")  # alpha-methylstyrene
+        v2 = Molecule(smiles="C=Cc1ccccc1")     # styrene
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.FEATURE
+        rxn = Reaction(reactants=[p], products=[v1, v2, dst])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = ((v1.get_molecular_weight() + v2.get_molecular_weight())
+                    * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+
+    def test_classify_volatile_ejection_bare_species_volatile(self):
+        """
+        LIVE-PATH regression: at stamp_polymer_flux_archetype time the
+        depolymerization volatile arrives as a bare pre-thermo ``Species``
+        (empty label, NO ``get_molecular_weight`` method, but a populated
+        ``.molecule`` structure), NOT a Molecule. A ``hasattr(p,
+        'get_molecular_weight')`` gate silently misses it and mis-stamps the
+        shape MIGRATION (mass-conserving) -> the TGA stays flat at 100%.
+        Empirically confirmed on a full PS run (sidecar emitted 5x migration/1).
+        The classifier must reach through to ``.molecule[0]`` and route
+        VOLATILE_EJECTION.
+        """
+        from rmgpy.species import Species
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        p = self.polymer_1
+        # Bare Species built from structure only -- Species has NO
+        # get_molecular_weight method (verified) and an empty label pre-thermo.
+        volatile = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1")])
+        assert not hasattr(volatile, "get_molecular_weight")  # the trap
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.UNKNOWN  # live value (not SCISSION)
+        assert (classify_reaction_flux_archetype([p], [volatile, dst])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert (classify_reaction_flux_archetype([p], [dst, volatile])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+
+    def test_stamp_volatile_ejection_units_bare_species_volatile(self):
+        """
+        LIVE-PATH regression companion: compute_volatile_ejection_units must
+        also weigh a bare ``Species`` volatile (via ``.molecule[0]``), not only
+        a Molecule -- else a would be 0 / wrong and mass would be fabricated
+        even once the archetype is right.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+        p = self.polymer_1
+        volatile = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1")])  # a-MS
+        dst = p.copy()
+        dst.label = "PS_scission_tail"
+        dst._reacted_class = PolymerClass.UNKNOWN
+        rxn = Reaction(reactants=[p], products=[volatile, dst])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = (volatile.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+        assert rxn.polymer_eject_units == pytest.approx(1.135, abs=0.01)
 
     def test_flag_false_one_unit_piece_routes_scission_fragment(self):
         """

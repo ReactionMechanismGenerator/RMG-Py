@@ -129,6 +129,7 @@ class Reaction:
                  is_end_group_reaction=False,
                  polymer_flux_archetype=0,
                  polymer_chip_units=0,
+                 polymer_eject_units=0.0,
                  ):
         self.index = index
         self.label = label
@@ -177,6 +178,13 @@ class Reaction:
         # make_new_reaction. Like the two fields above it is NOT serialized in
         # __reduce__; the solver demotes unstamped arrivals at initialize_model.
         self.polymer_chip_units = polymer_chip_units
+        # Fractional source-monomer-equivalents ejected as discrete volatile(s)
+        # for VOLATILE_EJECTION reactions (a = sum(volatile MW g/mol) /
+        # source monomer_mw_g_mol; NOT rounded), stamped in
+        # rmgpy.polymer.stamp_polymer_flux_archetype via make_new_reaction. Like
+        # the fields above it is NOT serialized in __reduce__; the solver demotes
+        # unstamped arrivals at initialize_model.
+        self.polymer_eject_units = polymer_eject_units
 
     def __repr__(self):
         """

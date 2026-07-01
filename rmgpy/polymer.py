@@ -1448,6 +1448,10 @@ class PolymerFluxArchetype(IntEnum):
     DISCRETE_CHIP = 5      # end-anchored cut ejects a stamped a-unit discrete
                            # chip; complement folds back to the SAME pool
                            # (spec 2026-06-10). Mirror: solver FLUX_DISCRETE_CHIP.
+    VOLATILE_EJECTION = 6  # depolymerization: polymer A -> discrete volatile(s)
+                           # + cross-pool polymer B; mass leaves the chain as
+                           # the ejected volatile (a = fractional source-monomer
+                           # equivalents ejected). Mass-losing, unlike MIGRATION.
 
 
 _flux_archetype_warned = set()
@@ -1518,6 +1522,34 @@ def _warn_probable_end_cut(detail) -> None:
             "unit) but the reaction is mu1-scaled: probable mis-scaled "
             "end-anchored cut; routed SCISSION_FRAGMENT pending the "
             "end-anchor detector item.", detail)
+
+
+def _nonpolymer_product_mw_g_mol(product) -> Optional[float]:
+    """Molecular weight (g/mol) of a NON-Polymer reaction product, robust to the
+    object type the LIVE pipeline actually passes at stamp time.
+
+    A product may be a ``Molecule`` (has ``get_molecular_weight`` -> kg/mol) OR a
+    bare pre-thermo ``Species`` (NO ``get_molecular_weight`` method, and often an
+    empty label, but a populated ``.molecule`` structure). ``Polymer`` (a Species
+    subclass) is a pool chain, not a discrete volatile -> returns None. Returns
+    None when no structure is available (cannot weigh -> caller treats it as "no
+    volatile", i.e. a mass-conserving relabel).
+
+    Empirically load-bearing: at ``stamp_polymer_flux_archetype`` time the
+    depolymerization volatiles arrive as bare ``Species``, which lack
+    ``get_molecular_weight`` -- a ``hasattr(p, 'get_molecular_weight')`` gate
+    silently misses them and mis-stamps VOLATILE_EJECTION as MIGRATION
+    (mass-conserving), flattening the TGA. Reach through to ``.molecule[0]``.
+    """
+    if isinstance(product, Polymer):
+        return None
+    getter = getattr(product, 'get_molecular_weight', None)
+    if callable(getter):
+        return getter() * 1000.0
+    mols = getattr(product, 'molecule', None)
+    if mols:
+        return mols[0].get_molecular_weight() * 1000.0
+    return None
 
 
 def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetype:
@@ -1592,11 +1624,46 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
         return PolymerFluxArchetype.SAME_POOL
     if (len(product_polymers) == 1 and len(cross_pool) == 1
             and len(reactant_pools) == 1):
+        # Same shape as MIGRATION (1 reactant pool, 1 cross-pool polymer
+        # product), BUT if a discrete non-polymer product ALSO leaves (a
+        # gas-phase volatile carrying mass), the chain LOSES that mass -- this
+        # is depolymerization, not a mass-conserving whole-chain relabel. Route
+        # VOLATILE_EJECTION so the ejected volatile's mass is debited from the
+        # chain. A non-polymer product that carries structure (Molecule OR bare
+        # pre-thermo Species) is a mass-carrying volatile; _nonpolymer_product_mw
+        # is robust to both (a plain hasattr(get_molecular_weight) gate misses
+        # the Species the live pipeline actually passes -- see that helper).
+        if any(_nonpolymer_product_mw_g_mol(p) is not None for p in products):
+            return PolymerFluxArchetype.VOLATILE_EJECTION
         return PolymerFluxArchetype.MIGRATION
     _warn_unresolved_archetype(
         "ambiguous cross-pool shape",
         tuple(sorted(p.label for p in product_polymers)))
     return PolymerFluxArchetype.UNRESOLVED
+
+
+def compute_volatile_ejection_units(products, source_polymer: 'Polymer') -> float:
+    """Fractional source-monomer-equivalents ejected as discrete volatile(s) in
+    a VOLATILE_EJECTION reaction: ``a = (sum of non-polymer product MW, g/mol) /
+    source_polymer.monomer_mw_g_mol``. NOT rounded (alpha-methylstyrene off a
+    styrene pool = 118.18/104.15 ~= 1.135). Non-polymer products are summed
+    (multiple volatiles). Per-volatile MW comes from
+    ``_nonpolymer_product_mw_g_mol`` (robust to Molecule vs bare pre-thermo
+    Species -- the live stamp-time type). Raises on a missing/zero
+    monomer_mw_g_mol rather than silently producing 0 (which would fabricate mass
+    conservation)."""
+    monomer_mw = getattr(source_polymer, 'monomer_mw_g_mol', 0.0) or 0.0
+    if monomer_mw <= 0.0:
+        raise ValueError(
+            f"VOLATILE_EJECTION: source polymer {getattr(source_polymer, 'label', '?')!r} "
+            f"has no positive monomer_mw_g_mol ({monomer_mw!r}); cannot compute "
+            "eject_units without fabricating mass conservation.")
+    volatile_mw_g = 0.0
+    for p in products:
+        mw = _nonpolymer_product_mw_g_mol(p)
+        if mw is not None:
+            volatile_mw_g += mw
+    return volatile_mw_g / monomer_mw
 
 
 def surge_chip_products(products, parent: 'Polymer') -> Optional[int]:
@@ -1717,6 +1784,15 @@ def stamp_polymer_flux_archetype(forward, reactants, polymer_reactants) -> None:
         return
     forward.polymer_flux_archetype = int(
         classify_reaction_flux_archetype(reactants, forward.products))
+    # VOLATILE_EJECTION: stamp the fractional source-monomer-equivalents that
+    # leave as discrete volatile(s) (a = sum non-polymer product MW /
+    # source monomer_mw_g_mol). The solver's mass-losing dispatch (later phase)
+    # and the sidecar emit read this STORED value.
+    if forward.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION):
+        source = polymer_reactants[0] if polymer_reactants else next(
+            (r for r in reactants if isinstance(r, Polymer)), None)
+        forward.polymer_eject_units = float(
+            compute_volatile_ejection_units(forward.products, source))
     # Refuse detection (item 18, spec section 4): a reaction stamped UNRESOLVED
     # because a polymer reactant produced no polymer product -- where a
     # non-polymer (gas) product structurally classifies FEATURE against a
@@ -3178,6 +3254,7 @@ ARCHETYPE_TERM_NAMES = {
     int(PolymerFluxArchetype.SCISSION_FRAGMENT): "scission_fragment/1",
     int(PolymerFluxArchetype.UNRESOLVED): "legacy_mu1/1",
     int(PolymerFluxArchetype.DISCRETE_CHIP): "discrete_chip/1",
+    int(PolymerFluxArchetype.VOLATILE_EJECTION): "volatile_ejection/1",
 }
 
 _ARRHENIUS_A_UNITS = {1: "s^-1", 2: "m^3/(mol*s)", 3: "m^6/(mol^2*s)"}
@@ -3237,6 +3314,7 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
     SCI = int(PolymerFluxArchetype.SCISSION_FRAGMENT)
     UNR = int(PolymerFluxArchetype.UNRESOLVED)
     CHIP = int(PolymerFluxArchetype.DISCRETE_CHIP)
+    VE = int(PolymerFluxArchetype.VOLATILE_EJECTION)
 
     for rxn in core_reactions:
         arch = int(getattr(rxn, "polymer_flux_archetype", 0))
@@ -3250,7 +3328,9 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
             arch, unresolved = UNR, True
         elif arch == UNR:
             unresolved = True
-        elif arch in (MIG, SCI) and (src is None or dst is None):
+        elif arch in (MIG, SCI, VE) and (src is None or dst is None):
+            # VOLATILE_EJECTION is cross-pool like MIGRATION: it needs both a
+            # configured source and destination pool, else it runs as legacy.
             arch, unresolved = UNR, True
         elif arch == CHIP and src is None:
             arch, unresolved = UNR, True
@@ -3323,6 +3403,8 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
         }
         if arch == CHIP:
             entry["params"] = {"a": int(getattr(rxn, "polymer_chip_units", 0))}
+        elif arch == VE:
+            entry["params"] = {"eject_units": float(getattr(rxn, "polymer_eject_units", 0.0))}
         entries.append(entry)
     return entries
 
