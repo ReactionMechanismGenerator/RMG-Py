@@ -93,6 +93,7 @@ FLUX_MIGRATION = 2
 FLUX_SCISSION_FRAGMENT = 3
 FLUX_UNRESOLVED = 4
 FLUX_DISCRETE_CHIP = 5
+FLUX_VOLATILE_EJECTION = 6
 
 
 # ======================================================================================
@@ -969,9 +970,15 @@ class HybridPolymerSystem(ReactionSystem):
         # Stamped chip repeat-unit counts (spec 2026-06-10 §4.3); same
         # chain(core, edge) order so the index matches r_idx in the residual.
         self.reaction_chip_units = np.zeros(n_rxn, dtype=np.int32)
+        # Stamped volatile-ejection unit debit a = Sigma(volatile MW) /
+        # source-pool monomer MW (fractional, e.g. ~1.135 for
+        # alpha-methylstyrene off a styrene pool). Same chain(core, edge)
+        # order so the index matches r_idx in the residual.
+        self.reaction_eject_units = np.zeros(n_rxn, dtype=np.float64)
         for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
             self.reaction_flux_archetype[i] = int(getattr(rxn, "polymer_flux_archetype", 0))
             self.reaction_chip_units[i] = int(getattr(rxn, "polymer_chip_units", 0))
+            self.reaction_eject_units[i] = float(getattr(rxn, "polymer_eject_units", 0.0))
         # Item 17 (spec 2026-06-12 SS3(e)): generation-time stamps, captured
         # AFTER the stamp-read loop and BEFORE the init demotion pass
         # (:NONE->UNRESOLVED + unresolvable stamped shapes) mutates the
@@ -1216,12 +1223,13 @@ class HybridPolymerSystem(ReactionSystem):
             if self.reaction_flux_archetype[i] == FLUX_NONE and (src != -1 or dst != -1):
                 self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
                 n_unstamped += 1
-            if ((self.reaction_flux_archetype[i] in (FLUX_MIGRATION, FLUX_SCISSION_FRAGMENT)
+            if ((self.reaction_flux_archetype[i] in (FLUX_MIGRATION, FLUX_SCISSION_FRAGMENT, FLUX_VOLATILE_EJECTION)
                     and (src == -1 or dst == -1))
                     or (self.reaction_flux_archetype[i] == FLUX_DISCRETE_CHIP
                         and src == -1)):
                 # A stamped archetype needs its pool(s) resolved in the
-                # solver: MIGRATION/SCISSION_FRAGMENT need BOTH src and dst
+                # solver: MIGRATION/SCISSION_FRAGMENT/VOLATILE_EJECTION need
+                # BOTH src and dst
                 # (e.g. scission daughters are registered as core Polymer
                 # species but have no pool config yet); DISCRETE_CHIP needs
                 # only src (no dst: complement folds back to the same pool
@@ -2252,6 +2260,49 @@ class HybridPolymerSystem(ReactionSystem):
                             if mu2_ok:
                                 dn_dt[f_idx[2]] -= ev_mol * b2
                                 dn_dt[t_idx[2]] += ev_mol * b2
+                elif arch == FLUX_VOLATILE_EJECTION:
+                    # Volatile ejection (spec 2026-06-2x): a MIGRATION mirror
+                    # A(pool) <=> volatile_gas + B(other pool). The moved chain
+                    # loses `a` = reaction_eject_units backbone units to the
+                    # discrete gas volatile as it lands in the destination
+                    # pool, so the to-leg carries the SAME b0 chains but with
+                    # E[n] shifted by sa (sa = -a forward: chain shrinks
+                    # landing in dst; +a reverse: chain re-grows landing in
+                    # src). from-leg loses the FULL bundle (identical to
+                    # MIGRATION). mu2 shift is the exact quadratic
+                    # (n + sa)^2 - n^2 = 2*sa*n + sa^2; sa*sa == a*a in both
+                    # directions -> (b2 - 2a*b1 + a^2*b0) forward,
+                    # (b2 + 2a*b1 + a^2*b0) reverse. The gas volatile itself is
+                    # credited by the standard section-4 net-rate product path
+                    # (NO gas moles added inside this branch).
+                    src = self.reaction_src_pool[r_idx]
+                    dst = self.reaction_dst_pool[r_idx]
+                    a = float(self.reaction_eject_units[r_idx])
+                    # -1 cannot reach here (init demotes unresolved pools);
+                    # the checks are defensive only (mirror MIGRATION).
+                    if src != -1 and dst != -1 and src != dst:
+                        for ev_rate, from_pool, to_pool, sa in (
+                                (rf, src, dst, -a), (rr, dst, src, +a)):
+                            if ev_rate <= 0.0:
+                                continue
+                            ev_mol = ev_rate * V_rxn
+                            b0, b1, b2, mu2_ok = self._chain_bundle(
+                                from_pool, y, V_poly,
+                                self.is_end_group_reaction[r_idx])
+                            if b0 == 0.0:
+                                continue
+                            f_idx = self.polymer_pools[from_pool].mu_indices
+                            t_idx = self.polymer_pools[to_pool].mu_indices
+                            # from-leg loses the FULL bundle
+                            dn_dt[f_idx[0]] -= ev_mol * b0
+                            dn_dt[f_idx[1]] -= ev_mol * b1
+                            # to-leg gains the a-SHIFTED bundle
+                            dn_dt[t_idx[0]] += ev_mol * b0
+                            dn_dt[t_idx[1]] += ev_mol * (b1 + sa * b0)
+                            if mu2_ok:
+                                dn_dt[f_idx[2]] -= ev_mol * b2
+                                dn_dt[t_idx[2]] += ev_mol * (
+                                    b2 + 2.0 * sa * b1 + a * a * b0)
                 elif arch == FLUX_SCISSION_FRAGMENT:
                     src = self.reaction_src_pool[r_idx]
                     dst = self.reaction_dst_pool[r_idx]

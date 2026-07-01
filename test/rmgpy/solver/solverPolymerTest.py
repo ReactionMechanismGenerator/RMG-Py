@@ -693,6 +693,7 @@ class TestHybridPolymerReactor:
         assert solver_mod.FLUX_SCISSION_FRAGMENT == int(PolymerFluxArchetype.SCISSION_FRAGMENT) == 3
         assert solver_mod.FLUX_UNRESOLVED == int(PolymerFluxArchetype.UNRESOLVED) == 4
         assert solver_mod.FLUX_DISCRETE_CHIP == int(PolymerFluxArchetype.DISCRETE_CHIP) == 5
+        assert solver_mod.FLUX_VOLATILE_EJECTION == int(PolymerFluxArchetype.VOLATILE_EJECTION) == 6
 
     def test_unstamped_proxy_reaction_remaps_to_unresolved(self):
         """
@@ -1474,6 +1475,127 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[2], -r * mu2a / mu1a)         # mu1 applied
         assert dn_dt[3] == 0.0                                # mu2 skipped
         assert dn_dt[7] == 0.0
+
+    # ------------------------------------------------------------------
+    # VOLATILE_EJECTION (archetype 6): a MIGRATION mirror that debits `a`
+    # (= polymer_eject_units, Sigma volatile MW / source monomer MW) on the
+    # destination (to-pool) leg. The from-leg loses the FULL bundle
+    # (identical to MIGRATION); the to-leg gains the SHIFTED bundle, so the
+    # net condensed mu1 change is -a*ev forward / +a*ev reverse (backbone
+    # mass ejected as / restored from the discrete gas volatile, which is
+    # itself credited by the standard section-4 net-rate product path).
+    # ------------------------------------------------------------------
+    def test_volatile_ejection_forward_one_event_shifts_dest_leg(self):
+        """
+        Forward VE one-event: src (A) loses its full length-biased bundle;
+        dst (B) gains the a-shifted bundle. Net condensed Delta mu1 == -a*ev
+        (mass leaves the melt). mu2 legs: src -ev*E[n^2]; dst
+        +ev*(E[n^2] - 2a*E[n] + a^2).
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        mu0a, mu1a, mu2a = 1.0, 5.0, 30.0
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        ev = kf * mu1a                       # site-scaled by A's mu1, V_poly=1
+        mu3a = mu0a * (mu2a / mu1a) ** 3     # 216.0
+        b1 = mu2a / mu1a                     # E[n]  = 6.0
+        b2 = mu3a / mu1a                     # E[n^2]= 43.2
+
+        # src (A) loses the FULL bundle
+        assert np.isclose(dn_dt[1], -ev * 1.0)                 # A mu0
+        assert np.isclose(dn_dt[2], -ev * b1)                  # A mu1
+        assert np.isclose(dn_dt[3], -ev * b2)                  # A mu2 == -ev*E[n^2]
+        # dst (B) gains the a-SHIFTED bundle
+        assert np.isclose(dn_dt[5], +ev * 1.0)                 # B mu0
+        assert np.isclose(dn_dt[6], +ev * (b1 - a))            # B mu1 == ev*(E[n]-a)
+        assert np.isclose(dn_dt[7], +ev * (b2 - 2.0 * a * b1 + a * a))  # B mu2
+        # net condensed conservation: mu0 conserved, mu1 loses exactly a*ev
+        assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-12)
+        assert np.isclose(dn_dt[2] + dn_dt[6], -a * ev)
+
+    def test_volatile_ejection_reverse_one_event_restores_parent(self):
+        """
+        Reverse VE one-event: dst (B) loses its full bundle; src (A, the
+        re-formed parent) gains the +a-shifted bundle. Net condensed Delta
+        mu1 == +a*ev (parent backbone mass restored). Reverse-only isolation:
+        kf zeroed, kb driven directly (mirrors the MIGRATION reverse harness).
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        mu_a = (1.0, 5.0, 30.0)
+        mu_b = (2.0, 4.0, 10.0)
+        rs = _two_pool_rs(rxn, core, mask, mu_a, mu_b)
+        rs.kf[0] = 0.0        # forward off: isolate the reverse leg
+        rs.kb[0] = 0.6
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        # rr = kb * C(proxyB=1), then site-scaled by the REACTANT-pool (A) mu1
+        # (mirrors MIGRATION: reverse site scaling keys on the reactant pool;
+        # the deferred reverse-site question is out of scope here).
+        ev = 0.6 * mu_a[1]                              # 3.0
+        mu3_b = mu_b[0] * (mu_b[2] / mu_b[1]) ** 3      # 31.25
+        bB1 = mu_b[2] / mu_b[1]                         # E[n_dst] = 2.5
+        bB2 = mu3_b / mu_b[1]                           # E[n_dst^2] = 7.8125
+
+        # dst (B) loses its FULL bundle
+        assert np.isclose(dn_dt[5], -ev * 1.0)                 # B mu0
+        assert np.isclose(dn_dt[6], -ev * bB1)                 # B mu1
+        assert np.isclose(dn_dt[7], -ev * bB2)                 # B mu2
+        # src (A, re-formed parent) gains the +a-SHIFTED bundle
+        assert np.isclose(dn_dt[1], +ev * 1.0)                 # A mu0
+        assert np.isclose(dn_dt[2], +ev * (bB1 + a))           # A mu1 == ev*(E[n_dst]+a)
+        assert np.isclose(dn_dt[3], +ev * (bB2 + 2.0 * a * bB1 + a * a))  # A mu2
+        # net condensed conservation: mu1 GAINS exactly a*ev (parent restored)
+        assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-12)
+        assert np.isclose(dn_dt[2] + dn_dt[6], +a * ev)
+
+    def test_volatile_ejection_fractional_a_not_rounded(self):
+        """
+        The stamped fractional a (e.g. 1.135 for alpha-methylstyrene off a
+        styrene pool) must flow verbatim -- NOT rounded to 1. The net
+        condensed mu1 change must equal -1.135*ev, distinguishable from the
+        integer-rounded -1.0*ev.
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        ev = kf * 5.0
+        net_mu1 = dn_dt[2] + dn_dt[6]
+        assert np.isclose(net_mu1, -a * ev)          # exact fractional a
+        assert not np.isclose(net_mu1, -1.0 * ev)    # NOT rounded to 1
+
+    def test_migration_unchanged_by_volatile_ejection_dispatch(self):
+        """
+        Regression guard: an equivalent MIGRATION reaction (archetype 2, no
+        eject_units) still conserves mu1 across pools (net Delta mu1 == 0).
+        The VE branch must not leak an `a`-shift into MIGRATION.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 2   # MIGRATION, eject_units defaults 0.0
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-14)
+        assert np.isclose(dn_dt[2] + dn_dt[6], 0.0, atol=1e-14)
+        assert np.isclose(dn_dt[3] + dn_dt[7], 0.0, atol=1e-14)
 
     def test_discrete_chip_monodisperse_closed_form_both_picks(self):
         """
