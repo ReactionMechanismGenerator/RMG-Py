@@ -4895,6 +4895,7 @@ def _handshake_structures(structure_list, polymer_reactants):
     Returns True iff at least one entry was replaced by a Polymer (the list is
     still mutated in place regardless of the return value).
     """
+    from rmgpy.polymer import clear_polymer_proxy, set_polymer_gas_veto
     replaced = False
     for i, item in enumerate(structure_list):
         if hasattr(item, 'is_polymer') and item.is_polymer:
@@ -4914,4 +4915,19 @@ def _handshake_structures(structure_list, polymer_reactants):
                     break
             except (RuntimeError, ValueError):
                 pass
+        else:
+            # No polymer reactant converted this product to a Polymer (and no
+            # PolymerCrosslinkError propagated -- those exit this function and
+            # reject the reaction upstream). The product stays the original
+            # discrete Molecule/Species, so clear the stale blanket proxy stamp
+            # (family.py:1665) that make_new_species would otherwise OR onto the
+            # solver-visible Species, wrongly counting a genuine gas-phase
+            # volatile as a melt reference-state participant. Clearing alone is
+            # not durable (is_polymer_proxy is a monotonic multi-writer sticky
+            # cache, re-stamped downstream), so ALSO stamp the positive,
+            # durable gas-volatile veto in props -- this is the verdict the
+            # solver reference-state melt gate honors and that survives
+            # Species.copy / dedup.
+            clear_polymer_proxy(item)
+            set_polymer_gas_veto(item)
     return replaced

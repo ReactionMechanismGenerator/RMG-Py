@@ -3179,6 +3179,273 @@ class TestHandshakeStructures:
             f"Second product (gas fragment) should remain a Molecule, got {type(product_list[1])}"
         )
 
+    # ------------------------------------------------------------------
+    # 6b. Stale polymer-proxy tag clearing on retained-discrete products
+    #     (handshake/chip handshake-layer fix)
+    # ------------------------------------------------------------------
+    def test_handshake_clears_proxy_on_discrete_gas_product(self):
+        """
+        family.py:1665 blanket-stamps every product is_polymer_proxy=True when
+        any reactant is a proxy (the PS pool always is). alpha-methylstyrene
+        (C=C(C)c1ccccc1, C9H10) is a genuine discrete gas-phase volatile that
+        create_reacted_copy returns None for, so the handshake KEEPS it a
+        Molecule -- but the stale proxy stamp must be CLEARED so the solver
+        does not count it as a melt reference-state participant. A genuine
+        scission tail in the same product list still becomes a proxy Polymer.
+
+        RED before the fix: the volatile keeps is_polymer_proxy True.
+        """
+        # genuine scission tail -> converts to a SCISSION proxy Polymer
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        tail = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert tail is not None, "test setup: scission tail construction failed"
+
+        # discrete volatile pre-stamped proxy True (simulating family.py:1665)
+        volatile = Molecule(smiles="C=C(C)c1ccccc1")
+        volatile.is_polymer_proxy = True
+        volatile.props["is_polymer_proxy"] = True
+
+        products = [tail.copy(deep=True), volatile]
+        self._handshake(products, [self.ps])
+
+        # genuine tail -> Polymer (still a proxy)
+        assert isinstance(products[0], Polymer), (
+            f"Scission tail should become a Polymer, got {type(products[0])}"
+        )
+        # volatile retained as a discrete Molecule with proxy tag CLEARED
+        assert isinstance(products[1], Molecule)
+        assert not isinstance(products[1], Polymer)
+        assert products[1].is_polymer_proxy is False, (
+            "Retained discrete gas-phase volatile must have its stale "
+            "is_polymer_proxy stamp cleared by the handshake"
+        )
+        assert products[1].props.get("is_polymer_proxy") in (False, None)
+
+    def test_surge_chip_clears_proxy_on_discrete_chip(self):
+        """
+        Chip surgery sub-shape (b) demotes the SCISSION-stamped chip back to a
+        discrete Molecule (undoing its handshake conversion). That demoted
+        discrete chip carries the stale is_polymer_proxy=True stamp inherited
+        from its source Molecule, and must be CLEARED so the chip is not
+        solver-visible as a melt participant.
+
+        RED before the fix: the demoted chip keeps is_polymer_proxy True.
+        """
+        from rmgpy.polymer import surge_chip_products
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert frag is not None
+        # simulate the family.py:1665 blanket stamp on the pre-handshake frag
+        frag.is_polymer_proxy = True
+        frag.props["is_polymer_proxy"] = True
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+
+        products = [frag.copy(deep=True), end_mod]
+        self._handshake(products, [self.ps])
+        assert products[0]._reacted_class == PolymerClass.SCISSION
+
+        a = surge_chip_products(products, self.ps)
+        assert a == 1
+        chip = products[0]
+        assert isinstance(chip, Molecule)
+        assert not isinstance(chip, Polymer)
+        assert chip.is_polymer_proxy is False, (
+            "Demoted discrete chip must have its stale is_polymer_proxy stamp "
+            "cleared by surge_chip_products"
+        )
+        assert chip.props.get("is_polymer_proxy") in (False, None)
+
+    def test_handshake_keeps_proxy_on_polymer_fragment(self):
+        """
+        GUARD (no over-clearing): a genuine scission tail that the handshake
+        DOES convert to a Polymer must keep is_polymer_proxy True -- the clear
+        only fires on products that stay discrete. GREEN before AND after.
+        """
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        tail = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert tail is not None
+        tail.is_polymer_proxy = True
+        tail.props["is_polymer_proxy"] = True
+
+        products = [tail.copy(deep=True)]
+        self._handshake(products, [self.ps])
+        assert isinstance(products[0], Polymer)
+        assert products[0].is_polymer_proxy is True, (
+            "A genuine fragment converted to a Polymer must remain a proxy; "
+            "the handshake clear must not touch it"
+        )
+
+    def test_clear_polymer_proxy_settles_sticky_species_cache(self):
+        """
+        Species.is_polymer_proxy is a sticky lazy-cache property: its getter
+        re-derives True from ANY proxy molecule and re-caches it. The LIVE
+        handshake item is a Species (not a Molecule), so clear_polymer_proxy
+        must clear the constituent molecules BEFORE the species-level flag --
+        otherwise the species _is_polymer_proxy cache re-sticks True off the
+        not-yet-cleared molecules, and make_new_species (model.py) ORs that
+        stale True onto the solver-visible Species (the alpha-methylstyrene
+        reference-state-tripwire leak observed in the live PS run).
+
+        RED before the ordering fix: species stays True; the make_new_species
+        OR stays True.
+        """
+        from rmgpy.species import Species
+        from rmgpy.polymer import clear_polymer_proxy
+
+        sp = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1")])
+        sp.is_polymer_proxy = True  # setter caches True + propagates to molecules
+        assert sp.is_polymer_proxy is True
+        assert sp.molecule[0].is_polymer_proxy is True
+
+        clear_polymer_proxy(sp)
+
+        assert sp.molecule[0].is_polymer_proxy is False, "constituent molecule not cleared"
+        assert sp.is_polymer_proxy is False, (
+            "sticky species cache must settle False after molecules-first clear"
+        )
+        # the exact OR make_new_species performs (model.py:486) must be False
+        assert (sp.molecule[0].is_polymer_proxy or sp.is_polymer_proxy) is False
+
+        # multi-molecule (resonance) species: every molecule + the species clear
+        sp2 = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1"),
+                                Molecule(smiles="C=C(C)c1ccccc1")])
+        sp2.is_polymer_proxy = True
+        clear_polymer_proxy(sp2)
+        assert sp2.is_polymer_proxy is False
+        assert all(m.is_polymer_proxy is False for m in sp2.molecule)
+
+    def test_handshake_sets_gas_veto_on_discrete_gas_product(self):
+        """
+        A genuine discrete gas volatile that the handshake keeps a Molecule
+        (create_reacted_copy -> None) must be stamped with the DURABLE
+        gas-volatile veto in ``props`` -- not merely have its stale proxy tag
+        cleared. Clearing is_polymer_proxy alone is defeated downstream because
+        the flag is a monotonic multi-writer sticky cache (re-stamped by
+        family.py:1665 + the species.py sticky getter). The positive veto in
+        ``props`` survives Species.copy and is never touched by the proxy
+        stamping machinery, so the solver melt gate can honor it.
+
+        RED before the fix: no veto key is set on the retained volatile.
+        """
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        tail = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert tail is not None, "test setup: scission tail construction failed"
+
+        volatile = Molecule(smiles="C=C(C)c1ccccc1")
+        volatile.is_polymer_proxy = True
+        volatile.props["is_polymer_proxy"] = True
+
+        products = [tail.copy(deep=True), volatile]
+        self._handshake(products, [self.ps])
+
+        # genuine tail -> Polymer: must NOT be vetoed (it is a real chain)
+        assert isinstance(products[0], Polymer)
+        assert products[0].props.get(VETO) in (False, None), (
+            "a genuine scission-tail Polymer must not receive the gas veto"
+        )
+        # discrete volatile: durable gas veto SET
+        assert isinstance(products[1], Molecule)
+        assert not isinstance(products[1], Polymer)
+        assert products[1].props.get(VETO) is True, (
+            "retained discrete gas volatile must carry the durable "
+            "polymer_reference_state_gas_veto in props"
+        )
+
+    def test_surge_chip_sets_gas_veto_on_discrete_chip(self):
+        """
+        A demoted discrete chip (surge_chip_products sub-shape b) is a genuine
+        gas-phase fragment; it must carry the durable gas-volatile veto so the
+        solver never counts it as a melt reference-state participant.
+
+        RED before the fix: no veto key on the demoted chip.
+        """
+        from rmgpy.polymer import surge_chip_products
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert frag is not None
+        frag.is_polymer_proxy = True
+        frag.props["is_polymer_proxy"] = True
+        end_mod = self.ps.baseline_proxy.molecule[0].copy(deep=True)
+        radicalize_head_end_group(self.ps, end_mod)
+
+        products = [frag.copy(deep=True), end_mod]
+        self._handshake(products, [self.ps])
+        assert products[0]._reacted_class == PolymerClass.SCISSION
+
+        a = surge_chip_products(products, self.ps)
+        assert a == 1
+        chip = products[0]
+        assert isinstance(chip, Molecule) and not isinstance(chip, Polymer)
+        assert chip.props.get(VETO) is True, (
+            "demoted discrete chip must carry the durable gas-volatile veto"
+        )
+
+    def test_handshake_does_not_veto_polymer_fragment(self):
+        """
+        GUARD (no over-vetoing): a fragment the handshake DOES convert to a
+        Polymer (a real chain) must NOT receive the gas veto -- otherwise a
+        genuine melt chain would be wrongly excluded from the melt sum. GREEN
+        before AND after.
+        """
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO
+
+        head_wing = self.ps._stitch_wing("head")
+        methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+        tail = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+        assert tail is not None
+        tail.is_polymer_proxy = True
+        tail.props["is_polymer_proxy"] = True
+
+        products = [tail.copy(deep=True)]
+        self._handshake(products, [self.ps])
+        assert isinstance(products[0], Polymer)
+        assert products[0].props.get(VETO) in (False, None), (
+            "a Polymer chain must never receive the gas-volatile veto"
+        )
+
+    def test_species_copy_preserves_gas_veto(self):
+        """
+        Contract pin: the durable gas veto lives in ``Species.props``, which
+        ``Species.copy`` deep-copies -- so the verdict survives the copies that
+        defeat both is_polymer_proxy clears and ad-hoc attributes. (Green from
+        the start; documents WHY props is the chosen carrier.)
+        """
+        from rmgpy.species import Species
+        from rmgpy.polymer import (POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO,
+                                   set_polymer_gas_veto)
+
+        sp = Species(molecule=[Molecule(smiles="C=C(C)c1ccccc1")])
+        set_polymer_gas_veto(sp)
+        assert sp.props.get(VETO) is True
+        clone = sp.copy(deep=True)
+        assert clone.props.get(VETO) is True, (
+            "Species.copy must preserve the durable gas veto (props)"
+        )
+
+    def test_gas_veto_key_literal_matches_solver_gate(self):
+        """Literal-drift guard (code-review NIT): the Cython solver melt gate
+        (rmgpy/solver/polymer.pyx) reads the props key as a HARDCODED string
+        literal, not the imported constant. If the Python constant is renamed
+        without updating the pyx, the solver silently stops honoring the veto
+        and the reference-state tripwire returns. Pin the exact literal so that
+        rename fails loudly here.
+        """
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY
+        assert POLYMER_REFERENCE_STATE_GAS_VETO_KEY == "polymer_reference_state_gas_veto", (
+            "the gas-veto props key literal is hardcoded in polymer.pyx's melt "
+            "gate; update both together"
+        )
 
     # ------------------------------------------------------------------
     # 7. Retroene-style scission: closed-shell fragments from proxy

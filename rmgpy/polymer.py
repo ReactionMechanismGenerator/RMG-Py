@@ -1650,6 +1650,12 @@ def surge_chip_products(products, parent: 'Polymer') -> Optional[int]:
             return None  # "chip" is not the smaller piece
         chip_mol = chip_src.copy(deep=True)
         chip_mol.clear_labeled_atoms()
+        # Demoted chip is a discrete gas-phase Molecule, not a Polymer
+        # fold-back -- scrub the stale handshake proxy stamp AND stamp the
+        # durable gas-volatile veto so it is not solver-visible as a melt
+        # participant (see set_polymer_gas_veto).
+        clear_polymer_proxy(chip_mol)
+        set_polymer_gas_veto(chip_mol)
         for i, p in enumerate(products):
             if p is daughter:
                 products[i] = chip_mol
@@ -1669,6 +1675,11 @@ def surge_chip_products(products, parent: 'Polymer') -> Optional[int]:
               if daughter_src is not None else proxy_mw)
     if chip_mol.get_molecular_weight() >= ref_mw:
         return None  # the discrete co-product is not the smaller piece
+    # The discrete co-product chip stays a Molecule (only the daughter is
+    # replaced by a fold-back Polymer below) -- scrub its stale proxy stamp
+    # AND stamp the durable gas-volatile veto (see set_polymer_gas_veto).
+    clear_polymer_proxy(chip_mol)
+    set_polymer_gas_veto(chip_mol)
     fold = parent.copy(deep=True)
     fold._reacted_class = PolymerClass.CHIP
     for i, p in enumerate(products):
@@ -3591,6 +3602,90 @@ def _tag_polymer_proxy(cand: 'Species', *, is_proxy: bool) -> None:
                 m.props = {}
             m.props["is_polymer_proxy"] = is_proxy
             m.is_polymer_proxy = is_proxy
+
+
+def clear_polymer_proxy(obj: Union['Species', Molecule]) -> None:
+    """Clear the ``is_polymer_proxy`` flag on a Molecule or Species.
+
+    Inverse of :func:`_tag_polymer_proxy`. The reaction-generation handshake
+    (``family.py:1665``) blanket-stamps every product ``is_polymer_proxy=True``
+    when any reactant is a proxy (the polymer pool always is). For a product
+    that the polymer machinery does NOT convert to a :class:`Polymer` -- i.e. a
+    genuine discrete gas-phase species or a demoted discrete chip -- that stamp
+    is stale and would wrongly count the species as a melt reference-state
+    participant in the solver. This helper scrubs it: the attribute, the
+    ``props`` entry (if a ``props`` dict exists), and the same on every
+    constituent :class:`Molecule` when ``obj`` is a Species.
+
+    Order matters: clear the constituent molecules FIRST, then the
+    object-level flag LAST. :attr:`Species.is_polymer_proxy` is a sticky
+    lazy-cache property (``species.py``): its setter calls
+    ``propagate_polymer_proxy_to_molecules``, whose getter re-derives ``True``
+    from ANY still-proxy molecule and re-caches it. Clearing the species flag
+    before the molecules would let that getter re-stamp the cache ``True`` off
+    the not-yet-cleared molecules, leaving the species ``_is_polymer_proxy``
+    stuck ``True`` (the molecules then go ``False`` but the cached species flag
+    never re-clears) -- which ``make_new_species`` (model.py) then ORs onto the
+    solver-visible Species. Molecules-first lets the final setter settle the
+    cache to ``False``.
+    """
+    if getattr(obj, "molecule", None):
+        for m in obj.molecule:
+            m.is_polymer_proxy = False
+            if isinstance(getattr(m, "props", None), dict):
+                m.props["is_polymer_proxy"] = False
+    obj.is_polymer_proxy = False
+    if isinstance(getattr(obj, "props", None), dict):
+        obj.props["is_polymer_proxy"] = False
+
+
+#: props key carrying the DURABLE "this is a genuine discrete gas volatile"
+#: verdict. Unlike :attr:`is_polymer_proxy` -- a monotonic multi-writer sticky
+#: cache re-stamped by ``family.py:1665`` and the ``species.py`` sticky getter,
+#: with no authoritative "gas" clear point -- this is a POSITIVE veto set ONCE
+#: at the discrete-product creation point (the polymer handshake / chip
+#: demotion) and never touched by the proxy stamping machinery. It lives in
+#: ``props`` because ``Species.copy`` deep-copies ``props`` (species.py) while
+#: ad-hoc attributes and ``Molecule.props`` are NOT preserved across copies.
+#: The solver reference-state melt gate (``polymer.pyx``) reads it: a species
+#: is a melt tag-branch participant only if proxy AND chain-scale MW AND NOT
+#: this veto -- so a genuine gas volatile that got proxy-contaminated is
+#: correctly excluded from the melt reference-state sum.
+POLYMER_REFERENCE_STATE_GAS_VETO_KEY = "polymer_reference_state_gas_veto"
+
+
+def set_polymer_gas_veto(obj: Union['Species', Molecule]) -> None:
+    """Stamp the durable gas-volatile veto on a Molecule or Species.
+
+    See :data:`POLYMER_REFERENCE_STATE_GAS_VETO_KEY`. Sets the veto in ``props``
+    on ``obj`` and -- when ``obj`` is a Species -- on every constituent
+    :class:`Molecule` too (belt-and-suspenders for the make_new_species path,
+    which may read the verdict off either the incoming object or its molecule).
+    The Species-level ``props`` entry is the load-bearing one: it is the copy of
+    the verdict that survives ``Species.copy``.
+    """
+    if not isinstance(getattr(obj, "props", None), dict):
+        obj.props = {}
+    obj.props[POLYMER_REFERENCE_STATE_GAS_VETO_KEY] = True
+    if getattr(obj, "molecule", None):
+        for m in obj.molecule:
+            if not isinstance(getattr(m, "props", None), dict):
+                m.props = {}
+            m.props[POLYMER_REFERENCE_STATE_GAS_VETO_KEY] = True
+
+
+def has_polymer_gas_veto(obj) -> bool:
+    """Return True if ``obj`` (a Molecule or Species) carries the durable
+    gas-volatile veto in ``props`` (or, for a Species, on any of its
+    molecules). See :data:`POLYMER_REFERENCE_STATE_GAS_VETO_KEY`."""
+    props = getattr(obj, "props", None)
+    if isinstance(props, dict) and props.get(POLYMER_REFERENCE_STATE_GAS_VETO_KEY):
+        return True
+    for m in getattr(obj, "molecule", None) or []:
+        mprops = getattr(m, "props", None)
+        if isinstance(mprops, dict) and mprops.get(POLYMER_REFERENCE_STATE_GAS_VETO_KEY):
+            return True
+    return False
 
 
 def similarity_merge(

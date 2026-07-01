@@ -610,6 +610,15 @@ class HybridPolymerSystem(ReactionSystem):
 
         is_melt = [False] * n_core
         mws = [0.0] * n_core
+        # Backstop census: chain-scale (MW >= window) members whose melt
+        # classification the durable gas veto SUPPRESSED. create_reacted_copy
+        # returns None both for a genuine gas volatile and for a wing-match
+        # FAILURE on a real chain-scale fragment; the veto trusts that None as
+        # authoritative "gas", so a mis-vetoed genuine chain would be silently
+        # dropped from the melt sum instead of loudly refused. Recording +
+        # warning here keeps that case visible for a human without regressing
+        # the alpha-methylstyrene fix (the build no longer refuses).
+        veto_suppressed_chain_scale = []
         for i in range(n_core):
             spc = core_species[i]
             # Input contract: consumer-world species carry no structure
@@ -639,9 +648,55 @@ class HybridPolymerSystem(ReactionSystem):
             # tag-read can. A stale tag on a below-window species simply
             # FAILS the conjunct and is excluded: expected and silent (its
             # gas reference state is CORRECT).
+            #
+            # DURABLE GAS-VOLATILE VETO (rmgpy.polymer): the tag branch keys off
+            # is_polymer_proxy, which is a monotonic multi-writer sticky cache
+            # with no authoritative "gas" clear point -- a genuine discrete gas
+            # volatile (e.g. alpha-methylstyrene) that got proxy-contaminated
+            # and happens to clear the MW window would be wrongly counted as a
+            # melt participant (the reference-state-tripwire leak). The polymer
+            # handshake / chip demotion stamps such a species with a POSITIVE,
+            # durable veto in props (POLYMER_REFERENCE_STATE_GAS_VETO_KEY) that
+            # the proxy stamping machinery never touches; honor it here. C3
+            # mask-lagged chains never receive the veto, so they stay melt.
+            _gas_veto = False
+            _props = getattr(spc, "props", None)
+            if isinstance(_props, dict):
+                # HARDCODED literal must equal rmgpy.polymer
+                # .POLYMER_REFERENCE_STATE_GAS_VETO_KEY -- pinned by
+                # test_gas_veto_key_literal_matches_solver_gate (rename both).
+                _gas_veto = bool(_props.get("polymer_reference_state_gas_veto", False))
+            _proxy_i = bool(getattr(spc, "is_polymer_proxy", False))
             is_melt[i] = ((not mask[i])
-                          or (bool(getattr(spc, "is_polymer_proxy", False))
-                              and mws[i] >= chain_window_kg))
+                          or (_proxy_i
+                              and mws[i] >= chain_window_kg
+                              and not _gas_veto))
+            # The veto is only a backstop concern when it suppressed an
+            # otherwise-melt CHAIN-SCALE tag-branch member (gas-masked, proxy,
+            # MW >= window). A below-window vetoed species would fail the MW
+            # conjunct anyway -- its exclusion is correct and silent.
+            if _gas_veto and _proxy_i and mask[i] and mws[i] >= chain_window_kg:
+                veto_suppressed_chain_scale.append(
+                    (getattr(spc, "label", "?"), mws[i]))
+
+        # Preserve the reference-state backstop for the ambiguous handshake
+        # false-None case (code-review IMPORTANT #1): a genuine chain-scale
+        # fragment the wing-matcher missed is now gas-vetoed rather than
+        # refused, so surface it for a human. NOT a refusal -- census only.
+        self.gas_veto_census = list(veto_suppressed_chain_scale)
+        if veto_suppressed_chain_scale:
+            logging.warning(
+                "THERMO REFERENCE-STATE GAS VETO: %d chain-scale (MW >= "
+                "%.4f kg/mol window) product(s) were excluded from the melt "
+                "reference-state by the durable gas-volatile veto: %s. This is "
+                "correct for genuine gas volatiles (e.g. alpha-methylstyrene); "
+                "if any is actually a polymer chain, it is a handshake "
+                "create_reacted_copy false-None (wing-match failure), NOT a "
+                "thermo problem -- investigate the handshake, do not touch "
+                "reference states.",
+                len(veto_suppressed_chain_scale), chain_window_kg,
+                ", ".join("%s (%.1f g/mol)" % (lbl, mw * 1000.0)
+                          for lbl, mw in veto_suppressed_chain_scale))
 
         offenders = []
         for rxn in core_reactions:

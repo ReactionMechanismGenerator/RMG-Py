@@ -2521,6 +2521,115 @@ class TestThermoReferenceStateTripwire:
         assert any("THERMO REFERENCE-STATE CENSUS" in r.getMessage()
                    for r in caplog.records)
 
+    def test_gas_volatile_veto_excludes_from_melt_tag_branch(self, caplog):
+        """Spec §5.1 (durable gas-volatile veto): a genuine discrete gas
+        volatile (alpha-methylstyrene, C9H10, ~118 g/mol) reaches the solver
+        gas-masked (gas_mask=True) but proxy-TAGGED and chain-scale, so the
+        melt-gate TAG branch (proxy AND MW>=window) would wrongly count it as a
+        melt reference-state participant. Because is_polymer_proxy is a
+        monotonic multi-writer sticky cache with no gas authority, the durable
+        verdict lives in ``Species.props['polymer_reference_state_gas_veto']``
+        (set once at the discrete-product creation point, copied by
+        Species.copy, never touched by the proxy stamping machinery). The gate
+        must honor it: TAG branch = proxy AND MW>=window AND NOT veto.
+
+        Live shape (the PS-run crash): melt reactant [chain] vs melt products
+        [volatile, tail] -> dn_melt=+1 -> one uncancelled Sackur-Tetrode term
+        -> U~11 decades -> REFUSE. With the volatile vetoed it drops out of the
+        product melt set -> dn_melt=0 -> benign, builds.
+
+        RED before the gate honors the veto: the vetoed build still REFUSES
+        (the veto is ignored). The no-veto control refuses in BOTH pre/post
+        (it is the liveness pin proving the scenario genuinely refuses).
+        """
+        import logging
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO_KEY
+
+        def _build(set_veto):
+            # one-pool core: melt proxy A + mu0/1/2 dummies (indices 0-3), a
+            # condensed melt chain TAIL (index 4, gas_mask=False), and the
+            # discrete gas volatile VOL (index 5, gas_mask=True, proxy-TAGGED,
+            # chain-scale MW 0.118 >= window -> only the TAG branch can make it
+            # melt).
+            a = _spc("CCCC", "A")
+            a_mu0, a_mu1, a_mu2 = (_spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
+                                   _spc("C#N", "A_mu2"))
+            tail = _spc("CCCCCCCC", "TAIL")
+            vol = _spc("C=C(C)c1ccccc1", "VOL")
+            vol.is_polymer_proxy = True
+            if set_veto:
+                vol.props[VETO_KEY] = True
+            for s in (a, a_mu0, a_mu1, a_mu2, tail, vol):
+                s.thermo = _trivial_nasa(_GAV_COMMENT)
+            core = [a, a_mu0, a_mu1, a_mu2, tail, vol]
+            mask = np.array([False, False, False, False, False, True], dtype=bool)
+            rxn = Reaction(reactants=[a], products=[vol, tail], **_REV_KIN)
+            # pool config -> chain_window = (104 + 10)/1000 = 0.114 kg/mol,
+            # just below the volatile's 0.118 so the TAG branch admits it.
+            return _refstate_rs(core, [rxn], mask,
+                                [_gate_pool_config(104.0)], {"A": (1.0, 5.0, 30.0)})
+
+        # LIVENESS PIN: without the veto the scenario genuinely refuses
+        # (proves the volatile-as-melt asymmetry is the cause).
+        with pytest.raises(ValueError, match="unpaired reference-state"):
+            _build(set_veto=False)
+
+        # THE red assertion: WITH the durable veto the volatile is excluded
+        # from the melt sum -> the build SUCCEEDS (no refusal).
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            rs = _build(set_veto=True)
+        assert rs.reference_state_max_decades < 3.0, (
+            "durable gas-volatile veto must exclude the volatile from the melt "
+            "tag branch so the reference-state term stays paired/benign"
+        )
+
+    def test_gas_veto_suppression_of_chain_scale_member_is_logged(self, caplog):
+        """Backstop (code-review IMPORTANT #1): the veto silences the
+        reference-state tripwire for a CHAIN-SCALE (MW >= window) product,
+        because create_reacted_copy returns None both for a genuine gas
+        volatile AND for a wing-match FAILURE on a real chain-scale fragment.
+        The gate cannot distinguish them (alpha-MS is itself above the window),
+        so a handshake false-None on a genuine chain would be silently dropped
+        from the melt sum instead of loudly refused. To preserve the backstop,
+        the gate must emit a visible census/warning naming any chain-scale
+        member whose melt classification the veto suppressed -- so a human can
+        catch a mis-vetoed real chain even though the build no longer refuses.
+
+        RED before the census logic: no such warning is emitted.
+        """
+        import logging
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO_KEY
+
+        a = _spc("CCCC", "A")
+        a_mu0, a_mu1, a_mu2 = (_spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
+                               _spc("C#N", "A_mu2"))
+        tail = _spc("CCCCCCCC", "TAIL")
+        vol = _spc("C=C(C)c1ccccc1", "VOL")       # chain-scale MW 0.118 >= window
+        vol.is_polymer_proxy = True
+        vol.props[VETO_KEY] = True
+        for s in (a, a_mu0, a_mu1, a_mu2, tail, vol):
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [a, a_mu0, a_mu1, a_mu2, tail, vol]
+        mask = np.array([False, False, False, False, False, True], dtype=bool)
+        rxn = Reaction(reactants=[a], products=[vol, tail], **_REV_KIN)
+
+        with caplog.at_level(logging.WARNING):
+            rs = _refstate_rs(core, [rxn], mask,
+                              [_gate_pool_config(104.0)], {"A": (1.0, 5.0, 30.0)})
+
+        # a visible notice naming the suppressed chain-scale species
+        assert any("GAS VETO" in r.getMessage() and "VOL" in r.getMessage()
+                   for r in caplog.records), (
+            "veto suppression of a chain-scale melt member must be logged so a "
+            "handshake false-None on a genuine chain surfaces for a human"
+        )
+        # and the census is recorded on the engine for programmatic inspection
+        assert any("VOL" in str(entry)
+                   for entry in getattr(rs, "gas_veto_census", [])), (
+            "the suppressed chain-scale member must be recorded in gas_veto_census"
+        )
+
     def test_override_knob_builds_and_still_logs_census(self, caplog):
         """Spec §8.1/§7: the SAME genuine-unpaired fixture as the refusal
         test builds with allow_unpaired_reference_state=True; the census and

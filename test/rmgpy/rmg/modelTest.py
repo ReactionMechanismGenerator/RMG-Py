@@ -418,6 +418,88 @@ class TestCoreEdgeReactionModel:
         assert len(cerm.species_dict) == len(spcs) - 1
         assert len(cerm.index_species_dict) == len(spcs) - 1
 
+    def test_make_new_species_transfers_gas_volatile_veto(self):
+        """
+        The durable gas-volatile veto (props key set by the polymer handshake
+        on a discrete gas product) must reach the solver-visible Species.
+        make_new_species builds/returns that Species, so it must transfer the
+        veto (1) onto a NEWLY created Species and (2) onto an already-existing
+        Species when a later duplicate carries the veto -- dedup short-circuits
+        before the proxy logic, so without an explicit transfer the verdict is
+        dropped (the trap that defeated the earlier clear-based fixes).
+
+        RED before the fix: neither the new nor the deduped Species carries the
+        veto key.
+        """
+        from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO
+
+        # (1) NEW species: incoming molecule carries the veto in props
+        cerm = CoreEdgeReactionModel()
+        spc = Species().from_smiles("C=C(C)c1ccccc1")
+        spc.props[VETO] = True
+        made, _ = cerm.make_new_species(spc)
+        assert made.props.get(VETO) is True, (
+            "make_new_species must transfer the gas veto onto a new Species"
+        )
+
+        # (2) EXISTING species: first register WITHOUT veto, then a duplicate
+        # WITH veto must stamp the already-existing (solver-visible) Species.
+        cerm = CoreEdgeReactionModel()
+        first = Species().from_smiles("C=C(C)c1ccccc1")
+        made1, is_new1 = cerm.make_new_species(first)
+        assert is_new1
+        assert made1.props.get(VETO) in (False, None)
+        dup = Species().from_smiles("C=C(C)c1ccccc1")
+        dup.props[VETO] = True
+        made2, is_new2 = cerm.make_new_species(dup)
+        assert is_new2 is False, "duplicate should dedup to the existing species"
+        assert made2 is made1, "dedup must return the existing Species object"
+        assert made1.props.get(VETO) is True, (
+            "make_new_species must transfer the veto onto the existing "
+            "(deduped) Species -- else the verdict is lost at first-write-wins"
+        )
+
+    def test_polymer_never_acquires_gas_veto_via_make_new_species(self):
+        """
+        Load-bearing invariant guard (code-review IMPORTANT #2): a Polymer
+        (a melt chain) must NEVER acquire the durable gas-volatile veto through
+        make_new_species. Correctness of the whole veto scheme rests on melt
+        chains being Polymers routed to _register_polymer (fingerprint dedup)
+        BEFORE the Species veto-transfer logic runs -- so a genuine chain can
+        never be false-vetoed and silently dropped from the melt sum. This test
+        pins that guarantee: even with a stray veto contaminating the chain's
+        constituent molecule, the registered Polymer's props stay veto-free.
+
+        RED if a future refactor removes the Polymer early-return and routes
+        chains through the molecule-reading veto-transfer path.
+        """
+        from rmgpy.polymer import (Polymer,
+                                   POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO)
+
+        cerm = CoreEdgeReactionModel()
+        poly = Polymer(
+            label="PS", monomer="[CH2][CH]c1ccccc1",
+            end_groups=["[CH3]", "[H]"], cutoff=3,
+            Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+        )
+        # Contaminate the chain's constituent molecule(s) with a stray veto,
+        # the exact hazard a molecule-dedup refactor would expose.
+        for m in getattr(poly, "molecule", None) or []:
+            if not isinstance(getattr(m, "props", None), dict):
+                m.props = {}
+            m.props[VETO] = True
+
+        made, _ = cerm._register_polymer(poly, generate_thermo=False)
+        # Route through the public entry too (Polymers early-return to
+        # _register_polymer before any veto logic).
+        made2, _ = cerm.make_new_species(poly, generate_thermo=False)
+        for obj in (made, made2):
+            assert isinstance(obj, Polymer)
+            assert obj.props.get(VETO) in (False, None), (
+                "a Polymer melt chain must never acquire the gas-volatile veto "
+                "through make_new_species / _register_polymer"
+            )
+
     def test_append_unreactive_structure(self):
         """
         Test that CERM.make_new_species correctly recognizes a non-representative resonance structure

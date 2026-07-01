@@ -461,11 +461,26 @@ class CoreEdgeReactionModel:
 
         molecule.clear_labeled_atoms()
 
+        # Durable gas-volatile veto (rmgpy.polymer): a positive verdict set by
+        # the polymer handshake / chip demotion on a genuine discrete gas
+        # volatile that got proxy-contaminated. It must reach the
+        # solver-visible Species. Read it off the incoming object/molecule and
+        # transfer it below -- onto BOTH a newly created Species AND an existing
+        # (deduped) Species, since dedup short-circuits before the proxy logic
+        # (first-write-wins would otherwise drop the verdict).
+        from rmgpy.polymer import (has_polymer_gas_veto,
+                                   POLYMER_REFERENCE_STATE_GAS_VETO_KEY)
+        _gas_veto = has_polymer_gas_veto(object) or has_polymer_gas_veto(molecule)
+
         # If desired, check to ensure that the species is new; return the
         # existing species if not new
         if check_existing:
             spec = self.check_for_existing_species(molecule)
             if spec is not None:
+                if _gas_veto:
+                    if not isinstance(getattr(spec, "props", None), dict):
+                        spec.props = {}
+                    spec.props[POLYMER_REFERENCE_STATE_GAS_VETO_KEY] = True
                 return spec, False
 
         # If we're here then we're ready to make the new species
@@ -485,6 +500,8 @@ class CoreEdgeReactionModel:
         spec = Species(label=label, molecule=[molecule], reactive=reactive, thermo=thermo, transport_data=transport)
         if molecule.is_polymer_proxy or object.is_polymer_proxy:
             spec.is_polymer_proxy = True
+        if _gas_veto:
+            spec.props[POLYMER_REFERENCE_STATE_GAS_VETO_KEY] = True
         spec.generate_resonance_structures()
 
         if check_decay:
