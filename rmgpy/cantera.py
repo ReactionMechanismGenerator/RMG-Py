@@ -342,11 +342,14 @@ def species_to_dict(species, species_list):
     if 'X' in atom_dict:
         del atom_dict['X']
 
-    # Calculate 'E' based on net charge: E = Z - charge
+    # Calculate 'E' based on net charge: E = Z - charge.
+    # Only emitted for charged species: standard atomic weights already include
+    # electrons, so an 'E' entry on a neutral species would double-count the
+    # electron mass in Cantera (inflating MW by ~Z*m_e per species).
     # --- FIX: Use .get() to avoid KeyError if 'X' or other unknown symbols are processed
-    Z_mol = sum(NUMBER_BY_SYMBOL.get(atom, 0) * count for atom, count in atom_dict.items())
     charge = mol.get_net_charge()
-    if 'E' not in atom_dict:  # Don't double count if E is explicit
+    if charge != 0 and 'E' not in atom_dict:  # Don't double count if E is explicit
+        Z_mol = sum(NUMBER_BY_SYMBOL.get(atom, 0) * count for atom, count in atom_dict.items())
         atom_dict['E'] = Z_mol - charge
 
     # Remove E if 0 to keep it clean

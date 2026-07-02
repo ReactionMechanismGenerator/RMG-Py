@@ -119,6 +119,37 @@ class TestCanteraWriter:
         # Diameter should be in meters (SI)
         assert np.isclose(d['transport']['diameter'], 3.0e-10)
 
+    def test_species_to_dict_neutral_has_no_e_entry(self):
+        """Neutral species must not carry an 'E' pseudo-element in composition.
+
+        Cantera prices 'E' at the electron mass on top of standard atomic
+        weights (which already include electrons), so an 'E' entry on a
+        neutral species inflates its molecular weight by ~Z*m_e.
+        """
+        sp = self._create_dummy_species("styrene", "C=Cc1ccccc1", index=1)
+        d = species_to_dict(sp, [sp])
+
+        assert 'E' not in d['composition']
+
+        # Regression: the Cantera-priced MW from the exported composition
+        # must match the RMG molecular weight (styrene: 104.15 g/mol).
+        # Tolerance: RMG and Cantera atomic-weight tables differ by ~3e-3 g/mol
+        # for styrene, while the 'E' double-count inflates by ~3.1e-2 g/mol
+        # (56 * m_e). 1e-2 sits between the two with 3x margin on each side.
+        ct_mw = ct.Species('tmp', {k: float(v) for k, v in d['composition'].items()}).molecular_weight
+        rmg_mw = sp.molecule[0].get_molecular_weight() * 1000.0  # kg/mol -> g/mol
+        assert abs(ct_mw - rmg_mw) < 1e-2
+
+    def test_species_to_dict_charged_keeps_e_entry(self):
+        """Charged species keep the 'E' electron-count entry (E = Z - charge)."""
+        anion = self._create_dummy_species("OHm", "[OH-]", index=1)
+        d = species_to_dict(anion, [anion])
+        assert d['composition']['E'] == 10  # Z = 8 + 1 = 9, charge = -1
+
+        cation = self._create_dummy_species("NH4p", "[NH4+]", index=2)
+        d = species_to_dict(cation, [cation])
+        assert d['composition']['E'] == 10  # Z = 7 + 4 = 11, charge = +1
+
     def test_reaction_to_dict_arrhenius(self):
         """Test standard Arrhenius kinetics."""
         r = self._create_dummy_species("R", "[CH2]O", index=1)
