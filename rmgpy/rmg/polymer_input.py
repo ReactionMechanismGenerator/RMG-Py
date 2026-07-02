@@ -35,7 +35,8 @@ from typing import Dict, List, Optional, Union
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
-from rmgpy.solver.polymer import HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig
+from rmgpy.solver.polymer import (HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig,
+                                  validate_radical_qssa_unzip)
 from rmgpy.species import Species
 
 
@@ -866,6 +867,7 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
                 k_unzip=spc.k_unzip,
                 proxy_species=spc,
                 monomer_product=getattr(spc, 'monomer_product_species', None),
+                radical_qssa_unzip=getattr(spc, 'radical_qssa_unzip', None),
             )
             pools.append(pool)
         else:
@@ -911,6 +913,18 @@ class PolymerPool(object):
                                    This parameter drives the physical flux ('handshake')
                                    from the statistical tail into the explicit oligomers.
                                    Defaults to 0.0.
+        radical_qssa_unzip (dict, optional): Radical QSSA unzip channel config
+                                   (initiation/depropagation/termination Arrhenius
+                                   triplets {A, n, Ea} -- SI convention: A [s^-1]
+                                   unimolecular, [m^3 mol^-1 s^-1] bimolecular
+                                   termination, Ea [J/mol] -- plus optional
+                                   transfer triplet, efficiency, monomer_yield,
+                                   basis). Validated + normalized in to_config
+                                   via validate_radical_qssa_unzip. Requires a
+                                   resolvable monomer_product and is mutually
+                                   exclusive with k_unzip > 0. M1: stored on the
+                                   solver config but inert (no RHS reads it
+                                   until the M2 rate law). Defaults to None.
     """
     def __init__(self,
                  label: str,
@@ -922,6 +936,7 @@ class PolymerPool(object):
                  k_unzip: float = 0.0,
                  proxy_species: Optional[Species] = None,
                  monomer_product: Optional[Species] = None,
+                 radical_qssa_unzip: Optional[dict] = None,
                  ):
         self.label = label
         self.xs = xs
@@ -934,6 +949,7 @@ class PolymerPool(object):
         # Real reactive species (e.g. styrene) that chain-unzip releases into the
         # melt. Distinct from `monomer` (the repeat-unit Molecule used for mass).
         self.monomer_product = monomer_product
+        self.radical_qssa_unzip = radical_qssa_unzip
 
     def to_config(self, spc_map):
         """
@@ -995,6 +1011,35 @@ class PolymerPool(object):
                 f"mass silently un-conserved. Define monomer_product (the real monomer "
                 f"species released on unzip) or set k_unzip=0.")
 
+        # Radical-QSSA unzip channel (M1: config + validation only; nothing in
+        # the solver residual reads it until the M2 rate law). Normalize +
+        # validate the dict shape (field rules live in
+        # validate_radical_qssa_unzip, the shared single source of truth),
+        # then enforce the two cross-invariants this layer can resolve:
+        # a released-monomer emission target must exist (the channel reuses
+        # the pool's existing monomer_product routing -- no new routing
+        # field), and the channel is mutually exclusive with the lumped
+        # k_unzip representation (double-count guard).
+        qssa_channel = None
+        if self.radical_qssa_unzip is not None:
+            qssa_channel = validate_radical_qssa_unzip(self.label, self.radical_qssa_unzip)
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {self.label}: radical_qssa_unzip is configured but no "
+                    f"monomer_product resolves for this pool. The QSSA unzip channel "
+                    f"releases monomer through the pool's existing monomer routing; "
+                    f"without an emission target the depropagated repeat units would "
+                    f"leave the condensed phase silently un-conserved. Define "
+                    f"monomer_product (the real monomer species released on unzip) "
+                    f"or remove radical_qssa_unzip.")
+            if self.k_unzip > 0.0:
+                raise ValueError(
+                    f"Pool {self.label}: radical_qssa_unzip is configured AND "
+                    f"k_unzip={self.k_unzip:g} > 0. These are two representations of "
+                    f"the SAME chain-end depropagation channel and are mutually "
+                    f"exclusive on a pool (enabling both would double-count the unzip "
+                    f"flux). Set k_unzip=0 or remove radical_qssa_unzip.")
+
         # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot AND the
         #    reference-state tripwire chain_window (spec 2026-06-10 §3, same idiom
         #    as Polymer.monomer_mw_g_mol). self.monomer is normally a Molecule (the
@@ -1023,7 +1068,8 @@ class PolymerPool(object):
             monomer_poly_index=monomer_idx,
             monomer_mw_g_mol=monomer_mw_g_mol,
             k_scission=self.k_scission,
-            k_unzip=self.k_unzip
+            k_unzip=self.k_unzip,
+            radical_qssa_unzip=qssa_channel
         )
 
 
@@ -1083,6 +1129,16 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
         # the config at 0.0, which drags max(monomer_mw over pools) -> 0 and
         # collapses the reference-state tripwire chain_window to the bare slack,
         # leaking small gas scission fragments into the melt sum.
+        #
+        # DECISION (radical_qssa_unzip cascade milestone, not yet implemented):
+        # spawned scission daughters WILL inherit the parent pool's
+        # radical_qssa_unzip channel (deep-copied) -- same monomer chemistry
+        # and monomer_mw imply the same elementary initiation/depropagation/
+        # termination constants. Until the daughter-config milestone wires
+        # that inheritance here (channel + monomer_poly_index routing), a
+        # derived daughter config is built channel-free: a QSSA parent's
+        # daughters silently lack the degradation channel. Gap is deliberate
+        # and visible at this site.
         configs.append(PolymerPoolConfig(
             label=b,
             xs=spc.cutoff,

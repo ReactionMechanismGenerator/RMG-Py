@@ -66,6 +66,7 @@ from rmgpy.rmg.reactionmechanismsimulator_reactors import (
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
+from rmgpy.solver.polymer import validate_radical_qssa_unzip
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.solver.termination import (
@@ -257,6 +258,7 @@ def polymer(label: str,
             k_scission: float = 0.0,
             discrete_dp_threshold: int = 4,
             monomer_product: Optional[Union[Molecule, str]] = None,
+            radical_qssa_unzip: Optional[dict] = None,
             ):
     """
     Helper function exposed in the input file to define a Polymer Pool.
@@ -289,6 +291,25 @@ def polymer(label: str,
                                as a reactive core species in the polymer melt phase so the
                                unzip flux feeds genuine downstream chemistry. Requires
                                k_unzip > 0 to have any effect. Default None (no release).
+        radical_qssa_unzip (dict): Radical QSSA unzip channel config, e.g.
+            radical_qssa_unzip=dict(
+                initiation=dict(A=1e15, n=0.0, Ea=3e5),
+                depropagation=dict(A=1e13, n=0.0, Ea=8e4),
+                termination=dict(A=1e8, n=0.0, Ea=1e4),
+            )
+            Mandatory blocks: initiation, depropagation, termination (Arrhenius
+            triplets {A, n, Ea}; SI convention -- A [s^-1] for the unimolecular
+            initiation/depropagation, [m^3 mol^-1 s^-1] for the bimolecular
+            termination; Ea [J/mol]; units are convention, not dimensionally
+            enforced). Optional: transfer (triplet, default None; accepted and
+            stored), efficiency and monomer_yield (floats in (0, 1], default
+            1.0), basis (only 'backbone_bonds_mu1_minus_mu0' is allowed;
+            forward-compat pin). Requires monomer_product (the channel reuses
+            the pool's monomer routing) and is mutually exclusive with
+            k_unzip > 0 (the two depropagation representations would
+            double-count). M1: validated + stored but INERT -- the QSSA rate
+            law lands in M2; nothing in the solver residual reads it yet.
+            Default None (channel absent).
     """
     # HARD ERROR at deck-read time: a negative k_unzip is not a valid rate
     # constant. Every unzip consumer downstream (solver residual, guards) is
@@ -313,6 +334,39 @@ def polymer(label: str,
             f"released species, leaving mass silently un-conserved. "
             f"Define monomer_product or set k_unzip=0.")
 
+    # HARD ERRORS at deck-read time for the radical QSSA unzip channel (M1:
+    # config + validation only; the solver stores the channel inert until the
+    # M2 rate law). Field rules (finite A/n/Ea, A > 0, Ea >= 0, efficiency/
+    # monomer_yield in (0, 1], pinned basis) live in
+    # validate_radical_qssa_unzip -- the shared single source of truth, also
+    # enforced by PolymerPool.to_config and the solver's
+    # validate_configuration; re-raise as InputError for deck feedback. The
+    # cross-invariants mirror the k_unzip guards above: the channel releases
+    # monomer through the pool's existing monomer_product routing (without it
+    # the depropagated mass would leave the condensed phase silently
+    # un-conserved), and it is mutually exclusive with k_unzip > 0 (two
+    # representations of the same depropagation channel would double-count).
+    if radical_qssa_unzip is not None:
+        try:
+            radical_qssa_unzip = validate_radical_qssa_unzip(label, radical_qssa_unzip)
+        except ValueError as e:
+            raise InputError(str(e))
+        if monomer_product is None:
+            raise InputError(
+                f"Polymer pool '{label}': radical_qssa_unzip requires monomer_product "
+                f"(the real monomer released on depropagation, e.g. 'C=Cc1ccccc1' for "
+                f"styrene) -- the channel reuses the pool's monomer routing, and "
+                f"without an emission target the released mass would leave the "
+                f"condensed phase silently un-conserved. Define monomer_product or "
+                f"remove radical_qssa_unzip.")
+        if k_unzip > 0.0:
+            raise InputError(
+                f"Polymer pool '{label}': radical_qssa_unzip and k_unzip={k_unzip:g} "
+                f"> 0 are mutually exclusive -- they are two representations of the "
+                f"SAME chain-end depropagation channel, and enabling both would "
+                f"double-count the unzip flux. Set k_unzip=0 or remove "
+                f"radical_qssa_unzip.")
+
     poly_obj = Polymer(
         label=label,
         monomer=monomer,
@@ -324,6 +378,7 @@ def polymer(label: str,
         moments=moments,
         k_unzip=k_unzip,
         k_scission=k_scission,
+        radical_qssa_unzip=radical_qssa_unzip,
         discrete_dp_threshold=discrete_dp_threshold,
     )
 

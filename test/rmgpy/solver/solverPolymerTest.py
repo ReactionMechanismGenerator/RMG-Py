@@ -194,6 +194,24 @@ def _one_pool_gate_rs(rxn, core, mask, moments, monomer_mw_g_mol=28.0):
     return rs
 
 
+def _qssa_triplet(A=1.0e13, n=0.0, Ea=1.0e5):
+    """Arrhenius triplet for the radical_qssa_unzip channel (SI convention:
+    A [s^-1] unimolecular / [m^3 mol^-1 s^-1] bimolecular, Ea [J/mol])."""
+    return dict(A=A, n=n, Ea=Ea)
+
+
+def _qssa_channel(**overrides):
+    """A valid minimal radical_qssa_unzip channel config (mandatory blocks
+    only; efficiency/monomer_yield/basis/transfer left to their defaults)."""
+    ch = dict(
+        initiation=_qssa_triplet(A=1.0e15, Ea=3.0e5),
+        depropagation=_qssa_triplet(A=1.0e13, Ea=8.0e4),
+        termination=_qssa_triplet(A=1.0e8, Ea=1.0e4),
+    )
+    ch.update(overrides)
+    return ch
+
+
 class TestHybridPolymerReactor:
     def test_phase_pure_gas_reaction_molar_balance(self):
         """
@@ -1124,6 +1142,286 @@ class TestHybridPolymerReactor:
         with pytest.raises(ValueError,
                            match=r"poly.*not a valid rate constant"):
             rxn_system.initialize_model(core_species, [], [], [])
+
+    # ------------------------------------------------------------------
+    # radical_qssa_unzip channel (M1: config + validation only, NO RHS)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _qssa_system(pool):
+        """(rxn_system, core_species) for the radical_qssa_unzip solver-invariant
+        fixtures: gas N2, one pool with mu at 1-3 and a condensed released-
+        monomer slot M at 4."""
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        M = _spc("C", "M")  # condensed released-monomer slot
+        core_species = [Inert, Mu0, Mu1, Mu2, M]
+        gas_species_mask = np.array([True, False, False, False, False],
+                                    dtype=bool)
+        rxn_system = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=gas_species_mask, constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            termination=[],
+        )
+        return rxn_system, core_species
+
+    def test_pool_config_radical_qssa_unzip_field_defaults_to_none(self):
+        """PolymerPoolConfig grows a radical_qssa_unzip field (plain dict,
+        default None). Channel-absent pools are completely unaffected."""
+        pool = PolymerPoolConfig(label="poly", xs=2,
+                                 explicit_dp_to_species_index={},
+                                 mu_indices=(1, 2, 3))
+        assert pool.radical_qssa_unzip is None
+
+    def test_initialize_model_accepts_valid_radical_qssa_unzip_config(self):
+        """GREEN path: a valid channel dict (mandatory Arrhenius triplets,
+        defaults for efficiency/monomer_yield/basis/transfer) with the monomer
+        routing wired and k_unzip=0 passes validate_configuration and is
+        stored on the pool config."""
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=_qssa_channel(),
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        assert rxn_system.polymer_pools[0].radical_qssa_unzip["initiation"] == \
+            dict(A=1.0e15, n=0.0, Ea=3.0e5)
+
+    def test_initialize_model_rejects_qssa_channel_without_monomer_index(self):
+        """SOLVER-LEVEL INVARIANT (last line of defense; a directly-constructed
+        PolymerPoolConfig bypasses the deck helper and to_config): a channel
+        without a released-monomer emission target would, once the M2 rate law
+        lands, let depropagated mass leave the condensed phase un-conserved.
+        Refuse it now, naming the pool."""
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None, k_unzip=0.0,
+            radical_qssa_unzip=_qssa_channel(),
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+
+        with pytest.raises(ValueError,
+                           match=r"poly.*radical_qssa_unzip.*un-conserved"):
+            rxn_system.initialize_model(core_species, [], [], [])
+
+    def test_initialize_model_rejects_qssa_channel_with_positive_k_unzip(self):
+        """Double-counting guard at the solver invariant: radical_qssa_unzip
+        and k_unzip > 0 are two representations of the same chain-end
+        depropagation channel -- mutually exclusive on a pool."""
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.1,
+            radical_qssa_unzip=_qssa_channel(),
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+
+        with pytest.raises(ValueError, match=r"poly.*mutually exclusive"):
+            rxn_system.initialize_model(core_species, [], [], [])
+
+    @pytest.mark.parametrize("channel, pattern", [
+        pytest.param({k: v for k, v in _qssa_channel().items()
+                      if k != "depropagation"},
+                     r"poly.*radical_qssa_unzip.*missing.*depropagation",
+                     id="missing-depropagation-block"),
+        pytest.param(_qssa_channel(initiation=_qssa_triplet(A=float("nan"))),
+                     r"poly.*initiation.*A.*not finite", id="nan-A"),
+        pytest.param(_qssa_channel(termination=_qssa_triplet(Ea=float("inf"))),
+                     r"poly.*termination.*Ea.*not finite", id="inf-Ea"),
+        pytest.param(_qssa_channel(depropagation=_qssa_triplet(A=0.0)),
+                     r"poly.*depropagation.*A.*> 0", id="zero-A"),
+        pytest.param(_qssa_channel(efficiency=0.0),
+                     r"poly.*efficiency.*\(0, 1\]", id="efficiency-zero"),
+        pytest.param(_qssa_channel(monomer_yield=1.5),
+                     r"poly.*monomer_yield.*\(0, 1\]",
+                     id="monomer-yield-above-one"),
+        pytest.param(_qssa_channel(basis="chain_ends_mu0"),
+                     r"poly.*basis.*backbone_bonds_mu1_minus_mu0",
+                     id="bad-basis"),
+    ])
+    def test_initialize_model_rejects_malformed_qssa_channel(self, channel,
+                                                             pattern):
+        """The solver re-validates the channel dict itself (finite A/n/Ea,
+        A > 0, Ea >= 0, efficiency/monomer_yield in (0, 1], pinned basis):
+        a directly-constructed PolymerPoolConfig bypasses every upstream
+        guard."""
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=channel,
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+
+        with pytest.raises(ValueError, match=pattern):
+            rxn_system.initialize_model(core_species, [], [], [])
+
+    def test_radical_qssa_unzip_config_is_rhs_inert(self):
+        """M1 contract: the stored channel has ZERO RHS/solver-dynamics effect.
+        Two systems identical except for the channel dict (k_scission drives
+        real moment dynamics in both) must produce bitwise-identical residuals;
+        the rate law only lands in M2."""
+        pool_kwargs = dict(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4,
+            k_scission=0.3, k_unzip=0.0,
+        )
+        rs_off, core_off = self._qssa_system(
+            PolymerPoolConfig(**pool_kwargs))
+        rs_on, core_on = self._qssa_system(
+            PolymerPoolConfig(radical_qssa_unzip=_qssa_channel(),
+                              **pool_kwargs))
+        rs_off.initialize_model(core_off, [], [], [])
+        rs_on.initialize_model(core_on, [], [], [])
+
+        dn_off = rs_off.residual(0.0, rs_off.y, np.zeros_like(rs_off.y))[0]
+        dn_on = rs_on.residual(0.0, rs_on.y, np.zeros_like(rs_on.y))[0]
+
+        assert np.any(dn_off != 0.0)  # the fixture has live dynamics
+        assert np.array_equal(dn_on, dn_off)
+
+    def test_direct_construction_qssa_channel_is_normalized_in_storage(self):
+        """NORMALIZED CONSUMPTION (review round 21, finding 1): a directly
+        constructed PolymerPoolConfig carrying a minimal-but-valid channel
+        (mandatory blocks only) must come OUT of initialize_model with the
+        validator's normalized form stored back on the config -- defaults
+        filled (efficiency=1.0, monomer_yield=1.0, transfer=None, basis
+        pinned), numerics coerced to float. Without the store-back, future
+        RHS code doing q['efficiency'] would KeyError on exactly this
+        (validation-passing) config."""
+        minimal = dict(
+            initiation=dict(A=1e15, n=0, Ea=3e5),
+            depropagation=dict(A=1e13, n=0, Ea=8e4),
+            termination=dict(A=1e8, n=0, Ea=1e4),
+        )
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=minimal,
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        q = rxn_system.polymer_pools[0].radical_qssa_unzip
+        assert q["efficiency"] == 1.0
+        assert q["monomer_yield"] == 1.0
+        assert q["transfer"] is None
+        assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+        assert q["initiation"] == dict(A=1.0e15, n=0.0, Ea=3.0e5)
+        assert isinstance(q["initiation"]["n"], float)
+
+    def test_qssa_stored_channel_does_not_alias_caller_dict(self):
+        """NORMALIZED CONSUMPTION, aliasing half: the stored normalized
+        structure must be defensively deep-copied -- mutating the caller's
+        original dict (or its nested triplets) after initialize_model must
+        not reach the stored config."""
+        ch = _qssa_channel()
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=ch,
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        ch["initiation"]["A"] = float("nan")
+        ch["efficiency"] = -1.0
+
+        q = rxn_system.polymer_pools[0].radical_qssa_unzip
+        assert q["initiation"]["A"] == 1.0e15
+        assert q["efficiency"] == 1.0
+
+    def test_qssa_channel_flattened_into_solver_state(self):
+        """M2 prep (review round 21, finding 1, flattening half): the
+        validated+normalized channel is flattened into solver-owned per-pool
+        flat arrays at initialization. The M2 rate law will read ONLY these
+        arrays, never the dict."""
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=_qssa_channel(
+                transfer=_qssa_triplet(A=2.0e7, n=0.5, Ea=5.0e4),
+                efficiency=0.8, monomer_yield=0.9),
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        rs = rxn_system
+        assert rs.qssa_enabled.shape == (1,)
+        assert rs.qssa_enabled[0] == 1
+        assert rs.qssa_ki_A[0] == 1.0e15
+        assert rs.qssa_ki_n[0] == 0.0
+        assert rs.qssa_ki_Ea[0] == 3.0e5
+        assert rs.qssa_kdp_A[0] == 1.0e13
+        assert rs.qssa_kdp_n[0] == 0.0
+        assert rs.qssa_kdp_Ea[0] == 8.0e4
+        assert rs.qssa_kt_A[0] == 1.0e8
+        assert rs.qssa_kt_n[0] == 0.0
+        assert rs.qssa_kt_Ea[0] == 1.0e4
+        assert rs.qssa_efficiency[0] == 0.8
+        assert rs.qssa_monomer_yield[0] == 0.9
+        assert rs.qssa_has_transfer[0] == 1
+        assert rs.qssa_ktr_A[0] == 2.0e7
+        assert rs.qssa_ktr_n[0] == 0.5
+        assert rs.qssa_ktr_Ea[0] == 5.0e4
+
+    def test_qssa_flattened_state_channel_absent_pool(self):
+        """A channel-absent pool flattens to the disabled/default row:
+        enabled=0, all Arrhenius slots 0, efficiency/monomer_yield 1 (inert
+        defaults), has_transfer=0."""
+        pool = PolymerPoolConfig(label="poly", xs=2,
+                                 explicit_dp_to_species_index={},
+                                 mu_indices=(1, 2, 3))
+        rxn_system, core_species = self._qssa_system(pool)
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        rs = rxn_system
+        assert rs.qssa_enabled[0] == 0
+        assert rs.qssa_ki_A[0] == 0.0
+        assert rs.qssa_kdp_A[0] == 0.0
+        assert rs.qssa_kt_A[0] == 0.0
+        assert rs.qssa_has_transfer[0] == 0
+        assert rs.qssa_ktr_A[0] == 0.0
+        assert rs.qssa_efficiency[0] == 1.0
+        assert rs.qssa_monomer_yield[0] == 1.0
+
+    def test_qssa_dict_mutation_after_initialize_cannot_reach_solver_state(self):
+        """MUTATION BYPASS (review round 21, finding 2): the nested dict is
+        mutable behind the frozen dataclass. With the flattened solver state,
+        post-initialization dict mutation is harmless -- corrupt the stored
+        dict aggressively and PROVE the flattened arrays (the only thing the
+        M2 rate law will read) are unchanged."""
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=_qssa_channel(),
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+        rxn_system.initialize_model(core_species, [], [], [])
+        rs = rxn_system
+
+        snapshot = {name: getattr(rs, name).copy() for name in (
+            "qssa_enabled", "qssa_ki_A", "qssa_ki_n", "qssa_ki_Ea",
+            "qssa_kdp_A", "qssa_kdp_n", "qssa_kdp_Ea",
+            "qssa_kt_A", "qssa_kt_n", "qssa_kt_Ea",
+            "qssa_efficiency", "qssa_monomer_yield",
+            "qssa_has_transfer", "qssa_ktr_A", "qssa_ktr_n", "qssa_ktr_Ea")}
+
+        q = rs.polymer_pools[0].radical_qssa_unzip
+        q["termination"]["A"] = float("nan")
+        q["initiation"]["Ea"] = -1.0e9
+        q["efficiency"] = float("inf")
+        q["transfer"] = dict(A=float("nan"), n=0.0, Ea=0.0)
+
+        for name, before in snapshot.items():
+            assert np.array_equal(getattr(rs, name), before), name
+        assert rs.qssa_kt_A[0] == 1.0e8
+        assert math.isfinite(rs.qssa_efficiency[0])
 
     def test_initialize_model_accepts_two_pools(self):
         """Synthetic multi-pool: HybridPolymerSystem must accept and resolve

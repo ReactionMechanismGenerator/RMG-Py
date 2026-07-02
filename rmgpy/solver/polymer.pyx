@@ -52,6 +52,7 @@ Units:
 
 from __future__ import annotations
 
+import copy
 import itertools
 import logging
 import math
@@ -100,6 +101,144 @@ FLUX_VOLATILE_EJECTION = 6
 # DATA CONFIGURATION
 # ======================================================================================
 
+# Pinned basis string for the radical QSSA unzip channel (forward-compat pin):
+# the M2 rate law will count initiation sites from the pool's backbone-bond
+# count (mu1 - mu0). Any other basis is rejected until a rate law that
+# consumes it actually ships, so a deck cannot silently request semantics
+# that do not exist yet.
+RADICAL_QSSA_UNZIP_BASIS = "backbone_bonds_mu1_minus_mu0"
+
+_RADICAL_QSSA_ARRHENIUS_KEYS = ("A", "n", "Ea")
+_RADICAL_QSSA_MANDATORY_BLOCKS = ("initiation", "depropagation", "termination")
+_RADICAL_QSSA_ALLOWED_KEYS = frozenset(
+    _RADICAL_QSSA_MANDATORY_BLOCKS
+    + ("transfer", "efficiency", "monomer_yield", "basis"))
+
+
+def _validate_qssa_arrhenius_triplet(pool_label, block_name, triplet):
+    """Validate one radical_qssa_unzip Arrhenius block {A, n, Ea}; return it
+    normalized to plain floats.
+
+    Rules (from day one, unlike the legacy k_unzip scalar): every value must
+    be a real number and FINITE (NaN/inf rejected explicitly), A > 0,
+    Ea >= 0, n any finite float. Raises ValueError naming the pool and the
+    offending block/key.
+    """
+    if not isinstance(triplet, dict):
+        raise ValueError(
+            f"Pool {pool_label}: radical_qssa_unzip block '{block_name}' must "
+            f"be a dict {{A, n, Ea}}, got {type(triplet).__name__}.")
+    missing = [k for k in _RADICAL_QSSA_ARRHENIUS_KEYS if k not in triplet]
+    extra = sorted(set(triplet) - set(_RADICAL_QSSA_ARRHENIUS_KEYS))
+    if missing or extra:
+        raise ValueError(
+            f"Pool {pool_label}: radical_qssa_unzip block '{block_name}' must "
+            f"have exactly the keys {{A, n, Ea}}; missing {missing or 'none'}, "
+            f"unknown {extra or 'none'}.")
+    out = {}
+    for key in _RADICAL_QSSA_ARRHENIUS_KEYS:
+        val = triplet[key]
+        if isinstance(val, bool) or not isinstance(val, (int, float)):
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip {block_name}.{key}="
+                f"{val!r} must be a number.")
+        val = float(val)
+        if not math.isfinite(val):
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip {block_name}.{key}="
+                f"{val!r} is not finite (NaN/inf are rejected).")
+        out[key] = val
+    if out["A"] <= 0.0:
+        raise ValueError(
+            f"Pool {pool_label}: radical_qssa_unzip {block_name}.A={out['A']:g} "
+            f"must be > 0 (a non-positive pre-exponential is not a valid rate "
+            f"constant).")
+    if out["Ea"] < 0.0:
+        raise ValueError(
+            f"Pool {pool_label}: radical_qssa_unzip {block_name}.Ea="
+            f"{out['Ea']:g} must be >= 0 [J/mol].")
+    return out
+
+
+def validate_radical_qssa_unzip(pool_label, channel):
+    """Validate a radical_qssa_unzip channel config dict and return it
+    normalized (defaults filled, all numerics coerced to float).
+
+    This is the single source of truth for the channel's FIELD rules, shared
+    by the deck helper (rmgpy/rmg/input.py, re-raised as InputError),
+    PolymerPool.to_config (rmgpy/rmg/polymer_input.py) and the solver's own
+    validate_configuration (last line of defense: a directly-constructed
+    PolymerPoolConfig bypasses both upstream layers). The per-layer CROSS
+    invariants (resolvable monomer routing; mutual exclusion with k_unzip > 0)
+    stay with the callers, whose field names differ.
+
+    Channel contract (M1; the QSSA rate law lands in M2 -- until then the
+    stored config is inert, nothing in the residual reads it):
+
+    - ``initiation``, ``depropagation``, ``termination``: mandatory Arrhenius
+      triplets ``{A, n, Ea}``. SI units BY CONVENTION, not dimensionally
+      enforced: A [s^-1] for the unimolecular blocks (initiation,
+      depropagation), A [m^3 mol^-1 s^-1] for the bimolecular termination
+      block; Ea [J/mol]; n dimensionless. All values finite; A > 0; Ea >= 0.
+    - ``transfer``: optional Arrhenius triplet (default None). Accepted and
+      stored under the same finite/positivity rules; no rate law yet.
+    - ``efficiency`` (f_i) and ``monomer_yield`` (y_m): floats in (0, 1],
+      default 1.0.
+    - ``basis``: must equal RADICAL_QSSA_UNZIP_BASIS (default; forward-compat
+      pin).
+
+    Raises ValueError naming the pool on any violation.
+    """
+    if not isinstance(channel, dict):
+        raise ValueError(
+            f"Pool {pool_label}: radical_qssa_unzip must be a dict, got "
+            f"{type(channel).__name__}.")
+    unknown = sorted(set(channel) - _RADICAL_QSSA_ALLOWED_KEYS)
+    if unknown:
+        raise ValueError(
+            f"Pool {pool_label}: radical_qssa_unzip has unknown key(s) "
+            f"{unknown}; allowed keys are {sorted(_RADICAL_QSSA_ALLOWED_KEYS)}.")
+
+    normalized = {}
+    for block in _RADICAL_QSSA_MANDATORY_BLOCKS:
+        if block not in channel:
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip is missing the "
+                f"mandatory Arrhenius block '{block}' (required blocks: "
+                f"{list(_RADICAL_QSSA_MANDATORY_BLOCKS)}).")
+        normalized[block] = _validate_qssa_arrhenius_triplet(
+            pool_label, block, channel[block])
+
+    transfer = channel.get("transfer", None)
+    normalized["transfer"] = (
+        None if transfer is None
+        else _validate_qssa_arrhenius_triplet(pool_label, "transfer", transfer))
+
+    for name in ("efficiency", "monomer_yield"):
+        val = channel.get(name, 1.0)
+        if isinstance(val, bool) or not isinstance(val, (int, float)):
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip {name}={val!r} must "
+                f"be a number.")
+        val = float(val)
+        if not math.isfinite(val) or not (0.0 < val <= 1.0):
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip {name}={val!r} must "
+                f"be a finite float in (0, 1].")
+        normalized[name] = val
+
+    basis = channel.get("basis", RADICAL_QSSA_UNZIP_BASIS)
+    if basis != RADICAL_QSSA_UNZIP_BASIS:
+        raise ValueError(
+            f"Pool {pool_label}: radical_qssa_unzip basis={basis!r} is not "
+            f"supported; the only allowed basis is "
+            f"'{RADICAL_QSSA_UNZIP_BASIS}' (forward-compat pin: other bases "
+            f"are rejected until a rate law that consumes them ships).")
+    normalized["basis"] = basis
+
+    return normalized
+
+
 @dataclass(frozen=True)
 class PolymerPoolConfig:
     """
@@ -127,6 +266,18 @@ class PolymerPoolConfig:
     # This parameter sets the timescale for both the default recession chemistry
     # (n -> n-1) AND the physical handshake flux across the boundary xs.
     k_unzip: float = 0.0
+
+    # Radical QSSA unzip channel (M1: config + validation ONLY -- nothing in
+    # the residual reads this yet; the QSSA rate law lands in M2). Normalized
+    # dict per validate_radical_qssa_unzip: {initiation, depropagation,
+    # termination: {A, n, Ea}, transfer: {A, n, Ea} | None, efficiency,
+    # monomer_yield: float in (0, 1], basis: RADICAL_QSSA_UNZIP_BASIS}.
+    # Units BY CONVENTION (documented, not dimensionally enforced): A [s^-1]
+    # unimolecular (initiation, depropagation), [m^3 mol^-1 s^-1] bimolecular
+    # (termination); Ea [J/mol]. Mutually exclusive with k_unzip > 0
+    # (double-count guard) and requires monomer_poly_index (the channel
+    # reuses the pool's existing monomer routing -- no new routing field).
+    radical_qssa_unzip: Optional[Dict[str, object]] = None
 
     # Custom Kinetics Hook
     # f(T, P, mu0, mu1, mu2, mu3) -> (dmu0_dt, dmu1_dt, dmu2_dt, small_species_sources)
@@ -574,6 +725,48 @@ class HybridPolymerSystem(ReactionSystem):
                     f"monomer_poly_index (the released monomer's core index) or "
                     f"set k_unzip=0.")
 
+            # Radical-QSSA unzip channel invariants (M1: the channel is inert
+            # -- nothing in the residual reads it until the M2 rate law -- but
+            # the solver is the LAST line of defense, same rationale as the
+            # k_unzip guards above: a directly-constructed PolymerPoolConfig
+            # bypasses the deck helper and PolymerPool.to_config, so the
+            # solver re-validates the channel shape itself).
+            if pool.radical_qssa_unzip is not None:
+                # CONSUME the validator's normalized return and store it back
+                # (review round 21, finding 1): a directly-constructed
+                # PolymerPoolConfig with a minimal-but-valid channel would
+                # otherwise pass validation but stay UN-normalized in storage
+                # (missing efficiency/monomer_yield/transfer/basis keys), so
+                # any future q["efficiency"] read would KeyError. The config
+                # is a frozen dataclass, so the store-back uses
+                # object.__setattr__ (the standard frozen-dataclass idiom; no
+                # prior precedent in this codebase). deepcopy makes the stored
+                # structure defensively independent of every caller-provided
+                # sub-dict (finding 2's aliasing half): post-hoc mutation of
+                # the caller's dict cannot reach the stored config.
+                normalized_qssa = validate_radical_qssa_unzip(
+                    pool.label, pool.radical_qssa_unzip)
+                object.__setattr__(pool, 'radical_qssa_unzip',
+                                   copy.deepcopy(normalized_qssa))
+                if pool.monomer_poly_index is None:
+                    raise ValueError(
+                        f"Pool {pool.label}: radical_qssa_unzip is configured "
+                        f"but monomer_poly_index is None. The QSSA unzip "
+                        f"channel releases monomer through the pool's existing "
+                        f"monomer routing; without an emission target the "
+                        f"depropagated repeat units would leave the condensed "
+                        f"phase silently un-conserved. Wire monomer_poly_index "
+                        f"(the released monomer's core index) or remove "
+                        f"radical_qssa_unzip.")
+                if pool.k_unzip > 0.0:
+                    raise ValueError(
+                        f"Pool {pool.label}: radical_qssa_unzip is configured "
+                        f"AND k_unzip={pool.k_unzip:g} > 0. These are two "
+                        f"representations of the SAME chain-end depropagation "
+                        f"channel and are mutually exclusive on a pool "
+                        f"(enabling both would double-count the unzip flux). "
+                        f"Set k_unzip=0 or remove radical_qssa_unzip.")
+
         for mt in self.mass_transfer:
             if not (0 <= mt.poly_index < n_core):
                 raise ValueError(f"Mass transfer poly_index {mt.poly_index} out of range.")
@@ -593,6 +786,78 @@ class HybridPolymerSystem(ReactionSystem):
         if overlap:
             raise ValueError(f"Configuration Error: Moment indices {overlap} appear in reaction stoichiometry. "
                              f"Moments must evolve only via tail_kinetics.")
+
+        # Flatten the (now validated + normalized) radical_qssa_unzip channels
+        # into solver-owned per-pool flat arrays. Runs AFTER the per-pool loop
+        # above so every stored channel dict is guaranteed normalized.
+        self._flatten_radical_qssa_state()
+
+    def _flatten_radical_qssa_state(self):
+        """Flatten each pool's validated+normalized radical_qssa_unzip channel
+        into solver-owned per-pool flat numpy arrays (review round 21,
+        finding 1 -- the M2-prep half; finding 2's mutation-bypass closure).
+
+        Contract:
+        - Populated ONLY here, on the initialize_model -> validate_configuration
+          path, from the normalized dict validate_configuration just stored.
+        - The M2 QSSA rate law will read ONLY these arrays, NEVER the dict.
+          Once flattening has run, mutating the (mutable) nested dict behind
+          the frozen PolymerPoolConfig is harmless to solver dynamics: the
+          arrays are the solver's sole source of truth for the channel.
+        - M1: NOTHING in the residual/RHS reads these yet (pinned by the
+          bitwise residual-equality test); they are inert state.
+
+        Layout (index = pool position in self.polymer_pools):
+        - qssa_enabled[i] (int8): 1 iff the pool has a channel configured.
+        - qssa_ki_A/n/Ea[i]: initiation Arrhenius triplet (A [s^-1]).
+        - qssa_kdp_A/n/Ea[i]: depropagation triplet (A [s^-1]).
+        - qssa_kt_A/n/Ea[i]: termination triplet (A [m^3 mol^-1 s^-1]).
+        - qssa_efficiency[i], qssa_monomer_yield[i]: f_i, y_m in (0, 1]
+          (default 1.0 on channel-absent pools -- the inert value).
+        - qssa_has_transfer[i] (int8) + qssa_ktr_A/n/Ea[i]: optional transfer
+          triplet; zeros when absent.
+        Disabled rows keep zero Arrhenius slots: every M2 consumer must gate
+        on qssa_enabled, never on A != 0.
+        """
+        n_pools = len(self.polymer_pools)
+        self.qssa_enabled = np.zeros(n_pools, dtype=np.int8)
+        self.qssa_ki_A = np.zeros(n_pools, dtype=float)
+        self.qssa_ki_n = np.zeros(n_pools, dtype=float)
+        self.qssa_ki_Ea = np.zeros(n_pools, dtype=float)
+        self.qssa_kdp_A = np.zeros(n_pools, dtype=float)
+        self.qssa_kdp_n = np.zeros(n_pools, dtype=float)
+        self.qssa_kdp_Ea = np.zeros(n_pools, dtype=float)
+        self.qssa_kt_A = np.zeros(n_pools, dtype=float)
+        self.qssa_kt_n = np.zeros(n_pools, dtype=float)
+        self.qssa_kt_Ea = np.zeros(n_pools, dtype=float)
+        self.qssa_efficiency = np.ones(n_pools, dtype=float)
+        self.qssa_monomer_yield = np.ones(n_pools, dtype=float)
+        self.qssa_has_transfer = np.zeros(n_pools, dtype=np.int8)
+        self.qssa_ktr_A = np.zeros(n_pools, dtype=float)
+        self.qssa_ktr_n = np.zeros(n_pools, dtype=float)
+        self.qssa_ktr_Ea = np.zeros(n_pools, dtype=float)
+
+        for i, pool in enumerate(self.polymer_pools):
+            q = pool.radical_qssa_unzip
+            if q is None:
+                continue
+            self.qssa_enabled[i] = 1
+            self.qssa_ki_A[i] = q["initiation"]["A"]
+            self.qssa_ki_n[i] = q["initiation"]["n"]
+            self.qssa_ki_Ea[i] = q["initiation"]["Ea"]
+            self.qssa_kdp_A[i] = q["depropagation"]["A"]
+            self.qssa_kdp_n[i] = q["depropagation"]["n"]
+            self.qssa_kdp_Ea[i] = q["depropagation"]["Ea"]
+            self.qssa_kt_A[i] = q["termination"]["A"]
+            self.qssa_kt_n[i] = q["termination"]["n"]
+            self.qssa_kt_Ea[i] = q["termination"]["Ea"]
+            self.qssa_efficiency[i] = q["efficiency"]
+            self.qssa_monomer_yield[i] = q["monomer_yield"]
+            if q["transfer"] is not None:
+                self.qssa_has_transfer[i] = 1
+                self.qssa_ktr_A[i] = q["transfer"]["A"]
+                self.qssa_ktr_n[i] = q["transfer"]["n"]
+                self.qssa_ktr_Ea[i] = q["transfer"]["Ea"]
 
     def _reference_state_tripwire(self, core_species, core_reactions):
         """Build-time thermo reference-state tripwire (spec 2026-06-11).

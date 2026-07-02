@@ -4843,6 +4843,305 @@ def test_pool_to_config_rejects_negative_k_unzip():
         pool.to_config(spc_map)
 
 
+# ---------------------------------------------------------------------------
+# radical_qssa_unzip channel (M1: config + validation only, NO RHS effect)
+# ---------------------------------------------------------------------------
+
+
+def _qssa_triplet(A=1.0e13, n=0.0, Ea=1.0e5):
+    """Arrhenius triplet for the radical_qssa_unzip channel (SI convention:
+    A [s^-1] unimolecular / [m^3 mol^-1 s^-1] bimolecular, Ea [J/mol])."""
+    return dict(A=A, n=n, Ea=Ea)
+
+
+def _qssa_channel(**overrides):
+    """A valid minimal radical_qssa_unzip channel config (mandatory blocks
+    only; efficiency/monomer_yield/basis/transfer left to their defaults)."""
+    ch = dict(
+        initiation=_qssa_triplet(A=1.0e15, Ea=3.0e5),
+        depropagation=_qssa_triplet(A=1.0e13, Ea=8.0e4),
+        termination=_qssa_triplet(A=1.0e8, Ea=1.0e4),
+    )
+    ch.update(overrides)
+    return ch
+
+
+def _qssa_pool(channel, k_unzip=0.0, wire_monomer_product=True):
+    """PolymerPool + spc_map fixture for the radical_qssa_unzip to_config
+    tests. The released-monomer routing reuses the pool's EXISTING
+    monomer_product field (design contract: no new routing field)."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    core = list(mu)
+    mp = None
+    if wire_monomer_product:
+        mp = Species(label="styrene", molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+        core.append(mp)
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=k_unzip, monomer_product=mp,
+                       radical_qssa_unzip=channel)
+    return pool, {s: i for i, s in enumerate(core)}
+
+
+def test_polymer_stores_radical_qssa_unzip_and_copy_preserves_it():
+    """Layer-2 attribute: the Polymer object carries the channel config as
+    passive storage (validation lives in the deck helper / to_config / solver),
+    and copy() must preserve it -- like k_unzip/k_scission, losing it on copy
+    would silently disable the pool's degradation channel."""
+    ch = _qssa_channel()
+    poly = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                   end_groups=['[CH3]', '[H]'], cutoff=3,
+                   Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                   radical_qssa_unzip=ch)
+    assert poly.radical_qssa_unzip == ch
+    assert poly.copy(deep=True).radical_qssa_unzip == ch
+
+
+def test_polymer_copy_deep_copies_radical_qssa_unzip():
+    """COPY ALIASING (review round 21, finding 3): copy() must deep-copy the
+    channel dict, not shallow-assign it. Copies aliasing the same nested dict
+    means mutating one Polymer's channel silently rewrites every copy's
+    (including the spawned-daughter configs that will inherit it)."""
+    poly = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                   end_groups=['[CH3]', '[H]'], cutoff=3,
+                   Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                   radical_qssa_unzip=_qssa_channel())
+    for cp in (poly.copy(), poly.copy(deep=True)):
+        assert cp.radical_qssa_unzip is not poly.radical_qssa_unzip
+        poly.radical_qssa_unzip["initiation"]["A"] = 999.0
+        poly.radical_qssa_unzip["efficiency"] = 0.123
+        assert cp.radical_qssa_unzip["initiation"]["A"] == 1.0e15
+        assert "efficiency" not in cp.radical_qssa_unzip
+        # restore for the second iteration
+        poly.radical_qssa_unzip["initiation"]["A"] = 1.0e15
+        del poly.radical_qssa_unzip["efficiency"]
+
+
+def test_polymer_radical_qssa_unzip_defaults_to_none():
+    """Regression: a Polymer built without the channel stays channel-free,
+    through copy() too."""
+    poly = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                   end_groups=['[CH3]', '[H]'], cutoff=3,
+                   Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    assert poly.radical_qssa_unzip is None
+    assert poly.copy(deep=True).radical_qssa_unzip is None
+
+
+def test_pool_to_config_roundtrips_radical_qssa_unzip():
+    """Valid channel round-trip: to_config validates + normalizes the dict and
+    stores it on PolymerPoolConfig with defaults filled (efficiency=1.0,
+    monomer_yield=1.0, pinned basis, transfer=None), reusing the pool's
+    existing monomer_product routing (monomer_poly_index; NO new routing
+    field). M1 contract: the config is validated but INERT (no RHS reads)."""
+    pool, spc_map = _qssa_pool(_qssa_channel())
+
+    cfg = pool.to_config(spc_map)
+
+    q = cfg.radical_qssa_unzip
+    assert q is not None
+    assert q["initiation"] == dict(A=1.0e15, n=0.0, Ea=3.0e5)
+    assert q["depropagation"] == dict(A=1.0e13, n=0.0, Ea=8.0e4)
+    assert q["termination"] == dict(A=1.0e8, n=0.0, Ea=1.0e4)
+    assert q["efficiency"] == 1.0
+    assert q["monomer_yield"] == 1.0
+    assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+    assert q["transfer"] is None
+    assert cfg.monomer_poly_index == 3  # existing routing reused
+    assert cfg.k_unzip == 0.0
+
+
+def test_pool_to_config_radical_qssa_unzip_explicit_optionals_and_transfer():
+    """Explicit efficiency/monomer_yield/basis/transfer values survive
+    normalization (transfer is accepted and stored -- same finite/positivity
+    rules, no rate law yet)."""
+    ch = _qssa_channel(efficiency=0.6, monomer_yield=0.9,
+                       basis="backbone_bonds_mu1_minus_mu0",
+                       transfer=_qssa_triplet(A=5.0e6, n=0.5, Ea=2.0e4))
+    pool, spc_map = _qssa_pool(ch)
+
+    q = pool.to_config(spc_map).radical_qssa_unzip
+
+    assert q["efficiency"] == 0.6
+    assert q["monomer_yield"] == 0.9
+    assert q["transfer"] == dict(A=5.0e6, n=0.5, Ea=2.0e4)
+
+
+def test_pool_to_config_channel_absent_stays_none():
+    """Regression: a channel-absent pool (here a legal k_unzip-only pool) is
+    completely unaffected -- radical_qssa_unzip stays None on its config."""
+    pool, spc_map = _qssa_pool(None, k_unzip=0.5)
+
+    cfg = pool.to_config(spc_map)
+
+    assert cfg.radical_qssa_unzip is None
+    assert cfg.k_unzip == 0.5
+    assert cfg.monomer_poly_index == 3
+
+
+_QSSA_BAD_CHANNELS = [
+    pytest.param({k: v for k, v in _qssa_channel().items() if k != "termination"},
+                 r"Pool P.*radical_qssa_unzip.*missing.*termination",
+                 id="missing-termination-block"),
+    pytest.param(_qssa_channel(initiation=_qssa_triplet(A=float("nan"))),
+                 r"Pool P.*initiation.*A.*not finite", id="nan-A"),
+    pytest.param(_qssa_channel(termination=_qssa_triplet(Ea=float("inf"))),
+                 r"Pool P.*termination.*Ea.*not finite", id="inf-Ea"),
+    pytest.param(_qssa_channel(initiation=_qssa_triplet(n=float("inf"))),
+                 r"Pool P.*initiation.*n.*not finite", id="inf-n"),
+    pytest.param(_qssa_channel(depropagation=_qssa_triplet(A=0.0)),
+                 r"Pool P.*depropagation.*A.*> 0", id="zero-A"),
+    pytest.param(_qssa_channel(depropagation=_qssa_triplet(A=-1.0e13)),
+                 r"Pool P.*depropagation.*A.*> 0", id="negative-A"),
+    pytest.param(_qssa_channel(initiation=_qssa_triplet(Ea=-5.0)),
+                 r"Pool P.*initiation.*Ea.*>= 0", id="negative-Ea"),
+    pytest.param(_qssa_channel(initiation=dict(A=1.0e13, n=0.0)),
+                 r"Pool P.*initiation.*Ea", id="triplet-missing-Ea"),
+    pytest.param(_qssa_channel(efficiency=0.0),
+                 r"Pool P.*efficiency.*\(0, 1\]", id="efficiency-zero"),
+    pytest.param(_qssa_channel(efficiency=1.5),
+                 r"Pool P.*efficiency.*\(0, 1\]", id="efficiency-above-one"),
+    pytest.param(_qssa_channel(monomer_yield=0.0),
+                 r"Pool P.*monomer_yield.*\(0, 1\]", id="monomer-yield-zero"),
+    pytest.param(_qssa_channel(monomer_yield=1.5),
+                 r"Pool P.*monomer_yield.*\(0, 1\]", id="monomer-yield-above-one"),
+    pytest.param(_qssa_channel(basis="chain_ends_mu0"),
+                 r"Pool P.*basis.*backbone_bonds_mu1_minus_mu0", id="bad-basis"),
+    pytest.param(_qssa_channel(transfer=_qssa_triplet(A=float("nan"))),
+                 r"Pool P.*transfer.*A.*not finite", id="nan-transfer-A"),
+    pytest.param(_qssa_channel(bogus_key=1.0),
+                 r"Pool P.*radical_qssa_unzip.*unknown key", id="unknown-key"),
+]
+
+
+@pytest.mark.parametrize("channel, pattern", _QSSA_BAD_CHANNELS)
+def test_pool_to_config_rejects_invalid_radical_qssa_unzip(channel, pattern):
+    """Field validation at config assembly: every A/n/Ea must be FINITE
+    (NaN/inf rejected explicitly -- this channel gets finite checks from day
+    one), A > 0, Ea >= 0; efficiency/monomer_yield in (0, 1]; basis pinned to
+    'backbone_bonds_mu1_minus_mu0' (forward-compat pin)."""
+    pool, spc_map = _qssa_pool(channel)
+    with pytest.raises(ValueError, match=pattern):
+        pool.to_config(spc_map)
+
+
+def test_pool_to_config_rejects_qssa_channel_without_monomer_product():
+    """Channel present without a resolvable monomer product = hard error: the
+    QSSA unzip channel releases monomer through the pool's existing monomer
+    routing; without an emission target the depropagated repeat units would
+    leave the condensed phase silently un-conserved (same failure class as the
+    k_unzip guard above)."""
+    pool, spc_map = _qssa_pool(_qssa_channel(), wire_monomer_product=False)
+    with pytest.raises(ValueError, match=r"Pool P.*radical_qssa_unzip.*un-conserved"):
+        pool.to_config(spc_map)
+
+
+def test_pool_to_config_rejects_qssa_channel_with_positive_k_unzip():
+    """Double-counting guard: radical_qssa_unzip and k_unzip > 0 are two
+    representations of the SAME chain-end depropagation channel and are
+    mutually exclusive on a pool."""
+    pool, spc_map = _qssa_pool(_qssa_channel(), k_unzip=0.5)
+    with pytest.raises(ValueError, match=r"Pool P.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_polymer_input_helper_rejects_bad_radical_qssa_unzip():
+    """Parse-time companion to the to_config field validation: the polymer()
+    deck helper must refuse a malformed radical_qssa_unzip with a clear
+    InputError at deck-read time. The check fires before the helper touches
+    the module-global rmg object, so this test needs no RMG instance."""
+    from rmgpy.rmg import input as rmg_input
+
+    for channel, pattern in [
+        ({k: v for k, v in _qssa_channel().items() if k != "initiation"},
+         r"PS.*missing.*initiation"),
+        (_qssa_channel(depropagation=_qssa_triplet(A=float("nan"))),
+         r"PS.*depropagation.*A.*not finite"),
+        (_qssa_channel(termination=_qssa_triplet(Ea=float("inf"))),
+         r"PS.*termination.*Ea.*not finite"),
+        (_qssa_channel(initiation=_qssa_triplet(A=-1.0)),
+         r"PS.*initiation.*A.*> 0"),
+        (_qssa_channel(efficiency=2.0), r"PS.*efficiency.*\(0, 1\]"),
+        (_qssa_channel(basis="wrong"), r"PS.*basis"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                              end_groups=["[CH3]", "[H]"], cutoff=3,
+                              Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                              monomer_product="C=Cc1ccccc1",
+                              radical_qssa_unzip=channel)
+
+
+def test_polymer_input_helper_rejects_qssa_channel_without_monomer_product():
+    """Deck-read-time cross-invariant: radical_qssa_unzip requires a
+    monomer_product (the channel reuses the pool's existing monomer routing;
+    without it the released mass would leave the condensed phase
+    un-conserved)."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError, match=r"PS.*radical_qssa_unzip.*un-conserved"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          monomer_product=None,
+                          radical_qssa_unzip=_qssa_channel())
+
+
+def test_polymer_input_helper_rejects_qssa_channel_with_positive_k_unzip():
+    """Deck-read-time double-counting guard: radical_qssa_unzip AND
+    k_unzip > 0 on the same pool is a hard error even when monomer_product is
+    wired (the two depropagation representations are mutually exclusive)."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError, match=r"PS.*mutually exclusive"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          k_unzip=1.0, monomer_product="C=Cc1ccccc1",
+                          radical_qssa_unzip=_qssa_channel())
+
+
+def test_polymer_input_helper_valid_qssa_channel_reaches_polymer_object():
+    """GREEN deck path (deck -> Polymer leg of the round-trip): a valid
+    radical_qssa_unzip passes parse-time validation and lands normalized
+    (defaults filled) on the Polymer object. The module-global rmg is mocked:
+    species registration is out of scope here."""
+    from unittest.mock import MagicMock
+    from rmgpy.rmg import input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        if isinstance(obj, Species):
+            return obj, True
+        return Species(label="styrene", molecule=[obj]), True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                                 end_groups=["[CH3]", "[H]"], cutoff=3,
+                                 Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                                 monomer_product="C=Cc1ccccc1",
+                                 radical_qssa_unzip=_qssa_channel())
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+    q = poly.radical_qssa_unzip
+    assert q["initiation"] == dict(A=1.0e15, n=0.0, Ea=3.0e5)
+    assert q["depropagation"] == dict(A=1.0e13, n=0.0, Ea=8.0e4)
+    assert q["termination"] == dict(A=1.0e8, n=0.0, Ea=1.0e4)
+    assert q["efficiency"] == 1.0
+    assert q["monomer_yield"] == 1.0
+    assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+    assert q["transfer"] is None
+
+
 def test_derive_daughter_pool_configs_skips_static_and_incomplete():
     """STAGE 1 / CYCLE 2: the root proxy (a Polymer in core whose label IS a
     static deck pool) must NOT be re-derived (else it is double-configured), and

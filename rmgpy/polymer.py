@@ -218,6 +218,14 @@ class Polymer(Species):
         moments (np.array): [μ0, μ1, μ2] representing the distribution (in Moles).
         k_unzip (float): Rate constant for unzipping reactions (1/s).
         k_scission (float): Rate constant for random scission reactions (1/s).
+        radical_qssa_unzip (Optional[dict]): Radical QSSA unzip channel config
+            (initiation/depropagation/termination Arrhenius triplets {A, n, Ea},
+            optional transfer triplet, efficiency, monomer_yield, basis).
+            Passive storage on the Polymer object: validation lives in the
+            polymer() deck helper, PolymerPool.to_config and the solver
+            (validate_radical_qssa_unzip in rmgpy/solver/polymer.pyx documents
+            the full contract). Mutually exclusive with k_unzip > 0. M1: the
+            stored config is inert (no RHS reads it until the M2 rate law).
     """
 
     def __init__(self,
@@ -232,13 +240,16 @@ class Polymer(Species):
                  moments: Optional[List[float]] = None,
                  k_unzip: float = 0.0,
                  k_scission: float = 0.0,
+                 radical_qssa_unzip: Optional[dict] = None,
                  **kwargs,
                  ):
-        # k_unzip/k_scission are named parameters, so they never appear in kwargs;
-        # assign them directly. discrete_dp_threshold (below) is popped from kwargs
-        # before Species.__init__, which does not accept it and would raise TypeError.
+        # k_unzip/k_scission/radical_qssa_unzip are named parameters, so they never
+        # appear in kwargs; assign them directly. discrete_dp_threshold (below) is
+        # popped from kwargs before Species.__init__, which does not accept it and
+        # would raise TypeError.
         self.k_unzip = k_unzip
         self.k_scission = k_scission
+        self.radical_qssa_unzip = radical_qssa_unzip
         # Discreteness threshold (spec 2026-06-10 §6, D7/D8): chains with
         # literal DP < threshold are candidates for discrete tracking. Default
         # 4 = monomer..trimer explicit. DORMANT under the fixed trimer proxy:
@@ -502,6 +513,10 @@ class Polymer(Species):
         # its degradation kinetics (k_scission/k_unzip would silently reset to 0).
         other.k_scission = self.k_scission
         other.k_unzip = self.k_unzip
+        # deepcopy, not shallow-assign (review round 21, finding 3): shallow
+        # assignment aliases the nested channel dict across copies, so mutating
+        # one Polymer's channel would silently rewrite every copy's.
+        other.radical_qssa_unzip = deepcopy(getattr(self, 'radical_qssa_unzip', None))
         other.discrete_dp_threshold = getattr(self, 'discrete_dp_threshold', 4)
         other.is_polymer = True
         other._cached_backbone_group = None
@@ -844,12 +859,17 @@ class Polymer(Species):
             # End-group modification (e.g. terminal radical activation, CH3->CH2.)
             # leaves the chain intact: the degree of polymerization, and therefore
             # the moment-tracked chain-length distribution, is unchanged. The
-            # method-of-moments model abstracts chain-end activation into k_unzip
-            # (dmu1/dt = -k_unzip*mu0, scaling with the chain-end count mu0), so we
-            # fold the product back into the parent pool with moments and mass
-            # preserved rather than spawning a distinct activated-chain population
-            # (which would double-count k_unzip and cannot be represented anyway,
-            # since an activated end-cap is di-radical: stitch site + activation).
+            # method-of-moments model abstracts chain-end activation into the
+            # pool's sanctioned depropagation representation -- either the lumped
+            # k_unzip rate (dmu1/dt = -k_unzip*mu0, scaling with the chain-end
+            # count mu0) or the radical_qssa_unzip channel (initiation/
+            # depropagation/termination QSSA; the two are mutually exclusive per
+            # pool, enforced at config validation) -- so we fold the product back
+            # into the parent pool with moments and mass preserved rather than
+            # spawning a distinct activated-chain population (which would
+            # double-count whichever unzip representation the pool carries, and
+            # cannot be represented anyway, since an activated end-cap is
+            # di-radical: stitch site + activation).
             #
             # Without this, _create_reacted_copy_logic's raw wing-matching diverges
             # from classify_structure's heavy-view matcher, mis-routes the END_MOD
