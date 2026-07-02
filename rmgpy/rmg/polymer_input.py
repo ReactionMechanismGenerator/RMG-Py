@@ -918,8 +918,12 @@ class PolymerPool(object):
                                    triplets {A, n, Ea} -- SI convention: A [s^-1]
                                    unimolecular, [m^3 mol^-1 s^-1] bimolecular
                                    termination, Ea [J/mol] -- plus optional
-                                   transfer triplet, efficiency, monomer_yield,
-                                   basis). Validated + normalized in to_config
+                                   transfer triplet (A [s^-1], PSEUDO-first-order:
+                                   ktr multiplies the active-end concentration R
+                                   directly in the rate law; premultiply a
+                                   literature bimolecular k_tr by the substrate
+                                   concentration [mol/m^3] before configuring
+                                   it), efficiency, monomer_yield, basis). Validated + normalized in to_config
                                    via validate_radical_qssa_unzip. Requires a
                                    resolvable monomer_product and is mutually
                                    exclusive with k_unzip > 0. M1: stored on the

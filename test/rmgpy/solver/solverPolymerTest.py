@@ -196,7 +196,9 @@ def _one_pool_gate_rs(rxn, core, mask, moments, monomer_mw_g_mol=28.0):
 
 def _qssa_triplet(A=1.0e13, n=0.0, Ea=1.0e5):
     """Arrhenius triplet for the radical_qssa_unzip channel (SI convention:
-    A [s^-1] unimolecular / [m^3 mol^-1 s^-1] bimolecular, Ea [J/mol])."""
+    A [s^-1] for initiation/depropagation AND for transfer -- transfer is
+    pseudo-first-order as implemented, ktr multiplies R directly -- and
+    [m^3 mol^-1 s^-1] for the bimolecular termination only; Ea [J/mol])."""
     return dict(A=A, n=n, Ea=Ea)
 
 
@@ -1261,11 +1263,14 @@ class TestHybridPolymerReactor:
         with pytest.raises(ValueError, match=pattern):
             rxn_system.initialize_model(core_species, [], [], [])
 
-    def test_radical_qssa_unzip_config_is_rhs_inert(self):
-        """M1 contract: the stored channel has ZERO RHS/solver-dynamics effect.
-        Two systems identical except for the channel dict (k_scission drives
-        real moment dynamics in both) must produce bitwise-identical residuals;
-        the rate law only lands in M2."""
+    def test_radical_qssa_unzip_footprint_confined_to_signature(self):
+        """M2 supersedes the M1 zero-RHS pin on the channel-ON side: the
+        channel is now LIVE, and its residual footprint must be confined to
+        the documented signature -- mu1 (drain), mu2 (drain) and the released
+        monomer slot (emission). Everything else (mu0, the gas inert, every
+        shared k_scission contribution) must stay BITWISE identical between
+        two systems that differ only by the channel; the channel-OFF path is
+        untouched."""
         pool_kwargs = dict(
             label="poly", xs=2, explicit_dp_to_species_index={},
             mu_indices=(1, 2, 3), monomer_poly_index=4,
@@ -1283,7 +1288,14 @@ class TestHybridPolymerReactor:
         dn_on = rs_on.residual(0.0, rs_on.y, np.zeros_like(rs_on.y))[0]
 
         assert np.any(dn_off != 0.0)  # the fixture has live dynamics
-        assert np.array_equal(dn_on, dn_off)
+        diff = dn_on - dn_off
+        # M2: the channel is live -- it must move mu1, mu2 and the monomer.
+        assert diff[2] < 0.0   # mu1 drained
+        assert diff[3] < 0.0   # mu2 drained
+        assert diff[4] > 0.0   # monomer emitted
+        # ... and NOTHING else: mu0 and the gas inert are bitwise-shared.
+        assert dn_on[0] == dn_off[0]
+        assert dn_on[1] == dn_off[1]
 
     def test_direct_construction_qssa_channel_is_normalized_in_storage(self):
         """NORMALIZED CONSUMPTION (review round 21, finding 1): a directly
@@ -1422,6 +1434,375 @@ class TestHybridPolymerReactor:
             assert np.array_equal(getattr(rs, name), before), name
         assert rs.qssa_kt_A[0] == 1.0e8
         assert math.isfinite(rs.qssa_efficiency[0])
+
+    # ------------------------------------------------------------------
+    # radical_qssa_unzip channel (M2: solver RHS -- rate law + moments +
+    # handshake + census)
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _qssa_m2_pool(channel, explicit=None, k_unzip=0.0, k_scission=0.0):
+        """One-pool config for the M2 RHS fixtures: mu at 1-3, condensed
+        released-monomer slot M at 4, optional explicit DP=2 species at 5."""
+        return PolymerPoolConfig(
+            label="poly", xs=2,
+            explicit_dp_to_species_index=dict(explicit) if explicit else {},
+            mu_indices=(1, 2, 3), monomer_poly_index=4,
+            k_scission=k_scission, k_unzip=k_unzip, tail_kinetics=None,
+            radical_qssa_unzip=channel)
+
+    @staticmethod
+    def _qssa_m2_system(pool, moments=(1.0, 5.0, 30.0), V_poly=1.0):
+        """Initialized HybridPolymerSystem for the M2 RHS fixtures: gas N2 at
+        0, mu dummies at 1-3, condensed monomer M at 4, explicit DP=2 chain
+        P2 at 5. ``moments`` are MOLES of moments (mu_k = Mu_k / V_poly)."""
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        M = _spc("C", "M")
+        P2 = _spc("CC", "P2")
+        core_species = [Inert, Mu0, Mu1, Mu2, M, P2]
+        gas_species_mask = np.array([True] + [False] * 5, dtype=bool)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
+            V_poly=V_poly, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=gas_species_mask, constant_gas_volume=False,
+            initial_polymer_moments={"poly": tuple(moments)},
+            initial_explicit_species={"poly": {2: 0.0}},
+            termination=[],
+        )
+        rs.initialize_model(core_species, [], [], [])
+        return rs
+
+    @staticmethod
+    def _qssa_oracle_rate(channel, mu0, mu1, T=800.0):
+        """Independent analytic recompute of the QSSA monomer-release rate
+        r_mono [mol m^-3 s^-1 of condensed volume] -- deliberately NOT
+        imported from production code. Concentration basis mol/m^3 (SI),
+        matching the solver's C_poly = y/V_poly convention; kt is
+        m^3 mol^-1 s^-1 on that basis, ktr is s^-1 (pseudo-first-order:
+        it multiplies R directly in ktr*R + 2*kt*R^2 = G_R).
+        R_gas = 8.314 J/mol/K (M1 SI pin)."""
+        R_gas = 8.314
+
+        def k(tri):
+            return tri["A"] * T ** tri["n"] * math.exp(-tri["Ea"] / (R_gas * T))
+
+        f = channel.get("efficiency", 1.0)
+        y_m = channel.get("monomer_yield", 1.0)
+        B = max(mu1 - mu0, 0.0)
+        if B <= 0.0:
+            return 0.0
+        ki, kdp, kt = (k(channel["initiation"]), k(channel["depropagation"]),
+                       k(channel["termination"]))
+        transfer = channel.get("transfer")
+        if transfer is None:
+            R_ss = math.sqrt(f * ki * B / kt)
+        else:
+            ktr = k(transfer)
+            G_R = 2.0 * f * ki * B
+            R_ss = (math.sqrt(ktr * ktr + 8.0 * kt * G_R) - ktr) / (4.0 * kt)
+        return y_m * kdp * R_ss
+
+    def _qssa_channel_diff(self, channel, moments=(1.0, 5.0, 30.0),
+                           V_poly=1.0, state=None):
+        """Residual difference (channel-ON minus channel-OFF) of two systems
+        identical but for the channel: isolates the QSSA contribution."""
+        rs_on = self._qssa_m2_system(self._qssa_m2_pool(channel),
+                                     moments, V_poly)
+        rs_off = self._qssa_m2_system(self._qssa_m2_pool(None),
+                                      moments, V_poly)
+        y = rs_on.y.copy()
+        if state is not None:
+            y[1], y[2], y[3] = state
+        dn_on = rs_on.residual(0.0, y, np.zeros_like(y))[0]
+        dn_off = rs_off.residual(0.0, y.copy(), np.zeros_like(y))[0]
+        return dn_on - dn_off
+
+    def test_qssa_rate_law_analytic_oracle_no_transfer(self):
+        """Analytic rate oracle, no transfer: the net dmu1 contribution of the
+        channel is exactly -y_m*kdp(T)*sqrt(f*ki(T)*B/kt(T)) with
+        B = mu1 - mu0 (breakable-bond basis), at the solver temperature."""
+        channel = _qssa_channel(efficiency=0.6, monomer_yield=0.9)
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+        r = self._qssa_oracle_rate(channel, mu0, mu1)
+        assert r > 0.0  # the oracle itself is live
+
+        diff = self._qssa_channel_diff(channel, moments=(mu0, mu1, mu2))
+        assert diff[2] == pytest.approx(-r, rel=1e-10)
+
+    def test_qssa_rate_law_analytic_oracle_with_transfer(self):
+        """Analytic rate oracle WITH transfer: R_ss solves the quadratic
+        active-end balance ktr*R + 2*kt*R^2 = G_R, i.e.
+        R_ss = (sqrt(ktr^2 + 8*kt*G_R) - ktr)/(4*kt). Transfer is a
+        first-order active-end LOSS, so it must strictly REDUCE the rate --
+        pinning that the accepted transfer block is implemented, not
+        silently ignored.
+
+        UNITS PIN: ktr multiplies R DIRECTLY in the implemented balance, so
+        the configured transfer triplet yields a PSEUDO-FIRST-ORDER rate
+        constant, ktr(T) [s^-1] -- NOT a bimolecular m^3 mol^-1 s^-1 one. A
+        literature bimolecular k_tr [L mol^-1 s^-1 / m^3 mol^-1 s^-1] must be
+        premultiplied by the relevant substrate concentration [mol/m^3, SI]
+        BEFORE entering the config. This oracle recomputes the documented
+        pseudo-first-order law exactly; if the solver ever applied a hidden
+        concentration factor to ktr the rtol-1e-10 match below would break."""
+        base = _qssa_channel()
+        with_tr = _qssa_channel(transfer=_qssa_triplet(A=1.0e5, Ea=5.0e4))
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+        r_tr = self._qssa_oracle_rate(with_tr, mu0, mu1)
+        r_no = self._qssa_oracle_rate(base, mu0, mu1)
+        assert 0.0 < r_tr < r_no  # transfer visibly suppresses the rate
+
+        diff = self._qssa_channel_diff(with_tr, moments=(mu0, mu1, mu2))
+        assert diff[2] == pytest.approx(-r_tr, rel=1e-10)
+
+    def test_qssa_mass_conservation_monomer_yield_scales_both_sides(self):
+        """monomer_yield y_m scales the moment drain AND the emission
+        TOGETHER: the monomer emission (mol/s) must equal the mu1 drain
+        (mol/s) exactly -- monomer_mw * drain == monomer_mw * emission, so
+        net condensed+gas mass is conserved by the channel. y_m=0.7 pins
+        that the yield cannot be applied to one side only."""
+        channel = _qssa_channel(monomer_yield=0.7)
+        diff = self._qssa_channel_diff(channel)
+        assert diff[2] < 0.0
+        assert diff[4] == pytest.approx(-diff[2], rel=1e-12)
+        # ... and y_m scaled BOTH: the drain is 0.7x the y_m=1 drain.
+        diff_full = self._qssa_channel_diff(_qssa_channel())
+        assert diff[2] == pytest.approx(0.7 * diff_full[2], rel=1e-10)
+
+    def test_qssa_moment_signature(self):
+        """Chain-END monomer release signature: dmu0 == 0 (no chain created
+        or destroyed), dmu1 == -r, dmu2 == -r*max(2*E[n] - 1, 0) with
+        E[n] = mu1/mu0 (same-pool-VE clamp idiom: the drain must never make
+        mu2 increase)."""
+        channel = _qssa_channel()
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+        r = self._qssa_oracle_rate(channel, mu0, mu1)
+        diff = self._qssa_channel_diff(channel, moments=(mu0, mu1, mu2))
+        assert diff[1] == 0.0                                    # dmu0
+        assert diff[2] == pytest.approx(-r, rel=1e-10)           # dmu1
+        assert diff[3] == pytest.approx(-r * (2.0 * mu1 / mu0 - 1.0),
+                                        rel=1e-10)               # dmu2
+        # mu2 must NEVER increase from this drain, across pathological
+        # states too (mu0 ~ 0 guarded by the eps clamp).
+        for state in [(1.0, 5.0, 30.0), (0.0, 5.0, 30.0),
+                      (1.0e-3, 1.0, 1.0e3), (2.0, 3.0, 30.0)]:
+            d = self._qssa_channel_diff(channel, state=state)
+            assert np.all(np.isfinite(d)), state
+            assert d[3] <= 0.0, state
+
+    def test_qssa_dp1_and_inverted_states_rate_zero_no_nan(self):
+        """DP->1 pools (mu1 == mu0) and cone-inverted states (mu1 < mu0):
+        B = max(mu1 - mu0, 0) -> 0, so the rate goes to zero SMOOTHLY -- no
+        sqrt-of-negative, no NaN, bitwise-zero channel contribution."""
+        channel = _qssa_channel()
+        for state in [(5.0, 5.0, 30.0),    # DP = 1 exactly
+                      (5.0, 4.0, 30.0),    # inverted: mu1 < mu0
+                      (0.0, 0.0, 0.0)]:    # fully degenerate
+            diff = self._qssa_channel_diff(channel, state=state)
+            assert np.all(np.isfinite(diff)), state
+            assert np.all(diff == 0.0), state
+
+    def test_qssa_emission_volume_factor(self):
+        """The emission lands on monomer_poly_index with the SAME volume
+        factor the surrounding small_src code uses: dn_dt[M] = r_mono*V_poly
+        with r_mono computed on mu_k = Mu_k/V_poly (mol/m^3 of condensed
+        volume). V_poly=2 with doubled moment MOLES keeps mu identical, so
+        dn_dt[M] must be exactly 2x the V_poly=1 emission."""
+        channel = _qssa_channel()
+        mu0, mu1 = 1.0, 5.0
+        r = self._qssa_oracle_rate(channel, mu0, mu1)
+        diff_v2 = self._qssa_channel_diff(channel,
+                                          moments=(2.0, 10.0, 60.0),
+                                          V_poly=2.0)
+        assert diff_v2[4] == pytest.approx(r * 2.0, rel=1e-10)
+        assert diff_v2[2] == pytest.approx(-r * 2.0, rel=1e-10)
+
+    def test_qssa_handshake_equivalence_with_k_unzip(self):
+        """Hybrid handshake: a QSSA pool with an explicit-tail boundary must
+        produce F = (r_mono/mu0) * N_boundary flux into the explicit DP=xs
+        species -- i.e. at a frozen state the ENTIRE residual must match a
+        k_unzip pool with k_unzip = r_mono/mu0 (the instantaneous per-chain
+        unzip frequency): same drain, same emission, same handshake. QSSA
+        pools must not strand low-DP condensed residue."""
+        channel = _qssa_channel()
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0   # mean DP 5 > xs 2 -> tail valid
+        r = self._qssa_oracle_rate(channel, mu0, mu1)
+        k_eq = r / mu0
+
+        rs_qssa = self._qssa_m2_system(
+            self._qssa_m2_pool(channel, explicit={2: 5}),
+            moments=(mu0, mu1, mu2))
+        rs_kz = self._qssa_m2_system(
+            self._qssa_m2_pool(None, explicit={2: 5}, k_unzip=k_eq),
+            moments=(mu0, mu1, mu2))
+
+        dn_qssa = rs_qssa.residual(0.0, rs_qssa.y,
+                                   np.zeros_like(rs_qssa.y))[0]
+        dn_kz = rs_kz.residual(0.0, rs_kz.y, np.zeros_like(rs_kz.y))[0]
+
+        assert dn_qssa[5] > 0.0    # explicit DP=2 boundary species fed
+        assert dn_qssa[1] < 0.0    # mu0 drained by the handshake
+        np.testing.assert_allclose(dn_qssa, dn_kz, rtol=1e-9, atol=0.0)
+
+    @staticmethod
+    def _qssa_census_system(channel, with_ve):
+        """System for the QSSA/scission-VE double-count census: pool proxy
+        bound by label, optional surviving same-pool VOLATILE_EJECTION
+        (src == dst survives the demotion loop, polymer.pyx ~1531)."""
+        Proxy = _spc("CCCC", "poly")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        M = _spc("C", "M")
+        G = _spc("[CH3]", "G")
+        core = [Proxy, Mu0, Mu1, Mu2, M, G]
+        mask = np.array([False] * 5 + [True], dtype=bool)
+        rxns = []
+        if with_ve:
+            rxn = Reaction(reactants=[Proxy], products=[Proxy, G], **_KIN)
+            rxn.polymer_flux_archetype = 6   # VOLATILE_EJECTION
+            rxn.polymer_eject_units = 1.0
+            rxns = [rxn]
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+            radical_qssa_unzip=channel)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={G: 0.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            termination=[])
+        rs.initialize_model(core, rxns, [], [])
+        return rs
+
+    def test_qssa_scission_ve_copresence_census_warns_once(self, caplog):
+        """Double-count census: QSSA initiation is backbone homolysis, so a
+        pool carrying BOTH the channel AND a surviving generated scission/VE
+        reaction sourced from it may double-count the same physics. That
+        must be censused (warn-once, NEVER refuse -- generated scission may
+        cover different bonds)."""
+        import rmgpy.solver.polymer as sp
+        with caplog.at_level(logging.WARNING):
+            rs = self._qssa_census_system(_qssa_channel(), with_ve=True)
+            # The VE survived demotion (src == dst same-pool shape).
+            assert rs.reaction_flux_archetype[0] == sp.FLUX_VOLATILE_EJECTION
+            assert rs.reaction_src_pool[0] == 0
+            assert len(rs.qssa_double_count_census) == 1
+            assert rs.qssa_double_count_census[0]["pool"] == "poly"
+            # Warn-once: a SECOND build censuses again but does not re-log.
+            rs2 = self._qssa_census_system(_qssa_channel(), with_ve=True)
+            assert len(rs2.qssa_double_count_census) == 1
+        qssa_warnings = [rec for rec in caplog.records
+                         if "QSSA" in rec.getMessage()
+                         and "poly" in rec.getMessage()
+                         and "double-count" in rec.getMessage().lower()]
+        assert len(qssa_warnings) == 1
+
+    def test_qssa_only_pool_census_silent(self):
+        """A QSSA pool with NO scission/VE reactions must NOT be censused;
+        neither must a scission/VE pool without the channel."""
+        rs_qssa_only = self._qssa_census_system(_qssa_channel(),
+                                                with_ve=False)
+        assert rs_qssa_only.qssa_double_count_census == []
+        rs_ve_only = self._qssa_census_system(None, with_ve=True)
+        assert rs_ve_only.qssa_double_count_census == []
+
+    def test_qssa_disabled_row_arrhenius_garbage_is_inert(self):
+        """The RHS must gate on qssa_enabled, NEVER on A != 0: poisoning a
+        disabled pool's flattened Arrhenius slots with live-looking values
+        must leave the residual bitwise unchanged (the channel-off path is
+        untouched by M2)."""
+        rs = self._qssa_m2_system(self._qssa_m2_pool(None, k_unzip=0.1))
+        dn_before = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0].copy()
+        assert np.any(dn_before != 0.0)  # k_unzip keeps the fixture live
+
+        assert rs.qssa_enabled[0] == 0
+        rs.qssa_ki_A[0] = 1.0e15
+        rs.qssa_ki_Ea[0] = 3.0e5
+        rs.qssa_kdp_A[0] = 1.0e13
+        rs.qssa_kdp_Ea[0] = 8.0e4
+        rs.qssa_kt_A[0] = 1.0e8
+        rs.qssa_kt_Ea[0] = 1.0e4
+        rs.qssa_has_transfer[0] = 1
+        rs.qssa_ktr_A[0] = 1.0e5
+
+        dn_after = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.array_equal(dn_after, dn_before)
+
+    def test_qssa_runtime_guard_kt_underflow_raises(self):
+        """Runtime degenerate-rate guard: a huge-but-FINITE termination Ea
+        passes M1 config validation but underflows kt(T) to exactly 0.0 at
+        the solver temperature -- R_ss = sqrt(f*ki*B/kt) would divide by
+        zero into inf. The RHS must raise ValueError naming the pool, T and
+        the termination constant (fail-loud), never emit inf/NaN flux."""
+        # exp(-5e6 / (8.314*800)) = exp(-751.7) -> 0.0 (double underflow)
+        channel = _qssa_channel(termination=_qssa_triplet(A=1.0e8, Ea=5.0e6))
+        with pytest.raises(ValueError, match=r"poly.*800.*termination"):
+            # initialize_model evaluates the residual once at setup, so the
+            # guard may fire at construction (even better: t=0 fail-loud);
+            # if it survives construction the direct RHS call must raise.
+            rs = self._qssa_m2_system(self._qssa_m2_pool(channel))
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+
+    def test_qssa_runtime_guard_overflow_to_inf_raises(self):
+        """Runtime degenerate-rate guard: an initiation block finite in
+        config (A=1e300, n=10 -- every field passes the M1 finiteness rules)
+        overflows to A*T**n = inf at evaluation. The RHS must raise
+        ValueError naming the pool, T and the initiation constant instead
+        of propagating inf through R_ss into the residual."""
+        channel = _qssa_channel(
+            initiation=_qssa_triplet(A=1.0e300, n=10.0, Ea=0.0))
+        with pytest.raises(ValueError, match=r"poly.*800.*initiation"):
+            rs = self._qssa_m2_system(self._qssa_m2_pool(channel))
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+
+    def test_qssa_k_scission_copresence_census_warns_once(self, caplog):
+        """Census gap closure: QSSA initiation and the pool's own k_scission
+        BOTH represent random backbone homolysis -- the most direct
+        initiation double-count. A pool with the channel AND k_scission > 0
+        must be censused (warn-once, never refuse), mirroring the
+        archetype-reaction co-presence census."""
+        # Warn-once is process-global and keyed (pool, overlap kind); an
+        # earlier fixture in this file (the M2 footprint test: 'poly' with
+        # k_scission=0.3 + channel) legitimately warms this key, so reset
+        # exactly the key under test to make the assertion deterministic.
+        from rmgpy.polymer import _qssa_double_count_warned
+        _qssa_double_count_warned.discard(("poly", "k_scission"))
+        with caplog.at_level(logging.WARNING):
+            rs = self._qssa_m2_system(
+                self._qssa_m2_pool(_qssa_channel(), k_scission=0.02))
+            ks_entries = [e for e in rs.qssa_double_count_census
+                          if e.get("overlap") == "k_scission"]
+            assert len(ks_entries) == 1
+            assert ks_entries[0]["pool"] == "poly"
+            assert ks_entries[0]["k_scission"] == pytest.approx(0.02)
+            # Warn-once: a SECOND build censuses again but does not re-log.
+            rs2 = self._qssa_m2_system(
+                self._qssa_m2_pool(_qssa_channel(), k_scission=0.02))
+            assert len([e for e in rs2.qssa_double_count_census
+                        if e.get("overlap") == "k_scission"]) == 1
+        ks_warnings = [rec for rec in caplog.records
+                       if "QSSA" in rec.getMessage()
+                       and "k_scission" in rec.getMessage()
+                       and "poly" in rec.getMessage()]
+        assert len(ks_warnings) == 1
+
+    def test_qssa_without_k_scission_census_silent(self):
+        """A QSSA pool with k_scission == 0 must NOT produce a k_scission
+        census entry; a k_scission-only pool without the channel must stay
+        entirely out of the QSSA census."""
+        rs_qssa_only = self._qssa_m2_system(
+            self._qssa_m2_pool(_qssa_channel(), k_scission=0.0))
+        assert [e for e in rs_qssa_only.qssa_double_count_census
+                if e.get("overlap") == "k_scission"] == []
+        rs_ks_only = self._qssa_m2_system(
+            self._qssa_m2_pool(None, k_scission=0.02))
+        assert rs_ks_only.qssa_double_count_census == []
 
     def test_initialize_model_accepts_two_pools(self):
         """Synthetic multi-pool: HybridPolymerSystem must accept and resolve

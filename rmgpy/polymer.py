@@ -1525,6 +1525,49 @@ def _warn_once_double_count(entry: dict) -> None:
             entry["pool"], entry["k_scission"], entry["k_unzip"])
 
 
+_qssa_double_count_warned = set()
+
+
+def _warn_once_qssa_double_count(entry: dict) -> None:
+    """Log each distinct QSSA double-count census entry once
+    (correct-but-loud, mirroring ``_warn_once_double_count``). QSSA
+    initiation is random backbone homolysis, so it can overlap two other
+    backbone-cutting channels on the same pool, distinguished by
+    ``entry["overlap"]``:
+
+    - ``"generated_scission_ve"``: surviving generated-chemistry SCISSION /
+      VOLATILE_EJECTION reactions sourced from the pool.
+    - ``"k_scission"``: the pool's own phenomenological k_scission -- the
+      most direct initiation double-count (both cut random backbone bonds).
+
+    Census-only, NEVER refuse: the overlapping channel may have been
+    parameterized for DIFFERENT/disjoint physics and only the user can know
+    (hard exclusion would be wrong); only the k_unzip co-presence is a hard
+    error (M1 mutual exclusion). Warn-once keyed per (pool, overlap kind)."""
+    overlap = entry.get("overlap", "generated_scission_ve")
+    key = (entry["pool"], overlap)
+    if key in _qssa_double_count_warned:
+        return
+    _qssa_double_count_warned.add(key)
+    if overlap == "k_scission":
+        logging.warning(
+            "QSSA DOUBLE-COUNT TRIPWIRE: pool '%s' has BOTH a radical_qssa_unzip "
+            "channel (QSSA initiation = random backbone homolysis) AND a nonzero "
+            "pool-level k_scission=%.3e [s^-1] -- both cut random backbone bonds, "
+            "the most direct initiation double-count. Ensure the two are "
+            "parameterized to cover DISJOINT physics. Census-only (warn, never "
+            "refuse).",
+            entry["pool"], entry["k_scission"])
+    else:
+        logging.warning(
+            "QSSA DOUBLE-COUNT TRIPWIRE: pool '%s' has BOTH a radical_qssa_unzip "
+            "channel (backbone-homolysis initiation) AND surviving explicit "
+            "scission/volatile-ejection reactions sourced from it -- chain "
+            "degradation may be double-counted. Census-only (warn, never refuse: "
+            "the generated chemistry may cover different bonds).",
+            entry["pool"])
+
+
 _chip_tripwire_warned = set()
 
 

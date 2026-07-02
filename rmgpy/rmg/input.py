@@ -301,10 +301,15 @@ def polymer(label: str,
             triplets {A, n, Ea}; SI convention -- A [s^-1] for the unimolecular
             initiation/depropagation, [m^3 mol^-1 s^-1] for the bimolecular
             termination; Ea [J/mol]; units are convention, not dimensionally
-            enforced). Optional: transfer (triplet, default None; accepted and
-            stored), efficiency and monomer_yield (floats in (0, 1], default
-            1.0), basis (only 'backbone_bonds_mu1_minus_mu0' is allowed;
-            forward-compat pin). Requires monomer_product (the channel reuses
+            enforced). Optional: transfer (triplet, default None; A [s^-1] --
+            PSEUDO-first-order as implemented: the rate law is ktr*R, ktr
+            multiplies the active-end concentration directly, so a literature
+            bimolecular k_tr [L mol^-1 s^-1 or m^3 mol^-1 s^-1] must be
+            premultiplied by the relevant substrate concentration [mol/m^3]
+            BEFORE it enters this config -- do not silently drop that
+            concentration factor), efficiency and monomer_yield (floats in
+            (0, 1], default 1.0), basis (only 'backbone_bonds_mu1_minus_mu0'
+            is allowed; forward-compat pin). Requires monomer_product (the channel reuses
             the pool's monomer routing) and is mutually exclusive with
             k_unzip > 0 (the two depropagation representations would
             double-count). M1: validated + stored but INERT -- the QSSA rate

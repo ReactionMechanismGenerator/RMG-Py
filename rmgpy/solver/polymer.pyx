@@ -85,6 +85,47 @@ ATTRIBUTION_TRUST_K = 100.0
 LN_EXP_OVERFLOW_GUARD = 700.0
 TAIL_CONC_MIN = 1e-9  # Minimum concentration (mol/m^3) to actuate handshake
 
+# Gas constant for the radical_qssa_unzip Arrhenius evaluations, J/(mol K).
+# Pinned to 8.314 by the M1/M2 channel contract (Ea is stored in J/mol by
+# convention, not dimensionally enforced) -- deliberately NOT constants.R
+# so the channel's k(T) is bit-reproducible against the documented law.
+QSSA_R_GAS = 8.314
+
+# +inf sentinel for the RHS runtime degenerate-rate guard: `x < QSSA_INF` is
+# a single comparison that rejects BOTH inf and NaN (NaN fails every
+# comparison), keeping the per-RHS-call hot path to a plain compare chain.
+QSSA_INF = float("inf")
+
+
+def _raise_degenerate_qssa_rates(pool_label, T, ki, kdp, kt, ktr=None):
+    """Cold path for the radical_qssa_unzip runtime degenerate-rate guard.
+
+    M1 validates config FINITENESS, but Arrhenius EVALUATION at the solver
+    temperature can still degenerate: kt(T) can underflow to exactly 0.0
+    (R_ss = sqrt(f*ki*B/kt) then divides by zero into inf) and a large A or n
+    can overflow A*T**n to inf (NaN downstream). Fail loud, naming the pool,
+    the temperature and every offending constant -- never silently zero or
+    clamp the rate. Only called off the hot path, when the cheap comparison
+    chain in the RHS has already found a degenerate value."""
+    problems = []
+    for name, val in (("initiation ki", ki), ("depropagation kdp", kdp),
+                      ("termination kt", kt), ("transfer ktr", ktr)):
+        if val is None:
+            continue
+        if not math.isfinite(val):
+            problems.append(f"{name}(T)={val!r} is non-finite "
+                            f"(Arrhenius overflow at evaluation)")
+        elif name == "termination kt" and val <= 0.0:
+            problems.append(
+                f"{name}(T)={val!r} underflowed to <= 0 "
+                f"(R_ss = sqrt(f*ki*B/kt) would divide by zero)")
+    raise ValueError(
+        f"Pool {pool_label}: radical_qssa_unzip rate evaluation is "
+        f"degenerate at T={T:g} K: " + "; ".join(problems) + ". Config-time "
+        f"validation (M1) pins finiteness of A/n/Ea but cannot catch "
+        f"runtime overflow/underflow of k(T) = A*T**n*exp(-Ea/(R*T)); fix "
+        f"the offending Arrhenius block for the reactor temperature range.")
+
 # Pool moment-flux archetypes. Mirror of rmgpy.polymer.PolymerFluxArchetype
 # (not imported to avoid a solver->polymer module cycle); equality is pinned
 # by test_flux_archetype_constants_match_enum.
@@ -180,8 +221,13 @@ def validate_radical_qssa_unzip(pool_label, channel):
       enforced: A [s^-1] for the unimolecular blocks (initiation,
       depropagation), A [m^3 mol^-1 s^-1] for the bimolecular termination
       block; Ea [J/mol]; n dimensionless. All values finite; A > 0; Ea >= 0.
-    - ``transfer``: optional Arrhenius triplet (default None). Accepted and
-      stored under the same finite/positivity rules; no rate law yet.
+    - ``transfer``: optional Arrhenius triplet (default None), same
+      finite/positivity rules. Units A [s^-1]: the M2 rate law is
+      PSEUDO-FIRST-ORDER in the active end R (ktr multiplies R directly in
+      the balance ktr*R + 2*kt*R^2 = G_R), so a literature bimolecular
+      k_tr [L mol^-1 s^-1 / m^3 mol^-1 s^-1] must be premultiplied by the
+      relevant substrate concentration [mol/m^3, SI] BEFORE entering this
+      config -- do not drop that concentration factor silently.
     - ``efficiency`` (f_i) and ``monomer_yield`` (y_m): floats in (0, 1],
       default 1.0.
     - ``basis``: must equal RADICAL_QSSA_UNZIP_BASIS (default; forward-compat
@@ -272,9 +318,13 @@ class PolymerPoolConfig:
     # dict per validate_radical_qssa_unzip: {initiation, depropagation,
     # termination: {A, n, Ea}, transfer: {A, n, Ea} | None, efficiency,
     # monomer_yield: float in (0, 1], basis: RADICAL_QSSA_UNZIP_BASIS}.
-    # Units BY CONVENTION (documented, not dimensionally enforced): A [s^-1]
-    # unimolecular (initiation, depropagation), [m^3 mol^-1 s^-1] bimolecular
-    # (termination); Ea [J/mol]. Mutually exclusive with k_unzip > 0
+    # Units BY CONVENTION (documented, not dimensionally enforced):
+    # initiation A [s^-1], depropagation A [s^-1], termination A
+    # [m^3 mol^-1 s^-1] (the only bimolecular block), transfer A [s^-1]
+    # (PSEUDO-first-order: ktr multiplies R directly in the M2 rate law --
+    # premultiply a literature bimolecular k_tr by the substrate
+    # concentration [mol/m^3] before configuring it); Ea [J/mol].
+    # Mutually exclusive with k_unzip > 0
     # (double-count guard) and requires monomer_poly_index (the channel
     # reuses the pool's existing monomer routing -- no new routing field).
     radical_qssa_unzip: Optional[Dict[str, object]] = None
@@ -811,11 +861,13 @@ class HybridPolymerSystem(ReactionSystem):
         - qssa_enabled[i] (int8): 1 iff the pool has a channel configured.
         - qssa_ki_A/n/Ea[i]: initiation Arrhenius triplet (A [s^-1]).
         - qssa_kdp_A/n/Ea[i]: depropagation triplet (A [s^-1]).
-        - qssa_kt_A/n/Ea[i]: termination triplet (A [m^3 mol^-1 s^-1]).
+        - qssa_kt_A/n/Ea[i]: termination triplet (A [m^3 mol^-1 s^-1]; the
+          only bimolecular block).
         - qssa_efficiency[i], qssa_monomer_yield[i]: f_i, y_m in (0, 1]
           (default 1.0 on channel-absent pools -- the inert value).
         - qssa_has_transfer[i] (int8) + qssa_ktr_A/n/Ea[i]: optional transfer
-          triplet; zeros when absent.
+          triplet (A [s^-1], pseudo-first-order: ktr multiplies R directly
+          in the M2 rate law); zeros when absent.
         Disabled rows keep zero Arrhenius slots: every M2 consumer must gate
         on qssa_enabled, never on A != 0.
         """
@@ -1579,6 +1631,44 @@ class HybridPolymerSystem(ReactionSystem):
         self._static_phase_gate_census(core_species, core_reactions)
 
         self.validate_configuration()
+
+        # radical_qssa_unzip double-count census (M2). QSSA initiation is
+        # backbone homolysis, so generated-chemistry SCISSION_FRAGMENT /
+        # VOLATILE_EJECTION reactions sourced from the same pool may
+        # represent overlapping physics. WARN-ONCE census mirroring the
+        # item-18 tripwire above -- warn, NEVER refuse (generated scission
+        # may cover different bonds; hard exclusion would be wrong). The
+        # k_unzip co-presence stays a hard error (M1 mutual exclusion).
+        # Placement is load-bearing twice over: AFTER the demotion loop (it
+        # scans FINAL archetypes, like the item-18 census) and AFTER
+        # validate_configuration (qssa_enabled -- the flattened solver-owned
+        # gate, the ONLY channel signal the solver trusts -- exists here).
+        from rmgpy.polymer import _warn_once_qssa_double_count
+        self.qssa_double_count_census = []
+        qssa_overlap_src_pools = set()
+        for r_dc in range(self.reaction_flux_archetype.shape[0]):
+            if self.reaction_flux_archetype[r_dc] in (FLUX_SCISSION_FRAGMENT, FLUX_VOLATILE_EJECTION):
+                if self.reaction_src_pool[r_dc] >= 0:
+                    qssa_overlap_src_pools.add(self.reaction_src_pool[r_dc])
+        for p_idx, pool in enumerate(self.polymer_pools):
+            if not self.qssa_enabled[p_idx]:
+                continue
+            if p_idx in qssa_overlap_src_pools:
+                entry = {"pool": pool.label,
+                         "overlap": "generated_scission_ve"}
+                self.qssa_double_count_census.append(entry)
+                _warn_once_qssa_double_count(entry)
+            # QSSA + the pool's own k_scission: BOTH are random backbone
+            # homolysis -- the most direct initiation double-count of all
+            # (unlike generated scission, k_scission cannot claim to cover
+            # different bonds by construction; only the user knows whether
+            # the two were parameterized for disjoint physics). Same
+            # warn-once helper, distinct census key.
+            if pool.k_scission > 0.0:
+                entry = {"pool": pool.label, "overlap": "k_scission",
+                         "k_scission": pool.k_scission}
+                self.qssa_double_count_census.append(entry)
+                _warn_once_qssa_double_count(entry)
 
         # Thermo reference-state tripwire (spec 2026-06-11 §7): runs AFTER
         # the archetype demotion pass and validate_configuration (masks,
@@ -2776,7 +2866,7 @@ class HybridPolymerSystem(ReactionSystem):
             dn_dt[s0] -= rate * V_gas
 
         # 8. Polymer Tail & Handshake
-        for pool in self.polymer_pools:
+        for pool_i, pool in enumerate(self.polymer_pools):
             idx_mu0, idx_mu1, idx_mu2 = pool.mu_indices
             xs = pool.xs
 
@@ -2836,11 +2926,113 @@ class HybridPolymerSystem(ReactionSystem):
                     if pool.monomer_poly_index is not None:
                         small_src[pool.monomer_poly_index] = r_events
 
+            # radical_qssa_unzip channel (M2 rate law). Reads ONLY the
+            # flattened solver-owned qssa_* arrays from M1 -- NEVER the pool
+            # dict -- and gates on qssa_enabled, never on A != 0. Mutually
+            # exclusive with k_unzip > 0 (M1 hard error), independent of
+            # tail_kinetics (a custom tail closure does not describe
+            # radical depropagation).
+            #
+            # Rate law (isothermal QSSA on the active chain-END radical R):
+            #   B    = max(mu1 - mu0, 0)         breakable backbone bonds
+            #                                    (mol/m^3 of condensed volume:
+            #                                    a chain of length k has k-1
+            #                                    bonds, so sum = mu1 - mu0)
+            #   G_R  = 2 f ki(T) B               radical generation (homolysis
+            #                                    makes TWO end radicals/bond)
+            #   no transfer:  0 = G_R - 2 kt R^2          -> R = sqrt(f ki B / kt)
+            #   transfer:     0 = G_R - ktr R - 2 kt R^2  -> R = (sqrt(ktr^2
+            #                     + 8 kt G_R) - ktr) / (4 kt)
+            #     (transfer = first-order active-END loss: H-abstraction turns
+            #     an unzipping end radical into a mid-chain radical)
+            #   r_mono = y_m kdp(T) R            monomer release, mol/(m^3 s)
+            # Arrhenius k(T) = A T^n exp(-Ea/(R_gas T)), Ea in J/mol (M1 SI
+            # pin). Units: ki/kdp in s^-1; kt in m^3/(mol s) (bimolecular);
+            # ktr in s^-1 -- PSEUDO-FIRST-ORDER, because ktr multiplies R
+            # DIRECTLY in the balance above (a literature bimolecular k_tr
+            # [L/(mol s) or m^3/(mol s)] must be premultiplied by the
+            # relevant substrate concentration [mol/m^3, SI] BEFORE entering
+            # the config). The mol/m^3 concentration basis established at
+            # C_poly = y/V_poly above means NO unit conversion is applied
+            # here.
+            r_qssa = 0.0
+            if self.qssa_enabled[pool_i]:
+                B_qssa = max(mu1 - mu0, 0.0)
+                if B_qssa > 0.0:
+                    T_qssa = self.T.value_si
+                    RT_qssa = QSSA_R_GAS * T_qssa
+                    ki_qssa = (self.qssa_ki_A[pool_i]
+                               * T_qssa ** self.qssa_ki_n[pool_i]
+                               * math.exp(-self.qssa_ki_Ea[pool_i] / RT_qssa))
+                    kdp_qssa = (self.qssa_kdp_A[pool_i]
+                                * T_qssa ** self.qssa_kdp_n[pool_i]
+                                * math.exp(-self.qssa_kdp_Ea[pool_i] / RT_qssa))
+                    kt_qssa = (self.qssa_kt_A[pool_i]
+                               * T_qssa ** self.qssa_kt_n[pool_i]
+                               * math.exp(-self.qssa_kt_Ea[pool_i] / RT_qssa))
+                    # Runtime degenerate-rate guard (fail-loud, cheap hot
+                    # path). M1 pins config finiteness, but EVALUATION can
+                    # still degenerate at solver T: kt underflows to 0.0
+                    # (sqrt(f*ki*B/kt) divides by zero -> inf) or a large
+                    # A/n overflows to inf/NaN. `x < QSSA_INF` rejects inf
+                    # AND NaN in one compare; ki/kdp underflow to 0.0 is
+                    # fine (the rate smoothly reaches 0), kt is not.
+                    if not (ki_qssa < QSSA_INF and kdp_qssa < QSSA_INF
+                            and 0.0 < kt_qssa < QSSA_INF):
+                        _raise_degenerate_qssa_rates(
+                            pool.label, T_qssa, ki_qssa, kdp_qssa, kt_qssa)
+                    fkiB = self.qssa_efficiency[pool_i] * ki_qssa * B_qssa
+                    G_R_qssa = 2.0 * fkiB  # two end radicals per homolysis
+                    if self.qssa_has_transfer[pool_i]:
+                        ktr_qssa = (self.qssa_ktr_A[pool_i]
+                                    * T_qssa ** self.qssa_ktr_n[pool_i]
+                                    * math.exp(-self.qssa_ktr_Ea[pool_i] / RT_qssa))
+                        if not ktr_qssa < QSSA_INF:
+                            _raise_degenerate_qssa_rates(
+                                pool.label, T_qssa, ki_qssa, kdp_qssa,
+                                kt_qssa, ktr_qssa)
+                        R_ss = ((math.sqrt(ktr_qssa * ktr_qssa
+                                           + 8.0 * kt_qssa * G_R_qssa)
+                                 - ktr_qssa) / (4.0 * kt_qssa))
+                    else:
+                        # == sqrt(G_R / (2 kt)), simplified
+                        R_ss = math.sqrt(fkiB / kt_qssa)
+                    r_qssa = self.qssa_monomer_yield[pool_i] * kdp_qssa * R_ss
+                if r_qssa > 0.0:
+                    # Chain-END monomer release signature: mu0 untouched (no
+                    # chain created/destroyed), mu1 drains one unit per
+                    # release, mu2 drains (2 E[n] - 1) per release with the
+                    # same-pool-VE clamp (>0 only: the drain must never make
+                    # mu2 increase; mu0 ~ 0 guarded by the eps clamp).
+                    # monomer_yield already scales r_qssa, so the moment
+                    # drain and the gas emission below scale TOGETHER --
+                    # scaling only one side would fabricate/destroy mass.
+                    dmu1_dt -= r_qssa
+                    qssa_mu2_dec = 2.0 * (mu1 / max(mu0, SMALL_EPS)) - 1.0
+                    if qssa_mu2_dec > 0.0:
+                        dmu2_dt -= r_qssa * qssa_mu2_dec
+                    # monomer_poly_index is non-None whenever enabled (M1
+                    # invariant); emission flows through the SAME small_src
+                    # -> dn_dt * V_poly path as the k_unzip channel.
+                    small_src[pool.monomer_poly_index] = (
+                        small_src.get(pool.monomer_poly_index, 0.0) + r_qssa)
+
             # Hybrid Handshake
             tail_mean = mu1 / mu0 if mu0 > SMALL_EPS else 0.0
             valid_tail = (mu0 > TAIL_CONC_MIN) and (tail_mean > xs + 1e-9)
 
-            if valid_tail and pool.k_unzip > 0:
+            # Per-chain unzip frequency feeding the handshake: the legacy
+            # k_unzip IS that frequency; the QSSA equivalent is
+            # k = r_mono / mu0 (release events per chain per second), so
+            # QSSA pools do not strand low-DP condensed residue. The two
+            # channels are mutually exclusive (M1), so at most one arm fires.
+            k_chain_handshake = 0.0
+            if pool.k_unzip > 0:
+                k_chain_handshake = pool.k_unzip
+            elif self.qssa_enabled[pool_i] and r_qssa > 0.0:
+                k_chain_handshake = r_qssa / max(mu0, SMALL_EPS)
+
+            if valid_tail and k_chain_handshake > 0.0:
                 explicit_xs_idx = pool.explicit_dp_to_species_index.get(xs, None)
                 if explicit_xs_idx is not None:
                     params = _gamma_params_from_mu012(mu0, mu1, mu2)
@@ -2868,7 +3060,7 @@ class HybridPolymerSystem(ReactionSystem):
                         N_boundary = min(N_boundary, mu1 / xs)
                         N_boundary = min(N_boundary, mu2 / (xs * xs))
 
-                    F = pool.k_unzip * N_boundary
+                    F = k_chain_handshake * N_boundary
 
                     if F > 0.0:
                         dn_dt[explicit_xs_idx] += F * V_poly
