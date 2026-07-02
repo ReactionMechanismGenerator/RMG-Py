@@ -30,6 +30,7 @@
 import copy
 import itertools
 import logging
+import math
 import numpy as np
 from typing import Dict, List, Optional, Union
 
@@ -992,6 +993,20 @@ class PolymerPool(object):
                 raise ValueError(
                     f"Pool {self.label}: monomer_product {self.monomer_product} not in core species; "
                     f"cannot wire unzip-to-monomer release.")
+
+        # HARD ERROR: a non-finite k_unzip/k_scission is not a valid rate
+        # constant. NaN passes BOTH the `< 0` and `> 0` gates as False, so
+        # it would make the channel SILENTLY INERT (a laundered no-op); inf
+        # poisons the residual. Config assembly is the last generation-side
+        # point before the solver; refuse here even with routing wired.
+        for _rate_name, _rate_val in (("k_unzip", self.k_unzip),
+                                      ("k_scission", self.k_scission)):
+            if not math.isfinite(_rate_val):
+                raise ValueError(
+                    f"Pool {self.label}: {_rate_name}={_rate_val!r} is not "
+                    f"finite -- NaN/inf is not a valid rate constant (NaN "
+                    f"would silently disable the channel; inf would poison "
+                    f"the residual). Set {_rate_name} to a finite value >= 0.")
 
         # HARD ERROR: a negative k_unzip is not a valid rate constant. Every
         # downstream unzip consumer is gated on k_unzip > 0, so a negative

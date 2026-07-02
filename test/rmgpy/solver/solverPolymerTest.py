@@ -1145,6 +1145,42 @@ class TestHybridPolymerReactor:
                            match=r"poly.*not a valid rate constant"):
             rxn_system.initialize_model(core_species, [], [], [])
 
+    @pytest.mark.parametrize("field", ["k_unzip", "k_scission"])
+    @pytest.mark.parametrize("bad", [float("nan"), float("inf"),
+                                     float("-inf")],
+                             ids=["nan", "+inf", "-inf"])
+    def test_initialize_model_rejects_non_finite_rates(self, field, bad):
+        """NaN passes BOTH the `< 0` and `> 0` gates as False, so a
+        non-finite k_unzip/k_scission on a directly-constructed
+        PolymerPoolConfig would make the channel SILENTLY INERT (NaN) or
+        poison the residual (inf) -- a laundered no-op behind every upstream
+        guard. validate_configuration (invoked by initialize_model) is the
+        last line of defense and must refuse it, naming the pool."""
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        M = _spc("C", "M")  # condensed released-monomer slot
+        core_species = [Inert, Mu0, Mu1, Mu2, M]
+        gas_species_mask = np.array([True, False, False, False, False],
+                                    dtype=bool)
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4,
+            **{field: bad},
+        )
+        rxn_system = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=gas_species_mask, constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            termination=[],
+        )
+        with pytest.raises(ValueError,
+                           match=rf"poly.*{field}.*not a valid rate constant"):
+            rxn_system.initialize_model(core_species, [], [], [])
+
     # ------------------------------------------------------------------
     # radical_qssa_unzip channel (M1: config + validation only, NO RHS)
     # ------------------------------------------------------------------

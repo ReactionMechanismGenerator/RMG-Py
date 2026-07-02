@@ -499,6 +499,29 @@ class TestUnzipRoutingGuard:
                 artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
                 initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
 
+    @pytest.mark.parametrize("channel,field", [("unzip", "k_unzip"),
+                                               ("scission", "k_scission")])
+    @pytest.mark.parametrize("bad", [float("nan"), float("inf"),
+                                     float("-inf")],
+                             ids=["nan", "+inf", "-inf"])
+    def test_build_system_rejects_non_finite_channel_rate(self, deck, channel,
+                                                          field, bad):
+        """NaN passes BOTH the `< 0` and `> 0` gates as False, so a
+        hand-edited artifact with a non-finite unzip/scission A would make
+        the channel SILENTLY INERT (NaN) or poison the residual (inf). The
+        assembler must refuse it with a clear ValueError naming the pool,
+        mirroring the negative-A guard."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["pools"][0]["channels"][channel]["A"] = bad
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError,
+                           match=rf"poly.*{field}.*not a valid rate constant"):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
     def test_build_system_rejects_non_string_monomer_routing(self, deck):
         """monomer_routing is a species-label string in the artifact schema
         (polymer.py _serialize_pool_for_sidecar). A hand-edited artifact with a

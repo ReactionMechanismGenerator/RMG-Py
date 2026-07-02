@@ -46,6 +46,7 @@ import csv
 import io
 import json
 import logging
+import math
 import sys
 
 import numpy as np
@@ -454,6 +455,22 @@ def build_system_from_artifact(artifact, species, reactions,
         mu_idx = tuple(idx[f"{lab}_mu{k}"] for k in range(3))
         routing = p.get("monomer_routing")
         k_unzip = float(p["channels"]["unzip"]["A"])
+        k_scission = float(p["channels"]["scission"]["A"])
+        # HARD ERROR: a non-finite unzip/scission A is not a valid rate
+        # constant. NaN passes BOTH the `< 0` and `> 0` gates as False, so a
+        # hand-edited artifact could make the channel SILENTLY INERT (a
+        # laundered no-op); inf poisons the residual. Mirror the negative-A
+        # guard below.
+        for _rate_name, _channel_name, _rate_val in (
+                ("k_unzip", "unzip", k_unzip),
+                ("k_scission", "scission", k_scission)):
+            if not math.isfinite(_rate_val):
+                raise ValueError(
+                    f"Pool {lab!r}: artifact declares {_channel_name} "
+                    f"A={_rate_val!r} -- a non-finite {_rate_name} is not a "
+                    f"valid rate constant (NaN would silently disable the "
+                    f"channel; inf would poison the residual). Fix the "
+                    f"artifact's {_channel_name} channel A (finite, >= 0).")
         # HARD ERROR: a negative unzip A is not a valid rate constant. Every
         # downstream k_unzip consumer is gated on k_unzip > 0, so a negative
         # value would silently become an inert channel instead of failing.
@@ -527,7 +544,7 @@ def build_system_from_artifact(artifact, species, reactions,
             # collapses to the bare slack and the tag-branch class drifts
             # from generation world.
             monomer_mw_g_mol=float(p.get("monomer_mw_g_mol") or 0.0),
-            k_scission=float(p["channels"]["scission"]["A"]),
+            k_scission=k_scission,
             k_unzip=k_unzip,
             radical_qssa_unzip=qssa_cfg,
         ))

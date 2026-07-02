@@ -4843,6 +4843,46 @@ def test_pool_to_config_rejects_negative_k_unzip():
         pool.to_config(spc_map)
 
 
+@pytest.mark.parametrize("field", ["k_unzip", "k_scission"])
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")],
+                         ids=["nan", "+inf", "-inf"])
+def test_polymer_input_helper_rejects_non_finite_rates(field, bad):
+    """NaN passes BOTH the `< 0` and `> 0` checks as False, so a non-finite
+    k_unzip/k_scission would make the channel SILENTLY INERT (or poison the
+    residual with inf) -- a laundered no-op. The deck helper must reject
+    NaN/inf at parse time with a clear InputError, mirroring the QSSA triplet
+    validator's finite-rejection posture."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError,
+                       match=rf"PS.*{field}.*not a valid rate constant"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          **{field: bad})
+
+
+@pytest.mark.parametrize("field", ["k_unzip", "k_scission"])
+@pytest.mark.parametrize("bad", [float("nan"), float("inf"), float("-inf")],
+                         ids=["nan", "+inf", "-inf"])
+def test_pool_to_config_rejects_non_finite_rates(field, bad):
+    """Config-assembly companion to the deck-helper finite check: a
+    non-finite k_unzip/k_scission must be refused by PolymerPool.to_config
+    even with a monomer_product wired (routing must not dodge the check)."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    styrene = Species(label="styrene", molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, monomer_product=styrene, **{field: bad})
+    spc_map = {s: i for i, s in enumerate(mu + [styrene])}
+
+    with pytest.raises(ValueError,
+                       match=rf"Pool P.*{field}.*not a valid rate constant"):
+        pool.to_config(spc_map)
+
+
 # ---------------------------------------------------------------------------
 # radical_qssa_unzip channel (M1: config + validation only, NO RHS effect)
 # ---------------------------------------------------------------------------

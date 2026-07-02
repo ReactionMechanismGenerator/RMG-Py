@@ -28,6 +28,7 @@
 ###############################################################################
 
 import logging
+import math
 import os
 from copy import deepcopy
 from typing import Dict, List, Optional, Union
@@ -316,6 +317,20 @@ def polymer(label: str,
             law lands in M2; nothing in the solver residual reads it yet.
             Default None (channel absent).
     """
+    # HARD ERROR at deck-read time: a non-finite k_unzip/k_scission is not a
+    # valid rate constant. NaN passes BOTH the `< 0` and `> 0` gates as
+    # False, so it would make the channel SILENTLY INERT (a laundered
+    # no-op); inf poisons the residual. Mirror the QSSA triplet validator's
+    # finite-rejection posture.
+    for _rate_name, _rate_val in (("k_unzip", k_unzip),
+                                  ("k_scission", k_scission)):
+        if not math.isfinite(_rate_val):
+            raise InputError(
+                f"Polymer pool '{label}': {_rate_name}={_rate_val!r} is not "
+                f"finite -- NaN/inf is not a valid rate constant (NaN would "
+                f"silently disable the channel; inf would poison the "
+                f"residual). Set {_rate_name} to a finite value >= 0.")
+
     # HARD ERROR at deck-read time: a negative k_unzip is not a valid rate
     # constant. Every unzip consumer downstream (solver residual, guards) is
     # gated on k_unzip > 0, so a negative value would silently become an inert

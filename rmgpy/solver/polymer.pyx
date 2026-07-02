@@ -759,6 +759,19 @@ class HybridPolymerSystem(ReactionSystem):
             # gated on monomer_poly_index is not None -- so k_unzip > 0 with
             # no monomer index makes mass leave the condensed phase
             # un-conserved (the drained repeat units go nowhere).
+            # Finiteness first: NaN passes BOTH the `< 0` and `> 0` gates as
+            # False, so a non-finite k_unzip/k_scission would make the
+            # channel SILENTLY INERT (a laundered no-op) while inf poisons
+            # the residual. Mirror the QSSA triplet validator's posture.
+            for _rate_name, _rate_val in (("k_unzip", pool.k_unzip),
+                                          ("k_scission", pool.k_scission)):
+                if not math.isfinite(_rate_val):
+                    raise ValueError(
+                        f"Pool {pool.label}: {_rate_name}={_rate_val!r} is not "
+                        f"finite -- NaN/inf is not a valid rate constant (NaN "
+                        f"would silently disable the channel; inf would poison "
+                        f"the residual). Set {_rate_name} to a finite value "
+                        f">= 0.")
             if pool.k_unzip < 0.0:
                 raise ValueError(
                     f"Pool {pool.label}: k_unzip={pool.k_unzip:g} is negative -- "
