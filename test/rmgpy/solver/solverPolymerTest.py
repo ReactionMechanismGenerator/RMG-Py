@@ -1597,6 +1597,206 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[2] + dn_dt[6], 0.0, atol=1e-14)
         assert np.isclose(dn_dt[3] + dn_dt[7], 0.0, atol=1e-14)
 
+    # ------------------------------------------------------------------
+    # SAME-POOL volatile ejection (signed a, spec 2026-06-2x round-13):
+    # unzip / depropagation write on ONE pool (src == dst). This is a
+    # DIRECT chip-style drain, NOT the cross-pool per-direction cancellation
+    # (which can push mu2 the wrong way near exhaustion). a > 0 sheds mass
+    # (mu1 drops by a*ev); a < 0 GAINS mass (mu1 rises by |a|*ev, chain
+    # growth). The mu2 decrement is CLAMPED at > 0 exactly like DISCRETE_CHIP.
+    # ------------------------------------------------------------------
+    def test_same_pool_ve_forward_drains_one_pool(self):
+        """
+        Same-pool VE (src == dst) forward, a > 0: a single pool's mu1 drops
+        by a*ev; mu2 by ev*(2a*E[n] - a^2) (clamp holds, decrement > 0).
+        No second pool is touched (B moments stay zero) -- distinct from the
+        cross-pool VE which splits the write across A and B.
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        mu0a, mu1a, mu2a = 1.0, 5.0, 30.0
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        ev = kf * mu1a                       # site-scaled by A's mu1, V_poly=1
+        b1 = mu2a / mu1a                     # E[n] = 6.0 (length-biased pick)
+        mu2_dec = 2.0 * a * b1 - a * a       # 12.331775 > 0 -> clamp holds
+        assert mu2_dec > 0.0
+        assert np.isclose(dn_dt[2], -a * ev)             # A mu1 drained by a*ev
+        assert np.isclose(dn_dt[3], -ev * mu2_dec)       # A mu2 clamped decrement
+        assert np.isclose(dn_dt[1], 0.0, atol=1e-14)     # mu0 unchanged (no chain lost)
+        # the OTHER pool (B) is untouched -- this is a single-pool write
+        assert np.allclose(dn_dt[5:8], 0.0, atol=1e-14)
+        # net condensed mu1 change == -a*ev (mass ejected to the gas volatile)
+        assert np.isclose(dn_dt[2] + dn_dt[6], -a * ev)
+
+    def test_same_pool_ve_reverse_restores_one_pool(self):
+        """
+        Same-pool VE reverse, a > 0: mu1 rises by a*ev on the single pool;
+        mu2 by ev*(2a*E[n] + a^2) -- the EXACT extension form (no clamp,
+        unconditionally positive). Reverse-only isolation: kf zeroed, kb
+        driven directly (mirrors the cross-pool VE reverse harness).
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        mu0a, mu1a, mu2a = 1.0, 5.0, 30.0
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (2.0, 4.0, 10.0))
+        rs.kf[0] = 0.0        # forward off: isolate the reverse leg
+        rs.kb[0] = 0.6
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        ev = 0.6 * mu1a                      # rr = kb*C(proxyA=1), site-scaled by mu1
+        b1 = mu2a / mu1a                     # E[n] = 6.0
+        assert np.isclose(dn_dt[2], +a * ev)                       # A mu1 restored
+        assert np.isclose(dn_dt[3], +ev * (2.0 * a * b1 + a * a))  # A mu2 exact extension
+        assert np.isclose(dn_dt[1], 0.0, atol=1e-14)               # mu0 unchanged
+        assert np.allclose(dn_dt[5:8], 0.0, atol=1e-14)            # B untouched
+        assert np.isclose(dn_dt[2] + dn_dt[6], +a * ev)            # net mu1 GAINS a*ev
+
+    def test_same_pool_ve_negative_a_adds_mass(self):
+        """
+        Signed a < 0 (monomer/radical ADDITION back onto the same pool):
+        forward mu1 -= rf_mol*a with a < 0 ADDS mass -> mu1 RISES by |a|*ev
+        (chain growth). The mu2 decrement 2a*E[n] - a^2 is negative for a < 0,
+        so the `> 0` clamp SKIPS the mu2 write (documented approximation: the
+        forward same-pool leg does not credit mu2 growth for a < 0; the exact
+        +extension lives on the reverse leg). mu1 growth is the load-bearing
+        signed behavior and is asserted exactly.
+        """
+        a = -1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        mu0a, mu1a, mu2a = 1.0, 5.0, 30.0
+        rs = _two_pool_rs(rxn, core, mask, (mu0a, mu1a, mu2a), (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        ev = kf * mu1a
+        b1 = mu2a / mu1a
+        assert 2.0 * a * b1 - a * a < 0.0                # decrement negative -> clamp
+        assert dn_dt[2] > 0.0                            # mu1 RISES (mass gained)
+        assert np.isclose(dn_dt[2], -a * ev)             # == +|a|*ev
+        assert np.isclose(dn_dt[3], 0.0, atol=1e-14)     # mu2 write clamped out
+        assert np.allclose(dn_dt[5:8], 0.0, atol=1e-14)  # B untouched
+
+    def test_same_pool_ve_throttle_direct_rhs_regimes(self):
+        """
+        Exhaustion throttle (spec s5 amendment) extended to same-pool a > 0
+        VE: a mu0-scaled (end-group) same-pool VE drains mu1 but never mu0,
+        so unthrottled mu1 would run linearly negative past exhaustion.
+        Throttled regime (mu1 < a*mu0): site = mu1/a, dmu1/dt = -kf*mu1
+        EXACTLY. Healthy regime (mu1 >> a*mu0): site = mu0 (byte-identical to
+        the pre-throttle path). Mirrors the DISCRETE_CHIP direct-RHS test.
+        """
+        a = 3.0
+        for mom_a, site in (((1.0, 1.0, 2.0), 1.0 / 3.0),    # throttled: min(1, 1/3)
+                            ((1.0, 50.0, 3000.0), 1.0)):     # healthy:  min(1, 50/3)
+            sp, core, mask = _two_pool_species()
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+            rxn.polymer_flux_archetype = 6
+            rxn.polymer_eject_units = a
+            rxn.is_end_group_reaction = True
+            rs = _two_pool_rs(rxn, core, mask, mom_a, (0.1, 0.2, 0.5))
+
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+            assert np.isclose(dn_dt[2], -kf * site * a), mom_a   # mu1 drain throttled
+            if site < mom_a[0]:
+                # Throttled identity: dmu1/dt = -kf*mu1 exactly.
+                assert np.isclose(dn_dt[2], -kf * mom_a[1])
+                assert not np.isclose(dn_dt[2], -kf * mom_a[0] * a)
+
+    def test_same_pool_ve_negative_a_exempt_from_throttle(self):
+        """
+        a < 0 same-pool VE GROWS the chain (mu1 rises), so there is no
+        exhaustion to throttle: the guard is a > 0. The rate must stay the
+        unthrottled mu0-scaled value even when mu1 is small relative to mu0
+        (no mu1/a division, which for a < 0 would be a spurious negative site).
+        """
+        a = -3.0
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rxn.is_end_group_reaction = True
+        mom_a = (2.0, 1.0, 1.0)               # mu1 small vs mu0 -- would throttle if a>0
+        rs = _two_pool_rs(rxn, core, mask, mom_a, (0.1, 0.2, 0.5))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        assert np.all(np.isfinite(dn_dt))
+        # site == mu0 (unthrottled), so mu1 drain leg = -kf*mu0*a = +kf*mu0*|a|
+        assert np.isclose(dn_dt[2], -kf * mom_a[0] * a)   # mu1 RISES, unthrottled
+
+    def test_same_pool_ve_exhaustion_trajectory_no_negative(self):
+        """
+        Same-pool a > 0 VE forward-Euler trajectory past exhaustion: with the
+        throttle, mu1 decays at worst exponentially and never crosses zero,
+        the FULL cone holds, and Sum(mu1) + a*n_gas is conserved at every step
+        (each ejected unit leaves the melt as gas mass). Mirrors the
+        DISCRETE_CHIP exhaustion trajectory.
+        """
+        a = 3.0
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rxn.is_end_group_reaction = True
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (0.0, 0.0, 0.0))
+
+        y = rs.y.copy()
+        invariant0 = y[2] + a * y[8]          # Sum(mu1) + a*n_gas
+        dt = 0.005
+        gas_increments = []
+        for _ in range(800):                  # t = 4 s, well past unthrottled zero-cross
+            dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+            assert np.all(np.isfinite(dn_dt))
+            y = y + dt * dn_dt
+            gas_increments.append(dt * dn_dt[8])
+            assert y[2] >= 0.0                              # mu1 never crosses zero
+            if y[2] > 1e-12:
+                assert y[1] * y[3] >= y[2] ** 2 * (1.0 - 1e-9)   # full cone
+        assert gas_increments[-1] < 1e-2 * gas_increments[0]     # production decays
+        assert np.isclose(y[2] + a * y[8], invariant0, rtol=1e-9, atol=1e-12)
+
+    def test_same_pool_ve_throttle_diagnostic_rate_parity(self):
+        """
+        Diagnostic-path parity: get_reaction_rates (the [THE HIJACK] block)
+        must apply the SAME same-pool VE exhaustion throttle as the residual.
+        mu0=1, mu1=1, a=3 is throttled (mu1/a = 1/3 < mu0), so the diagnostic
+        rate is kf*min(mu0, mu1/a) = kf/3, NOT the unthrottled kf*mu0, and
+        equals what the residual's dmu1/(-a) implies.
+        """
+        a = 3.0
+        mom_a = (1.0, 1.0, 2.0)               # throttled: min(1, 1/3) = 1/3
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rxn.is_end_group_reaction = True
+        rs = _two_pool_rs(rxn, core, mask, mom_a, (0.1, 0.2, 0.5))
+
+        rate = rs.get_reaction_rates(rs.y)[0]
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        site = min(mom_a[0], mom_a[1] / a)
+        assert np.isclose(rate, kf * site)                # throttled, not kf*mu0
+        assert not np.isclose(rate, kf * mom_a[0])
+        assert np.isclose(rate, dn_dt[2] / (-a))          # parity with residual
+
     def test_discrete_chip_monodisperse_closed_form_both_picks(self):
         """
         Spec test 10: monodisperse pool (mu_j = N*L^j) -> E[n] = L under BOTH

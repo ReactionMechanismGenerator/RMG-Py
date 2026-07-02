@@ -2122,6 +2122,23 @@ class HybridPolymerSystem(ReactionSystem):
                             max(0.0, y[mu_idx[0]]),
                             max(0.0, y[mu_idx[1]]) / float(self.reaction_chip_units[r_idx]),
                         ) / V_poly
+                    elif (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
+                            and self.is_end_group_reaction[r_idx]
+                            and self.reaction_src_pool[r_idx] != -1
+                            and self.reaction_src_pool[r_idx] == self.reaction_dst_pool[r_idx]
+                            and self.reaction_eject_units[r_idx] > 0.0):
+                        # Same-pool a>0 VE shares the DISCRETE_CHIP exhaustion
+                        # structure: mu0-scaled drain of mu1 that never touches
+                        # mu0, so it would run mu1 linearly negative past
+                        # exhaustion. Throttle site = min(mu0, mu1/a). Guard
+                        # a>0: a<0 GROWS the chain (no exhaustion) and mu1/a<0
+                        # would be a spurious negative site. (mirrored in
+                        # get_reaction_rates' hijack block -- keep in sync)
+                        mu_idx = self.polymer_pools[target_pool_idx].mu_indices
+                        site = min(
+                            max(0.0, y[mu_idx[0]]),
+                            max(0.0, y[mu_idx[1]]) / float(self.reaction_eject_units[r_idx]),
+                        ) / V_poly
 
                     rf *= site
                     rr *= site
@@ -2303,6 +2320,44 @@ class HybridPolymerSystem(ReactionSystem):
                                 dn_dt[f_idx[2]] -= ev_mol * b2
                                 dn_dt[t_idx[2]] += ev_mol * (
                                     b2 + 2.0 * sa * b1 + a * a * b0)
+                    elif src != -1 and src == dst:
+                        # SAME-POOL volatile ejection (spec round-13): unzip /
+                        # depropagation (a>0 sheds mass) or monomer/radical
+                        # addition (a<0 gains mass) that lands back in the SAME
+                        # pool. A dedicated single-pool chip-style write, NOT
+                        # the cross-pool per-direction cancellation above: the
+                        # cancellation can push mu2 the wrong way near
+                        # exhaustion, so we write mu2 with the DISCRETE_CHIP
+                        # clamp (>0) instead. `a` (signed) was resolved above.
+                        # mu0 is untouched (no chain created/destroyed); the gas
+                        # volatile flows through the standard section-4 path.
+                        b0, b1, _b2, _mu2_ok = self._chain_bundle(
+                            src, y, V_poly, self.is_end_group_reaction[r_idx])
+                        if b0 != 0.0:
+                            s_idx = self.polymer_pools[src].mu_indices
+                            e_n = b1
+                            if rf > 0.0:
+                                # Forward: Delta n = -a. Signed a: for a<0 this
+                                # ADDS mass (chain growth) -- correct. Clamp the
+                                # mu2 decrement at >0 (identical to
+                                # DISCRETE_CHIP): 2a*E[n]-a^2 < 0 is unphysical
+                                # per-chain for a>0 but reachable in expectation
+                                # near chip-size mean length; for a<0 it is
+                                # always <0, so the mu2 growth term is dropped
+                                # here (the exact +extension lives on reverse).
+                                rf_mol = rf * V_rxn
+                                dn_dt[s_idx[1]] -= rf_mol * a
+                                mu2_dec = 2.0 * a * e_n - a * a
+                                if mu2_dec > 0.0:
+                                    dn_dt[s_idx[2]] -= rf_mol * mu2_dec
+                            if rr > 0.0:
+                                # Reverse: EXACT extension form (n+a)^2 - n^2 =
+                                # +(2a*E[n] + a^2); unconditionally positive for
+                                # a>0 (no clamp), mirrors DISCRETE_CHIP reverse.
+                                rr_mol = rr * V_rxn
+                                dn_dt[s_idx[1]] += rr_mol * a
+                                dn_dt[s_idx[2]] += rr_mol * (
+                                    2.0 * a * e_n + a * a)
                 elif arch == FLUX_SCISSION_FRAGMENT:
                     src = self.reaction_src_pool[r_idx]
                     dst = self.reaction_dst_pool[r_idx]
@@ -2740,6 +2795,21 @@ class HybridPolymerSystem(ReactionSystem):
                     site = min(
                         max(0.0, y[moment_idx]),
                         max(0.0, y[mu1_idx]) / float(self.reaction_chip_units[r_idx]),
+                    ) / V_poly
+                elif (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
+                        and self.is_end_group_reaction[r_idx]
+                        and self.reaction_src_pool[r_idx] != -1
+                        and self.reaction_src_pool[r_idx] == self.reaction_dst_pool[r_idx]
+                        and self.reaction_eject_units[r_idx] > 0.0):
+                    # Same-pool a>0 VE exhaustion throttle -- parity with the
+                    # residual's section-2 site scaling (keep in sync). site =
+                    # min(mu0, mu1/a); guard a>0 (a<0 grows, no throttle).
+                    mu1_idx = self.polymer_pools[p0_pool_idx].mu_indices[1]
+                    if self.pool_mu1_indices[p0_pool_idx] != -1:
+                        mu1_idx = self.pool_mu1_indices[p0_pool_idx]
+                    site = min(
+                        max(0.0, y[moment_idx]),
+                        max(0.0, y[mu1_idx]) / float(self.reaction_eject_units[r_idx]),
                     ) / V_poly
 
                 rf *= site
