@@ -1543,7 +1543,7 @@ def _warn_once_double_count(entry: dict) -> None:
 _qssa_double_count_warned = set()
 
 
-def _warn_once_qssa_double_count(entry: dict) -> None:
+def warn_once_qssa_double_count(entry: dict) -> None:
     """Log each distinct QSSA double-count census entry once
     (correct-but-loud, mirroring ``_warn_once_double_count``). QSSA
     initiation is random backbone homolysis, so it can overlap two other
@@ -1581,6 +1581,13 @@ def _warn_once_qssa_double_count(entry: dict) -> None:
             "degradation may be double-counted. Census-only (warn, never refuse: "
             "the generated chemistry may cover different bonds).",
             entry["pool"])
+
+
+# Back-compat alias: the helper was born underscore-private and the solver
+# (and possibly external callers) imported it by that name. The public name
+# above is canonical; keep the private binding pointing at the same function
+# (the warn-once state set `_qssa_double_count_warned` keeps its name).
+_warn_once_qssa_double_count = warn_once_qssa_double_count
 
 
 _chip_tripwire_warned = set()
@@ -3858,7 +3865,13 @@ def build_polymer_moments_artifact(pool_registry,
                        for p in pools)
 
     conventions = {
-        "format_doc": "docs/polymer_moments_format.md (polymer_moments_format/2.0)",
+        # format_doc mirrors schema_version (same qssa_present fork below):
+        # /2.1 exactly when the QSSA schema bump applies, /2.0 otherwise so
+        # legacy artifacts stay byte-identical (golden-pinned by test). No
+        # loader parses this token (grepped rmgpy + TA) — human-facing only.
+        "format_doc": ("docs/polymer_moments_format.md "
+                       f"(polymer_moments_format/"
+                       f"{POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_QSSA if qssa_present else POLYMER_POOLS_SIDECAR_SCHEMA_VERSION})"),
         "recipe_revision": (POLYMER_RATE_RECIPE_REVISION_QSSA if qssa_present
                             else POLYMER_RATE_RECIPE_REVISION),
         "moment_basis": "extensive mol, DP basis (mu1 = moles of repeat units)",

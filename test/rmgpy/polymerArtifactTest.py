@@ -353,12 +353,24 @@ class TestRadicalQssaChannelSerialization:
         assert artifact["schema_version"] == "2.1"
         assert artifact["conventions"]["recipe_revision"] == "2026-07-02"
 
+    def test_qssa_artifact_stamps_format_doc_2_1(self, qssa_pool):
+        """conventions.format_doc must agree with schema_version: a QSSA
+        artifact stamps /2.1 (it used to keep the hard-coded /2.0 token even
+        while schema_version said 2.1 — a self-contradicting envelope). No
+        loader parses format_doc (grepped rmgpy + TA), but the human-facing
+        stamp must not lie about the schema of the document carrying it."""
+        artifact = self._artifact([qssa_pool], ["PS"], {"PS": "styrene(5)"})
+        assert artifact["conventions"]["format_doc"] == (
+            "docs/polymer_moments_format.md (polymer_moments_format/2.1)")
+
     def test_mixed_registry_bumps_when_any_pool_has_qssa(self, qssa_pool,
                                                          pe_pool):
         artifact = self._artifact([pe_pool, qssa_pool], ["PE", "PS"],
                                   {"PS": "styrene(5)"})
         assert artifact["schema_version"] == "2.1"
         assert artifact["conventions"]["recipe_revision"] == "2026-07-02"
+        assert artifact["conventions"]["format_doc"] == (
+            "docs/polymer_moments_format.md (polymer_moments_format/2.1)")
 
     def test_legacy_artifact_serialization_pinned(self, pe_pool):
         """No QSSA anywhere -> the ENTIRE serialized artifact is pinned to a

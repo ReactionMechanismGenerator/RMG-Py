@@ -1656,7 +1656,7 @@ class HybridPolymerSystem(ReactionSystem):
         # scans FINAL archetypes, like the item-18 census) and AFTER
         # validate_configuration (qssa_enabled -- the flattened solver-owned
         # gate, the ONLY channel signal the solver trusts -- exists here).
-        from rmgpy.polymer import _warn_once_qssa_double_count
+        from rmgpy.polymer import warn_once_qssa_double_count
         self.qssa_double_count_census = []
         qssa_overlap_src_pools = set()
         for r_dc in range(self.reaction_flux_archetype.shape[0]):
@@ -1670,7 +1670,7 @@ class HybridPolymerSystem(ReactionSystem):
                 entry = {"pool": pool.label,
                          "overlap": "generated_scission_ve"}
                 self.qssa_double_count_census.append(entry)
-                _warn_once_qssa_double_count(entry)
+                warn_once_qssa_double_count(entry)
             # QSSA + the pool's own k_scission: BOTH are random backbone
             # homolysis -- the most direct initiation double-count of all
             # (unlike generated scission, k_scission cannot claim to cover
@@ -1681,7 +1681,7 @@ class HybridPolymerSystem(ReactionSystem):
                 entry = {"pool": pool.label, "overlap": "k_scission",
                          "k_scission": pool.k_scission}
                 self.qssa_double_count_census.append(entry)
-                _warn_once_qssa_double_count(entry)
+                warn_once_qssa_double_count(entry)
 
         # Thermo reference-state tripwire (spec 2026-06-11 §7): runs AFTER
         # the archetype demotion pass and validate_configuration (masks,
