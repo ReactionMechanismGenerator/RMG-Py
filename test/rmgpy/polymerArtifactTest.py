@@ -360,13 +360,111 @@ class TestRadicalQssaChannelSerialization:
         assert artifact["schema_version"] == "2.1"
         assert artifact["conventions"]["recipe_revision"] == "2026-07-02"
 
-    def test_legacy_artifact_version_fields_byte_stable(self, pe_pool):
-        """No QSSA anywhere -> the artifact keeps the legacy literals
-        exactly (old consumers keep loading legacy sidecars unchanged)."""
-        artifact = self._artifact([pe_pool], ["PE"], {})
-        assert artifact["schema_version"] == "2.0"
-        assert artifact["conventions"]["recipe_revision"] == "2026-06-10"
-        assert set(artifact["pools"][0]["channels"]) == {"scission", "unzip"}
+    def test_legacy_artifact_serialization_pinned(self, pe_pool):
+        """No QSSA anywhere -> the ENTIRE serialized artifact is pinned to a
+        golden dict: adding the QSSA feature must not have changed a single
+        byte of a no-QSSA artifact, and any FUTURE drift (new key, dropped
+        key, value change, even float-vs-int flips) fails loudly here.
+
+        The two run-dependent envelope fields are handled explicitly:
+        ``rmg_commit`` is overridden through its parameter and
+        ``generated_at`` is popped after a format check. Byte-stability is
+        asserted on ``json.dumps(..., sort_keys=True)`` rather than dict
+        equality, because ``0 == 0.0`` as dicts yet they serialize to
+        different bytes."""
+        import re
+
+        artifact = build_polymer_moments_artifact(
+            [pe_pool], core_species=None, core_reactions=[],
+            configured_pool_labels=["PE"], monomer_routing_by_pool={},
+            rmg_commit="PINNED-FOR-TEST")
+
+        # The QSSA vocabulary must be entirely absent from a legacy artifact.
+        assert "radical_qssa_unzip" not in json.dumps(artifact)
+
+        generated_at = artifact.pop("generated_at")
+        assert re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z",
+                            generated_at)
+
+        golden = {
+            "schema_version": "2.0",
+            "rmg_commit": "PINNED-FOR-TEST",
+            "rmg_iteration": 0,
+            "conventions": {
+                "format_doc": ("docs/polymer_moments_format.md "
+                               "(polymer_moments_format/2.0)"),
+                "recipe_revision": "2026-06-10",
+                "moment_basis": ("extensive mol, DP basis "
+                                 "(mu1 = moles of repeat units)"),
+                "volumes": {
+                    "V_poly": "constant, consumer-supplied [m^3]",
+                    "V_gas": ("ideal gas, dynamic: V_gas = n_gas*R*T/P "
+                              "(1.0 m^3 floor when n_gas <= 0)"),
+                },
+                "configured_pools": ["PE"],
+                "condensed_species": [],
+                "site_scaling": ("site = max(0, mu_scaling)/V_poly read from "
+                                 "the first proxy reactant's pool; multiplies "
+                                 "ONCE; scales rf AND rr"),
+                "chip_site_throttle": ("site = min(max(0,mu0), max(0,mu1)/a)"
+                                       "/V_poly when archetype=discrete_chip/1 "
+                                       "and scaling=mu0 and a>0"),
+                "kb_recipe": ("kb = kf/Keq; Keq(T) = (P0/(R*T))^dn * "
+                              "exp(-dG0/(R*T)), P0 = 1e5 Pa, dG0 from "
+                              "chem.yaml NASA thermo; dn counts ALL species "
+                              "incl. condensed/proxy (format doc s4 step 1)"),
+                "mu3_closure": "log_lagrange/1",
+                "invariants": {
+                    "discrete_subset": ("sum_pools(mu1) + sum_chip_species"
+                                        "(a_i * n_i) is invariant over the "
+                                        "discrete-reaction subset only"),
+                    "with_unzip": ("add + n(monomer_routing) per pool with an "
+                                   "active unzip channel (unzip moves units "
+                                   "from mu1 into that species)"),
+                },
+            },
+            "pools": [
+                {
+                    "label": "PE",
+                    "monomer_smiles": "[CH2][CH2]",
+                    "monomer_adj_list": (
+                        "multiplicity 3\n"
+                        "1 *1 C u1 p0 c0 {2,S} {3,S} {4,S}\n"
+                        "2 *2 C u1 p0 c0 {1,S} {5,S} {6,S}\n"
+                        "3    H u0 p0 c0 {1,S}\n"
+                        "4    H u0 p0 c0 {1,S}\n"
+                        "5    H u0 p0 c0 {2,S}\n"
+                        "6    H u0 p0 c0 {2,S}\n"),
+                    "feature_monomers_smiles": [],
+                    "end_groups": ["[H]", "[H]"],
+                    "cutoff": 3,
+                    "parent_pool": None,
+                    "spawn_iteration": 0,
+                    "spawn_event_metadata": {"source": "input"},
+                    "mu_indices": None,
+                    "moments": [0.6666666666666666, 35.646601795609776,
+                                2287.2243952345866],
+                    "monomer_mw_g_mol": 28.053164947777987,
+                    "mn_g_mol": 1500.0,
+                    "mw_g_mol": 1800.0,
+                    "initial_mass_g": 1000.0,
+                    "channels": {
+                        "scission": {"A": 1.0, "n": 0.0, "Ea": 0.0,
+                                     "units": {"A": "s^-1", "Ea": "J/mol"}},
+                        "unzip": {"A": 0.01, "n": 0.0, "Ea": 0.0,
+                                  "units": {"A": "s^-1", "Ea": "J/mol"}},
+                    },
+                    "phase_species": [],
+                    "bookkeeping_species": [],
+                    "monomer_routing": None,
+                    "mu3_closure": "log_lagrange/1",
+                    "moments_provenance": "input_declared",
+                }
+            ],
+            "reactions": [],
+        }
+        assert json.dumps(artifact, sort_keys=True) == \
+            json.dumps(golden, sort_keys=True)
 
     def test_qssa_routing_and_json_round_trip(self, qssa_pool):
         """A QSSA pool with k_unzip == 0 still carries monomer_routing (the

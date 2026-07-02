@@ -1687,6 +1687,12 @@ class TestHybridPolymerReactor:
         must be censused (warn-once, NEVER refuse -- generated scission may
         cover different bonds)."""
         import rmgpy.solver.polymer as sp
+        # Warn-once is process-global and keyed (pool, overlap kind); an
+        # earlier fixture in this file may legitimately warm this key, so
+        # reset exactly the key under test to make the assertion
+        # deterministic (mirrors the k_scission co-presence twin).
+        from rmgpy.polymer import _qssa_double_count_warned
+        _qssa_double_count_warned.discard(("poly", "generated_scission_ve"))
         with caplog.at_level(logging.WARNING):
             rs = self._qssa_census_system(_qssa_channel(), with_ve=True)
             # The VE survived demotion (src == dst same-pool shape).
