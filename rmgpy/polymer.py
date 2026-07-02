@@ -1552,6 +1552,63 @@ def _nonpolymer_product_mw_g_mol(product) -> Optional[float]:
     return None
 
 
+# Signed-VOLATILE_EJECTION contract (Codex round-13). Routing gate excludes only
+# exact net-zero fold-backs; the DP-vs-mass THRESHOLD is deferred, so we never
+# hard-gate on a large threshold -- instead a diagnostic warn-once census fires
+# when |a| is atom-transfer-scale (see _warn_atom_transfer_ve).
+_VE_NET_MASS_EPS_G = 1e-6      # g/mol; |net| below this is a mass-conserving relabel
+_VE_ATOM_TRANSFER_UNITS = 0.5  # source-monomer-equivalents; below => census-only warn
+
+
+def _net_nonpolymer_mass_g_mol(reactants, products) -> float:
+    """SIGNED net non-polymer mass (g/mol) that leaves the chain in a reaction:
+
+        (Σ non-polymer PRODUCT MW) − (Σ non-polymer REACTANT MW)
+
+    weighed per participant by :func:`_nonpolymer_product_mw_g_mol` (``None`` ->
+    skipped, i.e. Polymer pool chains and structureless species do not count).
+
+    - net > 0 : chain LOSES mass (ejection / depropagation).
+    - net < 0 : chain GAINS mass (monomer / radical addition, reverse ejection).
+    - |net| ~ 0 : mass-conserving relabel / fold-back (NOT VOLATILE_EJECTION).
+
+    Netting the REACTANT non-polymers is REQUIRED so a bimolecular H_Abstraction
+    ``chain + R• -> chain + RH`` debits only the ~1 H actually shed (net = MW(RH)
+    − MW(R•) ≈ MW(H)), not the full RH mass -- otherwise every radical abstraction
+    would fabricate a whole co-reactant's worth of chain mass loss.
+    """
+    products_g = 0.0
+    for p in products:
+        mw = _nonpolymer_product_mw_g_mol(p)
+        if mw is not None:
+            products_g += mw
+    reactants_g = 0.0
+    for r in reactants:
+        mw = _nonpolymer_product_mw_g_mol(r)
+        if mw is not None:
+            reactants_g += mw
+    return products_g - reactants_g
+
+
+def _warn_atom_transfer_ve(signature, a) -> None:
+    """Diagnostic-only warn-once census (signed-VE spec): a VOLATILE_EJECTION whose
+    ``|a|`` is below one atom-transfer unit (``_VE_ATOM_TRANSFER_UNITS`` = 0.5
+    source-monomer-equivalents) is an atom-scale mass transfer (e.g. the single H
+    shed in an H_Abstraction), not a monomer-scale unzip. μ1 is then treated as a
+    MASS BUCKET, not a degree-of-polymerization count, for this reaction. Routing
+    is UNCHANGED (the DP-vs-mass threshold is deferred); this census only surfaces
+    the a-distribution on real decks so the threshold can be set empirically.
+    Reuses the ``_flux_archetype_warned`` warn-once set, keyed to avoid spam."""
+    key = ("atom_transfer_ve", signature)
+    if key not in _flux_archetype_warned:
+        _flux_archetype_warned.add(key)
+        logging.warning(
+            "Polymer VOLATILE_EJECTION atom-transfer census: |a|=%.4g < %.2f "
+            "source-monomer-equivalents for %s -- mu1 treated as a mass bucket "
+            "(not DP) for this reaction; routing unchanged (threshold deferred).",
+            abs(a), _VE_ATOM_TRANSFER_UNITS, signature)
+
+
 def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetype:
     """
     Classify a reaction's pool moment-flux archetype from its (handshaked)
@@ -1621,6 +1678,27 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
 
     cross_pool = [p for p in product_polymers if p.label not in reactant_pools]
     if not cross_pool:
+        # All polymer products fold back into a reactant pool. A genuine
+        # net-zero fold-back is SAME_POOL -- BUT if a discrete mass-carrying
+        # non-polymer product ALSO leaves (radical unzip / depropagation:
+        # `pool A -> monomer + pool A`, the chain sheds a monomer and the
+        # shorter chain stays in the SAME pool), the chain LOSES that mass.
+        # That is VOLATILE_EJECTION with src == dst (same pool), NOT SAME_POOL:
+        # SAME_POOL would apply zero moment loss while the gas monomer is still
+        # produced, re-creating the flat-TGA / mass-fabrication bug under a new
+        # archetype (Codex round-12). The solver's VE dispatch handles src==dst
+        # (the full-bundle-out + a-shifted-bundle-in on one pool nets to the
+        # chip drain mu0:0, mu1:-a, mu2:-(2a*E[n]-a^2)).
+        # Signed-net gate (Codex round-13): route VE only when the NET non-polymer
+        # mass moved is non-zero (abs(net) > eps). This nets the reactant side too,
+        # so a same-pool bimolecular step (chain + R• -> chain + RH) that only
+        # shifts an atom -- and a monomer ADDITION (chain + monomer -> chain, net
+        # < 0, chain grows) -- both route VE, while an exact fold-back nets 0 and
+        # stays SAME_POOL.
+        if (len(reactant_pools) == 1 and len(product_polymers) == 1
+                and abs(_net_nonpolymer_mass_g_mol(reactants, products))
+                > _VE_NET_MASS_EPS_G):
+            return PolymerFluxArchetype.VOLATILE_EJECTION
         return PolymerFluxArchetype.SAME_POOL
     if (len(product_polymers) == 1 and len(cross_pool) == 1
             and len(reactant_pools) == 1):
@@ -1633,7 +1711,12 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
         # pre-thermo Species) is a mass-carrying volatile; _nonpolymer_product_mw
         # is robust to both (a plain hasattr(get_molecular_weight) gate misses
         # the Species the live pipeline actually passes -- see that helper).
-        if any(_nonpolymer_product_mw_g_mol(p) is not None for p in products):
+        # Signed-net gate (Codex round-13): use abs(net) > eps (netting reactant
+        # non-polymers too), so a bimolecular cross-pool step debits only the net
+        # mass moved, not a whole co-reactant; an exact whole-chain relabel nets 0
+        # and stays MIGRATION.
+        if (abs(_net_nonpolymer_mass_g_mol(reactants, products))
+                > _VE_NET_MASS_EPS_G):
             return PolymerFluxArchetype.VOLATILE_EJECTION
         return PolymerFluxArchetype.MIGRATION
     _warn_unresolved_archetype(
@@ -1642,28 +1725,28 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
     return PolymerFluxArchetype.UNRESOLVED
 
 
-def compute_volatile_ejection_units(products, source_polymer: 'Polymer') -> float:
-    """Fractional source-monomer-equivalents ejected as discrete volatile(s) in
-    a VOLATILE_EJECTION reaction: ``a = (sum of non-polymer product MW, g/mol) /
+def compute_volatile_ejection_units(reactants, products, source_polymer: 'Polymer') -> float:
+    """SIGNED source-monomer-equivalents transferred in a VOLATILE_EJECTION
+    reaction: ``a = _net_nonpolymer_mass_g_mol(reactants, products) /
     source_polymer.monomer_mw_g_mol``. NOT rounded (alpha-methylstyrene off a
-    styrene pool = 118.18/104.15 ~= 1.135). Non-polymer products are summed
-    (multiple volatiles). Per-volatile MW comes from
-    ``_nonpolymer_product_mw_g_mol`` (robust to Molecule vs bare pre-thermo
-    Species -- the live stamp-time type). Raises on a missing/zero
-    monomer_mw_g_mol rather than silently producing 0 (which would fabricate mass
-    conservation)."""
+    styrene pool = 118.18/104.15 ~= 1.135).
+
+    Signed (Codex round-13):
+    - a > 0 : chain LOSES mass (net non-polymer PRODUCT mass, e.g. depropagation).
+    - a < 0 : chain GAINS mass (net non-polymer REACTANT mass, e.g. monomer /
+      radical addition).
+    Netting the reactant side is required so a bimolecular H_Abstraction debits
+    only the ~1 H shed (a ~= MW(H)/monomer), NOT the full co-reactant.
+
+    Raises on a missing/zero monomer_mw_g_mol rather than silently producing 0
+    (which would fabricate mass conservation)."""
     monomer_mw = getattr(source_polymer, 'monomer_mw_g_mol', 0.0) or 0.0
     if monomer_mw <= 0.0:
         raise ValueError(
             f"VOLATILE_EJECTION: source polymer {getattr(source_polymer, 'label', '?')!r} "
             f"has no positive monomer_mw_g_mol ({monomer_mw!r}); cannot compute "
             "eject_units without fabricating mass conservation.")
-    volatile_mw_g = 0.0
-    for p in products:
-        mw = _nonpolymer_product_mw_g_mol(p)
-        if mw is not None:
-            volatile_mw_g += mw
-    return volatile_mw_g / monomer_mw
+    return _net_nonpolymer_mass_g_mol(reactants, products) / monomer_mw
 
 
 def surge_chip_products(products, parent: 'Polymer') -> Optional[int]:
@@ -1791,8 +1874,15 @@ def stamp_polymer_flux_archetype(forward, reactants, polymer_reactants) -> None:
     if forward.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION):
         source = polymer_reactants[0] if polymer_reactants else next(
             (r for r in reactants if isinstance(r, Polymer)), None)
-        forward.polymer_eject_units = float(
-            compute_volatile_ejection_units(forward.products, source))
+        a = float(
+            compute_volatile_ejection_units(reactants, forward.products, source))
+        forward.polymer_eject_units = a
+        # Diagnostic-only census (signed-VE spec): an atom-transfer-scale |a|
+        # (< 0.5 monomer-equivalents, e.g. an H shed in H_Abstraction) means mu1
+        # is being moved as a mass bucket, not a DP count. Warn once; routing is
+        # unchanged (DP-vs-mass threshold deferred).
+        if abs(a) < _VE_ATOM_TRANSFER_UNITS:
+            _warn_atom_transfer_ve(_reaction_census_label(forward), a)
     # Refuse detection (item 18, spec section 4): a reaction stamped UNRESOLVED
     # because a polymer reactant produced no polymer product -- where a
     # non-polymer (gas) product structurally classifies FEATURE against a

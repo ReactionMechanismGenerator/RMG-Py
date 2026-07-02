@@ -778,11 +778,15 @@ PS_1
         # No polymer on either side -> NONE
         assert classify_reaction_flux_archetype([gas], [gas]) == PolymerFluxArchetype.NONE
 
-        # Fold-back (same label as the reactant pool) -> SAME_POOL
+        # Single polymer reactant sheds a discrete mass-carrying co-product (CC,
+        # a~=0.29) -> mass-equivalent volatile ejection, NOT a net-zero fold-back;
+        # proves mass bookkeeping not DP. (Signed-VE, Codex round-13: net =
+        # MW(CC) - 0 > eps, so the same-pool branch routes VOLATILE_EJECTION even
+        # though the polymer product folds back into the same pool.)
         fold = p.copy()
         fold._reacted_class = PolymerClass.FEATURE
         assert (classify_reaction_flux_archetype([p], [fold, gas])
-                == PolymerFluxArchetype.SAME_POOL)
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
 
         # Single cross-pool polymer product, NO non-polymer co-product (pure
         # whole-chain relabel) -> MIGRATION. (A cross-pool product WITH a
@@ -990,6 +994,141 @@ PS_1
         expected = (volatile.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
         assert rxn.polymer_eject_units == pytest.approx(expected)
         assert rxn.polymer_eject_units == pytest.approx(1.135, abs=0.01)
+
+    def test_classify_same_pool_ejection_is_mass_losing(self):
+        """
+        SAME-POOL unzip -- radical depropagation `pool A -> monomer + pool A`
+        (the chain sheds a monomer and the shorter chain stays in the SAME
+        pool) -- MUST be mass-losing VOLATILE_EJECTION, NOT the net-zero
+        SAME_POOL fold-back. Before this fix, classify returned SAME_POOL as
+        soon as there was no cross-pool polymer product, IGNORING the discrete
+        volatile co-product -> zero moment loss while gas monomer is produced =
+        the same flat-TGA/mass-fabrication class as the migration bug, under a
+        different archetype (Codex round-12). This is the shape real radical
+        unzipping produces, so it must be covered before enabling that chemistry.
+        """
+        from rmgpy.species import Species
+        from rmgpy.polymer import PolymerFluxArchetype, classify_reaction_flux_archetype
+        p = self.polymer_1
+        monomer = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])  # styrene
+        # Daughter folds back into the SAME pool (same label as the reactant).
+        same = p.copy()
+        same.label = p.label
+        same._reacted_class = PolymerClass.UNKNOWN
+        assert (classify_reaction_flux_archetype([p], [monomer, same])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        # A genuine net-zero same-pool fold-back (NO mass-carrying co-product)
+        # stays SAME_POOL.
+        assert (classify_reaction_flux_archetype([p], [same])
+                == PolymerFluxArchetype.SAME_POOL)
+
+    def test_stamp_same_pool_ejection_units(self):
+        """Companion: a same-pool ejection stamps eject_units from the volatile
+        (styrene off a styrene pool ~= 1.0), routed through the robust MW
+        helper (bare Species volatile)."""
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+        from rmgpy.polymer import PolymerFluxArchetype, stamp_polymer_flux_archetype
+        p = self.polymer_1
+        monomer = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])  # styrene
+        same = p.copy()
+        same.label = p.label
+        same._reacted_class = PolymerClass.UNKNOWN
+        rxn = Reaction(reactants=[p], products=[monomer, same])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = (monomer.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+
+    def test_classify_h_abstraction_nets_atom_transfer_ve(self):
+        """
+        SIGNED-VE (Codex round-13): a bimolecular same-pool H_Abstraction
+        ``chain + R•(bare Species) -> chain(same pool) + RH`` must net only the
+        single H actually shed, NOT the full RH mass. net = MW(RH) - MW(R•) ~=
+        MW(H) > eps -> VOLATILE_EJECTION, with a ~= MW(H)/monomer (tiny), and the
+        atom-transfer census warns (|a| < 0.5). Netting the REACTANT non-polymers
+        is what keeps a from being the full-RH ~0.154; without it every radical
+        abstraction would fabricate a whole co-reactant of chain mass loss.
+        """
+        import rmgpy.polymer as polymer_mod
+        polymer_mod._flux_archetype_warned.clear()
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype,
+                                   stamp_polymer_flux_archetype)
+        p = self.polymer_1
+        r_rad = Species(molecule=[Molecule(smiles="[CH3]")])   # bare radical R•
+        rh = Species(molecule=[Molecule(smiles="C")])          # RH = R• + H
+        same = p.copy()
+        same.label = p.label
+        same._reacted_class = PolymerClass.UNKNOWN
+        # Classify: bimolecular same-pool, net = MW(CH4) - MW(CH3) ~= MW(H) > eps.
+        assert (classify_reaction_flux_archetype([p, r_rad], [same, rh])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        # Stamp: signed a is the NET (H-scale), not the full RH mass.
+        rxn = Reaction(reactants=[p, r_rad], products=[same, rh])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p, r_rad], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        net_h_g = (rh.molecule[0].get_molecular_weight()
+                   - r_rad.molecule[0].get_molecular_weight()) * 1000.0
+        expected = net_h_g / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+        assert rxn.polymer_eject_units > 0.0                    # net loss (H shed)
+        # Tiny: ~= MW(H)/monomer ~ 0.0097, NOT the full RH mass ~ 0.154.
+        full_rh = (rh.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units < 0.05
+        assert rxn.polymer_eject_units < 0.2 * full_rh
+        # Atom-transfer census warned once (|a| < 0.5 monomer-equivalents).
+        assert any(k[0] == "atom_transfer_ve"
+                   for k in polymer_mod._flux_archetype_warned)
+
+    def test_classify_monomer_addition_is_negative_ve(self):
+        """
+        SIGNED-VE (Codex round-13): a same-pool monomer ADDITION
+        ``chain + monomer(bare Species) -> chain(same pool, longer)`` has NO
+        non-polymer product but a non-polymer REACTANT, so net = 0 - MW(monomer)
+        < 0. abs(net) > eps -> VOLATILE_EJECTION with a < 0 (chain GAINS mass).
+        The signed a is what lets the solver grow μ1 for addition instead of
+        silently conserving it.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype,
+                                   stamp_polymer_flux_archetype)
+        p = self.polymer_1
+        monomer = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])  # styrene
+        longer = p.copy()
+        longer.label = p.label
+        longer._reacted_class = PolymerClass.UNKNOWN
+        assert (classify_reaction_flux_archetype([p, monomer], [longer])
+                == PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn = Reaction(reactants=[p, monomer], products=[longer])
+        rxn.is_end_group_reaction = False
+        stamp_polymer_flux_archetype(rxn, [p, monomer], [p])
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        expected = -(monomer.molecule[0].get_molecular_weight() * 1000.0) / p.monomer_mw_g_mol
+        assert rxn.polymer_eject_units == pytest.approx(expected)
+        assert rxn.polymer_eject_units < 0.0                    # chain gains mass
+        assert rxn.polymer_eject_units == pytest.approx(-1.0, abs=0.01)
+
+    def test_classify_pure_fold_back_no_nonpoly_stays_same_pool(self):
+        """
+        SIGNED-VE (Codex round-13): a pure fold-back ``chain -> chain(same pool)``
+        with NO non-polymer participant on either side nets exactly 0, so it stays
+        SAME_POOL (abs(net) <= eps). Only a non-zero net mass routes VE.
+        """
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   classify_reaction_flux_archetype)
+        p = self.polymer_1
+        same = p.copy()
+        same.label = p.label
+        same._reacted_class = PolymerClass.UNKNOWN
+        assert (classify_reaction_flux_archetype([p], [same])
+                == PolymerFluxArchetype.SAME_POOL)
 
     def test_flag_false_one_unit_piece_routes_scission_fragment(self):
         """
