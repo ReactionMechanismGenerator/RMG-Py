@@ -421,15 +421,16 @@ class CoreEdgeReactionModel:
         """
         from rmgpy.polymer import (
             apply_spawn_intents,
+            collect_polymer_pool_registry,
             process_polymer_candidates_multipool,
         )
         proxy = [c for c in candidates if getattr(c, "is_polymer_proxy", False)]
         if not proxy:
             return
-        pool_registry = [
-            s for s in (self.core.species + self.edge.species + self.new_species_list)
-            if isinstance(s, Polymer)
-        ]
+        # Identity-deduped: a freshly-promoted daughter Polymer sits in BOTH
+        # core.species and new_species_list until the next enlarge clears it.
+        pool_registry = collect_polymer_pool_registry(
+            self.core.species, self.edge.species, self.new_species_list)
         if not pool_registry:
             return
         _, intents = process_polymer_candidates_multipool(

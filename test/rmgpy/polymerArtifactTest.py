@@ -845,6 +845,50 @@ class TestArtifactBuilderAndRoundTrip:
         assert data["conventions"]["configured_pools"] == ["PE"]
 
 
+class TestCollectPolymerPoolRegistry:
+    """collect_polymer_pool_registry is the single builder for the sidecar's
+    pool_registry (used by main.save_everything and
+    CoreEdgeReactionModel._apply_multipool_spawn_pass). A freshly-promoted
+    daughter Polymer sits in BOTH core.species and new_species_list until the
+    next enlarge clears it, so an un-deduped concatenation serializes the same
+    pool twice (observed live: pools [PS, tail, tail_2, tail, tail_2])."""
+
+    def test_same_object_in_two_lists_appears_once(self, pe_pool):
+        from rmgpy.polymer import collect_polymer_pool_registry
+
+        gas = _spc("C", "CH4", index=1)
+        registry = collect_polymer_pool_registry(
+            [gas, pe_pool],   # core.species (freshly-promoted daughter)
+            [],               # edge.species
+            [pe_pool],        # new_species_list (not yet cleared by enlarge)
+        )
+        assert len(registry) == 1
+        assert registry[0] is pe_pool
+
+    def test_order_preserved_and_distinct_pools_kept(self, pe_pool):
+        """Identity dedup only: first occurrence wins, order preserved, and a
+        DISTINCT (even equal-looking) Polymer object is NOT collapsed."""
+        from rmgpy.polymer import collect_polymer_pool_registry
+
+        other = Polymer(
+            label="PE",  # same label as pe_pool, different object
+            monomer="[CH2][CH2]", end_groups=["[H]", "[H]"], cutoff=3,
+            Mn=1500.0, Mw=1800.0, initial_mass=1.0,
+        )
+        gas = _spc("C", "CH4", index=1)
+        registry = collect_polymer_pool_registry(
+            [pe_pool, gas], [other], [pe_pool, other])
+        assert len(registry) == 2
+        assert registry[0] is pe_pool and registry[1] is other
+
+    def test_non_polymer_species_filtered(self, pe_pool):
+        from rmgpy.polymer import collect_polymer_pool_registry
+
+        gas = _spc("C", "CH4", index=1)
+        assert collect_polymer_pool_registry([gas], [gas], []) == []
+        assert collect_polymer_pool_registry([gas, pe_pool]) == [pe_pool]
+
+
 class _FakePool:
     """Minimal stand-in for PolymerPoolConfig (label + index fields only)."""
     def __init__(self, label, mu_indices=(), explicit_dp_to_species_index=None,

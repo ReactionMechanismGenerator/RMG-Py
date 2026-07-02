@@ -2100,15 +2100,17 @@ class RMG(util.Subject):
         # Normative contract: docs/polymer_moments_format.md.
         try:
             from rmgpy.polymer import (Polymer, write_polymer_pools_sidecar,
-                                       _artifact_species_label, derive_condensed_species)
-            pool_registry = [
-                s for s in (
-                    self.reaction_model.core.species
-                    + self.reaction_model.edge.species
-                    + self.reaction_model.new_species_list
-                )
-                if isinstance(s, Polymer)
-            ]
+                                       _artifact_species_label, collect_polymer_pool_registry,
+                                       derive_condensed_species)
+            # Identity-deduped: a freshly-promoted daughter Polymer sits in
+            # BOTH core.species and new_species_list until the next enlarge
+            # clears it, so a plain concatenation would serialize the same
+            # pool twice in the sidecar.
+            pool_registry = collect_polymer_pool_registry(
+                self.reaction_model.core.species,
+                self.reaction_model.edge.species,
+                self.reaction_model.new_species_list,
+            )
             if pool_registry and self.output_directory:
                 chemkin_dir = os.path.join(self.output_directory, "chemkin")
                 target_dir = chemkin_dir if os.path.isdir(chemkin_dir) else self.output_directory

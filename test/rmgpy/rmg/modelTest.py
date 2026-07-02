@@ -1057,6 +1057,52 @@ def _spc_with_h298(smiles, h298_kJ):
     return s
 
 
+class TestPolymerPoolRegistryDedup:
+    def test_spawn_pass_registry_dedups_freshly_promoted_daughter(self, monkeypatch):
+        """Regression: a freshly-promoted daughter Polymer sits in BOTH
+        core.species and new_species_list until the next enlarge clears it,
+        so the pool_registry built by _apply_multipool_spawn_pass (core +
+        edge + new_species_list) contained the SAME object twice (observed
+        live as duplicated sidecar pools [PS, tail, tail_2, tail, tail_2]).
+        The registry must be identity-deduped, order-preserving.
+
+        RED before the fix: the captured registry has 2 entries."""
+        import rmgpy.polymer as rmgpy_polymer
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        poly = Polymer(
+            label="PS", monomer="[CH2][CH]c1ccccc1",
+            end_groups=["[CH3]", "[H]"], cutoff=3,
+            Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+        )
+        # The both-lists condition of a freshly-promoted daughter:
+        cerm.core.species.append(poly)
+        cerm.new_species_list.append(poly)
+
+        captured = {}
+
+        def fake_multipool(*args, **kwargs):
+            captured["registry"] = list(kwargs["pool_registry"])
+            return [], []  # (processed, no spawn intents)
+
+        monkeypatch.setattr(rmgpy_polymer,
+                            "process_polymer_candidates_multipool",
+                            fake_multipool)
+
+        proxy = Species().from_smiles("C=Cc1ccccc1")
+        proxy.is_polymer_proxy = True
+        cerm._apply_multipool_spawn_pass([proxy])
+
+        registry = captured["registry"]
+        assert len(registry) == 1, (
+            f"pool_registry must dedup the same Polymer object appearing in "
+            f"both core.species and new_species_list; got {len(registry)} "
+            f"entries: {[p.label for p in registry]}"
+        )
+        assert registry[0] is poly
+
+
 class TestPolymerBMRealDHrxn:
     def test_convert_bm_matches_fix_barrier_height(self):
         cerm = CoreEdgeReactionModel()

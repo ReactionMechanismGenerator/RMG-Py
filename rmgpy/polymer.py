@@ -3123,6 +3123,28 @@ POLYMER_RATE_RECIPE_REVISION_QSSA = "2026-07-02"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
+def collect_polymer_pool_registry(*species_lists) -> List['Polymer']:
+    """Build the sidecar/spawn-pass pool registry from species lists
+    (typically ``core.species``, ``edge.species``, ``new_species_list``):
+    every :class:`Polymer`, identity-deduped, first occurrence wins,
+    order preserved.
+
+    Identity dedup is load-bearing: a freshly-promoted daughter Polymer sits
+    in BOTH ``core.species`` and ``new_species_list`` until the next enlarge
+    clears the latter, so a plain concatenation serializes the same pool
+    object twice (observed live: pools [PS, tail, tail_2, tail, tail_2]).
+    Dedup is by object identity only — two DISTINCT Polymer objects are both
+    kept even if they compare equal."""
+    seen = set()
+    registry = []
+    for species_list in species_lists:
+        for spc in species_list:
+            if isinstance(spc, Polymer) and id(spc) not in seen:
+                seen.add(id(spc))
+                registry.append(spc)
+    return registry
+
+
 def _artifact_species_label(spc) -> str:
     """chem.yaml species name for ``spc`` — must match rmgpy.cantera.get_label:
     ``label(index)`` when index > 0, bare label otherwise (µ-dummies have
