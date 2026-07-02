@@ -267,18 +267,59 @@ def build_system_from_artifact(artifact, species, reactions,
             continue
         mu_idx = tuple(idx[f"{lab}_mu{k}"] for k in range(3))
         routing = p.get("monomer_routing")
+        k_unzip = float(p["channels"]["unzip"]["A"])
+        # HARD ERROR: a negative unzip A is not a valid rate constant. Every
+        # downstream k_unzip consumer is gated on k_unzip > 0, so a negative
+        # value would silently become an inert channel instead of failing.
+        if k_unzip < 0.0:
+            raise ValueError(
+                f"Pool {lab!r}: artifact declares unzip A={k_unzip:g} -- a negative "
+                f"k_unzip is not a valid rate constant. Fix the artifact's unzip "
+                f"channel A (set it >= 0).")
+        # Routing schema: monomer_routing is a species-label string (see
+        # polymer.py _serialize_pool_for_sidecar). A hand-edited artifact with
+        # any other type used to die with a raw TypeError from idx[routing]
+        # (e.g. unhashable dict); an unknown label died with a raw KeyError.
+        # Both must be actionable ValueErrors naming the pool.
+        if routing is not None and not isinstance(routing, str):
+            raise ValueError(
+                f"Pool {lab!r}: monomer_routing must be a species-label string "
+                f"(the released monomer's label in the deck), got "
+                f"{type(routing).__name__}: {routing!r}. Fix the artifact's "
+                f"monomer_routing.")
+        # HARD ERROR: same guard as generation-side PolymerPool.to_config. A
+        # config with k_unzip > 0 and monomer_poly_index=None makes the solver
+        # drain the condensed moments with no monomer emission -- silently
+        # un-conserved mass. A post-guard generation run can never write such
+        # an artifact; refuse legacy/hand-edited ones at assembly time.
+        if k_unzip > 0.0 and not routing:
+            raise ValueError(
+                f"Pool {lab!r}: artifact declares k_unzip={k_unzip:g} > 0 but no "
+                f"monomer_routing target. The unzip channel would drain the condensed "
+                f"moments with no released-monomer emission, leaving mass silently "
+                f"un-conserved. Fix the artifact's monomer_routing or set the unzip "
+                f"channel A to 0.")
+        monomer_idx = None
+        if routing:
+            monomer_idx = idx.get(routing)
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {lab!r}: monomer_routing target {routing!r} is not in "
+                    f"the deck's species list; cannot wire unzip-to-monomer "
+                    f"release. Fix the artifact's monomer_routing to name a "
+                    f"species present in chem.yaml.")
         pools.append(PolymerPoolConfig(
             label=lab, xs=int(p.get("cutoff") or 0),
             explicit_dp_to_species_index={},
             mu_indices=mu_idx,
-            monomer_poly_index=idx[routing] if routing else None,
+            monomer_poly_index=monomer_idx,
             # The tripwire's ONE chain-scale window (and the spawn-gate
             # snapshot) consume this; without it the consumer-world window
             # collapses to the bare slack and the tag-branch class drifts
             # from generation world.
             monomer_mw_g_mol=float(p.get("monomer_mw_g_mol") or 0.0),
             k_scission=float(p["channels"]["scission"]["A"]),
-            k_unzip=float(p["channels"]["unzip"]["A"]),
+            k_unzip=k_unzip,
         ))
         if initial_moments and lab in initial_moments:
             moments0[lab] = tuple(initial_moments[lab])

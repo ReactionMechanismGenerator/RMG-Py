@@ -163,6 +163,77 @@ class TestTwoSegmentRestart:
                                    rtol=1e-6)
 
 
+class TestUnzipRoutingGuard:
+    def test_build_system_rejects_unzip_pool_without_monomer_routing(self, deck):
+        """An artifact pool with k_unzip > 0 but no monomer_routing target would
+        reach the solver as PolymerPoolConfig(k_unzip>0, monomer_poly_index=None)
+        -- the exact shape that drains condensed moments with no gas emission
+        (silently un-conserved mass). The consumer-world assembler must refuse
+        it at configuration time, same as generation-side to_config."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        pool_entry = artifact["pools"][0]
+        # Premise: the fixture's pool has no monomer routing target.
+        assert not pool_entry.get("monomer_routing")
+        pool_entry["channels"]["unzip"]["A"] = 1.0
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError, match=r"poly.*k_unzip.*un-conserved"):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_build_system_rejects_negative_unzip_rate(self, deck):
+        """A negative unzip A in the artifact is not a valid rate constant. All
+        downstream k_unzip consumers are gated on k_unzip > 0, so a negative
+        value would silently become an inert channel -- the assembler must
+        refuse it with a clear ValueError naming the pool."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["pools"][0]["channels"]["unzip"]["A"] = -1.0
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError,
+                           match=r"poly.*k_unzip.*not a valid rate constant"):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_build_system_rejects_non_string_monomer_routing(self, deck):
+        """monomer_routing is a species-label string in the artifact schema
+        (polymer.py _serialize_pool_for_sidecar). A hand-edited artifact with a
+        non-string routing value (e.g. a dict) used to die with a raw TypeError
+        from idx[routing] (unhashable) -- the assembler must instead raise an
+        actionable ValueError naming the pool and the bad routing value."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        pool_entry = artifact["pools"][0]
+        pool_entry["monomer_routing"] = {"target": "C1(3)"}
+        pool_entry["channels"]["unzip"]["A"] = 1.0
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError, match=r"poly.*monomer_routing"):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_build_system_rejects_unknown_monomer_routing_target(self, deck):
+        """A monomer_routing label absent from the deck's species list used to
+        die with a raw KeyError from idx[routing] -- the assembler must raise a
+        clear ValueError naming the pool and the unresolvable target."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        pool_entry = artifact["pools"][0]
+        pool_entry["monomer_routing"] = "styrene(99)"
+        pool_entry["channels"]["unzip"]["A"] = 1.0
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError, match=r"poly.*styrene\(99\)"):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+
 class TestCli:
     def test_main_writes_csv(self, deck, tmp_path):
         chem_path, art_path = deck

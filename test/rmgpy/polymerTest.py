@@ -4738,6 +4738,111 @@ def test_pool_to_config_populates_monomer_mw_from_molecule_monomer():
     assert cfg.monomer_mw_g_mol == pytest.approx(104.15, abs=1.0)
 
 
+def test_pool_to_config_hard_errors_on_unzip_without_monomer_product():
+    """k_unzip > 0 with no resolvable monomer_product must be a HARD config error.
+
+    The solver drains condensed moments unconditionally when k_unzip > 0
+    (polymer.pyx: dmu1_dt -= k_unzip*mu0) but only emits the released monomer
+    when monomer_poly_index is not None -- so a config with k_unzip > 0 and
+    monomer_poly_index=None silently un-conserves mass (drained mass goes
+    nowhere). to_config is the last point before that config reaches the
+    solver; it must refuse, naming the pool."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=0.5, monomer_product=None)
+    spc_map = {s: i for i, s in enumerate(mu)}
+
+    with pytest.raises(ValueError, match=r"Pool P.*k_unzip.*un-conserved") as excinfo:
+        pool.to_config(spc_map)
+    assert "monomer_product" in str(excinfo.value)
+
+
+def test_pool_to_config_unzip_with_monomer_product_wires_index():
+    """GREEN path: k_unzip > 0 WITH a resolvable monomer_product still builds a
+    config, with monomer_poly_index bound to the released monomer's core index."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    styrene = Species(label="styrene", molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=0.5, monomer_product=styrene)
+    core = mu + [styrene]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    cfg = pool.to_config(spc_map)
+
+    assert cfg.k_unzip == 0.5
+    assert cfg.monomer_poly_index == spc_map[styrene]
+
+
+def test_pool_to_config_zero_unzip_without_monomer_product_stays_legal():
+    """GREEN path: k_unzip == 0 with monomer_product=None is a valid frozen /
+    scission-only pool -- no unzip drain exists, so no emission target is needed."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=0.0, monomer_product=None)
+    spc_map = {s: i for i, s in enumerate(mu)}
+
+    cfg = pool.to_config(spc_map)
+
+    assert cfg.k_unzip == 0.0
+    assert cfg.monomer_poly_index is None
+
+
+def test_polymer_input_helper_hard_errors_on_unzip_without_monomer_product():
+    """Parse-time companion to the to_config guard: the polymer() input-deck
+    helper must refuse k_unzip > 0 with monomer_product=None immediately (clear
+    InputError at deck-read time), before any species registration. The check
+    fires before the helper touches the module-global rmg object, so this test
+    needs no RMG instance."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError, match=r"PS.*k_unzip.*un-conserved"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          k_unzip=1.0, monomer_product=None)
+
+
+def test_polymer_input_helper_rejects_negative_k_unzip():
+    """A negative k_unzip is not a valid rate constant. Every solver consumer
+    of k_unzip is gated on k_unzip > 0, so a negative value would silently
+    become an inert channel instead of failing -- the deck helper must refuse
+    it at parse time with a clear InputError, same class of error as the
+    missing-monomer_product guard."""
+    from rmgpy.rmg import input as rmg_input
+
+    with pytest.raises(InputError, match=r"PS.*k_unzip.*not a valid rate constant"):
+        rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                          k_unzip=-0.5)
+
+
+def test_pool_to_config_rejects_negative_k_unzip():
+    """Config-assembly companion to the deck-helper check: PolymerPool.to_config
+    must refuse a negative k_unzip (not a valid rate constant) even when a
+    monomer_product IS wired -- routing must not dodge the sign check."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("C=Cc1ccccc1")
+    styrene = Species(label="styrene", molecule=[Molecule().from_smiles("C=Cc1ccccc1")])
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_unzip=-0.5, monomer_product=styrene)
+    spc_map = {s: i for i, s in enumerate(mu + [styrene])}
+
+    with pytest.raises(ValueError, match=r"Pool P.*k_unzip.*not a valid rate constant"):
+        pool.to_config(spc_map)
+
+
 def test_derive_daughter_pool_configs_skips_static_and_incomplete():
     """STAGE 1 / CYCLE 2: the root proxy (a Polymer in core whose label IS a
     static deck pool) must NOT be re-derived (else it is double-configured), and

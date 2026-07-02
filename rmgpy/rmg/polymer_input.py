@@ -972,6 +972,29 @@ class PolymerPool(object):
                     f"Pool {self.label}: monomer_product {self.monomer_product} not in core species; "
                     f"cannot wire unzip-to-monomer release.")
 
+        # HARD ERROR: a negative k_unzip is not a valid rate constant. Every
+        # downstream unzip consumer is gated on k_unzip > 0, so a negative
+        # value would silently become an inert channel instead of failing --
+        # and a wired monomer_product must not dodge the sign check.
+        if self.k_unzip < 0.0:
+            raise ValueError(
+                f"Pool {self.label}: k_unzip={self.k_unzip:g} is negative -- a "
+                f"negative k_unzip is not a valid rate constant. Set k_unzip >= 0.")
+
+        # HARD ERROR: k_unzip > 0 with no resolvable monomer emission target.
+        # The solver drains the condensed moments unconditionally when
+        # k_unzip > 0 (polymer.pyx: dmu1_dt -= k_unzip*mu0) but only emits the
+        # released monomer when monomer_poly_index is not None -- so this
+        # config shape would silently un-conserve mass (the drained repeat
+        # units go nowhere). Refuse at configuration time, before the solver.
+        if self.k_unzip > 0.0 and monomer_idx is None:
+            raise ValueError(
+                f"Pool {self.label}: k_unzip={self.k_unzip:g} > 0 but no monomer_product "
+                f"is defined for this pool. The unzip channel would drain the condensed "
+                f"moments (mu1/mu2) with no released-monomer emission target, leaving "
+                f"mass silently un-conserved. Define monomer_product (the real monomer "
+                f"species released on unzip) or set k_unzip=0.")
+
         # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot AND the
         #    reference-state tripwire chain_window (spec 2026-06-10 §3, same idiom
         #    as Polymer.monomer_mw_g_mol). self.monomer is normally a Molecule (the

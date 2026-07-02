@@ -98,11 +98,19 @@ def _euler_oracle(rs, y0, dt, n_steps):
 class TestChannelSufficiency:
     def _run(self, k_s, k_u):
         inert = _spc("N#N", "N2")
-        core = [inert, _mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
-        mask = np.array([True, False, False, False], dtype=bool)
+        # Condensed released-monomer target M: k_unzip > 0 requires a wired
+        # emission target on BOTH sides (the solver invariant refuses
+        # monomer_poly_index=None, because the drain is unconditional while
+        # the emission is index-gated; the consumer mirrors it with
+        # dn[routing] += k_u*mu0*Vp) -- so the oracle comparison now covers
+        # the release flux too.
+        monomer = _spc("C", "M")
+        core = [inert, _mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2"),
+                monomer]
+        mask = np.array([True, False, False, False, False], dtype=bool)
         pool_cfg = PolymerPoolConfig(label="poly", xs=2,
                                      explicit_dp_to_species_index={},
-                                     mu_indices=(1, 2, 3), monomer_poly_index=None,
+                                     mu_indices=(1, 2, 3), monomer_poly_index=4,
                                      k_scission=k_s, k_unzip=k_u, tail_kinetics=None)
         mom0 = (1.0, 5.0, 30.0)
         rs = HybridPolymerSystem(
@@ -121,7 +129,9 @@ class TestChannelSufficiency:
         artifact = build_polymer_moments_artifact(
             [registry_pool], core_species=core, core_reactions=[],
             configured_pool_labels=["poly"],
-            condensed_species=core[1:4], cantera_index_map={})
+            condensed_species=core[1:5],
+            monomer_routing_by_pool={"poly": _yaml_label(monomer)},
+            cantera_index_map={})
         artifact = json.loads(json.dumps(artifact))  # honest serialization
 
         consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],

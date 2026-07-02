@@ -336,17 +336,25 @@ class TestHybridPolymerReactor:
         Mu1 = _spc("CO", "Mu1")
         Mu2 = _spc("CO", "Mu2")
 
-        core_species = [Inert, P2, Mu0, Mu1, Mu2]
+        # Released-monomer target for the lumped unzip channel. k_unzip > 0
+        # requires a monomer_poly_index (solver invariant: the drain is
+        # unconditional, the emission is gated on the index) -- a SEPARATE
+        # species from P2 so the handshake assertion dn_dt[P2] > 0 keeps
+        # proving handshake flux, not monomer emission.
+        M = _spc("C", "M")
+
+        core_species = [Inert, P2, Mu0, Mu1, Mu2, M]
 
         # gas mask: only Inert is gas
-        gas_species_mask = np.array([True, False, False, False, False], dtype=bool)
+        gas_species_mask = np.array([True, False, False, False, False, False],
+                                    dtype=bool)
 
         pool = PolymerPoolConfig(
             label="poly",
             xs=2,
             explicit_dp_to_species_index={2: 1},  # DP=2 -> P2 index
             mu_indices=(2, 3, 4),                 # Mu0, Mu1, Mu2 indices
-            monomer_poly_index=None,
+            monomer_poly_index=5,                 # unzip releases into M
             k_scission=0.0,
             k_unzip=0.1,  # enables handshake
             tail_kinetics=None,
@@ -525,12 +533,17 @@ class TestHybridPolymerReactor:
         Mu0 = _spc("CO", "poly_mu0")
         Mu1 = _spc("C=O", "poly_mu1")
         Mu2 = _spc("C#N", "poly_mu2")
-        core_species = [Inert, Mu0, Mu1, Mu2]
-        gas_species_mask = np.array([True, False, False, False], dtype=bool)
+        # Condensed released-monomer target: k_unzip > 0 requires a
+        # monomer_poly_index (solver invariant). The emission k_unzip*mu0 is
+        # part of the finiteness surface under test.
+        M = _spc("C", "M")
+        core_species = [Inert, Mu0, Mu1, Mu2, M]
+        gas_species_mask = np.array([True, False, False, False, False],
+                                    dtype=bool)
 
         pool = PolymerPoolConfig(
             label="poly", xs=2, explicit_dp_to_species_index={},
-            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            mu_indices=(1, 2, 3), monomer_poly_index=4,
             k_scission=0.3, k_unzip=0.1, tail_kinetics=None,  # exercise both moment terms
         )
         rxn_system = HybridPolymerSystem(
@@ -1018,7 +1031,11 @@ class TestHybridPolymerReactor:
             xs=2,
             explicit_dp_to_species_index={2: 2},
             mu_indices=(1, 1, 1),  # intentionally nonsense but won't be reached if stoich check triggers
-            k_unzip=0.1,
+            # k_unzip stays 0.0: it is incidental here, and k_unzip > 0 with
+            # monomer_poly_index=None now trips the unzip invariant FIRST --
+            # also a ValueError, which would let this test pass without ever
+            # reaching the moment-isolation check it pins.
+            k_unzip=0.0,
         )
 
         # Put Mu0 in a reaction -> should be caught by moment isolation check
@@ -1043,6 +1060,70 @@ class TestHybridPolymerReactor:
 
         with pytest.raises(ValueError):
             rxn_system.initialize_model(core_species, [rxn], [], [])
+
+    def test_initialize_model_rejects_unzip_pool_without_monomer_index(self):
+        """SOLVER-LEVEL INVARIANT (last line of defense behind the deck helper,
+        PolymerPool.to_config and the artifact runner, which all guard the same
+        shape upstream): a pool with k_unzip > 0 and monomer_poly_index=None
+        makes the residual drain the condensed moments unconditionally
+        (polymer.pyx: dmu1_dt -= k_unzip*mu0) while the released-monomer
+        emission is gated on monomer_poly_index is not None -- mass would leave
+        the condensed phase un-conserved. A directly-constructed
+        PolymerPoolConfig bypasses every upstream guard, so
+        validate_configuration (invoked by initialize_model) must refuse it,
+        naming the pool."""
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        core_species = [Inert, Mu0, Mu1, Mu2]
+        gas_species_mask = np.array([True, False, False, False], dtype=bool)
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_unzip=0.5,
+        )
+        rxn_system = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=gas_species_mask, constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            termination=[],
+        )
+        with pytest.raises(ValueError, match=r"poly.*k_unzip.*un-conserved"):
+            rxn_system.initialize_model(core_species, [], [], [])
+
+    def test_initialize_model_rejects_negative_k_unzip(self):
+        """A negative k_unzip is not a valid rate constant and must raise at the
+        same solver invariant layer -- NOT silently become an inert channel
+        (every k_unzip consumer in the residual is gated on k_unzip > 0, so a
+        negative value would masquerade as a frozen pool while the config is
+        nonsense). A wired monomer_poly_index must not dodge the check."""
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        M = _spc("C", "M")  # condensed released-monomer slot
+        core_species = [Inert, Mu0, Mu1, Mu2, M]
+        gas_species_mask = np.array([True, False, False, False, False],
+                                    dtype=bool)
+
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4,
+            k_unzip=-1.0,
+        )
+        rxn_system = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=gas_species_mask, constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            termination=[],
+        )
+        with pytest.raises(ValueError,
+                           match=r"poly.*not a valid rate constant"):
+            rxn_system.initialize_model(core_species, [], [], [])
 
     def test_initialize_model_accepts_two_pools(self):
         """Synthetic multi-pool: HybridPolymerSystem must accept and resolve
@@ -3231,7 +3312,8 @@ def _stage1_classifier(species_list):
 
 
 def _gate17_rs(core, mask, rxns_core, edge_spcs=(), rxns_edge=(),
-               pools=(("A", (1, 2, 3)),), moments=None, k_unzip=0.0):
+               pools=(("A", (1, 2, 3)),), moments=None, k_unzip=0.0,
+               monomer_poly_index=None):
     """Build + initialize a HybridPolymerSystem for the item-17 fixtures.
 
     ``pools`` is a tuple of (label, mu_indices) — the §5 config-state axis:
@@ -3239,18 +3321,21 @@ def _gate17_rs(core, mask, rxns_core, edge_spcs=(), rxns_edge=(),
     config (spec §3(a) stage-2 labels).
 
     ``k_unzip`` (default 0.0, no-op for the existing callers) arms the lumped
-    chain-end unzip channel on every pool. With ``monomer_poly_index=None`` it
-    drains ONLY the moment coordinates (dμ1/dt -= k_unzip·μ0,
-    dμ2/dt -= k_unzip·(2μ1−μ0)) and releases no real species — i.e. it loads the
-    moment-dummy core positions with large, known fluxes while leaving every
-    real species rate untouched. That is exactly the char_rate dimensional bug."""
+    chain-end unzip channel on every pool; it drains the moment coordinates
+    (dμ1/dt -= k_unzip·μ0, dμ2/dt -= k_unzip·(2μ1−μ0)) — i.e. it loads the
+    moment-dummy core positions with large, known fluxes. That is exactly the
+    char_rate dimensional bug. Arming it REQUIRES ``monomer_poly_index`` (the
+    released monomer's core index, applied to every pool): the solver
+    invariant refuses k_unzip > 0 with no emission target, because that shape
+    drains condensed mass to nowhere."""
     moments = moments if moments is not None else {
         lbl: (1.0, 5.0, 30.0) for lbl, _ in pools}
     mask_arr = np.array(mask, dtype=bool)
     seed_idx = int(np.where(mask_arr)[0][0])
     pool_cfgs = [PolymerPoolConfig(label=lbl, xs=2,
                                    explicit_dp_to_species_index={},
-                                   mu_indices=mu, monomer_poly_index=None,
+                                   mu_indices=mu,
+                                   monomer_poly_index=monomer_poly_index,
                                    k_unzip=k_unzip)
                  for lbl, mu in pools]
     rs = HybridPolymerSystem(
@@ -3549,12 +3634,15 @@ class TestCharRateMomentDummyExclusion:
     def _b1_with_unzip(self, k_unzip):
         """The census B1 fixture (A→G gated edge + slow gas driver X→Y so
         char_rate>0) with the chain-end unzip armed on pool A. Unzip drains
-        μ1/μ2 only (monomer_poly_index=None) → the A_mu1/A_mu2 core positions
-        carry large fluxes; every REAL species rate (X, Y, A) is unchanged."""
+        μ1/μ2 → the A_mu1/A_mu2 core positions carry large moment-coordinate
+        fluxes — and releases the monomer into R17 (condensed real species,
+        rate k_unzip·μ0 = 1.0·μ0), the solver-invariant-mandated emission
+        target. R17's flux is REAL chemistry and belongs IN char_rate (2a,
+        not 2b); the moment-coordinate fluxes do not."""
         sp = _gate17_species()
         core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
-                sp["Y"]]
-        mask = [False, False, False, False, True, True]
+                sp["Y"], sp["R17"]]
+        mask = [False, False, False, False, True, True, False]
         gated = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
         driver = Reaction(
             reactants=[sp["X"]], products=[sp["Y"]],
@@ -3562,7 +3650,8 @@ class TestCharRateMomentDummyExclusion:
                                Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
             reversible=False)
         rs = _gate17_rs(core, mask, [driver], edge_spcs=[sp["G"]],
-                        rxns_edge=[gated], k_unzip=k_unzip)
+                        rxns_edge=[gated], k_unzip=k_unzip,
+                        monomer_poly_index=6)  # unzip releases into R17
         return sp, core, driver, gated, rs
 
     def test_moment_dummy_flux_does_not_deflate_enlargement_ratio(self, caplog):
@@ -3570,10 +3659,16 @@ class TestCharRateMomentDummyExclusion:
         (≈ −9·k_unzip) dwarfs the real gas-driver flux. The census ungated_ratio
         for the gated product G is edge_rate/char_rate; with the bug, the moment
         dummies inflate char_rate and crush the ratio ~400×. After 2a, char_rate
-        is the real-species-only L2 norm (X,Y driver) and the ratio matches the
-        SAME hand-computed value as the unzip-free fixture:
+        is the real-species-only L2 norm and the ratio matches the hand-computed
+        value:
             ungated G rate = kf·μ1/V_poly = 10.0
-            char_rate (real only) = sqrt(2)·(1e-3 / V_gas), V_gas = R·800/1e5."""
+            char_rate (real only) = sqrt(emission² + 2·driver²) with
+              emission = k_unzip·μ0 = 1.0 (monomer release into R17 — REAL
+              chemistry, kept in the yardstick: 2a, not 2b)
+              driver = 1e-3 / V_gas per X/Y, V_gas = R·800/1e5.
+        The moment-coordinate fluxes (dμ1 = −1, dμ2 = −9) stay excluded: were
+        they mixed back in, char_rate would inflate ~9× and the assertion's
+        2e-2 tolerance fails."""
         import re
         sp, core, driver, gated, rs = self._b1_with_unzip(k_unzip=1.0)
         with caplog.at_level(logging.WARNING):
@@ -3581,7 +3676,9 @@ class TestCharRateMomentDummyExclusion:
         lines = _census_lines(caplog)
         assert len(lines) == 1, lines
         v_gas = constants.R * 800.0 / 1.0e5
-        expected_ratio = 10.0 / (np.sqrt(2.0) * 1.0e-3 / v_gas)
+        emission = 1.0 * 1.0  # k_unzip·μ0, V_poly=1 → [mol/m³/s]
+        char_real = np.sqrt(emission ** 2 + 2.0 * (1.0e-3 / v_gas) ** 2)
+        expected_ratio = 10.0 / char_real
         ratio = float(re.search(r"ungated_ratio=([0-9.eE+-]+)",
                                 lines[0]).group(1))
         assert ratio == pytest.approx(expected_ratio, rel=2e-2), (

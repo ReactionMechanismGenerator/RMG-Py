@@ -547,6 +547,33 @@ class HybridPolymerSystem(ReactionSystem):
                 if self.gas_species_mask[pool.monomer_poly_index]:
                     raise ValueError(f"Pool {pool.label} monomer index masked as GAS.")
 
+            # Unzip-channel invariants. This is the LAST line of defense: the
+            # deck helper (rmg/input.py), PolymerPool.to_config
+            # (rmg/polymer_input.py) and the artifact runner
+            # (tools/polymer_moments_runner.py) all guard the same shapes, but
+            # a directly-constructed PolymerPoolConfig bypasses every one of
+            # them. The residual drains the condensed moments unconditionally
+            # when k_unzip > 0 (dmu1_dt -= k_unzip*mu0; dmu2_dt -=
+            # k_unzip*(2*mu1 - mu0)) while the released-monomer emission is
+            # gated on monomer_poly_index is not None -- so k_unzip > 0 with
+            # no monomer index makes mass leave the condensed phase
+            # un-conserved (the drained repeat units go nowhere).
+            if pool.k_unzip < 0.0:
+                raise ValueError(
+                    f"Pool {pool.label}: k_unzip={pool.k_unzip:g} is negative -- "
+                    f"a negative k_unzip is not a valid rate constant (every unzip "
+                    f"consumer is gated on k_unzip > 0, so it would silently "
+                    f"masquerade as a frozen pool). Set k_unzip >= 0.")
+            if pool.k_unzip > 0.0 and pool.monomer_poly_index is None:
+                raise ValueError(
+                    f"Pool {pool.label}: k_unzip={pool.k_unzip:g} > 0 but "
+                    f"monomer_poly_index is None. The unzip channel drains this "
+                    f"pool's condensed moments unconditionally, and without a "
+                    f"released-monomer emission target the drained mass leaves "
+                    f"the condensed phase silently un-conserved. Wire "
+                    f"monomer_poly_index (the released monomer's core index) or "
+                    f"set k_unzip=0.")
+
         for mt in self.mass_transfer:
             if not (0 <= mt.poly_index < n_core):
                 raise ValueError(f"Mass transfer poly_index {mt.poly_index} out of range.")

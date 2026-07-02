@@ -290,6 +290,29 @@ def polymer(label: str,
                                unzip flux feeds genuine downstream chemistry. Requires
                                k_unzip > 0 to have any effect. Default None (no release).
     """
+    # HARD ERROR at deck-read time: a negative k_unzip is not a valid rate
+    # constant. Every unzip consumer downstream (solver residual, guards) is
+    # gated on k_unzip > 0, so a negative value would silently become an inert
+    # channel instead of failing.
+    if k_unzip < 0.0:
+        raise InputError(
+            f"Polymer pool '{label}': k_unzip={k_unzip:g} is negative -- a "
+            f"negative k_unzip is not a valid rate constant. Set k_unzip >= 0.")
+
+    # HARD ERROR at deck-read time: k_unzip > 0 with no monomer_product. The
+    # solver drains the pool's condensed moments unconditionally when
+    # k_unzip > 0 but emits the released monomer only when the pool config
+    # resolves a monomer_poly_index -- without monomer_product the drained
+    # mass would go nowhere (silently un-conserved). Fail fast here (the
+    # config-assembly guard in PolymerPool.to_config is the backstop).
+    if k_unzip > 0.0 and monomer_product is None:
+        raise InputError(
+            f"Polymer pool '{label}': k_unzip={k_unzip:g} > 0 requires monomer_product "
+            f"(the real monomer released on unzip, e.g. 'C=Cc1ccccc1' for styrene). "
+            f"Without it the unzip channel drains the condensed moments with no "
+            f"released species, leaving mass silently un-conserved. "
+            f"Define monomer_product or set k_unzip=0.")
+
     poly_obj = Polymer(
         label=label,
         monomer=monomer,
