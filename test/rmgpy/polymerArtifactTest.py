@@ -153,6 +153,193 @@ class TestPoolBlockSchema2:
         assert d["bookkeeping_species"] == []
 
 
+# Raw (pre-normalization) radical QSSA channel config, deck-shaped: only the
+# mandatory blocks plus transfer; efficiency/monomer_yield/basis exercised
+# both explicit and defaulted across the tests below.
+QSSA_RAW_CFG = {
+    "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+    "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+    "termination": {"A": 1.0e8, "n": 0.0, "Ea": 1.0e4},
+    "transfer": {"A": 2.0e3, "n": 0.0, "Ea": 5.0e4},
+    "efficiency": 0.8,
+    "monomer_yield": 0.9,
+}
+
+# The pinned sidecar units convention (docs: M2 commit c0256cc2f). initiation/
+# depropagation are unimolecular [s^-1]; termination is the ONLY bimolecular
+# block [m^3/(mol*s)]; transfer is PSEUDO-first-order [s^-1] (a literature
+# bimolecular k_tr must be premultiplied by the substrate concentration
+# before it enters the config). Ea always [J/mol].
+QSSA_PINNED_UNITS = {
+    "initiation": {"A": "s^-1", "Ea": "J/mol"},
+    "depropagation": {"A": "s^-1", "Ea": "J/mol"},
+    "termination": {"A": "m^3/(mol*s)", "Ea": "J/mol"},
+    "transfer": {"A": "s^-1", "Ea": "J/mol"},
+}
+
+
+@pytest.fixture
+def qssa_pool():
+    return Polymer(
+        label="PS",
+        monomer="[CH2][CH](c1ccccc1)",
+        end_groups=["[H]", "[H]"],
+        cutoff=3,
+        moments=[1.0, 50.0, 3000.0],
+        initial_mass=0.0,
+        k_scission=0.0,
+        k_unzip=0.0,
+        radical_qssa_unzip=dict(QSSA_RAW_CFG),
+    )
+
+
+class TestRadicalQssaChannelSerialization:
+    """Sidecar serialization of the radical_qssa_unzip channel (milestone 3).
+
+    The block lives INSIDE ``channels`` deliberately: the TA loader hard-errors
+    on any channel key outside its supported set (~/Code/TA/ta/mechanism.py:52
+    SUPPORTED_CHANNELS + :509-517 unknown-key ValueError), so an old consumer
+    fails loudly instead of silently integrating a flat/false TGA."""
+
+    def test_qssa_block_emitted_with_pinned_units_and_provenance(self, qssa_pool):
+        d = _serialize_pool_for_sidecar(qssa_pool)
+        block = d["channels"]["radical_qssa_unzip"]
+        assert block["enabled"] is True
+        assert block["basis"] == "backbone_bonds_mu1_minus_mu0"
+        assert block["efficiency"] == pytest.approx(0.8)
+        assert block["monomer_yield"] == pytest.approx(0.9)
+        for name in ("initiation", "depropagation", "termination", "transfer"):
+            trip = block[name]
+            assert trip["A"] == pytest.approx(QSSA_RAW_CFG[name]["A"])
+            assert trip["n"] == pytest.approx(QSSA_RAW_CFG[name]["n"])
+            assert trip["Ea"] == pytest.approx(QSSA_RAW_CFG[name]["Ea"])
+            assert trip["units"] == QSSA_PINNED_UNITS[name], (
+                f"units pin broken for {name!r}: {trip.get('units')!r}")
+        prov = block["provenance"]
+        assert prov["radical_balance"] == (
+            "G_R = 2*f*ki*B; loss = ktr*R + 2*kt*R^2; "
+            "Rss no-transfer = sqrt(f*ki*B/kt)")
+        assert prov["moment_closure"] == "end_shrink_pool_mean/1"
+        assert prov["R_gas_J_per_mol_K"] == pytest.approx(8.314)
+        assert prov["concentration_basis"] == "mol/m^3 condensed volume"
+        assert "premultiplied by substrate concentration" in prov["transfer_note"]
+
+    def test_qssa_pool_keeps_unzip_zeroed(self, qssa_pool):
+        """Mutual exclusion is an upstream hard error; the sidecar shape it
+        implies is unzip.A == 0 whenever the QSSA block is enabled."""
+        d = _serialize_pool_for_sidecar(qssa_pool)
+        assert d["channels"]["radical_qssa_unzip"]["enabled"] is True
+        assert d["channels"]["unzip"]["A"] == 0.0
+
+    def test_transfer_null_when_absent(self, qssa_pool):
+        cfg = dict(QSSA_RAW_CFG)
+        del cfg["transfer"]
+        qssa_pool.radical_qssa_unzip = cfg
+        d = _serialize_pool_for_sidecar(qssa_pool)
+        block = d["channels"]["radical_qssa_unzip"]
+        assert block["transfer"] is None
+        # defaults from the shared validator fill in when the deck omits them
+        cfg2 = {k: v for k, v in QSSA_RAW_CFG.items()
+                if k in ("initiation", "depropagation", "termination")}
+        qssa_pool.radical_qssa_unzip = cfg2
+        block = _serialize_pool_for_sidecar(qssa_pool)["channels"]["radical_qssa_unzip"]
+        assert block["efficiency"] == 1.0
+        assert block["monomer_yield"] == 1.0
+        assert block["basis"] == "backbone_bonds_mu1_minus_mu0"
+
+    def test_legacy_pool_emits_no_qssa_block(self, pe_pool):
+        """Channel absent -> emit NOTHING (no noise on legacy pools; an old
+        TA must keep loading legacy sidecars unchanged)."""
+        d = _serialize_pool_for_sidecar(pe_pool)
+        assert "radical_qssa_unzip" not in d["channels"]
+        assert set(d["channels"]) == {"scission", "unzip"}
+
+    def test_invalid_qssa_config_refuses_to_serialize(self, qssa_pool):
+        """The serializer normalizes through the SHARED validator: a garbage
+        channel dict must raise, never reach the sidecar."""
+        qssa_pool.radical_qssa_unzip = {"initiation": {"A": 1.0}}
+        with pytest.raises(ValueError, match=r"PS.*radical_qssa_unzip"):
+            _serialize_pool_for_sidecar(qssa_pool)
+
+    def test_recipe_block_emitted_verbatim(self, qssa_pool):
+        """The machine-readable normative recipe (round-23). Each string is
+        pinned as a LITERAL, verified against the implemented RHS in
+        rmgpy/solver/polymer.pyx (M2 rate law + moment signature; SMALL_EPS
+        at polymer.pyx:71). The loader pins the same strings independently
+        and rejects on any mismatch, so an accidental edit here is a
+        consumer-coordination event, not a cosmetic one."""
+        d = _serialize_pool_for_sidecar(qssa_pool)
+        recipe = d["channels"]["radical_qssa_unzip"]["recipe"]
+        assert recipe == {
+            "bond_basis": ("B = max(mu1 - mu0, 0) on concentration moments "
+                           "(mol/m^3 condensed)"),
+            "rate_no_transfer": ("r_mono = monomer_yield * kdp * "
+                                 "sqrt(efficiency * ki * B / kt)"),
+            "rate_with_transfer": ("r_mono = monomer_yield * kdp * "
+                                   "(sqrt(ktr^2 + 8*kt*(2*efficiency*ki*B)) "
+                                   "- ktr) / (4*kt)"),
+            "moment_signature": ("dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
+                                 "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
+            "small_eps": 1e-30,
+            "volume_note": ("kt is bimolecular: rates depend on condensed "
+                            "volume V_poly; consumers MUST evaluate on "
+                            "concentration moments mu_k = n_k / V_poly and "
+                            "convert emitted rate back with *V_poly"),
+        }
+        # human-readable provenance stays alongside the normative recipe
+        assert "provenance" in d["channels"]["radical_qssa_unzip"]
+
+    def _artifact(self, pools, labels, routing):
+        return build_polymer_moments_artifact(
+            pools, core_species=None, core_reactions=[],
+            configured_pool_labels=labels,
+            monomer_routing_by_pool=routing)
+
+    def test_qssa_artifact_bumps_schema_and_recipe_revision(self, qssa_pool):
+        """Version contract (round-23): channel-vocabulary growth is a minor
+        SHAPE bump (2.0 -> 2.1) and the QSSA rate law is new channel/flux
+        algebra (recipe_revision 2026-06-10 -> 2026-07-02). Both stamped only
+        when a pool actually carries the channel."""
+        artifact = self._artifact([qssa_pool], ["PS"], {"PS": "styrene(5)"})
+        assert artifact["schema_version"] == "2.1"
+        assert artifact["conventions"]["recipe_revision"] == "2026-07-02"
+
+    def test_mixed_registry_bumps_when_any_pool_has_qssa(self, qssa_pool,
+                                                         pe_pool):
+        artifact = self._artifact([pe_pool, qssa_pool], ["PE", "PS"],
+                                  {"PS": "styrene(5)"})
+        assert artifact["schema_version"] == "2.1"
+        assert artifact["conventions"]["recipe_revision"] == "2026-07-02"
+
+    def test_legacy_artifact_version_fields_byte_stable(self, pe_pool):
+        """No QSSA anywhere -> the artifact keeps the legacy literals
+        exactly (old consumers keep loading legacy sidecars unchanged)."""
+        artifact = self._artifact([pe_pool], ["PE"], {})
+        assert artifact["schema_version"] == "2.0"
+        assert artifact["conventions"]["recipe_revision"] == "2026-06-10"
+        assert set(artifact["pools"][0]["channels"]) == {"scission", "unzip"}
+
+    def test_qssa_routing_and_json_round_trip(self, qssa_pool):
+        """A QSSA pool with k_unzip == 0 still carries monomer_routing (the
+        channel reuses the pool's existing routing), and the whole artifact
+        survives a real json.dumps/loads round trip losslessly."""
+        artifact = build_polymer_moments_artifact(
+            [qssa_pool],
+            core_species=None,
+            core_reactions=[],
+            configured_pool_labels=["PS"],
+            monomer_routing_by_pool={"PS": "styrene(5)"},
+        )
+        rt = json.loads(json.dumps(artifact))
+        pool_entry = rt["pools"][0]
+        assert pool_entry["monomer_routing"] == "styrene(5)"
+        assert pool_entry["channels"]["unzip"]["A"] == 0.0
+        block = pool_entry["channels"]["radical_qssa_unzip"]
+        assert block == artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        assert block["enabled"] is True
+        assert block["termination"]["units"]["A"] == "m^3/(mol*s)"
+
+
 def _arrhenius(A=(2.0, "s^-1")):
     return Arrhenius(A=A, n=0.0, Ea=(0.0, "J/mol"), T0=(1.0, "K"))
 

@@ -20,6 +20,13 @@ P0 = 1.0e5            # Pa, Keq reference pressure
 SMALL_EPS = 1e-30
 LN_EXP_OVERFLOW_GUARD = 700.0
 
+# The only channel kinds this consumer dispatches. Any other key inside a
+# pool's ``channels`` (e.g. radical_qssa_unzip) must fail at construction,
+# not be dropped permissively -- silently integrating without an enabled
+# channel produces a flat/false trajectory. Mirrors the TA loader's guard
+# (~/Code/TA/ta/mechanism.py SUPPORTED_CHANNELS).
+SUPPORTED_CHANNELS = frozenset({"scission", "unzip"})
+
 
 def safe_mu3(mu0, mu1, mu2):
     """log_lagrange/1 closure with realizability guard (format doc §6)."""
@@ -82,6 +89,13 @@ class ArtifactConsumer:
             lab = p["label"]
             if lab not in self.configured:
                 continue
+            unknown = sorted(set(p["channels"]) - SUPPORTED_CHANNELS)
+            if unknown:
+                raise ValueError(
+                    f"pool {lab!r}: unsupported channel key(s) {unknown}; "
+                    f"this consumer implements {sorted(SUPPORTED_CHANNELS)} "
+                    f"only. Integrating without an enabled channel would "
+                    f"silently produce a wrong trajectory.")
             mu_idx = tuple(self.idx[f"{lab}_mu{k}"] for k in range(3))
             routing = p.get("monomer_routing")
             self.pools[lab] = {

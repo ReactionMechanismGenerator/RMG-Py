@@ -84,6 +84,306 @@ def deck(tmp_path):
     return chem_path, art_path
 
 
+QSSA_RAW_CFG = {
+    "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+    "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+    "termination": {"A": 1.0e8, "n": 0.0, "Ea": 1.0e4},
+    "transfer": {"A": 2.0e3, "n": 0.0, "Ea": 5.0e4},
+    "efficiency": 0.8,
+    "monomer_yield": 0.9,
+}
+
+
+@pytest.fixture
+def qssa_deck(tmp_path):
+    """A radical-QSSA pool (k_unzip == 0) with wired monomer routing, written
+    out as chem.yaml + polymer_pools.json exactly like an RMG run would."""
+    n2 = _spc("N#N", "N2", index=1)
+    sty = _spc("C=Cc1ccccc1", "styrene", index=2)
+    mus = [_mu("PS_mu0"), _mu("PS_mu1"), _mu("PS_mu2")]
+    core = [n2, sty] + mus
+    data, index_map = generate_cantera_data(core, [],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+
+    pool = Polymer(label="PS", monomer="[CH2][CH](c1ccccc1)",
+                   end_groups=["[H]", "[H]"], cutoff=3,
+                   moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                   k_scission=0.0, k_unzip=0.0,
+                   radical_qssa_unzip=dict(QSSA_RAW_CFG))
+    artifact = build_polymer_moments_artifact(
+        [pool], core_species=core, core_reactions=[],
+        configured_pool_labels=["PS"], condensed_species=mus + [sty],
+        monomer_routing_by_pool={"PS": "styrene(2)"},
+        cantera_index_map=index_map)
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+def _build_qssa(qssa_deck, artifact=None):
+    chem_path, art_path = qssa_deck
+    if artifact is None:
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=650.0, P=1.0e5, V_poly=1.0,
+        initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+
+def _load_artifact(qssa_deck):
+    with open(qssa_deck[1]) as fh:
+        return json.load(fh)
+
+
+class TestRadicalQssaArtifactLoader:
+    """build_system_from_artifact must parse + validate the sidecar's
+    radical_qssa_unzip block (milestone 3): shared-validator field rules,
+    pinned units (ERROR on mismatch, never convert), enabled-without-routing
+    hard error, and the M1 flattening picking up the parsed config."""
+
+    def test_round_trip_flattened_arrays_match_input_constants(self, qssa_deck):
+        rs, core, _ = _build_qssa(qssa_deck)
+        assert rs.qssa_enabled[0] == 1
+        assert rs.qssa_ki_A[0] == pytest.approx(1.0e13)
+        assert rs.qssa_ki_n[0] == pytest.approx(0.0)
+        assert rs.qssa_ki_Ea[0] == pytest.approx(3.0e5)
+        assert rs.qssa_kdp_A[0] == pytest.approx(1.0e14)
+        assert rs.qssa_kdp_n[0] == pytest.approx(0.5)
+        assert rs.qssa_kdp_Ea[0] == pytest.approx(9.0e4)
+        assert rs.qssa_kt_A[0] == pytest.approx(1.0e8)
+        assert rs.qssa_kt_n[0] == pytest.approx(0.0)
+        assert rs.qssa_kt_Ea[0] == pytest.approx(1.0e4)
+        assert rs.qssa_has_transfer[0] == 1
+        assert rs.qssa_ktr_A[0] == pytest.approx(2.0e3)
+        assert rs.qssa_ktr_Ea[0] == pytest.approx(5.0e4)
+        assert rs.qssa_efficiency[0] == pytest.approx(0.8)
+        assert rs.qssa_monomer_yield[0] == pytest.approx(0.9)
+        # routing survived: the pool config's monomer index points at styrene
+        pool_cfg = rs.polymer_pools[0]
+        assert pool_cfg.monomer_poly_index is not None
+        assert core[pool_cfg.monomer_poly_index].label == "styrene(2)"
+        assert pool_cfg.k_unzip == 0.0
+
+    def test_legacy_sidecar_without_block_loads_unchanged(self, deck):
+        """A pre-QSSA sidecar (no radical_qssa_unzip key) must load exactly
+        as before, with the channel disabled in the flattened state."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        assert "radical_qssa_unzip" not in artifact["pools"][0]["channels"]
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert rs.qssa_enabled[0] == 0
+        assert rs.polymer_pools[0].radical_qssa_unzip is None
+
+    def test_rejects_disabled_block_as_malformed(self, qssa_deck):
+        """The serializer never emits enabled=false: a disabled channel is
+        ABSENT from the sidecar. A present-disabled block would carry
+        constants nobody validates (enabled=false + garbage used to load
+        silently), so it is rejected outright (round-23)."""
+        artifact = _load_artifact(qssa_deck)
+        artifact["pools"][0]["channels"]["radical_qssa_unzip"]["enabled"] = False
+        with pytest.raises(ValueError, match=r"PS.*present-disabled"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_enabled_without_routing(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        artifact["pools"][0]["monomer_routing"] = None
+        with pytest.raises(ValueError,
+                           match=r"PS.*radical_qssa_unzip.*monomer_routing"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_wrong_units_string_no_conversion(self, qssa_deck):
+        """A sidecar claiming a different unit system must ERROR, not
+        convert: termination pinned bimolecular m^3/(mol*s)."""
+        artifact = _load_artifact(qssa_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        block["termination"]["units"]["A"] = "s^-1"
+        with pytest.raises(ValueError, match=r"PS.*termination.*units"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_bimolecular_transfer_units(self, qssa_deck):
+        """ktr is PSEUDO-first-order [s^-1]; a sidecar claiming bimolecular
+        transfer units must ERROR (premultiplication happened upstream or
+        not at all -- never converted silently here)."""
+        artifact = _load_artifact(qssa_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        block["transfer"]["units"]["A"] = "m^3/(mol*s)"
+        with pytest.raises(ValueError, match=r"PS.*transfer.*units"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_missing_units_block(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        del block["initiation"]["units"]
+        with pytest.raises(ValueError, match=r"PS.*initiation.*units"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_unknown_basis(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        block["basis"] = "chain_ends_mu0"
+        with pytest.raises(ValueError, match=r"PS.*basis"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_qssa_with_nonzero_unzip(self, qssa_deck):
+        """Mutual exclusion mirrors the generation-side guard: both channel
+        representations on one pool would double-count the unzip flux."""
+        artifact = _load_artifact(qssa_deck)
+        artifact["pools"][0]["channels"]["unzip"]["A"] = 0.5
+        with pytest.raises(ValueError,
+                           match=r"PS.*radical_qssa_unzip.*k_unzip"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_missing_or_non_bool_enabled(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        del block["enabled"]
+        with pytest.raises(ValueError, match=r"PS.*enabled"):
+            _build_qssa(qssa_deck, artifact)
+        artifact = _load_artifact(qssa_deck)
+        artifact["pools"][0]["channels"]["radical_qssa_unzip"]["enabled"] = 1
+        with pytest.raises(ValueError, match=r"PS.*enabled"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_unknown_key_in_block(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        block["efficency"] = 0.5  # typo'd efficiency must not be dropped
+        with pytest.raises(ValueError, match=r"PS.*efficency"):
+            _build_qssa(qssa_deck, artifact)
+
+
+class TestQssaSchemaVersionGate:
+    """Version contract (round-23): the QSSA channel vocabulary was
+    introduced in schema 2.1 (channel-vocabulary growth = minor bump).
+    Acceptance matrix: 2.0 no-QSSA -> load; 2.0 with-QSSA -> reject
+    (malformed); 2.1 either way -> load; future 2.x minor -> load (the
+    envelope gate has always been minor-permissive: main() pins
+    startswith('2.')); non-2.x major carrying QSSA -> reject."""
+
+    def test_qssa_artifact_is_stamped_2_1_and_accepted(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        assert artifact["schema_version"] == "2.1"
+        rs, _, _ = _build_qssa(qssa_deck, artifact)
+        assert rs.qssa_enabled[0] == 1
+
+    def test_legacy_deck_still_stamped_2_0_and_accepted(self, deck):
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        assert artifact["schema_version"] == "2.0"
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert rs.qssa_enabled[0] == 0
+
+    def test_accepts_2_1_without_qssa(self, deck):
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.1"
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert rs.qssa_enabled[0] == 0
+
+    def test_rejects_qssa_block_in_2_0_artifact(self, qssa_deck):
+        """A 2.0 artifact containing the QSSA vocabulary is malformed --
+        the emitter stamps 2.1 whenever it writes the block."""
+        artifact = _load_artifact(qssa_deck)
+        artifact["schema_version"] = "2.0"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.1"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_qssa_block_in_non_2x_artifact(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        artifact["schema_version"] = "3.0"
+        with pytest.raises(ValueError, match=r"schema_version"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_accepts_future_minor_with_qssa(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        artifact["schema_version"] = "2.7"
+        rs, _, _ = _build_qssa(qssa_deck, artifact)
+        assert rs.qssa_enabled[0] == 1
+
+
+class TestQssaNormativeRecipe:
+    """The QSSA block's machine-readable recipe sub-block (round-23): the
+    loader validates every field by EXACT match against its own pinned copy
+    (same idiom as the units pin -- reject, never adapt) and rejects a QSSA
+    block that lacks the recipe entirely."""
+
+    PINNED_RECIPE = {
+        "bond_basis": ("B = max(mu1 - mu0, 0) on concentration moments "
+                       "(mol/m^3 condensed)"),
+        "rate_no_transfer": ("r_mono = monomer_yield * kdp * "
+                             "sqrt(efficiency * ki * B / kt)"),
+        "rate_with_transfer": ("r_mono = monomer_yield * kdp * "
+                               "(sqrt(ktr^2 + 8*kt*(2*efficiency*ki*B)) "
+                               "- ktr) / (4*kt)"),
+        "moment_signature": ("dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
+                             "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
+        "small_eps": 1e-30,
+        "volume_note": ("kt is bimolecular: rates depend on condensed "
+                        "volume V_poly; consumers MUST evaluate on "
+                        "concentration moments mu_k = n_k / V_poly and "
+                        "convert emitted rate back with *V_poly"),
+    }
+
+    def test_recipe_round_trips_and_validates(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        assert block["recipe"] == self.PINNED_RECIPE
+        rs, _, _ = _build_qssa(qssa_deck, artifact)
+        assert rs.qssa_enabled[0] == 1
+
+    def test_rejects_missing_recipe(self, qssa_deck):
+        """QSSA block without recipe = malformed (never emitted that way)."""
+        artifact = _load_artifact(qssa_deck)
+        del artifact["pools"][0]["channels"]["radical_qssa_unzip"]["recipe"]
+        with pytest.raises(ValueError, match=r"PS.*recipe"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_recipe_field_mismatch_never_adapts(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        recipe = artifact["pools"][0]["channels"]["radical_qssa_unzip"]["recipe"]
+        recipe["rate_no_transfer"] = "r_mono = kdp * sqrt(ki * B / kt)"
+        with pytest.raises(ValueError, match=r"PS.*rate_no_transfer"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_recipe_missing_field(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        recipe = artifact["pools"][0]["channels"]["radical_qssa_unzip"]["recipe"]
+        del recipe["moment_signature"]
+        with pytest.raises(ValueError, match=r"PS.*moment_signature"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_recipe_small_eps_drift(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        recipe = artifact["pools"][0]["channels"]["radical_qssa_unzip"]["recipe"]
+        recipe["small_eps"] = 1e-29
+        with pytest.raises(ValueError, match=r"PS.*small_eps"):
+            _build_qssa(qssa_deck, artifact)
+
+    def test_rejects_unknown_recipe_key(self, qssa_deck):
+        artifact = _load_artifact(qssa_deck)
+        recipe = artifact["pools"][0]["channels"]["radical_qssa_unzip"]["recipe"]
+        recipe["extra_note"] = "x"
+        with pytest.raises(ValueError, match=r"PS.*extra_note"):
+            _build_qssa(qssa_deck, artifact)
+
+
 class TestChemYamlLoader:
     def test_load_chem_yaml(self, deck):
         chem_path, art_path = deck

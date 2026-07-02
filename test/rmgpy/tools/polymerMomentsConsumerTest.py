@@ -157,6 +157,40 @@ class TestChannelSufficiency:
         assert mine[-1, 2] == pytest.approx(5.0 - 0.5 * 1.0 * t_end, rel=1e-6)
 
 
+class TestUnknownChannelRejection:
+    def test_consumer_rejects_qssa_channel_loudly(self):
+        """This consumer implements scission/unzip ONLY. An artifact whose
+        pool carries a radical_qssa_unzip channel (or any unknown channel
+        kind) must fail at construction, not silently integrate without the
+        channel -- the silent path produces a flat/false trajectory, the
+        exact failure class the sidecar schema exists to kill. Mirrors TA's
+        guard (~/Code/TA/ta/mechanism.py:509-517)."""
+        inert = _spc("N#N", "N2")
+        monomer = _spc("C", "M")
+        core = [inert, _mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2"),
+                monomer]
+        registry_pool = Polymer(
+            label="poly", monomer="[CH2][CH2]",
+            end_groups=["[H]", "[H]"], cutoff=3,
+            moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+            k_scission=0.0, k_unzip=0.0,
+            radical_qssa_unzip={
+                "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+                "depropagation": {"A": 1.0e14, "n": 0.0, "Ea": 9.0e4},
+                "termination": {"A": 1.0e8, "n": 0.0, "Ea": 1.0e4},
+            })
+        artifact = build_polymer_moments_artifact(
+            [registry_pool], core_species=core, core_reactions=[],
+            configured_pool_labels=["poly"],
+            condensed_species=core[1:5],
+            monomer_routing_by_pool={"poly": _yaml_label(monomer)},
+            cantera_index_map={})
+        artifact = json.loads(json.dumps(artifact))
+        with pytest.raises(ValueError, match=r"poly.*radical_qssa_unzip"):
+            ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                             P=P_PA, V_poly=V_POLY)
+
+
 # ---------------------------------------------------------------------------
 # (b) synthetic two-pool deck: stamped MIGRATION + DISCRETE_CHIP (+ reversible
 #     Keq case). Reuses the apportionment plan's two-pool fixture layout.

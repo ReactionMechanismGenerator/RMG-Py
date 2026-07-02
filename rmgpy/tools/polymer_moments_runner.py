@@ -59,6 +59,7 @@ from rmgpy.solver.polymer import (
     HybridPolymerSystem,
     MassTransferConfig,
     PolymerPoolConfig,
+    validate_radical_qssa_unzip,
 )
 from rmgpy.species import Species
 from rmgpy.thermo import NASA, NASAPolynomial
@@ -240,6 +241,187 @@ def _restamp_and_extend(artifact, species, reactions):
     return all_reactions
 
 
+# Pinned A-units per radical_qssa_unzip Arrhenius block. Deliberately pinned
+# HERE, independently of the emitter's RADICAL_QSSA_SIDECAR_A_UNITS
+# (rmgpy/polymer.py): the loader guards the artifact BOUNDARY, so a sidecar
+# claiming any other unit system -- e.g. ktr in m^3/(mol*s), i.e. a
+# bimolecular transfer constant that was never premultiplied by the substrate
+# concentration -- must ERROR, never be silently converted or accepted.
+_QSSA_PINNED_A_UNITS = {
+    "initiation": "s^-1",
+    "depropagation": "s^-1",
+    "termination": "m^3/(mol*s)",
+    "transfer": "s^-1",
+}
+# Every key the sidecar block may carry: the channel-config vocabulary
+# (validate_radical_qssa_unzip) plus the sidecar-only envelope fields.
+_QSSA_SIDECAR_KEYS = frozenset(_QSSA_PINNED_A_UNITS) | frozenset(
+    ("enabled", "basis", "efficiency", "monomer_yield", "provenance",
+     "recipe"))
+
+# Normative machine-readable QSSA recipe, pinned HERE independently of the
+# emitter's RADICAL_QSSA_SIDECAR_RECIPE (rmgpy/polymer.py) -- same idiom as
+# the units pin above: the loader guards the artifact BOUNDARY, so a sidecar
+# claiming a different rate algebra (or omitting the recipe entirely) must
+# ERROR, never be adapted to. Each string matches the implemented RHS in
+# rmgpy/solver/polymer.pyx (M2 rate law; SMALL_EPS = 1e-30 at polymer.pyx:71).
+_QSSA_PINNED_RECIPE = {
+    "bond_basis": ("B = max(mu1 - mu0, 0) on concentration moments "
+                   "(mol/m^3 condensed)"),
+    "rate_no_transfer": ("r_mono = monomer_yield * kdp * "
+                         "sqrt(efficiency * ki * B / kt)"),
+    "rate_with_transfer": ("r_mono = monomer_yield * kdp * "
+                           "(sqrt(ktr^2 + 8*kt*(2*efficiency*ki*B)) "
+                           "- ktr) / (4*kt)"),
+    "moment_signature": ("dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
+                         "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
+    "small_eps": 1e-30,
+    "volume_note": ("kt is bimolecular: rates depend on condensed "
+                    "volume V_poly; consumers MUST evaluate on "
+                    "concentration moments mu_k = n_k / V_poly and "
+                    "convert emitted rate back with *V_poly"),
+}
+
+# The QSSA channel vocabulary entered the sidecar schema at 2.1 (channel-
+# vocabulary growth = minor bump); the emitter stamps >= 2.1 whenever it
+# writes the block, so a 2.0 artifact carrying one is malformed.
+_QSSA_MIN_SCHEMA_MINOR = 1
+
+
+def _check_qssa_schema_version(artifact):
+    """Reject an artifact carrying any channels.radical_qssa_unzip block
+    under a schema_version below 2.1 (or a non-2.x version).
+
+    Scans ALL pool entries, configured or not: the vocabulary appearing
+    anywhere means the artifact claims the 2.1+ shape. Artifacts with no
+    QSSA block anywhere are untouched -- any 2.x keeps loading exactly as
+    before (the envelope gate in main() has always been minor-permissive,
+    and stays so: minor bumps are additive by policy)."""
+    if not any("radical_qssa_unzip" in (p.get("channels") or {})
+               for p in artifact.get("pools", [])
+               if isinstance(p, dict)):
+        return
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    ok = (len(parts) == 2 and parts[0] == "2" and parts[1].isdigit()
+          and int(parts[1]) >= _QSSA_MIN_SCHEMA_MINOR)
+    if not ok:
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry a "
+            f"channels.radical_qssa_unzip block: the QSSA channel vocabulary "
+            f"was introduced in schema 2.1 (channel-vocabulary growth is a "
+            f"minor bump), and the emitter stamps >= 2.1 whenever it writes "
+            f"the block. This artifact is malformed -- regenerate the "
+            f"sidecar with a current RMG-Py polymer branch.")
+
+
+def _parse_radical_qssa_channel(lab, pool_entry):
+    """Parse + validate a pool entry's channels.radical_qssa_unzip block.
+
+    Returns the validated channel config dict (the exact shape
+    PolymerPoolConfig.radical_qssa_unzip expects, so the M1 flattening picks
+    it up), or None when the block is absent. A present block with
+    enabled == false is REJECTED, not skipped: the serializer never emits
+    disabled blocks (a disabled channel is absent), so present-disabled can
+    only mean a hand-edited/corrupted artifact whose constants nothing
+    would validate.
+
+    Validation is layered: the sidecar-envelope rules (boolean ``enabled``,
+    unknown keys, per-block ``units`` pinned to the emitter's convention,
+    the normative ``recipe`` pinned by exact match) live here, at the
+    artifact boundary; the FIELD rules (finite triplets, A > 0, Ea >= 0,
+    (0,1] fractions, pinned ``basis``) are delegated to
+    validate_radical_qssa_unzip -- the shared single source of truth, not
+    duplicated. Raises ValueError naming the pool on any violation.
+    """
+    raw = (pool_entry.get("channels") or {}).get("radical_qssa_unzip")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValueError(
+            f"Pool {lab!r}: channels.radical_qssa_unzip must be a dict, got "
+            f"{type(raw).__name__}. Fix the artifact.")
+    unknown = sorted(set(raw) - _QSSA_SIDECAR_KEYS)
+    if unknown:
+        raise ValueError(
+            f"Pool {lab!r}: channels.radical_qssa_unzip has unknown key(s) "
+            f"{unknown}; allowed keys are {sorted(_QSSA_SIDECAR_KEYS)}. "
+            f"Fix the artifact (unknown sub-vocabulary is never dropped "
+            f"permissively).")
+    enabled = raw.get("enabled")
+    if not isinstance(enabled, bool):
+        raise ValueError(
+            f"Pool {lab!r}: channels.radical_qssa_unzip must carry a boolean "
+            f"'enabled' field, got {enabled!r}. Fix the artifact.")
+    if not enabled:
+        raise ValueError(
+            f"Pool {lab!r}: channels.radical_qssa_unzip carries "
+            f"enabled=false. The emitter never writes disabled blocks: a "
+            f"disabled channel must be absent from the sidecar, not "
+            f"present-disabled (whose constants nothing validates). Fix the "
+            f"artifact (remove the block).")
+
+    # Normative recipe pin (schema 2.1): every field must match the loader's
+    # own copy EXACTLY -- reject, never adapt (units-pin idiom). A QSSA block
+    # without a recipe is malformed: the emitter always writes one.
+    recipe = raw.get("recipe")
+    if not isinstance(recipe, dict):
+        raise ValueError(
+            f"Pool {lab!r}: channels.radical_qssa_unzip must carry the "
+            f"normative 'recipe' block (schema 2.1), got "
+            f"{recipe!r}. A QSSA block without its machine-readable recipe "
+            f"is malformed -- regenerate the sidecar.")
+    unknown_recipe = sorted(set(recipe) - set(_QSSA_PINNED_RECIPE))
+    if unknown_recipe:
+        raise ValueError(
+            f"Pool {lab!r}: channels.radical_qssa_unzip recipe has unknown "
+            f"key(s) {unknown_recipe}; allowed keys are "
+            f"{sorted(_QSSA_PINNED_RECIPE)}. Fix the artifact (unknown "
+            f"recipe vocabulary is never dropped permissively).")
+    for key, pinned in _QSSA_PINNED_RECIPE.items():
+        if key not in recipe or recipe[key] != pinned:
+            raise ValueError(
+                f"Pool {lab!r}: channels.radical_qssa_unzip recipe[{key!r}] "
+                f"must equal the pinned normative recipe exactly; got "
+                f"{recipe.get(key)!r}, expected {pinned!r}. An artifact "
+                f"claiming a different rate algebra must be fixed at the "
+                f"source; this loader validates, never adapts.")
+
+    channel = {}
+    for block_name, pinned_a in _QSSA_PINNED_A_UNITS.items():
+        trip = raw.get(block_name)
+        if trip is None:
+            # transfer: null is the valid channel-absent shape; a missing
+            # mandatory block is diagnosed by the shared validator below.
+            if block_name == "transfer":
+                channel["transfer"] = None
+            continue
+        if not isinstance(trip, dict):
+            # let the shared validator produce its canonical triplet error
+            channel[block_name] = trip
+            continue
+        units = trip.get("units")
+        expected = {"A": pinned_a, "Ea": "J/mol"}
+        if units != expected:
+            note = ""
+            if block_name == "transfer":
+                note = (" ktr is PSEUDO-first-order: premultiply a "
+                        "bimolecular literature k_tr by the substrate "
+                        "concentration [mol/m^3] upstream, do not relabel "
+                        "the units.")
+            raise ValueError(
+                f"Pool {lab!r}: channels.radical_qssa_unzip {block_name} "
+                f"units must be exactly {expected} (pinned convention), got "
+                f"{units!r}. A sidecar claiming different units must be "
+                f"fixed at the source; this loader never converts.{note}")
+        channel[block_name] = {k: v for k, v in trip.items() if k != "units"}
+    for name in ("efficiency", "monomer_yield", "basis"):
+        if name in raw:
+            channel[name] = raw[name]
+    # shared single source of truth for field rules (basis pin included)
+    return validate_radical_qssa_unzip(lab, channel)
+
+
 def build_system_from_artifact(artifact, species, reactions,
                                T0, P, V_poly, initial_moles,
                                mass_transfer_spec, initial_moments=None):
@@ -251,6 +433,10 @@ def build_system_from_artifact(artifact, species, reactions,
     cdef class; do not hang extra attributes on it). The system is fully
     initialized at T0 (initialize_model runs through initialize_solver,
     rmgpy/solver/polymer.pyx:601-610)."""
+    # QSSA-vocabulary/version cross-check first: a 2.0 artifact carrying a
+    # radical_qssa_unzip block is malformed regardless of pool configuration.
+    _check_qssa_schema_version(artifact)
+
     core = list(species)
     idx = {s.label: i for i, s in enumerate(core)}
     all_reactions = _restamp_and_extend(artifact, core, reactions)
@@ -299,6 +485,29 @@ def build_system_from_artifact(artifact, species, reactions,
                 f"moments with no released-monomer emission, leaving mass silently "
                 f"un-conserved. Fix the artifact's monomer_routing or set the unzip "
                 f"channel A to 0.")
+        # Radical QSSA unzip channel (milestone 3): parse + validate the
+        # sidecar block (units pin, shared field validator) and enforce the
+        # cross-invariants at the artifact boundary, mirroring the k_unzip
+        # guards above and the generation-side layers.
+        qssa_cfg = _parse_radical_qssa_channel(lab, p)
+        if qssa_cfg is not None:
+            if k_unzip > 0.0:
+                raise ValueError(
+                    f"Pool {lab!r}: artifact declares an enabled "
+                    f"radical_qssa_unzip channel AND unzip A={k_unzip:g} > 0 "
+                    f"(k_unzip). These are two representations of the SAME "
+                    f"chain-end depropagation channel and are mutually "
+                    f"exclusive on a pool (both would double-count the unzip "
+                    f"flux). Fix the artifact: zero the unzip channel or "
+                    f"disable radical_qssa_unzip.")
+            if not routing:
+                raise ValueError(
+                    f"Pool {lab!r}: artifact declares an enabled "
+                    f"radical_qssa_unzip channel but no monomer_routing "
+                    f"target. The QSSA channel releases depropagated monomer "
+                    f"through the pool's monomer routing; without a target "
+                    f"the condensed mass would leave silently un-conserved. "
+                    f"Fix the artifact's monomer_routing.")
         monomer_idx = None
         if routing:
             monomer_idx = idx.get(routing)
@@ -320,6 +529,7 @@ def build_system_from_artifact(artifact, species, reactions,
             monomer_mw_g_mol=float(p.get("monomer_mw_g_mol") or 0.0),
             k_scission=float(p["channels"]["scission"]["A"]),
             k_unzip=k_unzip,
+            radical_qssa_unzip=qssa_cfg,
         ))
         if initial_moments and lab in initial_moments:
             moments0[lab] = tuple(initial_moments[lab])
@@ -425,7 +635,8 @@ def main(argv=None):
     parser = argparse.ArgumentParser(
         description="Polymer moments artifact reference runner (oracle). "
                     "See docs/polymer_moments_format.md.")
-    parser.add_argument("--artifact", required=True, help="polymer_pools.json (schema 2.0)")
+    parser.add_argument("--artifact", required=True,
+                        help="polymer_pools.json (schema 2.0/2.1)")
     parser.add_argument("--chem", required=True, help="chem.yaml from the same RMG run")
     parser.add_argument("--t-profile", required=True,
                         help="JSON: [{\"t_end\": s, \"T\": K}, ...] piecewise-isothermal")

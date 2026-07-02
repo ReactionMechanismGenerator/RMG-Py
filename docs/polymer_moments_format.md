@@ -16,6 +16,21 @@ major bump = breaking. This document versions with the schema.
 (§4/§5 semantics) are tracked separately by `conventions.recipe_revision`
 (§8) and do NOT bump `schema_version`.
 
+**Schema 2.1** = 2.0 + the `channels.radical_qssa_unzip` vocabulary
+(channel-vocabulary growth ⇒ minor bump). The emitter stamps `"2.1"` exactly
+when at least one pool carries that block and `"2.0"` otherwise (legacy
+artifacts stay byte-identical). A 2.0 artifact containing a
+`radical_qssa_unzip` block is malformed; the reference loader rejects it, as
+it does a present-but-`enabled: false` block (the emitter never writes
+disabled blocks — a disabled channel is absent). Each QSSA block carries a
+normative machine-readable `recipe` sub-block that consumers MUST validate
+by exact match (reject on mismatch or absence, never adapt — same rule as
+the per-block `units` pins); the pinned values live in `rmgpy/polymer.py`
+(`RADICAL_QSSA_SIDECAR_RECIPE`) and are duplicated independently by the
+reference loader (`rmgpy/tools/polymer_moments_runner.py`,
+`_QSSA_PINNED_RECIPE`). The QSSA rate law is new channel algebra, so a QSSA
+artifact also carries `recipe_revision = "2026-07-02"` (§8).
+
 ## 1. Envelope
 
 ```json
@@ -289,9 +304,10 @@ lists): `configured_pools` (pool labels with solver configs — §2/§3 semantic
 and `condensed_species` (chem.yaml labels with phase = condensed; everything
 else is gas). Consumers MUST use these lists, not name heuristics.
 
-`conventions.recipe_revision` (string, date token; current value
-`"2026-06-10"`) marks the revision of the RATE RECIPE the emitting RMG
-implements. It bumps (gets a new date) **only** when rate semantics change —
+`conventions.recipe_revision` (string, date token; current values
+`"2026-06-10"` for artifacts without any `radical_qssa_unzip` channel and
+`"2026-07-02"` for artifacts carrying one) marks the revision of the RATE
+RECIPE the emitting RMG implements. It bumps (gets a new date) **only** when rate semantics change —
 site scaling, the chip exhaustion throttle, the kb/Keq recipe, or channel /
 flux-archetype algebra (§4/§5) — and is independent of `schema_version`,
 which governs artifact shape only (a recipe bump is NOT a schema bump, and

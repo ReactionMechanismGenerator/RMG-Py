@@ -3087,6 +3087,12 @@ def process_polymer_candidates_multipool(
 
 
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION = "2.0"
+# Schema 2.1 = 2.0 + the channels.radical_qssa_unzip vocabulary. Channel-
+# vocabulary growth is a MINOR shape bump per the versioning policy
+# (docs/polymer_moments_format.md), so the emitter stamps 2.1 exactly when
+# at least one serialized pool carries the QSSA block — and keeps stamping
+# 2.0 otherwise, so legacy artifacts stay byte-identical (pinned by test).
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_QSSA = "2.1"
 # Rate-recipe revision marker, emitted as conventions["recipe_revision"].
 # Bump rule: assign a NEW date whenever the RATE RECIPE changes — site
 # scaling, the chip exhaustion throttle, the kb/Keq recipe, or channel /
@@ -3095,6 +3101,10 @@ POLYMER_POOLS_SIDECAR_SCHEMA_VERSION = "2.0"
 # Downstream consumers (TA) hard-fail on unknown values, so bumping this is
 # a consumer-coordination event, not a cosmetic edit.
 POLYMER_RATE_RECIPE_REVISION = "2026-06-10"
+# The radical_qssa_unzip channel is new channel/flux algebra, so a QSSA
+# artifact carries a NEW recipe revision. Conditional for the same reason as
+# the 2.1 schema stamp: no QSSA anywhere -> legacy revision, byte-identical.
+POLYMER_RATE_RECIPE_REVISION_QSSA = "2026-07-02"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
@@ -3209,6 +3219,118 @@ def _get_rmg_commit():
     return None
 
 
+# Pinned sidecar units convention for the radical_qssa_unzip channel
+# (single source for the emitter; the artifact loader in
+# rmgpy/tools/polymer_moments_runner.py pins the same strings independently
+# on its side of the boundary). initiation/depropagation are unimolecular
+# [s^-1]; termination is the ONLY bimolecular block [m^3 mol^-1 s^-1];
+# transfer is PSEUDO-first-order [s^-1] -- ktr multiplies the active-end
+# concentration R directly in the M2 rate law, so a literature bimolecular
+# k_tr must be premultiplied by the substrate concentration [mol/m^3]
+# BEFORE it enters the config. Ea always [J/mol]. A consumer seeing a
+# different string must ERROR, never convert.
+RADICAL_QSSA_SIDECAR_A_UNITS = {
+    "initiation": "s^-1",
+    "depropagation": "s^-1",
+    "termination": "m^3/(mol*s)",
+    "transfer": "s^-1",
+}
+
+# Normative machine-readable QSSA rate recipe, emitted as the channel block's
+# ``recipe`` sub-block (schema 2.1). Unlike the human-readable ``provenance``
+# strings, these are CONTRACT: the artifact loader
+# (rmgpy/tools/polymer_moments_runner.py _QSSA_PINNED_RECIPE) pins the same
+# values independently and errors on any mismatch or absence — reject, never
+# adapt, exactly like the units pin above. Every entry is verified against
+# the implemented RHS in rmgpy/solver/polymer.pyx (M2 rate law: B_qssa /
+# R_ss / r_qssa in the pool loop; moment signature dmu1/dmu2 drains;
+# SMALL_EPS = 1e-30 at polymer.pyx:71) — editing the solver algebra without
+# re-verifying and re-dating these strings breaks the contract.
+RADICAL_QSSA_SIDECAR_RECIPE = {
+    "bond_basis": ("B = max(mu1 - mu0, 0) on concentration moments "
+                   "(mol/m^3 condensed)"),
+    "rate_no_transfer": ("r_mono = monomer_yield * kdp * "
+                         "sqrt(efficiency * ki * B / kt)"),
+    "rate_with_transfer": ("r_mono = monomer_yield * kdp * "
+                           "(sqrt(ktr^2 + 8*kt*(2*efficiency*ki*B)) "
+                           "- ktr) / (4*kt)"),
+    "moment_signature": ("dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
+                         "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
+    "small_eps": 1e-30,
+    "volume_note": ("kt is bimolecular: rates depend on condensed "
+                    "volume V_poly; consumers MUST evaluate on "
+                    "concentration moments mu_k = n_k / V_poly and "
+                    "convert emitted rate back with *V_poly"),
+}
+
+
+def _serialize_radical_qssa_channel(pool: 'Polymer') -> Optional[Dict[str, Any]]:
+    """Serialize the pool's radical_qssa_unzip config for the sidecar, or
+    return None when the channel is absent (legacy pools emit nothing).
+
+    The config is re-normalized through validate_radical_qssa_unzip (the
+    shared single source of truth for field rules) so a directly-constructed
+    Polymer carrying a garbage dict raises here instead of poisoning the
+    artifact, and deck-omitted defaults (efficiency/monomer_yield/basis,
+    transfer: null) are always filled in the emitted block.
+
+    OLD-CONSUMER LOUD FAILURE (milestone-3 requirement): the block lives
+    INSIDE the pool's ``channels`` dict deliberately. The TA loader
+    (~/Code/TA/ta/mechanism.py) pins ``SUPPORTED_CHANNELS = frozenset(
+    {"scission", "unzip"})`` (mechanism.py:52) and hard-errors on any other
+    key inside ``channels`` (mechanism.py:509-517: "unrecognized channel
+    key(s) ... A new channel requires a schema minor-version bump and
+    consumer support"). RMG stamps schema_version 2.1 on any artifact
+    carrying this block (build_polymer_moments_artifact; the minor bump that
+    guard demands), and TA's 2.x parser is minor-permissive, so its v2 pool
+    parser (the one with that guard) is still the path taken. An old TA
+    therefore refuses a QSSA-enabled sidecar loudly instead of silently
+    integrating without the channel -- the silent path would produce a
+    flat/false TGA.
+    """
+    qssa = getattr(pool, "radical_qssa_unzip", None)
+    if qssa is None:
+        return None
+    # Lazy import: rmgpy.solver.polymer never imports rmgpy.polymer (cycle
+    # note at polymer.pyx:129-131), but keep the compiled-solver import out
+    # of this pure-Python module's import time anyway.
+    from rmgpy.solver.polymer import QSSA_R_GAS, validate_radical_qssa_unzip
+    q = validate_radical_qssa_unzip(getattr(pool, "label", ""), qssa)
+
+    def _triplet(block_name):
+        trip = q[block_name]
+        if trip is None:
+            return None
+        return {
+            "A": float(trip["A"]), "n": float(trip["n"]), "Ea": float(trip["Ea"]),
+            "units": {"A": RADICAL_QSSA_SIDECAR_A_UNITS[block_name],
+                      "Ea": "J/mol"},
+        }
+
+    return {
+        "enabled": True,
+        "basis": q["basis"],
+        "efficiency": float(q["efficiency"]),
+        "monomer_yield": float(q["monomer_yield"]),
+        "initiation": _triplet("initiation"),
+        "depropagation": _triplet("depropagation"),
+        "termination": _triplet("termination"),
+        "transfer": _triplet("transfer"),
+        "recipe": dict(RADICAL_QSSA_SIDECAR_RECIPE),
+        "provenance": {
+            "radical_balance": ("G_R = 2*f*ki*B; loss = ktr*R + 2*kt*R^2; "
+                                "Rss no-transfer = sqrt(f*ki*B/kt)"),
+            "moment_closure": "end_shrink_pool_mean/1",
+            "R_gas_J_per_mol_K": float(QSSA_R_GAS),
+            "concentration_basis": "mol/m^3 condensed volume",
+            "transfer_note": ("ktr is pseudo-first-order (s^-1); bimolecular "
+                              "literature k_tr must be premultiplied by "
+                              "substrate concentration before entering this "
+                              "config"),
+        },
+    }
+
+
 def _serialize_pool_for_sidecar(pool: 'Polymer',
                                 core_species: Optional[List['Species']] = None,
                                 monomer_routing: Optional[str] = None,
@@ -3285,6 +3407,22 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
         "unzip": {"A": float(getattr(pool, "k_unzip", 0.0)), "n": 0.0, "Ea": 0.0,
                   "units": {"A": "s^-1", "Ea": "J/mol"}},
     }
+    # Radical QSSA unzip channel (milestone 3). Absent -> emit nothing (legacy
+    # pools stay byte-identical). When present, the enabled block goes INSIDE
+    # channels so an old TA fails loudly on it (see
+    # _serialize_radical_qssa_channel for the file:line mechanism), and the
+    # pool's k_unzip stays 0 (mutual exclusion is an upstream hard error at
+    # deck read / to_config / solver validate_configuration). Monomer routing
+    # REUSES the existing top-level monomer_routing field: the live main.py
+    # hook keys routing on monomer_poly_index (rmgpy/rmg/main.py, the
+    # `idx = getattr(p, "monomer_poly_index", None)` loop in save_everything),
+    # which is guaranteed non-None for a QSSA pool by three layers of guards
+    # (rmgpy/rmg/input.py deck read, PolymerPool.to_config, solver
+    # validate_configuration) -- NOT on k_unzip > 0, so a QSSA pool with
+    # k_unzip == 0 gets its routing populated the same way an unzip pool does.
+    qssa_block = _serialize_radical_qssa_channel(pool)
+    if qssa_block is not None:
+        d["channels"]["radical_qssa_unzip"] = qssa_block
     phase_species: List[str] = []
     bookkeeping_species: List[str] = []
     if core_species:
@@ -3624,9 +3762,19 @@ def build_polymer_moments_artifact(pool_registry,
         core_reactions or [], core_species or [],
         configured_pool_labels, cantera_index_map)
 
+    # Version contract: the radical_qssa_unzip channel grows the closed
+    # channel vocabulary (schema minor bump -> 2.1) and adds new channel/flux
+    # algebra (new recipe_revision). Both stamps are conditional on the
+    # channel actually appearing in THIS artifact so that artifacts without
+    # any QSSA pool keep the legacy 2.0 / 2026-06-10 stamps byte-identically
+    # (pinned by test; old consumers keep loading legacy sidecars unchanged).
+    qssa_present = any("radical_qssa_unzip" in (p.get("channels") or {})
+                       for p in pools)
+
     conventions = {
         "format_doc": "docs/polymer_moments_format.md (polymer_moments_format/2.0)",
-        "recipe_revision": POLYMER_RATE_RECIPE_REVISION,
+        "recipe_revision": (POLYMER_RATE_RECIPE_REVISION_QSSA if qssa_present
+                            else POLYMER_RATE_RECIPE_REVISION),
         "moment_basis": "extensive mol, DP basis (mu1 = moles of repeat units)",
         "volumes": {
             "V_poly": "constant, consumer-supplied [m^3]",
@@ -3652,7 +3800,9 @@ def build_polymer_moments_artifact(pool_registry,
     }
 
     return {
-        "schema_version": POLYMER_POOLS_SIDECAR_SCHEMA_VERSION,
+        "schema_version": (POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_QSSA
+                           if qssa_present
+                           else POLYMER_POOLS_SIDECAR_SCHEMA_VERSION),
         "generated_at": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
         "rmg_commit": rmg_commit if rmg_commit is not None else _get_rmg_commit(),
         "rmg_iteration": int(iteration),
