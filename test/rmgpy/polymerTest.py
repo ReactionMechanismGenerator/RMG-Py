@@ -5198,6 +5198,241 @@ def test_derive_daughter_pool_config_uses_base_label_with_index_suffix():
 
 
 # ---------------------------------------------------------------------------
+# Daughter-pool QSSA inheritance (radical_qssa_unzip cascade milestone 5).
+# The recorded M1 decision (polymer_input.py, derive_daughter_pool_configs):
+# spawned scission daughters inherit the parent pool's radical_qssa_unzip
+# channel (deep-copied) -- same monomer chemistry and monomer_mw imply the
+# same elementary initiation/depropagation/termination constants. Without
+# inheritance a PS scission cascade freezes: the parent unzips but daughters
+# are inert and the TGA S-curve never completes.
+# ---------------------------------------------------------------------------
+
+def _qssa_raw_channel():
+    """Deck-shaped (pre-normalization) radical QSSA channel config."""
+    return {
+        "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+        "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+        "termination": {"A": 1.0e8, "n": 0.0, "Ea": 1.0e4},
+        "efficiency": 0.8,
+        "monomer_yield": 0.9,
+    }
+
+
+def _qssa_parent(channel=None):
+    """A PS-like parent Polymer, optionally carrying the QSSA channel and a
+    resolvable monomer_product_species (the deck attaches both; input.py:432)."""
+    p = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                end_groups=["[CH3]", "[H]"], cutoff=3,
+                Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+                radical_qssa_unzip=channel)
+    styrene = Species(label="styrene", smiles="C=Cc1ccccc1")
+    p.monomer_product_species = styrene
+    return p, styrene
+
+
+def _scission_tail_of(parent):
+    """Run a real scission EVENT through create_reacted_copy: head wing +
+    labeled methyl radical -> head-side scission -> a _scission_tail daughter."""
+    head_wing = parent._stitch_wing("head")
+    methyl_star2 = Molecule().from_adjacency_list(_methyl_radical_adj("*2"))
+    frag = polymer.stitch_molecules_by_labeled_atoms(head_wing, methyl_star2)
+    assert frag is not None
+    daughter = parent.create_reacted_copy(frag)
+    assert daughter is not None and daughter.label.endswith("_scission_tail")
+    return daughter
+
+
+def test_scission_daughter_inherits_qssa_channel_deepcopy():
+    """A scission daughter Polymer must carry the parent's radical_qssa_unzip
+    channel DEEP-COPIED (parent mutation must not propagate) plus the parent's
+    monomer_product_species by REFERENCE (spc_map resolution is object-keyed,
+    so identity is load-bearing for the daughter's monomer routing)."""
+    channel = _qssa_raw_channel()
+    parent, styrene = _qssa_parent(channel)
+
+    daughter = _scission_tail_of(parent)
+
+    assert daughter.radical_qssa_unzip == channel
+    assert daughter.radical_qssa_unzip is not parent.radical_qssa_unzip
+    # Deep copy: mutate the parent's nested triplet; daughter must not move.
+    parent.radical_qssa_unzip["initiation"]["A"] = 1.0
+    assert daughter.radical_qssa_unzip["initiation"]["A"] == 1.0e13
+    # Routing: SAME species object, so the daughter resolves the same core index.
+    assert daughter.monomer_product_species is styrene
+
+
+def test_scission_daughter_channel_free_parent_stays_channel_free():
+    """No noise: a channel-free parent spawns a channel-free daughter."""
+    parent, _ = _qssa_parent(channel=None)
+    daughter = _scission_tail_of(parent)
+    assert daughter.radical_qssa_unzip is None
+
+
+def test_inherit_gate_same_monomer_chemistry_inherits():
+    """Round-25 P2-1 gate, PASS arm: a daughter with the parent's monomer_mw
+    and unchanged feature chemistry (the scission tail/head shape) inherits
+    channel (deep-copied) + routing reference."""
+    import logging
+    channel = _qssa_raw_channel()
+    parent, styrene = _qssa_parent(channel)
+    daughter = Polymer(label="PS_scission_tail", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=2500.0, Mw=3000.0, initial_mass=0.0)
+    polymer._inherit_unzip_channel(daughter, parent)
+    assert daughter.radical_qssa_unzip == channel
+    assert daughter.radical_qssa_unzip is not parent.radical_qssa_unzip
+    assert daughter.monomer_product_species is styrene
+
+
+def test_feature_mod_daughter_does_not_inherit_channel_and_warns(caplog):
+    """Round-25 P2-1, BLOCK arm: create_reacted_copy stamps inheritance at
+    its single exit (:894) on EVERY non-None daughter, including _mod
+    products whose feature_monomer CHANGED (:1010) -- 'same monomer
+    chemistry' is false there, so the QSSA constants must NOT transfer.
+    Channel-free + once-per-pool WARNING instead."""
+    import logging
+    getattr(polymer, "_unzip_inherit_warned", set()).clear()
+    channel = _qssa_raw_channel()
+    parent, styrene = _qssa_parent(channel)
+    # The daughter shape the _mod constructor site produces: same monomer
+    # attr, but a CHANGED feature unit in the chain.
+    daughter = Polymer(label="PS_mod", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+    daughter.feature_monomer = Molecule().from_smiles("C=C")
+
+    with caplog.at_level(logging.WARNING):
+        polymer._inherit_unzip_channel(daughter, parent)
+
+    assert daughter.radical_qssa_unzip is None
+    assert getattr(daughter, "monomer_product_species", None) is None
+    warned = [r for r in caplog.records
+              if "channel-free" in r.getMessage()
+              and "PS_mod" in r.getMessage()]
+    assert warned, "expected a changed-chemistry channel-free WARNING"
+    # once-per-pool: a second identical event does not warn again
+    n = len(caplog.records)
+    with caplog.at_level(logging.WARNING):
+        polymer._inherit_unzip_channel(daughter, parent)
+    assert daughter.radical_qssa_unzip is None
+    assert len(caplog.records) == n
+
+
+def test_different_monomer_mw_daughter_does_not_inherit_channel():
+    """Round-25 P2-1, mw arm: a daughter whose monomer_mw differs from the
+    parent's fails the cheap truthful gate (the M1 rationale binds the
+    constants to same monomer chemistry AND monomer_mw)."""
+    import logging
+    getattr(polymer, "_unzip_inherit_warned", set()).clear()
+    parent, _ = _qssa_parent(_qssa_raw_channel())
+    daughter = Polymer(label="PE_like", monomer="[CH2][CH2]",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       Mn=1000.0, Mw=2500.0, initial_mass=1.0)
+    polymer._inherit_unzip_channel(daughter, parent)
+    assert daughter.radical_qssa_unzip is None
+    assert getattr(daughter, "monomer_product_species", None) is None
+
+
+def test_derive_daughter_pool_config_inherits_qssa_channel_and_routing():
+    """derive_daughter_pool_configs must build the daughter's config with the
+    inherited channel run through the SHARED validator (normalized: defaults
+    filled) and the monomer routing resolved (monomer_poly_index), deep-copied
+    so post-hoc mutation of the species' dict cannot reach the config."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                       radical_qssa_unzip=_qssa_raw_channel())
+    styrene = Species(label="styrene", smiles="C=Cc1ccccc1")
+    daughter.monomer_product_species = styrene
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"),
+            _moment_dummy("PS_d1_mu2"), styrene]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    cfg = configs[0]
+    q = cfg.radical_qssa_unzip
+    assert q is not None
+    assert q["initiation"]["A"] == 1.0e13
+    assert q["efficiency"] == 0.8
+    # Normalized through the shared validator: omitted fields filled in.
+    assert q["transfer"] is None
+    assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+    # Monomer routing resolved to the released monomer's core index.
+    assert cfg.monomer_poly_index == spc_map[styrene]
+    # Mutual-exclusion invariant holds by construction on the daughter.
+    assert cfg.k_unzip == 0.0
+    # Deep copy: the config is independent of the species' mutable dict.
+    daughter.radical_qssa_unzip["initiation"]["A"] = 1.0
+    assert q["initiation"]["A"] == 1.0e13
+
+
+def test_derive_daughter_pool_config_channel_free_stays_channel_free():
+    """A daughter without the channel derives a channel-free config (the
+    pre-milestone shape): no channel, no routing requirement."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"),
+            _moment_dummy("PS_d1_mu2")]
+    spc_map = {s: i for i, s in enumerate(core)}
+
+    configs = derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    assert len(configs) == 1
+    assert configs[0].radical_qssa_unzip is None
+    assert configs[0].monomer_poly_index is None
+
+
+def test_derive_daughter_pool_config_qssa_without_routing_is_loud():
+    """A daughter carrying the channel but NO resolvable monomer emission
+    target must FAIL LOUDLY at derivation (mirrors PolymerPool.to_config):
+    a silent channel-drop is exactly the failure class this milestone kills."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                       radical_qssa_unzip=_qssa_raw_channel())
+    # No monomer_product_species at all.
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"),
+            _moment_dummy("PS_d1_mu2")]
+    spc_map = {s: i for i, s in enumerate(core)}
+    with pytest.raises(ValueError, match="monomer_product"):
+        derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+    # monomer_product_species present but NOT in core (unresolvable index).
+    orphan = Species(label="styrene", smiles="C=Cc1ccccc1")
+    daughter.monomer_product_species = orphan
+    with pytest.raises(ValueError, match="monomer_product"):
+        derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+
+def test_derive_daughter_pool_config_invalid_inherited_channel_is_loud():
+    """A malformed inherited channel must raise through the SHARED validator
+    (validate_radical_qssa_unzip), naming the daughter pool -- daughters do
+    not bypass validation."""
+    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+    daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                       radical_qssa_unzip={"initiation": {"A": 1.0}})
+    styrene = Species(label="styrene", smiles="C=Cc1ccccc1")
+    daughter.monomer_product_species = styrene
+    core = [daughter, _moment_dummy("PS_d1_mu0"), _moment_dummy("PS_d1_mu1"),
+            _moment_dummy("PS_d1_mu2"), styrene]
+    spc_map = {s: i for i, s in enumerate(core)}
+    with pytest.raises(ValueError, match="PS_d1"):
+        derive_daughter_pool_configs(core, spc_map, existing_pool_labels={"PS"})
+
+
+# ---------------------------------------------------------------------------
 # Task 5: End-to-end scission tracer — Ea from REAL products, not pool proxy
 # ---------------------------------------------------------------------------
 

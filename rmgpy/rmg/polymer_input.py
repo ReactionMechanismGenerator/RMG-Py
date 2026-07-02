@@ -27,6 +27,7 @@
 #                                                                             #
 ###############################################################################
 
+import copy
 import itertools
 import logging
 import numpy as np
@@ -1133,22 +1134,58 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
         # the config at 0.0, which drags max(monomer_mw over pools) -> 0 and
         # collapses the reference-state tripwire chain_window to the bare slack,
         # leaking small gas scission fragments into the melt sum.
-        #
-        # DECISION (radical_qssa_unzip cascade milestone, not yet implemented):
-        # spawned scission daughters WILL inherit the parent pool's
-        # radical_qssa_unzip channel (deep-copied) -- same monomer chemistry
-        # and monomer_mw imply the same elementary initiation/depropagation/
-        # termination constants. Until the daughter-config milestone wires
-        # that inheritance here (channel + monomer_poly_index routing), a
-        # derived daughter config is built channel-free: a QSSA parent's
-        # daughters silently lack the degradation channel. Gap is deliberate
-        # and visible at this site.
+
+        # Daughter-pool channel inheritance (radical_qssa_unzip milestone 5,
+        # closing the M1 DECISION recorded at this site): the daughter Polymer
+        # species carries the parent's channel (deep-copied at creation --
+        # Polymer.create_reacted_copy / drain_spawn_intents, via
+        # _inherit_unzip_channel) plus the parent's monomer_product_species by
+        # reference. Wire both into the derived config:
+        # - the channel runs through the SHARED validator (daughters do not
+        #   bypass validation; malformed channels fail loudly, naming the
+        #   daughter pool), then is deep-copied so post-hoc mutation of the
+        #   species' dict cannot reach the config;
+        # - monomer routing resolves against the SAME object-keyed spc_map this
+        #   build uses for the static deck pools (line ~351), so the daughter
+        #   gets the identical released-monomer core index as its parent. A
+        #   channel WITHOUT resolvable routing is a hard error (mirrors
+        #   PolymerPool.to_config): the QSSA channel drains condensed moments
+        #   and must have an emission target, else mass silently un-conserves.
+        # Flattening/census timing: the solver engine is REBUILT from these
+        # configs on every HybridPolymerReactor.initialize_model, and its
+        # validate_configuration -> _flatten_radical_qssa_state + the M2
+        # double-count census re-run per rebuild -- so a daughter spawned at
+        # enlarge time has its channel flattened into the solver-owned arrays
+        # (qssa_enabled) on the next rebuild, never left enabled-in-dict but
+        # absent-in-arrays. k_unzip stays 0.0 on derived daughters, so the
+        # mutual-exclusion invariant (channel XOR k_unzip>0) holds trivially
+        # and is re-checked by the solver's shared validator path anyway.
+        monomer_idx = None
+        monomer_product = getattr(spc, "monomer_product_species", None)
+        if monomer_product is not None:
+            monomer_idx = spc_map.get(monomer_product)
+        qssa_channel = None
+        channel = getattr(spc, "radical_qssa_unzip", None)
+        if channel is not None:
+            qssa_channel = copy.deepcopy(validate_radical_qssa_unzip(b, channel))
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {b}: inherited radical_qssa_unzip is configured but no "
+                    f"monomer_product resolves for this daughter pool. The QSSA "
+                    f"unzip channel releases monomer through the pool's monomer "
+                    f"routing; without an emission target the depropagated repeat "
+                    f"units would leave the condensed phase silently un-conserved. "
+                    f"The parent pool's monomer_product_species must be a live "
+                    f"core species (it is for any validated QSSA deck pool).")
+
         configs.append(PolymerPoolConfig(
             label=b,
             xs=spc.cutoff,
             explicit_dp_to_species_index={},
             mu_indices=mu_indices,
+            monomer_poly_index=monomer_idx,
             monomer_mw_g_mol=float(getattr(spc, "monomer_mw_g_mol", 0.0) or 0.0),
+            radical_qssa_unzip=qssa_channel,
         ))
     return configs
 

@@ -180,7 +180,7 @@ QSSA_PINNED_UNITS = {
 
 @pytest.fixture
 def qssa_pool():
-    return Polymer(
+    pool = Polymer(
         label="PS",
         monomer="[CH2][CH](c1ccccc1)",
         end_groups=["[H]", "[H]"],
@@ -191,6 +191,11 @@ def qssa_pool():
         k_unzip=0.0,
         radical_qssa_unzip=dict(QSSA_RAW_CFG),
     )
+    # A real QSSA pool always carries a routing target (three layers of
+    # guards: deck read / to_config / solver validate_configuration; round-25
+    # P1-1 makes the serializer refuse enabled-QSSA without one).
+    pool.monomer_product_species = _spc("C=Cc1ccccc1", "styrene")
+    return pool
 
 
 class TestRadicalQssaChannelSerialization:
@@ -289,6 +294,50 @@ class TestRadicalQssaChannelSerialization:
         # human-readable provenance stays alongside the normative recipe
         assert "provenance" in d["channels"]["radical_qssa_unzip"]
 
+    def test_spawned_daughter_sidecar_carries_inherited_qssa_block(self, qssa_pool):
+        """Daughter-pool inheritance (M5): a spawn-intent daughter of a QSSA
+        parent lands in the serialized sidecar carrying the SAME channel block
+        (and lineage) as a deck pool would -- the sidecar writer iterates the
+        live pool registry (main.py: every Polymer in core+edge+new) and reads
+        the channel off the SPECIES, so inheritance at spawn time is exactly
+        what makes the daughter's block appear."""
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+
+        mp = Species(label="styrene")
+        mp.molecule = [Molecule().from_smiles("C=Cc1ccccc1")]
+        qssa_pool.monomer_product_species = mp
+
+        intent = SpawnIntent(
+            parent_pool=qssa_pool,
+            monomer=qssa_pool.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+        )
+        daughter = drain_spawn_intents([intent], iteration=2)[0]
+        assert daughter.label == "PS_d1"
+
+        d = _serialize_pool_for_sidecar(daughter)
+        assert d["parent_pool"] == "PS"
+        block = d["channels"]["radical_qssa_unzip"]
+        assert block["enabled"] is True
+        assert block["efficiency"] == pytest.approx(0.8)
+        assert block["monomer_yield"] == pytest.approx(0.9)
+        for name in ("initiation", "depropagation", "termination"):
+            assert block[name]["A"] == pytest.approx(QSSA_RAW_CFG[name]["A"])
+        # And a channel-free parent's daughter serializes channel-free.
+        pe_parent = Polymer(label="PE", monomer="[CH2][CH2]",
+                            end_groups=["[H]", "[H]"], cutoff=3,
+                            Mn=1000.0, Mw=2500.0, initial_mass=1.0)
+        intent2 = SpawnIntent(
+            parent_pool=pe_parent,
+            monomer=pe_parent.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+        )
+        d2 = _serialize_pool_for_sidecar(
+            drain_spawn_intents([intent2], iteration=2)[0])
+        assert "radical_qssa_unzip" not in d2["channels"]
+
     def _artifact(self, pools, labels, routing):
         return build_polymer_moments_artifact(
             pools, core_species=None, core_reactions=[],
@@ -338,6 +387,72 @@ class TestRadicalQssaChannelSerialization:
         assert block == artifact["pools"][0]["channels"]["radical_qssa_unzip"]
         assert block["enabled"] is True
         assert block["termination"]["units"]["A"] == "m^3/(mol*s)"
+
+
+class TestQssaRoutingDerivation:
+    """Round-25 P1-1: the PRODUCER must never emit an enabled QSSA block with
+    monomer_routing null -- that shape is defined malformed (the consumer
+    hard-rejects it: polymerMomentsRunnerTest test_rejects_enabled_without_
+    routing). The live save_everything hook builds monomer_routing_by_pool
+    from the ENGINE's configured pools only, so a daughter registered after
+    the last solver rebuild has no entry there; the serializer must then
+    derive the routing from the pool's own monomer_product_species (held
+    BY REFERENCE from M5 inheritance) against the same core-species universe
+    the routing labels come from -- or refuse to serialize."""
+
+    def test_unconfigured_qssa_daughter_derives_routing_from_species_ref(
+            self, qssa_pool):
+        """A channel-bearing daughter NOT present in the engine configs (no
+        monomer_routing_by_pool entry) serializes with routing DERIVED from
+        its monomer_product_species -- never enabled + null."""
+        sty = _spc("C=Cc1ccccc1", "styrene", index=7)
+        qssa_pool.monomer_product_species = sty
+        qssa_pool.parent_pool_label = "PS_parent"
+        core = [_spc("N#N", "N2", index=1), sty]
+
+        artifact = build_polymer_moments_artifact(
+            [qssa_pool], core_species=core, core_reactions=[],
+            configured_pool_labels=["PS_parent"],  # daughter unconfigured
+            monomer_routing_by_pool={})            # engine has no entry
+
+        entry = artifact["pools"][0]
+        assert entry["channels"]["radical_qssa_unzip"]["enabled"] is True
+        assert entry["monomer_routing"] == "styrene(7)"
+        assert "styrene(7)" in entry["phase_species"]
+
+    def test_explicit_engine_routing_wins_over_derivation(self, qssa_pool):
+        """The engine's configured routing stays authoritative when present."""
+        sty = _spc("C=Cc1ccccc1", "styrene", index=7)
+        qssa_pool.monomer_product_species = sty
+        d = _serialize_pool_for_sidecar(qssa_pool, core_species=[sty],
+                                        monomer_routing="styrene(7)")
+        assert d["monomer_routing"] == "styrene(7)"
+
+    def test_qssa_pool_without_routing_species_is_hard_error(self, qssa_pool):
+        """No monomer_product_species and no engine routing: serialization
+        must FAIL LOUDLY, never emit enabled + null."""
+        qssa_pool.monomer_product_species = None
+        with pytest.raises(ValueError,
+                           match=r"PS.*radical_qssa_unzip.*monomer_routing"):
+            _serialize_pool_for_sidecar(qssa_pool)
+
+    def test_qssa_pool_routing_species_not_in_core_is_hard_error(
+            self, qssa_pool):
+        """monomer_product_species present but NOT in the core universe the
+        artifact labels come from (identity check -- routing resolution is
+        object-keyed everywhere): hard error, not a dangling label."""
+        orphan = _spc("C=Cc1ccccc1", "styrene", index=7)
+        qssa_pool.monomer_product_species = orphan
+        core = [_spc("N#N", "N2", index=1)]
+        with pytest.raises(ValueError,
+                           match=r"PS.*radical_qssa_unzip.*monomer_routing"):
+            _serialize_pool_for_sidecar(qssa_pool, core_species=core)
+
+    def test_channel_free_pool_still_serializes_null_routing(self, pe_pool):
+        """The hard error is scoped to enabled-QSSA pools: legacy pools keep
+        the legacy null-routing shape byte-identically."""
+        d = _serialize_pool_for_sidecar(pe_pool)
+        assert d["monomer_routing"] is None
 
 
 def _arrhenius(A=(2.0, "s^-1")):

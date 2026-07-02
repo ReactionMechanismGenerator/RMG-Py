@@ -517,6 +517,12 @@ class Polymer(Species):
         # assignment aliases the nested channel dict across copies, so mutating
         # one Polymer's channel would silently rewrite every copy's.
         other.radical_qssa_unzip = deepcopy(getattr(self, 'radical_qssa_unzip', None))
+        # Released-monomer routing target (input.py:432). Shared BY REFERENCE
+        # deliberately, NOT deep-copied: routing resolution downstream
+        # (derive_daughter_pool_configs' spc_map, PolymerPool.to_config) is
+        # object-keyed, so identity with the core Species is load-bearing --
+        # a deep copy would silently resolve to no core index at all.
+        other.monomer_product_species = getattr(self, 'monomer_product_species', None)
         other.discrete_dp_threshold = getattr(self, 'discrete_dp_threshold', 4)
         other.is_polymer = True
         other._cached_backbone_group = None
@@ -885,6 +891,15 @@ class Polymer(Species):
         # END_MOD reactions for chain-end (mu0) scaling in the solver. Read by
         # is_end_group_reaction(products); a transient generation-time marker.
         new_poly._reacted_class = klass
+        # Daughter-pool channel inheritance (radical_qssa_unzip milestone 5),
+        # applied at the SINGLE exit point and GATED on same repeat chemistry
+        # (round-25 P2-1): scission tail/head and END_MOD/isomorphic copies
+        # share the parent's monomer chemistry and inherit the QSSA unzip
+        # channel (deep-copied) + monomer routing -- without this a PS
+        # scission cascade freezes. A _mod product whose feature_monomer
+        # CHANGED does NOT share that chemistry: it stays channel-free and
+        # the withheld inheritance is disclosed once per pool.
+        _inherit_unzip_channel(new_poly, self)
         # Keep the sanitized reacted fragment so chip product surgery
         # (surge_chip_products, spec 2026-06-10 §4.2) can demote a SCISSION
         # chip back to a discrete Molecule and size chips by MW. Transient
@@ -3331,6 +3346,43 @@ def _serialize_radical_qssa_channel(pool: 'Polymer') -> Optional[Dict[str, Any]]
     }
 
 
+def _derive_qssa_monomer_routing(pool: 'Polymer',
+                                 core_species: Optional[List['Species']]) -> str:
+    """Resolve the monomer-routing artifact label for an enabled-QSSA pool
+    that the engine's routing map does not cover (round-25 P1-1).
+
+    The routing target is the pool's own ``monomer_product_species`` -- the
+    same live Species the engine's ``monomer_poly_index`` points at for
+    configured pools (deck: input.py:432; daughters hold it BY REFERENCE via
+    ``_inherit_unzip_channel``). When a core universe is supplied, membership
+    is checked by IDENTITY (routing resolution is object-keyed everywhere:
+    ``derive_daughter_pool_configs``' spc_map, ``PolymerPool.to_config``).
+
+    Raises ``ValueError`` when the routing cannot be resolved: the
+    enabled-QSSA-without-routing artifact shape is defined malformed
+    (consumer-side hard reject), so the PRODUCER refuses to emit it.
+    """
+    label = getattr(pool, "label", "")
+    mps = getattr(pool, "monomer_product_species", None)
+    if mps is None:
+        raise ValueError(
+            f"Pool '{label}': radical_qssa_unzip is enabled but no "
+            f"monomer_routing could be resolved -- the pool has no engine "
+            f"routing entry and no monomer_product_species. Refusing to "
+            f"serialize: enabled-QSSA-without-routing is a defined-malformed "
+            f"artifact shape (consumers hard-reject it)."
+        )
+    if core_species and not any(spc is mps for spc in core_species):
+        raise ValueError(
+            f"Pool '{label}': radical_qssa_unzip is enabled but its "
+            f"monomer_routing target ('{getattr(mps, 'label', '')}') is not "
+            f"in the core species universe the artifact labels come from "
+            f"(identity check). Refusing to serialize enabled QSSA with "
+            f"unresolvable monomer_routing."
+        )
+    return _artifact_species_label(mps)
+
+
 def _serialize_pool_for_sidecar(pool: 'Polymer',
                                 core_species: Optional[List['Species']] = None,
                                 monomer_routing: Optional[str] = None,
@@ -3423,6 +3475,18 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
     qssa_block = _serialize_radical_qssa_channel(pool)
     if qssa_block is not None:
         d["channels"]["radical_qssa_unzip"] = qssa_block
+        # Round-25 P1-1: enabled-QSSA + null routing is a DEFINED-MALFORMED
+        # shape (the consumer hard-rejects it; polymer_moments_runner
+        # test_rejects_enabled_without_routing). The live save_everything
+        # hook keys monomer_routing_by_pool on the ENGINE's configured pools
+        # only, so a daughter registered after the last solver rebuild has
+        # no entry there -- derive its routing from the pool's own
+        # monomer_product_species (held BY REFERENCE from M5 inheritance)
+        # against the same core universe the routing labels come from, and
+        # HARD-ERROR when that is impossible. The producer never emits the
+        # malformed shape.
+        if monomer_routing is None:
+            monomer_routing = _derive_qssa_monomer_routing(pool, core_species)
     phase_species: List[str] = []
     bookkeeping_species: List[str] = []
     if core_species:
@@ -3827,6 +3891,176 @@ def schulz_flory_mu2(mu0: float, mu1: float) -> float:
     return 2.0 * mu1 * mu1 / mu0 - mu1
 
 
+# Warn-once registry for withheld/conflicting QSSA channel inheritance
+# (round-25 P1-2 / P2-1 / P2-2). Keyed on (parent_label, daughter_label,
+# reason) so each pool pair discloses each verdict exactly once instead of
+# spamming every enlarge pass. Same idiom as _flux_archetype_warned.
+_unzip_inherit_warned = set()
+
+
+def _same_repeat_chemistry(daughter: 'Polymer', parent: 'Polymer') -> bool:
+    """True when the daughter's repeat-unit chemistry is the parent's -- the
+    M1 condition under which the elementary initiation/depropagation/
+    termination constants transfer (same monomer chemistry AND monomer_mw).
+
+    Round-25 P2-1 probe finding: ``monomer_mw_g_mol`` derives SOLELY from
+    ``monomer`` (Polymer.__init__), and every daughter constructor site
+    passes the parent's monomer verbatim -- so an mw-only gate would be
+    vacuously true for the _mod shape. The truthful discriminator for a
+    feature modification is ``feature_monomer``: a daughter whose feature
+    unit differs from the parent's carries CHANGED chain chemistry (the
+    defect unit participates in initiation/depropagation), so the parent's
+    constants do not apply.
+    """
+    if getattr(daughter, 'monomer_mw_g_mol', None) != \
+            getattr(parent, 'monomer_mw_g_mol', None):
+        return False
+    d_feat = getattr(daughter, 'feature_monomer', None)
+    p_feat = getattr(parent, 'feature_monomer', None)
+    if (d_feat is None) != (p_feat is None):
+        return False
+    if d_feat is not None:
+        try:
+            return bool(d_feat.is_isomorphic(p_feat))
+        except Exception:
+            return False
+    return True
+
+
+def _inherit_unzip_channel(daughter: 'Polymer', parent: 'Polymer') -> bool:
+    """Daughter-pool inheritance of the radical_qssa_unzip channel (M5),
+    gated on same repeat chemistry (round-25 P2-1).
+
+    A daughter chain population (scission tail/head, END_MOD fold-back)
+    shares the parent's monomer chemistry and monomer_mw, so the same
+    elementary initiation/depropagation/termination constants apply -- the
+    M1 decision recorded at ``derive_daughter_pool_configs``
+    (rmgpy/rmg/polymer_input.py). A feature-modified daughter (changed
+    ``feature_monomer``) does NOT share that chemistry: it is created
+    channel-free with a once-per-pool WARNING (silent wrong constants are
+    worse than a visibly inert pool). Two deliberately different copy
+    semantics when inheritance applies:
+
+    - ``radical_qssa_unzip``: DEEP-copied. Post-hoc mutation of the parent's
+      channel must never reach the daughter (and vice versa) -- same aliasing
+      posture as ``Polymer.copy`` (review round 21, finding 3).
+    - ``monomer_product_species``: shared BY REFERENCE. Routing resolution
+      (the object-keyed ``spc_map`` in ``derive_daughter_pool_configs`` /
+      ``PolymerPool.to_config``) needs identity with the live core Species;
+      a copy would silently resolve to no core index.
+
+    Channel-free parents bequeath no channel: the daughter stays channel-free
+    (no noise). Returns True iff the channel was inherited.
+    """
+    channel = getattr(parent, 'radical_qssa_unzip', None)
+    if not _same_repeat_chemistry(daughter, parent):
+        if channel is not None:
+            key = (getattr(parent, 'label', ''),
+                   getattr(daughter, 'label', ''), 'changed-chemistry')
+            if key not in _unzip_inherit_warned:
+                _unzip_inherit_warned.add(key)
+                logging.warning(
+                    "Polymer pool '%s' created channel-free: its repeat-unit "
+                    "chemistry (feature/monomer) differs from parent '%s', "
+                    "so the parent's radical_qssa_unzip constants were NOT "
+                    "inherited.",
+                    getattr(daughter, 'label', ''),
+                    getattr(parent, 'label', ''))
+        return False
+    monomer_product = getattr(parent, 'monomer_product_species', None)
+    if monomer_product is not None:
+        daughter.monomer_product_species = monomer_product
+    if channel is None:
+        return False
+    daughter.radical_qssa_unzip = deepcopy(channel)
+    return True
+
+
+def _inherit_spawned_pool_channel(daughter: 'Polymer', parent: 'Polymer',
+                                  intent: 'SpawnIntent') -> bool:
+    """Certainty-gated QSSA inheritance for spawn-intent daughters
+    (round-25 P1-2).
+
+    ``SpawnIntent.parent_pool`` is an attribution SHORTCUT --
+    ``process_polymer_candidates_multipool`` queues ``pool_registry[0]``
+    verbatim (spec-§3 attribution rules), and the intent carries no record
+    of the true source pool (``triggering_reaction_index`` is never
+    populated on this path). The QSSA constants bind to CHEMISTRY, so
+    inherit only when the intent's TRUE detected motif (``intent.monomer``
+    -- the daughter's placeholder ``monomer`` attribute is the parent's and
+    proves nothing) matches the attributed parent's own monomer pattern
+    (``similarity_merge``, the same predicate the spawn pipeline uses).
+
+    In the live pipeline that match is impossible by construction (Phase E
+    is only reached for motifs that failed similarity_merge against EVERY
+    pool), so a live-run spawned pool is channel-free: attribution is
+    genuinely ambiguous and silent wrong constants are worse than a visibly
+    inert pool. A once-per-pool WARNING discloses the withheld channel.
+    Returns True iff the channel was inherited.
+    """
+    motif = getattr(intent, 'monomer', None)
+    certain = (parent is not None and motif is not None
+               and similarity_merge(motif, [parent]) is parent)
+    if certain:
+        return _inherit_unzip_channel(daughter, parent)
+    if parent is not None and \
+            getattr(parent, 'radical_qssa_unzip', None) is not None:
+        key = (getattr(parent, 'label', ''),
+               getattr(daughter, 'label', ''), 'ambiguous-parentage')
+        if key not in _unzip_inherit_warned:
+            _unzip_inherit_warned.add(key)
+            logging.warning(
+                "Spawned polymer pool '%s' created channel-free: parentage "
+                "is ambiguous (attributed parent '%s' carries a "
+                "radical_qssa_unzip channel, but the spawned motif does not "
+                "match its monomer chemistry, so the constants were NOT "
+                "inherited).",
+                getattr(daughter, 'label', ''),
+                getattr(parent, 'label', ''))
+    return False
+
+
+def merge_unzip_channel_on_dedup(existing: 'Polymer',
+                                 incoming: 'Polymer') -> None:
+    """Fingerprint-dedup channel merge (round-25 P2-2).
+
+    ``CoreEdgeReactionModel._register_polymer`` returns the EXISTING Polymer
+    on a fingerprint match and discards the incoming object -- first-writer
+    -wins on every attribute. A daughter registered channel-free first must
+    not silently swallow a later channel-bearing equivalent, so the verdict
+    is transferred onto the canonical object (same posture as the durable
+    gas-veto props transfer in ``make_new_species``, commit c133b34e1):
+
+    - existing lacks the channel, incoming has it: channel DEEP-copied onto
+      the existing object (the incoming is discarded; aliasing posture as
+      ``_inherit_unzip_channel``).
+    - ``monomer_product_species``: transferred BY REFERENCE whenever the
+      existing lacks it (identity is load-bearing for routing resolution).
+    - BOTH carry channels and they differ: keep the existing one and WARN
+      (disclosed first-writer-wins) once per pool.
+    """
+    inc_mps = getattr(incoming, 'monomer_product_species', None)
+    if inc_mps is not None and \
+            getattr(existing, 'monomer_product_species', None) is None:
+        existing.monomer_product_species = inc_mps
+    inc = getattr(incoming, 'radical_qssa_unzip', None)
+    if inc is None:
+        return
+    ex = getattr(existing, 'radical_qssa_unzip', None)
+    if ex is None:
+        existing.radical_qssa_unzip = deepcopy(inc)
+        return
+    if ex != inc:
+        key = (getattr(existing, 'label', ''), 'dedup-channel-conflict')
+        if key not in _unzip_inherit_warned:
+            _unzip_inherit_warned.add(key)
+            logging.warning(
+                "Polymer '%s': fingerprint-deduped equivalent arrived with a "
+                "DIFFERENT radical_qssa_unzip channel; keeping the existing "
+                "channel (first-writer-wins, disclosed).",
+                getattr(existing, 'label', ''))
+
+
 def drain_spawn_intents(
     intents: List[SpawnIntent],
     iteration: int,
@@ -3905,6 +4139,13 @@ def drain_spawn_intents(
         # PARENT's, as lineage metadata only (no DP is derived from them).
         new_pool.moments = np.zeros(3, dtype=np.float64)
         new_pool.parent_pool_label = parent.label
+        # Daughter-pool channel inheritance (radical_qssa_unzip M5), gated on
+        # parentage certainty (round-25 P1-2): intent.parent_pool is the
+        # pool_registry[0] attribution shortcut, so the channel transfers
+        # only when the intent's TRUE motif is the parent's own monomer
+        # chemistry; otherwise the pool spawns channel-free with a
+        # once-per-pool WARNING.
+        _inherit_spawned_pool_channel(new_pool, parent, intent)
         new_pool.spawn_iteration = iteration
         new_pool.end_groups_str = list(intent.end_groups)
         new_pool.mu_indices = (next_idx, next_idx + 1, next_idx + 2)

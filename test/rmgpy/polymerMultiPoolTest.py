@@ -642,6 +642,196 @@ class TestRegisterSpawnedPools:
         # Daughter's μ-indices land past the parent's default (0,1,2) slots.
         assert spawned[0].mu_indices == (3, 4, 5)
 
+    def test_spawned_daughter_inherits_qssa_channel_deepcopy(self, parent_polymer):
+        """Daughter-pool QSSA inheritance (radical_qssa_unzip milestone 5):
+        a spawn-intent daughter of a QSSA parent must carry the parent's
+        radical_qssa_unzip channel DEEP-COPIED (parent mutation must not
+        propagate) and the parent's monomer_product_species by REFERENCE
+        (spc_map routing resolution is object-keyed). Without this the
+        daughter registers as an inert pool and the unzip cascade freezes."""
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+        from rmgpy.species import Species
+
+        channel = {
+            "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+            "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+            "termination": {"A": 1.0e8, "n": 0.0, "Ea": 1.0e4},
+        }
+        parent_polymer.radical_qssa_unzip = channel
+        ethylene = Species(label="ethylene", smiles="C=C")
+        parent_polymer.monomer_product_species = ethylene
+
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=parent_polymer.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+        )
+        daughter = drain_spawn_intents([intent], iteration=4)[0]
+
+        assert daughter.radical_qssa_unzip == channel
+        assert daughter.radical_qssa_unzip is not channel
+        channel["initiation"]["A"] = 1.0
+        assert daughter.radical_qssa_unzip["initiation"]["A"] == 1.0e13
+        assert daughter.monomer_product_species is ethylene
+
+    def test_spawned_daughter_channel_free_parent_stays_channel_free(self, parent_polymer):
+        """No noise: a channel-free parent spawns a channel-free daughter."""
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=parent_polymer.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+        )
+        daughter = drain_spawn_intents([intent], iteration=4)[0]
+        assert daughter.radical_qssa_unzip is None
+
+    def test_spawned_daughter_ambiguous_parentage_stays_channel_free_and_warns(
+            self, parent_polymer, caplog):
+        """Round-25 P1-2 certainty gate: SpawnIntent.parent_pool is an
+        attribution SHORTCUT (process_polymer_candidates_multipool queues
+        pool_registry[0] verbatim), and a spawn intent only exists for a
+        motif that classified GAS against EVERY pool and failed
+        similarity_merge against every pool pattern -- so when the intent's
+        TRUE motif is NOT the attributed parent's own monomer chemistry, the
+        parentage is ambiguous and the daughter must NOT inherit the QSSA
+        constants (silent wrong constants are worse than a visibly inert
+        pool). A once-per-pool WARNING discloses the channel-free spawn."""
+        import logging as _logging
+        import rmgpy.polymer as _pm
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+        from rmgpy.species import Species
+
+        getattr(_pm, "_unzip_inherit_warned", set()).clear()
+        parent_polymer.radical_qssa_unzip = {
+            "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+            "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+            "termination": {"A": 1.0e8, "n": 0.0, "Ea": 1.0e4},
+        }
+        ethylene = Species(label="ethylene", smiles="C=C")
+        parent_polymer.monomer_product_species = ethylene
+
+        # A motif that is NOT the PE parent's chemistry (PS backbone).
+        foreign = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=foreign.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+        )
+        with caplog.at_level(_logging.WARNING):
+            daughter = drain_spawn_intents([intent], iteration=4)[0]
+
+        assert daughter.radical_qssa_unzip is None
+        assert getattr(daughter, "monomer_product_species", None) is None
+        warned = [r for r in caplog.records
+                  if "channel-free" in r.getMessage()
+                  and daughter.label in r.getMessage()]
+        assert warned, "expected an ambiguous-parentage channel-free WARNING"
+
+    def test_spawned_daughter_ambiguous_channel_free_parent_no_warning(
+            self, parent_polymer, caplog):
+        """No noise: an ambiguous-motif spawn off a CHANNEL-FREE parent has
+        nothing to withhold -- no warning."""
+        import logging as _logging
+        import rmgpy.polymer as _pm
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+
+        getattr(_pm, "_unzip_inherit_warned", set()).clear()
+        foreign = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                          end_groups=["[CH3]", "[H]"], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        intent = SpawnIntent(
+            parent_pool=parent_polymer,
+            monomer=foreign.backbone_group,
+            end_groups=["[H]", "[H]"],
+            triggering_dp=3,
+        )
+        with caplog.at_level(_logging.WARNING):
+            daughter = drain_spawn_intents([intent], iteration=4)[0]
+        assert daughter.radical_qssa_unzip is None
+        assert not [r for r in caplog.records
+                    if "channel-free" in r.getMessage()]
+
+
+class TestRegisterPolymerChannelMerge:
+    """Round-25 P2-2: _register_polymer dedup is first-writer-wins on the
+    whole object -- a daughter registered channel-free FIRST must not
+    silently swallow a later channel-bearing equivalent's QSSA channel.
+    Mirrors the gas-veto props transfer posture (commit c133b34e1:
+    make_new_species transfers the verdict onto the DEDUPED existing
+    species too)."""
+
+    @staticmethod
+    def _twin(channel=None, mps=None):
+        p = Polymer(label="PS_scission_tail", monomer="[CH2][CH]c1ccccc1",
+                    end_groups=["[CH3]", "[H]"], cutoff=3,
+                    Mn=2500.0, Mw=3000.0, initial_mass=0.001,
+                    radical_qssa_unzip=channel)
+        if mps is not None:
+            p.monomer_product_species = mps
+        return p
+
+    @staticmethod
+    def _channel():
+        return {
+            "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+            "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+            "termination": {"A": 1.0e8, "n": 0.0, "Ea": 1.0e4},
+        }
+
+    def test_dedup_transfers_channel_onto_channel_free_existing(self):
+        """Channel-free first, channel-bearing second: the fingerprint match
+        must TRANSFER channel + monomer_product_species onto the existing
+        (canonical) object instead of dropping them."""
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        from rmgpy.species import Species
+
+        model = CoreEdgeReactionModel()
+        first = self._twin(channel=None)
+        existing, is_new = model._register_polymer(first, generate_thermo=False)
+        assert is_new and existing is first
+
+        sty = Species(label="styrene", smiles="C=Cc1ccccc1")
+        channel = self._channel()
+        second = self._twin(channel=channel, mps=sty)
+        got, is_new2 = model._register_polymer(second, generate_thermo=False)
+
+        assert got is first and not is_new2
+        assert first.radical_qssa_unzip == channel
+        assert first.monomer_product_species is sty
+
+    def test_dedup_differing_channels_warns_and_keeps_existing(self, caplog):
+        """Both carry channels and they DIFFER: disclosed first-writer-wins
+        (warn, keep the existing channel untouched)."""
+        import logging as _logging
+        import rmgpy.polymer as _pm
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+
+        getattr(_pm, "_unzip_inherit_warned", set()).clear()
+        model = CoreEdgeReactionModel()
+        chan_a = self._channel()
+        first = self._twin(channel=chan_a)
+        model._register_polymer(first, generate_thermo=False)
+
+        chan_b = self._channel()
+        chan_b["initiation"]["A"] = 5.5e12
+        second = self._twin(channel=chan_b)
+        with caplog.at_level(_logging.WARNING):
+            got, is_new = model._register_polymer(second, generate_thermo=False)
+
+        assert got is first and not is_new
+        assert first.radical_qssa_unzip == chan_a
+        assert first.radical_qssa_unzip["initiation"]["A"] == 1.0e13
+        assert [r for r in caplog.records
+                if "radical_qssa_unzip" in r.getMessage()
+                and "PS_scission_tail" in r.getMessage()], \
+            "expected a disclosed first-writer-wins WARNING"
+
 
 class TestReactionModelIntegration:
     """Wiring between the multi-pool classifier and the live

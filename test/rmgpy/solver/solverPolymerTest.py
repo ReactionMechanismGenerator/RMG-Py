@@ -1804,6 +1804,147 @@ class TestHybridPolymerReactor:
             self._qssa_m2_pool(None, k_scission=0.02))
         assert rs_ks_only.qssa_double_count_census == []
 
+    # ------------------------------------------------------------------
+    # radical_qssa_unzip daughter-pool inheritance (M5): a scission event
+    # spawns a daughter that must KEEP depolymerizing, or the TGA S-curve
+    # freezes after the parent's first generation.
+    # ------------------------------------------------------------------
+
+    @staticmethod
+    def _qssa_scission_daughter():
+        """Produce a daughter Polymer through a REAL scission event on a QSSA
+        parent (create_reacted_copy on a head-wing + labeled-methyl fragment),
+        exactly the production path that registers scission daughters."""
+        from rmgpy.polymer import Polymer, stitch_molecules_by_labeled_atoms
+
+        channel = _qssa_channel()
+        parent = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                         end_groups=["[CH3]", "[H]"], cutoff=2,
+                         Mn=5000.0, Mw=6000.0, initial_mass=1.0,
+                         radical_qssa_unzip=channel)
+        styrene = _spc("C=Cc1ccccc1", "styrene")
+        parent.monomer_product_species = styrene
+
+        methyl_star2 = Molecule().from_adjacency_list("""multiplicity 2
+            1 *2 C u1 p0 c0 {2,S} {3,S} {4,S}
+            2 H u0 p0 c0 {1,S}
+            3 H u0 p0 c0 {1,S}
+            4 H u0 p0 c0 {1,S}""")
+        frag = stitch_molecules_by_labeled_atoms(
+            parent._stitch_wing("head"), methyl_star2)
+        daughter = parent.create_reacted_copy(frag)
+        assert daughter is not None
+        assert daughter.label == "PS_scission_tail"
+        return daughter, styrene, channel
+
+    def _qssa_daughter_system(self, daughter, styrene, moments=(1.0, 5.0, 30.0),
+                              reactions=None):
+        """Solver built the production way for a spawned daughter: pool config
+        comes from derive_daughter_pool_configs over the registered core
+        species (daughter + _muN dummies), NOT hand-built -- the exact path
+        HybridPolymerReactor.to_solver_object runs on every rebuild."""
+        from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+        Inert = _spc("N#N", "N2")
+        d_mu0 = _spc("CO", "PS_scission_tail_mu0")
+        d_mu1 = _spc("C=O", "PS_scission_tail_mu1")
+        d_mu2 = _spc("C#N", "PS_scission_tail_mu2")
+        core = [Inert, daughter, d_mu0, d_mu1, d_mu2, styrene]
+        spc_map = {s: i for i, s in enumerate(core)}
+
+        cfgs = derive_daughter_pool_configs(core, spc_map,
+                                            existing_pool_labels={"PS"})
+        assert len(cfgs) == 1 and cfgs[0].label == "PS_scission_tail"
+
+        mask = np.array([True] + [False] * 5, dtype=bool)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
+            V_poly=1.0, polymer_pools=[cfgs[0]], mass_transfer=[],
+            gas_species_mask=mask, constant_gas_volume=False,
+            initial_polymer_moments={"PS_scission_tail": tuple(moments)},
+            termination=[])
+        rs.initialize_model(core, list(reactions or []), [], [])
+        return rs, cfgs[0]
+
+    def test_spawned_scission_daughter_ejects_monomer_through_inherited_qssa(self):
+        """M5 integration: a scission EVENT produces a daughter Polymer; the
+        daughter's derived pool config carries the inherited channel + monomer
+        routing; a fresh solver build FLATTENS it (qssa_enabled -- the only
+        signal the RHS trusts, killing the enabled-in-dict/absent-in-arrays
+        failure) and the RHS actually DRAINS the daughter's mu1 and EMITS
+        monomer at the analytic QSSA rate. Companion: stripping the channel
+        from the daughter yields a solver whose residual shows NO channel
+        contribution (channel-free daughters stay honest-inert)."""
+        daughter, styrene, channel = self._qssa_scission_daughter()
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+
+        rs_on, cfg_on = self._qssa_daughter_system(daughter, styrene,
+                                                   moments=(mu0, mu1, mu2))
+        assert cfg_on.radical_qssa_unzip is not None
+        assert cfg_on.monomer_poly_index == 5
+        assert rs_on.qssa_enabled[0] == 1
+
+        # Channel-free twin: same daughter with the channel stripped.
+        daughter_off = daughter.copy()
+        daughter_off.radical_qssa_unzip = None
+        rs_off, cfg_off = self._qssa_daughter_system(daughter_off, styrene,
+                                                     moments=(mu0, mu1, mu2))
+        assert cfg_off.radical_qssa_unzip is None
+        assert rs_off.qssa_enabled[0] == 0
+
+        y = rs_on.y.copy()
+        dn_on = rs_on.residual(0.0, y, np.zeros_like(y))[0]
+        dn_off = rs_off.residual(0.0, y.copy(), np.zeros_like(y))[0]
+        diff = dn_on - dn_off
+
+        r = self._qssa_oracle_rate(channel, mu0, mu1)
+        assert r > 0.0                                   # the oracle is live
+        assert diff[3] == pytest.approx(-r, rel=1e-10)   # daughter mu1 drains
+        assert diff[5] == pytest.approx(+r, rel=1e-10)   # monomer emitted
+
+    def test_spawned_daughter_inherited_qssa_seen_by_double_count_census(self):
+        """The M2 double-count census keys on qssa_enabled, which is rebuilt
+        (with the flattening) on EVERY initialize_model -- so a daughter that
+        inherits the channel is censused exactly like a deck pool when a
+        surviving same-pool scission/VE reaction sources from it."""
+        import rmgpy.solver.polymer as sp
+        from rmgpy.polymer import _qssa_double_count_warned
+        _qssa_double_count_warned.discard(
+            ("PS_scission_tail", "generated_scission_ve"))
+
+        daughter, styrene, _ = self._qssa_scission_daughter()
+        G = _spc("[CH3]", "G_ve")
+        rxn = Reaction(reactants=[daughter], products=[daughter, G], **_KIN)
+        rxn.polymer_flux_archetype = 6   # VOLATILE_EJECTION (same-pool)
+        rxn.polymer_eject_units = 1.0
+
+        # G must be in core for the reaction indices to resolve; extend the
+        # daughter system's core via the reactions hook.
+        from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+        Inert = _spc("N#N", "N2")
+        d_mu0 = _spc("CO", "PS_scission_tail_mu0")
+        d_mu1 = _spc("C=O", "PS_scission_tail_mu1")
+        d_mu2 = _spc("C#N", "PS_scission_tail_mu2")
+        core = [Inert, daughter, d_mu0, d_mu1, d_mu2, styrene, G]
+        spc_map = {s: i for i, s in enumerate(core)}
+        cfgs = derive_daughter_pool_configs(core, spc_map,
+                                            existing_pool_labels={"PS"})
+        mask = np.array([True] + [False] * 5 + [True], dtype=bool)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
+            V_poly=1.0, polymer_pools=[cfgs[0]], mass_transfer=[],
+            gas_species_mask=mask, constant_gas_volume=False,
+            initial_polymer_moments={"PS_scission_tail": (1.0, 5.0, 30.0)},
+            termination=[])
+        rs.initialize_model(core, [rxn], [], [])
+
+        assert rs.reaction_flux_archetype[0] == sp.FLUX_VOLATILE_EJECTION
+        assert rs.reaction_src_pool[0] == 0
+        entries = [e for e in rs.qssa_double_count_census
+                   if e.get("overlap") == "generated_scission_ve"]
+        assert len(entries) == 1
+        assert entries[0]["pool"] == "PS_scission_tail"
+
     def test_initialize_model_accepts_two_pools(self):
         """Synthetic multi-pool: HybridPolymerSystem must accept and resolve
         two structurally-distinct PolymerPoolConfig objects in one solver.

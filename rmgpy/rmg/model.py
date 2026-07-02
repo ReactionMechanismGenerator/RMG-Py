@@ -334,6 +334,14 @@ class CoreEdgeReactionModel:
         # Search existing registries (fast: check in order of likelihood)
         for spec in self.new_species_list + self.core.species + self.edge.species:
             if isinstance(spec, Polymer) and spec.fingerprint == fp:
+                # Round-25 P2-2: dedup discards the incoming object, so a
+                # channel-free first registration must not silently swallow a
+                # later channel-bearing equivalent's radical_qssa_unzip /
+                # monomer_product_species. Transfer them onto the canonical
+                # existing Polymer (same posture as the gas-veto props
+                # transfer in make_new_species, commit c133b34e1).
+                from rmgpy.polymer import merge_unzip_channel_on_dedup
+                merge_unzip_channel_on_dedup(spec, poly)
                 return spec, False
 
         # Fresh polymer product — reset caches so it acts as an independent species
