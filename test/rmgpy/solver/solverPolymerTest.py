@@ -6652,3 +6652,92 @@ class TestHLossRadicalDaughterCoreMask:
         assert bool(np.asarray(rs.gas_species_mask)[6]) is True
         rs.residual(0.0, rs.y, np.zeros_like(rs.y))
         assert float(rs.core_species_production_rates[6]) == 0.0
+
+
+class TestReversibleChainScissionScopePin:
+    """ITEM C -- honest scope pin for the reference-state guard (no
+    behavior change; pin + wording only). The 2026-07-03 monomer-gas fix
+    removed the monomer-PRODUCT conflation (the routed release target
+    being force-condensed). It does NOT make reversible chain-scission
+    decks initialize: with the monomer now genuinely gas, a REVERSIBLE
+    polymer-proxy scission `proxy <=> gas monomer + gas fragment` (the
+    real PS mechanism's `polystyrene(2) <=> C8H8 + C16H18` shape, which
+    read U = 0.72 decades pre-fix ONLY because the monomer was wrongly
+    condensed) carries exactly one net melt participant and LEGITIMATELY
+    refuses via the thermo reference-state tripwire. The resolution is
+    deck/prep-level irreversibility -- open-crucible physics (the
+    volatiles leave; the reverse reaction has no meaning in the melt) --
+    not a code defect."""
+
+    # polystyrene(2) trimer-scale proxy: C24H26 = C8H8 + C16H18
+    PROXY_SMILES = "CC(c1ccccc1)CC(c1ccccc1)CCc1ccccc1"   # C24H26
+    STYRENE_SMILES = "C=Cc1ccccc1"                        # C8H8
+    FRAGMENT_SMILES = "CC(c1ccccc1)CCc1ccccc1"            # C16H18
+
+    def _build(self, **kwargs):
+        sp = {
+            "PS": _spc(self.PROXY_SMILES, "polystyrene(2)"),
+            "PS_mu0": _spc("CO", "polystyrene_mu0"),
+            "PS_mu1": _spc("C=O", "polystyrene_mu1"),
+            "PS_mu2": _spc("C#N", "polystyrene_mu2"),
+            "STY": _spc(self.STYRENE_SMILES, "C8H8"),      # gas monomer
+            "FRAG": _spc(self.FRAGMENT_SMILES, "C16H18"),  # gas fragment
+        }
+        for s in sp.values():
+            s.thermo = _trivial_nasa(_LIB_COMMENT)
+        core = [sp["PS"], sp["PS_mu0"], sp["PS_mu1"], sp["PS_mu2"],
+                sp["STY"], sp["FRAG"]]
+        mask = np.array([False, False, False, False, True, True],
+                        dtype=bool)
+        rxn = Reaction(reactants=[sp["PS"]],
+                       products=[sp["STY"], sp["FRAG"]], **_REV_KIN)
+        pool = PolymerPoolConfig(
+            label="polystyrene", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            monomer_mw_g_mol=104.15, k_scission=0.0, k_unzip=0.0)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={sp["STY"]: 0.0},
+            V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"polystyrene": (1.0, 5.0, 30.0)},
+            termination=[], **kwargs)
+        return rs, core, rxn, sp
+
+    def test_reversible_scission_to_gas_products_refuses(self):
+        """THE scope pin: one condensed proxy reactant, gas monomer + gas
+        fragment products, reversible -- exactly one net melt participant
+        -- must REFUSE via the tripwire. This is the guard working as
+        specified, not a defect for a future 'fix' to erode: any change
+        that lets this shape initialize without a deck-level thermo/
+        irreversibility resolution reintroduces the unpaired
+        reference-state error the tripwire exists to catch."""
+        rs, core, rxn, sp = self._build()
+
+        # LIVENESS: independently recomputed U for the single net melt
+        # participant (the proxy) is far above the 3.0-decade refuse
+        # bound -- the fixture genuinely carries the pathological shape,
+        # so the raises-check below cannot pass vacuously.
+        mw_proxy = sp["PS"].molecule[0].get_molecular_weight()
+        u_expected = (_sackur_tetrode_decades(mw_proxy, 800.0)
+                      + math.log10(1.0e5 / (constants.R * 800.0 * 1.0)))
+        assert u_expected > 3.0, (
+            "FIXTURE BROKEN: recomputed U for the melt proxy "
+            f"({u_expected:.2f}) is not above the refuse bound")
+        assert rxn.reversible
+
+        with pytest.raises(ValueError,
+                           match=r"THERMO REFERENCE-STATE TRIPWIRE"):
+            rs.initialize_model(core, [rxn], [], [])
+
+    def test_census_attributes_refusal_to_the_scission_reaction(self):
+        """Documentation pin: under the deck author's explicit
+        allow_unpaired_reference_state bypass the same deck initializes
+        and the census names THIS reaction with the chain-scale U -- the
+        refusal is attributable, physical, and resolved at deck/prep
+        level (irreversible scission in an open crucible), never by
+        weakening the guard."""
+        rs, core, rxn, sp = self._build(allow_unpaired_reference_state=True)
+        rs.initialize_model(core, [rxn], [], [])
+        assert rs.reference_state_max_decades > 3.0
+        assert any(str(rxn) == name
+                   for name, _u in rs.reference_state_census)

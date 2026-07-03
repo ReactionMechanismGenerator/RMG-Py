@@ -86,6 +86,15 @@ target masked GAS). The gate is revision-keyed, not semantics-sniffed:
 re-freezing an old artifact with gas-looking membership lists does not
 launder it past the refusal.
 
+Scope of the monomer-gas fix: it removes the monomer-PRODUCT reference-state
+conflation (the routed release target being force-condensed); it does NOT
+make reversible chain-scission decks initialize — a reversible
+`proxy <=> gas monomer + gas fragment` reaction (e.g.
+`polystyrene(2) <=> C8H8 + C16H18`, one net melt participant) still
+legitimately refuses via the thermo reference-state tripwire, and the
+resolution is deck/prep-level irreversibility (open-crucible physics), not a
+code change.
+
 ## 1. Envelope
 
 ```json
