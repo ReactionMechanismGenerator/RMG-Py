@@ -5,6 +5,7 @@ import csv
 import json
 import logging
 import os
+from copy import deepcopy as _dc
 
 import numpy as np
 import pytest
@@ -588,13 +589,28 @@ class TestWeakLinkArtifactLoader:
 
 
 class TestSchema21FixtureRegression:
-    """A FROZEN 2.1 artifact (channel constants and shape derived from the
-    kdpswap PS-rerun baseline sidecar) must load bit-for-bit as before the
-    2.2 milestone: same parsed channel config, same flattened arrays, no U
-    slot. The literal is deliberately NOT emitter-produced, so this
-    regression is independent of emitter changes."""
+    """Two FROZEN 2.1 artifacts (channel constants and shape derived from
+    the kdpswap PS-rerun baseline sidecar; deliberately NOT
+    emitter-produced, so this regression is independent of emitter
+    changes), split by recipe revision -- P1-B, the anti-laundering pin:
 
-    FROZEN_2_1_ARTIFACT = {
+    * FROZEN_2_1_LEGACY_ARTIFACT is the TRUE pre-monomer-gas freeze
+      (recipe_revision 2026-07-02, routed monomer styrene(2) CONDENSED;
+      byte-content recovered from the b35d54047 freeze). The loader must
+      HARD-REFUSE it with a regenerate message: this loader implements
+      only the gas-monomer semantics, and legacy acceptance would
+      re-condense the routed monomer -- the exact reference-state
+      conflation revision 2026-07-03-monomer-gas removed.
+    * FROZEN_2_1_MONOMER_GAS_ARTIFACT carries the NEW revision
+      (2026-07-03-qssa-monomer-gas, routed monomer GAS) and pins the
+      QSSA-parse regression the old single fixture used to pin.
+
+    A fixture carrying the OLD revision token with NEW gas semantics (or
+    vice versa) is semantically contradictory and is pinned REJECTED
+    below -- re-freezing across the revision boundary is the laundering
+    vector this split exists to forbid."""
+
+    FROZEN_2_1_LEGACY_ARTIFACT = {
         "schema_version": "2.1",
         "rmg_commit": "kdpswap-baseline-derived",
         "rmg_iteration": 0,
@@ -603,12 +619,8 @@ class TestSchema21FixtureRegression:
                            "(polymer_moments_format/2.1)"),
             "recipe_revision": "2026-07-02",
             "configured_pools": ["PS"],
-            # Re-frozen at the 2026-07-03-monomer-gas revision: the routed
-            # monomer styrene(2) is GAS (the solver oracle now validates the
-            # routing target gas). The kdpswap channel constants below are
-            # untouched -- the QSSA-parse regression this fixture pins is
-            # unchanged.
-            "condensed_species": ["PS_mu0", "PS_mu1", "PS_mu2"],
+            "condensed_species": ["PS_mu0", "PS_mu1", "PS_mu2",
+                                  "styrene(2)"],
         },
         "pools": [{
             "label": "PS",
@@ -669,7 +681,17 @@ class TestSchema21FixtureRegression:
         "reactions": [],
     }
 
-    def test_frozen_2_1_artifact_loads_with_identical_parsed_output(
+    # The monomer-gas twin differs from the legacy freeze by EXACTLY the
+    # 2026-07-03-monomer-gas revision delta (recipe_revision token + the
+    # routed monomer leaving the condensed list) -- derived here so the
+    # delta is explicit and nothing else can drift between the two.
+    FROZEN_2_1_MONOMER_GAS_ARTIFACT = _dc(FROZEN_2_1_LEGACY_ARTIFACT)
+    FROZEN_2_1_MONOMER_GAS_ARTIFACT["conventions"]["recipe_revision"] = \
+        "2026-07-03-qssa-monomer-gas"
+    FROZEN_2_1_MONOMER_GAS_ARTIFACT["conventions"]["condensed_species"] = \
+        ["PS_mu0", "PS_mu1", "PS_mu2"]
+
+    def test_frozen_monomer_gas_artifact_loads_with_identical_parsed_output(
             self, qssa_deck):
         from copy import deepcopy
 
@@ -678,8 +700,8 @@ class TestSchema21FixtureRegression:
         chem_path, _ = qssa_deck
         species, reactions = load_chem_yaml(chem_path)
         rs, core, _ = build_system_from_artifact(
-            deepcopy(self.FROZEN_2_1_ARTIFACT), species, reactions,
-            T0=650.0, P=1.0e5, V_poly=1.0,
+            deepcopy(self.FROZEN_2_1_MONOMER_GAS_ARTIFACT), species,
+            reactions, T0=650.0, P=1.0e5, V_poly=1.0,
             initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
         expected = validate_radical_qssa_unzip("PS", {
             "initiation": {"A": 1.0e15, "n": 0.0, "Ea": 281600.0},
@@ -693,6 +715,84 @@ class TestSchema21FixtureRegression:
         assert rs.qssa_kt_A[0] == pytest.approx(57750000.0)
         # legacy layout: no trailing U slot
         assert rs.neq == len(core)
+
+    def _load(self, artifact, qssa_deck):
+        from copy import deepcopy
+        chem_path, _ = qssa_deck
+        species, reactions = load_chem_yaml(chem_path)
+        return build_system_from_artifact(
+            deepcopy(artifact), species, reactions,
+            T0=650.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_frozen_legacy_artifact_hard_refused_with_regenerate_message(
+            self, qssa_deck):
+        """RED pin (P1-B direction 1): the TRUE legacy artifact (old
+        revision, old condensed-monomer semantics) is hard-refused AT THE
+        LOADER with an actionable regenerate message -- never a deep
+        solver error, never silent legacy acceptance (that would
+        re-condense the routed monomer, the exact defect revision
+        2026-07-03-monomer-gas removed)."""
+        with pytest.raises(ValueError,
+                           match=r"recipe_revision.*2026-07-02.*[Rr]egenerate"
+                                 r".*monomer-gas"):
+            self._load(self.FROZEN_2_1_LEGACY_ARTIFACT, qssa_deck)
+
+    def test_old_revision_with_gas_semantics_still_refused(self, qssa_deck):
+        """RED pin (P1-B, the laundering vector itself): an artifact
+        carrying the OLD revision token but re-frozen NEW gas semantics
+        (routed monomer absent from the condensed list -- exactly the
+        contradictory re-freeze the review forbids) must ALSO be refused:
+        the gate is revision-keyed, not semantics-sniffed, so a re-freeze
+        cannot launder an old artifact past it."""
+        from copy import deepcopy
+        laundered = deepcopy(self.FROZEN_2_1_LEGACY_ARTIFACT)
+        laundered["conventions"]["condensed_species"] = \
+            ["PS_mu0", "PS_mu1", "PS_mu2"]
+        with pytest.raises(ValueError,
+                           match=r"recipe_revision.*2026-07-02.*[Rr]egenerate"
+                                 r".*monomer-gas"):
+            self._load(laundered, qssa_deck)
+
+    def test_new_revision_with_condensed_routed_monomer_rejected(
+            self, qssa_deck):
+        """RED pin (P1-B direction 2): an artifact stamping a NEW
+        monomer-gas recipe_revision whose condensed list still contains
+        the routed monomer is internally contradictory and must be
+        REJECTED at the loader with a clear message (not mis-phased, not
+        left to a deep solver error)."""
+        from copy import deepcopy
+        contradictory = deepcopy(self.FROZEN_2_1_MONOMER_GAS_ARTIFACT)
+        contradictory["conventions"]["condensed_species"] = \
+            ["PS_mu0", "PS_mu1", "PS_mu2", "styrene(2)"]
+        with pytest.raises(ValueError,
+                           match=r"internally contradictory.*regenerate"):
+            self._load(contradictory, qssa_deck)
+
+    def test_new_revision_with_routed_monomer_in_phase_species_rejected(
+            self, qssa_deck):
+        """Same contradiction through the pools[].phase_species list (the
+        other membership list the monomer-gas revision removed the routed
+        monomer from)."""
+        from copy import deepcopy
+        contradictory = deepcopy(self.FROZEN_2_1_MONOMER_GAS_ARTIFACT)
+        contradictory["pools"][0]["phase_species"] = ["styrene(2)"]
+        with pytest.raises(ValueError,
+                           match=r"internally contradictory.*regenerate"):
+            self._load(contradictory, qssa_deck)
+
+    def test_old_revision_without_routed_monomer_still_loads(
+            self, qssa_deck):
+        """Scope pin: the hard refusal is keyed on routed-monomer
+        semantics being in play. An OLD-revision artifact that routes no
+        monomer (no monomer_routing, unzip/QSSA silent) has no
+        monomer-phase semantics to mis-read and still loads."""
+        from copy import deepcopy
+        legacy_unrouted = deepcopy(self.FROZEN_2_1_LEGACY_ARTIFACT)
+        legacy_unrouted["pools"][0]["monomer_routing"] = None
+        del legacy_unrouted["pools"][0]["channels"]["radical_qssa_unzip"]
+        rs, core, _ = self._load(legacy_unrouted, qssa_deck)
+        assert rs.qssa_enabled[0] == 0
 
 
 class TestChemYamlLoader:

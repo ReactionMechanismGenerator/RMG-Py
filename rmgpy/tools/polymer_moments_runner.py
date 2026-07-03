@@ -439,6 +439,92 @@ def _check_qssa_schema_version(artifact):
             f"regenerate the sidecar with a current RMG-Py polymer branch.")
 
 
+# Recipe-revision gate for the monomer-gas contract (P1-B, incident
+# 2026-07-03). Revision tokens that implement the GAS routed-monomer
+# semantics (docs/polymer_moments_format.md, revision note
+# 2026-07-03-monomer-gas): the unzip/QSSA release target is a gas-phase
+# species, never listed in conventions.condensed_species or
+# pools[].phase_species. Pre-revision tokens implemented the CONDENSED
+# routed-monomer semantics this loader no longer supports.
+_MONOMER_GAS_RECIPE_REVISIONS = frozenset({
+    "2026-07-03-monomer-gas",
+    "2026-07-03-qssa-monomer-gas",
+    "2026-07-03-weaklink-u-monomer-gas",
+})
+_PRE_MONOMER_GAS_RECIPE_REVISIONS = frozenset({
+    "2026-06-10",
+    "2026-07-02",
+    "2026-07-03-weaklink-u",
+})
+
+
+def _check_recipe_revision_monomer_phase(artifact):
+    """Revision-gate the routed-monomer phase semantics (P1-B).
+
+    Only artifacts that route released monomer (any configured pool with
+    a non-null ``monomer_routing``) carry the semantics at all; artifacts
+    without routing pass untouched, whatever their revision.
+
+    * NEW (monomer-gas) recipe_revision: the routed monomer must NOT
+      appear in ``conventions.condensed_species`` or the pool's
+      ``phase_species`` -- such an artifact is internally contradictory
+      (gas contract stamped, condensed membership listed) and is
+      REJECTED rather than mis-phased.
+    * OLD (pre-monomer-gas) or unknown recipe_revision: HARD REFUSAL
+      (decision (a)). Legacy acceptance would require re-condensing the
+      routed monomer on the live solver path -- the exact
+      reference-state conflation revision 2026-07-03-monomer-gas
+      removed, and the solver now validates the release target GAS
+      (validate_configuration raises on a condensed monomer index). The
+      gate is revision-keyed, NOT semantics-sniffed, so re-freezing an
+      old artifact with gas-looking lists cannot launder it past this
+      check."""
+    conv = artifact.get("conventions") or {}
+    rev = conv.get("recipe_revision")
+    configured = set(conv.get("configured_pools") or [])
+    condensed = set(conv.get("condensed_species") or [])
+    # Non-string monomer_routing values are NOT gated here: they fall
+    # through to the existing per-pool type guard in
+    # build_system_from_artifact, whose message names the pool and type.
+    routed = [(p.get("label"), p.get("monomer_routing"), p)
+              for p in artifact.get("pools", [])
+              if isinstance(p, dict) and p.get("label") in configured
+              and isinstance(p.get("monomer_routing"), str)
+              and p.get("monomer_routing")]
+    if not routed:
+        return  # no routed monomer: no monomer-phase semantics in play
+    if rev in _MONOMER_GAS_RECIPE_REVISIONS:
+        for lab, routing, p in routed:
+            phase_species = p.get("phase_species") or []
+            if routing in condensed or routing in phase_species:
+                raise ValueError(
+                    f"Pool {lab!r}: recipe_revision {rev!r} declares the "
+                    f"monomer-gas contract (the routed monomer is a "
+                    f"GAS-phase species), but the monomer_routing target "
+                    f"{routing!r} is still listed in "
+                    f"conventions.condensed_species / pools[].phase_species. "
+                    f"The artifact is internally contradictory; regenerate "
+                    f"it with current code (monomer-gas contract, "
+                    f"docs/polymer_moments_format.md revision note "
+                    f"2026-07-03-monomer-gas).")
+        return
+    kind = ("predates" if rev in _PRE_MONOMER_GAS_RECIPE_REVISIONS
+            else "is unknown to")
+    routed_desc = ", ".join(f"pool {lab!r} -> {routing!r}"
+                            for lab, routing, _ in routed)
+    raise ValueError(
+        f"artifact recipe_revision {rev!r} {kind} the monomer-gas contract "
+        f"(2026-07-03: the unzip/QSSA release target is a GAS-phase "
+        f"species) and the artifact routes released monomer "
+        f"({routed_desc}). This loader implements ONLY the gas-monomer "
+        f"semantics: legacy acceptance would re-condense the routed "
+        f"monomer -- the exact reference-state conflation the revision "
+        f"removed -- and the live solver refuses a condensed release "
+        f"target. Regenerate the artifact with current code (monomer-gas "
+        f"contract; recipe_revision one of "
+        f"{sorted(_MONOMER_GAS_RECIPE_REVISIONS)}).")
+
+
 def _parse_radical_qssa_channel(lab, pool_entry):
     """Parse + validate a pool entry's channels.radical_qssa_unzip block.
 
@@ -597,6 +683,10 @@ def build_system_from_artifact(artifact, species, reactions,
     # sub-vocabulary) is malformed regardless of pool configuration.
     _check_schema_version_known(artifact)
     _check_qssa_schema_version(artifact)
+    # Monomer-phase semantics are revision-gated (P1-B): reject
+    # contradictory NEW-revision artifacts, hard-refuse pre-monomer-gas
+    # ones that route monomer (see _check_recipe_revision_monomer_phase).
+    _check_recipe_revision_monomer_phase(artifact)
 
     core = list(species)
     idx = {s.label: i for i, s in enumerate(core)}

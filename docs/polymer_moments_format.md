@@ -70,6 +70,22 @@ release deposits into the gas amount basis (§2 `monomer_routing` row, §5
 condensed-monomer semantics hard-fail instead of silently mis-phasing the
 released volatile (§8 consumer guidance).
 
+The reference loader (`rmgpy/tools/polymer_moments_runner.py`,
+`_check_recipe_revision_monomer_phase`) enforces the revision gate whenever
+an artifact routes released monomer (any configured pool with a non-null
+`monomer_routing`); artifacts without routing carry no monomer-phase
+semantics and pass whatever their revision. A **monomer-gas** revision whose
+routed monomer still appears in `conventions.condensed_species` or
+`pools[].phase_species` is internally contradictory and is REJECTED. A
+**pre-monomer-gas** (or unknown) revision that routes monomer is HARD-REFUSED
+with a "regenerate with current code (monomer-gas contract)" message — legacy
+acceptance was rejected because it would re-condense the routed monomer on
+the live solver path (the exact reference-state conflation this revision
+removed; the solver's `validate_configuration` now requires the release
+target masked GAS). The gate is revision-keyed, not semantics-sniffed:
+re-freezing an old artifact with gas-looking membership lists does not
+launder it past the refusal.
+
 ## 1. Envelope
 
 ```json
