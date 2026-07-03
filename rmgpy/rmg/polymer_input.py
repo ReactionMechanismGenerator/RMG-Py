@@ -930,7 +930,16 @@ class PolymerPool(object):
                                    resolvable monomer_product and is mutually
                                    exclusive with k_unzip > 0. M1: stored on the
                                    solver config but inert (no RHS reads it
-                                   until the M2 rate law). Defaults to None.
+                                   until the M2 rate law). Also accepts the
+                                   weak-link allyl/U-state vocabulary
+                                   (schema-2.2, all-or-nothing group:
+                                   initiation_allyl, termination_recombination,
+                                   termination_disproportionation,
+                                   unsaturated_tail_ends_initial [mol, >= 0];
+                                   legacy summed termination must then be
+                                   ABSENT -- see validate_radical_qssa_unzip;
+                                   the solver refuses weak-link configs until
+                                   its rate law lands). Defaults to None.
     """
     def __init__(self,
                  label: str,

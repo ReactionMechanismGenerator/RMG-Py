@@ -3341,6 +3341,26 @@ def _serialize_radical_qssa_channel(pool: 'Polymer') -> Optional[Dict[str, Any]]
     from rmgpy.solver.polymer import QSSA_R_GAS, validate_radical_qssa_unzip
     q = validate_radical_qssa_unzip(getattr(pool, "label", ""), qssa)
 
+    # ANTI-SILENT-NO-OP GUARD (weak-link milestone i): the weak-link
+    # allyl/U-state vocabulary is valid CONFIG, but sidecar schema 2.1 has
+    # no fields for it and solver support is not implemented yet (both land
+    # in a later milestone, which also removes this guard). Emitting the
+    # legacy-shaped block here would silently launder the allyl channel out
+    # of the artifact -- and the ["termination"] read below would KeyError
+    # uninformatively anyway (weak-link configs carry SPLIT terminations).
+    if "initiation_allyl" in q:
+        raise ValueError(
+            f"Pool '{getattr(pool, 'label', '')}': radical_qssa_unzip "
+            f"carries the weak-link allyl/U-state vocabulary "
+            f"(initiation_allyl / termination_recombination / "
+            f"termination_disproportionation / "
+            f"unsaturated_tail_ends_initial), but sidecar schema 2.1 has no "
+            f"vocabulary for it and solver support is not implemented yet "
+            f"(the schema bump lands with the weak-link rate law in a later "
+            f"milestone). Refusing to serialize: emitting the block without "
+            f"the weak-link fields would silently drop the configured "
+            f"channel from the artifact.")
+
     def _triplet(block_name):
         trip = q[block_name]
         if trip is None:
@@ -3978,7 +3998,9 @@ def _inherit_unzip_channel(daughter: 'Polymer', parent: 'Polymer') -> bool:
 
     - ``radical_qssa_unzip``: DEEP-copied. Post-hoc mutation of the parent's
       channel must never reach the daughter (and vice versa) -- same aliasing
-      posture as ``Polymer.copy`` (review round 21, finding 3).
+      posture as ``Polymer.copy`` (review round 21, finding 3). Exception:
+      ``unsaturated_tail_ends_initial`` (weak-link U-state) is per-pool
+      STATE, not a chemistry constant -- it RESETS to 0.0 on the daughter.
     - ``monomer_product_species``: shared BY REFERENCE. Routing resolution
       (the object-keyed ``spc_map`` in ``derive_daughter_pool_configs`` /
       ``PolymerPool.to_config``) needs identity with the live core Species;
@@ -4007,7 +4029,16 @@ def _inherit_unzip_channel(daughter: 'Polymer', parent: 'Polymer') -> bool:
         daughter.monomer_product_species = monomer_product
     if channel is None:
         return False
-    daughter.radical_qssa_unzip = deepcopy(channel)
+    inherited = deepcopy(channel)
+    # CONSTANTS inherit, STATE does not (weak-link milestone i, review P1):
+    # unsaturated_tail_ends_initial is the pool's initial U-state amount,
+    # not a chemistry constant. State resets on spawn -- copying the
+    # parent's would fabricate the same initial U on every daughter pool (a
+    # hidden initiation source once the solver U-state lands). A future
+    # event-specific spawn law may compute the U transfer explicitly.
+    if "unsaturated_tail_ends_initial" in inherited:
+        inherited["unsaturated_tail_ends_initial"] = 0.0
+    daughter.radical_qssa_unzip = inherited
     return True
 
 

@@ -5473,6 +5473,283 @@ def test_derive_daughter_pool_config_invalid_inherited_channel_is_loud():
 
 
 # ---------------------------------------------------------------------------
+# Weak-link allyl/U-state config vocabulary (schema-2.2 milestone i: config +
+# validation ONLY -- the solver RHS and the sidecar schema bump are later
+# milestones). New OPTIONAL radical_qssa_unzip keys: initiation_allyl,
+# termination_recombination, termination_disproportionation (Arrhenius
+# triplets, same rules as the legacy blocks) and unsaturated_tail_ends_initial
+# (float, finite, >= 0; mol -- the same amount basis as mu0, the consumer
+# divides by V_poly). ALL-OR-NOTHING, and mutually exclusive with the legacy
+# SUMMED 'termination' block: U production is sourced by the
+# disproportionation branch specifically, so a summed kt cannot source U.
+# ---------------------------------------------------------------------------
+
+_WEAKLINK_KEYS = ("initiation_allyl", "termination_recombination",
+                  "termination_disproportionation",
+                  "unsaturated_tail_ends_initial")
+
+
+def _weaklink_channel(**overrides):
+    """A valid weak-link radical_qssa_unzip channel: allyl initiation + SPLIT
+    termination blocks + initial unsaturated tail-end amount; NO legacy
+    summed 'termination'."""
+    ch = dict(
+        initiation=_qssa_triplet(A=1.0e15, Ea=3.0e5),
+        depropagation=_qssa_triplet(A=1.0e13, Ea=8.0e4),
+        initiation_allyl=_qssa_triplet(A=2.0e14, Ea=2.4e5),
+        termination_recombination=_qssa_triplet(A=6.0e7, Ea=8.0e3),
+        termination_disproportionation=_qssa_triplet(A=4.0e7, Ea=1.2e4),
+        unsaturated_tail_ends_initial=0.02,
+    )
+    ch.update(overrides)
+    return ch
+
+
+def test_pool_to_config_legacy_qssa_normalized_shape_is_pinned():
+    """LEGACY FREEZE (weak-link milestone i): a deck with NONE of the
+    weak-link keys must normalize to EXACTLY the pre-milestone dict --
+    same keys, same values, no new vocabulary leaking in with defaults.
+    Downstream consumers (flattening, sidecar emitter) key off this shape."""
+    pool, spc_map = _qssa_pool(_qssa_channel())
+
+    q = pool.to_config(spc_map).radical_qssa_unzip
+
+    assert q == {
+        "initiation": dict(A=1.0e15, n=0.0, Ea=3.0e5),
+        "depropagation": dict(A=1.0e13, n=0.0, Ea=8.0e4),
+        "termination": dict(A=1.0e8, n=0.0, Ea=1.0e4),
+        "transfer": None,
+        "efficiency": 1.0,
+        "monomer_yield": 1.0,
+        "basis": "backbone_bonds_mu1_minus_mu0",
+    }
+    assert not any(k in q for k in _WEAKLINK_KEYS)
+
+
+def test_pool_to_config_roundtrips_weaklink_channel():
+    """Full weak-link config (all four new keys, no legacy summed
+    termination) is accepted at to_config and every value round-trips
+    exactly; the normalized dict carries NO 'termination' key."""
+    pool, spc_map = _qssa_pool(_weaklink_channel())
+
+    q = pool.to_config(spc_map).radical_qssa_unzip
+
+    assert q["initiation_allyl"] == dict(A=2.0e14, n=0.0, Ea=2.4e5)
+    assert q["termination_recombination"] == dict(A=6.0e7, n=0.0, Ea=8.0e3)
+    assert q["termination_disproportionation"] == dict(A=4.0e7, n=0.0, Ea=1.2e4)
+    assert q["unsaturated_tail_ends_initial"] == 0.02
+    assert isinstance(q["unsaturated_tail_ends_initial"], float)
+    assert "termination" not in q
+    # The shared legacy blocks and defaults still normalize as before.
+    assert q["initiation"] == dict(A=1.0e15, n=0.0, Ea=3.0e5)
+    assert q["depropagation"] == dict(A=1.0e13, n=0.0, Ea=8.0e4)
+    assert q["efficiency"] == 1.0
+    assert q["monomer_yield"] == 1.0
+    assert q["transfer"] is None
+    assert q["basis"] == "backbone_bonds_mu1_minus_mu0"
+
+
+def test_pool_to_config_weaklink_zero_initial_U_is_valid():
+    """unsaturated_tail_ends_initial = 0 is a legal state (no pre-existing
+    unsaturated tail ends); the >= 0 rule is inclusive and the int is
+    coerced to float."""
+    pool, spc_map = _qssa_pool(
+        _weaklink_channel(unsaturated_tail_ends_initial=0))
+
+    q = pool.to_config(spc_map).radical_qssa_unzip
+
+    assert q["unsaturated_tail_ends_initial"] == 0.0
+    assert isinstance(q["unsaturated_tail_ends_initial"], float)
+
+
+def test_pool_to_config_rejects_weaklink_with_legacy_termination():
+    """MUTUAL EXCLUSION: weak-link keys + the legacy SUMMED 'termination'
+    block is a hard error naming both the offending key and the rule --
+    U production depends on the disproportionation branch specifically,
+    a summed kt cannot source U."""
+    pool, spc_map = _qssa_pool(
+        _weaklink_channel(termination=_qssa_triplet(A=1.0e8, Ea=1.0e4)))
+    with pytest.raises(ValueError,
+                       match=r"Pool P.*'termination'.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+@pytest.mark.parametrize("dropped", _WEAKLINK_KEYS)
+def test_pool_to_config_rejects_weaklink_strict_subsets(dropped):
+    """ALL-OR-NOTHING: any strict subset of the weak-link vocabulary is
+    rejected, and the error names the missing key."""
+    ch = {k: v for k, v in _weaklink_channel().items() if k != dropped}
+    pool, spc_map = _qssa_pool(ch)
+    with pytest.raises(ValueError,
+                       match=rf"Pool P.*weak-link.*{dropped}"):
+        pool.to_config(spc_map)
+
+
+@pytest.mark.parametrize("only", _WEAKLINK_KEYS)
+def test_pool_to_config_rejects_lone_weaklink_key_on_legacy_channel(only):
+    """A single weak-link key dropped onto an otherwise-legacy channel
+    (legacy summed termination present) must be rejected -- whichever rule
+    fires first (mutual exclusion or all-or-nothing), it must be loud."""
+    ch = _qssa_channel(**{only: _weaklink_channel()[only]})
+    pool, spc_map = _qssa_pool(ch)
+    with pytest.raises(ValueError,
+                       match=r"Pool P.*(mutually exclusive|weak-link)"):
+        pool.to_config(spc_map)
+
+
+_WEAKLINK_BAD_CHANNELS = [
+    pytest.param(_weaklink_channel(initiation_allyl=_qssa_triplet(A=float("nan"))),
+                 r"Pool P.*initiation_allyl.*A.*not finite", id="allyl-nan-A"),
+    pytest.param(_weaklink_channel(initiation_allyl=_qssa_triplet(A=float("inf"))),
+                 r"Pool P.*initiation_allyl.*A.*not finite", id="allyl-inf-A"),
+    pytest.param(_weaklink_channel(initiation_allyl=_qssa_triplet(A=-1.0)),
+                 r"Pool P.*initiation_allyl.*A.*> 0", id="allyl-negative-A"),
+    pytest.param(_weaklink_channel(initiation_allyl=_qssa_triplet(Ea=-5.0)),
+                 r"Pool P.*initiation_allyl.*Ea.*>= 0", id="allyl-negative-Ea"),
+    pytest.param(_weaklink_channel(
+                     termination_recombination=_qssa_triplet(Ea=float("nan"))),
+                 r"Pool P.*termination_recombination.*Ea.*not finite",
+                 id="rec-nan-Ea"),
+    pytest.param(_weaklink_channel(
+                     termination_recombination=_qssa_triplet(A=0.0)),
+                 r"Pool P.*termination_recombination.*A.*> 0", id="rec-zero-A"),
+    pytest.param(_weaklink_channel(
+                     termination_disproportionation=_qssa_triplet(n=float("inf"))),
+                 r"Pool P.*termination_disproportionation.*n.*not finite",
+                 id="disp-inf-n"),
+    pytest.param(_weaklink_channel(
+                     termination_disproportionation=_qssa_triplet(A=-2.0)),
+                 r"Pool P.*termination_disproportionation.*A.*> 0",
+                 id="disp-negative-A"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial=float("nan")),
+                 r"Pool P.*unsaturated_tail_ends_initial.*not finite",
+                 id="U0-nan"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial=float("inf")),
+                 r"Pool P.*unsaturated_tail_ends_initial.*not finite",
+                 id="U0-inf"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial=-0.01),
+                 r"Pool P.*unsaturated_tail_ends_initial.*>= 0",
+                 id="U0-negative"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial="0.02"),
+                 r"Pool P.*unsaturated_tail_ends_initial.*number",
+                 id="U0-string"),
+    pytest.param(_weaklink_channel(unsaturated_tail_ends_initial=True),
+                 r"Pool P.*unsaturated_tail_ends_initial.*number",
+                 id="U0-bool"),
+]
+
+
+@pytest.mark.parametrize("channel, pattern", _WEAKLINK_BAD_CHANNELS)
+def test_pool_to_config_rejects_invalid_weaklink_values(channel, pattern):
+    """Field validation for the new vocabulary mirrors the legacy blocks:
+    finite via math.isfinite BEFORE the sign checks (NaN/inf named
+    explicitly, never falling through a comparison), A > 0, Ea >= 0;
+    unsaturated_tail_ends_initial a finite non-bool number >= 0."""
+    pool, spc_map = _qssa_pool(channel)
+    with pytest.raises(ValueError, match=pattern):
+        pool.to_config(spc_map)
+
+
+def test_polymer_input_helper_accepts_weaklink_channel():
+    """Deck-parse leg of the weak-link round-trip: a full weak-link config
+    passes the polymer() helper and lands normalized on the Polymer object
+    with every value intact and NO legacy 'termination' key."""
+    from unittest.mock import MagicMock
+    from rmgpy.rmg import input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        if isinstance(obj, Species):
+            return obj, True
+        return Species(label="styrene", molecule=[obj]), True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                                 end_groups=["[CH3]", "[H]"], cutoff=3,
+                                 Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                                 monomer_product="C=Cc1ccccc1",
+                                 radical_qssa_unzip=_weaklink_channel())
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+    q = poly.radical_qssa_unzip
+    assert q["initiation_allyl"] == dict(A=2.0e14, n=0.0, Ea=2.4e5)
+    assert q["termination_recombination"] == dict(A=6.0e7, n=0.0, Ea=8.0e3)
+    assert q["termination_disproportionation"] == dict(A=4.0e7, n=0.0, Ea=1.2e4)
+    assert q["unsaturated_tail_ends_initial"] == 0.02
+    assert "termination" not in q
+
+
+def test_polymer_input_helper_rejects_weaklink_violations():
+    """Deck-read-time companions: mutual exclusion, all-or-nothing subsets
+    and non-finite/negative values are refused with a clear InputError
+    before the helper touches the module-global rmg object."""
+    from rmgpy.rmg import input as rmg_input
+
+    for channel, pattern in [
+        (_weaklink_channel(termination=_qssa_triplet(A=1.0e8, Ea=1.0e4)),
+         r"PS.*'termination'.*mutually exclusive"),
+        ({k: v for k, v in _weaklink_channel().items()
+          if k != "termination_disproportionation"},
+         r"PS.*weak-link.*termination_disproportionation"),
+        ({k: v for k, v in _weaklink_channel().items()
+          if k != "unsaturated_tail_ends_initial"},
+         r"PS.*weak-link.*unsaturated_tail_ends_initial"),
+        (_weaklink_channel(initiation_allyl=_qssa_triplet(A=float("nan"))),
+         r"PS.*initiation_allyl.*A.*not finite"),
+        (_weaklink_channel(unsaturated_tail_ends_initial=-1.0),
+         r"PS.*unsaturated_tail_ends_initial.*>= 0"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                              end_groups=["[CH3]", "[H]"], cutoff=3,
+                              Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                              monomer_product="C=Cc1ccccc1",
+                              radical_qssa_unzip=channel)
+
+
+def test_scission_daughter_inherits_weaklink_constants_but_resets_U0():
+    """Daughter-pool inheritance: CONSTANTS inherit, STATE does not. The
+    chemistry constants (initiation, initiation_allyl, depropagation, the
+    split terminations) are deep-copied intact -- mutating the parent's
+    dict after the spawn must not reach the daughter (same aliasing posture
+    as the legacy channel). unsaturated_tail_ends_initial is per-pool
+    STATE, not a chemistry constant: it must RESET to 0.0 on the daughter
+    even when the parent's is nonzero, else every spawned pool would
+    fabricate the parent's initial U -- a hidden initiation source once
+    the solver U-state lands."""
+    channel = _weaklink_channel()  # parent U0 = 0.02 > 0
+    assert channel["unsaturated_tail_ends_initial"] > 0.0
+    parent, styrene = _qssa_parent(channel)
+
+    daughter = _scission_tail_of(parent)
+
+    q = daughter.radical_qssa_unzip
+    assert q is not parent.radical_qssa_unzip
+    # Chemistry constants: deep-copied intact.
+    for key in ("initiation", "depropagation", "initiation_allyl",
+                "termination_recombination",
+                "termination_disproportionation"):
+        assert q[key] == channel[key]
+    # State: U0 resets on spawn (a future event-specific spawn law may
+    # compute the U transfer explicitly; fabricating the parent's is wrong).
+    assert q["unsaturated_tail_ends_initial"] == 0.0
+    # Deep copy: parent mutation after the spawn cannot reach the daughter.
+    parent.radical_qssa_unzip["initiation_allyl"]["A"] = 1.0
+    parent.radical_qssa_unzip["unsaturated_tail_ends_initial"] = 99.0
+    assert q["initiation_allyl"]["A"] == 2.0e14
+    assert q["unsaturated_tail_ends_initial"] == 0.0
+    assert daughter.monomer_product_species is styrene
+
+
+# ---------------------------------------------------------------------------
 # Task 5: End-to-end scission tracer — Ea from REAL products, not pool proxy
 # ---------------------------------------------------------------------------
 

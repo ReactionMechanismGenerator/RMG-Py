@@ -151,9 +151,23 @@ RADICAL_QSSA_UNZIP_BASIS = "backbone_bonds_mu1_minus_mu0"
 
 _RADICAL_QSSA_ARRHENIUS_KEYS = ("A", "n", "Ea")
 _RADICAL_QSSA_MANDATORY_BLOCKS = ("initiation", "depropagation", "termination")
+
+# Weak-link allyl/U-state vocabulary (schema-2.2 milestone i: config +
+# validation ONLY -- no RHS reads it yet, and the sidecar schema bump is a
+# later milestone). ALL-OR-NOTHING as a group, and mutually exclusive with
+# the legacy SUMMED 'termination' block: the U-state (unsaturated tail ends)
+# is PRODUCED by the disproportionation branch specifically, so a summed kt
+# cannot source U -- the split blocks are structurally required.
+_RADICAL_QSSA_WEAKLINK_TRIPLET_BLOCKS = (
+    "initiation_allyl", "termination_recombination",
+    "termination_disproportionation")
+_RADICAL_QSSA_WEAKLINK_KEYS = _RADICAL_QSSA_WEAKLINK_TRIPLET_BLOCKS + (
+    "unsaturated_tail_ends_initial",)
+
 _RADICAL_QSSA_ALLOWED_KEYS = frozenset(
     _RADICAL_QSSA_MANDATORY_BLOCKS
-    + ("transfer", "efficiency", "monomer_yield", "basis"))
+    + ("transfer", "efficiency", "monomer_yield", "basis")
+    + _RADICAL_QSSA_WEAKLINK_KEYS)
 
 
 def _validate_qssa_arrhenius_triplet(pool_label, block_name, triplet):
@@ -233,6 +247,24 @@ def validate_radical_qssa_unzip(pool_label, channel):
     - ``basis``: must equal RADICAL_QSSA_UNZIP_BASIS (default; forward-compat
       pin).
 
+    Weak-link allyl/U-state vocabulary (schema-2.2 milestone i; OPTIONAL as
+    a GROUP, all-or-nothing within it):
+
+    - ``initiation_allyl``: Arrhenius triplet (A [s^-1]), same rules as
+      ``initiation`` -- the weak-link (allylic) initiation channel driven by
+      the pool's unsaturated-tail-ends state U.
+    - ``termination_recombination`` and ``termination_disproportionation``:
+      Arrhenius triplets (A [m^3 mol^-1 s^-1]), same rules as the legacy
+      summed ``termination``.
+    - ``unsaturated_tail_ends_initial``: finite float >= 0, the initial U
+      amount [mol] -- the SAME amount basis as mu0 (consumers divide by
+      V_poly).
+    - MUTUAL EXCLUSION: if ANY weak-link key is present, ALL four must be
+      present and the legacy summed ``termination`` must be ABSENT. U is
+      produced by the disproportionation branch specifically, so a summed
+      kt cannot source U. A channel with NONE of the weak-link keys
+      normalizes EXACTLY as before this vocabulary existed (legacy freeze).
+
     Raises ValueError naming the pool on any violation.
     """
     if not isinstance(channel, dict):
@@ -245,15 +277,66 @@ def validate_radical_qssa_unzip(pool_label, channel):
             f"Pool {pool_label}: radical_qssa_unzip has unknown key(s) "
             f"{unknown}; allowed keys are {sorted(_RADICAL_QSSA_ALLOWED_KEYS)}.")
 
+    weaklink_present = [k for k in _RADICAL_QSSA_WEAKLINK_KEYS
+                        if k in channel]
+    if weaklink_present:
+        if "termination" in channel:
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip carries the legacy "
+                f"SUMMED 'termination' block together with weak-link key(s) "
+                f"{weaklink_present}. They are mutually exclusive: the "
+                f"weak-link U-state channel requires the SPLIT termination "
+                f"blocks (termination_recombination + "
+                f"termination_disproportionation) because U production is "
+                f"sourced by the disproportionation branch specifically -- "
+                f"a summed termination cannot source U. Remove 'termination' "
+                f"(split it into the two branches) or remove all weak-link "
+                f"keys.")
+        missing_weaklink = [k for k in _RADICAL_QSSA_WEAKLINK_KEYS
+                            if k not in channel]
+        if missing_weaklink:
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip weak-link channel is "
+                f"incomplete: key(s) {weaklink_present} present but "
+                f"{missing_weaklink} missing. The weak-link vocabulary is "
+                f"all-or-nothing: initiation_allyl, "
+                f"termination_recombination, termination_disproportionation "
+                f"and unsaturated_tail_ends_initial must ALL be present "
+                f"(and the legacy summed 'termination' absent).")
+        mandatory_blocks = (("initiation", "depropagation")
+                            + _RADICAL_QSSA_WEAKLINK_TRIPLET_BLOCKS)
+    else:
+        mandatory_blocks = _RADICAL_QSSA_MANDATORY_BLOCKS
+
     normalized = {}
-    for block in _RADICAL_QSSA_MANDATORY_BLOCKS:
+    for block in mandatory_blocks:
         if block not in channel:
             raise ValueError(
                 f"Pool {pool_label}: radical_qssa_unzip is missing the "
                 f"mandatory Arrhenius block '{block}' (required blocks: "
-                f"{list(_RADICAL_QSSA_MANDATORY_BLOCKS)}).")
+                f"{list(mandatory_blocks)}).")
         normalized[block] = _validate_qssa_arrhenius_triplet(
             pool_label, block, channel[block])
+
+    if weaklink_present:
+        u0 = channel["unsaturated_tail_ends_initial"]
+        if isinstance(u0, bool) or not isinstance(u0, (int, float)):
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip "
+                f"unsaturated_tail_ends_initial={u0!r} must be a number "
+                f"[mol; same amount basis as mu0].")
+        u0 = float(u0)
+        if not math.isfinite(u0):
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip "
+                f"unsaturated_tail_ends_initial={u0!r} is not finite "
+                f"(NaN/inf are rejected).")
+        if u0 < 0.0:
+            raise ValueError(
+                f"Pool {pool_label}: radical_qssa_unzip "
+                f"unsaturated_tail_ends_initial={u0:g} must be >= 0 "
+                f"[mol; same amount basis as mu0].")
+        normalized["unsaturated_tail_ends_initial"] = u0
 
     transfer = channel.get("transfer", None)
     normalized["transfer"] = (
@@ -811,6 +894,28 @@ class HybridPolymerSystem(ReactionSystem):
                     pool.label, pool.radical_qssa_unzip)
                 object.__setattr__(pool, 'radical_qssa_unzip',
                                    copy.deepcopy(normalized_qssa))
+                # ANTI-SILENT-NO-OP GUARD (weak-link milestone i): the
+                # weak-link allyl/U-state vocabulary is valid CONFIG (the
+                # shared validator above accepts it) but NO term in this
+                # solver's residual reads it yet -- the weak-link rate law
+                # lands in a later milestone, which also removes this guard.
+                # Without it, an allyl-configured deck would initialize and
+                # run with the channel silently ignored (a laundered no-op;
+                # the flattening below only knows the legacy summed
+                # 'termination' layout).
+                if "initiation_allyl" in normalized_qssa:
+                    raise ValueError(
+                        f"Pool {pool.label}: weak-link allyl/U-state channel "
+                        f"configured but solver support is not implemented "
+                        f"yet. The radical_qssa_unzip config carries the "
+                        f"schema-2.2 weak-link vocabulary (initiation_allyl, "
+                        f"termination_recombination, "
+                        f"termination_disproportionation, "
+                        f"unsaturated_tail_ends_initial) and no term in the "
+                        f"residual reads it; refusing to initialize rather "
+                        f"than silently running WITHOUT the configured "
+                        f"channel. The weak-link rate law lands in a later "
+                        f"milestone.")
                 if pool.monomer_poly_index is None:
                     raise ValueError(
                         f"Pool {pool.label}: radical_qssa_unzip is configured "

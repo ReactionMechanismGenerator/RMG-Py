@@ -200,6 +200,25 @@ class TestRadicalQssaArtifactLoader:
                            match=r"PS.*radical_qssa_unzip.*monomer_routing"):
             _build_qssa(qssa_deck, artifact)
 
+    def test_rejects_weaklink_vocabulary_as_unknown_sidecar_keys(self, qssa_deck):
+        """SCHEMA PIN (weak-link milestone i): the weak-link allyl/U-state
+        vocabulary (initiation_allyl / termination_recombination /
+        termination_disproportionation / unsaturated_tail_ends_initial) is
+        NOT part of sidecar schema 2.1 -- the schema bump is a later
+        milestone. An artifact carrying any of it must be rejected as
+        unknown sub-vocabulary (never dropped permissively), so a
+        hand-edited or future-emitter sidecar cannot be silently loaded
+        without the channel."""
+        artifact = _load_artifact(qssa_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        block["initiation_allyl"] = {
+            "A": 2.0e14, "n": 0.0, "Ea": 2.4e5,
+            "units": {"A": "s^-1", "Ea": "J/mol"}}
+        block["unsaturated_tail_ends_initial"] = 0.02
+        with pytest.raises(ValueError,
+                           match=r"PS.*unknown key.*initiation_allyl"):
+            _build_qssa(qssa_deck, artifact)
+
     def test_rejects_wrong_units_string_no_conversion(self, qssa_deck):
         """A sidecar claiming a different unit system must ERROR, not
         convert: termination pinned bimolecular m^3/(mol*s)."""

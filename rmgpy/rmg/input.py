@@ -315,6 +315,16 @@ def polymer(label: str,
             k_unzip > 0 (the two depropagation representations would
             double-count). M1: validated + stored but INERT -- the QSSA rate
             law lands in M2; nothing in the solver residual reads it yet.
+            Weak-link allyl/U-state vocabulary (schema-2.2, OPTIONAL as a
+            group, all-or-nothing): initiation_allyl,
+            termination_recombination, termination_disproportionation
+            (triplets, same rules) and unsaturated_tail_ends_initial (finite
+            float >= 0 [mol], same amount basis as mu0). If ANY of the four
+            is present, ALL must be, and the legacy SUMMED termination must
+            be ABSENT (U is produced by the disproportionation branch
+            specifically; a summed kt cannot source U). The solver refuses
+            weak-link configs until its rate law lands (explicit
+            not-implemented error; no silent no-op).
             Default None (channel absent).
     """
     # HARD ERROR at deck-read time: a non-finite k_unzip/k_scission is not a

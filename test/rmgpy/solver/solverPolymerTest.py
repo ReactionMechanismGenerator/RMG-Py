@@ -1299,6 +1299,58 @@ class TestHybridPolymerReactor:
         with pytest.raises(ValueError, match=pattern):
             rxn_system.initialize_model(core_species, [], [], [])
 
+    def test_initialize_model_weaklink_channel_raises_not_implemented(self):
+        """ANTI-SILENT-NO-OP GUARD (weak-link milestone i): the weak-link
+        allyl/U-state vocabulary (initiation_allyl, split terminations,
+        unsaturated_tail_ends_initial) is accepted as CONFIG, but no RHS
+        term reads it yet. The solver must refuse to initialize with an
+        explicit not-implemented error -- never run silently WITHOUT the
+        configured channel (a laundered no-op). A later milestone removes
+        this guard when the weak-link rate law lands."""
+        channel = dict(
+            initiation=_qssa_triplet(A=1.0e15, Ea=3.0e5),
+            depropagation=_qssa_triplet(A=1.0e13, Ea=8.0e4),
+            initiation_allyl=_qssa_triplet(A=2.0e14, Ea=2.4e5),
+            termination_recombination=_qssa_triplet(A=6.0e7, Ea=8.0e3),
+            termination_disproportionation=_qssa_triplet(A=4.0e7, Ea=1.2e4),
+            unsaturated_tail_ends_initial=0.02,
+        )
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=channel,
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+
+        with pytest.raises(
+                ValueError,
+                match=r"poly.*weak-link allyl/U-state channel configured "
+                      r"but solver support is not implemented yet"):
+            rxn_system.initialize_model(core_species, [], [], [])
+
+    def test_initialize_model_rejects_weaklink_with_legacy_termination(self):
+        """The solver is the last line of defense for the mutual-exclusion
+        rule too: a directly-constructed config carrying BOTH the legacy
+        summed 'termination' and the weak-link vocabulary is refused by the
+        shared validator before the not-implemented guard is even reached."""
+        channel = dict(
+            _qssa_channel(),  # legacy, includes summed termination
+            initiation_allyl=_qssa_triplet(A=2.0e14, Ea=2.4e5),
+            termination_recombination=_qssa_triplet(A=6.0e7, Ea=8.0e3),
+            termination_disproportionation=_qssa_triplet(A=4.0e7, Ea=1.2e4),
+            unsaturated_tail_ends_initial=0.02,
+        )
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=channel,
+        )
+        rxn_system, core_species = self._qssa_system(pool)
+
+        with pytest.raises(ValueError,
+                           match=r"poly.*'termination'.*mutually exclusive"):
+            rxn_system.initialize_model(core_species, [], [], [])
+
     def test_radical_qssa_unzip_footprint_confined_to_signature(self):
         """M2 supersedes the M1 zero-RHS pin on the channel-ON side: the
         channel is now LIVE, and its residual footprint must be confined to

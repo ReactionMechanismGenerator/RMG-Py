@@ -266,6 +266,25 @@ class TestRadicalQssaChannelSerialization:
         with pytest.raises(ValueError, match=r"PS.*radical_qssa_unzip"):
             _serialize_pool_for_sidecar(qssa_pool)
 
+    def test_weaklink_channel_refuses_to_serialize(self, qssa_pool):
+        """ANTI-SILENT-NO-OP (weak-link milestone i): the weak-link
+        allyl/U-state vocabulary is valid CONFIG but sidecar schema 2.1 has
+        no fields for it (the schema bump is a later milestone). The emitter
+        must refuse loudly -- emitting the legacy-shaped block would
+        silently launder the allyl channel out of the artifact."""
+        qssa_pool.radical_qssa_unzip = {
+            "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+            "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+            "initiation_allyl": {"A": 2.0e14, "n": 0.0, "Ea": 2.4e5},
+            "termination_recombination": {"A": 6.0e7, "n": 0.0, "Ea": 8.0e3},
+            "termination_disproportionation":
+                {"A": 4.0e7, "n": 0.0, "Ea": 1.2e4},
+            "unsaturated_tail_ends_initial": 0.02,
+        }
+        with pytest.raises(ValueError,
+                           match=r"PS.*weak-link.*schema 2\.1"):
+            _serialize_pool_for_sidecar(qssa_pool)
+
     def test_recipe_block_emitted_verbatim(self, qssa_pool):
         """The machine-readable normative recipe (round-23). Each string is
         pinned as a LITERAL, verified against the implemented RHS in
