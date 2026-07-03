@@ -1,17 +1,25 @@
-# Polymer Moments Artifact — Normative Format Spec (`polymer_moments_format/2.0`)
+# Polymer Moments Artifact — Normative Format Spec (`polymer_moments_format/2.2`)
 
 **Artifact:** `polymer_pools.json`, emitted next to `chem.yaml` at the end of an
-RMG run (`save_everything`). **Schema version:** `2.0` (major bump over the 1.0
-pools-only sidecar; every 1.0 field is preserved verbatim).
+RMG run (`save_everything`). **Schema versions:** `2.0`–`2.2`, stamped per
+artifact by the strongest vocabulary present (`conventions.format_doc` mirrors
+the stamp, e.g. `polymer_moments_format/2.2`; 2.0 was the major bump over the
+1.0 pools-only sidecar — every 1.0 field is preserved verbatim).
 **Oracle:** `rmgpy/solver/polymer.pyx` (`HybridPolymerSystem`). A consumer that
 implements this document with numpy + Cantera reproduces the oracle's per-pool
 µ0/µ1/µ2 trajectories. The reference consumer lives at
 `test/rmgpy/tools/numpy_moments_consumer.py`; the reference runner (drives the
 oracle itself) at `rmgpy/tools/polymer_moments_runner.py`.
 
-**Versioning policy:** minor bump = additive term types / fields (consumers
-must ignore unknown keys and SHOULD warn on unknown `archetype` values);
-major bump = breaking. This document versions with the schema.
+**Versioning policy:** minor bump = additive term types / fields; major bump
+= breaking. Acceptance is STRICT-MINOR (ratified at 2.2, superseding the
+earlier minor-permissive rule): a consumer accepts only the schema minors it
+implements (currently `2.0`–`2.2`) and hard-rejects anything newer — these
+are physical-ODE artifacts, and a newer minor may carry vocabulary outside
+the blocks a consumer's unknown-key guards inspect, so loading it additively
+could silently change the physics (§10). Within an accepted minor, consumers
+SHOULD warn on unknown `archetype` values. This document versions with the
+schema.
 `schema_version` governs artifact SHAPE only; revisions to the RATE RECIPE
 (§4/§5 semantics) are tracked separately by `conventions.recipe_revision`
 (§8) and do NOT bump `schema_version`.
@@ -30,6 +38,21 @@ the per-block `units` pins); the pinned values live in `rmgpy/polymer.py`
 reference loader (`rmgpy/tools/polymer_moments_runner.py`,
 `_QSSA_PINNED_RECIPE`). The QSSA rate law is new channel algebra, so a QSSA
 artifact also carries `recipe_revision = "2026-07-02"` (§8).
+
+**Schema 2.2** = 2.1 + the weak-link allyl/U-state sub-vocabulary INSIDE the
+`channels.radical_qssa_unzip` block (§10). The emitter stamps `"2.2"` exactly
+when at least one serialized pool carries that vocabulary; with QSSA pools
+but no weak-link anywhere it keeps stamping `"2.1"`, and with no QSSA at all
+`"2.0"` — both byte-identically to the pre-2.2 emitter (pinned by test). A
+mixed artifact (legacy + QSSA + weak-link pools) stamps `"2.2"`: the
+artifact-level stamp is governed by the STRONGEST vocabulary present, so a
+2.1-only consumer rejects the WHOLE artifact rather than silently integrating
+the weak-link pool without its channel. A weak-link artifact carries
+`recipe_revision = "2026-07-03-weaklink-u"` (§8). Version acceptance is
+STRICT-MINOR from 2.2 on: the reference loader accepts `2.0`/`2.1`/`2.2` and
+rejects `2.3`+ (§10, the ratified policy change from the pre-2.2
+minor-permissive rule — these are physical-ODE artifacts, so unknown
+vocabulary is never ignorable; see the versioning-policy paragraph above).
 
 ## 1. Envelope
 
@@ -352,3 +375,133 @@ Over the discrete-reaction subset only (no channels active):
 With unzip active, add `+ n(monomer_routing)` per routed pool. Random
 scission conserves `Σ µ1` exactly. Mass transfer conserves total moles of the
 transferred species pair.
+
+## 10. Weak-link U-state channel (schema 2.2)
+
+Oracles: config validation `validate_radical_qssa_unzip`
+(`rmgpy/solver/polymer.pyx`), the weak-link branch of the residual's pool
+loop and the U0 census in `set_initial_conditions` (same file), emitter
+`_serialize_radical_qssa_channel` + stamping in
+`build_polymer_moments_artifact` (`rmgpy/polymer.py`), reference loader
+`_parse_radical_qssa_channel` / `_check_schema_version_known` /
+`_check_qssa_schema_version` (`rmgpy/tools/polymer_moments_runner.py`).
+
+### Vocabulary (inside `channels.radical_qssa_unzip`)
+
+Four new keys, ALL-OR-NOTHING as a group and MUTUALLY EXCLUSIVE with the
+legacy summed `termination` block (U is produced by the disproportionation
+branch specifically, so a summed kt cannot source U — the split blocks are
+structurally required; a config carrying both, or a partial group, is
+rejected by name):
+
+| Key | Shape | Units pin |
+|---|---|---|
+| `initiation_allyl` | Arrhenius triplet `{A, n, Ea, units}` | `A`: `"s^-1"`, `Ea`: `"J/mol"` |
+| `termination_recombination` | Arrhenius triplet | `A`: `"m^3/(mol*s)"`, `Ea`: `"J/mol"` |
+| `termination_disproportionation` | Arrhenius triplet | `A`: `"m^3/(mol*s)"`, `Ea`: `"J/mol"` |
+| `unsaturated_tail_ends_initial` | `{"value": <float ≥ 0>, "units": <pinned note>}` | `"mol — tail-distribution state; consumer divides by V_poly"` |
+
+`initiation_allyl` is unimolecular in the active unsaturated end; the split
+termination triplets carry the bimolecular units of the summed block they
+replace. `unsaturated_tail_ends_initial` is STATE, not a rate constant — a
+`{value, units}` pair, not a triplet — and its units note is pinned
+byte-for-byte (a bare `"mol"` is rejected; reject, never convert). In a
+weak-link block the emitter writes the summed slot explicitly as
+`termination: null` — legal ONLY under 2.2 (the split triplets replace it;
+the loader does not forward the key). A channel with NONE of the weak-link
+keys normalizes exactly as before this vocabulary existed (legacy freeze).
+
+### Recipe pin (`RADICAL_QSSA_SIDECAR_RECIPE_WEAKLINK`)
+
+A weak-link block carries the WEAK-LINK recipe, not the legacy one (either
+recipe on the wrong block kind is rejected). Same contract as §intro/2.1:
+every entry is a LITERAL the consumer validates by exact match — reject on
+mismatch, omission, or unknown keys, never adapt. Pinned values live in
+`rmgpy/polymer.py` (`RADICAL_QSSA_SIDECAR_RECIPE_WEAKLINK`) and are
+duplicated independently by the reference loader
+(`rmgpy/tools/polymer_moments_runner.py`, `_QSSA_PINNED_RECIPE_WEAKLINK`).
+Keys: `bond_basis`, `channel_gate`, `u_state`, `u_active`,
+`radical_generation`, `kt_split`, `rate_no_transfer`, `rate_with_transfer`,
+`du_dt`, `u0_census`, `u_transport`, `moment_signature`, `small_eps`,
+`volume_note`.
+The algebra they pin (transcribed from the implemented RHS):
+
+- `kt_total = kt_rec + kt_disp` replaces the legacy summed kt everywhere
+  (halved radical-disappearance convention unchanged).
+- `u_active = min(max(U, 0)/V_poly, B)` — active-site clamp, mol/m³.
+- `G_R = 2*efficiency*ki*B + 1*efficiency*ki_allyl*u_active` (ν = 1: one
+  unzipping radical per weak-link fission; the allylic co-fragment does not
+  unzip).
+- The channel gates on `B > 0`: at `B = 0` it is INERT even at `U > 0`.
+- `du_dt` (normative string, quoted in full because the two µ0 references
+  differ and the zero-capacity branch is explicit): `dU/dt =
+  kt_disp*R_ss^2*max(0, 1 - U/(2*mu0))*V_poly -
+  efficiency*ki_allyl*u_active*V_poly; production is the disproportionation
+  EVENT rate with NO efficiency factor (R_ss already carries the escape
+  efficiency) under a linear capacity throttle exactly zero at the TAIL
+  chain-end capacity 2*mu0 [mol], where mu0 is the INSTANTANEOUS
+  tail-distribution mu0(t) amount read from the current state at each RHS
+  evaluation (NOT the frozen initial mu0 of the u0_census bound); at
+  mu0(t) <= 0 the throttle is EXACTLY 0 by explicit branch (no ends, no
+  capacity, no U production; no division is performed and no small_eps
+  floor is applied); the sink is efficiency-SYMMETRIC with the G_R allyl
+  term (a caged recombination restores the allylic bond)`
+- `u0_census` (normative string): `U0 = unsaturated_tail_ends_initial [mol]
+  is rejected at solver init when U0 > 2*mu0_tail evaluated on the INITIAL
+  (t = 0) tail mu0 (TAIL-only chain-end capacity, amount basis); the loader
+  passes the value through`
+- `u_transport` (normative string — pins explicitly what is otherwise only
+  the absence of code): `U is NEVER advected or transferred by any
+  inter-pool or ejection flux archetype (migration, scission_fragment,
+  discrete_chip and volatile_ejection move pool moments and species amounts
+  only); the ONLY writers of U are this recipe's du_dt law and the t = 0
+  initial condition, and daughter pools spawn with U0 = 0 (constants
+  inherit, state resets)`
+
+### U-state semantics
+
+- `U` is a PER-POOL amount state [mol], appended to the ODE layout as one
+  trailing slot per weak-link pool (in pool order, after the core block).
+- `U` is MASSLESS: it never enters condensed mass or any Mn/Mw/PDI consumer
+  (pinned by the `u_state` recipe entry).
+- TAIL-DISTRIBUTION basis throughout: `B`, the runtime capacity throttle and
+  the t = 0 census all count the tail moments only — explicit-species chain
+  ends do not back `U` (mixed semantics would make a basis typo a silent
+  hidden initiation source).
+- Two distinct µ0 references, deliberately disambiguated: the t = 0 census
+  bound `U0 ≤ 2*mu0_tail` uses the INITIAL tail µ0 (solver
+  `set_initial_conditions`; `U0 = 0` always passes), while the dU/dt
+  production throttle `max(0, 1 - U/(2*mu0))` uses the INSTANTANEOUS
+  tail-distribution µ0(t) at every RHS evaluation. The census guards the
+  IC; the throttle guards the trajectory.
+- Daughter pools spawn with `U0 = 0`: channel CONSTANTS inherit, STATE
+  resets (`_inherit_unzip_channel` zeroes `unsaturated_tail_ends_initial`
+  in the deep-copied inherited config, `rmgpy/polymer.py` — copying the
+  parent's would fabricate the same initial U on every daughter, a hidden
+  initiation source).
+
+### Stamp + version-acceptance semantics
+
+- The emitter stamps `schema_version` by the STRONGEST vocabulary present:
+  `"2.2"` iff at least one pool block carries the weak-link vocabulary
+  (`initiation_allyl` membership is the complete discriminator — the
+  validator pins the group all-or-nothing before serialization), else
+  `"2.1"` iff any QSSA block, else `"2.0"`. `conventions.format_doc` mirrors
+  the stamp (`polymer_moments_format/2.2`) and
+  `conventions.recipe_revision = "2026-07-03-weaklink-u"` (the weak-link
+  law is new rate algebra). No weak-link anywhere ⇒ the 2.1/2.0 artifacts
+  stay byte-identical to the pre-2.2 emitter.
+- Mixed artifacts stamp `"2.2"` while the legacy pools' channel blocks
+  serialize byte-identically to their 2.1 form; a 2.1-only consumer
+  therefore rejects the whole artifact loudly instead of laundering the
+  weak-link pool.
+- STRICT-MINOR acceptance (ratified policy change, was minor-permissive):
+  the reference loader implements `2.0 ≤ 2.x ≤ 2.2` and hard-rejects
+  anything else, including `2.3`+ — a newer minor may carry vocabulary
+  OUTSIDE the channel blocks (new conventions, new pool fields) that the
+  unknown-key guards never inspect, and for physical-ODE artifacts loading
+  it additively would silently change the physics.
+- Vocabulary/version cross-check: a `2.1`-stamped artifact carrying any
+  weak-link key (scanned across ALL pool entries, configured or not) is
+  rejected as malformed, exactly as a `2.0` artifact carrying a QSSA block
+  is.
