@@ -6370,3 +6370,165 @@ class TestMonomerProductGasEmission:
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
         assert dn_dt[4] > 0.0                       # release flows to gas M
         assert np.isclose(dn_dt[2], -dn_dt[4], rtol=1e-12)  # mu1 drain pairs it
+
+
+class TestHLossRadicalDaughterQualifier:
+    """Ratified 2026-07-03 (PP thin-core fix): Gate B zeroed every proxy
+    H-abstraction (H + C9H20-proxy <=> H2 + C9H19*) because the edge-daughter
+    classifier only recognized spawned Polymer proxies with mu-triplets --
+    so the PP core could never grow (thin-core incident, 14 spc / 2 rxn).
+    NARROW qualifier: a plain Species edge daughter is prospectively
+    condensed ONLY when ALL hold: (i) plain Species (not a Polymer proxy);
+    (ii) radical-bearing and neutral; (iii) same non-H element composition
+    as a configured condensed pool proxy; (iv) differs from that proxy by
+    H-loss only; (v) not durably gas-vetoed and not a smaller
+    scission/volatile fragment. MW-window-alone qualification is REJECTED
+    (near-monomer volatiles would misclassify)."""
+
+    PP_PROXY_SMILES = "CCCC(C)CC(C)C"        # C9H20 PP trimer proxy
+    C9H19_SMILES = "CCCC(C)CC(C)[CH2]"       # H-loss radical daughter
+
+    @staticmethod
+    def _phase_with_pp():
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import PolymerPhase, PolymerPool
+        pool = PolymerPool(
+            label="PP", xs=2,
+            monomer=_spc("C=CC", "PP_repeat"),
+            explicit_map={}, mu_species=[])
+        return PolymerPhase(density=Quantity(1000.0, "kg/m^3"),
+                            initial_moments={}, initial_explicit={},
+                            pools=[pool], mass_transfer=[])
+
+    def _combined(self, *extra):
+        # the configured pool's core proxy (base label == pool label) plus
+        # the candidate daughters under test
+        proxy = _spc(self.PP_PROXY_SMILES, "PP(2)")
+        return [proxy] + list(extra)
+
+    def test_h_loss_radical_daughter_qualifies(self):
+        """THE PP red pin: the C9H19 H-abstraction daughter (plain Species,
+        radical, neutral, same C9 skeleton, proxy-H minus one) qualifies."""
+        phase = self._phase_with_pp()
+        d = _spc(self.C9H19_SMILES, "C9H19a(15)")
+        bases = phase.get_condensed_edge_daughter_bases(self._combined(d))
+        assert "C9H19a" in bases
+
+    def test_gas_product_propene_does_not_qualify(self):
+        """A gas product (propene: closed-shell, C3 != C9) must stay
+        unqualified -- Gate B keeps zeroing only-gas poly events."""
+        phase = self._phase_with_pp()
+        d = _spc("C=CC", "propene(20)")
+        assert phase.get_condensed_edge_daughter_bases(
+            self._combined(d)) == set()
+
+    def test_smaller_volatile_fragment_radical_does_not_qualify(self):
+        """A smaller scission/volatile fragment radical (C3H7*: radical and
+        neutral but NOT the proxy's heavy-atom skeleton) must not qualify --
+        the composition lock is what rejects MW-window-style qualification."""
+        phase = self._phase_with_pp()
+        d = _spc("[CH2]CC", "C3H7(21)")
+        assert phase.get_condensed_edge_daughter_bases(
+            self._combined(d)) == set()
+
+    def test_closed_shell_isomer_does_not_qualify(self):
+        """A closed-shell C9H20 isomer (same composition as the proxy, zero
+        radicals) is not an H-loss daughter -- (ii)/(iv) both fail."""
+        phase = self._phase_with_pp()
+        d = _spc("CCCCCC(C)CC", "C9H20iso(22)")
+        assert phase.get_condensed_edge_daughter_bases(
+            self._combined(d)) == set()
+
+    def test_gas_vetoed_daughter_does_not_qualify(self):
+        """A durably gas-vetoed species must stay gas even when it matches
+        the H-loss shape (condition (v))."""
+        from rmgpy.polymer import set_polymer_gas_veto
+        phase = self._phase_with_pp()
+        d = _spc(self.C9H19_SMILES, "C9H19v(23)")
+        set_polymer_gas_veto(d)
+        assert phase.get_condensed_edge_daughter_bases(
+            self._combined(d)) == set()
+
+    def test_spawned_proxy_without_triplet_still_unqualified(self):
+        """The spawned-proxy branch is untouched: a Polymer daughter without
+        its mu-triplet stays unqualified exactly as before (it must NOT leak
+        through the new plain-Species branch)."""
+        from rmgpy.polymer import Polymer
+        phase = self._phase_with_pp()
+        d = Polymer(label="PP_scission_tail", monomer="[CH2][CH]C",
+                    Mn=100.0, Mw=200.0)
+        d.is_polymer_proxy = True
+        bases = phase.get_condensed_edge_daughter_bases(self._combined(d))
+        assert "PP_scission_tail" not in bases
+
+    def test_sticky_proxy_stamp_alone_still_never_qualifies(self):
+        """Safety property preserved: a random ordinary species carrying a
+        sticky is_polymer_proxy stamp (family.py over-stamping) does not
+        qualify unless it independently passes the narrow H-loss rule."""
+        phase = self._phase_with_pp()
+        sticky = _spc("CCO", "OTH")
+        sticky.is_polymer_proxy = True
+        assert phase.get_condensed_edge_daughter_bases(
+            self._combined(sticky)) == set()
+
+
+class TestGateBHLossRadicalDaughterFlux:
+    """Solver-level PP-shaped pin: with the REAL bound classifier, the proxy
+    H-abstraction edge reaction (H + PP <=> H2 + C9H19*) must pass Gate B
+    (daughter prospectively condensed) and carry nonzero real flux, while an
+    only-gas poly event (propene product) stays Gate-B zeroed -- the hole
+    Gate B closes must NOT reopen."""
+
+    PP_PROXY_SMILES = "CCCC(C)CC(C)C"
+    C9H19_SMILES = "CCCC(C)CC(C)[CH2]"
+
+    def _build(self, daughter):
+        phase = TestHLossRadicalDaughterQualifier._phase_with_pp()
+        proxy = _spc(self.PP_PROXY_SMILES, "PP")
+        mu0 = _spc("CO", "PP_mu0")
+        mu1 = _spc("C=O", "PP_mu1")
+        mu2 = _spc("C#N", "PP_mu2")
+        h = _spc("[H]", "H")
+        h2 = _spc("[H][H]", "H2")
+        core = [proxy, mu0, mu1, mu2, h, h2]
+        mask = np.array([False, False, False, False, True, True], dtype=bool)
+        rxn = Reaction(reactants=[h, proxy], products=[h2, daughter], **_KIN)
+        cfg = PolymerPoolConfig(label="PP", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None,
+                                k_unzip=0.0)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={h: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"PP": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_condensed_edge_daughter_classifier=(
+                phase.get_condensed_edge_daughter_bases),
+            allow_default_prospective_edge=True)
+        rs.initialize_model(core, [], [daughter], [rxn])
+        return rs, core
+
+    def test_h_abstraction_daughter_passes_gate_b_flux_nonzero(self):
+        """RED pin (PP incident): pre-fix this poly event is Gate-B zeroed
+        (gate_code 2, flux identically 0); post-fix the C9H19 daughter is
+        prospectively condensed, the gate opens and the REAL flux flows."""
+        d = _spc(self.C9H19_SMILES, "C9H19a(15)")
+        rs, core = self._build(d)
+        pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        assert bool(pm[len(core)]) is False    # edge daughter CONDENSED
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert int(np.asarray(rs.edge_reaction_gate_code)[0]) == 0
+        assert float(np.asarray(rs.edge_reaction_rates)[0]) > 0.0
+
+    def test_only_gas_poly_event_remains_gate_b_zeroed(self):
+        """Converse pin: a poly event whose only products are genuinely gas
+        (H2 + propene) must remain Gate-B zeroed with a live counterfactual
+        -- the fix must not reopen the phase-gate hole."""
+        d = _spc("C=CC", "propene(20)")
+        rs, core = self._build(d)
+        pm = np.asarray(rs.prospective_gas_mask, dtype=bool)
+        assert bool(pm[len(core)]) is True     # propene stays GAS
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert int(np.asarray(rs.edge_reaction_gate_code)[0]) == 2
+        assert float(np.asarray(rs.edge_reaction_rates)[0]) == 0.0
+        assert float(np.asarray(rs.edge_reaction_rates_ungated)[0]) > 0.0

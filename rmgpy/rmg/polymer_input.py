@@ -687,10 +687,35 @@ class PolymerPhase(object):
 
     def get_condensed_edge_daughter_bases(self, combined_species) -> set:
         """Return the set of BASE labels of qualifying polymer daughters in
-        ``combined_species`` (chain(core, edge)). A species qualifies iff it is
-        a Polymer, is_polymer_proxy, its base is NOT a static-deck pool label,
-        and a complete {base}_mu0/_mu1/_mu2 moment-dummy triplet (each with
-        is_moment_dummy=True) is present in combined_species.
+        ``combined_species`` (chain(core, edge)). Two qualifying branches:
+
+        1. Spawned Polymer daughters (spec 2026-06-29): a Polymer,
+           is_polymer_proxy, base NOT a static-deck pool label, and a
+           complete {base}_mu0/_mu1/_mu2 moment-dummy triplet (each with
+           is_moment_dummy=True) present in combined_species.
+
+        2. H-loss radical daughters of configured condensed pool proxies
+           (ratified 2026-07-03, PP thin-core fix: Gate B zeroed every
+           proxy H-abstraction because ordinary radical daughters could
+           never qualify, so the PP core could not grow). A plain Species
+           qualifies ONLY when ALL hold:
+             (i)   it is a plain Species (NOT a Polymer proxy -- those go
+                   through branch 1 exclusively);
+             (ii)  it is radical-bearing and neutral;
+             (iii) it has the same non-H element composition (heavy-atom
+                   skeleton) as a configured condensed pool proxy;
+             (iv)  it differs from that proxy by H-loss only
+                   (H_proxy - H_daughter == its radical count >= 1,
+                   e.g. C9H20 -> C9H19*);
+             (v)   it is NOT durably gas-vetoed
+                   (POLYMER_REFERENCE_STATE_GAS_VETO_KEY) -- and smaller
+                   scission/volatile fragments are structurally excluded
+                   by (iii).
+           MW-window-alone qualification is explicitly REJECTED:
+           near-monomer volatiles (e.g. alpha-methylstyrene) would
+           misclassify. Physically an H-abstracted chain proxy IS a
+           condensed-phase radical; classifying it prospectively condensed
+           lets Gate B pass its REAL flux instead of zeroing it.
 
         Spec 2026-06-29. Recomputed by the solver over the LIVE combined list on
         every initialize_model (callable, never a frozen set) -- mirrors
@@ -698,7 +723,8 @@ class PolymerPhase(object):
         The solver restricts APPLICATION to edge slots; this predicate is
         base-level. is_moment_dummy is the stable marker; is_polymer_proxy is
         over-stamped (family.py:1657) and never gates alone."""
-        from rmgpy.polymer import Polymer  # local: avoids an import cycle
+        # local imports: avoid an import cycle
+        from rmgpy.polymer import Polymer, has_polymer_gas_veto
 
         static_pool_labels = {p.label for p in self.pools}
 
@@ -726,6 +752,68 @@ class PolymerPhase(object):
                 continue
             if all(present.get((base, k), False) for k in (0, 1, 2)):
                 qualifying.add(base)
+
+        # --- Branch 2: H-loss radical daughters (ratified 2026-07-03) ---
+        def _element_counts(spc):
+            mols = getattr(spc, "molecule", None) or []
+            if not mols or mols[0] is None:
+                return None
+            try:
+                return mols[0].get_element_count()
+            except Exception:
+                return None
+
+        # Composition universe of the CONFIGURED condensed pool proxies:
+        # the live core proxy carrying the pool's base label (exactly the
+        # species the solver's stage-2 override condenses), plus any
+        # explicitly-configured proxy_species.
+        proxy_comps = []
+        for spc in combined_species:
+            if isinstance(spc, Polymer) or getattr(spc, "is_moment_dummy", False):
+                continue
+            label = getattr(spc, "label", None)
+            if label and _base_label(label) in static_pool_labels:
+                comp = _element_counts(spc)
+                if comp:
+                    proxy_comps.append(comp)
+        for pool in self.pools:
+            comp = _element_counts(getattr(pool, "proxy_species", None))
+            if comp:
+                proxy_comps.append(comp)
+
+        if proxy_comps:
+            for spc in combined_species:
+                if isinstance(spc, Polymer):        # (i): branch 1 only
+                    continue
+                if getattr(spc, "is_moment_dummy", False):
+                    continue
+                label = getattr(spc, "label", None)
+                base = _base_label(label) if label else ""
+                if not base or base in static_pool_labels or base in qualifying:
+                    continue
+                mols = getattr(spc, "molecule", None) or []
+                if not mols or mols[0] is None:
+                    continue
+                try:
+                    n_rad = mols[0].get_radical_count()
+                    net_charge = mols[0].get_net_charge()
+                    comp = mols[0].get_element_count()
+                except Exception:
+                    continue
+                if n_rad < 1 or net_charge != 0:    # (ii)
+                    continue
+                if has_polymer_gas_veto(spc):       # (v)
+                    continue
+                heavy = {el: n for el, n in comp.items() if el != 'H'}
+                n_h = comp.get('H', 0)
+                for pcomp in proxy_comps:
+                    p_heavy = {el: n for el, n in pcomp.items() if el != 'H'}
+                    # (iii) same heavy skeleton + (iv) H-loss only, one H
+                    # per radical site
+                    if p_heavy == heavy and pcomp.get('H', 0) - n_h == n_rad:
+                        qualifying.add(base)
+                        break
+
         return qualifying
 
 
