@@ -266,25 +266,6 @@ class TestRadicalQssaChannelSerialization:
         with pytest.raises(ValueError, match=r"PS.*radical_qssa_unzip"):
             _serialize_pool_for_sidecar(qssa_pool)
 
-    def test_weaklink_channel_refuses_to_serialize(self, qssa_pool):
-        """ANTI-SILENT-NO-OP (weak-link milestone i): the weak-link
-        allyl/U-state vocabulary is valid CONFIG but sidecar schema 2.1 has
-        no fields for it (the schema bump is a later milestone). The emitter
-        must refuse loudly -- emitting the legacy-shaped block would
-        silently launder the allyl channel out of the artifact."""
-        qssa_pool.radical_qssa_unzip = {
-            "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
-            "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
-            "initiation_allyl": {"A": 2.0e14, "n": 0.0, "Ea": 2.4e5},
-            "termination_recombination": {"A": 6.0e7, "n": 0.0, "Ea": 8.0e3},
-            "termination_disproportionation":
-                {"A": 4.0e7, "n": 0.0, "Ea": 1.2e4},
-            "unsaturated_tail_ends_initial": 0.02,
-        }
-        with pytest.raises(ValueError,
-                           match=r"PS.*weak-link.*schema 2\.1"):
-            _serialize_pool_for_sidecar(qssa_pool)
-
     def test_recipe_block_emitted_verbatim(self, qssa_pool):
         """The machine-readable normative recipe (round-23). Each string is
         pinned as a LITERAL, verified against the implemented RHS in
@@ -516,6 +497,235 @@ class TestRadicalQssaChannelSerialization:
         assert block == artifact["pools"][0]["channels"]["radical_qssa_unzip"]
         assert block["enabled"] is True
         assert block["termination"]["units"]["A"] == "m^3/(mol*s)"
+
+
+# Raw (pre-normalization) weak-link allyl/U-state channel config (schema 2.2,
+# milestone iv). Split termination REPLACES the legacy summed block; the four
+# weak-link keys are all-or-nothing (validate_radical_qssa_unzip).
+WEAKLINK_RAW_CFG = {
+    "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+    "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+    "transfer": {"A": 2.0e3, "n": 0.0, "Ea": 5.0e4},
+    "initiation_allyl": {"A": 2.0e14, "n": 0.0, "Ea": 2.4e5},
+    "termination_recombination": {"A": 6.0e7, "n": 0.0, "Ea": 8.0e3},
+    "termination_disproportionation": {"A": 4.0e7, "n": 0.0, "Ea": 1.2e4},
+    "unsaturated_tail_ends_initial": 0.02,
+    "efficiency": 0.8,
+    "monomer_yield": 0.9,
+}
+
+# Pinned U0 units note (schema 2.2): U is serialized on the SAME amount basis
+# as mu0; the consumer divides by V_poly to get the concentration state.
+WEAKLINK_U0_UNITS = "mol — tail-distribution state; consumer divides by V_poly"
+
+# The normative machine-readable weak-link recipe, pinned as LITERALS
+# verified against the implemented RHS in rmgpy/solver/polymer.pyx
+# (weak-link branch, commit c6b13c3a0). The loader pins the same strings
+# independently; editing either copy is a consumer-coordination event.
+WEAKLINK_PINNED_RECIPE = {
+    "bond_basis": ("B = max(mu1 - mu0, 0) on concentration moments "
+                   "(mol/m^3 condensed)"),
+    "channel_gate": ("channel gates on B > 0: at B = 0 it is INERT even at "
+                     "U > 0 (no monomer drain, no U production, no U sink; "
+                     "the DP->1 self-termination floor survives)"),
+    "u_state": ("U is a per-pool amount state [mol], tail-distribution "
+                "basis, MASSLESS (it never enters condensed mass or any "
+                "Mn/Mw/PDI consumer); daughter pools spawn with U0 = 0 "
+                "(constants inherit, state resets)"),
+    "u_active": ("u_active = min(max(U, 0)/V_poly, B) (active-site clamp, "
+                 "mol/m^3)"),
+    "radical_generation": ("G_R = 2*efficiency*ki*B + "
+                           "1*efficiency*ki_allyl*u_active (nu = 1: one "
+                           "unzipping radical per weak-link fission; the "
+                           "allylic co-fragment does not unzip)"),
+    "kt_split": ("kt_total = kt_rec + kt_disp replaces the legacy summed kt "
+                 "everywhere (halved radical-disappearance convention "
+                 "unchanged)"),
+    "rate_no_transfer": ("r_mono = monomer_yield * kdp * "
+                         "sqrt(G_R / (2*kt_total))"),
+    "rate_with_transfer": ("r_mono = monomer_yield * kdp * "
+                           "(sqrt(ktr^2 + 8*kt_total*G_R) - ktr) / "
+                           "(4*kt_total)"),
+    "du_dt": ("dU/dt = kt_disp*R_ss^2*max(0, 1 - U/(2*mu0))*V_poly - "
+              "efficiency*ki_allyl*u_active*V_poly; production is the "
+              "disproportionation EVENT rate with NO efficiency factor "
+              "(R_ss already carries the escape efficiency) under a linear "
+              "capacity throttle exactly zero at the TAIL chain-end "
+              "capacity 2*mu0 [mol], where mu0 is the INSTANTANEOUS "
+              "tail-distribution mu0(t) amount read from the current "
+              "state at each RHS evaluation (NOT the frozen initial mu0 "
+              "of the u0_census bound); at mu0(t) <= 0 the throttle is "
+              "EXACTLY 0 by explicit branch (no ends, no capacity, no U "
+              "production; no division is performed and no small_eps "
+              "floor is applied); the sink is efficiency-SYMMETRIC "
+              "with the G_R allyl term (a caged recombination restores "
+              "the allylic bond)"),
+    "u0_census": ("U0 = unsaturated_tail_ends_initial [mol] is rejected at "
+                  "solver init when U0 > 2*mu0_tail evaluated on the "
+                  "INITIAL (t = 0) tail mu0 (TAIL-only chain-end capacity, "
+                  "amount basis); the loader passes the value through"),
+    "u_transport": ("U is NEVER advected or transferred by any inter-pool "
+                    "or ejection flux archetype (migration, "
+                    "scission_fragment, discrete_chip and "
+                    "volatile_ejection move pool moments and species "
+                    "amounts only); the ONLY writers of U are this "
+                    "recipe's du_dt law and the t = 0 initial condition, "
+                    "and daughter pools spawn with U0 = 0 (constants "
+                    "inherit, state resets)"),
+    "moment_signature": ("dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
+                         "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
+    "small_eps": 1e-30,
+    "volume_note": ("kt is bimolecular: rates depend on condensed "
+                    "volume V_poly; consumers MUST evaluate on "
+                    "concentration moments mu_k = n_k / V_poly and "
+                    "convert emitted rate back with *V_poly"),
+}
+
+
+@pytest.fixture
+def weaklink_pool():
+    pool = Polymer(
+        label="PSW",
+        monomer="[CH2][CH](c1ccccc1)",
+        end_groups=["[H]", "[H]"],
+        cutoff=3,
+        moments=[1.0, 50.0, 3000.0],
+        initial_mass=0.0,
+        k_scission=0.0,
+        k_unzip=0.0,
+        radical_qssa_unzip=dict(WEAKLINK_RAW_CFG),
+    )
+    pool.monomer_product_species = _spc("C=Cc1ccccc1", "styrene")
+    return pool
+
+
+class TestWeakLinkChannelSerialization:
+    """Sidecar schema 2.2 (weak-link milestone iv): the emitter serializes
+    the weak-link allyl/U-state vocabulary instead of refusing (the
+    milestone-i anti-silent-no-op guard is replaced by the real thing).
+    The no-laundering concern the old refusal test pinned lives on in the
+    LOADER: a 2.1-stamped artifact carrying weak-link keys is rejected
+    (polymerMomentsRunnerTest)."""
+
+    def test_weaklink_block_serializes_all_keys_with_units(self, weaklink_pool):
+        d = _serialize_pool_for_sidecar(weaklink_pool)
+        block = d["channels"]["radical_qssa_unzip"]
+        assert block["enabled"] is True
+        assert block["basis"] == "backbone_bonds_mu1_minus_mu0"
+        assert block["efficiency"] == pytest.approx(0.8)
+        assert block["monomer_yield"] == pytest.approx(0.9)
+        # legacy triplets keep their pinned units
+        for name in ("initiation", "depropagation", "transfer"):
+            trip = block[name]
+            assert trip["A"] == pytest.approx(WEAKLINK_RAW_CFG[name]["A"])
+            assert trip["units"] == QSSA_PINNED_UNITS[name]
+        # split termination REPLACES the summed block (mutual exclusion):
+        # the summed slot is explicitly null, the split triplets carry the
+        # bimolecular units of the block they replace.
+        assert block["termination"] is None
+        assert block["initiation_allyl"] == {
+            "A": 2.0e14, "n": 0.0, "Ea": 2.4e5,
+            "units": {"A": "s^-1", "Ea": "J/mol"}}
+        assert block["termination_recombination"] == {
+            "A": 6.0e7, "n": 0.0, "Ea": 8.0e3,
+            "units": {"A": "m^3/(mol*s)", "Ea": "J/mol"}}
+        assert block["termination_disproportionation"] == {
+            "A": 4.0e7, "n": 0.0, "Ea": 1.2e4,
+            "units": {"A": "m^3/(mol*s)", "Ea": "J/mol"}}
+        # U0 is state, not a rate constant: value + pinned units note
+        assert block["unsaturated_tail_ends_initial"] == {
+            "value": 0.02, "units": WEAKLINK_U0_UNITS}
+
+    def test_weaklink_recipe_block_emitted_verbatim(self, weaklink_pool):
+        """The machine-pinned weak-link law (milestone iv): every string is
+        a LITERAL a consumer can hash/compare, verified against the
+        implemented RHS in rmgpy/solver/polymer.pyx (weak-link branch)."""
+        d = _serialize_pool_for_sidecar(weaklink_pool)
+        block = d["channels"]["radical_qssa_unzip"]
+        assert block["recipe"] == WEAKLINK_PINNED_RECIPE
+        assert "provenance" in block
+
+    def _artifact(self, pools, labels, routing):
+        return build_polymer_moments_artifact(
+            pools, core_species=None, core_reactions=[],
+            configured_pool_labels=labels,
+            monomer_routing_by_pool=routing)
+
+    def test_weaklink_artifact_stamps_2_2(self, weaklink_pool):
+        """Weak-link vocabulary present -> the ARTIFACT stamps schema 2.2,
+        format_doc /2.2 and the weak-link recipe revision (the artifact-level
+        conventions.recipe_revision is where rate-recipe revisions live)."""
+        artifact = self._artifact([weaklink_pool], ["PSW"],
+                                  {"PSW": "styrene(5)"})
+        assert artifact["schema_version"] == "2.2"
+        assert artifact["conventions"]["format_doc"] == (
+            "docs/polymer_moments_format.md (polymer_moments_format/2.2)")
+        assert artifact["conventions"]["recipe_revision"] == \
+            "2026-07-03-weaklink-u"
+
+    def test_mixed_artifact_stamps_2_2_legacy_channels_unchanged(
+            self, weaklink_pool, qssa_pool, pe_pool):
+        """A mixed artifact (legacy pool + legacy-QSSA pool + weak-link pool)
+        is schema 2.2 (artifact stamp governed by the strongest vocabulary
+        present), while the legacy pools' channel blocks serialize BYTE-
+        IDENTICALLY to their 2.1 form."""
+        solo = self._artifact([qssa_pool], ["PS"], {"PS": "styrene(5)"})
+        assert solo["schema_version"] == "2.1"
+        solo_block = solo["pools"][0]["channels"]["radical_qssa_unzip"]
+
+        mixed = self._artifact(
+            [pe_pool, qssa_pool, weaklink_pool], ["PE", "PS", "PSW"],
+            {"PS": "styrene(5)", "PSW": "styrene(5)"})
+        assert mixed["schema_version"] == "2.2"
+        assert mixed["conventions"]["recipe_revision"] == \
+            "2026-07-03-weaklink-u"
+        assert mixed["conventions"]["format_doc"] == (
+            "docs/polymer_moments_format.md (polymer_moments_format/2.2)")
+        by_label = {p["label"]: p for p in mixed["pools"]}
+        assert json.dumps(by_label["PS"]["channels"]["radical_qssa_unzip"]) \
+            == json.dumps(solo_block)
+        assert set(by_label["PE"]["channels"]) == {"scission", "unzip"}
+
+    def test_legacy_qssa_block_byte_identical_to_2_1_golden(self, qssa_pool):
+        """r34 baseline lock, channel level: the serialized 2.1 QSSA block of
+        a NO-weak-link pool is pinned byte-for-byte to a golden captured from
+        the pre-milestone-iv build (7e1fa0671 lineage). The weak-link
+        serialization must not have moved a single byte of legacy output."""
+        d = _serialize_pool_for_sidecar(qssa_pool)
+        block = d["channels"]["radical_qssa_unzip"]
+        golden = (
+            '{"enabled": true, "basis": "backbone_bonds_mu1_minus_mu0", '
+            '"efficiency": 0.8, "monomer_yield": 0.9, '
+            '"initiation": {"A": 10000000000000.0, "n": 0.0, "Ea": 300000.0, '
+            '"units": {"A": "s^-1", "Ea": "J/mol"}}, '
+            '"depropagation": {"A": 100000000000000.0, "n": 0.5, '
+            '"Ea": 90000.0, "units": {"A": "s^-1", "Ea": "J/mol"}}, '
+            '"termination": {"A": 100000000.0, "n": 0.0, "Ea": 10000.0, '
+            '"units": {"A": "m^3/(mol*s)", "Ea": "J/mol"}}, '
+            '"transfer": {"A": 2000.0, "n": 0.0, "Ea": 50000.0, '
+            '"units": {"A": "s^-1", "Ea": "J/mol"}}, '
+            '"recipe": {"bond_basis": "B = max(mu1 - mu0, 0) on '
+            'concentration moments (mol/m^3 condensed)", '
+            '"rate_no_transfer": "r_mono = monomer_yield * kdp * '
+            'sqrt(efficiency * ki * B / kt)", '
+            '"rate_with_transfer": "r_mono = monomer_yield * kdp * '
+            '(sqrt(ktr^2 + 8*kt*(2*efficiency*ki*B)) - ktr) / (4*kt)", '
+            '"moment_signature": "dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * '
+            'max(2*mu1/max(mu0, small_eps) - 1, 0)", '
+            '"small_eps": 1e-30, '
+            '"volume_note": "kt is bimolecular: rates depend on condensed '
+            'volume V_poly; consumers MUST evaluate on concentration moments '
+            'mu_k = n_k / V_poly and convert emitted rate back with '
+            '*V_poly"}, '
+            '"provenance": {"radical_balance": "G_R = 2*f*ki*B; loss = '
+            'ktr*R + 2*kt*R^2; Rss no-transfer = sqrt(f*ki*B/kt)", '
+            '"moment_closure": "end_shrink_pool_mean/1", '
+            '"R_gas_J_per_mol_K": 8.314, '
+            '"concentration_basis": "mol/m^3 condensed volume", '
+            '"transfer_note": "ktr is pseudo-first-order (s^-1); bimolecular '
+            'literature k_tr must be premultiplied by substrate '
+            'concentration before entering this config"}}')
+        assert json.dumps(block) == golden
 
 
 class TestQssaRoutingDerivation:

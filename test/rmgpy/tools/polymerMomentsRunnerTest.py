@@ -200,23 +200,22 @@ class TestRadicalQssaArtifactLoader:
                            match=r"PS.*radical_qssa_unzip.*monomer_routing"):
             _build_qssa(qssa_deck, artifact)
 
-    def test_rejects_weaklink_vocabulary_as_unknown_sidecar_keys(self, qssa_deck):
-        """SCHEMA PIN (weak-link milestone i): the weak-link allyl/U-state
-        vocabulary (initiation_allyl / termination_recombination /
-        termination_disproportionation / unsaturated_tail_ends_initial) is
-        NOT part of sidecar schema 2.1 -- the schema bump is a later
-        milestone. An artifact carrying any of it must be rejected as
-        unknown sub-vocabulary (never dropped permissively), so a
-        hand-edited or future-emitter sidecar cannot be silently loaded
-        without the channel."""
+    def test_rejects_weaklink_vocabulary_in_2_1_stamped_artifact(self, qssa_deck):
+        """SCHEMA/VOCABULARY CONSISTENCY (weak-link milestone iv, replaces
+        the milestone-i unknown-key pin WITHOUT dropping its concern): the
+        weak-link allyl/U-state vocabulary entered the sidecar at schema
+        2.2, and the emitter stamps 2.2 whenever it writes it. A 2.1-stamped
+        artifact must not smuggle U keys -- reject, never load the channel
+        permissively (the milestone-i "no laundering under 2.1" pin)."""
         artifact = _load_artifact(qssa_deck)
+        assert artifact["schema_version"] == "2.1"
         block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
         block["initiation_allyl"] = {
             "A": 2.0e14, "n": 0.0, "Ea": 2.4e5,
             "units": {"A": "s^-1", "Ea": "J/mol"}}
-        block["unsaturated_tail_ends_initial"] = 0.02
-        with pytest.raises(ValueError,
-                           match=r"PS.*unknown key.*initiation_allyl"):
+        block["unsaturated_tail_ends_initial"] = {
+            "value": 0.02, "units": WEAKLINK_U0_UNITS}
+        with pytest.raises(ValueError, match=r"schema_version.*2\.2"):
             _build_qssa(qssa_deck, artifact)
 
     def test_rejects_wrong_units_string_no_conversion(self, qssa_deck):
@@ -330,11 +329,30 @@ class TestQssaSchemaVersionGate:
         with pytest.raises(ValueError, match=r"schema_version"):
             _build_qssa(qssa_deck, artifact)
 
-    def test_accepts_future_minor_with_qssa(self, qssa_deck):
+    def test_rejects_unknown_future_minor(self, qssa_deck, deck):
+        """Weak-link milestone iv POLICY CHANGE (was minor-permissive): the
+        loader now pins the maximum schema minor it implements (2.2). A
+        2.3+ artifact may carry vocabulary outside the channel blocks that
+        the unknown-key guards never see (new conventions, new pool fields),
+        so an older loader must fail loud instead of loading additively."""
+        artifact = _load_artifact(qssa_deck)
+        artifact["schema_version"] = "2.3"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.3"):
+            _build_qssa(qssa_deck, artifact)
         artifact = _load_artifact(qssa_deck)
         artifact["schema_version"] = "2.7"
-        rs, _, _ = _build_qssa(qssa_deck, artifact)
-        assert rs.qssa_enabled[0] == 1
+        with pytest.raises(ValueError, match=r"schema_version"):
+            _build_qssa(qssa_deck, artifact)
+        # no-QSSA legacy artifact: same envelope pin
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            legacy = json.load(fh)
+        legacy["schema_version"] = "2.3"
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError, match=r"schema_version.*2\.3"):
+            build_system_from_artifact(
+                legacy, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
 
 
 class TestQssaNormativeRecipe:
@@ -401,6 +419,268 @@ class TestQssaNormativeRecipe:
         recipe["extra_note"] = "x"
         with pytest.raises(ValueError, match=r"PS.*extra_note"):
             _build_qssa(qssa_deck, artifact)
+
+
+# --- Weak-link allyl/U-state channel (sidecar schema 2.2, milestone iv) ---
+
+# Raw deck-shaped weak-link config: split termination REPLACES the legacy
+# summed block; the four weak-link keys are all-or-nothing.
+WEAKLINK_RAW_CFG = {
+    "initiation": {"A": 1.0e13, "n": 0.0, "Ea": 3.0e5},
+    "depropagation": {"A": 1.0e14, "n": 0.5, "Ea": 9.0e4},
+    "transfer": {"A": 2.0e3, "n": 0.0, "Ea": 5.0e4},
+    "initiation_allyl": {"A": 2.0e14, "n": 0.0, "Ea": 2.4e5},
+    "termination_recombination": {"A": 6.0e7, "n": 0.0, "Ea": 8.0e3},
+    "termination_disproportionation": {"A": 4.0e7, "n": 0.0, "Ea": 1.2e4},
+    "unsaturated_tail_ends_initial": 0.02,
+    "efficiency": 0.8,
+    "monomer_yield": 0.9,
+}
+
+# Pinned U0 units note -- must match the emitter byte-for-byte.
+WEAKLINK_U0_UNITS = "mol — tail-distribution state; consumer divides by V_poly"
+
+
+def _weaklink_deck(tmp_path, u0=None):
+    """A weak-link QSSA pool with wired monomer routing, written out as
+    chem.yaml + polymer_pools.json exactly like an RMG run would."""
+    n2 = _spc("N#N", "N2", index=1)
+    sty = _spc("C=Cc1ccccc1", "styrene", index=2)
+    mus = [_mu("PS_mu0"), _mu("PS_mu1"), _mu("PS_mu2")]
+    core = [n2, sty] + mus
+    data, index_map = generate_cantera_data(core, [],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+
+    cfg = dict(WEAKLINK_RAW_CFG)
+    if u0 is not None:
+        cfg["unsaturated_tail_ends_initial"] = u0
+    pool = Polymer(label="PS", monomer="[CH2][CH](c1ccccc1)",
+                   end_groups=["[H]", "[H]"], cutoff=3,
+                   moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                   k_scission=0.0, k_unzip=0.0,
+                   radical_qssa_unzip=cfg)
+    artifact = build_polymer_moments_artifact(
+        [pool], core_species=core, core_reactions=[],
+        configured_pool_labels=["PS"], condensed_species=mus + [sty],
+        monomer_routing_by_pool={"PS": "styrene(2)"},
+        cantera_index_map=index_map)
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+@pytest.fixture
+def weaklink_deck(tmp_path):
+    return _weaklink_deck(tmp_path)
+
+
+class TestWeakLinkArtifactLoader:
+    """Sidecar schema 2.2 loader (milestone iv): the weak-link vocabulary
+    round-trips config -> sidecar -> load -> config exactly, the same
+    single-source validator covers the loaded keys, and the solver-side U0
+    census fires end-to-end through the runner path (no laundering
+    window)."""
+
+    def test_weaklink_artifact_stamps_2_2_and_loads(self, weaklink_deck):
+        artifact = _load_artifact(weaklink_deck)
+        assert artifact["schema_version"] == "2.2"
+        assert artifact["conventions"]["format_doc"] == (
+            "docs/polymer_moments_format.md (polymer_moments_format/2.2)")
+        assert artifact["conventions"]["recipe_revision"] == \
+            "2026-07-03-weaklink-u"
+        rs, core, _ = _build_qssa(weaklink_deck, artifact)
+        assert rs.qssa_enabled[0] == 1
+        assert rs.qssa_weaklink[0] == 1
+        assert rs.qssa_kia_A[0] == pytest.approx(2.0e14)
+        assert rs.qssa_kia_Ea[0] == pytest.approx(2.4e5)
+        assert rs.qssa_ktrec_A[0] == pytest.approx(6.0e7)
+        assert rs.qssa_ktdisp_A[0] == pytest.approx(4.0e7)
+        assert rs.qssa_u0[0] == pytest.approx(0.02)
+        # the U slot exists: one trailing ODE slot beyond the core block
+        assert rs.neq == len(core) + 1
+
+    def test_weaklink_round_trip_config_identity(self, weaklink_deck):
+        """config -> sidecar -> load -> config must be IDENTICAL to the
+        shared validator's normalization of the deck config (dict
+        equality, not approx): the loader feeds exactly the shape
+        validate_radical_qssa_unzip accepts."""
+        from rmgpy.solver.polymer import validate_radical_qssa_unzip
+
+        rs, _, _ = _build_qssa(weaklink_deck)
+        expected = validate_radical_qssa_unzip("PS", dict(WEAKLINK_RAW_CFG))
+        assert rs.polymer_pools[0].radical_qssa_unzip == expected
+
+    def test_nan_in_loaded_initiation_allyl_rejected(self, weaklink_deck):
+        """Boundary guard coverage for the new keys: a NaN smuggled into a
+        loaded weak-link triplet dies in the single-source validator, not
+        silently disabling (or poisoning) the channel."""
+        artifact = _load_artifact(weaklink_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        block["initiation_allyl"]["A"] = float("nan")
+        with pytest.raises(ValueError,
+                           match=r"PS.*initiation_allyl\.A.*finite"):
+            _build_qssa(weaklink_deck, artifact)
+
+    def test_wrong_units_on_weaklink_triplet_rejected(self, weaklink_deck):
+        """The split termination triplets carry the bimolecular pin of the
+        block they replace; a sidecar claiming s^-1 must ERROR, never be
+        converted."""
+        artifact = _load_artifact(weaklink_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        block["termination_disproportionation"]["units"]["A"] = "s^-1"
+        with pytest.raises(
+                ValueError,
+                match=r"PS.*termination_disproportionation.*units"):
+            _build_qssa(weaklink_deck, artifact)
+
+    def test_wrong_u0_units_note_rejected(self, weaklink_deck):
+        """U0's units note is pinned byte-for-byte: a bare 'mol' (or any
+        other string) means the amount-basis contract is not the one this
+        loader implements."""
+        artifact = _load_artifact(weaklink_deck)
+        block = artifact["pools"][0]["channels"]["radical_qssa_unzip"]
+        block["unsaturated_tail_ends_initial"]["units"] = "mol"
+        with pytest.raises(
+                ValueError,
+                match=r"PS.*unsaturated_tail_ends_initial.*units"):
+            _build_qssa(weaklink_deck, artifact)
+
+    def test_weaklink_recipe_pinned_exactly(self, weaklink_deck):
+        """The machine-pinned weak-link law: any mutation or omission of a
+        recipe field is rejected (reject, never adapt), and the legacy
+        recipe alone is NOT accepted for a weak-link block."""
+        artifact = _load_artifact(weaklink_deck)
+        recipe = artifact["pools"][0]["channels"]["radical_qssa_unzip"]["recipe"]
+        recipe["du_dt"] = "dU/dt = kt_disp*R_ss^2*V_poly"
+        with pytest.raises(ValueError, match=r"PS.*du_dt"):
+            _build_qssa(weaklink_deck, artifact)
+
+        artifact = _load_artifact(weaklink_deck)
+        recipe = artifact["pools"][0]["channels"]["radical_qssa_unzip"]["recipe"]
+        del recipe["radical_generation"]
+        with pytest.raises(ValueError, match=r"PS.*radical_generation"):
+            _build_qssa(weaklink_deck, artifact)
+
+    def test_u0_census_fires_end_to_end_through_runner_path(self, tmp_path):
+        """Test 7 ruling: the U0 > 2*mu0_tail census lives in the SOLVER
+        (set_initial_conditions); the loader passes the value through and
+        the solver rejects at init. Prove artifact-in -> error-out through
+        the full runner path so no laundering window exists: mu0 = 1.0 mol
+        -> tail capacity 2.0 mol; U0 = 5.0 mol must die at build time."""
+        deck = _weaklink_deck(tmp_path, u0=5.0)
+        with pytest.raises(
+                ValueError,
+                match=r"PS.*unsaturated_tail_ends_initial.*chain-end "
+                      r"capacity"):
+            _build_qssa(deck)
+
+
+class TestSchema21FixtureRegression:
+    """A FROZEN 2.1 artifact (channel constants and shape derived from the
+    kdpswap PS-rerun baseline sidecar) must load bit-for-bit as before the
+    2.2 milestone: same parsed channel config, same flattened arrays, no U
+    slot. The literal is deliberately NOT emitter-produced, so this
+    regression is independent of emitter changes."""
+
+    FROZEN_2_1_ARTIFACT = {
+        "schema_version": "2.1",
+        "rmg_commit": "kdpswap-baseline-derived",
+        "rmg_iteration": 0,
+        "conventions": {
+            "format_doc": ("docs/polymer_moments_format.md "
+                           "(polymer_moments_format/2.1)"),
+            "recipe_revision": "2026-07-02",
+            "configured_pools": ["PS"],
+            "condensed_species": ["PS_mu0", "PS_mu1", "PS_mu2",
+                                  "styrene(2)"],
+        },
+        "pools": [{
+            "label": "PS",
+            "cutoff": 3,
+            "moments": [0.01, 0.4800819207743936, 27.65743807853174],
+            "monomer_mw_g_mol": 104.14962093690001,
+            "channels": {
+                "scission": {"A": 0.0, "n": 0.0, "Ea": 0.0,
+                             "units": {"A": "s^-1", "Ea": "J/mol"}},
+                "unzip": {"A": 0.0, "n": 0.0, "Ea": 0.0,
+                          "units": {"A": "s^-1", "Ea": "J/mol"}},
+                "radical_qssa_unzip": {
+                    "enabled": True,
+                    "basis": "backbone_bonds_mu1_minus_mu0",
+                    "efficiency": 1.0,
+                    "monomer_yield": 1.0,
+                    "initiation": {"A": 1.0e15, "n": 0.0, "Ea": 281600.0,
+                                   "units": {"A": "s^-1", "Ea": "J/mol"}},
+                    "depropagation": {"A": 3.1e12, "n": 0.0, "Ea": 100000.0,
+                                      "units": {"A": "s^-1",
+                                                "Ea": "J/mol"}},
+                    "termination": {"A": 57750000.0, "n": 0.0, "Ea": 9600.0,
+                                    "units": {"A": "m^3/(mol*s)",
+                                              "Ea": "J/mol"}},
+                    "transfer": None,
+                    "recipe": {
+                        "bond_basis": ("B = max(mu1 - mu0, 0) on "
+                                       "concentration moments (mol/m^3 "
+                                       "condensed)"),
+                        "rate_no_transfer": (
+                            "r_mono = monomer_yield * kdp * "
+                            "sqrt(efficiency * ki * B / kt)"),
+                        "rate_with_transfer": (
+                            "r_mono = monomer_yield * kdp * "
+                            "(sqrt(ktr^2 + 8*kt*(2*efficiency*ki*B)) "
+                            "- ktr) / (4*kt)"),
+                        "moment_signature": (
+                            "dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
+                            "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
+                        "small_eps": 1e-30,
+                        "volume_note": (
+                            "kt is bimolecular: rates depend on condensed "
+                            "volume V_poly; consumers MUST evaluate on "
+                            "concentration moments mu_k = n_k / V_poly and "
+                            "convert emitted rate back with *V_poly"),
+                    },
+                    "provenance": {
+                        "radical_balance": (
+                            "G_R = 2*f*ki*B; loss = ktr*R + 2*kt*R^2; "
+                            "Rss no-transfer = sqrt(f*ki*B/kt)"),
+                    },
+                },
+            },
+            "phase_species": [],
+            "bookkeeping_species": [],
+            "monomer_routing": "styrene(2)",
+        }],
+        "reactions": [],
+    }
+
+    def test_frozen_2_1_artifact_loads_with_identical_parsed_output(
+            self, qssa_deck):
+        from copy import deepcopy
+
+        from rmgpy.solver.polymer import validate_radical_qssa_unzip
+
+        chem_path, _ = qssa_deck
+        species, reactions = load_chem_yaml(chem_path)
+        rs, core, _ = build_system_from_artifact(
+            deepcopy(self.FROZEN_2_1_ARTIFACT), species, reactions,
+            T0=650.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        expected = validate_radical_qssa_unzip("PS", {
+            "initiation": {"A": 1.0e15, "n": 0.0, "Ea": 281600.0},
+            "depropagation": {"A": 3.1e12, "n": 0.0, "Ea": 100000.0},
+            "termination": {"A": 57750000.0, "n": 0.0, "Ea": 9600.0},
+            "transfer": None,
+        })
+        assert rs.polymer_pools[0].radical_qssa_unzip == expected
+        assert rs.qssa_enabled[0] == 1
+        assert rs.qssa_weaklink[0] == 0
+        assert rs.qssa_kt_A[0] == pytest.approx(57750000.0)
+        # legacy layout: no trailing U slot
+        assert rs.neq == len(core)
 
 
 class TestChemYamlLoader:

@@ -253,12 +253,31 @@ _QSSA_PINNED_A_UNITS = {
     "depropagation": "s^-1",
     "termination": "m^3/(mol*s)",
     "transfer": "s^-1",
+    # Weak-link vocabulary (schema 2.2): allylic initiation is unimolecular
+    # in the active unsaturated end; the split termination triplets carry
+    # the bimolecular units of the summed block they replace.
+    "initiation_allyl": "s^-1",
+    "termination_recombination": "m^3/(mol*s)",
+    "termination_disproportionation": "m^3/(mol*s)",
 }
+# Pinned units note for the U-state initial condition (schema 2.2). U is
+# STATE, not a rate constant: same amount basis as mu0 [mol]; the consumer
+# divides by V_poly. Pinned byte-for-byte against the emitter's
+# RADICAL_QSSA_SIDECAR_U0_UNITS -- a sidecar claiming any other basis note
+# (e.g. a bare "mol", or a per-volume unit) must ERROR, never be adapted.
+_QSSA_U0_PINNED_UNITS = (
+    "mol — tail-distribution state; consumer divides by V_poly")
+# The weak-link allyl/U-state vocabulary (schema 2.2): all-or-nothing as a
+# group, mutually exclusive with the legacy summed 'termination' (enforced
+# by the shared validator; the loader only routes the keys through).
+_QSSA_WEAKLINK_KEYS = frozenset(
+    ("initiation_allyl", "termination_recombination",
+     "termination_disproportionation", "unsaturated_tail_ends_initial"))
 # Every key the sidecar block may carry: the channel-config vocabulary
 # (validate_radical_qssa_unzip) plus the sidecar-only envelope fields.
 _QSSA_SIDECAR_KEYS = frozenset(_QSSA_PINNED_A_UNITS) | frozenset(
     ("enabled", "basis", "efficiency", "monomer_yield", "provenance",
-     "recipe"))
+     "recipe", "unsaturated_tail_ends_initial"))
 
 # Normative machine-readable QSSA recipe, pinned HERE independently of the
 # emitter's RADICAL_QSSA_SIDECAR_RECIPE (rmgpy/polymer.py) -- same idiom as
@@ -283,30 +302,123 @@ _QSSA_PINNED_RECIPE = {
                     "convert emitted rate back with *V_poly"),
 }
 
+# Normative machine-readable recipe for the WEAK-LINK allyl/U-state variant
+# (schema 2.2), pinned HERE independently of the emitter's
+# RADICAL_QSSA_SIDECAR_RECIPE_WEAKLINK (rmgpy/polymer.py) -- same idiom as
+# the legacy pin above. Each string matches the implemented weak-link RHS
+# in rmgpy/solver/polymer.pyx (weak-link branch of the pool loop; U0 census
+# in set_initial_conditions).
+_QSSA_PINNED_RECIPE_WEAKLINK = {
+    "bond_basis": ("B = max(mu1 - mu0, 0) on concentration moments "
+                   "(mol/m^3 condensed)"),
+    "channel_gate": ("channel gates on B > 0: at B = 0 it is INERT even at "
+                     "U > 0 (no monomer drain, no U production, no U sink; "
+                     "the DP->1 self-termination floor survives)"),
+    "u_state": ("U is a per-pool amount state [mol], tail-distribution "
+                "basis, MASSLESS (it never enters condensed mass or any "
+                "Mn/Mw/PDI consumer); daughter pools spawn with U0 = 0 "
+                "(constants inherit, state resets)"),
+    "u_active": ("u_active = min(max(U, 0)/V_poly, B) (active-site clamp, "
+                 "mol/m^3)"),
+    "radical_generation": ("G_R = 2*efficiency*ki*B + "
+                           "1*efficiency*ki_allyl*u_active (nu = 1: one "
+                           "unzipping radical per weak-link fission; the "
+                           "allylic co-fragment does not unzip)"),
+    "kt_split": ("kt_total = kt_rec + kt_disp replaces the legacy summed kt "
+                 "everywhere (halved radical-disappearance convention "
+                 "unchanged)"),
+    "rate_no_transfer": ("r_mono = monomer_yield * kdp * "
+                         "sqrt(G_R / (2*kt_total))"),
+    "rate_with_transfer": ("r_mono = monomer_yield * kdp * "
+                           "(sqrt(ktr^2 + 8*kt_total*G_R) - ktr) / "
+                           "(4*kt_total)"),
+    "du_dt": ("dU/dt = kt_disp*R_ss^2*max(0, 1 - U/(2*mu0))*V_poly - "
+              "efficiency*ki_allyl*u_active*V_poly; production is the "
+              "disproportionation EVENT rate with NO efficiency factor "
+              "(R_ss already carries the escape efficiency) under a linear "
+              "capacity throttle exactly zero at the TAIL chain-end "
+              "capacity 2*mu0 [mol], where mu0 is the INSTANTANEOUS "
+              "tail-distribution mu0(t) amount read from the current "
+              "state at each RHS evaluation (NOT the frozen initial mu0 "
+              "of the u0_census bound); at mu0(t) <= 0 the throttle is "
+              "EXACTLY 0 by explicit branch (no ends, no capacity, no U "
+              "production; no division is performed and no small_eps "
+              "floor is applied); the sink is efficiency-SYMMETRIC "
+              "with the G_R allyl term (a caged recombination restores "
+              "the allylic bond)"),
+    "u0_census": ("U0 = unsaturated_tail_ends_initial [mol] is rejected at "
+                  "solver init when U0 > 2*mu0_tail evaluated on the "
+                  "INITIAL (t = 0) tail mu0 (TAIL-only chain-end capacity, "
+                  "amount basis); the loader passes the value through"),
+    "u_transport": ("U is NEVER advected or transferred by any inter-pool "
+                    "or ejection flux archetype (migration, "
+                    "scission_fragment, discrete_chip and "
+                    "volatile_ejection move pool moments and species "
+                    "amounts only); the ONLY writers of U are this "
+                    "recipe's du_dt law and the t = 0 initial condition, "
+                    "and daughter pools spawn with U0 = 0 (constants "
+                    "inherit, state resets)"),
+    "moment_signature": ("dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
+                         "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
+    "small_eps": 1e-30,
+    "volume_note": ("kt is bimolecular: rates depend on condensed "
+                    "volume V_poly; consumers MUST evaluate on "
+                    "concentration moments mu_k = n_k / V_poly and "
+                    "convert emitted rate back with *V_poly"),
+}
+
 # The QSSA channel vocabulary entered the sidecar schema at 2.1 (channel-
 # vocabulary growth = minor bump); the emitter stamps >= 2.1 whenever it
-# writes the block, so a 2.0 artifact carrying one is malformed.
+# writes the block, so a 2.0 artifact carrying one is malformed. The
+# weak-link allyl/U-state sub-vocabulary entered at 2.2, same rule.
 _QSSA_MIN_SCHEMA_MINOR = 1
+_WEAKLINK_MIN_SCHEMA_MINOR = 2
+# Maximum schema minor this loader implements. Weak-link milestone iv
+# POLICY CHANGE (was minor-permissive): a 2.3+ artifact may carry
+# vocabulary OUTSIDE the channel blocks (new conventions, new pool fields)
+# that the unknown-key guards here never inspect, so an older loader must
+# fail loud on it instead of loading additively.
+_MAX_KNOWN_SCHEMA_MINOR = 2
+
+
+def _check_schema_version_known(artifact):
+    """Reject any artifact whose schema_version is not one this loader
+    implements (2.0 <= 2.x <= 2.2)."""
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    ok = (len(parts) == 2 and parts[0] == "2" and parts[1].isdigit()
+          and int(parts[1]) <= _MAX_KNOWN_SCHEMA_MINOR)
+    if not ok:
+        raise ValueError(
+            f"artifact schema_version {ver!r} is not implemented by this "
+            f"loader (known: 2.0 .. 2.{_MAX_KNOWN_SCHEMA_MINOR}). A newer "
+            f"minor may carry vocabulary outside the channel blocks that "
+            f"this loader would silently ignore -- upgrade the loader or "
+            f"regenerate the sidecar with a matching RMG-Py polymer "
+            f"branch.")
 
 
 def _check_qssa_schema_version(artifact):
     """Reject an artifact carrying any channels.radical_qssa_unzip block
-    under a schema_version below 2.1 (or a non-2.x version).
+    under a schema_version below 2.1, or the weak-link allyl/U-state
+    sub-vocabulary below 2.2 (or a non-2.x version either way).
 
     Scans ALL pool entries, configured or not: the vocabulary appearing
-    anywhere means the artifact claims the 2.1+ shape. Artifacts with no
-    QSSA block anywhere are untouched -- any 2.x keeps loading exactly as
-    before (the envelope gate in main() has always been minor-permissive,
-    and stays so: minor bumps are additive by policy)."""
-    if not any("radical_qssa_unzip" in (p.get("channels") or {})
-               for p in artifact.get("pools", [])
-               if isinstance(p, dict)):
+    anywhere means the artifact claims the corresponding shape. Artifacts
+    with no QSSA block anywhere are untouched by this check (the envelope
+    gate is _check_schema_version_known)."""
+    blocks = [
+        (p.get("channels") or {}).get("radical_qssa_unzip")
+        for p in artifact.get("pools", [])
+        if isinstance(p, dict)
+        and "radical_qssa_unzip" in (p.get("channels") or {})]
+    if not blocks:
         return
     ver = str(artifact.get("schema_version", ""))
     parts = ver.split(".")
-    ok = (len(parts) == 2 and parts[0] == "2" and parts[1].isdigit()
-          and int(parts[1]) >= _QSSA_MIN_SCHEMA_MINOR)
-    if not ok:
+    minor = (int(parts[1]) if len(parts) == 2 and parts[0] == "2"
+             and parts[1].isdigit() else -1)
+    if minor < _QSSA_MIN_SCHEMA_MINOR:
         raise ValueError(
             f"artifact schema_version {ver!r} cannot carry a "
             f"channels.radical_qssa_unzip block: the QSSA channel vocabulary "
@@ -314,6 +426,17 @@ def _check_qssa_schema_version(artifact):
             f"minor bump), and the emitter stamps >= 2.1 whenever it writes "
             f"the block. This artifact is malformed -- regenerate the "
             f"sidecar with a current RMG-Py polymer branch.")
+    weaklink = sorted(set().union(*(
+        _QSSA_WEAKLINK_KEYS & set(b) for b in blocks
+        if isinstance(b, dict))))
+    if weaklink and minor < _WEAKLINK_MIN_SCHEMA_MINOR:
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry the weak-link "
+            f"allyl/U-state vocabulary {weaklink}: it was introduced in "
+            f"schema 2.2, and the emitter stamps 2.2 whenever it writes it. "
+            f"A 2.1-stamped artifact must not smuggle U keys (schema/"
+            f"vocabulary consistency; never loaded permissively) -- "
+            f"regenerate the sidecar with a current RMG-Py polymer branch.")
 
 
 def _parse_radical_qssa_channel(lab, pool_entry):
@@ -362,9 +485,18 @@ def _parse_radical_qssa_channel(lab, pool_entry):
             f"present-disabled (whose constants nothing validates). Fix the "
             f"artifact (remove the block).")
 
-    # Normative recipe pin (schema 2.1): every field must match the loader's
-    # own copy EXACTLY -- reject, never adapt (units-pin idiom). A QSSA block
-    # without a recipe is malformed: the emitter always writes one.
+    # The weak-link allyl/U-state sub-vocabulary (schema 2.2) selects the
+    # weak-link recipe pin; the group's all-or-nothing rule and the summed-
+    # termination exclusion are the shared validator's job below.
+    weaklink = bool(_QSSA_WEAKLINK_KEYS & set(raw))
+    pinned_recipe = (_QSSA_PINNED_RECIPE_WEAKLINK if weaklink
+                     else _QSSA_PINNED_RECIPE)
+
+    # Normative recipe pin (schema 2.1/2.2): every field must match the
+    # loader's own copy EXACTLY -- reject, never adapt (units-pin idiom). A
+    # QSSA block without a recipe is malformed: the emitter always writes
+    # one, and a weak-link block carrying only the LEGACY recipe (or vice
+    # versa) claims an algebra this loader does not implement for it.
     recipe = raw.get("recipe")
     if not isinstance(recipe, dict):
         raise ValueError(
@@ -372,14 +504,14 @@ def _parse_radical_qssa_channel(lab, pool_entry):
             f"normative 'recipe' block (schema 2.1), got "
             f"{recipe!r}. A QSSA block without its machine-readable recipe "
             f"is malformed -- regenerate the sidecar.")
-    unknown_recipe = sorted(set(recipe) - set(_QSSA_PINNED_RECIPE))
+    unknown_recipe = sorted(set(recipe) - set(pinned_recipe))
     if unknown_recipe:
         raise ValueError(
             f"Pool {lab!r}: channels.radical_qssa_unzip recipe has unknown "
             f"key(s) {unknown_recipe}; allowed keys are "
-            f"{sorted(_QSSA_PINNED_RECIPE)}. Fix the artifact (unknown "
+            f"{sorted(pinned_recipe)}. Fix the artifact (unknown "
             f"recipe vocabulary is never dropped permissively).")
-    for key, pinned in _QSSA_PINNED_RECIPE.items():
+    for key, pinned in pinned_recipe.items():
         if key not in recipe or recipe[key] != pinned:
             raise ValueError(
                 f"Pool {lab!r}: channels.radical_qssa_unzip recipe[{key!r}] "
@@ -392,8 +524,11 @@ def _parse_radical_qssa_channel(lab, pool_entry):
     for block_name, pinned_a in _QSSA_PINNED_A_UNITS.items():
         trip = raw.get(block_name)
         if trip is None:
-            # transfer: null is the valid channel-absent shape; a missing
-            # mandatory block is diagnosed by the shared validator below.
+            # transfer: null is the valid channel-absent shape (and a
+            # weak-link block carries termination: null -- the split
+            # triplets replace it, so the key is simply not forwarded); a
+            # missing mandatory block is diagnosed by the shared validator
+            # below.
             if block_name == "transfer":
                 channel["transfer"] = None
             continue
@@ -416,6 +551,28 @@ def _parse_radical_qssa_channel(lab, pool_entry):
                 f"{units!r}. A sidecar claiming different units must be "
                 f"fixed at the source; this loader never converts.{note}")
         channel[block_name] = {k: v for k, v in trip.items() if k != "units"}
+    if "unsaturated_tail_ends_initial" in raw:
+        # U0 is STATE, serialized {value, units-note}. The shape and the
+        # units note are pinned here at the boundary; the VALUE rules
+        # (number, finite, >= 0) are the shared validator's, and the
+        # capacity census (U0 <= 2*mu0_tail) is the SOLVER's at init --
+        # the loader passes the value through.
+        u0 = raw["unsaturated_tail_ends_initial"]
+        if not isinstance(u0, dict) or set(u0) != {"value", "units"}:
+            raise ValueError(
+                f"Pool {lab!r}: channels.radical_qssa_unzip "
+                f"unsaturated_tail_ends_initial must be a "
+                f"{{value, units}} dict (schema 2.2), got {u0!r}. Fix the "
+                f"artifact.")
+        if u0["units"] != _QSSA_U0_PINNED_UNITS:
+            raise ValueError(
+                f"Pool {lab!r}: channels.radical_qssa_unzip "
+                f"unsaturated_tail_ends_initial units must be exactly "
+                f"{_QSSA_U0_PINNED_UNITS!r} (pinned convention: same "
+                f"amount basis as mu0), got {u0['units']!r}. A sidecar "
+                f"claiming a different basis must be fixed at the source; "
+                f"this loader never converts.")
+        channel["unsaturated_tail_ends_initial"] = u0["value"]
     for name in ("efficiency", "monomer_yield", "basis"):
         if name in raw:
             channel[name] = raw[name]
@@ -434,8 +591,11 @@ def build_system_from_artifact(artifact, species, reactions,
     cdef class; do not hang extra attributes on it). The system is fully
     initialized at T0 (initialize_model runs through initialize_solver,
     rmgpy/solver/polymer.pyx:601-610)."""
-    # QSSA-vocabulary/version cross-check first: a 2.0 artifact carrying a
-    # radical_qssa_unzip block is malformed regardless of pool configuration.
+    # Envelope gate first (schema minor must be one this loader implements),
+    # then the QSSA-vocabulary/version cross-check: a 2.0 artifact carrying a
+    # radical_qssa_unzip block (or a 2.1 artifact carrying the weak-link
+    # sub-vocabulary) is malformed regardless of pool configuration.
+    _check_schema_version_known(artifact)
     _check_qssa_schema_version(artifact)
 
     core = list(species)
@@ -653,7 +813,7 @@ def main(argv=None):
         description="Polymer moments artifact reference runner (oracle). "
                     "See docs/polymer_moments_format.md.")
     parser.add_argument("--artifact", required=True,
-                        help="polymer_pools.json (schema 2.0/2.1)")
+                        help="polymer_pools.json (schema 2.0/2.1/2.2)")
     parser.add_argument("--chem", required=True, help="chem.yaml from the same RMG run")
     parser.add_argument("--t-profile", required=True,
                         help="JSON: [{\"t_end\": s, \"T\": K}, ...] piecewise-isothermal")

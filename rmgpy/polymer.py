@@ -3127,6 +3127,18 @@ POLYMER_RATE_RECIPE_REVISION = "2026-06-10"
 # artifact carries a NEW recipe revision. Conditional for the same reason as
 # the 2.1 schema stamp: no QSSA anywhere -> legacy revision, byte-identical.
 POLYMER_RATE_RECIPE_REVISION_QSSA = "2026-07-02"
+# Schema 2.2 = 2.1 + the weak-link allyl/U-state vocabulary INSIDE the
+# radical_qssa_unzip block (initiation_allyl / termination_recombination /
+# termination_disproportionation / unsaturated_tail_ends_initial). Same
+# minor-bump policy: the emitter stamps 2.2 exactly when at least one
+# serialized pool carries the weak-link vocabulary (the artifact-level stamp
+# is governed by the STRONGEST vocabulary present, so a mixed artifact is
+# 2.2); no weak-link anywhere -> the 2.1/2.0 stamps apply byte-identically.
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_WEAKLINK = "2.2"
+# The weak-link U-state channel is new rate algebra (allyl initiation with
+# nu=1, split termination, dU/dt law), so a weak-link artifact carries a NEW
+# recipe revision — conditional for the same reason as the schema stamps.
+POLYMER_RATE_RECIPE_REVISION_WEAKLINK = "2026-07-03-weaklink-u"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
@@ -3278,7 +3290,20 @@ RADICAL_QSSA_SIDECAR_A_UNITS = {
     "depropagation": "s^-1",
     "termination": "m^3/(mol*s)",
     "transfer": "s^-1",
+    # Weak-link vocabulary (schema 2.2): allylic initiation is unimolecular
+    # in the active unsaturated end; the split termination triplets carry
+    # the bimolecular units of the summed block they replace.
+    "initiation_allyl": "s^-1",
+    "termination_recombination": "m^3/(mol*s)",
+    "termination_disproportionation": "m^3/(mol*s)",
 }
+
+# Pinned units note for the serialized U-state initial condition (schema
+# 2.2). U is STATE, not a rate constant: same amount basis as mu0 [mol]; the
+# consumer divides by V_poly for the concentration form. The loader pins the
+# same string byte-for-byte (reject, never convert).
+RADICAL_QSSA_SIDECAR_U0_UNITS = (
+    "mol — tail-distribution state; consumer divides by V_poly")
 
 # Normative machine-readable QSSA rate recipe, emitted as the channel block's
 # ``recipe`` sub-block (schema 2.1). Unlike the human-readable ``provenance``
@@ -3298,6 +3323,74 @@ RADICAL_QSSA_SIDECAR_RECIPE = {
     "rate_with_transfer": ("r_mono = monomer_yield * kdp * "
                            "(sqrt(ktr^2 + 8*kt*(2*efficiency*ki*B)) "
                            "- ktr) / (4*kt)"),
+    "moment_signature": ("dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
+                         "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
+    "small_eps": 1e-30,
+    "volume_note": ("kt is bimolecular: rates depend on condensed "
+                    "volume V_poly; consumers MUST evaluate on "
+                    "concentration moments mu_k = n_k / V_poly and "
+                    "convert emitted rate back with *V_poly"),
+}
+
+# Normative machine-readable recipe for the WEAK-LINK allyl/U-state variant
+# of the QSSA channel (schema 2.2). Same contract as
+# RADICAL_QSSA_SIDECAR_RECIPE: the loader (polymer_moments_runner
+# _QSSA_PINNED_RECIPE_WEAKLINK) pins the same values independently and
+# errors on mismatch or absence — reject, never adapt. Every entry is
+# transcribed from the implemented weak-link RHS in
+# rmgpy/solver/polymer.pyx (weak-link branch of the pool loop; U slot
+# layout in _flatten_radical_qssa_state; U0 census in
+# set_initial_conditions) — editing means re-verifying and re-dating.
+RADICAL_QSSA_SIDECAR_RECIPE_WEAKLINK = {
+    "bond_basis": ("B = max(mu1 - mu0, 0) on concentration moments "
+                   "(mol/m^3 condensed)"),
+    "channel_gate": ("channel gates on B > 0: at B = 0 it is INERT even at "
+                     "U > 0 (no monomer drain, no U production, no U sink; "
+                     "the DP->1 self-termination floor survives)"),
+    "u_state": ("U is a per-pool amount state [mol], tail-distribution "
+                "basis, MASSLESS (it never enters condensed mass or any "
+                "Mn/Mw/PDI consumer); daughter pools spawn with U0 = 0 "
+                "(constants inherit, state resets)"),
+    "u_active": ("u_active = min(max(U, 0)/V_poly, B) (active-site clamp, "
+                 "mol/m^3)"),
+    "radical_generation": ("G_R = 2*efficiency*ki*B + "
+                           "1*efficiency*ki_allyl*u_active (nu = 1: one "
+                           "unzipping radical per weak-link fission; the "
+                           "allylic co-fragment does not unzip)"),
+    "kt_split": ("kt_total = kt_rec + kt_disp replaces the legacy summed kt "
+                 "everywhere (halved radical-disappearance convention "
+                 "unchanged)"),
+    "rate_no_transfer": ("r_mono = monomer_yield * kdp * "
+                         "sqrt(G_R / (2*kt_total))"),
+    "rate_with_transfer": ("r_mono = monomer_yield * kdp * "
+                           "(sqrt(ktr^2 + 8*kt_total*G_R) - ktr) / "
+                           "(4*kt_total)"),
+    "du_dt": ("dU/dt = kt_disp*R_ss^2*max(0, 1 - U/(2*mu0))*V_poly - "
+              "efficiency*ki_allyl*u_active*V_poly; production is the "
+              "disproportionation EVENT rate with NO efficiency factor "
+              "(R_ss already carries the escape efficiency) under a linear "
+              "capacity throttle exactly zero at the TAIL chain-end "
+              "capacity 2*mu0 [mol], where mu0 is the INSTANTANEOUS "
+              "tail-distribution mu0(t) amount read from the current "
+              "state at each RHS evaluation (NOT the frozen initial mu0 "
+              "of the u0_census bound); at mu0(t) <= 0 the throttle is "
+              "EXACTLY 0 by explicit branch (no ends, no capacity, no U "
+              "production; no division is performed and no small_eps "
+              "floor is applied); the sink is efficiency-SYMMETRIC "
+              "with the G_R allyl term (a caged recombination restores "
+              "the allylic bond)"),
+    "u0_census": ("U0 = unsaturated_tail_ends_initial [mol] is rejected at "
+                  "solver init when U0 > 2*mu0_tail evaluated on the "
+                  "INITIAL (t = 0) tail mu0 (TAIL-only chain-end capacity, "
+                  "amount basis); the loader passes the value through"),
+    "u_transport": ("U is NEVER advected or transferred by any inter-pool "
+                    "or ejection flux archetype (migration, "
+                    "scission_fragment, discrete_chip and "
+                    "volatile_ejection move pool moments and species "
+                    "amounts only); the ONLY writers of U are this "
+                    "recipe's du_dt law and the t = 0 initial condition, "
+                    "and daughter pools spawn with U0 = 0 (constants "
+                    "inherit, state resets)"),
     "moment_signature": ("dmu0 = 0; dmu1 -= r_mono; dmu2 -= r_mono * "
                          "max(2*mu1/max(mu0, small_eps) - 1, 0)"),
     "small_eps": 1e-30,
@@ -3341,26 +3434,6 @@ def _serialize_radical_qssa_channel(pool: 'Polymer') -> Optional[Dict[str, Any]]
     from rmgpy.solver.polymer import QSSA_R_GAS, validate_radical_qssa_unzip
     q = validate_radical_qssa_unzip(getattr(pool, "label", ""), qssa)
 
-    # ANTI-SILENT-NO-OP GUARD (weak-link milestone i): the weak-link
-    # allyl/U-state vocabulary is valid CONFIG, but sidecar schema 2.1 has
-    # no fields for it and solver support is not implemented yet (both land
-    # in a later milestone, which also removes this guard). Emitting the
-    # legacy-shaped block here would silently launder the allyl channel out
-    # of the artifact -- and the ["termination"] read below would KeyError
-    # uninformatively anyway (weak-link configs carry SPLIT terminations).
-    if "initiation_allyl" in q:
-        raise ValueError(
-            f"Pool '{getattr(pool, 'label', '')}': radical_qssa_unzip "
-            f"carries the weak-link allyl/U-state vocabulary "
-            f"(initiation_allyl / termination_recombination / "
-            f"termination_disproportionation / "
-            f"unsaturated_tail_ends_initial), but sidecar schema 2.1 has no "
-            f"vocabulary for it and solver support is not implemented yet "
-            f"(the schema bump lands with the weak-link rate law in a later "
-            f"milestone). Refusing to serialize: emitting the block without "
-            f"the weak-link fields would silently drop the configured "
-            f"channel from the artifact.")
-
     def _triplet(block_name):
         trip = q[block_name]
         if trip is None:
@@ -3369,6 +3442,51 @@ def _serialize_radical_qssa_channel(pool: 'Polymer') -> Optional[Dict[str, Any]]
             "A": float(trip["A"]), "n": float(trip["n"]), "Ea": float(trip["Ea"]),
             "units": {"A": RADICAL_QSSA_SIDECAR_A_UNITS[block_name],
                       "Ea": "J/mol"},
+        }
+
+    # Weak-link allyl/U-state vocabulary (schema 2.2, milestone iv --
+    # replaces the milestone-i anti-silent-no-op refusal with the real
+    # serialization). validate_radical_qssa_unzip guarantees the group is
+    # all-or-nothing and that the legacy SUMMED 'termination' is absent from
+    # a weak-link config, so 'initiation_allyl' membership is the complete
+    # discriminator. The summed termination slot is emitted explicitly null
+    # (split triplets replace it); U0 is STATE, serialized as value + pinned
+    # units note, not as a rate triplet. The artifact carrying any of this
+    # is stamped schema 2.2 by build_polymer_moments_artifact, so an old
+    # consumer/loader fails loudly instead of laundering the channel.
+    if "initiation_allyl" in q:
+        return {
+            "enabled": True,
+            "basis": q["basis"],
+            "efficiency": float(q["efficiency"]),
+            "monomer_yield": float(q["monomer_yield"]),
+            "initiation": _triplet("initiation"),
+            "depropagation": _triplet("depropagation"),
+            "termination": None,
+            "transfer": _triplet("transfer"),
+            "initiation_allyl": _triplet("initiation_allyl"),
+            "termination_recombination":
+                _triplet("termination_recombination"),
+            "termination_disproportionation":
+                _triplet("termination_disproportionation"),
+            "unsaturated_tail_ends_initial": {
+                "value": float(q["unsaturated_tail_ends_initial"]),
+                "units": RADICAL_QSSA_SIDECAR_U0_UNITS,
+            },
+            "recipe": dict(RADICAL_QSSA_SIDECAR_RECIPE_WEAKLINK),
+            "provenance": {
+                "radical_balance": (
+                    "G_R = 2*f*ki*B + f*ki_allyl*u_active; loss = ktr*R + "
+                    "2*kt_total*R^2; Rss no-transfer = "
+                    "sqrt(G_R/(2*kt_total))"),
+                "moment_closure": "end_shrink_pool_mean/1",
+                "R_gas_J_per_mol_K": float(QSSA_R_GAS),
+                "concentration_basis": "mol/m^3 condensed volume",
+                "transfer_note": ("ktr is pseudo-first-order (s^-1); "
+                                  "bimolecular literature k_tr must be "
+                                  "premultiplied by substrate concentration "
+                                  "before entering this config"),
+            },
         }
 
     return {
@@ -3883,17 +4001,33 @@ def build_polymer_moments_artifact(pool_registry,
     # (pinned by test; old consumers keep loading legacy sidecars unchanged).
     qssa_present = any("radical_qssa_unzip" in (p.get("channels") or {})
                        for p in pools)
+    # Weak-link vocabulary is a strict superset stamp: the artifact-level
+    # schema/recipe stamps are governed by the STRONGEST vocabulary present
+    # (a mixed artifact is 2.2). 'initiation_allyl' membership is the
+    # complete discriminator (validate_radical_qssa_unzip pins the group
+    # all-or-nothing before serialization).
+    weaklink_present = any(
+        "initiation_allyl" in ((p.get("channels") or {})
+                               .get("radical_qssa_unzip") or {})
+        for p in pools)
+    schema_version = (
+        POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_WEAKLINK if weaklink_present
+        else (POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_QSSA if qssa_present
+              else POLYMER_POOLS_SIDECAR_SCHEMA_VERSION))
+    recipe_revision = (
+        POLYMER_RATE_RECIPE_REVISION_WEAKLINK if weaklink_present
+        else (POLYMER_RATE_RECIPE_REVISION_QSSA if qssa_present
+              else POLYMER_RATE_RECIPE_REVISION))
 
     conventions = {
-        # format_doc mirrors schema_version (same qssa_present fork below):
-        # /2.1 exactly when the QSSA schema bump applies, /2.0 otherwise so
-        # legacy artifacts stay byte-identical (golden-pinned by test). No
-        # loader parses this token (grepped rmgpy + TA) — human-facing only.
+        # format_doc mirrors schema_version (same vocabulary fork above):
+        # /2.2 when the weak-link vocabulary is present, /2.1 for QSSA-only,
+        # /2.0 otherwise so legacy artifacts stay byte-identical
+        # (golden-pinned by test). No loader parses this token (grepped
+        # rmgpy + TA) — human-facing only.
         "format_doc": ("docs/polymer_moments_format.md "
-                       f"(polymer_moments_format/"
-                       f"{POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_QSSA if qssa_present else POLYMER_POOLS_SIDECAR_SCHEMA_VERSION})"),
-        "recipe_revision": (POLYMER_RATE_RECIPE_REVISION_QSSA if qssa_present
-                            else POLYMER_RATE_RECIPE_REVISION),
+                       f"(polymer_moments_format/{schema_version})"),
+        "recipe_revision": recipe_revision,
         "moment_basis": "extensive mol, DP basis (mu1 = moles of repeat units)",
         "volumes": {
             "V_poly": "constant, consumer-supplied [m^3]",
@@ -3919,9 +4053,7 @@ def build_polymer_moments_artifact(pool_registry,
     }
 
     return {
-        "schema_version": (POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_QSSA
-                           if qssa_present
-                           else POLYMER_POOLS_SIDECAR_SCHEMA_VERSION),
+        "schema_version": schema_version,
         "generated_at": datetime.datetime.utcnow().isoformat(timespec="seconds") + "Z",
         "rmg_commit": rmg_commit if rmg_commit is not None else _get_rmg_commit(),
         "rmg_iteration": int(iteration),
