@@ -214,6 +214,42 @@ def _qssa_channel(**overrides):
     return ch
 
 
+def _exact_triplet(A):
+    """Arrhenius triplet with n=0, Ea=0 so k(T) == A EXACTLY (T**0.0 == 1.0,
+    exp(-0.0) == 1.0 bitwise): lets weak-link pins assert bitwise/analytic
+    equalities instead of tolerance soup."""
+    return dict(A=float(A), n=0.0, Ea=0.0)
+
+
+def _weaklink_channel(**overrides):
+    """A valid weak-link allyl/U-state channel (schema-2.2 vocabulary): the
+    four weak-link keys present, legacy summed 'termination' absent."""
+    ch = dict(
+        initiation=_qssa_triplet(A=1.0e15, Ea=3.0e5),
+        depropagation=_qssa_triplet(A=1.0e13, Ea=8.0e4),
+        initiation_allyl=_qssa_triplet(A=2.0e14, Ea=2.4e5),
+        termination_recombination=_qssa_triplet(A=6.0e7, Ea=8.0e3),
+        termination_disproportionation=_qssa_triplet(A=4.0e7, Ea=1.2e4),
+        unsaturated_tail_ends_initial=0.0,
+    )
+    ch.update(overrides)
+    return ch
+
+
+def _weaklink_exact_channel(ki_A=1.0e-3, kdp_A=1.0e2, kia_A=2.0e4,
+                            ktrec_A=5.0e7, ktdisp_A=5.0e7, u0=0.0):
+    """Weak-link channel built entirely from n=0/Ea=0 triplets so every
+    k(T) == A exactly (see _exact_triplet)."""
+    return dict(
+        initiation=_exact_triplet(ki_A),
+        depropagation=_exact_triplet(kdp_A),
+        initiation_allyl=_exact_triplet(kia_A),
+        termination_recombination=_exact_triplet(ktrec_A),
+        termination_disproportionation=_exact_triplet(ktdisp_A),
+        unsaturated_tail_ends_initial=float(u0),
+    )
+
+
 class TestHybridPolymerReactor:
     def test_phase_pure_gas_reaction_molar_balance(self):
         """
@@ -1299,14 +1335,12 @@ class TestHybridPolymerReactor:
         with pytest.raises(ValueError, match=pattern):
             rxn_system.initialize_model(core_species, [], [], [])
 
-    def test_initialize_model_weaklink_channel_raises_not_implemented(self):
-        """ANTI-SILENT-NO-OP GUARD (weak-link milestone i): the weak-link
-        allyl/U-state vocabulary (initiation_allyl, split terminations,
-        unsaturated_tail_ends_initial) is accepted as CONFIG, but no RHS
-        term reads it yet. The solver must refuse to initialize with an
-        explicit not-implemented error -- never run silently WITHOUT the
-        configured channel (a laundered no-op). A later milestone removes
-        this guard when the weak-link rate law lands."""
+    def test_initialize_model_weaklink_channel_initializes_cleanly(self):
+        """Milestones ii+iii REPLACE the milestone-i anti-silent-no-op guard:
+        a weak-link allyl/U-state channel (initiation_allyl, split
+        terminations, unsaturated_tail_ends_initial) now has real solver
+        support -- initialization must succeed and expose the flattened
+        weak-link state (the guard test this replaces pinned the refusal)."""
         channel = dict(
             initiation=_qssa_triplet(A=1.0e15, Ea=3.0e5),
             depropagation=_qssa_triplet(A=1.0e13, Ea=8.0e4),
@@ -1322,11 +1356,22 @@ class TestHybridPolymerReactor:
         )
         rxn_system, core_species = self._qssa_system(pool)
 
-        with pytest.raises(
-                ValueError,
-                match=r"poly.*weak-link allyl/U-state channel configured "
-                      r"but solver support is not implemented yet"):
-            rxn_system.initialize_model(core_species, [], [], [])
+        rxn_system.initialize_model(core_species, [], [], [])
+
+        rs = rxn_system
+        assert rs.qssa_enabled[0] == 1
+        assert rs.qssa_weaklink[0] == 1
+        assert rs.qssa_kia_A[0] == 2.0e14
+        assert rs.qssa_kia_n[0] == 0.0
+        assert rs.qssa_kia_Ea[0] == 2.4e5
+        assert rs.qssa_ktrec_A[0] == 6.0e7
+        assert rs.qssa_ktrec_Ea[0] == 8.0e3
+        assert rs.qssa_ktdisp_A[0] == 4.0e7
+        assert rs.qssa_ktdisp_Ea[0] == 1.2e4
+        assert rs.qssa_u0[0] == 0.02
+        # legacy summed-kt slots stay zero on a weak-link pool: the RHS must
+        # gate on qssa_weaklink, never on kt_A != 0.
+        assert rs.qssa_kt_A[0] == 0.0
 
     def test_initialize_model_rejects_weaklink_with_legacy_termination(self):
         """The solver is the last line of defense for the mutual-exclusion
@@ -1540,10 +1585,14 @@ class TestHybridPolymerReactor:
             radical_qssa_unzip=channel)
 
     @staticmethod
-    def _qssa_m2_system(pool, moments=(1.0, 5.0, 30.0), V_poly=1.0):
+    def _qssa_m2_system(pool, moments=(1.0, 5.0, 30.0), V_poly=1.0,
+                        explicit_moles=0.0):
         """Initialized HybridPolymerSystem for the M2 RHS fixtures: gas N2 at
         0, mu dummies at 1-3, condensed monomer M at 4, explicit DP=2 chain
-        P2 at 5. ``moments`` are MOLES of moments (mu_k = Mu_k / V_poly)."""
+        P2 at 5. ``moments`` are MOLES of moments (mu_k = Mu_k / V_poly);
+        ``explicit_moles`` seeds the P2 slot (a pool built with
+        explicit={2: 5} then carries explicit-species moment contributions
+        that the step-6 consistency pass subtracts from these totals)."""
         Inert = _spc("N#N", "N2")
         Mu0 = _spc("CO", "poly_mu0")
         Mu1 = _spc("C=O", "poly_mu1")
@@ -1557,7 +1606,7 @@ class TestHybridPolymerReactor:
             V_poly=V_poly, polymer_pools=[pool], mass_transfer=[],
             gas_species_mask=gas_species_mask, constant_gas_volume=False,
             initial_polymer_moments={"poly": tuple(moments)},
-            initial_explicit_species={"poly": {2: 0.0}},
+            initial_explicit_species={"poly": {2: explicit_moles}},
             termination=[],
         )
         rs.initialize_model(core_species, [], [], [])
@@ -1734,6 +1783,474 @@ class TestHybridPolymerReactor:
         assert dn_qssa[5] > 0.0    # explicit DP=2 boundary species fed
         assert dn_qssa[1] < 0.0    # mu0 drained by the handshake
         np.testing.assert_allclose(dn_qssa, dn_kz, rtol=1e-9, atol=0.0)
+
+    # ------------------------------------------------------------------
+    # weak-link allyl/U-state channel (milestones ii+iii: per-pool U state
+    # slot + allyl initiation RHS, nu=1, disproportionation-sourced U)
+    # ------------------------------------------------------------------
+
+    def test_legacy_state_layout_and_rhs_golden_frozen(self):
+        """REGRESSION PIN 1 (contractual): a legacy config (no weak-link
+        keys) keeps the EXACT pre-milestone state layout (neq == n_core, no
+        U slot) and the EXACT pre-milestone RHS derivatives. The golden
+        values below were captured from the pre-implementation build
+        (commit 7e1fa0671) on this fixed fixture: legacy _qssa_channel() +
+        k_scission=0.3, moments (1, 5, 30) mol, V_poly=1, T=800 K. Bitwise
+        equality via float.fromhex -- any drift in the legacy path fails
+        here."""
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_qssa_channel(), k_scission=0.3))
+        assert rs.neq == 6              # n_core exactly: NO U slot appended
+        assert len(rs.y0) == 6
+        assert rs.num_qssa_u == 0
+        assert rs.qssa_u_slot[0] == -1
+
+        dn = rs.residual(0.0, rs.y0.copy(), np.zeros(6))[0]
+        golden = [
+            0.0,                                     # gas inert
+            float.fromhex("0x1.3333333333333p+0"),   # dmu0 (k_scission)
+            float.fromhex("-0x1.015b879ec323fp+7"),  # dmu1 (QSSA drain)
+            float.fromhex("-0x1.26cd5ef901eedp+10"), # dmu2
+            float.fromhex("0x1.015b879ec323fp+7"),   # monomer emission
+            0.0,                                     # explicit P2 slot
+        ]
+        assert dn.shape == (6,)
+        for i, g in enumerate(golden):
+            assert dn[i] == g, (i, dn[i].hex() if dn[i] else dn[i], g)
+
+    def test_weaklink_state_layout_appends_u_slot(self):
+        """A weak-link pool gets EXACTLY ONE extra ODE slot, appended after
+        the core-species block, initialized to unsaturated_tail_ends_initial
+        [mol -- same amount basis as mu0]. Tolerance arrays follow neq."""
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_channel(
+                unsaturated_tail_ends_initial=0.5)))
+        assert rs.num_qssa_u == 1
+        assert rs.neq == 7
+        assert len(rs.y0) == 7
+        assert rs.qssa_u_slot[0] == 6          # first slot after n_core=6
+        assert rs.y0[6] == 0.5
+        assert len(rs.atol_array) == 7
+        assert len(rs.rtol_array) == 7
+
+    def test_weaklink_sensitivity_layout_not_supported(self):
+        """The DASPK sensitivity layout interleaves per-species blocks; a
+        trailing U slot does not fit it. Refuse loudly instead of silently
+        corrupting the sensitivity state vector."""
+        pool = self._qssa_m2_pool(_weaklink_channel())
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        M = _spc("C", "M")
+        P2 = _spc("CC", "P2")
+        core = [Inert, Mu0, Mu1, Mu2, M, P2]
+        mask = np.array([True] + [False] * 5, dtype=bool)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
+            V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask, constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            initial_explicit_species={"poly": {2: 0.0}}, termination=[])
+        with pytest.raises(ValueError, match=r"sensitivity"):
+            rs.initialize_model(core, [], [], [], sensitivity=True)
+
+    def test_weaklink_bridge_matches_legacy_at_u_zero(self):
+        """REGRESSION PIN 7 (bridge) + PIN 2a: a weak-link pool with
+        kt_rec(T) + kt_disp(T) == the legacy summed kt(T) EXACTLY (n=0/Ea=0
+        triplets, A_rec = A_disp = A_legacy/2, both exactly representable)
+        and U = 0 must reproduce the legacy pool's moment derivatives
+        BITWISE at t=0: same G_R (the allyl term contributes exactly 0 at
+        U=0), same R_ss, same drains, same emission. This proves the kt
+        split did not change the base algebra. The U slot itself grows
+        (disproportionation sources U) -- pinned separately."""
+        legacy = dict(initiation=_exact_triplet(1.0e-3),
+                      depropagation=_exact_triplet(1.0e2),
+                      termination=_exact_triplet(1.0e8))
+        weak = _weaklink_exact_channel(ki_A=1.0e-3, kdp_A=1.0e2,
+                                       kia_A=1.0e3, ktrec_A=5.0e7,
+                                       ktdisp_A=5.0e7, u0=0.0)
+        rs_leg = self._qssa_m2_system(self._qssa_m2_pool(legacy))
+        rs_weak = self._qssa_m2_system(self._qssa_m2_pool(weak))
+
+        dn_leg = rs_leg.residual(0.0, rs_leg.y0.copy(), np.zeros(6))[0]
+        dn_weak = rs_weak.residual(0.0, rs_weak.y0.copy(), np.zeros(7))[0]
+
+        assert dn_leg[2] < 0.0  # the fixture's channel is live
+        for i in range(6):
+            assert dn_weak[i] == dn_leg[i], i  # bitwise bridge
+        # PIN 2b/4a: kt_disp legally > 0 and R_ss > 0 -> U grows.
+        assert dn_weak[6] > 0.0
+        # ... by exactly the disproportionation event rate kt_disp*R_ss^2
+        # (halved-radical-disappearance convention: kt_disp*R^2 IS the
+        # event rate; 1 unsaturated end per event), amount basis *V_poly.
+        B = 4.0  # mu1 - mu0 = 5 - 1 [mol/m^3, V_poly = 1]
+        R_ss = math.sqrt(1.0e-3 * B / 1.0e8)  # sqrt(f*ki*B/kt_total), f=1
+        assert dn_weak[6] == pytest.approx(5.0e7 * R_ss * R_ss, rel=1e-12)
+
+    def test_weaklink_all_zero_state_is_inert(self):
+        """PIN 2b (exact construction): B = 0 (mu1 == mu0) AND U = 0 -> the
+        whole weak-link channel contributes exactly nothing: every residual
+        entry, including dU/dt, is bitwise 0. U stays exactly 0 when there
+        is no radical source (validator forbids A=0, so this zero-source
+        state is the exact pin; production requires R_ss > 0)."""
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel(u0=0.0)),
+            moments=(1.0, 1.0, 1.0))  # all-monomer: B = mu1 - mu0 = 0
+        dn = rs.residual(0.0, rs.y0.copy(), np.zeros(7))[0]
+        assert np.all(dn == 0.0)
+
+    def test_weaklink_allyl_nu_is_one(self):
+        """PIN 3: the allyl channel enters G_R with stoichiometry nu = 1
+        (ONE unzipping radical per weak-link fission; the allylic
+        co-fragment does not unzip): dG_R/du == f*ki_allyl EXACTLY, not
+        2*f*ki_allyl. Constructed on a B > 0 state with u varied BELOW both
+        B (the r36 active-site clamp u_active = min(u, B) stays inactive)
+        and 2*mu0 (capacity); the allyl contribution is isolated as
+        G_R(u) - G_R(0). G_R is recovered from the no-transfer law
+        r = y_m*kdp*sqrt(G_R/(2*kt)) => G_R = 2*kt*(r/(y_m*kdp))^2."""
+        ki, kia, kdp, kt = 1.0e-3, 2.0e4, 1.0e2, 1.0e8  # exact, f = y_m = 1
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel(
+                ki_A=ki, kia_A=kia, kdp_A=kdp,
+                ktrec_A=kt / 2.0, ktdisp_A=kt / 2.0)),
+            moments=(1.0, 5.0, 30.0))  # B = 4; capacity 2*mu0 = 2
+        u_slot = rs.qssa_u_slot[0]
+
+        def g_r_at(u_mol):
+            y = rs.y0.copy()
+            y[u_slot] = u_mol
+            dn = rs.residual(0.0, y, np.zeros(7))[0]
+            r = -dn[2]  # dmu1 = -r_mono, V_poly = 1
+            return 2.0 * kt * (r / kdp) ** 2
+
+        g0 = g_r_at(0.0)
+        assert g0 == pytest.approx(2.0 * ki * 4.0, rel=1e-10)  # chain term
+        u1, u2 = 0.02, 0.04  # << B = 4 and << capacity 2: clamp inactive
+        g1, g2 = g_r_at(u1), g_r_at(u2)
+        # levels: G_R(u) - G_R(0) == 1 * kia * u (u = U/V_poly, V_poly = 1)
+        assert g1 - g0 == pytest.approx(kia * u1, rel=1e-10)
+        assert g2 - g0 == pytest.approx(kia * u2, rel=1e-10)
+        # derivative: dG_R/du == f*ki_allyl exactly (nu = 1, never 2)
+        dg_du = (g2 - g1) / (u2 - u1)
+        assert dg_du == pytest.approx(kia, rel=1e-9)
+        assert abs(dg_du - 2.0 * kia) > 0.5 * kia  # nu = 2 is far away
+
+    def test_weaklink_u_clamped_negative_state(self):
+        """u enters rates as max(U, 0)/V_poly: a (solver-transient) negative
+        U state contributes exactly like U = 0 -- bitwise-identical residual
+        (chain initiation still live, allyl term zero, production throttle
+        at its U=0 value), no negative G_R, no NaN."""
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel()),
+            moments=(1.0, 5.0, 30.0))  # B = 4 > 0: the channel is live
+        u_slot = rs.qssa_u_slot[0]
+        y_neg = rs.y0.copy()
+        y_neg[u_slot] = -1.0e-3
+        dn_neg = rs.residual(0.0, y_neg, np.zeros(7))[0]
+        y_zero = rs.y0.copy()
+        y_zero[u_slot] = 0.0
+        dn_zero = rs.residual(0.0, y_zero, np.zeros(7))[0]
+        assert np.all(np.isfinite(dn_neg))
+        assert dn_zero[2] < 0.0  # live fixture, not vacuous
+        assert np.array_equal(dn_neg, dn_zero)
+
+    def test_weaklink_allyl_inert_when_no_backbone_bonds(self):
+        """r36 P1-2: the weak channel fissions a backbone bond ALLYLIC to
+        the unsaturated end -- with B = 0 there is nothing to fission and
+        nothing to depropagate. B = 0 AND U > 0 must be completely inert:
+        no G_R, no monomer drain (which could push mu1 < mu0 and defeat the
+        DP->1 self-termination floor), no U consumption, no U production."""
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel()),
+            moments=(1.0, 1.0, 1.0))  # all-monomer: B = 0
+        u_slot = rs.qssa_u_slot[0]
+        y = rs.y0.copy()
+        y[u_slot] = 0.5  # U > 0 but no backbone bonds to fission
+        dn = rs.residual(0.0, y, np.zeros(7))[0]
+        assert np.all(dn == 0.0)
+
+    def test_weaklink_active_site_clamp_u_above_b(self):
+        """r36 P1-2: rates use the ACTIVE u, u_active = min(max(U,0)/V_poly,
+        B): unsaturated ends beyond the remaining backbone-bond count have
+        no bond to fission. With u > B both the G_R term and the U sink
+        must saturate at B: the moment derivatives at U = 3.5 are BITWISE
+        those at U = B = 3 (fixture: moments (2, 5, 30) -> B = 3, capacity
+        2*mu0 = 4, so U in (3, 4) is above B yet below capacity -- the
+        clamp is exercised independently of the capacity throttle)."""
+        ki, kia, kdp = 1.0e-3, 2.0e4, 1.0e2
+        ktrec, ktdisp = 5.0e7, 5.0e7
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel(
+                ki_A=ki, kia_A=kia, kdp_A=kdp,
+                ktrec_A=ktrec, ktdisp_A=ktdisp)),
+            moments=(2.0, 5.0, 30.0))
+        u_slot = rs.qssa_u_slot[0]
+
+        def dn_at(u_mol):
+            y = rs.y0.copy()
+            y[u_slot] = u_mol
+            return rs.residual(0.0, y, np.zeros(7))[0]
+
+        dn_at_b = dn_at(3.0)      # u == B exactly
+        dn_above = dn_at(3.5)     # u > B, still below capacity 4
+        for i in range(6):        # clamped: same G_R -> bitwise moments
+            assert dn_above[i] == dn_at_b[i], i
+        # ... and the analytic dU at U = 3.5: sink uses u_active = B = 3,
+        # production throttled by 1 - U/(2*mu0) = 1 - 3.5/4:
+        G_R = 2.0 * ki * 3.0 + kia * 3.0
+        R_sq = G_R / (2.0 * (ktrec + ktdisp))
+        expected = ktdisp * R_sq * (1.0 - 3.5 / 4.0) - kia * 3.0
+        assert dn_above[6] == pytest.approx(expected, rel=1e-12)
+        # a u-not-clamped sink law would differ by kia*0.5:
+        assert abs(dn_above[6] - (ktdisp * R_sq * (1.0 - 3.5 / 4.0)
+                                  - kia * 3.5)) > 0.4 * kia
+
+    def test_weaklink_efficiency_symmetric_on_allyl_channel(self):
+        """r36 P1-1: f multiplies BOTH allyl terms. f is the escaped-
+        radical-pair efficiency: a caged recombination restores the allylic
+        bond, so U is NOT consumed by the caged fraction --
+        dU/dt sink = f*ki_allyl*u_active, never the bare ki_allyl*u_active
+        (which would destroy U without producing radicals for f < 1).
+        Production keeps NO f (R_ss already contains the escape efficiency;
+        production is a termination event)."""
+        f, kia = 0.5, 2.0e4
+        ktrec = ktdisp = 0.5e-2  # kt_total = 1e-2
+        channel = _weaklink_exact_channel(
+            ki_A=1.0e-9, kdp_A=1.0e-6, kia_A=kia,
+            ktrec_A=ktrec, ktdisp_A=ktdisp)
+        channel["efficiency"] = f
+        rs = self._qssa_m2_system(self._qssa_m2_pool(channel),
+                                  moments=(1.0, 5.0, 30.0))  # B=4, cap=2
+        u_slot = rs.qssa_u_slot[0]
+        u = 1.0  # < B (clamp inactive), = cap/2 (throttle = 0.5)
+        y = rs.y0.copy()
+        y[u_slot] = u
+        dn = rs.residual(0.0, y, np.zeros(7))[0]
+        G_R = 2.0 * f * 1.0e-9 * 4.0 + f * kia * u
+        R_sq = G_R / (2.0 * (ktrec + ktdisp))
+        expected = ktdisp * R_sq * (1.0 - u / 2.0) - f * kia * u
+        assert dn[u_slot] == pytest.approx(expected, rel=1e-12)
+        # the f-asymmetric law (bare kia*u sink) is far away:
+        assert abs(dn[u_slot] - (ktdisp * R_sq * (1.0 - u / 2.0)
+                                 - kia * u)) > 0.4 * kia * u
+
+    def test_weaklink_u_capacity_saturation(self):
+        """r36 P1-3: U(t) must never exceed the chain-end capacity 2*mu0
+        mid-integration. Production is throttled by the linear factor
+        max(0, 1 - U/(2*mu0)) -- exactly zero at capacity -- so in a
+        strong-kt_disp regime U saturates at 2*mu0 from below:
+        U(t) ~ cap*(1 - exp(-p0*t/cap)) with p0 = kt_disp*R_ss^2 (sink
+        negligible: kia tiny). The channel never touches mu0, so
+        cap = 2*mu0(0) = 2 exactly throughout."""
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel(
+                ki_A=1.0e-3, kdp_A=1.0e-3, kia_A=1.0e-9,
+                ktrec_A=50.0, ktdisp_A=50.0)),
+            moments=(1.0, 5.0, 30.0))
+        u_slot = rs.qssa_u_slot[0]
+        cap = 2.0  # 2 * mu0 amount
+        p0 = 50.0 * (1.0e-3 * 4.0 / 100.0)  # kt_disp * R_ss^2 = 2e-3 mol/s
+        u_traj = []
+        for t in (500.0, 1000.0, 2000.0, 5000.0):
+            rs.advance(t)
+            y = np.asarray(rs.y)
+            assert np.all(np.isfinite(y)), t
+            u_traj.append(float(y[u_slot]))
+            assert y[u_slot] <= cap + 1.0e-6, t   # NEVER above capacity
+        assert all(b > a for a, b in zip(u_traj, u_traj[1:]))
+        assert u_traj[-1] > 1.9        # genuinely saturating, not stalled
+        # hand check against the closed-form throttled growth (B drifts
+        # ~0.8% over 5000 s from the mu1 drain -> few-% tolerance):
+        expected = cap * (1.0 - math.exp(-p0 * 5000.0 / cap))
+        assert u_traj[-1] == pytest.approx(expected, rel=3e-2)
+
+    def test_weaklink_du_production_scales_with_ktdisp_not_kttotal(self):
+        """PIN 4: ONLY disproportionation sources U. Two channels with the
+        SAME kt_total (same R_ss, bitwise-same moment drains) but swapped
+        rec/disp splits (3:1 vs 1:3) must produce dU/dt in exactly the
+        disp-ratio 1:3 -- production scales with kt_disp, never kt_total
+        (recombination and random initiation create no U). Fixture
+        constraints keeping the ratio EXACT under the r36 law: U0 = 0, so
+        u_active = 0 (clamp trivially inactive) and the capacity throttle
+        1 - U/(2*mu0) is exactly 1.0 on both systems."""
+        rs_lo = self._qssa_m2_system(self._qssa_m2_pool(
+            _weaklink_exact_channel(kia_A=1.0e-9,
+                                    ktrec_A=3.0e7, ktdisp_A=1.0e7)))
+        rs_hi = self._qssa_m2_system(self._qssa_m2_pool(
+            _weaklink_exact_channel(kia_A=1.0e-9,
+                                    ktrec_A=1.0e7, ktdisp_A=3.0e7)))
+        dn_lo = rs_lo.residual(0.0, rs_lo.y0.copy(), np.zeros(7))[0]
+        dn_hi = rs_hi.residual(0.0, rs_hi.y0.copy(), np.zeros(7))[0]
+
+        # same kt_total -> bitwise-identical moment drains and emission
+        for i in range(6):
+            assert dn_hi[i] == dn_lo[i], i
+        assert dn_lo[6] > 0.0
+        assert dn_hi[6] == pytest.approx(3.0 * dn_lo[6], rel=1e-12)
+
+    def test_weaklink_u_consumption_is_allyl_fission(self):
+        """dU/dt sink = f*ki_allyl(T) * u_active * V_poly (r36: f-symmetric
+        with the G_R term, u_active clamped -- inactive here, u < B): pins
+        the sink law and its amount/concentration volume convention on a
+        sink-dominated exact balance (f = 1)."""
+        ki, kia = 1.0e-9, 2.0e4
+        ktrec = ktdisp = 0.5e-2  # kt_total = 1e-2
+        rs = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel(
+                ki_A=ki, kia_A=kia, kdp_A=1.0e-6,
+                ktrec_A=ktrec, ktdisp_A=ktdisp)),
+            moments=(1.0, 5.0, 30.0))  # B = 4, capacity 2*mu0 = 2
+        u_slot = rs.qssa_u_slot[0]
+        u = 1.0  # < B (clamp inactive), = cap/2 (throttle = 0.5)
+        y = rs.y0.copy()
+        y[u_slot] = u
+        dn = rs.residual(0.0, y, np.zeros(7))[0]
+        # exact balance (production NOT negligible with these constants):
+        G_R = 2.0 * ki * 4.0 + kia * u
+        R_ss_sq = G_R / (2.0 * 1.0e-2)
+        expected = ktdisp * R_ss_sq * (1.0 - u / 2.0) - kia * u
+        assert dn[u_slot] == pytest.approx(expected, rel=1e-12)
+        assert dn[u_slot] < 0.0  # sink-dominated regime: U shrinks
+
+    def test_weaklink_u_is_massless(self):
+        """PIN 5: U is MASSLESS bookkeeping -- it must never enter condensed
+        mass/TGA, pool mass, or Mn/Mw/PDI. Structural half: the U slot lives
+        OUTSIDE the core-species block (>= n_core), so every mass consumer
+        (which reads species amounts + mu slots, all < n_core) is blind to
+        it by construction; y0[:n_core] is bitwise identical between U0=0
+        and U0=2 systems. Dynamic half: at U huge, the channel still moves
+        mass ONLY mu1 -> monomer, exactly balanced (emission == drain), and
+        creates/destroys no chains (dmu0 == 0)."""
+        rs0 = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel(u0=0.0)))
+        rs2 = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_exact_channel(u0=2.0)))
+        n_core = rs0.num_core_species
+        assert rs0.qssa_u_slot[0] >= n_core
+        # identical species/moment state regardless of U0: any mass or
+        # Mn/Mw/PDI computed from it is identical.
+        assert np.array_equal(rs0.y0[:n_core], rs2.y0[:n_core])
+        # Mn/Mw read the mu slots at their unchanged indices:
+        assert rs0.y0[2] / rs0.y0[1] == rs2.y0[2] / rs2.y0[1]  # Mn ~ mu1/mu0
+        assert rs0.y0[3] / rs0.y0[2] == rs2.y0[3] / rs2.y0[2]  # Mw ~ mu2/mu1
+
+        y_huge = rs0.y0.copy()
+        y_huge[rs0.qssa_u_slot[0]] = 1.0e6  # mid-run state, not an IC
+        dn = rs0.residual(0.0, y_huge, np.zeros(7))[0]
+        assert np.all(np.isfinite(dn))
+        assert dn[2] < 0.0                # huge U drives a live drain...
+        assert dn[4] == -dn[2]            # ...mass-balanced exactly
+        assert dn[1] == 0.0               # no chains created or destroyed
+        assert dn[0] == 0.0               # gas untouched
+
+    def test_weaklink_u0_census_trap(self):
+        """PIN 6 (r37: TAIL-ONLY basis): at initialization U0 must fit the
+        TAIL-DISTRIBUTION chain-end capacity 2*mu0_tail (each chain carries
+        at most 2 tail ends; a mol vs mol/L typo must not become a hidden
+        initiation source). U is a tail-distribution state -- B and the RHS
+        capacity throttle count the tail moments only -- so explicit-species
+        ends must NOT back U0 (census and throttle share ONE basis).
+        U0 = 3*mu0_tail rejected naming both numbers; U0 == 2*mu0_tail
+        accepted; U0 = 0 with mu0 = 0 accepted."""
+        # tail mu0 amount = 1.0 mol in the fixture -> capacity = 2.0 mol
+        with pytest.raises(ValueError,
+                           match=r"poly.*unsaturated_tail_ends_initial=3"
+                                 r".*2\*mu0 = 2\b"):
+            self._qssa_m2_system(
+                self._qssa_m2_pool(_weaklink_channel(
+                    unsaturated_tail_ends_initial=3.0)))
+
+        rs_ok = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_channel(
+                unsaturated_tail_ends_initial=2.0)))
+        assert rs_ok.y0[rs_ok.qssa_u_slot[0]] == 2.0
+
+        rs_empty = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_channel(
+                unsaturated_tail_ends_initial=0.0)),
+            moments=(0.0, 0.0, 0.0))
+        assert rs_empty.y0[rs_empty.qssa_u_slot[0]] == 0.0
+
+    def test_weaklink_u0_census_is_tail_only_not_explicit_backed(self):
+        """r37: the census basis must MATCH the RHS throttle basis
+        (tail-only). Discriminating fixture: total mu0 = 2 mol of which
+        1 mol is explicit DP=2 chains (1 mol P2 at slot 5, subtracted by
+        the step-6 consistency pass) -> tail mu0 = 1, tail capacity = 2;
+        the OLD (tail+explicit) law would have allowed U0 up to 4.
+        U0 = 2.5 sits between the two bounds: it MUST be rejected (a U0
+        justified by explicit-species ends would otherwise evolve against
+        tail-only capacity -- mixed semantics). U0 = 2.0 (== tail capacity)
+        stays accepted in the same fixture."""
+        totals = (2.0, 7.0, 34.0)  # tail (1, 5, 30) + explicit (1, 2, 4)
+        with pytest.raises(ValueError,
+                           match=r"poly.*unsaturated_tail_ends_initial=2\.5"
+                                 r".*tail-distribution.*2\*mu0 = 2\b"):
+            self._qssa_m2_system(
+                self._qssa_m2_pool(_weaklink_channel(
+                    unsaturated_tail_ends_initial=2.5), explicit={2: 5}),
+                moments=totals, explicit_moles=1.0)
+
+        rs_ok = self._qssa_m2_system(
+            self._qssa_m2_pool(_weaklink_channel(
+                unsaturated_tail_ends_initial=2.0), explicit={2: 5}),
+            moments=totals, explicit_moles=1.0)
+        assert rs_ok.y0[rs_ok.qssa_u_slot[0]] == 2.0
+        assert rs_ok.y0[1] == 1.0  # step 6 left tail mu0 = 1 (basis proof)
+        assert rs_ok.y0[5] == 1.0  # the explicit chains are really there
+
+    def test_weaklink_two_pool_integration_smoke(self):
+        """PIN 8: a two-pool system (pool A legacy channel, pool B
+        weak-link) integrates without error; the legacy pool gets no U slot
+        (state layout [-1, n_core]); U(t) is strictly increasing in the
+        hand-checkable production-dominated regime (kia tiny, kt_disp
+        production ~ constant while the mu1 drain is negligible), matching
+        U(t) ~ kt_disp * R_ss^2 * t."""
+        Inert = _spc("N#N", "N2")
+        Amu0, Amu1, Amu2 = _spc("CO", "A_mu0"), _spc("C=O", "A_mu1"), _spc("C#N", "A_mu2")
+        MA = _spc("C", "MA")
+        Bmu0, Bmu1, Bmu2 = _spc("CCO", "B_mu0"), _spc("CC=O", "B_mu1"), _spc("CC#N", "B_mu2")
+        MB = _spc("CC", "MB")
+        core = [Inert, Amu0, Amu1, Amu2, MA, Bmu0, Bmu1, Bmu2, MB]
+        mask = np.array([True] + [False] * 8, dtype=bool)
+        pool_a = PolymerPoolConfig(
+            label="A", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4,
+            radical_qssa_unzip=dict(initiation=_exact_triplet(1.0e-3),
+                                    depropagation=_exact_triplet(1.0e2),
+                                    termination=_exact_triplet(1.0e8)))
+        pool_b = PolymerPoolConfig(
+            label="B", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(5, 6, 7), monomer_poly_index=8,
+            radical_qssa_unzip=_weaklink_exact_channel(
+                ki_A=1.0e-3, kdp_A=1.0e2, kia_A=1.0e-9,
+                ktrec_A=5.0e7, ktdisp_A=5.0e7, u0=0.0))
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
+            V_poly=1.0, polymer_pools=[pool_a, pool_b], mass_transfer=[],
+            gas_species_mask=mask, constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0),
+                                     "B": (1.0, 5.0, 30.0)},
+            termination=[])
+        rs.initialize_model(core, [], [], [])
+
+        assert rs.neq == 10
+        assert list(rs.qssa_u_slot) == [-1, 9]
+        assert rs.y0[9] == 0.0
+
+        u_traj, mu1_traj = [], []
+        for t in (1.0e-3, 1.0e-2, 1.0e-1, 0.5, 1.0):
+            rs.advance(t)
+            y = np.asarray(rs.y)
+            assert np.all(np.isfinite(y)), t
+            u_traj.append(float(y[9]))
+            mu1_traj.append(float(y[6]))
+        assert all(b > a for a, b in zip(u_traj, u_traj[1:]))       # U up
+        assert all(b < a for a, b in zip(mu1_traj, mu1_traj[1:]))   # mu1 down
+        # hand check: dU/dt ~ kt_disp*R_ss^2 with R_ss = sqrt(ki*B/kt_total)
+        R_ss = math.sqrt(1.0e-3 * 4.0 / 1.0e8)
+        assert u_traj[-1] == pytest.approx(5.0e7 * R_ss * R_ss * 1.0,
+                                           rel=1e-2)
 
     @staticmethod
     def _qssa_census_system(channel, with_ve):

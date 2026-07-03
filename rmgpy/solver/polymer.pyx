@@ -97,7 +97,8 @@ QSSA_R_GAS = 8.314
 QSSA_INF = float("inf")
 
 
-def _raise_degenerate_qssa_rates(pool_label, T, ki, kdp, kt, ktr=None):
+def _raise_degenerate_qssa_rates(pool_label, T, ki, kdp, kt, ktr=None,
+                                 kia=None, ktrec=None, ktdisp=None):
     """Cold path for the radical_qssa_unzip runtime degenerate-rate guard.
 
     M1 validates config FINITENESS, but Arrhenius EVALUATION at the solver
@@ -109,7 +110,10 @@ def _raise_degenerate_qssa_rates(pool_label, T, ki, kdp, kt, ktr=None):
     chain in the RHS has already found a degenerate value."""
     problems = []
     for name, val in (("initiation ki", ki), ("depropagation kdp", kdp),
-                      ("termination kt", kt), ("transfer ktr", ktr)):
+                      ("termination kt", kt), ("transfer ktr", ktr),
+                      ("initiation_allyl kia", kia),
+                      ("termination_recombination ktrec", ktrec),
+                      ("termination_disproportionation ktdisp", ktdisp)):
         if val is None:
             continue
         if not math.isfinite(val):
@@ -795,9 +799,56 @@ class HybridPolymerSystem(ReactionSystem):
         self._scratch_C_gas = None
         self._scratch_C_poly = None
         self._scratch_dn_dt = None
+        # Weak-link U-state (milestones ii+iii): number of appended per-pool
+        # U slots and their dU/dt scratch. 0/None until initiate_tolerances /
+        # validate_configuration lay the state out; legacy-only systems keep
+        # num_qssa_u == 0 and the pre-milestone neq == n_core layout.
+        self.num_qssa_u = 0
+        self._scratch_du_dt = None
 
         self.pool_mu0_indices = np.full(len(self.polymer_pools), -1, dtype=np.int32)
         self.pool_mu1_indices = np.full(len(polymer_pools), -1, dtype=np.int32)
+
+    def initiate_tolerances(self, atol=1e-16, rtol=1e-8, sensitivity=False,
+                            sens_atol=1e-6, sens_rtol=1e-4):
+        """Extend the base ODE layout with one U slot per weak-link pool
+        (milestones ii+iii).
+
+        Layout contract: y = [core species amounts (mol) | U slots (mol)],
+        one appended slot per pool whose radical_qssa_unzip channel carries
+        the weak-link vocabulary, in pool order. Pools with a legacy-only
+        channel (or none) get NO slot: the legacy state layout is UNCHANGED
+        (neq == n_core, pinned bitwise by the golden RHS test). Slot
+        positions are bound in _flatten_radical_qssa_state (qssa_u_slot);
+        the count here keys on the same "initiation_allyl" key presence, and
+        the flattening pass cross-checks the two counts.
+
+        The DASPK sensitivity layout interleaves per-species blocks
+        (neq = n_core*(n_rxn+n_core+1)); a trailing U slot does not fit it,
+        so sensitivity + weak-link is refused loudly rather than silently
+        corrupting the sensitivity state vector.
+        """
+        ReactionSystem.initiate_tolerances(self, atol, rtol, sensitivity,
+                                           sens_atol, sens_rtol)
+        n_weak = 0
+        for pool in self.polymer_pools:
+            q = pool.radical_qssa_unzip
+            if isinstance(q, dict) and "initiation_allyl" in q:
+                n_weak += 1
+        self.num_qssa_u = n_weak
+        if n_weak == 0:
+            return
+        if sensitivity:
+            raise ValueError(
+                f"{n_weak} weak-link allyl/U-state pool(s) configured with "
+                f"sensitivity analysis enabled: the DASPK sensitivity state "
+                f"layout has no room for the appended U slots. Disable "
+                f"sensitivity or remove the weak-link channel(s).")
+        self.neq += n_weak
+        self.atol_array = np.concatenate(
+            [self.atol_array, np.full(n_weak, atol, dtype=float)])
+        self.rtol_array = np.concatenate(
+            [self.rtol_array, np.full(n_weak, rtol, dtype=float)])
 
     def validate_configuration(self):
         """Strict validation of indices and masks."""
@@ -894,28 +945,10 @@ class HybridPolymerSystem(ReactionSystem):
                     pool.label, pool.radical_qssa_unzip)
                 object.__setattr__(pool, 'radical_qssa_unzip',
                                    copy.deepcopy(normalized_qssa))
-                # ANTI-SILENT-NO-OP GUARD (weak-link milestone i): the
-                # weak-link allyl/U-state vocabulary is valid CONFIG (the
-                # shared validator above accepts it) but NO term in this
-                # solver's residual reads it yet -- the weak-link rate law
-                # lands in a later milestone, which also removes this guard.
-                # Without it, an allyl-configured deck would initialize and
-                # run with the channel silently ignored (a laundered no-op;
-                # the flattening below only knows the legacy summed
-                # 'termination' layout).
-                if "initiation_allyl" in normalized_qssa:
-                    raise ValueError(
-                        f"Pool {pool.label}: weak-link allyl/U-state channel "
-                        f"configured but solver support is not implemented "
-                        f"yet. The radical_qssa_unzip config carries the "
-                        f"schema-2.2 weak-link vocabulary (initiation_allyl, "
-                        f"termination_recombination, "
-                        f"termination_disproportionation, "
-                        f"unsaturated_tail_ends_initial) and no term in the "
-                        f"residual reads it; refusing to initialize rather "
-                        f"than silently running WITHOUT the configured "
-                        f"channel. The weak-link rate law lands in a later "
-                        f"milestone.")
+                # (The milestone-i anti-silent-no-op guard that refused
+                # weak-link configs here was REMOVED by milestones ii+iii:
+                # the U-state slot and the allyl initiation RHS below now
+                # consume the vocabulary for real.)
                 if pool.monomer_poly_index is None:
                     raise ValueError(
                         f"Pool {pool.label}: radical_qssa_unzip is configured "
@@ -988,6 +1021,22 @@ class HybridPolymerSystem(ReactionSystem):
           in the M2 rate law); zeros when absent.
         Disabled rows keep zero Arrhenius slots: every M2 consumer must gate
         on qssa_enabled, never on A != 0.
+
+        Weak-link U-state extension (milestones ii+iii):
+        - qssa_weaklink[i] (int8): 1 iff the channel carries the weak-link
+          vocabulary. On weak-link rows the legacy summed qssa_kt_* slots
+          STAY ZERO (there is no summed 'termination' block); the RHS must
+          gate on qssa_weaklink, never on kt_A != 0.
+        - qssa_kia_A/n/Ea[i]: initiation_allyl triplet (A [s^-1]).
+        - qssa_ktrec_A/n/Ea[i] / qssa_ktdisp_A/n/Ea[i]: split termination
+          triplets (A [m^3 mol^-1 s^-1]); the RHS uses kt_total =
+          kt_rec(T) + kt_disp(T) wherever the legacy summed kt appeared,
+          and ONLY kt_disp sources dU/dt.
+        - qssa_u0[i]: unsaturated_tail_ends_initial [mol] (state IC, set
+          into y0 by set_initial_conditions after the census trap there).
+        - qssa_u_slot[i] (int32): absolute ODE index of the pool's U slot
+          (n_core + running weak-link ordinal, matching the count
+          initiate_tolerances used to extend neq), or -1.
         """
         n_pools = len(self.polymer_pools)
         self.qssa_enabled = np.zeros(n_pools, dtype=np.int8)
@@ -1006,7 +1055,20 @@ class HybridPolymerSystem(ReactionSystem):
         self.qssa_ktr_A = np.zeros(n_pools, dtype=float)
         self.qssa_ktr_n = np.zeros(n_pools, dtype=float)
         self.qssa_ktr_Ea = np.zeros(n_pools, dtype=float)
+        self.qssa_weaklink = np.zeros(n_pools, dtype=np.int8)
+        self.qssa_kia_A = np.zeros(n_pools, dtype=float)
+        self.qssa_kia_n = np.zeros(n_pools, dtype=float)
+        self.qssa_kia_Ea = np.zeros(n_pools, dtype=float)
+        self.qssa_ktrec_A = np.zeros(n_pools, dtype=float)
+        self.qssa_ktrec_n = np.zeros(n_pools, dtype=float)
+        self.qssa_ktrec_Ea = np.zeros(n_pools, dtype=float)
+        self.qssa_ktdisp_A = np.zeros(n_pools, dtype=float)
+        self.qssa_ktdisp_n = np.zeros(n_pools, dtype=float)
+        self.qssa_ktdisp_Ea = np.zeros(n_pools, dtype=float)
+        self.qssa_u0 = np.zeros(n_pools, dtype=float)
+        self.qssa_u_slot = np.full(n_pools, -1, dtype=np.int32)
 
+        u_count = 0
         for i, pool in enumerate(self.polymer_pools):
             q = pool.radical_qssa_unzip
             if q is None:
@@ -1018,9 +1080,27 @@ class HybridPolymerSystem(ReactionSystem):
             self.qssa_kdp_A[i] = q["depropagation"]["A"]
             self.qssa_kdp_n[i] = q["depropagation"]["n"]
             self.qssa_kdp_Ea[i] = q["depropagation"]["Ea"]
-            self.qssa_kt_A[i] = q["termination"]["A"]
-            self.qssa_kt_n[i] = q["termination"]["n"]
-            self.qssa_kt_Ea[i] = q["termination"]["Ea"]
+            if "initiation_allyl" in q:
+                # Weak-link channel: split termination blocks (validator
+                # invariant: no legacy summed 'termination' key exists on
+                # this channel, so qssa_kt_* stays 0 on this row).
+                self.qssa_weaklink[i] = 1
+                self.qssa_kia_A[i] = q["initiation_allyl"]["A"]
+                self.qssa_kia_n[i] = q["initiation_allyl"]["n"]
+                self.qssa_kia_Ea[i] = q["initiation_allyl"]["Ea"]
+                self.qssa_ktrec_A[i] = q["termination_recombination"]["A"]
+                self.qssa_ktrec_n[i] = q["termination_recombination"]["n"]
+                self.qssa_ktrec_Ea[i] = q["termination_recombination"]["Ea"]
+                self.qssa_ktdisp_A[i] = q["termination_disproportionation"]["A"]
+                self.qssa_ktdisp_n[i] = q["termination_disproportionation"]["n"]
+                self.qssa_ktdisp_Ea[i] = q["termination_disproportionation"]["Ea"]
+                self.qssa_u0[i] = q["unsaturated_tail_ends_initial"]
+                self.qssa_u_slot[i] = self.num_core_species + u_count
+                u_count += 1
+            else:
+                self.qssa_kt_A[i] = q["termination"]["A"]
+                self.qssa_kt_n[i] = q["termination"]["n"]
+                self.qssa_kt_Ea[i] = q["termination"]["Ea"]
             self.qssa_efficiency[i] = q["efficiency"]
             self.qssa_monomer_yield[i] = q["monomer_yield"]
             if q["transfer"] is not None:
@@ -1028,6 +1108,21 @@ class HybridPolymerSystem(ReactionSystem):
                 self.qssa_ktr_A[i] = q["transfer"]["A"]
                 self.qssa_ktr_n[i] = q["transfer"]["n"]
                 self.qssa_ktr_Ea[i] = q["transfer"]["Ea"]
+
+        # Layout cross-check: initiate_tolerances extended neq by ITS count
+        # of weak-link pools (key presence on the raw configs, before
+        # validation); the flattening above counted the normalized ones. A
+        # mismatch means the pool configs changed between the two passes --
+        # the U slots would alias core species. Fail loud, never integrate
+        # a misaligned state vector.
+        if u_count != self.num_qssa_u:
+            raise ValueError(
+                f"Weak-link U-state layout drift: initiate_tolerances "
+                f"allocated {self.num_qssa_u} U slot(s) but "
+                f"validate_configuration found {u_count} weak-link pool(s). "
+                f"The pool configs changed between ODE layout and "
+                f"validation; rebuild the reactor (initialize_model) instead "
+                f"of mutating pool configs in place.")
 
     def _reference_state_tripwire(self, core_species, core_reactions):
         """Build-time thermo reference-state tripwire (spec 2026-06-11).
@@ -1799,6 +1894,7 @@ class HybridPolymerSystem(ReactionSystem):
         self._scratch_C_gas = np.zeros(n_core, float)
         self._scratch_C_poly = np.zeros(n_core, float)
         self._scratch_dn_dt = np.zeros(n_core, float)
+        self._scratch_du_dt = np.zeros(self.num_qssa_u, float)
         self._scratch_proxy_activity = np.zeros(n_core, float)
 
         # RIDER R2 dynamic half (item 17, spec 2026-06-12 SS3(e)): the edge
@@ -2021,6 +2117,44 @@ class HybridPolymerSystem(ReactionSystem):
             self.y0[idx_mu0] = max(0.0, r0) * self.V_poly
             self.y0[idx_mu1] = max(0.0, r1) * self.V_poly
             self.y0[idx_mu2] = max(0.0, r2) * self.V_poly
+
+        # 7. Weak-link U-state slots (milestones ii+iii): U(0) =
+        # unsaturated_tail_ends_initial [mol -- SAME amount basis as mu0],
+        # behind the CENSUS TRAP (adversarial-review requirement): each
+        # chain carries at most 2 tail ends, so U0 must fit the TAIL-
+        # DISTRIBUTION chain-end capacity 2*mu0_tail (the tail mu0 written
+        # back in step 6). TAIL-ONLY basis (review r37): U is a tail-
+        # distribution state -- B and the RHS capacity throttle count the
+        # tail moments only -- so the census must use the SAME basis;
+        # explicit-species ends must not back a U0 that would then evolve
+        # against tail-only capacity (mixed semantics). A mol vs mol/L (or
+        # other per-volume) typo would otherwise become a silent hidden
+        # initiation source. U0 = 0 always passes (mu0 may be 0 for an
+        # empty pool).
+        u_slots = getattr(self, "qssa_u_slot", None)
+        if u_slots is not None:
+            for i, pool in enumerate(self.polymer_pools):
+                slot = int(u_slots[i])
+                if slot < 0:
+                    continue
+                u0 = float(self.qssa_u0[i])
+                mu0_amount = max(0.0, self.y0[pool.mu_indices[0]])
+                capacity = 2.0 * mu0_amount
+                if u0 > capacity:
+                    raise ValueError(
+                        f"Pool {pool.label}: radical_qssa_unzip "
+                        f"unsaturated_tail_ends_initial={u0:g} mol exceeds "
+                        f"the pool's tail-distribution chain-end capacity "
+                        f"2*mu0 = {capacity:g} mol (initial TAIL mu0 = "
+                        f"{mu0_amount:g} mol; each chain carries at most 2 "
+                        f"tail ends, and U is a TAIL-distribution state -- "
+                        f"explicit-species chain ends do not back U, "
+                        f"matching the RHS capacity throttle basis). U is "
+                        f"on the SAME amount basis as mu0 [mol] -- a mol "
+                        f"vs mol/L (or other per-volume) typo here would "
+                        f"silently become a hidden initiation source. Fix "
+                        f"the amount basis or the value.")
+                self.y0[slot] = u0
 
     def generate_rate_coefficients(self, core_reactions, edge_reactions):
         for rxn in itertools.chain(core_reactions, edge_reactions):
@@ -2393,6 +2527,9 @@ class HybridPolymerSystem(ReactionSystem):
             self._scratch_C_gas = np.zeros(n_core, float)
             self._scratch_C_poly = np.zeros(n_core, float)
             self._scratch_dn_dt = np.zeros(n_core, float)
+        if (self._scratch_du_dt is None
+                or len(self._scratch_du_dt) != self.num_qssa_u):
+            self._scratch_du_dt = np.zeros(self.num_qssa_u, float)
 
         # 2. Update Volumes
         if self.constant_gas_volume:
@@ -2412,8 +2549,10 @@ class HybridPolymerSystem(ReactionSystem):
 
         mask = self.gas_species_mask
         pmask = self.prospective_gas_mask  # gate-input only (rider R3)
-        C_gas[mask] = np.maximum(0.0, y[mask]) / V_gas
-        C_poly[~mask] = np.maximum(0.0, y[~mask]) / V_poly
+        # NOTE the [:n_core] slice: y may carry trailing weak-link U slots
+        # beyond the core-species block; the mask covers only the prefix.
+        C_gas[mask] = np.maximum(0.0, y[:n_core][mask]) / V_gas
+        C_poly[~mask] = np.maximum(0.0, y[:n_core][~mask]) / V_poly
 
         # Sync diagnostic concentrations
         self.core_species_concentrations[mask] = C_gas[mask]
@@ -2422,6 +2561,9 @@ class HybridPolymerSystem(ReactionSystem):
         # 4. Clear Accumulators
         dn_dt = self._scratch_dn_dt
         dn_dt[:] = 0.0
+
+        du_dt = self._scratch_du_dt
+        du_dt[:] = 0.0
 
         proxy_activity = self._scratch_proxy_activity
         proxy_activity[:] = 0.0
@@ -3076,7 +3218,122 @@ class HybridPolymerSystem(ReactionSystem):
             r_qssa = 0.0
             if self.qssa_enabled[pool_i]:
                 B_qssa = max(mu1 - mu0, 0.0)
-                if B_qssa > 0.0:
+                if self.qssa_weaklink[pool_i]:
+                    # Weak-link allyl/U-state channel (milestones ii+iii;
+                    # rate law per review r36). Extensions over the legacy
+                    # algebra (everything else identical -- the bridge pin
+                    # proves it):
+                    #   kt_total = kt_rec(T) + kt_disp(T)   replaces kt
+                    #   u_active = min(max(U,0)/V_poly, B)  [mol/m^3]
+                    #     ACTIVE-SITE CLAMP (r36 P1-2): the weak channel
+                    #     fissions a backbone bond ALLYLIC to the
+                    #     unsaturated end; ends beyond the remaining
+                    #     backbone-bond count have nothing to fission. At
+                    #     B = 0 the whole channel is INERT (gate below) --
+                    #     no monomer drain that could push mu1 < mu0 past
+                    #     the DP->1 self-termination floor, no U sink, no
+                    #     production.
+                    #   G_R = 2 f ki(T) B + 1 f ki_allyl(T) u_active
+                    #     (nu = 1: ONE unzipping radical per weak-link
+                    #     fission; the allylic co-fragment does not unzip)
+                    #   dU/dt = + kt_disp R_ss^2 * max(0, 1 - U/(2*mu0))
+                    #             * V_poly
+                    #           - f ki_allyl(T) u_active V_poly
+                    #     Production: halved radical-disappearance
+                    #     convention (kt_disp*R^2 IS the disproportionation
+                    #     EVENT rate, 1 unsaturated end per event) -- ONLY
+                    #     disproportionation sources U; recombination and
+                    #     random initiation do not. NO f on production
+                    #     (r36): R_ss already carries the escape
+                    #     efficiency; termination is not a caged event.
+                    #     CAPACITY THROTTLE (r36 P1-3): the linear factor
+                    #     max(0, 1 - U/(2*mu0_amount)) is EXACTLY zero at
+                    #     the chain-end capacity 2*mu0 (each chain has at
+                    #     most 2 tail ends), so U(t) cannot integrate past
+                    #     it -- the t=0 census guards the IC, this guards
+                    #     the trajectory. mu0 here is the TAIL mu0 amount
+                    #     [mol], the same distribution B is counted on; at
+                    #     mu0 = 0 the throttle is 0 (no ends, no
+                    #     capacity).
+                    #     Sink: f-SYMMETRIC with the G_R term (r36 P1-1) --
+                    #     f is the escaped-radical-pair efficiency, a
+                    #     caged recombination restores the allylic bond,
+                    #     so the caged fraction consumes no U.
+                    #   Volume convention matches the moment ODEs below
+                    #   exactly: concentration-rate * V_poly -> amount-rate
+                    #   (dn_dt[idx_mu1] += dmu1_dt * V_poly).
+                    u_amount = max(0.0, y[self.qssa_u_slot[pool_i]])
+                    if B_qssa > 0.0:
+                        u_active = u_amount / V_poly
+                        if u_active > B_qssa:
+                            u_active = B_qssa
+                        T_qssa = self.T.value_si
+                        RT_qssa = QSSA_R_GAS * T_qssa
+                        ki_qssa = (self.qssa_ki_A[pool_i]
+                                   * T_qssa ** self.qssa_ki_n[pool_i]
+                                   * math.exp(-self.qssa_ki_Ea[pool_i] / RT_qssa))
+                        kdp_qssa = (self.qssa_kdp_A[pool_i]
+                                    * T_qssa ** self.qssa_kdp_n[pool_i]
+                                    * math.exp(-self.qssa_kdp_Ea[pool_i] / RT_qssa))
+                        kia_qssa = (self.qssa_kia_A[pool_i]
+                                    * T_qssa ** self.qssa_kia_n[pool_i]
+                                    * math.exp(-self.qssa_kia_Ea[pool_i] / RT_qssa))
+                        ktrec_qssa = (self.qssa_ktrec_A[pool_i]
+                                      * T_qssa ** self.qssa_ktrec_n[pool_i]
+                                      * math.exp(-self.qssa_ktrec_Ea[pool_i] / RT_qssa))
+                        ktdisp_qssa = (self.qssa_ktdisp_A[pool_i]
+                                       * T_qssa ** self.qssa_ktdisp_n[pool_i]
+                                       * math.exp(-self.qssa_ktdisp_Ea[pool_i] / RT_qssa))
+                        kt_qssa = ktrec_qssa + ktdisp_qssa
+                        # Same degenerate-rate posture as the legacy branch:
+                        # kt_total underflowing to 0 divides R_ss by zero;
+                        # any inf/NaN evaluation poisons the residual.
+                        if not (ki_qssa < QSSA_INF and kdp_qssa < QSSA_INF
+                                and kia_qssa < QSSA_INF
+                                and ktrec_qssa < QSSA_INF
+                                and ktdisp_qssa < QSSA_INF
+                                and 0.0 < kt_qssa < QSSA_INF):
+                            _raise_degenerate_qssa_rates(
+                                pool.label, T_qssa, ki_qssa, kdp_qssa,
+                                kt_qssa, kia=kia_qssa, ktrec=ktrec_qssa,
+                                ktdisp=ktdisp_qssa)
+                        fkiB = self.qssa_efficiency[pool_i] * ki_qssa * B_qssa
+                        G_R_qssa = (2.0 * fkiB
+                                    + self.qssa_efficiency[pool_i]
+                                    * kia_qssa * u_active)
+                        if self.qssa_has_transfer[pool_i]:
+                            ktr_qssa = (self.qssa_ktr_A[pool_i]
+                                        * T_qssa ** self.qssa_ktr_n[pool_i]
+                                        * math.exp(-self.qssa_ktr_Ea[pool_i] / RT_qssa))
+                            if not ktr_qssa < QSSA_INF:
+                                _raise_degenerate_qssa_rates(
+                                    pool.label, T_qssa, ki_qssa, kdp_qssa,
+                                    kt_qssa, ktr_qssa, kia=kia_qssa,
+                                    ktrec=ktrec_qssa, ktdisp=ktdisp_qssa)
+                            R_ss = ((math.sqrt(ktr_qssa * ktr_qssa
+                                               + 8.0 * kt_qssa * G_R_qssa)
+                                     - ktr_qssa) / (4.0 * kt_qssa))
+                        else:
+                            R_ss = math.sqrt(G_R_qssa / (2.0 * kt_qssa))
+                        r_qssa = (self.qssa_monomer_yield[pool_i]
+                                  * kdp_qssa * R_ss)
+                        # dU/dt (amount basis, mol/s): capacity-throttled
+                        # production by the disproportionation branch ONLY
+                        # (no f -- R_ss carries the escape efficiency);
+                        # f-symmetric sink by allyl fission of the ACTIVE
+                        # unsaturated ends. See the law block above.
+                        cap_qssa = 2.0 * mu0_mol  # tail chain-end capacity
+                        if cap_qssa > 0.0:
+                            throttle_qssa = 1.0 - u_amount / cap_qssa
+                            if throttle_qssa < 0.0:
+                                throttle_qssa = 0.0
+                        else:
+                            throttle_qssa = 0.0
+                        du_dt[self.qssa_u_slot[pool_i] - n_core] += (
+                            ktdisp_qssa * R_ss * R_ss * throttle_qssa
+                            - self.qssa_efficiency[pool_i]
+                            * kia_qssa * u_active) * V_poly
+                elif B_qssa > 0.0:
                     T_qssa = self.T.value_si
                     RT_qssa = QSSA_R_GAS * T_qssa
                     ki_qssa = (self.qssa_ki_A[pool_i]
@@ -3236,6 +3493,11 @@ class HybridPolymerSystem(ReactionSystem):
                 for bi in bad[:10]:
                     print(f"[POLY-DBG]     idx {bi}: y={y[bi]:.4e} gas={bool(mask[bi])}")
 
+        if self.num_qssa_u > 0:
+            # Weak-link layout: y = [core species | U slots]; the residual
+            # vector follows the same layout. The legacy (num_qssa_u == 0)
+            # return below is bit-for-bit the pre-milestone expression.
+            return (np.concatenate((dn_dt, du_dt)) - dydt), 1
         return (dn_dt - dydt), 1
 
     def get_reaction_rates(self, y_in):
