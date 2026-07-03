@@ -396,13 +396,14 @@ class TestHybridPolymerReactor:
         # requires a monomer_poly_index (solver invariant: the drain is
         # unconditional, the emission is gated on the index) -- a SEPARATE
         # species from P2 so the handshake assertion dn_dt[P2] > 0 keeps
-        # proving handshake flux, not monomer emission.
+        # proving handshake flux, not monomer emission. GAS since the
+        # 2026-07-03 monomer-gas fix (release = devolatilization).
         M = _spc("C", "M")
 
         core_species = [Inert, P2, Mu0, Mu1, Mu2, M]
 
-        # gas mask: only Inert is gas
-        gas_species_mask = np.array([True, False, False, False, False, False],
+        # gas mask: Inert and the released-monomer target M are gas
+        gas_species_mask = np.array([True, False, False, False, False, True],
                                     dtype=bool)
 
         pool = PolymerPoolConfig(
@@ -589,12 +590,12 @@ class TestHybridPolymerReactor:
         Mu0 = _spc("CO", "poly_mu0")
         Mu1 = _spc("C=O", "poly_mu1")
         Mu2 = _spc("C#N", "poly_mu2")
-        # Condensed released-monomer target: k_unzip > 0 requires a
-        # monomer_poly_index (solver invariant). The emission k_unzip*mu0 is
-        # part of the finiteness surface under test.
+        # GAS released-monomer target (2026-07-03 fix): k_unzip > 0 requires
+        # a monomer_poly_index (solver invariant). The emission k_unzip*mu0
+        # is part of the finiteness surface under test.
         M = _spc("C", "M")
         core_species = [Inert, Mu0, Mu1, Mu2, M]
-        gas_species_mask = np.array([True, False, False, False, False],
+        gas_species_mask = np.array([True, False, False, False, True],
                                     dtype=bool)
 
         pool = PolymerPoolConfig(
@@ -1160,9 +1161,9 @@ class TestHybridPolymerReactor:
         Mu0 = _spc("CO", "poly_mu0")
         Mu1 = _spc("C=O", "poly_mu1")
         Mu2 = _spc("C#N", "poly_mu2")
-        M = _spc("C", "M")  # condensed released-monomer slot
+        M = _spc("C", "M")  # GAS released-monomer target (2026-07-03 fix)
         core_species = [Inert, Mu0, Mu1, Mu2, M]
-        gas_species_mask = np.array([True, False, False, False, False],
+        gas_species_mask = np.array([True, False, False, False, True],
                                     dtype=bool)
 
         pool = PolymerPoolConfig(
@@ -1196,9 +1197,9 @@ class TestHybridPolymerReactor:
         Mu0 = _spc("CO", "poly_mu0")
         Mu1 = _spc("C=O", "poly_mu1")
         Mu2 = _spc("C#N", "poly_mu2")
-        M = _spc("C", "M")  # condensed released-monomer slot
+        M = _spc("C", "M")  # GAS released-monomer target (2026-07-03 fix)
         core_species = [Inert, Mu0, Mu1, Mu2, M]
-        gas_species_mask = np.array([True, False, False, False, False],
+        gas_species_mask = np.array([True, False, False, False, True],
                                     dtype=bool)
 
         pool = PolymerPoolConfig(
@@ -1230,9 +1231,9 @@ class TestHybridPolymerReactor:
         Mu0 = _spc("CO", "poly_mu0")
         Mu1 = _spc("C=O", "poly_mu1")
         Mu2 = _spc("C#N", "poly_mu2")
-        M = _spc("C", "M")  # condensed released-monomer slot
+        M = _spc("C", "M")  # GAS released-monomer target (2026-07-03 fix)
         core_species = [Inert, Mu0, Mu1, Mu2, M]
-        gas_species_mask = np.array([True, False, False, False, False],
+        gas_species_mask = np.array([True, False, False, False, True],
                                     dtype=bool)
         rxn_system = HybridPolymerSystem(
             T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0}, V_poly=1.0,
@@ -1600,7 +1601,10 @@ class TestHybridPolymerReactor:
         M = _spc("C", "M")
         P2 = _spc("CC", "P2")
         core_species = [Inert, Mu0, Mu1, Mu2, M, P2]
-        gas_species_mask = np.array([True] + [False] * 5, dtype=bool)
+        # M (released-monomer target) is GAS since the 2026-07-03 monomer-gas
+        # fix; the mu dummies and explicit P2 stay condensed.
+        gas_species_mask = np.array(
+            [True, False, False, False, True, False], dtype=bool)
         rs = HybridPolymerSystem(
             T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
             V_poly=V_poly, polymer_pools=[pool], mass_transfer=[],
@@ -2295,7 +2299,9 @@ class TestHybridPolymerReactor:
         Bmu0, Bmu1, Bmu2 = _spc("CCO", "B_mu0"), _spc("CC=O", "B_mu1"), _spc("CC#N", "B_mu2")
         MB = _spc("CC", "MB")
         core = [Inert, Amu0, Amu1, Amu2, MA, Bmu0, Bmu1, Bmu2, MB]
-        mask = np.array([True] + [False] * 8, dtype=bool)
+        # MA/MB (released-monomer targets) are GAS (2026-07-03 fix)
+        mask = np.array([True, False, False, False, True,
+                         False, False, False, True], dtype=bool)
         pool_a = PolymerPoolConfig(
             label="A", xs=2, explicit_dp_to_species_index={},
             mu_indices=(1, 2, 3), monomer_poly_index=4,
@@ -2344,10 +2350,10 @@ class TestHybridPolymerReactor:
         Mu0 = _spc("CO", "poly_mu0")
         Mu1 = _spc("C=O", "poly_mu1")
         Mu2 = _spc("C#N", "poly_mu2")
-        M = _spc("C", "M")
+        M = _spc("C", "M")   # GAS released-monomer target (2026-07-03 fix)
         G = _spc("[CH3]", "G")
         core = [Proxy, Mu0, Mu1, Mu2, M, G]
-        mask = np.array([False] * 5 + [True], dtype=bool)
+        mask = np.array([False, False, False, False, True, True], dtype=bool)
         rxns = []
         if with_ve:
             rxn = Reaction(reactants=[Proxy], products=[Proxy, G], **_KIN)
@@ -2550,7 +2556,10 @@ class TestHybridPolymerReactor:
                                             existing_pool_labels={"PS"})
         assert len(cfgs) == 1 and cfgs[0].label == "PS_scission_tail"
 
-        mask = np.array([True] + [False] * 5, dtype=bool)
+        # styrene (the routed monomer_product at index 5) is GAS
+        # (2026-07-03 monomer-gas fix); the daughter pool members stay
+        # condensed.
+        mask = np.array([True, False, False, False, False, True], dtype=bool)
         rs = HybridPolymerSystem(
             T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
             V_poly=1.0, polymer_pools=[cfgs[0]], mass_transfer=[],
@@ -2623,7 +2632,9 @@ class TestHybridPolymerReactor:
         spc_map = {s: i for i, s in enumerate(core)}
         cfgs = derive_daughter_pool_configs(core, spc_map,
                                             existing_pool_labels={"PS"})
-        mask = np.array([True] + [False] * 5 + [True], dtype=bool)
+        # styrene (routed monomer_product at 5) GAS -- 2026-07-03 fix
+        mask = np.array([True, False, False, False, False, True, True],
+                        dtype=bool)
         rs = HybridPolymerSystem(
             T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
             V_poly=1.0, polymer_pools=[cfgs[0]], mass_transfer=[],
@@ -5149,14 +5160,15 @@ class TestCharRateMomentDummyExclusion:
         """The census B1 fixture (A→G gated edge + slow gas driver X→Y so
         char_rate>0) with the chain-end unzip armed on pool A. Unzip drains
         μ1/μ2 → the A_mu1/A_mu2 core positions carry large moment-coordinate
-        fluxes — and releases the monomer into R17 (condensed real species,
-        rate k_unzip·μ0 = 1.0·μ0), the solver-invariant-mandated emission
-        target. R17's flux is REAL chemistry and belongs IN char_rate (2a,
-        not 2b); the moment-coordinate fluxes do not."""
+        fluxes — and releases the monomer into R17 (GAS real species since
+        the 2026-07-03 monomer-gas fix, rate k_unzip·μ0 = 1.0·μ0), the
+        solver-invariant-mandated emission target. R17's flux is REAL
+        chemistry and belongs IN char_rate (2a, not 2b); the
+        moment-coordinate fluxes do not."""
         sp = _gate17_species()
         core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
                 sp["Y"], sp["R17"]]
-        mask = [False, False, False, False, True, True, False]
+        mask = [False, False, False, False, True, True, True]
         gated = Reaction(reactants=[sp["A"]], products=[sp["G"]], **_KIN)
         driver = Reaction(
             reactants=[sp["X"]], products=[sp["Y"]],
@@ -5177,12 +5189,13 @@ class TestCharRateMomentDummyExclusion:
         value:
             ungated G rate = kf·μ1/V_poly = 10.0
             char_rate (real only) = sqrt(emission² + 2·driver²) with
-              emission = k_unzip·μ0 = 1.0 (monomer release into R17 — REAL
-              chemistry, kept in the yardstick: 2a, not 2b)
+              emission = k_unzip·μ0·V_poly / V_gas (monomer release into the
+              GAS R17, 2026-07-03 monomer-gas fix — REAL chemistry, kept in
+              the yardstick: 2a, not 2b)
               driver = 1e-3 / V_gas per X/Y, V_gas = R·800/1e5.
         The moment-coordinate fluxes (dμ1 = −1, dμ2 = −9) stay excluded: were
-        they mixed back in, char_rate would inflate ~9× and the assertion's
-        2e-2 tolerance fails."""
+        they mixed back in, char_rate would shift well beyond the assertion's
+        2e-2 tolerance."""
         import re
         sp, core, driver, gated, rs = self._b1_with_unzip(k_unzip=1.0)
         with caplog.at_level(logging.WARNING):
@@ -5190,7 +5203,7 @@ class TestCharRateMomentDummyExclusion:
         lines = _census_lines(caplog)
         assert len(lines) == 1, lines
         v_gas = constants.R * 800.0 / 1.0e5
-        emission = 1.0 * 1.0  # k_unzip·μ0, V_poly=1 → [mol/m³/s]
+        emission = 1.0 * 1.0 / v_gas  # k_unzip·μ0·V_poly [mol/s] / V_gas
         char_real = np.sqrt(emission ** 2 + 2.0 * (1.0e-3 / v_gas) ** 2)
         expected_ratio = 10.0 / char_real
         ratio = float(re.search(r"ungated_ratio=([0-9.eE+-]+)",
@@ -6202,3 +6215,158 @@ class TestCondensedEdgeDaughterClassifierPlumb:
         # bound method of THIS phase's get_condensed_edge_daughter_bases
         assert clf.__self__ is phase
         assert clf.__func__.__name__ == "get_condensed_edge_daughter_bases"
+
+
+class TestMonomerProductGasEmission:
+    """Incident 2026-07-03 (PS regeneration refusal): the deck-declared
+    monomer_product (the unzip release target, e.g. styrene) is the
+    mechanism's principal GAS volatile, but the solver's pool-override pass
+    forced it CONDENSED -- so every reversible gas core reaction producing it
+    carried an ~11.17-decade unpaired reference-state term and the (correct)
+    tripwire refused the run. Ratified fix (design B-prime): the release
+    target is validated GAS and the unzip/QSSA release deposits into the gas
+    species amount basis; the condensed pool-moment drain is unchanged."""
+
+    @staticmethod
+    def _ps_incident_system():
+        """Mirror of the real PS incident: pool PS (proxy + mu dummies,
+        condensed) with monomer_poly_index -> styrene, PLUS a reversible
+        gas-phase core reaction producing styrene against gas partners
+        (1-phenylethyl <=> H + styrene). Styrene is deck-declared GAS."""
+        sp = {
+            "PS": _spc("CCCC", "PS"),
+            "PS_mu0": _spc("CO", "PS_mu0"), "PS_mu1": _spc("C=O", "PS_mu1"),
+            "PS_mu2": _spc("C#N", "PS_mu2"),
+            "R": _spc("C[CH]c1ccccc1", "R"),     # 1-phenylethyl, gas
+            "H": _spc("[H]", "H"),               # gas
+            "STY": _spc("C=Cc1ccccc1", "STY"),   # styrene: monomer_product AND gas volatile
+        }
+        for s in sp.values():
+            s.thermo = _trivial_nasa(_LIB_COMMENT)
+        core = [sp["PS"], sp["PS_mu0"], sp["PS_mu1"], sp["PS_mu2"],
+                sp["R"], sp["H"], sp["STY"]]
+        mask = np.array([False] * 4 + [True, True, True], dtype=bool)
+        pool = PolymerPoolConfig(
+            label="PS", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=6,
+            monomer_mw_g_mol=104.15, k_scission=0.0, k_unzip=0.1,
+            tail_kinetics=None)
+        return sp, core, mask, pool
+
+    def test_incident_pin_gas_monomer_product_with_reversible_gas_chemistry(self):
+        """THE incident pin (red-first). On pre-fix HEAD the pool override
+        flips styrene CONDENSED and initialize_model REFUSES via the
+        reference-state tripwire (U ~ 11 decades, one melt participant facing
+        all-gas partners). Post-fix the build must initialize cleanly with
+        styrene GAS and NOT pool-mapped (its gas chemistry runs on the gas
+        concentration basis)."""
+        sp, core, mask, pool = self._ps_incident_system()
+        rxn = Reaction(reactants=[sp["R"]], products=[sp["H"], sp["STY"]],
+                       **_REV_KIN)
+
+        # LIVENESS PIN: were styrene condensed, its independently recomputed
+        # unpaired reference-state magnitude would be far above the 3.0-decade
+        # refuse bound -- i.e. this fixture genuinely reproduces the incident
+        # shape, and pre-fix HEAD refuses it (verified red).
+        mw_sty = sp["STY"].molecule[0].get_molecular_weight()
+        u_if_condensed = (_sackur_tetrode_decades(mw_sty, 800.0)
+                          + math.log10(1.0e5 / (constants.R * 800.0 * 1.0)))
+        assert u_if_condensed > 3.0, (
+            "FIXTURE BROKEN, not a valid red: recomputed U for a condensed "
+            f"styrene ({u_if_condensed:.2f}) is not above the refuse bound")
+        assert rxn.reversible and mask[4] and mask[5] and mask[6]
+
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={sp["H"]: 0.0},
+            V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"PS": (1.0, 5.0, 30.0)}, termination=[],
+        )
+        # Pre-fix: raises "THERMO REFERENCE-STATE TRIPWIRE ... unpaired
+        # reference-state" here. Post-fix: completes.
+        rs.initialize_model(core, [rxn], [], [])
+
+        final_mask = np.asarray(rs.gas_species_mask, dtype=bool)
+        assert bool(final_mask[6]) is True, (
+            "monomer_product target was condensed by the pool override -- "
+            "the incident defect")
+        # Not pool-mapped: its concentration in gas reactions must be the
+        # real gas concentration, never the pooled 1.0 site convention.
+        assert int(np.asarray(rs.species_to_pool_indices)[6]) == -1
+        # The unzip release lands ON the gas styrene (amount basis, mol/s).
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn_dt[6] > 0.0
+
+    def test_unzip_emission_deposits_to_gas_and_conserves_mass(self):
+        """Mass conservation across the unzip release with the GAS deposit:
+        the condensed mu1 drain (repeat units) must equal the gas monomer
+        deposit mol-for-mol -- dn_dt[mu1] == -dn_dt[monomer], both equal to
+        k_unzip * Mu0 in magnitude. Guards against a regression to the
+        May-era silent mass leak (drained repeat units going nowhere) AND
+        against double-deposit (condensed + gas)."""
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        M = _spc("C", "M")  # GAS released-monomer target (post-fix contract)
+        core = [Inert, Mu0, Mu1, Mu2, M]
+        mask = np.array([True, False, False, False, True], dtype=bool)
+
+        k_unzip = 0.5
+        V_poly = 2.0
+        Mu0_moles = 1.0
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4,
+            k_scission=0.0, k_unzip=k_unzip, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
+            V_poly=V_poly, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (Mu0_moles, 5.0, 30.0)},
+            termination=[],
+        )
+        rs.initialize_model(core, [], [], [])
+
+        # The release target must STAY gas (red now: the override flips it).
+        assert bool(np.asarray(rs.gas_species_mask)[4]) is True
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        # moments dict is moles-of-moments: mu0_conc = Mu0/V_poly, and the
+        # emission r_events*V_poly == k_unzip*Mu0 [mol/s] lands on the gas M.
+        expected = k_unzip * Mu0_moles
+        assert np.isclose(dn_dt[4], expected, rtol=1e-12)
+        assert np.isclose(dn_dt[2], -expected, rtol=1e-12)  # mu1 drain
+        # repeat-unit moles conserved across the phase boundary:
+        assert abs(dn_dt[2] + dn_dt[4]) <= 1e-15 * max(1.0, expected)
+
+    def test_qssa_release_deposits_to_gas_and_conserves_mass(self):
+        """The radical_qssa_unzip release writes the SAME small_src path as
+        legacy unzip and must therefore also deposit to the GAS species
+        amount basis, one gas monomer mole per drained mu1 repeat unit."""
+        Inert = _spc("N#N", "N2")
+        Mu0 = _spc("CO", "poly_mu0")
+        Mu1 = _spc("C=O", "poly_mu1")
+        Mu2 = _spc("C#N", "poly_mu2")
+        M = _spc("C", "M")  # GAS released-monomer target (post-fix contract)
+        core = [Inert, Mu0, Mu1, Mu2, M]
+        mask = np.array([True, False, False, False, True], dtype=bool)
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=4, k_unzip=0.0,
+            radical_qssa_unzip=_qssa_channel(),
+        )
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={Inert: 1.0},
+            V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            termination=[],
+        )
+        rs.initialize_model(core, [], [], [])
+
+        assert bool(np.asarray(rs.gas_species_mask)[4]) is True
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn_dt[4] > 0.0                       # release flows to gas M
+        assert np.isclose(dn_dt[2], -dn_dt[4], rtol=1e-12)  # mu1 drain pairs it

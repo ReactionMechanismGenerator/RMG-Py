@@ -441,9 +441,11 @@ def polymer(label: str,
                 break
 
     # 4b. Register the released-monomer product species (e.g. styrene) so the
-    #     solver's unzip source term can deposit real, reactive monomer into the
-    #     polymer melt phase. It is a normal reactive species; the solver flags
-    #     its core index as polymer-phase via the pool's monomer_poly_index.
+    #     solver's unzip source term can deposit real, reactive monomer into
+    #     the GAS phase (incident 2026-07-03, design B-prime: unzip release at
+    #     pyrolysis conditions is direct devolatilization). It is a normal
+    #     reactive GAS species; the pool's monomer_poly_index only routes the
+    #     emission -- the solver validates that the index is classified gas.
     poly_obj.monomer_product_species = None
     if monomer_product is not None:
         if isinstance(monomer_product, str):

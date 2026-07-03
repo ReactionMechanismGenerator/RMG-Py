@@ -37,7 +37,8 @@ the per-block `units` pins); the pinned values live in `rmgpy/polymer.py`
 (`RADICAL_QSSA_SIDECAR_RECIPE`) and are duplicated independently by the
 reference loader (`rmgpy/tools/polymer_moments_runner.py`,
 `_QSSA_PINNED_RECIPE`). The QSSA rate law is new channel algebra, so a QSSA
-artifact also carries `recipe_revision = "2026-07-02"` (§8).
+artifact also carries a QSSA recipe revision (`"2026-07-02"`, superseded by
+`"2026-07-03-qssa-monomer-gas"` — see the monomer-gas revision note below; §8).
 
 **Schema 2.2** = 2.1 + the weak-link allyl/U-state sub-vocabulary INSIDE the
 `channels.radical_qssa_unzip` block (§10). The emitter stamps `"2.2"` exactly
@@ -48,11 +49,26 @@ mixed artifact (legacy + QSSA + weak-link pools) stamps `"2.2"`: the
 artifact-level stamp is governed by the STRONGEST vocabulary present, so a
 2.1-only consumer rejects the WHOLE artifact rather than silently integrating
 the weak-link pool without its channel. A weak-link artifact carries
-`recipe_revision = "2026-07-03-weaklink-u"` (§8). Version acceptance is
+`recipe_revision = "2026-07-03-weaklink-u"` (superseded by
+`"2026-07-03-weaklink-u-monomer-gas"` — see the monomer-gas revision note
+below; §8). Version acceptance is
 STRICT-MINOR from 2.2 on: the reference loader accepts `2.0`/`2.1`/`2.2` and
 rejects `2.3`+ (§10, the ratified policy change from the pre-2.2
 minor-permissive rule — these are physical-ODE artifacts, so unknown
 vocabulary is never ignorable; see the versioning-policy paragraph above).
+
+**Recipe revision 2026-07-03-monomer-gas** (incident 2026-07-03, PS
+regeneration refusal; design "B-prime"): the `monomer_routing` release
+target is now a **GAS-phase** species. It is no longer listed in
+`pools[].phase_species` or `conventions.condensed_species`; the unzip/QSSA
+release deposits into the gas amount basis (§2 `monomer_routing` row, §5
+`unzip/1`, §9). This is a semantics change, NOT a shape change, so
+`schema_version` is untouched; `recipe_revision` is bumped instead
+(`2026-06-10` → `2026-07-03-monomer-gas`, `2026-07-02` →
+`2026-07-03-qssa-monomer-gas`, `2026-07-03-weaklink-u` →
+`2026-07-03-weaklink-u-monomer-gas`) so consumers implementing the old
+condensed-monomer semantics hard-fail instead of silently mis-phasing the
+released volatile (§8 consumer guidance).
 
 ## 1. Envelope
 
@@ -85,9 +101,9 @@ solver state-vector indices from the generating run).
 | `mn_g_mol`, `mw_g_mol` | float \| null | number-/weight-average MW at generation time |
 | `initial_mass_g` | float \| null | as configured (grams) |
 | `channels` | `{"scission": {A,n,Ea,units}, "unzip": {...}}` | Arrhenius-capable; today RMG emits `A=k, n=0, Ea=0`, `units = {"A": "s^-1", "Ea": "J/mol"}`. Channel equations: §5 (versioned `scission/1`, `unzip/1`) |
-| `phase_species` | [labels] | the pool's condensed-phase species by chem.yaml name (proxy variants, µ-dummies, routed monomer). No more `<label>_muN` name-guessing |
-| `bookkeeping_species` | [labels] | the **bookkeeping** subset of `phase_species`, in the same relative order: the pool's canonical proxy (concentration pinned to 1.0 by the site-scaling rule, §4 step 3) and the three µ-dummies (carry ~0 mol by convention; they exist to host the moments). The complement within `phase_species` is **real condensed** species carrying real moles (explicit-DP chains, dissolved/melt monomer via `monomer_routing`). This completes the `phase_species` promise above: consumers never name-guess `<label>_muN` (or the proxy) to split bookkeeping from real inventory. Always present (empty list iff nothing bookkeeping was collected); invariant `set(bookkeeping_species) ⊆ set(phase_species)`. **Additive** key — consumers must tolerate its absence in artifacts written before this revision |
-| `monomer_routing` | label \| null | chem.yaml species receiving the unzip monomer flux. It is a **condensed-phase** species (it reaches the gas only via mass transfer). `null` ⇒ unzip µ-flux applies but no monomer species is credited |
+| `phase_species` | [labels] | the pool's condensed-phase species by chem.yaml name (proxy variants, µ-dummies; explicit-DP chains). No more `<label>_muN` name-guessing. **Revision 2026-07-03-monomer-gas: the routed monomer is NOT listed here** (it is a gas-phase species; see `monomer_routing` below). Pre-revision artifacts listed it |
+| `bookkeeping_species` | [labels] | the **bookkeeping** subset of `phase_species`, in the same relative order: the pool's canonical proxy (concentration pinned to 1.0 by the site-scaling rule, §4 step 3) and the three µ-dummies (carry ~0 mol by convention; they exist to host the moments). The complement within `phase_species` is **real condensed** species carrying real moles (explicit-DP chains). This completes the `phase_species` promise above: consumers never name-guess `<label>_muN` (or the proxy) to split bookkeeping from real inventory. Always present (empty list iff nothing bookkeeping was collected); invariant `set(bookkeeping_species) ⊆ set(phase_species)`. **Additive** key — consumers must tolerate its absence in artifacts written before this revision |
+| `monomer_routing` | label \| null | chem.yaml species receiving the unzip/QSSA released-monomer flux. **Revision 2026-07-03-monomer-gas (incident 2026-07-03): this is a GAS-phase species** — release is direct devolatilization into the gas amount basis (`dn(monomer_routing)/dt += r·V_poly` [mol/s]; the species contributes to `V_gas`/headspace and is NOT in `phase_species` or `conventions.condensed_species`). Under the superseded pre-revision text it was declared condensed ("reaches the gas only via mass transfer"); that classification conflated the release target with the deck's principal gas volatile and is exactly what the reference-state tripwire refuses — consumers reading pre-revision artifacts (recipe_revision `2026-06-10`/`2026-07-02`/`2026-07-03-weaklink-u`) must keep the old condensed semantics for those artifacts only. `null` ⇒ unzip µ-flux applies but no monomer species is credited |
 | `mu3_closure` | `"log_lagrange/1"` | §6 |
 
 A pool listed here is **solver-configured** iff its `label` appears in
@@ -298,7 +314,9 @@ Intensive µ; rates volumetric [mol/m³/s], multiplied by `V_poly` into mol/s.
   `dµ2/dt += k_s·(µ1 − µ3)/3` only when µ3 (§6) is finite.
 - `unzip/1`: `r = k_u·µ0`; `dµ1/dt −= r`; `dµ2/dt −= k_u·(2µ1 − µ0)`;
   if `monomer_routing != null`: `dn(monomer_routing)/dt += r·V_poly`
-  (condensed phase). µ0 unchanged.
+  (GAS phase since revision 2026-07-03-monomer-gas — the deposit law is
+  unchanged mol-for-mol, but the credited species is a gas volatile; under
+  pre-revision recipe_revision values it was condensed). µ0 unchanged.
 
 The oracle's explicit-oligomer "handshake" (`polymer.pyx:1342-1380`) is NOT
 part of the artifact: run-path pools carry no explicit oligomer map, so it is
@@ -328,8 +346,12 @@ and `condensed_species` (chem.yaml labels with phase = condensed; everything
 else is gas). Consumers MUST use these lists, not name heuristics.
 
 `conventions.recipe_revision` (string, date token; current values
-`"2026-06-10"` for artifacts without any `radical_qssa_unzip` channel and
-`"2026-07-02"` for artifacts carrying one) marks the revision of the RATE
+`"2026-07-03-monomer-gas"` for artifacts without any `radical_qssa_unzip`
+channel, `"2026-07-03-qssa-monomer-gas"` for artifacts carrying one, and
+`"2026-07-03-weaklink-u-monomer-gas"` for weak-link artifacts — all three
+superseding, respectively, the pre-monomer-gas values `"2026-06-10"`,
+`"2026-07-02"` and `"2026-07-03-weaklink-u"`; see the
+2026-07-03-monomer-gas revision note in §2) marks the revision of the RATE
 RECIPE the emitting RMG implements. It bumps (gets a new date) **only** when rate semantics change —
 site scaling, the chip exhaustion throttle, the kb/Keq recipe, or channel /
 flux-archetype algebra (§4/§5) — and is independent of `schema_version`,
@@ -372,7 +394,9 @@ reconciliation item (item 19). The refusal census is the priority signal for ite
 
 Over the discrete-reaction subset only (no channels active):
 `Σ_pools µ1 + Σ_chip_species a_i·n_i` is constant.
-With unzip active, add `+ n(monomer_routing)` per routed pool. Random
+With unzip active, add `+ n(monomer_routing)` per routed pool (since
+revision 2026-07-03-monomer-gas that inventory term is GAS-phase moles; the
+invariant's numerical form is unchanged). Random
 scission conserves `Σ µ1` exactly. Mass transfer conserves total moles of the
 transferred species pair.
 
@@ -488,8 +512,9 @@ The algebra they pin (transcribed from the implemented RHS):
   validator pins the group all-or-nothing before serialization), else
   `"2.1"` iff any QSSA block, else `"2.0"`. `conventions.format_doc` mirrors
   the stamp (`polymer_moments_format/2.2`) and
-  `conventions.recipe_revision = "2026-07-03-weaklink-u"` (the weak-link
-  law is new rate algebra). No weak-link anywhere ⇒ the 2.1/2.0 artifacts
+  `conventions.recipe_revision = "2026-07-03-weaklink-u-monomer-gas"` (the
+  weak-link law is new rate algebra; the `-monomer-gas` suffix carries the
+  2026-07-03 gas-monomer routing revision, see the header note). No weak-link anywhere ⇒ the 2.1/2.0 artifacts
   stay byte-identical to the pre-2.2 emitter.
 - Mixed artifacts stamp `"2.2"` while the legacy pools' channel blocks
   serialize byte-identically to their 2.1 form; a 2.1-only consumer

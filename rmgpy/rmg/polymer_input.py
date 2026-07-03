@@ -961,8 +961,10 @@ class PolymerPool(object):
         self.k_scission = k_scission
         self.k_unzip = k_unzip
         self.proxy_species = proxy_species
-        # Real reactive species (e.g. styrene) that chain-unzip releases into the
-        # melt. Distinct from `monomer` (the repeat-unit Molecule used for mass).
+        # Real reactive GAS species (e.g. styrene) that chain-unzip releases
+        # into the gas phase (incident 2026-07-03: release = direct
+        # devolatilization). Distinct from `monomer` (the repeat-unit
+        # Molecule used for mass).
         self.monomer_product = monomer_product
         self.radical_qssa_unzip = radical_qssa_unzip
 

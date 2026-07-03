@@ -879,8 +879,17 @@ class HybridPolymerSystem(ReactionSystem):
             if pool.monomer_poly_index is not None:
                 if not (0 <= pool.monomer_poly_index < n_core):
                     raise ValueError(f"Pool {pool.label} monomer index out of range.")
-                if self.gas_species_mask[pool.monomer_poly_index]:
-                    raise ValueError(f"Pool {pool.label} monomer index masked as GAS.")
+                # INVERTED contract (incident 2026-07-03, design B-prime): the
+                # released-monomer target is the deck's gas volatile and the
+                # unzip/QSSA release deposits into the GAS amount basis. A
+                # condensed-masked target would re-create the reference-state
+                # conflation the tripwire refuses (one Species carrying two
+                # phase residences).
+                if not self.gas_species_mask[pool.monomer_poly_index]:
+                    raise ValueError(
+                        f"Pool {pool.label} monomer index masked as CONDENSED. "
+                        f"The unzip/QSSA release target (monomer_product) is "
+                        f"emitted to the GAS phase; it must be classified gas.")
 
             # Unzip-channel invariants. This is the LAST line of defense: the
             # deck helper (rmg/input.py), PolymerPool.to_config
@@ -1448,11 +1457,15 @@ class HybridPolymerSystem(ReactionSystem):
                         self.species_to_pool_indices[idx] = pool_i
                     mask_arr[idx] = False
 
-            # map monomer-in-poly if used
-            if pool.monomer_poly_index is not None and 0 <= pool.monomer_poly_index < n_core:
-                if record_indices:
-                    self.species_to_pool_indices[pool.monomer_poly_index] = pool_i
-                mask_arr[pool.monomer_poly_index] = False
+            # monomer_poly_index (the unzip/QSSA release target) is
+            # deliberately NOT mapped or condensed here (incident 2026-07-03,
+            # design B-prime): the release target is the mechanism's gas
+            # volatile (e.g. styrene for PS), and force-condensing it made
+            # every reversible gas core reaction producing it carry an
+            # ~11-decade unpaired reference-state term (correctly refused by
+            # the tripwire). The release deposits into the GAS amount basis
+            # (small_src -> dn_dt, mol/s); validate_configuration now REQUIRES
+            # the monomer index to be masked GAS.
 
             if record_indices and self.pool_mu1_indices[pool_i] == -1:
                 # Fallback: Try to use the config index if label lookup failed
@@ -3184,6 +3197,12 @@ class HybridPolymerSystem(ReactionSystem):
                     dmu1_dt -= r_events
                     dmu2_dt -= pool.k_unzip * (2.0 * mu1 - mu0)
                     if pool.monomer_poly_index is not None:
+                        # Released monomer is emitted to the GAS species
+                        # amount basis (incident 2026-07-03, design B-prime):
+                        # small_src [mol/(m^3_poly s)] lands as
+                        # dn_dt += r*V_poly [mol/s] on the gas-masked
+                        # monomer_poly_index. Mass conservation: one gas
+                        # monomer mole per drained mu1 repeat unit.
                         small_src[pool.monomer_poly_index] = r_events
 
             # radical_qssa_unzip channel (M2 rate law). Reads ONLY the
@@ -3388,7 +3407,9 @@ class HybridPolymerSystem(ReactionSystem):
                         dmu2_dt -= r_qssa * qssa_mu2_dec
                     # monomer_poly_index is non-None whenever enabled (M1
                     # invariant); emission flows through the SAME small_src
-                    # -> dn_dt * V_poly path as the k_unzip channel.
+                    # -> dn_dt * V_poly path as the k_unzip channel, i.e.
+                    # to the GAS species amount basis (incident 2026-07-03,
+                    # design B-prime).
                     small_src[pool.monomer_poly_index] = (
                         small_src.get(pool.monomer_poly_index, 0.0) + r_qssa)
 

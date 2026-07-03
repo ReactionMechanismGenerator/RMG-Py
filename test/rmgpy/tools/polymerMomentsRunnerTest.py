@@ -115,7 +115,11 @@ def qssa_deck(tmp_path):
                    radical_qssa_unzip=dict(QSSA_RAW_CFG))
     artifact = build_polymer_moments_artifact(
         [pool], core_species=core, core_reactions=[],
-        configured_pool_labels=["PS"], condensed_species=mus + [sty],
+        configured_pool_labels=["PS"],
+        # styrene(2) (the monomer_routing target) is GAS since recipe
+        # revision 2026-07-03-monomer-gas -- only the mu dummies are
+        # condensed.
+        condensed_species=mus,
         monomer_routing_by_pool={"PS": "styrene(2)"},
         cantera_index_map=index_map)
     art_path = os.path.join(str(tmp_path), "polymer_pools.json")
@@ -464,7 +468,11 @@ def _weaklink_deck(tmp_path, u0=None):
                    radical_qssa_unzip=cfg)
     artifact = build_polymer_moments_artifact(
         [pool], core_species=core, core_reactions=[],
-        configured_pool_labels=["PS"], condensed_species=mus + [sty],
+        configured_pool_labels=["PS"],
+        # styrene(2) (the monomer_routing target) is GAS since recipe
+        # revision 2026-07-03-monomer-gas -- only the mu dummies are
+        # condensed.
+        condensed_species=mus,
         monomer_routing_by_pool={"PS": "styrene(2)"},
         cantera_index_map=index_map)
     art_path = os.path.join(str(tmp_path), "polymer_pools.json")
@@ -491,7 +499,7 @@ class TestWeakLinkArtifactLoader:
         assert artifact["conventions"]["format_doc"] == (
             "docs/polymer_moments_format.md (polymer_moments_format/2.2)")
         assert artifact["conventions"]["recipe_revision"] == \
-            "2026-07-03-weaklink-u"
+            "2026-07-03-weaklink-u-monomer-gas"
         rs, core, _ = _build_qssa(weaklink_deck, artifact)
         assert rs.qssa_enabled[0] == 1
         assert rs.qssa_weaklink[0] == 1
@@ -595,8 +603,12 @@ class TestSchema21FixtureRegression:
                            "(polymer_moments_format/2.1)"),
             "recipe_revision": "2026-07-02",
             "configured_pools": ["PS"],
-            "condensed_species": ["PS_mu0", "PS_mu1", "PS_mu2",
-                                  "styrene(2)"],
+            # Re-frozen at the 2026-07-03-monomer-gas revision: the routed
+            # monomer styrene(2) is GAS (the solver oracle now validates the
+            # routing target gas). The kdpswap channel constants below are
+            # untouched -- the QSSA-parse regression this fixture pins is
+            # unchanged.
+            "condensed_species": ["PS_mu0", "PS_mu1", "PS_mu2"],
         },
         "pools": [{
             "label": "PS",

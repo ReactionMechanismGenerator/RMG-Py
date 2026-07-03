@@ -111,7 +111,9 @@ class TestPoolBlockSchema2:
     def test_monomer_routing_passthrough(self, pe_pool):
         d = _serialize_pool_for_sidecar(pe_pool, monomer_routing="ethylene(5)")
         assert d["monomer_routing"] == "ethylene(5)"
-        assert "ethylene(5)" in d["phase_species"]
+        # Recipe revision 2026-07-03-monomer-gas: the routed monomer is a
+        # GAS-phase species and must NOT be listed as pool phase membership.
+        assert "ethylene(5)" not in d["phase_species"]
 
     def test_bookkeeping_species_is_proxy_plus_mu_dummies(self, pe_pool):
         """bookkeeping_species = the pool proxy + the three µ-dummies, exactly,
@@ -129,27 +131,32 @@ class TestPoolBlockSchema2:
         positions = [d["phase_species"].index(s) for s in d["bookkeeping_species"]]
         assert positions == sorted(positions)
 
-    def test_routed_monomer_is_phase_but_not_bookkeeping(self, pe_pool):
-        """The routed condensed monomer is real condensed: it appears in
-        phase_species but NOT in bookkeeping_species."""
+    def test_routed_monomer_is_gas_not_phase_or_bookkeeping(self, pe_pool):
+        """Recipe revision 2026-07-03-monomer-gas (incident 2026-07-03): the
+        routed monomer is a GAS volatile -- in NEITHER phase_species NOR
+        bookkeeping_species. (Pre-revision emitters listed it in
+        phase_species as 'real condensed'; that classification conflated the
+        release target with the deck's principal gas product.)"""
         core = [
             _spc("CC", "PE", index=2),
             _mu_dummy("PE_mu0"), _mu_dummy("PE_mu1"), _mu_dummy("PE_mu2"),
         ]
         d = _serialize_pool_for_sidecar(pe_pool, core_species=core,
                                         monomer_routing="ethylene(5)")
-        assert "ethylene(5)" in d["phase_species"]
+        assert "ethylene(5)" not in d["phase_species"]
         assert "ethylene(5)" not in d["bookkeeping_species"]
+        assert d["phase_species"] == ["PE(2)", "PE_mu0", "PE_mu1", "PE_mu2"]
         assert d["bookkeeping_species"] == ["PE(2)", "PE_mu0", "PE_mu1", "PE_mu2"]
 
     def test_bookkeeping_species_always_present(self, pe_pool):
         """The key exists even without core_species (empty phase_species), and
-        a routing-only pool block keeps it empty (routing is real condensed)."""
+        a routing-only pool block keeps BOTH lists empty (the routed monomer
+        is gas since recipe revision 2026-07-03-monomer-gas)."""
         d = _serialize_pool_for_sidecar(pe_pool)
         assert d["phase_species"] == []
         assert d["bookkeeping_species"] == []
         d = _serialize_pool_for_sidecar(pe_pool, monomer_routing="ethylene(5)")
-        assert d["phase_species"] == ["ethylene(5)"]
+        assert d["phase_species"] == []
         assert d["bookkeeping_species"] == []
 
 
@@ -347,11 +354,13 @@ class TestRadicalQssaChannelSerialization:
     def test_qssa_artifact_bumps_schema_and_recipe_revision(self, qssa_pool):
         """Version contract (round-23): channel-vocabulary growth is a minor
         SHAPE bump (2.0 -> 2.1) and the QSSA rate law is new channel/flux
-        algebra (recipe_revision 2026-06-10 -> 2026-07-02). Both stamped only
-        when a pool actually carries the channel."""
+        algebra (recipe_revision bumps over the legacy value). Both stamped
+        only when a pool actually carries the channel. The -monomer-gas
+        suffix carries the 2026-07-03 gas-monomer routing revision."""
         artifact = self._artifact([qssa_pool], ["PS"], {"PS": "styrene(5)"})
         assert artifact["schema_version"] == "2.1"
-        assert artifact["conventions"]["recipe_revision"] == "2026-07-02"
+        assert artifact["conventions"]["recipe_revision"] == \
+            "2026-07-03-qssa-monomer-gas"
 
     def test_qssa_artifact_stamps_format_doc_2_1(self, qssa_pool):
         """conventions.format_doc must agree with schema_version: a QSSA
@@ -368,7 +377,8 @@ class TestRadicalQssaChannelSerialization:
         artifact = self._artifact([pe_pool, qssa_pool], ["PE", "PS"],
                                   {"PS": "styrene(5)"})
         assert artifact["schema_version"] == "2.1"
-        assert artifact["conventions"]["recipe_revision"] == "2026-07-02"
+        assert artifact["conventions"]["recipe_revision"] == \
+            "2026-07-03-qssa-monomer-gas"
         assert artifact["conventions"]["format_doc"] == (
             "docs/polymer_moments_format.md (polymer_moments_format/2.1)")
 
@@ -405,7 +415,9 @@ class TestRadicalQssaChannelSerialization:
             "conventions": {
                 "format_doc": ("docs/polymer_moments_format.md "
                                "(polymer_moments_format/2.0)"),
-                "recipe_revision": "2026-06-10",
+                # 2026-07-03-monomer-gas: gas-monomer routing revision — the
+                # ONE deliberate byte change vs the pre-revision golden.
+                "recipe_revision": "2026-07-03-monomer-gas",
                 "moment_basis": ("extensive mol, DP basis "
                                  "(mu1 = moles of repeat units)"),
                 "volumes": {
@@ -661,7 +673,7 @@ class TestWeakLinkChannelSerialization:
         assert artifact["conventions"]["format_doc"] == (
             "docs/polymer_moments_format.md (polymer_moments_format/2.2)")
         assert artifact["conventions"]["recipe_revision"] == \
-            "2026-07-03-weaklink-u"
+            "2026-07-03-weaklink-u-monomer-gas"
 
     def test_mixed_artifact_stamps_2_2_legacy_channels_unchanged(
             self, weaklink_pool, qssa_pool, pe_pool):
@@ -678,7 +690,7 @@ class TestWeakLinkChannelSerialization:
             {"PS": "styrene(5)", "PSW": "styrene(5)"})
         assert mixed["schema_version"] == "2.2"
         assert mixed["conventions"]["recipe_revision"] == \
-            "2026-07-03-weaklink-u"
+            "2026-07-03-weaklink-u-monomer-gas"
         assert mixed["conventions"]["format_doc"] == (
             "docs/polymer_moments_format.md (polymer_moments_format/2.2)")
         by_label = {p["label"]: p for p in mixed["pools"]}
@@ -757,7 +769,8 @@ class TestQssaRoutingDerivation:
         entry = artifact["pools"][0]
         assert entry["channels"]["radical_qssa_unzip"]["enabled"] is True
         assert entry["monomer_routing"] == "styrene(7)"
-        assert "styrene(7)" in entry["phase_species"]
+        # gas since recipe revision 2026-07-03-monomer-gas
+        assert "styrene(7)" not in entry["phase_species"]
 
     def test_explicit_engine_routing_wins_over_derivation(self, qssa_pool):
         """The engine's configured routing stays authoritative when present."""
@@ -1057,7 +1070,9 @@ class TestArtifactBuilderAndRoundTrip:
         with open(path) as fh:
             data = json.load(fh)
         assert data["conventions"]["recipe_revision"] == POLYMER_RATE_RECIPE_REVISION
-        assert data["conventions"]["recipe_revision"] == "2026-06-10"
+        # 2026-07-03-monomer-gas: gas-monomer routing revision (deliberate
+        # consumer-coordination bump; see docs/polymer_moments_format.md).
+        assert data["conventions"]["recipe_revision"] == "2026-07-03-monomer-gas"
         # shape version is untouched by the recipe marker
         assert data["schema_version"] == "2.0"
 
@@ -1234,23 +1249,25 @@ class TestDeriveCondensedSpecies:
         assert set(labels) >= {"epdm", "epdm_mu0", "epdm_mu1", "epdm_mu2"}
         assert "epdm_scission_tail" not in labels   # still gas
 
-    def test_explicit_and_monomer_indices_are_condensed(self):
-        """Explicit-oligomer and routed-monomer indices count as condensed in
-        the derived fallback (mirrors polymer.pyx:502-516)."""
+    def test_explicit_indices_condensed_monomer_index_gas(self):
+        """Explicit-oligomer indices count as condensed in the derived
+        fallback; the routed-monomer index does NOT (recipe revision
+        2026-07-03-monomer-gas: the release target is a gas volatile, and
+        the solver oracle validates it gas)."""
         core = [
             _spc("CC", "P", index=2),
             _mu_dummy("P_mu0"), _mu_dummy("P_mu1"), _mu_dummy("P_mu2"),
             _spc("[CH3]", "G", index=7),
             _spc("CCC", "P_dp3", index=8),
-            _spc("[CH2]CC", "monomer_in_poly", index=9),
+            _spc("[CH2]CC", "released_monomer", index=9),
         ]
         pools = [_FakePool("P", mu_indices=(1, 2, 3),
                            explicit_dp_to_species_index={3: 5},
                            monomer_poly_index=6)]
         condensed = derive_condensed_species(core, pools, mask=None)
         labels = [s.label for s in condensed]
-        assert set(labels) == {"P", "P_mu0", "P_mu1", "P_mu2",
-                               "P_dp3", "monomer_in_poly"}
+        assert set(labels) == {"P", "P_mu0", "P_mu1", "P_mu2", "P_dp3"}
+        assert "released_monomer" not in labels
         assert "G" not in labels
 
     def test_registry_pool_with_proxy_absent_from_core_emits_empty_lists(

@@ -3122,11 +3122,18 @@ POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_QSSA = "2.1"
 # POLYMER_POOLS_SIDECAR_SCHEMA_VERSION, which governs artifact SHAPE only.
 # Downstream consumers (TA) hard-fail on unknown values, so bumping this is
 # a consumer-coordination event, not a cosmetic edit.
-POLYMER_RATE_RECIPE_REVISION = "2026-06-10"
+# 2026-07-03-monomer-gas (incident 2026-07-03, design B-prime): the
+# monomer_routing target is a GAS-phase species -- it is no longer listed in
+# pools[].phase_species or conventions.condensed_species, and the unzip/QSSA
+# release deposits into the gas amount basis. Consumers that treated the
+# routed monomer as condensed (V_rxn selection, headspace/V_gas inventory,
+# phase reporting) MUST be updated; the revision bump forces that
+# coordination (docs/polymer_moments_format.md revision note).
+POLYMER_RATE_RECIPE_REVISION = "2026-07-03-monomer-gas"
 # The radical_qssa_unzip channel is new channel/flux algebra, so a QSSA
 # artifact carries a NEW recipe revision. Conditional for the same reason as
 # the 2.1 schema stamp: no QSSA anywhere -> legacy revision, byte-identical.
-POLYMER_RATE_RECIPE_REVISION_QSSA = "2026-07-02"
+POLYMER_RATE_RECIPE_REVISION_QSSA = "2026-07-03-qssa-monomer-gas"
 # Schema 2.2 = 2.1 + the weak-link allyl/U-state vocabulary INSIDE the
 # radical_qssa_unzip block (initiation_allyl / termination_recombination /
 # termination_disproportionation / unsaturated_tail_ends_initial). Same
@@ -3138,7 +3145,7 @@ POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_WEAKLINK = "2.2"
 # The weak-link U-state channel is new rate algebra (allyl initiation with
 # nu=1, split termination, dU/dt law), so a weak-link artifact carries a NEW
 # recipe revision — conditional for the same reason as the schema stamps.
-POLYMER_RATE_RECIPE_REVISION_WEAKLINK = "2026-07-03-weaklink-u"
+POLYMER_RATE_RECIPE_REVISION_WEAKLINK = "2026-07-03-weaklink-u-monomer-gas"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
@@ -3203,7 +3210,9 @@ def derive_condensed_species(core_species, pools_cfg, mask=None):
        builds its mask: a core species is condensed iff its base label (RMG
        ``(N)`` suffix stripped) matches a pool's proxy label or
        ``{label}_mu0/_mu1/_mu2``, or its index is a pool's explicit-oligomer /
-       moment / routed-monomer index. Keyed on the CONFIGURED pools, this
+       moment index. The routed-monomer index is NOT condensed (recipe
+       revision 2026-07-03-monomer-gas: the release target is a gas
+       volatile). Keyed on the CONFIGURED pools, this
        reproduces exactly what the solver mask would have marked — so when the
        mask IS present they agree, and when it is missing this is a faithful
        reconstruction (NOT an over-broad registry union).
@@ -3254,9 +3263,12 @@ def derive_condensed_species(core_species, pools_cfg, mask=None):
             for idx in mu_indices:
                 if isinstance(idx, int) and 0 <= idx < n:
                     condensed_idx.add(idx)
-        mono_idx = getattr(pool, "monomer_poly_index", None)
-        if isinstance(mono_idx, int) and 0 <= mono_idx < n:
-            condensed_idx.add(mono_idx)
+        # monomer_poly_index (the unzip/QSSA release target) is deliberately
+        # NOT added: since recipe revision 2026-07-03-monomer-gas (incident
+        # 2026-07-03, design B-prime) the routed monomer is a GAS-phase
+        # species -- the solver validates it gas and the release deposits
+        # into the gas amount basis. Mirroring the oracle means leaving it
+        # out here too.
 
     return [core_species[i] for i in range(n) if i in condensed_idx]
 
@@ -3670,8 +3682,10 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
                 # entries (routed monomer below; explicit-DP chains) never
                 # come through this branch — no name/suffix re-classification.
                 bookkeeping_species.append(artifact_label)
-    if monomer_routing and monomer_routing not in phase_species:
-        phase_species.append(monomer_routing)
+    # monomer_routing is deliberately NOT appended to phase_species (recipe
+    # revision 2026-07-03-monomer-gas): the release target is a GAS-phase
+    # species -- the unzip/QSSA channel deposits released monomer into the
+    # gas amount basis (docs/polymer_moments_format.md §2/§5 revision note).
     d["phase_species"] = phase_species
     d["bookkeeping_species"] = bookkeeping_species
     d["monomer_routing"] = monomer_routing
@@ -3950,9 +3964,11 @@ def build_polymer_moments_artifact(pool_registry,
 
     ``core_species``/``monomer_routing`` are populated by
     ``build_polymer_moments_artifact`` in the live run (legacy callers omit
-    them → ``phase_species: []``, ``monomer_routing: null``). The caller must
-    pass a CONDENSED-phase routing label (it is appended to phase_species
-    unchecked by ``_serialize_pool_for_sidecar``).
+    them → ``phase_species: []``, ``monomer_routing: null``). The routing
+    label names a GAS-phase species since recipe revision
+    2026-07-03-monomer-gas (it is NOT appended to phase_species and NOT in
+    ``conventions.condensed_species``; the unzip/QSSA release deposits into
+    the gas amount basis).
     """
     if not configured_pool_labels:
         configured_pool_labels = [getattr(p, "label", "") for p in pool_registry]
