@@ -683,6 +683,24 @@ class PolymerPhase(object):
             elif label_fallback_safe and (spc.label and spc.label in poly_labels):
                 mask[i] = False
 
+        # D. H-loss radical daughters of configured condensed pool proxies
+        #    (P1-A core-mask extension, ratified 2026-07-03). The SAME narrow
+        #    qualifier the solver applies to edge slots
+        #    (get_h_loss_radical_daughter_bases -- ONE predicate, never
+        #    duplicated): once such a daughter is PROMOTED TO CORE it must
+        #    keep its condensed classification here too, or static Gate B
+        #    zeroes its core production rows and regeneration stalls one
+        #    step after promotion. Gas products, volatile fragments,
+        #    spawned proxies and gas-vetoed species are unaffected (the
+        #    predicate rejects them); R1 core-prefix parity holds because
+        #    the combined-list stage-1 classifier is this same method.
+        h_loss_bases = self.get_h_loss_radical_daughter_bases(core_species)
+        if h_loss_bases:
+            for i, spc in enumerate(core_species):
+                label = getattr(spc, "label", None)
+                if label and _base_label(label) in h_loss_bases:
+                    mask[i] = False
+
         return mask
 
     def get_condensed_edge_daughter_bases(self, combined_species) -> set:
@@ -754,6 +772,33 @@ class PolymerPhase(object):
                 qualifying.add(base)
 
         # --- Branch 2: H-loss radical daughters (ratified 2026-07-03) ---
+        # ONE predicate, shared with the CORE mask path (get_gas_mask) so a
+        # qualifying daughter classifies consistently in core and edge.
+        qualifying |= self.get_h_loss_radical_daughter_bases(combined_species)
+
+        return qualifying
+
+    def get_h_loss_radical_daughter_bases(self, species_list) -> set:
+        """The NARROW H-loss radical-daughter qualifier (ratified 2026-07-03,
+        branch 2 of get_condensed_edge_daughter_bases -- see its docstring
+        for conditions (i)-(v) and the rationale). Returns the set of BASE
+        labels of plain-Species members of ``species_list`` that are
+        prospectively condensed H-loss radical daughters of a configured
+        condensed pool proxy.
+
+        SINGLE SOURCE for the qualifier: called by
+        get_condensed_edge_daughter_bases (edge-slot application in the
+        solver) AND by get_gas_mask (core mask construction, P1-A core-mask
+        extension 2026-07-03) -- a qualifying daughter promoted to core must
+        classify CONDENSED there too, or static Gate B zeroes its core
+        production rows and regeneration stalls one step after promotion
+        (R1 core-prefix parity holds because both masks derive from the
+        same predicate)."""
+        # local imports: avoid an import cycle
+        from rmgpy.polymer import Polymer, has_polymer_gas_veto
+
+        static_pool_labels = {p.label for p in self.pools}
+
         def _element_counts(spc):
             mols = getattr(spc, "molecule", None) or []
             if not mols or mols[0] is None:
@@ -768,7 +813,7 @@ class PolymerPhase(object):
         # species the solver's stage-2 override condenses), plus any
         # explicitly-configured proxy_species.
         proxy_comps = []
-        for spc in combined_species:
+        for spc in species_list:
             if isinstance(spc, Polymer) or getattr(spc, "is_moment_dummy", False):
                 continue
             label = getattr(spc, "label", None)
@@ -781,8 +826,9 @@ class PolymerPhase(object):
             if comp:
                 proxy_comps.append(comp)
 
+        qualifying = set()
         if proxy_comps:
-            for spc in combined_species:
+            for spc in species_list:
                 if isinstance(spc, Polymer):        # (i): branch 1 only
                     continue
                 if getattr(spc, "is_moment_dummy", False):

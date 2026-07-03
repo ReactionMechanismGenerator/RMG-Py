@@ -6532,3 +6532,123 @@ class TestGateBHLossRadicalDaughterFlux:
         assert int(np.asarray(rs.edge_reaction_gate_code)[0]) == 2
         assert float(np.asarray(rs.edge_reaction_rates)[0]) == 0.0
         assert float(np.asarray(rs.edge_reaction_rates_ungated)[0]) > 0.0
+
+
+class TestHLossRadicalDaughterCoreMask:
+    """P1-A (ratified core-mask extension of the 2026-07-03 H-loss
+    qualifier): the a10acaed4 qualifier only affected EDGE slots. Once a
+    qualifying H-loss radical daughter (e.g. C9H19 from the PP proxy) is
+    PROMOTED TO CORE, get_gas_mask stage-1/2 still classified it GAS and
+    static Gate B zeroed its core production rows -- PP regeneration would
+    stall one step after promotion. The SAME narrow qualifier (plain
+    Species, radical-bearing, neutral, same non-H element composition as a
+    configured pool proxy, H-loss-only, not durably gas-vetoed) must feed
+    the CORE mask construction path (PolymerPhase.get_gas_mask), so a
+    qualifying daughter is condensed-classified consistently in core and
+    edge. Negative pins: gas products, volatile fragments, spawned
+    proxies, and gas-vetoed species classify exactly as today, in core
+    too."""
+
+    PP_PROXY_SMILES = "CCCC(C)CC(C)C"        # C9H20 PP trimer proxy
+    C9H19_SMILES = "CCCC(C)CC(C)[CH2]"       # H-loss radical daughter
+
+    @staticmethod
+    def _phase():
+        return TestHLossRadicalDaughterQualifier._phase_with_pp()
+
+    # ---- predicate level: get_gas_mask over a CORE list ----
+
+    def test_promoted_daughter_condensed_by_get_gas_mask(self):
+        """THE core red pin: the qualifying C9H19 daughter, now a CORE
+        species, must be condensed-classified by get_gas_mask itself (the
+        core mask construction path), not just by the edge-slot flip."""
+        phase = self._phase()
+        core = [_spc(self.PP_PROXY_SMILES, "PP(2)"),
+                _spc(self.C9H19_SMILES, "C9H19a(15)"),
+                _spc("[H]", "H"), _spc("[H][H]", "H2")]
+        mask = phase.get_gas_mask(core)
+        assert bool(mask[1]) is False          # daughter CONDENSED in core
+        assert bool(mask[2]) is True           # H stays gas
+        assert bool(mask[3]) is True           # H2 stays gas
+
+    def test_negative_pins_stay_gas_in_core_mask(self):
+        """Gas products, smaller volatile fragments, closed-shell isomers
+        and gas-vetoed species must classify exactly as today in core."""
+        from rmgpy.polymer import set_polymer_gas_veto
+        phase = self._phase()
+        vetoed = _spc(self.C9H19_SMILES, "C9H19v(23)")
+        set_polymer_gas_veto(vetoed)
+        core = [_spc(self.PP_PROXY_SMILES, "PP(2)"),
+                _spc("C=CC", "propene(20)"),
+                _spc("[CH2]CC", "C3H7(21)"),
+                _spc("CCCCCC(C)CC", "C9H20iso(22)"),
+                vetoed]
+        mask = phase.get_gas_mask(core)
+        assert [bool(v) for v in mask[1:]] == [True, True, True, True]
+
+    def test_spawned_proxy_classification_unchanged_in_core(self):
+        """A spawned Polymer proxy (no configured registration) keeps its
+        current get_gas_mask classification (GAS at this stage; stage-2 /
+        spawned-pool machinery owns its condensation) -- the H-loss branch
+        must not leak onto Polymer instances."""
+        from rmgpy.polymer import Polymer
+        phase = self._phase()
+        d = Polymer(label="PP_scission_tail", monomer="[CH2][CH]C",
+                    Mn=100.0, Mw=200.0)
+        d.is_polymer_proxy = True
+        core = [_spc(self.PP_PROXY_SMILES, "PP(2)"), d]
+        mask = phase.get_gas_mask(core)
+        assert bool(mask[1]) is True
+
+    # ---- solver level: static Gate B on core rows ----
+
+    def _build_core_system(self, daughter_smiles, daughter_label):
+        phase = self._phase()
+        proxy = _spc(self.PP_PROXY_SMILES, "PP")
+        mu0 = _spc("CO", "PP_mu0")
+        mu1 = _spc("C=O", "PP_mu1")
+        mu2 = _spc("C#N", "PP_mu2")
+        h = _spc("[H]", "H")
+        h2 = _spc("[H][H]", "H2")
+        d = _spc(daughter_smiles, daughter_label)
+        core = [proxy, mu0, mu1, mu2, h, h2, d]
+        mask = np.asarray(phase.get_gas_mask(core), dtype=bool)
+        rxn = Reaction(reactants=[h, proxy], products=[h2, d], **_KIN)
+        cfg = PolymerPoolConfig(label="PP", xs=2,
+                                explicit_dp_to_species_index={},
+                                mu_indices=(1, 2, 3), monomer_poly_index=None,
+                                k_unzip=0.0)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={h: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"PP": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_classifier=phase.get_gas_mask,
+            prospective_condensed_edge_daughter_classifier=(
+                phase.get_condensed_edge_daughter_bases))
+        rs.initialize_model(core, [rxn], [], [])
+        return rs, core
+
+    def test_promoted_daughter_production_row_not_gate_b_zeroed(self):
+        """RED pin (P1-A): with the C9H19 daughter IN THE CORE, the proxy
+        H-abstraction core row (H + PP <=> H2 + C9H19) was Gate-B zeroed
+        (bare continue, production rate identically 0) because the core
+        mask still said GAS. Post-fix the daughter is condensed in the
+        core mask, the poly event has a condensed product, and its REAL
+        production flux flows -- PP regeneration survives promotion."""
+        rs, core = self._build_core_system(self.C9H19_SMILES, "C9H19a(15)")
+        assert bool(np.asarray(rs.gas_species_mask)[6]) is False
+        # R1 core-prefix parity held (initialize_model completed): the
+        # prospective mask agrees with the core mask on the daughter.
+        assert bool(np.asarray(rs.prospective_gas_mask)[6]) is False
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert float(rs.core_species_production_rates[6]) > 0.0
+
+    def test_only_gas_core_poly_event_stays_gate_b_zeroed(self):
+        """Converse pin: a CORE poly event whose only products are
+        genuinely gas (H2 + propene) must remain Gate-B zeroed -- the
+        core-mask extension must not reopen the phase-gate hole."""
+        rs, core = self._build_core_system("C=CC", "propene(20)")
+        assert bool(np.asarray(rs.gas_species_mask)[6]) is True
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert float(rs.core_species_production_rates[6]) == 0.0
