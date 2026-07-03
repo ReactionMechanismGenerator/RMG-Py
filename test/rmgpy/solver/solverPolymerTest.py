@@ -2089,6 +2089,89 @@ class TestHybridPolymerReactor:
         assert dn_lo[6] > 0.0
         assert dn_hi[6] == pytest.approx(3.0 * dn_lo[6], rel=1e-12)
 
+    # ------------------------------------------------------------------
+    # milestone (vi) equivalence pins: inert-by-values / allyl-off /
+    # disp-vs-recomb directionality. The validator pins A > 0 (0.0 is
+    # ILLEGAL for every Arrhenius block), so the legal minimum for a
+    # "switched-off" constant is the smallest positive double 5e-324;
+    # these pins lean on two exact float facts, probed before writing:
+    # big + 5e-324 == big bitwise (absorbed below the ulp) and
+    # 5e-324 * x == 0.0 exactly for x < 0.25 (underflow past the
+    # smallest subnormal).
+    # ------------------------------------------------------------------
+
+    def test_weaklink_inert_by_values_u_slot_frozen_at_ktdisp_floor(self):
+        """PIN P2 (inert-by-values): kt_disp at its legal minimum (A =
+        5e-324; the validator rejects A <= 0) with kt_rec == the FULL
+        legacy summed kt and U0 = 0 makes the weak-link pool inert-by-
+        values in every slot: kt_total = kt_rec + 5e-324 absorbs the
+        addend bitwise, so all six core derivatives are bitwise-identical
+        to the legacy pool, AND the production arm kt_disp*R_ss^2
+        underflows to exactly 0.0 while U0 = 0 zeroes the sink -- the U
+        slot is FROZEN (dU/dt == 0.0 exactly), not merely slow. This is
+        the deck-authoring recipe for running the 2.2 vocabulary as a
+        pure legacy channel."""
+        legacy = dict(initiation=_exact_triplet(1.0e-3),
+                      depropagation=_exact_triplet(1.0e2),
+                      termination=_exact_triplet(1.0e8))
+        weak = _weaklink_exact_channel(ki_A=1.0e-3, kdp_A=1.0e2,
+                                       kia_A=1.0e3, ktrec_A=1.0e8,
+                                       ktdisp_A=5e-324, u0=0.0)
+        rs_leg = self._qssa_m2_system(self._qssa_m2_pool(legacy))
+        rs_weak = self._qssa_m2_system(self._qssa_m2_pool(weak))
+
+        dn_leg = rs_leg.residual(0.0, rs_leg.y0.copy(), np.zeros(6))[0]
+        dn_weak = rs_weak.residual(0.0, rs_weak.y0.copy(), np.zeros(7))[0]
+
+        assert dn_leg[2] < 0.0  # the fixture's channel is live
+        for i in range(6):
+            assert dn_weak[i] == dn_leg[i], i  # bitwise bridge
+        assert dn_weak[6] == 0.0  # U slot frozen exactly, not just tiny
+
+    def test_weaklink_moments_invariant_to_u_at_kia_floor(self):
+        """PIN P3 (allyl-off): with ki_allyl at its legal minimum (A =
+        5e-324; A = 0 is illegal) U is inert AS A SOURCE -- the allyl
+        G_R term f*kia*u_active is absorbed below the ulp of 2*f*ki*B,
+        so the moment/species derivatives are BITWISE independent of the
+        U value. U itself is still live (the capacity throttle differs
+        between the twins), which is exactly the pin: U may grow via
+        disproportionation without ever feeding back into the moments."""
+        u_on = self._qssa_m2_system(self._qssa_m2_pool(
+            _weaklink_exact_channel(kia_A=5e-324, u0=1.0)))
+        u_off = self._qssa_m2_system(self._qssa_m2_pool(
+            _weaklink_exact_channel(kia_A=5e-324, u0=0.0)))
+
+        dn_on = u_on.residual(0.0, u_on.y0.copy(), np.zeros(7))[0]
+        dn_off = u_off.residual(0.0, u_off.y0.copy(), np.zeros(7))[0]
+
+        assert dn_on[2] < 0.0  # live channel, not a vacuous comparison
+        for i in range(6):
+            assert dn_on[i] == dn_off[i], i  # bitwise: moments blind to U
+        # non-vacuity: the U state itself IS different dynamics (capacity
+        # throttle 1 - U/(2*mu0): 0.5 vs 1.0), production still positive.
+        assert dn_on[6] > 0.0 and dn_off[6] > 0.0
+        assert dn_on[6] != dn_off[6]
+
+    def test_weaklink_recombination_never_sources_u(self):
+        """PIN P4 (directional, recombination arm): with kt_disp at the
+        legal floor (production arm underflows to exactly 0.0) and
+        kt_rec = 1e8 carrying ALL the termination, a live channel
+        (B > 0, R_ss > 0, throttle > 0) must produce NO U: dU/dt is the
+        pure allyl-fission sink -f*kia*u_active*V_poly EXACTLY.
+        Recombination does not create unsaturated tail ends. The
+        production arm (kt_disp > 0 grows U) is pinned by
+        test_weaklink_du_production_scales_with_ktdisp_not_kttotal and
+        the bridge test."""
+        rs = self._qssa_m2_system(self._qssa_m2_pool(
+            _weaklink_exact_channel(kia_A=2.0e4, ktrec_A=1.0e8,
+                                    ktdisp_A=5e-324, u0=1.0)))
+        dn = rs.residual(0.0, rs.y0.copy(), np.zeros(7))[0]
+        assert dn[2] < 0.0   # moments live: radicals exist, chains unzip
+        # pure sink, bitwise: production contributes exactly nothing
+        # (f = 1, u_active = min(U/V_poly, B) = 1.0, V_poly = 1)
+        assert dn[6] == -(1.0 * 2.0e4 * 1.0) * 1.0
+        assert dn[6] < 0.0   # U strictly shrinks: no recombination source
+
     def test_weaklink_u_consumption_is_allyl_fission(self):
         """dU/dt sink = f*ki_allyl(T) * u_active * V_poly (r36: f-symmetric
         with the G_R term, u_active clamped -- inactive here, u < B): pins
