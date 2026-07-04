@@ -6256,3 +6256,251 @@ class TestGasVetoScopingHLossDaughters:
             "small gas radical fragments must keep the durable gas veto")
         assert self.phase.get_h_loss_radical_daughter_bases(
             [self.proxy_spc, npr]) == set()
+
+
+# ---------------------------------------------------------------------------
+# Explicit-DP handshake, stage A (producer): auto-generated capped oligomer
+# at DP == cutoff (xs), wired from the deck flag polymer(explicit_dp=True)
+# through compile_polymer_phase into the pool's explicit_map.
+# ---------------------------------------------------------------------------
+
+def _explicit_dp_polymer(cutoff=3):
+    """PS pool: monomer C8H8, end caps CH3 + H -> capped chain at DP=n is
+    C(8n+1)H(8n+4)."""
+    return Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                   end_groups=["[CH3]", "[H]"], cutoff=cutoff,
+                   Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+
+
+class TestExplicitDpSpeciesGeneration:
+    def test_capped_chain_species_generalizes_dp1(self):
+        """The DP=n builder at n=1 reproduces the DP-1 fold-back gate species
+        exactly (extract/reuse, not copy-paste: one stitching recipe)."""
+        poly = _explicit_dp_polymer()
+        dp1 = poly._capped_chain_species(1)
+        assert dp1 is not None
+        assert dp1.molecule[0].get_formula() == "C9H12"
+        assert poly._dp1_capped_species().is_isomorphic(dp1)
+
+    def test_capped_chain_formula_scales_with_dp(self):
+        """Formula check computed from monomer + end_groups: repeat unit C8H8,
+        caps CH3 and H -> C(8n+1)H(8n+4)."""
+        poly = _explicit_dp_polymer()
+        for dp in (2, 3, 4):
+            spc = poly._capped_chain_species(dp)
+            assert spc is not None
+            expected = f"C{8 * dp + 1}H{8 * dp + 4}"
+            assert spc.molecule[0].get_formula() == expected
+
+    def test_generate_explicit_dp_species_label_and_formula(self):
+        """The generator builds the oligomer at DP == cutoff and labels it
+        '{label}_dp{cutoff}' (moment-dummy naming convention family)."""
+        poly = _explicit_dp_polymer(cutoff=3)
+        spc = poly.generate_explicit_dp_species()
+        assert spc.label == "PS_dp3"
+        assert spc.molecule[0].get_formula() == "C25H28"
+
+    def test_generate_explicit_dp_species_dp1_hard_error(self):
+        """DP=1 is forbidden: DP-1 capped chains are forced GAS by the DP-1
+        fold-back gate (commit f648ff80a), so an explicit DP=1 species would
+        collide with it. The deck validator already refuses cutoff < 2; this
+        pins the generator's own defensive gate (a future override that maps
+        DP 1 must hard-error, not silently collide)."""
+        poly = _explicit_dp_polymer(cutoff=2)
+        poly.cutoff = 1  # simulate a future override bypassing deck validation
+        with pytest.raises(ValueError) as excinfo:
+            poly.generate_explicit_dp_species()
+        msg = str(excinfo.value)
+        assert "explicit_dp" in msg
+        assert "PS" in msg
+        assert "fold-back" in msg
+
+    def test_generated_dp_xs_species_not_refused_by_dp1_foldback_gate(self):
+        """Non-collision pin (design constraint): the DP-1 fold-back gate in
+        _create_reacted_copy_logic refuses products isomorphic to the DP-1
+        capped chain. The generated DP=xs oligomer (xs >= 2) must NOT match
+        that gate -- if it did, any reacted copy isomorphic to the explicit
+        species would silently fold to None/gas and the handshake target
+        would fight the gate."""
+        poly = _explicit_dp_polymer(cutoff=3)
+        spc = poly.generate_explicit_dp_species()
+        gate = poly._dp1_capped_species()
+        assert gate is not None
+        # The gate matches exactly the DP-1 chain...
+        assert gate.is_isomorphic(poly._capped_chain_species(1).molecule[0])
+        # ...and must not match the DP=xs oligomer in any resonance form.
+        for mol in spc.molecule:
+            assert not gate.is_isomorphic(mol)
+
+
+class TestExplicitDpCompile:
+    def test_compile_polymer_phase_explicit_dp_on_populates_explicit_map(self):
+        """Flag ON: the compiled pool's explicit_map holds exactly ONE entry,
+        {cutoff: generated species} (no ladder in v1)."""
+        from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+        blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+        dp_spc = poly.generate_explicit_dp_species()
+        poly.explicit_dp = True
+        poly.explicit_dp_species = dp_spc
+
+        phase = compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+        assert phase.pools[0].explicit_map == {3: dp_spc}
+
+    def test_compile_polymer_phase_flag_off_keeps_explicit_map_empty(self):
+        """Flag OFF (default): explicit_map stays {} -- byte-identical to the
+        pre-feature behavior."""
+        from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+        blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+
+        phase = compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+        assert phase.pools[0].explicit_map == {}
+
+    def test_compile_polymer_phase_explicit_dp_without_species_hard_errors(self):
+        """Hard-error, never silent: explicit_dp=True with no attached
+        generated species must refuse at compile time (a silent {} would
+        recreate the structurally-inert feature)."""
+        from rmgpy.rmg.polymer_input import compile_polymer_phase
+
+        blueprint, initial_moles, species_dict, poly = _build_compile_inputs(moles=0.01)
+        poly.explicit_dp = True  # flag set but no explicit_dp_species attached
+
+        with pytest.raises(ValueError, match=r"explicit_dp.*PS|PS.*explicit_dp"):
+            compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+
+def _mock_rmg_input_env():
+    """MagicMock rmg environment for exercising the polymer() deck helper
+    (same pattern as test_polymer_input_helper_accepts_weaklink_channel)."""
+    from unittest.mock import MagicMock
+
+    def _make_new_species(obj, **kwargs):
+        if isinstance(obj, Species):
+            return obj, True
+        return Species(label="styrene", molecule=[obj]), True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+    return mock_rmg
+
+
+class TestExplicitDpDeckFlag:
+    def test_polymer_input_helper_explicit_dp_registers_oligomer(self):
+        """Deck flag ON: polymer() auto-generates the DP=cutoff capped
+        oligomer and registers it through the SAME path as monomer_product
+        (make_new_species + initial_species + species_dict), tagging it with
+        explicit_dp_origin for the actionable constraint gate."""
+        from rmgpy.rmg import input as rmg_input
+
+        mock_rmg = _mock_rmg_input_env()
+        old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+        rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+        try:
+            poly = rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                                     end_groups=["[CH3]", "[H]"], cutoff=3,
+                                     Mn=5000.0, Mw=6000.0, initial_mass=0.001,
+                                     explicit_dp=True)
+            sd = rmg_input.species_dict
+        finally:
+            rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+        assert poly.explicit_dp is True
+        dp_spc = poly.explicit_dp_species
+        assert dp_spc is not None
+        assert dp_spc.label == "PS_dp3"
+        assert dp_spc.molecule[0].get_formula() == "C25H28"
+        assert dp_spc in mock_rmg.initial_species
+        assert sd["PS_dp3"] is dp_spc
+        # Species is a compiled extension type: the marker lives in props.
+        assert dp_spc.props.get("explicit_dp_origin") == ("PS", 3)
+
+    def test_polymer_input_helper_explicit_dp_default_off(self):
+        """Default OFF: no oligomer generated, no registration -- behavior
+        byte-identical to the pre-feature deck."""
+        import inspect
+        from rmgpy.rmg import input as rmg_input
+
+        sig = inspect.signature(rmg_input.polymer)
+        assert "explicit_dp" in sig.parameters
+        assert sig.parameters["explicit_dp"].default is False
+
+        mock_rmg = _mock_rmg_input_env()
+        old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+        rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+        try:
+            poly = rmg_input.polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                                     end_groups=["[CH3]", "[H]"], cutoff=3,
+                                     Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+            sd = rmg_input.species_dict
+        finally:
+            rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+        assert poly.explicit_dp is False
+        assert poly.explicit_dp_species is None
+        assert "PS_dp3" not in sd
+
+
+class TestExplicitDpConstraintGate:
+    """Hard-error, never silent: if the active species constraints would
+    exclude the auto-generated oligomer from the core, RMG.initialize must
+    raise an actionable error naming the flag, the species formula and the
+    refusing constraint -- silent absence recreates the inert feature."""
+
+    @staticmethod
+    def _tagged_oligomer():
+        poly = _explicit_dp_polymer(cutoff=3)
+        spc = poly.generate_explicit_dp_species()
+        spc.props["explicit_dp_origin"] = ("PS", 3)
+        return spc
+
+    def test_constraint_refusal_hard_errors_with_actionable_message(self):
+        from rmgpy.constraints import validate_explicit_dp_oligomers
+        from rmgpy.exceptions import ForbiddenStructureException
+
+        spc = self._tagged_oligomer()  # C25H28
+        constraints = {"maximumCarbonAtoms": 8, "allowed": []}
+
+        with pytest.raises(ForbiddenStructureException) as excinfo:
+            validate_explicit_dp_oligomers([spc], constraints)
+        msg = str(excinfo.value)
+        assert "explicit_dp" in msg
+        assert "PS" in msg
+        assert "C25H28" in msg
+        assert "maximumCarbonAtoms" in msg
+
+    def test_no_error_when_input_species_allowed(self):
+        """'input species' in the allowed list admits the oligomer through
+        the same escape hatch every other input species gets -- no exclusion,
+        so no error."""
+        from rmgpy.constraints import validate_explicit_dp_oligomers
+
+        spc = self._tagged_oligomer()
+        constraints = {"maximumCarbonAtoms": 8, "allowed": ["input species"]}
+        validate_explicit_dp_oligomers([spc], constraints)  # must not raise
+
+    def test_untagged_and_passing_species_ignored(self):
+        from rmgpy.constraints import validate_explicit_dp_oligomers
+
+        plain = Species(label="CH4", molecule=[Molecule(smiles="C")])
+        passing = self._tagged_oligomer()
+        validate_explicit_dp_oligomers(
+            [plain, passing], {"maximumCarbonAtoms": 30, "allowed": []})
+
+    def test_main_initialize_calls_gate_before_generic_loop(self):
+        """Source pin: RMG.initialize runs the tailored gate BEFORE the
+        generic input-species constraint loop, so the actionable error wins
+        over the generic 'remove the species' message (misleading for an
+        auto-generated species the user never wrote)."""
+        import inspect
+        from rmgpy.rmg.main import RMG
+
+        src = inspect.getsource(RMG.initialize)
+        gate = src.index("validate_explicit_dp_oligomers")
+        generic = src.index("Species constraints forbids input species")
+        assert gate < generic

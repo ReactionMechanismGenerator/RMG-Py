@@ -53,7 +53,7 @@ import rmgpy.util as util
 from rmgpy import settings
 from rmgpy.cantera import CanteraWriter
 from rmgpy.chemkin import ChemkinWriter
-from rmgpy.constraints import fails_species_constraints, reset_polymer_warning
+from rmgpy.constraints import fails_species_constraints, reset_polymer_warning, validate_explicit_dp_oligomers
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
@@ -678,6 +678,13 @@ class RMG(util.Subject):
             spec, is_new = self.reaction_model.make_new_species(molecule, label=label, reactive=False)
             if is_new:
                 self.initial_species.append(spec)
+
+        # Explicit-DP handshake (stage A) hard gate: auto-generated DP=xs
+        # oligomers (polymer() input block, explicit_dp=True) must survive the
+        # constraint pass or fail LOUDLY with an actionable message naming the
+        # deck flag. Runs BEFORE the generic input-species loop below so the
+        # tailored error wins over the generic "remove the species" one.
+        validate_explicit_dp_oligomers(self.initial_species, self.species_constraints)
 
         # Perform species constraints and forbidden species checks on input species
         for spec in self.initial_species:

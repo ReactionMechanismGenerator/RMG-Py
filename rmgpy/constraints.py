@@ -194,3 +194,45 @@ def fails_species_constraints(species):
         species_constraints = {}
 
     return _evaluate_constraints(_normalize(species), species_constraints)
+
+
+def validate_explicit_dp_oligomers(initial_species, species_constraints):
+    """
+    Hard-error gate (never silent) for the explicit-DP handshake (stage A).
+
+    Every auto-generated DP=xs oligomer (created by the polymer() input block
+    when ``explicit_dp=True`` and marked with ``props['explicit_dp_origin']``,
+    the sanctioned marker dict -- Species is a compiled extension type with no
+    ad-hoc attributes) must
+    survive the input-species constraint pass -- if the active species
+    constraints would exclude it from the core, the handshake target would be
+    silently absent and the feature structurally inert. Called from
+    RMG.initialize BEFORE the generic input-species constraint loop so this
+    actionable message (naming the deck flag) wins over the generic
+    "remove the species" one, which is misleading for a species the user
+    never wrote.
+
+    ``'input species'`` in the constraints' ``allowed`` list admits the
+    oligomer through the same escape hatch every other input species gets,
+    so no error is raised in that case.
+    """
+    from rmgpy.exceptions import ForbiddenStructureException
+
+    constraints = species_constraints or {}
+    allowed = constraints.get('allowed', [])
+    for spc in initial_species:
+        origin = (getattr(spc, 'props', None) or {}).get('explicit_dp_origin')
+        if origin is None:
+            continue
+        reason = _evaluate_constraints(_normalize(spc), constraints)
+        if reason and 'input species' not in allowed:
+            pool_label, dp = origin
+            formula = spc.molecule[0].get_formula() if getattr(spc, 'molecule', None) else '?'
+            raise ForbiddenStructureException(
+                f"explicit_dp=True on polymer pool '{pool_label}' auto-generated "
+                f"the DP={dp} capped oligomer '{spc.label}' ({formula}), but the "
+                f"active species constraints refuse it: {reason}. The explicit-DP "
+                f"handshake cannot run without this core species. Raise the "
+                f"refusing maximum* limit in generatedSpeciesConstraints, add "
+                f"'input species' to its 'allowed' list, or disable explicit_dp "
+                f"on pool '{pool_label}'.")

@@ -260,6 +260,7 @@ def polymer(label: str,
             discrete_dp_threshold: int = 4,
             monomer_product: Optional[Union[Molecule, str]] = None,
             radical_qssa_unzip: Optional[dict] = None,
+            explicit_dp: bool = False,
             ):
     """
     Helper function exposed in the input file to define a Polymer Pool.
@@ -326,6 +327,23 @@ def polymer(label: str,
             weak-link configs until its rate law lands (explicit
             not-implemented error; no silent no-op).
             Default None (channel absent).
+        explicit_dp (bool): Opt-in explicit-DP handshake (stage A). When True,
+            auto-generates exactly ONE capped oligomer species at
+            DP == cutoff (xs) from this pool's own monomer + end_groups
+            (end_groups[0]--(monomer)x cutoff--end_groups[1], labeled
+            '{label}_dp{cutoff}') and registers it as a real, reactive CORE
+            species in the polymer melt phase -- the same registration path
+            as monomer_product. The pool's solver config then maps
+            {cutoff: core index}, and chains crossing the hybrid cutoff
+            deposit as flux into this species (draining mu0/mu1/mu2) instead
+            of vanishing statistically. Exactly one map entry (no DP ladder)
+            in v1; daughter pools spawned mid-run do NOT inherit an
+            explicit-DP species in v1. Requires cutoff >= 2 (DP-1 capped
+            chains are forced GAS by the DP-1 fold-back gate). If the active
+            species constraints would exclude the generated oligomer, RMG
+            raises an actionable hard error at initialization instead of
+            silently dropping the species. Default False (handshake target
+            absent; byte-identical to the legacy behavior).
     """
     # HARD ERROR at deck-read time: a non-finite k_unzip/k_scission is not a
     # valid rate constant. NaN passes BOTH the `< 0` and `> 0` gates as
@@ -457,6 +475,39 @@ def polymer(label: str,
             rmg.initial_species.append(mp_spc)
         species_dict[mp_spc.label] = mp_spc
         poly_obj.monomer_product_species = mp_spc
+
+    # 4c. Explicit-DP handshake oligomer (stage A, opt-in): auto-generate ONE
+    #     capped oligomer species at DP == cutoff (xs) from the pool's own
+    #     monomer + end_groups, and register it through the SAME path as
+    #     monomer_product above (make_new_species + initial_species +
+    #     species_dict) so it becomes a real, reactive core species before
+    #     solver init. compile_polymer_phase wires it into the pool's
+    #     explicit_map, which (a) condenses it in PolymerPhase.get_gas_mask
+    #     (section B) and (b) resolves explicit_dp_to_species_index =
+    #     {cutoff: core index} in PolymerPool.to_config -- the solver's hybrid
+    #     handshake then deposits boundary-crossing chains into it
+    #     (polymer.pyx: dn_dt[idx] += F*V_poly, draining mu0/mu1/mu2).
+    #     generate_explicit_dp_species hard-errors on cutoff < 2 (DP-1
+    #     fold-back gate collision) and on stitch failure -- never silent.
+    poly_obj.explicit_dp = bool(explicit_dp)
+    poly_obj.explicit_dp_species = None
+    if explicit_dp:
+        try:
+            dp_seed = poly_obj.generate_explicit_dp_species()
+        except ValueError as e:
+            raise InputError(str(e))
+        dp_spc, _ = rmg.reaction_model.make_new_species(dp_seed, reactive=True)
+        # Actionable-refusal marker: RMG.initialize's constraint gate
+        # (validate_explicit_dp_oligomers) raises a tailored hard error naming
+        # this flag if the active species constraints would exclude the
+        # generated oligomer from the core. Species is a compiled extension
+        # type (no ad-hoc attributes); props is the sanctioned marker dict
+        # (deep-copied by Species.copy).
+        dp_spc.props['explicit_dp_origin'] = (poly_obj.label, int(poly_obj.cutoff))
+        if dp_spc not in rmg.initial_species:
+            rmg.initial_species.append(dp_spc)
+        species_dict[dp_spc.label] = dp_spc
+        poly_obj.explicit_dp_species = dp_spc
 
     # 5. Generate Thermo for the Polymer (Delegates to the trimer proxy)
     rmg.reaction_model.generate_thermo(poly_obj)

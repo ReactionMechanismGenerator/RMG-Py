@@ -1006,14 +1006,37 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
                         "Reconcile initial_mass/Mn/Mw with initialMoles in the input deck.",
                         spc.label, mu0_from_mass, mu0, mu0)
 
+            # Explicit-DP handshake (stage A): the deck flag explicit_dp=True
+            # (input.py polymer() step 4c) auto-generated exactly ONE capped
+            # oligomer at DP == cutoff (xs) and registered it as a real core
+            # species. Wire it into the pool's explicit_map so
+            # PolymerPhase.get_gas_mask condenses it (section B) and
+            # PolymerPool.to_config resolves explicit_dp_to_species_index =
+            # {xs: core index}. No ladder in v1: exactly one entry, at the
+            # cutoff. Flag OFF keeps the map {} -- byte-identical to the
+            # legacy (structurally inert) behavior.
+            explicit_map = {}
+            if getattr(spc, 'explicit_dp', False):
+                dp_spc = getattr(spc, 'explicit_dp_species', None)
+                if dp_spc is None:
+                    # HARD ERROR, never silent: a flag with no species would
+                    # recreate the inert feature (empty map, dead handshake).
+                    raise ValueError(
+                        f"Polymer pool '{spc.label}': explicit_dp=True but no "
+                        f"auto-generated DP={spc.cutoff} oligomer species is "
+                        f"attached (explicit_dp_species is None) -- the "
+                        f"explicit-DP handshake would be silently inert. The "
+                        f"species is created by the polymer() input block when "
+                        f"explicit_dp=True; a pool cannot enable the flag "
+                        f"without it.")
+                explicit_map = {int(spc.cutoff): dp_spc}
+
             # Create Pool Config
-            # Note: Using the species itself as the placeholder for moments (Integration Test Hack)
-            # In production, this needs distinct dummy species.
             pool = PolymerPool(
                 label=spc.label,
                 xs=spc.cutoff,
                 monomer=spc.monomer,
-                explicit_map={},
+                explicit_map=explicit_map,
                 mu_species=[mu0_spc, mu1_spc, mu2_spc],
                 k_scission=spc.k_scission,
                 k_unzip=spc.k_unzip,
@@ -1357,6 +1380,14 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
         configs.append(PolymerPoolConfig(
             label=b,
             xs=spc.cutoff,
+            # v1 LIMITATION (explicit-DP stage A, documented + tested):
+            # daughter pools spawned mid-run get NO explicit-DP entry even
+            # when the parent pool carries explicit_dp=True. Auto-generating
+            # AND core-registering a capped DP=xs oligomer at enlarge time is
+            # out of stage-A scope, so derived daughters stay honest-empty
+            # here -- their boundary-crossing chains remain statistical. See
+            # test_daughter_pools_do_not_get_explicit_dp_in_v1
+            # (solverPolymerTest.py).
             explicit_dp_to_species_index={},
             mu_indices=mu_indices,
             monomer_poly_index=monomer_idx,

@@ -835,39 +835,95 @@ class Polymer(Species):
         spc.is_polymer_proxy = True
         return spc
 
+    def _capped_chain_species(self, dp: int) -> Optional[Species]:
+        """
+        The complete capped chain at the given degree of polymerization for
+        this pool: end_groups[0]--(monomer)x``dp``--end_groups[1], as a
+        Species with resonance structures (same recipe as _stitch_trimer) so
+        kekule/aromatic representations compare equal. Single stitching
+        recipe shared by the DP-1 fold-back gate (dp=1) and the explicit-DP
+        oligomer generator (dp=cutoff). Returns None when the stitch is not
+        constructible.
+        """
+        if dp < 1:
+            raise ValueError(
+                f"Polymer '{self.label}': capped chain DP must be >= 1, got {dp}.")
+        mol = self.end_groups[0].copy(deep=True)
+        for _ in range(int(dp)):
+            mol = stitch_molecules_by_labeled_atoms(mol, self.monomer.copy(deep=True))
+            if mol is None:
+                return None
+        mol = stitch_molecules_by_labeled_atoms(mol, self.end_groups[1].copy(deep=True))
+        if mol is None:
+            return None
+        mol.update()
+        mol.clear_labeled_atoms()
+        mol.assign_atom_ids()
+        spc = Species(molecule=[mol])
+        spc.molecule = generate_resonance_structures(mol,
+                                                     clar_structures=False,
+                                                     keep_isomorphic=False,
+                                                     filter_structures=True,
+                                                     save_order=True)
+        return spc
+
     def _dp1_capped_species(self) -> Optional[Species]:
         """
         The complete capped chain at DP = 1 for this pool:
         end_groups[0]--monomer--end_groups[1] (e.g. propane for a PP pool
-        with H/H end caps, ethylbenzene for a PS pool with H/H end caps),
-        as a Species with resonance structures (same recipe as
-        _stitch_trimer) so kekule/aromatic representations compare equal.
+        with H/H end caps, ethylbenzene for a PS pool with H/H end caps).
+        Built by the shared _capped_chain_species recipe.
         Used by the DP-1 fold-back gate in _create_reacted_copy_logic.
         Returns None when the stitch is not constructible. Cached lazily per
         instance (copies rebuild it on first use).
         """
         cached = getattr(self, '_dp1_capped_cache', None)
         if cached is None:
-            mol = stitch_molecules_by_labeled_atoms(
-                self.end_groups[0].copy(deep=True), self.monomer.copy(deep=True))
-            if mol is not None:
-                mol = stitch_molecules_by_labeled_atoms(
-                    mol, self.end_groups[1].copy(deep=True))
-            if mol is None:
-                cached = False  # sentinel: not constructible, do not retry
-            else:
-                mol.update()
-                mol.clear_labeled_atoms()
-                mol.assign_atom_ids()
-                spc = Species(molecule=[mol])
-                spc.molecule = generate_resonance_structures(mol,
-                                                             clar_structures=False,
-                                                             keep_isomorphic=False,
-                                                             filter_structures=True,
-                                                             save_order=True)
-                cached = spc
+            spc = self._capped_chain_species(1)
+            # False sentinel: not constructible, do not retry.
+            cached = spc if spc is not None else False
             self._dp1_capped_cache = cached
         return cached or None
+
+    def generate_explicit_dp_species(self) -> Species:
+        """
+        Build the explicit boundary oligomer at DP == self.cutoff (xs) for
+        the explicit-DP handshake (deck flag ``explicit_dp=True`` on the
+        polymer() input block): the complete capped chain
+        end_groups[0]--(monomer)x``cutoff``--end_groups[1], labeled
+        ``{label}_dp{cutoff}`` (same naming family as the ``_mu{k}`` moment
+        dummies).
+
+        Hard errors (never silent -- a missing species would leave the
+        handshake structurally inert):
+
+        * ``cutoff < 2``: DP-1 capped chains are forced GAS by the DP-1
+          fold-back gate (_create_reacted_copy_logic refuses products
+          isomorphic to the DP-1 chain), so an explicit DP=1 species would
+          collide with that gate. The deck validator already refuses
+          cutoff < 2; this is the generator's own defensive gate against a
+          future override mapping DP 1.
+        * stitch failure: the capped chain is not constructible from
+          monomer + end_groups.
+        """
+        dp = int(self.cutoff)
+        if dp < 2:
+            raise ValueError(
+                f"Polymer '{self.label}': explicit_dp=True requires cutoff >= 2, "
+                f"got cutoff={dp}. DP-1 capped chains are forced GAS by the DP-1 "
+                f"fold-back gate (products at DP <= 1 stay gas; "
+                f"_create_reacted_copy_logic), so an explicit DP=1 species would "
+                f"collide with that gate. Raise the pool's cutoff to >= 2 or "
+                f"disable explicit_dp.")
+        spc = self._capped_chain_species(dp)
+        if spc is None:
+            raise ValueError(
+                f"Polymer '{self.label}': explicit_dp=True could not construct "
+                f"the capped DP={dp} oligomer from monomer + end_groups (stitch "
+                f"failed). Check the monomer's [*:1]/[*:2] labels and the "
+                f"end_groups, or disable explicit_dp.")
+        spc.label = f"{self.label}_dp{dp}"
+        return spc
 
     def create_reacted_copy(self, reacted_proxy: Molecule) -> Optional['Polymer']:
         """

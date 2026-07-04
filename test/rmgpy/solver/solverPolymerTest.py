@@ -7007,3 +7007,144 @@ class TestInitialExplicitPlumbing:
         solver = reactor.to_solver_object(core, [], [], [])
         solver.initialize_model(core, [], [], [])
         assert solver.y0[core.index(n2)] == pytest.approx(1.0)
+
+
+class TestExplicitDpAutoGenPath:
+    """Explicit-DP handshake stage A (producer): the deck flag explicit_dp=True
+    auto-generates ONE capped oligomer at DP == cutoff (xs), registers it as a
+    real core species, and compile_polymer_phase wires it into the pool's
+    explicit_map so PolymerPool.to_config resolves
+    explicit_dp_to_species_index == {xs: core index}. These tests drive the
+    compiled run path (compile_polymer_phase -> HybridPolymerReactor ->
+    to_solver_object -> residual)."""
+
+    @staticmethod
+    def _compiled_setup(explicit_dp):
+        """Build (reactor, core, poly, dp_spc, mu_indices) through the real
+        compile path. Mean tail DP ~5 > xs=3 so the handshake is live;
+        k_unzip > 0 supplies the per-chain handshake frequency."""
+        from rmgpy.polymer import Polymer
+        from rmgpy.quantity import Quantity  # noqa: F401 (parity with compile)
+        from rmgpy.rmg.polymer_input import (HybridPolymerReactor,
+                                             PolymerPhaseBlueprint,
+                                             compile_polymer_phase)
+
+        poly = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=520.0, Mw=624.0, initial_mass=0.0052,
+                       k_unzip=0.1)
+        styrene = _spc("C=Cc1ccccc1", "styrene")
+        poly.monomer_product_species = styrene
+
+        dp_spc = poly.generate_explicit_dp_species()
+        if explicit_dp:
+            poly.explicit_dp = True
+            poly.explicit_dp_species = dp_spc
+
+        n2 = _spc("N#N", "N2")
+        mu = {}
+        for k, smi in ((0, "CO"), (1, "C=O"), (2, "C#N")):
+            m = _spc(smi, f"PS_mu{k}")
+            m.is_moment_dummy = True
+            mu[k] = m
+
+        species_dict = {"PS": poly, "PS_mu0": mu[0], "PS_mu1": mu[1],
+                        "PS_mu2": mu[2]}
+        blueprint = PolymerPhaseBlueprint(label="melt", species=["PS"],
+                                          solvent="PS",
+                                          density=(1050.0, "kg/m^3"))
+        initial_moles = {n2: 1.0, poly: 0.01}
+
+        phase = compile_polymer_phase(blueprint, initial_moles, species_dict)
+
+        reactor = HybridPolymerReactor(
+            temperature=(800.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles=initial_moles, polymerPhase=phase,
+            terminationTime=(1.0, "s"))
+        core = [n2, poly, mu[0], mu[1], mu[2], styrene, dp_spc]
+        mu_indices = (2, 3, 4)
+        return reactor, core, poly, dp_spc, mu_indices
+
+    def test_flag_on_config_maps_xs_to_condensed_core_index_zero_t0(self):
+        """Flag ON: the compiled solver pool holds exactly {xs: index}, the
+        index is condensed-masked (validate_configuration's explicit-DP check
+        passes), and with no deck loading the t=0 default is zero explicit
+        moles with UNSPLIT tail moments (nothing subtracted for a species
+        that starts empty)."""
+        reactor, core, _, dp_spc, mu_idx = self._compiled_setup(explicit_dp=True)
+        solver = reactor.to_solver_object(core, [], [], [])
+        solver.initialize_model(core, [], [], [])
+
+        i_dp = core.index(dp_spc)
+        pool_cfg = next(p for p in solver.polymer_pools if p.label == "PS")
+        assert pool_cfg.explicit_dp_to_species_index == {3: i_dp}
+        assert not solver.gas_species_mask[i_dp]
+        assert solver.y0[i_dp] == 0.0
+        moments = reactor.polymerPhase.initial_moments["PS"]
+        for k in range(3):
+            assert solver.y0[mu_idx[k]] == pytest.approx(moments[k])
+
+    def test_flag_off_config_stays_empty(self):
+        """Flag OFF (default): explicit_dp_to_species_index == {} --
+        byte-identical to today's structurally-inert behavior."""
+        reactor, core, _, _, _ = self._compiled_setup(explicit_dp=False)
+        solver = reactor.to_solver_object(core, [], [], [])
+        pool_cfg = next(p for p in solver.polymer_pools if p.label == "PS")
+        assert pool_cfg.explicit_dp_to_species_index == {}
+
+    def test_live_handshake_deposits_into_generated_species_with_matching_drain(self):
+        """Live RHS on the auto-gen path: with the flag ON the hybrid
+        handshake yields F > 0 deposit into the generated oligomer index and
+        drains (mu0, mu1, mu2) by exactly (F, xs*F, xs^2*F) -- pinned by
+        differencing the ON residual against an otherwise-identical OFF
+        build (deposit and drain are gated together on the map entry)."""
+        r_on, core_on, _, dp_on, mu_idx = self._compiled_setup(explicit_dp=True)
+        r_off, core_off, _, dp_off, _ = self._compiled_setup(explicit_dp=False)
+
+        s_on = r_on.to_solver_object(core_on, [], [], [])
+        s_on.initialize_model(core_on, [], [], [])
+        s_off = r_off.to_solver_object(core_off, [], [], [])
+        s_off.initialize_model(core_off, [], [], [])
+
+        dn_on = s_on.residual(0.0, s_on.y, np.zeros_like(s_on.y))[0]
+        dn_off = s_off.residual(0.0, s_off.y, np.zeros_like(s_off.y))[0]
+
+        i_dp = core_on.index(dp_on)
+        assert core_off.index(dp_off) == i_dp  # aligned state vectors
+
+        f_dep = dn_on[i_dp] - dn_off[i_dp]  # F * V_poly [mol/s]
+        assert f_dep > 0.0
+        xs = 3
+        assert dn_on[mu_idx[0]] - dn_off[mu_idx[0]] == pytest.approx(-f_dep)
+        assert dn_on[mu_idx[1]] - dn_off[mu_idx[1]] == pytest.approx(-xs * f_dep)
+        assert dn_on[mu_idx[2]] - dn_off[mu_idx[2]] == pytest.approx(-xs * xs * f_dep)
+
+    def test_daughter_pools_do_not_get_explicit_dp_in_v1(self):
+        """v1 LIMITATION (documented, not silent): daughter pools spawned
+        mid-run are derived with explicit_dp_to_species_index == {} even when
+        the parent carried explicit_dp=True -- auto-generating and
+        core-registering a capped oligomer at enlarge time is out of stage-A
+        scope. This test is the documentation."""
+        from rmgpy.polymer import Polymer
+        from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+
+        daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                           end_groups=["[CH3]", "[H]"], cutoff=3,
+                           Mn=520.0, Mw=624.0, initial_mass=0.001)
+        # Simulate a parent with the flag ON whose attributes propagated.
+        daughter.explicit_dp = True
+        daughter.explicit_dp_species = daughter.generate_explicit_dp_species()
+
+        mu = []
+        for k, smi in ((0, "CO"), (1, "C=O"), (2, "C#N")):
+            m = _spc(smi, f"PS_d1_mu{k}")
+            m.is_moment_dummy = True
+            mu.append(m)
+        core = [daughter] + mu
+        spc_map = {s: i for i, s in enumerate(core)}
+
+        configs = derive_daughter_pool_configs(core, spc_map, {"PS"})
+
+        assert len(configs) == 1
+        assert configs[0].label == "PS_d1"
+        assert configs[0].explicit_dp_to_species_index == {}
