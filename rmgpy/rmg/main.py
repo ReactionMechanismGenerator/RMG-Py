@@ -2165,6 +2165,7 @@ class RMG(util.Subject):
                 routing = {}
                 solver_mask = None
                 engine_pools_cfg = None
+                initial_explicit_by_pool = None
                 for system in (self.reaction_systems or []):
                     engine = getattr(system, "solver", None) or system
                     pools_cfg = getattr(engine, "polymer_pools", None)
@@ -2172,6 +2173,11 @@ class RMG(util.Subject):
                         continue
                     engine_pools_cfg = pools_cfg
                     solver_mask = getattr(engine, "gas_species_mask", None)
+                    # Stage-A explicit-DP loadings ({pool_label: {dp: moles}},
+                    # the exact shape set_initial_conditions step 2 seeds) —
+                    # feeds the schema-2.3 explicit_dp block's initial_moles.
+                    initial_explicit_by_pool = getattr(
+                        engine, "initial_explicit_species", None)
                     for p in pools_cfg:
                         idx = getattr(p, "monomer_poly_index", None)
                         if idx is not None and 0 <= idx < len(core_species):
@@ -2207,6 +2213,7 @@ class RMG(util.Subject):
                     condensed_species=condensed,
                     monomer_routing_by_pool=routing,
                     cantera_index_map=cantera_index_map,
+                    initial_explicit_by_pool=initial_explicit_by_pool,
                 )
         except Exception as e:
             logging.warning(f"Failed to write polymer_pools.json sidecar: {e}", exc_info=True)

@@ -336,13 +336,14 @@ class TestQssaSchemaVersionGate:
 
     def test_rejects_unknown_future_minor(self, qssa_deck, deck):
         """Weak-link milestone iv POLICY CHANGE (was minor-permissive): the
-        loader now pins the maximum schema minor it implements (2.2). A
-        2.3+ artifact may carry vocabulary outside the channel blocks that
-        the unknown-key guards never see (new conventions, new pool fields),
-        so an older loader must fail loud instead of loading additively."""
+        loader pins the maximum schema minor it implements (2.3 since the
+        explicit-DP handshake block, stage B). A newer-minor artifact may
+        carry vocabulary outside the channel blocks that the unknown-key
+        guards never see (new conventions, new pool fields), so an older
+        loader must fail loud instead of loading additively."""
         artifact = _load_artifact(qssa_deck)
-        artifact["schema_version"] = "2.3"
-        with pytest.raises(ValueError, match=r"schema_version.*2\.3"):
+        artifact["schema_version"] = "2.4"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.4"):
             _build_qssa(qssa_deck, artifact)
         artifact = _load_artifact(qssa_deck)
         artifact["schema_version"] = "2.7"
@@ -352,12 +353,25 @@ class TestQssaSchemaVersionGate:
         chem_path, art_path = deck
         with open(art_path) as fh:
             legacy = json.load(fh)
-        legacy["schema_version"] = "2.3"
+        legacy["schema_version"] = "2.4"
         species, reactions = load_chem_yaml(chem_path)
-        with pytest.raises(ValueError, match=r"schema_version.*2\.3"):
+        with pytest.raises(ValueError, match=r"schema_version.*2\.4"):
             build_system_from_artifact(
                 legacy, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
                 initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_accepts_2_3_without_explicit_dp(self, deck):
+        """2.3 is now an implemented minor: a 2.3 stamp with no explicit_dp
+        block anywhere loads (mirror of test_accepts_2_1_without_qssa)."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.3"
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert rs.polymer_pools[0].explicit_dp_to_species_index == {}
 
 
 class TestQssaNormativeRecipe:
@@ -1296,3 +1310,214 @@ class TestReferenceStateTripwireConsumerWorld:
             rs.initialize_model(core, [rxn], [], [])
         assert "GHOST" in str(exc.value)
         assert "math domain error" not in str(exc.value)
+
+
+@pytest.fixture
+def explicit_dp_deck(tmp_path):
+    """A stage-A explicit-DP pool (deck flag explicit_dp=True attached the
+    capped DP=cutoff oligomer as a real core species), written out as
+    chem.yaml + polymer_pools.json exactly like an RMG run would."""
+    n2 = _spc("N#N", "N2", index=1)
+    dp3 = _spc("CCC", "poly_dp3", index=2)
+    mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+    core = [n2, dp3] + mus
+    data, index_map = generate_cantera_data(core, [],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+
+    pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                   end_groups=["[H]", "[H]"], cutoff=3,
+                   moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                   k_scission=1.0, k_unzip=0.0)
+    pool.explicit_dp = True
+    pool.explicit_dp_species = dp3
+    artifact = build_polymer_moments_artifact(
+        [pool], core_species=core, core_reactions=[],
+        configured_pool_labels=["poly"], condensed_species=mus + [dp3],
+        cantera_index_map=index_map,
+        initial_explicit_by_pool={"poly": {3: 0.25}})
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+def _build_explicit(explicit_dp_deck, artifact=None):
+    chem_path, art_path = explicit_dp_deck
+    if artifact is None:
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+        initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+
+class TestExplicitDpArtifactLoader:
+    """Schema-2.3 explicit_dp pool block (stage B): the loader parses and
+    validates the block at the artifact boundary (pinned recipe/revision,
+    closed key vocabulary, handshake invariants) and wires the oracle's
+    explicit map + t=0 loadings from it."""
+
+    def test_round_trip_wires_explicit_map_and_initial_moles(
+            self, explicit_dp_deck):
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        assert artifact["schema_version"] == "2.3"
+        assert artifact["conventions"]["recipe_revision"] == \
+            "2026-07-04-explicit-dp-monomer-gas"
+        block = artifact["pools"][0]["explicit_dp"]
+        assert block["species"] == {"3": "poly_dp3(2)"}
+        assert block["initial_moles"] == {"3": 0.25}
+        rs, core, _ = _build_explicit(explicit_dp_deck, artifact)
+        labels = [s.label for s in core]
+        dp_idx = labels.index("poly_dp3(2)")
+        assert rs.polymer_pools[0].explicit_dp_to_species_index == {3: dp_idx}
+        # t=0 loading seeded as species amount (set_initial_conditions
+        # step 2, clamped >= 0)
+        assert rs.y0[dp_idx] == pytest.approx(0.25)
+        # BEHAVIORAL tail-split pin (adversarial-review P1): declared
+        # pools[].moments are TOTAL-INCLUSIVE and set_initial_conditions
+        # step 6 subtracts each mapped DP's contribution (N, dp*N, dp^2*N)
+        # from the seeded mu0/mu1/mu2, clamped >= 0. Declared [1, 5, 30]
+        # with 0.25 mol at DP=3, V_poly=1 -> seeded mu amounts
+        # [1-0.25, 5-3*0.25, 30-9*0.25] = [0.75, 4.25, 27.75]. Verbatim
+        # (no-subtraction) seeding would leave [1, 5, 30] — the false claim
+        # the original tail_split contract text made; this pin fails RED on
+        # any emitter/oracle drift back to that reading.
+        mu_seeded = [float(rs.y0[i]) for i in rs.polymer_pools[0].mu_indices]
+        assert mu_seeded == pytest.approx([0.75, 4.25, 27.75])
+
+    def test_legacy_artifact_without_block_loads_unchanged(self, deck):
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        assert "explicit_dp" not in json.dumps(artifact)
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert rs.polymer_pools[0].explicit_dp_to_species_index == {}
+
+    def test_rejects_block_in_2_2_stamped_artifact(self, explicit_dp_deck):
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.2"
+        with pytest.raises(ValueError, match=r"explicit_dp.*2\.3|2\.3.*explicit_dp"):
+            _build_explicit(explicit_dp_deck, artifact)
+
+    def test_rejects_disabled_block_as_malformed(self, explicit_dp_deck):
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        artifact["pools"][0]["explicit_dp"]["enabled"] = False
+        with pytest.raises(ValueError, match="enabled=false"):
+            _build_explicit(explicit_dp_deck, artifact)
+
+    def test_rejects_tampered_recipe_no_adaptation(self, explicit_dp_deck):
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        artifact["pools"][0]["explicit_dp"]["recipe"]["k_chain"] = "k_unzip"
+        with pytest.raises(ValueError, match="pinned normative recipe"):
+            _build_explicit(explicit_dp_deck, artifact)
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        artifact["pools"][0]["explicit_dp"]["recipe_revision"] = "2026-01-01"
+        with pytest.raises(ValueError, match="recipe_revision"):
+            _build_explicit(explicit_dp_deck, artifact)
+
+    def test_rejects_unknown_block_key(self, explicit_dp_deck):
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        artifact["pools"][0]["explicit_dp"]["dp_ladder"] = [2, 3]
+        with pytest.raises(ValueError, match="unknown key"):
+            _build_explicit(explicit_dp_deck, artifact)
+
+    def test_rejects_unresolvable_species_label(self, explicit_dp_deck):
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        artifact["pools"][0]["explicit_dp"]["species"]["3"] = "GHOST(99)"
+        with pytest.raises(ValueError, match="GHOST"):
+            _build_explicit(explicit_dp_deck, artifact)
+
+    def test_rejects_target_dp_cutoff_mismatch(self, explicit_dp_deck):
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        artifact["pools"][0]["explicit_dp"]["handshake_target_dp"] = 2
+        with pytest.raises(ValueError, match="handshake_target_dp"):
+            _build_explicit(explicit_dp_deck, artifact)
+
+    def test_handshake_residual_deposits_and_drains_through_runner_path(
+            self, tmp_path):
+        """BEHAVIORAL handshake pin through the runner path (adversarial
+        review: string pins alone gave false confidence). A runner-built
+        system with an active k_unzip arm and an explicit-DP target must,
+        at the RHS level, deposit F*V_poly into the explicit species and
+        drain the moments by exactly (F, xs*F, xs^2*F) on top of the unzip
+        channel's own (0, r, k_u*(2*mu1-mu0)) drain."""
+        n2 = _spc("N#N", "N2", index=1)
+        dp3 = _spc("CCC", "poly_dp3", index=2)
+        mono = _spc("C=C", "C2H4", index=3)
+        mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+        core = [n2, dp3, mono] + mus
+        data, index_map = generate_cantera_data(
+            core, [], return_reaction_index_map=True)
+        chem_path = os.path.join(str(tmp_path), "chem.yaml")
+        with open(chem_path, "w") as fh:
+            yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+        pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                       k_scission=0.0, k_unzip=0.1)
+        pool.explicit_dp = True
+        pool.explicit_dp_species = dp3
+        artifact = build_polymer_moments_artifact(
+            [pool], core_species=core, core_reactions=[],
+            configured_pool_labels=["poly"],
+            condensed_species=mus + [dp3],
+            monomer_routing_by_pool={"poly": "C2H4(3)"},
+            cantera_index_map=index_map)
+        species, reactions = load_chem_yaml(chem_path)
+        rs, core2, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        labels = [s.label for s in core2]
+        dp_idx = labels.index("poly_dp3(2)")
+        mono_idx = labels.index("C2H4(3)")
+        p = rs.polymer_pools[0]
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        # V_poly = 1, mu(conc) = (1, 5, 30), xs = 3, k_u = 0.1:
+        F = float(dn_dt[dp_idx])
+        assert F > 0.0  # boundary flux is live
+        # only the handshake touches mu0 (k_scission = 0)
+        assert -float(dn_dt[p.mu_indices[0]]) == pytest.approx(F)
+        # unzip drain r = k_u*mu0 = 0.1 stacks on the handshake's xs*F
+        assert -float(dn_dt[p.mu_indices[1]]) == pytest.approx(3.0 * F + 0.1)
+        # unzip mu2 drain k_u*(2*mu1 - mu0) = 0.9 stacks on xs^2*F
+        assert -float(dn_dt[p.mu_indices[2]]) == pytest.approx(9.0 * F + 0.9)
+        # the unzip release deposits r into the GAS monomer, not the target
+        assert float(dn_dt[mono_idx]) == pytest.approx(0.1)
+
+    def test_rejects_explicit_dp_token_without_any_block(
+            self, explicit_dp_deck):
+        """P2 pairing gate, direction (a): a conventions recipe_revision
+        carrying an explicit-dp token claims handshake algebra the pools do
+        not carry — a hand-edited artifact must fail loud (the producer
+        stamps the token iff a block is present)."""
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        del artifact["pools"][0]["explicit_dp"]
+        assert "explicit_dp" not in json.dumps(artifact["pools"])
+        with pytest.raises(ValueError, match="explicit-dp|explicit_dp"):
+            _build_explicit(explicit_dp_deck, artifact)
+
+    def test_rejects_block_without_explicit_dp_token(self, explicit_dp_deck):
+        """P2 pairing gate, direction (b): an explicit_dp block under a
+        non-explicit-dp recipe_revision claims rates from a recipe with no
+        handshake algebra — reject, never integrate permissively."""
+        with open(explicit_dp_deck[1]) as fh:
+            artifact = json.load(fh)
+        artifact["conventions"]["recipe_revision"] = "2026-07-03-monomer-gas"
+        with pytest.raises(ValueError, match="recipe_revision"):
+            _build_explicit(explicit_dp_deck, artifact)

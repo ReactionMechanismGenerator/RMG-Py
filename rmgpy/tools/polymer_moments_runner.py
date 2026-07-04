@@ -367,23 +367,78 @@ _QSSA_PINNED_RECIPE_WEAKLINK = {
                     "convert emitted rate back with *V_poly"),
 }
 
+# Normative explicit-DP handshake recipe (schema 2.3), pinned HERE
+# independently of the emitter's EXPLICIT_DP_SIDECAR_RECIPE
+# (rmgpy/polymer.py) -- same boundary-guard idiom as the QSSA pins: a
+# sidecar claiming a different handshake algebra (or omitting the recipe)
+# must ERROR, never be adapted to. Each string matches the implemented
+# oracle law in rmgpy/solver/polymer.pyx (hybrid handshake; gamma helpers
+# _gamma_params_from_mu012 / _gamma_prob_conditional_hybrid) and the
+# generation-side t=0 accounting (PolymerPhase.calculate_volume /
+# set_initial_conditions).
+_EXPLICIT_DP_PINNED_RECIPE = {
+    "tail_split": ("declared pools[].moments are TOTAL-INCLUSIVE (explicit "
+                   "chains counted in); the solver seeds the explicit "
+                   "species' initial_moles as species amounts (clamped "
+                   ">= 0), then subtracts each mapped DP's contribution "
+                   "(N_dp, dp*N_dp, dp^2*N_dp on concentration moments) "
+                   "from the seeded mu0/mu1/mu2, clamped >= 0 with a clamp "
+                   "warning (set_initial_conditions step 6) -- the "
+                   "integrated tail moments are total - explicit; the "
+                   "generation-side V_poly mass split applies the same "
+                   "subtraction and hard-errors when explicit mu1 exceeds "
+                   "declared mu1 beyond -1e-12"),
+    "boundary_flux": ("gated on mu0 > 1e-9 mol/m^3 AND mu1/mu0 > xs + 1e-9; "
+                      "p_cond = P(DP = xs+1 | DP > xs) from the gamma "
+                      "distribution moment-matched to (mu0, mu1, mu2) "
+                      "(k = 1/(PDI - 1), theta = mean/k; half-integer bins: "
+                      "[F((xs+1.5)/theta) - F((xs+0.5)/theta)] / "
+                      "[1 - F((xs+0.5)/theta)] with F the regularized lower "
+                      "incomplete gamma); triangular fallback on tail_mean "
+                      "in (xs+1, xs+2) peaking 1.0 at xs+1.5 when the gamma "
+                      "is unrealizable (any moment <= 1e-30, PDI <= 1+1e-6, "
+                      "or non-finite params); p_cond clamped to [0, 1]; "
+                      "N_boundary = min(mu0*p_cond, mu0, mu1/xs, mu2/xs^2) "
+                      "[mol/m^3]; F_flux = k_chain * N_boundary; "
+                      "dn(species[xs])/dt += F_flux*V_poly; dmu0 -= F_flux; "
+                      "dmu1 -= xs*F_flux; dmu2 -= xs^2*F_flux"),
+    "k_chain": ("k_unzip when k_unzip > 0, else r_qssa/max(mu0, 1e-30) when "
+                "the radical_qssa_unzip channel is active (mutually "
+                "exclusive upstream; at most one arm fires)"),
+    "transport": ("one-way: statistical moment tail -> explicit real "
+                  "condensed species at DP == handshake_target_dp; no "
+                  "reverse flux"),
+}
+# The pool block's own revision token, pinned byte-for-byte against the
+# emitter's EXPLICIT_DP_BLOCK_RECIPE_REVISION.
+_EXPLICIT_DP_PINNED_REVISION = "2026-07-04-explicit-dp"
+# Closed key vocabulary of the pool-level explicit_dp block (schema 2.3).
+_EXPLICIT_DP_BLOCK_KEYS = frozenset(
+    ("enabled", "species", "initial_moles", "handshake_target_dp",
+     "recipe_revision", "recipe"))
+
 # The QSSA channel vocabulary entered the sidecar schema at 2.1 (channel-
 # vocabulary growth = minor bump); the emitter stamps >= 2.1 whenever it
 # writes the block, so a 2.0 artifact carrying one is malformed. The
-# weak-link allyl/U-state sub-vocabulary entered at 2.2, same rule.
+# weak-link allyl/U-state sub-vocabulary entered at 2.2, and the pool-level
+# explicit_dp block at 2.3 -- same rule.
 _QSSA_MIN_SCHEMA_MINOR = 1
 _WEAKLINK_MIN_SCHEMA_MINOR = 2
+_EXPLICIT_DP_MIN_SCHEMA_MINOR = 3
 # Maximum schema minor this loader implements. Weak-link milestone iv
-# POLICY CHANGE (was minor-permissive): a 2.3+ artifact may carry
+# POLICY CHANGE (was minor-permissive): a newer-minor artifact may carry
 # vocabulary OUTSIDE the channel blocks (new conventions, new pool fields)
 # that the unknown-key guards here never inspect, so an older loader must
-# fail loud on it instead of loading additively.
-_MAX_KNOWN_SCHEMA_MINOR = 2
+# fail loud on it instead of loading additively. Raised to 3 with the
+# explicit-DP handshake block (stage B): this loader parses/validates the
+# pool-level explicit_dp vocabulary and the oracle it drives implements the
+# handshake law, so 2.3 acceptance is truthful; 2.4+ stays rejected.
+_MAX_KNOWN_SCHEMA_MINOR = 3
 
 
 def _check_schema_version_known(artifact):
     """Reject any artifact whose schema_version is not one this loader
-    implements (2.0 <= 2.x <= 2.2)."""
+    implements (2.0 <= 2.x <= 2.3)."""
     ver = str(artifact.get("schema_version", ""))
     parts = ver.split(".")
     ok = (len(parts) == 2 and parts[0] == "2" and parts[1].isdigit()
@@ -450,12 +505,190 @@ _MONOMER_GAS_RECIPE_REVISIONS = frozenset({
     "2026-07-03-monomer-gas",
     "2026-07-03-qssa-monomer-gas",
     "2026-07-03-weaklink-u-monomer-gas",
+    # Explicit-DP re-stamps (schema 2.3, stage B): same 3-way channel-family
+    # split, all implementing the GAS routed-monomer contract (the
+    # -monomer-gas suffix is retained; the explicit-DP handshake adds
+    # condensed-side algebra and does not touch the routed monomer's phase).
+    "2026-07-04-explicit-dp-monomer-gas",
+    "2026-07-04-explicit-dp-qssa-monomer-gas",
+    "2026-07-04-explicit-dp-weaklink-u-monomer-gas",
 })
 _PRE_MONOMER_GAS_RECIPE_REVISIONS = frozenset({
     "2026-06-10",
     "2026-07-02",
     "2026-07-03-weaklink-u",
 })
+
+
+def _check_explicit_dp_schema_version(artifact):
+    """Reject an artifact carrying any pool-level explicit_dp block under a
+    schema_version below 2.3 (or a non-2.x version). Scans ALL pool entries,
+    configured or not, mirroring _check_qssa_schema_version: the vocabulary
+    appearing anywhere means the artifact claims the 2.3 shape."""
+    carriers = [p.get("label") for p in artifact.get("pools", [])
+                if isinstance(p, dict) and "explicit_dp" in p]
+    if not carriers:
+        return
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    minor = (int(parts[1]) if len(parts) == 2 and parts[0] == "2"
+             and parts[1].isdigit() else -1)
+    if minor < _EXPLICIT_DP_MIN_SCHEMA_MINOR:
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry a pool-level "
+            f"explicit_dp block (pools {carriers}): the explicit-DP "
+            f"handshake vocabulary was introduced in schema 2.3, and the "
+            f"emitter stamps 2.3 whenever it writes it. This artifact is "
+            f"malformed -- regenerate the sidecar with a current RMG-Py "
+            f"polymer branch.")
+
+
+# The artifact-level recipe-revision tokens that carry the explicit-DP
+# handshake algebra (the 3-way channel-family split, rmgpy/polymer.py
+# POLYMER_RATE_RECIPE_REVISION_EXPLICIT_DP*). The pairing with the pool
+# vocabulary is exact in BOTH directions (P2 gates, stage-B adversarial
+# review): a token without any explicit_dp block claims handshake algebra
+# the pools do not carry, and a block without the token claims rates from a
+# recipe with no handshake algebra. The producer can emit neither shape;
+# hand-edited artifacts must fail loud.
+_EXPLICIT_DP_RECIPE_REVISIONS = frozenset({
+    "2026-07-04-explicit-dp-monomer-gas",
+    "2026-07-04-explicit-dp-qssa-monomer-gas",
+    "2026-07-04-explicit-dp-weaklink-u-monomer-gas",
+})
+
+
+def _check_explicit_dp_recipe_revision(artifact):
+    """Enforce the explicit-DP token/vocabulary pairing in both directions
+    (see _EXPLICIT_DP_RECIPE_REVISIONS)."""
+    rev = (artifact.get("conventions") or {}).get("recipe_revision")
+    carriers = [p.get("label") for p in artifact.get("pools", [])
+                if isinstance(p, dict) and "explicit_dp" in p]
+    if rev in _EXPLICIT_DP_RECIPE_REVISIONS and not carriers:
+        raise ValueError(
+            f"artifact recipe_revision {rev!r} declares the explicit-dp "
+            f"handshake algebra but NO pool carries an explicit_dp block. "
+            f"The emitter stamps an explicit-dp token exactly when a block "
+            f"is present; this artifact is hand-edited/corrupted -- "
+            f"regenerate the sidecar.")
+    if carriers and rev not in _EXPLICIT_DP_RECIPE_REVISIONS:
+        raise ValueError(
+            f"pools {carriers} carry explicit_dp blocks but the artifact "
+            f"recipe_revision is {rev!r} (not an explicit-dp token: "
+            f"{sorted(_EXPLICIT_DP_RECIPE_REVISIONS)}). The rates would "
+            f"claim a recipe with no handshake algebra; reject, never "
+            f"integrate permissively -- regenerate the sidecar.")
+
+
+def _parse_explicit_dp_block(lab, pool_entry):
+    """Parse + validate a pool entry's pool-level explicit_dp block (schema
+    2.3). Returns ``(dp_to_label, initial_moles)`` — ``{int dp: str label}``
+    and ``{int dp: float moles}`` — or ``None`` when the block is absent.
+
+    Boundary rules mirror the QSSA channel parser: closed key vocabulary,
+    boolean ``enabled`` (present-disabled REJECTED — the emitter never
+    writes disabled blocks), the normative ``recipe`` and the block
+    ``recipe_revision`` pinned by exact match (reject, never adapt), and
+    the handshake invariants the emitter guarantees (exactly one species
+    entry in v1, at DP == handshake_target_dp == the pool's cutoff;
+    initial_moles keyed identically, finite and >= 0)."""
+    raw = pool_entry.get("explicit_dp")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp must be a dict, got "
+            f"{type(raw).__name__}. Fix the artifact.")
+    unknown = sorted(set(raw) - _EXPLICIT_DP_BLOCK_KEYS)
+    if unknown:
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp has unknown key(s) {unknown}; "
+            f"allowed keys are {sorted(_EXPLICIT_DP_BLOCK_KEYS)}. Fix the "
+            f"artifact (unknown vocabulary is never dropped permissively).")
+    missing = sorted(_EXPLICIT_DP_BLOCK_KEYS - set(raw))
+    if missing:
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp is missing key(s) {missing}. The "
+            f"emitter always writes the full block -- regenerate the "
+            f"sidecar.")
+    enabled = raw["enabled"]
+    if not isinstance(enabled, bool):
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp must carry a boolean 'enabled' "
+            f"field, got {enabled!r}. Fix the artifact.")
+    if not enabled:
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp carries enabled=false. The emitter "
+            f"never writes disabled blocks: a disabled handshake must be "
+            f"absent from the sidecar, not present-disabled. Fix the "
+            f"artifact (remove the block).")
+    if raw["recipe_revision"] != _EXPLICIT_DP_PINNED_REVISION:
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp recipe_revision must equal "
+            f"{_EXPLICIT_DP_PINNED_REVISION!r} exactly, got "
+            f"{raw['recipe_revision']!r}. An artifact claiming a different "
+            f"handshake recipe must be fixed at the source; this loader "
+            f"validates, never adapts.")
+    recipe = raw["recipe"]
+    if not isinstance(recipe, dict):
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp must carry the normative 'recipe' "
+            f"dict (schema 2.3), got {recipe!r} -- regenerate the sidecar.")
+    unknown_recipe = sorted(set(recipe) - set(_EXPLICIT_DP_PINNED_RECIPE))
+    if unknown_recipe:
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp recipe has unknown key(s) "
+            f"{unknown_recipe}; allowed keys are "
+            f"{sorted(_EXPLICIT_DP_PINNED_RECIPE)}. Fix the artifact.")
+    for key, pinned in _EXPLICIT_DP_PINNED_RECIPE.items():
+        if key not in recipe or recipe[key] != pinned:
+            raise ValueError(
+                f"Pool {lab!r}: explicit_dp recipe[{key!r}] must equal the "
+                f"pinned normative recipe exactly; got {recipe.get(key)!r}, "
+                f"expected {pinned!r}. An artifact claiming a different "
+                f"handshake algebra must be fixed at the source; this "
+                f"loader validates, never adapts.")
+    species = raw["species"]
+    moles = raw["initial_moles"]
+    if not isinstance(species, dict) or not species:
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp species must be a non-empty "
+            f"{{dp: label}} dict, got {species!r}. Fix the artifact.")
+    if not isinstance(moles, dict) or set(moles) != set(species):
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp initial_moles must be keyed "
+            f"identically to species (got keys {sorted(moles) if isinstance(moles, dict) else moles!r} "
+            f"vs {sorted(species)}). Fix the artifact.")
+    target = raw["handshake_target_dp"]
+    cutoff = pool_entry.get("cutoff")
+    if not isinstance(target, int) or isinstance(target, bool) or (
+            cutoff is not None and int(cutoff) != target):
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp handshake_target_dp must be the "
+            f"pool's cutoff as an integer (cutoff={cutoff!r}), got "
+            f"{target!r}. Fix the artifact.")
+    if sorted(species) != [str(target)]:
+        raise ValueError(
+            f"Pool {lab!r}: explicit_dp species must carry exactly ONE "
+            f"entry at DP == handshake_target_dp ({target}) in v1, got keys "
+            f"{sorted(species)}. Fix the artifact.")
+    dp_to_label = {}
+    initial_moles = {}
+    for dp_key, label in species.items():
+        if not isinstance(label, str) or not label:
+            raise ValueError(
+                f"Pool {lab!r}: explicit_dp species[{dp_key!r}] must be a "
+                f"chem.yaml species-label string, got {label!r}. Fix the "
+                f"artifact.")
+        m = moles[dp_key]
+        if not isinstance(m, (int, float)) or isinstance(m, bool) or \
+                not math.isfinite(float(m)) or float(m) < 0.0:
+            raise ValueError(
+                f"Pool {lab!r}: explicit_dp initial_moles[{dp_key!r}] must "
+                f"be a finite number >= 0, got {m!r}. Fix the artifact.")
+        dp_to_label[int(dp_key)] = label
+        initial_moles[int(dp_key)] = float(m)
+    return dp_to_label, initial_moles
 
 
 def _check_recipe_revision_monomer_phase(artifact):
@@ -683,6 +916,13 @@ def build_system_from_artifact(artifact, species, reactions,
     # sub-vocabulary) is malformed regardless of pool configuration.
     _check_schema_version_known(artifact)
     _check_qssa_schema_version(artifact)
+    # Explicit-DP vocabulary/version cross-check (schema 2.3): a 2.0-2.2
+    # artifact carrying a pool-level explicit_dp block is malformed.
+    _check_explicit_dp_schema_version(artifact)
+    # ... and the explicit-dp token/vocabulary pairing is exact in both
+    # directions (P2 gates): token without block, block without token --
+    # both hand-edited shapes fail loud.
+    _check_explicit_dp_recipe_revision(artifact)
     # Monomer-phase semantics are revision-gated (P1-B): reject
     # contradictory NEW-revision artifacts, hard-refuse pre-monomer-gas
     # ones that route monomer (see _check_recipe_revision_monomer_phase).
@@ -698,6 +938,7 @@ def build_system_from_artifact(artifact, species, reactions,
 
     pools = []
     moments0 = {}
+    initial_explicit_by_pool = {}
     for p in artifact["pools"]:
         lab = p["label"]
         if lab not in conv["configured_pools"]:
@@ -784,9 +1025,31 @@ def build_system_from_artifact(artifact, species, reactions,
                     f"the deck's species list; cannot wire unzip-to-monomer "
                     f"release. Fix the artifact's monomer_routing to name a "
                     f"species present in chem.yaml.")
+        # Explicit-DP handshake block (schema 2.3): resolve the species
+        # labels against chem.yaml and wire the pool's explicit map + the
+        # t=0 loadings, so the oracle's hybrid handshake deposits
+        # boundary-crossing chains exactly as the generation run did. A
+        # label the deck cannot resolve is a hard error (the handshake
+        # would silently strand its flux otherwise).
+        explicit_map = {}
+        parsed_explicit = _parse_explicit_dp_block(lab, p)
+        if parsed_explicit is not None:
+            dp_to_label, dp_moles = parsed_explicit
+            for dp, spc_label in dp_to_label.items():
+                spc_idx = idx.get(spc_label)
+                if spc_idx is None:
+                    raise ValueError(
+                        f"Pool {lab!r}: explicit_dp species {spc_label!r} "
+                        f"(DP {dp}) is not in the deck's species list; "
+                        f"cannot wire the hybrid handshake target. Fix the "
+                        f"artifact's explicit_dp species to name a species "
+                        f"present in chem.yaml.")
+                explicit_map[dp] = spc_idx
+            if any(v > 0.0 for v in dp_moles.values()):
+                initial_explicit_by_pool[lab] = dict(dp_moles)
         pools.append(PolymerPoolConfig(
             label=lab, xs=int(p.get("cutoff") or 0),
-            explicit_dp_to_species_index={},
+            explicit_dp_to_species_index=explicit_map,
             mu_indices=mu_idx,
             monomer_poly_index=monomer_idx,
             # The tripwire's ONE chain-scale window (and the spawn-gate
@@ -827,7 +1090,12 @@ def build_system_from_artifact(artifact, species, reactions,
         V_poly=float(V_poly),
         polymer_pools=pools, mass_transfer=mt_configs,
         gas_species_mask=mask, constant_gas_volume=False,
-        initial_polymer_moments=moments0, termination=[],
+        initial_polymer_moments=moments0,
+        # Stage-A solver contract {pool_label: {dp: moles}} recovered from
+        # the artifact's explicit_dp.initial_moles (set_initial_conditions
+        # step 2 seeds it verbatim, matching the generation run).
+        initial_explicit_species=initial_explicit_by_pool,
+        termination=[],
         # Item 17 A5-2: the runner is a direct (no-blueprint-phase) construction
         # -- a legitimate last-resort prospective-mask fallback. Flag it so the
         # R1-EDGE provenance guard does not raise on a default-filled edge

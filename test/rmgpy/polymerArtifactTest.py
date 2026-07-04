@@ -1407,3 +1407,224 @@ class TestSpawnedPoolMoments:
         legacy_by = {p["label"]: p for p in legacy["pools"]}
         assert legacy_by["PE"]["moments_provenance"] == "input_declared"
         assert legacy_by[daughter.label]["moments_provenance"] == "spawned_empty"
+
+
+# The normative explicit-DP recipe strings, pinned as LITERALS in the test
+# (NOT imported from the emitter constant — an emitter edit must fail here,
+# same idiom as WEAKLINK_PINNED_RECIPE). Transcribed from the implemented
+# oracle: boundary flux polymer.pyx:3475-3524 (gamma-conditional p_cond,
+# triangular fallback, flux clamps), gamma helpers polymer.pyx:491-525,
+# k_chain arm selection polymer.pyx:3484-3488, t=0 tail split
+# set_initial_conditions step 6 / _explicit_moment_contributions
+# (polymer.pyx:2109-2132, :471-488: seeded moments = declared TOTAL minus
+# each mapped DP's (N, dp*N, dp^2*N), clamped >= 0) + the matching
+# generation-side V_poly mass split (PolymerPhase.calculate_volume).
+EXPLICIT_DP_PINNED_RECIPE = {
+    "tail_split": ("declared pools[].moments are TOTAL-INCLUSIVE (explicit "
+                   "chains counted in); the solver seeds the explicit "
+                   "species' initial_moles as species amounts (clamped "
+                   ">= 0), then subtracts each mapped DP's contribution "
+                   "(N_dp, dp*N_dp, dp^2*N_dp on concentration moments) "
+                   "from the seeded mu0/mu1/mu2, clamped >= 0 with a clamp "
+                   "warning (set_initial_conditions step 6) -- the "
+                   "integrated tail moments are total - explicit; the "
+                   "generation-side V_poly mass split applies the same "
+                   "subtraction and hard-errors when explicit mu1 exceeds "
+                   "declared mu1 beyond -1e-12"),
+    "boundary_flux": ("gated on mu0 > 1e-9 mol/m^3 AND mu1/mu0 > xs + 1e-9; "
+                      "p_cond = P(DP = xs+1 | DP > xs) from the gamma "
+                      "distribution moment-matched to (mu0, mu1, mu2) "
+                      "(k = 1/(PDI - 1), theta = mean/k; half-integer bins: "
+                      "[F((xs+1.5)/theta) - F((xs+0.5)/theta)] / "
+                      "[1 - F((xs+0.5)/theta)] with F the regularized lower "
+                      "incomplete gamma); triangular fallback on tail_mean "
+                      "in (xs+1, xs+2) peaking 1.0 at xs+1.5 when the gamma "
+                      "is unrealizable (any moment <= 1e-30, PDI <= 1+1e-6, "
+                      "or non-finite params); p_cond clamped to [0, 1]; "
+                      "N_boundary = min(mu0*p_cond, mu0, mu1/xs, mu2/xs^2) "
+                      "[mol/m^3]; F_flux = k_chain * N_boundary; "
+                      "dn(species[xs])/dt += F_flux*V_poly; dmu0 -= F_flux; "
+                      "dmu1 -= xs*F_flux; dmu2 -= xs^2*F_flux"),
+    "k_chain": ("k_unzip when k_unzip > 0, else r_qssa/max(mu0, 1e-30) when "
+                "the radical_qssa_unzip channel is active (mutually "
+                "exclusive upstream; at most one arm fires)"),
+    "transport": ("one-way: statistical moment tail -> explicit real "
+                  "condensed species at DP == handshake_target_dp; no "
+                  "reverse flux"),
+}
+
+
+@pytest.fixture
+def explicit_dp_pool():
+    """Stage-A-shaped pool: deck flag explicit_dp=True attached the capped
+    DP=cutoff oligomer species (rmgpy/rmg/input.py polymer() step 4c)."""
+    pool = Polymer(
+        label="PS",
+        monomer="[CH2][CH](c1ccccc1)",
+        end_groups=["[H]", "[H]"],
+        cutoff=3,
+        Mn=1500.0,
+        Mw=1800.0,
+        initial_mass=1.0,
+        k_scission=0.0,
+        k_unzip=0.01,
+    )
+    pool.explicit_dp = True
+    pool.explicit_dp_species = _spc("CCC", "PS_dp3", index=42)
+    return pool
+
+
+class TestExplicitDpSerialization:
+    """Stage B (schema 2.3): the explicit-DP handshake target is serialized
+    as a POOL-LEVEL block (state/topology, not kinetics — deliberately NOT
+    inside channels), emitted ONLY when the pool carries the stage-A
+    explicit species. Flag-OFF artifacts stay byte-identical (the golden pin
+    in test_legacy_artifact_serialization_pinned covers the bytes; the
+    absence assertions here cover the vocabulary)."""
+
+    def test_explicit_dp_block_emitted_with_exact_shape(self, explicit_dp_pool):
+        d = _serialize_pool_for_sidecar(explicit_dp_pool,
+                                        initial_explicit_moles={3: 0.25})
+        block = d["explicit_dp"]
+        assert block == {
+            "enabled": True,
+            "species": {"3": "PS_dp3(42)"},
+            "initial_moles": {"3": 0.25},
+            "handshake_target_dp": 3,
+            "recipe_revision": "2026-07-04-explicit-dp",
+            "recipe": EXPLICIT_DP_PINNED_RECIPE,
+        }
+
+    def test_initial_moles_default_zero(self, explicit_dp_pool):
+        """No initial_explicit loading declared -> 0.0, never a hole (the
+        stage-A channel's default: the species starts empty)."""
+        d = _serialize_pool_for_sidecar(explicit_dp_pool)
+        assert d["explicit_dp"]["initial_moles"] == {"3": 0.0}
+
+    def test_species_label_matches_artifact_convention(self, explicit_dp_pool):
+        """Labels, not indices: the species entry uses the same chem.yaml
+        label rule as every other species reference in the sidecar
+        (_artifact_species_label: 'label(index)' when index > 0)."""
+        core = [
+            _spc("CC", "PS", index=2),
+            _mu_dummy("PS_mu0"), _mu_dummy("PS_mu1"), _mu_dummy("PS_mu2"),
+            explicit_dp_pool.explicit_dp_species,
+        ]
+        d = _serialize_pool_for_sidecar(explicit_dp_pool, core_species=core)
+        assert d["explicit_dp"]["species"] == {"3": "PS_dp3(42)"}
+
+    def test_explicit_species_joins_phase_species_not_bookkeeping(
+            self, explicit_dp_pool):
+        """Format doc §2 phase_species/bookkeeping_species carve-out:
+        explicit-DP chains are REAL condensed inventory — listed in
+        phase_species, and exactly NOT in the bookkeeping subset."""
+        core = [
+            _spc("CC", "PS", index=2),
+            _mu_dummy("PS_mu0"), _mu_dummy("PS_mu1"), _mu_dummy("PS_mu2"),
+            explicit_dp_pool.explicit_dp_species,
+            _spc("[CH3]", "G", index=7),  # gas — in neither list
+        ]
+        d = _serialize_pool_for_sidecar(explicit_dp_pool, core_species=core)
+        assert d["phase_species"] == [
+            "PS(2)", "PS_mu0", "PS_mu1", "PS_mu2", "PS_dp3(42)"]
+        assert d["bookkeeping_species"] == [
+            "PS(2)", "PS_mu0", "PS_mu1", "PS_mu2"]
+
+    def test_flag_without_species_refuses_to_serialize(self, explicit_dp_pool):
+        """explicit_dp=True with no attached species would recreate the
+        structurally-inert handshake — the producer refuses (same posture as
+        compile_polymer_phase and enabled-QSSA-without-routing)."""
+        explicit_dp_pool.explicit_dp_species = None
+        with pytest.raises(ValueError, match="explicit_dp"):
+            _serialize_pool_for_sidecar(explicit_dp_pool)
+
+    def test_species_not_in_core_universe_refuses(self, explicit_dp_pool):
+        """When a core universe is supplied, the explicit species must be in
+        it BY IDENTITY (the labels must come from the same universe as every
+        other artifact label)."""
+        core = [_spc("CC", "PS", index=2), _spc("CCC", "PS_dp3", index=42)]
+        # same label, DIFFERENT object -> identity check must refuse
+        with pytest.raises(ValueError, match="explicit"):
+            _serialize_pool_for_sidecar(explicit_dp_pool, core_species=core)
+
+    def test_legacy_pool_emits_no_explicit_dp_vocabulary(self, pe_pool):
+        d = _serialize_pool_for_sidecar(pe_pool)
+        assert "explicit_dp" not in d
+
+    def _artifact(self, pools, labels, routing, **kw):
+        return build_polymer_moments_artifact(
+            pools, core_species=None, core_reactions=[],
+            configured_pool_labels=labels,
+            monomer_routing_by_pool=routing, **kw)
+
+    def test_explicit_dp_artifact_stamps_2_3(self, explicit_dp_pool):
+        artifact = self._artifact([explicit_dp_pool], ["PS"], {})
+        assert artifact["schema_version"] == "2.3"
+        assert artifact["conventions"]["recipe_revision"] == \
+            "2026-07-04-explicit-dp-monomer-gas"
+        assert artifact["conventions"]["format_doc"] == (
+            "docs/polymer_moments_format.md (polymer_moments_format/2.3)")
+
+    def test_no_explicit_artifact_keeps_legacy_stamps(self, pe_pool,
+                                                      qssa_pool,
+                                                      weaklink_pool):
+        """Absent path unchanged: no explicit_dp anywhere -> the 2.0/2.1/2.2
+        pick-max stamps apply byte-identically (composition with the golden
+        pin in test_legacy_artifact_serialization_pinned)."""
+        legacy = self._artifact([pe_pool], ["PE"], {})
+        assert legacy["schema_version"] == "2.0"
+        assert "explicit_dp" not in json.dumps(legacy)
+        qssa = self._artifact([qssa_pool], ["PS"], {"PS": "styrene(5)"})
+        assert qssa["schema_version"] == "2.1"
+        assert "explicit_dp" not in json.dumps(qssa)
+        weak = self._artifact([weaklink_pool], ["PSW"], {"PSW": "styrene(5)"})
+        assert weak["schema_version"] == "2.2"
+        assert "explicit_dp" not in json.dumps(weak)
+
+    def test_composition_with_qssa_and_weaklink(self, explicit_dp_pool,
+                                                qssa_pool, weaklink_pool):
+        """explicit_dp composes with the channel vocabularies: the schema
+        stamp is 2.3 (strongest), the recipe token carries the strongest
+        channel family, and ALL blocks coexist in the same artifact."""
+        art_q = self._artifact([explicit_dp_pool, qssa_pool], ["PS"],
+                               {"PS": "styrene(5)"})
+        assert art_q["schema_version"] == "2.3"
+        assert art_q["conventions"]["recipe_revision"] == \
+            "2026-07-04-explicit-dp-qssa-monomer-gas"
+        art_w = self._artifact([explicit_dp_pool, weaklink_pool],
+                               ["PS", "PSW"], {"PSW": "styrene(5)"})
+        assert art_w["schema_version"] == "2.3"
+        assert art_w["conventions"]["recipe_revision"] == \
+            "2026-07-04-explicit-dp-weaklink-u-monomer-gas"
+        by_label = {p["label"]: p for p in art_w["pools"]}
+        assert by_label["PS"]["explicit_dp"]["enabled"] is True
+        assert "initiation_allyl" in \
+            by_label["PSW"]["channels"]["radical_qssa_unzip"]
+
+    def test_initial_moles_flow_from_pool_channel_map(self, explicit_dp_pool):
+        """The artifact-level initial_explicit_by_pool map (the stage-A
+        solver contract {pool_label: {dp: moles}}) flows into the pool
+        block; pools without an entry default to 0.0."""
+        artifact = self._artifact(
+            [explicit_dp_pool], ["PS"], {},
+            initial_explicit_by_pool={"PS": {3: 0.125}})
+        assert artifact["pools"][0]["explicit_dp"]["initial_moles"] == \
+            {"3": 0.125}
+        artifact0 = self._artifact([explicit_dp_pool], ["PS"], {})
+        assert artifact0["pools"][0]["explicit_dp"]["initial_moles"] == \
+            {"3": 0.0}
+
+    def test_write_sidecar_passthrough_and_round_trip(self, explicit_dp_pool,
+                                                      tmp_path):
+        path = write_polymer_pools_sidecar(
+            [explicit_dp_pool], str(tmp_path),
+            configured_pool_labels=["PS"],
+            initial_explicit_by_pool={"PS": {3: 0.25}})
+        with open(path, encoding="utf-8") as fh:
+            rt = json.load(fh)
+        assert rt["schema_version"] == "2.3"
+        block = rt["pools"][0]["explicit_dp"]
+        assert block["species"] == {"3": "PS_dp3(42)"}
+        assert block["initial_moles"] == {"3": 0.25}
+        assert block["recipe"] == EXPLICIT_DP_PINNED_RECIPE
+
