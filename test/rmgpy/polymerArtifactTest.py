@@ -1628,3 +1628,51 @@ class TestExplicitDpSerialization:
         assert block["initial_moles"] == {"3": 0.25}
         assert block["recipe"] == EXPLICIT_DP_PINNED_RECIPE
 
+
+
+class TestGenerationDefaults:
+    """Commit 2 (provenance completeness): deck-declared mass_transfer and
+    the V_poly RMG used are emitted into conventions.generation_defaults,
+    explicitly NON-normative (consumer experiment config takes precedence).
+    Additive-informative: no schema bump; absent when nothing was declared
+    (the golden pin covers the byte-identity of that path)."""
+
+    GEN_MT = [{"gas_species": "C3H6(3)", "poly_species": "C3H6_poly(9)",
+               "K": 0.8, "kLa": 0.05}]
+
+    def _artifact(self, pools, labels, **kw):
+        return build_polymer_moments_artifact(
+            pools, core_species=None, core_reactions=[],
+            configured_pool_labels=labels, monomer_routing_by_pool={}, **kw)
+
+    def test_declared_mass_transfer_emitted_non_normative(self, pe_pool):
+        artifact = self._artifact(
+            [pe_pool], ["PE"],
+            generation_mass_transfer=self.GEN_MT,
+            generation_v_poly_m3=1.25e-6)
+        gd = artifact["conventions"]["generation_defaults"]
+        assert gd == {
+            "mass_transfer": [{"gas_species": "C3H6(3)",
+                               "poly_species": "C3H6_poly(9)",
+                               "K": 0.8, "kLa": 0.05,
+                               "units": {"K": "dimensionless",
+                                         "kLa": "s^-1"}}],
+            "V_poly_m3": 1.25e-6,
+            "note": ("generation-run values; consumer experiment config "
+                     "takes precedence"),
+        }
+        # no schema/recipe consequences: additive-informative only
+        assert artifact["schema_version"] == "2.0"
+        assert artifact["conventions"]["recipe_revision"] == \
+            "2026-07-03-monomer-gas"
+
+    def test_v_poly_only_omits_mass_transfer_key(self, pe_pool):
+        artifact = self._artifact([pe_pool], ["PE"],
+                                  generation_v_poly_m3=1.25e-6)
+        gd = artifact["conventions"]["generation_defaults"]
+        assert "mass_transfer" not in gd
+        assert gd["V_poly_m3"] == 1.25e-6
+
+    def test_nothing_declared_key_absent(self, pe_pool):
+        artifact = self._artifact([pe_pool], ["PE"])
+        assert "generation_defaults" not in artifact["conventions"]

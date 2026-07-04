@@ -4006,6 +4006,8 @@ def write_polymer_pools_sidecar(
     cantera_index_map=None,
     rmg_commit=None,
     initial_explicit_by_pool=None,
+    generation_mass_transfer=None,
+    generation_v_poly_m3=None,
 ) -> str:
     """Emit ``polymer_pools.json`` alongside ``chem.yaml`` (design doc §6).
 
@@ -4050,6 +4052,16 @@ def write_polymer_pools_sidecar(
         (``HybridPolymerSystem.initial_explicit_species``). Feeds the
         schema-2.3 ``explicit_dp`` block's ``initial_moles``; entries
         default to 0.0 when absent.
+    generation_mass_transfer : list of dict, optional
+        Deck-declared mass-transfer entries
+        (``{"gas_species", "poly_species", "K", "kLa"}`` with artifact
+        labels + SI floats). Emitted into the NON-normative
+        ``conventions.generation_defaults`` provenance block; omitted deck
+        mass_transfer -> key absent.
+    generation_v_poly_m3 : float, optional
+        The condensed volume the generating run actually used [m^3]
+        (``PolymerPhase.calculate_volume``). Same non-normative provenance
+        block.
 
     Returns
     -------
@@ -4067,6 +4079,8 @@ def write_polymer_pools_sidecar(
         iteration=iteration,
         rmg_commit=rmg_commit,
         initial_explicit_by_pool=initial_explicit_by_pool,
+        generation_mass_transfer=generation_mass_transfer,
+        generation_v_poly_m3=generation_v_poly_m3,
     )
     path = os.path.join(output_dir, filename)
     with open(path, "w", encoding="utf-8") as fh:
@@ -4245,7 +4259,9 @@ def build_polymer_moments_artifact(pool_registry,
                                    cantera_index_map=None,
                                    iteration=0,
                                    rmg_commit=None,
-                                   initial_explicit_by_pool=None):
+                                   initial_explicit_by_pool=None,
+                                   generation_mass_transfer=None,
+                                   generation_v_poly_m3=None):
     """Assemble the full schema-2.0 polymer moments artifact payload.
 
     Normative contract: docs/polymer_moments_format.md. The payload mirrors
@@ -4382,6 +4398,36 @@ def build_polymer_moments_artifact(pool_registry,
                            "channel (unzip moves units from mu1 into that species)"),
         },
     }
+
+    # --- generation_defaults (provenance completeness; NON-normative) ---
+    # kLa/K and V_poly are consumer-supplied operating conditions by
+    # contract (format doc §7/§8): the artifact never made them normative,
+    # which left the generating run's own values unrecorded. Emit them here
+    # as explicitly informative provenance — a consumer replaying the
+    # generation experiment can start from them, but its OWN experiment
+    # config always takes precedence (the "note" says so in-band). Purely
+    # ADDITIVE: nothing declared -> key absent, artifacts byte-identical
+    # (golden-pinned); no schema/recipe consequences either way (TA-side
+    # loaders ignore unknown conventions keys — probed 2026-07-04).
+    generation_defaults = {}
+    if generation_mass_transfer:
+        generation_defaults["mass_transfer"] = [
+            {
+                "gas_species": str(mt["gas_species"]),
+                "poly_species": str(mt["poly_species"]),
+                "K": float(mt["K"]),
+                "kLa": float(mt["kLa"]),
+                "units": {"K": "dimensionless", "kLa": "s^-1"},
+            }
+            for mt in generation_mass_transfer
+        ]
+    if generation_v_poly_m3 is not None:
+        generation_defaults["V_poly_m3"] = float(generation_v_poly_m3)
+    if generation_defaults:
+        generation_defaults["note"] = (
+            "generation-run values; consumer experiment config takes "
+            "precedence")
+        conventions["generation_defaults"] = generation_defaults
 
     return {
         "schema_version": schema_version,

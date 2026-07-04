@@ -2166,6 +2166,8 @@ class RMG(util.Subject):
                 solver_mask = None
                 engine_pools_cfg = None
                 initial_explicit_by_pool = None
+                generation_mass_transfer = None
+                generation_v_poly_m3 = None
                 for system in (self.reaction_systems or []):
                     engine = getattr(system, "solver", None) or system
                     pools_cfg = getattr(engine, "polymer_pools", None)
@@ -2178,6 +2180,31 @@ class RMG(util.Subject):
                     # feeds the schema-2.3 explicit_dp block's initial_moles.
                     initial_explicit_by_pool = getattr(
                         engine, "initial_explicit_species", None)
+                    # NON-normative generation provenance
+                    # (conventions.generation_defaults): the V_poly the
+                    # engine integrates, and the DECK-declared mass_transfer
+                    # entries from the blueprint phase (labels resolved the
+                    # same way as every other artifact label). Omitted deck
+                    # mass_transfer -> key absent.
+                    v_poly = getattr(engine, "V_poly", None)
+                    if v_poly is not None:
+                        generation_v_poly_m3 = float(v_poly)
+                    phase = getattr(system, "polymerPhase", None)
+                    deck_mt = getattr(phase, "mass_transfer", None) or []
+                    if deck_mt:
+                        generation_mass_transfer = [
+                            {
+                                "gas_species": _artifact_species_label(mt.gas_species),
+                                "poly_species": _artifact_species_label(mt.poly_species),
+                                "K": (mt.K.value_si
+                                      if hasattr(mt.K, "value_si")
+                                      else float(mt.K)),
+                                "kLa": (mt.kLa.value_si
+                                        if hasattr(mt.kLa, "value_si")
+                                        else float(mt.kLa)),
+                            }
+                            for mt in deck_mt
+                        ]
                     for p in pools_cfg:
                         idx = getattr(p, "monomer_poly_index", None)
                         if idx is not None and 0 <= idx < len(core_species):
@@ -2214,6 +2241,8 @@ class RMG(util.Subject):
                     monomer_routing_by_pool=routing,
                     cantera_index_map=cantera_index_map,
                     initial_explicit_by_pool=initial_explicit_by_pool,
+                    generation_mass_transfer=generation_mass_transfer,
+                    generation_v_poly_m3=generation_v_poly_m3,
                 )
         except Exception as e:
             logging.warning(f"Failed to write polymer_pools.json sidecar: {e}", exc_info=True)

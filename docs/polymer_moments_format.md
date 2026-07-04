@@ -390,12 +390,37 @@ Intensive µ; rates volumetric [mol/m³/s], multiplied by `V_poly` into mol/s.
 (oracle `polymer.pyx:1390-1402`; `K = C_poly_eq/C_gas_eq`, `kLa` [1/s]).
 kLa/K are apparatus properties and enter via the runner/consumer inputs.
 
+**Generation provenance (NON-normative).** The values above remain
+consumer-supplied. Since revision 2026-07-04, an artifact whose generating
+deck declared `mass_transfer` entries — and any artifact from a run with a
+polymer phase — MAY additionally record what the *generating run itself*
+used, in `conventions.generation_defaults` (§8): the deck's kLa/K per
+species pair and the `V_poly` the engine integrated
+(`PolymerPhase.calculate_volume`). This block is informative provenance
+only — a consumer's own experiment config always takes precedence (the
+block's in-band `note` says exactly that), it imposes no TA-normative
+semantics, and it is purely additive: nothing declared ⇒ key absent,
+artifacts byte-identical; no schema or recipe_revision consequences either
+way.
+
 ## 8. Conventions block
 
 `conventions` carries (informative duplicates of this doc, plus two normative
 lists): `configured_pools` (pool labels with solver configs — §2/§3 semantics)
 and `condensed_species` (chem.yaml labels with phase = condensed; everything
 else is gas). Consumers MUST use these lists, not name heuristics.
+
+`conventions.generation_defaults` (optional, **NON-normative** — see §7):
+generation-run provenance for consumer-supplied operating conditions.
+Shape: `{"mass_transfer": [{"gas_species", "poly_species", "K", "kLa",
+"units": {"K": "dimensionless", "kLa": "s^-1"}}, ...], "V_poly_m3": <float>,
+"note": "generation-run values; consumer experiment config takes
+precedence"}`. `mass_transfer` is present only when the generating deck
+declared entries; `V_poly_m3` only when a live engine's condensed volume
+was resolvable; the whole key is absent when neither is (byte-identity
+pinned). Consumers that don't recognize the key ignore it (unknown
+conventions keys have never been guarded — verified against the TA loader
+and the reference loader, 2026-07-04).
 
 `conventions.recipe_revision` (string, date token; current values
 `"2026-07-03-monomer-gas"` for artifacts without any `radical_qssa_unzip`
