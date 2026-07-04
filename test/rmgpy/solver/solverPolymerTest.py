@@ -6741,3 +6741,192 @@ class TestReversibleChainScissionScopePin:
         assert rs.reference_state_max_decades > 3.0
         assert any(str(rxn) == name
                    for name, _u in rs.reference_state_census)
+
+
+class TestEdgeReactantReverseFlux:
+    """Review round 51 (beta-scission-flux-diagnosis.md): RMG canonically
+    stores decomposition channels in the ASSOCIATION direction -- the
+    decomposition daughter is an edge REACTANT and the discovery flux is the
+    reverse rate rr = kb*[core products]. simple.pyx (:443-459, :509-523)
+    evaluates such rows (edge concentration = 0 -> rf vanishes; rr computable
+    when ALL products are core) and accumulates edge-reactant flux with
+    edge_species_rates[reactant] -= rate, so a net rate of -rr registers
+    POSITIVE daughter production. polymer.pyx skipped every edge-reactant row
+    before rate evaluation and accumulated the product side only, so
+    beta-scission, H-loss and proxy C-C homolysis discovery flux was
+    identically zero by construction (PP run 3: every core promotion in 39
+    iterations came from all-core-reactant rows)."""
+
+    @staticmethod
+    def _association_fixture():
+        """Run-3 shape: edge C6H13 + core propene <=> core C9H19."""
+        propene = _spc("C=CC", "propene")
+        c9 = _spc("C[CH]CC(C)CC(C)C", "C9H19")
+        c6 = _spc("C[CH]CC(C)C", "C6H13")
+        for s in (propene, c9, c6):
+            s.thermo = _trivial_nasa()
+        kin = Arrhenius(A=(1.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                        T0=(1.0, "K"))
+        rxn = Reaction(reactants=[c6, propene], products=[c9],
+                       kinetics=kin, reversible=True)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={c9: 1.0}, V_poly=1.0,
+            polymer_pools=[], mass_transfer=[],
+            gas_species_mask=np.array([True, True], dtype=bool),
+            constant_gas_volume=False, termination=[],
+            # direct-test build, no blueprint phase: permit the default
+            # (GAS) prospective edge fill so R1-EDGE does not raise.
+            allow_default_prospective_edge=True)
+        rs.initialize_model([propene, c9], [], [c6], [rxn])
+        return rs, propene, c9, c6
+
+    def test_association_row_registers_positive_daughter_edge_flux(self):
+        """PIN (a): a core-product association row with an edge REACTANT
+        (the canonical reverse-stored beta-scission channel) must show
+        POSITIVE daughter edge flux equal to rr = kb*[C9H19] -- today it is
+        exactly 0 because the row is skipped before rate evaluation."""
+        rs, propene, c9, c6 = self._association_fixture()
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        assert rs.kb[0] > 0.0            # fixture liveness: reverse is live
+        c9_conc = max(0.0, rs.y[1]) / rs.V_gas
+        expected_rr = rs.kb[0] * c9_conc
+        assert expected_rr > 0.0
+
+        # rf vanishes (edge reactant has no state => zero concentration),
+        # so the net rate is exactly -rr ...
+        assert rs.edge_reaction_rates[0] == pytest.approx(-expected_rr)
+        # ... and the reactant-side accumulator (-= rate, simple.pyx
+        # :509-515 sign parity) registers POSITIVE daughter production.
+        assert rs.edge_species_rates[0] > 0.0
+        assert rs.edge_species_rates[0] == pytest.approx(expected_rr)
+        assert rs.edge_species_rates_ungated[0] == pytest.approx(expected_rr)
+
+    def test_association_row_stays_diagnostic_only(self):
+        """PIN (a) rider: the newly-live edge row must stay DIAGNOSTIC-ONLY --
+        no dn_dt writes, no core production/consumption side effects."""
+        rs, propene, c9, c6 = self._association_fixture()
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        assert np.all(dn_dt == 0.0)
+        assert np.all(rs.core_species_consumption_rates == 0.0)
+        assert np.all(rs.core_species_production_rates == 0.0)
+
+    def test_get_edge_reaction_rates_handles_edge_reactant_rows(self):
+        """Bullet 5: the diagnostic path (get_reaction_rates feeding
+        get_edge_reaction_rates) indexes masks/concentrations with raw
+        participant slots as if every participant were core -- an edge
+        reactant must not crash it, and it must report the same -rr net rate
+        as the residual."""
+        rs, propene, c9, c6 = self._association_fixture()
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+
+        edge_rates = np.zeros(1, float)
+        rs.get_edge_reaction_rates(rs.y, edge_rates)
+        c9_conc = max(0.0, rs.y[1]) / rs.V_gas
+        assert edge_rates[0] == pytest.approx(-rs.kb[0] * c9_conc)
+        assert edge_rates[0] == pytest.approx(rs.edge_reaction_rates[0])
+
+    @staticmethod
+    def _homolysis_fixture():
+        """Reverse-stored proxy recombination: edge C3 + edge C6 <=> core PP
+        proxy (the canonical pyrolysis-initiation discovery pattern). The
+        daughters are prospectively CONDENSED via the edge-daughter
+        condensed-mask classifier (spec 2026-06-29, production shape for
+        pool-scission daughters), so the row is a poly event with a condensed
+        product and neither phase gate zeroes it."""
+        a = _spc("CCC(C)CC(C)C", "A")
+        mu0 = _spc("CO", "A_mu0")
+        mu1 = _spc("C=O", "A_mu1")
+        mu2 = _spc("C#N", "A_mu2")
+        g = _spc("[CH3]", "G")
+        c3 = _spc("[CH2]CC", "C3(7)")
+        c6 = _spc("C[CH]CC(C)C", "C6(6)")
+        for s in (a, mu0, mu1, mu2, g, c3, c6):
+            s.thermo = _trivial_nasa()
+        kin = Arrhenius(A=(1.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                        T0=(1.0, "K"))
+        rxn = Reaction(reactants=[c3, c6], products=[a],
+                       kinetics=kin, reversible=True)
+        pool = PolymerPoolConfig(label="A", xs=2,
+                                 explicit_dp_to_species_index={},
+                                 mu_indices=(1, 2, 3),
+                                 monomer_poly_index=None, k_unzip=0.0)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={g: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=np.array([False] * 4 + [True], dtype=bool),
+            constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            prospective_condensed_edge_daughter_classifier=
+                _condensed_edge_stub({"C3", "C6"}),
+            allow_default_prospective_edge=True)
+        rs.initialize_model([a, mu0, mu1, mu2, g], [], [c3, c6], [rxn])
+        return rs
+
+    def test_edge_edge_reverse_homolysis_scaled_by_product_site(self):
+        """PIN (b): edge + edge <=> core PP proxy gives positive edge flux
+        ONLY through rr, and rr takes its site scaling from the PRODUCT-side
+        proxy pool (default mu1 site density, y[mu1]/V_poly = 5.0) --
+        mirroring how forward-stored proxy rows replace _C(proxy) = 1.0 with
+        the pool site density."""
+        rs = self._homolysis_fixture()
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        assert rs.kb[0] > 0.0            # fixture liveness: reverse is live
+        site = max(0.0, rs.y[2]) / rs.V_poly     # product pool mu1 basis
+        assert site == pytest.approx(5.0)
+        expected_rr = rs.kb[0] * site
+
+        # rf == 0 exactly (BOTH reactants are edge, zero concentration):
+        # the flux exists only through rr.
+        assert rs.edge_reaction_rates[0] == pytest.approx(-expected_rr)
+        for edge_slot in (0, 1):         # C3 and C6 daughters alike
+            assert rs.edge_species_rates[edge_slot] > 0.0
+            assert rs.edge_species_rates[edge_slot] == \
+                pytest.approx(expected_rr)
+
+        # Diagnostic path parity (bullet 5): same product-side site scaling.
+        edge_rates = np.zeros(1, float)
+        rs.get_edge_reaction_rates(rs.y, edge_rates)
+        assert edge_rates[0] == pytest.approx(-expected_rr)
+
+    def test_edge_edge_reverse_homolysis_stays_diagnostic_only(self):
+        """PIN (b) rider: no dn_dt writes -- proxy state and pool moments
+        untouched by the newly-live edge row."""
+        rs = self._homolysis_fixture()
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.all(dn_dt == 0.0)
+
+    def test_edge_product_reverse_rate_stays_uncomputable(self):
+        """PIN (c): a row with an EDGE PRODUCT (no state in y) still has
+        rr = 0 -- the concentration-availability hole (simple.pyx :452-453,
+        Z6) is the VALID half of the old skip and must be preserved even on
+        the newly-live edge-reactant path."""
+        a = _spc("C", "A")
+        b = _spc("CC", "B")
+        e1 = _spc("[CH3]", "E1")
+        e2 = _spc("C[CH2]", "E2")
+        for s in (a, b, e1, e2):
+            s.thermo = _trivial_nasa()
+        kin = Arrhenius(A=(1.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                        T0=(1.0, "K"))
+        # edge E1 + core A <=> edge E2 + core B: rf = 0 (E1 has no state)
+        # AND rr = 0 (E2 has no state) => the row contributes exactly nothing.
+        rxn = Reaction(reactants=[e1, a], products=[e2, b],
+                       kinetics=kin, reversible=True)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={a: 0.5, b: 0.5},
+            V_poly=1.0, polymer_pools=[], mass_transfer=[],
+            gas_species_mask=np.array([True, True], dtype=bool),
+            constant_gas_volume=False, termination=[],
+            allow_default_prospective_edge=True)
+        rs.initialize_model([a, b], [], [e1, e2], [rxn])
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        assert rs.edge_reaction_rates[0] == 0.0
+        assert rs.edge_species_rates[0] == 0.0
+        assert rs.edge_species_rates[1] == 0.0
+        assert rs.edge_species_rates_ungated[0] == 0.0
+        assert rs.edge_species_rates_ungated[1] == 0.0
+        assert np.all(dn_dt == 0.0)

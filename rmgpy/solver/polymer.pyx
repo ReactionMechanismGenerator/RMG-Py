@@ -2617,22 +2617,27 @@ class HybridPolymerSystem(ReactionSystem):
         for r_idx in range(ir.shape[0]):
             r0, r1, r2 = ir[r_idx, 0], ir[r_idx, 1], ir[r_idx, 2]
 
-            if r0 == -1 or r0 >= n_core:
+            if r0 == -1:
                 continue
 
-            r0_is_gas = mask[r0]
+            # simple.pyx parity (:443-459, :509-515): a row with an EDGE
+            # REACTANT is still evaluated -- the edge species has no state in
+            # y, so its concentration is ZERO and rf vanishes; the discovery
+            # flux for reverse-stored decomposition channels (daughter as
+            # edge reactant, rr = kb*[core products]) flows through the
+            # reactant-side edge accumulator in section 4b. Phase verdict for
+            # an edge reactant comes from prospective_gas_mask (the only mask
+            # covering edge slots; its core prefix is bit-identical to
+            # gas_species_mask by rider R1).
+            r0_is_gas = mask[r0] if r0 < n_core else pmask[r0]
             r1_is_gas = True
             r2_is_gas = True
 
             if r1 != -1:
-                if r1 >= n_core:
-                    continue
-                r1_is_gas = mask[r1]
+                r1_is_gas = mask[r1] if r1 < n_core else pmask[r1]
 
             if r2 != -1:
-                if r2 >= n_core:
-                    continue
-                r2_is_gas = mask[r2]
+                r2_is_gas = mask[r2] if r2 < n_core else pmask[r2]
 
             is_poly_event = (not r0_is_gas) or (r1 != -1 and not r1_is_gas) or (r2 != -1 and not r2_is_gas)
 
@@ -2708,9 +2713,11 @@ class HybridPolymerSystem(ReactionSystem):
                     continue
 
             # 1. Map Reactants to Polymer Pools  (MOVED UP before _C)
-            p0_pool_idx = self.species_to_pool_indices[r0]
-            p1_pool_idx = -1 if r1 == -1 else self.species_to_pool_indices[r1]
-            p2_pool_idx = -1 if r2 == -1 else self.species_to_pool_indices[r2]  # optional but consistent
+            #    Edge reactants map to -1: species_to_pool_indices covers the
+            #    core prefix only, and an edge species is never a pool proxy.
+            p0_pool_idx = -1 if r0 >= n_core else self.species_to_pool_indices[r0]
+            p1_pool_idx = -1 if (r1 == -1 or r1 >= n_core) else self.species_to_pool_indices[r1]
+            p2_pool_idx = -1 if (r2 == -1 or r2 >= n_core) else self.species_to_pool_indices[r2]  # optional but consistent
 
             # Rate Calculation
             kf = self.kf[r_idx]
@@ -2719,6 +2726,11 @@ class HybridPolymerSystem(ReactionSystem):
             def _C(idx):
                 if idx == -1:
                     return 1.0
+                if idx >= n_core:
+                    # Edge species: no state in y -> zero concentration, so
+                    # rf vanishes for edge-reactant rows (simple.pyx parity;
+                    # NOT a guard -- definitional, no silent zeroing).
+                    return 0.0
                 if self.species_to_pool_indices[idx] != -1:
                     return 1.0
                 return C_gas[idx] if mask[idx] else C_poly[idx]
@@ -2797,6 +2809,31 @@ class HybridPolymerSystem(ReactionSystem):
 
                     rf *= site
                     rr *= site
+            elif has_any_prod and not has_edge_prod:
+                # PRODUCT-side proxy (review round 51): a reverse-stored
+                # association row (e.g. edge daughter + edge daughter <=>
+                # pool proxy, or gas radical + gas radical <=> pool proxy)
+                # carries the proxy on the PRODUCT side, so rr's _C(proxy)
+                # placeholder (1.0) must be replaced by the pool site
+                # density, mirroring the reactant-side hijack above --
+                # otherwise reverse homolysis discovery flux is unscaled.
+                # Products are all core here (has_edge_prod is False), so
+                # species_to_pool_indices indexing is safe. rf is untouched:
+                # no reactant is a proxy on this branch (elif), so the
+                # forward direction has no proxy concentration to replace.
+                prod_pool_idx = -1
+                for prod_p_idx in (p0, p1, p2):
+                    if prod_p_idx != -1 and self.species_to_pool_indices[prod_p_idx] != -1:
+                        prod_pool_idx = self.species_to_pool_indices[prod_p_idx]
+                        break
+                if prod_pool_idx != -1:
+                    # Default to Mu1 (site density); end-group physics
+                    # scales by Mu0 (chain density) -- same selection as
+                    # the reactant-side block.
+                    moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[1]
+                    if self.is_end_group_reaction[r_idx]:
+                        moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[0]
+                    rr *= max(0.0, y[moment_idx]) / V_poly
 
             # Net rate (volumetric, in the phase volume chosen earlier)
             rate = rf - rr
@@ -2831,7 +2868,12 @@ class HybridPolymerSystem(ReactionSystem):
             #    similarity/spawn diagnostics, which want edge flux too --
             #    except gate-zeroed edge rows, suppressed just below (T9).
             #    Pool MOMENT flux is handled once per reaction in section 5.
-            if self.is_pool_proxy[r0]:
+            if r0 >= n_core:
+                # Edge reactant: no core state, never a proxy; its
+                # reactant-side edge flux is accumulated in section 4b
+                # (diagnostic-only).
+                pass
+            elif self.is_pool_proxy[r0]:
                 if not gated:
                     # Ghost-flux suppression (spec SS3(e)/T9): a gate-zeroed
                     # edge row's |flux| is judged unphysical under core
@@ -2853,7 +2895,9 @@ class HybridPolymerSystem(ReactionSystem):
                 self.core_species_production_rates[r0] += rr
 
             if r1 != -1:
-                if self.is_pool_proxy[r1]:
+                if r1 >= n_core:
+                    pass  # edge reactant: see the r0 branch above
+                elif self.is_pool_proxy[r1]:
                     if not gated:
                         proxy_activity[r1] += abs_flux
                     if core_rxn:
@@ -2896,6 +2940,21 @@ class HybridPolymerSystem(ReactionSystem):
                     self.edge_species_rates_ungated[p_idx_tmp - n_core] += rate
                     if not gated:
                         self.edge_species_rates[p_idx_tmp - n_core] += rate
+
+            # 4b. Reactant-side edge accumulation (simple.pyx :509-515 sign
+            #     parity): edge reactants get -= rate, so a reverse-stored
+            #     decomposition row (rf = 0, net rate = -rr) registers
+            #     POSITIVE daughter production for enlargement. Diagnostic-
+            #     only: no dn_dt / core bookkeeping (edge species have no
+            #     state), exactly like the product-side branch above.
+            for p_slot in range(3):
+                p_idx_tmp = ir[r_idx, p_slot]
+                if p_idx_tmp == -1:
+                    continue
+                if p_idx_tmp >= n_core:
+                    self.edge_species_rates_ungated[p_idx_tmp - n_core] -= rate
+                    if not gated:
+                        self.edge_species_rates[p_idx_tmp - n_core] -= rate
 
             # 5. Pool moment flux -- archetype dispatch (core reactions only).
             #    Spec: docs/superpowers/specs/2026-06-09-proxy-moment-flux-
@@ -3579,13 +3638,21 @@ class HybridPolymerSystem(ReactionSystem):
             r1 = ir[r_idx, 1]
             r2 = ir[r_idx, 2]
 
-            # Determine Phase for Volume Basis
+            # Determine Phase for Volume Basis. Edge participants (review
+            # round 51: edge-reactant rows are evaluated, not skipped) are
+            # judged by prospective_gas_mask -- the only mask covering edge
+            # slots; its core prefix is bit-identical to gas_species_mask by
+            # rider R1. Raw indexing of the core-sized arrays with an edge
+            # slot would be an IndexError.
             is_poly = False
-            if r0 != -1 and not self.gas_species_mask[r0]:
+            if r0 != -1 and not (self.gas_species_mask[r0] if r0 < n_core
+                                 else self.prospective_gas_mask[r0]):
                 is_poly = True
-            elif r1 != -1 and not self.gas_species_mask[r1]:
+            elif r1 != -1 and not (self.gas_species_mask[r1] if r1 < n_core
+                                   else self.prospective_gas_mask[r1]):
                 is_poly = True
-            elif r2 != -1 and not self.gas_species_mask[r2]:
+            elif r2 != -1 and not (self.gas_species_mask[r2] if r2 < n_core
+                                   else self.prospective_gas_mask[r2]):
                 is_poly = True
 
             V_rxn = V_poly if is_poly else V_gas
@@ -3593,9 +3660,12 @@ class HybridPolymerSystem(ReactionSystem):
             kf = self.kf[r_idx]
             kb = self.kb[r_idx]
 
-            # Forward Rate
+            # Forward Rate. An EDGE reactant has no state in y -> zero
+            # concentration, so rf vanishes (simple.pyx :443-450 parity).
             rf = kf
-            if self.species_to_pool_indices[r0] != -1:
+            if r0 >= n_core:
+                rf *= 0.0
+            elif self.species_to_pool_indices[r0] != -1:
                 rf *= 1.0
             elif self.gas_species_mask[r0]:
                 rf *= C_gas[r0]
@@ -3603,7 +3673,9 @@ class HybridPolymerSystem(ReactionSystem):
                 rf *= C_poly[r0]
 
             if r1 != -1:
-                if self.species_to_pool_indices[r1] != -1:
+                if r1 >= n_core:
+                    rf *= 0.0
+                elif self.species_to_pool_indices[r1] != -1:
                     rf *= 1.0
                 elif self.gas_species_mask[r1]:
                     rf *= C_gas[r1]
@@ -3611,19 +3683,23 @@ class HybridPolymerSystem(ReactionSystem):
                     rf *= C_poly[r1]
 
             if r2 != -1:
-                if self.species_to_pool_indices[r2] != -1:
+                if r2 >= n_core:
+                    rf *= 0.0
+                elif self.species_to_pool_indices[r2] != -1:
                     rf *= 1.0
                 elif self.gas_species_mask[r2]:
                     rf *= C_gas[r2]
                 else:
                     rf *= C_poly[r2]
 
-            # Reverse Rate
+            # Reverse Rate. An EDGE product has no state in y, so rr is
+            # UNCOMPUTABLE and stays 0 (simple.pyx :452-453 parity -- the
+            # concentration-availability hole, same as the residual).
+            p0 = ip[r_idx, 0]
+            p1 = ip[r_idx, 1]
+            p2 = ip[r_idx, 2]
             rr = 0.0
-            if kb > 0:
-                p0 = ip[r_idx, 0]
-                p1 = ip[r_idx, 1]
-                p2 = ip[r_idx, 2]
+            if kb > 0 and p0 < n_core and p1 < n_core and p2 < n_core:
                 rr = kb
 
                 if p0 != -1:
@@ -3650,8 +3726,9 @@ class HybridPolymerSystem(ReactionSystem):
                     else:
                         rr *= C_poly[p2]
 
-            # [THE HIJACK] Scale by Moment if Reactant is Proxy
-            p0_pool_idx = self.species_to_pool_indices[r0] if r0 != -1 else -1
+            # [THE HIJACK] Scale by Moment if Reactant is Proxy (edge
+            # reactants are never proxies: pool proxies are core species)
+            p0_pool_idx = self.species_to_pool_indices[r0] if (r0 != -1 and r0 < n_core) else -1
             if p0_pool_idx != -1:
                 moment_idx = self.polymer_pools[p0_pool_idx].mu_indices[1]
 
@@ -3699,6 +3776,28 @@ class HybridPolymerSystem(ReactionSystem):
 
                 rf *= site
                 rr *= site
+            elif rr != 0.0:
+                # PRODUCT-side proxy mirror (review round 51; keep in sync
+                # with the residual's product-side scaling): a reverse-stored
+                # association row carries the proxy on the PRODUCT side, so
+                # rr's 1.0 placeholder is replaced by the pool site density.
+                # rr != 0.0 implies all products are core (the rr hole above),
+                # so species_to_pool_indices indexing is safe. rf untouched:
+                # no reactant is a proxy on this branch (elif).
+                prod_pool_idx = -1
+                if p0 != -1 and self.species_to_pool_indices[p0] != -1:
+                    prod_pool_idx = self.species_to_pool_indices[p0]
+                elif p1 != -1 and self.species_to_pool_indices[p1] != -1:
+                    prod_pool_idx = self.species_to_pool_indices[p1]
+                elif p2 != -1 and self.species_to_pool_indices[p2] != -1:
+                    prod_pool_idx = self.species_to_pool_indices[p2]
+                if prod_pool_idx != -1:
+                    moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[1]
+                    if self.pool_mu1_indices[prod_pool_idx] != -1:
+                        moment_idx = self.pool_mu1_indices[prod_pool_idx]
+                    if self.is_end_group_reaction[r_idx]:
+                        moment_idx = self.pool_mu0_indices[prod_pool_idx]
+                    rr *= max(0.0, y[moment_idx]) / V_poly
 
             reaction_rates[r_idx] = (rf - rr)
 
