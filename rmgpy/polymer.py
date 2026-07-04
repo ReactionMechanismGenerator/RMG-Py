@@ -378,10 +378,25 @@ class Polymer(Species):
 
     @property
     def fingerprint(self):
-        """Fingerprint of this polymer, taken from molecule attribute. Read-only."""
+        """Fingerprint of this polymer, taken from molecule attribute. Read-only.
+
+        The ``_Feat-`` segment is the feature monomer's element-count
+        fingerprint; for RADICAL feature units (radical-feature producer
+        path: more than the two stitch radicals) a ``-rad...`` radical-site
+        descriptor is appended, because the element-count string alone
+        cannot distinguish H-loss units of the same formula (e.g. the ~3 PP
+        C3H5 units) and ``_register_polymer`` dedups pools BY fingerprint --
+        distinct abstraction environments must stay distinct pools while
+        positional twins (identical unit graph) still collapse to one.
+        Classic 2-radical features are byte-identical to before.
+        """
         if self._fingerprint is None:
             if self.monomer:
-                feat = f'_Feat-{self.feature_monomer.fingerprint}' if self.feature_monomer else ''
+                feat = ''
+                if self.feature_monomer:
+                    feat = f'_Feat-{self.feature_monomer.fingerprint}'
+                    if self.feature_monomer.get_radical_count() > 2:
+                        feat += f'-rad{_radical_site_descriptor(self.feature_monomer)}'
                 eg = '_'.join(eg.fingerprint for eg in self.end_groups) if self.end_groups else ''
                 self._fingerprint = f'Polymer_{self.monomer.fingerprint}{feat}_EG-{eg}_{self.cutoff}'
         return self._fingerprint
@@ -925,10 +940,25 @@ class Polymer(Species):
         spc.label = f"{self.label}_dp{dp}"
         return spc
 
-    def create_reacted_copy(self, reacted_proxy: Molecule) -> Optional['Polymer']:
+    def create_reacted_copy(self, reacted_proxy: Molecule,
+                            h_loss_feature: bool = False) -> Optional['Polymer']:
         """
         Wrapper that ensures any generated polymer fragment is sanitized
         (labels stripped, proxy tagged) before returning to the RMG engine.
+
+        Args:
+            reacted_proxy: A single product fragment from the reaction.
+            h_loss_feature: HANDSHAKE CONTEXT flag (radical-feature producer
+                path, stage S1a of the feature-pool conduit arc). The CALLER
+                asserts, from reaction-level knowledge, that the reaction
+                removed exactly ONE H atom from the polymer reactant's proxy
+                (the H-abstraction shape). Only then may the fallback
+                producer path materialize a ``{label}_mod`` RADICAL FEATURE
+                daughter whose feature_monomer carries the mid-chain radical
+                (see :meth:`_create_h_loss_feature_copy`). The flag is never
+                inferred from the product's structure alone; the live
+                handshake wiring that threads it is stage S2 -- no live call
+                site passes it yet, so default behavior is byte-identical.
 
         Raises:
             PolymerCrosslinkError: if the product is a crosslink / chain-coupling
@@ -974,7 +1004,8 @@ class Polymer(Species):
             # phase as a spurious small molecule (a mass-balance leak).
             new_poly = self.copy(deep=True)
         else:
-            new_poly = self._create_reacted_copy_logic(reacted_proxy)
+            new_poly = self._create_reacted_copy_logic(
+                reacted_proxy, h_loss_feature=h_loss_feature)
         if new_poly is None:
             return None
         # Stamp the classification verdict so the polymer handshake can flag
@@ -1003,17 +1034,40 @@ class Polymer(Species):
             mol.reactive = True
         return new_poly
 
-    def _create_reacted_copy_logic(self, reacted_proxy: Molecule) -> Optional['Polymer']:
+    def _create_reacted_copy_logic(self, reacted_proxy: Molecule,
+                                   h_loss_feature: bool = False,
+                                   ) -> Optional['Polymer']:
         """
         Creates a new Polymer species from a reacted proxy fragment.
-        Handles both modification (intact chain) and scission (broken chain).
+        Handles both modification (intact chain) and scission (broken chain)
+        via the wing-matching logic; when that logic refuses the fragment AND
+        the caller threaded the H-loss handshake context (``h_loss_feature``),
+        falls back to the radical-feature producer path
+        (:meth:`_create_h_loss_feature_copy`, stage S1a). Fallback ordering is
+        deliberate: shapes the wing logic already handles (e.g. the
+        center-tertiary PP daughter that spawns a scission-tail pool) keep
+        their behavior byte-identical; only the previously-refused
+        (ValueError -> None -> gas-leak) H-abstraction rows gain a route.
 
         Args:
             reacted_proxy (Molecule): A single product fragment from the reaction.
+            h_loss_feature (bool): Handshake context -- the reaction removed
+                exactly ONE H from the unit (see :meth:`create_reacted_copy`).
 
         Returns:
             Optional['Polymer']: A new Polymer species with updated feature or end-groups.
                                  Returns None if for an invalid/unsupported polymer fragment.
+        """
+        new_poly = self._create_reacted_copy_wing_logic(reacted_proxy)
+        if new_poly is None and h_loss_feature:
+            new_poly = self._create_h_loss_feature_copy(reacted_proxy)
+        return new_poly
+
+    def _create_reacted_copy_wing_logic(self, reacted_proxy: Molecule) -> Optional['Polymer']:
+        """
+        Wing-matching core of :meth:`_create_reacted_copy_logic`: classifies
+        the fragment by locating intact head/tail wings and builds the
+        modification (intact chain) or scission (broken chain) daughter.
         """
         product = reacted_proxy.copy(deep=True)
         product.clear_labeled_atoms()
@@ -1193,6 +1247,154 @@ class Polymer(Species):
                            moments=None)
 
         return None
+
+    def _h_loss_feature_units(self) -> List[Molecule]:
+        """
+        Enumerate the candidate H-loss feature units of this pool's monomer:
+        for every H-bearing heavy atom of the (labeled) monomer, the unit
+        obtained by removing ONE H there and adding one radical electron --
+        i.e. the repeat unit as it looks after a mid-chain H-abstraction,
+        carrying the two stitch radicals on '*1'/'*2' plus exactly one extra
+        internal radical. Deterministic monomer-atom order (symmetric-
+        equivalent positions yield isomorphic units and the first match wins
+        downstream). For PP ('[CH2][CH](C)') this is the documented-v1 set of
+        ~3 H-environments: backbone CH2, backbone CH, pendant CH3.
+        """
+        units = []
+        n = len(self.monomer.atoms)
+        for i in range(n):
+            unit = self.monomer.copy(deep=True)
+            if len(unit.atoms) != n:  # defensive: copy must preserve order
+                return units
+            target = unit.atoms[i]
+            if target.is_hydrogen():
+                continue
+            h_neighbor = next((a for a in target.bonds if a.is_hydrogen()), None)
+            if h_neighbor is None:
+                continue
+            unit.remove_atom(h_neighbor)
+            target.increment_radical()
+            unit.update(sort_atoms=False)
+            units.append(unit)
+        return units
+
+    def _h_loss_positional_species(self, unit: Molecule, position: int) -> Optional[Species]:
+        """
+        The complete capped 3-unit chain with ``unit`` substituted at
+        ``position`` (0 = head-side flank, 1 = center, 2 = tail-side flank)
+        and the baseline monomer everywhere else -- the positional rendering
+        of a single mid-chain H-abstraction on the trimer proxy. Same
+        stitching + resonance recipe as :meth:`_capped_chain_species`.
+        Returns None when the stitch is not constructible.
+        """
+        mol = self.end_groups[0].copy(deep=True)
+        for i in range(3):
+            piece = unit if i == position else self.monomer
+            mol = stitch_molecules_by_labeled_atoms(mol, piece.copy(deep=True))
+            if mol is None:
+                return None
+        mol = stitch_molecules_by_labeled_atoms(mol, self.end_groups[1].copy(deep=True))
+        if mol is None:
+            return None
+        mol.update()
+        mol.clear_labeled_atoms()
+        mol.assign_atom_ids()
+        spc = Species(molecule=[mol])
+        spc.molecule = generate_resonance_structures(mol,
+                                                     clar_structures=False,
+                                                     keep_isomorphic=False,
+                                                     filter_structures=True,
+                                                     save_order=True)
+        return spc
+
+    @staticmethod
+    def _h_loss_unit_rendered_radical_envs(unit: Molecule) -> List[Tuple[int, int]]:
+        """
+        (n_H, n_heavy) environments of the unit's EXTRA radical site(s) as
+        rendered mid-chain: each labeled stitch atom consumes one radical and
+        gains one heavy (stitch-bond) neighbor when the unit sits inside a
+        chain. Used only as the ambiguity tie-break in
+        :meth:`_create_h_loss_feature_copy`.
+        """
+        envs = []
+        for a in unit.atoms:
+            if a.radical_electrons <= 0:
+                continue
+            rendered_rad = a.radical_electrons - (1 if a.label else 0)
+            if rendered_rad <= 0:
+                continue
+            n_h = sum(1 for nb in a.bonds if nb.is_hydrogen())
+            n_heavy = (sum(1 for nb in a.bonds if not nb.is_hydrogen())
+                       + (1 if a.label else 0))
+            envs.append((n_h, n_heavy))
+        return envs
+
+    def _create_h_loss_feature_copy(self, product: Molecule) -> Optional['Polymer']:
+        """
+        Radical-feature producer path (stage S1a, feature-pool conduit arc,
+        adversarially ratified). ONLY reached when the caller threaded the
+        H-loss handshake context (``h_loss_feature=True`` -- the reaction
+        removed exactly ONE H from the polymer reactant's proxy) AND the
+        wing logic refused the product; never triggered from the product's
+        structure alone.
+
+        Structural cross-check (so a lying context cannot smuggle garbage):
+        the product must be isomorphic to one of the pool's single-H-loss
+        POSITIONAL VARIANTS -- the capped trimer with exactly one H-loss
+        feature unit at the center or either flank. Di-radical (2-H-loss)
+        products, crosslinks, wrong skeletons and any other shape match no
+        variant and stay refused exactly as today.
+
+        Positional twins collapse by construction: a center hit (classified
+        FEATURE) and its flank twins (classified DISCARD, the positional
+        renderings of the SAME abstraction) all map to the SAME feature unit
+        graph, hence the same ``{label}_mod`` daughter fingerprint and ONE
+        pool after :meth:`CoreEdgeReactionModel._register_polymer` dedup.
+        Distinct H-environments (PP documented v1: backbone CH2, backbone
+        CH, pendant CH3 -- ~3 pools) map to distinct units and distinct
+        pools. A chain-END twin can be positionally ambiguous (e.g. the PP
+        C1 methyl daughter renders identically from the capped backbone-CH2
+        unit and the pendant-methyl unit); the tie-break prefers the unit
+        whose MID-CHAIN radical environment (n_H, n_heavy) matches the
+        product's radical atom, falling back to deterministic monomer-atom
+        order.
+        """
+        matched_units = []
+        for unit in self._h_loss_feature_units():
+            for position in (1, 0, 2):  # center first: canonical representative
+                spc = self._h_loss_positional_species(unit, position)
+                if spc is not None and spc.is_isomorphic(product):
+                    matched_units.append(unit)
+                    break
+        if not matched_units:
+            return None
+        unit = matched_units[0]
+        if len(matched_units) > 1:
+            radical_atoms = [a for a in product.atoms if a.radical_electrons > 0]
+            if len(radical_atoms) == 1:
+                pa = radical_atoms[0]
+                product_env = (sum(1 for nb in pa.bonds if nb.is_hydrogen()),
+                               sum(1 for nb in pa.bonds if not nb.is_hydrogen()))
+                exact = [u for u in matched_units
+                         if product_env in self._h_loss_unit_rendered_radical_envs(u)]
+                if exact:
+                    unit = exact[0]
+        feature = unit.copy(deep=True)
+        try:
+            self._assert_feature_unit(feature, allow_h_loss_radical=True)
+        except ValueError:
+            return None
+        return Polymer(
+            label=f"{self.label}_mod",
+            monomer=self.monomer,
+            feature_monomer=feature,
+            end_groups=[eg.copy(deep=True) for eg in self.end_groups],
+            cutoff=self.cutoff,
+            Mn=None if self.moments is not None else self.Mn,
+            Mw=None if self.moments is not None else self.Mw,
+            moments=self.moments.tolist() if self.moments is not None else None,
+            initial_mass=self.initial_mass_g / 1000.0,
+        )
 
     def _stitch_wing(self, side: str) -> Molecule:
         """
@@ -1382,18 +1584,30 @@ class Polymer(Species):
             raise ValueError(f"End-group labeled atom {want_label} must carry a radical electron for stitching.")
 
     @staticmethod
-    def _assert_feature_unit(mol: Molecule):
+    def _assert_feature_unit(mol: Molecule, allow_h_loss_radical: bool = False):
         """
         Validate that an extracted 'feature monomer' is stitchable as a repeat unit.
         Contract we enforce:
         - Exactly one '*1' and exactly one '*2' label.
         - No other labels (including '1','2') survive.
-        - Must have at least two radical electrons overall (typically exactly 2).
-          We enforce exactly 2 by default because stitching consumes one at each end.
+        - Radical budget (deliberately NOT a blanket >=2 relaxation, which
+          would accept garbage -- crosslinks, multi-radicals, bad resonance
+          forms):
+          * default: exactly 2 radical electrons total (one per stitch end;
+            stitching consumes one at each end) -- unchanged.
+          * ``allow_h_loss_radical=True`` (radical-feature producer path
+            ONLY; the caller must hold explicit handshake context that the
+            reaction removed exactly ONE H from this unit -- never inferred
+            from the unit's structure alone): exactly 3 radical electrons
+            total -- the two stitch radicals plus exactly ONE extra internal
+            radical from the abstracted H. A 2-radical unit (no H actually
+            lost) or a 4+-radical unit (di-radical / 2-extra-radical
+            garbage) refuses under the flag too.
         - The labeled atoms must each have >=1 radical electron (open sites).
 
         Args:
             mol (Molecule): The molecule to validate.
+            allow_h_loss_radical (bool): See radical budget above.
         """
         labels = _labels_present(mol)
         n1 = _count_label(mol, '*1')
@@ -1405,7 +1619,13 @@ class Polymer(Species):
         if extras:
             raise ValueError(f"Feature unit has invalid extra labels {extras}; only '*1'/'*2' are allowed.")
         rad_count = mol.get_radical_count()
-        if rad_count != 2:
+        expected_rad_count = 3 if allow_h_loss_radical else 2
+        if rad_count != expected_rad_count:
+            if allow_h_loss_radical:
+                raise ValueError(
+                    f"H-loss radical feature unit must have exactly 3 radical electrons "
+                    f"total (two stitch radicals + exactly ONE extra internal radical "
+                    f"from the abstracted H). Got radical_count={rad_count}.")
             raise ValueError(f"Feature unit must have exactly 2 radical electrons total (one at each end). "
                              f"Got radical_count={rad_count}.")
         atom_1 = next(a for a in mol.atoms if a.label == '*1')
@@ -1615,6 +1835,29 @@ def _warn_unresolved_archetype(reason: str, detail: tuple) -> None:
 
 
 _refused_census_warned = set()
+
+_pool_cap_warned = set()
+
+
+def _warn_pool_cap_exhausted(cand_label: str, n_pools: int, max_pools: int) -> None:
+    """Warn once per (registry size, cap) that the max_pools cap declined a
+    gate-cleared spawn -- and NAME radical-feature pool exhaustion: the
+    registry the cap counts includes radical-feature '_mod' daughter pools
+    (one per distinct H-abstraction environment of a pool's monomer, e.g.
+    ~3 for polypropylene), so feature pools alone can exhaust the cap and
+    silently suppress genuine novel-motif spawns."""
+    key = (n_pools, max_pools)
+    if key in _pool_cap_warned:
+        return
+    _pool_cap_warned.add(key)
+    logging.warning(
+        "Polymer pool cap reached (max_pools=%d, registry holds %d pools): "
+        "declining to spawn a new pool for candidate %s despite a cleared "
+        "mass-flux gate. NOTE: radical-feature '_mod' daughter pools (one "
+        "per distinct H-abstraction environment, e.g. ~3 for polypropylene) "
+        "count toward this cap -- if feature-pool exhaustion is suppressing "
+        "spawns, raise max_pools.",
+        max_pools, n_pools, cand_label)
 
 
 def _warn_once_refused(entry: dict) -> None:
@@ -2245,6 +2488,29 @@ def _labels_present(mol: Molecule) -> list[str]:
 def _count_label(mol: Molecule, label: str) -> int:
     """Count the number of atoms with a specific label in the molecule."""
     return sum(1 for a in mol.atoms if a.label == label)
+
+
+def _radical_site_descriptor(mol: Molecule) -> str:
+    """
+    Deterministic radical-placement descriptor for a feature-unit fingerprint
+    (radical-feature producer path): a sorted, joined encoding of every
+    radical-bearing atom as ``{label|element}{radicals}h{n_H}c{n_heavy}``.
+    Distinguishes same-formula H-loss units by WHERE the extra radical sits
+    (e.g. the ~3 PP C3H5 units: backbone CH2 / backbone CH / pendant CH3)
+    while staying identical for isomorphic units, so positional twins still
+    dedup to one pool. v1 coarseness is documented: exotic units whose
+    radical sites share (element, radical count, H count, heavy-neighbor
+    count) multisets would collide -- acceptable for the documented ~3-
+    environment scope; refine when a real deck needs it.
+    """
+    sites = []
+    for a in mol.atoms:
+        if a.radical_electrons > 0:
+            n_h = sum(1 for nb in a.bonds if nb.is_hydrogen())
+            n_heavy = sum(1 for nb in a.bonds if not nb.is_hydrogen())
+            key = a.label if a.label else a.symbol
+            sites.append(f"{key}{a.radical_electrons}h{n_h}c{n_heavy}")
+    return '-'.join(sorted(sites))
 
 
 def _ensure_open_site(atom: 'Atom') -> None:
@@ -3192,6 +3458,7 @@ def process_polymer_candidates_multipool(
             processed.append(cand)
             continue
         if len(pool_registry) >= max_pools:
+            _warn_pool_cap_exhausted(cand_label, len(pool_registry), max_pools)
             _tag_polymer_proxy(cand, is_proxy=True)
             processed.append(cand)
             continue

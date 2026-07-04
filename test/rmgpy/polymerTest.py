@@ -6504,3 +6504,204 @@ class TestExplicitDpConstraintGate:
         gate = src.index("validate_explicit_dp_oligomers")
         generic = src.index("Species constraints forbids input species")
         assert gate < generic
+
+
+# ---------------------------------------------------------------------------
+# Radical-feature producer path, stage S1a (feature-pool conduit arc,
+# adversarially ratified): an explicit, handshake-context-gated path that
+# materializes the "{label}_mod" RADICAL FEATURE POOL daughter for the
+# H-abstraction shape (mid-chain H-loss radical) instead of
+# ValueError -> None -> gas-leak. The context flag is threaded by the CALLER
+# (the live handshake wires it in stage S2); nothing live passes it yet, so
+# today's refuse stamps / veto scoping stay byte-identical.
+# ---------------------------------------------------------------------------
+
+class TestRadicalFeatureProducerPath:
+    """S1a pins. PP run-2 deck shape: proxy = H-([CH2][CH](C))x3-H = C9H20
+    (2,4-dimethylheptane); the seven refused C9H19 H-abstraction daughters
+    map onto exactly THREE distinct H-loss feature units (documented v1:
+    ~3 PP H-environments -- backbone CH2, backbone CH, pendant CH3)."""
+
+    SEVEN = ['CCCC(C)C[C](C)C', 'CCCC(C)[CH]C(C)C', 'CC[CH]C(C)CC(C)C',
+             'C[CH]CC(C)CC(C)C', '[CH2]C(CCC)CC(C)C',
+             '[CH2]C(C)CC(C)CCC', '[CH2]CCC(C)CC(C)C']
+    # abstraction-environment grouping of the seven (indices into SEVEN):
+    # positional twins of the SAME abstraction -> the SAME daughter pool.
+    GROUP_TERTIARY = (0, 3)    # extra radical on the backbone CH (*2)
+    GROUP_SECONDARY = (1, 2)   # extra radical on the backbone CH2 (*1)
+    GROUP_PRIMARY = (4, 5, 6)  # extra radical on the pendant methyl
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                          end_groups=['[H]', '[H]'], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+
+    # --- pin (i): producer path builds the radical-feature daughter -------
+
+    def test_h_loss_context_builds_radical_feature_daughter(self):
+        """RED before S1a: create_reacted_copy has no h_loss_feature context
+        parameter and returns None for every one of the seven refused rows.
+        GREEN after: each row yields a '{label}_mod' Polymer whose
+        feature_monomer carries the mid-chain radical (exactly ONE extra
+        radical beyond the two stitch radicals), whose feature_proxy builds
+        and IS the reactive proxy, and whose fingerprint is _Feat--distinct
+        from the parent's."""
+        for smi in self.SEVEN:
+            d = self.pp.create_reacted_copy(Molecule(smiles=smi),
+                                            h_loss_feature=True)
+            assert isinstance(d, Polymer), (
+                f"H-loss daughter {smi} must materialize a Polymer under "
+                f"the threaded H-loss handshake context, got {d!r}")
+            assert d.label == 'polypropylene_mod'
+            assert d.feature_monomer is not None
+            assert d.feature_monomer.get_radical_count() == 3, (
+                "radical feature unit = two stitch radicals + exactly one "
+                "extra internal radical from the abstracted H")
+            assert d.feature_proxy is not None
+            proxy = d.get_proxy_species()
+            assert proxy is d.feature_proxy, (
+                "reactive proxy must be the feature proxy (polymer.py:302)")
+            assert proxy.molecule[0].get_radical_count() == 1, (
+                "the stitched feature trimer is the mid-chain mono-radical")
+            assert '_Feat-' in d.fingerprint
+            assert d.fingerprint != self.pp.fingerprint
+
+    def test_without_context_refused_exactly_as_today(self):
+        """Live behavior unchanged in S1a (the item-18 refuse stamp stays
+        untouched until S2 wires the context): without the flag all seven
+        rows keep refusing exactly as today."""
+        for smi in self.SEVEN:
+            assert self.pp.create_reacted_copy(Molecule(smiles=smi)) is None
+
+    # --- radical-budget rule on the unit validator ------------------------
+
+    def test_assert_feature_unit_radical_budget(self):
+        """Codex constraint: do NOT globally relax _assert_feature_unit.
+        Default gate: exactly 2 radical electrons (unchanged).
+        allow_h_loss_radical=True: exactly 3 -- the two stitch radicals plus
+        exactly ONE extra internal radical; 2 (no H lost) and 4+ (di-radical
+        garbage) both refuse under the flag."""
+        def h_loss_unit():
+            unit = self.pp.monomer.copy(deep=True)
+            target = next(a for a in unit.atoms if a.label == '*2')
+            h = next(a for a in target.bonds if a.is_hydrogen())
+            unit.remove_atom(h)
+            target.increment_radical()
+            unit.update(sort_atoms=False)
+            return unit
+
+        three_rad = h_loss_unit()
+        with pytest.raises(ValueError):
+            Polymer._assert_feature_unit(three_rad.copy(deep=True))
+        Polymer._assert_feature_unit(three_rad.copy(deep=True),
+                                     allow_h_loss_radical=True)
+
+        two_rad = self.pp.monomer.copy(deep=True)
+        Polymer._assert_feature_unit(two_rad.copy(deep=True))
+        with pytest.raises(ValueError):
+            # exactly ONE extra radical: a no-extra-radical unit is NOT an
+            # H-loss unit; the flag must not blanket-accept it
+            Polymer._assert_feature_unit(two_rad.copy(deep=True),
+                                         allow_h_loss_radical=True)
+
+        four_rad = h_loss_unit()
+        extra = next(a for a in four_rad.atoms
+                     if not a.label and a.is_carbon())
+        h = next(a for a in extra.bonds if a.is_hydrogen())
+        four_rad.remove_atom(h)
+        extra.increment_radical()
+        four_rad.update(sort_atoms=False)
+        for flag in (False, True):
+            with pytest.raises(ValueError):
+                Polymer._assert_feature_unit(four_rad.copy(deep=True),
+                                             allow_h_loss_radical=flag)
+
+    # --- pin (ii): garbage shapes stay refused under the context ----------
+
+    def test_garbage_shapes_refused_even_with_context(self):
+        """2-extra-radical (di-radical, 2 H lost) and wrong-skeleton products
+        stay refused exactly as today even when a (lying) caller passes the
+        H-loss context: the producer path structurally cross-checks the
+        product against the pool's single-H-loss positional variants."""
+        dirad = Molecule(smiles='[CH2]C(CCC)C[C](C)C')  # C9H18, 2 rads
+        assert dirad.get_radical_count() == 2
+        assert self.pp.create_reacted_copy(dirad, h_loss_feature=True) is None
+        linear = Molecule(smiles='[CH2]CCCCCCCC')  # C9H19, wrong skeleton
+        assert self.pp.create_reacted_copy(linear, h_loss_feature=True) is None
+
+    def test_crosslink_still_raises_with_context(self):
+        """Chain-chain coupling keeps raising PolymerCrosslinkError with the
+        context flag set (the crosslink guard runs before the producer path)."""
+        proxy = self.pp.baseline_proxy.molecule[0]
+        coupled = proxy.copy(deep=True)
+        second_chain = proxy.copy(deep=True)
+        mapping = {}
+        for atom in second_chain.atoms:
+            new_atom = atom.copy()
+            coupled.add_atom(new_atom)
+            mapping[atom] = new_atom
+        for atom1 in second_chain.atoms:
+            for atom2, bond in atom1.edges.items():
+                if id(atom1) < id(atom2):
+                    coupled.add_bond(Bond(mapping[atom1], mapping[atom2], bond.order))
+        a1 = next(a for a in coupled.atoms
+                  if not a.is_hydrogen() and a not in mapping.values())
+        h1 = next(n for n in a1.edges if n.is_hydrogen())
+        coupled.remove_bond(coupled.get_bond(a1, h1))
+        coupled.remove_atom(h1)
+        a2 = next(mapping[a] for a in second_chain.atoms if not a.is_hydrogen())
+        h2 = next(n for n in a2.edges if n.is_hydrogen())
+        coupled.remove_bond(coupled.get_bond(a2, h2))
+        coupled.remove_atom(h2)
+        coupled.add_bond(Bond(a1, a2, order=1))
+        coupled.update_multiplicity()
+        assert polymer.classify_structure(
+            Species(molecule=[coupled.copy(deep=True)]), self.pp
+        )[0] == polymer.PolymerClass.CROSSLINK
+        with pytest.raises(polymer.PolymerCrosslinkError):
+            self.pp.create_reacted_copy(coupled, h_loss_feature=True)
+
+    # --- pin (iii): twins -> one pool; distinct sites -> distinct pools ---
+
+    def test_positional_twins_resolve_to_same_pool(self):
+        """DISCARD positional twins of the SAME abstraction share the SAME
+        feature graph -> identical fingerprint (the _register_polymer dedup
+        key) and isomorphic feature monomers -> ONE daughter pool."""
+        for group in (self.GROUP_TERTIARY, self.GROUP_SECONDARY,
+                      self.GROUP_PRIMARY):
+            daughters = [self.pp.create_reacted_copy(
+                Molecule(smiles=self.SEVEN[i]), h_loss_feature=True)
+                for i in group]
+            assert all(isinstance(d, Polymer) for d in daughters)
+            fps = {d.fingerprint for d in daughters}
+            assert len(fps) == 1, (
+                f"positional twins {[self.SEVEN[i] for i in group]} must "
+                f"share one fingerprint (one pool); got {fps}")
+            first = daughters[0].feature_monomer
+            for d in daughters[1:]:
+                assert d.feature_monomer.is_isomorphic(first)
+
+    def test_distinct_abstraction_sites_distinct_pools(self):
+        """Secondary vs tertiary vs primary abstraction environments must
+        yield DISTINCT pools (documented v1: ~3 PP H-environments)."""
+        reps = [self.GROUP_TERTIARY[0], self.GROUP_SECONDARY[0],
+                self.GROUP_PRIMARY[0]]
+        daughters = [self.pp.create_reacted_copy(
+            Molecule(smiles=self.SEVEN[i]), h_loss_feature=True)
+            for i in reps]
+        fps = [d.fingerprint for d in daughters]
+        assert len(set(fps)) == 3, (
+            f"three H-environments must map to three distinct pool "
+            f"fingerprints, got {fps}")
+
+    # --- pin (iv): existing handshake/chip/scission behavior untouched ----
+
+    def test_eighth_daughter_scission_tail_unchanged(self):
+        """The eighth (center-tertiary) daughter spawns its scission-tail
+        pool exactly as today, context flag or not: the producer path is a
+        FALLBACK behind the existing wing logic, never a preemption."""
+        for flag in (False, True):
+            r = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'),
+                                            h_loss_feature=flag)
+            assert r is not None and r.label.endswith('_scission_tail')

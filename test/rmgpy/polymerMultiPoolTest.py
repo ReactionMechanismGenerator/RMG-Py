@@ -567,6 +567,48 @@ class TestProcessPolymerCandidatesMultiPool:
         )
         assert intents == [], "max_pools=1 must block any new spawn"
 
+    def test_max_pools_cap_message_names_feature_pool_exhaustion(self, parent_polymer, caplog):
+        """S1a (feature-pool conduit arc): radical-feature '_mod' daughter
+        pools count toward the registry the max_pools cap sees, so a deck
+        with several H-abstraction environments (~3 for PP) can exhaust the
+        cap. The cap refusal must SAY so: warn-once naming radical-feature
+        pool exhaustion and the max_pools knob. RED before S1a: the cap
+        branch declines silently."""
+        import logging
+        from rmgpy.polymer import (MotifLedgerEntry, discover_repeat_motif,
+                                   process_polymer_candidates_multipool)
+        from rmgpy.species import Species
+
+        # Same gate-clearing recipe as test_novel_motif_spawns_one_pool, but
+        # with the registry already at the cap: the spawn gate passes, the
+        # CAP is what declines.
+        phenolic_chain = Species(smiles="Oc1ccc(Cc2ccc(Cc3ccc(O)cc3)cc2)cc1")
+        phenolic_chain.label = "phenolic_2nd"
+        model = _GateModel(window=3)
+        motif = discover_repeat_motif(phenolic_chain.molecule[0])
+        assert motif is not None
+        model.polymer_motif_ledger.append(MotifLedgerEntry(
+            motif=motif, accumulator_key="motif-0",
+            representatives=[("phenolic_1st", "PE")],
+        ))
+        model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, _PE_STATS, 0.5)
+
+        with caplog.at_level(logging.WARNING):
+            processed, intents = process_polymer_candidates_multipool(
+                candidates=[phenolic_chain],
+                reaction_model=model,
+                pool_registry=[parent_polymer],
+                iteration=1,
+                max_pools=1,  # already at cap; the CAP branch fires
+            )
+        assert intents == [], "cap must still block the spawn"
+        cap_msgs = [r.getMessage() for r in caplog.records
+                    if "max_pools" in r.getMessage()]
+        assert cap_msgs, "cap refusal must be loud (warn-once), not silent"
+        assert any("radical-feature" in m and "_mod" in m for m in cap_msgs), (
+            "the cap message must name radical-feature ('_mod') pool "
+            f"exhaustion as a cap consumer; got {cap_msgs}")
+
 
 # ---------------------------------------------------------------------------
 # SpawnIntent dataclass shape
