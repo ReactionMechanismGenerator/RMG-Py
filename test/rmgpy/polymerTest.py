@@ -6115,6 +6115,70 @@ class TestDp1FoldBackStaysGas:
             "fold-back re-creates the run-2 U=11.63 tripwire refusal"
         )
 
+    def test_run2_tripwire_three_point_negative_control(self):
+        """r61 negative control (adversarial review, pre-PP-sizing): keep the
+        OLD pairings measurable so the tripwire counterfactual keeps proving
+        the routed pool BEATS the bad surrogates, not merely that some number
+        is small. Three pairings of the same melt reactant (the C9H20 PP
+        proxy) through the solver's real _unpaired_reference_decades at the
+        run-2 operating point (T = 1100 K):
+
+        * routed feature-pool daughter (live S2 conduit): the C9H19 feature
+          proxy pairs the C9H20 melt reactant, U ~ 0.005 decades;
+        * the old malformed scission-tail spawn: C15H31 proxy, U ~ 0.326
+          decades -- an ORDER worse than routed (63x);
+        * the DP-1 fold-back: propane deduped into the parent pool leaves
+          the parent proxy AND the tail unpaired, U ~ 11.63 decades --
+          catastrophic, beyond the refuse bound.
+        """
+        from rmgpy.solver.polymer import (
+            _unpaired_reference_decades,
+            REFERENCE_STATE_CENSUS_DECADES,
+            REFERENCE_STATE_REFUSE_DECADES,
+        )
+        T = 1100.0
+        proxy_mw = self.pp.baseline_proxy.molecule[0].get_molecular_weight()
+        melt_r = [proxy_mw]
+        tert = Molecule(smiles='CCC[C](C)CC(C)C')
+
+        # (a) routed: the live conduit pairing, end-to-end through the real
+        # producer path exactly as the existing tripwire test drives it
+        routed = self.pp.create_reacted_copy(
+            tert.copy(deep=True), h_loss_feature=True)
+        assert routed is not None and routed.label == 'polypropylene_mod'
+        routed_mw = (
+            routed.get_proxy_species().molecule[0].get_molecular_weight())
+        u_routed = _unpaired_reference_decades(melt_r, [routed_mw], T)
+
+        # (b) old scission-tail surrogate: the scission invariant now
+        # refuses the spawn (pin that refusal), so rebuild the tail proxy
+        # MASS directly. The pre-S2 spawn emitted a zero-radical +1-cation
+        # C15H31 proxy; _unpaired_reference_decades sees only the molar
+        # mass, and the cation's missing electron is weightless, so a valid
+        # pentadecyl radical carries the identical C15H31 mass.
+        assert self.pp.create_reacted_copy(tert.copy(deep=True)) is None
+        old_tail = Molecule(smiles='[CH2]CCCCCCCCCCCCCC')
+        assert old_tail.get_formula() == 'C15H31'
+        u_tail = _unpaired_reference_decades(
+            melt_r, [old_tail.get_molecular_weight()], T)
+
+        # (c) fold-back surrogate: propane folded back into the parent pool
+        # puts the parent proxy itself on the product side next to the tail
+        # (the exact run-2 diagnosis pairing that measured 11.6297)
+        u_fold = _unpaired_reference_decades(
+            melt_r, [proxy_mw, old_tail.get_molecular_weight()], T)
+
+        # magnitude bands: the diagnosis' measured values, loose tolerances
+        assert u_routed == pytest.approx(0.005, abs=0.002)
+        assert u_tail == pytest.approx(0.326, abs=0.01)
+        assert u_fold == pytest.approx(11.63, abs=0.05)
+        # ordering: routed beats the old tail by an order, the fold-back is
+        # catastrophic; bound placement matches the spec bimodality
+        assert u_routed < 0.05 < u_tail < 1.0 < u_fold
+        assert u_tail > 10.0 * u_routed
+        assert u_routed < REFERENCE_STATE_CENSUS_DECADES
+        assert u_fold > REFERENCE_STATE_REFUSE_DECADES
+
     def test_dp2_and_radical_scission_products_unaffected(self):
         """Ratified red-first requirement 3 (guard, GREEN before and after):
         genuine chain/scission products at DP >= 2 still fold/spawn exactly
@@ -7042,3 +7106,73 @@ class TestFeaturePoolConduitRouting:
         assert compute_h_loss_feature_verdicts(
             [h, self.pp], [h2, ipr.copy(deep=True)],
             [self.pp]) == [False, False]
+
+    # --- pin 9 (r61): Disproportionation-shaped H-transfer routing --------
+
+    def test_disproportionation_shaped_h_transfer_routes(self):
+        """r61 ruling: a Disproportionation-family row where the nonpolymer
+        side gains exactly one H (radical + pool proxy -> RH + eliminating
+        same-skeleton H-loss daughter) IS legitimate conduit routing --
+        chemically it's polymer H-abstraction, and Disproportionation is in
+        the PP v1 family whitelist. The positive shape gets verdict True and
+        routes to the _mod feature pool as a VOLATILE_EJECTION row."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+                                   is_end_group_reaction,
+                                   stamp_polymer_flux_archetype)
+        from rmgpy.reaction import Reaction
+        ipr = Species(label='iPr', molecule=[Molecule(smiles='C[CH]C')])
+        c3h8 = Species(label='C3H8', molecule=[Molecule(smiles='CCC')])
+        rxn = Reaction(reactants=[ipr, self.pp],
+                       products=[c3h8, Molecule(smiles=self.TERTIARY)],
+                       reversible=False)
+        verdicts = compute_h_loss_feature_verdicts(
+            rxn.reactants, rxn.products, [self.pp])
+        assert verdicts == [False, True], (
+            "Disproportionation shape (the co-reactant radical gains the "
+            "abstracted H) must get the conduit verdict")
+        _handshake_structures(rxn.products, [self.pp],
+                              h_loss_verdicts=verdicts)
+        d = rxn.products[1]
+        assert isinstance(d, Polymer) and d.label == 'polypropylene_mod', (
+            f"Disproportionation-shaped row must route into the radical "
+            f"feature pool; got {getattr(d, 'label', d)!r}")
+        rxn.is_end_group_reaction = is_end_group_reaction(rxn.products)
+        stamp_polymer_flux_archetype(rxn, rxn.reactants, [self.pp])
+        assert rxn.polymer_flux_archetype == int(
+            polymer.PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert getattr(rxn, 'polymer_refused', False) is False
+        mw_h = Molecule(smiles='[H]').get_molecular_weight() * 1000.0
+        assert rxn.polymer_eject_units == pytest.approx(
+            mw_h / self.pp.monomer_mw_g_mol, rel=1e-6), (
+            "chain sheds exactly one H per event: a = +MW(H)/monomer_MW")
+
+    def test_disproportionation_shape_off_balance_does_not_route(self):
+        """r61 ruling, negative arm: a Disproportionation-looking row that
+        does NOT fit the +1-H balance must get verdict False and never
+        reach the feature pool. (a) the polymer side is the H-gainer (the
+        co-radical LOSES an H: ethyl -> ethylene); (b) two heavy products
+        (the co-product gains a heavy atom, not just the abstracted H)."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.polymer import compute_h_loss_feature_verdicts
+        et = Species(label='C2H5', molecule=[Molecule(smiles='C[CH2]')])
+        c2h4 = Species(label='C2H4', molecule=[Molecule(smiles='C=C')])
+        c3h8 = Species(label='C3H8', molecule=[Molecule(smiles='CCC')])
+        # (a) polymer side H-gainer: the nonpolymer side nets -1 H
+        prods_a = [c2h4, Molecule(smiles=self.TERTIARY)]
+        v_a = compute_h_loss_feature_verdicts(
+            [et, self.pp], prods_a, [self.pp])
+        assert v_a == [False, False], (
+            "polymer-side-H-gainer Disproportionation shape must not get "
+            "the conduit verdict")
+        _handshake_structures(prods_a, [self.pp], h_loss_verdicts=v_a)
+        assert not isinstance(prods_a[1], Polymer), (
+            "off-balance Disproportionation shape must not reach the "
+            "feature pool")
+        # (b) two heavy products: the co-product nets +1 C (+3 H)
+        v_b = compute_h_loss_feature_verdicts(
+            [et, self.pp], [c3h8, Molecule(smiles=self.TERTIARY)],
+            [self.pp])
+        assert v_b == [False, False], (
+            "heavy-gaining co-product must not count as abstraction "
+            "evidence")
