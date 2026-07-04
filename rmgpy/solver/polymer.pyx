@@ -2833,7 +2833,35 @@ class HybridPolymerSystem(ReactionSystem):
                         ) / V_poly
 
                     rf *= site
-                    rr *= site
+                    # Direction-specific source availability (run-5 DASPK
+                    # IDID=-7 forensics, adjudicated Part C): each direction's
+                    # event flux must scale with the moments of the pool
+                    # ACTUALLY BEING DEBITED in that direction. The REVERSE
+                    # leg of a cross-pool exchange debits the dst pool
+                    # (section-5 legs run (rf, src->dst), (rr, dst->src)), so
+                    # its site factor comes from the dst pool's OWN moments --
+                    # with the forward-reactant site a near-empty spawned pool
+                    # was drained at a rate set by the healthy source pool
+                    # (mu2 negative in ~1e-25 s, corrector divergence,
+                    # h -> ~4e-21, IDID=-7). Same moment order as the forward
+                    # site (mu1; mu0 for end-group rows), so the outflux -> 0
+                    # CONTINUOUSLY (linearly) as the debited pool empties: no
+                    # dt-dependent clamp, no activation threshold. Same-pool
+                    # rows (incl. the throttled DISCRETE_CHIP / same-pool-VE
+                    # shapes above, whose throttle multiplies BOTH directions
+                    # by design) and rows with no product-side pool (dst ==
+                    # -1: the reverse leg debits gas/explicit species only,
+                    # whose availability is already in _C) keep the shared
+                    # reactant-pool site. (mirrored in get_reaction_rates'
+                    # hijack block -- keep in sync)
+                    dst_pool_idx = self.reaction_dst_pool[r_idx]
+                    if dst_pool_idx != -1 and dst_pool_idx != target_pool_idx:
+                        moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[1]
+                        if self.is_end_group_reaction[r_idx]:
+                            moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[0]
+                        rr *= max(0.0, y[moment_idx]) / V_poly
+                    else:
+                        rr *= site
             elif has_any_prod and not has_edge_prod:
                 # PRODUCT-side proxy (review round 51): a reverse-stored
                 # association row (e.g. edge daughter + edge daughter <=>
@@ -3800,7 +3828,23 @@ class HybridPolymerSystem(ReactionSystem):
                     ) / V_poly
 
                 rf *= site
-                rr *= site
+                # Direction-specific source availability -- keep in sync with
+                # the residual's section-2 scaling (adjudicated Part C): the
+                # reverse leg of a cross-pool exchange debits the dst pool,
+                # so rr's site comes from the dst pool's own moments (mu1;
+                # mu0 for end-group rows; same pool_mu1_indices override as
+                # the forward site). Same-pool and no-dst rows keep the
+                # shared (possibly throttled) reactant-pool site.
+                dst_pool_idx = self.reaction_dst_pool[r_idx]
+                if dst_pool_idx != -1 and dst_pool_idx != p0_pool_idx:
+                    moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[1]
+                    if self.pool_mu1_indices[dst_pool_idx] != -1:
+                        moment_idx = self.pool_mu1_indices[dst_pool_idx]
+                    if self.is_end_group_reaction[r_idx]:
+                        moment_idx = self.pool_mu0_indices[dst_pool_idx]
+                    rr *= max(0.0, y[moment_idx]) / V_poly
+                else:
+                    rr *= site
             elif rr != 0.0:
                 # PRODUCT-side proxy mirror (review round 51; keep in sync
                 # with the residual's product-side scaling): a reverse-stored

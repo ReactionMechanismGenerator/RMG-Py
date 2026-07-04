@@ -2988,6 +2988,12 @@ class TestHybridPolymerReactor:
         wrong-source bundle fails loudly. Also pins the rf/rr volume-factor
         identity: at b0=1 on both legs, the net mu0 flux must equal the
         legacy net molar rate (rf-rr)*V_rxn.
+
+        UPDATED for the adjudicated direction-specific availability law
+        (run-5 DASPK forensics): the reverse leg's site now comes from the
+        DEBITED pool B's mu1 (rr = kb * mu1_B = 2.4), no longer from the
+        forward reactant pool A's (kb * mu1_A = 3.0, the run-5 defect this
+        test previously pinned).
         """
         sp, core, mask = _two_pool_species()
         # reversible=False so generate_rate_coefficients needs no thermo
@@ -3003,15 +3009,15 @@ class TestHybridPolymerReactor:
 
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
         rf = kf * mu_a[1]               # 2.0 * 5 = 10 (site-scaled by A mu1)
-        rr = 0.6 * mu_a[1]              # kb * C(proxyB)=1, then *= site -> 3.0
+        rr = 0.6 * mu_b[1]              # kb * C(proxyB)=1, then *= B site -> 2.4
         mu3_a = mu_a[0] * (mu_a[2] / mu_a[1]) ** 3   # 216.0
         mu3_b = mu_b[0] * (mu_b[2] / mu_b[1]) ** 3   # 31.25
         bA1, bA2 = mu_a[2] / mu_a[1], mu3_a / mu_a[1]    # 6.0, 43.2
         bB1, bB2 = mu_b[2] / mu_b[1], mu3_b / mu_b[1]    # 2.5, 7.8125
 
         assert np.isclose(dn_dt[1], -(rf - rr))              # == legacy net (b0=1)
-        assert np.isclose(dn_dt[2], -rf * bA1 + rr * bB1)    # -52.5
-        assert np.isclose(dn_dt[3], -rf * bA2 + rr * bB2)    # -408.5625
+        assert np.isclose(dn_dt[2], -rf * bA1 + rr * bB1)    # -54.0
+        assert np.isclose(dn_dt[3], -rf * bA2 + rr * bB2)    # -413.25
         assert np.isclose(dn_dt[5], +(rf - rr))
         assert np.isclose(dn_dt[6], +rf * bA1 - rr * bB1)
         assert np.isclose(dn_dt[7], +rf * bA2 - rr * bB2)
@@ -3203,10 +3209,11 @@ class TestHybridPolymerReactor:
 
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
 
-        # rr = kb * C(proxyB=1), then site-scaled by the REACTANT-pool (A) mu1
-        # (mirrors MIGRATION: reverse site scaling keys on the reactant pool;
-        # the deferred reverse-site question is out of scope here).
-        ev = 0.6 * mu_a[1]                              # 3.0
+        # rr = kb * C(proxyB=1), then site-scaled by the DEBITED pool (B) mu1
+        # (direction-specific availability, adjudicated Part C -- this
+        # resolves the previously deferred reverse-site question: the
+        # reverse leg drains B, so its availability comes from B).
+        ev = 0.6 * mu_b[1]                              # 2.4
         mu3_b = mu_b[0] * (mu_b[2] / mu_b[1]) ** 3      # 31.25
         bB1 = mu_b[2] / mu_b[1]                         # E[n_dst] = 2.5
         bB2 = mu3_b / mu_b[1]                           # E[n_dst^2] = 7.8125
@@ -3222,6 +3229,155 @@ class TestHybridPolymerReactor:
         # net condensed conservation: mu1 GAINS exactly a*ev (parent restored)
         assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-12)
         assert np.isclose(dn_dt[2] + dn_dt[6], +a * ev)
+
+    # ------------------------------------------------------------------
+    # Direction-specific source availability (run-5 DASPK IDID=-7
+    # forensics, adjudicated Part C): each per-direction exchange leg's
+    # event flux must scale with the moments of the pool ACTUALLY BEING
+    # DEBITED in that direction. The reverse leg debits the dst pool, so
+    # its site factor comes from the dst pool's OWN moments -- previously
+    # the forward reactant pool's (the "deferred reverse-site question"),
+    # which let a near-empty spawned pool be drained at a rate set by the
+    # healthy source pool: mu2 negative in ~1e-25 s, corrector divergence,
+    # h -> ~4e-21, IDID=-7, resurrection failure.
+    # ------------------------------------------------------------------
+    def test_cross_pool_reverse_availability_scales_with_debited_pool(self):
+        """
+        Run-5 shape: near-zero dst pool B (mu = [1.9e-18, 2.6e-17, 6.1e-16],
+        the polypropylene_mod_3 moments at the DASPK failure dump) with a
+        finite reverse driving force on a cross-pool VOLATILE_EJECTION row.
+        The outbound B fluxes must scale with B's own moments
+        (ev = kb * mu1_B ~ 1.6e-17), not with healthy pool A's
+        (ev = kb * mu1_A = 3.0, which pre-fix drained B's mu2 at -2831 mol/s
+        -- 1e12 times B's entire mu2 content per second).
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        mu_a = (1.0, 5.0, 30.0)
+        mu_b = (1.9e-18, 2.6e-17, 6.1e-16)
+        rs = _two_pool_rs(rxn, core, mask, mu_a, mu_b)
+        rs.kf[0] = 0.0        # forward off: isolate the reverse leg
+        rs.kb[0] = 0.6
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        ev = 0.6 * mu_b[1]                          # kb * mu1 of the DEBITED pool
+        mu3_b = mu_b[0] * (mu_b[2] / mu_b[1]) ** 3
+        bB1 = mu_b[2] / mu_b[1]
+        bB2 = mu3_b / mu_b[1]
+        # Outbound legs scale with B's own content (exact law, atol=0 so the
+        # tiny magnitudes are pinned relatively, not swallowed by a default
+        # absolute tolerance).
+        assert np.isclose(dn_dt[5], -ev * 1.0, rtol=1e-10, atol=0.0)
+        assert np.isclose(dn_dt[6], -ev * bB1, rtol=1e-10, atol=0.0)
+        assert np.isclose(dn_dt[7], -ev * bB2, rtol=1e-10, atol=0.0)
+        # No absolute-scale drain of a ~1e-18-scale pool.
+        assert abs(dn_dt[7]) < 1e-10
+        # Mass conservation holds EXACTLY across the fixed leg with the same
+        # event flux: chains conserved; backbone units gain exactly a*ev
+        # (the re-absorbed volatile's units), as for any reverse VE.
+        assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-30)
+        assert np.isclose(dn_dt[2] + dn_dt[6], +a * ev, rtol=1e-12, atol=0.0)
+
+    def test_cross_pool_reverse_fix_migration_mass_conservation_exact(self):
+        """
+        MIGRATION with BOTH legs live and distinguishable pools: all three
+        pool-moment sums conserve to machine precision under the
+        direction-specific availability law (source debit + destination
+        credit use the same per-direction event flux).
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 2
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (2.0, 4.0, 10.0))
+        rs.kb[0] = 0.6
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        assert dn_dt[1] + dn_dt[5] == pytest.approx(0.0, abs=1e-13)
+        assert dn_dt[2] + dn_dt[6] == pytest.approx(0.0, abs=1e-12)
+        assert dn_dt[3] + dn_dt[7] == pytest.approx(0.0, abs=1e-11)
+        # Reverse leg actually live (fixture liveness).
+        assert dn_dt[5] != 0.0
+
+    def test_cross_pool_reverse_fix_volatile_balance_exact(self):
+        """
+        Cross-pool VE with a discrete gas volatile, BOTH legs live:
+        A(poolA) <=> B(poolB) + G. Backbone-unit balance must close EXACTLY
+        with the SAME event fluxes that move the pool moments:
+        d(mu1_A + mu1_B)/dt + a * dn_G/dt == 0 and chain count conserves
+        (d(mu0_A + mu0_B)/dt == 0).
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), (2.0, 4.0, 10.0))
+        rs.kb[0] = 0.6
+        y = rs.y.copy()
+        y[8] = 1.0   # G moles so C(G) > 0 and the reverse leg is live
+
+        dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+
+        assert dn_dt[8] != 0.0   # fixture liveness: net gas flux flows
+        assert dn_dt[1] + dn_dt[5] == pytest.approx(0.0, abs=1e-12)
+        assert (dn_dt[2] + dn_dt[6]) + a * dn_dt[8] == pytest.approx(0.0, abs=1e-11)
+
+    def test_cross_pool_reverse_fix_healthy_pools_regression_pin(self):
+        """
+        Numeric regression pin captured at db76881b9 (PRE-fix head): with
+        equal availability moments (mu1_A == mu1_B) the directional law
+        coincides with the old shared-site law, so the full dn_dt vector is
+        byte-identical. Guards the fix against collateral factor changes.
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rs = _two_pool_rs(rxn, core, mask, (1.0e-3, 4.0e-3, 2.0e-2),
+                          (2.0e-3, 4.0e-3, 1.0e-2))
+        rs.kb[0] = 0.6
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        expected = np.array([
+            0.0, -0.0056, -0.031276, -0.21453825999999995,
+            0.0, +0.0056, +0.02492, +0.15075579999999994, 0.0,
+        ])
+        assert np.allclose(dn_dt[:9], expected, rtol=1e-12, atol=0.0)
+
+    def test_cross_pool_reverse_flux_vanishes_continuously(self):
+        """
+        Continuity: as the debited pool's moments -> 0 (fixed distribution
+        shape, amplitude s = 1e-6, 1e-12, 1e-18) the outbound mu2 drain
+        decreases monotonically and LINEARLY with s -- no step at any
+        threshold, no cliff. Pre-fix the drain was CONSTANT (-2831.2 mol/s
+        at every s: availability taken from the healthy source pool).
+        """
+        a = 1.135
+        mu_a = (1.0, 5.0, 30.0)
+        drains = []
+        for s in (1.0e-6, 1.0e-12, 1.0e-18):
+            sp, core, mask = _two_pool_species()
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+            rxn.polymer_flux_archetype = 6
+            rxn.polymer_eject_units = a
+            rs = _two_pool_rs(rxn, core, mask, mu_a,
+                              (1.9 * s, 26.0 * s, 610.0 * s))
+            rs.kf[0] = 0.0
+            rs.kb[0] = 0.6
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            drains.append(-dn_dt[7])
+        # Monotone decrease toward 0, all finite and positive (still live).
+        assert drains[0] > drains[1] > drains[2] > 0.0
+        # Linear in the pool amplitude: successive ratios == amplitude ratio.
+        assert drains[1] / drains[0] == pytest.approx(1.0e-6, rel=1e-9)
+        assert drains[2] / drains[1] == pytest.approx(1.0e-6, rel=1e-9)
 
     def test_volatile_ejection_fractional_a_not_rounded(self):
         """
