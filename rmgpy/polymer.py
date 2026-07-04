@@ -835,6 +835,40 @@ class Polymer(Species):
         spc.is_polymer_proxy = True
         return spc
 
+    def _dp1_capped_species(self) -> Optional[Species]:
+        """
+        The complete capped chain at DP = 1 for this pool:
+        end_groups[0]--monomer--end_groups[1] (e.g. propane for a PP pool
+        with H/H end caps, ethylbenzene for a PS pool with H/H end caps),
+        as a Species with resonance structures (same recipe as
+        _stitch_trimer) so kekule/aromatic representations compare equal.
+        Used by the DP-1 fold-back gate in _create_reacted_copy_logic.
+        Returns None when the stitch is not constructible. Cached lazily per
+        instance (copies rebuild it on first use).
+        """
+        cached = getattr(self, '_dp1_capped_cache', None)
+        if cached is None:
+            mol = stitch_molecules_by_labeled_atoms(
+                self.end_groups[0].copy(deep=True), self.monomer.copy(deep=True))
+            if mol is not None:
+                mol = stitch_molecules_by_labeled_atoms(
+                    mol, self.end_groups[1].copy(deep=True))
+            if mol is None:
+                cached = False  # sentinel: not constructible, do not retry
+            else:
+                mol.update()
+                mol.clear_labeled_atoms()
+                mol.assign_atom_ids()
+                spc = Species(molecule=[mol])
+                spc.molecule = generate_resonance_structures(mol,
+                                                             clar_structures=False,
+                                                             keep_isomorphic=False,
+                                                             filter_structures=True,
+                                                             save_order=True)
+                cached = spc
+            self._dp1_capped_cache = cached
+        return cached or None
+
     def create_reacted_copy(self, reacted_proxy: Molecule) -> Optional['Polymer']:
         """
         Wrapper that ensures any generated polymer fragment is sanitized
@@ -930,6 +964,27 @@ class Polymer(Species):
         product.update()
         if self.baseline_proxy.is_isomorphic(product):
             return self.copy(deep=True)
+
+        # DP-1 fold-back gate (ratified 2026-07-04, PP run-2 gate/conduit
+        # diagnosis Phenomenon 2): a product that is a COMPLETE capped chain
+        # at DP = 1 -- end_groups[0]-monomer-end_groups[1] exactly, e.g.
+        # propane == H-(C3H6)-H under end_groups=['[H]','[H]'] -- is the
+        # monomer-hydride/solvent-class VOLATILE co-product of abstraction/
+        # disproportionation against the proxy, NOT a chain population. The
+        # wing matcher below would otherwise accept its single wing, build a
+        # "{label}_scission_tail" whose reconstructed proxy is isomorphic to
+        # the PARENT proxy, and species dedup would fold the volatile back
+        # into the parent pool -- leaving the reaction's melt reference state
+        # unpaired (measured U = 11.63 decades vs 0.33 with the volatile kept
+        # gas; the run-2 tripwire refusal). Ratified rule: products at
+        # DP <= 1 STAY GAS; there is no automatic DP-1 fold-back (a deck
+        # wanting DP-1 condensed bookkeeping must configure it explicitly).
+        # DP-0 (end_groups[0]-end_groups[1], e.g. H2) needs no gate: it
+        # cannot contain a wing (end + full monomer) and already falls
+        # through to None structurally.
+        dp1 = self._dp1_capped_species()
+        if dp1 is not None and dp1.is_isomorphic(product):
+            return None
 
         def _count_boundary_edges(m):
             """Counts bonds leaving the matched subgraph."""

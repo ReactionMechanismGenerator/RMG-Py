@@ -6003,3 +6003,116 @@ class TestScissionRealDHrxnEndToEnd:
 # is driven by radical-vs-closed-shell enthalpy, not by the polymer relabeling the
 # fix targets; forcing ArrheniusBM onto that scaffold would be artificially misleading.
 # The scission path (Task 5) provides the load-bearing coverage for the relabeled gate.
+
+
+class TestDp1FoldBackStaysGas:
+    """
+    Fix (ratified 2026-07-04, PP run-2 gate/conduit diagnosis Phenomenon 2):
+    the create_reacted_copy wing-matcher accepted a DP-1 molecule (propane ==
+    H-(C3H6)-H under end_groups=['[H]','[H]']) as a polymer chain, built a
+    "{label}_scission_tail" whose proxy is ISOMORPHIC to the parent proxy, and
+    species dedup folded the volatile back into the parent pool
+    (polypropylene(2)) -- leaving the spawned tail's full unpaired
+    reference-state term on the product side (measured U = 11.6297 decades vs
+    0.326 with propane correctly gas). Ratified rule: products at DP <= 1 STAY
+    GAS -- a DP-1 "chain" is the monomer-hydride/solvent-class volatile
+    co-product; there is NO automatic DP-1 fold-back.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        self._handshake = _handshake_structures
+        # The PP run-2 deck shape (examples PP deck): -CH2-CH(CH3)- repeat,
+        # H/H end caps, xs=3 proxy = C9H20.
+        self.pp = Polymer(
+            label='polypropylene',
+            monomer='[CH2][CH](C)',
+            end_groups=['[H]', '[H]'],
+            cutoff=3,
+            Mn=1500.0,
+            Mw=1800.0,
+            initial_mass=0.1485,
+        )
+
+    def test_dp1_capped_volatile_is_refused(self):
+        """RED before the fix: propane (the DP-1 capped chain) wing-matches a
+        single head wing and returns a scission-tail Polymer whose proxy is
+        isomorphic to the parent proxy (the fold-back conflation)."""
+        propane = Molecule(smiles='CCC')
+        assert self.pp.create_reacted_copy(propane) is None, (
+            "DP-1 capped volatile (propane == H-(C3H6)-H) must STAY GAS: "
+            "create_reacted_copy must refuse it, not fold it back into the "
+            "parent pool"
+        )
+
+    def test_handshake_live_pp_shape_propane_stays_gas_tail_spawns(self):
+        """Ratified red-first requirement 1 (live PP shape): H_Abstraction
+        iPr + PP-proxy -> propane + tert-C9H19 daughter. Propane must NOT
+        fold back into polypropylene; the tert daughter still spawns the
+        scission-tail pool exactly as today."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        propane = Species(molecule=[Molecule(smiles='CCC')], label='propane')
+        tert = Molecule(smiles='CCC[C](C)CC(C)C')  # tertiary-site daughter
+        products = [propane, tert]
+        self._handshake(products, [self.pp])
+        assert not isinstance(products[0], Polymer), (
+            "propane folded back into the parent pool: the DP-1 co-product "
+            "of proxy H-abstraction must remain a discrete gas species"
+        )
+        assert has_polymer_gas_veto(products[0]), (
+            "the refused DP-1 volatile must carry the durable gas veto like "
+            "any other retained discrete volatile"
+        )
+        # co-product spawn unchanged (fold/spawn as today for DP >= 2 shapes)
+        assert isinstance(products[1], Polymer)
+        assert products[1].label.endswith('_scission_tail')
+
+    def test_run2_tripwire_counterfactual_below_census_bound(self):
+        """Ratified red-first requirement 2 (run-2 tripwire counterfactual):
+        with propane kept gas, the H_Abstraction reaction's unpaired
+        reference-state magnitude stays below the census bound (measured
+        0.326 decades); with the fold-back it is 11.6297 decades and trips
+        the refusal. Uses the solver's _unpaired_reference_decades exactly as
+        the diagnosis did (T = 1100 K, run-2 operating point)."""
+        from rmgpy.solver.polymer import (
+            _unpaired_reference_decades,
+            REFERENCE_STATE_CENSUS_DECADES,
+        )
+        T = 1100.0
+        proxy_mw = self.pp.baseline_proxy.molecule[0].get_molecular_weight()
+        melt_r = [proxy_mw]  # the PP proxy reactant is the only melt reactant
+        melt_p = []
+        for mol in (Molecule(smiles='CCC'),             # propane co-product
+                    Molecule(smiles='CCC[C](C)CC(C)C')):  # tert C9H19 daughter
+            new_p = self.pp.create_reacted_copy(mol)
+            if new_p is not None:
+                melt_p.append(
+                    new_p.get_proxy_species().molecule[0].get_molecular_weight())
+        u = _unpaired_reference_decades(melt_r, melt_p, T)
+        assert u < REFERENCE_STATE_CENSUS_DECADES, (
+            f"unpaired reference-state magnitude U = {u:.4f} decades >= "
+            f"census bound {REFERENCE_STATE_CENSUS_DECADES}: the DP-1 "
+            "fold-back re-creates the run-2 U=11.63 tripwire refusal"
+        )
+
+    def test_dp2_and_radical_scission_products_unaffected(self):
+        """Ratified red-first requirement 3 (guard, GREEN before and after):
+        genuine chain/scission products at DP >= 2 still fold/spawn exactly
+        as today -- the DP-1 gate must not reach them."""
+        # DP-2 capped chain (H-(C3H6)2-H): spawns a non-parent scission tail
+        head_wing = self.pp._stitch_wing('head')
+        unit = self.pp.monomer.copy(deep=True)
+        m = polymer.stitch_molecules_by_labeled_atoms(head_wing, unit)
+        dp2 = polymer.stitch_molecules_by_labeled_atoms(
+            m, self.pp.end_groups[1].copy(deep=True))
+        assert dp2 is not None, "test setup: DP-2 capped chain stitch failed"
+        dp2.update()
+        r = self.pp.create_reacted_copy(dp2)
+        assert r is not None and r.label.endswith('_scission_tail')
+        assert not r.get_proxy_species().molecule[0].is_isomorphic(
+            self.pp.baseline_proxy.molecule[0]), (
+            "DP-2 product must not fold back into the parent proxy")
+        # genuine radical H-loss daughter of the proxy still spawns as today
+        r2 = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'))
+        assert r2 is not None and r2.label.endswith('_scission_tail')
