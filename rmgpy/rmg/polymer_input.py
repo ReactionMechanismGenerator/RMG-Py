@@ -795,7 +795,8 @@ class PolymerPhase(object):
         (R1 core-prefix parity holds because both masks derive from the
         same predicate)."""
         # local imports: avoid an import cycle
-        from rmgpy.polymer import Polymer, has_polymer_gas_veto
+        from rmgpy.polymer import (Polymer, has_polymer_gas_veto,
+                                   is_h_loss_radical_daughter)
 
         static_pool_labels = {p.label for p in self.pools}
 
@@ -840,25 +841,17 @@ class PolymerPhase(object):
                 mols = getattr(spc, "molecule", None) or []
                 if not mols or mols[0] is None:
                     continue
-                try:
-                    n_rad = mols[0].get_radical_count()
-                    net_charge = mols[0].get_net_charge()
-                    comp = mols[0].get_element_count()
-                except Exception:
-                    continue
-                if n_rad < 1 or net_charge != 0:    # (ii)
-                    continue
                 if has_polymer_gas_veto(spc):       # (v)
                     continue
-                heavy = {el: n for el, n in comp.items() if el != 'H'}
-                n_h = comp.get('H', 0)
-                for pcomp in proxy_comps:
-                    p_heavy = {el: n for el, n in pcomp.items() if el != 'H'}
-                    # (iii) same heavy skeleton + (iv) H-loss only, one H
-                    # per radical site
-                    if p_heavy == heavy and pcomp.get('H', 0) - n_h == n_rad:
-                        qualifying.add(base)
-                        break
+                # (ii)+(iii)+(iv): the shared structural core
+                # (rmgpy.polymer.is_h_loss_radical_daughter) -- ONE
+                # predicate, also consumed by the handshake veto scoping
+                # (_handshake_structures, family.py, which additionally
+                # requires the chain-window MW conjunct before exempting a
+                # refused product from the durable gas veto); never
+                # duplicated.
+                if is_h_loss_radical_daughter(mols[0], proxy_comps):
+                    qualifying.add(base)
 
         return qualifying
 

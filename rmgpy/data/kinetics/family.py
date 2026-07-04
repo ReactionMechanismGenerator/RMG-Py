@@ -4885,6 +4885,55 @@ def get_site_solute_data(rxn):
         return None
 
 
+def _h_loss_daughter_veto_exempt(mol, polymer_reactants):
+    """Veto scoping predicate (ratified 2026-07-04, PP run-2 gate/conduit
+    diagnosis Phenomenon 1): return True iff a handshake-refused product
+    ``mol`` must NOT receive the durable gas veto because it is an H-loss
+    radical daughter of one of the ``polymer_reactants``' condensed proxies.
+
+    Stamping the veto on such daughters defeats condition (v) of the very
+    H-loss qualifier (PolymerPhase.get_h_loss_radical_daughter_bases) that
+    classifies them prospectively condensed -- the self-defeat loop that
+    vetoed seven of the eight PP C9H19 H-abstraction daughters and kept
+    Gate B closed. Scoping is by PREDICATE, not by MW window alone (the
+    durable gas veto exists precisely because alpha-methylstyrene sits ABOVE
+    the MW window): ALL of
+
+      * radical-bearing and neutral,
+      * same non-H element composition as the polymer reactant proxy,
+      * H_proxy - H_product == radical_count
+        (the shared structural core, rmgpy.polymer.is_h_loss_radical_daughter
+        -- ONE predicate with the qualifier, never duplicated), and
+      * MW >= monomer_mw + slack (chain-scale window conjunct; same slack
+        constant as the solver's reference-state window)
+
+    must hold. Closed-shell / composition-mismatched volatiles (e.g.
+    alpha-methylstyrene, propane, C3H7 fragments) keep the veto regardless
+    of MW. Fails closed on any structure query error.
+    """
+    # local imports: family.py must not import the solver at module load
+    from rmgpy.polymer import is_h_loss_radical_daughter
+    from rmgpy.solver.polymer import REFERENCE_STATE_MW_SLACK_G_MOL
+    try:
+        mw_g_mol = mol.get_molecular_weight() * 1000.0
+    except Exception:
+        return False
+    for polymer_obj in polymer_reactants:
+        monomer_mw = float(getattr(polymer_obj, 'monomer_mw_g_mol', 0.0) or 0.0)
+        if monomer_mw <= 0.0 or mw_g_mol < monomer_mw + REFERENCE_STATE_MW_SLACK_G_MOL:
+            continue
+        proxy_mols = getattr(polymer_obj, 'molecule', None) or []
+        if not proxy_mols or proxy_mols[0] is None:
+            continue
+        try:
+            proxy_comp = proxy_mols[0].get_element_count()
+        except Exception:
+            continue
+        if is_h_loss_radical_daughter(mol, [proxy_comp]):
+            return True
+    return False
+
+
 def _handshake_structures(structure_list, polymer_reactants):
     """
     Helper to scan a list of Molecules or Species (reactants or products) and
@@ -4929,5 +4978,13 @@ def _handshake_structures(structure_list, polymer_reactants):
             # solver reference-state melt gate honors and that survives
             # Species.copy / dedup.
             clear_polymer_proxy(item)
-            set_polymer_gas_veto(item)
+            # Veto scoping (ratified 2026-07-04): do NOT stamp the durable
+            # veto on an H-loss radical daughter of a condensed proxy -- the
+            # veto would defeat condition (v) of the H-loss qualifier that
+            # classifies the daughter prospectively condensed (the PP run-2
+            # self-defeat loop). Everything else refused here (closed-shell
+            # volatiles, composition mismatches, small fragments) keeps the
+            # veto regardless of MW.
+            if not _h_loss_daughter_veto_exempt(mol, polymer_reactants):
+                set_polymer_gas_veto(item)
     return replaced

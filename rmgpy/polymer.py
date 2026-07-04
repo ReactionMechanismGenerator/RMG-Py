@@ -4569,6 +4569,51 @@ def set_polymer_gas_veto(obj: Union['Species', Molecule]) -> None:
             m.props[POLYMER_REFERENCE_STATE_GAS_VETO_KEY] = True
 
 
+def is_h_loss_radical_daughter(molecule: Molecule, proxy_element_counts) -> bool:
+    """Structural core of the H-loss radical-daughter qualifier (ratified
+    2026-07-03; veto-scoping extraction 2026-07-04). Returns True iff
+    ``molecule`` is an H-loss radical daughter of a proxy whose element
+    counts appear in ``proxy_element_counts`` (an iterable of
+    ``Molecule.get_element_count()`` dicts):
+
+      (ii)  radical-bearing and neutral;
+      (iii) same non-H element composition (heavy-atom skeleton) as a proxy;
+      (iv)  differs from that proxy by H-loss only
+            (H_proxy - H_daughter == its radical count >= 1,
+            e.g. C9H20 -> C9H19*).
+
+    ONE predicate, never duplicated -- shared by BOTH consumers:
+
+    * ``PolymerPhase.get_h_loss_radical_daughter_bases``
+      (rmgpy/rmg/polymer_input.py), which adds condition (v)
+      (not durably gas-vetoed) and the base-label bookkeeping;
+    * the handshake veto scoping in ``_handshake_structures``
+      (rmgpy/data/kinetics/family.py), which adds the chain-window MW
+      conjunct (MW >= monomer_mw + slack) before EXEMPTING a refused
+      product from the durable gas veto -- without that exemption the veto
+      defeats condition (v) of the very qualifier above (the PP run-2
+      self-defeat loop, gate/conduit diagnosis Phenomenon 1).
+
+    Conditions (ii)-(iv) fail closed on any structure query error.
+    """
+    try:
+        n_rad = molecule.get_radical_count()
+        net_charge = molecule.get_net_charge()
+        comp = molecule.get_element_count()
+    except Exception:
+        return False
+    if n_rad < 1 or net_charge != 0:                # (ii)
+        return False
+    heavy = {el: n for el, n in comp.items() if el != 'H'}
+    n_h = comp.get('H', 0)
+    for pcomp in proxy_element_counts:
+        p_heavy = {el: n for el, n in pcomp.items() if el != 'H'}
+        # (iii) same heavy skeleton + (iv) H-loss only, one H per radical site
+        if p_heavy == heavy and pcomp.get('H', 0) - n_h == n_rad:
+            return True
+    return False
+
+
 def has_polymer_gas_veto(obj) -> bool:
     """Return True if ``obj`` (a Molecule or Species) carries the durable
     gas-volatile veto in ``props`` (or, for a Species, on any of its

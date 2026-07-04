@@ -6116,3 +6116,143 @@ class TestDp1FoldBackStaysGas:
         # genuine radical H-loss daughter of the proxy still spawns as today
         r2 = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'))
         assert r2 is not None and r2.label.endswith('_scission_tail')
+
+
+class TestGasVetoScopingHLossDaughters:
+    """
+    Fix (ratified 2026-07-04, PP run-2 gate/conduit diagnosis Phenomenon 1):
+    the handshake (family.py _handshake_structures) stamped the DURABLE gas
+    veto on EVERY product create_reacted_copy refused. For a condensed pool
+    proxy that includes its own H-loss radical daughters (e.g. seven of the
+    eight PP C9H19 H-abstraction daughters), the veto then defeated condition
+    (v) of the very H-loss qualifier (get_h_loss_radical_daughter_bases)
+    that was ratified to classify them prospectively condensed -- a
+    self-defeat loop that kept Gate B closed.
+
+    Ratified scoping (predicate, NOT an MW window -- the durable gas veto
+    exists precisely because alpha-methylstyrene sits ABOVE the MW window):
+    do NOT stamp the veto on radical daughters passing the H-loss-daughter
+    predicate (radical-bearing, neutral, MW >= monomer_mw + slack, same
+    non-H element composition as the polymer reactant proxy, and
+    H_proxy - H_product == radical_count); KEEP stamping closed-shell /
+    non-matching volatiles regardless of MW.
+    """
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import PolymerPhase, PolymerPool
+        self._handshake = _handshake_structures
+        # PP run-2 deck shape
+        self.pp = Polymer(
+            label='polypropylene',
+            monomer='[CH2][CH](C)',
+            end_groups=['[H]', '[H]'],
+            cutoff=3,
+            Mn=1500.0,
+            Mw=1800.0,
+            initial_mass=0.1485,
+        )
+        # PS pool for the alpha-methylstyrene pin (styrene monomer,
+        # 104.15 g/mol -- aMS at 118.18 sits ABOVE monomer + 10 slack)
+        self.ps = Polymer(
+            label='PS',
+            monomer='[CH2][CH]c1ccccc1',
+            end_groups=['[H]', '[H]'],
+            cutoff=3,
+            Mn=5000.0,
+            Mw=6000.0,
+            initial_mass=1.0,
+        )
+        # the PolymerPhase whose H-loss qualifier the veto must not defeat
+        proxy_spc = Species(molecule=[self.pp.molecule[0].copy(deep=True)],
+                            label='polypropylene')
+        pool = PolymerPool(label='polypropylene', xs=3, monomer=proxy_spc,
+                           explicit_map={}, mu_species=[])
+        self.proxy_spc = proxy_spc
+        self.phase = PolymerPhase(density=Quantity(905.0, 'kg/m^3'),
+                                  initial_moments={}, initial_explicit={},
+                                  pools=[pool])
+
+    def test_refused_h_loss_daughter_not_vetoed_and_qualifies(self):
+        """Ratified red-first requirement 1: a handshake-refused PP C9H19
+        H-loss daughter must NOT receive the durable gas veto, and must then
+        QUALIFY via the H-loss branch of the condensed-daughter predicate
+        (closing the self-defeat loop: 7/8 daughters were vetoed on run 2).
+
+        RED before the fix: the veto is stamped and condition (v) rejects
+        the daughter."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        d = Species(molecule=[Molecule(smiles='CCCC(C)C[C](C)C')],
+                    label='C9H19-14')  # secondary-site daughter, edge idx 14
+        products = [d]
+        self._handshake(products, [self.pp])
+        assert products[0] is d and not isinstance(products[0], Polymer), (
+            "test premise: the daughter stays a refused discrete Species")
+        assert not has_polymer_gas_veto(d), (
+            "handshake-refused H-loss radical daughter of the condensed "
+            "proxy must NOT be durably gas-vetoed (veto scoping, ratified "
+            "2026-07-04)"
+        )
+        bases = self.phase.get_h_loss_radical_daughter_bases(
+            [self.proxy_spc, d])
+        assert bases == {'C9H19-14'}, (
+            f"the unvetoed daughter must qualify via the H-loss branch, "
+            f"got {bases!r}"
+        )
+
+    def test_all_seven_run2_daughters_qualify_after_handshake(self):
+        """Run-2 closure pin: all seven previously-vetoed C9H19 daughters
+        pass through the handshake unvetoed and qualify (with the eighth,
+        the tertiary daughter, spawning its tail pool as before)."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        seven = ['CCCC(C)C[C](C)C', 'CCCC(C)[CH]C(C)C', 'CC[CH]C(C)CC(C)C',
+                 'C[CH]CC(C)CC(C)C', '[CH2]C(CCC)CC(C)C',
+                 '[CH2]C(C)CC(C)CCC', '[CH2]CCC(C)CC(C)C']
+        daughters = [Species(molecule=[Molecule(smiles=s)], label=f'D{i}')
+                     for i, s in enumerate(seven)]
+        products = list(daughters)
+        self._handshake(products, [self.pp])
+        for i, d in enumerate(daughters):
+            assert not isinstance(products[i], Polymer)
+            assert not has_polymer_gas_veto(d), (
+                f"daughter {seven[i]} must not be vetoed")
+        bases = self.phase.get_h_loss_radical_daughter_bases(
+            [self.proxy_spc] + daughters)
+        assert bases == {f'D{i}' for i in range(7)}
+
+    def test_alpha_methylstyrene_stays_vetoed_above_mw_window(self):
+        """Ratified red-first requirement 2 (explicit pin, GREEN before and
+        after): alpha-methylstyrene (C9H10, 118.18 g/mol) sits ABOVE the
+        styrene monomer + slack window (114.15) -- the reason MW-window
+        scoping was REJECTED -- but is closed-shell, so the predicate fails
+        and the durable gas veto KEEPS it out of the melt reference state."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        from rmgpy.solver.polymer import REFERENCE_STATE_MW_SLACK_G_MOL
+        ams = Species(molecule=[Molecule(smiles='C=C(C)c1ccccc1')],
+                      label='alpha-methylstyrene')
+        # pin the window arithmetic the rejection argument rests on
+        assert (ams.molecule[0].get_molecular_weight() * 1000.0
+                > self.ps.monomer_mw_g_mol + REFERENCE_STATE_MW_SLACK_G_MOL)
+        products = [ams]
+        self._handshake(products, [self.ps])
+        assert not isinstance(products[0], Polymer)
+        assert has_polymer_gas_veto(ams), (
+            "alpha-methylstyrene must remain durably gas-vetoed / excluded "
+            "from the melt reference state regardless of its MW"
+        )
+
+    def test_small_radical_fragment_stays_vetoed_and_never_qualifies(self):
+        """Ratified red-first requirement 3 (pin): a small radical below
+        monomer + slack and composition-mismatched (n-propyl, C3H7) keeps
+        the veto and fails the qualifier structurally either way."""
+        from rmgpy.polymer import has_polymer_gas_veto
+        npr = Species(molecule=[Molecule(smiles='CC[CH2]')], label='npropyl')
+        products = [npr]
+        self._handshake(products, [self.pp])
+        assert not isinstance(products[0], Polymer)
+        assert has_polymer_gas_veto(npr), (
+            "small gas radical fragments must keep the durable gas veto")
+        assert self.phase.get_h_loss_radical_daughter_bases(
+            [self.proxy_spc, npr]) == set()
