@@ -6705,3 +6705,85 @@ class TestRadicalFeatureProducerPath:
             r = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'),
                                             h_loss_feature=flag)
             assert r is not None and r.label.endswith('_scission_tail')
+
+
+# ---------------------------------------------------------------------------
+# Zero-born `_mod` moments, stage S1b (feature-pool conduit arc, commit 2 --
+# the ratified P1 mass-duplicator fix): a newly created "{label}_mod"
+# daughter is a just-spawned pool that genuinely contains nothing, so it
+# must be BORN AT ZERO (moments [0,0,0] via initial_mass=0, same seeding
+# recipe as scission tails and drain_spawn_intents' honest-empty daughters)
+# with spawned_empty provenance markers -- NOT carry a verbatim copy of the
+# PARENT's moments (mass fabrication: the parent keeps its moments and the
+# daughter re-declares the same mass).
+#
+# Live-path status (honest): pre-S2 no live handshake call site threads
+# h_loss_feature, so no _mod daughter reaches sidecar serialization in a
+# real run yet. The defect is proven at the object/artifact level on the
+# S1a producer path -- the same constructor shape the wing-branch _mod site
+# in _create_reacted_copy_wing_logic shares (that branch is additionally
+# latent: the raw wing matcher diverges for realistic shapes and routes
+# them to scission/None instead, probed 2026-07-04).
+# ---------------------------------------------------------------------------
+
+class TestModDaughterBornAtZero:
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                          end_groups=['[H]', '[H]'], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+        self.daughter = self.pp.create_reacted_copy(
+            Molecule(smiles='CCCC(C)[CH]C(C)C'), h_loss_feature=True)
+        assert isinstance(self.daughter, Polymer)
+        assert self.daughter.label == 'polypropylene_mod'
+
+    def test_mod_daughter_moments_born_at_zero(self):
+        """RED before S1b: the _mod constructor copies the PARENT's moments
+        verbatim (violating the born-at-zero contract that
+        drain_spawn_intents and the scission-tail seeding both honor)."""
+        d = self.daughter
+        assert d.moments is not None
+        assert np.allclose(d.moments, 0.0), (
+            f"newly spawned _mod daughter must be born at zero, got "
+            f"moments={d.moments} (parent's moments duplicated)")
+        assert d.initial_mass_g == 0.0
+        # H abstraction does not cut the chain: the parent's Mn/Mw ride
+        # along as lineage/DP metadata (not halved, not dropped) -- with
+        # initial_mass=0 they derive exactly [0,0,0] interim moments.
+        assert d.Mn == pytest.approx(self.pp.Mn)
+        assert d.Mw == pytest.approx(self.pp.Mw)
+        # and the parent pool is untouched (still owns its declared mass)
+        assert not np.allclose(self.pp.moments, 0.0)
+
+    def test_mod_daughter_spawned_empty_provenance_markers(self):
+        """RED before S1b: the daughter carries no spawn markers, so legacy
+        default-label sidecar calls would classify it input_declared."""
+        d = self.daughter
+        assert getattr(d, 'parent_pool_label', None) == 'polypropylene'
+        meta = getattr(d, 'spawn_metadata', None)
+        assert meta, "spawned _mod daughter must carry spawn_metadata"
+        assert meta.get('source') == 'radical_feature_h_loss'
+
+    def test_mod_daughter_sidecar_spawned_empty_and_monomer_mw(self):
+        """Sidecar view (legacy default-label call, where ONLY the object
+        markers decide provenance): the _mod pool serializes moments
+        [0,0,0] with moments_provenance spawned_empty and lineage
+        parent_pool -- and carries monomer_mw_g_mol (the TA sample-mass
+        hazard; fix-A precedent: derive_daughter_pool_configs sets it, the
+        _mod path must too)."""
+        payload = polymer.build_polymer_moments_artifact(
+            [self.pp, self.daughter])
+        by_label = {p['label']: p for p in payload['pools']}
+        entry = by_label['polypropylene_mod']
+        assert entry['moments'] == [0.0, 0.0, 0.0]
+        assert entry['moments_provenance'] == 'spawned_empty'
+        assert entry['parent_pool'] == 'polypropylene'
+        assert entry['spawn_event_metadata'].get('source') == 'radical_feature_h_loss'
+        assert entry['monomer_mw_g_mol'] == pytest.approx(self.pp.monomer_mw_g_mol)
+        assert self.daughter.monomer_mw_g_mol == pytest.approx(self.pp.monomer_mw_g_mol)
+        assert self.daughter.monomer_mw_g_mol > 0
+        # the parent stays input-declared with its declared moments
+        parent_entry = by_label['polypropylene']
+        assert parent_entry['moments_provenance'] == 'input_declared'
+        assert np.allclose(parent_entry['moments'], self.pp.moments)

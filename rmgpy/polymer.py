@@ -1173,17 +1173,8 @@ class Polymer(Species):
                 self._assert_feature_unit(new_feature_graph)
             except ValueError:
                 return None
-            return Polymer(
-                label=f"{self.label}_mod",
-                monomer=self.monomer,
-                feature_monomer=new_feature_graph,
-                end_groups=[eg.copy(deep=True) for eg in self.end_groups],
-                cutoff=self.cutoff,
-                Mn=None if self.moments is not None else self.Mn,
-                Mw=None if self.moments is not None else self.Mw,
-                moments=self.moments.tolist() if self.moments is not None else None,
-                initial_mass=self.initial_mass_g / 1000.0,
-            )
+            return self._born_at_zero_mod_daughter(new_feature_graph,
+                                                   source="feature_mod")
 
         if head_atoms:
             try:
@@ -1384,17 +1375,43 @@ class Polymer(Species):
             self._assert_feature_unit(feature, allow_h_loss_radical=True)
         except ValueError:
             return None
-        return Polymer(
+        return self._born_at_zero_mod_daughter(feature,
+                                               source="radical_feature_h_loss")
+
+    def _born_at_zero_mod_daughter(self, feature_monomer: Molecule,
+                                   source: str) -> 'Polymer':
+        """
+        Construct the ``{label}_mod`` feature-pool daughter BORN AT ZERO
+        (stage S1b, the ratified P1 mass-duplicator fix): a just-spawned
+        daughter genuinely contains nothing, so it seeds ``initial_mass=0``
+        -> moments [0, 0, 0], exactly unifying with the scission-tail
+        convention and ``drain_spawn_intents``' honest-empty daughters --
+        instead of duplicating the PARENT's moments (the parent keeps its
+        mass; a verbatim copy re-declared it). H abstraction / feature
+        modification does not cut the chain, so the parent's Mn/Mw ride
+        along unchanged as lineage/DP metadata (with zero mass they derive
+        zero interim moments). Spawn provenance markers
+        (``parent_pool_label`` + ``spawn_metadata``) make the sidecar's
+        secondary spawned-pool signal classify the pool
+        ``moments_provenance: spawned_empty`` even in legacy default-label
+        serializer calls. ``monomer_mw_g_mol`` is set by ``Polymer.__init__``
+        from the (shared) monomer -- pinned by test: the TA consumer sizes
+        sample mass with it.
+        """
+        daughter = Polymer(
             label=f"{self.label}_mod",
             monomer=self.monomer,
-            feature_monomer=feature,
+            feature_monomer=feature_monomer,
             end_groups=[eg.copy(deep=True) for eg in self.end_groups],
             cutoff=self.cutoff,
-            Mn=None if self.moments is not None else self.Mn,
-            Mw=None if self.moments is not None else self.Mw,
-            moments=self.moments.tolist() if self.moments is not None else None,
-            initial_mass=self.initial_mass_g / 1000.0,
+            Mn=self.Mn,
+            Mw=self.Mw,
+            moments=None,
+            initial_mass=0.0,
         )
+        daughter.parent_pool_label = self.label
+        daughter.spawn_metadata = {"source": source}
+        return daughter
 
     def _stitch_wing(self, side: str) -> Molecule:
         """
