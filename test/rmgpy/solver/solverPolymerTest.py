@@ -6930,3 +6930,80 @@ class TestEdgeReactantReverseFlux:
         assert rs.edge_species_rates_ungated[0] == 0.0
         assert rs.edge_species_rates_ungated[1] == 0.0
         assert np.all(dn_dt == 0.0)
+
+
+class TestInitialExplicitPlumbing:
+    """Defect fix (explicit-DP stage A prerequisite): the run path passed the
+    phase-level ``{Species: moles}`` dissolved-species dict straight into the
+    solver ctor arg ``initial_explicit_species``, whose contract is
+    ``{pool_label: {dp: moles}}`` (polymer.pyx set_initial_conditions step 2
+    looks up ``pool.label in self.initial_explicit_species``). A Species key
+    never matches a str pool label, so the channel was dead on arrival: a
+    deck-stated explicit-oligomer loading could never reach y0 or split off
+    the tail moments. to_solver_object must translate the phase's
+    Species-keyed oligomer loadings (the same source calculate_volume reads,
+    polymer_input.py explicit_mu1 accounting) into the solver's pool-labeled
+    shape -- and must NOT forward the dissolved gases, which already receive
+    y0 through initialMoles (step 1)."""
+
+    @staticmethod
+    def _reactor_with_explicit_pool(explicit_moles=0.3):
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import (HybridPolymerReactor, PolymerPhase,
+                                             PolymerPool)
+        n2 = _spc("N#N", "N2")
+        p2 = _spc("CC", "P2")  # explicit DP=2 oligomer (condensed via explicit_map)
+        mu0 = _spc("CO", "poly_mu0")
+        mu1 = _spc("C=O", "poly_mu1")
+        mu2 = _spc("C#N", "poly_mu2")
+        for m in (mu0, mu1, mu2):
+            m.is_moment_dummy = True
+        pool = PolymerPool(label="poly", xs=2,
+                           monomer=Molecule().from_smiles("C=C"),
+                           explicit_map={2: p2}, mu_species=[mu0, mu1, mu2],
+                           proxy_species=_spc("CCCC", "poly"))
+        phase = PolymerPhase(density=Quantity(1000.0, "kg/m^3"),
+                             initial_moments={"poly": (1.0, 5.0, 30.0)},
+                             # Species-keyed, exactly as compile_polymer_phase
+                             # builds it: oligomer loading + dissolved gas.
+                             initial_explicit={p2: explicit_moles, n2: 1.0},
+                             pools=[pool], mass_transfer=[])
+        reactor = HybridPolymerReactor(
+            temperature=(800.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles={n2: 1.0}, polymerPhase=phase,
+            terminationTime=(1.0, "s"))
+        core = [n2, p2, mu0, mu1, mu2]
+        return reactor, core, n2, p2
+
+    def test_run_path_delivers_pool_labeled_initial_explicit(self):
+        """RED pre-fix: the solver received the raw {Species: moles} dict
+        (silently ignored -- shape mismatch). GREEN: to_solver_object hands the
+        solver {pool_label: {dp: moles}} holding ONLY the oligomer loadings."""
+        reactor, core, _, _ = self._reactor_with_explicit_pool()
+        solver = reactor.to_solver_object(core, [], [], [])
+        assert solver.initial_explicit_species == {"poly": {2: 0.3}}
+
+    def test_initial_explicit_moles_reach_y0_and_split_off_tail_moments(self):
+        """RED pre-fix: y0[P2] stayed 0 and the tail moments kept the full
+        (1.0, 5.0, 30.0) -- the explicit loading never subtracted (moment
+        double-count the instant the species is populated). GREEN: y0[P2] =
+        0.3 mol and set_initial_conditions step 6 subtracts (N, 2N, 4N)."""
+        reactor, core, _, p2 = self._reactor_with_explicit_pool()
+        solver = reactor.to_solver_object(core, [], [], [])
+        solver.initialize_model(core, [], [], [])
+        i_p2 = core.index(p2)
+        assert solver.y0[i_p2] == pytest.approx(0.3)
+        # Moment moles: V_poly cancels -- mu_tot - mu_exp scaled back by V_poly.
+        i_mu0, i_mu1, i_mu2 = 2, 3, 4
+        assert solver.y0[i_mu0] == pytest.approx(1.0 - 0.3)
+        assert solver.y0[i_mu1] == pytest.approx(5.0 - 2 * 0.3)
+        assert solver.y0[i_mu2] == pytest.approx(30.0 - 4 * 0.3)
+
+    def test_dissolved_gas_y0_via_initial_moles_unregressed(self):
+        """Regression pin (GREEN before AND after): the dissolved gas keeps
+        getting its y0 from initialMoles (step 1); dropping the dissolved dict
+        from initial_explicit_species must not zero it or crash the build."""
+        reactor, core, n2, _ = self._reactor_with_explicit_pool()
+        solver = reactor.to_solver_object(core, [], [], [])
+        solver.initialize_model(core, [], [], [])
+        assert solver.y0[core.index(n2)] == pytest.approx(1.0)

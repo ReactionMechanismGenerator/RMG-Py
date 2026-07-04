@@ -399,6 +399,29 @@ class HybridPolymerReactor(ReactionSystem):
         for mt in self.polymerPhase.mass_transfer:
             poly_labels.add(mt.poly_species.label)
 
+        # 5.7. Translate explicit-oligomer loadings to the solver's shape.
+        # The solver contract for initial_explicit_species is
+        # {pool_label: {dp: moles}} (polymer.pyx set_initial_conditions step 2
+        # looks up `pool.label in self.initial_explicit_species`). The
+        # phase-level initial_explicit dict is {Species: moles} -- dissolved
+        # gases/solvents plus any explicit-oligomer loadings -- so passing it
+        # through verbatim made the channel silently dead (a Species key never
+        # matches a str pool label). Dissolved species already receive y0
+        # through initialMoles (step 1); here we forward ONLY the oligomer
+        # loadings, keyed the way the solver reads them (the same Species-keyed
+        # moles source calculate_volume's explicit_mu1 accounting uses).
+        initial_explicit_dp = {}
+        for pool in self.polymerPhase.pools:
+            if not pool.explicit_map:
+                continue
+            dp_moles = {}
+            for dp, spc in pool.explicit_map.items():
+                moles = self.polymerPhase.initial_explicit.get(spc, 0.0)
+                if moles:
+                    dp_moles[int(dp)] = float(moles)
+            if dp_moles:
+                initial_explicit_dp[pool.label] = dp_moles
+
         # 6. Instantiate the Numerical Engine
         # Note: We pass 'initialMoles' to the solver's 'initial_mole_fractions' argument
         # to satisfy the base class signature, but the solver correctly interprets them as moles.
@@ -428,7 +451,7 @@ class HybridPolymerReactor(ReactionSystem):
             constant_gas_volume=self.constant_gas_volume,
             V_gas0=V_gas0,
             initial_polymer_moments=self.polymerPhase.initial_moments,
-            initial_explicit_species=self.polymerPhase.initial_explicit,
+            initial_explicit_species=initial_explicit_dp,
             termination=termination,
             sensitive_species=self.sensitive_species,
             sensitivity_threshold=self.sensitivityThreshold,
