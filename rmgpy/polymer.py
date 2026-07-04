@@ -3669,8 +3669,9 @@ def _artifact_species_label(spc) -> str:
 
 def _species_base_label(spc) -> str:
     """Strip the RMG ``(N)`` index suffix — the solver's pool-membership rule
-    (rmgpy/solver/polymer.pyx:478-485 uses label.partition('(')[0])."""
-    return getattr(spc, "label", "").partition('(')[0]
+    (``_apply_pool_phase_overrides`` in rmgpy/solver/polymer.pyx; ONE
+    convention: :func:`strip_rmg_index_suffix`)."""
+    return strip_rmg_index_suffix(getattr(spc, "label", ""))
 
 
 def derive_condensed_species(core_species, pools_cfg, mask=None):
@@ -5299,6 +5300,39 @@ def set_polymer_gas_veto(obj: Union['Species', Molecule]) -> None:
             if not isinstance(getattr(m, "props", None), dict):
                 m.props = {}
             m.props[POLYMER_REFERENCE_STATE_GAS_VETO_KEY] = True
+
+
+def strip_rmg_index_suffix(label: str) -> str:
+    """Canonical base-label convention (PP run-5 erratum, 2026-07-05): strip
+    ONLY a trailing RMG index suffix ``(<int>)`` from a species label
+    (``'PS(2)' -> 'PS'``, ``'C[CH]CC(C)C(6)' -> 'C[CH]CC(C)C'``); any other
+    label -- including SMILES-derived labels whose parentheses are BRANCHING
+    syntax, e.g. ``'C[CH]CC(C)C'`` -- is returned unchanged.
+
+    This replaces the former ``label.partition('(')[0]`` convention
+    everywhere base labels are produced or consumed (polymer_input's
+    ``_base_label``, the solver's pool binding and edge-daughter condensed
+    application, ``_species_base_label`` below, and
+    ``derive_daughter_pool_configs``). Truncating at the FIRST ``'('``
+    aliased structurally different SMILES-labelled species onto one base:
+    a genuine C9H19 H-loss edge daughter ``'C[CH]CC(C)CC(C)C'`` registered
+    base ``'C[CH]CC'``, which the get_gas_mask section-D application then
+    matched against the unrelated CORE C6H13 tail ``'C[CH]CC(C)C'`` -- but
+    only in the combined chain(core, edge) call, so the prospective mask
+    core prefix diverged from gas_species_mask and RIDER R1 raised (the PP
+    run-5 PROSPECTIVE-MASK TRIPWIRE crash). A parenthesised group of bare
+    digits is never valid SMILES, so trailing-index stripping cannot
+    truncate a structural label.
+
+    ONE convention, never duplicated: every producer and consumer of base
+    labels must call this (directly or via a thin delegate) so set
+    membership stays lockstep across module boundaries.
+    """
+    if label and label.endswith(')'):
+        head, sep, tail = label[:-1].rpartition('(')
+        if sep and tail.isdigit():
+            return head
+    return label
 
 
 def is_h_loss_radical_daughter(molecule: Molecule, proxy_element_counts) -> bool:

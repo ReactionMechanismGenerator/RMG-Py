@@ -5998,6 +5998,115 @@ class TestProspectiveClassifierLengthGuard:
         assert pm.shape[0] == rs.num_core_species + 1
 
 
+class TestGasMaskSmilesBaseAliasParity:
+    """PP run-5 crash pin (PROSPECTIVE-MASK TRIPWIRE, 2026-07-04): _base_label
+    truncated labels at the FIRST '(' (label.partition('(')[0]), a convention
+    meant for the RMG index suffix ('PS(2)' -> 'PS'). SMILES-derived labels
+    legitimately contain '(' as BRANCHING syntax, so truncation aliases
+    structurally different species onto one base:
+
+      edge C9H19 daughter 'C[CH]CC(C)CC(C)C'  -> base 'C[CH]CC'
+      core C6H13 tail     'C[CH]CC(C)C'       -> base 'C[CH]CC'  (COLLIDES)
+
+    A genuine H-loss radical daughter of the C9H20 proxy in the EDGE therefore
+    registers a truncated base that the get_gas_mask section-D application
+    loop matches against unrelated CORE scission-tail radicals -- but ONLY in
+    the combined chain(core, edge) call (core-only has no qualifying C9H19),
+    so prospective says CONDENSED where gas_species_mask says GAS and RIDER
+    R1 raises (run 5: indices 24-26, C[CH]CC(C)C / [CH2]C(C)C /
+    [CH2]C(C)CCC). The core mask is RIGHT (the C6/C4 tails are not H-loss
+    daughters of any proxy); the prospective mask lied via the alias.
+
+    Fix under test: base labels strip ONLY a trailing '(<int>)' index suffix.
+    """
+
+    def _phase_and_lists(self):
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import PolymerPhase, PolymerPool
+
+        mono = _spc("C=CC", "MON")
+        mu0 = _spc("CO", "polypropylene_mu0")
+        mu1 = _spc("C=O", "polypropylene_mu1")
+        mu2 = _spc("C#N", "polypropylene_mu2")
+        for m in (mu0, mu1, mu2):
+            m.is_moment_dummy = True
+        proxy = _spc("CC(C)CC(C)CCC", "polypropylene")   # C9H20 trimer proxy
+        pool = PolymerPool(label="polypropylene", xs=3, monomer=mono,
+                           explicit_map={}, mu_species=[mu0, mu1, mu2],
+                           proxy_species=proxy)
+        phase = PolymerPhase(density=Quantity(905.0, "kg/m^3"),
+                             initial_moments={"polypropylene": (1.0, 5.0, 30.0)},
+                             initial_explicit={}, pools=[pool])
+        n2 = _spc("N#N", "N2")
+        # CORE scission-tail radicals, labelled by their SMILES (the run-5
+        # shape: labels contain structural parentheses, no index suffix).
+        c6a = _spc("C[CH]CC(C)C", "C[CH]CC(C)C")         # C6H13
+        c4 = _spc("[CH2]C(C)C", "[CH2]C(C)C")            # C4H9
+        c6b = _spc("[CH2]C(C)CCC", "[CH2]C(C)CCC")       # C6H13
+        core = [n2, proxy, mono, mu0, mu1, mu2, c6a, c4, c6b]
+        # EDGE: genuine C9H19 H-loss radical daughters of the C9H20 proxy
+        # whose SMILES labels share a first-'(' prefix with the core tails.
+        d1 = _spc("C[CH]CC(C)CC(C)C", "C[CH]CC(C)CC(C)C")     # base 'C[CH]CC'
+        d2 = _spc("[CH2]C(C)CC(C)CCC", "[CH2]C(C)CC(C)CCC")   # base '[CH2]C'
+        edge = [d1, d2]
+        return phase, core, edge
+
+    def test_edge_daughters_qualify_and_tails_do_not(self):
+        """Sanity of the fixture: the C9H19 edge daughters DO qualify under
+        the narrow H-loss predicate (they are the real Gate-B beneficiaries);
+        the C6/C4 core tails do NOT."""
+        from rmgpy.rmg.polymer_input import _base_label
+        phase, core, edge = self._phase_and_lists()
+        bases = phase.get_h_loss_radical_daughter_bases(core + edge)
+        # Every returned base must be the base of a QUALIFYING species (the
+        # two C9H19 daughters), never of a core tail.
+        daughter_bases = {_base_label(s.label) for s in edge}
+        assert bases, "fixture lost its qualifying C9H19 daughters"
+        assert bases <= daughter_bases
+        # core-only: nothing qualifies
+        assert phase.get_h_loss_radical_daughter_bases(core) == set()
+
+    def test_gas_mask_core_prefix_parity_under_smiles_alias(self):
+        """THE run-5 pin: get_gas_mask(chain(core, edge))[:n_core] must equal
+        get_gas_mask(core). On the buggy _base_label the C9H19 edge daughters'
+        truncated bases alias the three core tails CONDENSED in the combined
+        call only (exactly the PROSPECTIVE-MASK TRIPWIRE divergence)."""
+        phase, core, edge = self._phase_and_lists()
+        core_only = np.asarray(phase.get_gas_mask(core), dtype=bool)
+        combined = np.asarray(phase.get_gas_mask(core + edge), dtype=bool)
+        # the three tails are GAS in the core mask (the RIGHT verdict)
+        assert bool(core_only[6]) and bool(core_only[7]) and bool(core_only[8])
+        # core-prefix parity (R1's invariant) -- RED before the fix
+        assert np.array_equal(combined[:len(core)], core_only), (
+            "combined get_gas_mask core prefix diverged: %s vs %s"
+            % (combined[:len(core)].tolist(), core_only.tolist()))
+
+    def test_genuine_edge_daughters_stay_condensed(self):
+        """Guard against 'fixing' the alias by killing branch 2: the genuine
+        C9H19 daughters must classify CONDENSED in the combined call, and
+        their bases must survive an RMG index suffix on the label."""
+        from rmgpy.rmg.polymer_input import _base_label
+        phase, core, edge = self._phase_and_lists()
+        combined = np.asarray(phase.get_gas_mask(core + edge), dtype=bool)
+        assert not bool(combined[len(core)])      # d1 condensed
+        assert not bool(combined[len(core) + 1])  # d2 condensed
+        # index-suffixed copies (RMG relabels on promotion: 'label(31)')
+        bases = phase.get_condensed_edge_daughter_bases(core + edge)
+        for s in edge:
+            assert _base_label(s.label + "(31)") in bases
+
+    def test_base_label_strips_only_trailing_index_suffix(self):
+        """The corrected base-label convention: strip ONLY a trailing
+        '(<int>)' RMG index suffix; structural SMILES parentheses survive."""
+        from rmgpy.rmg.polymer_input import _base_label
+        assert _base_label("PS(2)") == "PS"
+        assert _base_label("polypropylene(2)") == "polypropylene"
+        assert _base_label("polypropylene_mod_2") == "polypropylene_mod_2"
+        assert _base_label("C[CH]CC(C)C(6)") == "C[CH]CC(C)C"
+        assert _base_label("C[CH]CC(C)C") == "C[CH]CC(C)C"
+        assert _base_label("[CH2]C(C)CCC") == "[CH2]C(C)CCC"
+
+
 class TestGasMaskInvariantToProxyTagContamination:
     """Regression (polystyrene reactive deck, 2026-06-26): a CORE gas solvent
     (N2) must keep the SAME phase verdict from get_gas_mask before AND after

@@ -51,7 +51,18 @@ def nasa_g_over_rt(coeffs, T):
 
 
 def _base(label):
-    return label.partition("(")[0]
+    """Strip ONLY a trailing RMG index suffix ``(<int>)`` from a label
+    ('PS(2)' -> 'PS', 'C[CH]CC(C)C(6)' -> 'C[CH]CC(C)C'). Local duplicate
+    of the ONE canonical convention, rmgpy.polymer.strip_rmg_index_suffix
+    (this module deliberately never imports rmgpy): truncating at the
+    FIRST '(' mangles SMILES-derived labels, whose parentheses are
+    branching syntax; a parenthesised group of bare digits is never valid
+    SMILES."""
+    if label and label.endswith(")"):
+        head, sep, tail = label[:-1].rpartition("(")
+        if sep and tail.isdigit():
+            return head
+    return label
 
 
 class ArtifactConsumer:

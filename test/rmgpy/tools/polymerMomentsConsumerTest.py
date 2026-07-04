@@ -322,6 +322,64 @@ class TestTwoPoolSufficiency:
         np.testing.assert_allclose(mine, oracle, rtol=1e-7, atol=1e-12)
 
 
+class TestSmilesBranchPoolLabel:
+    def test_legacy_mu1_deck_with_smiles_branch_pool_label(self):
+        """PP run-5 erratum parity: base labels strip ONLY a trailing
+        '(<int>)' RMG index (rmgpy.polymer.strip_rmg_index_suffix). This
+        consumer's _base() used to truncate at the FIRST '(' -- correct for
+        'PS(2)' but SMILES-mangling for a pool labelled with branching
+        parentheses: 'C[CH]CC(C)C(2)' -> 'C[CH]CC', so its legacy_mu1 proxy
+        rows dereferenced a nonexistent pool (KeyError at rhs time).
+        End-to-end: consumer must match the oracle on a deck whose pool
+        label IS branched SMILES."""
+        smiles = "C[CH]CC(C)C"
+        inert = _spc("N#N", "N2")
+        proxy = _spc(smiles, smiles, index=2)  # chem.yaml 'C[CH]CC(C)C(2)'
+        proxy.is_polymer_proxy = True
+        mus = [_mu(f"{smiles}_mu{k}") for k in range(3)]
+        gas = _spc("[CH3]", "G", index=9)
+        core = [inert, proxy] + mus + [gas]
+        mask = np.array([True, False, False, False, False, True], dtype=bool)
+
+        pool_cfg = PolymerPoolConfig(
+            label=smiles, xs=2, explicit_dp_to_species_index={},
+            mu_indices=(2, 3, 4), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        # deliberately UNSTAMPED (no polymer_flux_archetype): the artifact
+        # row lands on 'legacy_mu1/1', the branch whose proxy_r/p_pools go
+        # through the consumer's _base().
+        rxn = Reaction(reactants=[proxy], products=[proxy, gas],
+                       kinetics=_kin1(), reversible=False)
+
+        rs = HybridPolymerSystem(
+            T=T_K, P=P_PA, initial_mole_fractions={inert: 1.0}, V_poly=V_POLY,
+            polymer_pools=[pool_cfg], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={smiles: (1.0, 5.0, 30.0)},
+            termination=[])
+        rs.initialize_model(core, [rxn], [], [])
+        y0 = rs.y.copy()
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        registry_pool = Polymer(label=smiles, monomer="[CH2][CH2]",
+                                end_groups=["[H]", "[H]"], cutoff=3,
+                                moments=[1.0, 5.0, 30.0], initial_mass=0.0)
+        artifact = build_polymer_moments_artifact(
+            [registry_pool], core_species=core, core_reactions=[rxn],
+            configured_pool_labels=[smiles],
+            condensed_species=core[1:5], cantera_index_map={})
+        artifact = json.loads(json.dumps(artifact))
+        entry, = artifact["reactions"]
+        assert entry["archetype"] == "legacy_mu1/1"
+        assert entry["proxy_reactants"] == [f"{smiles}(2)"]
+
+        consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                                    P=P_PA, V_poly=V_POLY)
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-9, atol=1e-12)
+        assert mine[-1, 5] > y0[5]  # the gas product actually accumulated
+
+
 class TestMassTransferCrossCheck:
     def test_evaporation_both_sides_nonzero(self):
         """Spec §9 test 2b: nonzero kLa with BOTH C_poly and C_gas nonzero, on

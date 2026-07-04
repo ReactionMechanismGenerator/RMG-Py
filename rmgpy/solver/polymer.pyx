@@ -1415,11 +1415,16 @@ class HybridPolymerSystem(ReactionSystem):
         with (prospective_gas_mask, chain(core, edge),
         record_indices=False), where ONLY mask writes happen (the index
         arrays are core-sized; an edge match must never write them)."""
+        # ONE base-label convention (function-local import: documented
+        # solver<->polymer cycle note at the module head): trailing-index
+        # strip ONLY -- the former first-'(' truncation could alias a
+        # SMILES-labelled species (structural parentheses) onto a pool label.
+        from rmgpy.polymer import strip_rmg_index_suffix
         n_core = self.num_core_species
         n_total = len(species_list)
         for pool_i, pool in enumerate(self.polymer_pools):
             for i in range(n_total):
-                base_label = species_list[i].label.partition('(')[0]
+                base_label = strip_rmg_index_suffix(species_list[i].label)
                 if base_label == pool.label:
                     mask_arr[i] = False
                     if record_indices:
@@ -1429,7 +1434,7 @@ class HybridPolymerSystem(ReactionSystem):
             mu1_target_label = f"{pool.label}_mu1"
             for i in range(n_total):
                 # Handle RMG renaming: "PS_mu1(2)" -> "PS_mu1"
-                base_label = species_list[i].label.partition('(')[0]
+                base_label = strip_rmg_index_suffix(species_list[i].label)
                 if base_label == mu1_target_label:
                     if record_indices:
                         self.pool_mu1_indices[pool_i] = i
@@ -1437,7 +1442,7 @@ class HybridPolymerSystem(ReactionSystem):
 
             mu0_target_label = f"{pool.label}_mu0"
             for i in range(n_total):
-                base_label = species_list[i].label.partition('(')[0]
+                base_label = strip_rmg_index_suffix(species_list[i].label)
                 if base_label == mu0_target_label:
                     if record_indices:
                         self.pool_mu0_indices[pool_i] = i
@@ -1703,8 +1708,14 @@ class HybridPolymerSystem(ReactionSystem):
                     "building prospective_gas_mask (n_core=%d, n_edge=%d); not "
                     "defaulting to GAS.", n_core, n_edge_spc)
                 raise
+            # LOCKSTEP with the classifier's base-label convention
+            # (rmgpy.polymer.strip_rmg_index_suffix, via polymer_input's
+            # _base_label): trailing-index strip ONLY. The former first-'('
+            # truncation aliased SMILES-labelled species onto shared bases
+            # (PP run-5 tripwire crash).
+            from rmgpy.polymer import strip_rmg_index_suffix
             for i in range(n_core, n_core + n_edge_spc):
-                if combined_species[i].label.partition('(')[0] in condensed_bases:
+                if strip_rmg_index_suffix(combined_species[i].label) in condensed_bases:
                     self.prospective_gas_mask[i] = False
 
         # RIDER R1 -- core-prefix parity tripwire (spec SS3(d)). The
@@ -1727,10 +1738,14 @@ class HybridPolymerSystem(ReactionSystem):
             raise ValueError(
                 "PROSPECTIVE-MASK TRIPWIRE: prospective_gas_mask core prefix "
                 "diverges from gas_species_mask: " + "; ".join(diverging)
-                + ". First suspect: duplicate-label fallback disablement in "
-                "the combined get_gas_mask call (a duplicate label present "
-                "only in the edge disables the label fallback for the "
-                "combined list -- polymer_input.py:609-612).")
+                + ". Known suspects: (a) duplicate-label fallback "
+                "disablement in the combined get_gas_mask call (a duplicate "
+                "label present only in the edge disables label_fallback_safe "
+                "for the combined list -- PolymerPhase.get_gas_mask, "
+                "polymer_input.py); (b) any base-label producer/consumer "
+                "drifting from rmgpy.polymer.strip_rmg_index_suffix (the PP "
+                "run-5 crash was first-'(' truncation aliasing SMILES "
+                "labels onto shared bases -- fixed 2026-07-05).")
 
         # RIDER R1-EDGE -- edge-suffix provenance guard (item 17 A5-2, spec
         # SS3(d); DISTINCT from R1 by construction). R1's core-prefix check

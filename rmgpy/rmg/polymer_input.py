@@ -39,13 +39,18 @@ from rmgpy.quantity import Quantity
 from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
 from rmgpy.solver.polymer import (HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig,
                                   validate_radical_qssa_unzip)
+from rmgpy.polymer import strip_rmg_index_suffix
 from rmgpy.species import Species
 
 
 def _base_label(label):
-    """Polymer base label = everything before the first '(' (strips the
-    proxy multiplicity / index suffix, e.g. 'PS(2)' -> 'PS')."""
-    return label.partition("(")[0]
+    """Polymer base label: the label with ONLY a trailing RMG index suffix
+    '(<int>)' stripped (e.g. 'PS(2)' -> 'PS', 'C[CH]CC(C)C(6)' ->
+    'C[CH]CC(C)C'). Thin delegate of the ONE canonical convention,
+    rmgpy.polymer.strip_rmg_index_suffix -- the former first-'(' truncation
+    aliased SMILES-labelled species with structural parentheses onto a
+    shared base (the PP run-5 PROSPECTIVE-MASK TRIPWIRE crash)."""
+    return strip_rmg_index_suffix(label)
 
 
 class HybridPolymerReactor(ReactionSystem):
@@ -1298,16 +1303,17 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
     Labels use the solver's binding convention: RMG appends a ``(N)`` index to
     registered species labels (a proxy displays as ``PS(2)`` while its dummies
     stay the clean ``PS_mu0``), and ``_apply_pool_phase_overrides`` binds on
-    ``label.partition('(')[0] == pool.label``. So the derived pool label and the
-    moment-dummy lookup both use the ``(``-stripped base label.
+    ``strip_rmg_index_suffix(label) == pool.label`` (trailing-index strip ONLY
+    -- structural SMILES parentheses survive). So the derived pool label and
+    the moment-dummy lookup both use that same base label.
     """
     from rmgpy.polymer import Polymer
 
-    def base(label):
-        return label.partition('(')[0]
+    base = _base_label
 
     static = set(existing_pool_labels)
-    # Base-label -> core index, using the same '('-stripping the solver binds with.
+    # Base-label -> core index, using the same index-suffix strip the solver
+    # binds with (ONE convention: rmgpy.polymer.strip_rmg_index_suffix).
     base_to_index = {}
     for spc in core_species:
         base_to_index.setdefault(base(spc.label), spc_map[spc])
