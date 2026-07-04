@@ -1269,6 +1269,16 @@ class HybridPolymerSystem(ReactionSystem):
         for rxn in core_reactions:
             if not getattr(rxn, "reversible", False):
                 continue
+            if getattr(rxn, "polymer_refused", False):
+                # Refused rows (item-18 stamp-but-keep + the PP v1
+                # gas-association refusal, adjudicated round 63) have their
+                # WHOLE flux suppressed in the residual (reaction_refused),
+                # so their reference-state pairing is moot: no Keq of theirs
+                # ever moves a mole. Skip them here -- keyed on the refused
+                # stamp ONLY, no other relaxation (the SAME row unrefused
+                # still trips; pinned by
+                # test_refused_row_with_unpaired_reference_state_passes_initialize).
+                continue
             j = self.reaction_index[rxn]
             r_idx = [int(k) for k in self.reactant_indices[j] if 0 <= k < n_core]
             p_idx = [int(k) for k in self.product_indices[j] if 0 <= k < n_core]

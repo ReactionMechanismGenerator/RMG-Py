@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, compute_h_loss_feature_verdicts, is_end_group_reaction, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, compute_h_loss_feature_verdicts, is_end_group_reaction, stamp_gas_association_refusal, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -772,6 +772,17 @@ class CoreEdgeReactionModel:
                         forward.reverse.pairs[pairIndex] = (products[product_index], reactants[reactant_index])
         forward.reactants = reactants
         forward.products = products
+
+        # PP v1 campaign refusal (adjudicated round 63): a row bridging PURE
+        # gas-phase radicals into a condensed pool proxy (association, either
+        # generated orientation) is refused conduit-deferred at classification
+        # time, so the solver's thermo reference-state tripwire never sees it
+        # live. The association orientation has NO polymer reactant, so the
+        # polymer_reactants stamping blocks above never see it -- this is the
+        # one seam where both RESOLVED sides are visible for every branch
+        # (the recombination product resolves onto the registered pool
+        # Polymer via species_dict isomorphism in make_new_species).
+        stamp_gas_association_refusal(forward)
 
         if check_existing:
             found, rxn = self.check_for_existing_reaction(forward)

@@ -4563,6 +4563,114 @@ def test_small_radical_lost_to_gas_conserves_not_refused():
     assert rxn.polymer_refused_accumulating is False
 
 
+def test_gas_radical_association_into_condensed_proxy_refused_conduit_deferred():
+    """PP v1 campaign refusal (adjudicated adversarial round 63): the exact
+    run-5 shape ``[CH2]C(C)C + C[CH]CCC <=> polypropylene proxy`` -- pure
+    gas-phase radicals reversibly associating INTO the condensed pool proxy --
+    must classify ``polymer_refused`` with the conduit-deferred census reason
+    (``polymer_refused_accumulating is False``). RED at b917becd7: no
+    classifier saw this orientation (the stamping block keys on polymer
+    REACTANTS, and the association orientation has none), so the row entered
+    the live model unpaired and died at the thermo reference-state tripwire
+    (U = 10.39 decades). Refusal is the adjudicated PP v1 scope cut; the
+    long-term representation is the pool-moment-credit conduit -- exactly
+    what "conduit-deferred" means."""
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    r1 = Species(molecule=[Molecule().from_smiles("[CH2]C(C)C")])   # isobutyl
+    r2 = Species(molecule=[Molecule().from_smiles("C[CH]CCC")])     # 2-pentyl
+    # Association orientation (as generated in run 5): gas radicals -> proxy.
+    rxn = Reaction(reactants=[r1, r2], products=[pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False   # -> "conduit-deferred"
+    # Reverse generated orientation (proxy homolysis into pure gas radicals)
+    # is the SAME bridge and must classify identically.
+    rxn_rev = Reaction(reactants=[pp], products=[r1, r2], reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is True
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_gas_gas_gas_recombination_termination_not_refused():
+    """Negative control (design constraint 1): the refusal is SHAPE-specific,
+    not family-specific. Ordinary gas+gas->gas R_Recombination termination
+    (two alkyl radicals -> alkane, no condensed proxy on either side) must
+    NOT be refused -- R_Recombination termination is whitelisted chemistry."""
+    from rmgpy.polymer import stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    r1 = Species(molecule=[Molecule().from_smiles("[CH2]C(C)C")])
+    r2 = Species(molecule=[Molecule().from_smiles("C[CH]CCC")])
+    alkane = Species(molecule=[Molecule().from_smiles("CC(C)CC(C)CCC")])
+    rxn = Reaction(reactants=[r1, r2], products=[alkane], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_gas_association_refusal_leaves_abstraction_and_scission_alone():
+    """Negative controls (design constraint 1 + RED pin 3): shapes with a
+    proxy participant on the mixed side, or a non-radical on the all-gas
+    side, are NOT the refused association bridge.
+
+    (a) H-abstraction routing (the S2 conduit): proxy + gas radical ->
+        daughter Polymer + gas -- neither side is "all gas radicals".
+    (b) Volatile-producing scission: proxy -> gas radical + closed-shell
+        alkene -- the all-gas side contains a NON-radical, so it is
+        beta-scission chemistry, not the association bridge; it must keep
+        routing (volatile-producing chemistry is explicitly kept)."""
+    from rmgpy.polymer import Polymer, PolymerClass, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # (a) H-abstraction shape: pp + CH3. -> pp(FEATURE) + CH4
+    daughter = pp.copy()
+    daughter._reacted_class = PolymerClass.FEATURE
+    assert isinstance(daughter, Polymer)
+    ch3 = Species(molecule=[Molecule().from_smiles("[CH3]")])
+    ch4 = Species(molecule=[Molecule().from_smiles("C")])
+    habs = Reaction(reactants=[pp, ch3], products=[daughter, ch4],
+                    reversible=True)
+    stamp_gas_association_refusal(habs)
+    assert habs.polymer_refused is False
+    # (b) volatile-producing scission shape: pp -> allyl radical + hexene
+    allyl = Species(molecule=[Molecule().from_smiles("[CH2]C=C")])
+    hexene = Species(molecule=[Molecule().from_smiles("C=CCCCC")])
+    scission = Reaction(reactants=[pp], products=[allyl, hexene],
+                        reversible=True)
+    stamp_gas_association_refusal(scission)
+    assert scission.polymer_refused is False
+
+
+def test_gas_association_refusal_does_not_overwrite_existing_refusal_reason():
+    """A row already refused by the item-18 detector (e.g. qssa-invalid,
+    ``polymer_refused_accumulating is True``) that ALSO matches the
+    association shape must keep its original census reason -- the new stamp
+    never downgrades qssa-invalid to conduit-deferred."""
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    r1 = Species(molecule=[Molecule().from_smiles("[CH2]C(C)C")])
+    r2 = Species(molecule=[Molecule().from_smiles("C[CH]CCC")])
+    rxn = Reaction(reactants=[pp], products=[r1, r2], reversible=True)
+    rxn.polymer_refused = True
+    rxn.polymer_refused_accumulating = True   # qssa-invalid, stamped earlier
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is True   # reason preserved
+
+
 def _build_compile_inputs(moles, initial_mass=1.0, Mn=5000.0, Mw=6000.0,
                           label="PS", monomer="[CH2][CH]c1ccccc1"):
     """Build the (blueprint, initial_moles, species_dict) triple that

@@ -2385,6 +2385,84 @@ def stamp_polymer_flux_archetype(forward, reactants, polymer_reactants) -> None:
                 not is_qssa_eliminating_radical(lost))
 
 
+def stamp_gas_association_refusal(forward) -> None:
+    """PP v1 campaign refusal (adjudicated adversarial round 63, grounded in
+    the run-5 rerun): an R_Recombination-style row that bridges PURE gas-phase
+    radicals into a condensed polymer proxy -- e.g.
+    ``[CH2]C(C)C + C[CH]CCC <=> polypropylene`` -- carries an unpaired
+    thermo reference state (U ~ 10-12 decades; species thermo is uniformly
+    gas-referenced, and this shape has NO same-mass chain counterparty to
+    cancel against), exactly the class the solver's reference-state tripwire
+    exists to stop. The correct LONG-TERM representation is a
+    pool-moment-credit conduit (out of scope); until it lands the shape is
+    predeclared out of the PP v1 campaign scope and REFUSED via the shipped
+    refused-row contract (schema 2.4): stamp-but-keep, whole flux zeroed in
+    the solver / reference runner / TA, sidecar reason "conduit-deferred"
+    (``polymer_refused_accumulating`` stays False -- the closed-vocabulary
+    reason for rows deferred pending the conduit).
+
+    SHAPE-specific, deliberately NOT family-specific:
+
+    * gas radical(s) -> condensed proxy (association orientation, the run-5
+      generated direction) and condensed proxy -> gas radicals (homolysis,
+      the reverse generated orientation) are refused;
+    * gas+gas->gas R_Recombination termination has no condensed side and is
+      untouched (whitelisted chemistry);
+    * H-abstraction / routing shapes carry the proxy on the mixed side --
+      neither side is "all gas radicals" -- untouched;
+    * beta-scission / volatile-producing shapes carry a closed-shell product
+      on the all-gas side -- untouched.
+
+    Phase info at this layer: "condensed polymer proxy" means an
+    :class:`Polymer` participant (pool proxies and spawned daughters ARE
+    ``Polymer`` Species here -- the association product resolves onto the
+    registered pool object via ``species_dict`` isomorphism in
+    ``make_new_species``). "Gas" is any non-``Polymer`` participant; the
+    sticky ``is_polymer_proxy`` tag is deliberately NOT consulted
+    (family.py blanket-tags small radicals on proxy-touching reactions, and
+    keying on it would let the exact run-5 radicals slip through).
+
+    Called from ``make_new_reaction`` (rmgpy/rmg/model.py) AFTER the resolved
+    reactants/products are assigned onto ``forward`` -- the association
+    orientation has no polymer REACTANT, so the ``polymer_reactants``
+    handshake/stamping block never sees it; this is the one seam where both
+    resolved sides are visible for every branch.
+
+    Unconditional engine behavior, matching the existing item-18 refusal
+    stamp (no deck-level gate exists for refusals today); the long-term
+    conduit will replace it. An earlier refusal stamp (item-18 detector) is
+    never overwritten -- its census reason wins.
+    """
+    if getattr(forward, "polymer_refused", False):
+        return  # already refused upstream; keep that census reason
+    reactants = getattr(forward, "reactants", None) or []
+    products = getattr(forward, "products", None) or []
+    r_condensed = any(isinstance(s, Polymer) for s in reactants)
+    p_condensed = any(isinstance(s, Polymer) for s in products)
+    if r_condensed == p_condensed:
+        # no condensed participant at all, or condensed on BOTH sides
+        # (routing chemistry) -- not the gas-association bridge.
+        return
+
+    def _all_gas_radicals(side):
+        if not side:
+            return False
+        for s in side:
+            if isinstance(s, Polymer):
+                return False
+            mol_list = getattr(s, "molecule", None)
+            mol = mol_list[0] if mol_list else (
+                s if isinstance(s, Molecule) else None)
+            if mol is None or mol.get_radical_count() < 1:
+                return False
+        return True
+
+    if ((p_condensed and _all_gas_radicals(reactants))
+            or (r_condensed and _all_gas_radicals(products))):
+        forward.polymer_refused = True
+        forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
+
+
 def _chain_radical_lost_to_gas(forward, polymer_reactants):
     """Return the gas-product :class:`Molecule` that a polymer reactant dropped to
     gas (``create_reacted_copy`` returned ``None``) and that carries CHAIN-SCALE

@@ -1061,6 +1061,35 @@ class TestRefusedRowSerialization:
             cantera_index_map={id(rxn): [3]})
         assert entries[0]["refused_reason"] == "qssa-invalid"
 
+    def test_gas_association_refused_row_round_trips_conduit_deferred(self):
+        """PP v1 gas-association refusal (adjudicated round 63): a run-5-shaped
+        row (pure gas radicals <=> condensed pool proxy) stamped by the NEW
+        classifier ``stamp_gas_association_refusal`` round-trips the sidecar
+        with the shipped schema-2.4 vocabulary: ``refused: true`` +
+        ``refused_reason: "conduit-deferred"`` (the row is deferred pending
+        the pool-moment-credit conduit). RED at b917becd7: the classifier does
+        not exist."""
+        from rmgpy.polymer import stamp_gas_association_refusal
+        pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        pp.index = 2
+        r1 = _spc("[CH2]C(C)C", "iC4H9", index=4)
+        r2 = _spc("C[CH]CCC", "C5H11", index=5)
+        core = [pp, r1, r2]
+        rxn = Reaction(reactants=[r1, r2], products=[pp],
+                       kinetics=_arrhenius(A=(3.0, "m^3/(mol*s)")),
+                       reversible=True)
+        stamp_gas_association_refusal(rxn)
+        assert rxn.polymer_refused is True   # classifier fired (RED half)
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["polypropylene"],
+            cantera_index_map={id(rxn): [0]})
+        assert len(entries) == 1   # stamp-but-keep: the row stays listed
+        e = entries[0]
+        assert e["refused"] is True
+        assert e["refused_reason"] == "conduit-deferred"
+        assert e["proxy_products"] == ["polypropylene(2)"]
+
     def test_non_refused_rows_carry_no_refused_keys(self):
         """Non-refused rows: NO new key — absent, not false (byte-identical
         pin; TA-side loaders treat key PRESENCE as the 2.4 vocabulary)."""

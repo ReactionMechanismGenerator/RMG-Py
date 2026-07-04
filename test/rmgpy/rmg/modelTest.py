@@ -1324,3 +1324,85 @@ class TestMakeNewReactionBMGate:
             f"_convert_bm_kinetics_with_dHrxn called {called['n']} time(s); "
             "expected 0 for unrelabeled polymer reaction"
         )
+
+
+class TestGasAssociationRefusalAtMakeNewReaction:
+    """PP v1 campaign refusal at the LIVE classification chokepoint
+    (adjudicated adversarial round 63): ``make_new_reaction`` must stamp
+    ``polymer_refused`` (conduit-deferred) on an R_Recombination-style row
+    that bridges pure gas-phase radicals into a condensed pool proxy. The
+    association orientation has NO polymer reactant, so the pre-existing
+    ``polymer_reactants`` stamping block never sees it -- the stamp must run
+    at the one point where BOTH resolved sides are visible (after
+    ``forward.reactants/products`` are assigned). RED at b917becd7: the row
+    comes back unstamped and later dies at the solver's thermo
+    reference-state tripwire (run 5, U = 10.39 decades)."""
+
+    def test_run5_gas_association_shape_is_stamped_refused(self):
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        proxy_mol = pp.molecule[0].copy(deep=True)
+        rxn = TemplateReaction(
+            reactants=[Molecule().from_smiles('[CH2]C(C)C'),
+                       Molecule().from_smiles('C[CH]CCC')],
+            products=[proxy_mol],
+            family='R_Recombination',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')),
+        )
+        out, is_new = cerm.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is not None and is_new
+        # LIVENESS PIN -- BEFORE the red assertion: the recombination product
+        # must resolve onto the registered pool Polymer via species_dict
+        # isomorphism (the premise that makes the shape detectable at all).
+        # A failure HERE means the fixture is dead, not a valid red.
+        assert any(isinstance(p, Polymer) for p in out.products), (
+            "FIXTURE BROKEN, not a valid red: the recombination product did "
+            "not resolve onto the registered pool Polymer")
+        assert all(not isinstance(r, Polymer)
+                   and r.molecule[0].get_radical_count() > 0
+                   for r in out.reactants)
+        # THE red assertions: at b917becd7 the row passes classification
+        # unstamped (polymer_refused is False).
+        assert out.polymer_refused is True
+        assert out.polymer_refused_accumulating is False  # conduit-deferred
+
+    def test_gas_termination_shape_is_not_stamped_refused(self):
+        """Negative control at the same chokepoint: gas+gas->gas
+        R_Recombination termination (no condensed proxy side) must come back
+        unstamped even with a Polymer registered in the model."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        # NOTE: isobutyl + 2-pentyl recombination IS the PP 3-mer proxy
+        # structure (2,4-dimethylheptane) -- that is exactly why run 5
+        # generated the refused row. The termination control must therefore
+        # use radicals whose adduct is NOT proxy-isomorphic.
+        rxn = TemplateReaction(
+            reactants=[Molecule().from_smiles('[CH3]'),
+                       Molecule().from_smiles('C[CH2]')],
+            products=[Molecule().from_smiles('CCC')],
+            family='R_Recombination',
+            is_forward=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')),
+        )
+        out, is_new = cerm.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is not None and is_new
+        assert not any(isinstance(p, Polymer) for p in out.products)
+        assert out.polymer_refused is False
+        assert out.polymer_refused_accumulating is False

@@ -4355,6 +4355,53 @@ class TestThermoReferenceStateTripwire:
             _refstate_rs(core, [rxn], mask,
                          [_gate_pool_config()], {"A": (1.0, 5.0, 30.0)})
 
+    def test_refused_row_with_unpaired_reference_state_passes_initialize(self):
+        """PP v1 gas-association refusal, pin pair (adjudicated round 63,
+        design constraint 3): a ``polymer_refused`` row (stamp-but-keep, its
+        WHOLE flux suppressed via ``reaction_refused`` in the residual) with a
+        genuinely unpaired reference state must PASS ``initialize_model`` --
+        a refused row's reference-state pairing is moot. The skip is keyed on
+        the refused stamp ONLY: the SAME row unrefused must still trip (second
+        half of the pair, below). RED at b917becd7: the tripwire census loop
+        reads every reversible core row regardless of refused status, so the
+        refused build raises the cliff-sign ValueError."""
+        sp, core, mask = _refstate_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G1"], sp["G2"]],
+                       **_REV_KIN)
+        rxn.polymer_refused = True
+        rxn.polymer_refused_accumulating = False   # conduit-deferred
+
+        # LIVENESS PIN -- BEFORE the red assertion: the row genuinely carries
+        # chain-scale unpaired U above the refuse bound (independently
+        # recomputed, same recipe as the refusal test). A failure HERE means
+        # the fixture is dead, not a valid red.
+        assert rxn.reversible
+        mw_a = sp["A"].molecule[0].get_molecular_weight()
+        u_expected = (_sackur_tetrode_decades(mw_a, 800.0)
+                      + math.log10(1.0e5 / (constants.R * 800.0 * 1.0)))
+        assert u_expected > 3.0, (
+            "FIXTURE BROKEN, not a valid red: independently recomputed U "
+            f"({u_expected:.2f}) is not above the refuse bound"
+        )
+
+        # THE red assertion: the refused build must COMPLETE (no tripwire
+        # ValueError) -- and the refusal is not a free pass: the row's flux
+        # is suppressed and censused as conduit-deferred.
+        rs = _refstate_rs(core, [rxn], mask,
+                          [_gate_pool_config()], {"A": (1.0, 5.0, 30.0)})
+        assert any(c["reason"] == "conduit-deferred"
+                   for c in rs.refused_reaction_census)
+
+        # Pin-pair second half: the SAME row UNREFUSED still trips -- the
+        # skip is via the refused stamp only, no other relaxation.
+        sp2, core2, mask2 = _refstate_pool_species()
+        rxn2 = Reaction(reactants=[sp2["A"]], products=[sp2["G1"], sp2["G2"]],
+                        **_REV_KIN)
+        assert not getattr(rxn2, "polymer_refused", False)
+        with pytest.raises(ValueError, match="unpaired reference-state"):
+            _refstate_rs(core2, [rxn2], mask2,
+                         [_gate_pool_config()], {"A": (1.0, 5.0, 30.0)})
+
     def test_mixed_provenance_chain_counterparty_warns(self, caplog):
         """Spec §8.4: one melt-class species takes library thermo while its
         chain-scale counterparty takes GAV -> the mixed-provenance warning
