@@ -71,7 +71,42 @@ ARCHETYPE_INTS = {
     "scission_fragment/1": 3,
     "legacy_mu1/1": 4,
     "discrete_chip/1": 5,
+    "volatile_ejection/1": 6,
 }
+
+
+def _validated_eject_units(e):
+    """Validate + return a volatile_ejection/1 row's SIGNED eject_units.
+
+    The emitter writes exactly ONE VE params sub-shape:
+    ``params = {"eject_units": float}`` (rmgpy/polymer.py
+    compile_polymer_reaction_entries; a = net non-polymer mass /
+    source-monomer MW, SIGNED -- a < 0 is net mass gain from the gas
+    co-reactants, see the signed-VE contract in rmgpy/polymer.py). Reject
+    anything else with an actionable error, never KeyError and never a
+    silent 0.0 default: defaulting would launder the atom-transfer debit
+    away (the moved chain lands un-shrunk while the gas volatile still
+    appears -- fabricated mass), and adapting chip-style vocabulary would
+    guess semantics."""
+    eid = e.get("id")
+    params = e.get("params")
+    if not isinstance(params, dict) or set(params) != {"eject_units"}:
+        raise ValueError(
+            f"reactions[] entry {eid!r} (volatile_ejection/1) must carry "
+            f"params = {{'eject_units': <signed float>}} exactly -- the "
+            f"only VE params shape the emitter writes -- got {params!r}. "
+            f"Fix the artifact; defaulting would silently zero the "
+            f"atom-transfer debit.")
+    a = params["eject_units"]
+    if isinstance(a, bool) or not isinstance(a, (int, float)) \
+            or not math.isfinite(float(a)):
+        raise ValueError(
+            f"reactions[] entry {eid!r} (volatile_ejection/1) has "
+            f"eject_units={a!r}; it must be a finite SIGNED number (the "
+            f"source-monomer-equivalents transferred to the gas "
+            f"co-participants, rmgpy/polymer.py "
+            f"compute_volatile_ejection_units). Fix the artifact.")
+    return float(a)
 
 
 def _species_from_yaml(entry):
@@ -157,7 +192,17 @@ def _restamp_and_extend(artifact, species, reactions):
     all_reactions = list(reactions)
     restamped_indices = set()
     for e in artifact["reactions"]:
-        arch = ARCHETYPE_INTS[e["archetype"]]
+        arch_name = e["archetype"]
+        if arch_name not in ARCHETYPE_INTS:
+            raise ValueError(
+                f"reactions[] entry {e.get('id')!r} carries unknown "
+                f"archetype {arch_name!r}; this loader's term-type "
+                f"vocabulary is CLOSED to {sorted(ARCHETYPE_INTS)} "
+                f"(docs/polymer_moments_format.md §3). An unknown archetype "
+                f"is flux this consumer cannot reproduce -- upgrade the "
+                f"loader or regenerate the sidecar with a matching RMG-Py "
+                f"polymer branch.")
+        arch = ARCHETYPE_INTS[arch_name]
         if e["cantera"] is not None:
             rxn = reactions[e["cantera"]["index"]]
             restamped_indices.add(e["cantera"]["index"])
@@ -177,6 +222,20 @@ def _restamp_and_extend(artifact, species, reactions):
         rxn.polymer_flux_archetype = arch
         rxn.is_end_group_reaction = (e["scaling"] == "mu0")
         rxn.polymer_chip_units = int(e.get("params", {}).get("a", 0))
+        # VOLATILE_EJECTION rows carry the SIGNED atom-transfer stamp
+        # (params.eject_units; the only VE params sub-shape the emitter
+        # writes). The oracle reads it back as Reaction.polymer_eject_units
+        # (polymer.pyx:1551): cross-pool, the from-leg drops the full
+        # interior/end-group bundle and the to-leg lands a-shifted
+        # ((b0, b1 + sa*b0, b2 + 2*sa*b1 + a^2*b0), sa = -a forward / +a
+        # reverse); same-pool (src == dst fold-back), the chip-style signed
+        # mu1/mu2 single-pool write applies. src/dst pools are re-resolved
+        # from the species at initialize_model like every other archetype
+        # (the artifact's src_pool/dst_pool fields stay documentation).
+        # Restore exactly; validate, never default (see
+        # _validated_eject_units).
+        if arch_name == "volatile_ejection/1":
+            rxn.polymer_eject_units = _validated_eject_units(e)
         # Physically-melt classification, like MW, must cross the artifact
         # boundary: the reference-state tripwire's tag branch reads
         # is_polymer_proxy, which generation world stamps by blanket-tagging

@@ -395,11 +395,11 @@ def _refused_deck(tmp_path, mark_refused=True):
     ``mark_refused=False`` builds the same chemistry WITHOUT the refused
     stamp -- the pre-2.4 artifact shape.
 
-    NOTE (known gap, out of scope here): the reference runner has NO
-    volatile_ejection/1 vocabulary (ARCHETYPE_INTS) and cannot load VE rows
-    at all, so the refused-vs-VE regression pin lives at the SOLVER level
-    (solverPolymerTest.py
-    test_refused_zero_while_volatile_ejection_contributes)."""
+    NOTE: the runner's volatile_ejection/1 vocabulary gap this note used to
+    record is CLOSED -- consumer-side VE coverage (load, numeric bundle
+    pins, refused-VE zero) lives in TestVolatileEjectionConsumer below; the
+    solver-level refused-vs-VE regression pin remains in solverPolymerTest.py
+    test_refused_zero_while_volatile_ejection_contributes."""
     n2 = _spc("N#N", "N2", index=1)
     poly = _spc("CCCC", "poly", index=2)
     rad = _spc("[CH2]CCC", "R", index=3)
@@ -587,6 +587,210 @@ class TestRefusedRowConsumer:
             assert rxn.polymer_refused_accumulating is accumulating, (
                 f"reason {reason!r} must restore accumulating="
                 f"{accumulating}")
+
+
+def _ve_deck(tmp_path, eject_units=2.0, mark_refused=False):
+    """A cross-pool VOLATILE_EJECTION deck: polyA(2) -> vol(4) + polyB(3)
+    (interior/mu1-scaled; the moved chain loses ``eject_units`` backbone
+    units to the discrete gas volatile as it lands in polyB), written out as
+    chem.yaml + polymer_pools.json exactly like an RMG run would. The VE row
+    is proxy-touching, so chem.yaml drops it and the artifact entry carries
+    cantera: null + its own kinetics -- the same on-disk shape production PS
+    runs emit (dRetroene rows: cross-pool, scaling mu1,
+    params={eject_units})."""
+    n2 = _spc("N#N", "N2", index=1)
+    pa = _spc("CCCC", "polyA", index=2)
+    pb = _spc("CCC", "polyB", index=3)
+    vol = _spc("C=C", "vol", index=4)
+    mus = ([_mu(f"polyA_mu{k}") for k in range(3)]
+           + [_mu(f"polyB_mu{k}") for k in range(3)])
+    core = [n2, pa, pb, vol] + mus
+    pa.is_polymer_proxy = True
+    pb.is_polymer_proxy = True
+
+    ve_rxn = Reaction(
+        reactants=[pa], products=[vol, pb],
+        kinetics=Arrhenius(A=(2.5, "1/s"), n=0.0, Ea=(0.0, "J/mol"),
+                           T0=(1.0, "K")),
+        reversible=False)
+    ve_rxn.polymer_flux_archetype = int(
+        PolymerFluxArchetype.VOLATILE_EJECTION)
+    ve_rxn.polymer_eject_units = eject_units
+    if mark_refused:
+        ve_rxn.polymer_refused = True
+        ve_rxn.polymer_refused_accumulating = False
+
+    data, index_map = generate_cantera_data(core, [ve_rxn],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+
+    pool_a = Polymer(label="polyA", monomer="[CH2][CH2]",
+                     end_groups=["[H]", "[H]"], cutoff=3,
+                     moments=[1.0, 10.0, 120.0], initial_mass=0.0,
+                     k_scission=0.0, k_unzip=0.0)
+    pool_b = Polymer(label="polyB", monomer="[CH2][CH2]",
+                     end_groups=["[H]", "[H]"], cutoff=3,
+                     moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                     k_scission=0.0, k_unzip=0.0)
+    artifact = build_polymer_moments_artifact(
+        [pool_a, pool_b], core_species=core, core_reactions=[ve_rxn],
+        configured_pool_labels=["polyA", "polyB"],
+        condensed_species=[pa, pb] + mus,
+        cantera_index_map=index_map)
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+def _build_ve(chem_path, artifact):
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+        initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+
+class TestVolatileEjectionConsumer:
+    """volatile_ejection/1 vocabulary in the reference runner (pre-S2
+    blocker, round 59): the emitter has written VE rows since the signed-VE
+    spec (rmgpy/polymer.py ARCHETYPE_TERM_NAMES + params.eject_units) and
+    shipped PS artifacts carry them, but ARCHETYPE_INTS had no entry, so any
+    sidecar with a VE row crashed the runner with
+    KeyError: 'volatile_ejection/1'. The consumer must restore BOTH stamps
+    the oracle reads (polymer_flux_archetype = 6 and the SIGNED
+    polymer_eject_units; src/dst pools are re-resolved from the species like
+    every other archetype) and reject malformed eject vocabulary with
+    actionable errors, never a silent 0.0 default."""
+
+    def _artifact(self, tmp_path, **kw):
+        chem_path, art_path = _ve_deck(tmp_path, **kw)
+        with open(art_path) as fh:
+            return chem_path, json.load(fh)
+
+    def test_emitter_writes_ve_row_shape(self, tmp_path):
+        """Premise pin: the emitter's one on-disk VE shape (matches the
+        shipped PS artifacts, e.g. b2fix-psrun ve_1782931902): cross-pool
+        row, cantera null (proxy-touching rows are dropped from chem.yaml),
+        scaling mu1, params carrying exactly eject_units."""
+        _, artifact = self._artifact(tmp_path)
+        (row,) = artifact["reactions"]
+        assert row["archetype"] == "volatile_ejection/1"
+        assert row["cantera"] is None
+        assert row["kinetics"] is not None
+        assert row["scaling"] == "mu1"
+        assert row["src_pool"] == "polyA"
+        assert row["dst_pool"] == "polyB"
+        assert row["params"] == {"eject_units": 2.0}
+        assert row["proxy_reactants"] == ["polyA(2)"]
+        assert row["proxy_products"] == ["polyB(3)"]
+        assert row["unresolved"] is False
+
+    def test_ve_row_loads_and_restores_solver_stamps(self, tmp_path):
+        """Pre-fix this died with KeyError: 'volatile_ejection/1' (the
+        ARCHETYPE_INTS lookup in _restamp_and_extend). Post-fix the oracle
+        carries the VE archetype int, the eject-units stamp, and the
+        re-resolved src/dst pools."""
+        chem_path, artifact = self._artifact(tmp_path)
+        rs, _, _ = _build_ve(chem_path, artifact)
+        assert int(rs.reaction_flux_archetype[0]) == 6
+        assert float(rs.reaction_eject_units[0]) == pytest.approx(2.0)
+        assert int(rs.reaction_src_pool[0]) == 0
+        assert int(rs.reaction_dst_pool[0]) == 1
+
+    def test_signed_negative_eject_units_round_trips(self, tmp_path):
+        """eject_units is SIGNED (polymer.py signed-VE contract: a < 0 is
+        net mass GAIN from the gas co-reactants); the consumer must restore
+        the sign, never clamp."""
+        chem_path, artifact = self._artifact(tmp_path, eject_units=-1.5)
+        rs, _, _ = _build_ve(chem_path, artifact)
+        assert float(rs.reaction_eject_units[0]) == pytest.approx(-1.5)
+
+    def test_ve_forward_bundle_and_gas_pins(self, tmp_path):
+        """Numeric behavioral pins through the real runner path (numbers,
+        not strings). Forward cross-pool VE with mu(polyA) = [1, 10, 120]
+        mol, V_poly = 1 m^3, kf = 2.5 s^-1, a = eject_units = 2,
+        hand-computed against the solver VE law (polymer.pyx VE branch +
+        _chain_bundle):
+
+          event rate  ev = kf * mu1 = 25 mol/s   (interior: mu1-scaled site)
+          length-biased bundle: b0 = 1, b1 = mu2/mu1 = 12,
+              mu3 = mu0*(mu2/mu1)^3 = 1728 (log-Lagrange closure),
+              b2 = mu3/mu1 = 172.8
+          src debit (full bundle):  -ev*(b0, b1, b2) = (-25, -300, -4320)
+          dst credit (a-shifted, sa = -a): +ev*(b0, b1 - a,
+              b2 - 2*a*b1 + a^2) = (+25, +250, +3220)
+          gas volatile (standard net-rate product path): +ev = +25
+        """
+        chem_path, artifact = self._artifact(tmp_path)
+        rs, core, _ = _build_ve(chem_path, artifact)
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        i = {s.label: k for k, s in enumerate(core)}
+        ev = 2.5 * 10.0
+        assert dn[i["polyA_mu0"]] == pytest.approx(-ev, rel=1e-12)
+        assert dn[i["polyA_mu1"]] == pytest.approx(-ev * 12.0, rel=1e-12)
+        assert dn[i["polyA_mu2"]] == pytest.approx(-ev * 172.8, rel=1e-12)
+        assert dn[i["polyB_mu0"]] == pytest.approx(+ev, rel=1e-12)
+        assert dn[i["polyB_mu1"]] == pytest.approx(+ev * (12.0 - 2.0),
+                                                   rel=1e-12)
+        assert dn[i["polyB_mu2"]] == pytest.approx(
+            +ev * (172.8 - 2.0 * 2.0 * 12.0 + 2.0 ** 2), rel=1e-12)
+        assert dn[i["vol(4)"]] == pytest.approx(+ev, rel=1e-12)
+
+    def test_refused_ve_row_contributes_exactly_zero(self, tmp_path):
+        """A refused VE row (schema 2.4 stamp-but-keep) must suppress its
+        WHOLE flux in the consumer oracle too: with the refused VE row as
+        the only reaction, every residual entry is exactly zero."""
+        chem_path, artifact = self._artifact(tmp_path, mark_refused=True)
+        (row,) = artifact["reactions"]
+        assert artifact["schema_version"] == "2.4"
+        assert row["refused"] is True
+        assert row["archetype"] == "volatile_ejection/1"
+        rs, _, _ = _build_ve(chem_path, artifact)
+        assert int(rs.reaction_refused.sum()) == 1
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.all(dn == 0.0), f"refused VE row leaked flux: {dn}"
+
+    def test_rejects_malformed_eject_params_never_keyerror(self, tmp_path):
+        """The emitter writes params = {'eject_units': float} on every VE
+        row (rmgpy/polymer.py compile_polymer_reaction_entries) -- the ONLY
+        VE params sub-shape that exists on disk. Anything else is a
+        hand-edited/corrupted sidecar: reject with an actionable ValueError
+        naming eject_units -- never KeyError, never a silent 0.0 default
+        (which would launder the atom-transfer debit away: the chain lands
+        un-shrunk while the gas volatile still appears)."""
+        cases = [
+            ("missing params", lambda r: r.pop("params")),
+            ("empty params", lambda r: r.__setitem__("params", {})),
+            ("chip vocabulary", lambda r: r.__setitem__("params", {"a": 2})),
+            ("extra key", lambda r: r["params"].__setitem__("a", 2)),
+            ("string value", lambda r: r["params"].__setitem__(
+                "eject_units", "2.0")),
+            ("boolean value", lambda r: r["params"].__setitem__(
+                "eject_units", True)),
+            ("non-finite", lambda r: r["params"].__setitem__(
+                "eject_units", float("nan"))),
+        ]
+        for name, mutate in cases:
+            chem_path, artifact = self._artifact(tmp_path)
+            (row,) = artifact["reactions"]
+            mutate(row)
+            with pytest.raises(ValueError, match=r"eject_units"):
+                _build_ve(chem_path, artifact)
+            del artifact  # each case mutates a fresh load
+
+    def test_rejects_unknown_archetype_with_actionable_error(self, tmp_path):
+        """The archetype term-type vocabulary is CLOSED: an unknown name
+        means flux this consumer cannot reproduce -- ValueError naming the
+        offender and the known vocabulary, not the bare KeyError that was
+        the pre-fix failure mode."""
+        chem_path, artifact = self._artifact(tmp_path)
+        (row,) = artifact["reactions"]
+        row["archetype"] = "volatile_ejection/2"
+        with pytest.raises(ValueError,
+                           match=r"unknown archetype.*volatile_ejection/2"):
+            _build_ve(chem_path, artifact)
 
 
 class TestQssaNormativeRecipe:
