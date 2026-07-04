@@ -3616,6 +3616,23 @@ EXPLICIT_DP_BLOCK_RECIPE_REVISION = "2026-07-04-explicit-dp"
 # envelope. Erratum: pre-2.4 sidecars generated while refused stamps
 # existed carry such rows UNMARKED and consumers over-integrate them.
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_REFUSED = "2.4"
+# Schema 2.5 = 2.4 + the spawned-pool closure on the conventions block
+# (S4 serializer closure): conventions.spawned_pools lists every registry
+# pool that is NOT solver-configured (runtime-spawned scission daughters and
+# S2 feature pools <parent>_mod), disjoint from configured_pools by
+# construction, and conventions.condensed_species is CLOSED over those
+# pools' phase_species (proxy + mu-dummies, already declared condensed
+# row-side) so the TA consumer classifies them CONDENSED instead of
+# defaulting them GAS (the item-16 mass-balance hazard). Same presence-based
+# minor-bump policy as 2.1-2.4: the emitter stamps 2.5 exactly when at
+# least one spawned pool is present in the registry; no spawned pool
+# anywhere -> the key is ABSENT (never an empty list) and the 2.4/2.3/...
+# stamps apply byte-identically (golden-pinned). NO recipe_revision change:
+# spawned_pools is SHAPE vocabulary with classification semantics, not new
+# rate algebra (spawned pools still carry no solver-config channels
+# integration), and STRICT-MINOR acceptance already stops older consumers
+# at the envelope — the exact 2.4 refused-row precedent.
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SPAWNED = "2.5"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
@@ -4714,6 +4731,15 @@ def build_polymer_moments_artifact(pool_registry,
     # carried by new shape vocabulary, not new rate algebra, and the
     # STRICT-MINOR envelope already stops pre-2.4 consumers.
     refused_present = any(e.get("refused") for e in reactions)
+    # Spawned-pool closure vocabulary (schema 2.5) is CONVENTIONS-level: the
+    # closure complement of configured_pools within the registry, keyed on
+    # the PRIMARY signal only (label not in configured set) so it is
+    # disjoint from configured_pools by construction. The legacy
+    # default-label call (configured defaults to ALL registry labels) has
+    # an empty complement -> key absent, stamps untouched — mirroring the
+    # documented legacy-default limitation of moments_provenance above.
+    spawned_pool_labels = [p["label"] for p in pools
+                           if p["label"] not in configured_set]
     if explicit_dp_present:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_EXPLICIT_DP
         recipe_revision = (
@@ -4733,6 +4759,30 @@ def build_polymer_moments_artifact(pool_registry,
                   else POLYMER_RATE_RECIPE_REVISION))
     if refused_present:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_REFUSED
+    # Spawned-pool presence is the strongest SHAPE stamp (2.5 > 2.4 > ...);
+    # recipe_revision deliberately untouched (2.4 precedent: classification
+    # vocabulary, not rate algebra).
+    if spawned_pool_labels:
+        schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SPAWNED
+
+    # conventions.condensed_species closure (schema 2.5): a spawned pool's
+    # phase_species (canonical proxy + mu-dummies collected from the same
+    # core universe, already declared condensed ROW-side) join the normative
+    # condensed list the consumers key on ("Consumers MUST use these lists,
+    # not name heuristics", format doc §8) — otherwise TA's normative path
+    # classifies a late-spawned pool's bookkeeping species GAS and the
+    # condensed mass balance silently breaks. With no spawned pool the set
+    # reduces to the caller's condensed_species exactly (byte-identical,
+    # golden-pinned); the change in membership semantics ships only inside
+    # 2.5-stamped artifacts, which STRICT-MINOR gating hides from every
+    # pre-2.5 consumer.
+    condensed_labels = {_artifact_species_label(s)
+                        for s in (condensed_species or [])}
+    if spawned_pool_labels:
+        spawned_set = set(spawned_pool_labels)
+        condensed_labels.update(
+            lbl for p in pools if p["label"] in spawned_set
+            for lbl in (p.get("phase_species") or []))
 
     conventions = {
         # format_doc mirrors schema_version (same vocabulary fork above):
@@ -4749,8 +4799,7 @@ def build_polymer_moments_artifact(pool_registry,
             "V_gas": "ideal gas, dynamic: V_gas = n_gas*R*T/P (1.0 m^3 floor when n_gas <= 0)",
         },
         "configured_pools": list(configured_pool_labels),
-        "condensed_species": sorted(_artifact_species_label(s)
-                                    for s in (condensed_species or [])),
+        "condensed_species": sorted(condensed_labels),
         "site_scaling": ("site = max(0, mu_scaling)/V_poly read from the first proxy "
                          "reactant's pool; multiplies ONCE; scales rf AND rr"),
         "chip_site_throttle": ("site = min(max(0,mu0), max(0,mu1)/a)/V_poly when "
@@ -4766,6 +4815,15 @@ def build_polymer_moments_artifact(pool_registry,
                            "channel (unzip moves units from mu1 into that species)"),
         },
     }
+    # The configured-pools closure surface (schema 2.5): registry order,
+    # disjoint from configured_pools, emitted ONLY when non-empty so
+    # spawned-free artifacts stay byte-identical (never an empty list).
+    # Rows keep full solver-inertness semantics (format doc §2: no site
+    # scaling, no conc:=1.0, no channels integration) — this key carries
+    # PHASE-CLASSIFICATION membership only, plus row-side monomer_mw_g_mol /
+    # spawn provenance for the consumer's mass accounting.
+    if spawned_pool_labels:
+        conventions["spawned_pools"] = spawned_pool_labels
 
     # --- generation_defaults (provenance completeness; NON-normative) ---
     # kLa/K and V_poly are consumer-supplied operating conditions by

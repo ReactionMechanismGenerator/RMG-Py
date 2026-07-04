@@ -336,30 +336,125 @@ class TestQssaSchemaVersionGate:
 
     def test_rejects_unknown_future_minor(self, qssa_deck, deck):
         """Weak-link milestone iv POLICY CHANGE (was minor-permissive): the
-        loader pins the maximum schema minor it implements (2.4 since the
-        refused-row marker; was 2.3 at the explicit-DP handshake block,
-        stage B). A newer-minor artifact may carry vocabulary outside the
-        channel blocks that the unknown-key guards never see (new
-        conventions, new pool fields), so an older loader must fail loud
-        instead of loading additively."""
+        loader pins the maximum schema minor it implements (2.5 since the
+        spawned-pool closure; was 2.4 at the refused-row marker, 2.3 at the
+        explicit-DP handshake block). A newer-minor artifact may carry
+        vocabulary outside the channel blocks that the unknown-key guards
+        never see (new conventions, new pool fields), so an older loader
+        must fail loud instead of loading additively."""
         artifact = _load_artifact(qssa_deck)
-        artifact["schema_version"] = "2.5"
-        with pytest.raises(ValueError, match=r"schema_version.*2\.5"):
+        artifact["schema_version"] = "2.6"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.6"):
             _build_qssa(qssa_deck, artifact)
         artifact = _load_artifact(qssa_deck)
-        artifact["schema_version"] = "2.7"
+        artifact["schema_version"] = "2.8"
         with pytest.raises(ValueError, match=r"schema_version"):
             _build_qssa(qssa_deck, artifact)
         # no-QSSA legacy artifact: same envelope pin
         chem_path, art_path = deck
         with open(art_path) as fh:
             legacy = json.load(fh)
-        legacy["schema_version"] = "2.5"
+        legacy["schema_version"] = "2.6"
         species, reactions = load_chem_yaml(chem_path)
-        with pytest.raises(ValueError, match=r"schema_version.*2\.5"):
+        with pytest.raises(ValueError, match=r"schema_version.*2\.6"):
             build_system_from_artifact(
                 legacy, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
                 initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_accepts_2_5_without_spawned(self, deck):
+        """2.5 is now an implemented minor: a 2.5 stamp with no
+        conventions.spawned_pools anywhere loads (mirror of
+        test_accepts_2_4_without_refused)."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.5"
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert len(rs.polymer_pools) == 1
+
+    def test_rejects_spawned_pools_in_2_4_stamped_artifact(self, deck):
+        """Vocabulary/version cross-check (the refused-row precedent): a
+        below-2.5 artifact carrying conventions.spawned_pools is malformed
+        -- the emitter stamps 2.5 whenever it writes the key."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.4"
+        artifact["conventions"]["spawned_pools"] = ["poly_d1"]
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError, match=r"spawned_pools.*2\.5"):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_rejects_spawned_configured_overlap(self, deck):
+        """The closure is the configured set's complement by construction: a
+        label in BOTH lists is simultaneously solver-configured and
+        solver-inert -- malformed, reject-never-adapt."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.5"
+        pool_label = artifact["conventions"]["configured_pools"][0]
+        artifact["conventions"]["spawned_pools"] = [pool_label]
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError, match=r"overlaps configured_pools"):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def _spawned_shape_case(self, deck, schema_version, spawned, match):
+        """Load a fresh deck, plant conventions.spawned_pools = ``spawned``
+        under ``schema_version``, and assert the loader rejects it."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = schema_version
+        artifact["conventions"]["spawned_pools"] = spawned
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError, match=match):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_rejects_empty_spawned_pools_in_2_4_stamped_artifact(self, deck):
+        """KEY PRESENCE, not truthiness, is the vocabulary signal: the
+        emitter stamps 2.5 whenever it writes conventions.spawned_pools at
+        all, so even an EMPTY list under a 2.4 stamp is malformed (a
+        truthiness gate silently waved it through)."""
+        self._spawned_shape_case(deck, "2.4", [], r"spawned_pools.*2\.5")
+
+    def test_rejects_empty_spawned_pools_in_2_5_stamped_artifact(self, deck):
+        """The emitter writes the key ONLY when the closure is non-empty
+        (presence-based 2.5 stamping: spawned-free artifacts stay
+        byte-identical to their older stamps), so an empty list under 2.5
+        is equally malformed -- reject, never adapt."""
+        self._spawned_shape_case(deck, "2.5", [], r"spawned_pools.*empty")
+
+    def test_rejects_non_list_spawned_pools(self, deck):
+        """A bare string ('poly_mod') is truthy and iterable, so a
+        truthiness gate consumed it as an iterable of CHARACTERS; the
+        emitter writes a list of pool labels -- anything else is
+        malformed."""
+        self._spawned_shape_case(deck, "2.5", "poly_mod",
+                                 r"spawned_pools.*list")
+
+    def test_rejects_malformed_spawned_pool_entries(self, deck):
+        """Closure entries are registry pool LABELS: non-string entries and
+        empty strings are malformed regardless of position."""
+        for bad in ([42], [None], [""], ["poly_d1", ""], ["poly_d1", 7]):
+            self._spawned_shape_case(deck, "2.5", bad,
+                                     r"spawned_pools.*non-empty string")
+
+    def test_rejects_duplicate_spawned_pool_labels(self, deck):
+        """The closure is a SET of registry pool labels (identity-deduped
+        at collection, labels disambiguated at registration): the emitter
+        never repeats one, so a duplicate is malformed."""
+        self._spawned_shape_case(deck, "2.5", ["poly_d1", "poly_d1"],
+                                 r"spawned_pools.*duplicate")
 
     def test_accepts_2_4_without_refused(self, deck):
         """2.4 is now an implemented minor: a 2.4 stamp with no refused row

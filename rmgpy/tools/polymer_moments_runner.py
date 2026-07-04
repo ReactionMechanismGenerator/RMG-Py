@@ -498,6 +498,7 @@ _QSSA_MIN_SCHEMA_MINOR = 1
 _WEAKLINK_MIN_SCHEMA_MINOR = 2
 _EXPLICIT_DP_MIN_SCHEMA_MINOR = 3
 _REFUSED_MIN_SCHEMA_MINOR = 4
+_SPAWNED_MIN_SCHEMA_MINOR = 5
 # The CLOSED refused_reason vocabulary (format doc §12): the emitter derives
 # the reason bijectively from the accumulating stamp, so exactly these two
 # strings can exist. _restamp_and_extend reconstructs the accumulating class
@@ -513,8 +514,13 @@ REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid"})
 # marker (format doc §12): this loader restores the marker onto the
 # reconstructed reactions (Reaction.polymer_refused) so the oracle's
 # reaction_refused suppression zeroes the row's whole flux exactly like the
-# generating run, so 2.4 acceptance is truthful; 2.5+ stays rejected.
-_MAX_KNOWN_SCHEMA_MINOR = 4
+# generating run. Raised to 5 with the spawned-pool closure (format doc
+# §13): conventions.spawned_pools is classification vocabulary whose
+# runtime effect rides conventions.condensed_species -- which this loader
+# already honors verbatim for its phase mask -- while pool moment blocks
+# stay keyed on configured_pools (spawned pools remain solver-inert, §2),
+# so 2.5 acceptance is truthful; 2.6+ stays rejected.
+_MAX_KNOWN_SCHEMA_MINOR = 5
 
 
 def _check_schema_version_known(artifact):
@@ -647,6 +653,78 @@ def _check_refused_schema_version(artifact):
             f"introduced in schema 2.4, and the emitter stamps 2.4 whenever "
             f"it writes it. This artifact is malformed -- regenerate the "
             f"sidecar with a current RMG-Py polymer branch.")
+
+
+def _check_spawned_pools_schema_version(artifact):
+    """Reject an artifact carrying the spawned-pool closure vocabulary (a
+    ``conventions.spawned_pools`` KEY -- presence, not truthiness) under a
+    schema_version below 2.5 (or a non-2.x version), and shape-guard the
+    key itself. Mirrors _check_refused_schema_version on the version axis
+    and _validate_refused_entry on the shape axis: the emitter writes the
+    key ONLY as a non-empty list of unique, non-empty pool-label strings
+    and stamps 2.5 whenever it does (format doc §13), so an empty list, a
+    non-list (a bare string would be consumed as an iterable of
+    CHARACTERS), non-string / empty entries, or duplicate labels are all
+    malformed -- reject, never adapt. Also rejects an overlap with
+    configured_pools: the closure is the complement of the configured set
+    by construction (a label in both would be simultaneously
+    solver-configured and solver-inert -- the emitter never produces
+    it)."""
+    conv = artifact.get("conventions") or {}
+    if "spawned_pools" not in conv:
+        return
+    spawned = conv["spawned_pools"]
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    minor = (int(parts[1]) if len(parts) == 2 and parts[0] == "2"
+             and parts[1].isdigit() else -1)
+    if minor < _SPAWNED_MIN_SCHEMA_MINOR:
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry "
+            f"conventions.spawned_pools ({spawned!r}): the spawned-pool "
+            f"closure vocabulary was introduced in schema 2.5, and the "
+            f"emitter stamps 2.5 whenever it writes it. This artifact is "
+            f"malformed -- regenerate the sidecar with a current RMG-Py "
+            f"polymer branch.")
+    if not isinstance(spawned, (list, tuple)):
+        raise ValueError(
+            f"conventions.spawned_pools is {spawned!r} "
+            f"({type(spawned).__name__}), not a list: the emitter writes a "
+            f"non-empty list of pool-label strings (format doc §13). This "
+            f"artifact is malformed -- fix/regenerate it at the source; "
+            f"this loader never adapts it.")
+    if not spawned:
+        raise ValueError(
+            "conventions.spawned_pools is an empty list: the emitter "
+            "writes the key ONLY when the closure is non-empty "
+            "(presence-based 2.5 stamping, format doc §13), so an empty "
+            "list is malformed -- fix/regenerate it at the source; this "
+            "loader never adapts it.")
+    for lbl in spawned:
+        if not isinstance(lbl, str) or not lbl:
+            raise ValueError(
+                f"conventions.spawned_pools entry {lbl!r} is not a "
+                f"non-empty string: the closure lists registry pool LABELS "
+                f"(format doc §13). This artifact is malformed -- "
+                f"fix/regenerate it at the source; this loader never "
+                f"adapts it.")
+    dupes = sorted({lbl for lbl in spawned if spawned.count(lbl) > 1})
+    if dupes:
+        raise ValueError(
+            f"conventions.spawned_pools carries duplicate label(s) "
+            f"{dupes}: the closure is a set of registry pool labels "
+            f"(format doc §13) and the emitter never repeats one. This "
+            f"artifact is malformed -- fix/regenerate it at the source; "
+            f"this loader never adapts it.")
+    overlap = sorted(set(spawned) & set(conv.get("configured_pools") or []))
+    if overlap:
+        raise ValueError(
+            f"conventions.spawned_pools overlaps configured_pools on "
+            f"{overlap}: the spawned closure is the complement of the "
+            f"configured set (format doc §13; a pool cannot be both "
+            f"solver-configured and runtime-spawned/inert). This artifact "
+            f"is malformed -- fix/regenerate it at the source; this loader "
+            f"never adapts it.")
 
 
 def _validate_refused_entry(e):
@@ -1068,6 +1146,11 @@ def build_system_from_artifact(artifact, species, reactions,
     # artifact carrying a refused marker on any reactions[] row is
     # malformed (the emitter stamps 2.4 whenever it writes one).
     _check_refused_schema_version(artifact)
+    # Spawned-pool closure vocabulary/version cross-check (schema 2.5): a
+    # 2.0-2.4 artifact carrying conventions.spawned_pools is malformed, and
+    # so is any overlap with configured_pools (the closure is the
+    # configured set's complement by construction).
+    _check_spawned_pools_schema_version(artifact)
     # ... and the explicit-dp token/vocabulary pairing is exact in both
     # directions (P2 gates): token without block, block without token --
     # both hand-edited shapes fail loud.

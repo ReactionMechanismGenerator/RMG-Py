@@ -1103,9 +1103,13 @@ class TestRefusedRowSerialization:
         envelope)."""
         core = _two_pool_core()
         rxn = self._refused_rxn(core)
+        # "PE" listed configured alongside A/B: the registry pool must not
+        # read as runtime-spawned here, or the spawned-pool closure (schema
+        # 2.5, the stronger SHAPE stamp) legitimately outranks the 2.4
+        # refused stamp this test pins.
         artifact = build_polymer_moments_artifact(
             [pe_pool], core_species=core, core_reactions=[rxn],
-            configured_pool_labels=["A", "B"],
+            configured_pool_labels=["PE", "A", "B"],
             condensed_species=core[:4],
             cantera_index_map={id(rxn): [3]})
         assert artifact["schema_version"] == "2.4"
@@ -1120,9 +1124,12 @@ class TestRefusedRowSerialization:
         mig = Reaction(reactants=[core[0]], products=[core[4]],
                        kinetics=_arrhenius(), reversible=False)
         mig.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        # "PE" configured for the same reason as the 2.4-stamp test above:
+        # a registry pool absent from the configured set is runtime-spawned
+        # by the primary signal and would truthfully stamp 2.5.
         artifact = build_polymer_moments_artifact(
             [pe_pool], core_species=core, core_reactions=[mig],
-            configured_pool_labels=["A", "B"],
+            configured_pool_labels=["PE", "A", "B"],
             condensed_species=core[:4],
             cantera_index_map={id(mig): [0]})
         assert artifact["schema_version"] == "2.0"
@@ -1791,3 +1798,161 @@ class TestGenerationDefaults:
     def test_nothing_declared_key_absent(self, pe_pool):
         artifact = self._artifact([pe_pool], ["PE"])
         assert "generation_defaults" not in artifact["conventions"]
+
+
+class TestSpawnedPoolConfiguredSurface:
+    """S4 serializer closure (schema 2.5): every runtime-spawned pool present
+    in the registry at save time — scission daughters AND S2 feature pools —
+    must reach the sidecar's configured-pools surface so the TA consumer can
+    classify its proxy + mu-dummies CONDENSED instead of defaulting them GAS
+    (the item-16 hazard shape). Vocabulary:
+
+    * ``conventions.spawned_pools`` — labels of registry pools NOT in
+      ``conventions.configured_pools`` (closure complement; disjoint by
+      construction). Presence-based: no spawned pool anywhere -> key absent
+      and the artifact stays byte-identical (schema stamp included).
+    * ``conventions.condensed_species`` closure — a spawned pool's
+      ``phase_species`` (proxy + mu-dummies, already declared condensed
+      row-side) join the normative condensed list the consumers key on.
+    * schema 2.5 stamp, strongest SHAPE (2.5 > 2.4 > ...); recipe_revision
+      untouched (classification vocabulary, not rate algebra) — the exact
+      2.4 refused-row precedent."""
+
+    PP_H_LOSS_DAUGHTER = 'CCC[C](C)CC(C)C'  # live PP center-tertiary C9H19
+
+    @staticmethod
+    def _pp_pool():
+        return Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                       end_groups=['[H]', '[H]'], cutoff=3,
+                       Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+
+    def _spawned_feature_setup(self):
+        """A runtime-spawned feature pool through the REAL S1a/S2 machinery
+        (create_reacted_copy(h_loss_feature=True)), plus a core carrying
+        both pools' proxies and mu-dummies."""
+        pp = self._pp_pool()
+        daughter = pp.create_reacted_copy(
+            Molecule(smiles=self.PP_H_LOSS_DAUGHTER), h_loss_feature=True)
+        core = [
+            _spc("CCCC(C)CC(C)C", "polypropylene", index=2),
+            _mu_dummy("polypropylene_mu0"),
+            _mu_dummy("polypropylene_mu1"),
+            _mu_dummy("polypropylene_mu2"),
+            _spc(self.PP_H_LOSS_DAUGHTER, daughter.label if daughter else "d",
+                 index=9),
+            _mu_dummy(f"{daughter.label}_mu0" if daughter else "d_mu0"),
+            _mu_dummy(f"{daughter.label}_mu1" if daughter else "d_mu1"),
+            _mu_dummy(f"{daughter.label}_mu2" if daughter else "d_mu2"),
+            _spc("[CH3]", "G", index=7),
+        ]
+        core[0].is_polymer_proxy = True
+        core[4].is_polymer_proxy = True
+        return pp, daughter, core
+
+    def test_spawned_feature_pool_reaches_configured_pools_surface(self):
+        """RED pin 1: the S2 feature pool born mid-run must appear in the
+        sidecar's configured-pools surface (conventions.spawned_pools) with
+        monomer_mw_g_mol present, spawn provenance preserved and born-at-zero
+        moments untouched."""
+        pp, daughter, core = self._spawned_feature_setup()
+
+        # LIVENESS PINS (tripwire discipline): the daughter came through the
+        # real producer path with lineage + pinned monomer MW intact. A pin
+        # failure here is a broken fixture, never a valid red.
+        assert daughter is not None
+        assert daughter.label == "polypropylene_mod"
+        assert daughter.parent_pool_label == "polypropylene"
+        assert daughter.monomer_mw_g_mol == pytest.approx(
+            pp.monomer_mw_g_mol)
+
+        payload = build_polymer_moments_artifact(
+            [pp, daughter],
+            core_species=core,
+            configured_pool_labels=["polypropylene"],  # engine-configured only
+            condensed_species=core[:4],  # engine mask: deck pool only
+        )
+        conv = payload["conventions"]
+        entry = next(p for p in payload["pools"]
+                     if p["label"] == "polypropylene_mod")
+
+        # Row-side truths that must survive the closure unchanged.
+        assert entry["moments"] == [0.0, 0.0, 0.0]
+        assert entry["moments_provenance"] == "spawned_empty"
+        assert isinstance(entry["spawn_event_metadata"], dict)
+        assert entry["monomer_mw_g_mol"] == pytest.approx(
+            pp.monomer_mw_g_mol)
+
+        # RED assertion 1 (the configured-pools surface): the spawned pool
+        # label is published next to configured_pools, disjoint from it.
+        assert conv.get("spawned_pools") == ["polypropylene_mod"], (
+            "runtime-spawned feature pool missing from the sidecar's "
+            "configured-pools surface (conventions.spawned_pools)")
+        assert set(conv["spawned_pools"]).isdisjoint(conv["configured_pools"])
+
+        # RED assertion 2 (the consumer-keyed condensed list): the spawned
+        # pool's proxy + mu-dummies join conventions.condensed_species.
+        for lbl in ("polypropylene_mod(9)", "polypropylene_mod_mu0",
+                    "polypropylene_mod_mu1", "polypropylene_mod_mu2"):
+            assert lbl in conv["condensed_species"], (
+                f"spawned-pool condensed member {lbl!r} missing from "
+                "conventions.condensed_species (TA classifies it GAS)")
+
+        # RED assertion 3 (envelope): spawned-pool vocabulary is the
+        # strongest SHAPE stamp; rate algebra untouched.
+        assert payload["schema_version"] == "2.5"
+        assert conv["recipe_revision"] == POLYMER_RATE_RECIPE_REVISION
+
+    def test_spawned_scission_daughter_reaches_surface_too(self, pe_pool):
+        """The historical spawn shape (gate-path drain scission daughter)
+        rides the same closure."""
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+        intent = SpawnIntent(parent_pool=pe_pool, monomer=pe_pool.monomer,
+                             end_groups=["[H]", "[H]"], triggering_dp=4)
+        daughter = drain_spawn_intents([intent], iteration=7,
+                                       existing_pools=[pe_pool])[0]
+        payload = build_polymer_moments_artifact(
+            [pe_pool, daughter], configured_pool_labels=["PE"])
+        conv = payload["conventions"]
+        assert conv.get("spawned_pools") == [daughter.label]
+        assert payload["schema_version"] == "2.5"
+        entry = next(p for p in payload["pools"]
+                     if p["label"] == daughter.label)
+        assert entry["monomer_mw_g_mol"] == pytest.approx(
+            pe_pool.monomer_mw_g_mol)
+
+    def test_declared_only_artifact_is_byte_identical(self, pe_pool):
+        """RED pin 2 (regression guard, GREEN before and after): with no
+        spawned pool anywhere the key is ABSENT — never an empty list — and
+        the legacy 2.0 stamp + conventions block are untouched."""
+        core = [
+            _spc("CC", "PE", index=2),
+            _mu_dummy("PE_mu0"), _mu_dummy("PE_mu1"), _mu_dummy("PE_mu2"),
+        ]
+        core[0].is_polymer_proxy = True
+        payload = build_polymer_moments_artifact(
+            [pe_pool], core_species=core,
+            configured_pool_labels=["PE"], condensed_species=core)
+        conv = payload["conventions"]
+        assert "spawned_pools" not in conv
+        assert payload["schema_version"] == "2.0"
+        assert conv["configured_pools"] == ["PE"]
+        assert conv["condensed_species"] == [
+            "PE(2)", "PE_mu0", "PE_mu1", "PE_mu2"]
+
+    def test_legacy_default_labels_call_emits_no_spawned_surface(self, pe_pool):
+        """Legacy default-label call (configured defaults to ALL registry
+        labels): the closure complement is empty by construction, so the
+        surface stays absent even though the daughter's row still reads
+        spawned via its object markers (the documented secondary signal)."""
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+        intent = SpawnIntent(parent_pool=pe_pool, monomer=pe_pool.monomer,
+                             end_groups=["[H]", "[H]"], triggering_dp=4)
+        daughter = drain_spawn_intents([intent], iteration=7,
+                                       existing_pools=[pe_pool])[0]
+        payload = build_polymer_moments_artifact([pe_pool, daughter])
+        conv = payload["conventions"]
+        assert "spawned_pools" not in conv
+        assert payload["schema_version"] == "2.0"
+        entry = next(p for p in payload["pools"]
+                     if p["label"] == daughter.label)
+        assert entry["moments_provenance"] == "spawned_empty"
