@@ -891,6 +891,63 @@ class TestHybridPolymerReactor:
         net = dn[i["epdm_mu1"]] * mono_mw + dn[i["epdm_macroradical"]] * macro_mw
         assert np.isclose(net, 0.0, atol=1e-6), f"backbone mass not conserved: {net:.4e} g/s fabricated"
 
+    def test_refused_zero_while_volatile_ejection_contributes(self):
+        """Cross-solver agreement pin (schema 2.4 refused-row contract), RMG
+        half, numbers not strings: a refused reaction contributes EXACTLY
+        zero to the residual (elementwise: the two-reaction system equals
+        the VE-only system), while a non-refused VOLATILE_EJECTION reaction
+        on the same pool still contributes (regression guard). TA pins the
+        same two numbers on its side (tests/test_polymer_simulator.py)."""
+        import numpy as np
+        from rmgpy.reaction import Reaction
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.solver.polymer import HybridPolymerSystem, PolymerPoolConfig
+        Proxy = _spc("CCC(C)CCCC(C)CCCC(C)C", "epdm")
+        Mu0 = _spc("CO", "epdm_mu0"); Mu1 = _spc("C=O", "epdm_mu1"); Mu2 = _spc("C#N", "epdm_mu2")
+        Macro = _spc("CCC(C)CCC[C](C)CCCC(C)C", "epdm_macroradical")
+        H = _spc("[H]", "H"); H2 = _spc("[H][H]", "H2")
+        Vol = _spc("C=C", "C2H4")
+        core = [Proxy, Mu0, Mu1, Mu2, Macro, H, H2, Vol]
+        mask = np.array([False, False, False, False, False, True, True, True], dtype=bool)
+        refused = Reaction(reactants=[Proxy, H], products=[Macro, H2],
+                           kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                                              Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+                           reversible=False)
+        refused.polymer_flux_archetype = 4      # UNRESOLVED
+        refused.polymer_refused = True
+
+        def _ve():
+            ve = Reaction(reactants=[Proxy], products=[Proxy, Vol],
+                          kinetics=Arrhenius(A=(0.5, "1/s"), n=0.0,
+                                             Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+                          reversible=False)
+            ve.polymer_flux_archetype = 6       # VOLATILE_EJECTION
+            ve.polymer_eject_units = 0.5
+            return ve
+
+        def _system(rxns):
+            pool = PolymerPoolConfig(label="epdm", xs=2,
+                                     explicit_dp_to_species_index={},
+                                     mu_indices=(1, 2, 3),
+                                     monomer_poly_index=None,
+                                     k_scission=0.0, k_unzip=0.0,
+                                     tail_kinetics=None)
+            rs = HybridPolymerSystem(
+                T=800.0, P=1.0e5, initial_mole_fractions={H: 1.0},
+                V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+                gas_species_mask=mask.copy(), constant_gas_volume=False,
+                initial_polymer_moments={"epdm": (1.0, 50.0, 3000.0)},
+                termination=[])
+            rs.initialize_model(core, rxns, [], [])
+            return rs
+
+        rs_both = _system([refused, _ve()])
+        dn_both = rs_both.residual(0.0, rs_both.y, np.zeros_like(rs_both.y))[0]
+        rs_ve = _system([_ve()])
+        dn_ve = rs_ve.residual(0.0, rs_ve.y, np.zeros_like(rs_ve.y))[0]
+        assert np.any(dn_ve != 0.0)              # the VE row is live
+        assert np.array_equal(dn_both, dn_ve)    # refused adds exactly zero
+
     def test_refused_census_distinguishes_eliminating_and_accumulating(self):
         import numpy as np
         from rmgpy.reaction import Reaction

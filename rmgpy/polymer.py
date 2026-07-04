@@ -3570,6 +3570,23 @@ POLYMER_RATE_RECIPE_REVISION_EXPLICIT_DP_WEAKLINK = (
 # sub-block): names the explicit-DP recipe itself, independent of which
 # channel family the artifact-level token composes with.
 EXPLICIT_DP_BLOCK_RECIPE_REVISION = "2026-07-04-explicit-dp"
+# Schema 2.4 = 2.3 + the per-row refused marker on reactions[] entries
+# (refused-row sidecar contract): a reaction stamped polymer_refused=True
+# (item 18 stamp-but-keep) is zeroed WHOLESALE by the generating solver
+# (polymer.pyx reaction_refused), so its row carries "refused": true +
+# "refused_reason" (the census reason available at stamp time:
+# conduit-deferred / qssa-invalid). The row STAYS listed — consumers need it
+# to zero the mapped Cantera reaction — but MUST skip its moment flux AND
+# its manual species dispatch (docs/polymer_moments_format.md §12). Same
+# presence-based minor-bump policy as 2.1/2.2/2.3: the emitter stamps 2.4
+# exactly when at least one row carries the marker; no refused row anywhere
+# -> the 2.3/2.2/2.1/2.0 stamps apply byte-identically (non-refused rows
+# never gain the keys: absent, not false). NO recipe_revision change:
+# refused is SHAPE vocabulary with consumption semantics, not new rate
+# algebra, and STRICT-MINOR acceptance already stops older consumers at the
+# envelope. Erratum: pre-2.4 sidecars generated while refused stamps
+# existed carry such rows UNMARKED and consumers over-integrate them.
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_REFUSED = "2.4"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
@@ -4530,6 +4547,34 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
             entry["params"] = {"a": int(getattr(rxn, "polymer_chip_units", 0))}
         elif arch == VE:
             entry["params"] = {"eject_units": float(getattr(rxn, "polymer_eject_units", 0.0))}
+        # Refused-row marker (schema 2.4, format doc §12): the generating
+        # solver zeroes this reaction's WHOLE flux (polymer.pyx
+        # reaction_refused), so the row must say so or a consumer integrates
+        # flux the oracle fabricated nothing for. Stamp-but-keep: the row
+        # stays listed (consumers zero its Cantera multiplier from the
+        # listing). refused_reason mirrors the solver census reason built
+        # from the same stamps (polymer.pyx:1526-1530). Non-refused rows
+        # gain NO key (absent, not false — byte-identical artifacts).
+        if getattr(rxn, "polymer_refused", False):
+            if entry["proxy_reactants"] or entry["proxy_products"]:
+                entry["refused"] = True
+                entry["refused_reason"] = (
+                    "qssa-invalid"
+                    if getattr(rxn, "polymer_refused_accumulating", False)
+                    else "conduit-deferred")
+            else:
+                # The marker is legal ONLY on pool-mapped rows (loader
+                # guard, both consumers): a refused reaction whose pool is
+                # not solver-configured emits unmarked — warn-loud, because
+                # a consumer will over-integrate this row (the generating
+                # solver still zeroes it).
+                logging.warning(
+                    "Polymer artifact: refused reaction %s has no "
+                    "pool-mapped participant under the configured pools; "
+                    "emitting WITHOUT the refused marker (consumers will "
+                    "integrate this row while the generating solver zeroed "
+                    "it). Configure the pool or expect over-integration.",
+                    equation)
         entries.append(entry)
     return entries
 
@@ -4632,6 +4677,14 @@ def build_polymer_moments_artifact(pool_registry,
     # explicit-dp re-stamp). No explicit-DP anywhere -> the legacy stamps
     # apply byte-identically (golden-pinned).
     explicit_dp_present = any("explicit_dp" in p for p in pools)
+    # Refused-row vocabulary (schema 2.4) is ROW-level, on reactions[]; its
+    # presence is the strongest SHAPE stamp (2.4 > 2.3 > ...), same
+    # presence-based rule as every prior minor: no refused row anywhere ->
+    # the older stamps apply byte-identically (golden-pinned). It does NOT
+    # touch recipe_revision: zeroing a listed row is consumption semantics
+    # carried by new shape vocabulary, not new rate algebra, and the
+    # STRICT-MINOR envelope already stops pre-2.4 consumers.
+    refused_present = any(e.get("refused") for e in reactions)
     if explicit_dp_present:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_EXPLICIT_DP
         recipe_revision = (
@@ -4649,6 +4702,8 @@ def build_polymer_moments_artifact(pool_registry,
             POLYMER_RATE_RECIPE_REVISION_WEAKLINK if weaklink_present
             else (POLYMER_RATE_RECIPE_REVISION_QSSA if qssa_present
                   else POLYMER_RATE_RECIPE_REVISION))
+    if refused_present:
+        schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_REFUSED
 
     conventions = {
         # format_doc mirrors schema_version (same vocabulary fork above):

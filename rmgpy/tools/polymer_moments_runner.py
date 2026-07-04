@@ -215,6 +215,19 @@ def _restamp_and_extend(artifact, species, reactions):
         if e.get("proxy_reactants") or e.get("proxy_products"):
             for s in rxn.reactants + rxn.products:
                 s.is_polymer_proxy = True
+        # Refused-row marker (schema 2.4, format doc §12): restore the
+        # generating solver's stamp so initialize_model rebuilds
+        # reaction_refused and the residual suppresses the row's WHOLE flux
+        # (moment and species alike) exactly like the generating run. The
+        # accumulating class is recovered from the census reason (the same
+        # bijection polymer.pyx:1526-1530 serialized it with). The row's
+        # Cantera entry (when retained) needs no zeroing here -- the runner
+        # drives the oracle directly, and the oracle's suppression is
+        # whole-reaction.
+        if _validate_refused_entry(e):
+            rxn.polymer_refused = True
+            rxn.polymer_refused_accumulating = (
+                e["refused_reason"] == "qssa-invalid")
         if e["kinetics"] is not None:
             # Belt-and-braces reversibility for listed entries: post-fix
             # chem.yaml records reversibility in the equation arrow
@@ -425,15 +438,24 @@ _EXPLICIT_DP_BLOCK_KEYS = frozenset(
 _QSSA_MIN_SCHEMA_MINOR = 1
 _WEAKLINK_MIN_SCHEMA_MINOR = 2
 _EXPLICIT_DP_MIN_SCHEMA_MINOR = 3
+_REFUSED_MIN_SCHEMA_MINOR = 4
+# The CLOSED refused_reason vocabulary (format doc §12): the emitter derives
+# the reason bijectively from the accumulating stamp, so exactly these two
+# strings can exist. _restamp_and_extend reconstructs the accumulating class
+# FROM the reason (== "qssa-invalid", else non-accumulating), so an unknown
+# reason would silently change solver semantics -- reject, never adapt.
+REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid"})
 # Maximum schema minor this loader implements. Weak-link milestone iv
 # POLICY CHANGE (was minor-permissive): a newer-minor artifact may carry
 # vocabulary OUTSIDE the channel blocks (new conventions, new pool fields)
 # that the unknown-key guards here never inspect, so an older loader must
 # fail loud on it instead of loading additively. Raised to 3 with the
-# explicit-DP handshake block (stage B): this loader parses/validates the
-# pool-level explicit_dp vocabulary and the oracle it drives implements the
-# handshake law, so 2.3 acceptance is truthful; 2.4+ stays rejected.
-_MAX_KNOWN_SCHEMA_MINOR = 3
+# explicit-DP handshake block (stage B). Raised to 4 with the refused-row
+# marker (format doc §12): this loader restores the marker onto the
+# reconstructed reactions (Reaction.polymer_refused) so the oracle's
+# reaction_refused suppression zeroes the row's whole flux exactly like the
+# generating run, so 2.4 acceptance is truthful; 2.5+ stays rejected.
+_MAX_KNOWN_SCHEMA_MINOR = 4
 
 
 def _check_schema_version_known(artifact):
@@ -541,6 +563,70 @@ def _check_explicit_dp_schema_version(artifact):
             f"emitter stamps 2.3 whenever it writes it. This artifact is "
             f"malformed -- regenerate the sidecar with a current RMG-Py "
             f"polymer branch.")
+
+
+def _check_refused_schema_version(artifact):
+    """Reject an artifact carrying the refused-row vocabulary (a "refused"
+    or "refused_reason" key on any reactions[] entry) under a schema_version
+    below 2.4 (or a non-2.x version). Mirrors _check_explicit_dp_schema_version:
+    the vocabulary appearing anywhere means the artifact claims the 2.4
+    shape (format doc §12) -- an older parse would drop the marker silently
+    and integrate flux the generating solver zeroed."""
+    carriers = [e.get("id") for e in artifact.get("reactions", [])
+                if isinstance(e, dict)
+                and ("refused" in e or "refused_reason" in e)]
+    if not carriers:
+        return
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    minor = (int(parts[1]) if len(parts) == 2 and parts[0] == "2"
+             and parts[1].isdigit() else -1)
+    if minor < _REFUSED_MIN_SCHEMA_MINOR:
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry the refused-row "
+            f"marker (entries {carriers}): the refused vocabulary was "
+            f"introduced in schema 2.4, and the emitter stamps 2.4 whenever "
+            f"it writes it. This artifact is malformed -- regenerate the "
+            f"sidecar with a current RMG-Py polymer branch.")
+
+
+def _validate_refused_entry(e):
+    """Shape-guard one reactions[] entry's refused vocabulary (format doc
+    §12; reject, never adapt): the emitter writes ``refused: true`` plus a
+    non-empty ``refused_reason`` on POOL-MAPPED rows, or NOTHING (absent,
+    not false). Returns True iff the row is a valid refused row."""
+    if "refused" not in e and "refused_reason" not in e:
+        return False
+    eid = e.get("id")
+    if e.get("refused") is not True:
+        raise ValueError(
+            f"reactions[] entry {eid!r} carries malformed refused vocabulary "
+            f"(refused={e.get('refused')!r}): the emitter writes refused: "
+            f"true + refused_reason on refused rows and NOTHING otherwise "
+            f"(absent, not false). A refused_reason without refused: true "
+            f"is equally malformed. Fix the artifact.")
+    reason = e.get("refused_reason")
+    if not isinstance(reason, str) or not reason:
+        raise ValueError(
+            f"reactions[] entry {eid!r} has refused: true but no valid "
+            f"refused_reason ({reason!r}): the emitter always writes the "
+            f"stamp-time census reason (a non-empty string, e.g. "
+            f"'conduit-deferred' / 'qssa-invalid'). Fix the artifact.")
+    if reason not in REFUSED_REASONS:
+        raise ValueError(
+            f"reactions[] entry {eid!r} has unknown refused_reason "
+            f"{reason!r}: the schema-2.4 vocabulary is CLOSED to "
+            f"{sorted(REFUSED_REASONS)} (format doc §12). The accumulating "
+            f"class is reconstructed from this reason, so an unknown value "
+            f"would silently change solver semantics. Fix the artifact.")
+    if not (e.get("proxy_reactants") or e.get("proxy_products")):
+        raise ValueError(
+            f"reactions[] entry {eid!r} has refused: true but no pool-mapped "
+            f"participant (empty proxy_reactants AND proxy_products): the "
+            f"refused marker is legal ONLY on pool-mapped rows -- honoring "
+            f"it here would silently zero ordinary gas chemistry. Fix the "
+            f"artifact.")
+    return True
 
 
 # The artifact-level recipe-revision tokens that carry the explicit-DP
@@ -919,6 +1005,10 @@ def build_system_from_artifact(artifact, species, reactions,
     # Explicit-DP vocabulary/version cross-check (schema 2.3): a 2.0-2.2
     # artifact carrying a pool-level explicit_dp block is malformed.
     _check_explicit_dp_schema_version(artifact)
+    # Refused-row vocabulary/version cross-check (schema 2.4): a 2.0-2.3
+    # artifact carrying a refused marker on any reactions[] row is
+    # malformed (the emitter stamps 2.4 whenever it writes one).
+    _check_refused_schema_version(artifact)
     # ... and the explicit-dp token/vocabulary pairing is exact in both
     # directions (P2 gates): token without block, block without token --
     # both hand-edited shapes fail loud.

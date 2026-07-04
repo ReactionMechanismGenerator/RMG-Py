@@ -336,14 +336,15 @@ class TestQssaSchemaVersionGate:
 
     def test_rejects_unknown_future_minor(self, qssa_deck, deck):
         """Weak-link milestone iv POLICY CHANGE (was minor-permissive): the
-        loader pins the maximum schema minor it implements (2.3 since the
-        explicit-DP handshake block, stage B). A newer-minor artifact may
-        carry vocabulary outside the channel blocks that the unknown-key
-        guards never see (new conventions, new pool fields), so an older
-        loader must fail loud instead of loading additively."""
+        loader pins the maximum schema minor it implements (2.4 since the
+        refused-row marker; was 2.3 at the explicit-DP handshake block,
+        stage B). A newer-minor artifact may carry vocabulary outside the
+        channel blocks that the unknown-key guards never see (new
+        conventions, new pool fields), so an older loader must fail loud
+        instead of loading additively."""
         artifact = _load_artifact(qssa_deck)
-        artifact["schema_version"] = "2.4"
-        with pytest.raises(ValueError, match=r"schema_version.*2\.4"):
+        artifact["schema_version"] = "2.5"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.5"):
             _build_qssa(qssa_deck, artifact)
         artifact = _load_artifact(qssa_deck)
         artifact["schema_version"] = "2.7"
@@ -353,12 +354,25 @@ class TestQssaSchemaVersionGate:
         chem_path, art_path = deck
         with open(art_path) as fh:
             legacy = json.load(fh)
-        legacy["schema_version"] = "2.4"
+        legacy["schema_version"] = "2.5"
         species, reactions = load_chem_yaml(chem_path)
-        with pytest.raises(ValueError, match=r"schema_version.*2\.4"):
+        with pytest.raises(ValueError, match=r"schema_version.*2\.5"):
             build_system_from_artifact(
                 legacy, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
                 initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_accepts_2_4_without_refused(self, deck):
+        """2.4 is now an implemented minor: a 2.4 stamp with no refused row
+        anywhere loads (mirror of test_accepts_2_3_without_explicit_dp)."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.4"
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert int(rs.reaction_refused.sum()) == 0
 
     def test_accepts_2_3_without_explicit_dp(self, deck):
         """2.3 is now an implemented minor: a 2.3 stamp with no explicit_dp
@@ -372,6 +386,207 @@ class TestQssaSchemaVersionGate:
             artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
             initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
         assert rs.polymer_pools[0].explicit_dp_to_species_index == {}
+
+
+def _refused_deck(tmp_path, mark_refused=True):
+    """A deck whose artifact carries one pool-mapped refused row (item 18
+    stamp-but-keep: poly(2) + H -> R + H2, the chain radical R condensed-
+    classified past Gate B exactly like production).
+    ``mark_refused=False`` builds the same chemistry WITHOUT the refused
+    stamp -- the pre-2.4 artifact shape.
+
+    NOTE (known gap, out of scope here): the reference runner has NO
+    volatile_ejection/1 vocabulary (ARCHETYPE_INTS) and cannot load VE rows
+    at all, so the refused-vs-VE regression pin lives at the SOLVER level
+    (solverPolymerTest.py
+    test_refused_zero_while_volatile_ejection_contributes)."""
+    n2 = _spc("N#N", "N2", index=1)
+    poly = _spc("CCCC", "poly", index=2)
+    rad = _spc("[CH2]CCC", "R", index=3)
+    h = _spc("[H]", "H", index=4)
+    h2 = _spc("[H][H]", "H2", index=5)
+    mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+    core = [n2, poly, rad, h, h2] + mus
+    poly.is_polymer_proxy = True
+
+    refused_rxn = Reaction(
+        reactants=[poly, h], products=[rad, h2],
+        kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "J/mol"),
+                           T0=(1.0, "K")),
+        reversible=False)
+    refused_rxn.polymer_flux_archetype = int(PolymerFluxArchetype.UNRESOLVED)
+    if mark_refused:
+        refused_rxn.polymer_refused = True
+        refused_rxn.polymer_refused_accumulating = False
+    rxns = [refused_rxn]
+
+    data, index_map = generate_cantera_data(core, [refused_rxn],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+
+    pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                   end_groups=["[H]", "[H]"], cutoff=3,
+                   moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                   k_scission=0.0, k_unzip=0.0)
+    artifact = build_polymer_moments_artifact(
+        [pool], core_species=core, core_reactions=rxns,
+        configured_pool_labels=["poly"],
+        # R past Gate B: the leaked chain radical is condensed-classified,
+        # exactly the production refused shape (all-gas products would be
+        # phase-gate-disqualified and never reach the refused suppression).
+        condensed_species=[poly, rad] + mus,
+        cantera_index_map=index_map)
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+def _build_refused(chem_path, artifact):
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+        initial_moles={"N2(1)": 1.0, "H(4)": 1.0}, mass_transfer_spec=[])
+
+
+class TestRefusedRowConsumer:
+    """Schema 2.4 refused-row contract, consumer side (reference loader):
+    honor the marker (zero the row's WHOLE flux, moment and species alike --
+    the generating solver's reaction_refused suppression restored across the
+    artifact boundary), guard it (pool-mapped rows only, stamped >= 2.4,
+    emitter never writes refused: false), and keep non-refused rows
+    integrating."""
+
+    def _artifact(self, tmp_path, **kw):
+        chem_path, art_path = _refused_deck(tmp_path, **kw)
+        with open(art_path) as fh:
+            return chem_path, json.load(fh)
+
+    def test_refused_row_emitted_marked_and_stamped_2_4(self, tmp_path):
+        _, artifact = self._artifact(tmp_path)
+        assert artifact["schema_version"] == "2.4"
+        marked = [e for e in artifact["reactions"] if e.get("refused")]
+        assert len(marked) == 1
+        assert marked[0]["refused"] is True
+        assert marked[0]["refused_reason"] == "conduit-deferred"
+        assert marked[0]["proxy_reactants"] == ["poly(2)"]
+
+    def test_refused_row_restamped_and_contributes_exactly_zero(
+            self, tmp_path):
+        """Pin 5 (RMG half, numbers not strings): the consumer-world oracle
+        rebuilt from a 2.4 artifact suppresses the refused row's ENTIRE
+        residual contribution -- with the refused row as the only reaction,
+        every residual entry is exactly zero."""
+        chem_path, artifact = self._artifact(tmp_path)
+        rs, core, _ = _build_refused(chem_path, artifact)
+        assert int(rs.reaction_refused.sum()) == 1
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.all(dn == 0.0), f"refused row leaked flux: {dn}"
+
+    def test_stripped_marker_reproduces_pre_2_4_over_integration(
+            self, tmp_path):
+        """Pin 3 (RMG half): the SAME row without the marker -- a pre-2.4
+        artifact shape -- integrates the flux the generating solver zeroed
+        (mu1 drained, chain radical R fabricated). This is the erratum the
+        format doc records: pre-2.4 sidecars with refused RMG rows
+        over-integrate in consumers."""
+        chem_path, art_path = _refused_deck(tmp_path, mark_refused=False)
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        assert artifact["schema_version"] == "2.0"  # pre-2.4 shape
+        assert all("refused" not in e for e in artifact["reactions"])
+        rs, core, _ = _build_refused(chem_path, artifact)
+        assert int(rs.reaction_refused.sum()) == 0
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        labels = [s.label for s in core]
+        i = {lab: k for k, lab in enumerate(labels)}
+        # the pre-2.4 over-integration, numerically: mu1 drains while the
+        # chain radical R gains -- MW-weighted backbone mass fabrication
+        assert dn[i["poly_mu1"]] < 0.0
+        assert dn[i["R(3)"]] > 0.0
+
+    def test_rejects_refused_marker_in_2_3_stamped_artifact(self, tmp_path):
+        """Vocabulary/version cross-check (the 2.1-QSSA / 2.3-explicit-dp
+        precedent): a below-2.4 artifact carrying the refused marker is
+        malformed -- the emitter stamps 2.4 whenever it writes one."""
+        chem_path, artifact = self._artifact(tmp_path)
+        artifact["schema_version"] = "2.3"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.4"):
+            _build_refused(chem_path, artifact)
+
+    def test_rejects_refused_on_non_pool_mapped_row(self, tmp_path):
+        """Refused is legal ONLY on pool-mapped rows: a hand-edited row with
+        the marker but no proxy participant is corrupt (the suppression
+        would silently zero ordinary gas chemistry)."""
+        chem_path, artifact = self._artifact(tmp_path)
+        (row,) = [e for e in artifact["reactions"] if e.get("refused")]
+        row["proxy_reactants"] = []
+        row["proxy_products"] = []
+        with pytest.raises(ValueError, match=r"refused.*pool-mapped|pool-mapped.*refused"):
+            _build_refused(chem_path, artifact)
+
+    def test_rejects_refused_false_and_reason_shapes(self, tmp_path):
+        """The emitter writes refused: true + a non-empty refused_reason or
+        NOTHING (absent, not false). Present-but-false, a missing/empty
+        reason, and a reason without the marker are all malformed -- reject,
+        never adapt."""
+        chem_path, artifact = self._artifact(tmp_path)
+        (row,) = [e for e in artifact["reactions"] if e.get("refused")]
+
+        bad = json.loads(json.dumps(artifact))
+        (brow,) = [e for e in bad["reactions"] if "refused" in e]
+        brow["refused"] = False
+        with pytest.raises(ValueError, match=r"refused"):
+            _build_refused(chem_path, bad)
+
+        bad = json.loads(json.dumps(artifact))
+        (brow,) = [e for e in bad["reactions"] if "refused" in e]
+        del brow["refused_reason"]
+        with pytest.raises(ValueError, match=r"refused_reason"):
+            _build_refused(chem_path, bad)
+
+        bad = json.loads(json.dumps(artifact))
+        for e in bad["reactions"]:
+            if "refused" in e:
+                del e["refused"]
+        # reason without marker (artifact still stamped 2.4 -- shape alone)
+        with pytest.raises(ValueError, match=r"refused_reason"):
+            _build_refused(chem_path, bad)
+
+    def test_rejects_unknown_refused_reason(self, tmp_path):
+        """The refused_reason vocabulary is CLOSED (format doc §12): exactly
+        'conduit-deferred' / 'qssa-invalid'. _restamp_and_extend reconstructs
+        the accumulating class FROM the reason, so an unknown string would
+        silently coerce to non-accumulating semantics -- reject at load,
+        naming the allowed vocabulary, before the coercion runs."""
+        chem_path, artifact = self._artifact(tmp_path)
+        (row,) = [e for e in artifact["reactions"] if e.get("refused")]
+        row["refused_reason"] = "bogus"
+        with pytest.raises(ValueError,
+                           match=r"conduit-deferred.*qssa-invalid"):
+            _build_refused(chem_path, artifact)
+
+    def test_refused_reason_bijection_restores_accumulating_class(
+            self, tmp_path):
+        """The emitter bijection round-trips: a valid 'qssa-invalid' reason
+        restores the accumulating stamp on restamp, 'conduit-deferred'
+        restores non-accumulating. (A 'bogus' reason never reaches this
+        coercion -- test_rejects_unknown_refused_reason pins the earlier
+        rejection.)"""
+        for reason, accumulating in (("qssa-invalid", True),
+                                     ("conduit-deferred", False)):
+            chem_path, artifact = self._artifact(tmp_path)
+            (row,) = [e for e in artifact["reactions"] if e.get("refused")]
+            row["refused_reason"] = reason
+            species, reactions = load_chem_yaml(chem_path)
+            _restamp_and_extend(artifact, species, reactions)
+            (rxn,) = [r for r in reactions
+                      if getattr(r, "polymer_refused", False)]
+            assert rxn.polymer_refused_accumulating is accumulating, (
+                f"reason {reason!r} must restore accumulating="
+                f"{accumulating}")
 
 
 class TestQssaNormativeRecipe:

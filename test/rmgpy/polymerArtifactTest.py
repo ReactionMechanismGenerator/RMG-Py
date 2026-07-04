@@ -1016,6 +1016,121 @@ class TestCompileReactionEntries:
         assert e["kinetics"] is None
 
 
+class TestRefusedRowSerialization:
+    """Schema 2.4 (refused-row sidecar contract): a reaction stamped
+    ``polymer_refused=True`` (item 18 stamp-but-keep) is zeroed by the
+    generating solver (polymer.pyx reaction_refused), so its sidecar row must
+    carry ``refused: true`` + ``refused_reason`` — otherwise a consumer
+    integrates moment flux the oracle fabricated nothing for (the live
+    RMG-vs-TA divergence this contract closes). The row STAYS listed:
+    consumers need it to zero the Cantera multiplier."""
+
+    def _refused_rxn(self, core, accumulating=False):
+        # The emitter-side refused shape: pool proxy reactant, gas products
+        # only (the chain radical the handshake dropped to gas), stamped
+        # UNRESOLVED + polymer_refused by Task 3 at generation time.
+        rxn = Reaction(reactants=[core[0], core[8]], products=[core[9]],
+                       kinetics=_arrhenius(A=(3.0, "m^3/(mol*s)")),
+                       reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.UNRESOLVED)
+        rxn.polymer_refused = True
+        rxn.polymer_refused_accumulating = accumulating
+        return rxn
+
+    def test_refused_row_carries_marker_and_census_reason(self):
+        core = _two_pool_core()
+        rxn = self._refused_rxn(core, accumulating=False)
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["A", "B"],
+            cantera_index_map={id(rxn): [3]})
+        assert len(entries) == 1  # stamp-but-keep: the row stays listed
+        e = entries[0]
+        assert e["refused"] is True
+        # the census reason available at stamp time (polymer.pyx:1529):
+        # eliminating radical -> conduit-deferred
+        assert e["refused_reason"] == "conduit-deferred"
+        # a refused row still runs the legacy emission (solver mirror)
+        assert e["archetype"] == "legacy_mu1/1"
+        assert e["unresolved"] is True
+
+    def test_refused_reason_tracks_accumulating_class(self):
+        core = _two_pool_core()
+        rxn = self._refused_rxn(core, accumulating=True)
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["A", "B"],
+            cantera_index_map={id(rxn): [3]})
+        assert entries[0]["refused_reason"] == "qssa-invalid"
+
+    def test_non_refused_rows_carry_no_refused_keys(self):
+        """Non-refused rows: NO new key — absent, not false (byte-identical
+        pin; TA-side loaders treat key PRESENCE as the 2.4 vocabulary)."""
+        core = _two_pool_core()
+        mig = Reaction(reactants=[core[0]], products=[core[4]],
+                       kinetics=_arrhenius(), reversible=False)
+        mig.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        legacy = Reaction(reactants=[core[8], core[0]],
+                          products=[core[9], core[0]],
+                          kinetics=_arrhenius(A=(3.0, "m^3/(mol*s)")),
+                          reversible=False)  # unstamped -> legacy/unresolved
+        entries = compile_polymer_reaction_entries(
+            [mig, legacy], core, configured_pool_labels=["A", "B"],
+            cantera_index_map={id(mig): [0], id(legacy): [1]})
+        assert len(entries) == 2
+        for e in entries:
+            assert "refused" not in e
+            assert "refused_reason" not in e
+
+    def test_refused_marker_requires_pool_mapped_row(self):
+        """The marker is legal ONLY on pool-mapped rows (loader guard both
+        sides): a refused reaction whose pool is not solver-configured emits
+        WITHOUT the marker (warn-loud), never a marker the loaders reject."""
+        core = _two_pool_core()
+        rxn = self._refused_rxn(core)
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["B"],  # A not configured
+            cantera_index_map={id(rxn): [3]})
+        assert len(entries) == 1
+        e = entries[0]
+        assert e["proxy_reactants"] == [] and e["proxy_products"] == []
+        assert "refused" not in e and "refused_reason" not in e
+
+    def test_refused_presence_stamps_schema_2_4(self, pe_pool):
+        """Presence-based stamp, the 2.1/2.2/2.3 precedent exactly: the
+        emitter stamps "2.4" exactly when at least one reactions[] row
+        carries the refused marker. Refused rows add SHAPE vocabulary with
+        consumption semantics, not new rate algebra, so recipe_revision is
+        untouched (STRICT-MINOR acceptance stops old consumers at the
+        envelope)."""
+        core = _two_pool_core()
+        rxn = self._refused_rxn(core)
+        artifact = build_polymer_moments_artifact(
+            [pe_pool], core_species=core, core_reactions=[rxn],
+            configured_pool_labels=["A", "B"],
+            condensed_species=core[:4],
+            cantera_index_map={id(rxn): [3]})
+        assert artifact["schema_version"] == "2.4"
+        assert "polymer_moments_format/2.4" in artifact["conventions"]["format_doc"]
+        assert artifact["conventions"]["recipe_revision"] == \
+            POLYMER_RATE_RECIPE_REVISION
+
+    def test_no_refused_keeps_legacy_stamps_byte_identical(self, pe_pool):
+        """No refused row anywhere -> the 2.0 stamp (and the whole artifact)
+        is byte-identical to the pre-2.4 emitter."""
+        core = _two_pool_core()
+        mig = Reaction(reactants=[core[0]], products=[core[4]],
+                       kinetics=_arrhenius(), reversible=False)
+        mig.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        artifact = build_polymer_moments_artifact(
+            [pe_pool], core_species=core, core_reactions=[mig],
+            configured_pool_labels=["A", "B"],
+            condensed_species=core[:4],
+            cantera_index_map={id(mig): [0]})
+        assert artifact["schema_version"] == "2.0"
+        assert "polymer_moments_format/2.0" in artifact["conventions"]["format_doc"]
+        for e in artifact["reactions"]:
+            assert "refused" not in e
+
+
 class TestArtifactBuilderAndRoundTrip:
     def _build(self, pe_pool, tmp_path):
         core = [
