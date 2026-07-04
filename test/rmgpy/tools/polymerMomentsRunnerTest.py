@@ -1940,3 +1940,161 @@ class TestExplicitDpArtifactLoader:
         artifact["conventions"]["recipe_revision"] = "2026-07-03-monomer-gas"
         with pytest.raises(ValueError, match="recipe_revision"):
             _build_explicit(explicit_dp_deck, artifact)
+
+
+def _s2_conduit_ve_deck(tmp_path):
+    """Stage-S2 conduit deck: the live PP tertiary H-abstraction row
+    (H + polypropylene -> H2 + polypropylene_mod) ROUTED by the real
+    generation machinery (per-product verdicts -> _handshake_structures ->
+    stamp_polymer_flux_archetype), then written out as chem.yaml +
+    polymer_pools.json in the proven _ve_deck idiom (plain proxy Species
+    stand-ins in core; pool objects in the artifact). Returns
+    (chem_path, art_path, monomer_mw, mw_h, mw_h2, eject_units)."""
+    from rmgpy.data.kinetics.family import _handshake_structures
+    from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+                               is_end_group_reaction,
+                               stamp_polymer_flux_archetype)
+
+    parent = Polymer(label="polypropylene", monomer="[CH2][CH](C)",
+                     end_groups=["[H]", "[H]"], cutoff=3,
+                     moments=[1.0, 40.0, 2000.0], initial_mass=0.0,
+                     k_scission=0.0, k_unzip=0.0)
+    h_spc = Species(label="H", molecule=[Molecule().from_smiles("[H]")])
+    h2_spc = Species(label="H2", molecule=[Molecule().from_smiles("[H][H]")])
+    routed = Reaction(reactants=[h_spc, parent],
+                      products=[h2_spc,
+                                Molecule().from_smiles("CCC[C](C)CC(C)C")],
+                      reversible=False)
+    polymer_reactants = [parent]
+    verdicts = compute_h_loss_feature_verdicts(
+        routed.reactants, routed.products, polymer_reactants)
+    _handshake_structures(routed.products, polymer_reactants,
+                          h_loss_verdicts=verdicts)
+    routed.is_end_group_reaction = is_end_group_reaction(routed.products)
+    stamp_polymer_flux_archetype(routed, routed.reactants, polymer_reactants)
+    daughter = routed.products[1]
+    assert isinstance(daughter, Polymer) and daughter.label == \
+        "polypropylene_mod", (
+        f"S2 routing must land the tertiary daughter in the feature pool, "
+        f"got {getattr(daughter, 'label', type(daughter))!r}")
+    assert routed.polymer_flux_archetype == int(
+        PolymerFluxArchetype.VOLATILE_EJECTION)
+    eject_units = float(routed.polymer_eject_units)
+
+    # deck stand-ins (same idiom as _ve_deck): proxy Species in core, pool
+    # objects (parent declared + routed born-at-zero daughter) in the artifact
+    n2 = _spc("N#N", "N2", index=1)
+    hatom = _spc("[H]", "H", index=2)
+    h2 = _spc("[H][H]", "H2", index=3)
+    pa = _spc("CCCC(C)CC(C)C", "polypropylene", index=4)
+    pb = Species(molecule=[daughter.get_proxy_species().molecule[0].copy(
+        deep=True)])
+    pb.label = daughter.label
+    pb.index = 5
+    rows = [NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, -745.375, 3.35532],
+                           Tmin=(tmin, "K"), Tmax=(tmax, "K"))
+            for tmin, tmax in ((200.0, 1000.0), (1000.0, 6000.0))]
+    pb.thermo = NASA(polynomials=rows, Tmin=(200.0, "K"), Tmax=(6000.0, "K"))
+    mus = ([_mu(f"polypropylene_mu{k}") for k in range(3)]
+           + [_mu(f"polypropylene_mod_mu{k}") for k in range(3)])
+    core = [n2, hatom, h2, pa, pb] + mus
+    pa.is_polymer_proxy = True
+    pb.is_polymer_proxy = True
+
+    ve_rxn = Reaction(
+        reactants=[hatom, pa], products=[h2, pb],
+        kinetics=Arrhenius(A=(1.0e3, "m^3/(mol*s)"), n=0.0,
+                           Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+        reversible=False)
+    ve_rxn.polymer_flux_archetype = routed.polymer_flux_archetype
+    ve_rxn.polymer_eject_units = eject_units
+
+    data, index_map = generate_cantera_data(core, [ve_rxn],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+    artifact = build_polymer_moments_artifact(
+        [parent, daughter], core_species=core, core_reactions=[ve_rxn],
+        configured_pool_labels=["polypropylene", "polypropylene_mod"],
+        condensed_species=[pa, pb] + mus,
+        cantera_index_map=index_map)
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    mw_h = hatom.molecule[0].get_molecular_weight() * 1000.0
+    mw_h2 = h2.molecule[0].get_molecular_weight() * 1000.0
+    return (chem_path, art_path, parent.monomer_mw_g_mol, mw_h, mw_h2,
+            eject_units)
+
+
+class TestS2ConduitVEMassInvariant:
+    """S2 pin 6: the ROUTED H-abstraction conduit row conserves mass at the
+    RHS level -- pool source debit + feature-pool credit + gas credit nets
+    to zero including the single transferred H -- through the real emitter +
+    reference-runner path (the db6f46e37 VE numeric-pin pattern)."""
+
+    def _build(self, tmp_path):
+        deck = _s2_conduit_ve_deck(tmp_path)
+        chem_path, art_path = deck[0], deck[1]
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        species, reactions = load_chem_yaml(chem_path)
+        rs, core, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0, "H(2)": 0.5},
+            mass_transfer_spec=[])
+        return deck, artifact, rs, core
+
+    def test_routed_row_emits_configured_cross_pool_ve(self, tmp_path):
+        """The routed row's sidecar shape: volatile_ejection/1, src the
+        parent pool, dst the (configured) feature pool, NOT unresolved,
+        signed atom-transfer eject_units = +MW(H)/monomer_MW; the feature
+        pool itself is spawned_empty at [0,0,0] with the parent monomer
+        MW."""
+        deck, artifact, _, _ = self._build(tmp_path)
+        _, _, monomer_mw, mw_h, _, eject_units = deck
+        assert eject_units == pytest.approx(mw_h / monomer_mw, rel=1e-9)
+        (row,) = artifact["reactions"]
+        assert row["archetype"] == "volatile_ejection/1"
+        assert row["src_pool"] == "polypropylene"
+        assert row["dst_pool"] == "polypropylene_mod"
+        assert row["unresolved"] is False
+        assert row["scaling"] == "mu1"
+        assert row["params"] == {"eject_units": pytest.approx(eject_units)}
+        assert "refused" not in row
+        pools = {p["label"]: p for p in artifact["pools"]}
+        mod = pools["polypropylene_mod"]
+        assert mod["moments"] == [0.0, 0.0, 0.0]
+        assert mod["moments_provenance"] == "spawned_empty"
+        assert mod["parent_pool"] == "polypropylene"
+        assert mod["monomer_mw_g_mol"] == pytest.approx(monomer_mw)
+
+    def test_rhs_mass_conservation_including_transferred_h(self, tmp_path):
+        """Numeric pin through the real solver residual: with a = MW(H)/
+        monomer_MW, per event the source pool loses a full length-biased
+        bundle, the feature pool gains the a-shifted bundle, and the gas
+        side nets +MW(H2) - MW(H) = +MW(H) -- total mass rate exactly
+        zero."""
+        deck, _, rs, core = self._build(tmp_path)
+        _, _, monomer_mw, mw_h, mw_h2, a = deck
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        i = {s.label: k for k, s in enumerate(core)}
+        ev = float(dn[i["H2(3)"]])
+        assert ev > 0.0, "the routed VE row must carry live flux"
+        assert dn[i["H(2)"]] == pytest.approx(-ev, rel=1e-12)
+        # length-biased bundle off mu = [1, 40, 2000]: b0=1, b1=mu2/mu1=50
+        b1 = 2000.0 / 40.0
+        assert dn[i["polypropylene_mu0"]] == pytest.approx(-ev, rel=1e-9)
+        assert dn[i["polypropylene_mu1"]] == pytest.approx(-ev * b1,
+                                                           rel=1e-9)
+        assert dn[i["polypropylene_mod_mu0"]] == pytest.approx(+ev, rel=1e-9)
+        assert dn[i["polypropylene_mod_mu1"]] == pytest.approx(
+            +ev * (b1 - a), rel=1e-9)
+        chain_mass_rate = monomer_mw * (dn[i["polypropylene_mu1"]]
+                                        + dn[i["polypropylene_mod_mu1"]])
+        gas_mass_rate = mw_h2 * dn[i["H2(3)"]] + mw_h * dn[i["H(2)"]]
+        assert chain_mass_rate == pytest.approx(-ev * mw_h, rel=1e-9)
+        assert gas_mass_rate == pytest.approx(+ev * mw_h, rel=1e-9)
+        assert chain_mass_rate + gas_mass_rate == pytest.approx(
+            0.0, abs=abs(chain_mass_rate) * 1e-9)

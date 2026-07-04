@@ -649,17 +649,20 @@ PS_1
 
     def test_create_reacted_copy_modification_from_baseline_proxy(self):
         """
-        For PS proxy, a single H-abstraction on the backbone may reduce intact-monomer matches
-        such that create_reacted_copy() classifies as scission. This test pins that behavior.
+        For PS proxy, a single H-abstraction on the backbone yields a
+        same-heavy-skeleton (DP-preserving) H-loss radical daughter. The
+        scission invariant (stage S2) forbids booking it as a scission
+        population -- a scission daughter must be strictly shorter than the
+        parent proxy -- so without the threaded H-loss conduit context the
+        product refuses (None) and falls to the refuse stamp, instead of
+        spawning a half-length _scission_tail/_scission_head pool.
+        (This test previously pinned the scission-spawn, which was the live
+        PP-run species-25 defect shape.)
         """
         p = self.polymer_1.copy()
         reacted_proxy = p.baseline_proxy.molecule[0].copy(deep=True)
         abstract_h_from_center_backbone(reacted_proxy)
-        new_p = p.create_reacted_copy(reacted_proxy)
-        assert new_p is not None
-        assert isinstance(new_p, Polymer)
-        assert new_p.feature_monomer is None
-        assert new_p.label.endswith("_scission_tail") or new_p.label.endswith("_scission_head")
+        assert p.create_reacted_copy(reacted_proxy) is None
 
     def test_create_reacted_copy_modification_baseline(self):
         """
@@ -6046,16 +6049,24 @@ class TestDp1FoldBackStaysGas:
             "parent pool"
         )
 
-    def test_handshake_live_pp_shape_propane_stays_gas_tail_spawns(self):
+    def test_handshake_live_pp_shape_propane_stays_gas_tail_routes(self):
         """Ratified red-first requirement 1 (live PP shape): H_Abstraction
         iPr + PP-proxy -> propane + tert-C9H19 daughter. Propane must NOT
-        fold back into polypropylene; the tert daughter still spawns the
-        scission-tail pool exactly as today."""
-        from rmgpy.polymer import has_polymer_gas_veto
+        fold back into polypropylene. Stage-S2 behavioral correction: the
+        tert daughter no longer spawns a scission-tail pool (that spawn was
+        the species-25 defect the scission invariant forbids) -- with the
+        live per-product verdict threaded it routes into the radical feature
+        pool instead."""
+        from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+                                   has_polymer_gas_veto)
+        ipr = Species(molecule=[Molecule(smiles='C[CH]C')], label='iPr')
         propane = Species(molecule=[Molecule(smiles='CCC')], label='propane')
         tert = Molecule(smiles='CCC[C](C)CC(C)C')  # tertiary-site daughter
         products = [propane, tert]
-        self._handshake(products, [self.pp])
+        verdicts = compute_h_loss_feature_verdicts(
+            [ipr, self.pp], products, [self.pp])
+        assert verdicts == [False, True]
+        self._handshake(products, [self.pp], h_loss_verdicts=verdicts)
         assert not isinstance(products[0], Polymer), (
             "propane folded back into the parent pool: the DP-1 co-product "
             "of proxy H-abstraction must remain a discrete gas species"
@@ -6064,17 +6075,19 @@ class TestDp1FoldBackStaysGas:
             "the refused DP-1 volatile must carry the durable gas veto like "
             "any other retained discrete volatile"
         )
-        # co-product spawn unchanged (fold/spawn as today for DP >= 2 shapes)
+        # the DP-preserving daughter routes to the feature pool (never a
+        # half-length scission population)
         assert isinstance(products[1], Polymer)
-        assert products[1].label.endswith('_scission_tail')
+        assert products[1].label == 'polypropylene_mod'
 
     def test_run2_tripwire_counterfactual_below_census_bound(self):
         """Ratified red-first requirement 2 (run-2 tripwire counterfactual):
         with propane kept gas, the H_Abstraction reaction's unpaired
         reference-state magnitude stays below the census bound (measured
-        0.326 decades); with the fold-back it is 11.6297 decades and trips
-        the refusal. Uses the solver's _unpaired_reference_decades exactly as
-        the diagnosis did (T = 1100 K, run-2 operating point)."""
+        ~0.005 decades under the S2 conduit routing, 0.326 under the old
+        scission-tail spawn); with the fold-back it is 11.6297 decades and
+        trips the refusal. Uses the solver's _unpaired_reference_decades
+        exactly as the diagnosis did (T = 1100 K, run-2 operating point)."""
         from rmgpy.solver.polymer import (
             _unpaired_reference_decades,
             REFERENCE_STATE_CENSUS_DECADES,
@@ -6083,9 +6096,15 @@ class TestDp1FoldBackStaysGas:
         proxy_mw = self.pp.baseline_proxy.molecule[0].get_molecular_weight()
         melt_r = [proxy_mw]  # the PP proxy reactant is the only melt reactant
         melt_p = []
-        for mol in (Molecule(smiles='CCC'),             # propane co-product
-                    Molecule(smiles='CCC[C](C)CC(C)C')):  # tert C9H19 daughter
-            new_p = self.pp.create_reacted_copy(mol)
+        # Stage-S2 behavioral correction: propane refuses under either flag
+        # (DP-1 stays gas); the tert C9H19 daughter routes through the
+        # conduit with the live threaded verdict (h_loss_feature=True) and
+        # its C9H19 feature proxy pairs the C9H20 melt reactant (measured
+        # U ~ 0.005 decades, vs 0.326 for the old scission-tail spawn and
+        # 11.63 for the fold-back).
+        for mol, flag in ((Molecule(smiles='CCC'), False),
+                          (Molecule(smiles='CCC[C](C)CC(C)C'), True)):
+            new_p = self.pp.create_reacted_copy(mol, h_loss_feature=flag)
             if new_p is not None:
                 melt_p.append(
                     new_p.get_proxy_species().molecule[0].get_molecular_weight())
@@ -6113,9 +6132,11 @@ class TestDp1FoldBackStaysGas:
         assert not r.get_proxy_species().molecule[0].is_isomorphic(
             self.pp.baseline_proxy.molecule[0]), (
             "DP-2 product must not fold back into the parent proxy")
-        # genuine radical H-loss daughter of the proxy still spawns as today
+        # Stage-S2 behavioral correction: the same-heavy-skeleton H-loss
+        # daughter no longer scission-spawns (the species-25 defect); without
+        # the conduit flag it refuses and falls to the refuse stamp.
         r2 = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'))
-        assert r2 is not None and r2.label.endswith('_scission_tail')
+        assert r2 is None
 
 
 class TestGasVetoScopingHLossDaughters:
@@ -6695,16 +6716,27 @@ class TestRadicalFeatureProducerPath:
             f"three H-environments must map to three distinct pool "
             f"fingerprints, got {fps}")
 
-    # --- pin (iv): existing handshake/chip/scission behavior untouched ----
+    # --- pin (iv): the eighth daughter obeys the S2 scission invariant ----
 
-    def test_eighth_daughter_scission_tail_unchanged(self):
-        """The eighth (center-tertiary) daughter spawns its scission-tail
-        pool exactly as today, context flag or not: the producer path is a
-        FALLBACK behind the existing wing logic, never a preemption."""
-        for flag in (False, True):
-            r = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'),
-                                            h_loss_feature=flag)
-            assert r is not None and r.label.endswith('_scission_tail')
+    def test_eighth_daughter_routes_or_refuses_never_scission_spawns(self):
+        """The eighth (center-tertiary) daughter is a same-heavy-skeleton
+        DP-preserving H-loss radical, so the scission invariant (stage S2)
+        forbids the _scission_tail spawn this test used to pin (the live
+        PP-run species-25 defect: same-length chain misbooked as a
+        half-length population with a malformed +1-cation C15H31 proxy).
+        Route-first: with the threaded conduit context it lands in the SAME
+        feature pool as its positional tertiary twins; without it, it
+        refuses (None) and falls to the refuse stamp."""
+        assert self.pp.create_reacted_copy(
+            Molecule(smiles='CCC[C](C)CC(C)C')) is None
+        d = self.pp.create_reacted_copy(Molecule(smiles='CCC[C](C)CC(C)C'),
+                                        h_loss_feature=True)
+        assert isinstance(d, Polymer)
+        assert d.label == 'polypropylene_mod'
+        twin = self.pp.create_reacted_copy(
+            Molecule(smiles=self.SEVEN[self.GROUP_TERTIARY[0]]),
+            h_loss_feature=True)
+        assert d.fingerprint == twin.fingerprint
 
 
 # ---------------------------------------------------------------------------
@@ -6717,13 +6749,13 @@ class TestRadicalFeatureProducerPath:
 # PARENT's moments (mass fabrication: the parent keeps its moments and the
 # daughter re-declares the same mass).
 #
-# Live-path status (honest): pre-S2 no live handshake call site threads
-# h_loss_feature, so no _mod daughter reaches sidecar serialization in a
-# real run yet. The defect is proven at the object/artifact level on the
-# S1a producer path -- the same constructor shape the wing-branch _mod site
-# in _create_reacted_copy_wing_logic shares (that branch is additionally
-# latent: the raw wing matcher diverges for realistic shapes and routes
-# them to scission/None instead, probed 2026-07-04).
+# Live-path status: as of stage S2 the make_new_reaction handshake computes
+# per-product H-loss verdicts (compute_h_loss_feature_verdicts) and threads
+# h_loss_feature through _handshake_structures, so routed _mod daughters DO
+# reach sidecar serialization in a real run (see
+# TestFeaturePoolConduitRouting). The defect was originally proven at the
+# object/artifact level on the S1a producer path -- the same constructor
+# shape the wing-branch _mod site in _create_reacted_copy_wing_logic shares.
 # ---------------------------------------------------------------------------
 
 class TestModDaughterBornAtZero:
@@ -6787,3 +6819,226 @@ class TestModDaughterBornAtZero:
         parent_entry = by_label['polypropylene']
         assert parent_entry['moments_provenance'] == 'input_declared'
         assert np.allclose(parent_entry['moments'], self.pp.moments)
+
+# ---------------------------------------------------------------------------
+# Feature-pool conduit routing, stage S2 (feature-pool conduit arc,
+# adversarially ratified): the live handshake computes a per-product H-loss
+# verdict WHERE REACTANTS AND PRODUCTS ARE BOTH VISIBLE (the
+# make_new_reaction call site) and threads it through _handshake_structures
+# into create_reacted_copy(h_loss_feature=...). Routed rows emit as
+# cross-pool VOLATILE_EJECTION (H + parent_pool -> H2 + feature pool,
+# a = +MW(H)/monomer_MW). The wing scission branches additionally enforce
+# the scission invariant: a scission daughter is a PIECE of the cut chain,
+# so it must be strictly shorter (fewer heavy atoms) than the parent proxy
+# -- a same-heavy-skeleton H-loss radical daughter must never spawn
+# _scission_tail/_scission_head, flag or no flag (the PP-run species-25
+# defect: a DP-preserving chain misbooked as a half-length population with
+# a malformed +1-cation C15H31 proxy).
+# ---------------------------------------------------------------------------
+
+class TestFeaturePoolConduitRouting:
+    """S2 pins. The live PP run-2 defect shape: proxy CCCC(C)CC(C)C + H ->
+    CCC[C](C)CC(C)C + H2 spawned 'polypropylene_scission_tail' (Mn/2, Mw/2,
+    malformed C15H31 cation proxy) instead of routing the DP-preserving
+    daughter into the radical feature pool."""
+
+    TERTIARY = 'CCC[C](C)CC(C)C'  # the live center-tertiary C9H19 daughter
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                          end_groups=['[H]', '[H]'], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+        self.ps = Polymer(label='PS', monomer='[CH2][CH](c1ccccc1)',
+                          end_groups=['[CH3]', '[H]'], cutoff=3,
+                          Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+
+    @staticmethod
+    def _benzylic_h_loss_daughter(ps):
+        """Same-heavy-skeleton H-loss daughter of the PS proxy with the
+        radical on a backbone CH alpha to a phenyl ring: resonance-stabilized
+        (accumulating, NOT QSSA-eliminating)."""
+        mol = ps.baseline_proxy.molecule[0].copy(deep=True)
+
+        def in_ring(atom):
+            return any(b.is_benzene() for b in atom.bonds.values())
+
+        target = next(
+            a for a in mol.atoms
+            if a.is_carbon() and a.radical_electrons == 0 and not in_ring(a)
+            and sum(1 for n in a.bonds if n.is_hydrogen()) == 1
+            and any((not n.is_hydrogen()) and in_ring(n) for n in a.bonds))
+        h = next(n for n in target.bonds if n.is_hydrogen())
+        mol.remove_atom(h)
+        target.increment_radical()
+        mol.update()
+        return mol
+
+    def _routed_reaction(self):
+        """Drive the REAL generation machinery the make_new_reaction
+        handshake runs: per-product verdicts (reactants AND products
+        visible) -> _handshake_structures -> archetype stamping."""
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+                                   is_end_group_reaction,
+                                   stamp_polymer_flux_archetype)
+        from rmgpy.reaction import Reaction
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        rxn = Reaction(reactants=[h, self.pp],
+                       products=[h2, Molecule(smiles=self.TERTIARY)],
+                       reversible=False)
+        polymer_reactants = [self.pp]
+        verdicts = compute_h_loss_feature_verdicts(
+            rxn.reactants, rxn.products, polymer_reactants)
+        _handshake_structures(rxn.products, polymer_reactants,
+                              h_loss_verdicts=verdicts)
+        rxn.is_end_group_reaction = is_end_group_reaction(rxn.products)
+        stamp_polymer_flux_archetype(rxn, rxn.reactants, polymer_reactants)
+        return rxn, verdicts
+
+    # --- pin 1: the live defect row becomes a feature-pool VE row ---------
+
+    def test_live_tertiary_daughter_routes_to_feature_pool_ve_row(self):
+        rxn, verdicts = self._routed_reaction()
+        assert verdicts == [False, True]
+        d = rxn.products[1]
+        assert isinstance(d, Polymer)
+        assert d.label == 'polypropylene_mod', (
+            f"live tertiary daughter must route into the radical feature "
+            f"pool, not spawn a scission population; got {d.label!r}")
+        assert rxn.polymer_flux_archetype == int(
+            polymer.PolymerFluxArchetype.VOLATILE_EJECTION)
+        mw_h = Molecule(smiles='[H]').get_molecular_weight() * 1000.0
+        assert rxn.polymer_eject_units == pytest.approx(
+            mw_h / self.pp.monomer_mw_g_mol, rel=1e-6), (
+            "signed eject_units convention: chain sheds exactly one H per "
+            "event, a = +MW(H)/monomer_MW")
+        assert rxn.polymer_eject_units > 0.0
+        assert rxn.is_end_group_reaction is False  # interior: mu1 scaling
+        assert getattr(rxn, 'polymer_refused', False) is False
+
+    # --- pin 2: no malformed zero-radical/charged proxy can be emitted ----
+
+    def test_routed_feature_pool_proxy_is_valid_neutral_radical(self):
+        rxn, _ = self._routed_reaction()
+        pm = rxn.products[1].get_proxy_species().molecule[0]
+        assert pm.get_net_charge() == 0, (
+            "the spawned pool proxy must be neutral (live defect: C15H31 "
+            "+1-cation proxy on the misbooked scission tail)")
+        assert pm.get_radical_count() == 1
+        assert pm.get_formula() == 'C9H19'
+
+    # --- pin 3: same-length H-loss daughter with the flag OFF refuses -----
+
+    def test_h_loss_daughter_never_scission_spawns_without_flag(self):
+        r = self.pp.create_reacted_copy(Molecule(smiles=self.TERTIARY))
+        assert r is None, (
+            f"scission invariant: a DP-preserving (same-heavy-skeleton) "
+            f"H-loss daughter must refuse with the conduit flag off, never "
+            f"spawn a scission population; got {getattr(r, 'label', r)!r}")
+        ps_daughter = self._benzylic_h_loss_daughter(self.ps)
+        r = self.ps.create_reacted_copy(ps_daughter)
+        assert r is None, (
+            f"got {getattr(r, 'label', r)!r} for the PS benzylic daughter")
+
+    # --- pin 4: the verdict is product-specific and evidence-gated --------
+
+    def test_verdict_requires_abstraction_co_product_evidence(self):
+        from rmgpy.polymer import compute_h_loss_feature_verdicts
+        daughter = Molecule(smiles=self.TERTIARY)
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        ch3 = Species(label='CH3', molecule=[Molecule(smiles='[CH3]')])
+        ch4 = Species(label='CH4', molecule=[Molecule(smiles='C')])
+        # H2 / RH / H-atom co-products all carry the abstracted H -> route
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp], [h2, daughter], [self.pp]) == [False, True]
+        assert compute_h_loss_feature_verdicts(
+            [ch3, self.pp], [ch4, daughter], [self.pp]) == [False, True]
+        assert compute_h_loss_feature_verdicts(
+            [self.pp], [daughter, Molecule(smiles='[H]')],
+            [self.pp]) == [True, False]
+        # structurally identical daughter WITHOUT the co-product evidence
+        # (the nonpolymer side never gained the missing H) -> no route
+        assert compute_h_loss_feature_verdicts(
+            [ch3, self.pp], [ch3, daughter], [self.pp]) == [False, False]
+        assert compute_h_loss_feature_verdicts(
+            [self.pp], [daughter], [self.pp]) == [False]
+        # ambiguous polymer source (two pool reactants) -> no route
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp, self.ps], [h2, daughter],
+            [self.pp, self.ps]) == [False, False]
+
+    # --- pin 5: eliminating routes; accumulating stays refused ------------
+
+    def test_accumulating_h_loss_stays_refused_qssa_invalid(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        from rmgpy.polymer import (compile_polymer_reaction_entries,
+                                   compute_h_loss_feature_verdicts,
+                                   is_end_group_reaction,
+                                   stamp_polymer_flux_archetype)
+        from rmgpy.reaction import Reaction
+        polymer._flux_archetype_warned.clear()
+        daughter = self._benzylic_h_loss_daughter(self.ps)
+        assert polymer.is_qssa_eliminating_radical(daughter) is False
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        d_spc = Species(label='PSrad', molecule=[daughter])
+        rxn = Reaction(reactants=[h, self.ps], products=[h2, d_spc],
+                       reversible=False)
+        verdicts = compute_h_loss_feature_verdicts(
+            rxn.reactants, rxn.products, [self.ps])
+        assert verdicts == [False, False], (
+            "accumulating (resonance-stabilized) H-loss daughter must not "
+            "route through the conduit")
+        _handshake_structures(rxn.products, [self.ps],
+                              h_loss_verdicts=verdicts)
+        assert not isinstance(rxn.products[1], Polymer)
+        rxn.is_end_group_reaction = is_end_group_reaction(rxn.products)
+        stamp_polymer_flux_archetype(rxn, rxn.reactants, [self.ps])
+        assert rxn.polymer_flux_archetype == int(
+            polymer.PolymerFluxArchetype.UNRESOLVED)
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is True
+        (row,) = compile_polymer_reaction_entries(
+            [rxn], [h, h2, d_spc, self.ps], ['PS'])
+        assert row['refused'] is True
+        assert row['refused_reason'] == 'qssa-invalid'
+
+    # --- pin 7: feature pool born zero, parent monomer MW, sidecar --------
+
+    def test_routed_feature_pool_born_zero_with_parent_monomer_mw(self):
+        rxn, _ = self._routed_reaction()
+        d = rxn.products[1]
+        assert np.allclose(d.moments, 0.0)
+        assert d.initial_mass_g == 0.0
+        assert d.monomer_mw_g_mol == pytest.approx(self.pp.monomer_mw_g_mol)
+        assert d.monomer_mw_g_mol > 0
+        assert d.parent_pool_label == 'polypropylene'
+        payload = polymer.build_polymer_moments_artifact([self.pp, d])
+        entry = {p['label']: p for p in payload['pools']}['polypropylene_mod']
+        assert entry['moments'] == [0.0, 0.0, 0.0]
+        assert entry['moments_provenance'] == 'spawned_empty'
+        assert entry['parent_pool'] == 'polypropylene'
+        assert entry['monomer_mw_g_mol'] == pytest.approx(
+            self.pp.monomer_mw_g_mol)
+
+    # --- pin 8: DP<=1 gas gate unchanged (volatiles stay gas) -------------
+
+    def test_dp1_gas_gate_unchanged_volatiles_stay_gas(self):
+        from rmgpy.polymer import compute_h_loss_feature_verdicts
+        propane = Molecule(smiles='CCC')  # the PP pool's DP-1 capped chain
+        ipr = Molecule(smiles='C[CH]C')   # DP-1 H-loss radical
+        for vol in (propane, ipr):
+            for flag in (False, True):
+                assert self.pp.create_reacted_copy(
+                    vol.copy(deep=True), h_loss_feature=flag) is None
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp], [h2, propane.copy(deep=True)],
+            [self.pp]) == [False, False]
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp], [h2, ipr.copy(deep=True)],
+            [self.pp]) == [False, False]

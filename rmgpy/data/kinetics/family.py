@@ -4934,7 +4934,7 @@ def _h_loss_daughter_veto_exempt(mol, polymer_reactants):
     return False
 
 
-def _handshake_structures(structure_list, polymer_reactants):
+def _handshake_structures(structure_list, polymer_reactants, h_loss_verdicts=None):
     """
     Helper to scan a list of Molecules or Species (reactants or products) and
     convert them to Polymer objects if they match an input polymer structure.
@@ -4943,6 +4943,16 @@ def _handshake_structures(structure_list, polymer_reactants):
     corresponding Polymer returned by create_reacted_copy().
     Returns True iff at least one entry was replaced by a Polymer (the list is
     still mutated in place regardless of the return value).
+
+    ``h_loss_verdicts`` (stage S2, feature-pool conduit arc) is an optional
+    list of bools parallel to ``structure_list`` -- the per-product H-loss
+    conduit verdicts computed by
+    :func:`rmgpy.polymer.compute_h_loss_feature_verdicts` at the
+    ``make_new_reaction`` call site, where resolved reactants and raw
+    products are both visible. A True verdict threads
+    ``h_loss_feature=True`` into ``create_reacted_copy`` so the
+    radical-feature producer path can route the daughter into its
+    ``{label}_mod`` feature pool. ``None`` (legacy callers) means all-False.
     """
     from rmgpy.polymer import clear_polymer_proxy, set_polymer_gas_veto
     replaced = False
@@ -4955,9 +4965,12 @@ def _handshake_structures(structure_list, polymer_reactants):
             mol = item.molecule[0]
         else:
             continue
+        h_loss_feature = bool(h_loss_verdicts[i]) if (
+            h_loss_verdicts is not None and i < len(h_loss_verdicts)) else False
         for polymer_obj in polymer_reactants:
             try:
-                new_polymer = polymer_obj.create_reacted_copy(mol)
+                new_polymer = polymer_obj.create_reacted_copy(
+                    mol, h_loss_feature=h_loss_feature)
                 if new_polymer:
                     structure_list[i] = new_polymer
                     replaced = True

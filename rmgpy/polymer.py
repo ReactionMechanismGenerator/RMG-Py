@@ -952,13 +952,15 @@ class Polymer(Species):
                 path, stage S1a of the feature-pool conduit arc). The CALLER
                 asserts, from reaction-level knowledge, that the reaction
                 removed exactly ONE H atom from the polymer reactant's proxy
-                (the H-abstraction shape). Only then may the fallback
+                (the H-abstraction shape). Only then may the route-first
                 producer path materialize a ``{label}_mod`` RADICAL FEATURE
                 daughter whose feature_monomer carries the mid-chain radical
                 (see :meth:`_create_h_loss_feature_copy`). The flag is never
                 inferred from the product's structure alone; the live
-                handshake wiring that threads it is stage S2 -- no live call
-                site passes it yet, so default behavior is byte-identical.
+                handshake wiring (stage S2) computes the per-product verdict
+                where reactants AND products are both visible
+                (:func:`compute_h_loss_feature_verdicts`, threaded through
+                ``_handshake_structures`` from ``make_new_reaction``).
 
         Raises:
             PolymerCrosslinkError: if the product is a crosslink / chain-coupling
@@ -1040,14 +1042,18 @@ class Polymer(Species):
         """
         Creates a new Polymer species from a reacted proxy fragment.
         Handles both modification (intact chain) and scission (broken chain)
-        via the wing-matching logic; when that logic refuses the fragment AND
-        the caller threaded the H-loss handshake context (``h_loss_feature``),
-        falls back to the radical-feature producer path
-        (:meth:`_create_h_loss_feature_copy`, stage S1a). Fallback ordering is
-        deliberate: shapes the wing logic already handles (e.g. the
-        center-tertiary PP daughter that spawns a scission-tail pool) keep
-        their behavior byte-identical; only the previously-refused
-        (ValueError -> None -> gas-leak) H-abstraction rows gain a route.
+        via the wing-matching logic. ROUTE-FIRST ordering (stage S2,
+        adjudicated after the S1a fallback ordering proved a design P1 in the
+        live PP run): when the caller threaded the H-loss handshake context
+        (``h_loss_feature``), the radical-feature producer path
+        (:meth:`_create_h_loss_feature_copy`, stage S1a) runs BEFORE the wing
+        logic, so the scission branches never see a DP-preserving H-loss
+        daughter (live defect: the center-tertiary PP daughter spawned
+        ``polypropylene_scission_tail`` -- a same-length chain misbooked as a
+        half-length population with a malformed +1-cation C15H31 proxy). The
+        wing logic independently enforces the scission invariant (a scission
+        daughter must be strictly shorter than the parent proxy), so a lying
+        or absent flag cannot re-open the scission-spawn hole.
 
         Args:
             reacted_proxy (Molecule): A single product fragment from the reaction.
@@ -1058,10 +1064,11 @@ class Polymer(Species):
             Optional['Polymer']: A new Polymer species with updated feature or end-groups.
                                  Returns None if for an invalid/unsupported polymer fragment.
         """
-        new_poly = self._create_reacted_copy_wing_logic(reacted_proxy)
-        if new_poly is None and h_loss_feature:
+        if h_loss_feature:
             new_poly = self._create_h_loss_feature_copy(reacted_proxy)
-        return new_poly
+            if new_poly is not None:
+                return new_poly
+        return self._create_reacted_copy_wing_logic(reacted_proxy)
 
     def _create_reacted_copy_wing_logic(self, reacted_proxy: Molecule) -> Optional['Polymer']:
         """
@@ -1175,6 +1182,28 @@ class Polymer(Species):
                 return None
             return self._born_at_zero_mod_daughter(new_feature_graph,
                                                    source="feature_mod")
+
+        if head_atoms or tail_atoms:
+            # Scission invariant (stage S2, feature-pool conduit arc): a
+            # scission head/tail daughter is a PIECE of the cut chain, so it
+            # must be strictly shorter (fewer heavy atoms) than the parent
+            # proxy. A same-heavy-skeleton H-loss radical daughter reaches
+            # here with the full proxy heavy count (its internal radical
+            # coincides with the *2 cut atom, so _ensure_open_site adds
+            # nothing) and used to spawn a DP-preserving chain misbooked as a
+            # brand-new half-length population (Mn/2, Mw/2) with a malformed
+            # +1-cation proxy -- the live PP-run species-25 defect. Refuse
+            # regardless of the h_loss_feature flag: routing is the producer
+            # path's job (route-first in _create_reacted_copy_logic), and a
+            # non-routed same-length daughter must fall to the refuse stamp,
+            # never to a scission spawn.
+            proxy_heavy = sum(
+                1 for a in self.baseline_proxy.molecule[0].atoms
+                if not a.is_hydrogen())
+            product_heavy = sum(
+                1 for a in product.atoms if not a.is_hydrogen())
+            if product_heavy >= proxy_heavy:
+                return None
 
         if head_atoms:
             try:
@@ -5257,6 +5286,100 @@ def is_h_loss_radical_daughter(molecule: Molecule, proxy_element_counts) -> bool
         if p_heavy == heavy and pcomp.get('H', 0) - n_h == n_rad:
             return True
     return False
+
+
+def compute_h_loss_feature_verdicts(reactants, products, polymer_reactants):
+    """Per-product H-loss conduit verdicts (stage S2, feature-pool conduit
+    arc, adjudicated design): a list of bools parallel to ``products``,
+    ``True`` iff that product may route through the radical-feature producer
+    path (``create_reacted_copy(..., h_loss_feature=True)``).
+
+    Computed at the ONE place where resolved reactants and raw products are
+    both visible (the ``make_new_reaction`` handshake call site in
+    rmgpy/rmg/model.py) -- NEVER inferred inside :class:`Polymer` from a
+    single molecule. A product's verdict is True iff ALL of:
+
+    * exactly ONE polymer reactant source (``len(polymer_reactants) == 1``);
+    * the product is a same-heavy-skeleton SINGLE-H-loss radical daughter of
+      that source's reacting proxy (:func:`is_h_loss_radical_daughter` with
+      radical count exactly 1);
+    * abstraction co-product EVIDENCE: the non-polymer side of the reaction
+      (all non-polymer participants except this daughter) nets a gain of
+      exactly ONE hydrogen and no heavy atoms -- the H atom / H2 / RH
+      co-product actually carries the abstracted H, not just a formula
+      coincidence. Fails closed if any non-polymer participant cannot be
+      weighed;
+    * the daughter radical is QSSA-eliminating
+      (:func:`is_qssa_eliminating_radical`); accumulating
+      (resonance-stabilized) daughters stay refused and pick up the
+      ``qssa-invalid`` refuse stamp downstream.
+    """
+    verdicts = [False] * len(products)
+    if len(polymer_reactants) != 1:
+        return verdicts
+    proxy_mols = getattr(polymer_reactants[0], 'molecule', None) or []
+    if not proxy_mols or proxy_mols[0] is None:
+        return verdicts
+    try:
+        proxy_comp = proxy_mols[0].get_element_count()
+    except Exception:
+        return verdicts
+
+    def _participant_mol(item):
+        """Molecule of a non-polymer participant; None for Polymers (pool
+        chains do not count) and a ValueError for unweighable non-polymers
+        (fail closed)."""
+        if isinstance(item, Polymer) or getattr(item, 'is_polymer', False):
+            return None
+        if isinstance(item, Molecule):
+            return item
+        mols = getattr(item, 'molecule', None)
+        if mols and mols[0] is not None:
+            return mols[0]
+        raise ValueError("unweighable non-polymer participant")
+
+    for i, item in enumerate(products):
+        try:
+            mol = _participant_mol(item)
+        except ValueError:
+            continue
+        if mol is None:
+            continue
+        try:
+            if mol.get_radical_count() != 1:
+                continue
+        except Exception:
+            continue
+        if not is_h_loss_radical_daughter(mol, [proxy_comp]):
+            continue
+        # Abstraction co-product evidence: net element delta of the
+        # NON-POLYMER side excluding this daughter must be exactly +1 H.
+        delta: Dict[str, int] = {}
+        try:
+            for j, other in enumerate(products):
+                if j == i:
+                    continue
+                omol = _participant_mol(other)
+                if omol is None:
+                    continue
+                for el, n in omol.get_element_count().items():
+                    delta[el] = delta.get(el, 0) + n
+            for r in reactants:
+                rmol = _participant_mol(r)
+                if rmol is None:
+                    continue
+                for el, n in rmol.get_element_count().items():
+                    delta[el] = delta.get(el, 0) - n
+        except Exception:
+            continue
+        if any(n != 0 for el, n in delta.items() if el != 'H'):
+            continue
+        if delta.get('H', 0) != 1:
+            continue
+        if not is_qssa_eliminating_radical(mol):
+            continue
+        verdicts[i] = True
+    return verdicts
 
 
 def has_polymer_gas_veto(obj) -> bool:

@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, is_end_group_reaction, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, compute_h_loss_feature_verdicts, is_end_group_reaction, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -675,8 +675,15 @@ class CoreEdgeReactionModel:
             polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
             if polymer_reactants:
                 real_products_snapshot = [p.copy(deep=True) for p in forward.products]
+                # Per-product H-loss conduit verdicts (stage S2): computed
+                # HERE, the one place where resolved reactants and raw
+                # products are both visible, then threaded through the
+                # handshake into create_reacted_copy(h_loss_feature=...).
+                h_loss_verdicts = compute_h_loss_feature_verdicts(
+                    reactants, forward.products, polymer_reactants)
                 try:
-                    relabeled = _handshake_structures(forward.products, polymer_reactants)
+                    relabeled = _handshake_structures(forward.products, polymer_reactants,
+                                                      h_loss_verdicts=h_loss_verdicts)
                 except PolymerCrosslinkError as e:
                     # Chain-chain coupling is not representable in the method-of-
                     # moments model; discard the reaction rather than leak the
@@ -731,7 +738,11 @@ class CoreEdgeReactionModel:
                 polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
                 if polymer_reactants:
                     real_products_snapshot = [p.copy(deep=True) for p in forward.products]
-                    relabeled = _handshake_structures(forward.products, polymer_reactants)
+                    # Same S2 verdict computation as the is_forward branch.
+                    h_loss_verdicts = compute_h_loss_feature_verdicts(
+                        reactants, forward.products, polymer_reactants)
+                    relabeled = _handshake_structures(forward.products, polymer_reactants,
+                                                      h_loss_verdicts=h_loss_verdicts)
                     forward.is_end_group_reaction = is_end_group_reaction(forward.products)
                     # Same surgery + stamping as the is_forward branch.
                     stamp_polymer_flux_archetype(forward, reactants, polymer_reactants)
