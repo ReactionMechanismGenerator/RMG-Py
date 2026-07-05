@@ -1985,3 +1985,243 @@ class TestSpawnedPoolConfiguredSurface:
         entry = next(p for p in payload["pools"]
                      if p["label"] == daughter.label)
         assert entry["moments_provenance"] == "spawned_empty"
+
+
+# ---------------------------------------------------------------------------
+# Radical-homolysis initiation sidecar block (Stage 2, adjudicated rounds
+# 66/67): schema 2.6 = 2.5 + the pool-level ``homolysis_initiation`` block.
+# Presence-gated exactly like 2.5 (no homolysis pool anywhere -> artifacts
+# stay byte-identical at their older stamps), BESIDE 2.5 (the spawned-pool
+# closure + condensed closure keep their exact 2.5 semantics), with the
+# daughter fields named for the open-*1/open-*2 POSITIONAL contract (round
+# 67 ruling (a)) and a kernel field naming the solver kernel (ruling (c),
+# machine-checkable supersession).
+# ---------------------------------------------------------------------------
+
+
+def _khom_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
+    return dict(A=A, n=n, Ea=Ea)
+
+
+class TestHomolysisInitiationSidecar:
+    """Emitter side of the schema-2.6 homolysis_initiation contract."""
+
+    @staticmethod
+    def _pp_pool(**kw):
+        return Polymer(label='PP', monomer='[CH2][CH](C)',
+                       end_groups=['[H]', '[H]'], cutoff=3,
+                       moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                       k_homolysis=_khom_triplet(), **kw)
+
+    def _setup(self):
+        """Parent + both end-radical daughters through the REAL Stage-1
+        producer (generate_end_radical_daughters), plus a core carrying the
+        three pools' proxies and mu-dummies (the live registration shape:
+        daughters are eagerly solver-CONFIGURED -- polymer.pyx
+        _flatten_homolysis_state hard-errors otherwise)."""
+        pp = self._pp_pool()
+        prim, sec = pp.generate_end_radical_daughters()
+        core = [_spc("CCC(C)CC(C)C", "PP", index=2)]
+        for base in ("PP", prim.label, sec.label):
+            core += [_mu_dummy(f"{base}_mu{k}") for k in range(3)]
+        core[0].is_polymer_proxy = True
+        return pp, prim, sec, core
+
+    def _payload(self, pp, prim, sec, core, registry=None, condensed=None):
+        return build_polymer_moments_artifact(
+            registry if registry is not None else [pp, prim, sec],
+            core_species=core,
+            configured_pool_labels=["PP", prim.label, sec.label],
+            condensed_species=condensed if condensed is not None else core,
+        )
+
+    def test_homolysis_pool_emits_block_and_2_6_stamp(self):
+        """RED pin: the kernel-enabled pool's sidecar entry carries the full
+        homolysis_initiation block (structured kinetics with explicit units,
+        open-site daughter fields, kernel, block recipe_revision + pinned
+        recipe) and the artifact stamps schema 2.6."""
+        pp, prim, sec, core = self._setup()
+        payload = self._payload(pp, prim, sec, core)
+        entry = next(p for p in payload["pools"] if p["label"] == "PP")
+
+        block = entry.get("homolysis_initiation")
+        assert isinstance(block, dict), (
+            "kernel-enabled pool must carry the pool-level "
+            "homolysis_initiation block")
+        assert block["enabled"] is True
+        assert block["kinetics"] == {
+            "A": 1.0e13, "n": 0.5, "Ea": 1.2e5,
+            "units": {"A": "s^-1", "Ea": "J/mol"},
+        }
+        # Round-67 ruling (a): field names are POSITIONAL (open-*1/open-*2
+        # stitch termini), never primary/secondary radical-character claims.
+        assert block["open_site_1_radical_pool"] == "PP_rad_primary_end"
+        assert block["open_site_2_radical_pool"] == "PP_rad_secondary_end"
+        # Ruling (c): the block names the solver kernel (machine-checkable
+        # supersession contract).
+        assert block["kernel"] == "radical_homolysis_initiation/1"
+        assert block["recipe_revision"] == "2026-07-05-radical-homolysis"
+        # Machine-pinned moment law in the STABLE product forms actually
+        # implemented (round-67 P2; polymer.pyx homolysis kernel).
+        recipe = block["recipe"]
+        assert isinstance(recipe, dict) and recipe
+        joined = " ".join(str(v) for v in recipe.values())
+        for needle in ("max(mu1 - mu0, 0)", "k*(mu2 - mu1)",
+                       "k*(mu3 - mu2)", "k*(2*mu3 - 3*mu2 + mu1)/6",
+                       "k*(mu1 - mu3)/3"):
+            assert needle in joined, (
+                f"recipe must pin the stable-form law term {needle!r}")
+
+        # Daughters land in pools[] and are classified + condensed.
+        labels = [p["label"] for p in payload["pools"]]
+        assert prim.label in labels and sec.label in labels
+        conv = payload["conventions"]
+        for lbl in (prim.label, sec.label):
+            assert (lbl in conv["configured_pools"]
+                    or lbl in conv.get("spawned_pools", [])), (
+                f"daughter {lbl!r} must be classified in the "
+                f"configured/spawned closure")
+            d_entry = next(p for p in payload["pools"] if p["label"] == lbl)
+            assert d_entry["phase_species"], (
+                f"daughter {lbl!r} must carry phase_species")
+            for member in d_entry["phase_species"]:
+                assert member in conv["condensed_species"], (
+                    f"daughter member {member!r} missing from the "
+                    f"condensed closure")
+            assert d_entry["spawn_event_metadata"].get("source") == \
+                "k_homolysis_end_radical"
+            assert d_entry["parent_pool"] == "PP"
+        assert payload["schema_version"] == "2.6"
+        # Block-local revision only: artifact-level recipe_revision is
+        # untouched (the 2.4/2.5 precedent for new-vocabulary stamps).
+        assert conv["recipe_revision"] == POLYMER_RATE_RECIPE_REVISION
+
+    def test_2_6_sits_beside_2_5_spawned_closure(self):
+        """RED pin: 2.6 must NOT subsume 2.5 -- an artifact carrying BOTH a
+        homolysis pool and a runtime-spawned feature pool keeps the exact
+        2.5 spawned_pools + condensed-closure emission alongside the 2.6
+        stamp."""
+        pp, prim, sec, core = self._setup()
+        mod = pp.create_reacted_copy(
+            Molecule(smiles='CCC[C](C)CC(C)C'), h_loss_feature=True)
+        assert mod is not None
+        core = core + [
+            _spc('CCC[C](C)CC(C)C', mod.label, index=9),
+            _mu_dummy(f"{mod.label}_mu0"), _mu_dummy(f"{mod.label}_mu1"),
+            _mu_dummy(f"{mod.label}_mu2"),
+        ]
+        core[-4].is_polymer_proxy = True
+        payload = build_polymer_moments_artifact(
+            [pp, prim, sec, mod],
+            core_species=core,
+            configured_pool_labels=["PP", prim.label, sec.label],
+            condensed_species=core[:10],  # engine mask: configured pools only
+        )
+        conv = payload["conventions"]
+        # 2.5 closure unchanged beside the block: the _mod pool is the
+        # configured set's complement, disjoint, and its members join the
+        # condensed closure.
+        assert conv.get("spawned_pools") == [mod.label]
+        assert set(conv["spawned_pools"]).isdisjoint(conv["configured_pools"])
+        for lbl in (f"{mod.label}(9)", f"{mod.label}_mu0",
+                    f"{mod.label}_mu1", f"{mod.label}_mu2"):
+            assert lbl in conv["condensed_species"]
+        # 2.6 outranks 2.5 as the strongest SHAPE stamp.
+        assert payload["schema_version"] == "2.6"
+        assert "homolysis_initiation" in next(
+            p for p in payload["pools"] if p["label"] == "PP")
+
+    def test_no_homolysis_artifact_keeps_pre_2_6_stamp(self, pe_pool):
+        """Negative control (presence gate): without any homolysis pool the
+        artifact stays byte-identical at its older stamp and no pool carries
+        the block."""
+        core = [
+            _spc("CC", "PE", index=2),
+            _mu_dummy("PE_mu0"), _mu_dummy("PE_mu1"), _mu_dummy("PE_mu2"),
+        ]
+        core[0].is_polymer_proxy = True
+        payload = build_polymer_moments_artifact(
+            [pe_pool], core_species=core,
+            configured_pool_labels=["PE"], condensed_species=core)
+        assert payload["schema_version"] == "2.0"
+        assert all("homolysis_initiation" not in p for p in payload["pools"])
+
+    def test_producer_refuses_missing_daughters(self):
+        """RED pin: serializing a kernel-enabled pool whose end-radical
+        daughters are absent from the registry would emit exactly the shape
+        the consumer hard-rejects -- the producer refuses instead."""
+        pp, prim, sec, core = self._setup()
+        with pytest.raises(ValueError, match=r"PP.*_rad_.*end"):
+            build_polymer_moments_artifact(
+                [pp],  # daughters missing from the registry
+                core_species=core,
+                configured_pool_labels=["PP", prim.label, sec.label],
+                condensed_species=core,
+            )
+
+    def test_producer_refuses_uncondensed_daughters(self):
+        """RED pin: a daughter whose phase_species does not reach the
+        condensed closure is the item-16 mass-balance hazard shape -- the
+        producer refuses to emit it."""
+        pp, prim, sec, core = self._setup()
+        with pytest.raises(ValueError, match=r"condensed"):
+            self._payload(pp, prim, sec, core,
+                          condensed=core[:4])  # daughters' members missing
+
+    def test_producer_refuses_unconfigured_daughter(self):
+        """r68 P2 (producer/consumer closure mirror): a daughter omitted
+        from configured_pool_labels classifies into the spawned complement
+        -- exactly the shape the r68-tightened loader hard-rejects
+        (build_system_from_artifact only builds configured pools). The
+        producer must refuse to emit it."""
+        pp, prim, sec, core = self._setup()
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*configured"):
+            build_polymer_moments_artifact(
+                [pp, prim, sec], core_species=core,
+                configured_pool_labels=["PP", sec.label],
+                condensed_species=core)
+
+    def test_producer_refuses_spawned_classified_daughter(self):
+        """r68 P2: the daughter-not-in-spawned_pools conjunct, checked
+        independently of the configured conjunct (defense-in-depth: in the
+        emitter spawned is derived as the configured complement, so the
+        overlap shape is only reachable through a broken caller of the
+        guard itself)."""
+        from rmgpy.polymer import _assert_homolysis_serialization_closure
+        pp, prim, sec, core = self._setup()
+        payload = self._payload(pp, prim, sec, core)
+        carriers = [p for p in payload["pools"]
+                    if "homolysis_initiation" in p]
+        conv = payload["conventions"]
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*spawned"):
+            _assert_homolysis_serialization_closure(
+                payload["pools"], carriers,
+                set(conv["condensed_species"]),
+                set(conv["configured_pools"]),
+                {prim.label})  # contrived overlap: spawned AND configured
+
+    def test_producer_refuses_provenance_stripped_daughter(self):
+        """r68 P2: a daughter without the Stage-1 spawn provenance pin
+        (spawn_event_metadata.source == 'k_homolysis_end_radical')
+        serializes with the {'source': 'input'} default -- a shape the
+        loader hard-rejects. The producer must refuse to emit it."""
+        pp, prim, sec, core = self._setup()
+        prim.spawn_metadata = None  # serializer defaults to source: input
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*(provenance|spawn)"):
+            self._payload(pp, prim, sec, core)
+
+    def test_producer_refuses_unconfigured_carrier(self):
+        """r68 P2: the kernel-carrying pool itself must be
+        solver-configured -- build_system_from_artifact skips unconfigured
+        pools, so a block on an unconfigured carrier is a silently dropped
+        kernel on the consumer side; the r68-tightened loader hard-rejects
+        it and the producer must refuse to emit it."""
+        pp, prim, sec, core = self._setup()
+        with pytest.raises(ValueError, match=r"'PP'.*configured"):
+            build_polymer_moments_artifact(
+                [pp, prim, sec], core_species=core,
+                configured_pool_labels=[prim.label, sec.label],
+                condensed_species=core)

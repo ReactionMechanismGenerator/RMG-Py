@@ -424,3 +424,123 @@ class TestMassTransferCrossCheck:
         assert mine[-1, 9] != pytest.approx(y0[9])
         np.testing.assert_allclose(mine[:, 8] + mine[:, 9],
                                    y0[8] + y0[9], rtol=1e-9)
+
+
+# ---------------------------------------------------------------------------
+# (c) refused-row + homolysis-kernel supersession guards (schema 2.4 / 2.6,
+#     Stage 2 of the adjudicated round-66/67 arc, ruling (c)): this consumer
+#     must never convert a refused row's kinetics into flux, must validate
+#     the CLOSED refused_reason vocabulary strictly, and must hard-reject a
+#     pool-level homolysis_initiation block it does not implement (silently
+#     integrating without the kernel produces a flat/false trajectory --
+#     the exact failure class the sidecar schema exists to kill).
+# ---------------------------------------------------------------------------
+
+
+class TestRefusedRowAndHomolysisGuards:
+
+    def _refused_artifact(self, mark_refused=True):
+        """One pool-mapped row (poly(2) + H -> R + H2), optionally stamped
+        refused/conduit-deferred -- the production stamp-but-keep shape."""
+        n2 = _spc("N#N", "N2")
+        proxy = _spc("CCCC", "poly", index=2)
+        rad = _spc("[CH2]CCC", "R", index=3)
+        h = _spc("[H]", "H", index=4)
+        h2 = _spc("[H][H]", "H2", index=5)
+        proxy.is_polymer_proxy = True
+        mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+        core = [n2, proxy, rad, h, h2] + mus
+        rxn = Reaction(
+            reactants=[proxy, h], products=[rad, h2],
+            kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                               Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+            reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.UNRESOLVED)
+        if mark_refused:
+            rxn.polymer_refused = True
+            rxn.polymer_refused_accumulating = False
+        pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                       k_scission=0.0, k_unzip=0.0)
+        artifact = build_polymer_moments_artifact(
+            [pool], core_species=core, core_reactions=[rxn],
+            configured_pool_labels=["poly"],
+            condensed_species=[proxy, rad] + mus,
+            cantera_index_map={})
+        return json.loads(json.dumps(artifact)), core
+
+    def _consumer_and_y0(self, artifact, core):
+        order = [_yaml_label(s) for s in core]
+        consumer = ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+        i = {lab: k for k, lab in enumerate(order)}
+        y0 = np.zeros(len(order))
+        y0[i["N2"]] = 1.0
+        y0[i["H(4)"]] = 2.0
+        y0[i["poly_mu0"]], y0[i["poly_mu1"]], y0[i["poly_mu2"]] = 1.0, 5.0, 30.0
+        return consumer, y0, i
+
+    def test_refused_row_contributes_exactly_zero_flux(self):
+        """RED pin (ruling (c)): the refused row is the ONLY reaction and
+        both channels are off, so an honest consumer's RHS is exactly zero
+        everywhere -- converting the row's kinetics to flux is the pre-2.4
+        over-integration erratum."""
+        artifact, core = self._refused_artifact(mark_refused=True)
+        assert artifact["schema_version"] == "2.4"
+        consumer, y0, _ = self._consumer_and_y0(artifact, core)
+        dn = consumer.rhs(y0, 800.0)
+        assert np.all(dn == 0.0), f"refused row converted to flux: {dn}"
+
+    def test_unmarked_row_still_integrates(self):
+        """Control: the SAME chemistry without the refused stamp integrates
+        (proves the zero above is suppression, not a dead fixture)."""
+        artifact, core = self._refused_artifact(mark_refused=False)
+        consumer, y0, i = self._consumer_and_y0(artifact, core)
+        dn = consumer.rhs(y0, 800.0)
+        assert dn[i["R(3)"]] > 0.0
+        assert dn[i["poly_mu1"]] < 0.0
+
+    def test_rejects_unknown_refused_reason(self):
+        """The refused_reason vocabulary is CLOSED (format doc §12):
+        reject at construction, never adapt."""
+        artifact, core = self._refused_artifact(mark_refused=True)
+        (row,) = [e for e in artifact["reactions"] if e.get("refused")]
+        row["refused_reason"] = "totally-new-reason"
+        order = [_yaml_label(s) for s in core]
+        with pytest.raises(ValueError, match=r"refused_reason"):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    def test_rejects_refused_false_shape(self):
+        """The emitter writes refused: true + reason or NOTHING (absent,
+        not false) -- present-but-false is malformed."""
+        artifact, core = self._refused_artifact(mark_refused=True)
+        (row,) = [e for e in artifact["reactions"] if e.get("refused")]
+        row["refused"] = False
+        order = [_yaml_label(s) for s in core]
+        with pytest.raises(ValueError, match=r"refused"):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    def test_rejects_homolysis_initiation_block_loudly(self):
+        """RED pin (ruling (c) supersession contract): this consumer does
+        not implement the radical-homolysis kernel, so a pool carrying the
+        schema-2.6 homolysis_initiation block must fail at construction --
+        the silent path integrates a melt with no initiation flux (flat/
+        false trajectory). Mirrors the radical_qssa_unzip channel guard."""
+        pool = Polymer(label="PP", monomer="[CH2][CH](C)",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                       k_homolysis={"A": 1.0e13, "n": 0.5, "Ea": 1.2e5})
+        prim, sec = pool.generate_end_radical_daughters()
+        core = [_spc("N#N", "N2")]
+        for base in ("PP", prim.label, sec.label):
+            core += [_mu(f"{base}_mu{k}") for k in range(3)]
+        artifact = build_polymer_moments_artifact(
+            [pool, prim, sec], core_species=core, core_reactions=[],
+            configured_pool_labels=["PP", prim.label, sec.label],
+            condensed_species=core[1:],
+            cantera_index_map={})
+        artifact = json.loads(json.dumps(artifact))
+        assert artifact["schema_version"] == "2.6"
+        order = [_yaml_label(s) for s in core]
+        with pytest.raises(ValueError, match=r"PP.*homolysis_initiation"):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)

@@ -336,15 +336,16 @@ class TestQssaSchemaVersionGate:
 
     def test_rejects_unknown_future_minor(self, qssa_deck, deck):
         """Weak-link milestone iv POLICY CHANGE (was minor-permissive): the
-        loader pins the maximum schema minor it implements (2.5 since the
-        spawned-pool closure; was 2.4 at the refused-row marker, 2.3 at the
-        explicit-DP handshake block). A newer-minor artifact may carry
-        vocabulary outside the channel blocks that the unknown-key guards
-        never see (new conventions, new pool fields), so an older loader
-        must fail loud instead of loading additively."""
+        loader pins the maximum schema minor it implements (2.6 since the
+        homolysis_initiation block; was 2.5 at the spawned-pool closure,
+        2.4 at the refused-row marker, 2.3 at the explicit-DP handshake
+        block). A newer-minor artifact may carry vocabulary outside the
+        channel blocks that the unknown-key guards never see (new
+        conventions, new pool fields), so an older loader must fail loud
+        instead of loading additively."""
         artifact = _load_artifact(qssa_deck)
-        artifact["schema_version"] = "2.6"
-        with pytest.raises(ValueError, match=r"schema_version.*2\.6"):
+        artifact["schema_version"] = "2.7"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.7"):
             _build_qssa(qssa_deck, artifact)
         artifact = _load_artifact(qssa_deck)
         artifact["schema_version"] = "2.8"
@@ -354,9 +355,9 @@ class TestQssaSchemaVersionGate:
         chem_path, art_path = deck
         with open(art_path) as fh:
             legacy = json.load(fh)
-        legacy["schema_version"] = "2.6"
+        legacy["schema_version"] = "2.7"
         species, reactions = load_chem_yaml(chem_path)
-        with pytest.raises(ValueError, match=r"schema_version.*2\.6"):
+        with pytest.raises(ValueError, match=r"schema_version.*2\.7"):
             build_system_from_artifact(
                 legacy, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
                 initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
@@ -2193,3 +2194,321 @@ class TestS2ConduitVEMassInvariant:
         assert gas_mass_rate == pytest.approx(+ev * mw_h, rel=1e-9)
         assert chain_mass_rate + gas_mass_rate == pytest.approx(
             0.0, abs=abs(chain_mass_rate) * 1e-9)
+
+
+# ---------------------------------------------------------------------------
+# Radical-homolysis initiation block, consumer side (schema 2.6, Stage 2 of
+# the adjudicated round-66/67 arc): strict block guard (key presence + shape,
+# never truthiness), version cross-check, closure membership (daughters in
+# pools[] / classified / condensed), kernel + recipe pins, and the
+# machine-checkable kernel-supersession census (refused rows stay refused
+# and carry ZERO flux while the kernel is live).
+# ---------------------------------------------------------------------------
+
+
+def _homolysis_deck(tmp_path, with_refused=False):
+    """A kernel-enabled parent pool + its two eagerly-configured end-radical
+    daughter pools (the live registration shape: polymer.pyx
+    _flatten_homolysis_state hard-errors on unconfigured daughters), written
+    out as chem.yaml + polymer_pools.json exactly like an RMG run would.
+    ``with_refused=True`` adds one pool-mapped conduit-deferred refused row
+    (the supersession pairing of round-66/67 ruling (c))."""
+    n2 = _spc("N#N", "N2", index=1)
+    pool = Polymer(label="PP", monomer="[CH2][CH](C)",
+                   end_groups=["[H]", "[H]"], cutoff=3,
+                   moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                   k_homolysis={"A": 1.0e13, "n": 0.5, "Ea": 1.2e5})
+    prim, sec = pool.generate_end_radical_daughters()
+    mus = []
+    for base in ("PP", prim.label, sec.label):
+        mus += [_mu(f"{base}_mu{k}") for k in range(3)]
+    core = [n2]
+    rxns = []
+    condensed = list(mus)
+    if with_refused:
+        proxy = _spc("CCC(C)CC(C)C", "PP", index=2)
+        rad = _spc("[CH2]C(C)CC(C)C", "R", index=3)
+        h = _spc("[H]", "H", index=4)
+        h2 = _spc("[H][H]", "H2", index=5)
+        proxy.is_polymer_proxy = True
+        refused_rxn = Reaction(
+            reactants=[proxy, h], products=[rad, h2],
+            kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                               Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+            reversible=False)
+        refused_rxn.polymer_flux_archetype = int(
+            PolymerFluxArchetype.UNRESOLVED)
+        refused_rxn.polymer_refused = True
+        refused_rxn.polymer_refused_accumulating = False
+        core += [proxy, rad, h, h2]
+        rxns = [refused_rxn]
+        condensed = [proxy, rad] + mus
+    core += mus
+    data, index_map = generate_cantera_data(core, rxns,
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+    artifact = build_polymer_moments_artifact(
+        [pool, prim, sec], core_species=core, core_reactions=rxns,
+        configured_pool_labels=["PP", prim.label, sec.label],
+        condensed_species=condensed, cantera_index_map=index_map)
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+@pytest.fixture
+def homolysis_deck(tmp_path):
+    return _homolysis_deck(tmp_path)
+
+
+def _build_homolysis(deck, artifact=None, initial_moles=None):
+    chem_path, art_path = deck
+    if artifact is None:
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+        initial_moles=initial_moles or {"N2(1)": 1.0},
+        mass_transfer_spec=[])
+
+
+def _homolysis_artifact(deck):
+    with open(deck[1]) as fh:
+        return json.load(fh)
+
+
+class TestHomolysisInitiationConsumer:
+    """Schema 2.6 homolysis_initiation contract, consumer side."""
+
+    def test_round_trip_kernel_flattened_and_daughters_resolved(
+            self, homolysis_deck):
+        """RED pin (full round trip): a real kernel-enabled PolymerPhase
+        pool serialized by the emitter loads GREEN, wires the kernel into
+        the reconstructed oracle (khom_* flattened arrays), and resolves
+        both end-radical daughter pools' moment slots."""
+        artifact = _homolysis_artifact(homolysis_deck)
+        assert artifact["schema_version"] == "2.6"
+        entry = next(p for p in artifact["pools"] if p["label"] == "PP")
+        block = entry.get("homolysis_initiation")
+        assert isinstance(block, dict)
+        assert block["kernel"] == "radical_homolysis_initiation/1"
+        assert block["recipe_revision"] == "2026-07-05-radical-homolysis"
+
+        rs, core, _ = _build_homolysis(homolysis_deck, artifact)
+        assert len(rs.polymer_pools) == 3
+        assert rs.khom_enabled[0] == 1
+        assert rs.khom_A[0] == pytest.approx(1.0e13)
+        assert rs.khom_n[0] == pytest.approx(0.5)
+        assert rs.khom_Ea[0] == pytest.approx(1.2e5)
+        assert rs.khom_prim_mu0[0] >= 0
+        assert rs.khom_sec_mu0[0] >= 0
+        labels = [s.label for s in core]
+        assert labels[rs.khom_prim_mu0[0]] == "PP_rad_primary_end_mu0"
+        assert labels[rs.khom_sec_mu0[0]] == "PP_rad_secondary_end_mu0"
+
+    def test_accepts_2_6_without_homolysis(self, deck):
+        """2.6 is now an implemented minor: a 2.6 stamp with no
+        homolysis_initiation block anywhere loads (mirror of
+        test_accepts_2_5_without_spawned)."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.6"
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert len(rs.polymer_pools) == 1
+        assert rs.khom_enabled[0] == 0
+
+    def test_rejects_block_in_2_5_stamped_artifact(self, homolysis_deck):
+        """Vocabulary/version cross-check (the 2.4-refused / 2.5-spawned
+        precedent): a below-2.6 artifact carrying a homolysis_initiation
+        block is malformed -- the emitter stamps 2.6 whenever it writes
+        one."""
+        artifact = _homolysis_artifact(homolysis_deck)
+        artifact["schema_version"] = "2.5"
+        with pytest.raises(ValueError, match=r"homolysis_initiation.*2\.6"):
+            _build_homolysis(homolysis_deck, artifact)
+
+    def _shape_case(self, deck, mutate, match):
+        """Load a fresh homolysis artifact, apply ``mutate(artifact)``, and
+        assert the loader rejects with an actionable error."""
+        artifact = _homolysis_artifact(deck)
+        mutate(artifact)
+        with pytest.raises(ValueError, match=match):
+            _build_homolysis(deck, artifact)
+
+    @staticmethod
+    def _block(artifact):
+        return next(p for p in artifact["pools"]
+                    if p["label"] == "PP")["homolysis_initiation"]
+
+    def test_rejects_daughter_missing_from_pools(self, homolysis_deck):
+        def cut(a):
+            a["pools"] = [p for p in a["pools"]
+                          if p["label"] != "PP_rad_primary_end"]
+        self._shape_case(homolysis_deck, cut,
+                         r"PP_rad_primary_end.*pools")
+
+    def test_rejects_unclassified_daughter(self, homolysis_deck):
+        """A daughter in NEITHER conventions.configured_pools NOR
+        conventions.spawned_pools is unclassified in the configured/spawned
+        closure -- its moment credits would have no solver home."""
+        def cut(a):
+            a["conventions"]["configured_pools"] = [
+                lbl for lbl in a["conventions"]["configured_pools"]
+                if lbl != "PP_rad_secondary_end"]
+        self._shape_case(homolysis_deck, cut,
+                         r"PP_rad_secondary_end.*(configured|spawned|classif)")
+
+    def test_rejects_spawned_only_daughter(self, homolysis_deck):
+        """r68 P1: a daughter classified ONLY in conventions.spawned_pools
+        must be rejected BEFORE solver construction --
+        build_system_from_artifact constructs PolymerPoolConfigs from
+        configured_pools alone, so a spawned-only daughter is never built
+        and the kernel's fragment credits have no solver home. Schema 2.5
+        defines spawned_pools as the configured set's complement, so
+        membership there contradicts the eager-configured daughter
+        design."""
+        def cut(a):
+            conv = a["conventions"]
+            conv["configured_pools"] = [
+                lbl for lbl in conv["configured_pools"]
+                if lbl != "PP_rad_primary_end"]
+            conv["spawned_pools"] = ["PP_rad_primary_end"]
+        self._shape_case(homolysis_deck, cut,
+                         r"PP_rad_primary_end.*spawned_pools")
+
+    @pytest.mark.parametrize("also_spawn", [False, True],
+                             ids=["dropped", "respawned"])
+    def test_rejects_unconfigured_carrier(self, homolysis_deck, also_spawn):
+        """r68 P1: the pool CARRYING the homolysis_initiation block must
+        itself be in conventions.configured_pools --
+        build_system_from_artifact skips unconfigured pools, so a block on
+        an unconfigured carrier would be a silently dropped kernel."""
+        def cut(a):
+            conv = a["conventions"]
+            conv["configured_pools"] = [
+                lbl for lbl in conv["configured_pools"] if lbl != "PP"]
+            if also_spawn:
+                conv["spawned_pools"] = ["PP"]
+        self._shape_case(homolysis_deck, cut,
+                         r"'PP'.*configured_pools")
+
+    def test_rejects_uncondensed_daughter(self, homolysis_deck):
+        def cut(a):
+            a["conventions"]["condensed_species"] = [
+                lbl for lbl in a["conventions"]["condensed_species"]
+                if not lbl.startswith("PP_rad_primary_end")]
+        self._shape_case(homolysis_deck, cut,
+                         r"PP_rad_primary_end.*condensed")
+
+    def test_rejects_missing_kinetics_key(self, homolysis_deck):
+        def cut(a):
+            del self._block(a)["kinetics"]["Ea"]
+        self._shape_case(homolysis_deck, cut, r"kinetics")
+
+    def test_rejects_wrong_kinetics_units(self, homolysis_deck):
+        def cut(a):
+            self._block(a)["kinetics"]["units"]["A"] = "1/min"
+        self._shape_case(homolysis_deck, cut, r"units")
+
+    def test_rejects_non_positive_A(self, homolysis_deck):
+        def cut(a):
+            self._block(a)["kinetics"]["A"] = 0.0
+        self._shape_case(homolysis_deck, cut, r"A")
+
+    def test_rejects_boolean_kinetics_value(self, homolysis_deck):
+        """Key-presence + SHAPE validation, not truthiness (the r63 lesson):
+        JSON true is not a rate constant."""
+        def cut(a):
+            self._block(a)["kinetics"]["A"] = True
+        self._shape_case(homolysis_deck, cut, r"A")
+
+    def test_rejects_present_disabled_block(self, homolysis_deck):
+        def cut(a):
+            self._block(a)["enabled"] = False
+        self._shape_case(homolysis_deck, cut, r"present-disabled|enabled")
+
+    def test_rejects_unknown_block_key(self, homolysis_deck):
+        def cut(a):
+            self._block(a)["gas_release"] = "CH4"
+        self._shape_case(homolysis_deck, cut, r"unknown key")
+
+    def test_rejects_missing_kernel_field(self, homolysis_deck):
+        def cut(a):
+            del self._block(a)["kernel"]
+        self._shape_case(homolysis_deck, cut, r"kernel|missing")
+
+    def test_rejects_unknown_kernel_name(self, homolysis_deck):
+        """Ruling (c): the kernel field is the machine-checkable
+        supersession contract -- an unknown kernel is flux this consumer
+        cannot reproduce."""
+        def cut(a):
+            self._block(a)["kernel"] = "beta_scission_zip/9"
+        self._shape_case(homolysis_deck, cut, r"kernel")
+
+    def test_rejects_missing_recipe_revision(self, homolysis_deck):
+        def cut(a):
+            del self._block(a)["recipe_revision"]
+        self._shape_case(homolysis_deck, cut, r"recipe_revision|missing")
+
+    def test_rejects_unknown_recipe_revision(self, homolysis_deck):
+        def cut(a):
+            self._block(a)["recipe_revision"] = "2026-01-01-bogus"
+        self._shape_case(homolysis_deck, cut, r"recipe_revision")
+
+    def test_rejects_tampered_recipe(self, homolysis_deck):
+        def cut(a):
+            block = self._block(a)
+            key = sorted(block["recipe"])[0]
+            block["recipe"][key] = "dmu1 += R (mass fabricated)"
+        self._shape_case(homolysis_deck, cut, r"recipe")
+
+    def test_rejects_daughter_without_spawn_provenance(self, homolysis_deck):
+        """The daughters are producer-spawned pools; a daughter row claiming
+        user/input provenance is a hand-edited artifact."""
+        def cut(a):
+            entry = next(p for p in a["pools"]
+                         if p["label"] == "PP_rad_primary_end")
+            entry["spawn_event_metadata"] = {"source": "input"}
+        self._shape_case(homolysis_deck, cut, r"provenance|spawn")
+
+    def test_supersession_census_refused_rows_zero_flux(self, tmp_path):
+        """Ruling (c), machine-checkable: with the kernel live, refused
+        conduit-deferred rows stay marked refused on the reconstructed
+        reactions, the rebuilt oracle's homolysis supersession census names
+        them, and they contribute EXACTLY zero flux -- while the kernel
+        itself credits the daughter pools (so the zero is suppression, not
+        a dead system)."""
+        deck = _homolysis_deck(tmp_path, with_refused=True)
+        artifact = _homolysis_artifact(deck)
+        assert artifact["schema_version"] == "2.6"
+        marked = [e for e in artifact["reactions"] if e.get("refused")]
+        assert len(marked) == 1
+        assert marked[0]["refused_reason"] == "conduit-deferred"
+
+        rs, core, _ = _build_homolysis(
+            deck, artifact, initial_moles={"N2(1)": 1.0, "H(4)": 1.0})
+        # refused marker survived the boundary
+        assert int(rs.reaction_refused.sum()) == 1
+        # machine-checkable census: the kernel-enabled pool names the
+        # superseded refused rows
+        census = list(rs.homolysis_supersession_census)
+        assert census and census[0]["pool"] == "PP"
+        assert census[0]["superseded_rows"]
+        # zero flux from the refused row: its non-pool participants gain
+        # nothing...
+        labels = [s.label for s in core]
+        i = {lab: k for k, lab in enumerate(labels)}
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn[i["R(3)"]] == 0.0
+        assert dn[i["H2(5)"]] == 0.0
+        # ...while the live kernel credits both end-radical daughters
+        assert dn[i["PP_rad_primary_end_mu0"]] > 0.0
+        assert dn[i["PP_rad_secondary_end_mu0"]] > 0.0

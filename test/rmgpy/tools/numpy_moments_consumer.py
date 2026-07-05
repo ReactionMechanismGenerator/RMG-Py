@@ -27,6 +27,47 @@ LN_EXP_OVERFLOW_GUARD = 700.0
 # (~/Code/TA/ta/mechanism.py SUPPORTED_CHANNELS).
 SUPPORTED_CHANNELS = frozenset({"scission", "unzip"})
 
+# The CLOSED refused_reason vocabulary (schema 2.4, format doc §12). Local
+# copy -- this module never imports rmgpy -- of the reference loader's
+# REFUSED_REASONS pin: a refused row's WHOLE flux (moment and species
+# alike) was zeroed by the generating solver, so this consumer must skip
+# the row entirely, never convert its kinetics into flux (round-67 ruling
+# (c): refused explicit homolysis rows superseded by a live k_homolysis
+# kernel stay zero). Unknown reasons are rejected at construction, never
+# adapted.
+REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid"})
+
+
+def _validated_refused(e):
+    """Strict shape guard for one reactions[] entry's refused vocabulary
+    (format doc §12; the reference loader's _validate_refused_entry,
+    mirrored rmgpy-free): the emitter writes ``refused: true`` plus a
+    known ``refused_reason`` on POOL-MAPPED rows, or NOTHING (absent, not
+    false). Returns True iff the row is a valid refused row."""
+    if "refused" not in e and "refused_reason" not in e:
+        return False
+    eid = e.get("id")
+    if e.get("refused") is not True:
+        raise ValueError(
+            f"reactions[] entry {eid!r} carries malformed refused "
+            f"vocabulary (refused={e.get('refused')!r}): the emitter "
+            f"writes refused: true + refused_reason on refused rows and "
+            f"NOTHING otherwise (absent, not false). Fix the artifact.")
+    reason = e.get("refused_reason")
+    if not isinstance(reason, str) or reason not in REFUSED_REASONS:
+        raise ValueError(
+            f"reactions[] entry {eid!r} has invalid refused_reason "
+            f"{reason!r}: the schema-2.4 vocabulary is CLOSED to "
+            f"{sorted(REFUSED_REASONS)} (format doc §12). Fix the "
+            f"artifact.")
+    if not (e.get("proxy_reactants") or e.get("proxy_products")):
+        raise ValueError(
+            f"reactions[] entry {eid!r} has refused: true but no "
+            f"pool-mapped participant: the refused marker is legal ONLY "
+            f"on pool-mapped rows -- honoring it here would silently zero "
+            f"ordinary gas chemistry. Fix the artifact.")
+    return True
+
 
 def safe_mu3(mu0, mu1, mu2):
     """log_lagrange/1 closure with realizability guard (format doc §6)."""
@@ -98,6 +139,22 @@ class ArtifactConsumer:
         self.pools = {}
         for p in artifact["pools"]:
             lab = p["label"]
+            # Schema-2.6 radical-homolysis initiation kernel: NOT
+            # implemented by this consumer. Fail at construction, never
+            # drop permissively -- integrating a kernel-enabled melt
+            # without its initiation flux produces a flat/false
+            # trajectory, and the refused explicit rows it supersedes
+            # carry zero flux by contract (round-67 ruling (c)), so
+            # nothing here may stand in for the kernel.
+            if "homolysis_initiation" in p:
+                raise ValueError(
+                    f"pool {lab!r}: unsupported pool-level "
+                    f"homolysis_initiation block (schema 2.6 "
+                    f"radical-homolysis initiation kernel); this consumer "
+                    f"implements channels {sorted(SUPPORTED_CHANNELS)} "
+                    f"only. Integrating without the kernel would silently "
+                    f"produce a wrong trajectory, and refused rows must "
+                    f"never be converted into its flux.")
             if lab not in self.configured:
                 continue
             unknown = sorted(set(p["channels"]) - SUPPORTED_CHANNELS)
@@ -126,6 +183,12 @@ class ArtifactConsumer:
             pool_mapped = ({self.idx[s] for s in e["proxy_reactants"]}
                            | {self.idx[s] for s in e["proxy_products"]})
             self.entries.append({
+                # Refused-row marker (schema 2.4, format doc §12):
+                # validated strictly at construction; a refused entry's
+                # WHOLE flux is skipped in rhs (moment and species alike),
+                # exactly the generating solver's reaction_refused
+                # suppression.
+                "refused": _validated_refused(e),
                 "A": kin["A"], "n": kin["n"], "Ea": kin["Ea"],
                 "reversible": kin["reversible"],
                 "ridx": ridx, "pidx": pidx, "pool_mapped": pool_mapped,
@@ -184,6 +247,11 @@ class ArtifactConsumer:
                      np.clip(y, 0.0, None) / Vp)
 
         for e in self.entries:
+            if e["refused"]:
+                # Stamp-but-keep (format doc §12): the row stays listed
+                # (consumers may need it to zero a mapped Cantera
+                # reaction) but its ENTIRE flux is suppressed.
+                continue
             kf = e["A"] * T ** e["n"] * np.exp(-e["Ea"] / (R * T))
             kb = kf / self._keq(e, T) if e["reversible"] else 0.0
 

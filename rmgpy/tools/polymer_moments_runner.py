@@ -489,6 +489,57 @@ _EXPLICIT_DP_BLOCK_KEYS = frozenset(
     ("enabled", "species", "initial_moles", "handshake_target_dp",
      "recipe_revision", "recipe"))
 
+# --- Pinned homolysis_initiation contract (schema 2.6, Stage 2 of the
+# radical-homolysis initiation arc, adjudicated rounds 66/67). Pinned HERE
+# independently of the emitter (rmgpy/polymer.py HOMOLYSIS_*), the same
+# boundary-guard idiom as the QSSA/explicit-DP pins: the loader guards the
+# artifact BOUNDARY -- a sidecar claiming a different kernel, recipe, or
+# unit system must ERROR, never be adapted to. Each recipe string matches
+# the implemented oracle law (rmgpy/solver/polymer.pyx, the khom_* RHS
+# section: stable direct product forms, round-67 P2).
+_HOMOLYSIS_PINNED_KERNEL = "radical_homolysis_initiation/1"
+_HOMOLYSIS_PINNED_REVISION = "2026-07-05-radical-homolysis"
+_HOMOLYSIS_BLOCK_KEYS = frozenset(
+    ("enabled", "kinetics", "open_site_1_radical_pool",
+     "open_site_2_radical_pool", "kernel", "recipe_revision", "recipe"))
+_HOMOLYSIS_KINETICS_KEYS = frozenset(("A", "n", "Ea", "units"))
+# Pinned units: the kernel triplet is SI (A [s^-1] -- unimolecular event
+# rate per breakable bond mole; Ea [J/mol]), the radical_qssa_unzip
+# convention. Any other claim is malformed.
+_HOMOLYSIS_PINNED_UNITS = {"A": "s^-1", "Ea": "J/mol"}
+# Ratified daughter-label convention (round 66; solver
+# K_HOMOLYSIS_DAUGHTER_SUFFIXES): POSITIONAL open-*1 / open-*2 termini.
+_HOMOLYSIS_DAUGHTER_SUFFIXES = ("_rad_primary_end", "_rad_secondary_end")
+# The spawn provenance the Stage-1 producer stamps on both daughters
+# (Polymer.generate_end_radical_daughters).
+_HOMOLYSIS_SPAWN_SOURCE = "k_homolysis_end_radical"
+_HOMOLYSIS_PINNED_RECIPE = {
+    "event_rate": ("R = k(T)*max(mu1 - mu0, 0) [mol/(m^3 s)]; "
+                   "k(T) = A*T^n*exp(-Ea/(R_gas*T)) evaluated at the "
+                   "RUNTIME temperature (round 66: never a precomputed "
+                   "scalar); a chain of length n has n-1 breakable bonds"),
+    "parent_debit": ("dmu0 -= R; dmu1 -= R*B1 computed as k*(mu2 - mu1); "
+                     "dmu2 -= R*B2 computed as k*(mu3 - mu2); mu3 from the "
+                     "log_lagrange/1 closure"),
+    "daughter_credit": ("EACH of the two end-radical daughter pools: "
+                        "dmu0 += R; dmu1 += k*(mu2 - mu1)/2; "
+                        "dmu2 += k*(2*mu3 - 3*mu2 + mu1)/6 -- STABLE "
+                        "direct forms (round-67 P2): never B1/B2 ratios "
+                        "re-multiplied by R (catastrophic cancellation "
+                        "near DP -> 1 exhaustion)"),
+    "totals": ("dmu0_total = +R = k(T)*max(mu1 - mu0, 0); dmu1_total = 0 "
+               "(mass conserved, machine precision); dmu2_total = "
+               "k*(mu1 - mu3)/3 = -k*(mu3 - mu1)/3 (the legacy "
+               "Ziff-McGrady random-scission second-moment source)"),
+    "out_of_domain": ("zero flux (warn once per pool per rebuild) when "
+                      "mu2 < mu1, mu3 is nonfinite, or "
+                      "2*mu3 - 3*mu2 + mu1 < 0 (B1, B2 >= 0 does NOT imply "
+                      "a nonnegative daughter mu2 credit; round-67 P1)"),
+    "reversibility": ("one-way, NO gas release: homolysis releases no "
+                      "volatiles, and recombination arrives via the "
+                      "discovered chemistry conduit, never this kernel"),
+}
+
 # The QSSA channel vocabulary entered the sidecar schema at 2.1 (channel-
 # vocabulary growth = minor bump); the emitter stamps >= 2.1 whenever it
 # writes the block, so a 2.0 artifact carrying one is malformed. The
@@ -499,6 +550,7 @@ _WEAKLINK_MIN_SCHEMA_MINOR = 2
 _EXPLICIT_DP_MIN_SCHEMA_MINOR = 3
 _REFUSED_MIN_SCHEMA_MINOR = 4
 _SPAWNED_MIN_SCHEMA_MINOR = 5
+_HOMOLYSIS_MIN_SCHEMA_MINOR = 6
 # The CLOSED refused_reason vocabulary (format doc §12): the emitter derives
 # the reason bijectively from the accumulating stamp, so exactly these two
 # strings can exist. _restamp_and_extend reconstructs the accumulating class
@@ -519,8 +571,15 @@ REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid"})
 # runtime effect rides conventions.condensed_species -- which this loader
 # already honors verbatim for its phase mask -- while pool moment blocks
 # stay keyed on configured_pools (spawned pools remain solver-inert, §2),
-# so 2.5 acceptance is truthful; 2.6+ stays rejected.
-_MAX_KNOWN_SCHEMA_MINOR = 5
+# so 2.5 acceptance is truthful. Raised to 6 with the pool-level
+# homolysis_initiation block (Stage 2, rounds 66/67): this loader validates
+# the block strictly (_check_homolysis_initiation /
+# _parse_homolysis_initiation_block) and wires the kernel triplet into the
+# reconstructed pool configs, so the rebuilt oracle's RHS carries the
+# generating solver's homolysis flux and its supersession census re-runs
+# (refused rows stay refused/zero-flux) -- 2.6 acceptance is truthful;
+# 2.7+ stays rejected.
+_MAX_KNOWN_SCHEMA_MINOR = 6
 
 
 def _check_schema_version_known(artifact):
@@ -725,6 +784,271 @@ def _check_spawned_pools_schema_version(artifact):
             f"solver-configured and runtime-spawned/inert). This artifact "
             f"is malformed -- fix/regenerate it at the source; this loader "
             f"never adapts it.")
+
+
+def _parse_homolysis_initiation_block(lab, pool_entry):
+    """Parse + validate a pool entry's pool-level homolysis_initiation
+    block (schema 2.6). Returns the validated Arrhenius triplet
+    ``{"A": float, "n": float, "Ea": float}`` (SI: A [s^-1], Ea [J/mol]),
+    or ``None`` when the block is absent.
+
+    Boundary rules mirror _parse_explicit_dp_block: closed key vocabulary,
+    boolean ``enabled`` (present-disabled REJECTED -- the emitter never
+    writes disabled blocks), key-presence + SHAPE validation (never
+    truthiness: JSON ``true`` is not a rate constant, the r63 lesson), the
+    pinned kernel name (round-67 ruling (c): an unknown kernel is flux this
+    consumer cannot reproduce), pinned units (ERROR on mismatch, never
+    convert), and the normative ``recipe`` + block ``recipe_revision``
+    pinned by exact match (reject, never adapt)."""
+    raw = pool_entry.get("homolysis_initiation")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation must be a dict, got "
+            f"{type(raw).__name__}. Fix the artifact.")
+    unknown = sorted(set(raw) - _HOMOLYSIS_BLOCK_KEYS)
+    if unknown:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation has unknown key(s) "
+            f"{unknown}; allowed keys are {sorted(_HOMOLYSIS_BLOCK_KEYS)}. "
+            f"Fix the artifact (unknown vocabulary is never dropped "
+            f"permissively).")
+    missing = sorted(_HOMOLYSIS_BLOCK_KEYS - set(raw))
+    if missing:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation is missing key(s) "
+            f"{missing}. The emitter always writes the full block "
+            f"(kinetics, both open-site daughter fields, kernel, "
+            f"recipe_revision, recipe) -- regenerate the sidecar.")
+    enabled = raw["enabled"]
+    if not isinstance(enabled, bool):
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation must carry a boolean "
+            f"'enabled' field, got {enabled!r}. Fix the artifact.")
+    if not enabled:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation carries enabled=false. "
+            f"The emitter never writes disabled blocks: a disabled kernel "
+            f"must be ABSENT from the sidecar, not present-disabled. Fix "
+            f"the artifact (remove the block).")
+    kernel = raw["kernel"]
+    if kernel != _HOMOLYSIS_PINNED_KERNEL:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation names kernel {kernel!r}; "
+            f"this loader implements exactly "
+            f"{_HOMOLYSIS_PINNED_KERNEL!r}. An unknown kernel is flux this "
+            f"consumer cannot reproduce (round-67 ruling (c) supersession "
+            f"contract) -- upgrade the loader or regenerate the sidecar.")
+    if raw["recipe_revision"] != _HOMOLYSIS_PINNED_REVISION:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation recipe_revision must "
+            f"equal {_HOMOLYSIS_PINNED_REVISION!r} exactly, got "
+            f"{raw['recipe_revision']!r}. An artifact claiming a different "
+            f"kernel recipe must be fixed at the source; this loader "
+            f"validates, never adapts.")
+    recipe = raw["recipe"]
+    if not isinstance(recipe, dict):
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation must carry the normative "
+            f"'recipe' dict (schema 2.6), got {recipe!r} -- regenerate the "
+            f"sidecar.")
+    unknown_recipe = sorted(set(recipe) - set(_HOMOLYSIS_PINNED_RECIPE))
+    if unknown_recipe:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation recipe has unknown "
+            f"key(s) {unknown_recipe}; allowed keys are "
+            f"{sorted(_HOMOLYSIS_PINNED_RECIPE)}. Fix the artifact.")
+    for key, pinned in _HOMOLYSIS_PINNED_RECIPE.items():
+        if key not in recipe or recipe[key] != pinned:
+            raise ValueError(
+                f"Pool {lab!r}: homolysis_initiation recipe[{key!r}] must "
+                f"equal the pinned normative recipe exactly; got "
+                f"{recipe.get(key)!r}, expected {pinned!r}. An artifact "
+                f"claiming a different kernel algebra must be fixed at the "
+                f"source; this loader validates, never adapts.")
+    kin = raw["kinetics"]
+    if not isinstance(kin, dict):
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation kinetics must be a dict "
+            f"{{A, n, Ea, units}}, got {type(kin).__name__}. Fix the "
+            f"artifact.")
+    unknown_kin = sorted(set(kin) - _HOMOLYSIS_KINETICS_KEYS)
+    missing_kin = sorted(_HOMOLYSIS_KINETICS_KEYS - set(kin))
+    if unknown_kin or missing_kin:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation kinetics must carry "
+            f"exactly the keys {sorted(_HOMOLYSIS_KINETICS_KEYS)} "
+            f"(unknown: {unknown_kin}, missing: {missing_kin}). Fix the "
+            f"artifact.")
+    if kin["units"] != dict(_HOMOLYSIS_PINNED_UNITS):
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation kinetics units must be "
+            f"exactly {_HOMOLYSIS_PINNED_UNITS!r} (SI, the "
+            f"radical_qssa_unzip convention), got {kin['units']!r}. A "
+            f"sidecar claiming any other unit system must ERROR, never be "
+            f"silently converted.")
+    out = {}
+    for key in ("A", "n", "Ea"):
+        val = kin[key]
+        if isinstance(val, bool) or not isinstance(val, (int, float)) or \
+                not math.isfinite(float(val)):
+            raise ValueError(
+                f"Pool {lab!r}: homolysis_initiation kinetics {key}="
+                f"{val!r} must be a finite number (shape validation, "
+                f"never truthiness). Fix the artifact.")
+        out[key] = float(val)
+    if out["A"] <= 0.0:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation kinetics A={out['A']:g} "
+            f"must be > 0 (a zero/negative kernel must be ABSENT, not "
+            f"present-inert). Fix the artifact.")
+    if out["Ea"] < 0.0:
+        raise ValueError(
+            f"Pool {lab!r}: homolysis_initiation kinetics "
+            f"Ea={out['Ea']:g} must be >= 0 [J/mol]. Fix the artifact.")
+    for field, suffix in zip(("open_site_1_radical_pool",
+                              "open_site_2_radical_pool"),
+                             _HOMOLYSIS_DAUGHTER_SUFFIXES):
+        d_label = raw[field]
+        if not isinstance(d_label, str) or d_label != f"{lab}{suffix}":
+            raise ValueError(
+                f"Pool {lab!r}: homolysis_initiation {field}={d_label!r} "
+                f"must be the ratified daughter pool label "
+                f"{lab + suffix!r} (round-66 POSITIONAL open-site "
+                f"convention). Fix the artifact.")
+    return out
+
+
+def _check_homolysis_initiation(artifact):
+    """Vocabulary/version cross-check + closure guard for the schema-2.6
+    pool-level homolysis_initiation block. Mirrors
+    _check_explicit_dp_schema_version on the version axis (the block
+    anywhere under a below-2.6 stamp is malformed) and adds the daughter
+    closure the emitter guarantees (round-67 §Stage 2 Scope, tightened by
+    the round-68 adjudication): the kernel-carrying pool itself must be in
+    conventions.configured_pools (build_system_from_artifact only builds
+    configured pools -- a block on an unconfigured carrier would be a
+    silently dropped kernel), and each kernel-carrying pool's two
+    end-radical daughter pools must
+
+    * be present in pools[] (their moment slots receive the kernel's
+      fragment credits),
+    * be in conventions.configured_pools (the daughters are eagerly
+      solver-configured by design, polymer.pyx _flatten_homolysis_state
+      hard-errors otherwise; build_system_from_artifact never builds a
+      pool outside configured_pools, so any other classification has no
+      solver home for the kernel's credits) and NOT in
+      conventions.spawned_pools (schema 2.5 defines that list as the
+      configured set's complement -- membership there contradicts the
+      eager-configured daughter design),
+    * be condensed per the condensed closure (phase_species non-empty and
+      fully inside conventions.condensed_species -- the item-16
+      mass-balance hazard otherwise), and
+    * carry the Stage-1 spawn provenance
+      (spawn_event_metadata.source == 'k_homolysis_end_radical'): the
+      daughters are producer-spawned pools, never user pools."""
+    carriers = [p for p in artifact.get("pools", [])
+                if isinstance(p, dict) and "homolysis_initiation" in p]
+    if not carriers:
+        return
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    minor = (int(parts[1]) if len(parts) == 2 and parts[0] == "2"
+             and parts[1].isdigit() else -1)
+    if minor < _HOMOLYSIS_MIN_SCHEMA_MINOR:
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry a pool-level "
+            f"homolysis_initiation block (pools "
+            f"{[p.get('label') for p in carriers]}): the radical-homolysis "
+            f"kernel vocabulary was introduced in schema 2.6, and the "
+            f"emitter stamps 2.6 whenever it writes it. This artifact is "
+            f"malformed -- regenerate the sidecar with a current RMG-Py "
+            f"polymer branch.")
+    conv = artifact.get("conventions") or {}
+    configured = set(conv.get("configured_pools") or [])
+    spawned_raw = conv.get("spawned_pools")
+    spawned = (set(spawned_raw)
+               if isinstance(spawned_raw, (list, tuple)) else set())
+    condensed = set(conv.get("condensed_species") or [])
+    by_label = {p.get("label"): p for p in artifact.get("pools", [])
+                if isinstance(p, dict)}
+    for carrier in carriers:
+        lab = carrier.get("label")
+        # Round-68 P1: the carrier itself must be solver-configured.
+        # build_system_from_artifact only constructs PolymerPoolConfigs
+        # for conventions.configured_pools, so a valid-looking block on an
+        # unconfigured pool would be SKIPPED -- a silently dropped kernel.
+        if lab not in configured:
+            raise ValueError(
+                f"Pool {lab!r}: carries a homolysis_initiation block but "
+                f"is not listed in conventions.configured_pools. The "
+                f"loader only builds configured pools, so the kernel "
+                f"would be silently dropped (never integrated). The "
+                f"producer only serializes the block on solver-configured "
+                f"pools; this artifact is hand-edited/corrupted. Fix the "
+                f"artifact.")
+        _parse_homolysis_initiation_block(lab, carrier)  # shape guard
+        block = carrier["homolysis_initiation"]
+        for field in ("open_site_1_radical_pool",
+                      "open_site_2_radical_pool"):
+            d_label = block[field]
+            d_entry = by_label.get(d_label)
+            if d_entry is None:
+                raise ValueError(
+                    f"Pool {lab!r}: homolysis_initiation daughter pool "
+                    f"{d_label!r} ({field}) is missing from the artifact's "
+                    f"pools[] -- the kernel's fragment credits would have "
+                    f"no moment slots. This artifact is malformed; "
+                    f"regenerate the sidecar.")
+            # Round-68 P1: daughters are eagerly solver-CONFIGURED by
+            # design; spawned_pools is the configured set's complement
+            # (schema 2.5), so membership there contradicts that design.
+            # Check the spawned conjunct first so the contradiction is
+            # named even when the 2.5 overlap guard was bypassed.
+            if d_label in spawned:
+                raise ValueError(
+                    f"Pool {lab!r}: homolysis_initiation daughter pool "
+                    f"{d_label!r} is classified in "
+                    f"conventions.spawned_pools. Schema 2.5 defines that "
+                    f"list as the configured set's complement, and "
+                    f"homolysis daughters are eagerly solver-configured "
+                    f"by design (polymer.pyx _flatten_homolysis_state "
+                    f"hard-errors otherwise) -- a spawned-classified "
+                    f"daughter is never built by the loader and the "
+                    f"kernel's credits would have no solver home. Fix "
+                    f"the artifact.")
+            if d_label not in configured:
+                raise ValueError(
+                    f"Pool {lab!r}: homolysis_initiation daughter pool "
+                    f"{d_label!r} is not listed in "
+                    f"conventions.configured_pools. The daughters are "
+                    f"eagerly solver-configured by the producer "
+                    f"(polymer.pyx _flatten_homolysis_state hard-errors "
+                    f"otherwise), and the loader only builds configured "
+                    f"pools -- an unconfigured daughter has no solver "
+                    f"home for the kernel's credits. Fix the artifact.")
+            members = d_entry.get("phase_species") or []
+            not_condensed = sorted(m for m in members if m not in condensed)
+            if not members or not_condensed:
+                raise ValueError(
+                    f"Pool {lab!r}: homolysis_initiation daughter pool "
+                    f"{d_label!r} is not condensed per the condensed "
+                    f"closure (phase_species={members}, not condensed="
+                    f"{not_condensed}); its moment slots would be "
+                    f"phase-classified GAS (the item-16 mass-balance "
+                    f"hazard). Fix the artifact.")
+            meta = d_entry.get("spawn_event_metadata")
+            if not isinstance(meta, dict) or \
+                    meta.get("source") != _HOMOLYSIS_SPAWN_SOURCE:
+                raise ValueError(
+                    f"Pool {lab!r}: homolysis_initiation daughter pool "
+                    f"{d_label!r} lacks the Stage-1 spawn provenance "
+                    f"(expected spawn_event_metadata.source == "
+                    f"{_HOMOLYSIS_SPAWN_SOURCE!r}, got {meta!r}). The "
+                    f"daughters are producer-spawned pools, never user "
+                    f"pools -- a row claiming other provenance is "
+                    f"hand-edited. Fix the artifact.")
 
 
 def _validate_refused_entry(e):
@@ -1151,6 +1475,14 @@ def build_system_from_artifact(artifact, species, reactions,
     # so is any overlap with configured_pools (the closure is the
     # configured set's complement by construction).
     _check_spawned_pools_schema_version(artifact)
+    # Homolysis-initiation vocabulary/version cross-check + daughter
+    # closure (schema 2.6, r68-tightened): a 2.0-2.5 artifact carrying the
+    # pool-level block is malformed, and a 2.6 block whose carrier is
+    # unconfigured or whose end-radical daughters are missing from
+    # pools[], not solver-configured (or spawned-classified),
+    # un-condensed, or provenance-stripped is rejected before any pool
+    # config is built.
+    _check_homolysis_initiation(artifact)
     # ... and the explicit-dp token/vocabulary pairing is exact in both
     # directions (P2 gates): token without block, block without token --
     # both hand-edited shapes fail loud.
@@ -1279,6 +1611,18 @@ def build_system_from_artifact(artifact, species, reactions,
                 explicit_map[dp] = spc_idx
             if any(v > 0.0 for v in dp_moles.values()):
                 initial_explicit_by_pool[lab] = dict(dp_moles)
+        # Radical-homolysis initiation kernel (schema 2.6): parse +
+        # validate the pool-level block (pinned kernel/units/recipe;
+        # artifact-level closure already enforced by
+        # _check_homolysis_initiation above) and wire the triplet into the
+        # reconstructed config, so the rebuilt oracle's RHS carries the
+        # generating solver's kernel flux instead of silently integrating
+        # a melt with no initiation (the flat/false-trajectory failure
+        # class). The solver's own validate_configuration +
+        # _flatten_homolysis_state re-enforce the daughter-configured
+        # invariant and the k_scission/QSSA/k_unzip mutual exclusions
+        # natively on initialize_model.
+        khom_cfg = _parse_homolysis_initiation_block(lab, p)
         pools.append(PolymerPoolConfig(
             label=lab, xs=int(p.get("cutoff") or 0),
             explicit_dp_to_species_index=explicit_map,
@@ -1292,6 +1636,7 @@ def build_system_from_artifact(artifact, species, reactions,
             k_scission=k_scission,
             k_unzip=k_unzip,
             radical_qssa_unzip=qssa_cfg,
+            k_homolysis=khom_cfg,
         ))
         if initial_moments and lab in initial_moments:
             moments0[lab] = tuple(initial_moments[lab])

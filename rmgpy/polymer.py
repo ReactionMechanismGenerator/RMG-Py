@@ -1035,7 +1035,10 @@ class Polymer(Species):
                 **dist_kwargs,
             )
             daughter.parent_pool_label = self.label
-            daughter.spawn_metadata = {"source": "k_homolysis_end_radical"}
+            # Literal pinned as module constant HOMOLYSIS_SPAWN_SOURCE
+            # (defined below; used at call time) -- both closure guards
+            # (producer + runner _HOMOLYSIS_SPAWN_SOURCE) pin it exactly.
+            daughter.spawn_metadata = {"source": HOMOLYSIS_SPAWN_SOURCE}
             daughters.append(daughter)
         return tuple(daughters)
 
@@ -3963,6 +3966,28 @@ POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_REFUSED = "2.4"
 # integration), and STRICT-MINOR acceptance already stops older consumers
 # at the envelope — the exact 2.4 refused-row precedent.
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SPAWNED = "2.5"
+# Schema 2.6 = 2.5 + the POOL-LEVEL homolysis_initiation block (Stage 2 of
+# the radical-homolysis initiation arc, adjudicated rounds 66/67): a pool
+# with the k_homolysis kernel configured serializes its Arrhenius triplet
+# (structured, explicit SI units), the two end-radical daughter pool labels
+# under the open-*1/open-*2 POSITIONAL field names (round-67 ruling (a):
+# never a primary/secondary radical-character claim), the solver kernel name
+# (ruling (c): machine-checkable supersession -- refused explicit homolysis
+# rows stay refused/zero-flux, consumers must never infer the kernel's flux
+# from them), a block-local recipe_revision, and the machine-pinned moment
+# law in the STABLE product forms actually implemented (round-67 P2). Same
+# presence-based minor-bump policy as 2.1-2.5: the emitter stamps 2.6
+# exactly when at least one serialized pool carries the block; no homolysis
+# pool anywhere -> the older stamps apply byte-identically (pinned by test).
+# 2.6 sits BESIDE 2.5, never subsumes it (round-67 §Stage 2 Scope): the
+# spawned-pool closure + condensed closure keep their exact 2.5 semantics,
+# and both daughter pools must appear in pools[], be classified in the
+# configured/spawned closure, and be condensed per the condensed closure
+# (the producer refuses to emit any other shape; the consumer hard-rejects
+# it). NO artifact-level recipe_revision change: the block carries its own
+# block-local revision token (the explicit-dp 2.3 precedent), and
+# STRICT-MINOR acceptance already stops pre-2.6 consumers at the envelope.
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_HOMOLYSIS = "2.6"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
@@ -4348,6 +4373,190 @@ def _serialize_explicit_dp_block(pool: 'Polymer',
     }
 
 
+# Block-local revision token of the pool-level ``homolysis_initiation``
+# block (schema 2.6). Same contract as EXPLICIT_DP_BLOCK_RECIPE_REVISION:
+# names the kernel's rate recipe itself, independent of the artifact-level
+# token; consumers pin it by exact match and reject on mismatch or absence.
+HOMOLYSIS_BLOCK_RECIPE_REVISION = "2026-07-05-radical-homolysis"
+# The solver kernel this block supersedes refused explicit rows FOR (round
+# 67 ruling (c)): versioned term-type style, same convention as
+# ARCHETYPE_TERM_NAMES / mu3_closure. Consumers pin it by exact match --
+# an unknown kernel is flux they cannot reproduce.
+HOMOLYSIS_KERNEL_NAME = "radical_homolysis_initiation/1"
+# Stage-1 spawn provenance pin stamped on every homolysis end-radical
+# daughter (generate_end_radical_daughters). Consumers pin
+# spawn_event_metadata.source by exact match (runner
+# _HOMOLYSIS_SPAWN_SOURCE) and reject any other provenance; the producer
+# closure guard mirrors that rejection (r68).
+HOMOLYSIS_SPAWN_SOURCE = "k_homolysis_end_radical"
+# Normative moment law of the radical-homolysis initiation kernel, pinned
+# in the STABLE product forms actually implemented (round-67 P2;
+# rmgpy/solver/polymer.pyx, the khom_* RHS section). Same contract as
+# EXPLICIT_DP_SIDECAR_RECIPE: consumers pin these strings independently and
+# reject on mismatch -- editing the solver algebra without re-verifying and
+# re-dating these strings (and HOMOLYSIS_BLOCK_RECIPE_REVISION) breaks the
+# contract.
+HOMOLYSIS_SIDECAR_RECIPE = {
+    "event_rate": ("R = k(T)*max(mu1 - mu0, 0) [mol/(m^3 s)]; "
+                   "k(T) = A*T^n*exp(-Ea/(R_gas*T)) evaluated at the "
+                   "RUNTIME temperature (round 66: never a precomputed "
+                   "scalar); a chain of length n has n-1 breakable bonds"),
+    "parent_debit": ("dmu0 -= R; dmu1 -= R*B1 computed as k*(mu2 - mu1); "
+                     "dmu2 -= R*B2 computed as k*(mu3 - mu2); mu3 from the "
+                     "log_lagrange/1 closure"),
+    "daughter_credit": ("EACH of the two end-radical daughter pools: "
+                        "dmu0 += R; dmu1 += k*(mu2 - mu1)/2; "
+                        "dmu2 += k*(2*mu3 - 3*mu2 + mu1)/6 -- STABLE "
+                        "direct forms (round-67 P2): never B1/B2 ratios "
+                        "re-multiplied by R (catastrophic cancellation "
+                        "near DP -> 1 exhaustion)"),
+    "totals": ("dmu0_total = +R = k(T)*max(mu1 - mu0, 0); dmu1_total = 0 "
+               "(mass conserved, machine precision); dmu2_total = "
+               "k*(mu1 - mu3)/3 = -k*(mu3 - mu1)/3 (the legacy "
+               "Ziff-McGrady random-scission second-moment source)"),
+    "out_of_domain": ("zero flux (warn once per pool per rebuild) when "
+                      "mu2 < mu1, mu3 is nonfinite, or "
+                      "2*mu3 - 3*mu2 + mu1 < 0 (B1, B2 >= 0 does NOT imply "
+                      "a nonnegative daughter mu2 credit; round-67 P1)"),
+    "reversibility": ("one-way, NO gas release: homolysis releases no "
+                      "volatiles, and recombination arrives via the "
+                      "discovered chemistry conduit, never this kernel"),
+}
+
+
+def _serialize_homolysis_initiation_block(pool: 'Polymer'
+                                          ) -> Optional[Dict[str, Any]]:
+    """Serialize the pool's k_homolysis kernel as the pool-level
+    ``homolysis_initiation`` block (schema 2.6), or return None when the
+    kernel is absent (kernel-free pools emit nothing -- presence-gated
+    artifacts stay byte-identical, pinned by test).
+
+    The triplet is re-normalized through ``validate_k_homolysis`` (the
+    shared single source of truth, same posture as
+    ``_serialize_radical_qssa_channel``) so a directly-constructed Polymer
+    carrying a garbage dict raises here instead of poisoning the artifact.
+    The daughter fields are named for the open-*1/open-*2 POSITIONAL
+    contract (round-67 ruling (a)); their values follow the ratified label
+    convention (K_HOMOLYSIS_DAUGHTER_SUFFIXES), which consumers pin."""
+    khom = getattr(pool, "k_homolysis", None)
+    if khom is None:
+        return None
+    # Lazy import (the QSSA serializer's cycle-avoidance idiom).
+    from rmgpy.solver.polymer import (K_HOMOLYSIS_DAUGHTER_SUFFIXES,
+                                      validate_k_homolysis)
+    label = getattr(pool, "label", "")
+    trip = validate_k_homolysis(label, khom)
+    return {
+        "enabled": True,
+        "kinetics": {
+            "A": float(trip["A"]), "n": float(trip["n"]),
+            "Ea": float(trip["Ea"]),
+            "units": {"A": "s^-1", "Ea": "J/mol"},
+        },
+        "open_site_1_radical_pool":
+            f"{label}{K_HOMOLYSIS_DAUGHTER_SUFFIXES[0]}",
+        "open_site_2_radical_pool":
+            f"{label}{K_HOMOLYSIS_DAUGHTER_SUFFIXES[1]}",
+        "kernel": HOMOLYSIS_KERNEL_NAME,
+        "recipe_revision": HOMOLYSIS_BLOCK_RECIPE_REVISION,
+        "recipe": dict(HOMOLYSIS_SIDECAR_RECIPE),
+    }
+
+
+def _assert_homolysis_serialization_closure(pools: List[Dict[str, Any]],
+                                            carriers: List[Dict[str, Any]],
+                                            condensed_labels,
+                                            configured_labels,
+                                            spawned_labels) -> None:
+    """Producer-side closure guard for the schema-2.6 block, the exact
+    mirror of the consumer's _check_homolysis_initiation (r68 adjudication:
+    build_polymer_moments_artifact must never emit an artifact the
+    reference loader rejects): the kernel-carrying pool itself must be
+    solver-configured (the loader skips unconfigured pools -- a block
+    there is a silently dropped kernel), and each of its two end-radical
+    daughter pools must be present in pools[], solver-configured (in
+    ``configured_labels``) and NOT spawned-classified (``spawned_labels``
+    is the configured set's complement per schema 2.5), condensed (a
+    non-empty ``phase_species`` fully inside the artifact's condensed
+    closure), and carry the Stage-1 spawn provenance pin
+    (spawn_event_metadata.source == HOMOLYSIS_SPAWN_SOURCE). Daughters are
+    eagerly registered at model setup (rmgpy/rmg/input.py step 4d) and
+    solver-configured (polymer.pyx _flatten_homolysis_state hard-errors
+    otherwise), so a miss here means a broken caller, never a valid
+    artifact."""
+    by_label = {p.get("label"): p for p in pools}
+    configured_labels = set(configured_labels)
+    spawned_labels = set(spawned_labels)
+    for carrier in carriers:
+        lab = carrier.get("label", "")
+        if lab not in configured_labels:
+            raise ValueError(
+                f"Pool '{lab}': carries a homolysis_initiation block but "
+                f"is not among the solver-configured pools "
+                f"(configured_pool_labels). The consumer only builds "
+                f"configured pools, so the kernel would be silently "
+                f"dropped on load; refusing to serialize (consumers "
+                f"hard-reject it).")
+        block = carrier["homolysis_initiation"]
+        for field in ("open_site_1_radical_pool",
+                      "open_site_2_radical_pool"):
+            d_label = block[field]
+            d_entry = by_label.get(d_label)
+            if d_entry is None:
+                raise ValueError(
+                    f"Pool '{lab}': k_homolysis is enabled but its "
+                    f"end-radical daughter pool '{d_label}' ({field}) is "
+                    f"missing from the serialized pool registry. The "
+                    f"producer spawns both daughters at model setup "
+                    f"(rmgpy/rmg/input.py step 4d); refusing to serialize "
+                    f"a homolysis_initiation block whose daughter the "
+                    f"artifact cannot name (consumers hard-reject it).")
+            if d_label not in configured_labels:
+                raise ValueError(
+                    f"Pool '{lab}': end-radical daughter pool '{d_label}' "
+                    f"is not among the solver-configured pools "
+                    f"(configured_pool_labels). Homolysis daughters are "
+                    f"eagerly solver-configured by design (rmgpy/rmg/"
+                    f"input.py step 4d; polymer.pyx "
+                    f"_flatten_homolysis_state hard-errors otherwise) and "
+                    f"the consumer only builds configured pools -- the "
+                    f"kernel's credits would have no solver home; "
+                    f"refusing to serialize (consumers hard-reject it).")
+            if d_label in spawned_labels:
+                raise ValueError(
+                    f"Pool '{lab}': end-radical daughter pool '{d_label}' "
+                    f"is classified in the spawned-pool closure "
+                    f"(conventions.spawned_pools, the configured set's "
+                    f"complement per schema 2.5). A spawned-classified "
+                    f"homolysis daughter contradicts the eager-configured "
+                    f"daughter design; refusing to serialize (consumers "
+                    f"hard-reject it).")
+            members = d_entry.get("phase_species") or []
+            missing = sorted(m for m in members if m not in condensed_labels)
+            if not members or missing:
+                raise ValueError(
+                    f"Pool '{lab}': end-radical daughter pool '{d_label}' "
+                    f"is not condensed per the artifact's condensed closure "
+                    f"(phase_species={members}, not condensed={missing}). "
+                    f"The kernel's fragment credits land in the daughter's "
+                    f"moment slots, so an un-condensed daughter is the "
+                    f"item-16 mass-balance hazard shape -- pass the live "
+                    f"core_species/condensed_species (the engine mask marks "
+                    f"configured daughter pools condensed); refusing to "
+                    f"serialize.")
+            meta = d_entry.get("spawn_event_metadata")
+            if not isinstance(meta, dict) or \
+                    meta.get("source") != HOMOLYSIS_SPAWN_SOURCE:
+                raise ValueError(
+                    f"Pool '{lab}': end-radical daughter pool '{d_label}' "
+                    f"lacks the Stage-1 spawn provenance pin (expected "
+                    f"spawn_event_metadata.source == "
+                    f"{HOMOLYSIS_SPAWN_SOURCE!r}, got {meta!r}). Homolysis "
+                    f"daughters are producer-spawned pools, never user "
+                    f"pools, and the consumer hard-rejects any other "
+                    f"provenance; refusing to serialize.")
+
+
 def _serialize_radical_qssa_channel(pool: 'Polymer') -> Optional[Dict[str, Any]]:
     """Serialize the pool's radical_qssa_unzip config for the sidecar, or
     return None when the channel is absent (legacy pools emit nothing).
@@ -4620,6 +4829,14 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
         initial_explicit_moles=initial_explicit_moles)
     if explicit_dp_block is not None:
         d["explicit_dp"] = explicit_dp_block
+    # Radical-homolysis initiation block (schema 2.6, Stage 2). Absent ->
+    # emit nothing (kernel-free pools stay byte-identical, presence-gated).
+    # POOL-LEVEL like explicit_dp (the kernel is solver-owned rate algebra
+    # keyed on the pool, not a reactions[] channel); an old consumer is
+    # stopped by the 2.6 schema stamp itself (STRICT-MINOR acceptance).
+    homolysis_block = _serialize_homolysis_initiation_block(pool)
+    if homolysis_block is not None:
+        d["homolysis_initiation"] = homolysis_block
     phase_species: List[str] = []
     bookkeeping_species: List[str] = []
     if core_species:
@@ -5095,6 +5312,15 @@ def build_polymer_moments_artifact(pool_registry,
     # vocabulary, not rate algebra).
     if spawned_pool_labels:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SPAWNED
+    # Homolysis-initiation vocabulary (schema 2.6) is POOL-level, the
+    # strongest SHAPE stamp of all (2.6 > 2.5 > ...), presence-gated like
+    # every prior minor. It sits BESIDE 2.5: the spawned_pools emission and
+    # the condensed closure below are untouched. Artifact-level
+    # recipe_revision stays untouched too -- the block carries its own
+    # block-local revision token (the explicit-dp 2.3 precedent).
+    homolysis_carriers = [p for p in pools if "homolysis_initiation" in p]
+    if homolysis_carriers:
+        schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_HOMOLYSIS
 
     # conventions.condensed_species closure (schema 2.5): a spawned pool's
     # phase_species (canonical proxy + mu-dummies collected from the same
@@ -5114,6 +5340,18 @@ def build_polymer_moments_artifact(pool_registry,
         condensed_labels.update(
             lbl for p in pools if p["label"] in spawned_set
             for lbl in (p.get("phase_species") or []))
+
+    # Producer-side schema-2.6 closure guard (r68 mirror of the runner's
+    # _check_homolysis_initiation): the carrier and both end-radical
+    # daughters of every kernel-carrying pool must be solver-configured
+    # (and the daughters never spawned-classified), present in pools[],
+    # condensed per the FINAL condensed closure (2.5 spawned additions
+    # included), and provenance-pinned -- the consumer hard-rejects any
+    # other shape, so the producer refuses to emit it.
+    if homolysis_carriers:
+        _assert_homolysis_serialization_closure(
+            pools, homolysis_carriers, condensed_labels,
+            configured_set, spawned_pool_labels)
 
     conventions = {
         # format_doc mirrors schema_version (same vocabulary fork above):
