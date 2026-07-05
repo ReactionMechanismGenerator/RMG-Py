@@ -8861,6 +8861,174 @@ class TestRefusalAdjudicationSurvivesRebuild:
         assert np.array_equal(dn[:5], _VE_CONTROL_PIN)
 
 
+class TestSameProxyRefusalFluxDead:
+    """r74 adjudication (PP run-5 "H fountain", forensics
+    /home/alon/Projects/polymer/PP/rmg/run5 +
+    /home/alon/Projects/polymer/PP/ta-diag-run5): the two degenerate core
+    rows ``H(1) + rad_end <=> rad_end`` carry the SAME resolved pool proxy
+    Species on BOTH sides, so Keq collapses to G(H) alone and the reverse
+    leg is a unimolecular H source (kb ~ 1e16 in this fixture) that strips
+    the pool's mu1 at one H-mass per event -- the TA diagnostic volatilized
+    the whole 10 mg PP sample as H2 at 889 C, element-impossible. The
+    same-proxy refusal must ride the FULL r71 refusal contract: re-derived
+    at the rebuild restamp (FIX 2) regardless of upstream stamp loss, zero
+    core RHS flux, zero edge enlargement inputs (FIX 3), archetype ignored
+    while refused.
+
+    RED-FIRST: every red assertion below was quoted FAILING on pre-fix HEAD
+    (9a7530b8b) -- pre-fix the core row produces H at +8.1e17 mol/s while
+    draining pool mu1/mu2, and the edge row leaks -8.1e17 into
+    edge_reaction_rates."""
+
+    @staticmethod
+    def _degenerate_fixture():
+        """Run-5 degenerate row built through the REAL generation route
+        (make_new_reaction handshake + fold-back + species_dict resolution),
+        assembled into a core species list with pool config -- the same
+        recipe as TestRefusalAdjudicationSurvivesRebuild's promotion half."""
+        from rmgpy.data.kinetics import TemplateReaction
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer import Polymer
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        prim, sec = pp.generate_end_radical_daughters()
+        cerm._register_polymer(sec, generate_thermo=False)
+        rad = sec.molecule[0].copy(deep=True)
+        capped = rad.copy(deep=True)
+        capped.saturate_radicals()
+        forward = TemplateReaction(
+            reactants=[Molecule().from_smiles('[H]'), rad],
+            products=[capped],
+            family='R_Recombination', is_forward=True, reversible=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')))
+        out, is_new = cerm.make_new_reaction(
+            forward, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is not None and is_new
+        # LIVENESS: the run-5 laundering mechanism itself -- the H-capped
+        # adduct resolved back onto the SAME rad_end pool object.
+        polymer_p = [s for s in out.products if isinstance(s, Polymer)]
+        assert polymer_p and polymer_p[0] is sec, (
+            "FIXTURE BROKEN: product did not fold back onto the rad_end pool")
+        h_spc = next(s for s in out.reactants if not isinstance(s, Polymer))
+
+        cerm.add_species_to_edge(sec)
+        cerm.add_species_to_core(sec)     # brings the mu dummies along
+        cerm.add_species_to_core(h_spc)
+        core_species = list(cerm.core.species)
+        for s in core_species:
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        # Polymer thermo delegates to its ACTIVE proxy Species
+        # (get_free_energy -> get_proxy_species().thermo -- the end-radical
+        # daughter's reactive proxy, not baseline): the reversible row's Keq
+        # needs it resolvable without a thermo database.
+        sec.get_proxy_species().thermo = _trivial_nasa(_GAV_COMMENT)
+        sec.baseline_proxy.thermo = _trivial_nasa(_GAV_COMMENT)
+        idx = {s.label: i for i, s in enumerate(core_species)}
+        mask = np.ones(len(core_species), dtype=bool)
+        for lbl in (sec.label, sec.label + '_mu0', sec.label + '_mu1',
+                    sec.label + '_mu2'):
+            mask[idx[lbl]] = False
+        pool = PolymerPoolConfig(
+            label=sec.label, xs=2, explicit_dp_to_species_index={},
+            mu_indices=(idx[sec.label + '_mu0'], idx[sec.label + '_mu1'],
+                        idx[sec.label + '_mu2']),
+            monomer_poly_index=None, monomer_mw_g_mol=42.08,
+            k_scission=0.0, k_unzip=0.0)
+        return out, h_spc, core_species, mask, pool
+
+    def _build_rs(self, out, h_spc, core_species, mask, pool,
+                  core_rxns, edge_rxns):
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={h_spc: 0.0},
+            V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={pool.label: (1.0, 50.0, 3000.0)},
+            termination=[], allow_default_prospective_edge=True)
+        # The adjudicated run-5 arrival state (r71, binding): by rebuild
+        # time the row can arrive UNSTAMPED (stamps are ad-hoc attributes,
+        # losable across canonical dedup / __reduce__) -- the rebuild
+        # restamp must re-derive the refusal regardless.
+        out.polymer_refused = False
+        out.polymer_refused_accumulating = False
+        rs.initialize_model(core_species, core_rxns, [], edge_rxns)
+        return rs
+
+    def _with_db(self, body):
+        import rmgpy.data.rmg as rmg_data
+        from rmgpy.data.base import ForbiddenStructures
+        from rmgpy.data.rmg import RMGDatabase
+
+        old_db = rmg_data.database
+        db = RMGDatabase()
+        db.forbidden_structures = ForbiddenStructures()
+        rmg_data.database = db
+        try:
+            return body()
+        finally:
+            rmg_data.database = old_db
+
+    def test_red_same_proxy_core_row_restamped_refused_and_rhs_dead(self):
+        """RED (restamp + core RHS): the rebuild restamp must re-derive the
+        same-proxy refusal on the core row, and the refused row must apply
+        ZERO RHS flux. Pre-fix: reaction_refused[0] == 0 and the residual
+        produces H at +8.1e17 mol/s while draining pool mu1/mu2 -- the H
+        fountain running inside the RMG solver."""
+        def body():
+            out, h_spc, core_species, mask, pool = self._degenerate_fixture()
+            rs = self._build_rs(out, h_spc, core_species, mask, pool,
+                                [out], [])
+            # LIVENESS PIN -- BEFORE the red asserts: the reverse leg
+            # genuinely carries rate (kb = kf/Keq with Keq = f(G_H) alone),
+            # so the zeros below cannot mean "fixture dead".
+            assert rs.kb[0] > 0.0, (
+                "FIXTURE BROKEN, not a valid red: the degenerate row "
+                "carries no reverse rate coefficient at all")
+            # THE red asserts (r74 riding r71 FIX 2 + item-18 flux gate):
+            assert getattr(out, 'polymer_refused', False) is True, (
+                "rebuild restamp did not re-derive the same-proxy refusal "
+                "(the run-5 arrival state runs live)")
+            assert rs.reaction_refused[0] == 1, (
+                "reaction_refused missed the same-proxy degenerate core row")
+            dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            assert np.all(dn == 0.0), (
+                "same-proxy-refused core row applied nonzero RHS flux -- "
+                "the H fountain (unimolecular H source, Keq = f(G_H) alone) "
+                "is live in the solver")
+        self._with_db(body)
+
+    def test_red_same_proxy_edge_row_flux_dead_for_enlargement(self):
+        """RED (edge half, r71 FIX 3 inheritance): the same-proxy refusal
+        must zero the refused EDGE row's enlargement inputs
+        (edge_reaction_rates); only the ungated per-reaction counterfactual
+        survives (diagnostic, never flux). Pre-fix the row leaks -8.1e17
+        into edge_reaction_rates."""
+        def body():
+            out, h_spc, core_species, mask, pool = self._degenerate_fixture()
+            rs = self._build_rs(out, h_spc, core_species, mask, pool,
+                                [], [out])
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+            # LIVENESS PIN -- BEFORE the red asserts: the row genuinely
+            # carries reverse flux; the ungated counterfactual sees it, so
+            # the zero below cannot mean "fixture dead".
+            assert rs.edge_reaction_rates_ungated[0] != 0.0, (
+                "FIXTURE BROKEN, not a valid red: the degenerate edge row "
+                "carries no flux at all")
+            # THE red asserts:
+            assert rs.reaction_refused[0] == 1, (
+                "restamp missed the same-proxy degenerate EDGE row")
+            assert rs.edge_reaction_rates[0] == 0.0, (
+                "same-proxy-refused edge row leaked into "
+                "edge_reaction_rates (the enlargement input that promoted "
+                "run-5's rows to core)")
+        self._with_db(body)
+
+
 class TestSpawnGateDefectAwareMass:
     """FR1-K2 mass-consumer audit (round-72 P2): the spawn-gate snapshot's
     per-chain event mass must use the EXACT condensed mass

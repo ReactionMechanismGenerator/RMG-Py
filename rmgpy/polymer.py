@@ -2867,16 +2867,38 @@ def stamp_gas_association_refusal(forward) -> None:
     stamp (no deck-level gate exists for refusals today); the long-term
     conduit will replace it. An earlier refusal stamp (item-18 detector) is
     never overwritten -- its census reason wins.
+
+    SECOND refused shape (adjudicated adversarial round 74, grounded in the
+    PP run-5 TA diagnostic): the SAME-PROXY degenerate row, e.g.
+    ``H(1) + rad_end <=> rad_end`` -- the resolved pool proxy Species is
+    IDENTICAL on both sides (the H-capped adduct folds back onto the
+    rad_end pool in the handshake and resolves to the same registered
+    object) while gas species appear/disappear across the row. Because the
+    polymer participant cancels, Keq collapses to the gas species' free
+    energy alone and the thermo-reversed direction becomes a unimolecular
+    gas source: run-5's TA replay volatilized the entire 10 mg PP sample as
+    pure H2 at 889 C -- element-impossible (carbon leaving as hydrogen).
+    The row is a moment identity wearing a reaction's clothes; its Keq is
+    meaningless BY CONSTRUCTION. See :func:`_stamp_same_proxy_refusal` for
+    the three-conjunct predicate (incl. the DP-scale carve-out that keeps
+    genuine same-pool depropagation/unzip/chip rows live).
     """
     if getattr(forward, "polymer_refused", False):
         return  # already refused upstream; keep that census reason
     reactants = getattr(forward, "reactants", None) or []
     products = getattr(forward, "products", None) or []
-    r_condensed = any(isinstance(s, Polymer) for s in reactants)
-    p_condensed = any(isinstance(s, Polymer) for s in products)
-    if r_condensed == p_condensed:
-        # no condensed participant at all, or condensed on BOTH sides
-        # (routing chemistry) -- not the gas-association bridge.
+    polymer_r = [s for s in reactants if isinstance(s, Polymer)]
+    polymer_p = [s for s in products if isinstance(s, Polymer)]
+    r_condensed = bool(polymer_r)
+    p_condensed = bool(polymer_p)
+    if r_condensed and p_condensed:
+        # condensed on BOTH sides: ordinarily routing chemistry, EXCEPT the
+        # r74 same-proxy degenerate shape (run-5 H fountain).
+        _stamp_same_proxy_refusal(forward, reactants, products,
+                                  polymer_r, polymer_p)
+        return
+    if not r_condensed and not p_condensed:
+        # no condensed participant at all -- ordinary gas chemistry.
         return
 
     def _all_gas_radicals(side):
@@ -2896,6 +2918,97 @@ def stamp_gas_association_refusal(forward) -> None:
             or (r_condensed and _all_gas_radicals(products))):
         forward.polymer_refused = True
         forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
+
+
+def _polymer_participants_identical(polymer_reactants, polymer_products) -> bool:
+    """True when the Polymer participants on the two sides of a row pair off
+    IDENTICALLY: same resolved pool proxy Species by object identity (the
+    post-``make_new_species`` / rebuild state -- ``species_dict`` and the
+    solver's core/edge lists hand every side the same registered object),
+    with a registered-pool label fallback for copies (pool labels are unique
+    by ``_register_polymer``'s first-writer-wins dedup). The fallback
+    additionally requires an equal ``_reacted_class``: a handshake
+    reacted-copy daughter (FEATURE / SCISSION / CHIP / ...) carries that
+    stamp as the RECORD of a polymer state transition, so an unresolved
+    same-label daughter never pairs off against its unreacted parent (the
+    pinned H-abstraction routing negative control). Identical pairing means
+    NO polymer participant undergoes any pool/proxy/state transition
+    anywhere in the row -- r74 conjuncts (1) and (3a). Any polymer that
+    moves to a distinct pool (real H-capping's target end-state, feature
+    '_mod' daughters, scission daughters) breaks the pairing and the row is
+    NOT the degenerate shape."""
+    if not polymer_reactants or len(polymer_reactants) != len(polymer_products):
+        return False
+    unmatched = list(polymer_products)
+    for r in polymer_reactants:
+        for p in unmatched:
+            if r is p or (getattr(r, 'label', '')
+                          and r.label == getattr(p, 'label', None)
+                          and getattr(r, '_reacted_class', None)
+                          == getattr(p, '_reacted_class', None)):
+                unmatched.remove(p)
+                break
+        else:
+            return False
+    return True
+
+
+def _stamp_same_proxy_refusal(forward, reactants, products,
+                              polymer_r, polymer_p) -> None:
+    """r74 same-proxy refusal (PP run-5 "H fountain"; forensics
+    ~/Projects/polymer/PP/rmg/run5 + ta-diag-run5). Refuse (stamp-but-keep,
+    census reason "conduit-deferred", identical to the r63 gas-association
+    refusal contract) a condensed-both-sides row when ALL of:
+
+    1. the resolved polymer pool/proxy participants are IDENTICAL on the
+       reactant and product side (:func:`_polymer_participants_identical`),
+       AND
+    2. the non-polymer (gas) sides genuinely DIFFER -- gas species appear or
+       disappear across the row (a pure identity row nets nothing and is
+       not the laundered shape), AND
+    3. there is no distinct polymer state transition the row could be
+       booking. Decided at DP scale (the reformulation adjudication asked
+       to be verified at the chokepoint): a net gas-side mass change BELOW
+       ``_VE_ATOM_TRANSFER_UNITS`` (0.5) source-monomer-equivalents cannot
+       be a repeat-unit-count change -- it claims a chemical end-state
+       transition (H-capping / H-loss) that same-pool resolution cannot
+       represent, so mu1 would be moved as a laundered mass bucket with a
+       Keq of the gas species alone (run-5's |a| = MW(H)/monomer = 0.0240,
+       the H fountain). A monomer-scale change (|a| >= 0.5) IS a genuine
+       within-pool DP transition -- depropagation / unzip / discrete-chip,
+       the solver VE/chip dispatch's design domain -- and stays LIVE
+       (pinned bitwise by r71's
+       test_negative_control_live_ve_row_with_real_polymer_keeps_flux).
+
+    Real H-capping to a DISTINCT target pool state fails conjunct 1 and is
+    never refused. Rides every r71 chokepoint for free: this function is
+    called from :func:`stamp_gas_association_refusal`, which runs at
+    make_new_reaction classification, merges across canonical dedup
+    (``merge_polymer_adjudication_stamps``), is idempotently re-run over
+    chain(core, edge) at the solver rebuild restamp, and feeds the
+    item-18/r71 flux gates (zero core RHS, zero edge enlargement inputs)
+    and the unstamped-proxy hard-fail exemption."""
+    if not _polymer_participants_identical(polymer_r, polymer_p):
+        return  # a polymer moves pool/proxy/state -- real conduit chemistry
+    gas_r = defaultdict(int)
+    gas_p = defaultdict(int)
+    for s in reactants:
+        if not isinstance(s, Polymer):
+            gas_r[id(s)] += 1
+    for s in products:
+        if not isinstance(s, Polymer):
+            gas_p[id(s)] += 1
+    if gas_r == gas_p:
+        return  # pure identity row: no net gas change, nothing laundered
+    monomer_mw = max((float(getattr(p, 'monomer_mw_g_mol', 0.0) or 0.0)
+                      for p in polymer_r), default=0.0)
+    net_mass = abs(_net_nonpolymer_mass_g_mol(reactants, products))
+    if monomer_mw > 0.0 and net_mass >= _VE_ATOM_TRANSFER_UNITS * monomer_mw:
+        # Monomer-scale DP transition (depropagation/unzip/chip):
+        # representable within the pool by the VE/chip dispatch -- live.
+        return
+    forward.polymer_refused = True
+    forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
 
 
 def merge_polymer_adjudication_stamps(source, target) -> None:

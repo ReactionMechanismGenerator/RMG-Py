@@ -1609,3 +1609,152 @@ class TestRefusalStampMergeOnCanonicalDedup:
         assert out.polymer_refused is False
         assert out.polymer_refused_accumulating is False
         assert int(out.polymer_flux_archetype) == 0
+
+
+class TestSameProxyRefusalAtMakeNewReaction:
+    """r74 adjudication (PP run-5 "H fountain", forensics
+    /home/alon/Projects/polymer/PP/rmg/run5 +
+    /home/alon/Projects/polymer/PP/ta-diag-run5): run-5's core carried two
+    degenerate dR_Recombination rows of the form ``H(1) + rad_end <=>
+    rad_end`` -- the SAME resolved pool proxy Species on BOTH sides (the
+    H-capped adduct folds back onto the rad_end pool in the handshake, and
+    make_new_species resolves it to the identical registered object).
+    Because the polymer participant is identical across the row, Keq
+    collapses to G(H) alone and the thermo-reversed direction becomes a
+    unimolecular H source: the TA diagnostic volatilized the entire 10 mg PP
+    sample as pure H2 at 889 C -- element-impossible (carbon leaving as
+    hydrogen). The row is a moment identity wearing a reaction's clothes;
+    its Keq is meaningless BY CONSTRUCTION.
+
+    Adjudicated fix (class (a), refusal): ``stamp_gas_association_refusal``
+    -- the SAME function every r71 chokepoint rides (make_new_reaction
+    stamping, canonical-dedup merge, rebuild restamp) -- must stamp the shape
+    polymer_refused/"conduit-deferred" when (1) the polymer participants
+    pair off IDENTICALLY across the row, (2) the non-polymer (gas) sides
+    genuinely differ, and (3) the net gas-side mass change is ATOM-scale
+    (|a| < 0.5 source-monomer-equivalents): a sub-monomer change claims a
+    chemical end-state transition that same-pool resolution cannot
+    represent. A monomer-scale change IS a within-pool DP transition
+    (depropagation / unzip / chip -- the VE/chip dispatch's design domain)
+    and is NOT refused (pinned bitwise by r71's
+    test_negative_control_live_ve_row_with_real_polymer_keeps_flux).
+
+    RED-FIRST: the red assertions below were quoted FAILING on pre-fix HEAD
+    (9a7530b8b)."""
+
+    @staticmethod
+    def _rad_end_cerm():
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        prim, sec = pp.generate_end_radical_daughters()
+        cerm._register_polymer(prim, generate_thermo=False)
+        cerm._register_polymer(sec, generate_thermo=False)
+        return cerm, pp, prim, sec
+
+    def test_red_run5_same_proxy_degenerate_row_is_refused(self):
+        """RED: the run-5 degenerate shape built through the REAL generation
+        route (family-tagged TemplateReaction -> make_new_reaction handshake
+        -> fold-back -> species_dict resolution) must come out refused.
+        Pre-fix it comes out LIVE: polymer_refused False, archetype
+        VOLATILE_EJECTION with a = -MW(H)/monomer = -0.0240 -- the H
+        fountain's forward leg."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import Polymer
+
+        cerm, pp, prim, sec = self._rad_end_cerm()
+        rad = sec.molecule[0].copy(deep=True)
+        capped = rad.copy(deep=True)
+        capped.saturate_radicals()
+        rxn = TemplateReaction(
+            reactants=[Molecule().from_smiles('[H]'), rad],
+            products=[capped],
+            family='R_Recombination', is_forward=True, reversible=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')))
+        out, is_new = cerm.make_new_reaction(
+            rxn, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is not None and is_new
+        # LIVENESS PINS -- BEFORE the red assertions: the H-capped adduct
+        # must have resolved back onto the SAME rad_end pool object on the
+        # product side (the run-5 laundering mechanism itself). A failure
+        # HERE means the fixture is dead, not a valid red.
+        polymer_r = [s for s in out.reactants if isinstance(s, Polymer)]
+        polymer_p = [s for s in out.products if isinstance(s, Polymer)]
+        assert len(polymer_r) == 1 and len(polymer_p) == 1 and \
+            polymer_r[0] is polymer_p[0], (
+                "FIXTURE BROKEN, not a valid red: the H-capped product did "
+                "not resolve back onto the SAME rad_end pool proxy")
+        assert any(not isinstance(s, Polymer) for s in out.reactants), (
+            "FIXTURE BROKEN: no gas participant -- nothing is laundered")
+        # THE red assertions (r74): the degenerate same-proxy row must be
+        # stamped refused (conduit-deferred), exactly like the r63 refusal
+        # class -- pre-fix it is False (the row runs live).
+        assert out.polymer_refused is True, (
+            "same-proxy degenerate row (H + rad_end <=> rad_end) came out "
+            "of make_new_reaction UNREFUSED -- the run-5 H-fountain shape "
+            "is live")
+        assert out.polymer_refused_accumulating is False  # conduit-deferred
+
+    def test_distinct_target_pool_h_capping_is_not_refused(self):
+        """Negative (r74 mandate): real H-capping -- the polymer moves to a
+        DISTINCT target pool state -- must NOT be refused by the same-proxy
+        predicate. Exercised at the exact function every chokepoint rides
+        (the r71 FIX 2 rebuild restamp calls it on every core AND edge
+        row)."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import stamp_gas_association_refusal
+
+        cerm, pp, prim, sec = self._rad_end_cerm()
+        h_spc = Species(molecule=[Molecule().from_smiles('[H]')])
+        h_spc.label = 'H'
+        rxn = Reaction(
+            reactants=[h_spc, sec], products=[pp],
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')), reversible=True)
+        stamp_gas_association_refusal(rxn)
+        assert getattr(rxn, 'polymer_refused', False) is False, (
+            "distinct-target-pool H-capping shape was wrongly refused")
+
+    def test_pure_identity_row_is_not_refused(self):
+        """Negative (conjunct 2): a row with NO net gas change (identical
+        non-polymer participants both sides) is not the laundered shape --
+        nothing appears or disappears."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import stamp_gas_association_refusal
+
+        cerm, pp, prim, sec = self._rad_end_cerm()
+        h_spc = Species(molecule=[Molecule().from_smiles('[H]')])
+        h_spc.label = 'H'
+        rxn = Reaction(
+            reactants=[h_spc, sec], products=[h_spc, sec],
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')), reversible=True)
+        stamp_gas_association_refusal(rxn)
+        assert getattr(rxn, 'polymer_refused', False) is False
+
+    def test_monomer_scale_same_pool_ejection_is_not_refused(self):
+        """Negative (conjunct 3, DP-scale): same-pool VOLATILE_EJECTION at
+        monomer scale (P -> P + propene, a = 1.0) is a genuine within-pool
+        DP transition (depropagation/unzip) handled by the solver's VE
+        dispatch -- NOT refused. Mirrors (and must never contradict) r71's
+        bitwise-pinned test_negative_control_live_ve_row_with_real_polymer_
+        keeps_flux."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import stamp_gas_association_refusal
+
+        cerm, pp, prim, sec = self._rad_end_cerm()
+        propene = Species(molecule=[Molecule().from_smiles('C=CC')])
+        propene.label = 'propene'
+        rxn = Reaction(
+            reactants=[pp], products=[pp, propene],
+            kinetics=Arrhenius(A=(2.0, '1/s'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')), reversible=False)
+        stamp_gas_association_refusal(rxn)
+        assert getattr(rxn, 'polymer_refused', False) is False, (
+            "monomer-scale same-pool depropagation was wrongly refused -- "
+            "this contradicts the r71 bitwise-pinned VE negative control")
