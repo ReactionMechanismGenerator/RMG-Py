@@ -594,6 +594,15 @@ class PolymerPhase(object):
         Note: If initial_explicit contains non-polymer species (e.g. dissolved gases),
         their mass contributes to the total phase volume. This assumes 'density'
         refers to the mixture density.
+
+        FR1-K2 mass audit note (round-72 P2): the tail term
+        ``mu1 * monomer_mw`` is deliberately NOT defect-aware. This is a
+        t=0 computation over the DECK pools' declared initial_moments;
+        X-loss feature pools (chain_mass_defect_g_mol > 0) are
+        producer-spawned born-at-zero daughters, never deck pools with
+        initial_moments, so their defect term (mu0 * defect) is exactly
+        0.0 at the only instant this runs -- and V_poly is constant
+        thereafter by contract.
         """
         total_mass_kg = 0.0
 

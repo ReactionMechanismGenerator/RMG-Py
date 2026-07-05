@@ -93,7 +93,7 @@ class _GateModel:
 
 # pool_stats with E[n]=1, MW=1 make a representative's g equal its gross
 # entry — fabricated-snapshot arithmetic reads off directly.
-_PE_STATS = {"PE": (1.0, 1.0)}
+_PE_STATS = {"PE": (1.0, 1.0, 0.0)}
 
 
 def _phenolic(label):
@@ -453,7 +453,7 @@ class TestMotifLedger:
         ledger = [e1, e2]
         # pool_stats PE: E[n]=2, MW=5 -> g_X = 0.3*10 = 3.0, g_Y = 0.1*10 = 1.0;
         # engine-attributed canonical-proxy total = 6.0.
-        snapshot = ({"X": 0.3, "Y": 0.1}, {"PE": (2.0, 5.0)}, 6.0)
+        snapshot = ({"X": 0.3, "Y": 0.1}, {"PE": (2.0, 5.0, 0.0)}, 6.0)
 
         # Denominator = proxies (6) + DEDUPED reps (g_X + g_Y = 4) = 10 —
         # X appears in two entries but counts once.
@@ -466,6 +466,33 @@ class TestMotifLedger:
                               representatives=[("Z", "NOPOOL")])
         assert _spawn_gate_fraction(e3, ledger + [e3], snapshot) == pytest.approx(0.0)
         assert _spawn_gate_fraction(e1, ledger, None) == 0.0
+
+    def test_snapshot_event_mass_is_defect_aware(self):
+        """FR1-K2 mass-consumer audit (round-72 P2): a representative
+        absorbed into an X-loss FEATURE pool carries that pool's EXACT
+        per-chain mass E[n]*MW - chain_mass_defect (the normative
+        condensed_mass_g at mu0=1, mu1=E[n]) -- not the raw E[n]*MW,
+        which overstates every chain by M_X. pool_stats rows are
+        (E[n], MW, defect) triples; a defect-free pool reduces to the
+        legacy product exactly; missing pools still defer to 0."""
+        from rmgpy.polymer import _snapshot_event_mass
+
+        snapshot = ({"X": 0.3, "Y": 0.1},
+                    {"FEAT": (2.0, 5.0, 3.0), "PE": (2.0, 5.0, 0.0)},
+                    0.0)
+        # defect pool: 0.3 * (2*5 - 3) = 2.1, NOT 0.3 * 10 = 3.0
+        assert _snapshot_event_mass(snapshot, "X", "FEAT") == \
+            pytest.approx(0.3 * 7.0)
+        # defect-free pool: legacy product exactly
+        assert _snapshot_event_mass(snapshot, "Y", "PE") == \
+            pytest.approx(0.1 * 10.0)
+        # deferral directions unchanged
+        assert _snapshot_event_mass(snapshot, "X", "NOPOOL") == 0.0
+        assert _snapshot_event_mass(snapshot, "MISSING", "FEAT") == 0.0
+        # a pathological defect exceeding the per-chain moment mass clamps
+        # at 0 (deferral direction, never negative mass)
+        bad = ({"X": 0.3}, {"FEAT": (1.0, 1.0, 5.0)}, 0.0)
+        assert _snapshot_event_mass(bad, "X", "FEAT") == 0.0
 
 
 class TestProcessPolymerCandidatesMultiPool:
@@ -535,7 +562,7 @@ class TestProcessPolymerCandidatesMultiPool:
             representatives=[("phenolic_1st", "PE")],
         ))
         # fraction = 0.5/(0.5+0.5) = 0.5.
-        model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PE": (1.0, 1.0)}, 0.5)
+        model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PE": (1.0, 1.0, 0.0)}, 0.5)
 
         processed, intents = process_polymer_candidates_multipool(
             candidates=[phenolic_chain],
@@ -921,7 +948,7 @@ class TestReactionModelIntegration:
             motif=motif, accumulator_key="motif-0",
             representatives=[("phenolic_1st", "PS")],
         ))
-        model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PS": (1.0, 1.0)}, 0.5)
+        model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PS": (1.0, 1.0, 0.0)}, 0.5)
 
         model._apply_multipool_spawn_pass([phenolic])
 
@@ -980,7 +1007,7 @@ class TestMultiPoolPipelineEndToEnd:
             motif=motif, accumulator_key="motif-0",
             representatives=[("phenolic_1st", "PE")],
         ))
-        gate_model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PE": (1.0, 1.0)}, 0.5)
+        gate_model.polymer_flux_snapshot = ({"phenolic_1st": 0.5}, {"PE": (1.0, 1.0, 0.0)}, 0.5)
 
         processed, intents = process_polymer_candidates_multipool(
             candidates=[novel],

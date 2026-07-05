@@ -1910,6 +1910,12 @@ class HybridPolymerSystem(ReactionSystem):
         # the proxy's saturated parent) was REJECTED as the cheap-at-init
         # test: it needs graph saturation + isomorphism per gas species per
         # rebuild; (i) is a float compare on data already in hand.
+        # FR1-K2 mass audit note (round-72 P2): deliberately NOT
+        # defect-aware. This is a PER-REPEAT-UNIT MW scale window, not a
+        # condensed-mass computation; chain_mass_defect_g_mol is a
+        # PER-CHAIN correction (one lost X per chain), and X-loss feature
+        # pools keep the parent's monomer_mw by design (intact-chain
+        # transfer), so the per-unit window is exactly right as is.
         chain_window_kg = (max((float(p.monomer_mw_g_mol) for p in self.polymer_pools),
                                default=0.0)
                            + REFERENCE_STATE_MW_SLACK_G_MOL) / 1000.0
@@ -3246,7 +3252,8 @@ class HybridPolymerSystem(ReactionSystem):
            (model.py's dedup is gated on edge.phase_system), and silent
            overwrite would misattribute gate flux; the main.py caller turns
            the raise into warn + None snapshot -> the gate defers.
-        2. ``pool_stats``: dict pool label -> ``(E_n, monomer_mw_g_mol)``
+        2. ``pool_stats``: dict pool label ->
+           ``(E_n, monomer_mw_g_mol, chain_mass_defect_g_mol)``
            with ``E_n = y[mu1]/y[mu0] if y[mu0] > trust else 0.0`` where
            ``trust = max(SMALL_EPS, ATTRIBUTION_TRUST_K * atol_mu0)`` is the
            ATTRIBUTION TRUST FLOOR (item #14a): mu0 at or below the
@@ -3263,9 +3270,18 @@ class HybridPolymerSystem(ReactionSystem):
            motifs currently attribute to the zeroed pool (the engine has no
            ledger; the caller does).
         3. ``proxy_event_mass_total``: float — sum of
-           ``gross_j * E_n[pool(j)] * mw[pool(j)]`` over CANONICAL pool
-           proxies (``species_to_pool_indices[j] != -1 and is_pool_proxy[j]``
-           — the engine CAN attribute those).
+           ``gross_j * max(0, condensed_mass_g(1, E_n[pool(j)]))``
+           = ``gross_j * max(0, E_n*mw - chain_mass_defect)`` over
+           CANONICAL pool proxies
+           (``species_to_pool_indices[j] != -1 and is_pool_proxy[j]``
+           — the engine CAN attribute those). The defect term is the
+           FR1-K2 mass-consumer audit (round-72 P2): an X-loss feature
+           pool's chains each lost exactly one X, so the EXACT per-chain
+           event mass is the pool's normative condensed_mass_g at
+           (mu0=1, mu1=E_n) — the raw E_n*mw would overstate every event
+           by M_X. Ordinary pools (defect 0) reduce to the legacy
+           product bit-identically; the max(0, .) clamp errs toward
+           deferral.
 
         GROSS production, never net dn_dt: canonical proxies have
         dn_dt ~= 0 BY DESIGN (the archetype apportionment reroutes their
@@ -3339,7 +3355,9 @@ class HybridPolymerSystem(ReactionSystem):
         for p in range(n_pools):
             pool = self.polymer_pools[p]
             mw = float(getattr(pool, "monomer_mw_g_mol", 0.0) or 0.0)
-            pool_stats[pool.label] = (e_n_by_pool[p], mw)
+            defect = float(getattr(pool, "chain_mass_defect_g_mol", 0.0)
+                           or 0.0)
+            pool_stats[pool.label] = (e_n_by_pool[p], mw, defect)
         # index -> label for CORE species (species_index covers core+edge).
         labels = {}
         for spc, idx in self.species_index.items():
@@ -3365,8 +3383,15 @@ class HybridPolymerSystem(ReactionSystem):
             gross[label] = g
             p = stp[i]
             if p >= 0 and self.is_pool_proxy[i]:
-                e_n, mw = pool_stats[self.polymer_pools[p].label]
-                proxy_event_mass_total += g * e_n * mw
+                pool = self.polymer_pools[p]
+                e_n = pool_stats[pool.label][0]
+                # EXACT per-chain event mass (FR1-K2 mass audit, round-72
+                # P2): the pool's normative condensed_mass_g at
+                # (mu0=1, mu1=E_n) = E_n*mw - chain_mass_defect. Ordinary
+                # pools (defect 0) reduce to the legacy E_n*mw
+                # bit-identically; max(0, .) errs toward deferral.
+                proxy_event_mass_total += g * max(
+                    0.0, pool.condensed_mass_g(1.0, e_n))
         return gross, pool_stats, proxy_event_mass_total
 
     def _chain_bundle(self, int pool_idx, y, double V_poly, bint end_group):

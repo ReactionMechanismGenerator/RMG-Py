@@ -155,6 +155,29 @@ class ArtifactConsumer:
                     f"only. Integrating without the kernel would silently "
                     f"produce a wrong trajectory, and refused rows must "
                     f"never be converted into its flux.")
+            # Schema-2.7 side-group homolysis kernel + its X-loss
+            # feature-pool exact mass contract: NOT implemented by this
+            # consumer. Fail at construction, never drop permissively --
+            # integrating a kernel-enabled melt without the channel (or a
+            # defect-carrying pool without the normative mass formula
+            # condensed_mass_g = mu1*monomer_mw_g_mol -
+            # mu0*chain_mass_defect_g_mol) silently mints condensed mass
+            # while gas X appears (the round-70 P1 trap), and the refused
+            # explicit rows the kernel supersedes carry zero flux by
+            # contract, so nothing here may stand in for it.
+            if "side_group_homolysis" in p or \
+                    "chain_mass_defect_g_mol" in p:
+                raise ValueError(
+                    f"pool {lab!r}: unsupported schema-2.7 side-group "
+                    f"homolysis vocabulary (pool-level "
+                    f"side_group_homolysis block and/or the X-loss "
+                    f"feature-pool chain_mass_defect_g_mol mass "
+                    f"contract); this consumer implements channels "
+                    f"{sorted(SUPPORTED_CHANNELS)} only. Integrating "
+                    f"without the kernel/defect would silently produce a "
+                    f"wrong trajectory and a wrong condensed mass, and "
+                    f"refused rows must never be converted into its "
+                    f"flux.")
             if lab not in self.configured:
                 continue
             unknown = sorted(set(p["channels"]) - SUPPORTED_CHANNELS)

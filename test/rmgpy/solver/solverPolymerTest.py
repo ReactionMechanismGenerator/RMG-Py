@@ -154,7 +154,7 @@ def _refstate_rs(core, rxns, mask, pools, moments, rs_kwargs=None):
     return rs
 
 
-def _gate_pool_config(monomer_mw_g_mol=28.0):
+def _gate_pool_config(monomer_mw_g_mol=28.0, chain_mass_defect_g_mol=0.0):
     """PolymerPoolConfig for the spawn-gate fixtures.
 
     ``monomer_mw_g_mol`` is added by the mass-flux-spawn-gate change (spec
@@ -169,6 +169,8 @@ def _gate_pool_config(monomer_mw_g_mol=28.0):
     if any(f.name == "monomer_mw_g_mol"
            for f in dataclasses.fields(PolymerPoolConfig)):
         kwargs["monomer_mw_g_mol"] = monomer_mw_g_mol
+    if chain_mass_defect_g_mol:
+        kwargs["chain_mass_defect_g_mol"] = chain_mass_defect_g_mol
     return PolymerPoolConfig(**kwargs)
 
 
@@ -189,10 +191,13 @@ def _one_pool_gate_species(rep_smiles="CCO"):
     return sp, core, mask
 
 
-def _one_pool_gate_rs(rxn, core, mask, moments, monomer_mw_g_mol=28.0):
+def _one_pool_gate_rs(rxn, core, mask, moments, monomer_mw_g_mol=28.0,
+                      chain_mass_defect_g_mol=0.0):
     rs = HybridPolymerSystem(
         T=800.0, P=1.0e5, initial_mole_fractions={core[5]: 0.0}, V_poly=1.0,
-        polymer_pools=[_gate_pool_config(monomer_mw_g_mol)], mass_transfer=[],
+        polymer_pools=[_gate_pool_config(monomer_mw_g_mol,
+                                         chain_mass_defect_g_mol)],
+        mass_transfer=[],
         gas_species_mask=mask.copy(), constant_gas_volume=False,
         initial_polymer_moments={"A": moments}, termination=[],
     )
@@ -4288,7 +4293,7 @@ class TestIntegratedSpawnGateTripwire:
 
         gross, pool_stats, proxy_total = rs.spawn_gate_flux_snapshot()
         assert gross["R"] == pytest.approx(max(0.0, prod_r), rel=1e-12)
-        e_n, mw = pool_stats["A"]
+        e_n, mw, defect = pool_stats["A"]
         assert e_n == pytest.approx(float(rs.y[2]) / float(rs.y[1]), rel=1e-12)
         assert mw == pytest.approx(28.0)
         g_r = gross["R"] * e_n * mw
@@ -4306,7 +4311,7 @@ class TestIntegratedSpawnGateTripwire:
         assert dn_dt[0] == pytest.approx(0.0, abs=1e-14)
         gross, pool_stats, proxy_total = rs.spawn_gate_flux_snapshot()
         assert gross["A"] > 0.0
-        e_n, mw = pool_stats["A"]
+        e_n, mw, defect = pool_stats["A"]
         assert proxy_total == pytest.approx(gross["A"] * e_n * mw, rel=1e-12)
         assert proxy_total > 0.0
 
@@ -4336,7 +4341,7 @@ class TestSpawnGateFluxSnapshot:
         assert gross["A"] > 0.0
         # pool_stats: pool label -> (E[n], monomer MW), live E[n] = mu1/mu0.
         assert set(pool_stats.keys()) == {"A"}
-        e_n, mw = pool_stats["A"]
+        e_n, mw, defect = pool_stats["A"]
         assert e_n == pytest.approx(5.0)
         assert mw == pytest.approx(28.0)
         # proxy_event_mass_total: engine-attributed CANONICAL PROXIES only
@@ -4362,7 +4367,7 @@ class TestSpawnGateFluxSnapshot:
 
         prod = float(rs.core_species_production_rates[4])
         assert prod > 0.0
-        e_n, mw = pool_stats["A"]
+        e_n, mw, defect = pool_stats["A"]
         g_r = gross["R"] * e_n * mw  # the gate's representative g_i (spec §3)
         assert g_r == pytest.approx(prod * 60.0 * 28.0, rel=1e-12)
         rep_mw_g_mol = sp["R"].molecule[0].get_molecular_weight() * 1000.0  # ~86.18
@@ -8854,3 +8859,56 @@ class TestRefusalAdjudicationSurvivesRebuild:
         # Bitwise pre-change pin (recorded on b0de7dde8 BEFORE the fix):
         assert dn[4] == _VE_CONTROL_PIN[4] != 0.0
         assert np.array_equal(dn[:5], _VE_CONTROL_PIN)
+
+
+class TestSpawnGateDefectAwareMass:
+    """FR1-K2 mass-consumer audit (round-72 P2): the spawn-gate snapshot's
+    per-chain event mass must use the EXACT condensed mass
+    (condensed_mass_g(1, E[n]) = E[n]*monomer_MW - chain_mass_defect), not
+    the raw E[n]*MW -- an X-loss feature pool's chains each lost one X, so
+    the moment-derived per-chain mass overstates by M_X. pool_stats grows
+    the pool's defect as a third element so the python-side ledger half
+    (_snapshot_event_mass) stays consistent with the engine half."""
+
+    def _defect_rs(self):
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]],
+                       **_KIN)
+        rxn.polymer_flux_archetype = 1
+        # E[n] = 5, MW = 28, defect = 8 -> exact per-chain mass 132, not
+        # 140.
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0, 5.0, 30.0),
+                               monomer_mw_g_mol=28.0,
+                               chain_mass_defect_g_mol=8.0)
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        return rs
+
+    def test_pool_stats_carry_defect_and_proxy_total_is_exact(self):
+        """RED pin: pool_stats rows are (E[n], MW, defect) triples and
+        proxy_event_mass_total uses the exact per-chain mass
+        E[n]*MW - defect for the defect pool."""
+        rs = self._defect_rs()
+        gross, pool_stats, proxy_total = rs.spawn_gate_flux_snapshot()
+        e_n, mw, defect = pool_stats["A"]
+        assert e_n == pytest.approx(5.0)
+        assert mw == pytest.approx(28.0)
+        assert defect == pytest.approx(8.0)
+        assert proxy_total == pytest.approx(
+            gross["A"] * (5.0 * 28.0 - 8.0), rel=1e-12)
+        assert proxy_total > 0.0
+
+    def test_defect_free_pool_unchanged(self):
+        """Negative control: an ordinary pool (defect 0) keeps the exact
+        legacy E[n]*MW event mass (the accessor reduces to mu1*MW)."""
+        sp, core, mask = _one_pool_gate_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]],
+                       **_KIN)
+        rxn.polymer_flux_archetype = 1
+        rs = _one_pool_gate_rs(rxn, core, mask, (1.0, 5.0, 30.0),
+                               monomer_mw_g_mol=28.0)
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        gross, pool_stats, proxy_total = rs.spawn_gate_flux_snapshot()
+        e_n, mw, defect = pool_stats["A"]
+        assert defect == 0.0
+        assert proxy_total == pytest.approx(gross["A"] * 5.0 * 28.0,
+                                            rel=1e-12)

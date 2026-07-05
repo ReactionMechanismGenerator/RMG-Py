@@ -336,28 +336,30 @@ class TestQssaSchemaVersionGate:
 
     def test_rejects_unknown_future_minor(self, qssa_deck, deck):
         """Weak-link milestone iv POLICY CHANGE (was minor-permissive): the
-        loader pins the maximum schema minor it implements (2.6 since the
-        homolysis_initiation block; was 2.5 at the spawned-pool closure,
-        2.4 at the refused-row marker, 2.3 at the explicit-DP handshake
-        block). A newer-minor artifact may carry vocabulary outside the
-        channel blocks that the unknown-key guards never see (new
-        conventions, new pool fields), so an older loader must fail loud
-        instead of loading additively."""
-        artifact = _load_artifact(qssa_deck)
-        artifact["schema_version"] = "2.7"
-        with pytest.raises(ValueError, match=r"schema_version.*2\.7"):
-            _build_qssa(qssa_deck, artifact)
+        loader pins the maximum schema minor it implements (2.7 since the
+        side_group_homolysis block; was 2.6 at the homolysis_initiation
+        block, 2.5 at the spawned-pool closure, 2.4 at the refused-row
+        marker, 2.3 at the explicit-DP handshake block). A newer-minor
+        artifact may carry vocabulary outside the channel blocks that the
+        unknown-key guards never see (new conventions, new pool fields),
+        so an older loader must fail loud instead of loading additively.
+        Per-bump precedent: each schema bump moves this probe one minor up
+        (2.7 -> 2.8 at the side-group block)."""
         artifact = _load_artifact(qssa_deck)
         artifact["schema_version"] = "2.8"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.8"):
+            _build_qssa(qssa_deck, artifact)
+        artifact = _load_artifact(qssa_deck)
+        artifact["schema_version"] = "2.9"
         with pytest.raises(ValueError, match=r"schema_version"):
             _build_qssa(qssa_deck, artifact)
         # no-QSSA legacy artifact: same envelope pin
         chem_path, art_path = deck
         with open(art_path) as fh:
             legacy = json.load(fh)
-        legacy["schema_version"] = "2.7"
+        legacy["schema_version"] = "2.8"
         species, reactions = load_chem_yaml(chem_path)
-        with pytest.raises(ValueError, match=r"schema_version.*2\.7"):
+        with pytest.raises(ValueError, match=r"schema_version.*2\.8"):
             build_system_from_artifact(
                 legacy, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
                 initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
@@ -2512,3 +2514,579 @@ class TestHomolysisInitiationConsumer:
         # ...while the live kernel credits both end-radical daughters
         assert dn[i["PP_rad_primary_end_mu0"]] > 0.0
         assert dn[i["PP_rad_secondary_end_mu0"]] > 0.0
+
+
+# ---------------------------------------------------------------------------
+# Side-group homolysis block, consumer side (schema 2.7, FR1-K2, adjudicated
+# rounds 72/73): strict block guard (key presence + shape, never truthiness),
+# vocabulary/version cross-check for BOTH the pool-level block and the X-loss
+# feature-pool chain_mass_defect_g_mol field, selector/feature closure
+# validated FROM SERIALIZED DATA ALONE (site_atom_indices -- the loader has
+# no monomer graph to re-derive from), kernel + recipe + NORMATIVE mass
+# formula pins, round-trip wiring into the reconstructed PolymerPoolConfig,
+# and the machine-checkable kernel-supersession census (refused rows stay
+# refused and carry ZERO flux while the kernel is live).
+# ---------------------------------------------------------------------------
+
+
+def _side_group_deck(tmp_path, with_refused=False):
+    """A side-group-kernel-enabled parent pool + its eagerly-configured
+    X-loss feature daughter pool (the live registration shape: polymer.pyx
+    _flatten_side_group_state hard-errors on unconfigured feature pools),
+    written out as chem.yaml + polymer_pools.json exactly like an RMG run
+    would. ``with_refused=True`` adds one pool-mapped conduit-deferred
+    refused row (the FR1-K1 supersession pairing)."""
+    n2 = _spc("N#N", "N2", index=1)
+    br = _spc("[Br]", "Br", index=2)
+    pool = Polymer(label="PVBr", monomer="[CH2][CH]Br",
+                   end_groups=["[H]", "[H]"], cutoff=3,
+                   moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                   side_group_homolysis=[dict(
+                       label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
+                       site_selector="aliphatic", sites_per_unit=1.0,
+                       gas_product="[Br]")])
+    (daughter,) = pool.generate_side_loss_daughters()
+    pool.side_group_gas_species = [br]
+    mus = []
+    for base in ("PVBr", daughter.label):
+        mus += [_mu(f"{base}_mu{k}") for k in range(3)]
+    core = [n2, br]
+    rxns = []
+    condensed = list(mus)
+    if with_refused:
+        proxy = _spc("CC(Br)CC(Br)C", "PVBr", index=3)
+        radp = _spc("C[CH]CC(Br)C", "RP", index=4)
+        hbr = _spc("Br", "HBr", index=5)
+        proxy.is_polymer_proxy = True
+        refused_rxn = Reaction(
+            reactants=[proxy, br], products=[radp, hbr],
+            kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                               Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+            reversible=False)
+        refused_rxn.polymer_flux_archetype = int(
+            PolymerFluxArchetype.UNRESOLVED)
+        refused_rxn.polymer_refused = True
+        refused_rxn.polymer_refused_accumulating = False
+        core += [proxy, radp, hbr]
+        rxns = [refused_rxn]
+        condensed = [proxy, radp] + mus
+    core += mus
+    data, index_map = generate_cantera_data(core, rxns,
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+    artifact = build_polymer_moments_artifact(
+        [pool, daughter], core_species=core, core_reactions=rxns,
+        configured_pool_labels=["PVBr", daughter.label],
+        condensed_species=condensed, cantera_index_map=index_map)
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+@pytest.fixture
+def side_group_deck(tmp_path):
+    return _side_group_deck(tmp_path)
+
+
+def _build_side_group(deck, artifact=None, initial_moles=None):
+    chem_path, art_path = deck
+    if artifact is None:
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+        initial_moles=initial_moles or {"N2(1)": 1.0},
+        mass_transfer_spec=[])
+
+
+def _side_group_artifact(deck):
+    with open(deck[1]) as fh:
+        return json.load(fh)
+
+
+_SG_FEAT = "PVBr_sidegrp_aliphatic_C_Br"
+
+
+class TestSideGroupHomolysisConsumer:
+    """Consumer/loader side of the schema-2.7 contract (FR1-K2)."""
+
+    def test_round_trip_wires_kernel_gas_and_defect(self, tmp_path):
+        """RED pin: the emitter's 2.7 artifact loads GREEN and the rebuilt
+        oracle carries the kernel -- sgh_* row arrays populated from the
+        block, the gas credit routed to the chem.yaml Br species, the
+        feature pool's moment slots resolved, and the EXACT mass contract
+        (chain_mass_defect_g_mol) wired into the reconstructed
+        PolymerPoolConfig so _flatten_side_group_state re-enforces it."""
+        deck = _side_group_deck(tmp_path)
+        artifact = _side_group_artifact(deck)
+        assert artifact["schema_version"] == "2.7"
+        entry = next(p for p in artifact["pools"] if p["label"] == "PVBr")
+        block = entry.get("side_group_homolysis")
+        assert block is not None
+        assert block["kernel"] == "side_group_homolysis/1"
+        assert block["recipe_revision"] == "2026-07-06-side-group-homolysis"
+        rs, core, _ = _build_side_group(deck, artifact)
+        assert len(rs.polymer_pools) == 2
+        assert rs.sgh_enabled[0] == 1
+        assert rs.sgh_A[0] == pytest.approx(1.0e13)
+        assert rs.sgh_n[0] == pytest.approx(0.5)
+        assert rs.sgh_Ea[0] == pytest.approx(1.2e5)
+        assert rs.sgh_sites[0] == pytest.approx(1.0)
+        labels = [s.label for s in core]
+        assert labels[rs.sgh_gas[0]] == "Br(2)"
+        assert labels[rs.sgh_dst_mu0[0]] == f"{_SG_FEAT}_mu0"
+        by_label = {p.label: p for p in rs.polymer_pools}
+        assert by_label[_SG_FEAT].chain_mass_defect_g_mol == \
+            pytest.approx(79.904, rel=1e-3)
+        assert by_label["PVBr"].chain_mass_defect_g_mol == 0.0
+        # The kernel is LIVE in the rebuilt oracle: parent debit, feature
+        # credit, gas credit all present in one residual evaluation.
+        i = {lab: k for k, lab in enumerate(labels)}
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn[i["Br(2)"]] > 0.0
+        assert dn[i["PVBr_mu0"]] < 0.0
+        assert dn[i[f"{_SG_FEAT}_mu0"]] == pytest.approx(
+            -dn[i["PVBr_mu0"]], rel=1e-12)
+
+    def test_accepts_2_7_without_side_group(self, deck):
+        """A 2.7 stamp alone (no side-group vocabulary) loads fine: the
+        stamp gates vocabulary, absence keeps legacy behavior."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.7"
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert len(rs.polymer_pools) == 1
+        assert rs.sgh_enabled[0] == 0
+
+    def test_rejects_block_in_2_6_stamped_artifact(self, side_group_deck):
+        """Vocabulary/version cross-check: a below-2.7 artifact carrying
+        the side_group_homolysis block is malformed -- the emitter stamps
+        2.7 whenever it writes one."""
+        artifact = _side_group_artifact(side_group_deck)
+        artifact["schema_version"] = "2.6"
+        with pytest.raises(ValueError,
+                           match=r"side_group_homolysis.*2\.7"):
+            _build_side_group(side_group_deck, artifact)
+
+    def test_rejects_defect_field_in_2_6_stamped_artifact(
+            self, side_group_deck):
+        """The X-loss mass-contract field ALONE under a below-2.7 stamp is
+        equally malformed (the defect is 2.7 vocabulary schema 2.6 cannot
+        express -- the round-70 P1 trap)."""
+        artifact = _side_group_artifact(side_group_deck)
+        artifact["schema_version"] = "2.6"
+        for p in artifact["pools"]:
+            p.pop("side_group_homolysis", None)
+        assert any("chain_mass_defect_g_mol" in p
+                   for p in artifact["pools"])
+        with pytest.raises(ValueError,
+                           match=r"chain_mass_defect_g_mol.*2\.7"):
+            _build_side_group(side_group_deck, artifact)
+
+    def _shape_case(self, deck, mutate, match):
+        """Load the side-group artifact, apply ``mutate(artifact)``, and
+        require the loader to reject with an actionable error."""
+        artifact = _side_group_artifact(deck)
+        mutate(artifact)
+        with pytest.raises(ValueError, match=match):
+            _build_side_group(deck, artifact)
+
+    @staticmethod
+    def _block(artifact):
+        return next(p for p in artifact["pools"]
+                    if p["label"] == "PVBr")["side_group_homolysis"]
+
+    @classmethod
+    def _channel(cls, artifact):
+        return cls._block(artifact)["channels"][0]
+
+    @staticmethod
+    def _feat(artifact):
+        return next(p for p in artifact["pools"]
+                    if p["label"] == _SG_FEAT)
+
+    def test_rejects_missing_kinetics_key(self, side_group_deck):
+        def cut(a):
+            del self._channel(a)["kinetics"]["Ea"]
+        self._shape_case(side_group_deck, cut, r"kinetics")
+
+    def test_rejects_wrong_kinetics_units(self, side_group_deck):
+        """The per-site A unit is pinned exactly: the sibling kernel's
+        plain 's^-1' claims a DIFFERENT rate law and must reject."""
+        def cut(a):
+            self._channel(a)["kinetics"]["units"]["A"] = "s^-1"
+        self._shape_case(side_group_deck, cut, r"units")
+
+    def test_rejects_non_positive_A(self, side_group_deck):
+        def cut(a):
+            self._channel(a)["kinetics"]["A"] = 0.0
+        self._shape_case(side_group_deck, cut, r"A")
+
+    def test_rejects_boolean_kinetics_value(self, side_group_deck):
+        """Key-presence + SHAPE validation, not truthiness: JSON true is
+        not a rate constant."""
+        def cut(a):
+            self._channel(a)["kinetics"]["A"] = True
+        self._shape_case(side_group_deck, cut, r"finite number")
+
+    def test_rejects_present_disabled_block(self, side_group_deck):
+        def cut(a):
+            self._block(a)["enabled"] = False
+        self._shape_case(side_group_deck, cut, r"present-disabled|ABSENT")
+
+    def test_rejects_unknown_block_key(self, side_group_deck):
+        def cut(a):
+            self._block(a)["gas_release"] = "CH4"
+        self._shape_case(side_group_deck, cut, r"unknown key")
+
+    def test_rejects_missing_block_key(self, side_group_deck):
+        def cut(a):
+            del self._block(a)["kernel"]
+        self._shape_case(side_group_deck, cut, r"missing key")
+
+    def test_rejects_unknown_kernel(self, side_group_deck):
+        """An unknown kernel is flux this consumer cannot reproduce."""
+        def cut(a):
+            self._block(a)["kernel"] = "beta_scission_zip/9"
+        self._shape_case(side_group_deck, cut, r"kernel")
+
+    def test_rejects_unknown_recipe_revision(self, side_group_deck):
+        def cut(a):
+            self._block(a)["recipe_revision"] = "2026-01-01-bogus"
+        self._shape_case(side_group_deck, cut, r"recipe_revision")
+
+    def test_rejects_tampered_recipe(self, side_group_deck):
+        """The recipe strings -- including the NORMATIVE mass formula --
+        are pinned independently of the emitter, exact match."""
+        def cut(a):
+            self._block(a)["recipe"]["mass"] = "condensed_mass_g = mu1*MW"
+        self._shape_case(side_group_deck, cut, r"mass")
+
+    def test_rejects_unknown_channel_key(self, side_group_deck):
+        def cut(a):
+            self._channel(a)["site_smarts"] = "[Br]"
+        self._shape_case(side_group_deck, cut, r"exactly the keys")
+
+    def test_rejects_missing_channel_key(self, side_group_deck):
+        """site_selector is REQUIRED (round-72 P1: the kinetics label
+        alone must never pick the site)."""
+        def cut(a):
+            del self._channel(a)["site_selector"]
+        self._shape_case(side_group_deck, cut, r"exactly the keys")
+
+    def test_rejects_unknown_site_selector(self, side_group_deck):
+        """The selector vocabulary is CLOSED: an unknown selector is a
+        site this consumer cannot classify."""
+        def cut(a):
+            self._channel(a)["site_selector"] = "allylic"
+        self._shape_case(side_group_deck, cut, r"site_selector")
+
+    def test_rejects_sites_per_unit_match_count_mismatch(
+            self, side_group_deck):
+        """sites_per_unit is CHECKED against the SERIALIZED selector
+        resolution (site_atom_indices), never trusted -- the round-72 law,
+        validated from data alone (round-73: no solver-backstop gap)."""
+        def cut(a):
+            self._channel(a)["sites_per_unit"] = 2.0
+        self._shape_case(side_group_deck, cut, r"contradicts")
+
+    def test_rejects_malformed_site_atom_indices(self, side_group_deck):
+        def cut(a):
+            self._channel(a)["site_atom_indices"] = [2, 2]
+        self._shape_case(side_group_deck, cut, r"site_atom_indices")
+
+    def test_rejects_same_atom_set_channels(self, side_group_deck):
+        """Two rate channels resolving to ONE structural site double-carry
+        the loss (round-72 P1) -- checkable from the serialized atom sets
+        alone."""
+        def cut(a):
+            block = self._block(a)
+            twin = _dc(block["channels"][0])
+            twin["label"] = "other_C-Br"
+            twin["feature_pool"] = "PVBr_sidegrp_other_C_Br"
+            block["channels"].append(twin)
+        self._shape_case(side_group_deck, cut, r"SAME.*atom set")
+
+    def _overlap_case(self, deck, base_indices, twin_indices):
+        """Hand-build a two-channel artifact whose channels' atom sets
+        OVERLAP without being identical (round-75 P1-1) -- each channel
+        still satisfies len(site_atom_indices) == sites_per_unit -- and
+        hand it straight to the runner's artifact guard (the twin's
+        mu-dummies are not in the deck's chem.yaml, so the full loader
+        cannot carry the shape further; the K1 direct-guard-call
+        precedent)."""
+        from rmgpy.tools.polymer_moments_runner import (
+            _check_side_group_homolysis)
+        artifact = _side_group_artifact(deck)
+        block = self._block(artifact)
+        base = block["channels"][0]
+        base["site_atom_indices"] = sorted(base_indices)
+        base["sites_per_unit"] = float(len(base_indices))
+        twin = _dc(base)
+        twin["label"] = "other_C-Br"
+        twin["feature_pool"] = "PVBr_sidegrp_other_C_Br"
+        twin["site_atom_indices"] = sorted(twin_indices)
+        twin["sites_per_unit"] = float(len(twin_indices))
+        block["channels"].append(twin)
+        twin_feat = _dc(self._feat(artifact))
+        twin_feat["label"] = "PVBr_sidegrp_other_C_Br"
+        twin_feat["spawn_event_metadata"] = {
+            "source": "side_group_homolysis", "channel": "other_C-Br"}
+        artifact["pools"].append(twin_feat)
+        artifact["conventions"]["configured_pools"].append(
+            "PVBr_sidegrp_other_C_Br")
+        with pytest.raises(ValueError, match=r"overlap"):
+            _check_side_group_homolysis(artifact)
+
+    def test_rejects_superset_overlap_atom_set_channels(
+            self, side_group_deck):
+        """Round-75 P1-1: the same-set guard keyed on identical
+        frozensets lets a twin claiming a strict SUPERSET of the base
+        channel's Br site pass -- atom 2 is double-carried while both
+        channels satisfy the count law. ANY non-empty pairwise
+        intersection per gas element must reject."""
+        self._overlap_case(side_group_deck, [2], [2, 4])
+
+    def test_rejects_subset_overlap_atom_set_channels(
+            self, side_group_deck):
+        """Round-75 P1-1, subset direction: the twin claims a strict
+        SUBSET of the base channel's atom set -- same double-carry, same
+        rejection."""
+        self._overlap_case(side_group_deck, [2, 4], [2])
+
+    def test_rejects_out_of_range_site_atom_indices(self, side_group_deck):
+        """Round-75 P1-2: the serialized indices are 0-based positions in
+        the carrier's monomer_adj_list atom order -- an index past the
+        serialized atom count is structurally meaningless and must
+        reject, not pass on non-negativity alone."""
+        def cut(a):
+            self._channel(a)["site_atom_indices"] = [999]
+        self._shape_case(side_group_deck, cut, r"out of range")
+
+    def test_rejects_carrier_without_monomer_adj_list(
+            self, side_group_deck):
+        """Round-75 P1-2: without the carrier's monomer_adj_list the
+        indices cannot be bounds-anchored at all -- a kernel-carrying
+        pool REQUIRES the serialized structure text."""
+        def cut(a):
+            next(p for p in a["pools"]
+                 if p["label"] == "PVBr")["monomer_adj_list"] = ""
+        self._shape_case(side_group_deck, cut, r"monomer_adj_list")
+
+    def test_rejects_carrier_block_plus_defect(self, side_group_deck):
+        """Round-75 P1-3: v1 saturation -- the parent pool owns the
+        kernel, X-loss feature pools own the defect, NEVER both: a
+        defected carrier claims its chains already lost an X while the
+        live kernel debits them for losing another (no multi-loss
+        cascade in v1)."""
+        def cut(a):
+            next(p for p in a["pools"] if p["label"] == "PVBr")[
+                "chain_mass_defect_g_mol"] = 79.904
+        self._shape_case(side_group_deck, cut,
+                         r"BOTH.*chain_mass_defect")
+
+    def test_rejects_duplicate_channel_labels(self, side_group_deck):
+        def cut(a):
+            block = self._block(a)
+            block["channels"].append(_dc(block["channels"][0]))
+        self._shape_case(side_group_deck, cut, r"duplicate")
+
+    def test_rejects_gas_mw_mismatch(self, side_group_deck):
+        """gas_mw_g_mol must pin M_X of the gas_product -- it is the value
+        the feature pool's defect must carry."""
+        def cut(a):
+            self._channel(a)["gas_mw_g_mol"] = 5.0
+        self._shape_case(side_group_deck, cut, r"gas_mw_g_mol")
+
+    def test_rejects_non_monoatomic_gas_product(self, side_group_deck):
+        def cut(a):
+            self._channel(a)["gas_product"] = "[CH3]"
+        self._shape_case(side_group_deck, cut, r"monoatomic|mono-radical")
+
+    def test_rejects_unresolvable_gas_species(self, side_group_deck):
+        """The gas routing target must exist in chem.yaml -- the ejected X
+        would silently vanish otherwise (un-conserved mass)."""
+        def cut(a):
+            self._channel(a)["gas_species"] = "Xe(99)"
+        self._shape_case(side_group_deck, cut,
+                         r"not in the deck's species list")
+
+    def test_rejects_unratified_feature_pool_label(self, side_group_deck):
+        def cut(a):
+            self._channel(a)["feature_pool"] = "PVBr_sidegrp_bogus"
+        self._shape_case(side_group_deck, cut, r"ratified")
+
+    def test_rejects_feature_pool_missing_from_pools(self, side_group_deck):
+        def cut(a):
+            a["pools"] = [p for p in a["pools"]
+                          if p["label"] != _SG_FEAT]
+        self._shape_case(side_group_deck, cut,
+                         rf"{_SG_FEAT}.*missing")
+
+    def test_rejects_unconfigured_feature_pool(self, side_group_deck):
+        def cut(a):
+            conv = a["conventions"]
+            conv["configured_pools"] = [
+                lbl for lbl in conv["configured_pools"]
+                if lbl != _SG_FEAT]
+        self._shape_case(side_group_deck, cut,
+                         rf"{_SG_FEAT}.*configured_pools")
+
+    def test_rejects_spawned_classified_feature_pool(self, side_group_deck):
+        """Schema 2.5 defines spawned_pools as the configured complement;
+        a spawned-classified feature pool is never built by the loader
+        (the r68 lesson, side-group edition)."""
+        def cut(a):
+            conv = a["conventions"]
+            conv["configured_pools"] = [
+                lbl for lbl in conv["configured_pools"]
+                if lbl != _SG_FEAT]
+            conv["spawned_pools"] = [_SG_FEAT]
+        self._shape_case(side_group_deck, cut,
+                         rf"{_SG_FEAT}.*spawned_pools")
+
+    def test_rejects_unconfigured_carrier(self, side_group_deck):
+        """A block on an unconfigured carrier is a silently dropped
+        kernel."""
+        def cut(a):
+            conv = a["conventions"]
+            conv["configured_pools"] = [
+                lbl for lbl in conv["configured_pools"] if lbl != "PVBr"]
+        self._shape_case(side_group_deck, cut,
+                         r"'PVBr'.*configured_pools")
+
+    def test_rejects_uncondensed_feature_pool(self, side_group_deck):
+        def cut(a):
+            a["conventions"]["condensed_species"] = [
+                lbl for lbl in a["conventions"]["condensed_species"]
+                if not lbl.startswith(_SG_FEAT)]
+        self._shape_case(side_group_deck, cut, rf"{_SG_FEAT}.*condensed")
+
+    def test_rejects_provenance_stripped_feature_pool(self, side_group_deck):
+        def cut(a):
+            self._feat(a)["spawn_event_metadata"] = {"source": "input"}
+        self._shape_case(side_group_deck, cut, r"provenance")
+
+    def test_rejects_wrong_channel_provenance(self, side_group_deck):
+        """The provenance pin includes the SPAWNING CHANNEL's label -- the
+        (channel -> feature pool) pairing the mass contract keys on."""
+        def cut(a):
+            self._feat(a)["spawn_event_metadata"] = {
+                "source": "side_group_homolysis", "channel": "bogus"}
+        self._shape_case(side_group_deck, cut, r"provenance")
+
+    def test_rejects_defect_mismatch(self, side_group_deck):
+        """chain_mass_defect_g_mol must pin the channel's gas M_X exactly
+        (the NORMATIVE mass formula)."""
+        def cut(a):
+            self._feat(a)["chain_mass_defect_g_mol"] = 5.0
+        self._shape_case(side_group_deck, cut,
+                         r"chain_mass_defect_g_mol")
+
+    def test_rejects_missing_defect(self, side_group_deck):
+        """A claimed feature pool WITHOUT the defect field cannot honor
+        the exact mass contract."""
+        def cut(a):
+            del self._feat(a)["chain_mass_defect_g_mol"]
+        self._shape_case(side_group_deck, cut,
+                         r"chain_mass_defect_g_mol")
+
+    def test_rejects_monomer_mw_divergence(self, side_group_deck):
+        """The chain transfers INTACT: the X loss is carried by the
+        defect, never by the repeat-unit mass."""
+        def cut(a):
+            self._feat(a)["monomer_mw_g_mol"] = 999.0
+        self._shape_case(side_group_deck, cut, r"monomer_mw")
+
+    def test_rejects_orphan_defect_pool(self, side_group_deck):
+        """Reverse closure: the side_group_homolysis spawn PROVENANCE on a
+        pool NO channel claims (block stripped, provenance left behind)
+        means the carrier's block was lost."""
+        def cut(a):
+            for p in a["pools"]:
+                p.pop("side_group_homolysis", None)
+        self._shape_case(side_group_deck, cut, r"claims")
+
+    def test_accepts_unclaimed_copy_carried_defect_pool(self,
+                                                        side_group_deck):
+        """A defect field WITHOUT the spawn provenance on an unclaimed
+        pool is LEGAL (Polymer.copy() carries chain_mass_defect_g_mol to
+        downstream daughters, where the normative mass formula stays exact
+        with no live channel): the artifact still loads and the kernel
+        still wires."""
+        artifact = _side_group_artifact(side_group_deck)
+        extra = _dc(self._feat(artifact))
+        extra["label"] = "PVBr_feat_mod"
+        extra["spawn_event_metadata"] = {"source": "input"}
+        extra["phase_species"] = []
+        extra["bookkeeping_species"] = []
+        # NOT in configured_pools: the loader builds configured pools
+        # only; the entry just rides along (legacy-pools posture).
+        artifact["pools"].append(extra)
+        rs, _, _ = _build_side_group(side_group_deck, artifact)
+        assert rs.sgh_enabled[0] == 1
+
+    def test_rejects_malformed_defect_value(self, side_group_deck):
+        """Any serialized defect -- claimed or not -- must be a finite
+        value > 0 (shape validation, never truthiness)."""
+        def cut(a):
+            extra = _dc(self._feat(a))
+            extra["label"] = "PVBr_feat_mod"
+            extra["spawn_event_metadata"] = {"source": "input"}
+            extra["chain_mass_defect_g_mol"] = True
+            a["pools"].append(extra)
+        self._shape_case(side_group_deck, cut, r"finite value")
+
+    def test_rejects_k_unzip_coexistence(self, side_group_deck):
+        """Generation-side mutual exclusion re-enforced at the artifact
+        boundary: side_group_homolysis + k_unzip > 0 double-carries
+        degradation."""
+        def cut(a):
+            entry = next(p for p in a["pools"] if p["label"] == "PVBr")
+            entry["channels"]["unzip"]["A"] = 2.0
+            entry["monomer_routing"] = "Br(2)"
+        self._shape_case(side_group_deck, cut, r"mutually exclusive")
+
+    def test_kernel_supersession_census_and_zero_refused_flux(
+            self, tmp_path):
+        """FR1-K1 supersession, machine-checkable across the artifact
+        boundary: with the kernel live, refused conduit-deferred rows stay
+        marked refused on the reconstructed reactions, the rebuilt
+        oracle's side_group_supersession_census names them, and they
+        contribute EXACTLY zero flux -- while the kernel itself credits
+        the feature pool and the gas Br (so the zero is suppression, not a
+        dead system)."""
+        deck = _side_group_deck(tmp_path, with_refused=True)
+        artifact = _side_group_artifact(deck)
+        assert artifact["schema_version"] == "2.7"
+        marked = [e for e in artifact["reactions"] if e.get("refused")]
+        assert len(marked) == 1
+        assert marked[0]["refused_reason"] == "conduit-deferred"
+
+        rs, core, _ = _build_side_group(
+            deck, artifact, initial_moles={"N2(1)": 1.0, "Br(2)": 0.5})
+        # refused marker survived the boundary
+        assert int(rs.reaction_refused.sum()) == 1
+        # machine-checkable census: the kernel-enabled pool names the
+        # superseded refused rows
+        census = list(rs.side_group_supersession_census)
+        assert census and census[0]["pool"] == "PVBr"
+        assert census[0]["superseded_rows"]
+        # zero flux from the refused row: its non-pool participants gain
+        # nothing (Br is stocked, so the row WOULD run if unsuppressed)...
+        labels = [s.label for s in core]
+        i = {lab: k for k, lab in enumerate(labels)}
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn[i["RP(4)"]] == 0.0
+        assert dn[i["HBr(5)"]] == 0.0
+        # ...while the live kernel credits the feature pool and gas Br
+        assert dn[i[f"{_SG_FEAT}_mu0"]] > 0.0
+        assert dn[i["Br(2)"]] > 0.0

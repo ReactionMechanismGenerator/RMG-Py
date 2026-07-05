@@ -540,6 +540,91 @@ _HOMOLYSIS_PINNED_RECIPE = {
                       "discovered chemistry conduit, never this kernel"),
 }
 
+# --- Pinned side_group_homolysis contract (schema 2.7, FR1-K2, the
+# sibling of the 2.6 homolysis_initiation surface; adjudicated rounds
+# 72/73). Pinned HERE independently of the emitter (rmgpy/polymer.py
+# SIDE_GROUP_*), the same boundary-guard idiom: the loader guards the
+# artifact BOUNDARY -- a sidecar claiming a different kernel, recipe,
+# unit system, selector vocabulary or feature-pool label convention must
+# ERROR, never be adapted to. Each recipe string matches the implemented
+# oracle law (rmgpy/solver/polymer.pyx, the sgh_* RHS section) and the
+# NORMATIVE mass formula (PolymerPoolConfig.condensed_mass_g).
+_SIDE_GROUP_PINNED_KERNEL = "side_group_homolysis/1"
+_SIDE_GROUP_PINNED_REVISION = "2026-07-06-side-group-homolysis"
+_SIDE_GROUP_BLOCK_KEYS = frozenset(
+    ("enabled", "channels", "kernel", "recipe_revision", "recipe"))
+_SIDE_GROUP_CHANNEL_KEYS = frozenset(
+    ("label", "kinetics", "site_selector", "sites_per_unit",
+     "site_atom_indices", "gas_product", "gas_species", "gas_mw_g_mol",
+     "feature_pool"))
+_SIDE_GROUP_KINETICS_KEYS = frozenset(("A", "n", "Ea", "units"))
+# Pinned units: the kernel triplet is SI PER SITE (the RHS multiplies by
+# sites_per_unit*mu1) -- deliberately distinct from the sibling kernel's
+# plain "s^-1". Any other claim is malformed.
+_SIDE_GROUP_PINNED_UNITS = {"A": "s^-1 per site", "Ea": "J/mol"}
+# The CLOSED round-72 structural selector vocabulary (solver
+# SIDE_GROUP_SITE_SELECTORS): the three classes PARTITION the carbon-bound
+# X sites of a repeat unit. An unknown selector is a site this consumer
+# cannot classify -- reject, never adapt.
+_SIDE_GROUP_SELECTORS = ("aryl", "benzylic", "aliphatic")
+# Ratified X-loss feature-pool label convention (solver
+# side_group_daughter_pool_label): '{parent}_sidegrp_{sanitized label}',
+# with the sanitizer mapping every character outside [A-Za-z0-9_] to '_'.
+_SIDE_GROUP_DAUGHTER_INFIX = "_sidegrp_"
+# The spawn provenance the FR1-K1 producer stamps on every X-loss feature
+# daughter (Polymer.generate_side_loss_daughters): source + the SPAWNING
+# CHANNEL's label.
+_SIDE_GROUP_SPAWN_SOURCE = "side_group_homolysis"
+_SIDE_GROUP_PINNED_RECIPE = {
+    "event_rate": ("per channel: R = k(T)*s*mu1 [mol/(m^3 s)]; "
+                   "k(T) = A*T^n*exp(-Ea/(R_gas*T)) per site evaluated at "
+                   "the RUNTIME temperature; s = sites_per_unit -- every "
+                   "repeat unit carries s X sites, so a chain of length n "
+                   "reacts at k*s*n and the reacting chain is picked with "
+                   "probability ~ n (site-weighted)"),
+    "parent_debit": ("dmu_j -= k*s*mu_{j+1} for j = 0, 1, 2; mu3 from the "
+                     "log_lagrange/1 closure -- STABLE direct product "
+                     "forms, never picked-chain ratios re-multiplied "
+                     "by R"),
+    "feature_credit": ("the channel's X-loss feature pool "
+                       "('{parent}_sidegrp_{sanitized channel label}') is "
+                       "credited EXACTLY the parent debit -- the chain "
+                       "transfers INTACT (no chain cut), two-pool "
+                       "mu0/mu1/mu2 totals conserved bitwise, arriving-"
+                       "flux mean length = the parent's length-biased "
+                       "mean mu2/mu1"),
+    "gas_credit": ("dn(gas_product) += R via the small-source -> "
+                   "dn_dt*V_poly path (bit-identical to the feature mu0 "
+                   "credit); channels sharing one gas species are "
+                   "additive"),
+    "out_of_domain": ("zero flux (warn once per (pool, channel) per "
+                      "rebuild) when mu2 < mu1, mu3 is nonfinite, or "
+                      "mu3 < mu2; mu1 <= 0 / mu0 <= 0 is the silent "
+                      "in-domain zero (no sites, no events); a degenerate "
+                      "k(T) raises"),
+    "mass": ("condensed_mass_g = mu1*monomer_mw_g_mol - "
+             "mu0*chain_mass_defect_g_mol -- NORMATIVE feature-pool mass "
+             "formula: the feature pool keeps the parent's monomer_mw "
+             "(intact-chain transfer) and every feature chain lost "
+             "exactly ONE X (v1), so chain_mass_defect_g_mol = M_X of the "
+             "spawning channel's gas_product and d(condensed mass)/dt + "
+             "d(gas X mass)/dt = 0 exactly on the kernel's "
+             "contributions"),
+    "saturation": ("v1 LIMITATION: the kernel acts on the PARENT pool "
+                   "only; feature pools carry no side_group_homolysis of "
+                   "their own and saturate as terminal X-loss sinks (no "
+                   "multi-loss cascade)"),
+}
+
+
+def _side_group_sanitize(channel_label):
+    """The ratified channel-label sanitizer (pinned here independently of
+    the solver's sanitize_side_group_channel_label, boundary-guard idiom):
+    every character outside [A-Za-z0-9_] becomes '_'."""
+    return "".join(c if (c.isalnum() or c == "_") else "_"
+                   for c in channel_label)
+
+
 # The QSSA channel vocabulary entered the sidecar schema at 2.1 (channel-
 # vocabulary growth = minor bump); the emitter stamps >= 2.1 whenever it
 # writes the block, so a 2.0 artifact carrying one is malformed. The
@@ -551,6 +636,7 @@ _EXPLICIT_DP_MIN_SCHEMA_MINOR = 3
 _REFUSED_MIN_SCHEMA_MINOR = 4
 _SPAWNED_MIN_SCHEMA_MINOR = 5
 _HOMOLYSIS_MIN_SCHEMA_MINOR = 6
+_SIDE_GROUP_MIN_SCHEMA_MINOR = 7
 # The CLOSED refused_reason vocabulary (format doc §12): the emitter derives
 # the reason bijectively from the accumulating stamp, so exactly these two
 # strings can exist. _restamp_and_extend reconstructs the accumulating class
@@ -577,9 +663,20 @@ REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid"})
 # _parse_homolysis_initiation_block) and wires the kernel triplet into the
 # reconstructed pool configs, so the rebuilt oracle's RHS carries the
 # generating solver's homolysis flux and its supersession census re-runs
-# (refused rows stay refused/zero-flux) -- 2.6 acceptance is truthful;
-# 2.7+ stays rejected.
-_MAX_KNOWN_SCHEMA_MINOR = 6
+# (refused rows stay refused/zero-flux) -- 2.6 acceptance is truthful.
+# Raised to 7 with the pool-level side_group_homolysis block + the X-loss
+# feature-pool chain_mass_defect_g_mol mass contract (FR1-K2, rounds
+# 72/73): this loader validates both strictly
+# (_check_side_group_homolysis / _parse_side_group_homolysis_block --
+# including selector/feature closure FROM SERIALIZED DATA ALONE via the
+# per-channel site_atom_indices, never re-deriving from a monomer graph
+# it does not have) and wires the channel list + gas routing + defect
+# into the reconstructed pool configs, so the rebuilt oracle's RHS
+# carries the generating solver's side-group flux, its exact mass
+# contract re-enforces at initialize_model (_flatten_side_group_state)
+# and its supersession census re-runs -- 2.7 acceptance is truthful;
+# 2.8+ stays rejected.
+_MAX_KNOWN_SCHEMA_MINOR = 7
 
 
 def _check_schema_version_known(artifact):
@@ -1051,6 +1148,571 @@ def _check_homolysis_initiation(artifact):
                     f"hand-edited. Fix the artifact.")
 
 
+def _parse_side_group_homolysis_block(lab, pool_entry):
+    """Parse + validate a pool entry's pool-level side_group_homolysis
+    block (schema 2.7, FR1-K2). Returns the validated channel list -- one
+    dict per channel with EXACTLY the serialized vocabulary (label,
+    kinetics triplet flattened to A/n/Ea floats, site_selector,
+    sites_per_unit, site_atom_indices, gas_product, gas_species,
+    gas_mw_g_mol, feature_pool) -- or ``None`` when the block is absent.
+
+    Boundary rules mirror _parse_homolysis_initiation_block: closed key
+    vocabulary at every level, boolean ``enabled`` (present-disabled
+    REJECTED), key-presence + SHAPE validation (never truthiness), pinned
+    kernel/units/recipe/recipe_revision by exact match (reject, never
+    adapt). Structural selector closure is validated FROM SERIALIZED DATA
+    ALONE (round-73: K2 must not inherit the solver-backstop structural
+    gap -- this loader has no monomer graph to re-derive from):
+
+    * ``site_selector`` must come from the CLOSED vocabulary
+      {'aryl','benzylic','aliphatic'};
+    * ``site_atom_indices`` -- the emitter-resolved selector match
+      indices in monomer_adj_list atom order -- must be a non-empty list
+      of unique non-negative ints whose LENGTH EQUALS ``sites_per_unit``
+      (the serialized rendering of the round-72 'sites_per_unit is
+      CHECKED, never trusted' law);
+    * no two channels may resolve to the SAME (gas element, atom set) --
+      the double-carry distinct labels were hiding;
+    * ``gas_product`` must parse to a monoatomic mono-radical whose molar
+      mass matches the serialized ``gas_mw_g_mol`` pin (the value the
+      feature pool's chain_mass_defect_g_mol must also pin);
+    * ``feature_pool`` must be the ratified
+      '{parent}_sidegrp_{sanitized label}' daughter label;
+    * duplicate channel labels (raw or sanitized-collision) reject."""
+    raw = pool_entry.get("side_group_homolysis")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis must be a dict, got "
+            f"{type(raw).__name__}. Fix the artifact.")
+    unknown = sorted(set(raw) - _SIDE_GROUP_BLOCK_KEYS)
+    if unknown:
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis has unknown key(s) "
+            f"{unknown}; allowed keys are "
+            f"{sorted(_SIDE_GROUP_BLOCK_KEYS)}. Fix the artifact "
+            f"(unknown vocabulary is never dropped permissively).")
+    missing = sorted(_SIDE_GROUP_BLOCK_KEYS - set(raw))
+    if missing:
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis is missing key(s) "
+            f"{missing}. The emitter always writes the full block "
+            f"(channels, kernel, recipe_revision, recipe) -- regenerate "
+            f"the sidecar.")
+    enabled = raw["enabled"]
+    if not isinstance(enabled, bool):
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis must carry a boolean "
+            f"'enabled' field, got {enabled!r}. Fix the artifact.")
+    if not enabled:
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis carries enabled=false. "
+            f"The emitter never writes disabled blocks: a disabled kernel "
+            f"must be ABSENT from the sidecar, not present-disabled. Fix "
+            f"the artifact (remove the block).")
+    kernel = raw["kernel"]
+    if kernel != _SIDE_GROUP_PINNED_KERNEL:
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis names kernel {kernel!r}; "
+            f"this loader implements exactly "
+            f"{_SIDE_GROUP_PINNED_KERNEL!r}. An unknown kernel is flux "
+            f"this consumer cannot reproduce (the supersession contract) "
+            f"-- upgrade the loader or regenerate the sidecar.")
+    if raw["recipe_revision"] != _SIDE_GROUP_PINNED_REVISION:
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis recipe_revision must "
+            f"equal {_SIDE_GROUP_PINNED_REVISION!r} exactly, got "
+            f"{raw['recipe_revision']!r}. An artifact claiming a "
+            f"different kernel recipe must be fixed at the source; this "
+            f"loader validates, never adapts.")
+    recipe = raw["recipe"]
+    if not isinstance(recipe, dict):
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis must carry the normative "
+            f"'recipe' dict (schema 2.7), got {recipe!r} -- regenerate "
+            f"the sidecar.")
+    unknown_recipe = sorted(set(recipe) - set(_SIDE_GROUP_PINNED_RECIPE))
+    if unknown_recipe:
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis recipe has unknown "
+            f"key(s) {unknown_recipe}; allowed keys are "
+            f"{sorted(_SIDE_GROUP_PINNED_RECIPE)}. Fix the artifact.")
+    for key, pinned in _SIDE_GROUP_PINNED_RECIPE.items():
+        if key not in recipe or recipe[key] != pinned:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis recipe[{key!r}] must "
+                f"equal the pinned normative recipe exactly (including "
+                f"the NORMATIVE mass formula, recipe['mass']); got "
+                f"{recipe.get(key)!r}, expected {pinned!r}. An artifact "
+                f"claiming a different kernel algebra or mass contract "
+                f"must be fixed at the source; this loader validates, "
+                f"never adapts.")
+    channels = raw["channels"]
+    if not isinstance(channels, list) or len(channels) == 0:
+        raise ValueError(
+            f"Pool {lab!r}: side_group_homolysis channels must be a "
+            f"non-empty list of channel dicts, got {channels!r}. A "
+            f"kernel with no channels must be ABSENT from the sidecar. "
+            f"Fix the artifact.")
+    # r75 P1-2: the serialized site_atom_indices are 0-based positions in
+    # the carrier's monomer_adj_list atom order; without that text the
+    # indices cannot be bounds-anchored AT ALL. The atom count is parsed
+    # from the TEXT alone (one numbered atom line per atom -- the first
+    # token is the 1-based atom number), never by re-deriving a molecule
+    # graph (the round-73 posture).
+    adj = pool_entry.get("monomer_adj_list")
+    n_atoms = 0
+    if isinstance(adj, str):
+        n_atoms = sum(1 for line in adj.splitlines()
+                      if line.split() and line.split()[0].isdigit())
+    if n_atoms <= 0:
+        raise ValueError(
+            f"Pool {lab!r}: carries a side_group_homolysis block but its "
+            f"monomer_adj_list is missing/empty (names {n_atoms} atoms) "
+            f"-- site_atom_indices are indices in monomer_adj_list atom "
+            f"order and cannot be bounds-checked without it (round-75 "
+            f"P1). Fix the artifact (regenerate the sidecar).")
+    # Lazy import (the boundary guard needs to parse the gas_product
+    # SMILES to re-pin M_X and the gas element -- a one-atom molecule,
+    # never a monomer graph).
+    from rmgpy.molecule import Molecule
+    out = []
+    seen_sanitized = {}
+    seen_sites = {}
+    for pos, ch in enumerate(channels):
+        if not isinstance(ch, dict):
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channels[{pos}] must "
+                f"be a channel dict, got {type(ch).__name__}. Fix the "
+                f"artifact.")
+        unknown_ch = sorted(set(ch) - _SIDE_GROUP_CHANNEL_KEYS)
+        missing_ch = sorted(_SIDE_GROUP_CHANNEL_KEYS - set(ch))
+        if unknown_ch or missing_ch:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channels[{pos}] "
+                f"(label={ch.get('label', '<unset>')!r}) must carry "
+                f"exactly the keys {sorted(_SIDE_GROUP_CHANNEL_KEYS)} "
+                f"(unknown: {unknown_ch}, missing: {missing_ch}). Fix "
+                f"the artifact.")
+        label = ch["label"]
+        if not isinstance(label, str) or not label.strip():
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channels[{pos}] "
+                f"label must be a non-empty string, got {label!r}. Fix "
+                f"the artifact.")
+        san = _side_group_sanitize(label)
+        if san in seen_sanitized:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis has duplicate "
+                f"channel labels: {seen_sanitized[san]!r} and {label!r} "
+                f"collide (sanitized {san!r}). Two channels of the same "
+                f"bond class would double-carry the loss. Fix the "
+                f"artifact.")
+        seen_sanitized[san] = label
+        kin = ch["kinetics"]
+        if not isinstance(kin, dict):
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"kinetics must be a dict {{A, n, Ea, units}}, got "
+                f"{type(kin).__name__}. Fix the artifact.")
+        unknown_kin = sorted(set(kin) - _SIDE_GROUP_KINETICS_KEYS)
+        missing_kin = sorted(_SIDE_GROUP_KINETICS_KEYS - set(kin))
+        if unknown_kin or missing_kin:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"kinetics must carry exactly the keys "
+                f"{sorted(_SIDE_GROUP_KINETICS_KEYS)} (unknown: "
+                f"{unknown_kin}, missing: {missing_kin}). Fix the "
+                f"artifact.")
+        if kin["units"] != dict(_SIDE_GROUP_PINNED_UNITS):
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"kinetics units must be exactly "
+                f"{_SIDE_GROUP_PINNED_UNITS!r} (SI, PER SITE -- the RHS "
+                f"multiplies by sites_per_unit*mu1), got {kin['units']!r}. "
+                f"A sidecar claiming any other unit system must ERROR, "
+                f"never be silently converted.")
+        parsed = {"label": label}
+        for key in ("A", "n", "Ea"):
+            val = kin[key]
+            if isinstance(val, bool) or not isinstance(val, (int, float)) \
+                    or not math.isfinite(float(val)):
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis channel "
+                    f"{label!r} kinetics {key}={val!r} must be a finite "
+                    f"number (shape validation, never truthiness). Fix "
+                    f"the artifact.")
+            parsed[key] = float(val)
+        if parsed["A"] <= 0.0:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"kinetics A={parsed['A']:g} must be > 0 (a zero/negative "
+                f"channel must be ABSENT, not present-inert). Fix the "
+                f"artifact.")
+        if parsed["Ea"] < 0.0:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"kinetics Ea={parsed['Ea']:g} must be >= 0 [J/mol]. Fix "
+                f"the artifact.")
+        sel = ch["site_selector"]
+        if not isinstance(sel, str) or sel not in _SIDE_GROUP_SELECTORS:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"site_selector={sel!r} must be one of "
+                f"{_SIDE_GROUP_SELECTORS} -- the round-72 CLOSED "
+                f"structural selector vocabulary. An unknown selector is "
+                f"a site this consumer cannot classify; reject, never "
+                f"adapt.")
+        parsed["site_selector"] = sel
+        spu = ch["sites_per_unit"]
+        if isinstance(spu, bool) or not isinstance(spu, (int, float)) or \
+                not math.isfinite(float(spu)) or float(spu) <= 0.0:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"sites_per_unit={spu!r} must be a finite number > 0. "
+                f"Fix the artifact.")
+        parsed["sites_per_unit"] = float(spu)
+        idxs = ch["site_atom_indices"]
+        if (not isinstance(idxs, list) or len(idxs) == 0
+                or any(isinstance(i, bool) or not isinstance(i, int)
+                       or i < 0 for i in idxs)
+                or len(set(idxs)) != len(idxs)):
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"site_atom_indices={idxs!r} must be a non-empty list of "
+                f"unique non-negative ints (the emitter-resolved selector "
+                f"match indices in monomer_adj_list atom order -- the "
+                f"loader-side structural closure, round-73). Fix the "
+                f"artifact.")
+        if float(len(idxs)) != parsed["sites_per_unit"]:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"sites_per_unit={parsed['sites_per_unit']:g} contradicts "
+                f"the serialized structural match count: "
+                f"site_atom_indices={sorted(idxs)} names {len(idxs)} "
+                f"site(s). sites_per_unit is CHECKED against the "
+                f"serialized selector resolution, never trusted "
+                f"(round-72). Fix the artifact.")
+        parsed["site_atom_indices"] = [int(i) for i in idxs]
+        oob = sorted(i for i in parsed["site_atom_indices"]
+                     if i >= n_atoms)
+        if oob:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"site_atom_indices {oob} are out of range for the "
+                f"pool's monomer_adj_list, which names {n_atoms} atom(s) "
+                f"(the indices are 0-based positions in its atom order; "
+                f"round-75 P1). Fix the artifact.")
+        gp = ch["gas_product"]
+        if not isinstance(gp, str) or not gp.strip():
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"gas_product must be a SMILES string, got {gp!r}. Fix "
+                f"the artifact.")
+        try:
+            gmol = Molecule().from_smiles(gp)
+        except Exception as e:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"gas_product={gp!r} does not parse as SMILES ({e}). Fix "
+                f"the artifact.")
+        if len(gmol.atoms) != 1 or gmol.get_radical_count() != 1:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"gas_product={gp!r} must be a monoatomic mono-radical "
+                f"(v1, e.g. '[Br]'); got {len(gmol.atoms)} atom(s), "
+                f"radical count {gmol.get_radical_count()}. Fix the "
+                f"artifact.")
+        parsed["gas_product"] = gp
+        gas_sym = gmol.atoms[0].symbol
+        mw_x = gmol.get_molecular_weight() * 1000.0
+        gw = ch["gas_mw_g_mol"]
+        if (isinstance(gw, bool) or not isinstance(gw, (int, float))
+                or not math.isfinite(float(gw))
+                or abs(float(gw) - mw_x) > 1.0e-6 * mw_x):
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"gas_mw_g_mol={gw!r} does not pin the gas_product's "
+                f"molar mass (M_X({gp}) = {mw_x:g} g/mol). This is the "
+                f"value the feature pool's chain_mass_defect_g_mol must "
+                f"carry (the NORMATIVE mass formula); a diverging pin "
+                f"mints/destroys condensed mass. Fix the artifact.")
+        parsed["gas_mw_g_mol"] = float(gw)
+        # Double-carry guard, from serialized data alone: EMPTY pairwise
+        # intersection between channels' atom sets per gas element
+        # (round-72 P1: distinct labels hiding one structural site;
+        # round-75 P1-1: OVERLAPPING sets -- subset/superset -- hide it
+        # just as well while each satisfies len == sites_per_unit).
+        new_set = set(parsed["site_atom_indices"])
+        for prev_label, prev_set in seen_sites.get(gas_sym, []):
+            shared = sorted(prev_set & new_set)
+            if shared:
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis channels "
+                    f"{prev_label!r} and {label!r} resolve to the SAME "
+                    f"{gas_sym} atom set or overlap on atom indices "
+                    f"{shared} -- two rate channels claiming one "
+                    f"structural site double-carry the loss (rounds "
+                    f"72/75 P1: disjointness is EMPTY pairwise "
+                    f"intersection, not merely non-identical sets). Fix "
+                    f"the artifact.")
+        seen_sites.setdefault(gas_sym, []).append((label, new_set))
+        gs = ch["gas_species"]
+        if not isinstance(gs, str) or not gs.strip():
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"gas_species={gs!r} must be a non-empty artifact species "
+                f"label -- the routing target of the kernel's +R gas "
+                f"credit (the ejected X would silently vanish otherwise). "
+                f"Fix the artifact.")
+        parsed["gas_species"] = gs
+        fp = ch["feature_pool"]
+        expected_fp = f"{lab}{_SIDE_GROUP_DAUGHTER_INFIX}{san}"
+        if not isinstance(fp, str) or fp != expected_fp:
+            raise ValueError(
+                f"Pool {lab!r}: side_group_homolysis channel {label!r} "
+                f"feature_pool={fp!r} must be the ratified X-loss feature "
+                f"pool label {expected_fp!r} "
+                f"('{{parent}}_sidegrp_{{sanitized channel label}}'). Fix "
+                f"the artifact.")
+        parsed["feature_pool"] = fp
+        out.append(parsed)
+    return out
+
+
+def _check_side_group_homolysis(artifact):
+    """Vocabulary/version cross-check + closure guard for the schema-2.7
+    side_group_homolysis vocabulary (FR1-K2), the strict mirror of the
+    producer's _assert_side_group_serialization_closure (the r68
+    producer/consumer mirror-property): BOTH the pool-level block and the
+    X-loss feature-pool chain_mass_defect_g_mol field anywhere under a
+    below-2.7 stamp are malformed, and every conjunct is checkable from
+    serialized data alone. Per carrier: the pool itself must be in
+    conventions.configured_pools; per channel, the named feature pool
+    must
+
+    * be present in pools[] (its moment slots receive the kernel's
+      intact-chain credits),
+    * be in conventions.configured_pools and NOT in
+      conventions.spawned_pools (feature daughters are eagerly
+      solver-configured by design; polymer.pyx _flatten_side_group_state
+      hard-errors otherwise),
+    * be condensed per the condensed closure (phase_species non-empty and
+      fully inside conventions.condensed_species),
+    * carry the FR1-K1 spawn provenance (spawn_event_metadata ==
+      {'source': 'side_group_homolysis', 'channel': <channel label>}),
+    * pin the carrier's monomer_mw_g_mol EXACTLY (intact-chain transfer:
+      the X loss is carried by the defect, never the repeat-unit mass),
+    * pin chain_mass_defect_g_mol == the channel's gas_mw_g_mol (the
+      NORMATIVE mass formula's M_X).
+
+    Reverse closure: a pool entry carrying the side_group_homolysis spawn
+    PROVENANCE that NO carrier channel claims is an orphan (the carrier's
+    block was lost) -- reject, never adapt. A defect field on any pool is
+    shape-validated (finite, > 0), but a defect WITHOUT the provenance is
+    legal: Polymer.copy() carries it to downstream daughters, where the
+    normative mass formula stays exact with no live channel."""
+    pools = [p for p in artifact.get("pools", []) if isinstance(p, dict)]
+    carriers = [p for p in pools if "side_group_homolysis" in p]
+    defect_pools = [p for p in pools if "chain_mass_defect_g_mol" in p]
+    if not carriers and not defect_pools:
+        return
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    minor = (int(parts[1]) if len(parts) == 2 and parts[0] == "2"
+             and parts[1].isdigit() else -1)
+    if minor < _SIDE_GROUP_MIN_SCHEMA_MINOR:
+        present = []
+        if carriers:
+            present.append(
+                f"side_group_homolysis block on pools "
+                f"{[p.get('label') for p in carriers]}")
+        if defect_pools:
+            present.append(
+                f"chain_mass_defect_g_mol on pools "
+                f"{[p.get('label') for p in defect_pools]}")
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry the "
+            f"side-group homolysis vocabulary ({'; '.join(present)}): it "
+            f"was introduced in schema 2.7, and the emitter stamps 2.7 "
+            f"whenever it writes either the block or the X-loss mass "
+            f"contract. This artifact is malformed -- regenerate the "
+            f"sidecar with a current RMG-Py polymer branch.")
+    conv = artifact.get("conventions") or {}
+    configured = set(conv.get("configured_pools") or [])
+    spawned_raw = conv.get("spawned_pools")
+    spawned = (set(spawned_raw)
+               if isinstance(spawned_raw, (list, tuple)) else set())
+    condensed = set(conv.get("condensed_species") or [])
+    by_label = {p.get("label"): p for p in pools}
+    claimed = {}
+    for carrier in carriers:
+        lab = carrier.get("label")
+        if lab not in configured:
+            raise ValueError(
+                f"Pool {lab!r}: carries a side_group_homolysis block but "
+                f"is not listed in conventions.configured_pools. The "
+                f"loader only builds configured pools, so the kernel "
+                f"would be silently dropped (never integrated). The "
+                f"producer only serializes the block on solver-configured "
+                f"pools; this artifact is hand-edited/corrupted. Fix the "
+                f"artifact.")
+        if "chain_mass_defect_g_mol" in carrier:
+            raise ValueError(
+                f"Pool {lab!r}: carries BOTH a side_group_homolysis "
+                f"block and a chain_mass_defect_g_mol field "
+                f"({carrier.get('chain_mass_defect_g_mol')!r}). v1 "
+                f"saturation: the parent pool owns the kernel and X-loss "
+                f"feature pools own the defect, NEVER both -- a defected "
+                f"carrier claims its chains already lost an X while the "
+                f"live kernel debits them for losing another (no "
+                f"multi-loss cascade in v1; round-75 P1). Fix the "
+                f"artifact.")
+        channels = _parse_side_group_homolysis_block(lab, carrier)
+        carrier_mw = carrier.get("monomer_mw_g_mol")
+        if (isinstance(carrier_mw, bool)
+                or not isinstance(carrier_mw, (int, float))
+                or not math.isfinite(float(carrier_mw))
+                or float(carrier_mw) <= 0.0):
+            raise ValueError(
+                f"Pool {lab!r}: carries a side_group_homolysis block but "
+                f"monomer_mw_g_mol={carrier_mw!r} is not a finite value "
+                f"> 0 -- the NORMATIVE mass formula (condensed_mass_g = "
+                f"mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol) is "
+                f"unevaluatable without it. Fix the artifact.")
+        carrier_mw = float(carrier_mw)
+        for ch in channels:
+            d_label = ch["feature_pool"]
+            claimed[d_label] = (lab, ch["label"])
+            d_entry = by_label.get(d_label)
+            if d_entry is None:
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis channel "
+                    f"{ch['label']!r} feature pool {d_label!r} is missing "
+                    f"from the artifact's pools[] -- the kernel's "
+                    f"intact-chain credits would have no moment slots. "
+                    f"This artifact is malformed; regenerate the "
+                    f"sidecar.")
+            if d_label in spawned:
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis feature pool "
+                    f"{d_label!r} is classified in "
+                    f"conventions.spawned_pools. Schema 2.5 defines that "
+                    f"list as the configured set's complement, and X-loss "
+                    f"feature daughters are eagerly solver-configured by "
+                    f"design (polymer.pyx _flatten_side_group_state "
+                    f"hard-errors otherwise) -- a spawned-classified "
+                    f"feature pool is never built by the loader and the "
+                    f"kernel's credits would have no solver home. Fix "
+                    f"the artifact.")
+            if d_label not in configured:
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis feature pool "
+                    f"{d_label!r} is not listed in "
+                    f"conventions.configured_pools. Feature daughters are "
+                    f"eagerly solver-configured by the producer "
+                    f"(polymer.pyx _flatten_side_group_state hard-errors "
+                    f"otherwise), and the loader only builds configured "
+                    f"pools -- an unconfigured feature pool has no solver "
+                    f"home for the kernel's credits. Fix the artifact.")
+            members = d_entry.get("phase_species") or []
+            not_condensed = sorted(m for m in members
+                                   if m not in condensed)
+            if not members or not_condensed:
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis feature pool "
+                    f"{d_label!r} is not condensed per the condensed "
+                    f"closure (phase_species={members}, not condensed="
+                    f"{not_condensed}); its moment slots would be "
+                    f"phase-classified GAS (the item-16 mass-balance "
+                    f"hazard). Fix the artifact.")
+            meta = d_entry.get("spawn_event_metadata")
+            if (not isinstance(meta, dict)
+                    or meta.get("source") != _SIDE_GROUP_SPAWN_SOURCE
+                    or meta.get("channel") != ch["label"]):
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis feature pool "
+                    f"{d_label!r} lacks the FR1-K1 spawn provenance "
+                    f"(expected spawn_event_metadata == {{'source': "
+                    f"{_SIDE_GROUP_SPAWN_SOURCE!r}, 'channel': "
+                    f"{ch['label']!r}}}, got {meta!r}). Feature daughters "
+                    f"are producer-spawned pools, never user pools -- a "
+                    f"row claiming other provenance is hand-edited. Fix "
+                    f"the artifact.")
+            d_mw = d_entry.get("monomer_mw_g_mol")
+            if (isinstance(d_mw, bool)
+                    or not isinstance(d_mw, (int, float))
+                    or not math.isfinite(float(d_mw))
+                    or abs(float(d_mw) - carrier_mw) >
+                    1.0e-9 * max(abs(carrier_mw), 1.0)):
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis feature pool "
+                    f"{d_label!r} monomer_mw_g_mol={d_mw!r} does not pin "
+                    f"the carrier's ({carrier_mw!r}). The chain transfers "
+                    f"INTACT -- the X loss is carried by "
+                    f"chain_mass_defect_g_mol, never by the repeat-unit "
+                    f"mass; a diverging monomer_mw fabricates/destroys "
+                    f"condensed mass. Fix the artifact.")
+            defect = d_entry.get("chain_mass_defect_g_mol")
+            mw_x = ch["gas_mw_g_mol"]
+            if (isinstance(defect, bool)
+                    or not isinstance(defect, (int, float))
+                    or not math.isfinite(float(defect))
+                    or not float(defect) > 0.0
+                    or abs(float(defect) - mw_x) > 1.0e-6 * mw_x):
+                raise ValueError(
+                    f"Pool {lab!r}: side_group_homolysis feature pool "
+                    f"{d_label!r} has chain_mass_defect_g_mol={defect!r} "
+                    f"but channel {ch['label']!r} ejects "
+                    f"gas_product={ch['gas_product']!r} with "
+                    f"M_X={mw_x:g} g/mol. The NORMATIVE mass formula "
+                    f"(condensed_mass_g = mu1*monomer_mw_g_mol - "
+                    f"mu0*chain_mass_defect_g_mol) requires the defect to "
+                    f"pin M_X exactly -- anything else mints or destroys "
+                    f"condensed mass while gas X appears. Fix the "
+                    f"artifact.")
+    for p in pools:
+        lbl = p.get("label")
+        # Any serialized defect must at least be a well-formed exact
+        # per-chain mass loss (finite, > 0) -- the emitter only writes
+        # positive defects, and the reconstructed config feeds it straight
+        # into the normative condensed_mass_g accessor.
+        if "chain_mass_defect_g_mol" in p:
+            defect = p.get("chain_mass_defect_g_mol")
+            if (isinstance(defect, bool)
+                    or not isinstance(defect, (int, float))
+                    or not math.isfinite(float(defect))
+                    or not float(defect) > 0.0):
+                raise ValueError(
+                    f"Pool {lbl!r}: chain_mass_defect_g_mol={defect!r} "
+                    f"must be a finite value > 0 (the exact per-chain "
+                    f"X-loss mass; the emitter never writes any other "
+                    f"shape). Fix the artifact.")
+        # Reverse closure (orphan guard), keyed on the spawn PROVENANCE
+        # only: a pool stamped as a producer-spawned X-loss feature
+        # daughter that NO channel claims is corrupted (its label is a
+        # deterministic function of (parent, channel), so unclaimed
+        # provenance means the carrier's block was lost). A
+        # defect-carrying pool WITHOUT the provenance is deliberately
+        # legal: Polymer.copy() carries chain_mass_defect_g_mol to
+        # downstream daughters (e.g. an S2 _mod child of a feature pool
+        # -- its chains each lost one X too), and the NORMATIVE mass
+        # formula stays exact there with no live channel.
+        meta = p.get("spawn_event_metadata")
+        if (isinstance(meta, dict) and meta.get("source") ==
+                _SIDE_GROUP_SPAWN_SOURCE and lbl not in claimed):
+            raise ValueError(
+                f"Pool {lbl!r}: carries the side_group_homolysis spawn "
+                f"provenance (a producer-spawned X-loss feature daughter) "
+                f"but NO side_group_homolysis channel in the artifact "
+                f"claims it as its feature pool. The feature-pool label "
+                f"is a deterministic function of (parent, channel), so an "
+                f"unclaimed provenance pin means the carrier's block was "
+                f"lost -- the kernel's flux into this pool cannot be "
+                f"reproduced. Fix the artifact.")
+
+
 def _validate_refused_entry(e):
     """Shape-guard one reactions[] entry's refused vocabulary (format doc
     §12; reject, never adapt): the emitter writes ``refused: true`` plus a
@@ -1483,6 +2145,16 @@ def build_system_from_artifact(artifact, species, reactions,
     # un-condensed, or provenance-stripped is rejected before any pool
     # config is built.
     _check_homolysis_initiation(artifact)
+    # Side-group homolysis vocabulary/version cross-check + feature-pool
+    # closure (schema 2.7, FR1-K2): a 2.0-2.6 artifact carrying the
+    # pool-level block OR the X-loss chain_mass_defect_g_mol field is
+    # malformed; a 2.7 block whose carrier is unconfigured or whose
+    # feature pools are missing from pools[], not solver-configured (or
+    # spawned-classified), un-condensed, provenance-stripped, or whose
+    # monomer_mw/defect pins break the NORMATIVE mass formula is rejected
+    # before any pool config is built -- as is any orphan X-loss pool no
+    # channel claims.
+    _check_side_group_homolysis(artifact)
     # ... and the explicit-dp token/vocabulary pairing is exact in both
     # directions (P2 gates): token without block, block without token --
     # both hand-edited shapes fail loud.
@@ -1623,6 +2295,59 @@ def build_system_from_artifact(artifact, species, reactions,
         # invariant and the k_scission/QSSA/k_unzip mutual exclusions
         # natively on initialize_model.
         khom_cfg = _parse_homolysis_initiation_block(lab, p)
+        # Side-group homolysis kernel (schema 2.7, FR1-K2): parse +
+        # validate the pool-level block (pinned kernel/units/recipe;
+        # data-alone selector closure; artifact-level feature-pool closure
+        # already enforced by _check_side_group_homolysis above), enforce
+        # the generation-side mutual exclusions at the artifact boundary,
+        # resolve each channel's gas_species routing against chem.yaml,
+        # and wire the channel list + gas indices into the reconstructed
+        # config -- so the rebuilt oracle's RHS carries the generating
+        # solver's side-group flux and its EXACT mass contract
+        # (chain_mass_defect_g_mol, wired below) re-enforces natively at
+        # initialize_model (_flatten_side_group_state).
+        sgh_channels = None
+        sgh_gas_indices = None
+        sgh_parsed = _parse_side_group_homolysis_block(lab, p)
+        if sgh_parsed is not None:
+            if k_unzip > 0.0:
+                raise ValueError(
+                    f"Pool {lab!r}: artifact declares an enabled "
+                    f"side_group_homolysis block AND unzip A="
+                    f"{k_unzip:g} > 0 (k_unzip). Legacy k_unzip is a "
+                    f"phenomenological closed-chain monomer-loss channel, "
+                    f"while side_group_homolysis creates radical-defect "
+                    f"feature pools feeding explicit degradation "
+                    f"chemistry; the two are mutually exclusive on a pool "
+                    f"(generation-side layers enforce the same). Fix the "
+                    f"artifact.")
+            if qssa_cfg is not None:
+                raise ValueError(
+                    f"Pool {lab!r}: artifact declares an enabled "
+                    f"side_group_homolysis block AND an enabled "
+                    f"radical_qssa_unzip channel. Two lumped initiation "
+                    f"carriers on one pool are mutually exclusive "
+                    f"(generation-side layers enforce the same). Fix the "
+                    f"artifact.")
+            sgh_channels = [
+                {k: ch[k] for k in ("label", "A", "n", "Ea",
+                                    "site_selector", "sites_per_unit",
+                                    "gas_product")}
+                for ch in sgh_parsed]
+            gas_idx = []
+            for ch in sgh_parsed:
+                g_idx = idx.get(ch["gas_species"])
+                if g_idx is None:
+                    raise ValueError(
+                        f"Pool {lab!r}: side_group_homolysis channel "
+                        f"{ch['label']!r} gas_species "
+                        f"{ch['gas_species']!r} is not in the deck's "
+                        f"species list; cannot wire the kernel's gas "
+                        f"X-radical release (the ejected X would silently "
+                        f"vanish -- un-conserved mass). Fix the artifact "
+                        f"to name a species present in chem.yaml.")
+                gas_idx.append(g_idx)
+            sgh_gas_indices = tuple(gas_idx)
         pools.append(PolymerPoolConfig(
             label=lab, xs=int(p.get("cutoff") or 0),
             explicit_dp_to_species_index=explicit_map,
@@ -1637,6 +2362,14 @@ def build_system_from_artifact(artifact, species, reactions,
             k_unzip=k_unzip,
             radical_qssa_unzip=qssa_cfg,
             k_homolysis=khom_cfg,
+            side_group_homolysis=sgh_channels,
+            side_group_gas_indices=sgh_gas_indices,
+            # X-loss feature-pool EXACT mass contract (schema 2.7): the
+            # solver's _flatten_side_group_state re-checks defect == M_X
+            # per channel destination at initialize_model, and every
+            # defect-aware mass consumer reads it via condensed_mass_g.
+            chain_mass_defect_g_mol=float(
+                p.get("chain_mass_defect_g_mol") or 0.0),
         ))
         if initial_moments and lab in initial_moments:
             moments0[lab] = tuple(initial_moments[lab])

@@ -548,3 +548,57 @@ class TestRefusedRowAndHomolysisGuards:
         order = [_yaml_label(s) for s in core]
         with pytest.raises(ValueError, match=r"PP.*homolysis_initiation"):
             ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    @staticmethod
+    def _side_group_artifact():
+        """A real emitter artifact carrying the schema-2.7 side-group
+        kernel block + the X-loss feature pool's chain_mass_defect_g_mol
+        mass contract."""
+        br = _spc("[Br]", "Br", index=7)
+        pool = Polymer(label="PVBr", monomer="[CH2][CH]Br",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                       side_group_homolysis=[dict(
+                           label="aliphatic_C-Br", A=1.0e13, n=0.5,
+                           Ea=1.2e5, site_selector="aliphatic",
+                           sites_per_unit=1.0, gas_product="[Br]")])
+        (daughter,) = pool.generate_side_loss_daughters()
+        pool.side_group_gas_species = [br]
+        core = [_spc("N#N", "N2"), br]
+        for base in ("PVBr", daughter.label):
+            core += [_mu(f"{base}_mu{k}") for k in range(3)]
+        artifact = build_polymer_moments_artifact(
+            [pool, daughter], core_species=core, core_reactions=[],
+            configured_pool_labels=["PVBr", daughter.label],
+            condensed_species=core[2:],
+            cantera_index_map={})
+        return json.loads(json.dumps(artifact)), core, daughter.label
+
+    def test_rejects_side_group_homolysis_block_loudly(self):
+        """RED pin (FR1-K2 supersession contract): this consumer does not
+        implement the side-group homolysis kernel, so a pool carrying the
+        schema-2.7 side_group_homolysis block must fail at construction --
+        the silent path integrates a melt with no X-loss flux and mints
+        the round-70 P1 mass defect."""
+        artifact, core, _ = self._side_group_artifact()
+        assert artifact["schema_version"] == "2.7"
+        order = [_yaml_label(s) for s in core]
+        with pytest.raises(ValueError,
+                           match=r"PVBr.*side_group_homolysis"):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    def test_rejects_chain_mass_defect_pool_loudly(self):
+        """The X-loss mass contract ALONE (feature pool with
+        chain_mass_defect_g_mol, block stripped) must also fail loudly:
+        this consumer's mass accounting does not implement the normative
+        condensed_mass_g formula, so integrating the pool would silently
+        carry a wrong condensed mass."""
+        artifact, core, d_label = self._side_group_artifact()
+        for p in artifact["pools"]:
+            p.pop("side_group_homolysis", None)
+        assert any("chain_mass_defect_g_mol" in p
+                   for p in artifact["pools"])
+        order = [_yaml_label(s) for s in core]
+        with pytest.raises(ValueError,
+                           match=r"chain_mass_defect_g_mol"):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
