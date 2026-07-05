@@ -7284,3 +7284,324 @@ class TestFeaturePoolConduitRouting:
         assert v_b == [False, False], (
             "heavy-gaining co-product must not count as abstraction "
             "evidence")
+
+
+# ---------------------------------------------------------------------------
+# Radical-homolysis initiation conduit, Stage 1 (adjudicated adversarial
+# round 66): the k_homolysis Arrhenius kernel spawns TWO end-radical daughter
+# pools at model setup (primary = open-*1 chain terminus, secondary = open-*2
+# chain terminus per the backbone C-C cut), with hard deck exclusions against
+# k_scission > 0 (same random backbone-break physics, double-count) and
+# against QSSA random initiation (radical_qssa_unzip's initiation IS random
+# backbone homolysis).
+# ---------------------------------------------------------------------------
+
+def _khom_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
+    """Arrhenius triplet for the k_homolysis kernel (SI convention, same as
+    the radical_qssa_unzip blocks: A [s^-1], Ea [J/mol], n dimensionless)."""
+    return dict(A=A, n=n, Ea=Ea)
+
+
+class TestEndRadicalDaughterProducer:
+    """Pin 4 (round-66 red list): primary/secondary end-radical pools are
+    distinct (labels + fingerprints + proxies), born at zero, condensed,
+    with monomer_mw_g_mol pinned and spawned provenance."""
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        self.pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                          end_groups=['[H]', '[H]'], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+        self.prim, self.sec = self.pp.generate_end_radical_daughters()
+
+    def test_labels_and_distinct_fingerprints(self):
+        """RED pin 4a: the two daughters carry the ratified label convention
+        and three-way distinct fingerprints (from each other, from the parent,
+        and from a mid-chain H-loss _mod pool of the same backbone)."""
+        assert self.prim.label == 'polypropylene_rad_primary_end'
+        assert self.sec.label == 'polypropylene_rad_secondary_end'
+        fps = {self.pp.fingerprint, self.prim.fingerprint, self.sec.fingerprint}
+        assert len(fps) == 3, (
+            f"end-radical daughters must carry distinct fingerprints, got {fps}")
+        # distinct from the S2 mid-chain _mod pool machinery too
+        mod = self.pp.create_reacted_copy(
+            Molecule(smiles='CCCC(C)[CH]C(C)C'), h_loss_feature=True)
+        assert isinstance(mod, Polymer)
+        assert self.prim.fingerprint != mod.fingerprint
+        assert self.sec.fingerprint != mod.fingerprint
+
+    def test_born_at_zero_with_monomer_mw_and_provenance(self):
+        """RED pin 4b: born-at-zero moments, monomer_mw_g_mol pinned to the
+        parent repeat unit, spawned_empty-style provenance markers."""
+        for d in (self.prim, self.sec):
+            assert d.moments is not None
+            assert np.allclose(d.moments, 0.0), (
+                f"end-radical daughter must be born at zero, got {d.moments}")
+            assert d.initial_mass_g == 0.0
+            assert d.monomer_mw_g_mol == pytest.approx(self.pp.monomer_mw_g_mol)
+            assert d.monomer_mw_g_mol > 0.0
+            assert d.parent_pool_label == 'polypropylene'
+            assert d.spawn_metadata.get('source') == 'k_homolysis_end_radical'
+
+    def test_proxies_are_valid_mono_radical_end_oligomers(self):
+        """RED pin 4c: each proxy is a valid NEUTRAL MONO-radical oligomer
+        with the radical on the expected chain-end carbon. For PP
+        ([CH2][CH](C), *1 = CH2, *2 = CH):
+          primary  end ~CH2*      -> radical C with 2 H + 1 heavy neighbor
+          secondary end ~CH*(CH3) -> radical C with 1 H + 2 heavy neighbors
+        """
+        for d, (n_h_exp, n_heavy_exp) in ((self.prim, (2, 1)),
+                                          (self.sec, (1, 2))):
+            proxy = d.get_proxy_species()
+            assert proxy is not None
+            mol = proxy.molecule[0]
+            assert mol.get_radical_count() == 1, (
+                f"{d.label} proxy must be mono-radical, got "
+                f"{mol.get_radical_count()}")
+            assert mol.get_net_charge() == 0
+            rad_atoms = [a for a in mol.atoms if a.radical_electrons > 0]
+            assert len(rad_atoms) == 1
+            rad = rad_atoms[0]
+            assert rad.is_carbon()
+            n_h = sum(1 for nb in rad.bonds if nb.is_hydrogen())
+            n_heavy = sum(1 for nb in rad.bonds if not nb.is_hydrogen())
+            assert (n_h, n_heavy) == (n_h_exp, n_heavy_exp), (
+                f"{d.label} radical environment ({n_h}H, {n_heavy}C) does not "
+                f"match the expected end site ({n_h_exp}H, {n_heavy_exp}C)")
+            assert d.multiplicity == 2
+
+    def test_primary_and_secondary_proxies_not_isomorphic(self):
+        """RED pin 4d: the two end-radical proxies are chemically distinct
+        species (not graph-isomorphic), so RMG cannot collapse the pools."""
+        p_mol = self.prim.get_proxy_species().molecule[0]
+        s_mol = self.sec.get_proxy_species().molecule[0]
+        assert not p_mol.is_isomorphic(s_mol)
+
+    def test_end_radical_pools_condensed_membership(self):
+        """RED pin 4e: once configured as pools, the daughters' proxy + mu
+        dummies resolve as condensed-phase members (label-convention source 2
+        of derive_condensed_species)."""
+        from types import SimpleNamespace
+        core = []
+        for base in ('polypropylene_rad_primary_end',
+                     'polypropylene_rad_secondary_end'):
+            proxy = Species(label=base,
+                            molecule=[Molecule(smiles='[CH2]CC')])
+            core.append(proxy)
+            for k in (0, 1, 2):
+                core.append(Species(label=f"{base}_mu{k}",
+                                    molecule=[Molecule(smiles='CO')]))
+        gas = Species(label='CH4', molecule=[Molecule(smiles='C')])
+        core.append(gas)
+        pools_cfg = [SimpleNamespace(label='polypropylene_rad_primary_end'),
+                     SimpleNamespace(label='polypropylene_rad_secondary_end')]
+        condensed = polymer.derive_condensed_species(core, pools_cfg)
+        condensed_labels = {s.label for s in condensed}
+        for base in ('polypropylene_rad_primary_end',
+                     'polypropylene_rad_secondary_end'):
+            assert base in condensed_labels
+            for k in (0, 1, 2):
+                assert f"{base}_mu{k}" in condensed_labels
+        assert 'CH4' not in condensed_labels
+
+
+def test_assert_end_radical_proxy_strict():
+    """The end-radical proxy assertion path is STRICT (round 66: do not relax
+    _assert_feature_unit/_assert_end_group; the end-radical shape gets its own
+    assertion): exactly ONE radical, sitting ON the surviving (terminal)
+    stitch-labeled heavy atom."""
+    from rmgpy.polymer import _assert_end_radical_proxy
+
+    # (a) closed-shell molecule with the open-site label -> refused
+    mol = Molecule(smiles='CCC')
+    mol.atoms[0].label = '*1'
+    with pytest.raises(ValueError, match=r"mono-radical|exactly one radical"):
+        _assert_end_radical_proxy(mol, 'primary')
+
+    # (b) mono-radical but the radical is NOT on the labeled terminal atom
+    mol = Molecule(smiles='C[CH]C')
+    terminal = next(a for a in mol.atoms
+                    if a.is_carbon() and a.radical_electrons == 0)
+    terminal.label = '*1'
+    with pytest.raises(ValueError, match=r"terminal|labeled"):
+        _assert_end_radical_proxy(mol, 'primary')
+
+    # (c) di-radical -> refused (exactly one radical total)
+    mol = Molecule(smiles='[CH2]C[CH2]')
+    rad = next(a for a in mol.atoms if a.radical_electrons > 0)
+    rad.label = '*1'
+    with pytest.raises(ValueError, match=r"mono-radical|exactly one radical"):
+        _assert_end_radical_proxy(mol, 'primary')
+
+    # (d) no surviving open-site label at all -> refused
+    mol = Molecule(smiles='[CH2]CC')
+    with pytest.raises(ValueError, match=r"label"):
+        _assert_end_radical_proxy(mol, 'primary')
+
+    # (e) the real primary-end shape passes
+    mol = Molecule(smiles='[CH2]CC')
+    rad = next(a for a in mol.atoms if a.radical_electrons > 0)
+    rad.label = '*1'
+    _assert_end_radical_proxy(mol, 'primary')
+
+
+def test_polymer_stores_k_homolysis_and_copy_preserves_it():
+    """Passive-storage + copy pin (mirrors the radical_qssa_unzip precedent):
+    losing k_homolysis or end_radical_site on copy() would silently disable
+    the initiation kernel / collapse a daughter pool's identity."""
+    kh = _khom_triplet()
+    poly = Polymer(label='PP', monomer='[CH2][CH](C)',
+                   end_groups=['[H]', '[H]'], cutoff=3,
+                   Mn=1500.0, Mw=1800.0, initial_mass=0.1,
+                   k_homolysis=kh)
+    assert poly.k_homolysis == kh
+    cp = poly.copy(deep=True)
+    assert cp.k_homolysis == kh
+    # deep copy, not aliasing
+    cp.k_homolysis['A'] = 999.0
+    assert poly.k_homolysis['A'] == kh['A'] or cp.k_homolysis is not poly.k_homolysis
+    # end_radical_site rides copy() too
+    prim, _ = poly.generate_end_radical_daughters()
+    prim_cp = prim.copy(deep=True)
+    assert prim_cp.end_radical_site == prim.end_radical_site
+    assert prim_cp.fingerprint == prim.fingerprint
+
+
+def test_polymer_input_helper_rejects_k_homolysis_with_positive_k_scission():
+    """Pin 5a (deck layer): k_scission > 0 with k_homolysis enabled is a hard
+    deck error naming both parameters -- both parameterize random backbone
+    homolysis and would double-count initiation."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_homolysis.*k_scission.*mutually exclusive"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          k_scission=0.5,
+                          k_homolysis=_khom_triplet())
+
+
+def test_polymer_input_helper_rejects_k_homolysis_with_qssa_random_initiation():
+    """Pin 5b (deck layer): QSSA random initiation configured together with
+    k_homolysis is a hard deck error naming both params (QSSA initiation IS
+    random backbone homolysis; enabling both double-counts initiation)."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_homolysis.*radical_qssa_unzip.*mutually exclusive"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          monomer_product="C=CC",
+                          radical_qssa_unzip=_qssa_channel(),
+                          k_homolysis=_khom_triplet())
+
+
+def test_polymer_input_helper_rejects_malformed_k_homolysis():
+    """Deck-read-time field validation for the k_homolysis triplet (shared
+    single-source validator, mirrors the QSSA triplet rules)."""
+    import rmgpy.rmg.input as rmg_input
+
+    for bad, pattern in [
+        (dict(A=-1.0, n=0.0, Ea=8.0e4), r"PP.*k_homolysis.*A.*> 0"),
+        (dict(A=float("nan"), n=0.0, Ea=8.0e4), r"PP.*k_homolysis.*A.*not finite"),
+        (dict(A=1.0e13, n=0.0), r"PP.*k_homolysis.*missing"),
+        (dict(A=1.0e13, n=0.0, Ea=8.0e4, extra=1.0), r"PP.*k_homolysis.*unknown"),
+        (dict(A=1.0e13, n=0.0, Ea=-5.0), r"PP.*k_homolysis.*Ea.*>= 0"),
+        (42.0, r"PP.*k_homolysis.*dict"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                              end_groups=["[H]", "[H]"], cutoff=3,
+                              Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                              k_homolysis=bad)
+
+
+def test_pool_to_config_rejects_k_homolysis_with_positive_k_scission():
+    """Pin 5a (config layer): PolymerPool.to_config re-enforces the
+    k_homolysis <-> k_scission mutual exclusion (a directly-constructed
+    PolymerPool must not dodge the deck check)."""
+    from rmgpy.rmg.polymer_input import PolymerPool
+
+    mono = Molecule().from_smiles("[CH2][CH](C)")
+    mu = [_moment_dummy("P_mu0"), _moment_dummy("P_mu1"), _moment_dummy("P_mu2")]
+    pool = PolymerPool(label="P", xs=3, monomer=mono, explicit_map={},
+                       mu_species=mu, k_scission=0.5,
+                       k_homolysis=_khom_triplet())
+    spc_map = {s: i for i, s in enumerate(mu)}
+    with pytest.raises(ValueError, match=r"Pool P.*k_homolysis.*k_scission.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_pool_to_config_rejects_k_homolysis_with_qssa_channel():
+    """Pin 5b (config layer): PolymerPool.to_config re-enforces the
+    k_homolysis <-> radical_qssa_unzip mutual exclusion."""
+    pool, spc_map = _qssa_pool(_qssa_channel())
+    pool.k_homolysis = _khom_triplet()
+    with pytest.raises(ValueError, match=r"Pool P.*k_homolysis.*radical_qssa_unzip.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_polymer_input_helper_rejects_k_homolysis_with_positive_k_unzip():
+    """P1 (adjudicated round 67, deck layer): legacy k_unzip (phenomenological
+    closed-chain monomer-loss channel) together with k_homolysis (radical-end
+    pools feeding explicit beta-scission/unzip chemistry) lets a deck
+    double-carry depolymerization -- hard deck error naming both parameters.
+    monomer_product is wired so the k_unzip routing guard cannot mask this."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_homolysis.*k_unzip.*mutually exclusive"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          monomer_product="C=CC",
+                          k_unzip=0.7,
+                          k_homolysis=_khom_triplet())
+
+
+def test_pool_to_config_rejects_k_homolysis_with_positive_k_unzip():
+    """P1 (adjudicated round 67, config layer): PolymerPool.to_config
+    re-enforces the k_homolysis <-> k_unzip mutual exclusion (a
+    directly-constructed PolymerPool must not dodge the deck check).
+    monomer_product is wired so the k_unzip routing guard cannot mask this."""
+    pool, spc_map = _qssa_pool(None, k_unzip=0.5)
+    pool.k_homolysis = _khom_triplet()
+    with pytest.raises(ValueError, match=r"Pool P.*k_homolysis.*k_unzip.*mutually exclusive"):
+        pool.to_config(spc_map)
+
+
+def test_polymer_input_helper_k_homolysis_spawns_end_radical_pools():
+    """GREEN round-trip (producer wiring): polymer(...) with k_homolysis
+    registers BOTH end-radical daughter pools at model setup (not lazily),
+    stores the normalized triplet on the parent, and appends the daughters to
+    initial_species."""
+    from unittest.mock import MagicMock
+    import rmgpy.rmg.input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        return obj, True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                                 end_groups=["[H]", "[H]"], cutoff=3,
+                                 Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                                 k_homolysis=_khom_triplet())
+        sd = rmg_input.species_dict
+        assert poly.k_homolysis == _khom_triplet()
+        assert all(isinstance(v, float) for v in poly.k_homolysis.values())
+        for suffix in ("_rad_primary_end", "_rad_secondary_end"):
+            label = f"PP{suffix}"
+            assert label in sd, f"{label} not registered by the deck helper"
+            d = sd[label]
+            assert isinstance(d, Polymer)
+            assert np.allclose(d.moments, 0.0)
+            assert d in mock_rmg.initial_species
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd

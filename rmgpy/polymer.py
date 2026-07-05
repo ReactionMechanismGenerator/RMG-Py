@@ -118,6 +118,10 @@ from rmgpy.thermo import Wilhoit, NASA, ThermoData
 
 
 LABELS_1, LABELS_2 = ('1', '*1'), ('2', '*2')
+# Temporary label used by _stitch_end_radical_oligomer to keep an open chain
+# terminus out of the stitcher's *1/*2 label resolution (restored before the
+# strict end-radical assertion runs).
+_END_RADICAL_PARKED_LABEL = '*er'
 
 
 class PolymerCrosslinkError(Exception):
@@ -241,15 +245,37 @@ class Polymer(Species):
                  k_unzip: float = 0.0,
                  k_scission: float = 0.0,
                  radical_qssa_unzip: Optional[dict] = None,
+                 k_homolysis: Optional[dict] = None,
+                 end_radical_site: Optional[str] = None,
                  **kwargs,
                  ):
-        # k_unzip/k_scission/radical_qssa_unzip are named parameters, so they never
+        # k_unzip/k_scission/radical_qssa_unzip/k_homolysis/end_radical_site
+        # are named parameters, so they never
         # appear in kwargs; assign them directly. discrete_dp_threshold (below) is
         # popped from kwargs before Species.__init__, which does not accept it and
         # would raise TypeError.
         self.k_unzip = k_unzip
         self.k_scission = k_scission
         self.radical_qssa_unzip = radical_qssa_unzip
+        # Radical-homolysis initiation kernel (Stage 1, adjudicated round 66):
+        # Arrhenius triplet {A, n, Ea} (SI: A [s^-1], Ea [J/mol]) or None.
+        # Passive storage here (like radical_qssa_unzip); validated by
+        # rmgpy.solver.polymer.validate_k_homolysis at the deck / config /
+        # solver layers. NOT a bare scalar by design: the solver evaluates
+        # k(T) at its runtime temperature.
+        self.k_homolysis = k_homolysis
+        # end_radical_site marks this Polymer as one of the two homolysis
+        # end-radical daughter pools: 'primary' = the open-*1 chain terminus,
+        # 'secondary' = the open-*2 terminus of the backbone C-C cut. When
+        # set, the reactive proxy is the end-radical oligomer (mono-radical
+        # on the uncapped terminal heavy atom) and the fingerprint carries an
+        # _EndRad segment so the pools stay distinct from each other, from
+        # the parent, and from mid-chain _mod feature pools.
+        if end_radical_site not in (None, 'primary', 'secondary'):
+            raise InputError(
+                f"Polymer '{label}': end_radical_site must be None, "
+                f"'primary' or 'secondary', got {end_radical_site!r}.")
+        self.end_radical_site = end_radical_site
         # Discreteness threshold (spec 2026-06-10 §6, D7/D8): chains with
         # literal DP < threshold are candidates for discrete tracking. Default
         # 4 = monomer..trimer explicit. DORMANT under the fixed trimer proxy:
@@ -276,6 +302,7 @@ class Polymer(Species):
 
         self._baseline_proxy = None
         self._feature_proxy = None
+        self._end_radical_proxy = None
         self._fingerprint = None
         self.thermo = None
         self.is_polymer = True
@@ -299,7 +326,15 @@ class Polymer(Species):
             else:
                 raise InputError(f"Polymer '{label}': Must provide either 'moments' OR ('Mn' and 'Mw').\n"
                                  f"Got moments={moments}, Mn={Mn}, Mw={Mw}.")
-        reactive_proxy = self.feature_proxy or self.baseline_proxy
+        if self.end_radical_site is not None:
+            # End-radical daughter pool: the reactive proxy IS the
+            # end-radical oligomer (built + strictly asserted in
+            # end_radical_proxy), never the closed-shell baseline trimer --
+            # otherwise RMG would dedup the daughter against the parent's
+            # species graph.
+            reactive_proxy = self.end_radical_proxy
+        else:
+            reactive_proxy = self.feature_proxy or self.baseline_proxy
         self.molecule = reactive_proxy.molecule
 
     def __repr__(self):
@@ -397,6 +432,17 @@ class Polymer(Species):
                     feat = f'_Feat-{self.feature_monomer.fingerprint}'
                     if self.feature_monomer.get_radical_count() > 2:
                         feat += f'-rad{_radical_site_descriptor(self.feature_monomer)}'
+                if getattr(self, 'end_radical_site', None):
+                    # End-radical daughter pools (k_homolysis conduit): the
+                    # _EndRad segment keys the pool identity on WHICH chain
+                    # terminus carries the radical (site name) plus the
+                    # radical atom's environment descriptor -- distinct from
+                    # the parent (no segment), from each other (different
+                    # site + environment) and from mid-chain _mod pools
+                    # (_Feat segment).
+                    er_mol = self.end_radical_proxy.molecule[0]
+                    feat += (f'_EndRad-{self.end_radical_site}'
+                             f'-rad{_radical_site_descriptor(er_mol)}')
                 eg = '_'.join(eg.fingerprint for eg in self.end_groups) if self.end_groups else ''
                 self._fingerprint = f'Polymer_{self.monomer.fingerprint}{feat}_EG-{eg}_{self.cutoff}'
         return self._fingerprint
@@ -414,6 +460,17 @@ class Polymer(Species):
         if self.feature_monomer and self._feature_proxy is None:
             self._feature_proxy = self._stitch_trimer(self.feature_monomer)
         return self._feature_proxy
+
+    @property
+    def end_radical_proxy(self) -> Optional[Species]:
+        """The cached end-radical oligomer proxy (k_homolysis daughter pools
+        only; None unless end_radical_site is set). Built with ONE uncapped
+        stitch terminus so the surviving stitch radical IS the chain-end
+        radical; strictly asserted by _assert_end_radical_proxy."""
+        site = getattr(self, 'end_radical_site', None)
+        if site and getattr(self, '_end_radical_proxy', None) is None:
+            self._end_radical_proxy = self._stitch_end_radical_oligomer(site)
+        return getattr(self, '_end_radical_proxy', None)
 
     @property
     def backbone_group(self) -> 'Group':
@@ -522,6 +579,8 @@ class Polymer(Species):
         other.monomer_mw_g_mol = self.monomer_mw_g_mol
         other._baseline_proxy = self._baseline_proxy.copy(deep=True) if self._baseline_proxy else None
         other._feature_proxy = self._feature_proxy.copy(deep=True) if self._feature_proxy else None
+        other._end_radical_proxy = (self._end_radical_proxy.copy(deep=True)
+                                    if getattr(self, '_end_radical_proxy', None) else None)
         other._fingerprint = self._fingerprint
         # Attributes set in __init__ that __new__ bypasses — must be carried over,
         # else a copied Polymer loses its identity flag (is_polymer) and, worse,
@@ -532,6 +591,12 @@ class Polymer(Species):
         # assignment aliases the nested channel dict across copies, so mutating
         # one Polymer's channel would silently rewrite every copy's.
         other.radical_qssa_unzip = deepcopy(getattr(self, 'radical_qssa_unzip', None))
+        # k_homolysis kernel triplet + end-radical pool identity (Stage 1,
+        # round 66): losing the triplet on copy would silently disable the
+        # initiation kernel; losing end_radical_site would collapse a
+        # daughter pool's proxy/fingerprint back onto the parent's.
+        other.k_homolysis = deepcopy(getattr(self, 'k_homolysis', None))
+        other.end_radical_site = getattr(self, 'end_radical_site', None)
         # Released-monomer routing target (input.py:432). Shared BY REFERENCE
         # deliberately, NOT deep-copied: routing resolution downstream
         # (derive_daughter_pool_configs' spc_map, PolymerPool.to_config) is
@@ -806,6 +871,10 @@ class Polymer(Species):
             return self.baseline_proxy
         elif mode == 'feature':
             return self.feature_proxy
+        elif getattr(self, 'end_radical_site', None):
+            # End-radical daughter pool: its reactive identity IS the
+            # end-radical oligomer (mono-radical chain terminus).
+            return self.end_radical_proxy
         else:
             return self.feature_proxy or self.baseline_proxy
 
@@ -849,6 +918,126 @@ class Polymer(Species):
                                                      save_order=True)
         spc.is_polymer_proxy = True
         return spc
+
+    def _stitch_end_radical_oligomer(self, site: str) -> Optional[Species]:
+        """
+        Constructs the end-radical oligomer proxy for a k_homolysis daughter
+        pool (Stage 1, adjudicated round 66): a 3-unit chain with ONE
+        uncapped stitch terminus, so the surviving stitch radical IS the
+        chain-end radical (no H bookkeeping -- homolysis of the inter-unit
+        *1-*2 backbone bond leaves exactly these two ends):
+
+            primary   [HeadCap *1]-[*2 u *1]-[*2 u *1]-[*2 u *1(RADICAL)]
+            secondary [(RADICAL)*2 u *1]-[*2 u *1]-[*2 u *1]-[*2 TailCap]
+
+        The surviving stitch label is the TERMINALITY WITNESS: the strict
+        assertion (_assert_end_radical_proxy -- exactly one radical, ON the
+        labeled terminal heavy atom) runs BEFORE labels are cleared. Finishing
+        recipe (update / resonance / is_polymer_proxy) matches _stitch_trimer
+        so the proxy passes the same downstream validity expectations as the
+        S2 feature proxies.
+        """
+        if site not in ('primary', 'secondary'):
+            raise ValueError(
+                f"Polymer '{self.label}': unknown end-radical site "
+                f"{site!r} (expected 'primary' or 'secondary').")
+        unit = self.monomer
+        if site == 'primary':
+            chain = stitch_molecules_by_labeled_atoms(
+                self.end_groups[0].copy(deep=True), unit.copy(deep=True))
+            if chain is None:
+                return None
+            chain = stitch_molecules_by_labeled_atoms(chain, unit.copy(deep=True))
+            if chain is None:
+                return None
+            chain = stitch_molecules_by_labeled_atoms(chain, unit.copy(deep=True))
+        else:
+            # The open *2 terminus must survive three stitches, but
+            # stitch_molecules_by_labeled_atoms resolves labels on the MERGED
+            # graph (first match wins), so an unconsumed *2 on the left
+            # operand would mis-bond the first unit onto itself. Park the
+            # open-site label out of the stitcher's label sets for the
+            # duration and restore it afterwards (the atom keeps its radical
+            # electron throughout -- it is simply never bonded).
+            u1 = unit.copy(deep=True)
+            parked = next((a for a in u1.atoms if a.label in LABELS_2), None)
+            if parked is None:
+                return None
+            parked.label = _END_RADICAL_PARKED_LABEL
+            chain = stitch_molecules_by_labeled_atoms(u1, unit.copy(deep=True))
+            if chain is None:
+                return None
+            chain = stitch_molecules_by_labeled_atoms(chain, unit.copy(deep=True))
+            if chain is None:
+                return None
+            chain = stitch_molecules_by_labeled_atoms(
+                chain, self.end_groups[1].copy(deep=True))
+            if chain is None:
+                return None
+            restored = next((a for a in chain.atoms
+                             if a.label == _END_RADICAL_PARKED_LABEL), None)
+            if restored is None:
+                return None
+            restored.label = LABELS_2[-1]
+        if chain is None:
+            return None
+        chain.update()
+        chain.identify_ring_membership()
+        # STRICT assertion path (round 66: do NOT relax _assert_feature_unit
+        # / _assert_end_group) -- before the labels are cleared.
+        _assert_end_radical_proxy(chain, site)
+        spc = Species(molecule=[chain])
+        mol_0 = spc.molecule[0].copy(deep=True)
+        mol_0.clear_labeled_atoms()
+        mol_0.assign_atom_ids()
+        spc.molecule = generate_resonance_structures(mol_0,
+                                                     clar_structures=False,
+                                                     keep_isomorphic=False,
+                                                     filter_structures=True,
+                                                     save_order=True)
+        spc.is_polymer_proxy = True
+        return spc
+
+    def generate_end_radical_daughters(self) -> Tuple['Polymer', 'Polymer']:
+        """
+        Producer for the radical-homolysis initiation conduit (Stage 1,
+        adjudicated round 66): build BOTH end-radical daughter pools of this
+        parent, for registration at MODEL SETUP (not lazily).
+
+        Returns ``(primary, secondary)``:
+        - ``{label}_rad_primary_end``   -- open-*1 end radical,
+        - ``{label}_rad_secondary_end`` -- open-*2 end radical
+        of the backbone C-C cut. The suffix names are POSITIONAL (round 67
+        ruling a): they identify WHICH stitch terminus carries the radical,
+        not primary/secondary radical character -- that chemical reading
+        holds only for PP under its head-to-tail repeat convention, is
+        orientation-dependent, and is false for other polymers.
+
+        Each daughter: born-at-zero moments (spawned_empty pattern, mirrors
+        _born_at_zero_mod_daughter), parent's monomer (monomer_mw_g_mol
+        pinned by __init__), spawned provenance markers, and an end-radical
+        reactive proxy with its own strict assertion path.
+        """
+        daughters = []
+        for site, suffix in (('primary', '_rad_primary_end'),
+                             ('secondary', '_rad_secondary_end')):
+            if self.Mn and self.Mw:
+                dist_kwargs = dict(Mn=self.Mn, Mw=self.Mw, moments=None)
+            else:
+                dist_kwargs = dict(moments=[0.0, 0.0, 0.0])
+            daughter = Polymer(
+                label=f"{self.label}{suffix}",
+                monomer=self.monomer,
+                end_groups=[eg.copy(deep=True) for eg in self.end_groups],
+                cutoff=self.cutoff,
+                initial_mass=0.0,
+                end_radical_site=site,
+                **dist_kwargs,
+            )
+            daughter.parent_pool_label = self.label
+            daughter.spawn_metadata = {"source": "k_homolysis_end_radical"}
+            daughters.append(daughter)
+        return tuple(daughters)
 
     def _capped_chain_species(self, dp: int) -> Optional[Species]:
         """
@@ -1990,6 +2179,29 @@ def warn_once_qssa_double_count(entry: dict) -> None:
 _warn_once_qssa_double_count = warn_once_qssa_double_count
 
 
+_homolysis_supersession_warned = set()
+
+
+def warn_once_homolysis_supersession(entry: dict) -> None:
+    """Log each k_homolysis supersession census entry once (Stage 1,
+    adjudicated round 66): refused explicit homolysis/association rows
+    co-existing with a live k_homolysis kernel are FINE -- they carry zero
+    flux (``reaction_refused``) -- but the pairing must be stated explicitly
+    in the run log: the refused conduit-deferred rows are SUPERSEDED by the
+    pool's kernel, which now carries the initiation flux they were refused
+    for. Census-only, NEVER refuse. Warn-once keyed per pool."""
+    key = entry["pool"]
+    if key in _homolysis_supersession_warned:
+        return
+    _homolysis_supersession_warned.add(key)
+    rows = entry.get("superseded_rows", [])
+    logging.warning(
+        "HOMOLYSIS KERNEL CENSUS: pool '%s' has a live k_homolysis initiation "
+        "kernel; %d refused conduit-deferred row(s) are superseded by the "
+        "kernel (they remain refused and carry zero flux): %s",
+        entry["pool"], len(rows), "; ".join(str(r) for r in rows))
+
+
 _chip_tripwire_warned = set()
 
 
@@ -2612,6 +2824,46 @@ def _labels_present(mol: Molecule) -> list[str]:
 def _count_label(mol: Molecule, label: str) -> int:
     """Count the number of atoms with a specific label in the molecule."""
     return sum(1 for a in mol.atoms if a.label == label)
+
+
+def _assert_end_radical_proxy(mol: Molecule, site: str) -> None:
+    """
+    STRICT validity assertion for an end-radical oligomer proxy (k_homolysis
+    daughter pools, Stage 1 / round 66). Runs on the stitched chain BEFORE
+    labels are cleared, so the surviving stitch label is the terminality
+    witness. Deliberately its own assertion path: _assert_feature_unit
+    (mid-chain, 2-3 radicals + both stitch labels) and _assert_end_group
+    (stitch fragment) describe different shapes and are NOT relaxed.
+
+    Requirements:
+    - exactly ONE surviving open-site label, from the site's label set
+      (*1 for 'primary', *2 for 'secondary'), and no other labels;
+    - the molecule is MONO-radical (exactly one radical electron total);
+    - the radical sits ON the labeled terminal atom, which is a heavy atom.
+    """
+    want = LABELS_1 if site == 'primary' else LABELS_2
+    labeled = [a for a in mol.atoms if a.label]
+    on_site = [a for a in labeled if a.label in want]
+    if len(on_site) != 1 or len(labeled) != 1:
+        raise ValueError(
+            f"End-radical proxy ({site}) must carry exactly one surviving "
+            f"open-site label from {want} and no other labels; got "
+            f"{[a.label for a in labeled] or 'none'}.")
+    rad_count = mol.get_radical_count()
+    if rad_count != 1:
+        raise ValueError(
+            f"End-radical proxy ({site}) must be mono-radical (exactly one "
+            f"radical electron total). Got {rad_count}.")
+    atom = on_site[0]
+    if atom.is_hydrogen():
+        raise ValueError(
+            f"End-radical proxy ({site}): the open-site atom must be a "
+            f"terminal HEAVY atom, got a hydrogen.")
+    if atom.radical_electrons != 1:
+        raise ValueError(
+            f"End-radical proxy ({site}): the radical must sit ON the "
+            f"terminal (stitch-labeled) atom; the labeled atom carries "
+            f"{atom.radical_electrons} radical electrons.")
 
 
 def _radical_site_descriptor(mol: Molecule) -> str:

@@ -38,7 +38,7 @@ import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
 from rmgpy.solver.polymer import (HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig,
-                                  validate_radical_qssa_unzip)
+                                  validate_k_homolysis, validate_radical_qssa_unzip)
 from rmgpy.polymer import strip_rmg_index_suffix
 from rmgpy.species import Species
 
@@ -1048,6 +1048,7 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
                 proxy_species=spc,
                 monomer_product=getattr(spc, 'monomer_product_species', None),
                 radical_qssa_unzip=getattr(spc, 'radical_qssa_unzip', None),
+                k_homolysis=getattr(spc, 'k_homolysis', None),
             )
             pools.append(pool)
         else:
@@ -1130,6 +1131,7 @@ class PolymerPool(object):
                  proxy_species: Optional[Species] = None,
                  monomer_product: Optional[Species] = None,
                  radical_qssa_unzip: Optional[dict] = None,
+                 k_homolysis: Optional[dict] = None,
                  ):
         self.label = label
         self.xs = xs
@@ -1145,6 +1147,12 @@ class PolymerPool(object):
         # Molecule used for mass).
         self.monomer_product = monomer_product
         self.radical_qssa_unzip = radical_qssa_unzip
+        # Radical-homolysis initiation kernel (Stage 1, round 66): Arrhenius
+        # triplet {A, n, Ea} (SI: A [s^-1], Ea [J/mol]) or None. Validated +
+        # normalized in to_config via validate_k_homolysis; mutually
+        # exclusive with k_scission > 0, with radical_qssa_unzip, and (round
+        # 67) with k_unzip > 0.
+        self.k_homolysis = k_homolysis
 
     def to_config(self, spc_map):
         """
@@ -1249,6 +1257,40 @@ class PolymerPool(object):
                     f"exclusive on a pool (enabling both would double-count the unzip "
                     f"flux). Set k_unzip=0 or remove radical_qssa_unzip.")
 
+        # 3b. Radical-homolysis initiation kernel (Stage 1, adjudicated round
+        #     66): validate + normalize the triplet (shared single source of
+        #     truth: validate_k_homolysis) and re-enforce the two hard mutual
+        #     exclusions -- a directly-constructed PolymerPool must not dodge
+        #     the deck-read checks in rmgpy/rmg/input.py.
+        khom_channel = None
+        if self.k_homolysis is not None:
+            khom_channel = validate_k_homolysis(self.label, self.k_homolysis)
+            if self.k_scission > 0.0:
+                raise ValueError(
+                    f"Pool {self.label}: k_homolysis is configured AND "
+                    f"k_scission={self.k_scission:g} > 0. Both parameterize the "
+                    f"SAME random backbone-break event (homolysis IS random "
+                    f"scission, with the products routed to the end-radical "
+                    f"pools) and are mutually exclusive on a pool -- enabling "
+                    f"both would double-count chain initiation. Set k_scission=0 "
+                    f"or remove k_homolysis.")
+            if self.radical_qssa_unzip is not None:
+                raise ValueError(
+                    f"Pool {self.label}: k_homolysis is configured AND "
+                    f"radical_qssa_unzip is configured. The QSSA channel's "
+                    f"initiation block IS random backbone homolysis, so the two "
+                    f"are mutually exclusive on a pool -- enabling both would "
+                    f"double-count initiation. Remove one of them.")
+            if self.k_unzip > 0.0:
+                raise ValueError(
+                    f"Pool {self.label}: k_homolysis is configured AND "
+                    f"k_unzip={self.k_unzip:g} > 0. Legacy k_unzip is a "
+                    f"phenomenological closed-chain monomer-loss channel, while "
+                    f"k_homolysis creates radical-end pools that feed explicit "
+                    f"beta-scission/unzip chemistry; the two are mutually "
+                    f"exclusive on a pool -- enabling both would double-carry "
+                    f"depolymerization. Set k_unzip=0 or remove k_homolysis.")
+
         # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot AND the
         #    reference-state tripwire chain_window (spec 2026-06-10 §3, same idiom
         #    as Polymer.monomer_mw_g_mol). self.monomer is normally a Molecule (the
@@ -1278,7 +1320,8 @@ class PolymerPool(object):
             monomer_mw_g_mol=monomer_mw_g_mol,
             k_scission=self.k_scission,
             k_unzip=self.k_unzip,
-            radical_qssa_unzip=qssa_channel
+            radical_qssa_unzip=qssa_channel,
+            k_homolysis=khom_channel
         )
 
 

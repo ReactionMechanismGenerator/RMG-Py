@@ -67,7 +67,7 @@ from rmgpy.rmg.reactionmechanismsimulator_reactors import (
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
-from rmgpy.solver.polymer import validate_radical_qssa_unzip
+from rmgpy.solver.polymer import validate_k_homolysis, validate_radical_qssa_unzip
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.solver.termination import (
@@ -261,6 +261,7 @@ def polymer(label: str,
             monomer_product: Optional[Union[Molecule, str]] = None,
             radical_qssa_unzip: Optional[dict] = None,
             explicit_dp: bool = False,
+            k_homolysis: Optional[dict] = None,
             ):
     """
     Helper function exposed in the input file to define a Polymer Pool.
@@ -415,6 +416,54 @@ def polymer(label: str,
                 f"double-count the unzip flux. Set k_unzip=0 or remove "
                 f"radical_qssa_unzip.")
 
+    # HARD ERRORS at deck-read time for the radical-homolysis initiation
+    # kernel (Stage 1, adjudicated round 66). Field rules (dict-shaped
+    # Arrhenius triplet {A, n, Ea}, finite, A > 0, Ea >= 0 -- NOT a bare
+    # scalar, the solver evaluates k(T) at its runtime T) live in
+    # validate_k_homolysis -- shared single source of truth, also enforced by
+    # PolymerPool.to_config and the solver's validate_configuration.
+    # Cross-invariants (all mutual exclusions name BOTH parameters):
+    # - k_scission > 0: k_homolysis IS random backbone scission with the
+    #   products routed to the end-radical pools; enabling both would
+    #   double-count chain initiation.
+    # - radical_qssa_unzip: the QSSA channel's initiation block IS random
+    #   backbone homolysis; enabling both would double-count initiation.
+    # - k_unzip > 0 (adjudicated round 67): legacy k_unzip is a
+    #   phenomenological closed-chain monomer-loss channel, while k_homolysis
+    #   creates radical-end pools that feed explicit beta-scission/unzip
+    #   chemistry; enabling both lets a deck double-carry depolymerization.
+    # Refused explicit homolysis rows + k_homolysis are FINE (zero flux);
+    # the solver's supersession census pairs them explicitly.
+    if k_homolysis is not None:
+        try:
+            k_homolysis = validate_k_homolysis(label, k_homolysis)
+        except ValueError as e:
+            raise InputError(str(e))
+        if k_scission > 0.0:
+            raise InputError(
+                f"Polymer pool '{label}': k_homolysis and k_scission="
+                f"{k_scission:g} > 0 are mutually exclusive -- both "
+                f"parameterize the SAME random backbone-break event "
+                f"(homolysis IS random scission, with the products routed to "
+                f"the end-radical pools), and enabling both would "
+                f"double-count chain initiation. Set k_scission=0 or remove "
+                f"k_homolysis.")
+        if radical_qssa_unzip is not None:
+            raise InputError(
+                f"Polymer pool '{label}': k_homolysis and radical_qssa_unzip "
+                f"are mutually exclusive -- the QSSA channel's initiation "
+                f"block IS random backbone homolysis, and enabling both "
+                f"would double-count initiation. Remove one of them.")
+        if k_unzip > 0.0:
+            raise InputError(
+                f"Polymer pool '{label}': k_homolysis and k_unzip="
+                f"{k_unzip:g} > 0 are mutually exclusive -- legacy k_unzip "
+                f"is a phenomenological closed-chain monomer-loss channel, "
+                f"while k_homolysis creates radical-end pools that feed "
+                f"explicit beta-scission/unzip chemistry; enabling both "
+                f"would let the deck double-carry depolymerization. Set "
+                f"k_unzip=0 or remove k_homolysis.")
+
     poly_obj = Polymer(
         label=label,
         monomer=monomer,
@@ -427,6 +476,7 @@ def polymer(label: str,
         k_unzip=k_unzip,
         k_scission=k_scission,
         radical_qssa_unzip=radical_qssa_unzip,
+        k_homolysis=k_homolysis,
         discrete_dp_threshold=discrete_dp_threshold,
     )
 
@@ -509,8 +559,40 @@ def polymer(label: str,
         species_dict[dp_spc.label] = dp_spc
         poly_obj.explicit_dp_species = dp_spc
 
+    # 4d. Radical-homolysis end-radical daughter pools (Stage 1, adjudicated
+    #     round 66): when the k_homolysis kernel is enabled, BOTH daughter
+    #     pools ({label}_rad_primary_end / {label}_rad_secondary_end) are
+    #     created HERE, at model setup -- not lazily -- through the same
+    #     registration path as the parent (make_new_species routes Polymer
+    #     objects through _register_polymer, which dedups by fingerprint and
+    #     creates the _mu0/_mu1/_mu2 moment dummies). The solver's
+    #     _flatten_homolysis_state hard-errors if a kernel-enabled pool's
+    #     daughters are missing, so this step is load-bearing.
+    poly_obj.end_radical_daughter_labels = []
+    if k_homolysis is not None:
+        for daughter in poly_obj.generate_end_radical_daughters():
+            daughter.creation_iteration = rmg.reaction_model.iteration_num
+            d_spc, _ = rmg.reaction_model.make_new_species(
+                daughter, generate_thermo=False)
+            if d_spc not in rmg.initial_species:
+                rmg.initial_species.append(d_spc)
+            species_dict[d_spc.label] = d_spc
+            for suffix in ['_mu0', '_mu1', '_mu2']:
+                m_label = f"{d_spc.label}{suffix}"
+                for spc in rmg.reaction_model.new_species_list:
+                    if spc.label == m_label:
+                        rmg.initial_species.append(spc)
+                        species_dict[m_label] = spc
+                        break
+            poly_obj.end_radical_daughter_labels.append(d_spc.label)
+
     # 5. Generate Thermo for the Polymer (Delegates to the trimer proxy)
     rmg.reaction_model.generate_thermo(poly_obj)
+    # 5b. Thermo for the end-radical daughters (delegates to their
+    #     end-radical oligomer proxies).
+    if k_homolysis is not None:
+        for d_label in poly_obj.end_radical_daughter_labels:
+            rmg.reaction_model.generate_thermo(species_dict[d_label])
 
     return poly_obj
 

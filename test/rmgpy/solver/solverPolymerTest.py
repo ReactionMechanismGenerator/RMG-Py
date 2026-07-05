@@ -7684,3 +7684,348 @@ class TestExplicitDpAutoGenPath:
         assert len(configs) == 1
         assert configs[0].label == "PS_d1"
         assert configs[0].explicit_dp_to_species_index == {}
+
+
+# ---------------------------------------------------------------------------
+# Radical-homolysis initiation kernel, Stage 1 (adjudicated adversarial
+# round 66). Event: random backbone C-C homolysis on the parent pool at
+# R = k(T) * max(mu1 - mu0, 0),  k(T) = A * T^n * exp(-Ea/(R_gas*T))
+# with the bond-weighted parent debit
+#   B1 = (mu2 - mu1)/(mu1 - mu0),  B2 = (mu3 - mu2)/(mu1 - mu0)
+#   parent: dmu0 -= R; dmu1 -= R*B1; dmu2 -= R*B2
+# and EACH of the two end-radical daughter pools credited
+#   dmu0 += R; dmu1 += R*B1/2; dmu2 += R*(2*B2 - B1)/6.
+# mu3 closes via the established log-Lagrange idiom mu0*(mu2/mu1)^3.
+# No gas species term (homolysis releases no volatiles); no reverse leg.
+# ---------------------------------------------------------------------------
+
+_KHOM_R_GAS = 8.314  # matches the solver's QSSA_R_GAS pin (SI, J/(mol K))
+
+
+def _khom_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
+    return dict(A=A, n=n, Ea=Ea)
+
+
+def _khom_arrhenius(T, trip=None):
+    trip = trip or _khom_triplet()
+    return trip["A"] * T ** trip["n"] * math.exp(-trip["Ea"] / (_KHOM_R_GAS * T))
+
+
+def _khom_core_and_pools(k_homolysis=None, k_scission=0.0,
+                         parent_moments=(1.0, 5.0, 30.0),
+                         include_daughters=True, extra_species=None):
+    """Parent pool 'poly' (mu slots 2-4) + end-radical daughters
+    'poly_rad_primary_end' (6-8) and 'poly_rad_secondary_end' (10-12),
+    all condensed; index 0 is a gas inert."""
+    Inert = _spc("N#N", "N2")
+    core = [Inert,
+            _spc("CCCC", "poly"),
+            _spc("CO", "poly_mu0"), _spc("C=O", "poly_mu1"), _spc("C#N", "poly_mu2")]
+    pools = [PolymerPoolConfig(
+        label="poly", xs=2, explicit_dp_to_species_index={},
+        mu_indices=(2, 3, 4), monomer_poly_index=None,
+        k_scission=k_scission, k_unzip=0.0,
+        k_homolysis=k_homolysis, tail_kinetics=None)]
+    moments = {"poly": tuple(parent_moments)}
+    if include_daughters:
+        core += [_spc("[CH2]CC", "poly_rad_primary_end"),
+                 _spc("CCO", "poly_rad_primary_end_mu0"),
+                 _spc("CC=O", "poly_rad_primary_end_mu1"),
+                 _spc("CC#N", "poly_rad_primary_end_mu2"),
+                 _spc("C[CH]C", "poly_rad_secondary_end"),
+                 _spc("CCCO", "poly_rad_secondary_end_mu0"),
+                 _spc("CCC=O", "poly_rad_secondary_end_mu1"),
+                 _spc("CCC#N", "poly_rad_secondary_end_mu2")]
+        pools += [
+            PolymerPoolConfig(
+                label="poly_rad_primary_end", xs=2,
+                explicit_dp_to_species_index={}, mu_indices=(6, 7, 8),
+                monomer_poly_index=None, k_scission=0.0, k_unzip=0.0,
+                tail_kinetics=None),
+            PolymerPoolConfig(
+                label="poly_rad_secondary_end", xs=2,
+                explicit_dp_to_species_index={}, mu_indices=(10, 11, 12),
+                monomer_poly_index=None, k_scission=0.0, k_unzip=0.0,
+                tail_kinetics=None)]
+        moments["poly_rad_primary_end"] = (0.0, 0.0, 0.0)
+        moments["poly_rad_secondary_end"] = (0.0, 0.0, 0.0)
+    if extra_species:
+        core += extra_species
+    mask = np.array([s.label in ("N2",) or (extra_species and s in extra_species)
+                     for s in core], dtype=bool)
+    return core, mask, pools, moments
+
+
+def _khom_system(core, mask, pools, moments, T=800.0, rxns=None):
+    rs = HybridPolymerSystem(
+        T=T, P=1.0e5, initial_mole_fractions={core[0]: 1.0},
+        V_poly=1.0, polymer_pools=pools, mass_transfer=[],
+        gas_species_mask=mask.copy(), constant_gas_volume=False,
+        initial_polymer_moments=moments, termination=[])
+    rs.initialize_model(core, rxns or [], [], [])
+    return rs
+
+
+class TestRadicalHomolysisKernel:
+
+    def test_homolysis_moment_derivatives_parent_and_daughters(self):
+        """Pins 1+2+3 (round-66 red list): event rate, parent debit, both
+        daughter credits, and the three conservation identities -- all
+        hand-derived for mu=(1,5,30), V_poly=1:
+
+          mu3 = mu0*(mu2/mu1)^3 = 1*(30/5)^3 = 216
+          denom = mu1 - mu0 = 4;  R = k(800)*4
+          B1 = (30-5)/4 = 6.25;  B2 = (216-30)/4 = 46.5
+          parent:   dmu0 = -R; dmu1 = -6.25*R; dmu2 = -46.5*R
+          daughter: dmu0 = +R; dmu1 = +3.125*R;
+                    dmu2 = +(2*46.5 - 6.25)/6 * R = +14.4583333...*R
+          totals:   dmu0 = +R  (one new chain per event)
+                    dmu1 = 0   (monomer units conserved, machine precision)
+                    dmu2 = -R*(B1+B2)/3 = -R*52.75/3
+                         == k*(mu1 - mu3)/3 = k*(5-216)/3   [legacy
+                         Ziff-McGrady random-scission total: R*(B1+B2)/3 =
+                         k*(mu1-mu0)*((mu2-mu1)+(mu3-mu2))/((mu1-mu0)*3)
+                         = k*(mu3-mu1)/3 -- EXACT algebraic identity]
+        """
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=_khom_triplet())
+        rs = _khom_system(core, mask, pools, moments, T=800.0)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        k = _khom_arrhenius(800.0)
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+        mu3 = mu0 * (mu2 / mu1) ** 3          # 216.0
+        denom = mu1 - mu0                     # 4.0
+        R = k * denom
+        B1 = (mu2 - mu1) / denom              # 6.25
+        B2 = (mu3 - mu2) / denom              # 46.5
+
+        # parent debit (pin 2)
+        assert np.isclose(dn_dt[2], -R, rtol=1e-12)
+        assert np.isclose(dn_dt[3], -R * B1, rtol=1e-12)
+        assert np.isclose(dn_dt[4], -R * B2, rtol=1e-12)
+        # each daughter credit (pin 2)
+        for base in (6, 10):
+            assert np.isclose(dn_dt[base], R, rtol=1e-12)
+            assert np.isclose(dn_dt[base + 1], R * B1 / 2.0, rtol=1e-12)
+            assert np.isclose(dn_dt[base + 2], R * (2.0 * B2 - B1) / 6.0,
+                              rtol=1e-12)
+        # identities (pin 3)
+        total_mu1 = dn_dt[3] + dn_dt[7] + dn_dt[11]
+        assert total_mu1 == 0.0, (
+            f"total dmu1 must vanish at machine precision, got {total_mu1!r}")
+        total_mu0 = dn_dt[2] + dn_dt[6] + dn_dt[10]
+        assert np.isclose(total_mu0, R, rtol=1e-12)
+        total_mu2 = dn_dt[4] + dn_dt[8] + dn_dt[12]
+        legacy_mu2 = k * (mu1 - mu3) / 3.0    # Ziff-McGrady total
+        assert np.isclose(total_mu2, legacy_mu2, rtol=1e-12)
+        assert np.isclose(total_mu2, -R * (B1 + B2) / 3.0, rtol=1e-12)
+        # no gas species term (round 66: homolysis produces no volatiles)
+        assert dn_dt[0] == 0.0
+        # proxies carry no kernel flux
+        assert dn_dt[1] == 0.0 and dn_dt[5] == 0.0 and dn_dt[9] == 0.0
+
+    def test_homolysis_zero_flux_at_mu1_le_mu0_and_empty_pool(self):
+        """Pin 1: R = k(T)*max(mu1-mu0, 0) -- zero flux at mu1 <= mu0 and on
+        an empty pool; the whole residual is exactly zero (no reactions, no
+        other channels)."""
+        for parent_moments in ((2.0, 2.0, 2.0), (0.0, 0.0, 0.0)):
+            core, mask, pools, moments = _khom_core_and_pools(
+                k_homolysis=_khom_triplet(), parent_moments=parent_moments)
+            rs = _khom_system(core, mask, pools, moments)
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            assert np.all(dn_dt == 0.0), (
+                f"homolysis must carry zero flux for moments "
+                f"{parent_moments}, got nonzero {dn_dt.nonzero()}")
+
+    def test_homolysis_arrhenius_evaluated_at_runtime_temperature(self):
+        """Pin 7: k(T) is evaluated at the solver's runtime T (round 66: 'a
+        scalar precomputed at 1100 K will poison any ramp/TA replay'). k at
+        two different temperatures matches A*T^n*exp(-Ea/(R*T)) -- the n=0.5
+        triplet also catches a dropped T^n factor."""
+        rates = {}
+        for T in (700.0, 1100.0):
+            core, mask, pools, moments = _khom_core_and_pools(
+                k_homolysis=_khom_triplet())
+            rs = _khom_system(core, mask, pools, moments, T=T)
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            rates[T] = dn_dt[6]     # primary-daughter mu0 credit == R
+            expected = _khom_arrhenius(T) * (5.0 - 1.0)
+            assert np.isclose(rates[T], expected, rtol=1e-10), (
+                f"k({T}) mismatch: got {rates[T]}, expected {expected}")
+        assert rates[1100.0] > rates[700.0] * 10.0  # genuinely T-dependent
+
+    def test_homolysis_requires_resolvable_end_radical_pools(self):
+        """Loud guard: k_homolysis enabled but the end-radical daughter pools
+        absent from the solver's pool configs is a hard initialize error
+        (the producer creates them at model setup; a missing pool means the
+        kernel's credits would silently vanish)."""
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=_khom_triplet(), include_daughters=False)
+        with pytest.raises(ValueError,
+                           match=r"poly.*k_homolysis.*_rad_primary_end"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_solver_rejects_k_homolysis_with_positive_k_scission(self):
+        """Pin 5 (solver last line of defense): k_scission > 0 AND
+        k_homolysis on one pool double-counts random backbone homolysis."""
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=_khom_triplet(), k_scission=0.3)
+        with pytest.raises(ValueError,
+                           match=r"Pool poly.*k_homolysis.*k_scission.*mutually exclusive"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_solver_rejects_k_homolysis_with_qssa_channel(self):
+        """Pin 5 (solver last line of defense): QSSA random initiation AND
+        k_homolysis on one pool double-counts initiation."""
+        qssa = dict(initiation=dict(A=1.0e15, n=0.0, Ea=3.0e5),
+                    depropagation=dict(A=1.0e13, n=0.0, Ea=8.0e4),
+                    termination=dict(A=1.0e8, n=0.0, Ea=1.0e4))
+        Mono = _spc("C=CC", "propene_gas")
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=None, extra_species=[Mono])
+        parent = dataclasses.replace(
+            pools[0], k_homolysis=_khom_triplet(),
+            radical_qssa_unzip=qssa, monomer_poly_index=len(core) - 1)
+        pools[0] = parent
+        with pytest.raises(ValueError,
+                           match=r"Pool poly.*k_homolysis.*radical_qssa_unzip.*mutually exclusive"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_solver_rejects_k_homolysis_with_positive_k_unzip(self):
+        """P1 (adjudicated round 67, solver last line of defense): legacy
+        k_unzip (phenomenological closed-chain monomer-loss channel) AND
+        k_homolysis (radical-end pools feeding explicit beta-scission/unzip
+        chemistry) on one pool double-carries depolymerization.
+        monomer_poly_index is wired so the k_unzip routing guard cannot mask
+        this exclusion."""
+        Mono = _spc("C=CC", "propene_gas")
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=None, extra_species=[Mono])
+        parent = dataclasses.replace(
+            pools[0], k_homolysis=_khom_triplet(),
+            k_unzip=0.4, monomer_poly_index=len(core) - 1)
+        pools[0] = parent
+        with pytest.raises(ValueError,
+                           match=r"Pool poly.*k_homolysis.*k_unzip.*mutually exclusive"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_homolysis_guard_rejects_negative_daughter_mu2_credit(self, caplog):
+        """P1 (adjudicated round 67): B1 >= 0 and B2 >= 0 do NOT imply
+        2*B2 - B1 >= 0. mu = (1, 4, 8.2) -> mu3 = mu0*(mu2/mu1)^3 = 8.615,
+        so B1 = 4.2/3 = 1.4 >= 0 and B2 = 0.415/3 ~ 0.138 >= 0 pass the
+        per-moment guards, but the daughter mu2 credit factor
+        2*B2 - B1 = (2*mu3 - 3*mu2 + mu1)/(mu1 - mu0) = -3.37/3 < 0 would
+        credit NEGATIVE mu2 to both radical daughters. Convention (mirrors
+        the existing nonrealizable-state guard in this kernel): loud
+        warn-once + the kernel contributes ZERO flux."""
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=_khom_triplet(), parent_moments=(1.0, 4.0, 8.2))
+        rs = _khom_system(core, mask, pools, moments)
+        with caplog.at_level(logging.WARNING):
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.all(dn_dt == 0.0), (
+            f"kernel must contribute zero flux on a moment state whose "
+            f"daughter mu2 credit factor 2*B2 - B1 is negative; nonzero at "
+            f"{dn_dt.nonzero()}: {dn_dt[dn_dt != 0.0]}")
+        assert any("k_homolysis kernel skipped" in r.getMessage()
+                   for r in caplog.records), (
+            "the out-of-domain guard must warn loudly, not skip silently")
+
+    def test_homolysis_credits_use_stable_direct_forms_near_exhaustion(self):
+        """P2 (adjudicated round 67): near DP -> 1 exhaustion (mu1 barely
+        above mu0) the divided forms R*Bi = k*B*((mu_{i+1}-mu_i)/B) suffer
+        ratio cancellation; the credits must be computed in the
+        algebraically identical DIRECT forms:
+            R*B1          = k*(mu2 - mu1)
+            R*B2          = k*(mu3 - mu2)
+            R*(2B2-B1)/6  = k*(2*mu3 - 3*mu2 + mu1)/6
+        Pinned by EXACT (bitwise) equality against the direct forms at a
+        near-exhaustion state; the divide-then-remultiply forms differ in
+        the last ulps here."""
+        mu0, mu1, mu2 = 1.0, 1.0 + 1e-9, 1.0 + 3e-9
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=_khom_triplet(), parent_moments=(mu0, mu1, mu2))
+        rs = _khom_system(core, mask, pools, moments, T=800.0)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        k = _khom_arrhenius(800.0)
+        # bitwise replica of the solver's log-Lagrange mu3 closure
+        # (_safe_mu3_from_mu012) -- exact equality below depends on it
+        mu3 = float(np.exp(3.0 * np.log(mu2) - 3.0 * np.log(mu1)
+                           + np.log(mu0)))
+        # parent debit, stable direct forms
+        assert dn_dt[2] == -(k * (mu1 - mu0))
+        assert dn_dt[3] == -(k * (mu2 - mu1))
+        assert dn_dt[4] == -(k * (mu3 - mu2))
+        # EACH daughter credit, stable direct forms
+        for base in (6, 10):
+            assert dn_dt[base] == k * (mu1 - mu0)
+            assert dn_dt[base + 1] == k * (mu2 - mu1) / 2.0
+            assert dn_dt[base + 2] == k * (2.0 * mu3 - 3.0 * mu2 + mu1) / 6.0
+        # analytic invariants survive the exhaustion regime
+        assert dn_dt[3] + dn_dt[7] + dn_dt[11] == 0.0
+        total_mu2 = dn_dt[4] + dn_dt[8] + dn_dt[12]
+        assert np.isclose(total_mu2, k * (mu1 - mu3) / 3.0, rtol=1e-12)
+
+    def test_solver_rejects_malformed_k_homolysis_triplet(self):
+        """Pin 5 (solver field validation): a directly-constructed config
+        with a malformed triplet must fail loudly, not run a garbage rate."""
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=dict(A=-1.0, n=0.0, Ea=8.0e4))
+        with pytest.raises(ValueError, match=r"Pool poly.*k_homolysis.*A.*> 0"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_refused_homolysis_rows_zero_flux_and_census_pairs_kernel(self):
+        """Pin 6: the run-5 gas-radical association shape (gas radicals ->
+        condensed proxy), refused conduit-deferred, stays refused and carries
+        EXACTLY zero flux while the k_homolysis kernel is live -- and the
+        census pairs them: a warn-level entry names the refused row(s) as
+        superseded by the kernel."""
+        R1 = _spc("[CH2]C(C)C", "isobutyl")
+        R2 = _spc("C[CH]CCC", "pentyl2")
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=_khom_triplet(), extra_species=[R1, R2])
+        proxy = core[1]
+        refused = Reaction(reactants=[R1, R2], products=[proxy],
+                           kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                                              Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+                           reversible=False)
+        # run-5 stamp (the classifier itself is pinned in polymerTest.py::
+        # test_gas_radical_association_into_condensed_proxy_refused_...)
+        refused.polymer_refused = True
+        refused.polymer_refused_accumulating = False    # conduit-deferred
+
+        rs_with = _khom_system(core, mask, pools, moments, rxns=[refused])
+        dn_with = rs_with.residual(0.0, rs_with.y, np.zeros_like(rs_with.y))[0]
+
+        core2, mask2, pools2, moments2 = _khom_core_and_pools(
+            k_homolysis=_khom_triplet(),
+            extra_species=[_spc("[CH2]C(C)C", "isobutyl"),
+                           _spc("C[CH]CCC", "pentyl2")])
+        rs_wo = _khom_system(core2, mask2, pools2, moments2, rxns=[])
+        dn_wo = rs_wo.residual(0.0, rs_wo.y, np.zeros_like(rs_wo.y))[0]
+
+        assert np.any(dn_wo != 0.0)                 # kernel flux is live
+        assert np.array_equal(dn_with, dn_wo), (
+            "refused row must add exactly zero flux next to the live kernel")
+        # still censused refused (not silently un-refused by the kernel)
+        assert any(c["reason"] == "conduit-deferred"
+                   for c in rs_with.refused_reaction_census)
+        # the pairing census names the refused rows as superseded
+        census = rs_with.homolysis_supersession_census
+        assert census, "kernel-live census must pair the refused rows"
+        entry = next(c for c in census if c["pool"] == "poly")
+        assert len(entry["superseded_rows"]) == 1
+
+    def test_homolysis_diagnostic_reports_kernel_and_radical_pools(self, capsys):
+        """Round 66: radical inventories must be traceable in run logs -- the
+        POLYMER SOLVER DIAGNOSTIC block lists the kernel triplet on the parent
+        pool and enumerates both end-radical pools with their moment slots."""
+        core, mask, pools, moments = _khom_core_and_pools(
+            k_homolysis=_khom_triplet())
+        _khom_system(core, mask, pools, moments)
+        out = capsys.readouterr().out
+        assert "POLYMER SOLVER DIAGNOSTIC" in out
+        assert "k_homolysis" in out
+        assert "poly_rad_primary_end" in out
+        assert "poly_rad_secondary_end" in out

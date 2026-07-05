@@ -372,6 +372,69 @@ def validate_radical_qssa_unzip(pool_label, channel):
     return normalized
 
 
+# Ratified label convention (radical-homolysis conduit, adjudicated round 66;
+# wording per round 67 ruling a) for the two end-radical daughter pools
+# spawned by a k_homolysis parent. The contract is POSITIONAL: 'primary' in
+# the suffix means the open-*1 end radical, 'secondary' the open-*2 end
+# radical of the backbone C-C cut. The names are NOT a claim of
+# primary/secondary radical character -- that reading holds only for PP under
+# its head-to-tail repeat convention, is orientation-dependent, and is false
+# for other polymers.
+K_HOMOLYSIS_DAUGHTER_SUFFIXES = ("_rad_primary_end", "_rad_secondary_end")
+
+
+def validate_k_homolysis(pool_label, triplet):
+    """Validate a k_homolysis Arrhenius triplet {A, n, Ea} and return it
+    normalized to plain floats (single source of truth for the field rules,
+    shared by the deck helper rmgpy/rmg/input.py -- re-raised as InputError
+    -- PolymerPool.to_config and the solver's own validate_configuration).
+
+    Same rules and SI convention as the radical_qssa_unzip Arrhenius blocks
+    (deliberately NOT a bare scalar -- round 66: 'a scalar precomputed at
+    1100 K will poison any ramp/TA replay'; the solver evaluates
+    k(T) = A*T^n*exp(-Ea/(R_gas*T)) at its runtime T): exactly the keys
+    {A, n, Ea}; every value a finite real number; A > 0 [s^-1]; Ea >= 0
+    [J/mol]; n dimensionless. Units are convention, not dimensionally
+    enforced (matches the QSSA blocks' posture).
+    """
+    if not isinstance(triplet, dict):
+        raise ValueError(
+            f"Pool {pool_label}: k_homolysis must be a dict {{A, n, Ea}} "
+            f"(Arrhenius triplet, SI convention: A [s^-1], Ea [J/mol]), got "
+            f"{type(triplet).__name__}. A bare scalar is rejected by design "
+            f"(round 66): the kernel must evaluate k(T) at the solver's "
+            f"runtime temperature.")
+    missing = [k for k in _RADICAL_QSSA_ARRHENIUS_KEYS if k not in triplet]
+    extra = sorted(set(triplet) - set(_RADICAL_QSSA_ARRHENIUS_KEYS))
+    if missing or extra:
+        raise ValueError(
+            f"Pool {pool_label}: k_homolysis must have exactly the keys "
+            f"{{A, n, Ea}}; missing {missing or 'none'}, unknown "
+            f"{extra or 'none'}.")
+    out = {}
+    for key in _RADICAL_QSSA_ARRHENIUS_KEYS:
+        val = triplet[key]
+        if isinstance(val, bool) or not isinstance(val, (int, float)):
+            raise ValueError(
+                f"Pool {pool_label}: k_homolysis {key}={val!r} must be a "
+                f"number.")
+        val = float(val)
+        if not math.isfinite(val):
+            raise ValueError(
+                f"Pool {pool_label}: k_homolysis {key}={val!r} is not finite "
+                f"(NaN/inf are rejected).")
+        out[key] = val
+    if out["A"] <= 0.0:
+        raise ValueError(
+            f"Pool {pool_label}: k_homolysis A={out['A']:g} must be > 0 (a "
+            f"non-positive pre-exponential is not a valid rate constant).")
+    if out["Ea"] < 0.0:
+        raise ValueError(
+            f"Pool {pool_label}: k_homolysis Ea={out['Ea']:g} must be >= 0 "
+            f"[J/mol].")
+    return out
+
+
 @dataclass(frozen=True)
 class PolymerPoolConfig:
     """
@@ -415,6 +478,23 @@ class PolymerPoolConfig:
     # (double-count guard) and requires monomer_poly_index (the channel
     # reuses the pool's existing monomer routing -- no new routing field).
     radical_qssa_unzip: Optional[Dict[str, object]] = None
+
+    # Radical-homolysis initiation kernel (Stage 1, adjudicated round 66).
+    # Normalized Arrhenius triplet {A, n, Ea} per validate_k_homolysis
+    # (SI convention: A [s^-1], Ea [J/mol]; NOT a bare scalar -- the RHS
+    # evaluates k(T) = A*T^n*exp(-Ea/(R_gas*T)) at the runtime T). Event
+    # rate R = k(T)*max(mu1-mu0, 0) [backbone bonds]; the parent pool is
+    # debited the bond-weighted breaking chain and BOTH end-radical daughter
+    # pools ({label}_rad_primary_end / {label}_rad_secondary_end, created at
+    # model setup by the producer) are credited the uniform-cut fragments.
+    # One-way (no reverse leg); releases NO gas species. Mutually exclusive
+    # with k_scission > 0 (same random backbone-break event; double-count),
+    # with radical_qssa_unzip (QSSA initiation IS random backbone
+    # homolysis; double-count), and (round 67) with k_unzip > 0 (legacy
+    # closed-chain monomer-loss channel vs radical-end pools feeding
+    # explicit beta-scission/unzip chemistry; double-carried
+    # depolymerization).
+    k_homolysis: Optional[Dict[str, float]] = None
 
     # Custom Kinetics Hook
     # f(T, P, mu0, mu1, mu2, mu3) -> (dmu0_dt, dmu1_dt, dmu2_dt, small_species_sources)
@@ -977,6 +1057,48 @@ class HybridPolymerSystem(ReactionSystem):
                         f"(enabling both would double-count the unzip flux). "
                         f"Set k_unzip=0 or remove radical_qssa_unzip.")
 
+            # Radical-homolysis kernel invariants (Stage 1, adjudicated round
+            # 66). LAST line of defense, same rationale as above: the deck
+            # helper and PolymerPool.to_config guard these shapes, but a
+            # directly-constructed PolymerPoolConfig bypasses both. The
+            # normalized triplet is stored back (frozen-dataclass store-back
+            # idiom, mirroring the QSSA channel above) so the flattener can
+            # trust its shape.
+            if pool.k_homolysis is not None:
+                normalized_khom = validate_k_homolysis(
+                    pool.label, pool.k_homolysis)
+                object.__setattr__(pool, 'k_homolysis',
+                                   copy.deepcopy(normalized_khom))
+                if pool.k_scission > 0.0:
+                    raise ValueError(
+                        f"Pool {pool.label}: k_homolysis is configured AND "
+                        f"k_scission={pool.k_scission:g} > 0. Both "
+                        f"parameterize the SAME random backbone-break event "
+                        f"(homolysis IS random scission, with the products "
+                        f"routed to the end-radical pools) and are mutually "
+                        f"exclusive on a pool -- enabling both would "
+                        f"double-count chain initiation. Set k_scission=0 or "
+                        f"remove k_homolysis.")
+                if pool.radical_qssa_unzip is not None:
+                    raise ValueError(
+                        f"Pool {pool.label}: k_homolysis is configured AND "
+                        f"radical_qssa_unzip is configured. The QSSA "
+                        f"channel's initiation block IS random backbone "
+                        f"homolysis, so the two are mutually exclusive on a "
+                        f"pool -- enabling both would double-count "
+                        f"initiation. Remove one of them.")
+                if pool.k_unzip > 0.0:
+                    raise ValueError(
+                        f"Pool {pool.label}: k_homolysis is configured AND "
+                        f"k_unzip={pool.k_unzip:g} > 0. Legacy k_unzip is a "
+                        f"phenomenological closed-chain monomer-loss "
+                        f"channel, while k_homolysis creates radical-end "
+                        f"pools that feed explicit beta-scission/unzip "
+                        f"chemistry; the two are mutually exclusive on a "
+                        f"pool -- enabling both would double-carry "
+                        f"depolymerization. Set k_unzip=0 or remove "
+                        f"k_homolysis.")
+
         for mt in self.mass_transfer:
             if not (0 <= mt.poly_index < n_core):
                 raise ValueError(f"Mass transfer poly_index {mt.poly_index} out of range.")
@@ -1001,6 +1123,79 @@ class HybridPolymerSystem(ReactionSystem):
         # into solver-owned per-pool flat arrays. Runs AFTER the per-pool loop
         # above so every stored channel dict is guaranteed normalized.
         self._flatten_radical_qssa_state()
+
+        # Flatten the (now validated + normalized) k_homolysis kernels and
+        # resolve each enabled parent's end-radical daughter pools. Same
+        # timing contract as the QSSA flattener above.
+        self._flatten_homolysis_state()
+
+    def _flatten_homolysis_state(self):
+        """Flatten each pool's validated+normalized k_homolysis triplet into
+        solver-owned per-pool flat arrays, and resolve the two end-radical
+        daughter pools' moment slots (Stage 1, adjudicated round 66).
+
+        Contract (mirrors _flatten_radical_qssa_state):
+        - Populated ONLY here, on the initialize_model ->
+          validate_configuration path, from the normalized dict just stored.
+        - The RHS reads ONLY these arrays, never the dict.
+
+        Layout (index = pool position in self.polymer_pools):
+        - khom_enabled[i] (int8): 1 iff the pool has k_homolysis configured.
+        - khom_A/n/Ea[i]: the Arrhenius triplet (A [s^-1], Ea [J/mol]).
+        - khom_prim_mu0/mu1/mu2[i] and khom_sec_mu0/mu1/mu2[i] (int32): the
+          absolute core indices of the {label}_rad_primary_end /
+          {label}_rad_secondary_end daughter pools' moment slots; -1 on
+          kernel-free pools.
+
+        HARD ERROR when a kernel-enabled pool's daughter pools are missing
+        from the configured pool list: the producer creates them at model
+        setup, so an unresolvable daughter here means the kernel's fragment
+        credits would silently vanish (mass laundered out of the melt).
+        """
+        n_pools = len(self.polymer_pools)
+        # warn-once registry for the runtime moment-shape guard (mirrors
+        # self._realizability_warned): one loud line per pool per rebuild.
+        self._khom_guard_warned = set()
+        self.khom_enabled = np.zeros(n_pools, dtype=np.int8)
+        self.khom_A = np.zeros(n_pools, dtype=float)
+        self.khom_n = np.zeros(n_pools, dtype=float)
+        self.khom_Ea = np.zeros(n_pools, dtype=float)
+        self.khom_prim_mu0 = np.full(n_pools, -1, dtype=np.int32)
+        self.khom_prim_mu1 = np.full(n_pools, -1, dtype=np.int32)
+        self.khom_prim_mu2 = np.full(n_pools, -1, dtype=np.int32)
+        self.khom_sec_mu0 = np.full(n_pools, -1, dtype=np.int32)
+        self.khom_sec_mu1 = np.full(n_pools, -1, dtype=np.int32)
+        self.khom_sec_mu2 = np.full(n_pools, -1, dtype=np.int32)
+
+        label_to_pool = {p.label: p for p in self.polymer_pools}
+        for i, pool in enumerate(self.polymer_pools):
+            trip = pool.k_homolysis
+            if trip is None:
+                continue
+            missing = [f"{pool.label}{suffix}"
+                       for suffix in K_HOMOLYSIS_DAUGHTER_SUFFIXES
+                       if f"{pool.label}{suffix}" not in label_to_pool]
+            if missing:
+                raise ValueError(
+                    f"Pool {pool.label}: k_homolysis is enabled but the "
+                    f"end-radical daughter pool(s) {missing} are not among "
+                    f"the configured solver pools (expected "
+                    f"'{pool.label}{K_HOMOLYSIS_DAUGHTER_SUFFIXES[0]}' and "
+                    f"'{pool.label}{K_HOMOLYSIS_DAUGHTER_SUFFIXES[1]}'). The "
+                    f"producer spawns both at model setup; without them the "
+                    f"kernel's fragment credits would silently vanish.")
+            self.khom_enabled[i] = 1
+            self.khom_A[i] = trip["A"]
+            self.khom_n[i] = trip["n"]
+            self.khom_Ea[i] = trip["Ea"]
+            prim = label_to_pool[
+                f"{pool.label}{K_HOMOLYSIS_DAUGHTER_SUFFIXES[0]}"]
+            sec = label_to_pool[
+                f"{pool.label}{K_HOMOLYSIS_DAUGHTER_SUFFIXES[1]}"]
+            (self.khom_prim_mu0[i], self.khom_prim_mu1[i],
+             self.khom_prim_mu2[i]) = prim.mu_indices
+            (self.khom_sec_mu0[i], self.khom_sec_mu1[i],
+             self.khom_sec_mu2[i]) = sec.mu_indices
 
     def _flatten_radical_qssa_state(self):
         """Flatten each pool's validated+normalized radical_qssa_unzip channel
@@ -1921,6 +2116,28 @@ class HybridPolymerSystem(ReactionSystem):
                 self.qssa_double_count_census.append(entry)
                 warn_once_qssa_double_count(entry)
 
+        # k_homolysis supersession census (Stage 1, adjudicated round 66):
+        # refused explicit homolysis/association rows co-existing with the
+        # kernel are FINE -- they carry zero flux (reaction_refused) -- but
+        # the census must state the pairing EXPLICITLY: a warn-level line
+        # names the refused conduit-deferred rows as superseded by the
+        # kernel. Placement mirrors the QSSA census above (after
+        # validate_configuration: khom_enabled -- the flattened solver-owned
+        # gate -- exists here; after the refused census: superseded rows are
+        # final). Diagnostic-only: NO flux/state change, warn NEVER refuse.
+        from rmgpy.polymer import warn_once_homolysis_supersession
+        self.homolysis_supersession_census = []
+        deferred_rows = [c["reaction"] for c in self.refused_reaction_census
+                         if c.get("reason") == "conduit-deferred"]
+        if deferred_rows and np.any(self.khom_enabled):
+            for p_idx, pool in enumerate(self.polymer_pools):
+                if not self.khom_enabled[p_idx]:
+                    continue
+                entry = {"pool": pool.label,
+                         "superseded_rows": list(deferred_rows)}
+                self.homolysis_supersession_census.append(entry)
+                warn_once_homolysis_supersession(entry)
+
         # Thermo reference-state tripwire (spec 2026-06-11 §7): runs AFTER
         # the archetype demotion pass and validate_configuration (masks,
         # pool membership and archetypes are final here) and BEFORE
@@ -1975,8 +2192,23 @@ class HybridPolymerSystem(ReactionSystem):
 
         # --- Per-pool sections ---
         for pool_i, pool in enumerate(self.polymer_pools):
+            # k_homolysis kernel + end-radical daughter pools must be
+            # traceable in run logs (round 66: radical inventories); the
+            # daughters themselves enumerate here as ordinary pools, with
+            # their role tagged so a reader can find their mu0/mu1 growth.
+            khom = pool.k_homolysis
+            if khom is not None:
+                khom_str = (f"A={khom['A']:.2e},n={khom['n']:g},"
+                            f"Ea={khom['Ea']:.4g}J/mol")
+            else:
+                khom_str = "off"
+            role_tag = ""
+            if pool.label.endswith(K_HOMOLYSIS_DAUGHTER_SUFFIXES):
+                role_tag = "  [end-radical daughter]"
             print(f"\n--- Pool {pool_i}: '{pool.label}'  (xs={pool.xs}, "
-                  f"k_scission={pool.k_scission:.2e}, k_unzip={pool.k_unzip:.2e}) ---")
+                  f"k_scission={pool.k_scission:.2e}, "
+                  f"k_unzip={pool.k_unzip:.2e}, "
+                  f"k_homolysis={khom_str}){role_tag} ---")
             print(f"  {'Role':<16} {'Species Label':<30} {'Index':<7} {'y0':>13}")
             print(f"  {'-'*16} {'-'*30} {'-'*7} {'-'*13}")
 
@@ -3316,6 +3548,106 @@ class HybridPolymerSystem(ReactionSystem):
                         # monomer_poly_index. Mass conservation: one gas
                         # monomer mole per drained mu1 repeat unit.
                         small_src[pool.monomer_poly_index] = r_events
+
+            # Radical-homolysis initiation kernel (Stage 1, adjudicated round
+            # 66). Independent of tail_kinetics (a custom tail closure does
+            # not describe chain initiation); mutually exclusive with
+            # k_scission > 0 and with the QSSA channel (validate_configuration
+            # hard-errors on both shapes). Reads ONLY the flattened khom_*
+            # arrays from _flatten_homolysis_state -- never the pool dict.
+            #
+            # Event: random backbone C-C homolysis at the RUNTIME temperature
+            # (round 66: 'a scalar precomputed at 1100 K will poison any
+            # ramp/TA replay'):
+            #   k(T) = A * T^n * exp(-Ea/(R_gas*T))
+            #   R    = k(T) * max(mu1 - mu0, 0)   [a chain of length n has
+            #                                      n-1 breakable bonds]
+            # Bond-weighted breaking-chain moments (E[n] = B1, E[n^2] = B2):
+            #   B1 = (mu2 - mu1)/(mu1 - mu0);  B2 = (mu3 - mu2)/(mu1 - mu0)
+            # with mu3 from the established log-Lagrange closure (computed
+            # once per pool above). Parent debit:
+            #   dmu0 -= R;  dmu1 -= R*B1;  dmu2 -= R*B2
+            # EACH end-radical daughter pool (uniform cut at bond j of an
+            # n-chain: E[j] = n/2, E[j^2] = n(2n-1)/6):
+            #   dmu0 += R;  dmu1 += R*B1/2;  dmu2 += R*(2*B2 - B1)/6
+            # STABLE FORMS (adjudicated round 67, P2): dividing by
+            # (mu1 - mu0) and re-multiplying by R cancels catastrophically
+            # near DP -> 1 exhaustion (mu1 ~= mu0), so every product-side
+            # term is computed in its algebraically identical direct form:
+            #   R*B1         = k*(mu2 - mu1)
+            #   R*B2         = k*(mu3 - mu2)
+            #   R*(2B2-B1)/6 = k*(2*mu3 - 3*mu2 + mu1)/6
+            # (R = k*max(mu1-mu0, 0) itself stays the mu0 event rate).
+            # Totals reproduce the legacy Ziff-McGrady random-scission moment
+            # sources EXACTLY: dmu0_tot = +R = k*(mu1-mu0); dmu1_tot = 0
+            # (mass conserved, machine precision); dmu2_tot = -R*(B1+B2)/3
+            # = k*(mu1-mu3)/3. NO gas species term (homolysis releases no
+            # volatiles) and NO reverse leg (one-way; round 66
+            # §Reversibility -- recombination arrives via the discovered
+            # chemistry conduit, not this kernel).
+            if self.khom_enabled[pool_i]:
+                B_hom = mu1 - mu0
+                if B_hom > 0.0 and mu0 > 0.0:
+                    T_hom = self.T.value_si
+                    k_hom = (self.khom_A[pool_i]
+                             * T_hom ** self.khom_n[pool_i]
+                             * math.exp(-self.khom_Ea[pool_i]
+                                        / (QSSA_R_GAS * T_hom)))
+                    if not (0.0 < k_hom < QSSA_INF):
+                        raise ValueError(
+                            f"Pool {pool.label}: k_homolysis(T={T_hom:g} K) "
+                            f"evaluated to a degenerate rate constant "
+                            f"({k_hom!r}) -- A={self.khom_A[pool_i]:g}, "
+                            f"n={self.khom_n[pool_i]:g}, "
+                            f"Ea={self.khom_Ea[pool_i]:g} J/mol. Refusing "
+                            f"to integrate a poisoned kernel.")
+                    mu3_ok = np.isfinite(mu3)
+                    # Direct (stable) moment differences: d1 = R*B1/k,
+                    # d2 = R*B2/k, c2 = 6*(daughter mu2 credit)/k.
+                    d1_hom = mu2 - mu1
+                    d2_hom = (mu3 - mu2) if mu3_ok else -1.0
+                    c2_hom = (2.0 * mu3 - 3.0 * mu2 + mu1) if mu3_ok else -1.0
+                    if ((not mu3_ok) or d1_hom < 0.0 or d2_hom < 0.0
+                            or c2_hom < 0.0):
+                        # Loud guard (warn once per pool per rebuild,
+                        # mirroring the realizability idiom above): the
+                        # moment state is outside the kernel's domain
+                        # (mu2 < mu1, a degenerate/overflowed mu3 closure,
+                        # or -- round 67 P1 -- a nonrealizable combination
+                        # where B1, B2 >= 0 but the daughter mu2 credit
+                        # factor 2*B2 - B1 = c2/(mu1-mu0) is NEGATIVE, which
+                        # would credit negative mu2 to both end-radical
+                        # daughters). Contribute ZERO flux this step rather
+                        # than integrate garbage fragment moments.
+                        if pool.label not in self._khom_guard_warned:
+                            self._khom_guard_warned.add(pool.label)
+                            logging.warning(
+                                "Polymer pool '%s': k_homolysis kernel "
+                                "skipped -- nonfinite/negative moment "
+                                "combination (mu0=%.6g, mu1=%.6g, mu2=%.6g, "
+                                "mu3=%.6g; mu2-mu1=%.6g, mu3-mu2=%.6g, "
+                                "daughter-mu2 factor 2*mu3-3*mu2+mu1=%.6g). "
+                                "The kernel contributes zero flux until the "
+                                "state re-enters its realizable domain.",
+                                pool.label, mu0, mu1, mu2, mu3,
+                                d1_hom, d2_hom, c2_hom)
+                    else:
+                        r_hom = k_hom * B_hom
+                        dmu0_dt -= r_hom
+                        dmu1_dt -= k_hom * d1_hom
+                        dmu2_dt -= k_hom * d2_hom
+                        # Fragment credits go straight to the daughter
+                        # pools' moment slots (they are core species; the
+                        # daughter's own accumulator flush is additive).
+                        frag_mu0 = r_hom * V_poly
+                        frag_mu1 = (k_hom * d1_hom / 2.0) * V_poly
+                        frag_mu2 = (k_hom * c2_hom / 6.0) * V_poly
+                        dn_dt[self.khom_prim_mu0[pool_i]] += frag_mu0
+                        dn_dt[self.khom_prim_mu1[pool_i]] += frag_mu1
+                        dn_dt[self.khom_prim_mu2[pool_i]] += frag_mu2
+                        dn_dt[self.khom_sec_mu0[pool_i]] += frag_mu0
+                        dn_dt[self.khom_sec_mu1[pool_i]] += frag_mu1
+                        dn_dt[self.khom_sec_mu2[pool_i]] += frag_mu2
 
             # radical_qssa_unzip channel (M2 rate law). Reads ONLY the
             # flattened solver-owned qssa_* arrays from M1 -- NEVER the pool
