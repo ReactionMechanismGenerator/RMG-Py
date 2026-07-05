@@ -38,7 +38,8 @@ import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
 from rmgpy.solver.polymer import (HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig,
-                                  validate_k_homolysis, validate_radical_qssa_unzip)
+                                  validate_k_homolysis, validate_radical_qssa_unzip,
+                                  validate_side_group_homolysis)
 from rmgpy.polymer import strip_rmg_index_suffix
 from rmgpy.species import Species
 
@@ -1049,6 +1050,10 @@ def compile_polymer_phase(blueprint: Union[PolymerPhaseBlueprint, PolymerPhase],
                 monomer_product=getattr(spc, 'monomer_product_species', None),
                 radical_qssa_unzip=getattr(spc, 'radical_qssa_unzip', None),
                 k_homolysis=getattr(spc, 'k_homolysis', None),
+                side_group_homolysis=getattr(spc, 'side_group_homolysis',
+                                             None),
+                side_group_gas_species=getattr(spc, 'side_group_gas_species',
+                                               None),
             )
             pools.append(pool)
         else:
@@ -1132,6 +1137,8 @@ class PolymerPool(object):
                  monomer_product: Optional[Species] = None,
                  radical_qssa_unzip: Optional[dict] = None,
                  k_homolysis: Optional[dict] = None,
+                 side_group_homolysis: Optional[list] = None,
+                 side_group_gas_species: Optional[List[Species]] = None,
                  ):
         self.label = label
         self.xs = xs
@@ -1153,6 +1160,16 @@ class PolymerPool(object):
         # exclusive with k_scission > 0, with radical_qssa_unzip, and (round
         # 67) with k_unzip > 0.
         self.k_homolysis = k_homolysis
+        # Side-group homolysis initiation kernel (FR1-K1, round 70): LIST
+        # of channel dicts or None. Validated + normalized in to_config via
+        # validate_side_group_homolysis; mutually exclusive with k_unzip > 0
+        # and with radical_qssa_unzip (MAY coexist with k_homolysis /
+        # k_scission -- different bonds). side_group_gas_species is the
+        # aligned list of registered gas X-radical Species (one per channel,
+        # rmgpy/rmg/input.py step 4e); to_config resolves their core
+        # indices into side_group_gas_indices.
+        self.side_group_homolysis = side_group_homolysis
+        self.side_group_gas_species = side_group_gas_species
 
     def to_config(self, spc_map):
         """
@@ -1291,6 +1308,67 @@ class PolymerPool(object):
                     f"exclusive on a pool -- enabling both would double-carry "
                     f"depolymerization. Set k_unzip=0 or remove k_homolysis.")
 
+        # 3c. Side-group homolysis initiation kernel (FR1-K1, adjudicated
+        #     round 70): validate + normalize the channel list (shared
+        #     single source of truth: validate_side_group_homolysis),
+        #     re-enforce the mutual exclusions, and resolve each channel's
+        #     gas-product core index -- a directly-constructed PolymerPool
+        #     must not dodge the deck-read checks in rmgpy/rmg/input.py.
+        sgh_channels = None
+        sgh_gas_indices = None
+        if self.side_group_homolysis is not None:
+            # Round-72 P1: this layer holds the monomer structure (Species
+            # or Molecule -- same duck-typing as the monomer_mw resolution
+            # below), so run the FULL structural selector law, not just the
+            # shape check.
+            sgh_monomer = None
+            _mono_list = getattr(self.monomer, "molecule", None)
+            if _mono_list:
+                sgh_monomer = _mono_list[0]
+            elif self.monomer is not None and hasattr(self.monomer, "atoms"):
+                sgh_monomer = self.monomer
+            sgh_channels = validate_side_group_homolysis(
+                self.label, self.side_group_homolysis, monomer=sgh_monomer)
+            if self.k_unzip > 0.0:
+                raise ValueError(
+                    f"Pool {self.label}: side_group_homolysis is configured "
+                    f"AND k_unzip={self.k_unzip:g} > 0. Legacy k_unzip is a "
+                    f"phenomenological closed-chain monomer-loss channel, "
+                    f"while side_group_homolysis creates radical-defect "
+                    f"feature pools that feed explicit degradation "
+                    f"chemistry; the two are mutually exclusive on a pool "
+                    f"-- enabling both would double-carry degradation. Set "
+                    f"k_unzip=0 or remove side_group_homolysis.")
+            if self.radical_qssa_unzip is not None:
+                raise ValueError(
+                    f"Pool {self.label}: side_group_homolysis is configured "
+                    f"AND radical_qssa_unzip is configured. Two lumped "
+                    f"initiation carriers on one pool are mutually "
+                    f"exclusive -- enabling both would double-carry "
+                    f"initiation. Remove one of them.")
+            gas_list = self.side_group_gas_species or []
+            if len(gas_list) != len(sgh_channels):
+                raise ValueError(
+                    f"Pool {self.label}: side_group_homolysis has "
+                    f"{len(sgh_channels)} channel(s) but "
+                    f"{len(gas_list)} registered gas-product species. The "
+                    f"kernel emits one X radical per event; every channel "
+                    f"needs its registered gas Species (rmgpy/rmg/input.py "
+                    f"step 4e) or the ejected X would silently vanish "
+                    f"(un-conserved mass).")
+            resolved = []
+            for ci, g_spc in enumerate(gas_list):
+                g_idx = spc_map.get(g_spc)
+                if g_idx is None:
+                    raise ValueError(
+                        f"Pool {self.label}: side_group_homolysis channel "
+                        f"'{sgh_channels[ci]['label']}' gas_product species "
+                        f"{g_spc} not in core species; cannot wire the "
+                        f"kernel's gas X-radical release (the ejected X "
+                        f"would silently vanish -- un-conserved mass).")
+                resolved.append(g_idx)
+            sgh_gas_indices = tuple(resolved)
+
         # 4. Monomer (repeat-unit) MW [g/mol] for the spawn-gate snapshot AND the
         #    reference-state tripwire chain_window (spec 2026-06-10 §3, same idiom
         #    as Polymer.monomer_mw_g_mol). self.monomer is normally a Molecule (the
@@ -1321,7 +1399,9 @@ class PolymerPool(object):
             k_scission=self.k_scission,
             k_unzip=self.k_unzip,
             radical_qssa_unzip=qssa_channel,
-            k_homolysis=khom_channel
+            k_homolysis=khom_channel,
+            side_group_homolysis=sgh_channels,
+            side_group_gas_indices=sgh_gas_indices,
         )
 
 
@@ -1442,6 +1522,15 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
             monomer_poly_index=monomer_idx,
             monomer_mw_g_mol=float(getattr(spc, "monomer_mw_g_mol", 0.0) or 0.0),
             radical_qssa_unzip=qssa_channel,
+            # FR1-K1 mass contract: an X-loss feature daughter's exact
+            # per-chain defect (M_X of the spawning channel's gas_product,
+            # pinned by generate_side_loss_daughters) must survive config
+            # derivation -- dropping it re-opens the round-70 P1
+            # mass-minting trap, and the solver's
+            # _flatten_side_group_state hard-errors on a kernel destination
+            # without it. 0.0 on every other daughter class (unchanged).
+            chain_mass_defect_g_mol=float(
+                getattr(spc, "chain_mass_defect_g_mol", 0.0) or 0.0),
         ))
     return configs
 

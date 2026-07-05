@@ -67,7 +67,9 @@ from rmgpy.rmg.reactionmechanismsimulator_reactors import (
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
-from rmgpy.solver.polymer import validate_k_homolysis, validate_radical_qssa_unzip
+from rmgpy.solver.polymer import (validate_k_homolysis,
+                                  validate_radical_qssa_unzip,
+                                  validate_side_group_homolysis)
 from rmgpy.solver.simple import SimpleReactor
 from rmgpy.solver.surface import SurfaceReactor
 from rmgpy.solver.termination import (
@@ -262,6 +264,7 @@ def polymer(label: str,
             radical_qssa_unzip: Optional[dict] = None,
             explicit_dp: bool = False,
             k_homolysis: Optional[dict] = None,
+            side_group_homolysis: Optional[list] = None,
             ):
     """
     Helper function exposed in the input file to define a Polymer Pool.
@@ -345,6 +348,38 @@ def polymer(label: str,
             raises an actionable hard error at initialization instead of
             silently dropping the species. Default False (handshake target
             absent; byte-identical to the legacy behavior).
+        side_group_homolysis (list): Side-group homolysis initiation kernel
+            (FR1-K1, adjudicated round 70): a LIST of channel dicts, one per
+            side-group bond class, each with EXACTLY the keys
+            {label, A, n, Ea, site_selector, sites_per_unit, gas_product},
+            e.g. side_group_homolysis=[dict(label='benzylic_C-Br', A=1e15,
+            n=0.0, Ea=2.9e5, site_selector='benzylic', sites_per_unit=2.0,
+            gas_product='[Br]')].
+            k(T) = A*T^n*exp(-Ea/(R*T)) is the PER-SITE homolysis frequency
+            (A [s^-1 per site], Ea [J/mol], SI convention); site_selector
+            (round-72 P1, REQUIRED) structurally pins WHICH X atom the
+            channel removes -- one of 'aryl' | 'benzylic' | 'aliphatic',
+            classifying the carbon the X hangs off (the three classes
+            partition the carbon-bound sites); it is validated against the
+            parsed monomer (must match >= 1 X atom; no two channels may
+            resolve to the same atom set); sites_per_unit is the number of
+            X sites per monomer repeat unit and is CHECKED to equal the
+            selector's structural match count (channels stay SEPARATE,
+            never lumped -- e.g. aryl C-Br = 4 vs benzylic C-Br = 2);
+            gas_product is the ejected X radical's SMILES
+            (v1: monoatomic mono-radical only, e.g. '[Br]'). Per channel
+            the event rate is R = k(T)*sites_per_unit*mu1 and the reacting
+            chain is picked length-weighted; the chain transfers INTACT (no
+            chain cut) to an auto-spawned X-loss feature pool
+            '{label}_sidegrp_{channel}' carrying the exact per-chain mass
+            defect M_X, while gas_product receives +R. Mutually exclusive
+            with k_unzip > 0 and with radical_qssa_unzip (double-carry);
+            MAY coexist with k_homolysis/k_scission (different bonds:
+            side-group C-X vs backbone C-C). v1 limitation: the kernel acts
+            on the parent pool only (feature pools saturate; no multi-loss
+            cascade), and no sidecar schema exists yet (schema 2.7 pending
+            -- serialization of kernel-carrying pools hard-fails).
+            Default None (kernel absent).
     """
     # HARD ERROR at deck-read time: a non-finite k_unzip/k_scission is not a
     # valid rate constant. NaN passes BOTH the `< 0` and `> 0` gates as
@@ -464,6 +499,44 @@ def polymer(label: str,
                 f"would let the deck double-carry depolymerization. Set "
                 f"k_unzip=0 or remove k_homolysis.")
 
+    # HARD ERRORS at deck-read time for the side-group homolysis initiation
+    # kernel (FR1-K1, adjudicated round 70). Field rules (LIST of channel
+    # dicts with exactly {label, A, n, Ea, site_selector, sites_per_unit,
+    # gas_product}; duplicate-label rejection) live in
+    # validate_side_group_homolysis --
+    # shared single source of truth, also enforced by PolymerPool.to_config
+    # and the solver's validate_configuration. Cross-invariants:
+    # - k_unzip > 0: legacy k_unzip is a phenomenological closed-chain
+    #   monomer-loss channel; enabling both double-carries degradation.
+    # - radical_qssa_unzip: two lumped initiation carriers on one pool
+    #   double-carry initiation.
+    # DELIBERATE coexistence (round-70 ruling): k_homolysis / k_scission act
+    # on backbone C-C bonds, this kernel on side-group C-X bonds -- both may
+    # run on one pool with no double-carry. Refused explicit
+    # gas-radical<->condensed rows + this kernel are FINE (zero flux); the
+    # solver's supersession census pairs them explicitly.
+    if side_group_homolysis is not None:
+        try:
+            side_group_homolysis = validate_side_group_homolysis(
+                label, side_group_homolysis)
+        except ValueError as e:
+            raise InputError(str(e))
+        if k_unzip > 0.0:
+            raise InputError(
+                f"Polymer pool '{label}': side_group_homolysis and k_unzip="
+                f"{k_unzip:g} > 0 are mutually exclusive -- legacy k_unzip "
+                f"is a phenomenological closed-chain monomer-loss channel, "
+                f"while side_group_homolysis creates radical-defect feature "
+                f"pools that feed explicit degradation chemistry; enabling "
+                f"both would double-carry degradation. Set k_unzip=0 or "
+                f"remove side_group_homolysis.")
+        if radical_qssa_unzip is not None:
+            raise InputError(
+                f"Polymer pool '{label}': side_group_homolysis and "
+                f"radical_qssa_unzip are mutually exclusive -- two lumped "
+                f"initiation carriers on one pool would double-carry "
+                f"initiation. Remove one of them.")
+
     poly_obj = Polymer(
         label=label,
         monomer=monomer,
@@ -477,8 +550,26 @@ def polymer(label: str,
         k_scission=k_scission,
         radical_qssa_unzip=radical_qssa_unzip,
         k_homolysis=k_homolysis,
+        side_group_homolysis=side_group_homolysis,
         discrete_dp_threshold=discrete_dp_threshold,
     )
+
+    # 1b. Round-72 P1 STRUCTURAL layer of the side-group channel law,
+    #     enforced against the PARSED monomer at deck-read time: the
+    #     pre-construction call above can only check shapes (the deck-level
+    #     monomer is still a SMILES string); Polymer.__init__ has parsed it
+    #     now, so resolve each channel's REQUIRED site_selector on the real
+    #     repeat unit (selector matches >= 1 X atom, sites_per_unit equals
+    #     the structural match count, no two channels on one atom set) and
+    #     fail with a deck-grade error. The producer re-runs the same
+    #     single-source check at spawn time (defense in depth).
+    if side_group_homolysis is not None:
+        try:
+            side_group_homolysis = validate_side_group_homolysis(
+                label, side_group_homolysis, monomer=poly_obj.monomer)
+        except ValueError as e:
+            raise InputError(str(e))
+        poly_obj.side_group_homolysis = side_group_homolysis
 
     poly_obj.creation_iteration = rmg.reaction_model.iteration_num
 
@@ -586,12 +677,62 @@ def polymer(label: str,
                         break
             poly_obj.end_radical_daughter_labels.append(d_spc.label)
 
+    # 4e. Side-group homolysis gas-product species (FR1-K1): each channel's
+    #     ejected X radical (e.g. Br) is registered as a real, reactive GAS
+    #     species through the SAME path as monomer_product (step 4b) --
+    #     the kernel's +R gas credit needs a live core destination, and
+    #     PolymerPool.to_config resolves side_group_gas_indices from these
+    #     Species objects (object-keyed spc_map: identity is load-bearing).
+    #     Channels sharing one gas product dedup through make_new_species;
+    #     the aligned list still resolves per channel.
+    poly_obj.side_group_gas_species = []
+    if side_group_homolysis is not None:
+        for ch in side_group_homolysis:
+            g_mol = Molecule().from_smiles(ch["gas_product"])
+            g_spc, _ = rmg.reaction_model.make_new_species(g_mol,
+                                                           reactive=True)
+            if g_spc not in rmg.initial_species:
+                rmg.initial_species.append(g_spc)
+            species_dict[g_spc.label] = g_spc
+            poly_obj.side_group_gas_species.append(g_spc)
+
+    # 4f. Side-group X-loss feature pools (FR1-K1): ONE daughter pool per
+    #     channel ('{label}_sidegrp_{channel}'), created HERE at model setup
+    #     -- not lazily -- through the same registration path as the
+    #     homolysis end-radical daughters (step 4d). The solver's
+    #     _flatten_side_group_state hard-errors if a kernel-enabled pool's
+    #     feature pool is missing, so this step is load-bearing. Each
+    #     daughter carries the exact mass-defect contract
+    #     (chain_mass_defect_g_mol = M_X) pinned by the producer.
+    poly_obj.side_loss_daughter_labels = []
+    if side_group_homolysis is not None:
+        for daughter in poly_obj.generate_side_loss_daughters():
+            daughter.creation_iteration = rmg.reaction_model.iteration_num
+            d_spc, _ = rmg.reaction_model.make_new_species(
+                daughter, generate_thermo=False)
+            if d_spc not in rmg.initial_species:
+                rmg.initial_species.append(d_spc)
+            species_dict[d_spc.label] = d_spc
+            for suffix in ['_mu0', '_mu1', '_mu2']:
+                m_label = f"{d_spc.label}{suffix}"
+                for spc in rmg.reaction_model.new_species_list:
+                    if spc.label == m_label:
+                        rmg.initial_species.append(spc)
+                        species_dict[m_label] = spc
+                        break
+            poly_obj.side_loss_daughter_labels.append(d_spc.label)
+
     # 5. Generate Thermo for the Polymer (Delegates to the trimer proxy)
     rmg.reaction_model.generate_thermo(poly_obj)
     # 5b. Thermo for the end-radical daughters (delegates to their
     #     end-radical oligomer proxies).
     if k_homolysis is not None:
         for d_label in poly_obj.end_radical_daughter_labels:
+            rmg.reaction_model.generate_thermo(species_dict[d_label])
+    # 5c. Thermo for the side-group X-loss feature daughters (delegates to
+    #     their mid-chain-radical feature trimer proxies).
+    if side_group_homolysis is not None:
+        for d_label in poly_obj.side_loss_daughter_labels:
             rmg.reaction_model.generate_thermo(species_dict[d_label])
 
     return poly_obj

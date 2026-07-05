@@ -435,6 +435,297 @@ def validate_k_homolysis(pool_label, triplet):
     return out
 
 
+# Side-group homolysis initiation kernel (FR1-K1, adjudicated adversarial
+# round 70): pool-level side-group X-loss (e.g. aliphatic C-Br -> Br.(gas) +
+# mid-chain backbone radical; the chain length is UNCHANGED -- this is NOT a
+# chain cut, so it is deliberately a distinct kernel from k_homolysis, and
+# the S2 H-loss conduit is NOT reused: the ruling requires its own machinery
+# and fingerprint class). One X-loss feature pool per (parent, channel),
+# labeled '{parent}_sidegrp_{sanitized channel label}'.
+SIDE_GROUP_DAUGHTER_INFIX = "_sidegrp_"
+
+_SIDE_GROUP_CHANNEL_KEYS = ("label", "A", "n", "Ea", "site_selector",
+                            "sites_per_unit", "gas_product")
+
+# Structural site-selector vocabulary (round-72 P1 adjudication): every
+# side_group_homolysis channel MUST name the carbon environment of the X
+# atom it removes -- the kinetics label alone must never pick the site.
+# Implemented as explicit in-repo atom-environment predicates over RMG's
+# own molecular graph (adjudication-equivalent alternative to site_smarts:
+# full SMARTS would require an RMG<->RDKit atom-index round-trip whose
+# ordering is not contract-stable -- a misordered mapping would silently
+# select the wrong atom, the exact bug class being fixed). The three
+# classes PARTITION the carbon-bound X sites (mutually exclusive, jointly
+# exhaustive), so two channels can only resolve to the SAME atom set by
+# duplicating a (selector, element) pair -- which the validator hard-fails
+# as a double-carry.
+SIDE_GROUP_SITE_SELECTORS = ("aryl", "benzylic", "aliphatic")
+
+
+def side_group_site_atom_indices(monomer, element_symbol, site_selector):
+    """Deterministic structural site selection for the side_group_homolysis
+    kernel (round-72 P1): the atom indices, in ``monomer.atoms`` order (the
+    canonical deterministic order; the producer removes the FIRST match),
+    of the removable side-group atoms of ``element_symbol`` whose carbon
+    environment matches ``site_selector``.
+
+    Removable side-group X atom (the same predicate the producer's removal
+    always used): element match, unlabeled (never a stitch atom),
+    closed-shell, terminal (exactly one bond), single-bonded. The selector
+    then classifies the carbon the X hangs off (an X on a non-carbon
+    neighbor matches NO selector -- the v1 vocabulary is carbon-environment
+    only, consistent with the kernel's C-X homolysis law):
+
+    - 'aryl':      the neighbor carbon is in an aromatic ring
+                   (Molecule.get_aromatic_rings -- robust to kekulized vs
+                   aromatic bond representations).
+    - 'benzylic':  the neighbor carbon is NOT aromatic but is bonded to an
+                   aromatic-ring carbon.
+    - 'aliphatic': the neighbor carbon is neither aromatic nor benzylic.
+    """
+    aromatic_atoms = set()
+    for ring in monomer.get_aromatic_rings()[0]:
+        aromatic_atoms.update(ring)
+    matches = []
+    for idx, atom in enumerate(monomer.atoms):
+        if (atom.symbol != element_symbol or atom.label
+                or atom.radical_electrons != 0 or len(atom.bonds) != 1
+                or not next(iter(atom.bonds.values())).is_single()):
+            continue
+        neighbor = next(iter(atom.bonds.keys()))
+        if not neighbor.is_carbon():
+            continue
+        if neighbor in aromatic_atoms:
+            cls = "aryl"
+        elif any(nb in aromatic_atoms and nb.is_carbon()
+                 for nb in neighbor.bonds.keys()):
+            cls = "benzylic"
+        else:
+            cls = "aliphatic"
+        if cls == site_selector:
+            matches.append(idx)
+    return tuple(matches)
+
+
+def sanitize_side_group_channel_label(channel_label):
+    """Deterministic sanitizer for a side_group_homolysis channel label used
+    inside pool labels and fingerprints: every character outside [A-Za-z0-9_]
+    becomes '_' (e.g. 'aliphatic_C-Br' -> 'aliphatic_C_Br'). Single source of
+    truth shared by the validator (sanitized-collision duplicate check), the
+    producer (rmgpy.polymer.Polymer.generate_side_loss_daughters) and the
+    flattener's destination-pool resolution."""
+    return "".join(c if (c.isalnum() or c == "_") else "_"
+                   for c in channel_label)
+
+
+def side_group_daughter_pool_label(pool_label, channel_label):
+    """The ratified label of the X-loss feature pool spawned for one
+    (parent, channel) pair: '{parent}_sidegrp_{sanitized channel label}'."""
+    return (f"{pool_label}{SIDE_GROUP_DAUGHTER_INFIX}"
+            f"{sanitize_side_group_channel_label(channel_label)}")
+
+
+def _side_group_gas_mw_g_mol(gas_product):
+    """Molar mass [g/mol] of a channel's gas_product SMILES (M_X of the
+    ejected X radical). Lazy Molecule import (cycle-avoidance idiom)."""
+    from rmgpy.molecule import Molecule
+    return Molecule().from_smiles(gas_product).get_molecular_weight() * 1000.0
+
+
+def validate_side_group_homolysis(pool_label, channels, monomer=None):
+    """Validate a side_group_homolysis channel LIST and return it normalized
+    (single source of truth for the field rules, shared by the deck helper
+    rmgpy/rmg/input.py -- re-raised as InputError -- PolymerPool.to_config,
+    the producer and the solver's validate_configuration; mirrors
+    validate_k_homolysis).
+
+    Each channel is a dict with EXACTLY the keys
+    {label, A, n, Ea, site_selector, sites_per_unit, gas_product}:
+    - label: non-empty str naming the bond class (e.g. 'aliphatic_C-Br').
+      Channels stay SEPARATE, never lumped (round-70 ruling); duplicate
+      labels -- raw or after sanitization -- are rejected.
+    - A > 0 [s^-1 per site], n dimensionless, Ea >= 0 [J/mol]: same SI
+      convention and finite-rejection posture as validate_k_homolysis (the
+      solver evaluates k(T) = A*T^n*exp(-Ea/(R_gas*T)) at its runtime T).
+    - site_selector: REQUIRED structural site selector (round-72 P1), one
+      of SIDE_GROUP_SITE_SELECTORS ('aryl' | 'benzylic' | 'aliphatic') --
+      names the carbon environment of the X atom the channel removes. The
+      kinetics label alone must NEVER pick the site: on a mixed-site
+      monomer a channel labeled 'aliphatic_C-Br' would otherwise remove
+      the first X in atom order (an ARYL one), minting the wrong -- or the
+      same -- defect structure under a different rate.
+    - sites_per_unit > 0: side-group X sites per monomer repeat unit
+      (e.g. aryl C-Br = 4, benzylic C-Br = 2). CHECKED, not trusted, when
+      ``monomer`` is given (below).
+    - gas_product: SMILES of the ejected X radical. Must parse and be a
+      MONO-RADICAL; v1 supports only MONOATOMIC radicals (e.g. '[Br]') --
+      the deterministic feature-unit derivation removes a single X atom.
+
+    STRUCTURAL layer (round-72 P1): when ``monomer`` -- the pool's parsed
+    repeat-unit Molecule -- is given, each channel's selector is resolved
+    against it via side_group_site_atom_indices and the law is enforced:
+    (a) the selector must match >= 1 removable X atom of the channel's
+    gas_product element (no match -> hard fail naming the channel);
+    (b) sites_per_unit must EQUAL the selector's structural match count
+    (mismatch -> hard fail with both numbers); (c) no two channels may
+    resolve to the SAME atom set (that is a double-carry the distinct
+    labels were hiding -> hard fail naming both channels). The layers that
+    hold the monomer structure (deck helper, PolymerPool.to_config, the
+    producer) pass it; the solver's directly-constructed PolymerPoolConfig
+    backstop carries no structure and validates shape + vocabulary only.
+    """
+    if isinstance(channels, dict) or not isinstance(channels, (list, tuple)):
+        raise ValueError(
+            f"Pool {pool_label}: side_group_homolysis must be a list of "
+            f"channel dicts (one entry per bond class, e.g. "
+            f"[{{'label': 'aliphatic_C-Br', 'A': ..., 'n': ..., 'Ea': ..., "
+            f"'sites_per_unit': ..., 'gas_product': '[Br]'}}]), got "
+            f"{type(channels).__name__}.")
+    if len(channels) == 0:
+        raise ValueError(
+            f"Pool {pool_label}: side_group_homolysis must not be an empty "
+            f"list -- omit the parameter entirely to disable the kernel "
+            f"(an empty list would be a silently inert channel).")
+    normalized = []
+    seen_sanitized = {}
+    for pos, ch in enumerate(channels):
+        if not isinstance(ch, dict):
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis entry {pos} must "
+                f"be a channel dict, got {type(ch).__name__}.")
+        missing = [k for k in _SIDE_GROUP_CHANNEL_KEYS if k not in ch]
+        extra = sorted(set(ch) - set(_SIDE_GROUP_CHANNEL_KEYS))
+        if missing or extra:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis entry {pos} "
+                f"(label={ch.get('label', '<unset>')!r}) must have exactly "
+                f"the keys {{label, A, n, Ea, site_selector, sites_per_unit, "
+                f"gas_product}}; missing {missing or 'none'}, unknown "
+                f"{extra or 'none'}.")
+        label = ch["label"]
+        if not isinstance(label, str) or not label.strip():
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis entry {pos} label "
+                f"must be a non-empty string naming the bond class, got "
+                f"{label!r}.")
+        out = {"label": label}
+        sel = ch["site_selector"]
+        if not isinstance(sel, str) or sel not in SIDE_GROUP_SITE_SELECTORS:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis channel '{label}' "
+                f"site_selector={sel!r} must be one of "
+                f"{SIDE_GROUP_SITE_SELECTORS} -- the REQUIRED structural "
+                f"site selector pins WHICH X atom the channel removes "
+                f"(round-72: a kinetics label alone must never pick the "
+                f"site).")
+        out["site_selector"] = sel
+        for key in ("A", "n", "Ea", "sites_per_unit"):
+            val = ch[key]
+            if isinstance(val, bool) or not isinstance(val, (int, float)):
+                raise ValueError(
+                    f"Pool {pool_label}: side_group_homolysis channel "
+                    f"'{label}' {key}={val!r} must be a number.")
+            val = float(val)
+            if not math.isfinite(val):
+                raise ValueError(
+                    f"Pool {pool_label}: side_group_homolysis channel "
+                    f"'{label}' {key}={val!r} is not finite (NaN/inf are "
+                    f"rejected).")
+            out[key] = val
+        if out["A"] <= 0.0:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis channel '{label}' "
+                f"A={out['A']:g} must be > 0 (a non-positive pre-exponential "
+                f"is not a valid rate constant).")
+        if out["Ea"] < 0.0:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis channel '{label}' "
+                f"Ea={out['Ea']:g} must be >= 0 [J/mol].")
+        if out["sites_per_unit"] <= 0.0:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis channel '{label}' "
+                f"sites_per_unit={out['sites_per_unit']:g} must be > 0 "
+                f"(side-group X sites per monomer repeat unit).")
+        gp = ch["gas_product"]
+        if not isinstance(gp, str) or not gp.strip():
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis channel '{label}' "
+                f"gas_product must be a SMILES string, got {gp!r}.")
+        from rmgpy.molecule import Molecule
+        try:
+            gmol = Molecule().from_smiles(gp)
+        except Exception as e:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis channel '{label}' "
+                f"gas_product={gp!r} does not parse as SMILES ({e}).")
+        if gmol.get_radical_count() != 1:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis channel '{label}' "
+                f"gas_product={gp!r} must be a mono-radical (the homolysis "
+                f"co-product is the ejected X radical); got radical count "
+                f"{gmol.get_radical_count()}.")
+        if len(gmol.atoms) != 1:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis channel '{label}' "
+                f"gas_product={gp!r} has {len(gmol.atoms)} atoms -- v1 "
+                f"supports only monoatomic radical gas products (e.g. "
+                f"'[Br]'): the deterministic feature-unit derivation removes "
+                f"a single X atom from the repeat unit.")
+        out["gas_product"] = gp
+        san = sanitize_side_group_channel_label(label)
+        if san in seen_sanitized:
+            raise ValueError(
+                f"Pool {pool_label}: side_group_homolysis has duplicate "
+                f"channel labels: {seen_sanitized[san]!r} and {label!r} "
+                f"collide (sanitized '{san}'). Two decks of the same channel "
+                f"would double-carry the same bond class; channels must be "
+                f"unique.")
+        seen_sanitized[san] = label
+        normalized.append(out)
+
+    # STRUCTURAL layer (round-72 P1) -- only when the caller holds the
+    # parsed repeat-unit structure; see the docstring for the three laws.
+    if monomer is not None:
+        from rmgpy.molecule import Molecule
+        seen_sites = {}
+        for out in normalized:
+            label = out["label"]
+            sym = Molecule().from_smiles(out["gas_product"]).atoms[0].symbol
+            idxs = side_group_site_atom_indices(monomer, sym,
+                                                out["site_selector"])
+            if not idxs:
+                raise ValueError(
+                    f"Pool {pool_label}: side_group_homolysis channel "
+                    f"'{label}' site_selector='{out['site_selector']}' "
+                    f"matches NO removable side-group {sym} atom (terminal, "
+                    f"single-bonded, closed-shell, unlabeled, on a matching "
+                    f"carbon environment) in the repeat unit -- the "
+                    f"selector must structurally pin which {sym} the "
+                    f"channel removes; a non-matching selector would mint "
+                    f"the wrong defect (round-72 P1).")
+            if float(len(idxs)) != out["sites_per_unit"]:
+                raise ValueError(
+                    f"Pool {pool_label}: side_group_homolysis channel "
+                    f"'{label}' sites_per_unit={out['sites_per_unit']:g} "
+                    f"contradicts the structural match count: "
+                    f"site_selector='{out['site_selector']}' matches "
+                    f"{len(idxs)} {sym} site(s) in the repeat unit. "
+                    f"sites_per_unit is CHECKED against the monomer, never "
+                    f"trusted (round-72 P1); set it to {len(idxs)} or fix "
+                    f"the selector.")
+            key = (sym, frozenset(idxs))
+            if key in seen_sites:
+                raise ValueError(
+                    f"Pool {pool_label}: side_group_homolysis channels "
+                    f"'{seen_sites[key]}' and '{label}' resolve to the SAME "
+                    f"{sym} atom set {sorted(idxs)} in the repeat unit -- "
+                    f"two rate channels on one structural site double-carry "
+                    f"the loss (the distinct labels were hiding it; "
+                    f"round-72 P1). Merge them or pick disjoint selectors.")
+            seen_sites[key] = label
+    return normalized
+
+
 @dataclass(frozen=True)
 class PolymerPoolConfig:
     """
@@ -496,6 +787,42 @@ class PolymerPoolConfig:
     # depolymerization).
     k_homolysis: Optional[Dict[str, float]] = None
 
+    # Side-group homolysis initiation kernel (FR1-K1, adjudicated round 70):
+    # normalized channel LIST per validate_side_group_homolysis (each entry
+    # exactly {label, A, n, Ea, site_selector, sites_per_unit, gas_product};
+    # site_selector is the round-72 REQUIRED structural site selector) or
+    # None. Per
+    # channel with s = sites_per_unit and k(T) = A*T^n*exp(-Ea/(R_gas*T))
+    # per site: total sites = s*mu1, so the event rate is R = k(T)*s*mu1 and
+    # the reacting chain is picked with probability ~ its length n
+    # (site-weighted). Parent debit dmu_j -= k*s*mu_{j+1} (j = 0, 1, 2; mu3
+    # from the log-Lagrange closure); the '{label}_sidegrp_{channel}' X-loss
+    # feature pool is credited EXACTLY the parent debit (the chain transfers
+    # INTACT -- no chain cut); the gas X radical is credited +R. Mutually
+    # exclusive with k_unzip > 0 and with radical_qssa_unzip (double-carry);
+    # MAY coexist with k_homolysis / k_scission (different bonds: side-group
+    # C-X vs backbone C-C). v1 LIMITATION: the kernel acts on the PARENT
+    # pool only -- feature pools carry no further side-group loss (they
+    # saturate as terminal X-loss sinks; no multi-loss cascade).
+    side_group_homolysis: Optional[List[Dict[str, object]]] = None
+    # Resolved core index of each channel's gas_product species, aligned
+    # with side_group_homolysis (PolymerPool.to_config resolves it; a
+    # kernel-enabled pool without resolved indices is a hard config error --
+    # the emitted X radical would silently vanish).
+    side_group_gas_indices: Optional[Tuple[int, ...]] = None
+
+    # Exact per-chain mass defect [g/mol] of an X-loss feature pool (FR1-K1
+    # mass contract, the round-70 #1 P1 trap): the feature pool keeps the
+    # parent's monomer_mw_g_mol (the chain transferred INTACT), but every
+    # feature chain lost exactly ONE X atom (v1: no multi-loss cascade), so
+    # the pool's EXACT condensed mass is
+    #     mass [g] = mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol
+    # (see condensed_mass_g). The producer pins it to M_X of the spawning
+    # channel's gas_product; _flatten_side_group_state hard-errors on any
+    # kernel destination whose defect does not pin M_X exactly. 0.0 on
+    # ordinary pools (the accessor then reduces to mu1*MW).
+    chain_mass_defect_g_mol: float = 0.0
+
     # Custom Kinetics Hook
     # f(T, P, mu0, mu1, mu2, mu3) -> (dmu0_dt, dmu1_dt, dmu2_dt, small_species_sources)
     # Units:
@@ -507,6 +834,18 @@ class PolymerPoolConfig:
     # It does NOT handle the "Physical Handshake" flux.
     tail_kinetics: Optional[Callable[[float, float, float, float, float, float],
                                      Tuple[float, float, float, Dict[int, float]]]] = None
+
+    def condensed_mass_g(self, mu0_mol, mu1_mol):
+        """EXACT condensed mass [g] of this pool at the given extensive
+        moments [mol] (FR1-K1 mass contract): mu1*monomer_mw_g_mol minus the
+        per-chain X-loss defect mu0*chain_mass_defect_g_mol. For ordinary
+        pools (defect 0) this is the plain moment-derived mass; for X-loss
+        feature pools it carries the one-lost-X-per-chain correction so that
+        d(condensed mass)/dt + d(gas X mass)/dt = 0 holds exactly on the
+        side-group kernel's contributions (pinned by test). Also works on
+        rates: feeding d(mu)/dt returns d(mass)/dt."""
+        return (mu1_mol * self.monomer_mw_g_mol
+                - mu0_mol * self.chain_mass_defect_g_mol)
 
     def __repr__(self):
         return f"<PolymerPool '{self.label}' xs={self.xs}>"
@@ -1099,6 +1438,77 @@ class HybridPolymerSystem(ReactionSystem):
                         f"depolymerization. Set k_unzip=0 or remove "
                         f"k_homolysis.")
 
+            # Side-group homolysis kernel invariants (FR1-K1, adjudicated
+            # round 70). LAST line of defense, same rationale as the two
+            # kernels above: deck helper and PolymerPool.to_config guard
+            # these shapes, but a directly-constructed PolymerPoolConfig
+            # bypasses both. NOTE the adjudicated coexistence: k_homolysis /
+            # k_scission act on backbone C-C bonds while this kernel acts on
+            # side-group C-X bonds -- no exclusion between them.
+            if (not math.isfinite(pool.chain_mass_defect_g_mol)
+                    or pool.chain_mass_defect_g_mol < 0.0):
+                raise ValueError(
+                    f"Pool {pool.label}: chain_mass_defect_g_mol="
+                    f"{pool.chain_mass_defect_g_mol!r} must be a finite "
+                    f"value >= 0 [g/mol] (the X-loss feature-pool mass "
+                    f"contract; garbage here silently mints/destroys "
+                    f"condensed mass).")
+            if pool.side_group_homolysis is not None:
+                # Shape + selector-vocabulary backstop only: the config
+                # carries no monomer structure, so the round-72 STRUCTURAL
+                # selector layer (match >= 1, sites_per_unit == match
+                # count, disjoint atom sets) runs where the parsed monomer
+                # lives -- deck helper, PolymerPool.to_config, producer.
+                normalized_sgh = validate_side_group_homolysis(
+                    pool.label, pool.side_group_homolysis)
+                object.__setattr__(pool, 'side_group_homolysis',
+                                   copy.deepcopy(normalized_sgh))
+                if pool.k_unzip > 0.0:
+                    raise ValueError(
+                        f"Pool {pool.label}: side_group_homolysis is "
+                        f"configured AND k_unzip={pool.k_unzip:g} > 0. "
+                        f"Legacy k_unzip is a phenomenological closed-chain "
+                        f"monomer-loss channel, while side_group_homolysis "
+                        f"creates radical-defect feature pools that feed "
+                        f"explicit degradation chemistry; the two are "
+                        f"mutually exclusive on a pool -- enabling both "
+                        f"would double-carry degradation. Set k_unzip=0 or "
+                        f"remove side_group_homolysis.")
+                if pool.radical_qssa_unzip is not None:
+                    raise ValueError(
+                        f"Pool {pool.label}: side_group_homolysis is "
+                        f"configured AND radical_qssa_unzip is configured. "
+                        f"The QSSA channel's initiation block is random "
+                        f"backbone homolysis feeding the same lumped "
+                        f"depropagation, so the two initiation carriers are "
+                        f"mutually exclusive on a pool -- enabling both "
+                        f"would double-carry initiation. Remove one of "
+                        f"them.")
+                gi = pool.side_group_gas_indices
+                if gi is None or len(gi) != len(normalized_sgh):
+                    raise ValueError(
+                        f"Pool {pool.label}: side_group_homolysis is "
+                        f"configured but the gas-product core indices are "
+                        f"not resolved (side_group_gas_indices={gi!r} for "
+                        f"{len(normalized_sgh)} channel(s)). The kernel "
+                        f"emits one X radical per event; without a resolved "
+                        f"gas destination the ejected X would silently "
+                        f"vanish (un-conserved mass).")
+                for ci, g_idx in enumerate(gi):
+                    if not (0 <= g_idx < n_core):
+                        raise ValueError(
+                            f"Pool {pool.label}: side_group_homolysis "
+                            f"channel '{normalized_sgh[ci]['label']}' gas "
+                            f"index {g_idx} out of range.")
+                    if not self.gas_species_mask[g_idx]:
+                        raise ValueError(
+                            f"Pool {pool.label}: side_group_homolysis "
+                            f"channel '{normalized_sgh[ci]['label']}' "
+                            f"gas_product index {g_idx} is NOT masked as "
+                            f"GAS -- the ejected X radical is a gas-phase "
+                            f"species; emitting it into a condensed slot "
+                            f"would corrupt the phase bookkeeping.")
+
         for mt in self.mass_transfer:
             if not (0 <= mt.poly_index < n_core):
                 raise ValueError(f"Mass transfer poly_index {mt.poly_index} out of range.")
@@ -1128,6 +1538,11 @@ class HybridPolymerSystem(ReactionSystem):
         # resolve each enabled parent's end-radical daughter pools. Same
         # timing contract as the QSSA flattener above.
         self._flatten_homolysis_state()
+
+        # Flatten the (now validated + normalized) side_group_homolysis
+        # channels and resolve each enabled parent's X-loss feature pools +
+        # gas destinations (FR1-K1). Same timing contract.
+        self._flatten_side_group_state()
 
     def _flatten_homolysis_state(self):
         """Flatten each pool's validated+normalized k_homolysis triplet into
@@ -1196,6 +1611,128 @@ class HybridPolymerSystem(ReactionSystem):
              self.khom_prim_mu2[i]) = prim.mu_indices
             (self.khom_sec_mu0[i], self.khom_sec_mu1[i],
              self.khom_sec_mu2[i]) = sec.mu_indices
+
+    def _flatten_side_group_state(self):
+        """Flatten each pool's validated+normalized side_group_homolysis
+        channel list into solver-owned per-channel row arrays, resolve each
+        channel's X-loss feature pool + gas destination, and ENFORCE the
+        exact mass-defect contract (FR1-K1, adjudicated round 70).
+
+        Contract (mirrors _flatten_homolysis_state):
+        - Populated ONLY here, on the initialize_model ->
+          validate_configuration path, from the normalized channel lists.
+        - The RHS reads ONLY these arrays, never the pool dicts.
+
+        Layout:
+        - sgh_enabled[i] (int8, per pool): 1 iff pool i has channels.
+        - sgh_row_start[i]/sgh_row_end[i] (int32, per pool): this pool's
+          contiguous slice of the row arrays below (one row per channel).
+        - sgh_A/n/Ea/sites[row]: the channel's Arrhenius triplet
+          (A [s^-1 per site], Ea [J/mol]) and sites_per_unit.
+        - sgh_gas[row] (int32): core index of the ejected X radical.
+        - sgh_dst_mu0/mu1/mu2[row] (int32): the X-loss feature pool's
+          moment slots.
+        - sgh_channel_labels[row]: channel label (guard warn-once keys and
+          error messages).
+
+        HARD ERRORS (never silent):
+        - a channel whose feature pool is missing from the configured pools
+          (the transferred chains would silently vanish);
+        - a feature pool whose chain_mass_defect_g_mol does not pin the
+          channel's gas_product molar mass M_X (the round-70 #1 P1 trap:
+          same-monomer_mw feature pools double-count X unless the defect is
+          explicit and exact);
+        - a feature pool whose monomer_mw_g_mol diverges from the parent's
+          (the chain transfers intact -- a diverging repeat-unit mass
+          fabricates/destroys condensed mass).
+        """
+        n_pools = len(self.polymer_pools)
+        # warn-once registry for the runtime out-of-domain guard, keyed
+        # (pool label, channel label); one loud line per key per rebuild.
+        self._sgh_guard_warned = set()
+        self.sgh_enabled = np.zeros(n_pools, dtype=np.int8)
+        self.sgh_row_start = np.zeros(n_pools, dtype=np.int32)
+        self.sgh_row_end = np.zeros(n_pools, dtype=np.int32)
+        rows_A = []
+        rows_n = []
+        rows_Ea = []
+        rows_sites = []
+        rows_gas = []
+        rows_d0 = []
+        rows_d1 = []
+        rows_d2 = []
+        self.sgh_channel_labels = []
+
+        label_to_pool = {p.label: p for p in self.polymer_pools}
+        for i, pool in enumerate(self.polymer_pools):
+            self.sgh_row_start[i] = len(rows_A)
+            self.sgh_row_end[i] = len(rows_A)
+            channels = pool.side_group_homolysis
+            if not channels:
+                continue
+            for ci, ch in enumerate(channels):
+                d_label = side_group_daughter_pool_label(
+                    pool.label, ch["label"])
+                dst = label_to_pool.get(d_label)
+                if dst is None:
+                    raise ValueError(
+                        f"Pool {pool.label}: side_group_homolysis channel "
+                        f"'{ch['label']}' is enabled but its X-loss feature "
+                        f"pool '{d_label}' is not among the configured "
+                        f"solver pools. The producer spawns it at model "
+                        f"setup (rmgpy/rmg/input.py); without it the "
+                        f"kernel's transferred chains would silently vanish "
+                        f"(mass laundered out of the melt).")
+                # Exact mass-defect contract (round-70 P1 trap): the feature
+                # pool keeps the parent's monomer_mw, so its condensed mass
+                # is mu1*MW - mu0*M_X -- the defect MUST pin the channel's
+                # gas_product molar mass, and the repeat-unit mass must not
+                # diverge from the parent's.
+                mw_x = _side_group_gas_mw_g_mol(ch["gas_product"])
+                defect = float(dst.chain_mass_defect_g_mol)
+                if not (defect > 0.0) or abs(defect - mw_x) > 1.0e-6 * mw_x:
+                    raise ValueError(
+                        f"Pool {pool.label}: X-loss feature pool "
+                        f"'{d_label}' has chain_mass_defect_g_mol="
+                        f"{defect!r} but channel '{ch['label']}' ejects "
+                        f"gas_product={ch['gas_product']!r} with M_X="
+                        f"{mw_x:g} g/mol. The mass contract (feature-pool "
+                        f"condensed mass = mu1*MW - mu0*M_X) requires the "
+                        f"defect to pin M_X exactly -- anything else mints "
+                        f"or destroys condensed mass while gas X appears.")
+                mw_parent = float(pool.monomer_mw_g_mol)
+                mw_dst = float(dst.monomer_mw_g_mol)
+                if abs(mw_dst - mw_parent) > 1.0e-9 * max(abs(mw_parent),
+                                                          1.0):
+                    raise ValueError(
+                        f"Pool {pool.label}: X-loss feature pool "
+                        f"'{d_label}' monomer_mw_g_mol={mw_dst:g} diverges "
+                        f"from the parent's {mw_parent:g}. The chain "
+                        f"transfers INTACT (same repeat unit; the X loss is "
+                        f"carried by chain_mass_defect_g_mol, never by the "
+                        f"monomer mass), so a diverging monomer_mw "
+                        f"fabricates/destroys condensed mass.")
+                rows_A.append(ch["A"])
+                rows_n.append(ch["n"])
+                rows_Ea.append(ch["Ea"])
+                rows_sites.append(ch["sites_per_unit"])
+                rows_gas.append(int(pool.side_group_gas_indices[ci]))
+                d0, d1, d2 = dst.mu_indices
+                rows_d0.append(d0)
+                rows_d1.append(d1)
+                rows_d2.append(d2)
+                self.sgh_channel_labels.append(ch["label"])
+            self.sgh_enabled[i] = 1
+            self.sgh_row_end[i] = len(rows_A)
+
+        self.sgh_A = np.asarray(rows_A, dtype=float)
+        self.sgh_n = np.asarray(rows_n, dtype=float)
+        self.sgh_Ea = np.asarray(rows_Ea, dtype=float)
+        self.sgh_sites = np.asarray(rows_sites, dtype=float)
+        self.sgh_gas = np.asarray(rows_gas, dtype=np.int32)
+        self.sgh_dst_mu0 = np.asarray(rows_d0, dtype=np.int32)
+        self.sgh_dst_mu1 = np.asarray(rows_d1, dtype=np.int32)
+        self.sgh_dst_mu2 = np.asarray(rows_d2, dtype=np.int32)
 
     def _flatten_radical_qssa_state(self):
         """Flatten each pool's validated+normalized radical_qssa_unzip channel
@@ -2138,6 +2675,24 @@ class HybridPolymerSystem(ReactionSystem):
                 self.homolysis_supersession_census.append(entry)
                 warn_once_homolysis_supersession(entry)
 
+        # side_group_homolysis supersession census (FR1-K1): refused
+        # explicit gas-radical<->condensed rows REMAIN refused next to the
+        # live kernel (they carry zero flux -- reaction_refused), and the
+        # census pairs them explicitly, same contract as the k_homolysis
+        # census above. Diagnostic-only: NO flux/state change, warn NEVER
+        # refuse. Same placement rationale (after validate_configuration:
+        # sgh_enabled exists; after the refused census: rows are final).
+        from rmgpy.polymer import warn_once_side_group_supersession
+        self.side_group_supersession_census = []
+        if deferred_rows and np.any(self.sgh_enabled):
+            for p_idx, pool in enumerate(self.polymer_pools):
+                if not self.sgh_enabled[p_idx]:
+                    continue
+                entry = {"pool": pool.label,
+                         "superseded_rows": list(deferred_rows)}
+                self.side_group_supersession_census.append(entry)
+                warn_once_side_group_supersession(entry)
+
         # Thermo reference-state tripwire (spec 2026-06-11 §7): runs AFTER
         # the archetype demotion pass and validate_configuration (masks,
         # pool membership and archetypes are final here) and BEFORE
@@ -2202,13 +2757,31 @@ class HybridPolymerSystem(ReactionSystem):
                             f"Ea={khom['Ea']:.4g}J/mol")
             else:
                 khom_str = "off"
+            # side_group_homolysis channels (FR1-K1) must be traceable in
+            # run logs too: the parent names every channel; feature pools
+            # are tagged; the v1 saturation limitation is disclosed.
+            sgh_channels = pool.side_group_homolysis
+            if sgh_channels:
+                sgh_str = ("[" + ",".join(ch["label"] for ch in sgh_channels)
+                           + "]")
+            else:
+                sgh_str = "off"
             role_tag = ""
             if pool.label.endswith(K_HOMOLYSIS_DAUGHTER_SUFFIXES):
                 role_tag = "  [end-radical daughter]"
+            elif SIDE_GROUP_DAUGHTER_INFIX in pool.label:
+                role_tag = "  [side-group X-loss daughter]"
             print(f"\n--- Pool {pool_i}: '{pool.label}'  (xs={pool.xs}, "
                   f"k_scission={pool.k_scission:.2e}, "
                   f"k_unzip={pool.k_unzip:.2e}, "
-                  f"k_homolysis={khom_str}){role_tag} ---")
+                  f"k_homolysis={khom_str}, "
+                  f"side_group_homolysis={sgh_str}){role_tag} ---")
+            if sgh_channels:
+                print(f"  side_group_homolysis v1 saturation: the kernel "
+                      f"acts on THIS parent pool only; its X-loss feature "
+                      f"pools carry no further side-group loss (no "
+                      f"multi-loss cascade -- they saturate as terminal "
+                      f"X-loss sinks).")
             print(f"  {'Role':<16} {'Species Label':<30} {'Index':<7} {'y0':>13}")
             print(f"  {'-'*16} {'-'*30} {'-'*7} {'-'*13}")
 
@@ -3648,6 +4221,106 @@ class HybridPolymerSystem(ReactionSystem):
                         dn_dt[self.khom_sec_mu0[pool_i]] += frag_mu0
                         dn_dt[self.khom_sec_mu1[pool_i]] += frag_mu1
                         dn_dt[self.khom_sec_mu2[pool_i]] += frag_mu2
+
+            # Side-group homolysis initiation kernel (FR1-K1, adjudicated
+            # round 70). Reads ONLY the flattened sgh_* row arrays from
+            # _flatten_side_group_state -- never the pool dicts. MAY coexist
+            # with the k_homolysis kernel above (different bonds: side-group
+            # C-X here vs backbone C-C there; no double-carry).
+            #
+            # Event, per channel with s = sites_per_unit and
+            # k(T) = A*T^n*exp(-Ea/(R_gas*T)) per site, at the RUNTIME T:
+            # every repeat unit carries s X sites, so a chain of length n
+            # loses X at rate k*s*n and the reacting chain is picked with
+            # probability ~ n (site-weighted). The chain transfers INTACT
+            # (no chain cut) to the channel's X-loss feature pool:
+            #   event rate      R = k*s*mu1
+            #   parent debit    dmu_j -= k*s*mu_{j+1}   (j = 0, 1, 2;
+            #                   equivalently R*E[n^j] with picked-chain
+            #                   moments E[n^j] = mu_{j+1}/mu1 -- computed in
+            #                   the STABLE direct product forms, never a
+            #                   ratio re-multiplied by R)
+            #   feature credit  EXACTLY the parent debit (total mu0/mu1/mu2
+            #                   across the two pools conserved bitwise)
+            #   gas X credit    +R of gas_product (one X radical per event)
+            # mu3 from the established log-Lagrange closure (computed once
+            # per pool above). MASS CONTRACT: the transferred chain lost one
+            # X atom while the feature pool keeps the parent's monomer_mw,
+            # so the feature pool's EXACT condensed mass is
+            # mu1*MW - mu0*M_X (chain_mass_defect_g_mol = M_X, enforced at
+            # flatten); on this kernel's contributions
+            # d(condensed mass)/dt = -R*M_X = -d(gas X mass)/dt exactly.
+            # v1 LIMITATION (adjudicated): the kernel acts on the PARENT
+            # pool only -- feature pools carry no side_group_homolysis of
+            # their own (no multi-loss cascade; they saturate as terminal
+            # X-loss sinks).
+            if self.sgh_enabled[pool_i] and mu1 > 0.0 and mu0 > 0.0:
+                T_sgh = self.T.value_si
+                mu3_ok_sgh = np.isfinite(mu3)
+                for sgh_row in range(self.sgh_row_start[pool_i],
+                                     self.sgh_row_end[pool_i]):
+                    k_sgh = (self.sgh_A[sgh_row]
+                             * T_sgh ** self.sgh_n[sgh_row]
+                             * math.exp(-self.sgh_Ea[sgh_row]
+                                        / (QSSA_R_GAS * T_sgh)))
+                    if not (0.0 < k_sgh < QSSA_INF):
+                        raise ValueError(
+                            f"Pool {pool.label}: side_group_homolysis "
+                            f"channel "
+                            f"'{self.sgh_channel_labels[sgh_row]}' "
+                            f"k(T={T_sgh:g} K) evaluated to a degenerate "
+                            f"rate constant ({k_sgh!r}) -- "
+                            f"A={self.sgh_A[sgh_row]:g}, "
+                            f"n={self.sgh_n[sgh_row]:g}, "
+                            f"Ea={self.sgh_Ea[sgh_row]:g} J/mol. Refusing "
+                            f"to integrate a poisoned kernel.")
+                    if (not mu3_ok_sgh) or mu2 < mu1 or mu3 < mu2:
+                        # Loud out-of-domain guard (warn once per
+                        # pool/channel per rebuild, sibling-kernel
+                        # convention): the debit consumes mu2 and the mu3
+                        # closure directly, so a nonrealizable shape
+                        # (mu2 < mu1 -- impossible for chains with n >= 1;
+                        # nonfinite mu3; mu3 < mu2) would transfer negative
+                        # or garbage moment bundles. Contribute ZERO flux
+                        # this step. (mu1 <= 0 / mu0 <= 0 is the SILENT
+                        # in-domain zero above: no sites, no events.)
+                        key = (pool.label,
+                               self.sgh_channel_labels[sgh_row])
+                        if key not in self._sgh_guard_warned:
+                            self._sgh_guard_warned.add(key)
+                            logging.warning(
+                                "Polymer pool '%s': side_group_homolysis "
+                                "channel '%s' skipped -- "
+                                "nonfinite/negative moment combination "
+                                "(mu0=%.6g, mu1=%.6g, mu2=%.6g, mu3=%.6g; "
+                                "require mu2 >= mu1 and finite "
+                                "mu3 >= mu2). The kernel contributes zero "
+                                "flux until the state re-enters its "
+                                "realizable domain.",
+                                pool.label,
+                                self.sgh_channel_labels[sgh_row],
+                                mu0, mu1, mu2, mu3)
+                        continue
+                    ks_sgh = k_sgh * self.sgh_sites[sgh_row]
+                    r0_sgh = ks_sgh * mu1     # R: events == chains == gas X
+                    r1_sgh = ks_sgh * mu2     # R*E[n], stable direct form
+                    r2_sgh = ks_sgh * mu3     # R*E[n^2], stable direct form
+                    dmu0_dt -= r0_sgh
+                    dmu1_dt -= r1_sgh
+                    dmu2_dt -= r2_sgh
+                    # Feature-pool credits go straight to the destination
+                    # moment slots -- the SAME r*V_poly products as the
+                    # parent debit flush below, so the two-pool totals
+                    # cancel bitwise.
+                    dn_dt[self.sgh_dst_mu0[sgh_row]] += r0_sgh * V_poly
+                    dn_dt[self.sgh_dst_mu1[sgh_row]] += r1_sgh * V_poly
+                    dn_dt[self.sgh_dst_mu2[sgh_row]] += r2_sgh * V_poly
+                    # Gas X radical: +R through the same small_src ->
+                    # dn_dt * V_poly path as the unzip/QSSA releases
+                    # (additive: channels may share one gas species).
+                    g_idx_sgh = int(self.sgh_gas[sgh_row])
+                    small_src[g_idx_sgh] = (
+                        small_src.get(g_idx_sgh, 0.0) + r0_sgh)
 
             # radical_qssa_unzip channel (M2 rate law). Reads ONLY the
             # flattened solver-owned qssa_* arrays from M1 -- NEVER the pool

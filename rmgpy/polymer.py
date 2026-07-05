@@ -247,6 +247,8 @@ class Polymer(Species):
                  radical_qssa_unzip: Optional[dict] = None,
                  k_homolysis: Optional[dict] = None,
                  end_radical_site: Optional[str] = None,
+                 side_group_homolysis: Optional[list] = None,
+                 side_loss_channel: Optional[str] = None,
                  **kwargs,
                  ):
         # k_unzip/k_scission/radical_qssa_unzip/k_homolysis/end_radical_site
@@ -276,6 +278,37 @@ class Polymer(Species):
                 f"Polymer '{label}': end_radical_site must be None, "
                 f"'primary' or 'secondary', got {end_radical_site!r}.")
         self.end_radical_site = end_radical_site
+        # Side-group homolysis initiation kernel (FR1-K1, adjudicated round
+        # 70): LIST of channel dicts (each exactly {label, A, n, Ea,
+        # site_selector, sites_per_unit, gas_product}; site_selector is the
+        # round-72 REQUIRED structural site selector) or None. Passive
+        # storage here (like k_homolysis); validated by
+        # rmgpy.solver.polymer.validate_side_group_homolysis at the deck /
+        # config / solver layers. The producer
+        # (generate_side_loss_daughters) spawns ONE X-loss feature pool per
+        # channel at model setup.
+        self.side_group_homolysis = side_group_homolysis
+        # side_loss_channel marks this Polymer as the X-loss feature pool of
+        # one (parent, channel) pair: the raw channel label (e.g.
+        # 'aliphatic_C-Br'). When set, the fingerprint carries a _SideLoss
+        # segment keyed on the sanitized channel label + the feature unit's
+        # radical environment, so channels NEVER lump (round-70 ruling) and
+        # the pool stays distinct from the parent, from _EndRad daughters
+        # and from S2 H-loss _Feat/_mod pools.
+        if side_loss_channel is not None and (
+                not isinstance(side_loss_channel, str)
+                or not side_loss_channel.strip()):
+            raise InputError(
+                f"Polymer '{label}': side_loss_channel must be None or a "
+                f"non-empty channel-label string, got {side_loss_channel!r}.")
+        self.side_loss_channel = side_loss_channel
+        # Exact per-chain mass defect [g/mol] of an X-loss feature pool
+        # (FR1-K1 mass contract): every feature chain lost exactly ONE X
+        # (v1, no multi-loss cascade), so the pool's exact condensed mass is
+        # mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol. Pinned to M_X
+        # of the spawning channel's gas_product by
+        # generate_side_loss_daughters; 0.0 on ordinary pools.
+        self.chain_mass_defect_g_mol = 0.0
         # Discreteness threshold (spec 2026-06-10 §6, D7/D8): chains with
         # literal DP < threshold are candidates for discrete tracking. Default
         # 4 = monomer..trimer explicit. DORMANT under the fixed trimer proxy:
@@ -428,7 +461,21 @@ class Polymer(Species):
         if self._fingerprint is None:
             if self.monomer:
                 feat = ''
-                if self.feature_monomer:
+                side_ch = getattr(self, 'side_loss_channel', None)
+                if self.feature_monomer and side_ch:
+                    # Side-group X-loss feature pools (FR1-K1): a DISTINCT
+                    # fingerprint class keyed on the sanitized CHANNEL label
+                    # (round-70 ruling: channels never lump -- two channels
+                    # of the same element with identical unit graphs must
+                    # stay distinct pools) plus the unit's radical-site
+                    # environment. The _SideLoss literal never collides with
+                    # _Feat (S2 H-loss) or _EndRad (k_homolysis) segments.
+                    from rmgpy.solver.polymer import \
+                        sanitize_side_group_channel_label
+                    feat = (f'_SideLoss-'
+                            f'{sanitize_side_group_channel_label(side_ch)}'
+                            f'-rad{_radical_site_descriptor(self.feature_monomer)}')
+                elif self.feature_monomer:
                     feat = f'_Feat-{self.feature_monomer.fingerprint}'
                     if self.feature_monomer.get_radical_count() > 2:
                         feat += f'-rad{_radical_site_descriptor(self.feature_monomer)}'
@@ -597,6 +644,17 @@ class Polymer(Species):
         # daughter pool's proxy/fingerprint back onto the parent's.
         other.k_homolysis = deepcopy(getattr(self, 'k_homolysis', None))
         other.end_radical_site = getattr(self, 'end_radical_site', None)
+        # Side-group homolysis kernel channels + X-loss feature-pool
+        # identity + exact mass-defect contract (FR1-K1): losing the
+        # channel list on copy would silently disable the kernel; losing
+        # side_loss_channel would collapse a feature pool's fingerprint
+        # back onto an S2 _Feat pool; losing chain_mass_defect_g_mol would
+        # re-open the round-70 P1 mass-minting trap.
+        other.side_group_homolysis = deepcopy(
+            getattr(self, 'side_group_homolysis', None))
+        other.side_loss_channel = getattr(self, 'side_loss_channel', None)
+        other.chain_mass_defect_g_mol = getattr(
+            self, 'chain_mass_defect_g_mol', 0.0)
         # Released-monomer routing target (input.py:432). Shared BY REFERENCE
         # deliberately, NOT deep-copied: routing resolution downstream
         # (derive_daughter_pool_configs' spc_map, PolymerPool.to_config) is
@@ -1039,6 +1097,135 @@ class Polymer(Species):
             # (defined below; used at call time) -- both closure guards
             # (producer + runner _HOMOLYSIS_SPAWN_SOURCE) pin it exactly.
             daughter.spawn_metadata = {"source": HOMOLYSIS_SPAWN_SOURCE}
+            daughters.append(daughter)
+        return tuple(daughters)
+
+    def _side_loss_feature_unit(self, channel_label: str,
+                                gas_product: str,
+                                site_selector: str) -> Molecule:
+        """
+        Build the X-loss feature repeat unit for one side_group_homolysis
+        channel (FR1-K1): the parent monomer with ONE X atom removed and a
+        radical electron left on its ex-neighbor (the mid-chain radical
+        defect of homolytic C-X cleavage).
+
+        DETERMINISTIC transformation (documented; the channel LABEL keys
+        pool identity, the unit is the representative structure): the
+        removed atom is the FIRST atom, in the unit's atom order, matched
+        by the channel's REQUIRED structural site selector
+        (rmgpy.solver.polymer.side_group_site_atom_indices; round-72 P1:
+        the kinetics label alone must never pick the site -- on a
+        mixed-site monomer a channel labeled 'aliphatic_C-Br' would
+        otherwise remove the first X in atom order, an ARYL one, minting
+        the wrong defect structure under that channel's rate). The
+        removable-X predicate is unchanged: terminal (exactly one bond),
+        single-bonded, closed-shell and not a stitch-labeled atom. No
+        selector-matched atom is a hard error naming the channel (the
+        validator enforces the same law with the full three-part
+        structural check).
+
+        Validated by its own STRICT assertion path
+        (_assert_side_loss_unit: element census = monomer minus one X,
+        exactly 3 radical electrons, radical on the ex-neighbor) plus the
+        existing feature-unit machinery (_assert_feature_unit with the
+        3-radical budget, mirroring the S2 H-loss units).
+        """
+        from rmgpy.solver.polymer import side_group_site_atom_indices
+        gas = Molecule().from_smiles(gas_product)
+        if len(gas.atoms) != 1 or gas.get_radical_count() != 1:
+            raise ValueError(
+                f"Polymer '{self.label}': side_group_homolysis channel "
+                f"'{channel_label}' gas_product={gas_product!r} must be a "
+                f"monoatomic mono-radical (e.g. '[Br]') in v1.")
+        sym = gas.atoms[0].symbol
+        unit = self.monomer.copy(deep=True)
+        # Selector-directed selection, resolved ON THE COPY the removal
+        # operates on (self-consistent indices whatever the copy's atom
+        # ordering).
+        idxs = side_group_site_atom_indices(unit, sym, site_selector)
+        if not idxs:
+            raise ValueError(
+                f"Polymer '{self.label}': side_group_homolysis channel "
+                f"'{channel_label}' (site_selector='{site_selector}') "
+                f"needs a removable side-group {sym} atom (terminal, "
+                f"single-bonded, closed-shell, unlabeled) on a matching "
+                f"carbon environment in the repeat unit, but the monomer "
+                f"has none. The X-loss feature pool cannot be built.")
+        x_atom = unit.atoms[idxs[0]]
+        neighbor = next(iter(x_atom.bonds.keys()))
+        unit.remove_atom(x_atom)
+        neighbor.increment_radical()
+        unit.update()
+        _assert_side_loss_unit(unit, sym, self.monomer, channel_label,
+                               radical_atom=neighbor)
+        self._assert_feature_unit(unit, allow_h_loss_radical=True)
+        return unit
+
+    def generate_side_loss_daughters(self) -> Tuple['Polymer', ...]:
+        """
+        Producer for the side-group homolysis conduit (FR1-K1, adjudicated
+        round 70): build ONE X-loss feature pool per configured channel of
+        this parent, for registration at MODEL SETUP (not lazily) --
+        mirrors generate_end_radical_daughters.
+
+        Each daughter '{label}_sidegrp_{sanitized channel label}':
+        born-at-zero moments (spawned_empty pattern), the parent's monomer
+        (monomer_mw_g_mol pinned by __init__ -- the chain transfers INTACT,
+        no chain cut), an X-loss feature_monomer built by the documented
+        deterministic transformation (_side_loss_feature_unit) with its own
+        strict assertion path, a distinct _SideLoss fingerprint class keyed
+        on the channel label, spawn provenance {'source':
+        'side_group_homolysis', 'channel': <label>}, and the EXACT
+        mass-defect contract chain_mass_defect_g_mol = M_X of the channel's
+        gas_product (round-70 #1 P1 trap: the feature pool keeps the
+        parent's monomer_mw, so its condensed mass is mu1*MW - mu0*M_X).
+
+        v1 LIMITATION (adjudicated): daughters carry NO side_group_homolysis
+        of their own -- the kernel acts on the PARENT pool only, so feature
+        pools saturate as terminal X-loss sinks (no multi-loss cascade).
+        """
+        from rmgpy.solver.polymer import (side_group_daughter_pool_label,
+                                          validate_side_group_homolysis)
+        channels = getattr(self, 'side_group_homolysis', None)
+        if not channels:
+            return tuple()
+        # Round-72 P1: structural validation against the parsed monomer --
+        # selector required + matching >= 1 X atom, sites_per_unit checked
+        # against the match count, no two channels on one atom set.
+        channels = validate_side_group_homolysis(self.label, channels,
+                                                 monomer=self.monomer)
+        daughters = []
+        for ch in channels:
+            unit = self._side_loss_feature_unit(ch["label"],
+                                                ch["gas_product"],
+                                                ch["site_selector"])
+            if self.Mn and self.Mw:
+                dist_kwargs = dict(Mn=self.Mn, Mw=self.Mw, moments=None)
+            else:
+                dist_kwargs = dict(moments=[0.0, 0.0, 0.0])
+            daughter = Polymer(
+                label=side_group_daughter_pool_label(self.label,
+                                                     ch["label"]),
+                monomer=self.monomer,
+                feature_monomer=unit,
+                end_groups=[eg.copy(deep=True) for eg in self.end_groups],
+                cutoff=self.cutoff,
+                initial_mass=0.0,
+                side_loss_channel=ch["label"],
+                **dist_kwargs,
+            )
+            gas = Molecule().from_smiles(ch["gas_product"])
+            daughter.chain_mass_defect_g_mol = (
+                gas.get_molecular_weight() * 1000.0)
+            daughter.parent_pool_label = self.label
+            # Literal pinned as module constant
+            # SIDE_GROUP_HOMOLYSIS_SPAWN_SOURCE (defined below, near
+            # HOMOLYSIS_SPAWN_SOURCE) -- the schema-2.7 consumer (K2) will
+            # pin it exactly, like the sibling kernel's provenance.
+            daughter.spawn_metadata = {
+                "source": SIDE_GROUP_HOMOLYSIS_SPAWN_SOURCE,
+                "channel": ch["label"],
+            }
             daughters.append(daughter)
         return tuple(daughters)
 
@@ -2205,6 +2392,29 @@ def warn_once_homolysis_supersession(entry: dict) -> None:
         entry["pool"], len(rows), "; ".join(str(r) for r in rows))
 
 
+_side_group_supersession_warned = set()
+
+
+def warn_once_side_group_supersession(entry: dict) -> None:
+    """Log each side_group_homolysis supersession census entry once
+    (FR1-K1; same contract as warn_once_homolysis_supersession): refused
+    explicit gas-radical<->condensed rows co-existing with a live
+    side-group kernel REMAIN refused and carry zero flux, and the pairing
+    is stated explicitly in the run log. Census-only, NEVER refuse.
+    Warn-once keyed per pool."""
+    key = entry["pool"]
+    if key in _side_group_supersession_warned:
+        return
+    _side_group_supersession_warned.add(key)
+    rows = entry.get("superseded_rows", [])
+    logging.warning(
+        "SIDE-GROUP HOMOLYSIS KERNEL CENSUS: pool '%s' has a live "
+        "side_group_homolysis initiation kernel; %d refused "
+        "conduit-deferred row(s) are superseded by the kernel (they remain "
+        "refused and carry zero flux): %s",
+        entry["pool"], len(rows), "; ".join(str(r) for r in rows))
+
+
 _chip_tripwire_warned = set()
 
 
@@ -2867,6 +3077,59 @@ def _assert_end_radical_proxy(mol: Molecule, site: str) -> None:
             f"End-radical proxy ({site}): the radical must sit ON the "
             f"terminal (stitch-labeled) atom; the labeled atom carries "
             f"{atom.radical_electrons} radical electrons.")
+
+
+def _assert_side_loss_unit(unit: Molecule, element_symbol: str,
+                           monomer: Molecule, channel_label: str,
+                           radical_atom: Optional['Atom'] = None) -> None:
+    """
+    STRICT validity assertion for a side-group X-loss feature unit (FR1-K1;
+    the analog of _assert_end_radical_proxy for the side-group kernel --
+    deliberately its own assertion path: _assert_feature_unit and
+    _assert_end_group describe different shapes and are NOT relaxed; the
+    caller additionally runs _assert_feature_unit with the 3-radical
+    budget).
+
+    Requirements:
+    - element census: the unit carries EXACTLY one fewer atom of
+      element_symbol than the monomer, and identical counts for every
+      other element (one X removed, nothing else touched);
+    - the unit is 3-radical total (two stitch radicals + exactly ONE
+      mid-chain defect radical from the homolyzed C-X bond);
+    - when the builder passes the ex-neighbor handle (radical_atom), that
+      atom carries at least one radical electron (the defect sits WHERE
+      the X was lost).
+    """
+    def _census(mol):
+        counts = {}
+        for a in mol.atoms:
+            counts[a.symbol] = counts.get(a.symbol, 0) + 1
+        return counts
+
+    unit_counts = _census(unit)
+    mono_counts = _census(monomer)
+    expected = dict(mono_counts)
+    expected[element_symbol] = expected.get(element_symbol, 0) - 1
+    if expected.get(element_symbol, 0) <= 0:
+        expected.pop(element_symbol, None)
+    if unit_counts != expected:
+        raise ValueError(
+            f"Side-group X-loss unit (channel '{channel_label}') must be "
+            f"the monomer minus exactly ONE {element_symbol} atom; got "
+            f"element census {unit_counts} vs expected {expected}.")
+    rad_count = unit.get_radical_count()
+    if rad_count != 3:
+        raise ValueError(
+            f"Side-group X-loss unit (channel '{channel_label}') must "
+            f"carry exactly 3 radical electrons total (two stitch radicals "
+            f"+ ONE mid-chain defect radical from the homolyzed C-"
+            f"{element_symbol} bond). Got {rad_count}.")
+    if radical_atom is not None and radical_atom.radical_electrons < 1:
+        raise ValueError(
+            f"Side-group X-loss unit (channel '{channel_label}'): the "
+            f"defect radical must sit on the atom that lost the "
+            f"{element_symbol} substituent; that atom carries "
+            f"{radical_atom.radical_electrons} radical electrons.")
 
 
 def _radical_site_descriptor(mol: Molecule) -> str:
@@ -4389,6 +4652,13 @@ HOMOLYSIS_KERNEL_NAME = "radical_homolysis_initiation/1"
 # _HOMOLYSIS_SPAWN_SOURCE) and reject any other provenance; the producer
 # closure guard mirrors that rejection (r68).
 HOMOLYSIS_SPAWN_SOURCE = "k_homolysis_end_radical"
+# FR1-K1 spawn provenance pin stamped on every side-group X-loss feature
+# daughter (generate_side_loss_daughters), together with the spawning
+# channel label: spawn_metadata = {"source": SIDE_GROUP_HOMOLYSIS_SPAWN_
+# SOURCE, "channel": <label>}. The schema-2.7 consumer (K2, pending) will
+# pin it exactly, mirroring the sibling kernel's HOMOLYSIS_SPAWN_SOURCE
+# contract.
+SIDE_GROUP_HOMOLYSIS_SPAWN_SOURCE = "side_group_homolysis"
 # Normative moment law of the radical-homolysis initiation kernel, pinned
 # in the STABLE product forms actually implemented (round-67 P2;
 # rmgpy/solver/polymer.pyx, the khom_* RHS section). Same contract as
@@ -4727,6 +4997,21 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
     only; ignored for pools without a handshake species. Absent entries
     default to 0.0 (the species starts empty), never a hole.
     """
+    # FR1-K1 serialize-guard: the side_group_homolysis kernel has NO sidecar
+    # schema yet (schema 2.7 is K2, pending). A kernel-carrying pool -- or an
+    # X-loss feature daughter, whose chain_mass_defect_g_mol mass contract
+    # schema 2.6 cannot express -- must HARD-FAIL here rather than emit an
+    # artifact that silently omits the channel (a consumer would re-run a
+    # channel-less mechanism and mint the round-70 P1 mass defect).
+    if (getattr(pool, "side_group_homolysis", None)
+            or getattr(pool, "side_loss_channel", None)):
+        raise ValueError(
+            f"Pool '{getattr(pool, 'label', '')}': carries the "
+            f"side_group_homolysis kernel vocabulary (channel list or "
+            f"X-loss feature-pool identity), but its sidecar schema is not "
+            f"ratified -- schema 2.7 pending (FR1-K2). Refusing to emit an "
+            f"artifact that silently omits the channel and its exact "
+            f"mass-defect contract (chain_mass_defect_g_mol).")
     monomer_smiles = ""
     monomer_adj_list = ""
     try:

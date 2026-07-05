@@ -2225,3 +2225,71 @@ class TestHomolysisInitiationSidecar:
                 [pp, prim, sec], core_species=core,
                 configured_pool_labels=[prim.label, sec.label],
                 condensed_species=core)
+
+
+class TestSideGroupHomolysisSerializationGuard:
+    """FR1-K1: schema 2.7 is PENDING (K2). A pool carrying the
+    side_group_homolysis kernel -- or an X-loss feature daughter -- must
+    HARD-FAIL the sidecar builder with a clear 'schema 2.7 pending' error,
+    never emit an artifact that silently omits the channel or the
+    mass-defect contract."""
+
+    @staticmethod
+    def _sgh_channel():
+        return dict(label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
+                    site_selector="aliphatic", sites_per_unit=1.0,
+                    gas_product="[Br]")
+
+    def _pvbr(self):
+        return Polymer(label='PVBr', monomer='[CH2][CH]Br',
+                       end_groups=['[H]', '[H]'], cutoff=3,
+                       moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                       side_group_homolysis=[self._sgh_channel()])
+
+    @staticmethod
+    def _core(*bases):
+        core = []
+        for i, b in enumerate(bases):
+            s = _spc("CCC(Br)CC(Br)C", b, index=2 + i)
+            s.is_polymer_proxy = True
+            core.append(s)
+            core.extend(_mu_dummy(f"{b}_mu{k}") for k in range(3))
+        return core
+
+    def test_kernel_pool_refuses_serialization_schema_2_7_pending(self):
+        """RED pin: the kernel-carrying pool reaching the sidecar builder is
+        a hard failure naming the pending schema, NOT a silently
+        channel-less artifact."""
+        pvbr = self._pvbr()
+        core = self._core("PVBr")
+        with pytest.raises(ValueError, match=r"PVBr.*side_group_homolysis.*schema 2\.7 pending"):
+            build_polymer_moments_artifact(
+                [pvbr], core_species=core,
+                configured_pool_labels=["PVBr"],
+                condensed_species=core)
+
+    def test_side_loss_daughter_refuses_serialization_schema_2_7_pending(self):
+        """RED pin: the X-loss feature daughter alone must also refuse --
+        serializing it under 2.6 drops the chain_mass_defect contract (the
+        round-70 P1 mass-minting trap on the consumer side)."""
+        pvbr = self._pvbr()
+        daughter = pvbr.generate_side_loss_daughters()[0]
+        core = self._core(daughter.label)
+        with pytest.raises(ValueError, match=r"schema 2\.7 pending"):
+            build_polymer_moments_artifact(
+                [daughter], core_species=core,
+                configured_pool_labels=[daughter.label],
+                condensed_species=core)
+
+    def test_kernel_free_pool_still_serializes(self):
+        """Negative control: a kernel-free pool of the same shape keeps
+        serializing exactly as before (presence-gated guard)."""
+        pe = Polymer(label='PVBr', monomer='[CH2][CH]Br',
+                     end_groups=['[H]', '[H]'], cutoff=3,
+                     moments=[1.0, 50.0, 3000.0], initial_mass=0.0)
+        core = self._core("PVBr")
+        payload = build_polymer_moments_artifact(
+            [pe], core_species=core,
+            configured_pool_labels=["PVBr"], condensed_species=core)
+        assert payload["schema_version"] == "2.0"
+        assert all("side_group_homolysis" not in p for p in payload["pools"])

@@ -8029,3 +8029,512 @@ class TestRadicalHomolysisKernel:
         assert "k_homolysis" in out
         assert "poly_rad_primary_end" in out
         assert "poly_rad_secondary_end" in out
+
+
+# ---------------------------------------------------------------------------
+# Side-group homolysis initiation kernel (FR1-K1, adjudicated adversarial
+# round 70): pool-level side-group X-loss (e.g. aliphatic C-Br -> Br.(gas) +
+# mid-chain backbone radical, chain length UNCHANGED). Per channel with
+# sites_per_unit = s and k(T) = A*T^n*exp(-Ea/(R_gas*T)) per site:
+#   event rate    R = k(T)*s*mu1        [sites scale with chain length]
+#   chain pick    P(chain of length n) ~ n  (site-weighted)
+#   parent debit  dmu0 -= k*s*mu1; dmu1 -= k*s*mu2; dmu2 -= k*s*mu3
+#   feature credit EXACTLY the parent debit (chain transfers intact)
+#   gas credit    +R of gas_product (the X radical)
+#   mass contract condensed mass = mu1*MW - mu0*M_X on the feature pool
+#                 (chain_mass_defect_g_mol); d(condensed)+d(gas X) = 0.
+# mu3 closes via the established log-Lagrange idiom mu0*(mu2/mu1)^3.
+# ---------------------------------------------------------------------------
+
+
+def _sgh_channel(label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
+                 site_selector="aliphatic", sites_per_unit=2.0,
+                 gas_product="[Br]"):
+    return dict(label=label, A=A, n=n, Ea=Ea, site_selector=site_selector,
+                sites_per_unit=sites_per_unit, gas_product=gas_product)
+
+
+def _sgh_arrhenius(T, ch=None):
+    ch = ch or _sgh_channel()
+    return ch["A"] * T ** ch["n"] * math.exp(-ch["Ea"] / (_KHOM_R_GAS * T))
+
+
+def _sgh_mx_g_mol(gas_product="[Br]"):
+    return Molecule().from_smiles(gas_product).get_molecular_weight() * 1000.0
+
+
+_SGH_PARENT_MW = 106.949  # ~vinyl-bromide repeat unit [g/mol]; exact value shared
+
+
+def _sgh_core_and_pools(channels=None, parent_moments=(1.0, 5.0, 30.0),
+                        include_daughters=True, gas_indices="auto",
+                        daughter_defect="auto", daughter_mw=None,
+                        k_homolysis=None, k_unzip=0.0, monomer_poly_index=None,
+                        extra_species=None):
+    """Parent pool 'poly' (mu slots 3-5) + one X-loss feature pool per channel
+    ('poly_sidegrp_<sanitized>', mu slots 7-9, 11-13, ...), all condensed;
+    index 0 is a gas inert, index 1 the gas Br radical."""
+    channels = channels if channels is not None else [_sgh_channel()]
+    Inert = _spc("N#N", "N2")
+    BrRad = _spc("[Br]", "Br_rad")
+    core = [Inert, BrRad,
+            _spc("CCCC", "poly"),
+            _spc("CO", "poly_mu0"), _spc("C=O", "poly_mu1"),
+            _spc("C#N", "poly_mu2")]
+    moments = {"poly": tuple(parent_moments)}
+    pools = []
+    dst_labels = []
+    if include_daughters:
+        fillers = [("CCO", "CC=O", "CC#N", "CCC"),
+                   ("CCCO", "CCC=O", "CCC#N", "CCCC(C)")]
+        for ci, ch in enumerate(channels):
+            san = "".join(c if (c.isalnum() or c == "_") else "_"
+                          for c in ch.get("label", f"ch{ci}"))
+            d_label = f"poly_sidegrp_{san}"
+            dst_labels.append(d_label)
+            f0, f1, f2, fp = fillers[ci % len(fillers)]
+            base = len(core)
+            gp = ch.get("gas_product", "[Br]")
+            core += [_spc(fp, d_label),
+                     _spc(f0, f"{d_label}_mu0"),
+                     _spc(f1, f"{d_label}_mu1"),
+                     _spc(f2, f"{d_label}_mu2")]
+            defect = (_sgh_mx_g_mol(gp)
+                      if daughter_defect == "auto" else daughter_defect)
+            pools.append(PolymerPoolConfig(
+                label=d_label, xs=2, explicit_dp_to_species_index={},
+                mu_indices=(base + 1, base + 2, base + 3),
+                monomer_poly_index=None, k_scission=0.0, k_unzip=0.0,
+                monomer_mw_g_mol=(daughter_mw if daughter_mw is not None
+                                  else _SGH_PARENT_MW),
+                chain_mass_defect_g_mol=defect,
+                tail_kinetics=None))
+            moments[d_label] = (0.0, 0.0, 0.0)
+    if gas_indices == "auto":
+        gas_indices = tuple(1 for _ in channels)
+    parent = PolymerPoolConfig(
+        label="poly", xs=2, explicit_dp_to_species_index={},
+        mu_indices=(3, 4, 5), monomer_poly_index=monomer_poly_index,
+        k_scission=0.0, k_unzip=k_unzip,
+        monomer_mw_g_mol=_SGH_PARENT_MW,
+        k_homolysis=k_homolysis,
+        side_group_homolysis=channels,
+        side_group_gas_indices=gas_indices,
+        tail_kinetics=None)
+    pools.insert(0, parent)
+    if k_homolysis is not None:
+        # end-radical daughters for coexistence tests
+        for suffix, smis in (("_rad_primary_end", ("[CH2]CC", "OCCO", "OCC=O", "OCC#N")),
+                             ("_rad_secondary_end", ("C[CH]C", "OCCCO", "OCCC=O", "OCCC#N"))):
+            base = len(core)
+            core += [_spc(smis[0], f"poly{suffix}"),
+                     _spc(smis[1], f"poly{suffix}_mu0"),
+                     _spc(smis[2], f"poly{suffix}_mu1"),
+                     _spc(smis[3], f"poly{suffix}_mu2")]
+            pools.append(PolymerPoolConfig(
+                label=f"poly{suffix}", xs=2, explicit_dp_to_species_index={},
+                mu_indices=(base + 1, base + 2, base + 3),
+                monomer_poly_index=None, k_scission=0.0, k_unzip=0.0,
+                monomer_mw_g_mol=_SGH_PARENT_MW, tail_kinetics=None))
+            moments[f"poly{suffix}"] = (0.0, 0.0, 0.0)
+    if extra_species:
+        core += extra_species
+    mask = np.array([s.label in ("N2", "Br_rad")
+                     or (extra_species and s in extra_species)
+                     for s in core], dtype=bool)
+    return core, mask, pools, moments
+
+
+def _sgh_system(core, mask, pools, moments, T=800.0, rxns=None):
+    rs = HybridPolymerSystem(
+        T=T, P=1.0e5, initial_mole_fractions={core[0]: 1.0},
+        V_poly=1.0, polymer_pools=pools, mass_transfer=[],
+        gas_species_mask=mask.copy(), constant_gas_volume=False,
+        initial_polymer_moments=moments, termination=[])
+    rs.initialize_model(core, rxns or [], [], [])
+    return rs
+
+
+class TestSideGroupHomolysisKernel:
+
+    def test_validator_field_rules(self):
+        """Strict-key validation for the side_group_homolysis channel list
+        (single source of truth: rmgpy.solver.polymer.
+        validate_side_group_homolysis). Every malformed shape fails loudly,
+        never a laundered no-op."""
+        from rmgpy.solver.polymer import validate_side_group_homolysis
+
+        good = _sgh_channel()
+        out = validate_side_group_homolysis("P", [good])
+        assert isinstance(out, list) and len(out) == 1
+        assert out[0]["A"] == 1.0e13 and out[0]["sites_per_unit"] == 2.0
+        assert set(out[0]) == {"label", "A", "n", "Ea", "site_selector",
+                               "sites_per_unit", "gas_product"}
+
+        cases = [
+            (dict(good), r"P.*side_group_homolysis.*list"),          # not a list
+            ([42.0], r"P.*side_group_homolysis.*dict"),               # entry not a dict
+            ([], r"P.*side_group_homolysis.*empty"),                  # empty list
+            ([{**good, "extra": 1.0}], r"P.*unknown"),                # unknown key
+            ([{k: v for k, v in good.items() if k != "Ea"}], r"P.*missing"),
+            # round-72 P1: the structural site selector is REQUIRED and
+            # vocabulary-pinned even at the shape layer (the solver config
+            # carries no monomer structure; the structural layers live at
+            # deck / to_config / producer).
+            ([{k: v for k, v in good.items() if k != "site_selector"}],
+             r"P.*missing.*site_selector"),
+            ([{**good, "site_selector": "halogenated"}],
+             r"P.*site_selector.*one of"),
+            ([{**good, "site_selector": 1.0}],
+             r"P.*site_selector.*one of"),
+            ([{**good, "A": -1.0}], r"P.*A.*> 0"),
+            ([{**good, "A": float("nan")}], r"P.*A.*not finite"),
+            ([{**good, "Ea": -5.0}], r"P.*Ea.*>= 0"),
+            ([{**good, "sites_per_unit": 0.0}], r"P.*sites_per_unit.*> 0"),
+            ([{**good, "sites_per_unit": True}], r"P.*sites_per_unit.*number"),
+            ([{**good, "label": ""}], r"P.*label.*non-empty"),
+            ([{**good, "gas_product": "not a smiles ]["}], r"P.*gas_product.*parse"),
+            ([{**good, "gas_product": "CC"}], r"P.*gas_product.*radical"),
+            ([{**good, "gas_product": "[CH3]"}], r"P.*gas_product.*monoatomic"),
+            ([good, dict(good)], r"P.*duplicate"),
+            # sanitized-collision duplicates are duplicates too
+            ([good, {**good, "label": "aliphatic_C+Br"}], r"P.*duplicate"),
+        ]
+        for bad, pattern in cases:
+            with pytest.raises(ValueError, match=pattern):
+                validate_side_group_homolysis("P", bad)
+
+    def test_side_group_moment_law_parent_feature_gas(self):
+        """The adjudicated moment law, hand-computed at mu = (1, 5, 30),
+        T = 800 K, s = 2, V_poly = 1:
+
+          mu3 = mu0*(mu2/mu1)^3 = 216;  ks = k(800)*2
+          parent debit:   dmu0 = -ks*5; dmu1 = -ks*30; dmu2 = -ks*216
+          feature credit: EXACTLY the parent debit (chain intact, no cut)
+          gas Br credit:  +R = +ks*5 (one X radical per event)
+
+        Conservation is pinned BITWISE: parent + feature mu totals are
+        exactly 0.0, and the gas rate is bit-identical to the feature mu0
+        credit. No-chain-cut: the arriving-flux mean length dmu1/dmu0 equals
+        the parent's length-biased mean mu2/mu1."""
+        core, mask, pools, moments = _sgh_core_and_pools()
+        rs = _sgh_system(core, mask, pools, moments, T=800.0)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        ks = _sgh_arrhenius(800.0) * 2.0
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+        mu3 = mu0 * (mu2 / mu1) ** 3          # 216.0
+
+        # parent debit (site-weighted chain pick: dmu_j = -k*s*mu_{j+1})
+        assert np.isclose(dn_dt[3], -ks * mu1, rtol=1e-12)
+        assert np.isclose(dn_dt[4], -ks * mu2, rtol=1e-12)
+        assert np.isclose(dn_dt[5], -ks * mu3, rtol=1e-12)
+        # feature credit == parent debit, BITWISE (chain transfers intact)
+        assert dn_dt[7] == -dn_dt[3]
+        assert dn_dt[8] == -dn_dt[4]
+        assert dn_dt[9] == -dn_dt[5]
+        # two-pool conservation, BITWISE zero
+        assert dn_dt[3] + dn_dt[7] == 0.0
+        assert dn_dt[4] + dn_dt[8] == 0.0
+        assert dn_dt[5] + dn_dt[9] == 0.0
+        # gas X radical: +R, bit-identical to the feature chain-count credit
+        assert dn_dt[1] == dn_dt[7]
+        assert np.isclose(dn_dt[1], ks * mu1, rtol=1e-12)
+        # no chain cut: E[n] of the transferred flux is the length-biased mean
+        assert np.isclose(dn_dt[8] / dn_dt[7], mu2 / mu1, rtol=1e-12)
+        # inert gas and proxies carry no kernel flux
+        assert dn_dt[0] == 0.0 and dn_dt[2] == 0.0 and dn_dt[6] == 0.0
+
+    def test_side_group_mass_conservation_pin(self):
+        """The #1 P1 trap (round 70): the feature pool keeps the parent's
+        monomer_mw, so moment-derived mass alone would stay flat while gas
+        Br appears. The kernel's mass contract is EXPLICIT: feature-pool
+        condensed mass = mu1*MW - mu0*M_X (chain_mass_defect_g_mol = M_X;
+        every feature chain lost exactly ONE X in v1), so
+        d(condensed mass)/dt + d(gas X mass)/dt = 0 BITWISE on the kernel's
+        contributions."""
+        core, mask, pools, moments = _sgh_core_and_pools()
+        rs = _sgh_system(core, mask, pools, moments, T=800.0)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        m_x = _sgh_mx_g_mol()
+        parent, feature = pools[0], pools[1]
+        assert feature.chain_mass_defect_g_mol == m_x
+        # The contract, term by term: total condensed-mass rate =
+        # (total dmu1)*MW - (feature dmu0)*M_X. Both pieces cancel BITWISE
+        # against their counterparts (dmu1 totals vanish exactly; the
+        # feature mu0 credit is bit-identical to the gas rate), so the sum
+        # with the gas X mass rate is EXACTLY zero.
+        d_condensed_mass = ((dn_dt[4] + dn_dt[8]) * _SGH_PARENT_MW
+                            - dn_dt[7] * m_x)
+        d_gas_mass = dn_dt[1] * m_x
+        assert d_condensed_mass + d_gas_mass == 0.0, (
+            f"kernel must conserve condensed+gas X mass exactly, got "
+            f"{d_condensed_mass + d_gas_mass!r}")
+        # and the defect is genuinely nonzero (the trap would be a flat 0)
+        assert d_gas_mass > 0.0 and d_condensed_mass == -d_gas_mass
+        # The per-pool accessor states the same contract (mass = mu1*MW -
+        # mu0*defect); summed per pool it differs from the grouped form
+        # only by float summation order.
+        d_parent_mass = parent.condensed_mass_g(dn_dt[3], dn_dt[4])
+        d_feature_mass = feature.condensed_mass_g(dn_dt[7], dn_dt[8])
+        assert parent.chain_mass_defect_g_mol == 0.0
+        assert np.isclose(d_parent_mass + d_feature_mass, -d_gas_mass,
+                          rtol=1e-12)
+
+    def test_side_group_arrhenius_evaluated_at_runtime_temperature(self):
+        """k(T) is evaluated at the solver's runtime T (n=0.5 also catches a
+        dropped T^n factor)."""
+        rates = {}
+        for T in (700.0, 1100.0):
+            core, mask, pools, moments = _sgh_core_and_pools()
+            rs = _sgh_system(core, mask, pools, moments, T=T)
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            rates[T] = dn_dt[1]
+            expected = _sgh_arrhenius(T) * 2.0 * 5.0
+            assert np.isclose(rates[T], expected, rtol=1e-10), (
+                f"k({T}) mismatch: got {rates[T]}, expected {expected}")
+        assert rates[1100.0] > rates[700.0] * 10.0
+
+    def test_side_group_zero_flux_on_empty_pool(self):
+        """R = k*s*mu1 -- an empty pool carries exactly zero flux (silent:
+        zero sites IS the in-domain rate)."""
+        core, mask, pools, moments = _sgh_core_and_pools(
+            parent_moments=(0.0, 0.0, 0.0))
+        rs = _sgh_system(core, mask, pools, moments)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.all(dn_dt == 0.0)
+
+    def test_side_group_guard_zero_flux_and_warn_once(self, caplog):
+        """Out-of-domain guard (sibling-kernel conventions): nonrealizable
+        moment shapes (mu2 < mu1; degenerate mu3 closure with mu3 < mu2)
+        contribute ZERO flux with a loud warn-once per pool/channel per
+        rebuild -- the second residual call adds no new warning."""
+        for parent_moments in ((1.0, 5.0, 4.0),    # mu2 < mu1
+                               (1.0, 5.0, 6.0)):   # mu3 = 1.728 < mu2
+            core, mask, pools, moments = _sgh_core_and_pools(
+                parent_moments=parent_moments)
+            rs = _sgh_system(core, mask, pools, moments)
+            with caplog.at_level(logging.WARNING):
+                dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+                n_first = sum("side_group_homolysis" in r.getMessage()
+                              and "skipped" in r.getMessage()
+                              for r in caplog.records)
+                rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+                n_second = sum("side_group_homolysis" in r.getMessage()
+                               and "skipped" in r.getMessage()
+                               for r in caplog.records)
+            assert np.all(dn_dt == 0.0), (
+                f"kernel must contribute zero flux for moments "
+                f"{parent_moments}, got nonzero at {dn_dt.nonzero()}")
+            assert n_first == 1, "the guard must warn loudly, exactly once"
+            assert n_second == n_first, "warn-once: no repeat on re-entry"
+            caplog.clear()
+
+    def test_side_group_degenerate_kT_raises(self):
+        """A k(T) evaluating to inf/NaN/0-overflow is a poisoned kernel --
+        hard error, never integrate garbage (sibling convention)."""
+        core, mask, pools, moments = _sgh_core_and_pools(
+            channels=[_sgh_channel(A=1.0e300, n=100.0)])
+        with pytest.raises(ValueError, match=r"poly.*side_group_homolysis.*degenerate"):
+            # the poisoned k(T) fires on the FIRST residual evaluation --
+            # initialize_model's set_initial_derivative already runs one
+            rs = _sgh_system(core, mask, pools, moments)
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+
+    def test_side_group_requires_resolvable_feature_pool(self):
+        """Loud guard: an enabled channel whose X-loss feature pool is absent
+        from the solver's configured pools is a hard initialize error (the
+        producer creates it at model setup; a missing pool means the
+        transferred chains would silently vanish)."""
+        core, mask, pools, moments = _sgh_core_and_pools(
+            include_daughters=False)
+        with pytest.raises(ValueError,
+                           match=r"poly.*side_group_homolysis.*poly_sidegrp_aliphatic_C_Br"):
+            _sgh_system(core, mask, pools, moments)
+
+    def test_side_group_requires_resolved_gas_indices(self):
+        """An enabled channel with no resolved gas-product index would mint
+        condensed-mass loss with no gas destination -- hard error."""
+        core, mask, pools, moments = _sgh_core_and_pools(gas_indices=None)
+        with pytest.raises(ValueError,
+                           match=r"poly.*side_group_homolysis.*gas"):
+            _sgh_system(core, mask, pools, moments)
+
+    def test_side_group_gas_index_must_be_gas_masked(self):
+        """The gas_product index must be classified GAS: emitting the X
+        radical into a condensed slot would corrupt the phase bookkeeping."""
+        core, mask, pools, moments = _sgh_core_and_pools(gas_indices=(2,))
+        with pytest.raises(ValueError,
+                           match=r"poly.*side_group_homolysis.*GAS"):
+            _sgh_system(core, mask, pools, moments)
+
+    def test_side_group_mass_defect_contract_enforced_at_flatten(self):
+        """The mass contract is machine-enforced, not a docstring: a feature
+        pool whose chain_mass_defect_g_mol is zero/mismatched vs the
+        channel's gas-product MW, or whose monomer_mw diverges from the
+        parent's, is a hard initialize error (that shape silently mints or
+        destroys mass)."""
+        # defect = 0 (the exact P1-trap shape)
+        core, mask, pools, moments = _sgh_core_and_pools(daughter_defect=0.0)
+        with pytest.raises(ValueError,
+                           match=r"poly.*chain_mass_defect"):
+            _sgh_system(core, mask, pools, moments)
+        # monomer_mw mismatch parent vs feature pool
+        core, mask, pools, moments = _sgh_core_and_pools(daughter_mw=90.0)
+        with pytest.raises(ValueError,
+                           match=r"poly.*monomer_mw"):
+            _sgh_system(core, mask, pools, moments)
+
+    def test_solver_rejects_side_group_with_positive_k_unzip(self):
+        """Exclusion (solver last line of defense): legacy k_unzip and
+        side_group_homolysis double-carry degradation on one pool."""
+        Mono = _spc("C=CC", "propene_gas")
+        core, mask, pools, moments = _sgh_core_and_pools(extra_species=[Mono])
+        pools[0] = dataclasses.replace(
+            pools[0], k_unzip=0.4, monomer_poly_index=len(core) - 1)
+        with pytest.raises(ValueError,
+                           match=r"poly.*side_group_homolysis.*k_unzip.*mutually exclusive"):
+            _sgh_system(core, mask, pools, moments)
+
+    def test_solver_rejects_side_group_with_qssa_channel(self):
+        """Exclusion (solver last line of defense): QSSA random initiation and
+        side_group_homolysis on one pool double-carry initiation."""
+        qssa = dict(initiation=dict(A=1.0e15, n=0.0, Ea=3.0e5),
+                    depropagation=dict(A=1.0e13, n=0.0, Ea=8.0e4),
+                    termination=dict(A=1.0e8, n=0.0, Ea=1.0e4))
+        Mono = _spc("C=CC", "propene_gas")
+        core, mask, pools, moments = _sgh_core_and_pools(extra_species=[Mono])
+        pools[0] = dataclasses.replace(
+            pools[0], radical_qssa_unzip=qssa,
+            monomer_poly_index=len(core) - 1)
+        with pytest.raises(ValueError,
+                           match=r"poly.*side_group_homolysis.*radical_qssa_unzip.*mutually exclusive"):
+            _sgh_system(core, mask, pools, moments)
+
+    def test_side_group_coexists_with_k_homolysis_no_double_carry(self):
+        """Adjudicated coexistence: side-group X-loss (C-X bonds) and backbone
+        homolysis (C-C bonds) are DIFFERENT bonds -- both may run on one
+        pool. The combined residual is exactly the sum of the two
+        single-kernel residuals (no cross term, no double carry)."""
+        core, mask, pools, moments = _sgh_core_and_pools(
+            k_homolysis=_khom_triplet())
+        rs_both = _sgh_system(core, mask, pools, moments)
+        dn_both = rs_both.residual(0.0, rs_both.y, np.zeros_like(rs_both.y))[0]
+
+        core2, mask2, pools2, moments2 = _sgh_core_and_pools(
+            k_homolysis=_khom_triplet())
+        pools2[0] = dataclasses.replace(
+            pools2[0], side_group_homolysis=None, side_group_gas_indices=None)
+        rs_hom = _sgh_system(core2, mask2, pools2, moments2)
+        dn_hom = rs_hom.residual(0.0, rs_hom.y, np.zeros_like(rs_hom.y))[0]
+
+        core3, mask3, pools3, moments3 = _sgh_core_and_pools(
+            k_homolysis=_khom_triplet())
+        pools3[0] = dataclasses.replace(pools3[0], k_homolysis=None)
+        rs_sgh = _sgh_system(core3, mask3, pools3, moments3)
+        dn_sgh = rs_sgh.residual(0.0, rs_sgh.y, np.zeros_like(rs_sgh.y))[0]
+
+        assert np.any(dn_hom != 0.0) and np.any(dn_sgh != 0.0)
+        assert np.allclose(dn_both, dn_hom + dn_sgh, rtol=1e-12, atol=0.0)
+
+    def test_side_group_multi_channel_separate_pools_and_rates(self):
+        """Channels stay SEPARATE, never lumped (round-70 ruling): aliphatic
+        (s=2) and aryl (s=4) C-Br run at their own k_i(T)*s_i site rates
+        into their OWN feature pools; the shared gas Br slot receives the
+        sum of the per-channel event rates."""
+        ch_a = _sgh_channel()                                  # s = 2
+        ch_b = _sgh_channel(label="aryl_C-Br", A=5.0e12, n=0.5,
+                            Ea=2.0e5, site_selector="aryl",
+                            sites_per_unit=4.0)                # s = 4
+        core, mask, pools, moments = _sgh_core_and_pools(channels=[ch_a, ch_b])
+        rs = _sgh_system(core, mask, pools, moments, T=800.0)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        mu1, mu2 = 5.0, 30.0
+        mu3 = (mu2 / mu1) ** 3
+        ks_a = _sgh_arrhenius(800.0, ch_a) * 2.0
+        ks_b = _sgh_arrhenius(800.0, ch_b) * 4.0
+        # per-channel feature pools (slots 7-9 aliphatic, 11-13 aryl)
+        assert np.isclose(dn_dt[7], ks_a * mu1, rtol=1e-12)
+        assert np.isclose(dn_dt[8], ks_a * mu2, rtol=1e-12)
+        assert np.isclose(dn_dt[9], ks_a * mu3, rtol=1e-12)
+        assert np.isclose(dn_dt[11], ks_b * mu1, rtol=1e-12)
+        assert np.isclose(dn_dt[12], ks_b * mu2, rtol=1e-12)
+        assert np.isclose(dn_dt[13], ks_b * mu3, rtol=1e-12)
+        # parent debit = sum of channel debits; conservation to num precision
+        assert np.isclose(dn_dt[3] + dn_dt[7] + dn_dt[11], 0.0,
+                          rtol=0.0, atol=1e-25 + 1e-15 * abs(dn_dt[3]))
+        assert np.isclose(dn_dt[4] + dn_dt[8] + dn_dt[12], 0.0,
+                          rtol=0.0, atol=1e-25 + 1e-15 * abs(dn_dt[4]))
+        # shared gas slot: sum of event rates
+        assert np.isclose(dn_dt[1], (ks_a + ks_b) * mu1, rtol=1e-12)
+
+    def test_solver_rejects_duplicate_channel_labels(self):
+        """Duplicate channel labels on one pool are a hard error (two decks
+        of the same channel double-carry the same bond class)."""
+        core, mask, pools, moments = _sgh_core_and_pools(
+            channels=[_sgh_channel(), _sgh_channel(A=2.0e13)],
+            gas_indices=(1, 1))
+        with pytest.raises(ValueError,
+                           match=r"poly.*side_group_homolysis.*duplicate"):
+            _sgh_system(core, mask, pools, moments)
+
+    def test_solver_rejects_malformed_side_group_channels(self):
+        """Solver field validation: a directly-constructed config with a
+        malformed channel list must fail loudly, not run a garbage rate."""
+        core, mask, pools, moments = _sgh_core_and_pools(
+            channels=[dict(label="x", A=1.0e13, n=0.0)], gas_indices=(1,))
+        with pytest.raises(ValueError,
+                           match=r"poly.*side_group_homolysis.*missing"):
+            _sgh_system(core, mask, pools, moments)
+
+    def test_refused_rows_zero_flux_and_census_pairs_side_group_kernel(self):
+        """Refused explicit gas-radical<->condensed rows remain refused
+        (supersession, same contract as the sibling kernel): the
+        conduit-deferred row carries EXACTLY zero flux next to the live
+        kernel, and the census pairs them explicitly."""
+        R1 = _spc("[CH2]C(C)C", "isobutyl")
+        R2 = _spc("C[CH]CCC", "pentyl2")
+        core, mask, pools, moments = _sgh_core_and_pools(
+            extra_species=[R1, R2])
+        proxy = core[2]
+        refused = Reaction(reactants=[R1, R2], products=[proxy],
+                           kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                                              Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+                           reversible=False)
+        refused.polymer_refused = True
+        refused.polymer_refused_accumulating = False    # conduit-deferred
+
+        rs_with = _sgh_system(core, mask, pools, moments, rxns=[refused])
+        dn_with = rs_with.residual(0.0, rs_with.y, np.zeros_like(rs_with.y))[0]
+
+        core2, mask2, pools2, moments2 = _sgh_core_and_pools(
+            extra_species=[_spc("[CH2]C(C)C", "isobutyl"),
+                           _spc("C[CH]CCC", "pentyl2")])
+        rs_wo = _sgh_system(core2, mask2, pools2, moments2, rxns=[])
+        dn_wo = rs_wo.residual(0.0, rs_wo.y, np.zeros_like(rs_wo.y))[0]
+
+        assert np.any(dn_wo != 0.0)                 # kernel flux is live
+        assert np.array_equal(dn_with, dn_wo), (
+            "refused row must add exactly zero flux next to the live kernel")
+        assert any(c["reason"] == "conduit-deferred"
+                   for c in rs_with.refused_reaction_census)
+        census = rs_with.side_group_supersession_census
+        assert census, "kernel-live census must pair the refused rows"
+        entry = next(c for c in census if c["pool"] == "poly")
+        assert len(entry["superseded_rows"]) == 1
+
+    def test_side_group_diagnostic_lists_channels_and_saturation(self, capsys):
+        """The POLYMER SOLVER DIAGNOSTIC block names the kernel channels on
+        the parent pool, tags the X-loss feature pool, and discloses the v1
+        saturation limitation (the kernel acts on the PARENT only; feature
+        pools carry no further side-group loss)."""
+        core, mask, pools, moments = _sgh_core_and_pools()
+        _sgh_system(core, mask, pools, moments)
+        out = capsys.readouterr().out
+        assert "POLYMER SOLVER DIAGNOSTIC" in out
+        assert "side_group_homolysis" in out
+        assert "aliphatic_C-Br" in out
+        assert "poly_sidegrp_aliphatic_C_Br" in out
+        assert "saturat" in out  # v1 saturation disclosure
