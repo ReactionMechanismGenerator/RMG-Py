@@ -137,12 +137,18 @@ def _refstate_pool_species(thermo_comment=_GAV_COMMENT):
 def _refstate_rs(core, rxns, mask, pools, moments, rs_kwargs=None):
     """Build + initialize a HybridPolymerSystem for the tripwire fixtures.
     core[-1] must be a gas species (it seeds initial_mole_fractions)."""
+    # r71 FIX 4 escape (documented direct-test posture): these fixtures
+    # deliberately build unstamped proxy rows to exercise the legacy
+    # mu1-only demotion; production keeps the constructor default (False,
+    # hard-fail) -- pinned by TestRefusalAdjudicationSurvivesRebuild.
+    kwargs = dict(allow_unstamped_proxy_rows=True)
+    kwargs.update(rs_kwargs or {})
     rs = HybridPolymerSystem(
         T=800.0, P=1.0e5, initial_mole_fractions={core[-1]: 0.0}, V_poly=1.0,
         polymer_pools=pools, mass_transfer=[],
         gas_species_mask=mask.copy(), constant_gas_volume=False,
         initial_polymer_moments=moments, termination=[],
-        **(rs_kwargs or {}),
+        **kwargs,
     )
     rs.initialize_model(core, rxns, [], [])
     return rs
@@ -480,7 +486,8 @@ class TestHybridPolymerReactor:
                 reversible=False,
             )
             rxn.is_end_group_reaction = flag
-            rs = HybridPolymerSystem(
+            rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+                allow_unstamped_proxy_rows=True,
                 T=800.0, P=1.0e5, initial_mole_fractions={Prod: 0.0}, V_poly=1.0,
                 polymer_pools=[pool], mass_transfer=[],
                 gas_species_mask=gas_species_mask.copy(), constant_gas_volume=False,
@@ -793,7 +800,8 @@ class TestHybridPolymerReactor:
             mu_indices=(1, 2, 3), monomer_poly_index=None,
             k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
         )
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={A: 1.0}, V_poly=1.0,
             polymer_pools=[pool], mass_transfer=[],
             gas_species_mask=gas_species_mask.copy(), constant_gas_volume=False,
@@ -5175,7 +5183,8 @@ class TestThermoReferenceStateEpdmShaped:
             reversible=True)
         pool = dataclasses.replace(_gate_pool_config(monomer_mw_g_mol=70.0),
                                    label="E")
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=1000.0, P=1.0e5,
             initial_mole_fractions={sp["H"]: 0.01, sp["H2"]: 0.0},
             V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
@@ -5301,7 +5310,12 @@ def _gate17_rs(core, mask, rxns_core, edge_spcs=(), rxns_edge=(),
         # edge. (Fixtures express prospectively-condensed edge species via
         # configured pool labels in stage 2; the production live-edge stage-1
         # path is exercised by the classifier-wired fixtures in T12/T13.)
-        allow_default_prospective_edge=True)
+        allow_default_prospective_edge=True,
+        # r71 FIX 4 escape (direct-test posture): item-17 gate fixtures
+        # deliberately run unstamped proxy rows on the legacy mu1-only
+        # path; the production hard-fail default is pinned by
+        # TestRefusalAdjudicationSurvivesRebuild.
+        allow_unstamped_proxy_rows=True)
     rs.initialize_model(list(core), list(rxns_core), list(edge_spcs),
                         list(rxns_edge))
     return rs
@@ -5439,7 +5453,8 @@ class TestProspectiveMask:
         # is flagged allow_default_prospective_edge=True; the back-compat
         # PROSPECTIVE-MASK SEED STALE warning is still emitted (a stale seed
         # was present) and the fallback is taken (no provenance raise).
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
             V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
             gas_species_mask=mask.copy(), constant_gas_volume=False,
@@ -5470,7 +5485,8 @@ class TestProspectiveMask:
                                 mu_indices=(1, 2, 3), monomer_poly_index=None)
         doctored = np.concatenate([mask, np.ones(1, dtype=bool)])
         doctored[4] = False  # X: gas in the real mask, condensed in the seed
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
             V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
             gas_species_mask=mask.copy(), constant_gas_volume=False,
@@ -6067,7 +6083,8 @@ class TestProspectiveEdgeProvenance:
         cfg = PolymerPoolConfig(label="A", xs=2,
                                 explicit_dp_to_species_index={},
                                 mu_indices=(1, 2, 3), monomer_poly_index=None)
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             **self._prod_build_kwargs(core, mask, cfg),
             prospective_classifier=_stage1_classifier)  # production marker
         # No raise: the edge suffix was classified by the live-edge stage-1.
@@ -6095,7 +6112,8 @@ class TestProspectiveEdgeProvenance:
         cfg = PolymerPoolConfig(label="A", xs=2,
                                 explicit_dp_to_species_index={},
                                 mu_indices=(1, 2, 3), monomer_poly_index=None)
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
             V_poly=1.0, polymer_pools=[cfg],
             mass_transfer=[], gas_species_mask=mask.copy(),
@@ -6143,7 +6161,8 @@ class TestArmedRowsExerciseStage1:
         cfg = PolymerPoolConfig(label="A", xs=2,
                                 explicit_dp_to_species_index={},
                                 mu_indices=(1, 2, 3), monomer_poly_index=None)
-        rs_edge = HybridPolymerSystem(
+        rs_edge = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
             V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
             gas_species_mask=np.array(mask, dtype=bool),
@@ -6281,7 +6300,8 @@ class TestLiveEdgeRebuildWidensR1RaiseSurface:
                                 explicit_dp_to_species_index={},
                                 mu_indices=(1, 2, 3), monomer_poly_index=None)
         rxn = Reaction(reactants=[core[0]], products=[g], **_KIN)
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
             V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
             gas_species_mask=gas_mask.copy(), constant_gas_volume=False,
@@ -6356,7 +6376,8 @@ class TestProspectiveClassifierLengthGuard:
         out = np.asarray(phase.get_gas_mask(combined_input))
         assert out.shape[0] == len(combined_input)  # exactly len(input)
         # full build through the live-edge rebuild: no CLASSIFIER length raise
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
             V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
             gas_species_mask=np.asarray(phase.get_gas_mask(core), dtype=bool),
@@ -7033,7 +7054,8 @@ class TestGateBHLossRadicalDaughterFlux:
                                 explicit_dp_to_species_index={},
                                 mu_indices=(1, 2, 3), monomer_poly_index=None,
                                 k_unzip=0.0)
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={h: 1.0},
             V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
             gas_species_mask=mask.copy(), constant_gas_volume=False,
@@ -7154,7 +7176,8 @@ class TestHLossRadicalDaughterCoreMask:
                                 explicit_dp_to_species_index={},
                                 mu_indices=(1, 2, 3), monomer_poly_index=None,
                                 k_unzip=0.0)
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={h: 1.0},
             V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
             gas_species_mask=mask.copy(), constant_gas_volume=False,
@@ -7231,7 +7254,8 @@ class TestReversibleChainScissionScopePin:
             label="polystyrene", xs=2, explicit_dp_to_species_index={},
             mu_indices=(1, 2, 3), monomer_poly_index=None,
             monomer_mw_g_mol=104.15, k_scission=0.0, k_unzip=0.0)
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={sp["STY"]: 0.0},
             V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
             gas_species_mask=mask.copy(), constant_gas_volume=False,
@@ -7388,7 +7412,8 @@ class TestEdgeReactantReverseFlux:
                                  explicit_dp_to_species_index={},
                                  mu_indices=(1, 2, 3),
                                  monomer_poly_index=None, k_unzip=0.0)
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={g: 1.0}, V_poly=1.0,
             polymer_pools=[pool], mass_transfer=[],
             gas_species_mask=np.array([False] * 4 + [True], dtype=bool),
@@ -7451,7 +7476,8 @@ class TestEdgeReactantReverseFlux:
         # AND rr = 0 (E2 has no state) => the row contributes exactly nothing.
         rxn = Reaction(reactants=[e1, a], products=[e2, b],
                        kinetics=kin, reversible=True)
-        rs = HybridPolymerSystem(
+        rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
+            allow_unstamped_proxy_rows=True,
             T=800.0, P=1.0e5, initial_mole_fractions={a: 0.5, b: 0.5},
             V_poly=1.0, polymer_pools=[], mass_transfer=[],
             gas_species_mask=np.array([True, True], dtype=bool),
@@ -8538,3 +8564,293 @@ class TestSideGroupHomolysisKernel:
         assert "aliphatic_C-Br" in out
         assert "poly_sidegrp_aliphatic_C_Br" in out
         assert "saturat" in out  # v1 saturation disclosure
+
+
+# Bitwise pre-change pin for the live-VE negative control below, recorded on
+# b0de7dde8 (pre-fix HEAD) with the exact fixture in
+# test_negative_control_live_ve_row_with_real_polymer_keeps_flux:
+# dn[:5] = [proxy, mu0, mu1, mu2, volatile].
+_VE_CONTROL_PIN = np.array([0.0, 0.0, -100.0, -11900.0, 100.0])
+
+
+class TestRefusalAdjudicationSurvivesRebuild:
+    """r71 adjudication (PP run-5 solver stall, forensics
+    /home/alon/Projects/polymer/PP/rmg/run5): the polymer_refused
+    adjudication was LOST between generation-time stamping and the
+    post-promotion solver rebuild, and refused EDGE rows still fed
+    edge_species_rates -- which is exactly HOW the dead chain-scale radicals
+    were promoted to core, where the unstamped rows ran live legacy mu1-only
+    flux against an exhausted pool (mu ~ 1e-10) and collapsed DASPK.
+
+    RED-FIRST discipline: every red assertion below was quoted FAILING on
+    pre-fix HEAD (b0de7dde8) for its pinned reason before the fix landed.
+    Liveness pins precede each red assert so a red can only mean "guard
+    absent", never "fixture dead".
+    """
+
+    @staticmethod
+    def _run5_edge_fixture():
+        """Association-orientation run-5 shape: gas radical (core) +
+        chain-scale radical (EDGE, prospectively CONDENSED -- the edge-daughter
+        condensed-mask kept run-5's gates open) <=> pool proxy (core),
+        REVERSIBLE. The promotion flux is the reverse (homolysis-discovery)
+        leg rr; rf vanishes on the edge reactant's zero concentration."""
+        sp = {
+            "P": _spc("CC(C)CC(C)CCC", "poly"),
+            "mu0": _spc("CO", "poly_mu0"), "mu1": _spc("C=O", "poly_mu1"),
+            "mu2": _spc("C#N", "poly_mu2"),
+            "R1": _spc("[CH2]C(C)C", "isobutyl"),
+        }
+        edge_r = _spc("C[CH]CCC", "pentyl2_edge")
+        for s in list(sp.values()) + [edge_r]:
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [sp["P"], sp["mu0"], sp["mu1"], sp["mu2"], sp["R1"]]
+        mask = np.array([False] * 4 + [True], dtype=bool)
+        rxn = Reaction(
+            reactants=[sp["R1"], edge_r], products=[sp["P"]],
+            kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                               Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+            reversible=True)
+        # Stamped at generation (round-63 refusal), exactly as run-5's rows
+        # were (RMG.log:648-660 census).
+        rxn.polymer_refused = True
+        rxn.polymer_refused_accumulating = False   # conduit-deferred
+        return sp, edge_r, core, mask, rxn
+
+    @staticmethod
+    def _pool(label, mu_indices, monomer_mw_g_mol=42.08):
+        return PolymerPoolConfig(
+            label=label, xs=2, explicit_dp_to_species_index={},
+            mu_indices=mu_indices, monomer_poly_index=None,
+            monomer_mw_g_mol=monomer_mw_g_mol,
+            k_scission=0.0, k_unzip=0.0)
+
+    def test_red_a_refused_edge_row_is_flux_dead_for_enlargement(self):
+        """RED-A edge half (FIX 3): a refused EDGE row must contribute ZERO
+        to edge_species_rates / edge_reaction_rates (the enlargement inputs
+        that promoted run-5's dead radicals). The per-reaction ungated
+        counterfactual stays live (diagnostic only, never flux)."""
+        sp, edge_r, core, mask, rxn = self._run5_edge_fixture()
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[-1]: 0.0},
+            V_poly=1.0, polymer_pools=[self._pool("poly", (1, 2, 3))],
+            mass_transfer=[], gas_species_mask=mask.copy(),
+            constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 50.0, 3000.0)},
+            termination=[],
+            allow_default_prospective_edge=True,
+            prospective_condensed_edge_daughter_classifier=(
+                lambda spcs: {"pentyl2_edge"}),
+        )
+        rs.initialize_model(core, [], [edge_r], [rxn])
+        assert rs.reaction_refused[0] == 1   # liveness: stamp visible to solver
+        rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+
+        # LIVENESS PIN -- BEFORE the red asserts: the row genuinely carries
+        # reverse flux (the gates are open: prospectively-condensed edge
+        # daughter, condensed product). The per-reaction ungated
+        # counterfactual sees it, so the zeros below cannot mean "fixture
+        # dead" (Gate A/B zeroing would zero this too).
+        assert rs.edge_reaction_rates_ungated[0] != 0.0, (
+            "FIXTURE BROKEN, not a valid red: the refused edge row carries "
+            "no reverse flux at all")
+
+        # THE RED asserts (FIX 3): flux-dead in every enlargement input.
+        assert rs.edge_reaction_rates[0] == 0.0, (
+            "refused edge row leaked into edge_reaction_rates")
+        assert rs.edge_species_rates[0] == 0.0, (
+            "refused edge row leaked promotion flux into edge_species_rates "
+            "-- this is HOW run-5's dead radicals reached core")
+
+    def test_red_a_adjudication_survives_promotion_and_rebuild(self):
+        """RED-A promotion half (FIX 2): build the row through the REAL
+        generation route (make_new_reaction stamps it), place it in edge,
+        lose the adjudication on the canonical object (the run-5 arrival
+        state, r71: 'the rows arrived unstamped'), promote the missing
+        radical through the REAL path (add_species_to_core moves the row
+        edge->core), rebuild the solver -- the rebuild restamp (last honest
+        chokepoint) must re-derive the refusal regardless of how it was
+        lost upstream."""
+        import rmgpy.data.rmg as rmg_data
+        from rmgpy.data.base import ForbiddenStructures
+        from rmgpy.data.kinetics import TemplateReaction
+        from rmgpy.data.rmg import RMGDatabase
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer import Polymer
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        import rmgpy.solver.polymer as solver_mod
+
+        old_db = rmg_data.database
+        db = RMGDatabase()
+        db.forbidden_structures = ForbiddenStructures()
+        rmg_data.database = db
+        try:
+            cerm = CoreEdgeReactionModel()
+            pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                         Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+            cerm._register_polymer(pp, generate_thermo=False)
+            forward = TemplateReaction(
+                reactants=[Molecule().from_smiles('[CH2]C(C)C'),
+                           Molecule().from_smiles('C[CH]CCC')],
+                products=[Molecule().from_smiles('CC(C)CC(C)CCC')],
+                family='R_Recombination', is_forward=True, reversible=True,
+                kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                                   Ea=(0.0, 'kJ/mol')))
+            out, is_new = cerm.make_new_reaction(
+                forward, check_existing=False, generate_thermo=False,
+                generate_kinetics=False)
+            # LIVENESS PINS: real generation route, product resolved onto the
+            # registered pool Polymer, refusal stamped at generation.
+            assert out is not None and is_new
+            assert any(isinstance(p, Polymer) for p in out.products)
+            assert out.polymer_refused is True
+
+            r1_spc = next(s for s in out.reactants
+                          if s.molecule[0].get_formula() == 'C4H9')
+            r2_spc = next(s for s in out.reactants
+                          if s.molecule[0].get_formula() == 'C5H11')
+
+            cerm.add_species_to_edge(pp)      # brings the mu dummies along
+            cerm.add_species_to_core(pp)      # moves pp + dummies to core
+            cerm.add_species_to_core(r1_spc)
+            cerm.add_species_to_edge(r2_spc)
+            cerm.add_reaction_to_edge(out)
+
+            # The adjudicated run-5 arrival state (r71, binding): by rebuild
+            # time the canonical row is UNSTAMPED -- the stamps are ad-hoc
+            # object attributes, deliberately NOT serialized in __reduce__
+            # (rmgpy/reaction.py: "the solver re-derives them at
+            # initialize_model" -- the re-derivation FIX 2 forces into
+            # existence), and check_for_existing_reaction can discard a
+            # stamped candidate for an unstamped canonical (FIX 1's seam,
+            # pinned live in modelTest). Simulate that loss on the canonical
+            # edge object.
+            out.polymer_refused = False
+            out.polymer_refused_accumulating = False
+
+            # REAL promotion path (run 5, RMG.log:917 'Moved 1 reactions from
+            # edge to core: H(1) + CCCC(C)C[C](C)C(16) <=> polypropylene(2)').
+            moved = cerm.add_species_to_core(r2_spc)
+            assert moved == [out]                       # liveness
+            assert out in cerm.core.reactions
+            assert out not in cerm.edge.reactions
+
+            core_species = list(cerm.core.species)
+            for s in core_species + list(cerm.edge.species):
+                s.thermo = _trivial_nasa(_GAV_COMMENT)
+            # Polymer thermo delegates to its internal proxy Species
+            # (get_free_energy -> get_proxy_species().thermo): the reversible
+            # row's Keq needs it resolvable without a thermo database.
+            pp.baseline_proxy.thermo = _trivial_nasa(_GAV_COMMENT)
+            idx = {s.label: i for i, s in enumerate(core_species)}
+            mask = np.ones(len(core_species), dtype=bool)
+            for lbl in ('polypropylene', 'polypropylene_mu0',
+                        'polypropylene_mu1', 'polypropylene_mu2'):
+                mask[idx[lbl]] = False
+            # Run-5 mirror: the promoted chain-scale radical classifies
+            # CONDENSED in the core mask (melt window) -- what kept the row
+            # open through the product gates and mass-paired past the thermo
+            # reference-state tripwire while its legacy flux drained the pool.
+            mask[idx[r2_spc.label]] = False
+            pool = self._pool('polypropylene',
+                              (idx['polypropylene_mu0'],
+                               idx['polypropylene_mu1'],
+                               idx['polypropylene_mu2']))
+            rs = HybridPolymerSystem(
+                T=800.0, P=1.0e5,
+                initial_mole_fractions={core_species[idx[r1_spc.label]]: 0.0},
+                V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+                gas_species_mask=mask, constant_gas_volume=False,
+                initial_polymer_moments={'polypropylene': (1.0, 50.0, 3000.0)},
+                termination=[], allow_default_prospective_edge=True)
+            rs.initialize_model(core_species, list(cerm.core.reactions),
+                                list(cerm.edge.species),
+                                list(cerm.edge.reactions))
+
+            i = cerm.core.reactions.index(out)
+            # THE RED asserts (FIX 2 -- rebuild restamping at the last honest
+            # chokepoint): the canonical core row must arrive adjudicated.
+            assert getattr(out, 'polymer_refused', False) is True, (
+                "adjudication lost across promotion: canonical core row "
+                "arrived unstamped at the rebuild")
+            assert rs.reaction_refused[i] == 1, (
+                "reaction_refused missed the refused core row")
+            assert rs.reaction_flux_archetype[i] == solver_mod.FLUX_NONE, (
+                "refused row was demoted onto the legacy mu1-only path")
+            assert any(c['reason'] == 'conduit-deferred'
+                       for c in rs.refused_reaction_census)
+            dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            assert np.all(dn == 0.0), (
+                "refused core row applied nonzero RHS flux (the run-5 stall "
+                "mechanism: live legacy mu1 flux against the pool)")
+        finally:
+            rmg_data.database = old_db
+
+    def test_red_hard_fail_on_unclassified_live_proxy_row(self):
+        """RED (FIX 4): a proxy-touching row that is neither refused nor
+        archetype-classified after restamping must HARD-FAIL initialize_model
+        with an error naming the row -- never silently run legacy mu1-only
+        flux (the run-5 stall channel)."""
+        sp, core, mask = _refstate_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G1"], sp["G2"]],
+                       **_KIN)   # irreversible: archetype NONE, not refused
+        # LIVENESS PIN: the row is genuinely proxy-touching and unclassified.
+        assert int(getattr(rxn, "polymer_flux_archetype", 0)) == 0
+        assert not getattr(rxn, "polymer_refused", False)
+        # Constructed DIRECTLY (not via _refstate_rs, whose direct-test
+        # posture sets the escape hatch): this pins the PRODUCTION default,
+        # allow_unstamped_proxy_rows=False -> hard-fail.
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[-1]: 0.0},
+            V_poly=1.0, polymer_pools=[_gate_pool_config()], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[])
+        with pytest.raises(ValueError, match="polymer_flux_archetype"):
+            rs.initialize_model(core, [rxn], [], [])
+
+    def test_unclassified_proxy_row_escape_hatch_keeps_legacy_demotion(self):
+        """FIX 4 escape hatch (documented test/runner-only, mirroring
+        allow_default_prospective_edge): with allow_unstamped_proxy_rows=True
+        the pre-fix legacy demotion (NONE -> UNRESOLVED, warn-once) is
+        preserved for direct-construction fixtures."""
+        import rmgpy.solver.polymer as solver_mod
+        sp, core, mask = _refstate_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G1"], sp["G2"]],
+                       **_KIN)
+        rs = _refstate_rs(core, [rxn], mask, [_gate_pool_config()],
+                          {"A": (1.0, 5.0, 30.0)},
+                          rs_kwargs={"allow_unstamped_proxy_rows": True})
+        assert rs.reaction_flux_archetype[0] == solver_mod.FLUX_UNRESOLVED
+
+    def test_negative_control_live_ve_row_with_real_polymer_keeps_flux(self):
+        """Negative control (r71 mandate): a legitimately LIVE proxy row
+        carried by a REAL Polymer object (the restamp predicate's phase
+        vocabulary) must NOT be refused by the rebuild restamp, and its
+        residual stays bitwise at the pre-change value pinned below."""
+        from rmgpy.polymer import Polymer
+        import rmgpy.solver.polymer as solver_mod
+        pp = Polymer(label='poly', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        mu0 = _spc("CO", "poly_mu0"); mu1 = _spc("C=O", "poly_mu1")
+        mu2 = _spc("C#N", "poly_mu2"); vol = _spc("C=CC", "propene")
+        for s in (pp, mu0, mu1, mu2, vol):
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [pp, mu0, mu1, mu2, vol]
+        mask = np.array([False] * 4 + [True], dtype=bool)
+        ve = Reaction(reactants=[pp], products=[pp, vol], **_KIN)
+        ve.polymer_flux_archetype = 6   # VOLATILE_EJECTION
+        ve.polymer_eject_units = 1.0
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={vol: 0.0}, V_poly=1.0,
+            polymer_pools=[self._pool("poly", (1, 2, 3))], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 50.0, 3000.0)},
+            termination=[])
+        rs.initialize_model(core, [ve], [], [])
+        assert rs.reaction_refused[0] == 0, (
+            "rebuild restamp refused a legitimately live VE row")
+        assert rs.reaction_flux_archetype[0] == solver_mod.FLUX_VOLATILE_EJECTION
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        # Bitwise pre-change pin (recorded on b0de7dde8 BEFORE the fix):
+        assert dn[4] == _VE_CONTROL_PIN[4] != 0.0
+        assert np.array_equal(dn[:5], _VE_CONTROL_PIN)

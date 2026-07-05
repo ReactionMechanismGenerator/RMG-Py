@@ -1124,6 +1124,7 @@ class HybridPolymerSystem(ReactionSystem):
         collider_efficiencies: Optional[np.ndarray] = None,
         debug_check_realizability: bool = False,
         allow_unpaired_reference_state: bool = False,
+        allow_unstamped_proxy_rows: bool = False,
     ):
         super().__init__(termination=termination,
                          sensitive_species=sensitive_species,
@@ -1182,6 +1183,12 @@ class HybridPolymerSystem(ReactionSystem):
         self.prospective_condensed_edge_daughter_classifier = \
             prospective_condensed_edge_daughter_classifier
         self._allow_default_prospective_edge = bool(allow_default_prospective_edge)
+        # r71 FIX 4 escape hatch (test/runner-only, mirroring
+        # allow_default_prospective_edge): permits the legacy mu1-only
+        # NONE -> UNRESOLVED demotion for unstamped LIVE proxy rows instead
+        # of the production hard-fail at initialize_model. A production
+        # build (rmgpy.rmg construction) leaves this default-False.
+        self._allow_unstamped_proxy_rows = bool(allow_unstamped_proxy_rows)
         self._prospective_edge_provenance = None
         self.const_spc_names = const_spc_names or []
         self.const_spc_indices = None
@@ -2247,6 +2254,29 @@ class HybridPolymerSystem(ReactionSystem):
             if getattr(rxn, "is_end_group_reaction", False):
                 self.is_end_group_reaction[i] = 1
 
+        # r71 FIX 2 (PP run-5 stall) -- rebuild RESTAMPING at the last honest
+        # chokepoint. The generation-time refusal stamps are ad-hoc object
+        # attributes that have PROVEN losable between stamping and this
+        # rebuild (canonical dedup in check_for_existing_reaction; the
+        # __reduce__ serialization contract -- rmgpy/reaction.py documents
+        # "the solver re-derives them at initialize_model", and THIS is that
+        # re-derivation). Idempotently re-run the shape predicate over every
+        # row (core AND edge) BEFORE reaction_refused is captured and BEFORE
+        # the thermo reference-state tripwire scans core rows: this loop sees
+        # the final post-promotion/post-dedup list regardless of construction
+        # path. stamp_gas_association_refusal early-returns on already-refused
+        # rows, so an upstream qssa-invalid census reason is never overwritten
+        # (precedence preserved) and stamped rows are unchanged. The other
+        # refusal sibling (stamp_polymer_flux_archetype's UNRESOLVED
+        # FEATURE-radical branch) is NOT re-runnable here -- it needs the
+        # generation-time handshake context (resolved polymer_reactants, chip
+        # surgery) -- which is exactly why FIX 4 below hard-fails any
+        # remaining unclassified live proxy row instead of trusting it.
+        # Function-local import: avoids a solver->polymer module cycle.
+        from rmgpy.polymer import stamp_gas_association_refusal
+        for rxn in itertools.chain(core_reactions, edge_reactions):
+            stamp_gas_association_refusal(rxn)
+
         # item 18: capture the Task-3 refusal stamp in the SAME chain(core, edge)
         # order so self.reaction_refused[r_idx] aligns with the residual's r_idx
         # exactly like is_end_group_reaction. A refused FEATURE-radical reaction's
@@ -2518,13 +2548,23 @@ class HybridPolymerSystem(ReactionSystem):
                 % (self._prospective_edge_provenance.shape[0], n_default))
 
         # Resolve per-reaction source/target pools from species indices (no
-        # label matching), and remap unstamped proxy-touching reactions
-        # (archetype NONE, e.g. unpickled) to UNRESOLVED so legacy mu1 flux
-        # applies instead of silently dropping pool moment flux.
+        # label matching). r71 FIX 4 (PP run-5 stall): an unstamped
+        # proxy-touching row (archetype NONE after the FIX 2 restamp) that is
+        # NOT refused has no classification the solver can conserve mass
+        # under -- the former silent NONE -> UNRESOLVED remap (legacy
+        # mu1-only flux) is exactly what ran live against run-5's exhausted
+        # pool. Such rows now HARD-FAIL unless the build explicitly opts into
+        # the legacy fallback (allow_unstamped_proxy_rows=True --
+        # direct-test/runner construction only, mirroring
+        # allow_default_prospective_edge). Refused rows stay archetype NONE:
+        # they are flux-dead via reaction_refused, and routing them onto the
+        # legacy path would misreport an adjudicated row as legacy-live.
         ir_arr = self.reactant_indices
         ip_arr = self.product_indices
         n_unstamped = 0
         n_unresolvable = 0
+        unstamped_live_rows = []
+        combined_rxns = list(itertools.chain(core_reactions, edge_reactions))
         for i in range(n_rxn):
             src = -1
             for slot in range(3):
@@ -2548,8 +2588,19 @@ class HybridPolymerSystem(ReactionSystem):
             self.reaction_src_pool[i] = src
             self.reaction_dst_pool[i] = dst
             if self.reaction_flux_archetype[i] == FLUX_NONE and (src != -1 or dst != -1):
-                self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
-                n_unstamped += 1
+                if self.reaction_refused[i]:
+                    # Refused row (adjudicated, flux-dead via
+                    # reaction_refused): stays archetype NONE -- never
+                    # routed onto the legacy mu1-only path (r71 FIX 4).
+                    pass
+                elif self._allow_unstamped_proxy_rows:
+                    self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
+                    n_unstamped += 1
+                else:
+                    unstamped_live_rows.append(
+                        "%s row %d: %s" % (
+                            "core" if i < len(core_reactions) else "edge",
+                            i, str(combined_rxns[i])))
             if ((self.reaction_flux_archetype[i] in (FLUX_MIGRATION, FLUX_SCISSION_FRAGMENT, FLUX_VOLATILE_EJECTION)
                     and (src == -1 or dst == -1))
                     or (self.reaction_flux_archetype[i] == FLUX_DISCRETE_CHIP
@@ -2575,10 +2626,26 @@ class HybridPolymerSystem(ReactionSystem):
                 "%d reactions stamped MIGRATION/SCISSION_FRAGMENT/DISCRETE_CHIP "
                 "could not resolve their solver pool(s); demoted to legacy "
                 "mu1-only moment flux (UNRESOLVED).", n_unresolvable)
+        if unstamped_live_rows:
+            raise ValueError(
+                "UNSTAMPED PROXY ROW(S): %d proxy-touching reaction(s) "
+                "arrived at the solver rebuild with no polymer_flux_archetype "
+                "stamp and no polymer_refused adjudication -- the legacy "
+                "mu1-only fallback would apply silent unclassified flux to "
+                "the pool (the PP run-5 stall channel, adjudicated r71). "
+                "Offending row(s): %s. A production build must classify "
+                "every live proxy row at generation "
+                "(stamp_polymer_flux_archetype) or refuse it "
+                "(stamp_gas_association_refusal). Direct-test/runner "
+                "construction that deliberately exercises the legacy "
+                "mu1-only fallback must set allow_unstamped_proxy_rows=True."
+                % (len(unstamped_live_rows), "; ".join(unstamped_live_rows)))
         if n_unstamped:
             logging.warning(
                 "%d proxy-touching reactions arrived without a polymer_flux_archetype "
-                "stamp; applying legacy mu1-only pool moment flux for them.",
+                "stamp; applying legacy mu1-only pool moment flux for them "
+                "(allow_unstamped_proxy_rows escape hatch -- direct-test/"
+                "runner construction only).",
                 n_unstamped)
 
         # item 18 (T2): double-count tripwire. A pool carrying BOTH a surviving
@@ -3700,9 +3767,13 @@ class HybridPolymerSystem(ReactionSystem):
 
             if r_idx < n_rxn:
                 self.core_reaction_rates[r_idx] = rate
-            elif gated:
+            elif gated or self.reaction_refused[r_idx]:
                 # counterfactual only -- the real entry stays 0 (the
-                # consistency point enlargement reads).
+                # consistency point enlargement reads). r71 FIX 3: refused
+                # edge rows are routed here too -- their real
+                # edge_reaction_rates entry must be zero (enlargement
+                # input), the ungated entry stays a strictly-diagnostic
+                # counterfactual (census only, never flux).
                 self.edge_reaction_rates_ungated[r_idx - n_rxn] = rate
             else:
                 self.edge_reaction_rates[r_idx - n_rxn] = rate
@@ -3710,14 +3781,19 @@ class HybridPolymerSystem(ReactionSystem):
 
             core_rxn = r_idx < n_rxn
 
-            if core_rxn and self.reaction_refused[r_idx]:
-                # item 18: a refused FEATURE-radical reaction must contribute NO
-                # flux (stamp-but-keep): skip all reactant/product/moment writes
-                # so no MW-weighted backbone mass is fabricated. Mass fabrication
-                # occurs only in CORE (the UNRESOLVED leg + the section-4 gas
-                # credit); edge reactions are diagnostic-only and non-fabricating,
-                # so they are intentionally NOT touched here (keeps item-17's edge
-                # phase-gate census / counterfactual unchanged -- see scope note).
+            if self.reaction_refused[r_idx]:
+                # item 18 + r71 FIX 3: a refused reaction must contribute NO
+                # flux ANYWHERE (stamp-but-keep): skip all reactant/product/
+                # moment writes so no MW-weighted backbone mass is fabricated
+                # in core -- AND no edge promotion flux is delivered. The
+                # pre-r71 core-only gate left refused EDGE rows feeding
+                # edge_species_rates / proxy_activity, which is exactly how
+                # PP run-5's dead chain-scale radicals were promoted to core
+                # (forensics: run5/RMG.log:910-955), where the adjudication
+                # was lost and legacy mu1 flux collapsed DASPK. Refused rows
+                # must not move species to core; the per-reaction ungated
+                # counterfactual above is the only surviving record
+                # (diagnostic, never flux).
                 continue
 
             # 3. Apply Fluxes to Reactants (core reactions only -- edge

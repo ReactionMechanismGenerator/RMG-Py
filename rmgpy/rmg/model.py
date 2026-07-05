@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, compute_h_loss_feature_verdicts, is_end_group_reaction, stamp_gas_association_refusal, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, compute_h_loss_feature_verdicts, is_end_group_reaction, merge_polymer_adjudication_stamps, stamp_gas_association_refusal, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -787,6 +787,14 @@ class CoreEdgeReactionModel:
         if check_existing:
             found, rxn = self.check_for_existing_reaction(forward)
             if found:
+                # r71 FIX 1 (run-5 stall): the canonical-dedup path discards
+                # the freshly stamped `forward` -- merge its polymer
+                # adjudication (refusal, archetype, chip/eject units,
+                # end-group flag) onto the returned canonical object so the
+                # adjudication is never lost with the discarded candidate.
+                # qssa-invalid wins over conduit-deferred inside the merge.
+                if rxn is not None:
+                    merge_polymer_adjudication_stamps(forward, rxn)
                 return rxn, False
 
         # Generate the reaction pairs if not yet defined

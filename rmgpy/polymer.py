@@ -2888,6 +2888,49 @@ def stamp_gas_association_refusal(forward) -> None:
         forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
 
 
+def merge_polymer_adjudication_stamps(source, target) -> None:
+    """r71 FIX 1 (PP run-5 stall): ``check_for_existing_reaction`` can discard
+    a freshly stamped candidate and return a pre-existing UNSTAMPED canonical
+    equivalent -- silently dropping the polymer adjudication from the model
+    (the refused rows then run live legacy mu1-only flux against the pool,
+    the run-5 DASPK collapse). Called from ``make_new_reaction`` when the
+    canonical-dedup path returns an existing reaction: OR/merge the discarded
+    ``source`` candidate's adjudication-bearing stamps onto the canonical
+    ``target``.
+
+    Merge rules (adjudicated):
+
+    * ``polymer_refused`` ORs; ``polymer_refused_accumulating`` ORs across
+      refused stamps, so the census reason "qssa-invalid" (accumulating=True)
+      WINS over "conduit-deferred" in both merge directions and an existing
+      qssa-invalid canonical is never demoted.
+    * ``polymer_flux_archetype`` / ``polymer_chip_units`` /
+      ``polymer_eject_units`` / ``is_end_group_reaction`` FILL the canonical's
+      unstamped (NONE / zero / False) slots only -- a live canonical stamp is
+      never overwritten (it was made with its own full handshake context).
+
+    No-op for ordinary gas chemistry (every getattr defaults falsy).
+    """
+    if source is target:
+        return
+    if getattr(source, "polymer_refused", False):
+        target.polymer_refused = True
+        target.polymer_refused_accumulating = bool(
+            getattr(target, "polymer_refused_accumulating", False)
+            or getattr(source, "polymer_refused_accumulating", False))
+    if (int(getattr(target, "polymer_flux_archetype", 0) or 0) == 0
+            and int(getattr(source, "polymer_flux_archetype", 0) or 0) != 0):
+        target.polymer_flux_archetype = int(source.polymer_flux_archetype)
+    if (int(getattr(target, "polymer_chip_units", 0) or 0) == 0
+            and int(getattr(source, "polymer_chip_units", 0) or 0) != 0):
+        target.polymer_chip_units = int(source.polymer_chip_units)
+    if (float(getattr(target, "polymer_eject_units", 0.0) or 0.0) == 0.0
+            and float(getattr(source, "polymer_eject_units", 0.0) or 0.0) != 0.0):
+        target.polymer_eject_units = float(source.polymer_eject_units)
+    if getattr(source, "is_end_group_reaction", False):
+        target.is_end_group_reaction = True
+
+
 def _chain_radical_lost_to_gas(forward, polymer_reactants):
     """Return the gas-product :class:`Molecule` that a polymer reactant dropped to
     gas (``create_reacted_copy`` returned ``None``) and that carries CHAIN-SCALE

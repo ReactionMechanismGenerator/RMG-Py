@@ -1406,3 +1406,206 @@ class TestGasAssociationRefusalAtMakeNewReaction:
         assert not any(isinstance(p, Polymer) for p in out.products)
         assert out.polymer_refused is False
         assert out.polymer_refused_accumulating is False
+
+
+class TestRefusalStampMergeOnCanonicalDedup:
+    """r71 FIX 1 (PP run-5 stall, forensics
+    /home/alon/Projects/polymer/PP/rmg/run5): ``check_for_existing_reaction``
+    can DISCARD a freshly stamped candidate and return a pre-existing
+    UNSTAMPED equivalent -- silently dropping the polymer adjudication
+    (polymer_refused & co) from the model. ``make_new_reaction`` must merge
+    the discarded candidate's adjudication-bearing stamps onto the canonical
+    returned object, with qssa-invalid (accumulating) winning over
+    conduit-deferred.
+
+    RED-FIRST: the red assertions below were quoted FAILING on pre-fix HEAD
+    (b0de7dde8) before the merge landed."""
+
+    @classmethod
+    def setup_class(cls):
+        """R_Recombination from the testing database: check_for_existing_reaction
+        resolves the family object (get_family_library_object)."""
+        rmg = RMG()
+        rmg.database = RMGDatabase()
+        path = os.path.join(settings["test_data.directory"], "testing_database")
+        rmg.database.load_kinetics(
+            os.path.join(path, "kinetics"),
+            kinetics_families=["R_Recombination"],
+            reaction_libraries=[],
+        )
+        for family in rmg.database.kinetics.families.values():
+            family.forbidden = ForbiddenStructures()
+        rmg.database.forbidden_structures = ForbiddenStructures()
+
+    @classmethod
+    def teardown_class(cls):
+        """Reset the loaded database."""
+        import rmgpy.data.rmg
+
+        rmgpy.data.rmg.database = None
+
+    @staticmethod
+    def _pp_cerm():
+        from rmgpy.polymer import Polymer
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        return cerm, pp
+
+    @staticmethod
+    def _candidate():
+        from rmgpy.kinetics import Arrhenius
+
+        # Run-5 shape: isobutyl + 2-pentyl recombination IS the PP 3-mer
+        # proxy structure, so the product resolves onto the registered pool
+        # Polymer via species_dict isomorphism in make_new_species.
+        return TemplateReaction(
+            reactants=[Molecule().from_smiles('[CH2]C(C)C'),
+                       Molecule().from_smiles('C[CH]CCC')],
+            products=[Molecule().from_smiles('CC(C)CC(C)CCC')],
+            family='R_Recombination', is_forward=True, reversible=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')))
+
+    def _canonical_and_dedup(self, canonical_mutator=None,
+                             candidate_mutator=None):
+        """Register the row once (canonical), optionally doctor its stamps,
+        then run a second identical candidate through the check_existing=True
+        dedup and return (canonical, candidate, returned, is_new)."""
+        cerm, _pp = self._pp_cerm()
+        first = self._candidate()
+        rxn0, is_new = cerm.make_new_reaction(
+            first, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert is_new and rxn0.polymer_refused is True   # liveness pin
+        if canonical_mutator is not None:
+            canonical_mutator(rxn0)
+        second = self._candidate()
+        if candidate_mutator is not None:
+            candidate_mutator(second)
+        out, is_new2 = cerm.make_new_reaction(
+            second, check_existing=True, generate_thermo=False,
+            generate_kinetics=False)
+        return rxn0, second, out, is_new2
+
+    def test_red_b_stamp_merged_onto_unstamped_canonical(self):
+        """RED-B: stamped forward + pre-existing UNSTAMPED equivalent ->
+        the returned canonical object must carry the refusal stamp."""
+
+        def lose_stamp(rxn0):
+            # The run-5 canonical arrival state (r71): the adjudication is
+            # an ad-hoc attribute, deliberately NOT serialized in __reduce__
+            # -- lost on any canonical object that predates or bypasses the
+            # generation-time stamp.
+            rxn0.polymer_refused = False
+            rxn0.polymer_refused_accumulating = False
+
+        rxn0, second, out, is_new2 = self._canonical_and_dedup(
+            canonical_mutator=lose_stamp)
+        # LIVENESS PINS: the canonical-dedup path was actually taken, and the
+        # discarded candidate WAS stamped at generation.
+        assert out is rxn0 and not is_new2
+        assert second.polymer_refused is True
+        # THE RED assert (FIX 1): adjudication merged onto the canonical.
+        assert out.polymer_refused is True, (
+            "check_for_existing_reaction discarded the stamped candidate and "
+            "returned the unstamped canonical -- adjudication lost")
+        assert out.polymer_refused_accumulating is False   # conduit-deferred
+
+    def test_qssa_invalid_precedence_survives_merge(self):
+        """Precedence control: a canonical already refused qssa-invalid
+        (accumulating=True) must NOT be demoted to conduit-deferred by a
+        merged conduit-deferred candidate -- qssa-invalid wins."""
+
+        def qssa_canonical(rxn0):
+            rxn0.polymer_refused = True
+            rxn0.polymer_refused_accumulating = True   # qssa-invalid
+
+        rxn0, second, out, is_new2 = self._canonical_and_dedup(
+            canonical_mutator=qssa_canonical)
+        assert out is rxn0 and not is_new2
+        assert second.polymer_refused_accumulating is False  # candidate: conduit-deferred
+        assert out.polymer_refused is True
+        assert out.polymer_refused_accumulating is True, (
+            "qssa-invalid canonical was demoted to conduit-deferred by merge")
+
+    def test_qssa_invalid_candidate_upgrades_canonical(self):
+        """RED: a qssa-invalid candidate merged onto a conduit-deferred
+        canonical upgrades it (qssa-invalid wins in both directions)."""
+
+        def conduit_canonical(rxn0):
+            rxn0.polymer_refused = True
+            rxn0.polymer_refused_accumulating = False
+
+        def qssa_candidate(second):
+            # Refused upstream as qssa-invalid (the item-18 detector);
+            # stamp_gas_association_refusal keeps the earlier census reason.
+            second.polymer_refused = True
+            second.polymer_refused_accumulating = True
+
+        rxn0, second, out, is_new2 = self._canonical_and_dedup(
+            canonical_mutator=conduit_canonical,
+            candidate_mutator=qssa_candidate)
+        assert out is rxn0 and not is_new2
+        assert out.polymer_refused_accumulating is True, (
+            "qssa-invalid candidate stamp did not win over the canonical's "
+            "conduit-deferred reason")
+
+    def test_red_b_archetype_and_unit_stamps_merged(self):
+        """RED: archetype / chip / eject / end-group adjudication carried by
+        the discarded candidate fills the canonical's unstamped slots (never
+        overwrites a live canonical stamp)."""
+
+        def lose_all(rxn0):
+            rxn0.polymer_refused = False
+            rxn0.polymer_refused_accumulating = False
+            rxn0.polymer_flux_archetype = 0
+            rxn0.polymer_chip_units = 0
+            rxn0.polymer_eject_units = 0.0
+            rxn0.is_end_group_reaction = False
+
+        def stamp_candidate(second):
+            second.polymer_flux_archetype = 6   # VOLATILE_EJECTION
+            second.polymer_eject_units = 1.135
+            second.polymer_chip_units = 2
+            second.is_end_group_reaction = True
+
+        rxn0, second, out, is_new2 = self._canonical_and_dedup(
+            canonical_mutator=lose_all, candidate_mutator=stamp_candidate)
+        assert out is rxn0 and not is_new2
+        assert out.polymer_flux_archetype == 6
+        assert out.polymer_eject_units == 1.135
+        assert out.polymer_chip_units == 2
+        assert out.is_end_group_reaction is True
+        assert out.polymer_refused is True   # gas-association stamp merged too
+
+    def test_negative_control_merge_invents_no_stamps(self):
+        """Negative control: ordinary gas termination deduped against an
+        ordinary canonical stays unstamped -- the merge never invents
+        adjudication."""
+        from rmgpy.kinetics import Arrhenius
+
+        cerm, _pp = self._pp_cerm()
+
+        def gas_rxn():
+            return TemplateReaction(
+                reactants=[Molecule().from_smiles('[CH3]'),
+                           Molecule().from_smiles('C[CH2]')],
+                products=[Molecule().from_smiles('CCC')],
+                family='R_Recombination', is_forward=True, reversible=True,
+                kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                                   Ea=(0.0, 'kJ/mol')))
+
+        rxn0, is_new = cerm.make_new_reaction(
+            gas_rxn(), check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert is_new and rxn0.polymer_refused is False   # liveness
+        out, is_new2 = cerm.make_new_reaction(
+            gas_rxn(), check_existing=True, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is rxn0 and not is_new2
+        assert out.polymer_refused is False
+        assert out.polymer_refused_accumulating is False
+        assert int(out.polymer_flux_archetype) == 0

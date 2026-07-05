@@ -1679,7 +1679,15 @@ def build_system_from_artifact(artifact, species, reactions,
         # suffix. (The runner passes edge_species=[] today, so its edge suffix
         # is empty and provenance is vacuously clean even without the flag, but
         # set it explicitly for clarity and to cover non-empty edges.)
-        allow_default_prospective_edge=True)
+        allow_default_prospective_edge=True,
+        # r71 FIX 4 escape (documented runner posture): the oracle replays
+        # historical decks faithfully, including legacy-schema decks whose
+        # pool-mapped rows carry no archetype in the sidecar (pre-archetype
+        # emitters). Those rows ran legacy mu1-only flux in the generating
+        # solver, and the oracle must reproduce that flux, not refuse it.
+        # Production RMG builds (rmgpy/rmg/polymer_input.py) leave the flag
+        # default-False and hard-fail on unstamped live proxy rows.
+        allow_unstamped_proxy_rows=True)
     with contextlib.redirect_stdout(io.StringIO()):  # mute the mapping banner
         rs.initialize_model(core, all_reactions, [], [])
     return rs, core, all_reactions

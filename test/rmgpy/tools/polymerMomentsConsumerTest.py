@@ -356,7 +356,11 @@ class TestSmilesBranchPoolLabel:
             polymer_pools=[pool_cfg], mass_transfer=[],
             gas_species_mask=mask.copy(), constant_gas_volume=False,
             initial_polymer_moments={smiles: (1.0, 5.0, 30.0)},
-            termination=[])
+            termination=[],
+            # r71 FIX 4 escape: this fixture's row is deliberately unstamped
+            # to exercise the legacy_mu1/1 artifact branch (direct-test
+            # posture; production default False hard-fails).
+            allow_unstamped_proxy_rows=True)
         rs.initialize_model(core, [rxn], [], [])
         y0 = rs.y.copy()
         oracle = _euler_oracle(rs, y0, DT, N_STEPS)
