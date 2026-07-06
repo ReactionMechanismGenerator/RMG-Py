@@ -7049,9 +7049,9 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
                 spawned_refused = True
             elif attributable:
                 # Spawned-refused but NOT pool-mapped (no configured-pool
-                # participant): the refused marker is illegal here (loader
-                # guard), so keep the legacy demotion emission; the refused
-                # block below still warn-louds the over-integration hazard.
+                # participant): the refusal is unrepresentable in the closed
+                # sidecar vocabulary -- the refused block below HARD-FAILS
+                # (r92 artifact P1), never emits a live legacy row.
                 spawned_refused = True
                 arch, unresolved = UNR, True
             else:
@@ -7146,18 +7146,30 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
                     if getattr(rxn, "polymer_refused_accumulating", False)
                     else "conduit-deferred")
             else:
-                # The marker is legal ONLY on pool-mapped rows (loader
-                # guard, both consumers): a refused reaction whose pool is
-                # not solver-configured emits unmarked — warn-loud, because
-                # a consumer will over-integrate this row (the generating
-                # solver still zeroes it).
-                logging.warning(
-                    "Polymer artifact: refused reaction %s has no "
-                    "pool-mapped participant under the configured pools; "
-                    "emitting WITHOUT the refused marker (consumers will "
-                    "integrate this row while the generating solver zeroed "
-                    "it). Configure the pool or expect over-integration.",
-                    equation)
+                # r92 artifact P1 -- HARD-FAIL, never emit. Adjudicated
+                # choice (b) over (a): representing the refusal on a
+                # NON-pool-mapped row would require extending the sidecar
+                # vocabulary -- a schema-visible change (the loader guard in
+                # BOTH consumers rejects the refused marker without a
+                # pool-mapped participant, format doc §12 CLOSED vocabulary)
+                # that needs its own adjudication. And the pre-r92 warn+emit
+                # produced a LIVE legacy_mu1/1 row for a reaction the
+                # generating solver ZEROES (reaction_refused / spawned-pool
+                # refusal): a conforming consumer over-integrates flux the
+                # oracle fabricated nothing for -- artifact corruption, the
+                # r71-banned "never emit an artifact that misrepresents
+                # solver physics" class.
+                raise ValueError(
+                    "Polymer artifact: refused reaction %s has no pool-mapped "
+                    "participant under the configured pools %s; the refusal "
+                    "is not representable in the closed schema-2.4 vocabulary "
+                    "(the refused marker is legal only on pool-mapped rows, "
+                    "format doc §12) and emitting the row live would "
+                    "misrepresent solver physics (the generating solver "
+                    "zeroes it; a conforming consumer would over-integrate). "
+                    "Configure the participant pool (item 16) or drop the "
+                    "row before emitting (r92)."
+                    % (equation, sorted(pool_set)))
         entries.append(entry)
     return entries
 

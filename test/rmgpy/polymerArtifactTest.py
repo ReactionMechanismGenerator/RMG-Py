@@ -1138,19 +1138,20 @@ class TestRefusedRowSerialization:
             assert "refused" not in e
             assert "refused_reason" not in e
 
-    def test_refused_marker_requires_pool_mapped_row(self):
-        """The marker is legal ONLY on pool-mapped rows (loader guard both
-        sides): a refused reaction whose pool is not solver-configured emits
-        WITHOUT the marker (warn-loud), never a marker the loaders reject."""
+    def test_refused_row_without_pool_mapped_participant_hard_fails(self):
+        """r92 artifact P1 (re-adjudicates the former warn+emit pin, a
+        defect pin): a refused row with NO configured-pool participant
+        cannot legally carry the refused marker (loader guard, closed
+        schema-2.4 vocabulary) -- and emitting it live means a conforming
+        consumer integrates flux the generating solver ZEROED
+        (over-integration; artifact misrepresents solver physics, the
+        r71-banned class). The emitter must HARD-FAIL loudly, never emit."""
         core = _two_pool_core()
         rxn = self._refused_rxn(core)
-        entries = compile_polymer_reaction_entries(
-            [rxn], core, configured_pool_labels=["B"],  # A not configured
-            cantera_index_map={id(rxn): [3]})
-        assert len(entries) == 1
-        e = entries[0]
-        assert e["proxy_reactants"] == [] and e["proxy_products"] == []
-        assert "refused" not in e and "refused_reason" not in e
+        with pytest.raises(ValueError, match=r"refused.*no pool-mapped"):
+            compile_polymer_reaction_entries(
+                [rxn], core, configured_pool_labels=["B"],  # A not configured
+                cantera_index_map={id(rxn): [3]})
 
     def test_flip_refused_row_not_emitted_live_legacy(self):
         """r92 (run-10 artifact rows r8/r30-32): a kinetics-flipped row whose
@@ -3105,6 +3106,23 @@ class TestSpawnedPoolRefusalMirror:
             [rxn], core, configured_pool_labels=["A", "B"],
             cantera_index_map={id(rxn): [0]})
         assert _validate_refused_entry(entries[0])
+
+    def test_spawned_refused_without_configured_participant_hard_fails(self):
+        """r92 artifact P1: the r91-documented corner -- a spawned-refused
+        row with NO configured-pool participant (both endpoints spawned
+        config-less pools) cannot legally carry the sidecar refused marker,
+        and the pre-r92 emitter warned + emitted a live legacy_mu1/1 row the
+        generating solver zeroes (over-integration for a conforming
+        consumer). The emitter must HARD-FAIL loudly instead."""
+        core = _two_pool_core()
+        d1, d2 = self._spawned("A_mod"), self._spawned("B_mod")
+        rxn = Reaction(reactants=[d1], products=[d2],
+                       kinetics=_arrhenius(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        with pytest.raises(ValueError, match=r"refused.*no pool-mapped"):
+            compile_polymer_reaction_entries(
+                [rxn], core + [d1, d2], configured_pool_labels=["A", "B"],
+                cantera_index_map={id(rxn): [0]})
 
     def test_plain_species_dst_keeps_legacy_demotion_mirror(self):
         """Negative control: the existing demotion mirror is untouched when
