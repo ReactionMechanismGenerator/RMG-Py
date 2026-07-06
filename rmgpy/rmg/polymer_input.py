@@ -38,7 +38,8 @@ import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
 from rmgpy.solver.polymer import (HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig,
-                                  validate_k_homolysis, validate_radical_qssa_unzip,
+                                  validate_k_depropagation, validate_k_homolysis,
+                                  validate_radical_qssa_unzip,
                                   validate_side_group_homolysis)
 from rmgpy.polymer import strip_rmg_index_suffix
 from rmgpy.species import Species
@@ -1515,6 +1516,31 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
                     f"The parent pool's monomer_product_species must be a live "
                     f"core species (it is for any validated QSSA deck pool).")
 
+        # End-radical DEPROPAGATION kernel (adjudicated round 74 SS2): the
+        # deck declares k_depropagation on the PARENT pool's k_homolysis
+        # context; generate_end_radical_daughters copies the triplet (deep
+        # copy) plus the released-monomer routing (BY REFERENCE) onto both
+        # spawned daughters, and it reaches the solver HERE. Same posture
+        # as the inherited QSSA channel above: shared validator (daughters
+        # never bypass validation), deep-copied storage, and a HARD error
+        # when the kernel has no resolvable monomer routing (the released
+        # units would leave the condensed phase silently un-conserved).
+        kdep_channel = None
+        kdep = getattr(spc, "k_depropagation", None)
+        if kdep is not None:
+            kdep_channel = copy.deepcopy(validate_k_depropagation(b, kdep))
+            if monomer_idx is None:
+                raise ValueError(
+                    f"Pool {b}: inherited k_depropagation is configured but "
+                    f"no monomer_product resolves for this daughter pool. "
+                    f"The depropagation kernel releases one monomer "
+                    f"volatile per unzip event; without an emission target "
+                    f"the released units would leave the condensed phase "
+                    f"silently un-conserved. The parent pool's "
+                    f"monomer_product_species must be a live core species "
+                    f"(the deck helper requires monomer_product whenever "
+                    f"k_depropagation is configured).")
+
         configs.append(PolymerPoolConfig(
             label=b,
             xs=spc.cutoff,
@@ -1531,6 +1557,7 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
             monomer_poly_index=monomer_idx,
             monomer_mw_g_mol=float(getattr(spc, "monomer_mw_g_mol", 0.0) or 0.0),
             radical_qssa_unzip=qssa_channel,
+            k_depropagation=kdep_channel,
             # FR1-K1 mass contract: an X-loss feature daughter's exact
             # per-chain defect (M_X of the spawning channel's gas_product,
             # pinned by generate_side_loss_daughters) must survive config

@@ -8063,6 +8063,368 @@ class TestRadicalHomolysisKernel:
 
 
 # ---------------------------------------------------------------------------
+# End-radical DEPROPAGATION kernel (adjudicated round 74 SS2, the run-6 wall
+# fix): pool-level unzip consumption channel for radical-end daughter pools.
+# For a radical-end pool with one active radical end per chain and
+# k_dep(T) = A*T^n*exp(-Ea/(R_gas*T)):
+#   event rate  R = k_dep*mu0        (one monomer released per event)
+#   gas credit  +R of the pool's monomer volatile (monomer_poly_index)
+#   dmu1 = -R;  dmu2 = -k_dep*(2*mu1 - mu0);  dmu0 = -k_dep*N1
+# with N1 = mu0 * P(DP=1) from the EXISTING discrete/gamma moment closure
+# (_gamma_params_from_mu012 + _gamma_prob_conditional_hybrid(1, 0, k, th)),
+# floored by a smooth terminal boundary law (smoothstep over mean DP in
+# [1, 2]) so the pool never stalls at a one-repeat-per-chain residue.
+# SMOOTH exhaustion gate (r74 SS5: no hard max(...,0) cliff): all release
+# terms carry g = 1 - sp(1 - mean), sp(x) = x^3/(x^2 + W^2), which is
+# EXACTLY 1 for mean >= 1 and rolls off C2-smoothly below.
+# Mass invariant: gas release rate == -dmu1 identically (bitwise).
+# ---------------------------------------------------------------------------
+
+
+def _kdep_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
+    return dict(A=A, n=n, Ea=Ea)
+
+
+def _kdep_arrhenius(T, trip=None):
+    trip = trip or _kdep_triplet()
+    return trip["A"] * T ** trip["n"] * math.exp(-trip["Ea"] / (_KHOM_R_GAS * T))
+
+
+def _kdep_expected_p1(mu0, mu1, mu2):
+    """Independent replica of the adjudicated N1 closure: DP=1 chain fraction
+    from the gamma closure over (mu0, mu1, mu2), discretized on half-integer
+    bins and conditioned on n >= 1, floored by the smoothstep terminal
+    boundary law over mean DP in [1, 2]."""
+    from scipy.special import gammainc
+
+    mean = mu1 / mu0
+    t = mean - 1.0
+    if t <= 0.0:
+        p_fb = 1.0
+    elif t >= 1.0:
+        p_fb = 0.0
+    else:
+        p_fb = 1.0 - (3.0 * t * t - 2.0 * t * t * t)
+    p_gamma = 0.0
+    pdi = mu2 * mu0 / (mu1 * mu1)
+    if math.isfinite(pdi) and pdi > 1.0 + 1e-6:
+        k = 1.0 / (pdi - 1.0)
+        theta = mean / k
+        if k > 0.0 and theta > 0.0:
+            F = lambda x: float(gammainc(k, x / theta))
+            tail = 1.0 - F(0.5)
+            if tail > 1e-12:
+                p_gamma = max(0.0, F(1.5) - F(0.5)) / tail
+    return min(1.0, max(0.0, max(p_gamma, p_fb)))
+
+
+def _kdep_core_and_pools(k_depropagation=None, moments=(1.0, 5.0, 30.0),
+                         k_unzip=0.0, radical_qssa_unzip=None,
+                         k_homolysis=None, monomer=True):
+    """One radical-end pool 'poly_rad_primary_end' (mu slots 3-5, condensed)
+    plus a gas inert (0) and the released-monomer gas volatile (1)."""
+    Inert = _spc("N#N", "N2")
+    Mono = _spc("C=CC", "propene_gas")
+    core = [Inert, Mono,
+            _spc("[CH2]CC", "poly_rad_primary_end"),
+            _spc("CCO", "poly_rad_primary_end_mu0"),
+            _spc("CC=O", "poly_rad_primary_end_mu1"),
+            _spc("CC#N", "poly_rad_primary_end_mu2")]
+    pools = [PolymerPoolConfig(
+        label="poly_rad_primary_end", xs=2,
+        explicit_dp_to_species_index={}, mu_indices=(3, 4, 5),
+        monomer_poly_index=(1 if monomer else None),
+        monomer_mw_g_mol=42.08,
+        k_scission=0.0, k_unzip=k_unzip,
+        radical_qssa_unzip=radical_qssa_unzip,
+        k_homolysis=k_homolysis,
+        k_depropagation=k_depropagation, tail_kinetics=None)]
+    all_moments = {"poly_rad_primary_end": tuple(moments)}
+    mask = np.array([s.label in ("N2", "propene_gas") for s in core],
+                    dtype=bool)
+    return core, mask, pools, all_moments
+
+
+class TestEndRadicalDepropagationKernel:
+
+    GAS, MU0, MU1, MU2 = 1, 3, 4, 5
+
+    def test_deprop_law_moment_derivatives_and_gas_rate(self):
+        """r74 SS2 law at a healthy state mu=(1,5,30), V_poly=1, T=800:
+            R    = k(800)*mu0            (mean DP 5 >= 1 -> gate g == 1)
+            gas  = +R at monomer_poly_index
+            dmu1 = -R
+            dmu2 = -k*(2*mu1 - mu0) = -9k  (up to the documented smooth
+                   O(W^2/(mean-1)) deficit of the C2 positive-part)
+            dmu0 = -k*mu0*p1, p1 the gamma-closure DP=1 fraction
+        (pdi = 30/25 = 1.2 -> k_shape = 5, theta = 1)."""
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=_kdep_triplet())
+        rs = _khom_system(core, mask, pools, moments, T=800.0)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        k = _kdep_arrhenius(800.0)
+        mu0, mu1, mu2 = 1.0, 5.0, 30.0
+        R = k * mu0
+        assert np.isclose(dn_dt[self.GAS], R, rtol=1e-9)
+        assert np.isclose(dn_dt[self.MU1], -R, rtol=1e-9)
+        assert np.isclose(dn_dt[self.MU2], -k * (2.0 * mu1 - mu0), rtol=1e-4)
+        p1 = _kdep_expected_p1(mu0, mu1, mu2)
+        assert 0.0 < p1 < 1.0
+        assert np.isclose(dn_dt[self.MU0], -k * mu0 * p1, rtol=1e-9)
+        # proxy and inert carry no kernel flux
+        assert dn_dt[0] == 0.0 and dn_dt[2] == 0.0
+
+    def test_deprop_exact_mass_invariant(self):
+        """r74 SS2 mass pin: d(condensed mass) + d(propene mass) = 0 EXACTLY.
+        The gas release rate and the mu1 drain are the SAME float (bitwise),
+        so monomer_MW * R closes the balance at machine precision."""
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=_kdep_triplet())
+        rs = _khom_system(core, mask, pools, moments, T=800.0)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn_dt[self.GAS] > 0.0
+        assert dn_dt[self.GAS] == -dn_dt[self.MU1], (
+            f"gas release {dn_dt[self.GAS]!r} must equal the mu1 drain "
+            f"{-dn_dt[self.MU1]!r} bitwise -- anything else un-conserves "
+            f"mass under MW multiplication")
+        mw = pools[0].monomer_mw_g_mol
+        d_condensed = pools[0].condensed_mass_g(dn_dt[self.MU0],
+                                                dn_dt[self.MU1])
+        d_gas = mw * dn_dt[self.GAS]
+        assert d_condensed + d_gas == 0.0
+
+    def test_deprop_n1_boundary_all_dp1_residue_terminates(self):
+        """N1 boundary pin (r74: 'NO permanent dmu0=0 -- that stalls at a
+        one-repeat-per-chain residue'): an all-DP-1 pool (c, c, c) has
+        N1 = mu0 exactly (fallback p1 = 1, gate g = 1), so all three moments
+        decay together at -k*c and the chains terminate."""
+        c = 0.7
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=_kdep_triplet(), moments=(c, c, c))
+        rs = _khom_system(core, mask, pools, moments, T=800.0)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        k = _kdep_arrhenius(800.0)
+        assert np.isclose(dn_dt[self.MU0], -k * c, rtol=1e-9)
+        assert np.isclose(dn_dt[self.MU1], -k * c, rtol=1e-9)
+        assert np.isclose(dn_dt[self.MU2], -k * c, rtol=1e-9)
+        assert dn_dt[self.GAS] == -dn_dt[self.MU1]
+
+    def test_deprop_pool_drains_to_zero_no_dp1_stall(self):
+        """Live-path exhaustion pin: integrating the kernel-only pool from
+        mu = (1, 3, 10) must drain the CHAIN COUNT and the REPEAT UNITS to
+        ~zero (not stall at the mu0 = 1 one-repeat-per-chain residue a
+        permanent dmu0 = 0 law leaves), stay finite throughout, and deliver
+        the released units to the gas volatile within integration error.
+        (mu2 may keep a small inert orphan: the r74 law dmu2 =
+        -k*(2*mu1 - mu0) is exact per event, but the CLOSURE-estimated N1
+        makes the coupled trajectory drift from a realizable distribution;
+        the residue is variance bookkeeping, carries no mass and no flux,
+        and is pinned bounded here.)"""
+        trip = dict(A=1.0, n=0.0, Ea=0.0)   # k_dep == 1 s^-1 at any T
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=trip, moments=(1.0, 3.0, 10.0))
+        rs = _khom_system(core, mask, pools, moments, T=800.0)
+
+        y = rs.y.copy().astype(float)
+
+        def f(yv):
+            return rs.residual(0.0, yv, np.zeros_like(yv))[0]
+
+        dt = 0.02
+        for _ in range(int(60.0 / dt)):     # 60 e-folds of k_dep
+            k1 = f(y)
+            k2 = f(y + 0.5 * dt * k1)
+            k3 = f(y + 0.5 * dt * k2)
+            k4 = f(y + dt * k3)
+            y = y + (dt / 6.0) * (k1 + 2.0 * k2 + 2.0 * k3 + k4)
+            assert np.all(np.isfinite(y)), "state must stay finite"
+        assert y[self.MU0] < 1e-3, (
+            f"chain count stalled at mu0={y[self.MU0]:g} -- the DP=1 "
+            f"residue never terminated")
+        assert y[self.MU1] < 1e-3, (
+            f"repeat units stalled at mu1={y[self.MU1]:g}")
+        # documented closure-orphan bound (inert, massless, fluxless)
+        assert 0.0 <= y[self.MU2] < 0.5
+        # released units land in the gas volatile (mass closure over the
+        # run: every drained mu1 unit is a gas monomer, nothing else moves
+        # mass)
+        assert np.isclose(y[self.GAS] + y[self.MU1], 3.0, atol=5e-3)
+
+    def test_deprop_smooth_exhaustion_gate_no_cliff(self):
+        """r74 SS5 (designed-in from the start): the kernel rolls off
+        SMOOTHLY as the pool empties -- no max(...,0) cliff at mean DP = 1.
+        Pins: (a) the gate is EXACTLY 1 at mean >= 1 (healthy law exact);
+        (b) crossing mean = 1 downward changes the release rate by O(eps^3)
+        (C2 rolloff), not a jump; (c) at the pathological mu1 = 0, mu0 > 0
+        noise state the gas release is ~W^2-suppressed (no fountain) while
+        the chain count still drains at the full -k*mu0 (no DASPK grind)."""
+        k = _kdep_arrhenius(800.0)
+
+        def rate_at(mu):
+            core, mask, pools, moments = _kdep_core_and_pools(
+                k_depropagation=_kdep_triplet(), moments=mu)
+            rs = _khom_system(core, mask, pools, moments, T=800.0)
+            return rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        # (a) exact law at mean exactly 1 from above
+        dn = rate_at((1.0, 1.0, 1.0))
+        assert dn[self.GAS] == k * 1.0
+
+        # (b) no cliff crossing mean = 1: relative change is O(eps^3/W^2)
+        eps = 1e-3
+        dn_below = rate_at((1.0, 1.0 - eps, 1.0))
+        rel_jump = abs(dn_below[self.GAS] - dn[self.GAS]) / dn[self.GAS]
+        assert rel_jump < 1e-4, (
+            f"release rate jumped by {rel_jump:g} across the exhaustion "
+            f"boundary -- the gate must roll off smoothly (C2), not cliff")
+
+        # (c) mu1 = 0 noise state: negligible fabrication, full chain drain
+        dn0 = rate_at((0.5, 0.0, 0.0))
+        assert 0.0 <= dn0[self.GAS] < k * 0.5 * 1e-3, (
+            f"gas fabrication {dn0[self.GAS]:g} from an empty-unit pool")
+        assert np.isclose(dn0[self.MU0], -k * 0.5, rtol=1e-9), (
+            "chain count must keep draining at -k*mu0 (fallback p1 = 1) so "
+            "the noise state cannot become a stiff no-outlet grind")
+
+    def test_deprop_arrhenius_evaluated_at_runtime_temperature(self):
+        """k_dep(T) is evaluated at the solver's runtime T (round 66
+        precedent: 'a scalar precomputed at 1100 K will poison any ramp/TA
+        replay'); the n=0.5 triplet also catches a dropped T^n factor."""
+        rates = {}
+        for T in (700.0, 1100.0):
+            core, mask, pools, moments = _kdep_core_and_pools(
+                k_depropagation=_kdep_triplet())
+            rs = _khom_system(core, mask, pools, moments, T=T)
+            dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            rates[T] = dn_dt[self.GAS]
+            assert np.isclose(rates[T], _kdep_arrhenius(T) * 1.0, rtol=1e-9)
+        assert rates[1100.0] > rates[700.0] * 10.0
+
+    def test_deprop_zero_flux_on_empty_pool(self):
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=_kdep_triplet(), moments=(0.0, 0.0, 0.0))
+        rs = _khom_system(core, mask, pools, moments)
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert np.all(dn_dt == 0.0)
+
+    def test_solver_rejects_k_depropagation_without_monomer_index(self):
+        """LAST line of defense: the kernel releases one monomer per event;
+        without a resolvable gas destination the released units leave the
+        condensed phase silently un-conserved."""
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=_kdep_triplet(), monomer=False)
+        with pytest.raises(ValueError,
+                           match=r"poly_rad_primary_end.*k_depropagation.*monomer"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_solver_rejects_k_depropagation_with_positive_k_unzip(self):
+        """Mutual exclusion (probe finding: k_unzip is the legacy
+        phenomenological form of the SAME chain-end monomer-release event --
+        dmu1 = -k*mu0, dmu2 = -k*(2mu1-mu0), permanent dmu0 = 0): enabling
+        both double-carries depropagation."""
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=_kdep_triplet(), k_unzip=0.4)
+        with pytest.raises(ValueError,
+                           match=r"poly_rad_primary_end.*k_depropagation.*k_unzip.*mutually exclusive"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_solver_rejects_k_depropagation_with_qssa_channel(self):
+        """Mutual exclusion: the QSSA channel's depropagation block IS
+        lumped chain-end depropagation on the same pool."""
+        qssa = dict(initiation=dict(A=1.0e15, n=0.0, Ea=3.0e5),
+                    depropagation=dict(A=1.0e13, n=0.0, Ea=8.0e4),
+                    termination=dict(A=1.0e8, n=0.0, Ea=1.0e4))
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=_kdep_triplet(), radical_qssa_unzip=qssa)
+        with pytest.raises(ValueError,
+                           match=r"poly_rad_primary_end.*k_depropagation.*radical_qssa_unzip.*mutually exclusive"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_solver_rejects_k_depropagation_with_k_homolysis(self):
+        """Mutual exclusion (r74 SS3: multi-generation homolysis of
+        radical-ended chains is DEFERRED -- 'do not inherit the block
+        blindly'): a pool cannot carry both the closed-chain initiation
+        kernel and the radical-end depropagation kernel."""
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=_kdep_triplet(), k_homolysis=_khom_triplet())
+        with pytest.raises(ValueError,
+                           match=r"poly_rad_primary_end.*k_depropagation.*k_homolysis.*mutually exclusive"):
+            _khom_system(core, mask, pools, moments)
+
+    def test_solver_rejects_malformed_k_depropagation_triplet(self):
+        core, mask, pools, moments = _kdep_core_and_pools(
+            k_depropagation=dict(A=-1.0, n=0.0, Ea=8.0e4))
+        with pytest.raises(ValueError,
+                           match=r"poly_rad_primary_end.*k_depropagation.*A.*> 0"):
+            _khom_system(core, mask, pools, moments)
+
+
+class TestDepropagationDaughterWiring:
+    """Deck param -> spawned end-radical daughter pools (probe finding c):
+    k_depropagation is declared on the PARENT pool's k_homolysis context;
+    the producer copies it (plus the released-monomer routing, held BY
+    REFERENCE) onto both spawned daughters, and
+    derive_daughter_pool_configs wires it into the daughters' solver
+    configs."""
+
+    @staticmethod
+    def _parent_with_kdep():
+        from rmgpy.polymer import Polymer
+        pp = Polymer(label='PP', monomer='[CH2][CH](C)',
+                     end_groups=['[H]', '[H]'], cutoff=3,
+                     Mn=1500.0, Mw=1800.0, initial_mass=0.1,
+                     k_homolysis=_khom_triplet(),
+                     k_depropagation=_kdep_triplet())
+        pp.monomer_product_species = _spc("C=CC", "propene")
+        return pp
+
+    def test_daughters_carry_k_depropagation_and_monomer_routing(self):
+        pp = self._parent_with_kdep()
+        prim, sec = pp.generate_end_radical_daughters()
+        for d in (prim, sec):
+            assert d.k_depropagation == _kdep_triplet()
+            # deep copy, never aliasing the parent's dict
+            assert d.k_depropagation is not pp.k_depropagation
+            # routing held BY REFERENCE (identity is load-bearing for the
+            # object-keyed spc_map resolution downstream)
+            assert d.monomer_product_species is pp.monomer_product_species
+
+    def test_derive_daughter_pool_configs_wires_k_depropagation(self):
+        from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+        pp = self._parent_with_kdep()
+        prim, sec = pp.generate_end_radical_daughters()
+        mono = pp.monomer_product_species
+        core = [mono]
+        for d in (prim, sec):
+            core += [d, _spc("CCO", f"{d.label}_mu0"),
+                     _spc("CC=O", f"{d.label}_mu1"),
+                     _spc("CC#N", f"{d.label}_mu2")]
+        spc_map = {s: i for i, s in enumerate(core)}
+        cfgs = derive_daughter_pool_configs(core, spc_map, {"PP"})
+        assert len(cfgs) == 2
+        for cfg in cfgs:
+            assert cfg.k_depropagation == _kdep_triplet()
+            assert cfg.monomer_poly_index == spc_map[mono]
+
+    def test_derive_daughter_pool_configs_rejects_kdep_without_routing(self):
+        """A daughter carrying the kernel but whose released-monomer species
+        is missing from the core map must fail LOUDLY at config derivation
+        (mass would silently un-conserve), never build a mute config."""
+        from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+        pp = self._parent_with_kdep()
+        prim, _ = pp.generate_end_radical_daughters()
+        prim.monomer_product_species = None
+        core = [prim, _spc("CCO", f"{prim.label}_mu0"),
+                _spc("CC=O", f"{prim.label}_mu1"),
+                _spc("CC#N", f"{prim.label}_mu2")]
+        spc_map = {s: i for i, s in enumerate(core)}
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*k_depropagation.*monomer"):
+            derive_daughter_pool_configs(core, spc_map, {"PP"})
+
+
+# ---------------------------------------------------------------------------
 # Side-group homolysis initiation kernel (FR1-K1, adjudicated adversarial
 # round 70): pool-level side-group X-loss (e.g. aliphatic C-Br -> Br.(gas) +
 # mid-chain backbone radical, chain length UNCHANGED). Per channel with

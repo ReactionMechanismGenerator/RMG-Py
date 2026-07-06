@@ -383,6 +383,49 @@ def validate_radical_qssa_unzip(pool_label, channel):
 K_HOMOLYSIS_DAUGHTER_SUFFIXES = ("_rad_primary_end", "_rad_secondary_end")
 
 
+def _validate_kernel_arrhenius_triplet(pool_label, param_name, triplet):
+    """Shared field validator for pool-level kernel Arrhenius triplets
+    {A, n, Ea} (k_homolysis, k_depropagation); returns the triplet
+    normalized to plain floats. Error text stays byte-compatible with the
+    historical k_homolysis messages (parameter name interpolated)."""
+    if not isinstance(triplet, dict):
+        raise ValueError(
+            f"Pool {pool_label}: {param_name} must be a dict {{A, n, Ea}} "
+            f"(Arrhenius triplet, SI convention: A [s^-1], Ea [J/mol]), got "
+            f"{type(triplet).__name__}. A bare scalar is rejected by design "
+            f"(round 66): the kernel must evaluate k(T) at the solver's "
+            f"runtime temperature.")
+    missing = [k for k in _RADICAL_QSSA_ARRHENIUS_KEYS if k not in triplet]
+    extra = sorted(set(triplet) - set(_RADICAL_QSSA_ARRHENIUS_KEYS))
+    if missing or extra:
+        raise ValueError(
+            f"Pool {pool_label}: {param_name} must have exactly the keys "
+            f"{{A, n, Ea}}; missing {missing or 'none'}, unknown "
+            f"{extra or 'none'}.")
+    out = {}
+    for key in _RADICAL_QSSA_ARRHENIUS_KEYS:
+        val = triplet[key]
+        if isinstance(val, bool) or not isinstance(val, (int, float)):
+            raise ValueError(
+                f"Pool {pool_label}: {param_name} {key}={val!r} must be a "
+                f"number.")
+        val = float(val)
+        if not math.isfinite(val):
+            raise ValueError(
+                f"Pool {pool_label}: {param_name} {key}={val!r} is not finite "
+                f"(NaN/inf are rejected).")
+        out[key] = val
+    if out["A"] <= 0.0:
+        raise ValueError(
+            f"Pool {pool_label}: {param_name} A={out['A']:g} must be > 0 (a "
+            f"non-positive pre-exponential is not a valid rate constant).")
+    if out["Ea"] < 0.0:
+        raise ValueError(
+            f"Pool {pool_label}: {param_name} Ea={out['Ea']:g} must be >= 0 "
+            f"[J/mol].")
+    return out
+
+
 def validate_k_homolysis(pool_label, triplet):
     """Validate a k_homolysis Arrhenius triplet {A, n, Ea} and return it
     normalized to plain floats (single source of truth for the field rules,
@@ -397,42 +440,25 @@ def validate_k_homolysis(pool_label, triplet):
     [J/mol]; n dimensionless. Units are convention, not dimensionally
     enforced (matches the QSSA blocks' posture).
     """
-    if not isinstance(triplet, dict):
-        raise ValueError(
-            f"Pool {pool_label}: k_homolysis must be a dict {{A, n, Ea}} "
-            f"(Arrhenius triplet, SI convention: A [s^-1], Ea [J/mol]), got "
-            f"{type(triplet).__name__}. A bare scalar is rejected by design "
-            f"(round 66): the kernel must evaluate k(T) at the solver's "
-            f"runtime temperature.")
-    missing = [k for k in _RADICAL_QSSA_ARRHENIUS_KEYS if k not in triplet]
-    extra = sorted(set(triplet) - set(_RADICAL_QSSA_ARRHENIUS_KEYS))
-    if missing or extra:
-        raise ValueError(
-            f"Pool {pool_label}: k_homolysis must have exactly the keys "
-            f"{{A, n, Ea}}; missing {missing or 'none'}, unknown "
-            f"{extra or 'none'}.")
-    out = {}
-    for key in _RADICAL_QSSA_ARRHENIUS_KEYS:
-        val = triplet[key]
-        if isinstance(val, bool) or not isinstance(val, (int, float)):
-            raise ValueError(
-                f"Pool {pool_label}: k_homolysis {key}={val!r} must be a "
-                f"number.")
-        val = float(val)
-        if not math.isfinite(val):
-            raise ValueError(
-                f"Pool {pool_label}: k_homolysis {key}={val!r} is not finite "
-                f"(NaN/inf are rejected).")
-        out[key] = val
-    if out["A"] <= 0.0:
-        raise ValueError(
-            f"Pool {pool_label}: k_homolysis A={out['A']:g} must be > 0 (a "
-            f"non-positive pre-exponential is not a valid rate constant).")
-    if out["Ea"] < 0.0:
-        raise ValueError(
-            f"Pool {pool_label}: k_homolysis Ea={out['Ea']:g} must be >= 0 "
-            f"[J/mol].")
-    return out
+    return _validate_kernel_arrhenius_triplet(pool_label, "k_homolysis",
+                                              triplet)
+
+
+def validate_k_depropagation(pool_label, triplet):
+    """Validate a k_depropagation Arrhenius triplet {A, n, Ea} and return it
+    normalized to plain floats (single source of truth for the field rules,
+    shared by the deck helper rmgpy/rmg/input.py -- re-raised as InputError
+    -- derive_daughter_pool_configs and the solver's own
+    validate_configuration).
+
+    End-radical DEPROPAGATION kernel (adjudicated round 74 SS2, the run-6
+    no-outlet wall fix): per-chain-end unzip frequency
+    k_dep(T) = A*T^n*exp(-Ea/(R_gas*T)) evaluated at the solver's RUNTIME
+    temperature (same not-a-bare-scalar posture as k_homolysis, round 66).
+    A [s^-1], Ea [J/mol], n dimensionless; units are convention, not
+    dimensionally enforced."""
+    return _validate_kernel_arrhenius_triplet(pool_label, "k_depropagation",
+                                              triplet)
 
 
 # Side-group homolysis initiation kernel (FR1-K1, adjudicated adversarial
@@ -787,6 +813,29 @@ class PolymerPoolConfig:
     # depolymerization).
     k_homolysis: Optional[Dict[str, float]] = None
 
+    # End-radical DEPROPAGATION kernel (adjudicated round 74 SS2, the run-6
+    # no-outlet wall fix): normalized Arrhenius triplet {A, n, Ea} per
+    # validate_k_depropagation (SI convention: A [s^-1], Ea [J/mol]; NOT a
+    # bare scalar -- the RHS evaluates k_dep(T) = A*T^n*exp(-Ea/(R_gas*T))
+    # at the runtime T) or None. Consumption channel for RADICAL-END pools
+    # (one active radical end per chain): per unzip event one monomer
+    # volatile is released to monomer_poly_index (gas amount basis).
+    #   R    = k_dep(T) * mu0 * g     [g = smooth exhaustion gate, == 1 in
+    #                                  the realizable region mean DP >= 1]
+    #   dmu1 = -R;  gas = +R (the SAME float -- exact mass invariant)
+    #   dmu2 = -k_dep*(2*mu1 - mu0)   [smooth positive-part on the excess]
+    #   dmu0 = -k_dep*N1, N1 = mu0 * P(DP=1) from the EXISTING
+    #          discrete/gamma closure (never a permanent dmu0 = 0 -- r74:
+    #          that stalls at a one-repeat-per-chain residue)
+    # Mutually exclusive on one pool with k_unzip > 0 (legacy
+    # phenomenological form of the SAME chain-end monomer-release event),
+    # with radical_qssa_unzip (its depropagation block IS lumped chain-end
+    # depropagation) and with k_homolysis (multi-generation homolysis of
+    # radical-ended chains is DEFERRED, r74 SS3; and a closed-chain
+    # initiation pool has no radical end to depropagate). Requires a
+    # resolvable monomer_poly_index (released units must land somewhere).
+    k_depropagation: Optional[Dict[str, float]] = None
+
     # Side-group homolysis initiation kernel (FR1-K1, adjudicated round 70):
     # normalized channel LIST per validate_side_group_homolysis (each entry
     # exactly {label, A, n, Ea, site_selector, sites_per_unit, gas_product};
@@ -972,6 +1021,72 @@ def _discrete_gamma_fallback(target: int, xs: int, k: float, theta: float) -> fl
     if denom <= 0.0 or target_idx == -1:
         return 0.0
     return math.exp(logs[target_idx] - max_log) / denom
+
+
+# End-radical DEPROPAGATION kernel (adjudicated round 74 SS2) smooth-gate
+# width, dimensionless in mean DP. sp(x) = x^3/(x^2 + W^2) is a C2 smooth
+# positive-part: exactly 0 for x <= 0, asymptotically x - W^2/x for x >> W.
+# The gate g = 1 - sp(1 - mean) is therefore EXACTLY 1 in the realizable
+# region mean >= 1 (the healthy law is exact, no perturbation) and rolls
+# off C2-smoothly below it (r74 SS5: no hard max(...,0) cliff at
+# exhaustion -- the DASPK grind / IDID=-7 class). Residual monomer release
+# from a pathological mu1 = 0, mu0 > 0 noise state is bounded by
+# k_dep*mu0*W^2 (documented honest degradation; the chain count keeps
+# draining at the full -k_dep*mu0 there, so the state cannot become a
+# stiff no-outlet grind).
+KDEP_GATE_WIDTH = 1.0e-2
+
+
+def _smooth_pos(x: float, w: float) -> float:
+    """C2 smooth positive-part x^3/(x^2 + w^2): 0 for x <= 0, ~x for
+    x >> w, with value/first/second derivative all continuous at 0
+    (strictly smoother than the max(x, 0) clamps elsewhere)."""
+    if x <= 0.0:
+        return 0.0
+    return x * x * x / (x * x + w * w)
+
+
+def _deprop_dp1_fraction(mu0: float, mu1: float, mu2: float) -> float:
+    """DP=1 chain fraction p1 (N1 = mu0 * p1) for the end-radical
+    depropagation kernel (r74 SS2: 'Estimate N1 using the existing
+    discrete/gamma-style moment closure').
+
+    Gamma leg -- the EXISTING closure machinery: shape/scale from
+    _gamma_params_from_mu012 (k = 1/(PDI-1), theta = mean/k), DP=1 bin
+    probability from _gamma_prob_conditional_hybrid(1, 0, k, theta), i.e.
+    [F(1.5) - F(0.5)] / [1 - F(0.5)] on the half-integer-bin discretization
+    conditioned on n >= 1 (the same convention the hybrid handshake uses).
+
+    Smooth terminal boundary floor (disclosed per r74): the gamma leg is
+    unavailable for degenerate/monodisperse shapes (PDI <= 1 + 1e-6 returns
+    no params), so p1 is floored by a C1 smoothstep 1 -> 0 over mean DP in
+    [1, 2]. The floor is what guarantees NO stall: any state at or below
+    one repeat unit per chain has p1 = 1, so dmu0 = -k_dep*mu0 terminates
+    the residue instead of freezing it (r74: no permanent dmu0 = 0).
+
+    Returns a value in [0, 1]; smooth (max of two continuous legs) in the
+    moment state."""
+    if mu0 <= SMALL_EPS:
+        return 0.0
+    mean = mu1 / mu0
+    t = mean - 1.0
+    if t <= 0.0:
+        p_floor = 1.0
+    elif t >= 1.0:
+        p_floor = 0.0
+    else:
+        p_floor = 1.0 - (3.0 * t * t - 2.0 * t * t * t)
+    p_gamma = 0.0
+    params = _gamma_params_from_mu012(mu0, mu1, mu2)
+    if params:
+        k_shape, theta = params
+        p_gamma = _gamma_prob_conditional_hybrid(1, 0, k_shape, theta)
+    p1 = p_gamma if p_gamma > p_floor else p_floor
+    if p1 < 0.0:
+        return 0.0
+    if p1 > 1.0:
+        return 1.0
+    return p1
 
 
 # ======================================================================================
@@ -1445,6 +1560,58 @@ class HybridPolymerSystem(ReactionSystem):
                         f"depolymerization. Set k_unzip=0 or remove "
                         f"k_homolysis.")
 
+            # End-radical depropagation kernel invariants (adjudicated round
+            # 74 SS2). LAST line of defense, same rationale as the kernels
+            # above: the deck helper (parent-declared, daughter-applied) and
+            # derive_daughter_pool_configs guard these shapes, but a
+            # directly-constructed PolymerPoolConfig bypasses both. The
+            # normalized triplet is stored back (frozen-dataclass store-back
+            # idiom) so the flattener can trust its shape.
+            if pool.k_depropagation is not None:
+                normalized_kdep = validate_k_depropagation(
+                    pool.label, pool.k_depropagation)
+                object.__setattr__(pool, 'k_depropagation',
+                                   copy.deepcopy(normalized_kdep))
+                if pool.monomer_poly_index is None:
+                    raise ValueError(
+                        f"Pool {pool.label}: k_depropagation is configured "
+                        f"but monomer_poly_index is None. The kernel "
+                        f"releases ONE monomer volatile per unzip event; "
+                        f"without a resolvable gas emission target the "
+                        f"released units would leave the condensed phase "
+                        f"silently un-conserved. Wire monomer_poly_index "
+                        f"(the released monomer's core index) or remove "
+                        f"k_depropagation.")
+                if pool.k_unzip > 0.0:
+                    raise ValueError(
+                        f"Pool {pool.label}: k_depropagation is configured "
+                        f"AND k_unzip={pool.k_unzip:g} > 0. Legacy k_unzip "
+                        f"is the phenomenological scalar form of the SAME "
+                        f"chain-end monomer-release event (and its law "
+                        f"stalls at a permanent dmu0 = 0), so the two are "
+                        f"mutually exclusive on a pool -- enabling both "
+                        f"would double-carry depropagation. Set k_unzip=0 "
+                        f"or remove k_depropagation.")
+                if pool.radical_qssa_unzip is not None:
+                    raise ValueError(
+                        f"Pool {pool.label}: k_depropagation is configured "
+                        f"AND radical_qssa_unzip is configured. The QSSA "
+                        f"channel's depropagation block IS lumped chain-end "
+                        f"depropagation, so the two are mutually exclusive "
+                        f"on a pool -- enabling both would double-count the "
+                        f"unzip flux. Remove one of them.")
+                if pool.k_homolysis is not None:
+                    raise ValueError(
+                        f"Pool {pool.label}: k_depropagation is configured "
+                        f"AND k_homolysis is configured. Multi-generation "
+                        f"homolysis of radical-ended chains is DEFERRED "
+                        f"(adjudicated round 74 SS3: internal homolysis of a "
+                        f"radical-ended chain creates radical-state pools "
+                        f"this producer cannot generate), and a closed-chain "
+                        f"initiation pool has no radical end to "
+                        f"depropagate; the two kernels are mutually "
+                        f"exclusive on one pool. Remove one of them.")
+
             # Side-group homolysis kernel invariants (FR1-K1, adjudicated
             # round 70). LAST line of defense, same rationale as the two
             # kernels above: deck helper and PolymerPool.to_config guard
@@ -1550,6 +1717,44 @@ class HybridPolymerSystem(ReactionSystem):
         # channels and resolve each enabled parent's X-loss feature pools +
         # gas destinations (FR1-K1). Same timing contract.
         self._flatten_side_group_state()
+
+        # Flatten the (now validated + normalized) k_depropagation kernels
+        # and resolve each enabled pool's released-monomer gas destination
+        # (r74 SS2). Same timing contract.
+        self._flatten_depropagation_state()
+
+    def _flatten_depropagation_state(self):
+        """Flatten each pool's validated+normalized k_depropagation triplet
+        into solver-owned per-pool flat arrays (r74 SS2 end-radical
+        depropagation kernel).
+
+        Contract (mirrors _flatten_homolysis_state):
+        - Populated ONLY here, on the initialize_model ->
+          validate_configuration path, from the normalized dict just stored.
+        - The RHS reads ONLY these arrays, never the dict.
+
+        Layout (index = pool position in self.polymer_pools):
+        - kdep_enabled[i] (int8): 1 iff the pool has k_depropagation.
+        - kdep_A/n/Ea[i]: the Arrhenius triplet (A [s^-1], Ea [J/mol]).
+        - kdep_gas[i] (int32): core index of the released monomer volatile
+          (== pool.monomer_poly_index, guaranteed non-None and gas-masked by
+          validate_configuration); -1 on kernel-free pools.
+        """
+        n_pools = len(self.polymer_pools)
+        self.kdep_enabled = np.zeros(n_pools, dtype=np.int8)
+        self.kdep_A = np.zeros(n_pools, dtype=float)
+        self.kdep_n = np.zeros(n_pools, dtype=float)
+        self.kdep_Ea = np.zeros(n_pools, dtype=float)
+        self.kdep_gas = np.full(n_pools, -1, dtype=np.int32)
+        for i, pool in enumerate(self.polymer_pools):
+            trip = pool.k_depropagation
+            if trip is None:
+                continue
+            self.kdep_enabled[i] = 1
+            self.kdep_A[i] = trip["A"]
+            self.kdep_n[i] = trip["n"]
+            self.kdep_Ea[i] = trip["Ea"]
+            self.kdep_gas[i] = pool.monomer_poly_index
 
     def _flatten_homolysis_state(self):
         """Flatten each pool's validated+normalized k_homolysis triplet into
@@ -2839,6 +3044,14 @@ class HybridPolymerSystem(ReactionSystem):
                            + "]")
             else:
                 sgh_str = "off"
+            # k_depropagation kernel (r74 SS2): the radical-end consumption
+            # channel must be traceable in run logs too.
+            kdep = pool.k_depropagation
+            if kdep is not None:
+                kdep_str = (f"A={kdep['A']:.2e},n={kdep['n']:g},"
+                            f"Ea={kdep['Ea']:.4g}J/mol")
+            else:
+                kdep_str = "off"
             role_tag = ""
             if pool.label.endswith(K_HOMOLYSIS_DAUGHTER_SUFFIXES):
                 role_tag = "  [end-radical daughter]"
@@ -2848,6 +3061,7 @@ class HybridPolymerSystem(ReactionSystem):
                   f"k_scission={pool.k_scission:.2e}, "
                   f"k_unzip={pool.k_unzip:.2e}, "
                   f"k_homolysis={khom_str}, "
+                  f"k_depropagation={kdep_str}, "
                   f"side_group_homolysis={sgh_str}){role_tag} ---")
             if sgh_channels:
                 print(f"  side_group_homolysis v1 saturation: the kernel "
@@ -4630,6 +4844,66 @@ class HybridPolymerSystem(ReactionSystem):
                     # design B-prime).
                     small_src[pool.monomer_poly_index] = (
                         small_src.get(pool.monomer_poly_index, 0.0) + r_qssa)
+
+            # End-radical DEPROPAGATION kernel (adjudicated round 74 SS2, the
+            # run-6 no-outlet wall fix). Reads ONLY the flattened kdep_*
+            # arrays from _flatten_depropagation_state -- never the pool
+            # dict. Gates on kdep_enabled; mutually exclusive with
+            # k_unzip > 0 / radical_qssa_unzip / k_homolysis on the same
+            # pool (validate_configuration hard-errors), so at most one
+            # chain-end release arm fires per pool.
+            #
+            # Law, per radical-end pool (ONE active radical end per chain),
+            # k_dep(T) = A*T^n*exp(-Ea/(R_gas*T)) at the RUNTIME T:
+            #   R    = k_dep * mu0 * g   unzip events == monomer release
+            #   gas  = +R at kdep_gas    (the SAME float as the mu1 drain:
+            #                             d(condensed) + d(gas monomer) = 0
+            #                             EXACTLY under MW multiplication)
+            #   dmu1 = -R
+            #   dmu2 = -k_dep*(2*mu1 - mu0), computed as
+            #          -k_dep*mu0*(g + 2*sp(mean - 1)): a DP=n chain loses
+            #          (2n - 1) from mu2 per event; the smooth positive-part
+            #          sp keeps the excess term nonnegative without a
+            #          max(...,0) cliff (identical to the nominal law up to
+            #          O(W^2/(mean-1)) in the realizable region).
+            #   dmu0 = -k_dep * N1, N1 = mu0 * p1 from the EXISTING
+            #          discrete/gamma closure + smooth terminal boundary
+            #          floor (_deprop_dp1_fraction): DP=1 chains release
+            #          their last unit and TERMINATE -- never a permanent
+            #          dmu0 = 0 (r74: that stalls at a one-repeat-per-chain
+            #          residue).
+            # SMOOTH exhaustion gate (r74 SS5, designed in from the start):
+            # g = 1 - sp(1 - mean) is EXACTLY 1 for mean >= 1 and rolls off
+            # C2-smoothly below; dmu0 is deliberately NOT gated by g, so a
+            # noise state mean < 1 drains chains FASTER than units
+            # (self-healing back toward the realizable cone, no stiff
+            # no-outlet grind).
+            if self.kdep_enabled[pool_i] and mu0 > 0.0:
+                T_kdep = self.T.value_si
+                k_dep = (self.kdep_A[pool_i]
+                         * T_kdep ** self.kdep_n[pool_i]
+                         * math.exp(-self.kdep_Ea[pool_i]
+                                    / (QSSA_R_GAS * T_kdep)))
+                if not (0.0 < k_dep < QSSA_INF):
+                    raise ValueError(
+                        f"Pool {pool.label}: k_depropagation(T={T_kdep:g} K) "
+                        f"evaluated to a degenerate rate constant "
+                        f"({k_dep!r}) -- A={self.kdep_A[pool_i]:g}, "
+                        f"n={self.kdep_n[pool_i]:g}, "
+                        f"Ea={self.kdep_Ea[pool_i]:g} J/mol. Refusing to "
+                        f"integrate a poisoned kernel.")
+                mean_kdep = mu1 / mu0
+                g_kdep = 1.0 - _smooth_pos(1.0 - mean_kdep, KDEP_GATE_WIDTH)
+                r_kdep = k_dep * mu0 * g_kdep
+                if r_kdep > 0.0:
+                    dmu1_dt -= r_kdep
+                    dmu2_dt -= k_dep * mu0 * (
+                        g_kdep + 2.0 * _smooth_pos(mean_kdep - 1.0,
+                                                   KDEP_GATE_WIDTH))
+                    g_idx_kdep = int(self.kdep_gas[pool_i])
+                    small_src[g_idx_kdep] = (
+                        small_src.get(g_idx_kdep, 0.0) + r_kdep)
+                dmu0_dt -= k_dep * mu0 * _deprop_dp1_fraction(mu0, mu1, mu2)
 
             # Hybrid Handshake
             tail_mean = mu1 / mu0 if mu0 > SMALL_EPS else 0.0

@@ -2003,6 +2003,38 @@ def _khom_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
     return dict(A=A, n=n, Ea=Ea)
 
 
+class TestDepropagationProducerRefusal:
+    """End-radical depropagation kernel (r74 SS2) has NO sidecar schema
+    block yet (schema 2.8 pending; K-pattern precedent: k_homolysis before
+    schema 2.6). The producer must HARD-FAIL rather than emit an artifact
+    that silently omits a live consumption channel -- a TA replay of such
+    an artifact would un-conserve mass."""
+
+    @staticmethod
+    def _kdep_pool(**kw):
+        p = Polymer(label='PP_rad_primary_end', monomer='[CH2][CH](C)',
+                    end_groups=['[H]', '[H]'], cutoff=3,
+                    moments=[0.0, 0.0, 0.0], initial_mass=0.0,
+                    end_radical_site='primary', **kw)
+        p.k_depropagation = dict(A=9.4e14, n=0.0, Ea=117152.0)
+        return p
+
+    def test_serializer_refuses_k_depropagation_carrying_pool(self):
+        pool = self._kdep_pool()
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*k_depropagation.*schema"):
+            _serialize_pool_for_sidecar(pool)
+
+    def test_kernel_free_pool_still_serializes(self):
+        """The refusal is presence-gated: a kernel-free end-radical pool
+        keeps serializing exactly as before."""
+        pool = self._kdep_pool()
+        pool.k_depropagation = None
+        d = _serialize_pool_for_sidecar(pool)
+        assert d["label"] == "PP_rad_primary_end"
+        assert "k_depropagation" not in d
+
+
 class TestHomolysisInitiationSidecar:
     """Emitter side of the schema-2.6 homolysis_initiation contract."""
 

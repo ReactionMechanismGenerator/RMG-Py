@@ -67,7 +67,8 @@ from rmgpy.rmg.reactionmechanismsimulator_reactors import (
 from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
 from rmgpy.solver.liquid import LiquidReactor
 from rmgpy.solver.mbSampled import MBSampledReactor
-from rmgpy.solver.polymer import (validate_k_homolysis,
+from rmgpy.solver.polymer import (validate_k_depropagation,
+                                  validate_k_homolysis,
                                   validate_radical_qssa_unzip,
                                   validate_side_group_homolysis)
 from rmgpy.solver.simple import SimpleReactor
@@ -264,6 +265,7 @@ def polymer(label: str,
             radical_qssa_unzip: Optional[dict] = None,
             explicit_dp: bool = False,
             k_homolysis: Optional[dict] = None,
+            k_depropagation: Optional[dict] = None,
             side_group_homolysis: Optional[list] = None,
             ):
     """
@@ -499,6 +501,49 @@ def polymer(label: str,
                 f"would let the deck double-carry depolymerization. Set "
                 f"k_unzip=0 or remove k_homolysis.")
 
+    # HARD ERRORS at deck-read time for the end-radical DEPROPAGATION kernel
+    # (adjudicated round 74 SS2, the run-6 no-outlet wall fix). Field rules
+    # (dict-shaped Arrhenius triplet {A, n, Ea}, finite, A > 0, Ea >= 0 --
+    # runtime-T evaluation, never a bare scalar) live in
+    # validate_k_depropagation -- shared single source of truth, also
+    # enforced by derive_daughter_pool_configs and the solver's
+    # validate_configuration. Cross-invariants:
+    # - requires k_homolysis: k_depropagation is declared on the PARENT
+    #   pool's k_homolysis context and APPLIED to the spawned end-radical
+    #   daughter pools (they are never deck-declared); without k_homolysis
+    #   no radical-end pool exists, so the parameter would be a silent dead
+    #   knob (a laundered no-op).
+    # - requires monomer_product: each unzip event releases one monomer
+    #   volatile through the pool's existing monomer routing; without it
+    #   the released units would leave the condensed phase silently
+    #   un-conserved.
+    # (k_unzip > 0 / radical_qssa_unzip / k_scission > 0 are transitively
+    # excluded here because k_homolysis is required and already excludes
+    # all three; the solver re-enforces the per-pool exclusions directly.)
+    if k_depropagation is not None:
+        try:
+            k_depropagation = validate_k_depropagation(label, k_depropagation)
+        except ValueError as e:
+            raise InputError(str(e))
+        if k_homolysis is None:
+            raise InputError(
+                f"Polymer pool '{label}': k_depropagation requires "
+                f"k_homolysis on the same pool -- the depropagation kernel "
+                f"runs on the SPAWNED end-radical daughter pools "
+                f"({label}_rad_primary_end / {label}_rad_secondary_end), "
+                f"which only exist when the k_homolysis initiation kernel "
+                f"is configured. Without it the parameter would be a "
+                f"silent dead knob. Configure k_homolysis or remove "
+                f"k_depropagation.")
+        if monomer_product is None:
+            raise InputError(
+                f"Polymer pool '{label}': k_depropagation requires "
+                f"monomer_product (the real monomer volatile released on "
+                f"each unzip event, e.g. 'C=CC' for polypropylene). "
+                f"Without it the depropagated repeat units would leave the "
+                f"condensed phase silently un-conserved. Define "
+                f"monomer_product or remove k_depropagation.")
+
     # HARD ERRORS at deck-read time for the side-group homolysis initiation
     # kernel (FR1-K1, adjudicated round 70). Field rules (LIST of channel
     # dicts with exactly {label, A, n, Ea, site_selector, sites_per_unit,
@@ -550,6 +595,7 @@ def polymer(label: str,
         k_scission=k_scission,
         radical_qssa_unzip=radical_qssa_unzip,
         k_homolysis=k_homolysis,
+        k_depropagation=k_depropagation,
         side_group_homolysis=side_group_homolysis,
         discrete_dp_threshold=discrete_dp_threshold,
     )

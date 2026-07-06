@@ -247,6 +247,7 @@ class Polymer(Species):
                  k_scission: float = 0.0,
                  radical_qssa_unzip: Optional[dict] = None,
                  k_homolysis: Optional[dict] = None,
+                 k_depropagation: Optional[dict] = None,
                  end_radical_site: Optional[str] = None,
                  side_group_homolysis: Optional[list] = None,
                  side_loss_channel: Optional[str] = None,
@@ -267,6 +268,15 @@ class Polymer(Species):
         # solver layers. NOT a bare scalar by design: the solver evaluates
         # k(T) at its runtime temperature.
         self.k_homolysis = k_homolysis
+        # End-radical depropagation kernel (adjudicated round 74 SS2):
+        # Arrhenius triplet {A, n, Ea} (SI: A [s^-1], Ea [J/mol]) or None.
+        # Passive storage here (like k_homolysis); validated by
+        # rmgpy.solver.polymer.validate_k_depropagation at the deck /
+        # config / solver layers. Declared on the PARENT pool's k_homolysis
+        # context; the producer (generate_end_radical_daughters) copies it
+        # onto both spawned end-radical daughter pools, where the kernel
+        # actually runs.
+        self.k_depropagation = k_depropagation
         # end_radical_site marks this Polymer as one of the two homolysis
         # end-radical daughter pools: 'primary' = the open-*1 chain terminus,
         # 'secondary' = the open-*2 terminus of the backbone C-C cut. When
@@ -644,6 +654,11 @@ class Polymer(Species):
         # initiation kernel; losing end_radical_site would collapse a
         # daughter pool's proxy/fingerprint back onto the parent's.
         other.k_homolysis = deepcopy(getattr(self, 'k_homolysis', None))
+        # k_depropagation kernel triplet (r74 SS2): losing it on copy would
+        # silently disable the radical-end consumption channel (the run-6
+        # no-outlet wall would reopen on the copied pool).
+        other.k_depropagation = deepcopy(getattr(self, 'k_depropagation',
+                                                 None))
         other.end_radical_site = getattr(self, 'end_radical_site', None)
         # Side-group homolysis kernel channels + X-loss feature-pool
         # identity + exact mass-defect contract (FR1-K1): losing the
@@ -1107,6 +1122,21 @@ class Polymer(Species):
             # (defined below; used at call time) -- both closure guards
             # (producer + runner _HOMOLYSIS_SPAWN_SOURCE) pin it exactly.
             daughter.spawn_metadata = {"source": HOMOLYSIS_SPAWN_SOURCE}
+            # End-radical depropagation kernel (r74 SS2): the deck declares
+            # k_depropagation on the PARENT's k_homolysis context (daughters
+            # are never deck-declared); apply it to the spawned radical-end
+            # pools where the kernel actually runs. The triplet is
+            # deep-copied (post-hoc mutation of the parent's dict must not
+            # reach the daughters), while the released-monomer routing
+            # Species is held BY REFERENCE -- identity with the core
+            # Species is load-bearing for the object-keyed spc_map
+            # resolution in derive_daughter_pool_configs (same contract as
+            # the QSSA _inherit_unzip_channel path).
+            kdep = getattr(self, 'k_depropagation', None)
+            if kdep is not None:
+                daughter.k_depropagation = deepcopy(kdep)
+                daughter.monomer_product_species = getattr(
+                    self, 'monomer_product_species', None)
             daughters.append(daughter)
         return tuple(daughters)
 
@@ -5637,6 +5667,24 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
     only; ignored for pools without a handshake species. Absent entries
     default to 0.0 (the species starts empty), never a hole.
     """
+    # End-radical depropagation PRODUCER REFUSAL (r74 SS2 kernel; K-pattern
+    # precedent: k_homolysis before schema 2.6): NO sidecar schema block
+    # exists yet for k_depropagation (schema 2.8 pending), and the emitter
+    # must never silently serialize an artifact that omits a LIVE
+    # consumption channel -- a TA replay of such an artifact would
+    # un-conserve mass (the condensed drain and the monomer volatile source
+    # would both be missing). HARD, LOUD failure until the schema block +
+    # TA twin land.
+    if getattr(pool, "k_depropagation", None) is not None:
+        raise ValueError(
+            f"Pool '{getattr(pool, 'label', '')}': carries a "
+            f"k_depropagation end-radical depropagation kernel, but the "
+            f"polymer-pools sidecar has no schema block for it yet "
+            f"(schema 2.8 pending; K-pattern precedent: k_homolysis "
+            f"before schema 2.6). Refusing to serialize an artifact that "
+            f"would silently omit a live consumption channel (a TA replay "
+            f"would un-conserve mass: no condensed drain, no monomer "
+            f"volatile source).")
     # FR1-K2 fallthrough guard (the successor of the K1 'schema 2.7
     # pending' hard-fail): an X-loss feature-pool identity whose exact
     # mass-defect contract the schema-2.7 vocabulary cannot express

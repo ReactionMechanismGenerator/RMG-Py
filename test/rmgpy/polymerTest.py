@@ -7608,6 +7608,130 @@ def test_polymer_input_helper_k_homolysis_spawns_end_radical_pools():
 
 
 # ---------------------------------------------------------------------------
+# End-radical DEPROPAGATION kernel (adjudicated round 74 SS2) -- deck +
+# producer surfaces: k_depropagation is declared on the PARENT pool's
+# k_homolysis context and applied to its spawned end-radical daughter pools.
+# ---------------------------------------------------------------------------
+
+def _kdep_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
+    return dict(A=A, n=n, Ea=Ea)
+
+
+def test_polymer_stores_k_depropagation_and_copy_preserves_it():
+    """Passive-storage + copy pin (mirrors the k_homolysis precedent):
+    losing k_depropagation on copy() would silently disable the r74
+    consumption channel on the spawned daughters."""
+    kd = _kdep_triplet()
+    poly = Polymer(label='PP', monomer='[CH2][CH](C)',
+                   end_groups=['[H]', '[H]'], cutoff=3,
+                   Mn=1500.0, Mw=1800.0, initial_mass=0.1,
+                   k_homolysis=_khom_triplet(),
+                   k_depropagation=kd)
+    assert poly.k_depropagation == kd
+    cp = poly.copy(deep=True)
+    assert cp.k_depropagation == kd
+    # deep copy, not aliasing
+    cp.k_depropagation['A'] = 999.0
+    assert poly.k_depropagation['A'] == kd['A']
+
+
+def test_polymer_input_helper_rejects_k_depropagation_without_k_homolysis():
+    """Deck layer: k_depropagation configures the SPAWNED end-radical
+    daughter pools; without k_homolysis no radical-end pool exists to
+    depropagate, so the parameter would be a silent dead knob."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_depropagation.*k_homolysis"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          monomer_product="C=CC",
+                          k_depropagation=_kdep_triplet())
+
+
+def test_polymer_input_helper_rejects_k_depropagation_without_monomer_product():
+    """Deck layer: the kernel releases one monomer volatile per unzip event;
+    without monomer_product the released units would leave the condensed
+    phase silently un-conserved."""
+    import rmgpy.rmg.input as rmg_input
+
+    with pytest.raises(InputError, match=r"PP.*k_depropagation.*monomer_product"):
+        rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                          end_groups=["[H]", "[H]"], cutoff=3,
+                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                          k_homolysis=_khom_triplet(),
+                          k_depropagation=_kdep_triplet())
+
+
+def test_polymer_input_helper_rejects_malformed_k_depropagation():
+    """Deck-read-time field validation for the k_depropagation triplet
+    (shared single-source validator, mirrors the k_homolysis rules)."""
+    import rmgpy.rmg.input as rmg_input
+
+    for bad, pattern in [
+        (dict(A=-1.0, n=0.0, Ea=8.0e4), r"PP.*k_depropagation.*A.*> 0"),
+        (dict(A=1.0e13, n=0.0), r"PP.*k_depropagation.*missing"),
+        (dict(A=1.0e13, n=0.0, Ea=-5.0), r"PP.*k_depropagation.*Ea.*>= 0"),
+        (42.0, r"PP.*k_depropagation.*dict"),
+    ]:
+        with pytest.raises(InputError, match=pattern):
+            rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                              end_groups=["[H]", "[H]"], cutoff=3,
+                              Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                              monomer_product="C=CC",
+                              k_homolysis=_khom_triplet(),
+                              k_depropagation=bad)
+
+
+def test_polymer_input_helper_k_depropagation_reaches_spawned_daughters():
+    """GREEN round-trip (deck wiring): polymer(...) with k_homolysis +
+    k_depropagation + monomer_product stores the normalized triplet on the
+    parent AND on both spawned end-radical daughters, with the daughters
+    holding the released-monomer Species BY REFERENCE (identity is
+    load-bearing for derive_daughter_pool_configs' object-keyed spc_map)."""
+    from unittest.mock import MagicMock
+    import rmgpy.rmg.input as rmg_input
+
+    def _make_new_species(obj, **kwargs):
+        # Step 4b registers the monomer_product as a raw Molecule; the real
+        # make_new_species wraps it in a Species -- mirror that here so the
+        # registration path (and the identity contract on the wrapped
+        # Species) is exercised.
+        if isinstance(obj, Molecule):
+            spc = Species(molecule=[obj], label=obj.to_smiles())
+            return spc, True
+        return obj, True
+
+    mock_rmg = MagicMock()
+    mock_rmg.initial_species = []
+    mock_rmg.reaction_model.iteration_num = 0
+    mock_rmg.reaction_model.new_species_list = []
+    mock_rmg.reaction_model.make_new_species.side_effect = _make_new_species
+
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
+    try:
+        poly = rmg_input.polymer(label="PP", monomer="[CH2][CH](C)",
+                                 end_groups=["[H]", "[H]"], cutoff=3,
+                                 Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                                 monomer_product="C=CC",
+                                 k_homolysis=_khom_triplet(),
+                                 k_depropagation=_kdep_triplet())
+        sd = rmg_input.species_dict
+        assert poly.k_depropagation == _kdep_triplet()
+        assert all(isinstance(v, float)
+                   for v in poly.k_depropagation.values())
+        for suffix in ("_rad_primary_end", "_rad_secondary_end"):
+            d = sd[f"PP{suffix}"]
+            assert d.k_depropagation == _kdep_triplet()
+            assert d.k_depropagation is not poly.k_depropagation
+            assert d.monomer_product_species is poly.monomer_product_species
+            assert d.monomer_product_species is not None
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+
+# ---------------------------------------------------------------------------
 # Side-group homolysis (FR1-K1, adjudicated round 70) -- producer + deck
 # surfaces: per-pool side_group_homolysis channel list, one X-loss feature
 # pool per (parent, channel), gas X radical registration, exact mass-defect
