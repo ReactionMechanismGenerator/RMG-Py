@@ -1420,6 +1420,14 @@ class PolymerPool(object):
                 monomer_mw_g_mol = self.monomer.get_molecular_weight() * 1000.0
         except Exception:
             monomer_mw_g_mol = 0.0
+        # 4b. Monomer heavy-atom (non-H) count -- the SECOND axis of the r89
+        #     dual-axis melt gate in the solver's reference-state tripwire
+        #     (mirrors rmgpy.polymer._discrete_is_polymer_sized: mass AND
+        #     structure, both computable, both at/above threshold). Same
+        #     Molecule-or-Species idiom and same best-effort posture as the
+        #     MW above: 0 (-> axis uncomputable -> the gate answers
+        #     conservative-gas and warns) when no resolvable structure.
+        monomer_heavy_atoms = _monomer_heavy_atom_count(self.monomer)
 
         return PolymerPoolConfig(
             label=self.label,
@@ -1428,6 +1436,7 @@ class PolymerPool(object):
             mu_indices=mu_idxs,
             monomer_poly_index=monomer_idx,
             monomer_mw_g_mol=monomer_mw_g_mol,
+            monomer_heavy_atoms=monomer_heavy_atoms,
             k_scission=self.k_scission,
             k_unzip=self.k_unzip,
             radical_qssa_unzip=qssa_channel,
@@ -1435,6 +1444,24 @@ class PolymerPool(object):
             side_group_homolysis=sgh_channels,
             side_group_gas_indices=sgh_gas_indices,
         )
+
+
+def _monomer_heavy_atom_count(monomer):
+    """Heavy-atom (non-H) count of a pool monomer, handling BOTH monomer
+    idioms (a Molecule from the polymer() input helper, or a Species resolved
+    from species_dict -- the same dual idiom as the monomer-MW read in
+    ``to_pool_config``). Best-effort 0 when no resolvable structure: the r89
+    dual-axis melt gate treats 0 as an UNCOMPUTABLE heavy axis (conservative-
+    gas + census warning), never as a decided answer."""
+    try:
+        mol_list = getattr(monomer, "molecule", None)
+        mol = mol_list[0] if mol_list else (
+            monomer if hasattr(monomer, "get_num_atoms") else None)
+        if mol is None:
+            return 0
+        return int(mol.get_num_atoms() - mol.get_num_atoms('H'))
+    except Exception:
+        return 0
 
 
 def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
@@ -1578,6 +1605,13 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
             mu_indices=mu_indices,
             monomer_poly_index=monomer_idx,
             monomer_mw_g_mol=float(getattr(spc, "monomer_mw_g_mol", 0.0) or 0.0),
+            # r89 dual-axis heavy denominator: a spawned daughter Polymer
+            # carries the parent's monomer structure (intact-chain transfer),
+            # so the derived config gets the same heavy-atom axis the static
+            # deck pool would -- without it every tag-branch candidate in a
+            # daughter-only deck would be heavy-axis-undecidable.
+            monomer_heavy_atoms=_monomer_heavy_atom_count(
+                getattr(spc, "monomer", None)),
             radical_qssa_unzip=qssa_channel,
             k_depropagation=kdep_channel,
             # FR1-K1 mass contract: an X-loss feature daughter's exact

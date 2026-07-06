@@ -53,7 +53,9 @@ import numpy as np
 import yaml
 
 from rmgpy.kinetics import Arrhenius
+from rmgpy.molecule import Molecule
 from rmgpy.molecule.element import get_element
+from rmgpy.polymer import POLYMER_HEAVY_ATOM_COUNT_KEY
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction
 from rmgpy.solver.polymer import (
@@ -129,14 +131,60 @@ def _species_from_yaml(entry):
     # Structure does not cross the artifact boundary, so MW must come from
     # artifact fields too: the chem.yaml elemental composition. The solver's
     # thermo reference-state tripwire reads this species-level quantity.
+    # The r89 dual-axis melt gate additionally needs the HEAVY-ATOM (non-H)
+    # count -- the second axis MUST come from real composition data, never
+    # approximated from mass (r89 data-flow constraint) -- so stamp it into
+    # props (POLYMER_HEAVY_ATOM_COUNT_KEY; props survive Species.copy) from
+    # the same composition dict. Stamped whenever a composition is present,
+    # INCLUDING a genuine 0 (e.g. H2: computable, decidedly not
+    # polymer-sized); absent composition leaves the axis undecidable and the
+    # gate conservative-gas.
+    composition = entry.get("composition") or {}
     mw_kg_mol = 0.0
-    for symbol, count in (entry.get("composition") or {}).items():
+    heavy_atoms = 0
+    for symbol, count in composition.items():
         if symbol == "E":
             continue  # electron count: negligible mass; not a get_element symbol
         mw_kg_mol += get_element(symbol).mass * float(count)  # .mass is kg/mol
+        if symbol != "H":
+            heavy_atoms += int(count)
     if mw_kg_mol > 0.0:
         spc.molecular_weight = (mw_kg_mol, "kg/mol")
+    if composition:
+        spc.props[POLYMER_HEAVY_ATOM_COUNT_KEY] = heavy_atoms
     return spc
+
+
+def _monomer_heavy_atoms_from_pool_entry(p):
+    """Heavy-atom (non-H) count of an artifact pool's monomer, reconstructed
+    from the structure fields the generation-world serializer writes for
+    every pool (``monomer_adj_list`` preferred -- lossless; ``monomer_smiles``
+    fallback). This is the r89 dual-axis melt gate's heavy DENOMINATOR at the
+    consumer seam; per the r89 data-flow constraint it must come from real
+    structure data, never be approximated from mass. Best-effort 0 when
+    neither field parses: the axis is then UNDECIDABLE and the solver gate
+    answers conservative-gas with a census warning (mirroring
+    rmgpy.polymer._warn_impostor_axis_undecidable), never a blind melt."""
+    mol = None
+    try:
+        adj = p.get("monomer_adj_list")
+        if adj:
+            mol = Molecule().from_adjacency_list(str(adj))
+    except Exception:
+        mol = None
+    if mol is None:
+        try:
+            smi = p.get("monomer_smiles")
+            if smi:
+                mol = Molecule().from_smiles(str(smi))
+        except Exception:
+            mol = None
+    if mol is None:
+        return 0
+    try:
+        return int(mol.get_num_atoms() - mol.get_num_atoms('H'))
+    except Exception:
+        return 0
 
 
 def _parse_equation(eq):
@@ -2894,11 +2942,19 @@ def build_system_from_artifact(artifact, species, reactions,
             explicit_dp_to_species_index=explicit_map,
             mu_indices=mu_idx,
             monomer_poly_index=monomer_idx,
-            # The tripwire's ONE chain-scale window (and the spawn-gate
+            # The tripwire's provenance window (and the spawn-gate
             # snapshot) consume this; without it the consumer-world window
-            # collapses to the bare slack and the tag-branch class drifts
-            # from generation world.
+            # collapses to the bare slack and the sensor drifts from
+            # generation world.
             monomer_mw_g_mol=float(p.get("monomer_mw_g_mol") or 0.0),
+            # r89 dual-axis heavy denominator: reconstructed from the
+            # artifact's monomer structure fields (monomer_adj_list /
+            # monomer_smiles, emitted by polymer.py's pool serializer for
+            # every pool) so the consumer-world melt gate carries the SAME
+            # heavy-atom axis as generation world. 0 (no resolvable
+            # structure) leaves the axis undecidable: tag-branch candidates
+            # answer conservative-gas and the tripwire warns.
+            monomer_heavy_atoms=_monomer_heavy_atoms_from_pool_entry(p),
             k_scission=k_scission,
             k_unzip=k_unzip,
             radical_qssa_unzip=qssa_cfg,

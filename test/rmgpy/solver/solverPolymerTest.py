@@ -154,7 +154,8 @@ def _refstate_rs(core, rxns, mask, pools, moments, rs_kwargs=None):
     return rs
 
 
-def _gate_pool_config(monomer_mw_g_mol=28.0, chain_mass_defect_g_mol=0.0):
+def _gate_pool_config(monomer_mw_g_mol=28.0, chain_mass_defect_g_mol=0.0,
+                      monomer_heavy_atoms=0):
     """PolymerPoolConfig for the spawn-gate fixtures.
 
     ``monomer_mw_g_mol`` is added by the mass-flux-spawn-gate change (spec
@@ -163,12 +164,20 @@ def _gate_pool_config(monomer_mw_g_mol=28.0, chain_mass_defect_g_mol=0.0):
     tripwire run on pre-change HEAD and die at the GROSS-ARRAY assertion
     (the born-dead mechanism, spec §3.1) instead of at fixture construction.
     Once the field lands, the guard always takes the kwargs branch.
+
+    ``monomer_heavy_atoms`` is the r89 dual-axis heavy denominator (same
+    field-presence guard posture: pre-r89 HEAD builds the config without it
+    and the dual-axis tests die at their own assertions, not at fixture
+    construction). Default 0 = heavy axis uncomputable.
     """
     kwargs = dict(label="A", xs=2, explicit_dp_to_species_index={},
                   mu_indices=(1, 2, 3), monomer_poly_index=None)
     if any(f.name == "monomer_mw_g_mol"
            for f in dataclasses.fields(PolymerPoolConfig)):
         kwargs["monomer_mw_g_mol"] = monomer_mw_g_mol
+    if monomer_heavy_atoms and any(f.name == "monomer_heavy_atoms"
+                                   for f in dataclasses.fields(PolymerPoolConfig)):
+        kwargs["monomer_heavy_atoms"] = monomer_heavy_atoms
     if chain_mass_defect_g_mol:
         kwargs["chain_mass_defect_g_mol"] = chain_mass_defect_g_mol
     return PolymerPoolConfig(**kwargs)
@@ -4862,7 +4871,8 @@ class TestThermoReferenceStateTripwire:
         # refuses it first and the build completes.
         with caplog.at_level(_logging.WARNING):
             rs = _refstate_rs(core, [rxn], mask,
-                              [_gate_pool_config(monomer_mw_g_mol=42.08)],
+                              [_gate_pool_config(monomer_mw_g_mol=42.08,
+                                                 monomer_heavy_atoms=3)],
                               {"A": (1.0, 5.0, 30.0)})
         assert rxn.polymer_refused is True
         assert rxn.polymer_refused_accumulating is False  # conduit-deferred
@@ -4897,7 +4907,8 @@ class TestThermoReferenceStateTripwire:
         mask = np.array([False] * 4 + [True, True], dtype=bool)
         rxn = Reaction(reactants=[sp["D1"]], products=[sp["D2"]], **_REV_KIN)
         rs = _refstate_rs(core, [rxn], mask,
-                          [_gate_pool_config(monomer_mw_g_mol=42.08)],
+                          [_gate_pool_config(monomer_mw_g_mol=42.08,
+                                                 monomer_heavy_atoms=3)],
                           {"A": (1.0, 5.0, 30.0)})
         assert not getattr(rxn, "polymer_refused", False)
         assert not any(c["reason"] == "conduit-deferred"
@@ -4908,10 +4919,15 @@ class TestThermoReferenceStateTripwire:
         chain-scale counterparty takes GAV -> the mixed-provenance warning
         must fire. The counterparty is the §2 decoupling shape: a
         gas-classified but proxy-TAGGED same-mass radical (butyl 57.11 vs
-        butane 58.12 g/mol, inside the one-monomer window 28+10), so the pair
-        is mass-paired (U = 1.5*log10(58.12/57.11) = 0.011 -- no census, no
-        refusal) and ONLY the sensor can speak. The small gas H also takes
-        library thermo and must NOT matter (outside the window)."""
+        butane 58.12 g/mol), so the pair is mass-paired
+        (U = 1.5*log10(58.12/57.11) = 0.011 -- no census, no refusal) and
+        ONLY the sensor can speak. The small gas H also takes library thermo
+        and must NOT matter (outside the counterparty window). r89 lockstep:
+        the pool is a CH2-repeat (14.03 g/mol, 1 heavy atom) so butyl clears
+        the dual-axis polymer-sized melt gate (4.07 mass-units, 4.0
+        heavy-units >= 2.5) -- under the r89 class a below-threshold tagged
+        radical would be conservative-gas and A would be UNPAIRED (refusal),
+        which is a different test."""
         import logging
         sp = {
             "A": _spc("CCCC", "A"),
@@ -4924,9 +4940,10 @@ class TestThermoReferenceStateTripwire:
         sp["H"].thermo = _trivial_nasa(_LIB_COMMENT)   # small gas: library
         for k in ("A_mu0", "A_mu1", "A_mu2"):
             sp[k].thermo = _trivial_nasa(_LIB_COMMENT)
-        # gas-CLASSIFIED, proxy-TAGGED, chain-scale (57.11 >= window
-        # 28 + 10 = 38 from the pool config below): physically-melt via the
-        # tag branch of the C3-AMENDED spec-§5.1 class (tag AND MW >= window)
+        # gas-CLASSIFIED, proxy-TAGGED, dual-axis polymer-sized against the
+        # CH2 pool (57.11 / 14.03 = 4.07 mass-units, 4 / 1 = 4.0
+        # heavy-units, both >= 2.5): physically-melt via the tag branch of
+        # the r89-amended spec-§5.1 class (tag AND NOT veto AND dual-axis)
         sp["B"].is_polymer_proxy = True
         core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["B"], sp["H"]]
         mask = np.array([False] * 4 + [True, True], dtype=bool)
@@ -4937,14 +4954,20 @@ class TestThermoReferenceStateTripwire:
         # distinguishes pre/post-change.
         mw_a = sp["A"].molecule[0].get_molecular_weight() * 1000.0
         mw_b = sp["B"].molecule[0].get_molecular_weight() * 1000.0
-        assert abs(mw_a - mw_b) <= 28.0 + 10.0
-        # amended-class pin (spec §5.1 C3): B must clear the chain-scale
-        # window, or it would not be physically-melt at all and the sensor
-        # would have no melt-vs-counterparty pair to warn on
-        assert mw_b >= 28.0 + 10.0
+        assert abs(mw_a - mw_b) <= 14.03 + 10.0
+        # amended-class pin (spec §5.1 C3, r89 dual-axis): B must clear the
+        # polymer-sized threshold on BOTH axes, or it would not be
+        # physically-melt at all and the sensor would have no
+        # melt-vs-counterparty pair to warn on
+        assert mw_b >= 2.5 * 14.03
+        heavy_b = (sp["B"].molecule[0].get_num_atoms()
+                   - sp["B"].molecule[0].get_num_atoms('H'))
+        assert heavy_b >= 2.5 * 1
         with caplog.at_level(logging.WARNING):
             _refstate_rs(core, [rxn], mask,
-                         [_gate_pool_config()], {"A": (1.0, 5.0, 30.0)})
+                         [_gate_pool_config(monomer_mw_g_mol=14.03,
+                                            monomer_heavy_atoms=1)],
+                         {"A": (1.0, 5.0, 30.0)})
 
         # THE red assertion: pre-change HEAD emits no provenance warning.
         assert any("THERMO REFERENCE-STATE PROVENANCE" in r.getMessage()
@@ -4955,29 +4978,44 @@ class TestThermoReferenceStateTripwire:
         )
 
     def test_melt_sum_leak_guard_raises_classification_error(self):
-        """Spec §5.1 C3 amendment: the cannot-happen leak guard inside the
-        melt-sum accumulation. Under the amended class a tagged below-window
-        species fails the MW conjunct and is EXCLUDED by the gate -- expected
-        and silent (the family.py:1657 over-tagging fingerprint, H2 on every
-        proxy-touching reaction); the raise is only for such a species
-        REACHING the melt sum. Because the gate and the guard share ONE
-        window definition, the violation is structurally unreachable through
-        public paths -- so the raise is pinned by calling the helper directly
-        with a hand-built violating member (documented bypass, per the C3
-        amendment)."""
+        """Spec §5.1 C3 amendment (r89 dual-axis form): the cannot-happen
+        leak guard inside the melt-sum accumulation. Under the amended class
+        a tagged below-threshold species fails the dual-axis polymer-sized
+        conjunct and is EXCLUDED by the gate -- expected and silent (the
+        family.py:1657 over-tagging fingerprint, H2 on every proxy-touching
+        reaction; the PP run-9 DP-2 hexadiene); the raise is only for such a
+        species REACHING the melt sum. Because the gate and the guard share
+        ONE dual-axis predicate, the violation is structurally unreachable
+        through public paths -- so the raise is pinned by calling the helper
+        directly with a hand-built violating member (documented bypass, per
+        the C3 amendment)."""
         from rmgpy.solver.polymer import _assert_chain_scale_melt_member
+        pp_axes = [(42.08, 3)]   # propene pool: monomer MW [g/mol], heavy atoms
+        units = 2.5
         # Valid members never raise: a condensed-branch member (gate-exempt,
-        # pool-configured by input -- any MW, even below the window) and a
-        # chain-scale tag-branch member (MW above the window).
-        _assert_chain_scale_melt_member("M1", 0.016043, False, 0.038)
-        _assert_chain_scale_melt_member("Erad", 0.211407, True, 0.080)
-        # The hand-built violation: a gas-classified (tag-branch) member
-        # below the window inside the melt sum. The message must steer the
-        # operator to CLASSIFICATION, never to reference states.
+        # pool-configured by input -- any size, even below threshold) and a
+        # polymer-sized tag-branch member (C15 backbone radical: 211.4 g/mol
+        # = 5.0 mass-units, 15 heavy = 5.0 heavy-units).
+        _assert_chain_scale_melt_member("M1", 0.016043, 1, False, pp_axes, units)
+        _assert_chain_scale_melt_member("Erad", 0.211407, 15, True, pp_axes, units)
+        # The hand-built violations: gas-classified (tag-branch) members
+        # below the dual-axis threshold inside the melt sum. The message must
+        # steer the operator to CLASSIFICATION, never to reference states.
         with pytest.raises(ValueError, match="classification leak, NOT a thermo problem"):
-            _assert_chain_scale_melt_member("H2", 0.002016, True, 0.038)
+            _assert_chain_scale_melt_member("H2", 0.002016, 0, True, pp_axes, units)
         with pytest.raises(ValueError, match="non-chain species in the melt sum"):
-            _assert_chain_scale_melt_member("H2", 0.002016, True, 0.038)
+            _assert_chain_scale_melt_member("H2", 0.002016, 0, True, pp_axes, units)
+        # r89: the run-9 DP-2 shape (hexadiene, 82.15 g/mol = 1.95
+        # mass-units) violates too -- under the pre-r89 window form
+        # (>= monomer + 10 slack) it slipped THROUGH this guard.
+        with pytest.raises(ValueError, match="classification leak"):
+            _assert_chain_scale_melt_member(
+                "C=CCCC=C", 0.08215, 6, True, pp_axes, units)
+        # And an axis-undecidable member (heavy unknown: -1) may never reach
+        # the sum either -- undecidable is conservative-gas, not melt.
+        with pytest.raises(ValueError, match="classification leak"):
+            _assert_chain_scale_melt_member(
+                "NOAXIS", 0.211407, -1, True, pp_axes, units)
 
     def test_unpaired_decades_formula_pins_spec_numbers(self):
         """Spec §5.1/§2 pinned numerically against the production helper:
@@ -5054,83 +5092,134 @@ class TestThermoReferenceStateTripwire:
         assert any("THERMO REFERENCE-STATE CENSUS" in r.getMessage()
                    for r in caplog.records)
 
-    def test_gas_volatile_veto_excludes_from_melt_tag_branch(self, caplog):
-        """Spec §5.1 (durable gas-volatile veto): a genuine discrete gas
-        volatile (alpha-methylstyrene, C9H10, ~118 g/mol) reaches the solver
-        gas-masked (gas_mask=True) but proxy-TAGGED and chain-scale, so the
-        melt-gate TAG branch (proxy AND MW>=window) would wrongly count it as a
-        melt reference-state participant. Because is_polymer_proxy is a
-        monotonic multi-writer sticky cache with no gas authority, the durable
-        verdict lives in ``Species.props['polymer_reference_state_gas_veto']``
-        (set once at the discrete-product creation point, copied by
-        Species.copy, never touched by the proxy stamping machinery). The gate
-        must honor it: TAG branch = proxy AND MW>=window AND NOT veto.
-
-        Live shape (the PS-run crash): melt reactant [chain] vs melt products
-        [volatile, tail] -> dn_melt=+1 -> one uncancelled Sackur-Tetrode term
-        -> U~11 decades -> REFUSE. With the volatile vetoed it drops out of the
-        product melt set -> dn_melt=0 -> benign, builds.
-
-        RED before the gate honors the veto: the vetoed build still REFUSES
-        (the veto is ignored). The no-veto control refuses in BOTH pre/post
-        (it is the liveness pin proving the scenario genuinely refuses).
-        """
-        import logging
+    @staticmethod
+    def _volatile_vs_pool_build(vol_smiles, pool_mw, pool_heavy, set_veto,
+                                set_tag=True):
+        """Shared r89 fixture: one-pool core (melt proxy A + mu dummies,
+        indices 0-3), a condensed melt chain TAIL (index 4, gas_mask=False)
+        and the discrete gas species VOL (index 5, gas_mask=True) in the
+        unpaired shape ``A <=> VOL + TAIL`` (dn_melt=+1 if VOL classifies
+        melt -> one uncancelled Sackur-Tetrode term -> U ~ 11 decades ->
+        REFUSE; VOL classified gas -> dn_melt=0 -> benign, builds)."""
         from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO_KEY
-
-        def _build(set_veto):
-            # one-pool core: melt proxy A + mu0/1/2 dummies (indices 0-3), a
-            # condensed melt chain TAIL (index 4, gas_mask=False), and the
-            # discrete gas volatile VOL (index 5, gas_mask=True, proxy-TAGGED,
-            # chain-scale MW 0.118 >= window -> only the TAG branch can make it
-            # melt).
-            a = _spc("CCCC", "A")
-            a_mu0, a_mu1, a_mu2 = (_spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
-                                   _spc("C#N", "A_mu2"))
-            tail = _spc("CCCCCCCC", "TAIL")
-            vol = _spc("C=C(C)c1ccccc1", "VOL")
+        a = _spc("CCCC", "A")
+        a_mu0, a_mu1, a_mu2 = (_spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
+                               _spc("C#N", "A_mu2"))
+        tail = _spc("CCCCCCCC", "TAIL")
+        vol = _spc(vol_smiles, "VOL")
+        if set_tag:
             vol.is_polymer_proxy = True
-            if set_veto:
-                vol.props[VETO_KEY] = True
-            for s in (a, a_mu0, a_mu1, a_mu2, tail, vol):
-                s.thermo = _trivial_nasa(_GAV_COMMENT)
-            core = [a, a_mu0, a_mu1, a_mu2, tail, vol]
-            mask = np.array([False, False, False, False, False, True], dtype=bool)
-            rxn = Reaction(reactants=[a], products=[vol, tail], **_REV_KIN)
-            # pool config -> chain_window = (104 + 10)/1000 = 0.114 kg/mol,
-            # just below the volatile's 0.118 so the TAG branch admits it.
-            return _refstate_rs(core, [rxn], mask,
-                                [_gate_pool_config(104.0)], {"A": (1.0, 5.0, 30.0)})
+        if set_veto:
+            vol.props[VETO_KEY] = True
+        for s in (a, a_mu0, a_mu1, a_mu2, tail, vol):
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [a, a_mu0, a_mu1, a_mu2, tail, vol]
+        mask = np.array([False, False, False, False, False, True], dtype=bool)
+        rxn = Reaction(reactants=[a], products=[vol, tail], **_REV_KIN)
+        return _refstate_rs(core, [rxn], mask,
+                            [_gate_pool_config(monomer_mw_g_mol=pool_mw,
+                                               monomer_heavy_atoms=pool_heavy)],
+                            {"A": (1.0, 5.0, 30.0)})
 
-        # LIVENESS PIN: without the veto the scenario genuinely refuses
-        # (proves the volatile-as-melt asymmetry is the cause).
-        with pytest.raises(ValueError, match="unpaired reference-state"):
-            _build(set_veto=False)
-
-        # THE red assertion: WITH the durable veto the volatile is excluded
-        # from the melt sum -> the build SUCCEEDS (no refusal).
+    @pytest.mark.parametrize("vol_smiles,pool_mw,pool_heavy,mass_units,heavy_units", [
+        # r89 RED 1 sibling shape at the tripwire seam: PP run-9's
+        # 1,5-hexadiene (C6H10, 82.15 g/mol) vs the propene pool -- above
+        # the pre-r89 window (42.08 + 10 = 52.1) but a genuine DP-2 gas
+        # volatile at 1.95 mass-units / 2.0 heavy-units < 2.5.
+        ("C=CCCC=C", 42.08, 3, 82.15 / 42.08, 6 / 3.0),
+        # r89 RED 2 (PS sibling): alpha-methylstyrene (118.18 g/mol) vs the
+        # styrene pool -- above the pre-r89 window (104.15 + 10 = 114.2) but
+        # 1.13 mass-units / 1.125 heavy-units < 2.5.
+        ("C=C(C)c1ccccc1", 104.15, 8, 118.18 / 104.15, 9 / 8.0),
+    ])
+    def test_dp2_and_ams_volatiles_classify_gas_without_needing_veto(
+            self, vol_smiles, pool_mw, pool_heavy, mass_units, heavy_units,
+            caplog):
+        """r89 dual-axis melt gate (PP run-9 fix, RED-first at 5bba9e3eb): a
+        proxy-TAGGED, gas-masked, UN-vetoed genuine volatile whose MW clears
+        the pre-r89 chain window but which sits below
+        _IMPOSTOR_DISCRETE_MONOMER_UNITS (2.5) monomer-equivalents on the
+        mass and/or heavy-atom axis must classify GAS -- the tag branch is
+        proxy AND NOT veto AND dual-axis polymer-sized, so the unpaired
+        shape ``A <=> VOL + TAIL`` stays benign (VOL's gas reference state
+        is simply CORRECT). RED at 5bba9e3eb: the window-based tag branch
+        melt-classifies VOL and initialize_model dies on the cliff-sign
+        ValueError (run-9's death on ``allyl + allyl <=> 1,5-hexadiene``,
+        RMG.log:2564-2587)."""
+        import logging
+        # LIVENESS PINS: VOL is genuinely the r89 shape -- above the
+        # pre-r89 window, below the dual-axis threshold.
+        mw_vol = Molecule().from_smiles(vol_smiles).get_molecular_weight() * 1000.0
+        assert mw_vol >= pool_mw + 10.0, "not the window-leak shape"
+        assert mass_units < 2.5 or heavy_units < 2.5, "not a DP-2 volatile"
         caplog.clear()
         with caplog.at_level(logging.WARNING):
-            rs = _build(set_veto=True)
+            rs = self._volatile_vs_pool_build(vol_smiles, pool_mw, pool_heavy,
+                                              set_veto=False)
         assert rs.reference_state_max_decades < 3.0, (
-            "durable gas-volatile veto must exclude the volatile from the melt "
-            "tag branch so the reference-state term stays paired/benign"
+            "the dual-axis gate must classify a below-threshold tagged "
+            "volatile GAS (no veto needed) so the reference-state term stays "
+            "paired/benign"
+        )
+        # A decided-False verdict is NOT undecidable: no axis census.
+        assert not any("AXIS UNDECIDABLE" in r.getMessage()
+                       for r in caplog.records)
+        # And not veto-censused either (nothing was vetoed).
+        assert not getattr(rs, "gas_veto_census", [])
+
+    def test_gas_volatile_veto_excludes_from_melt_tag_branch(self, caplog):
+        """Spec §5.1 (durable gas-volatile veto), r89 form: a POLYMER-SIZED
+        proxy-derived discrete (the FR1 run-3 adduct shape, C9H18Br2,
+        286.05 g/mol = 6.8 mass-units / 11 heavy = 3.67 heavy-units vs the
+        propene pool -- both axes >= 2.5) reaches the solver gas-masked but
+        proxy-TAGGED. Because is_polymer_proxy is a monotonic multi-writer
+        sticky cache with no gas authority, the durable verdict lives in
+        ``Species.props['polymer_reference_state_gas_veto']`` (set once at
+        the discrete-product creation point, copied by Species.copy, never
+        touched by the proxy stamping machinery). The gate must honor it
+        with UNCHANGED precedence (r89 RED 4): TAG branch = proxy AND NOT
+        veto AND dual-axis polymer-sized.
+
+        The no-veto control refuses in BOTH pre/post r89 (r89 RED 3 at the
+        tripwire seam: a genuinely chain-scale tagged unvetoed discrete
+        REMAINS melt -- the dual-axis amendment must not blanket-gas the
+        FR1 adduct cohort)."""
+        import logging
+
+        # LIVENESS PIN + r89 RED 3 (negative control): without the veto the
+        # polymer-sized adduct is MELT and the scenario genuinely refuses
+        # (proves the volatile-as-melt asymmetry is the cause and pins that
+        # r87 tripwire behavior on chain-scale adducts is unchanged).
+        with pytest.raises(ValueError, match="unpaired reference-state"):
+            self._volatile_vs_pool_build("CC(CBr)CC(C)CC(C)Br", 42.08, 3,
+                                         set_veto=False)
+
+        # r89 RED 4 (veto precedence unchanged): WITH the durable veto the
+        # adduct is excluded from the melt sum -> the build SUCCEEDS.
+        caplog.clear()
+        with caplog.at_level(logging.WARNING):
+            rs = self._volatile_vs_pool_build("CC(CBr)CC(C)CC(C)Br", 42.08, 3,
+                                              set_veto=True)
+        assert rs.reference_state_max_decades < 3.0, (
+            "durable gas-volatile veto must exclude the discrete from the "
+            "melt tag branch so the reference-state term stays paired/benign"
         )
 
     def test_gas_veto_suppression_of_chain_scale_member_is_logged(self, caplog):
-        """Backstop (code-review IMPORTANT #1): the veto silences the
-        reference-state tripwire for a CHAIN-SCALE (MW >= window) product,
-        because create_reacted_copy returns None both for a genuine gas
-        volatile AND for a wing-match FAILURE on a real chain-scale fragment.
-        The gate cannot distinguish them (alpha-MS is itself above the window),
-        so a handshake false-None on a genuine chain would be silently dropped
-        from the melt sum instead of loudly refused. To preserve the backstop,
-        the gate must emit a visible census/warning naming any chain-scale
-        member whose melt classification the veto suppressed -- so a human can
-        catch a mis-vetoed real chain even though the build no longer refuses.
-
-        RED before the census logic: no such warning is emitted.
-        """
+        """Backstop (code-review IMPORTANT #1, r89-aligned): the veto
+        silences the reference-state tripwire for a genuinely CHAIN-SCALE
+        (dual-axis polymer-sized) product, because create_reacted_copy
+        returns None both for a genuine gas volatile AND for a wing-match
+        FAILURE on a real chain-scale fragment. A handshake false-None on a
+        genuine chain would be silently dropped from the melt sum instead of
+        loudly refused, so the gate must emit a visible census/warning
+        naming any POLYMER-SIZED member whose melt classification the veto
+        suppressed. r89 alignment: the census keys on the SAME dual-axis
+        chain-scale notion as the gate -- a vetoed genuine volatile below
+        scale (DP-2 hexadiene, 1.95 propene-monomer-equivalents) is NO
+        LONGER announced (pre-r89 its MW cleared the window, 82.15 > 52.1,
+        and it was censused despite the warning text itself calling such
+        exclusions correct)."""
         import logging
         from rmgpy.polymer import POLYMER_REFERENCE_STATE_GAS_VETO_KEY as VETO_KEY
 
@@ -5138,18 +5227,27 @@ class TestThermoReferenceStateTripwire:
         a_mu0, a_mu1, a_mu2 = (_spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
                                _spc("C#N", "A_mu2"))
         tail = _spc("CCCCCCCC", "TAIL")
-        vol = _spc("C=C(C)c1ccccc1", "VOL")       # chain-scale MW 0.118 >= window
+        # polymer-sized vetoed member: the FR1 adduct shape vs propene pool
+        # (286.05 g/mol = 6.8 mass-units, 11 heavy = 3.67 heavy-units)
+        vol = _spc("CC(CBr)CC(C)CC(C)Br", "VOL")
         vol.is_polymer_proxy = True
         vol.props[VETO_KEY] = True
-        for s in (a, a_mu0, a_mu1, a_mu2, tail, vol):
+        # below-scale vetoed volatile: DP-2 hexadiene (1.95 mass-units, 2.0
+        # heavy-units vs the propene pool -- decided False on both axes)
+        hexd = _spc("C=CCCC=C", "HEXD")
+        hexd.is_polymer_proxy = True
+        hexd.props[VETO_KEY] = True
+        for s in (a, a_mu0, a_mu1, a_mu2, tail, vol, hexd):
             s.thermo = _trivial_nasa(_GAV_COMMENT)
-        core = [a, a_mu0, a_mu1, a_mu2, tail, vol]
-        mask = np.array([False, False, False, False, False, True], dtype=bool)
+        core = [a, a_mu0, a_mu1, a_mu2, tail, vol, hexd]
+        mask = np.array([False] * 5 + [True, True], dtype=bool)
         rxn = Reaction(reactants=[a], products=[vol, tail], **_REV_KIN)
 
         with caplog.at_level(logging.WARNING):
             rs = _refstate_rs(core, [rxn], mask,
-                              [_gate_pool_config(104.0)], {"A": (1.0, 5.0, 30.0)})
+                              [_gate_pool_config(monomer_mw_g_mol=42.08,
+                                                 monomer_heavy_atoms=3)],
+                              {"A": (1.0, 5.0, 30.0)})
 
         # a visible notice naming the suppressed chain-scale species
         assert any("GAS VETO" in r.getMessage() and "VOL" in r.getMessage()
@@ -5161,6 +5259,199 @@ class TestThermoReferenceStateTripwire:
         assert any("VOL" in str(entry)
                    for entry in getattr(rs, "gas_veto_census", [])), (
             "the suppressed chain-scale member must be recorded in gas_veto_census"
+        )
+        # r89 alignment pin: the below-scale vetoed volatile is NOT censused
+        # (its exclusion is a decided gas verdict, not a suppression worth a
+        # human's attention). Pre-r89 RED: HEXD's MW cleared the window and
+        # it polluted the census.
+        assert not any("HEXD" in str(entry)
+                       for entry in getattr(rs, "gas_veto_census", [])), (
+            "a below-polymer-sized vetoed volatile must not pollute the "
+            "gas-veto census (dual-axis alignment, r89)"
+        )
+
+    def test_run9_allyl_recombination_dp2_product_passes_tripwire(self, caplog):
+        """r89 RED 1, the EXACT PP run-9 death shape
+        (/home/alon/Projects/polymer/PP/rmg/run9/RMG.log:2564-2587): the
+        all-gas reversible recombination ``[CH2]C=C + [CH2]C=C <=>
+        C=CCCC=C`` where the 1,5-hexadiene product (82.15 g/mol, a genuine
+        DP-2 gas volatile at 2.0 propene-monomer-equivalents) is
+        proxy-tagged (family.py:1657 blanket over-tagging from some OTHER
+        proxy-touching reaction) and un-vetoed (no polymer reactant in THIS
+        row, so _handshake_structures never stamped it). RED at 5bba9e3eb:
+        the window conjunct (82.15 >= 42.08 + 10) melt-classifies hexadiene,
+        the allyls (41.07 g/mol) stay gas, and the tripwire dies on a false
+        11.01-decade unpaired term. Post-r89 the row has NO melt participant
+        at all (U contribution 0) and the build completes silently."""
+        import logging
+        a = _spc("CCCC", "A")
+        a_mu0, a_mu1, a_mu2 = (_spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
+                               _spc("C#N", "A_mu2"))
+        allyl = _spc("[CH2]C=C", "allyl")
+        hexadiene = _spc("C=CCCC=C", "hexadiene")
+        hexadiene.is_polymer_proxy = True   # blanket over-tagging fingerprint
+        for s in (a, a_mu0, a_mu1, a_mu2, allyl, hexadiene):
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [a, a_mu0, a_mu1, a_mu2, allyl, hexadiene]
+        mask = np.array([False] * 4 + [True, True], dtype=bool)
+        rxn = Reaction(reactants=[allyl, allyl], products=[hexadiene],
+                       **_REV_KIN)
+
+        # LIVENESS PINS: the run-9 numbers. Hexadiene clears the pre-r89 PP
+        # window (chain window 42.08 + 10 = 52.1) but is 1.95 mass-units /
+        # 2.0 heavy-units < 2.5; un-vetoed; the row is reversible all-gas.
+        mw_hex = hexadiene.molecule[0].get_molecular_weight() * 1000.0
+        assert mw_hex == pytest.approx(82.15, abs=0.1)
+        assert mw_hex >= 42.08 + 10.0
+        assert mw_hex < 2.5 * 42.08
+        assert not hexadiene.props.get("polymer_reference_state_gas_veto",
+                                       False)
+        assert rxn.reversible
+
+        with caplog.at_level(logging.WARNING):
+            rs = _refstate_rs(core, [rxn], mask,
+                              [_gate_pool_config(monomer_mw_g_mol=42.08,
+                                                 monomer_heavy_atoms=3)],
+                              {"A": (1.0, 5.0, 30.0)})
+        # No melt participant in the row: U identically 0, no census, and
+        # the row is untouched (not refused).
+        assert rs.reference_state_max_decades == 0.0
+        assert not rs.reference_state_census
+        assert not getattr(rxn, "polymer_refused", False)
+        assert not any("THERMO REFERENCE-STATE" in r.getMessage()
+                       for r in caplog.records)
+
+    def test_condensed_branch_melt_below_threshold_unchanged(self):
+        """r89 RED 5 (negative control): a genuinely-melt species that is
+        condensed via gas_species_mask=False stays MELT even though it sits
+        BELOW 2.5 monomer-equivalents -- the dual-axis amendment touches
+        ONLY the tag branch; the not-gas-masked branch is size-blind
+        (pool-configured by input). Fixture: the §8.1 refusal shape (butane
+        proxy A, 58.12 g/mol = 1.38 mass-units / 1.33 heavy-units vs the
+        propene pool) must STILL refuse on the unpaired melt <=> all-gas
+        row."""
+        sp, core, mask = _refstate_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["G1"], sp["G2"]],
+                       **_REV_KIN)
+        # LIVENESS PIN: A is below the dual-axis threshold on both axes --
+        # only the condensed branch can classify it melt.
+        mw_a = sp["A"].molecule[0].get_molecular_weight() * 1000.0
+        assert mw_a < 2.5 * 42.08
+        assert not mask[0]
+        with pytest.raises(ValueError, match="unpaired reference-state"):
+            _refstate_rs(core, [rxn], mask,
+                         [_gate_pool_config(monomer_mw_g_mol=42.08,
+                                            monomer_heavy_atoms=3)],
+                         {"A": (1.0, 5.0, 30.0)})
+
+    def test_axis_undecidable_candidate_classifies_gas_and_warns(self, caplog):
+        """r89 undecidable-axis contract (mirrors rmgpy.polymer
+        ._warn_impostor_axis_undecidable): a proxy-tagged gas-masked
+        candidate whose polymer-sized verdict cannot be established on BOTH
+        axes (here: mass axis clears the threshold but the pool config
+        carries no monomer_heavy_atoms -> heavy denominator uncomputable) is
+        NEVER melt-classified blind -- it degrades to conservative-gas
+        (build completes; a single-axis melt call is forbidden) AND the
+        degradation is announced through the census warning + the
+        reference_state_axis_undecidable record."""
+        import logging
+        # The polymer-sized adduct vs a pool WITHOUT a heavy denominator:
+        # mass axis 6.8 units (computable, True), heavy axis uncomputable.
+        with caplog.at_level(logging.WARNING):
+            rs = self._volatile_vs_pool_build("CC(CBr)CC(C)CC(C)Br", 42.08,
+                                              0, set_veto=False)
+        # conservative-gas: the build completes, no refusal
+        assert rs.reference_state_max_decades < 3.0
+        # ...and the degradation is announced, naming species and axis
+        assert any("AXIS UNDECIDABLE" in r.getMessage()
+                   and "VOL" in r.getMessage()
+                   and "structure" in r.getMessage()
+                   for r in caplog.records), (
+            "an undecidable dual-axis verdict must be censused, never silent"
+        )
+        assert any(lbl == "VOL" and "structure" in miss
+                   for lbl, miss in
+                   getattr(rs, "reference_state_axis_undecidable", [])), (
+            "the undecidable candidate must be recorded on the engine"
+        )
+
+    def test_all_gas_no_proxy_reactions_stay_ignored(self):
+        """r89 RED 7 (negative control): an ordinary reversible all-gas
+        reaction with NO proxy tag anywhere has no melt participant and is
+        ignored by the tripwire -- no census, no refusal, max U untouched."""
+        a = _spc("CCCC", "A")
+        a_mu0, a_mu1, a_mu2 = (_spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
+                               _spc("C#N", "A_mu2"))
+        m1, m4 = _spc("C", "M1"), _spc("CCCC", "M4")
+        for s in (a, a_mu0, a_mu1, a_mu2, m1, m4):
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [a, a_mu0, a_mu1, a_mu2, m1, m4]
+        mask = np.array([False] * 4 + [True, True], dtype=bool)
+        # Wildly mass-unpaired all-gas row: only melt membership could make
+        # the tripwire care.
+        rxn = Reaction(reactants=[m1], products=[m4], **_REV_KIN)
+        rs = _refstate_rs(core, [rxn], mask,
+                          [_gate_pool_config(monomer_mw_g_mol=42.08,
+                                             monomer_heavy_atoms=3)],
+                          {"A": (1.0, 5.0, 30.0)})
+        assert rs.reference_state_max_decades == 0.0
+        assert not rs.reference_state_census
+
+    def test_solver_dual_axis_gate_agrees_with_polymer_module_classifier(self):
+        """r89 agreement pin: the solver seam's _dual_axis_polymer_sized
+        (numbers-only mirror) and rmgpy.polymer._discrete_is_polymer_sized
+        (structure-based original) must return the SAME verdict on a shared
+        fixture matrix, with the SAME threshold constant -- the refusal
+        mirror (shape B) and the tripwire's is_melt tag branch are built on
+        these two implementations respectively, and they MUST agree or the
+        refused/live sets drift."""
+        from rmgpy.polymer import (Polymer, _IMPOSTOR_DISCRETE_MONOMER_UNITS,
+                                   _discrete_is_polymer_sized)
+        from rmgpy.solver.polymer import _dual_axis_polymer_sized
+
+        pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        ps = Polymer(label="polystyrene", monomer="[CH2][CH]c1ccccc1",
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        matrix = [
+            ("C=CC", pp), ("C=CCCCC", pp), ("C=CCCC=C", pp),   # 1.0/2.0/1.95u
+            ("C=C(C)c1ccccc1", ps),                            # AMS 1.13u
+            ("CC(CBr)CC(C)CC(C)Br", pp),                       # adduct 6.8u
+            ("[H][H]", pp), ("BrBr", pp),                      # heavy-vs-mass split
+            ("CCC(C)CCCC(C)CCCC(C)C", pp),                     # C15 chain 5u
+        ]
+        for smiles, pool in matrix:
+            spc = Species(molecule=[Molecule().from_smiles(smiles)])
+            spc.label = smiles
+            expected = _discrete_is_polymer_sized(spc, pool)
+            mol = spc.molecule[0]
+            mono = pool.monomer
+            axes = [(mono.get_molecular_weight() * 1000.0,
+                     mono.get_num_atoms() - mono.get_num_atoms('H'))]
+            got, missing = _dual_axis_polymer_sized(
+                mol.get_molecular_weight() * 1000.0,
+                mol.get_num_atoms() - mol.get_num_atoms('H'),
+                axes, _IMPOSTOR_DISCRETE_MONOMER_UNITS)
+            assert got == expected, (
+                f"{smiles} vs {pool.label}: solver gate {got} != polymer "
+                f"module classifier {expected} -- refusal mirror and "
+                f"tripwire is_melt drift"
+            )
+            assert missing is None  # fully-computable matrix: all decided
+
+    def test_heavy_atom_key_literal_matches_solver_gate(self):
+        """Literal-drift guard (same posture as
+        test_gas_veto_key_literal_matches_solver_gate): the Cython solver
+        melt gate reads the consumer-world heavy-atom props key as a
+        HARDCODED string literal. If the Python constant is renamed without
+        updating the pyx, structureless consumer species silently lose their
+        heavy axis and every tag-branch candidate degrades to
+        conservative-gas (unpairing genuine chains). Pin the exact literal
+        so that rename fails loudly here."""
+        from rmgpy.polymer import POLYMER_HEAVY_ATOM_COUNT_KEY
+        assert POLYMER_HEAVY_ATOM_COUNT_KEY == "polymer_heavy_atom_count", (
+            "the heavy-atom props key literal is hardcoded in polymer.pyx's "
+            "melt gate; update both together"
         )
 
     def test_override_knob_builds_and_still_logs_census(self, caplog):
@@ -5320,9 +5611,10 @@ class TestThermoReferenceStateEpdmShaped:
 
     Fixture geometry mirrors the real deck (T = 1000 K): proxy C15H32
     (212.41 g/mol, GAV), same-length radical C15H31 (211.41 g/mol, GAV,
-    gas-classified + proxy-tagged), H/H2 library. Counterparty window =
-    70 (pool monomer) + 10 = 80 g/mol: Erad is inside (|dMW| = 1.0), H/H2
-    far outside (|dMW| >= 209)."""
+    gas-classified + proxy-tagged; dual-axis polymer-sized vs the C5H10
+    repeat unit: 3.02 mass-units, 15/5 = 3.0 heavy-units >= 2.5), H/H2
+    library. Counterparty window = 70 (pool monomer) + 10 = 80 g/mol: Erad
+    is inside (|dMW| = 1.0), H/H2 far outside (|dMW| >= 209)."""
 
     @staticmethod
     def _build():
@@ -5351,7 +5643,8 @@ class TestThermoReferenceStateEpdmShaped:
             kinetics=Arrhenius(A=(1.0e3, "m^3/(mol*s)"), n=0.0,
                                Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
             reversible=True)
-        pool = dataclasses.replace(_gate_pool_config(monomer_mw_g_mol=70.0),
+        pool = dataclasses.replace(_gate_pool_config(monomer_mw_g_mol=70.0,
+                                                     monomer_heavy_atoms=5),
                                    label="E")
         rs = HybridPolymerSystem(  # r71 FIX 4 escape: direct-test fixture
             allow_unstamped_proxy_rows=True,

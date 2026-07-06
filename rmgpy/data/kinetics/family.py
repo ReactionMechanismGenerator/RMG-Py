@@ -4910,6 +4910,15 @@ def _h_loss_daughter_veto_exempt(mol, polymer_reactants):
     must hold. Closed-shell / composition-mismatched volatiles (e.g.
     alpha-methylstyrene, propane, C3H7 fragments) keep the veto regardless
     of MW. Fails closed on any structure query error.
+
+    r89 audit note: the MW-window conjunct here DELIBERATELY stays
+    window-based (monomer + slack) -- it is a cheap NECESSARY gate layered
+    UNDER the composition/H-count predicate, which pins the exempt set to
+    same-non-H-composition H-loss radical daughters of the ~3-unit proxy
+    (dual-axis polymer-sized by construction). DP-2 gas volatiles
+    (hexadiene, hexene) are closed-shell and composition-mismatched, so the
+    r89 dual-axis melt-gate change cannot make them veto-EXEMPT through
+    this predicate (probed: both return False against the PP pool).
     """
     # local imports: family.py must not import the solver at module load
     from rmgpy.polymer import is_h_loss_radical_daughter

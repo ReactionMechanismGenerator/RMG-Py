@@ -785,6 +785,21 @@ class PolymerPoolConfig:
     # defers; nothing is fabricated).
     monomer_mw_g_mol: float = 0.0
 
+    # Monomer (repeat-unit) heavy-atom (non-H) count. The SECOND axis of the
+    # r89 dual-axis polymer-sized melt gate in _reference_state_tripwire
+    # (mirror of rmgpy.polymer._discrete_is_polymer_sized: mass AND heavy
+    # structure, both computable, both at/above
+    # _IMPOSTOR_DISCRETE_MONOMER_UNITS monomer-equivalents against >= 1
+    # pool). Populated by every config producer from the monomer STRUCTURE
+    # (rmgpy/rmg/polymer_input.py to_pool_config /
+    # derive_daughter_pool_configs; consumer world reconstructs it from the
+    # artifact's monomer_adj_list) -- per the r89 data-flow constraint the
+    # heavy axis is never approximated from mass. Default 0 = axis
+    # UNCOMPUTABLE (honest degradation: tag-branch candidates classify
+    # conservative-gas and the tripwire emits an axis-undecidable census
+    # warning; nothing is classified blind).
+    monomer_heavy_atoms: int = 0
+
     # Kinetics Parameters
     k_scission: float = 0.0
 
@@ -1170,30 +1185,83 @@ def _unpaired_reference_decades(reactant_melt_mws, product_melt_mws, T):
                 REFERENCE_STATE_P0 / (constants.R * T * REFERENCE_STATE_C0)))
 
 
-def _assert_chain_scale_melt_member(label, mw_kg_mol, gas_classified, window_kg_mol):
-    """Cannot-happen leak guard (spec §5.1, C3 amendment 2026-06-11), called
-    for every species entering the melt sum. A gas-classified species can be
-    physically-melt ONLY via the tag branch, whose chain-scale MW conjunct
-    (MW >= max pool monomer + slack) is part of the CLASS DEFINITION -- so a
-    gas-classified member below the window cannot reach the sum through the
-    amended gate. A tagged below-window species being EXCLUDED by the gate is
-    expected and silent (the family.py:1657 over-tagging fingerprint, H2 on
-    every proxy-touching reaction); the raise here fires only if such a
-    species REACHES the sum (a future refactor recomputing membership without
-    the conjunct), converting the mistake into a loud CLASSIFICATION error
-    instead of a silently-large U and a misattributed reference-state
-    refusal. Condensed-branch members (gas_classified=False; pool-configured
-    by input) are exempt from the gate and from this guard."""
-    if gas_classified and mw_kg_mol < window_kg_mol:
+def _dual_axis_polymer_sized(mw_g_mol, heavy_count, pool_axes, units):
+    """r89 dual-axis polymer-sized test at the solver seam -- the EXACT
+    mirror of rmgpy.polymer._discrete_is_polymer_sized measured against the
+    configured pools, on pre-plumbed numbers instead of structures (the
+    solver's PolymerPoolConfig sidecars and consumer-world species carry no
+    Molecule):
+
+    * mass axis:  ``mw_g_mol`` [g/mol] vs ``units * pool monomer MW``;
+    * heavy axis: ``heavy_count`` (non-H atoms; -1 = unknown, e.g. a
+      consumer-world species whose artifact carried no composition) vs
+      ``units * pool monomer_heavy_atoms`` (0 = unknown denominator).
+
+    Returns ``(sized, missing)``. ``sized`` is True iff at least one pool
+    decides True on BOTH computable axes (any-pool, matching
+    _discrete_is_chain_scale_proxy_derived). ``missing`` is None when every
+    consulted pool DECIDED (True somewhere, or computable evidence decided
+    False everywhere); otherwise it names the uncomputable axis/axes of a
+    pool whose computable evidence did not already decide False -- the r85
+    P2(a) undecidable case: an uncomputable axis NEVER defers to the other
+    (a single-axis melt call is exactly the run-9 false positive in reverse),
+    the answer degrades to conservative-gas, and the caller must announce it
+    (mirroring rmgpy.polymer._warn_impostor_axis_undecidable semantics)."""
+    missing = None
+    for monomer_mw, monomer_heavy in pool_axes:
+        mass_computable = monomer_mw > 0.0 and mw_g_mol > 0.0
+        mass_sized = mass_computable and mw_g_mol >= units * monomer_mw
+        heavy_computable = monomer_heavy > 0 and heavy_count >= 0
+        heavy_sized = heavy_computable and heavy_count >= units * monomer_heavy
+        if mass_computable and heavy_computable:
+            if mass_sized and heavy_sized:
+                return True, None
+            continue  # both axes computable: decided False for this pool
+        # At least one axis uncomputable for this pool: undecidable UNLESS a
+        # computable axis already decided False (then it is a decided False).
+        if not any([mass_computable and not mass_sized,
+                    heavy_computable and not heavy_sized]):
+            missing = ("mass and structure"
+                       if not mass_computable and not heavy_computable
+                       else ("mass" if not mass_computable else "structure"))
+    return False, missing
+
+
+def _assert_chain_scale_melt_member(label, mw_kg_mol, heavy_count,
+                                    gas_classified, pool_axes, units):
+    """Cannot-happen leak guard (spec §5.1 C3 amendment 2026-06-11, r89
+    dual-axis form), called for every species entering the melt sum. A
+    gas-classified species can be physically-melt ONLY via the tag branch,
+    whose dual-axis polymer-sized conjunct (_dual_axis_polymer_sized: mass
+    AND heavy axes, both computable, both >= units monomer-equivalents
+    against >= 1 pool) is part of the CLASS DEFINITION -- so a gas-classified
+    member below the threshold (or with an undecidable axis) cannot reach
+    the sum through the amended gate. A tagged below-threshold species being
+    EXCLUDED by the gate is expected and silent (the family.py:1657
+    over-tagging fingerprint, H2 on every proxy-touching reaction; the PP
+    run-9 DP-2 hexadiene at 2.0 monomer-equivalents); the raise here fires
+    only if such a species REACHES the sum (a future refactor recomputing
+    membership without the conjunct), converting the mistake into a loud
+    CLASSIFICATION error instead of a silently-large U and a misattributed
+    reference-state refusal. Condensed-branch members (gas_classified=False;
+    pool-configured by input) are exempt from the gate and from this
+    guard."""
+    if not gas_classified:
+        return
+    sized, _missing = _dual_axis_polymer_sized(
+        mw_kg_mol * 1000.0, heavy_count, pool_axes, units)
+    if not sized:
         raise ValueError(
             "THERMO REFERENCE-STATE TRIPWIRE (classification leak): the "
             "is_polymer_proxy tag includes a non-chain species in the melt "
-            f"sum ({label}, MW = {mw_kg_mol * 1000.0:.2f} g/mol < chain-scale "
-            f"window {window_kg_mol * 1000.0:.2f} g/mol); physically-melt "
-            "class definition violated -- this is a classification leak, NOT "
-            "a thermo problem; do not respond by touching reference states. "
-            "See the proxy-tag propagation chain (family.py) and the "
-            "invariant section of docs/multi_pool_design.md.")
+            f"sum ({label}, MW = {mw_kg_mol * 1000.0:.2f} g/mol, "
+            f"heavy atoms = {heavy_count}, not polymer-sized at "
+            f"{units} monomer-equivalents on both axes against any pool); "
+            "physically-melt class definition violated -- this is a "
+            "classification leak, NOT a thermo problem; do not respond by "
+            "touching reference states. See the proxy-tag propagation chain "
+            "(family.py) and the invariant section of "
+            "docs/multi_pool_design.md.")
 
 
 def _thermo_provenance(spc):
@@ -2111,8 +2179,9 @@ class HybridPolymerSystem(ReactionSystem):
         to ~11.6 decades into every boundary-crossing Keq. This pass
         measures, per reversible CORE reaction, the unpaired reference-state
         magnitude U over the physically-melt participants (condensed
-        gas_species_mask OR is_polymer_proxy-tagged with chain-scale MW --
-        spec §5.1, C3-amended), logs a census above
+        gas_species_mask OR is_polymer_proxy-tagged, unvetoed AND dual-axis
+        polymer-sized -- spec §5.1 C3-amended, r89 dual-axis), logs a census
+        above
         REFERENCE_STATE_CENSUS_DECADES, refuses above
         REFERENCE_STATE_REFUSE_DECADES (unless
         allow_unpaired_reference_state -- the census still logs), and warns
@@ -2128,15 +2197,17 @@ class HybridPolymerSystem(ReactionSystem):
 
         mask = self.gas_species_mask
 
-        # ONE chain-scale window (spec §5.1 C3 amendment + §5.3): largest
-        # configured pool monomer MW + slack, in kg/mol. Shared by BOTH the
-        # physically-melt class gate (tag branch, below) and the provenance
-        # counterparty predicate (i) -- one definition, two uses, so the
-        # class and the sensor cannot drift apart. Predicate (ii) (sharing
-        # the proxy's saturated parent) was REJECTED as the cheap-at-init
-        # test: it needs graph saturation + isomorphism per gas species per
-        # rebuild; (i) is a float compare on data already in hand.
-        # FR1-K2 mass audit note (round-72 P2): deliberately NOT
+        # Chain-scale window (spec §5.3): largest configured pool monomer MW
+        # + slack, in kg/mol. Since the r89 dual-axis amendment this window
+        # serves ONLY the provenance counterparty predicate (i) below -- the
+        # physically-melt class gate (tag branch) uses the dual-axis
+        # polymer-sized test instead (the window form melt-classified DP-2
+        # gas volatiles: PP run-9 1,5-hexadiene, 82.15 g/mol > propene
+        # window 52.1 but only 2.0 monomer-equivalents). Predicate (ii)
+        # (sharing the proxy's saturated parent) was REJECTED as the
+        # cheap-at-init test: it needs graph saturation + isomorphism per
+        # gas species per rebuild; (i) is a float compare on data already in
+        # hand. FR1-K2 mass audit note (round-72 P2): deliberately NOT
         # defect-aware. This is a PER-REPEAT-UNIT MW scale window, not a
         # condensed-mass computation; chain_mass_defect_g_mol is a
         # PER-CHAIN correction (one lost X per chain), and X-loss feature
@@ -2146,17 +2217,40 @@ class HybridPolymerSystem(ReactionSystem):
                                default=0.0)
                            + REFERENCE_STATE_MW_SLACK_G_MOL) / 1000.0
 
+        # r89 dual-axis gate inputs. The threshold is imported at call time
+        # (documented solver <-> polymer module cycle, same posture as
+        # rmgpy.polymer's function-local solver imports) so the gate and
+        # rmgpy.polymer._discrete_is_polymer_sized share ONE constant; the
+        # per-pool axes come from the flattened configs (monomer_mw_g_mol +
+        # monomer_heavy_atoms), plumbed producer-side from the monomer
+        # STRUCTURE -- the heavy axis is never approximated from mass.
+        from rmgpy.polymer import _IMPOSTOR_DISCRETE_MONOMER_UNITS as _units
+        pool_axes = [(float(getattr(p, "monomer_mw_g_mol", 0.0) or 0.0),
+                      int(getattr(p, "monomer_heavy_atoms", 0) or 0))
+                     for p in self.polymer_pools]
+
         is_melt = [False] * n_core
         mws = [0.0] * n_core
-        # Backstop census: chain-scale (MW >= window) members whose melt
+        heavies = [-1] * n_core   # -1 = unknown (no structure, no stamp)
+        # Backstop census: polymer-sized (dual-axis) members whose melt
         # classification the durable gas veto SUPPRESSED. create_reacted_copy
         # returns None both for a genuine gas volatile and for a wing-match
         # FAILURE on a real chain-scale fragment; the veto trusts that None as
         # authoritative "gas", so a mis-vetoed genuine chain would be silently
         # dropped from the melt sum instead of loudly refused. Recording +
         # warning here keeps that case visible for a human without regressing
-        # the alpha-methylstyrene fix (the build no longer refuses).
+        # the alpha-methylstyrene fix (the build no longer refuses). r89: the
+        # census keys on the SAME dual-axis chain-scale notion as the gate --
+        # a genuinely-volatile vetoed species (AMS, 1.13 monomer-equivalents)
+        # is no longer announced; only chain-scale suppressions are.
         veto_suppressed_chain_scale = []
+        # r89 undecidable-axis census (mirror of rmgpy.polymer
+        # ._warn_impostor_axis_undecidable): a tag-branch candidate whose
+        # polymer-sized verdict could not be established on BOTH axes is
+        # NEVER classified blind -- it degrades to conservative-gas -- but
+        # the degradation is announced, per species, so a silent axis-data
+        # gap cannot quietly unpair a genuine chain.
+        axis_undecidable = []
         for i in range(n_core):
             spc = core_species[i]
             # Input contract: consumer-world species carry no structure
@@ -2175,17 +2269,44 @@ class HybridPolymerSystem(ReactionSystem):
                 mws[i] = mol_list[0].get_molecular_weight()
             else:
                 mws[i] = 0.0
-            # Physically-melt CLASS (spec §5.1, C3-AMENDED): the condensed
-            # branch (pool-configured by input) unconditionally; the tag
-            # branch only at chain-scale MW. The MW conjunct is part of the
-            # class DEFINITION, not bolted onto the provenance set:
-            # family.py:1657 blanket-tags every structure of a
-            # proxy-touching reaction (including H2), so a raw tag-read
-            # would be correct only by spawn-pass ordering -- the structural
-            # gate cannot be broken by a lifecycle reordering the way a
-            # tag-read can. A stale tag on a below-window species simply
-            # FAILS the conjunct and is excluded: expected and silent (its
-            # gas reference state is CORRECT).
+            # Heavy-atom (non-H) count for the r89 dual-axis gate: from the
+            # structure when one exists; otherwise from the species-level
+            # props stamp the consumer runner populates from the artifact's
+            # composition (real composition data both ways -- the r89
+            # data-flow constraint forbids deriving this axis from mass).
+            # -1 = unknown: the heavy axis is then uncomputable and the
+            # dual-axis verdict degrades to conservative-gas + census.
+            _props = getattr(spc, "props", None)
+            if mol_list:
+                _m0 = mol_list[0]
+                heavies[i] = _m0.get_num_atoms() - _m0.get_num_atoms('H')
+            elif isinstance(_props, dict):
+                # HARDCODED literal must equal rmgpy.polymer
+                # .POLYMER_HEAVY_ATOM_COUNT_KEY -- pinned by
+                # test_heavy_atom_key_literal_matches_solver_gate
+                # (rename both).
+                _hv = _props.get("polymer_heavy_atom_count")
+                if _hv is not None:
+                    heavies[i] = int(_hv)
+            # Physically-melt CLASS (spec §5.1 C3-AMENDED, r89 dual-axis):
+            # the condensed branch (pool-configured by input)
+            # unconditionally; the tag branch only when DUAL-AXIS
+            # POLYMER-SIZED (mass AND heavy axes both computable and both
+            # >= _IMPOSTOR_DISCRETE_MONOMER_UNITS monomer-equivalents
+            # against >= 1 pool -- _dual_axis_polymer_sized, the exact
+            # mirror of rmgpy.polymer._discrete_is_polymer_sized). The size
+            # conjunct is part of the class DEFINITION, not bolted onto the
+            # provenance set: family.py:1657 blanket-tags every structure
+            # of a proxy-touching reaction (including H2), so a raw
+            # tag-read would be correct only by spawn-pass ordering -- the
+            # structural gate cannot be broken by a lifecycle reordering
+            # the way a tag-read can. A stale tag on a below-threshold
+            # species simply FAILS the conjunct and is excluded: expected
+            # and silent (its gas reference state is CORRECT -- PP run-9's
+            # 1,5-hexadiene, a genuine DP-2 gas volatile at 2.0
+            # monomer-equivalents, is exactly this class; the pre-r89 MW
+            # window wrongly melt-classified it and refused an all-gas
+            # allyl recombination at U ~ 11 decades).
             #
             # DURABLE GAS-VOLATILE VETO (rmgpy.polymer): the tag branch keys off
             # is_polymer_proxy, which is a monotonic multi-writer sticky cache
@@ -2198,22 +2319,33 @@ class HybridPolymerSystem(ReactionSystem):
             # the proxy stamping machinery never touches; honor it here. C3
             # mask-lagged chains never receive the veto, so they stay melt.
             _gas_veto = False
-            _props = getattr(spc, "props", None)
             if isinstance(_props, dict):
                 # HARDCODED literal must equal rmgpy.polymer
                 # .POLYMER_REFERENCE_STATE_GAS_VETO_KEY -- pinned by
                 # test_gas_veto_key_literal_matches_solver_gate (rename both).
                 _gas_veto = bool(_props.get("polymer_reference_state_gas_veto", False))
             _proxy_i = bool(getattr(spc, "is_polymer_proxy", False))
+            # r89 gate order: veto precedence is unchanged (a vetoed species
+            # NEVER classifies melt via the tag branch, whatever its size);
+            # the dual-axis verdict is evaluated for every gas-masked
+            # tagged candidate because both censuses key on it.
+            _sized = False
+            _missing = None
+            if mask[i] and _proxy_i:
+                _sized, _missing = _dual_axis_polymer_sized(
+                    mws[i] * 1000.0, heavies[i], pool_axes, _units)
+                if not _sized and _missing is not None:
+                    axis_undecidable.append(
+                        (getattr(spc, "label", "?"), _missing))
             is_melt[i] = ((not mask[i])
-                          or (_proxy_i
-                              and mws[i] >= chain_window_kg
-                              and not _gas_veto))
+                          or (_proxy_i and not _gas_veto and _sized))
             # The veto is only a backstop concern when it suppressed an
-            # otherwise-melt CHAIN-SCALE tag-branch member (gas-masked, proxy,
-            # MW >= window). A below-window vetoed species would fail the MW
-            # conjunct anyway -- its exclusion is correct and silent.
-            if _gas_veto and _proxy_i and mask[i] and mws[i] >= chain_window_kg:
+            # otherwise-melt POLYMER-SIZED tag-branch member (gas-masked,
+            # proxy, dual-axis sized). A below-threshold vetoed species
+            # would fail the size conjunct anyway -- its exclusion is
+            # correct and silent (r89: alpha-methylstyrene, 1.13
+            # monomer-equivalents, is no longer announced).
+            if _gas_veto and _proxy_i and mask[i] and _sized:
                 veto_suppressed_chain_scale.append(
                     (getattr(spc, "label", "?"), mws[i]))
 
@@ -2224,17 +2356,37 @@ class HybridPolymerSystem(ReactionSystem):
         self.gas_veto_census = list(veto_suppressed_chain_scale)
         if veto_suppressed_chain_scale:
             logging.warning(
-                "THERMO REFERENCE-STATE GAS VETO: %d chain-scale (MW >= "
-                "%.4f kg/mol window) product(s) were excluded from the melt "
-                "reference-state by the durable gas-volatile veto: %s. This is "
-                "correct for genuine gas volatiles (e.g. alpha-methylstyrene); "
-                "if any is actually a polymer chain, it is a handshake "
+                "THERMO REFERENCE-STATE GAS VETO: %d chain-scale "
+                "(dual-axis polymer-sized at >= %.1f monomer-equivalents "
+                "of mass AND heavy atoms) product(s) were excluded from the "
+                "melt reference-state by the durable gas-volatile veto: %s. "
+                "If any is actually a polymer chain, it is a handshake "
                 "create_reacted_copy false-None (wing-match failure), NOT a "
                 "thermo problem -- investigate the handshake, do not touch "
                 "reference states.",
-                len(veto_suppressed_chain_scale), chain_window_kg,
+                len(veto_suppressed_chain_scale), _units,
                 ", ".join("%s (%.1f g/mol)" % (lbl, mw * 1000.0)
                           for lbl, mw in veto_suppressed_chain_scale))
+
+        # r89 undecidable-axis census: conservative-gas degradations are
+        # announced, never silent (mirror of rmgpy.polymer
+        # ._warn_impostor_axis_undecidable -- never classify blind; the
+        # solver tripwire's condensed branch and the r71 hard-fail stay the
+        # loud backstops).
+        self.reference_state_axis_undecidable = list(axis_undecidable)
+        if axis_undecidable:
+            logging.warning(
+                "THERMO REFERENCE-STATE AXIS UNDECIDABLE (r89 census): %d "
+                "proxy-tagged gas-masked candidate(s) had an uncomputable "
+                "polymer-sized axis, so the dual-axis melt conjunct could "
+                "not be established on BOTH axes; classifying "
+                "conservative-gas (never melt-classify blind): %s. If one "
+                "is a genuine chain, plumb its missing axis data (species "
+                "composition / pool monomer structure), do not touch "
+                "reference states.",
+                len(axis_undecidable),
+                ", ".join("%s (missing: %s)" % (lbl, miss)
+                          for lbl, miss in axis_undecidable))
 
         offenders = []
         for rxn in core_reactions:
@@ -2258,10 +2410,11 @@ class HybridPolymerSystem(ReactionSystem):
             if not melt_r and not melt_p:
                 continue  # all-gas reaction: gas reference uniformly correct
 
-            # Leak self-assertion (spec §5.1 C3 amendment): cannot-happen
-            # guard on every species entering the melt sum. A gas-classified
-            # member can only be here via the tag branch, whose MW conjunct
-            # is enforced in the gate above; if a below-window species ever
+            # Leak self-assertion (spec §5.1 C3 amendment, r89 dual-axis):
+            # cannot-happen guard on every species entering the melt sum. A
+            # gas-classified member can only be here via the tag branch,
+            # whose dual-axis polymer-sized conjunct is enforced in the gate
+            # above; if a below-threshold (or axis-undecidable) species ever
             # reaches this point (a future refactor recomputing membership
             # without the conjunct), raise the CLASSIFICATION error loudly
             # instead of computing a large U and misattributing it to thermo.
@@ -2283,8 +2436,8 @@ class HybridPolymerSystem(ReactionSystem):
                         "input-contract violation, NOT a thermo problem; do "
                         "not respond by touching reference states.")
                 _assert_chain_scale_melt_member(
-                    core_species[k].label, mws[k], bool(mask[k]),
-                    chain_window_kg)
+                    core_species[k].label, mws[k], heavies[k], bool(mask[k]),
+                    pool_axes, _units)
 
             u = _unpaired_reference_decades(
                 [mws[k] for k in melt_r], [mws[k] for k in melt_p], T)

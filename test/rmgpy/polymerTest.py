@@ -5031,6 +5031,46 @@ def test_reference_state_split_isomerization_refused_with_pool_registry():
     assert rxn3.polymer_refused is False
 
 
+def test_split_refusal_mirror_excludes_dp2_volatile_from_melt_multiset():
+    """r89 lockstep pin (agreement: refusal-melt-mirror == tripwire-is_melt):
+    the shape-B stamp's melt-MW multisets must classify membership by the
+    SAME dual-axis polymer-sized gate as the r89 tripwire tag branch, NOT by
+    the pre-r89 MW window. Fixture: an adduct isomerization that carries a
+    proxy-tagged un-vetoed DP-2 volatile (1,5-hexadiene, 82.15 g/mol -- above
+    the propene window 52.1 but 1.95/2.0 monomer-equivalents) as a spectator
+    co-participant on ONE side. Post-r89 the volatile is GAS to both the
+    mirror and the tripwire: the adduct isomers pair off and the row stays
+    LIVE. RED at 5bba9e3eb: the window-based _melt_mws counts hexadiene as a
+    melt participant on one side only, fabricates a split, and REFUSES a row
+    the (fixed) tripwire scores U ~ 0 -- refused/live drift, the exact
+    disagreement r89 forbids."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import stamp_gas_association_refusal
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+
+    pp, d_melt_a = _chain_scale_adduct_fixture()
+    d_melt_a.is_polymer_proxy = True
+    d_melt_b = Species(molecule=[Molecule().from_smiles("BrCC(C)CC(C)CC(C)Br")])
+    d_melt_b.is_polymer_proxy = True
+    hexadiene = Species(molecule=[Molecule().from_smiles("C=CCCC=C")])
+    hexadiene.is_polymer_proxy = True   # blanket over-tagging fingerprint
+    # LIVENESS PIN: hexadiene is the window-leak shape (above window, below
+    # dual-axis threshold on the mass axis).
+    mw_hex = hexadiene.molecule[0].get_molecular_weight() * 1000.0
+    assert mw_hex >= pp.monomer_mw_g_mol + 10.0
+    assert mw_hex < 2.5 * pp.monomer_mw_g_mol
+
+    rxn = Reaction(reactants=[d_melt_a, hexadiene], products=[d_melt_b],
+                   reversible=True)
+    stamp_gas_association_refusal(rxn, pool_registry=[pp])
+    assert rxn.polymer_refused is False, (
+        "the shape-B melt mirror must classify a DP-2 volatile GAS (dual-axis"
+        ", r89) -- a window-based mirror refuses a row the tripwire keeps, "
+        "drifting the refused/live sets"
+    )
+
+
 def _build_compile_inputs(moles, initial_mass=1.0, Mn=5000.0, Mw=6000.0,
                           label="PS", monomer="[CH2][CH]c1ccccc1"):
     """Build the (blueprint, initial_moles, species_dict) triple that

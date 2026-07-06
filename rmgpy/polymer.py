@@ -3235,12 +3235,18 @@ def _stamp_reference_state_split_refusal(forward, reactants, products,
     ``(117) <=> (111)``/``(116)``, U = 13.10 decades, RMG.out:5140-5144).
 
     The melt classification mirrors the tripwire's tag branch EXACTLY
-    (polymer.pyx ``_reference_state_tripwire``, spec 5.1 C3-amended):
-    ``is_polymer_proxy`` AND MW >= (largest registered pool monomer MW +
-    ``REFERENCE_STATE_MW_SLACK_G_MOL``) AND NOT gas-vetoed -- one
-    definition, imported function-locally like
-    :func:`_chain_radical_lost_to_gas`, so the stamp and the sensor cannot
-    drift apart. A NO-split row (both sides melt-classified isomers) pairs
+    (polymer.pyx ``_reference_state_tripwire``, r89 dual-axis amendment of
+    spec 5.1 C3): ``is_polymer_proxy`` AND NOT gas-vetoed AND polymer-sized
+    against at least one registered pool per
+    :func:`_discrete_is_polymer_sized` (mass AND heavy-atom axes both
+    computable and at/above ``_IMPOSTOR_DISCRETE_MONOMER_UNITS``
+    monomer-equivalents). ONE size predicate shared with the classifier and
+    (constant-shared) with the solver gate, so the stamp and the sensor
+    cannot drift apart -- the pre-r89 window form (MW >= largest pool
+    monomer + slack) melt-classified DP-2 gas volatiles (PP run-9
+    1,5-hexadiene, 82.15 g/mol > propene window 52.1 but 2.0
+    monomer-equivalents) and disagreed with conjunct (a)'s dual-axis
+    membership. A NO-split row (both sides melt-classified isomers) pairs
     off exactly in U and stays LIVE (pinned negative control).
 
     ``pool_registry`` is a list of registered :class:`Polymer` pools or a
@@ -3264,14 +3270,15 @@ def _stamp_reference_state_split_refusal(forward, reactants, products,
     if not any(_discrete_is_chain_scale_proxy_derived(s, pools)
                for s in participants):
         return
-    # Function-local import (solver <-> polymer module cycle, same posture
-    # as _chain_radical_lost_to_gas).
-    from rmgpy.solver.polymer import REFERENCE_STATE_MW_SLACK_G_MOL
-    window_g = (max(float(getattr(p, 'monomer_mw_g_mol', 0.0) or 0.0)
-                    for p in pools)
-                + REFERENCE_STATE_MW_SLACK_G_MOL)
 
     def _melt_mws(side):
+        # r89 dual-axis melt mirror: membership = proxy-tagged AND unvetoed
+        # AND polymer-sized (both axes) against >= 1 pool -- the SAME
+        # predicate conjunct (a) used above, and the same gate the solver
+        # tripwire applies, so refused/live sets cannot drift. A
+        # structureless participant is undecidable to
+        # _discrete_is_polymer_sized (mol is None -> False) and stays
+        # conservative-gas here exactly as at the solver seam.
         out = []
         for s in side:
             if not getattr(s, 'is_polymer_proxy', False):
@@ -3283,10 +3290,11 @@ def _stamp_reference_state_split_refusal(forward, reactants, products,
                 s if isinstance(s, Molecule) else None)
             if mol is None:
                 continue
+            if not any(_discrete_is_polymer_sized(s, poly) for poly in pools):
+                continue
             mw = mol.get_molecular_weight() * 1000.0
-            if mw >= window_g:
-                # Round away summation-order ulps so isomers pair exactly.
-                out.append(round(mw, 6))
+            # Round away summation-order ulps so isomers pair exactly.
+            out.append(round(mw, 6))
         return sorted(out)
 
     if _melt_mws(reactants) == _melt_mws(products):
@@ -3449,6 +3457,16 @@ def _chain_radical_lost_to_gas(forward, polymer_reactants):
     single-monomer-debit accounts for those leaks correctly. Polymer products are
     skipped, which correctly excludes the conserving pool->pool case (e.g.
     ``epdm_scission_tail``).
+
+    r89 audit note: this threshold DELIBERATELY stays window-based (one
+    monomer + slack), NOT the dual-axis 2.5-monomer-equivalent melt gate.
+    It is a per-event MASS-CONSERVATION debit audit, not a phase
+    classification: the UNRESOLVED leg debits exactly ONE monomer, so ANY
+    gas product materially heavier than one repeat unit (a DP-2 dimer
+    volatile included) fabricates the difference and must be caught here.
+    Raising the bar to 2.5 units would let ~2-unit products leak un-audited
+    mass -- the run-9 DP-2 misclassification was a melt-CLASSIFICATION
+    error (a different consumer), not a debit-audit error.
 
     Imported function-locally: there is a documented solver->polymer import cycle
     (``polymer.pyx`` avoids importing ``polymer.py`` at module level), so the
@@ -7688,6 +7706,23 @@ def clear_polymer_proxy(obj: Union['Species', Molecule]) -> None:
 #: this veto -- so a genuine gas volatile that got proxy-contaminated is
 #: correctly excluded from the melt reference-state sum.
 POLYMER_REFERENCE_STATE_GAS_VETO_KEY = "polymer_reference_state_gas_veto"
+
+#: Species-level heavy-atom (non-H) count carried in ``props`` for species
+#: whose STRUCTURE does not cross a data boundary (r89 dual-axis melt gate).
+#: Consumer-world species (rmgpy/tools/polymer_moments_runner.py
+#: ``_species_from_yaml``) are label + thermo only (``molecule == []``); their
+#: MW is reconstructed from the chem.yaml elemental composition, and the
+#: solver reference-state melt gate's HEAVY-ATOM axis
+#: (``polymer.pyx _dual_axis_polymer_sized``, mirroring
+#: :func:`_discrete_is_polymer_sized`) needs the heavy count from the same
+#: composition -- the r89 adjudication forbids approximating the heavy axis
+#: from mass. Lives in ``props`` for the same reason as the gas veto above:
+#: ``Species.copy`` deep-copies ``props`` while ad-hoc attributes are lost.
+#: The solver reads the literal (pinned alongside the veto-key literal); a
+#: species with structure never needs it (the gate computes the count from
+#: ``molecule[0]`` first). Absent + structureless => the heavy axis is
+#: UNDECIDABLE and the gate answers conservative-gas with a census warning.
+POLYMER_HEAVY_ATOM_COUNT_KEY = "polymer_heavy_atom_count"
 
 
 def set_polymer_gas_veto(obj: Union['Species', Molecule]) -> None:
