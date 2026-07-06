@@ -65,3 +65,29 @@ class TerminationRateRatio:
 
     def __init__(self, ratio=0.01):
         self.ratio = ratio
+
+class TerminationPolymerConversion:
+    """
+    Terminate when the DEFECT-ADJUSTED condensed polymer mass summed over ALL
+    solver polymer pools (configured, spawned, homolysis-daughter,
+    deprop-daughter and side-group feature pools, plus explicit-DP oligomer
+    carriers) has dropped by the given fraction of its value at simulation
+    initialization (r86):
+
+        M_pool(t)   = max(0, mu1_p(t)*monomer_mw_g_mol_p
+                             - mu0_p(t)*chain_mass_defect_g_mol_p)
+        M_poly(t)   = sum over pools of M_pool(t)
+        X_polymer(t) = 1 - M_poly(t)/M_poly(0)
+
+    One attribute: the fractional `conversion` at which to terminate,
+    validated strictly inside (0, 1) at this single chokepoint (the deck
+    reader and the solver both construct through here).
+    """
+
+    def __init__(self, conv=0.0):
+        conv = float(conv)
+        if not 0.0 < conv < 1.0:
+            raise ValueError(
+                "terminationPolymerConversion must satisfy 0 < f < 1, got "
+                f"{conv!r}.")
+        self.conversion = conv

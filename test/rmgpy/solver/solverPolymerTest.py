@@ -9973,3 +9973,276 @@ class TestR81ResurrectionZeroMetricGuard:
         assert any(
             "was added to model core in model resurrection process"
             in r.getMessage() for r in caplog.records)
+
+
+class _StiffPastCrossingSystem(HybridPolymerSystem):
+    """Bounded stand-in for the FR1 tf100 signature (r86): the
+    post-conversion region is a stiff wall -- any DASSL continuation whose
+    OUTER TARGET time lies beyond ``t_wall`` (which sits PAST the
+    conversion crossing) dies inside the integrator before the post-step
+    termination check can run. Integrates normally otherwise, so tests
+    stay fast and fail fast instead of hanging."""
+
+    t_wall = 6.0
+
+    def step(self, step_time):
+        if step_time > self.t_wall:
+            from pydas.dassl import DASSLError
+            raise DASSLError(
+                "DASSL returned with an IDID = -1, 500 steps taken on this "
+                "call before reaching TOUT (the tf100 wall past the "
+                "polymer-conversion crossing).")
+        return HybridPolymerSystem.step(self, step_time)
+
+
+def _polymer_conversion_rs(cls=HybridPolymerSystem, moments=(1.0, 5.0, 30.0),
+                           monomer_mw_g_mol=42.08, chain_mass_defect_g_mol=0.0,
+                           termination=None):
+    """Single consuming pool A: same-pool VOLATILE_EJECTION row A -> A + G
+    (archetype 6, eject a) drains mu1 at exactly d(mu1)/dt = -kf*mu1
+    at exactly d(mu1)/dt = -kf*a*mu1 (empirically pinned: site = mu1/a,
+    a units ejected per event, quadratic in a through the site*drain
+    pairing), so with _KIN's kf = 2.0 1/s and a = 1.135 the defect-free
+    polymer conversion X(t) = 1 - exp(-2.27 t) crosses 0.999 at
+    t = ln(1000)/2.27 = 3.043 s."""
+    sp = _gate17_species()
+    core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+    mask = np.array([False, False, False, False, True], dtype=bool)
+    rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["X"]], **_KIN)
+    rxn.polymer_flux_archetype = 6            # VOLATILE_EJECTION, same-pool
+    rxn.polymer_eject_units = 1.135
+    cfg = PolymerPoolConfig(label="A", xs=2,
+                            explicit_dp_to_species_index={},
+                            mu_indices=(1, 2, 3), monomer_poly_index=None,
+                            monomer_mw_g_mol=monomer_mw_g_mol,
+                            chain_mass_defect_g_mol=chain_mass_defect_g_mol)
+    rs = cls(
+        T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+        V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+        gas_species_mask=mask, constant_gas_volume=False,
+        initial_polymer_moments={"A": tuple(moments)},
+        termination=list(termination or []),
+        allow_default_prospective_edge=True,
+        allow_unstamped_proxy_rows=True)
+    return rs, core, [rxn]
+
+
+def _polymer_conversion_simulate(rs, core, rxns_core):
+    from rmgpy.rmg.settings import ModelSettings, SimulatorSettings
+    ms = ModelSettings(tol_keep_in_edge=0.0, tol_move_to_core=1.0e8,
+                       tol_interrupt_simulation=1.0e8)
+    return rs.simulate(list(core), list(rxns_core), [], [], [], [],
+                       model_settings=ms,
+                       simulator_settings=SimulatorSettings())
+
+
+class TestTerminationPolymerConversion:
+    """r86 terminationPolymerConversion: terminate the simulation when the
+    defect-adjusted condensed polymer mass across ALL solver pools has
+    dropped by the target fraction --
+    X_polymer(t) = 1 - M_poly(t)/M_poly(0), with
+    M_pool = max(0, mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol)
+    summed over every pool (configured, spawned, daughters, side-group
+    feature pools) plus explicit-DP oligomer carriers. Reachability is
+    Codex-adjudicated (r86 NO-GO on post-step-only): once X_polymer > 0
+    the next solver target time is CAPPED before the predicted crossing,
+    so the crossing is bracketed before the post-chemistry stiff region
+    (the FR1 tf100 wall). No bare terminationTime cut anywhere."""
+
+    def test_termination_class_validates_bounds(self):
+        from rmgpy.solver.termination import TerminationPolymerConversion
+        term = TerminationPolymerConversion(0.999)
+        assert term.conversion == 0.999
+        for bad in (0.0, 1.0, -0.1, 1.5):
+            with pytest.raises(ValueError,
+                               match="terminationPolymerConversion"):
+                TerminationPolymerConversion(bad)
+
+    def test_metric_sums_all_pools_defect_adjusted_and_clamped(self):
+        """M_poly = sum over ALL pools of max(0, mu1*MW - mu0*defect):
+        defect pools use the schema-2.7 mass-defect formula (an FR1
+        Br-loss pool must not falsely retain Br mass), and only each
+        pool's FINAL contribution is clamped at zero (numerical fuzz) --
+        never the individual moments."""
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 2
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0),
+                          (2.0, 3.0, 10.0))
+        # Give the fixture's pools the r86 mass parameters directly (the
+        # PolymerPoolConfig fields the deck compiler fills).
+        import dataclasses
+        pool_a = dataclasses.replace(rs.polymer_pools[0],
+                                     monomer_mw_g_mol=42.08,
+                                     chain_mass_defect_g_mol=0.0)
+        pool_b = dataclasses.replace(rs.polymer_pools[1],
+                                     monomer_mw_g_mol=42.08,
+                                     chain_mass_defect_g_mol=79.9)
+        rs.polymer_pools = [pool_a, pool_b]
+        m = rs.get_total_polymer_condensed_mass_g()
+        expected_a = 5.0 * 42.08 - 1.0 * 0.0
+        expected_b = 3.0 * 42.08 - 2.0 * 79.9
+        assert expected_b < 0.0          # defect exceeds mass: fuzz shape
+        assert m == pytest.approx(expected_a + max(0.0, expected_b))
+        # The clamp is per-pool on the FINAL contribution: pool B clamps
+        # to zero, it does NOT subtract from pool A.
+        assert m == pytest.approx(expected_a)
+
+    def test_metric_includes_explicit_dp_oligomer_mass(self):
+        """r86 probe 3: a pool with explicit_dp species carries genuine
+        polymer repeat-unit mass in an ordinary condensed core species
+        OUTSIDE the mu slots (the init consistency check subtracts it from
+        mu1); the conversion metric must add it back via
+        _explicit_moment_contributions, not silently ignore it."""
+        sp = _gate17_species()
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"],
+                sp["G"]]
+        mask = np.array([False, False, False, False, True, False],
+                        dtype=bool)
+        cfg = PolymerPoolConfig(label="A", xs=3,
+                                explicit_dp_to_species_index={3: 5},
+                                mu_indices=(1, 2, 3),
+                                monomer_poly_index=None,
+                                monomer_mw_g_mol=42.08,
+                                chain_mass_defect_g_mol=0.0)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=mask, constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)},
+            initial_explicit_species={"A": {3: 0.5}},
+            termination=[])
+        rs.initialize_model(core, [], [], [])
+        # Init subtracted the oligomer share from the mu1 STATE slot; the
+        # metric must report the TOTAL: (mu1_tail + 3*0.5)*MW = 5.0*MW.
+        m = rs.get_total_polymer_condensed_mass_g()
+        assert float(np.asarray(rs.y)[2]) == pytest.approx(5.0 - 1.5)
+        assert m == pytest.approx(5.0 * 42.08)
+
+    def test_simulate_rejects_nonpositive_initial_polymer_mass(self):
+        """M_poly(0) is frozen at simulation initialization and must be
+        strictly positive -- a zero-mass (or defect-swamped) initial pool
+        state is a loud ValueError, never a silent 0/0."""
+        from rmgpy.solver.termination import TerminationPolymerConversion
+        rs, core, rxns = _polymer_conversion_rs(
+            moments=(0.0, 0.0, 0.0),
+            termination=[TerminationPolymerConversion(0.999)])
+        with pytest.raises(ValueError, match="M_poly\\(0\\)"):
+            _polymer_conversion_simulate(rs, core, rxns)
+
+    def test_simulate_terminates_cleanly_past_stiff_wall(self, caplog):
+        """Live-path reachability pin (the r86 NO-GO shape, bounded): the
+        post-conversion region is a stiff wall at t = 6.0 s, PAST the
+        X = 0.999 crossing at t = ln(1000)/2.27 = 3.043 s. Without
+        conservative target capping the geometric step schedule requests
+        a target of 10 s from t ~ 1 s and dies inside DASSL before any
+        post-step check runs (RED shape); with capping the crossing is
+        bracketed, termination fires, completion status is IDENTICAL to a
+        normal termination (terminated=True, no resurrection), and the
+        X_polymer value is reported in the log."""
+        from rmgpy.solver.termination import TerminationPolymerConversion
+        rs, core, rxns = _polymer_conversion_rs(
+            cls=_StiffPastCrossingSystem,
+            termination=[TerminationPolymerConversion(0.999)])
+        with caplog.at_level(logging.INFO):
+            terminated, resurrected, invalid_objects, _, _, t_final, _ = \
+                _polymer_conversion_simulate(rs, core, rxns)
+        assert terminated is True
+        assert resurrected is False
+        assert invalid_objects == []
+        # Crossing bracketed: we stopped just past ln(1000)/(kf*a), far
+        # from the 6.0 s wall and further still from the 10 s uncapped
+        # target.
+        assert t_final == pytest.approx(np.log(1000.0) / 2.27, rel=0.05)
+        assert t_final < _StiffPastCrossingSystem.t_wall
+        msgs = [r.getMessage() for r in caplog.records]
+        assert any("termination polymer conversion" in m and "X_polymer" in m
+                   for m in msgs)
+
+    def test_simulate_without_wall_reports_conversion_value(self, caplog):
+        """Plain live-path completion (no wall subclass): the criterion
+        fires on its own -- no terminationTime backstop anywhere in the
+        termination list -- and reports X_polymer >= the target."""
+        import re
+        from rmgpy.solver.termination import TerminationPolymerConversion
+        rs, core, rxns = _polymer_conversion_rs(
+            termination=[TerminationPolymerConversion(0.9)])
+        with caplog.at_level(logging.INFO):
+            terminated, _, _, _, _, t_final, _ = \
+                _polymer_conversion_simulate(rs, core, rxns)
+        assert terminated is True
+        assert t_final == pytest.approx(np.log(10.0) / 2.27, rel=0.05)
+        msgs = [r.getMessage() for r in caplog.records
+                if "termination polymer conversion" in r.getMessage()]
+        assert msgs
+        x_val = float(re.search(r"X_polymer = ([0-9.eE+-]+)",
+                                msgs[0]).group(1))
+        assert x_val >= 0.9
+
+    def test_to_solver_object_plumb_and_no_pool_rejection(self):
+        """Deck surface: terminationPolymerConversion is accepted by the
+        HybridPolymerReactor input object, forwarded by the input-file
+        reader, materialized as a TerminationPolymerConversion solver
+        criterion -- and rejected loudly when the model has NO polymer
+        pools (nothing for the metric to measure)."""
+        import inspect
+        from rmgpy.quantity import Quantity
+        from rmgpy.polymer import Polymer
+        from rmgpy.rmg.polymer_input import (HybridPolymerReactor,
+                                             PolymerPhase)
+        from rmgpy.solver.termination import TerminationPolymerConversion
+
+        a = _spc("CCCC", "A")
+        daughter = Polymer(label="PS_d1", monomer="[CH2][CH]c1ccccc1",
+                           end_groups=["[CH3]", "[H]"], cutoff=3,
+                           Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+        mu0 = _spc("[Ne]", "PS_d1_mu0"); mu0.reactive = False
+        mu0.is_moment_dummy = True
+        mu1 = _spc("[Ne]", "PS_d1_mu1"); mu1.reactive = False
+        mu1.is_moment_dummy = True
+        mu2 = _spc("[Ne]", "PS_d1_mu2"); mu2.reactive = False
+        mu2.is_moment_dummy = True
+        core = [a, daughter, mu0, mu1, mu2]
+        phase = PolymerPhase(density=Quantity(1050.0, "kg/m^3"),
+                             initial_moments={},
+                             initial_explicit={a: 1.0}, pools=[],
+                             mass_transfer=[])
+        reactor = HybridPolymerReactor(
+            temperature=(1000.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles={a: 1.0}, polymerPhase=phase,
+            terminationPolymerConversion=0.999)
+        solver = reactor.to_solver_object(core, [], [], [])
+        tpc = [t for t in solver.termination
+               if isinstance(t, TerminationPolymerConversion)]
+        assert len(tpc) == 1
+        assert tpc[0].conversion == 0.999
+
+        # NO polymer pools anywhere (no deck pools, no core daughters):
+        # loud rejection, never a silently ignored criterion.
+        reactor_no_pool = HybridPolymerReactor(
+            temperature=(1000.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles={a: 1.0}, polymerPhase=PolymerPhase(
+                density=Quantity(1050.0, "kg/m^3"), initial_moments={},
+                initial_explicit={a: 1.0}, pools=[], mass_transfer=[]),
+            terminationPolymerConversion=0.999)
+        with pytest.raises(ValueError, match="no polymer pools"):
+            reactor_no_pool.to_solver_object([a], [], [], [])
+
+        # Out-of-range values die at the single validation chokepoint.
+        reactor_bad = HybridPolymerReactor(
+            temperature=(1000.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles={a: 1.0}, polymerPhase=phase,
+            terminationPolymerConversion=1.5)
+        with pytest.raises(ValueError,
+                           match="terminationPolymerConversion"):
+            reactor_bad.to_solver_object(core, [], [], [])
+
+        # Input-file reader carries the kwarg (static pin, same pattern as
+        # the allow_unpaired_reference_state knob).
+        from rmgpy.rmg.input import hybrid_polymer_reactor
+        sig = inspect.signature(hybrid_polymer_reactor)
+        assert "terminationPolymerConversion" in sig.parameters
+        assert sig.parameters["terminationPolymerConversion"].default is None
+        src = inspect.getsource(hybrid_polymer_reactor)
+        assert ("terminationPolymerConversion=terminationPolymerConversion"
+                in src)

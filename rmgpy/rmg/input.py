@@ -1718,6 +1718,7 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
                            terminationConversion: Optional[Dict[Union[Species, str], float]] = None,
                            terminationTime: Optional[Union[float, Quantity]] = None,
                            terminationRateRatio: Optional[float] = None,
+                           terminationPolymerConversion: Optional[float] = None,
                            sensitivity: Optional[Union[List[str], str, List[Species]]] = None,
                            sensitivityThreshold: float = 1e-3,
                            constant_gas_volume: bool = False,
@@ -1749,6 +1750,10 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
                                                             Can be a number (implies 's') or (value, units).
         terminationRateRatio (float, optional): The characteristic rate ratio at which to
                                                 terminate the simulation.
+        terminationPolymerConversion (float, optional): The fractional drop (0 < f < 1) in the
+                                                defect-adjusted condensed polymer mass, summed over
+                                                ALL solver polymer pools (r86), at which to
+                                                terminate. Requires a polymer phase with pools.
         sensitivity (Optional[Union[List[str], str]]): A list of species labels or 'all' to perform
                                                        sensitivity analysis on.
         sensitivityThreshold (float): The cutoff threshold for sensitivity analysis. Default is 1e-3.
@@ -1830,7 +1835,26 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         if terminationRateRatio <= 0.0:
             raise InputError(f"terminationRateRatio must be positive, got {terminationRateRatio}")
 
-    if not (terminationConversion or terminationTime or terminationRateRatio):
+    if terminationPolymerConversion is not None:
+        # r86: validate at deck read -- strict bounds and a model that
+        # actually carries polymer pools (a pool-less deck has nothing for
+        # the defect-adjusted condensed-mass metric to measure). The same
+        # bounds are enforced again at the TerminationPolymerConversion
+        # constructor chokepoint; runtime daughter pools are re-checked in
+        # to_solver_object.
+        try:
+            conv_val = float(terminationPolymerConversion)
+        except (TypeError, ValueError) as e:
+            raise InputError(f"Invalid terminationPolymerConversion: "
+                             f"{terminationPolymerConversion!r}.") from e
+        if not (0.0 < conv_val < 1.0):
+            raise InputError(f"terminationPolymerConversion must satisfy 0 < f < 1, got {conv_val}")
+        if not real_polymer_phase.pools:
+            raise InputError('terminationPolymerConversion requested but the polymer phase declares no '
+                             'polymer pools -- the polymer conversion metric would be undefined.')
+
+    if not (terminationConversion or terminationTime or terminationRateRatio
+            or terminationPolymerConversion):
         raise InputError('No termination conditions specified for HybridPolymerReactor.')
 
     # 4. Process Sensitivity
@@ -1872,6 +1896,7 @@ def hybrid_polymer_reactor(temperature: Union[float, List[float], Quantity],
         terminationConversion=terminationConversion,
         terminationTime=terminationTime,
         terminationRateRatio=terminationRateRatio,
+        terminationPolymerConversion=terminationPolymerConversion,
         sensitivity=sensitive_species,
         sensitivityThreshold=sensitivityThreshold,
         constant_gas_volume=constant_gas_volume,

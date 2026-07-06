@@ -37,6 +37,7 @@ from typing import Dict, List, Optional, Union
 import rmgpy.constants as constants
 from rmgpy.quantity import Quantity
 from rmgpy.solver.base import ReactionSystem, TerminationConversion, TerminationRateRatio, TerminationTime
+from rmgpy.solver.termination import TerminationPolymerConversion
 from rmgpy.solver.polymer import (HybridPolymerSystem, MassTransferConfig, PolymerPoolConfig,
                                   validate_k_depropagation, validate_k_homolysis,
                                   validate_radical_qssa_unzip,
@@ -76,6 +77,9 @@ class HybridPolymerReactor(ReactionSystem):
         terminationTime (Quantity, optional): The maximum time to simulate (e.g. '10 s').
         terminationRateRatio (float, optional): The minimum ratio of production rate to consumption rate
                                                for all core species before terminating the simulation.
+        terminationPolymerConversion (float, optional): The fractional drop (0 < f < 1) in the
+                                               defect-adjusted condensed polymer mass, summed over ALL
+                                               solver polymer pools (r86), at which to terminate.
         sensitivity (list, optional): A list of Species objects or reaction labels to calculate
                                       sensitivities for.
         sensitivityThreshold (float, optional): The cutoff threshold for sensitivity analysis.
@@ -101,6 +105,7 @@ class HybridPolymerReactor(ReactionSystem):
                  terminationConversion: Optional[Dict[Union[Species, str], float]] = None,
                  terminationTime: Optional[Union[Quantity, float]] = None,
                  terminationRateRatio=None,
+                 terminationPolymerConversion: Optional[float] = None,
                  sensitivity: Optional[List[Union[Species, str]]] = None,
                  sensitivityThreshold: float = 1e-3,
                  sens_conditions: Optional[Dict[str, Union[float, Quantity]]] = None,
@@ -135,6 +140,7 @@ class HybridPolymerReactor(ReactionSystem):
         self.terminationConversion = terminationConversion
         self.terminationTime = terminationTime
         self.terminationRateRatio = terminationRateRatio
+        self.terminationPolymerConversion = terminationPolymerConversion
         self.sensitivity = sensitivity
         self.sensitive_species = list()
         self.sensitivityThreshold = sensitivityThreshold
@@ -365,6 +371,22 @@ class HybridPolymerReactor(ReactionSystem):
         # SCISSION_FRAGMENT/MIGRATION flux resolves instead of demoting to UNRESOLVED.
         static_pool_labels = {p.label for p in self.polymerPhase.pools}
         pool_configs += derive_daughter_pool_configs(core_species, spc_map, static_pool_labels)
+
+        # r86 terminationPolymerConversion: materialize AFTER the pool
+        # configs are final (deck pools + runtime daughter pools), so the
+        # no-pool rejection sees the same pool census the metric will. The
+        # 0 < f < 1 bounds live in the TerminationPolymerConversion
+        # constructor (single chokepoint).
+        if self.terminationPolymerConversion is not None:
+            if not pool_configs:
+                raise ValueError(
+                    'terminationPolymerConversion requested but the model '
+                    'has no polymer pools (neither deck-configured pools '
+                    'nor runtime daughter pools) -- the polymer conversion '
+                    'metric would be undefined.')
+            termination.append(TerminationPolymerConversion(
+                self.terminationPolymerConversion))
+
         mt_configs = [mt.to_config(spc_map) for mt in self.polymerPhase.mass_transfer]
 
         # Validate indices consistent with get_gas_mask()

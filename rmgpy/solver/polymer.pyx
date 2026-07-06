@@ -3820,6 +3820,50 @@ class HybridPolymerSystem(ReactionSystem):
             " (first rows: %s)" % coupled_rows[:8]
             if coupled_rows else "")
 
+    def get_total_polymer_condensed_mass_g(self, y=None):
+        """r86 terminationPolymerConversion metric (defect-adjusted):
+
+            M_pool = max(0, mu1_p*monomer_mw_g_mol_p
+                            - mu0_p*chain_mass_defect_g_mol_p)
+            M_poly = sum over ALL solver polymer pools of M_pool
+
+        summed over EVERY pool the solver carries at this rebuild --
+        configured, spawned, homolysis-daughter, deprop-daughter AND
+        side-group feature pools (defect pools apply the schema-2.7
+        mass-defect formula through PolymerPoolConfig.condensed_mass_g, so
+        an FR1 Br-loss pool never falsely retains Br mass). Explicit-DP
+        oligomer carriers hold genuine polymer repeat-unit mass OUTSIDE
+        the mu state slots (the init consistency check subtracts their
+        share from mu1, r86 probe 3), so their contribution is added back
+        via _explicit_moment_contributions. Only each pool's FINAL mass
+        contribution is clamped at zero (numerical fuzz); individual
+        moments are never clamped. Returns grams; reads self.y when no
+        state vector is passed."""
+        cdef int p, i0, i1
+        cdef double total, mu0_mol, mu1_mol, V_poly
+        if y is None:
+            y = self.y
+        if self.polymer_pools is None or len(self.polymer_pools) == 0:
+            return None
+        V_poly = self.V_poly
+        total = 0.0
+        for p in range(len(self.polymer_pools)):
+            pool = self.polymer_pools[p]
+            i0 = self.pool_mu0_indices[p] if self.pool_mu0_indices is not None else -1
+            i1 = self.pool_mu1_indices[p] if self.pool_mu1_indices is not None else -1
+            if i0 < 0 or i1 < 0:
+                # Pre-initialize_model fallback: the config-time layout.
+                i0, i1 = pool.mu_indices[0], pool.mu_indices[1]
+            mu0_mol = y[i0]
+            mu1_mol = y[i1]
+            if pool.explicit_dp_to_species_index:
+                e0, e1, _e2 = _explicit_moment_contributions(
+                    V_poly, y, pool.explicit_dp_to_species_index)
+                mu0_mol += e0 * V_poly
+                mu1_mol += e1 * V_poly
+            total += max(0.0, pool.condensed_mass_g(mu0_mol, mu1_mol))
+        return total
+
     def _chain_bundle(self, int pool_idx, y, double V_poly, bint end_group):
         """
         Expected (chains, units, units^2) carried by ONE picked chain of pool

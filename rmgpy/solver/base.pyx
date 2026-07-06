@@ -56,7 +56,8 @@ from rmgpy.chemkin import get_species_identifier
 from rmgpy.reaction import Reaction
 from rmgpy.quantity import Quantity
 from rmgpy.species import Species
-from rmgpy.solver.termination import TerminationTime, TerminationConversion, TerminationRateRatio
+from rmgpy.solver.termination import (TerminationTime, TerminationConversion, TerminationRateRatio,
+                                      TerminationPolymerConversion)
 ################################################################################
 
 cdef class ReactionSystem(DASx):
@@ -724,6 +725,41 @@ cdef class ReactionSystem(DASx):
         # Copy the initial conditions to use in evaluating conversions
         y0 = self.y.copy()
 
+        # r86 terminationPolymerConversion: freeze M_poly(0) at simulation
+        # initialization and validate it loudly. The metric itself lives on
+        # the polymer-aware subclass (get_total_polymer_condensed_mass_g);
+        # the base implementation returns None, so requesting a polymer
+        # conversion cut on a pool-less model is a hard error, never a
+        # silently ignored criterion.
+        polymer_conv_term = None
+        polymer_mass_initial_g = 0.0
+        for term in self.termination:
+            if isinstance(term, TerminationPolymerConversion):
+                polymer_conv_term = term
+                m0 = self.get_total_polymer_condensed_mass_g()
+                if m0 is None:
+                    raise ValueError(
+                        'terminationPolymerConversion requires a reaction '
+                        'system with polymer pools (the metric '
+                        'M_poly = sum over pools of max(0, mu1*monomer_mw '
+                        '- mu0*chain_mass_defect) is undefined here).')
+                if not (m0 > 0.0):
+                    raise ValueError(
+                        'terminationPolymerConversion: initial condensed '
+                        'polymer mass M_poly(0) = {0!r} g must be strictly '
+                        'positive (zero or defect-swamped initial pool '
+                        'state).'.format(m0))
+                polymer_mass_initial_g = m0
+                break
+        # Accepted-checkpoint history for the conservative solver-target
+        # cap (Codex r86: post-step-only checking is a NO-GO -- the
+        # geometric step schedule must not carry the integrator past the
+        # crossing into the post-chemistry stiff region).
+        polymer_conv_prev_t = self.t
+        polymer_conv_prev_x = 0.0
+        polymer_conv_have_ckpt = False
+        polymer_conv_cap = 0.0
+
         # a list with the time, Volume, number of moles of core species
         self.snapshots = []
 
@@ -746,7 +782,14 @@ cdef class ReactionSystem(DASx):
 
             if not first_time:
                 try:
-                    self.step(step_time)
+                    # r86 terminationPolymerConversion reachability cap: the
+                    # geometric target is clipped to the conservative
+                    # pre-crossing cap computed at the previous accepted
+                    # checkpoint (0.0 = no cap active).
+                    if 0.0 < polymer_conv_cap < step_time:
+                        self.step(polymer_conv_cap)
+                    else:
+                        self.step(step_time)
                     if np.isnan(self.y).any():
                         raise DASxError("nans in moles")
                 except DASxError as e:
@@ -1308,10 +1351,47 @@ cdef class ReactionSystem(DASx):
                         logging.info('At time {0:10.4e} s, reached target termination RateRatio: '
                                      '{1}'.format(self.t,char_rate/max_char_rate))
                         self.log_conversions(species_index, y0)
+                elif isinstance(term, TerminationPolymerConversion):
+                    # r86: defect-adjusted condensed polymer mass across ALL
+                    # solver pools; M_poly(0) frozen and validated above.
+                    polymer_conv_x = 1.0 - (self.get_total_polymer_condensed_mass_g()
+                                            / polymer_mass_initial_g)
+                    if polymer_conv_x > term.conversion:
+                        terminated = True
+                        logging.info('At time {0:10.4e} s, reached target termination polymer conversion: '
+                                     'X_polymer = {1:.6f} (target {2:f}).'.format(
+                                         self.t, polymer_conv_x, term.conversion))
+                        self.log_conversions(species_index, y0)
+                        break
 
             # Increment destination step time if necessary
             if self.t >= 0.9999 * step_time:
                 step_time *= 10.0
+
+            # r86 terminationPolymerConversion reachability: conservative
+            # solver-target capping (Codex NO-GO on post-step-only). Once
+            # X_polymer > 0, estimate dX/dt from the accepted checkpoints
+            # and cap the NEXT step target before the predicted crossing
+            # (safety factor 0.5), with a minimum relative advance of 0.1%
+            # of the current time so the capped sequence still crosses the
+            # target in bounded iterations. The geometric step_time above
+            # is left untouched -- the cap applies at the step() call.
+            if polymer_conv_term is not None and not terminated:
+                polymer_conv_x = 1.0 - (self.get_total_polymer_condensed_mass_g()
+                                        / polymer_mass_initial_g)
+                polymer_conv_cap = 0.0
+                if (polymer_conv_have_ckpt and polymer_conv_x > 0.0
+                        and self.t > polymer_conv_prev_t
+                        and polymer_conv_x > polymer_conv_prev_x):
+                    rate = ((polymer_conv_x - polymer_conv_prev_x)
+                            / (self.t - polymer_conv_prev_t))
+                    dt_pred = (polymer_conv_term.conversion - polymer_conv_x) / rate
+                    if dt_pred > 0.0:
+                        polymer_conv_cap = self.t + max(
+                            0.5 * dt_pred, 1.0e-3 * max(self.t, 1.0e-300))
+                polymer_conv_prev_t = self.t
+                polymer_conv_prev_x = polymer_conv_x
+                polymer_conv_have_ckpt = True
 
         # Change surface species and reactions based on what will be added to the surface
         surface_species, surface_reactions = self.add_reactions_to_surface(new_surface_reactions,
@@ -1372,6 +1452,14 @@ cdef class ReactionSystem(DASx):
             if network is not None:
                 logging.info('    PDepNetwork #{0:d} leak rate: {1:10.4e} mol/m^3*s ({2:.4g})'.format(
                     network.index, network_rate, network_rate / char_rate))
+
+    def get_total_polymer_condensed_mass_g(self, y=None):
+        """r86 terminationPolymerConversion metric hook. The base reaction
+        system carries no polymer pools, so the defect-adjusted condensed
+        polymer mass is undefined: return ``None`` (the simulate() guard
+        turns that into a loud ``ValueError`` if a polymer-conversion cut
+        was requested). Polymer-aware systems override this."""
+        return None
 
     cpdef log_conversions(self, species_index, y0):
         """
