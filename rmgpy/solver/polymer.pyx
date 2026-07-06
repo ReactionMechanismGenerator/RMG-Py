@@ -82,6 +82,19 @@ SMALL_EPS = 1e-30
 # deliberately distrusts what the solver still legally computes (two
 # constants, two jobs).
 ATTRIBUTION_TRUST_K = 100.0
+# Exhaustion-tail conditioning floor multiplier (adjudicated round 81, the
+# PP run-7 IDID=-7 wall): per-state floor = max(SMALL_EPS, K * atol[state]).
+# A pool is EXHAUSTED only when |mu0|, |mu1| AND |mu2| ALL sit below their
+# floors (never mu0 alone -- tiny mu0 with nontrivial mu1 is a few long
+# chains, not an empty pool); an exhausted pool projects to (0,0,0) for RHS
+# reads and its kernels / pool-debiting flux are suppressed. K = 100 is the
+# same two-decade tolerance-anchored margin as ATTRIBUTION_TRUST_K (a
+# separate constant on purpose: the spawn-gate trust band and the solver
+# exhaustion band are two jobs that may diverge). Any moment more negative
+# than -floor is a HARD error (integrator corruption), never
+# max(..., SMALL_EPS). Generic solver infrastructure OUTSIDE the 2.8 kernel
+# contract -- the sidecar recipe strings are deliberately untouched.
+EXHAUSTION_FLOOR_K = 100.0
 LN_EXP_OVERFLOW_GUARD = 700.0
 TAIL_CONC_MIN = 1e-9  # Minimum concentration (mol/m^3) to actuate handshake
 
@@ -1349,6 +1362,13 @@ class HybridPolymerSystem(ReactionSystem):
 
         self.pool_mu0_indices = np.full(len(self.polymer_pools), -1, dtype=np.int32)
         self.pool_mu1_indices = np.full(len(polymer_pools), -1, dtype=np.int32)
+
+        # Exhaustion-tail conditioning state (r81 B). None/empty until
+        # initialize_model lays out the state vector and the atol-derived
+        # per-moment floors; the census set is per-rebuild (cleared there).
+        self._pool_exhausted = None
+        self._pool_mu_floors = None
+        self._exhaustion_census_emitted = set()
 
     def initiate_tolerances(self, atol=1e-16, rtol=1e-8, sensitivity=False,
                             sens_atol=1e-6, sens_rtol=1e-4):
@@ -3001,6 +3021,32 @@ class HybridPolymerSystem(ReactionSystem):
                                                    float)
         self._phase_gate_census_emitted = set()
 
+        # Exhaustion-tail conditioning (r81 B): per-pool per-moment floors
+        # derived from the solver ABSOLUTE tolerances -- floor_k =
+        # max(SMALL_EPS, EXHAUSTION_FLOOR_K * atol[state]) on the pool's own
+        # mu0/mu1/mu2 state slots (mole basis, same basis atol governs).
+        # Census keying is per-rebuild, mirroring the sibling warn-once sets.
+        n_pools_exh = len(self.polymer_pools)
+        self._pool_exhausted = np.zeros(n_pools_exh, dtype=np.uint8)
+        self._exhaustion_census_emitted = set()
+        self._pool_mu_floors = np.full((n_pools_exh, 3), SMALL_EPS,
+                                       dtype=float)
+        atol_arr_exh = getattr(self, "atol_array", None)
+        for p in range(n_pools_exh):
+            mu_idx_exh = self.polymer_pools[p].mu_indices
+            for k in range(3):
+                s_idx = int(mu_idx_exh[k])
+                if atol_arr_exh is None:
+                    a_exh = 0.0
+                elif np.ndim(atol_arr_exh) == 0:
+                    a_exh = float(atol_arr_exh)
+                elif s_idx < len(atol_arr_exh):
+                    a_exh = float(atol_arr_exh[s_idx])
+                else:
+                    a_exh = float(np.max(atol_arr_exh))
+                self._pool_mu_floors[p, k] = max(
+                    SMALL_EPS, EXHAUSTION_FLOOR_K * a_exh)
+
         self.get_const_spc_indices(core_species)
         self.set_initial_conditions()
 
@@ -3541,6 +3587,28 @@ class HybridPolymerSystem(ReactionSystem):
             else:
                 atol_mu0 = float(np.max(atol_arr))
             trust = max(SMALL_EPS, ATTRIBUTION_TRUST_K * atol_mu0)
+            # r81 (B) negative-moment rule: the pre-r81 mu0 <= SMALL_EPS
+            # branch zeroed SILENTLY and would swallow a negative. Now a
+            # mu0 beyond -floor is a hard error (integrator corruption);
+            # inside [-floor, SMALL_EPS] it projects to E[n] = 0 WITH the
+            # exhaustion census below. Floor from the centralized
+            # atol-derived exhaustion floors when available
+            # (post-initialize_model); SMALL_EPS otherwise (pre-init
+            # snapshot -> honest degenerate, mirroring atol_mu0 = 0).
+            floors_exh = self._pool_mu_floors
+            floor0 = (float(floors_exh[p, 0]) if floors_exh is not None
+                      and p < len(floors_exh) else SMALL_EPS)
+            if mu0 < -floor0:
+                raise ValueError(
+                    f"Polymer pool '{self.polymer_pools[p].label}' mu0="
+                    f"{mu0!r} mol is negative beyond the exhaustion floor "
+                    f"-{floor0:.6e} mol (= -max(SMALL_EPS, "
+                    f"{EXHAUSTION_FLOOR_K:.0f}*atol[state])) at the "
+                    f"spawn-gate snapshot. A negative moment beyond the "
+                    f"integrator's own error budget is integrator "
+                    f"corruption, not exhaustion -- refusing to attribute "
+                    f"from it (r81 negative-moment rule: hard error, never "
+                    f"a silent 0.0).")
             if mu0 > trust:
                 e_n_by_pool[p] = mu1 / mu0
             elif mu0 > SMALL_EPS:
@@ -3565,7 +3633,23 @@ class HybridPolymerSystem(ReactionSystem):
                     "motifs attributed to this pool: %d.",
                     self.polymer_pools[p].label, mu0, SMALL_EPS, trust,
                     ATTRIBUTION_TRUST_K, atol_mu0, n_motifs)
-            # mu0 <= SMALL_EPS: exhausted/empty -> 0.0 silently (unchanged).
+            else:
+                # mu0 in [-floor0, SMALL_EPS]: exhausted/empty -> E[n] = 0.0
+                # WITH the exhaustion census (r81 B5, once per pool per
+                # rebuild) -- never silently: a swallowed in-band negative
+                # would hide the onset of integrator corruption.
+                key_exh = (self.polymer_pools[p].label, "spawn-gate")
+                if key_exh not in self._exhaustion_census_emitted:
+                    self._exhaustion_census_emitted.add(key_exh)
+                    logging.warning(
+                        "POOL EXHAUSTION CENSUS: pool %s spawn-gate "
+                        "mu0=%.6e mol is within the exhaustion band "
+                        "[-%.6e, %.0e]; E[n] attribution projected to 0.0 "
+                        "for this snapshot (floor = max(SMALL_EPS, "
+                        "%.0f*atol[mu0]); negative beyond -floor is a "
+                        "hard error).",
+                        self.polymer_pools[p].label, mu0, floor0, SMALL_EPS,
+                        EXHAUSTION_FLOOR_K)
         for p in range(n_pools):
             pool = self.polymer_pools[p]
             mw = float(getattr(pool, "monomer_mw_g_mol", 0.0) or 0.0)
@@ -3608,6 +3692,125 @@ class HybridPolymerSystem(ReactionSystem):
                     0.0, pool.condensed_mass_g(1.0, e_n))
         return gross, pool_stats, proxy_event_mass_total
 
+    def _update_pool_exhaustion(self, y):
+        """Centralized pool-exhaustion predicate (r81 B, the PP run-7
+        IDID=-7 wall). Called once per residual evaluation; refreshes
+        ``self._pool_exhausted`` from the RAW state vector ``y``:
+
+        * a pool is EXHAUSTED only when ``abs(mu0)``, ``abs(mu1)`` AND
+          ``abs(mu2)`` are ALL below their per-state floors
+          ``max(SMALL_EPS, EXHAUSTION_FLOOR_K * atol[state])`` (never mu0
+          alone: tiny mu0 with nontrivial mu1 is a few long chains);
+        * any moment more negative than ``-floor_k`` is a HARD error
+          (integrator corruption, never ``max(..., SMALL_EPS)``);
+        * a negative inside ``[-floor_k, +floor_k]`` projects to zero (the
+          existing ``max(0.0, .)`` reads) but is ANNOUNCED through the
+          exhaustion census instead of silence.
+
+        Exhausted pools are projected to (0,0,0) FOR RHS READS ONLY --
+        ``y`` itself is never mutated. mu3 < mu2 OUTSIDE the exhaustion
+        band deliberately stays a real guard event (the existing warn-once
+        kernel guards are untouched)."""
+        cdef int p, n_pools
+        cdef double f0, f1, f2, raw0, raw1, raw2
+        n_pools = len(self.polymer_pools)
+        for p in range(n_pools):
+            idx0, idx1, idx2 = self.polymer_pools[p].mu_indices
+            f0 = self._pool_mu_floors[p, 0]
+            f1 = self._pool_mu_floors[p, 1]
+            f2 = self._pool_mu_floors[p, 2]
+            raw0 = y[idx0]
+            raw1 = y[idx1]
+            raw2 = y[idx2]
+            if raw0 < -f0 or raw1 < -f1 or raw2 < -f2:
+                pool = self.polymer_pools[p]
+                raise ValueError(
+                    f"Polymer pool '{pool.label}' moment state went "
+                    f"negative beyond the exhaustion floor: mu0={raw0!r}, "
+                    f"mu1={raw1!r}, mu2={raw2!r} mol vs floors "
+                    f"-{f0:.6e}/-{f1:.6e}/-{f2:.6e} mol "
+                    f"(= -max(SMALL_EPS, {EXHAUSTION_FLOOR_K:.0f}*"
+                    f"atol[state])). A negative moment beyond the "
+                    f"integrator's own error budget is integrator "
+                    f"corruption, not exhaustion -- refusing to integrate "
+                    f"it (r81 negative-moment rule: hard error, never "
+                    f"max(..., SMALL_EPS)).")
+            if (abs(raw0) <= f0 and abs(raw1) <= f1 and abs(raw2) <= f2):
+                self._pool_exhausted[p] = 1
+                self._emit_pool_exhaustion_census(
+                    p, raw0, raw1, raw2,
+                    "exhausted -- projected to (0,0,0) for RHS reads")
+            else:
+                self._pool_exhausted[p] = 0
+                if raw0 < 0.0 or raw1 < 0.0 or raw2 < 0.0:
+                    self._emit_pool_exhaustion_census(
+                        p, raw0, raw1, raw2,
+                        "in-band negative moment projected to zero "
+                        "(pool NOT exhausted)")
+
+    def _emit_pool_exhaustion_census(self, int p, double raw0, double raw1,
+                                     double raw2, reason):
+        """Once-per-pool-per-rebuild exhaustion census (r81 B3): label, raw
+        moments, floors, and which kernels / pool-coupled reaction rows are
+        suppressed while the pool reads as (0,0,0). Cold path -- string and
+        row-scan work happen at most once per (pool, reason) per rebuild."""
+        pool = self.polymer_pools[p]
+        key = (pool.label, reason)
+        if key in self._exhaustion_census_emitted:
+            return
+        self._exhaustion_census_emitted.add(key)
+        f0 = self._pool_mu_floors[p, 0]
+        f1 = self._pool_mu_floors[p, 1]
+        f2 = self._pool_mu_floors[p, 2]
+        kernels = []
+        if getattr(pool, "tail_kinetics", None):
+            kernels.append("tail_kinetics")
+        if float(getattr(pool, "k_scission", 0.0) or 0.0) > 0.0:
+            kernels.append("k_scission")
+        if float(getattr(pool, "k_unzip", 0.0) or 0.0) > 0.0:
+            kernels.append("k_unzip")
+        khom = getattr(self, "khom_enabled", None)
+        if khom is not None and len(khom) > p and khom[p]:
+            kernels.append("k_homolysis")
+        sgh = getattr(self, "sgh_enabled", None)
+        if sgh is not None and len(sgh) > p and sgh[p]:
+            kernels.append("side_group_homolysis")
+        qssa = getattr(self, "qssa_enabled", None)
+        if qssa is not None and len(qssa) > p and qssa[p]:
+            kernels.append("radical_qssa_unzip")
+        kdep = getattr(self, "kdep_enabled", None)
+        if kdep is not None and len(kdep) > p and kdep[p]:
+            kernels.append("k_depropagation")
+        suppressed_rows = []
+        n_rows = 0
+        ir = getattr(self, "reactant_indices", None)
+        ip = getattr(self, "product_indices", None)
+        stp = getattr(self, "species_to_pool_indices", None)
+        if ir is not None and ip is not None and stp is not None:
+            n_core = self.num_core_species
+            n_rows = ir.shape[0]
+            for j in range(n_rows):
+                hit = False
+                for slot in range(3):
+                    a = ir[j, slot]
+                    b = ip[j, slot]
+                    if ((a != -1 and a < n_core and stp[a] == p)
+                            or (b != -1 and b < n_core and stp[b] == p)):
+                        hit = True
+                        break
+                if hit:
+                    suppressed_rows.append(j)
+        logging.warning(
+            "POOL EXHAUSTION CENSUS: pool %s %s (raw mu0=%.6e, mu1=%.6e, "
+            "mu2=%.6e mol; floors %.6e/%.6e/%.6e mol = max(SMALL_EPS, "
+            "%.0f*atol[state])); suppressed kernels: %s; suppressed "
+            "pool-coupled reaction rows: %d of %d (core+edge)%s.",
+            pool.label, reason, raw0, raw1, raw2, f0, f1, f2,
+            EXHAUSTION_FLOOR_K, kernels if kernels else "none",
+            len(suppressed_rows), n_rows,
+            " (first rows: %s)" % suppressed_rows[:8]
+            if suppressed_rows else "")
+
     def _chain_bundle(self, int pool_idx, y, double V_poly, bint end_group):
         """
         Expected (chains, units, units^2) carried by ONE picked chain of pool
@@ -3618,6 +3821,10 @@ class HybridPolymerSystem(ReactionSystem):
         move a chain (denominator below SMALL_EPS) -- caller skips the term.
         mu2_ok False means apply b0/b1 but skip the mu2 component (mu3 = inf).
         """
+        # r81 (B): an exhausted pool reads as (0,0,0) -- too empty to move
+        # a chain, whatever the raw noise-scale moments say.
+        if self._pool_exhausted is not None and self._pool_exhausted[pool_idx]:
+            return 0.0, 0.0, 0.0, False
         idx0, idx1, idx2 = self.polymer_pools[pool_idx].mu_indices
         mu0 = max(0.0, y[idx0]) / V_poly
         mu1 = max(0.0, y[idx1]) / V_poly
@@ -3716,6 +3923,13 @@ class HybridPolymerSystem(ReactionSystem):
 
         proxy_activity = self._scratch_proxy_activity
         proxy_activity[:] = 0.0
+
+        # r81 (B) exhaustion-tail conditioning: refresh the per-pool
+        # exhausted flags from the RAW state ONCE per residual evaluation
+        # (hard-errors on any moment beyond -floor). Every pool-moment read
+        # below (site factors, bundles, kernels) consults the flags so an
+        # exhausted pool reads as (0,0,0) WITHOUT mutating y.
+        self._update_pool_exhaustion(y)
 
         self.core_reaction_rates[:] = 0.0
         self.edge_reaction_rates[:] = 0.0
@@ -3943,6 +4157,12 @@ class HybridPolymerSystem(ReactionSystem):
                             max(0.0, y[mu_idx[1]]) / float(self.reaction_eject_units[r_idx]),
                         ) / V_poly
 
+                    # r81 (B): an exhausted pool reads as (0,0,0) for RHS
+                    # purposes, so any event rate drawing on it is exactly
+                    # zero -- no pool-debiting flux off integrator noise.
+                    if self._pool_exhausted[target_pool_idx]:
+                        site = 0.0
+
                     rf *= site
                     # Direction-specific source availability (run-5 DASPK
                     # IDID=-7 forensics, adjudicated Part C): each direction's
@@ -3967,10 +4187,15 @@ class HybridPolymerSystem(ReactionSystem):
                     # hijack block -- keep in sync)
                     dst_pool_idx = self.reaction_dst_pool[r_idx]
                     if dst_pool_idx != -1 and dst_pool_idx != target_pool_idx:
-                        moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[1]
-                        if self.is_end_group_reaction[r_idx]:
-                            moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[0]
-                        rr *= max(0.0, y[moment_idx]) / V_poly
+                        if self._pool_exhausted[dst_pool_idx]:
+                            # r81 (B): the reverse leg debits the dst pool;
+                            # exhausted dst reads as (0,0,0) -> rr = 0.
+                            rr = 0.0
+                        else:
+                            moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[1]
+                            if self.is_end_group_reaction[r_idx]:
+                                moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[0]
+                            rr *= max(0.0, y[moment_idx]) / V_poly
                     else:
                         rr *= site
             elif has_any_prod and not has_edge_prod:
@@ -3991,13 +4216,18 @@ class HybridPolymerSystem(ReactionSystem):
                         prod_pool_idx = self.species_to_pool_indices[prod_p_idx]
                         break
                 if prod_pool_idx != -1:
-                    # Default to Mu1 (site density); end-group physics
-                    # scales by Mu0 (chain density) -- same selection as
-                    # the reactant-side block.
-                    moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[1]
-                    if self.is_end_group_reaction[r_idx]:
-                        moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[0]
-                    rr *= max(0.0, y[moment_idx]) / V_poly
+                    if self._pool_exhausted[prod_pool_idx]:
+                        # r81 (B): the reverse direction debits the product
+                        # pool; exhausted pool reads as (0,0,0) -> rr = 0.
+                        rr = 0.0
+                    else:
+                        # Default to Mu1 (site density); end-group physics
+                        # scales by Mu0 (chain density) -- same selection as
+                        # the reactant-side block.
+                        moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[1]
+                        if self.is_end_group_reaction[r_idx]:
+                            moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[0]
+                        rr *= max(0.0, y[moment_idx]) / V_poly
 
             # Net rate (volumetric, in the phase volume chosen earlier)
             rate = rf - rr
@@ -4259,15 +4489,24 @@ class HybridPolymerSystem(ReactionSystem):
                         # _chain_bundle's non-end-group branch (kept inline
                         # because the scission factors 1/2, 2/3, 1/3 differ
                         # per moment and per side).
-                        mu0_p = max(0.0, y[s_idx[0]]) / V_poly
-                        mu1_p = max(0.0, y[s_idx[1]]) / V_poly
-                        mu2_p = max(0.0, y[s_idx[2]]) / V_poly
+                        if self._pool_exhausted[src]:
+                            # r81 (B): exhausted parent reads as (0,0,0) --
+                            # its noise-scale mu2/mu1 ratios must never set
+                            # fragment statistics.
+                            mu0_p = mu1_p = mu2_p = 0.0
+                        else:
+                            mu0_p = max(0.0, y[s_idx[0]]) / V_poly
+                            mu1_p = max(0.0, y[s_idx[1]]) / V_poly
+                            mu2_p = max(0.0, y[s_idx[2]]) / V_poly
                         ok = mu1_p > SMALL_EPS
                         if ok and r_mol_s < 0.0:
                             # Net reverse = coupling bookkeeping; it depletes
                             # the DAUGHTER, so guard its moments too. (Stated
                             # approximation: parent statistics, sign-flipped.)
-                            if (max(0.0, y[d_idx[0]]) / V_poly <= SMALL_EPS or
+                            # r81 (B): an exhausted daughter reads as (0,0,0),
+                            # so the reverse leg cannot debit it.
+                            if (self._pool_exhausted[dst] or
+                                    max(0.0, y[d_idx[0]]) / V_poly <= SMALL_EPS or
                                     max(0.0, y[d_idx[1]]) / V_poly <= SMALL_EPS):
                                 ok = False
                         if ok:
@@ -4341,15 +4580,25 @@ class HybridPolymerSystem(ReactionSystem):
                     # chip exhaustion structure but are deliberately NOT
                     # throttled (bit-exact legacy contract; see
                     # docs/multi_pool_design.md limitation 14 / spec A4).
-                    if self.is_pool_proxy[r0]:
+                    # r81 (B): a leg that would DEBIT an exhausted pool is
+                    # skipped (reads-as-zero availability); credit legs
+                    # (refilling an exhausted pool) stay live.
+                    if self.is_pool_proxy[r0] and not (
+                            self._pool_exhausted[p0_pool_idx]
+                            and r_mol_s > 0.0):
                         dn_dt[self.polymer_pools[p0_pool_idx].mu_indices[1]] -= r_mol_s
-                    if r1 != -1 and self.is_pool_proxy[r1]:
+                    if r1 != -1 and self.is_pool_proxy[r1] and not (
+                            self._pool_exhausted[p1_pool_idx]
+                            and r_mol_s > 0.0):
                         dn_dt[self.polymer_pools[p1_pool_idx].mu_indices[1]] -= r_mol_s
                     for p_slot in range(3):
                         p_idx_tmp = ip[r_idx, p_slot]
                         if (p_idx_tmp != -1 and p_idx_tmp < n_core
                                 and self.is_pool_proxy[p_idx_tmp]):
                             pool_idx = self.species_to_pool_indices[p_idx_tmp]
+                            if (self._pool_exhausted[pool_idx]
+                                    and r_mol_s < 0.0):
+                                continue  # r81 (B): reverse debit skipped
                             dn_dt[self.polymer_pools[pool_idx].mu_indices[1]] += r_mol_s
 
         # 7. Network Leaks
@@ -4372,6 +4621,13 @@ class HybridPolymerSystem(ReactionSystem):
 
         # 8. Polymer Tail & Handshake
         for pool_i, pool in enumerate(self.polymer_pools):
+            if self._pool_exhausted[pool_i]:
+                # r81 (B): the pool reads as (0,0,0) -- EVERY pool kernel
+                # (tail closure, scission, unzip, homolysis, side-group,
+                # QSSA, depropagation, handshake) is suppressed this
+                # evaluation. Census emitted once per pool per rebuild by
+                # _update_pool_exhaustion; y is never mutated.
+                continue
             idx_mu0, idx_mu1, idx_mu2 = pool.mu_indices
             xs = pool.xs
 

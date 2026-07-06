@@ -2960,3 +2960,31 @@ class TestSideGroupHomolysisSidecar:
         assert all("side_group_homolysis" not in p
                    and "chain_mass_defect_g_mol" not in p
                    for p in payload["pools"])
+
+
+class TestR81RecipeStringsUntouched:
+    """r81 (B) schema/TA constraint: exhaustion-tail conditioning is generic
+    tolerance-based solver infrastructure OUTSIDE the 2.8 kernel contract --
+    the schema-2.8 end_radical_depropagation recipe strings are load-bearing
+    pins (runner and TA validate exact text) and must remain byte-identical.
+    This pin fails if ANY byte of the recipe dict, the block revision token,
+    or the kernel name changes without a coordinated re-dating."""
+
+    def test_28_depropagation_recipe_strings_byte_identical(self):
+        import hashlib
+
+        from rmgpy.polymer import (
+            DEPROPAGATION_BLOCK_RECIPE_REVISION,
+            DEPROPAGATION_KERNEL_NAME,
+            DEPROPAGATION_SIDECAR_RECIPE,
+        )
+        payload = json.dumps(
+            {"recipe": DEPROPAGATION_SIDECAR_RECIPE,
+             "revision": DEPROPAGATION_BLOCK_RECIPE_REVISION,
+             "kernel": DEPROPAGATION_KERNEL_NAME},
+            sort_keys=True, ensure_ascii=True)
+        assert hashlib.sha256(payload.encode("utf-8")).hexdigest() == \
+            "c27136d6f5e745c631bac3f9b8e430d0187fb6e849a6faf9cca9390311e7a352"
+        assert DEPROPAGATION_BLOCK_RECIPE_REVISION == \
+            "2026-07-06-end-radical-depropagation"
+        assert DEPROPAGATION_KERNEL_NAME == "end_radical_depropagation/1"

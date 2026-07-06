@@ -630,8 +630,7 @@ class TestHybridPolymerReactor:
             (0.0, 5.0, 30.0),         # mu0 = 0
             (1.0e-3, 1.0, 1.0e120),   # broad distribution -> mu3 closure overflows to Inf
             (1.0e100, 1.0e100, 1.0e300),  # all-huge near double-max
-            (-1.0, -2.0, -3.0),       # negatives (clamped by max(0,.))
-            (0.0, 0.0, 0.0),          # fully degenerate
+            (0.0, 0.0, 0.0),          # fully degenerate (r81: exhausted -> zero RHS)
         ]
         for mu0, mu1, mu2 in pathological_states:
             y = rxn_system.y.copy()
@@ -641,6 +640,14 @@ class TestHybridPolymerReactor:
                 f"Non-finite dn_dt for moment state (mu0,mu1,mu2)=({mu0},{mu1},{mu2}): {dn_dt}. "
                 "This would trigger an unrecoverable model resurrection."
             )
+        # Negatives beyond the atol-derived exhaustion floor are NO LONGER
+        # silently max(0,.)-clamped: r81's negative-moment rule makes them a
+        # HARD error (integrator corruption must surface, not integrate).
+        # The pre-r81 pin ((-1,-2,-3) stays finite) is superseded.
+        y = rxn_system.y.copy()
+        y[1], y[2], y[3] = -1.0, -2.0, -3.0
+        with pytest.raises(ValueError, match="beyond the exhaustion floor"):
+            rxn_system.residual(0.0, y, np.zeros_like(y))
 
     def test_mu3_closure_realizability_guard(self):
         """
@@ -3256,13 +3263,17 @@ class TestHybridPolymerReactor:
     # ------------------------------------------------------------------
     def test_cross_pool_reverse_availability_scales_with_debited_pool(self):
         """
-        Run-5 shape: near-zero dst pool B (mu = [1.9e-18, 2.6e-17, 6.1e-16],
-        the polypropylene_mod_3 moments at the DASPK failure dump) with a
+        Run-5 shape: near-zero dst pool B (the run-5 forensic
+        polypropylene_mod_3 moments rescaled x1e4 to sit just ABOVE the r81
+        exhaustion floor of 1e-14 mol, preserving the pool's shape) with a
         finite reverse driving force on a cross-pool VOLATILE_EJECTION row.
         The outbound B fluxes must scale with B's own moments
-        (ev = kb * mu1_B ~ 1.6e-17), not with healthy pool A's
+        (ev = kb * mu1_B ~ 1.6e-13), not with healthy pool A's
         (ev = kb * mu1_A = 3.0, which pre-fix drained B's mu2 at -2831 mol/s
-        -- 1e12 times B's entire mu2 content per second).
+        -- 1e12 times B's entire mu2 content per second). BELOW the floor
+        the r81 exhaustion conditioning takes over: the ORIGINAL in-band
+        forensic values now yield an exactly-zero outbound flux (second
+        phase below).
         """
         a = 1.135
         sp, core, mask = _two_pool_species()
@@ -3270,7 +3281,7 @@ class TestHybridPolymerReactor:
         rxn.polymer_flux_archetype = 6
         rxn.polymer_eject_units = a
         mu_a = (1.0, 5.0, 30.0)
-        mu_b = (1.9e-18, 2.6e-17, 6.1e-16)
+        mu_b = (1.9e-14, 2.6e-13, 6.1e-12)
         rs = _two_pool_rs(rxn, core, mask, mu_a, mu_b)
         rs.kf[0] = 0.0        # forward off: isolate the reverse leg
         rs.kb[0] = 0.6
@@ -3287,13 +3298,25 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[5], -ev * 1.0, rtol=1e-10, atol=0.0)
         assert np.isclose(dn_dt[6], -ev * bB1, rtol=1e-10, atol=0.0)
         assert np.isclose(dn_dt[7], -ev * bB2, rtol=1e-10, atol=0.0)
-        # No absolute-scale drain of a ~1e-18-scale pool.
-        assert abs(dn_dt[7]) < 1e-10
+        # No absolute-scale drain of a ~1e-14-scale pool (pre-fix: -2831).
+        assert abs(dn_dt[7]) < 1e-9
         # Mass conservation holds EXACTLY across the fixed leg with the same
         # event flux: chains conserved; backbone units gain exactly a*ev
         # (the re-absorbed volatile's units), as for any reverse VE.
         assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-30)
         assert np.isclose(dn_dt[2] + dn_dt[6], +a * ev, rtol=1e-12, atol=0.0)
+        # r81 exhaustion conditioning: at the ORIGINAL run-5 forensic
+        # moments (1.9e-18/2.6e-17/6.1e-16 mol -- all inside the
+        # max(SMALL_EPS, 100*atol) = 1e-14 band) the pool reads as (0,0,0)
+        # and the reverse leg contributes EXACTLY nothing.
+        rs2 = _two_pool_rs(rxn, core, mask, mu_a,
+                           (1.9e-18, 2.6e-17, 6.1e-16))
+        rs2.kf[0] = 0.0
+        rs2.kb[0] = 0.6
+        dn_dt2 = rs2.residual(0.0, rs2.y, np.zeros_like(rs2.y))[0]
+        assert dn_dt2[5] == 0.0
+        assert dn_dt2[6] == 0.0
+        assert dn_dt2[7] == 0.0
 
     def test_cross_pool_reverse_fix_migration_mass_conservation_exact(self):
         """
@@ -3367,15 +3390,20 @@ class TestHybridPolymerReactor:
     def test_cross_pool_reverse_flux_vanishes_continuously(self):
         """
         Continuity: as the debited pool's moments -> 0 (fixed distribution
-        shape, amplitude s = 1e-6, 1e-12, 1e-18) the outbound mu2 drain
-        decreases monotonically and LINEARLY with s -- no step at any
-        threshold, no cliff. Pre-fix the drain was CONSTANT (-2831.2 mol/s
-        at every s: availability taken from the healthy source pool).
+        shape, amplitude s = 1e-6, 1e-9, 1e-12 -- three decades spanning the
+        live region ABOVE the r81 exhaustion floor of 1e-14 mol) the
+        outbound mu2 drain decreases monotonically and LINEARLY with s --
+        no step at any threshold, no cliff. Pre-fix the drain was CONSTANT
+        (-2831.2 mol/s at every s: availability taken from the healthy
+        source pool). INSIDE the r81 exhaustion band (s = 1e-18) the drain
+        is EXACTLY zero: below max(SMALL_EPS, 100*atol) the pool reads as
+        (0,0,0) -- the state there is integrator noise, and cutting it to
+        zero is the adjudicated conditioning, not a physics cliff.
         """
         a = 1.135
         mu_a = (1.0, 5.0, 30.0)
         drains = []
-        for s in (1.0e-6, 1.0e-12, 1.0e-18):
+        for s in (1.0e-6, 1.0e-9, 1.0e-12):
             sp, core, mask = _two_pool_species()
             rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
             rxn.polymer_flux_archetype = 6
@@ -3389,8 +3417,20 @@ class TestHybridPolymerReactor:
         # Monotone decrease toward 0, all finite and positive (still live).
         assert drains[0] > drains[1] > drains[2] > 0.0
         # Linear in the pool amplitude: successive ratios == amplitude ratio.
-        assert drains[1] / drains[0] == pytest.approx(1.0e-6, rel=1e-9)
-        assert drains[2] / drains[1] == pytest.approx(1.0e-6, rel=1e-9)
+        assert drains[1] / drains[0] == pytest.approx(1.0e-3, rel=1e-9)
+        assert drains[2] / drains[1] == pytest.approx(1.0e-3, rel=1e-9)
+        # r81 exhaustion band: amplitude fully inside the noise floor ->
+        # exactly zero drain (the run-7 tail conditioning).
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rs = _two_pool_rs(rxn, core, mask, mu_a,
+                          (1.9e-18, 2.6e-17, 6.1e-16))
+        rs.kf[0] = 0.0
+        rs.kb[0] = 0.6
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn_dt[7] == 0.0
 
     def test_volatile_ejection_fractional_a_not_rounded(self):
         """
@@ -4162,12 +4202,23 @@ class TestHybridPolymerReactor:
         y = rs.y.copy()
         dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
         assert np.all(np.isfinite(dn_dt))
-        # Overshoot mu2 negative with one huge explicit step, then re-evaluate.
+        # Overshoot mu2 negative with one huge explicit step, then
+        # re-evaluate. Pre-r81 this pinned "finite + cone warning"; under
+        # the r81 negative-moment rule a moment this far beyond -floor
+        # (-1e10 mol vs -1e-14) is integrator corruption and HARD-errors
+        # instead of being silently max(0,.)-clamped.
         y2 = y + 1e3 * dn_dt
         assert y2[3] < 0.0, "test setup: expected a mu2 overshoot"
+        with pytest.raises(ValueError, match="beyond the exhaustion floor"):
+            rs.residual(0.0, y2, np.zeros_like(y2))
+        # The cone diagnostic itself (debug_check_realizability) survives
+        # for NONNEGATIVE out-of-cone states: mu0*mu2 < mu1^2 with all
+        # moments >= 0 still warns once and stays finite.
+        y3 = y.copy()
+        y3[1], y3[2], y3[3] = 1.0, 5.0, 1.0   # 1*1 < 25: outside the cone
         with caplog.at_level(_logging.WARNING):
-            dn_dt2 = rs.residual(0.0, y2, np.zeros_like(y2))[0]
-        assert np.all(np.isfinite(dn_dt2))
+            dn_dt3 = rs.residual(0.0, y3, np.zeros_like(y3))[0]
+        assert np.all(np.isfinite(dn_dt3))
         assert any("realizable cone" in rec.message for rec in caplog.records)
 
     def test_scission_net_reverse_guard_on_empty_daughter(self):
@@ -4390,8 +4441,12 @@ class TestSpawnGateFluxSnapshot:
         sp, core, mask = _one_pool_gate_species()
         rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["R"]], **_KIN)
         rxn.polymer_flux_archetype = 1
-        # mu0 exhausted (0 <= SMALL_EPS), mu1 tiny but nonzero.
-        rs = _one_pool_gate_rs(rxn, core, mask, (0.0, 1e-25, 1e-20))
+        # mu0 exhausted (0 <= SMALL_EPS), mu1/mu2 small but ABOVE the r81
+        # exhaustion floor (1e-14 mol): the pool is NOT fully exhausted, so
+        # the row still carries flux and the deferral tested here is the
+        # spawn-gate E[n] clamp itself (a fully exhausted pool would defer
+        # even earlier -- zero RHS -> zero gross -- by r81 conditioning).
+        rs = _one_pool_gate_rs(rxn, core, mask, (0.0, 1e-10, 1e-5))
 
         rs.residual(0.0, rs.y, np.zeros_like(rs.y))
         snapshot = rs.spawn_gate_flux_snapshot()
@@ -9442,3 +9497,127 @@ class TestSpawnGateDefectAwareMass:
         assert defect == 0.0
         assert proxy_total == pytest.approx(gross["A"] * 5.0 * 28.0,
                                             rel=1e-12)
+
+
+# ---------------------------------------------------------------------------
+# r81 run-8 gate (adjudicated round 81, 2026-07-06): (B) exhaustion-tail
+# conditioning + (C) resurrection zero-metric guard. Forensics: PP run-7
+# (/home/alon/Projects/polymer/PP/rmg/run7/RMG.log) -- after full
+# depropagation every pool sits at 1e-15..1e-18 mol, DASPK hits IDID=-7 on
+# the ill-conditioned exhausted tail, and Model Resurrection amplifies it by
+# adding species at rate ratio 0.0 (zero flux), six loops deep.
+# ---------------------------------------------------------------------------
+
+
+def _r81_pool_rs(moments, k_unzip=0.0, monomer_poly_index=None):
+    """One-pool fixture for the exhaustion-conditioning pins: pool A
+    (proxy + mu dummies), gas seed X, and one core fold-back row
+    A -> A + X (the canonical unstamped legacy shape, rate = kf*mu1).
+    Default solver atol = 1e-16, so the r81 exhaustion floor is
+    max(SMALL_EPS, 100*atol) = 1e-14 mol per moment slot."""
+    sp = _gate17_species()
+    core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"]]
+    mask = [False, False, False, False, True]
+    rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["X"]], **_KIN)
+    rs = _gate17_rs(core, mask, [rxn], moments={"A": moments},
+                    k_unzip=k_unzip, monomer_poly_index=monomer_poly_index)
+    return rs, core, rxn
+
+
+class TestR81ExhaustionTailConditioning:
+    """(B) The centralized pool-exhaustion predicate: a pool is exhausted
+    ONLY when |mu0|, |mu1| AND |mu2| all sit below per-state floors
+    max(SMALL_EPS, 100*atol[state]); an exhausted pool projects to (0,0,0)
+    for RHS reads (kernels + pool-debiting flux suppressed, census once per
+    pool per rebuild), and a moment more negative than -floor is a HARD
+    error, never max(..., SMALL_EPS)."""
+
+    # all three moments below the 1e-14 mol floor -- the run-7 tail state
+    _EXHAUSTED = (1.0e-16, 5.0e-16, 3.0e-15)
+
+    def test_exhausted_pool_contributes_zero_rhs(self):
+        """RED (run-7 wall): with every moment in the exhaustion band the
+        pool must read as (0,0,0) -- the proxy row's site factor is exactly
+        zero (no pool-debiting flux) and the k_unzip kernel is suppressed
+        (no gas fabrication), so the WHOLE residual is exactly zero."""
+        rs, _, _ = _r81_pool_rs(self._EXHAUSTED, k_unzip=1.0,
+                                monomer_poly_index=4)
+        delta, _ = rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert float(np.asarray(rs.core_reaction_rates)[0]) == 0.0
+        assert float(np.max(np.abs(np.asarray(delta)))) == 0.0
+
+    def test_tiny_mu0_with_real_mu1_is_not_clamped(self, caplog):
+        """Anti-overreach pin (r81 B1: never mu0 alone): tiny mu0 with a
+        nontrivial mu1 is a few LONG chains, not an empty pool -- the
+        mu1-scaled proxy row keeps its exact legacy rate kf*mu1 = 10.0 and
+        NO exhaustion census fires."""
+        rs, _, _ = _r81_pool_rs((1.0e-16, 5.0, 30.0))
+        with caplog.at_level(logging.WARNING):
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert float(np.asarray(rs.core_reaction_rates)[0]) == \
+            pytest.approx(10.0, rel=1e-12)
+        assert not any("POOL EXHAUSTION CENSUS" in r.getMessage()
+                       for r in caplog.records)
+
+    def test_negative_moment_beyond_floor_hard_errors(self):
+        """RED (r81 negative-moment rule): a moment more negative than
+        -floor is integrator corruption -- the residual must raise loudly,
+        never max(..., SMALL_EPS) it back to zero."""
+        rs, _, _ = _r81_pool_rs((1.0, 5.0, 30.0))
+        y2 = np.array(rs.y, dtype=float).copy()
+        y2[rs.polymer_pools[0].mu_indices[0]] = -1.0e-12  # << -1e-14 floor
+        with pytest.raises(ValueError, match="beyond the exhaustion floor"):
+            rs.residual(0.0, y2, np.zeros_like(y2))
+
+    def test_negative_moment_within_band_projects_with_census(self, caplog):
+        """RED (r81 negative-moment rule, band half): a negative inside
+        [-floor, +floor] projects to zero WITH the exhaustion census --
+        never silently -- and does NOT raise."""
+        rs, _, _ = _r81_pool_rs((1.0, 5.0, 30.0))
+        y2 = np.array(rs.y, dtype=float).copy()
+        y2[rs.polymer_pools[0].mu_indices[0]] = -5.0e-15  # inside the band
+        with caplog.at_level(logging.WARNING):
+            rs.residual(0.0, y2, np.zeros_like(y2))
+        assert any("POOL EXHAUSTION CENSUS" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_exhaustion_census_once_per_pool_per_rebuild(self, caplog):
+        """RED (r81 B3): the census line carries label + raw moments +
+        floors, fires ONCE per pool per rebuild (two residual calls -> one
+        line), and re-fires after an initialize_model rebuild."""
+        rs, core, rxn = _r81_pool_rs(self._EXHAUSTED)
+        with caplog.at_level(logging.WARNING):
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        lines = [r.getMessage() for r in caplog.records
+                 if "POOL EXHAUSTION CENSUS" in r.getMessage()]
+        assert len(lines) == 1
+        assert "pool A" in lines[0]
+        assert "floor" in lines[0]
+        caplog.clear()
+        rs.initialize_model(list(core), [rxn], [], [])
+        with caplog.at_level(logging.WARNING):
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert any("POOL EXHAUSTION CENSUS" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_spawn_gate_negative_beyond_floor_hard_errors(self):
+        """RED (r81 B5): the spawn-gate mu0 read at polymer.pyx:3568
+        (mu0 <= SMALL_EPS -> 0.0 silently) swallowed negatives; beyond
+        -floor it must now raise."""
+        rs, _, _ = _r81_pool_rs((1.0, 5.0, 30.0))
+        rs.y[int(rs.pool_mu0_indices[0])] = -1.0e-12
+        with pytest.raises(ValueError, match="beyond the exhaustion floor"):
+            rs.spawn_gate_flux_snapshot()
+
+    def test_spawn_gate_in_band_zero_carries_census(self, caplog):
+        """RED (r81 B5, band half): a spawn-gate mu0 inside
+        [-floor, SMALL_EPS] still defers (E[n] = 0) but now announces the
+        projection through the exhaustion census instead of silence."""
+        rs, _, _ = _r81_pool_rs((1.0, 5.0, 30.0))
+        rs.y[int(rs.pool_mu0_indices[0])] = -5.0e-15
+        with caplog.at_level(logging.WARNING):
+            _, pool_stats, _ = rs.spawn_gate_flux_snapshot()
+        assert pool_stats["A"][0] == 0.0
+        assert any("POOL EXHAUSTION CENSUS" in r.getMessage()
+                   for r in caplog.records)
