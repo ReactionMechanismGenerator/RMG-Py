@@ -2594,7 +2594,8 @@ def _warn_atom_transfer_ve(signature, a) -> None:
             abs(a), _VE_ATOM_TRANSFER_UNITS, signature)
 
 
-def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetype:
+def classify_reaction_flux_archetype(reactants, products,
+                                     trust_reacted_class=True) -> PolymerFluxArchetype:
     """
     Classify a reaction's pool moment-flux archetype from its (handshaked)
     reactant and product lists. Product Polymers carry ``_reacted_class``
@@ -2602,14 +2603,26 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
     product surgery, spec 2026-06-10 §4.2); pool identity is the Polymer
     label (the same key the solver's ``initialize_model`` uses to map
     species to pools).
+
+    ``trust_reacted_class=False`` (r92 flip-restamp): classify STAMP-BLIND,
+    from pool labels + net non-polymer mass only. Used when re-classifying a
+    kinetics-FLIPPED reaction (:func:`restamp_flipped_polymer_archetype`),
+    where the participant lists hold REGISTRY objects: a registry daughter
+    Polymer persistently carries the ``_reacted_class`` stamped by the
+    reaction that CREATED it (``_register_polymer`` registers the reacted
+    copy itself), which describes a DIFFERENT reaction -- trusting it would
+    spuriously route the flipped row SCISSION_FRAGMENT/DISCRETE_CHIP. The
+    stamp-gated branches are simply unreachable then; shapes that would
+    need them classify UNRESOLVED (and the caller refuses).
     """
     reactant_pools = {r.label for r in reactants if isinstance(r, Polymer)}
     product_polymers = [p for p in products if isinstance(p, Polymer)]
     if not reactant_pools and not product_polymers:
         return PolymerFluxArchetype.NONE
 
-    if any(getattr(p, '_reacted_class', None) == PolymerClass.CHIP
-           for p in product_polymers):
+    if trust_reacted_class and any(
+            getattr(p, '_reacted_class', None) == PolymerClass.CHIP
+            for p in product_polymers):
         # Chip product surgery (surge_chip_products) already rewrote this
         # product list to [discrete chip, CHIP-stamped fold-back]. This check
         # MUST precede the SCISSION branch: after the (b)-surgery there is no
@@ -2618,8 +2631,9 @@ def classify_reaction_flux_archetype(reactants, products) -> PolymerFluxArchetyp
         # flag; nothing downstream may recompute it from product stamps.
         return PolymerFluxArchetype.DISCRETE_CHIP
 
-    if any(getattr(p, '_reacted_class', None) == PolymerClass.SCISSION
-           for p in product_polymers):
+    if trust_reacted_class and any(
+            getattr(p, '_reacted_class', None) == PolymerClass.SCISSION
+            for p in product_polymers):
         if is_end_group_reaction(products):
             # Unsurged end-initiated scission: chip product surgery
             # (surge_chip_products, spec 2026-06-10 §4.2) was either not
@@ -2883,6 +2897,132 @@ def stamp_polymer_flux_archetype(forward, reactants, polymer_reactants) -> None:
             forward.polymer_refused = True
             forward.polymer_refused_accumulating = (
                 not is_qssa_eliminating_radical(lost))
+
+
+# r92 flip-restamp census accumulators (module-level, mirror the warn-once
+# census sets above). Refusals log a cumulative WARNING every time (they are
+# rare and each one is a zeroed row); clean restamps log an INFO line once per
+# (family, before -> after) signature and DEBUG otherwise, always carrying the
+# cumulative clean-restamp count.
+_flip_restamp_census = {
+    "restamped": 0,
+    "refused": 0,
+    "refused_archetypes": set(),
+    "refused_families": set(),
+    "refused_rows": [],
+    "restamp_signatures": set(),
+}
+
+
+def _archetype_name(value) -> str:
+    try:
+        return PolymerFluxArchetype(int(value)).name
+    except ValueError:
+        return str(value)
+
+
+def restamp_flipped_polymer_archetype(forward) -> None:
+    """
+    r92 flip-restamp-or-refuse (PP run-10 killer, artifact rows r8/r30-32).
+
+    ``apply_kinetics_to_reaction`` flips a reaction's reactants/products in
+    place when the kinetics are estimated in reverse. The polymer flux
+    archetype stamped by ``make_new_reaction`` encodes the GENERATION
+    direction (parent/daughter roles, eject sign), so it is stale after the
+    flip. The pre-r92 behavior -- blind demotion to UNRESOLVED -- dispatched
+    live legacy mu1-only flux with RESOLVED pools: the r71-banned
+    unclassified-pool-flux class through a generation-time door.
+
+    Instead: CLEAR the stale direction-bound fields and RE-RUN the flux
+    classification on the FLIPPED direction.
+
+    * Classification is STAMP-BLIND (``trust_reacted_class=False``): the
+      participant lists hold registry objects, and a registry daughter
+      Polymer persistently carries the ``_reacted_class`` stamped by the
+      reaction that CREATED it (``_register_polymer`` registers the reacted
+      copy itself) -- species-level residue describing a different reaction.
+      Only pool labels + net non-polymer mass are orientation-honest here,
+      and they ARE direction-aware: a flipped MIGRATION re-derives its
+      swapped src/dst, a flipped VOLATILE_EJECTION recomputes its eject
+      units with the flipped SIGN (the chain now gains what it lost).
+    * Classification UNRESOLVED, or required metadata uncomputable
+      (VOLATILE_EJECTION ``eject_units`` with no positive source monomer
+      MW): REFUSE conduit-deferred -- ``polymer_refused=True``,
+      ``polymer_refused_accumulating=False`` -- zero whole-row flux via the
+      solver's ``reaction_refused``, never a live legacy row.
+    * An upstream refusal is preserved (OR semantics; qssa-invalid wins),
+      matching :func:`merge_polymer_adjudication_stamps`.
+    * ``is_end_group_reaction`` is deliberately kept: it flags WHERE on the
+      chain the event happens (chain end -> mu0 scaling), which a direction
+      flip does not move; its END_MOD stamp basis is unreconstructable here
+      for the same registry-residue reason above.
+
+    Pure-gas rows (no Polymer participant) are left untouched.
+    """
+    participants = (forward.reactants or []) + (forward.products or [])
+    if not any(isinstance(s, Polymer) for s in participants):
+        return
+
+    before = int(getattr(forward, 'polymer_flux_archetype', 0))
+    # CLEAR the stale direction-bound archetype fields (written for the
+    # pre-flip direction) before re-classifying.
+    forward.polymer_flux_archetype = int(PolymerFluxArchetype.NONE)
+    forward.polymer_chip_units = 0
+    forward.polymer_eject_units = 0.0
+
+    new_arch = classify_reaction_flux_archetype(
+        forward.reactants or [], forward.products or [],
+        trust_reacted_class=False)
+
+    refusal_detail = None
+    if new_arch == PolymerFluxArchetype.VOLATILE_EJECTION:
+        source = next((r for r in (forward.reactants or [])
+                       if isinstance(r, Polymer)), None)
+        try:
+            forward.polymer_eject_units = float(compute_volatile_ejection_units(
+                forward.reactants, forward.products, source))
+        except (ValueError, AttributeError) as e:
+            refusal_detail = "eject_units uncomputable: %s" % e
+            new_arch = PolymerFluxArchetype.UNRESOLVED
+
+    fam = str(getattr(forward, 'family', None)
+              or getattr(forward, 'library', None) or '?')
+    c = _flip_restamp_census
+    if new_arch == PolymerFluxArchetype.UNRESOLVED:
+        forward.polymer_flux_archetype = int(PolymerFluxArchetype.UNRESOLVED)
+        forward.polymer_refused = True
+        # conduit-deferred; an upstream qssa-invalid refusal is preserved.
+        forward.polymer_refused_accumulating = bool(
+            getattr(forward, 'polymer_refused_accumulating', False))
+        c["refused"] += 1
+        c["refused_archetypes"].add(_archetype_name(before))
+        c["refused_families"].add(fam)
+        if len(c["refused_rows"]) < 5:
+            c["refused_rows"].append(_reaction_census_label(forward))
+        logging.warning(
+            "FLIPPED-POLYMER RESTAMP REFUSAL: %d kinetics-flipped polymer "
+            "row(s) could not be restamped on the flipped direction and are "
+            "refused conduit-deferred (zero whole-row flux; never live "
+            "legacy mu1) [latest: %s]; archetypes-before=%s families=%s "
+            "first_rows=%s",
+            c["refused"],
+            refusal_detail or "flipped-direction classification UNRESOLVED",
+            ",".join(sorted(c["refused_archetypes"])),
+            ",".join(sorted(c["refused_families"])),
+            "; ".join(c["refused_rows"]))
+        return
+
+    forward.polymer_flux_archetype = int(new_arch)
+    c["restamped"] += 1
+    sig = (fam, _archetype_name(before), new_arch.name)
+    level = logging.DEBUG if sig in c["restamp_signatures"] else logging.INFO
+    c["restamp_signatures"].add(sig)
+    logging.log(
+        level,
+        "FLIPPED-POLYMER RESTAMP: %d kinetics-flipped polymer row(s) "
+        "restamped cleanly so far (latest %s -> %s, family %s: %s)",
+        c["restamped"], _archetype_name(before), new_arch.name, fam,
+        _reaction_census_label(forward))
 
 
 def stamp_gas_association_refusal(forward, pool_registry=None) -> None:

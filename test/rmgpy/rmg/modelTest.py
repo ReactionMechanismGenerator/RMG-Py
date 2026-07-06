@@ -1103,6 +1103,54 @@ class TestPolymerPoolRegistryDedup:
         assert registry[0] is poly
 
 
+class TestApplyKineticsFlipRestamp:
+    def test_flip_restamps_polymer_archetype_live_path(self, monkeypatch):
+        """r92 wiring (PP run-10 killer): when apply_kinetics_to_reaction
+        flips a reaction in place (kinetics estimated in reverse), the
+        polymer flux classification must be RE-RUN on the flipped direction
+        (restamp-or-refuse) at the live call site -- never blindly demoted
+        to legacy UNRESOLVED (which dispatched live legacy-mu1 flux with
+        RESOLVED pools, run-10 artifact rows r8/r30-32).
+
+        Here the flipped orientation (gas -> pool) is unrestampable, so the
+        row must come out REFUSED conduit-deferred."""
+        import rmgpy.data.rmg as rmg_data
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import Polymer, PolymerFluxArchetype
+
+        pool = Polymer(label="PS", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        gas = Species().from_smiles("CC")
+        rxn = TemplateReaction(
+            reactants=[pool], products=[gas], pairs=[(pool, gas)],
+            family="fake_family")
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.SCISSION_FRAGMENT)
+
+        kin = Arrhenius(A=(1.0, "s^-1"), n=0.0, Ea=(0.0, "J/mol"),
+                        T0=(1.0, "K"))
+        cerm = CoreEdgeReactionModel()
+        monkeypatch.setattr(
+            cerm, "generate_kinetics",
+            lambda reaction: (kin, "test", None, False), raising=False)
+
+        class _FakeFamily:
+            own_reverse = False
+
+        class _FakeDb:
+            families = {"fake_family": _FakeFamily()}
+
+        monkeypatch.setattr(rmg_data, "get_db", lambda name: _FakeDb())
+
+        cerm.apply_kinetics_to_reaction(rxn)
+
+        assert rxn.reactants == [gas] and rxn.products == [pool]  # flipped
+        assert rxn.kinetics is kin
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False   # conduit-deferred
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+
+
 class TestPolymerBMRealDHrxn:
     def test_convert_bm_matches_fix_barrier_height(self):
         cerm = CoreEdgeReactionModel()

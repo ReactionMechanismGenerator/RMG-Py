@@ -2722,10 +2722,12 @@ class HybridPolymerSystem(ReactionSystem):
         # Item 17 (spec 2026-06-12 SS3(e)): generation-time stamps, captured
         # AFTER the stamp-read loop and BEFORE the init demotion pass
         # (:NONE->UNRESOLVED + unresolvable stamped shapes) mutates the
-        # array in place. For reactions flip-demoted at GENERATION time
-        # (demote_flipped_polymer_archetype mutates the object itself),
-        # "pre-demotion" deliberately means pre-SOLVER-demotion: the
-        # captured value is legitimately UNRESOLVED and the census reports
+        # array in place. For reactions kinetics-FLIPPED at GENERATION time
+        # (restamp_flipped_polymer_archetype, r92: restamp-or-refuse mutates
+        # the object itself), "pre-demotion" deliberately means
+        # pre-SOLVER-demotion: the captured value is the restamped
+        # flipped-direction archetype (or UNRESOLVED for flip-REFUSED rows,
+        # which are flux-dead via reaction_refused) and the census reports
         # it as such.
         self.reaction_pre_demotion_archetype = self.reaction_flux_archetype.copy()
 

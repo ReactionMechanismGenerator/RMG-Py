@@ -1152,6 +1152,33 @@ class TestRefusedRowSerialization:
         assert e["proxy_reactants"] == [] and e["proxy_products"] == []
         assert "refused" not in e and "refused_reason" not in e
 
+    def test_flip_refused_row_not_emitted_live_legacy(self):
+        """r92 (run-10 artifact rows r8/r30-32): a kinetics-flipped row whose
+        flipped-direction restamp is unresolvable is refused at generation
+        time and must reach the artifact carrying the refused marker (the
+        consumer zeroes it) -- never as a live legacy_mu1/1 row while the
+        generating solver zeroes its flux."""
+        from rmgpy.polymer import restamp_flipped_polymer_archetype
+        pool = Polymer(label="A", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=1.0)
+        pool.index = 1
+        gas = _spc("CC", "ethane", index=7)
+        # Flipped orientation left by apply_kinetics_to_reaction: gas -> pool
+        # (reversed association), stale pre-flip stamp still on the object.
+        rxn = Reaction(reactants=[gas], products=[pool],
+                       kinetics=_arrhenius(A=(3.0, "m^3/(mol*s)")),
+                       reversible=True)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.SCISSION_FRAGMENT)
+        restamp_flipped_polymer_archetype(rxn)
+        entries = compile_polymer_reaction_entries(
+            [rxn], [pool, gas], configured_pool_labels=["A"],
+            cantera_index_map={id(rxn): [8]})
+        assert len(entries) == 1
+        e = entries[0]
+        assert e.get("refused") is True
+        assert e.get("refused_reason") == "conduit-deferred"
+
     def test_refused_presence_stamps_schema_2_4(self, pe_pool):
         """Presence-based stamp, the 2.1/2.2/2.3 precedent exactly: the
         emitter stamps "2.4" exactly when at least one reactions[] row

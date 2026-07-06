@@ -1233,29 +1233,172 @@ PS_1
         assert (classify_reaction_flux_archetype([p], [piece, gas])
                 == PolymerFluxArchetype.SCISSION_FRAGMENT)
 
-    def test_demote_flipped_polymer_archetype(self):
+    def test_flipped_row_restamps_cross_pool_direction(self):
         """
-        apply_kinetics_to_reaction flips reactions in place when the kinetics
-        are estimated in reverse; the stamped archetype then encodes reversed
-        parent/daughter roles. demote_flipped_polymer_archetype must reset any
-        polymer-touching reaction to UNRESOLVED (role-agnostic legacy flux)
-        and leave pure-gas reactions alone.
+        r92 flip-restamp-or-refuse (PP run-10 r8/r30-32). This test
+        RE-ADJUDICATES the former test_demote_flipped_polymer_archetype
+        defect pin: blind demotion to UNRESOLVED dispatched live legacy-mu1
+        flux with RESOLVED pools -- the r71-banned unclassified-pool-flux
+        class through a generation-time door. After a kinetics flip the
+        polymer flux classification must be RE-RUN on the flipped
+        direction; a clean cross-pool relabel restamps MIGRATION, never
+        legacy UNRESOLVED.
         """
         from rmgpy.reaction import Reaction
-        from rmgpy.rmg.model import demote_flipped_polymer_archetype
-        from rmgpy.polymer import PolymerFluxArchetype
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()   # PS_1
+        dst = self.polymer_2.copy()   # PS_2 (cross pool)
+        # Original generation direction PS_2 -> PS_1 stamped MIGRATION;
+        # apply_kinetics_to_reaction swapped the lists in place.
+        rxn = Reaction(reactants=[src], products=[dst],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.MIGRATION))
+        restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.MIGRATION)
+        assert rxn.polymer_refused is False
+
+    def test_flipped_ve_row_restamps_with_flipped_sign(self, caplog):
+        """
+        r92: VOLATILE_EJECTION is genuinely direction-bound -- the flipped
+        row's eject_units must be RECOMPUTED on the flipped direction (the
+        chain now GAINS the volatile mass, a < 0), not kept stale and not
+        demoted to legacy. Also pins the success-side census line.
+        """
+        import logging as _logging
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()
+        dst = self.polymer_2.copy()
+        styrene = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])
+        # Original: PS_2 -> PS_1 + styrene (VE, a > 0), flipped in place to
+        # PS_1 + styrene -> PS_2.
+        rxn = Reaction(
+            reactants=[src, styrene], products=[dst],
+            polymer_flux_archetype=int(PolymerFluxArchetype.VOLATILE_EJECTION),
+            polymer_eject_units=1.0)
+        with caplog.at_level(_logging.DEBUG, logger=""):
+            restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert rxn.polymer_eject_units == pytest.approx(-1.0, abs=0.05)
+        assert rxn.polymer_refused is False
+        # Success-side census: reports how many flips restamped cleanly.
+        hits = [r for r in caplog.records
+                if "FLIPPED-POLYMER RESTAMP:" in r.getMessage()
+                and "restamped cleanly" in r.getMessage()]
+        assert hits
+
+    def test_flipped_row_unrestampable_refused_conduit_deferred(self, caplog):
+        """
+        r92: a flipped row whose flipped-direction classification is
+        UNRESOLVED (here a reversed gas->pool association: no reactant
+        pool) must be REFUSED conduit-deferred (zero flux via
+        reaction_refused), never left as a live legacy-mu1 row. Pins the
+        FLIPPED-POLYMER RESTAMP REFUSAL census line.
+        """
+        import logging as _logging
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
 
         p = self.polymer_1.copy()
         gas = Species(molecule=[Molecule(smiles="CC")])
-
         rxn = Reaction(reactants=[gas], products=[p],
                        polymer_flux_archetype=int(PolymerFluxArchetype.SCISSION_FRAGMENT))
-        demote_flipped_polymer_archetype(rxn)
+        with caplog.at_level(_logging.WARNING):
+            restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False   # conduit-deferred
         assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+        hits = [r for r in caplog.records
+                if "FLIPPED-POLYMER RESTAMP REFUSAL:" in r.getMessage()]
+        assert hits
+        msg = hits[-1].getMessage()
+        assert "SCISSION_FRAGMENT" in msg   # archetype-before
+        assert "families=" in msg and "first_rows=" in msg
 
+    def test_flipped_row_ignores_stale_species_level_reacted_class(self):
+        """
+        r92 stamp-blind restamp (premise probe): _register_polymer registers
+        the reacted-copy object ITSELF, so a registry daughter Polymer
+        persistently carries the _reacted_class stamped by the reaction
+        that CREATED it -- species-level residue describing a DIFFERENT
+        reaction. The flipped-direction reclassification must not read it
+        (else a flipped row spuriously restamps SCISSION_FRAGMENT); only
+        pool labels + net non-polymer mass are orientation-honest here.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()
+        dst = self.polymer_2.copy()
+        dst._reacted_class = PolymerClass.SCISSION   # creation-time residue
+        styrene = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])
+        rxn = Reaction(reactants=[src], products=[dst, styrene],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.MIGRATION))
+        restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_flux_archetype != int(PolymerFluxArchetype.SCISSION_FRAGMENT)
+        # Cross-pool + net volatile mass leaving => VOLATILE_EJECTION, a > 0.
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert rxn.polymer_eject_units == pytest.approx(1.0, abs=0.05)
+
+    def test_flipped_ve_metadata_failure_refuses(self):
+        """
+        r92: a flipped row that classifies VOLATILE_EJECTION but whose
+        required metadata (eject_units) cannot be computed (source pool has
+        no positive monomer MW) must refuse conduit-deferred -- never stamp
+        a VE row with fabricated/zero eject_units, never fall to legacy.
+        """
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()
+        src.monomer_mw_g_mol = 0.0   # metadata unavailable
+        dst = self.polymer_2.copy()
+        styrene = Species(molecule=[Molecule(smiles="C=Cc1ccccc1")])
+        rxn = Reaction(reactants=[src, styrene], products=[dst],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.VOLATILE_EJECTION))
+        restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False
+        assert rxn.polymer_flux_archetype == int(PolymerFluxArchetype.UNRESOLVED)
+        assert rxn.polymer_eject_units == 0.0
+
+    def test_flipped_pure_gas_row_untouched(self):
+        """r92 negative control: pure-gas rows are not polymer rows; the
+        flip restamp leaves them NONE and unrefused."""
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        gas = Species(molecule=[Molecule(smiles="CC")])
         gas_rxn = Reaction(reactants=[gas], products=[gas])
-        demote_flipped_polymer_archetype(gas_rxn)
+        restamp_flipped_polymer_archetype(gas_rxn)
         assert gas_rxn.polymer_flux_archetype == int(PolymerFluxArchetype.NONE)
+        assert gas_rxn.polymer_refused is False
+
+    def test_flipped_row_preserves_upstream_refusal(self):
+        """r92: an upstream refusal (e.g. qssa-invalid, item 18) stamped
+        before the kinetics flip must survive the restamp -- OR semantics,
+        matching merge_polymer_adjudication_stamps (qssa-invalid wins over
+        conduit-deferred)."""
+        from rmgpy.reaction import Reaction
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   restamp_flipped_polymer_archetype)
+
+        src = self.polymer_1.copy()
+        dst = self.polymer_2.copy()
+        rxn = Reaction(reactants=[src], products=[dst],
+                       polymer_flux_archetype=int(PolymerFluxArchetype.MIGRATION))
+        rxn.polymer_refused = True
+        rxn.polymer_refused_accumulating = True   # qssa-invalid upstream
+        restamp_flipped_polymer_archetype(rxn)
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is True
 
     def test_create_reacted_copy_end_mod_folds_to_parent(self):
         """

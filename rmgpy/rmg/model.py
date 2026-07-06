@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_h_loss_feature_verdicts, is_end_group_reaction, merge_polymer_adjudication_stamps, stamp_gas_association_refusal, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_h_loss_feature_verdicts, is_end_group_reaction, merge_polymer_adjudication_stamps, restamp_flipped_polymer_archetype, stamp_gas_association_refusal, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -1385,10 +1385,15 @@ class CoreEdgeReactionModel:
             family = get_db("kinetics").families[reaction.family]
             reaction.reactants, reaction.products = reaction.products, reaction.reactants
             reaction.pairs = [(p, r) for r, p in reaction.pairs]
-            # The polymer flux archetype encodes parent/daughter roles for the
-            # generation direction; after the swap they are reversed, so fall
-            # back to the role-agnostic legacy transfer.
-            demote_flipped_polymer_archetype(reaction)
+            # The polymer flux archetype is orientation-bound (parent/daughter
+            # roles, eject sign), so the stamp written for the generation
+            # direction is stale after the swap. r92 (PP run-10): re-run the
+            # flux classification on the FLIPPED direction -- restamp when it
+            # resolves, REFUSE conduit-deferred (zero flux) when it does not.
+            # Never demote to legacy UNRESOLVED: that dispatched live
+            # unclassified mu1 flux with resolved pools (run-10 rows
+            # r8/r30-32, the r71-banned class through a generation-time door).
+            restamp_flipped_polymer_archetype(reaction)
             if family.own_reverse and hasattr(reaction, "reverse"):
                 if reaction.reverse:
                     reaction.template = reaction.reverse.template
@@ -2692,20 +2697,3 @@ def are_identical_species_references(rxn1, rxn2):
     identical_collider = rxn1.specific_collider == rxn2.specific_collider
 
     return (identical_same_direction or identical_opposite_directions) and identical_collider
-
-
-def demote_flipped_polymer_archetype(reaction):
-    """
-    Demote a polymer-touching reaction's flux archetype to UNRESOLVED after an
-    in-place direction flip (reactants and products swapped).
-
-    The archetype is stamped by make_new_reaction for the GENERATION direction;
-    a flip reverses the parent/daughter roles it encodes (e.g. a stamped
-    SCISSION_FRAGMENT would make the solver treat the daughter pool as the
-    parent and drain the wrong distribution). Re-classifying here is not safe
-    either: after the swap the product list holds the registry pool object,
-    which carries no per-reaction ``_reacted_class`` stamp. UNRESOLVED makes
-    the solver fall back to the direction-agnostic legacy mu1 transfer.
-    """
-    if any(isinstance(s, Polymer) for s in (reaction.reactants or []) + (reaction.products or [])):
-        reaction.polymer_flux_archetype = int(PolymerFluxArchetype.UNRESOLVED)
