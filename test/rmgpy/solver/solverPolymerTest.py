@@ -630,7 +630,7 @@ class TestHybridPolymerReactor:
             (0.0, 5.0, 30.0),         # mu0 = 0
             (1.0e-3, 1.0, 1.0e120),   # broad distribution -> mu3 closure overflows to Inf
             (1.0e100, 1.0e100, 1.0e300),  # all-huge near double-max
-            (0.0, 0.0, 0.0),          # fully degenerate (r81: exhausted -> zero RHS)
+            (0.0, 0.0, 0.0),          # fully degenerate (r86: census only, RHS live from raw y)
         ]
         for mu0, mu1, mu2 in pathological_states:
             y = rxn_system.y.copy()
@@ -3270,10 +3270,12 @@ class TestHybridPolymerReactor:
         The outbound B fluxes must scale with B's own moments
         (ev = kb * mu1_B ~ 1.6e-13), not with healthy pool A's
         (ev = kb * mu1_A = 3.0, which pre-fix drained B's mu2 at -2831 mol/s
-        -- 1e12 times B's entire mu2 content per second). BELOW the floor
-        the r81 exhaustion conditioning takes over: the ORIGINAL in-band
-        forensic values now yield an exactly-zero outbound flux (second
-        phase below).
+        -- 1e12 times B's entire mu2 content per second). r86
+        re-adjudication (Codex-adjudicated, spar r86 -- r81 read-projection
+        reverted): BELOW the floor the SAME availability law keeps holding
+        from the raw state -- the ORIGINAL in-band forensic values yield a
+        tiny LIVE outbound flux scaled by B's own moments, not an
+        exactly-zero projection (second phase below).
         """
         a = 1.135
         sp, core, mask = _two_pool_species()
@@ -3305,18 +3307,24 @@ class TestHybridPolymerReactor:
         # (the re-absorbed volatile's units), as for any reverse VE.
         assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-30)
         assert np.isclose(dn_dt[2] + dn_dt[6], +a * ev, rtol=1e-12, atol=0.0)
-        # r81 exhaustion conditioning: at the ORIGINAL run-5 forensic
-        # moments (1.9e-18/2.6e-17/6.1e-16 mol -- all inside the
-        # max(SMALL_EPS, 100*atol) = 1e-14 band) the pool reads as (0,0,0)
-        # and the reverse leg contributes EXACTLY nothing.
-        rs2 = _two_pool_rs(rxn, core, mask, mu_a,
-                           (1.9e-18, 2.6e-17, 6.1e-16))
+        # r86 re-adjudication (r81 read-projection reverted): at the
+        # ORIGINAL run-5 forensic moments (1.9e-18/2.6e-17/6.1e-16 mol --
+        # all inside the max(SMALL_EPS, 100*atol) = 1e-14 census band) the
+        # exhaustion census announces the pool, but the reverse leg keeps
+        # the SAME mu_B-scaled availability law from the raw state -- a
+        # tiny LIVE outbound flux, never an exactly-zero projection.
+        mu_b2 = (1.9e-18, 2.6e-17, 6.1e-16)
+        rs2 = _two_pool_rs(rxn, core, mask, mu_a, mu_b2)
         rs2.kf[0] = 0.0
         rs2.kb[0] = 0.6
         dn_dt2 = rs2.residual(0.0, rs2.y, np.zeros_like(rs2.y))[0]
-        assert dn_dt2[5] == 0.0
-        assert dn_dt2[6] == 0.0
-        assert dn_dt2[7] == 0.0
+        ev2 = 0.6 * mu_b2[1]
+        mu3_b2 = mu_b2[0] * (mu_b2[2] / mu_b2[1]) ** 3
+        bB1_2 = mu_b2[2] / mu_b2[1]
+        bB2_2 = mu3_b2 / mu_b2[1]
+        assert np.isclose(dn_dt2[5], -ev2 * 1.0, rtol=1e-10, atol=0.0)
+        assert np.isclose(dn_dt2[6], -ev2 * bB1_2, rtol=1e-10, atol=0.0)
+        assert np.isclose(dn_dt2[7], -ev2 * bB2_2, rtol=1e-10, atol=0.0)
 
     def test_cross_pool_reverse_fix_migration_mass_conservation_exact(self):
         """
@@ -3390,20 +3398,20 @@ class TestHybridPolymerReactor:
     def test_cross_pool_reverse_flux_vanishes_continuously(self):
         """
         Continuity: as the debited pool's moments -> 0 (fixed distribution
-        shape, amplitude s = 1e-6, 1e-9, 1e-12 -- three decades spanning the
-        live region ABOVE the r81 exhaustion floor of 1e-14 mol) the
-        outbound mu2 drain decreases monotonically and LINEARLY with s --
-        no step at any threshold, no cliff. Pre-fix the drain was CONSTANT
-        (-2831.2 mol/s at every s: availability taken from the healthy
-        source pool). INSIDE the r81 exhaustion band (s = 1e-18) the drain
-        is EXACTLY zero: below max(SMALL_EPS, 100*atol) the pool reads as
-        (0,0,0) -- the state there is integrator noise, and cutting it to
-        zero is the adjudicated conditioning, not a physics cliff.
+        shape, amplitude s = 1e-6, 1e-9, 1e-12, 1e-18 -- spanning the live
+        region above the 1e-14 mol census floor AND the census band inside
+        it, r86 re-adjudication: the r81 read-projection is reverted, so
+        the linear law continues THROUGH the floor with no step at any
+        threshold, no cliff -- the run-9d H-early wake-up shape must see a
+        continuous RHS across the floor crossing) the outbound mu2 drain
+        decreases monotonically and LINEARLY with s. Pre-fix the drain was
+        CONSTANT (-2831.2 mol/s at every s: availability taken from the
+        healthy source pool).
         """
         a = 1.135
         mu_a = (1.0, 5.0, 30.0)
         drains = []
-        for s in (1.0e-6, 1.0e-9, 1.0e-12):
+        for s in (1.0e-6, 1.0e-9, 1.0e-12, 1.0e-18):
             sp, core, mask = _two_pool_species()
             rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
             rxn.polymer_flux_archetype = 6
@@ -3414,23 +3422,15 @@ class TestHybridPolymerReactor:
             rs.kb[0] = 0.6
             dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
             drains.append(-dn_dt[7])
-        # Monotone decrease toward 0, all finite and positive (still live).
-        assert drains[0] > drains[1] > drains[2] > 0.0
+        # Monotone decrease toward 0, all finite and positive (still live --
+        # INCLUDING the in-band amplitude s = 1e-18: census only, no
+        # projected-to-zero cliff at the floor).
+        assert drains[0] > drains[1] > drains[2] > drains[3] > 0.0
         # Linear in the pool amplitude: successive ratios == amplitude ratio.
         assert drains[1] / drains[0] == pytest.approx(1.0e-3, rel=1e-9)
         assert drains[2] / drains[1] == pytest.approx(1.0e-3, rel=1e-9)
-        # r81 exhaustion band: amplitude fully inside the noise floor ->
-        # exactly zero drain (the run-7 tail conditioning).
-        sp, core, mask = _two_pool_species()
-        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
-        rxn.polymer_flux_archetype = 6
-        rxn.polymer_eject_units = a
-        rs = _two_pool_rs(rxn, core, mask, mu_a,
-                          (1.9e-18, 2.6e-17, 6.1e-16))
-        rs.kf[0] = 0.0
-        rs.kb[0] = 0.6
-        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
-        assert dn_dt[7] == 0.0
+        # Through the floor: the SAME line continues into the census band.
+        assert drains[3] / drains[2] == pytest.approx(1.0e-6, rel=1e-9)
 
     def test_volatile_ejection_fractional_a_not_rounded(self):
         """
@@ -9715,26 +9715,88 @@ def _r81_pool_rs(moments, k_unzip=0.0, monomer_poly_index=None):
 
 
 class TestR81ExhaustionTailConditioning:
-    """(B) The centralized pool-exhaustion predicate: a pool is exhausted
-    ONLY when |mu0|, |mu1| AND |mu2| all sit below per-state floors
-    max(SMALL_EPS, 100*atol[state]); an exhausted pool projects to (0,0,0)
-    for RHS reads (kernels + pool-debiting flux suppressed, census once per
-    pool per rebuild), and a moment more negative than -floor is a HARD
+    """(B) The centralized pool-exhaustion predicate, re-adjudicated r86
+    (Codex-adjudicated, spar r86): the predicate is a CENSUS/TRIPWIRE
+    driver ONLY. A pool is counted exhausted when |mu0|, |mu1| AND |mu2|
+    all sit below per-state floors max(SMALL_EPS, 100*atol[state]) --
+    census once per pool per rebuild -- but the RHS keeps computing from
+    the RAW state vector (the r81 read-projection is reverted; flags have
+    ZERO RHS effect). A moment more negative than -floor stays a HARD
     error, never max(..., SMALL_EPS)."""
 
     # all three moments below the 1e-14 mol floor -- the run-7 tail state
     _EXHAUSTED = (1.0e-16, 5.0e-16, 3.0e-15)
 
-    def test_exhausted_pool_contributes_zero_rhs(self):
-        """RED (run-7 wall): with every moment in the exhaustion band the
-        pool must read as (0,0,0) -- the proxy row's site factor is exactly
-        zero (no pool-debiting flux) and the k_unzip kernel is suppressed
-        (no gas fabrication), so the WHOLE residual is exactly zero."""
+    def test_exhausted_pool_rhs_stays_live_census_only(self, caplog):
+        """r86 re-adjudication of the r81 zero-RHS pin: with every moment
+        in the exhaustion band the census fires (once, diagnostic), but
+        the RHS computes LIVE from raw y -- the proxy row keeps its exact
+        legacy rate kf*mu1 = 2.0*5e-16 and the residual is NOT the zero
+        vector (the r81 projected-to-zero read is reverted; the run-9d
+        H-early wake-up must never see a frozen pool)."""
         rs, _, _ = _r81_pool_rs(self._EXHAUSTED, k_unzip=1.0,
                                 monomer_poly_index=4)
-        delta, _ = rs.residual(0.0, rs.y, np.zeros_like(rs.y))
-        assert float(np.asarray(rs.core_reaction_rates)[0]) == 0.0
-        assert float(np.max(np.abs(np.asarray(delta)))) == 0.0
+        with caplog.at_level(logging.WARNING):
+            delta, _ = rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+        assert float(np.asarray(rs.core_reaction_rates)[0]) == \
+            pytest.approx(2.0 * self._EXHAUSTED[1], rel=1e-12)
+        assert float(np.max(np.abs(np.asarray(delta)))) > 0.0
+        assert any("POOL EXHAUSTION CENSUS" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_floor_crossing_pool_wake_up_integrates_smoothly(self):
+        """r86 revert demonstration (the run-9d H-early wake-up shape in
+        miniature): a pool whose moments START inside the census band is
+        fed by a healthy pool and must DASSL-integrate smoothly THROUGH
+        the floor crossing -- finite state throughout, monotone growth of
+        the waking pool, and its own mu1-scaled fold-back row live once
+        awake (gas actually produced). The RED half of the revert (the
+        exactly-zero in-band projection removed) is pinned at residual
+        level by test_exhausted_pool_rhs_stays_live_census_only and the
+        two cross-pool continuity tests; an integration-scale RED
+        observable is NOT constructible here because the pre-crossing gas
+        signal sits below the integrator atol (1e-16) by construction of
+        the census band -- a trajectory-level pre/post difference would
+        pin integrator noise, not physics."""
+        sp, core, mask = _two_pool_species()
+        feed = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        feed.polymer_flux_archetype = 2          # MIGRATION: A chains -> B
+        foldback = Reaction(reactants=[sp["B"]],
+                            products=[sp["B"], sp["G"]], **_KIN)
+        pool_a = PolymerPoolConfig(label="A", xs=2,
+                                   explicit_dp_to_species_index={},
+                                   mu_indices=(1, 2, 3),
+                                   monomer_poly_index=None,
+                                   k_scission=0.0, k_unzip=0.0,
+                                   tail_kinetics=None)
+        pool_b = PolymerPoolConfig(label="B", xs=2,
+                                   explicit_dp_to_species_index={},
+                                   mu_indices=(5, 6, 7),
+                                   monomer_poly_index=None,
+                                   k_scission=0.0, k_unzip=0.0,
+                                   tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[8]: 0.0},
+            V_poly=1.0, polymer_pools=[pool_a, pool_b], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0),
+                                     "B": (1.9e-18, 2.6e-17, 6.1e-16)},
+            termination=[],
+            allow_default_prospective_edge=True,
+            allow_unstamped_proxy_rows=True)
+        rs.initialize_model(core, [feed, foldback], [], [])
+        mu1_b_traj = []
+        for t in (1.0e-3, 1.0e-2, 1.0e-1, 1.0):
+            rs.advance(t)
+            y = np.asarray(rs.y)
+            assert np.all(np.isfinite(y)), t
+            mu1_b_traj.append(float(y[6]))
+        # B woke up: mu1_B grew monotonically from 2.6e-17 mol (in-band)
+        # to far above the 1e-14 mol census floor -- no wall, no cliff.
+        assert all(b > a for a, b in zip(mu1_b_traj, mu1_b_traj[1:]))
+        assert mu1_b_traj[-1] > 1.0e-3
+        # ... and B's own fold-back row is LIVE post-wake: gas accumulated.
+        assert float(np.asarray(rs.y)[8]) > 0.0
 
     def test_tiny_mu0_with_real_mu1_is_not_clamped(self, caplog):
         """Anti-overreach pin (r81 B1: never mu0 alone): tiny mu0 with a
@@ -9760,9 +9822,11 @@ class TestR81ExhaustionTailConditioning:
             rs.residual(0.0, y2, np.zeros_like(y2))
 
     def test_negative_moment_within_band_projects_with_census(self, caplog):
-        """RED (r81 negative-moment rule, band half): a negative inside
-        [-floor, +floor] projects to zero WITH the exhaustion census --
-        never silently -- and does NOT raise."""
+        """r81 negative-moment rule, band half (kept under r86 as a
+        census-only pin): a negative inside [-floor, +floor] is ANNOUNCED
+        through the exhaustion census -- never silently -- and does NOT
+        raise. The RHS keeps its pre-existing local max(0, .) reads; the
+        census is diagnostic only (r86: no RHS projection)."""
         rs, _, _ = _r81_pool_rs((1.0, 5.0, 30.0))
         y2 = np.array(rs.y, dtype=float).copy()
         y2[rs.polymer_pools[0].mu_indices[0]] = -5.0e-15  # inside the band
