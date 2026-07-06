@@ -4793,6 +4793,116 @@ class TestThermoReferenceStateTripwire:
             _refstate_rs(core2, [rxn2], mask2,
                          [_gate_pool_config()], {"A": (1.0, 5.0, 30.0)})
 
+    @staticmethod
+    def _split_isomerization_fixture():
+        """r87 shape-B fixture (FR1 run-3 ``(117) <=> (111)``): a real
+        Polymer pool A in core (the restamp's pool registry is collected
+        from the SPECIES lists, so the monomer scale must be discoverable
+        there) plus two chain-scale proxy-derived C9H18Br2 adduct isomers:
+        D_melt melt-classified (tagged, 286.05 g/mol >= window 42.08 + 10,
+        unvetoed) and D_gas veto-suppressed (tagged AND gas-vetoed, run-3's
+        (117) posture). 286.05 g/mol = 6.8 monomer-equivalents of mass, 11
+        heavy atoms = 3.7 of structure -- polymer-sized on both r85 axes."""
+        from rmgpy.polymer import Polymer, set_polymer_gas_veto
+        pool = Polymer(label="A", monomer="[CH2][CH]C",
+                       Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        sp = {
+            "A": pool,
+            "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
+            "A_mu2": _spc("C#N", "A_mu2"),
+            "D_gas": _spc("BrCC(C)CC(C)CC(C)Br", "D_gas"),
+            "D_melt": _spc("CC(CBr)CC(C)CC(C)Br", "D_melt"),
+        }
+        sp["D_melt"].is_polymer_proxy = True
+        sp["D_gas"].is_polymer_proxy = True
+        set_polymer_gas_veto(sp["D_gas"])
+        for s in sp.values():
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"],
+                sp["D_gas"], sp["D_melt"]]
+        mask = np.array([False] * 4 + [True, True], dtype=bool)
+        return sp, core, mask
+
+    def test_reference_state_split_isomerization_refused_at_restamp(self, caplog):
+        """r87 (FR1 run-3 shape B, RED-first): the ``(117) <=> (111)``
+        reference-state-SPLIT isomerization -- one side melt-classified,
+        the other veto-suppressed, U ~ 13 decades unpaired (run-3 RMG.out
+        line 5140) -- arrives UNSTAMPED at initialize_model and must be
+        refused (conduit-deferred) by the r71 rebuild restamp BEFORE the
+        thermo reference-state tripwire scans core rows, so the build
+        COMPLETES with the row quarantined instead of dying on the
+        cliff-sign ValueError. RED at 9b22bba8d: no shape-B classifier
+        exists, the live row reaches the tripwire and the build raises.
+
+        Census pin (r87 'gas-veto census unchanged'): the veto-suppressed
+        chain-scale adduct still surfaces through the THERMO
+        REFERENCE-STATE GAS VETO warning -- refusal must not eat it."""
+        import logging as _logging
+        sp, core, mask = self._split_isomerization_fixture()
+        rxn = Reaction(reactants=[sp["D_gas"]], products=[sp["D_melt"]],
+                       **_REV_KIN)
+
+        # LIVENESS PIN -- BEFORE the red assertion: the melt-classified side
+        # genuinely carries chain-scale unpaired U above the 3.0-decade
+        # refuse bound (independently recomputed, same recipe as the
+        # refusal test). A failure HERE means the fixture is dead, not a
+        # valid red.
+        assert rxn.reversible
+        mw_d = sp["D_melt"].molecule[0].get_molecular_weight()
+        u_expected = (_sackur_tetrode_decades(mw_d, 800.0)
+                      + math.log10(1.0e5 / (constants.R * 800.0 * 1.0)))
+        assert u_expected > 3.0, (
+            "FIXTURE BROKEN, not a valid red: independently recomputed U "
+            f"({u_expected:.2f}) is not above the refuse bound"
+        )
+        assert not getattr(rxn, "polymer_refused", False)
+
+        # THE red assertion: pre-change the unstamped split row reaches the
+        # tripwire and initialize_model raises; post-change the restamp
+        # refuses it first and the build completes.
+        with caplog.at_level(_logging.WARNING):
+            rs = _refstate_rs(core, [rxn], mask,
+                              [_gate_pool_config(monomer_mw_g_mol=42.08)],
+                              {"A": (1.0, 5.0, 30.0)})
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False  # conduit-deferred
+        assert any(c["reason"] == "conduit-deferred"
+                   for c in rs.refused_reaction_census)
+        # Gas-veto census unchanged: the vetoed chain-scale adduct is still
+        # announced (run-3 RMG.out line 5113 posture).
+        assert any("THERMO REFERENCE-STATE GAS VETO" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_no_split_isomerization_stays_live_through_tripwire(self):
+        """r87 negative control (pin): the SAME adduct isomerization with
+        BOTH sides melt-classified (no veto anywhere) does NOT split the
+        reference-state classification -- U pairs off exactly (isomers,
+        same MW) -- so the row stays LIVE and the tripwire passes it."""
+        from rmgpy.polymer import Polymer
+        pool = Polymer(label="A", monomer="[CH2][CH]C",
+                       Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        sp = {
+            "A": pool,
+            "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
+            "A_mu2": _spc("C#N", "A_mu2"),
+            "D1": _spc("BrCC(C)CC(C)CC(C)Br", "D1"),
+            "D2": _spc("CC(CBr)CC(C)CC(C)Br", "D2"),
+        }
+        sp["D1"].is_polymer_proxy = True
+        sp["D2"].is_polymer_proxy = True
+        for s in sp.values():
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"],
+                sp["D1"], sp["D2"]]
+        mask = np.array([False] * 4 + [True, True], dtype=bool)
+        rxn = Reaction(reactants=[sp["D1"]], products=[sp["D2"]], **_REV_KIN)
+        rs = _refstate_rs(core, [rxn], mask,
+                          [_gate_pool_config(monomer_mw_g_mol=42.08)],
+                          {"A": (1.0, 5.0, 30.0)})
+        assert not getattr(rxn, "polymer_refused", False)
+        assert not any(c["reason"] == "conduit-deferred"
+                       for c in rs.refused_reaction_census)
+
     def test_mixed_provenance_chain_counterparty_warns(self, caplog):
         """Spec §8.4: one melt-class species takes library thermo while its
         chain-scale counterparty takes GAV -> the mixed-provenance warning

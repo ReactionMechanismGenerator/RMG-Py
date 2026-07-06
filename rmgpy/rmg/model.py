@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, compute_h_loss_feature_verdicts, is_end_group_reaction, merge_polymer_adjudication_stamps, stamp_gas_association_refusal, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_h_loss_feature_verdicts, is_end_group_reaction, merge_polymer_adjudication_stamps, stamp_gas_association_refusal, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -782,7 +782,15 @@ class CoreEdgeReactionModel:
         # one seam where both RESOLVED sides are visible for every branch
         # (the recombination product resolves onto the registered pool
         # Polymer via species_dict isomorphism in make_new_species).
-        stamp_gas_association_refusal(forward)
+        # pool_registry (r87 shape B): the reference-state-split
+        # isomerization carries no Polymer participant on EITHER side, so
+        # the monomer scale for the chain-scale conjunct comes from the
+        # registered pools; the lambda keeps the collection lazy (the stamp
+        # resolves it only after its cheap evidence pre-gate passes).
+        stamp_gas_association_refusal(
+            forward,
+            pool_registry=lambda: collect_polymer_pool_registry(
+                self.core.species, self.edge.species, self.new_species_list))
 
         if check_existing:
             found, rxn = self.check_for_existing_reaction(forward)

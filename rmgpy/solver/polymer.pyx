@@ -2505,9 +2505,17 @@ class HybridPolymerSystem(ReactionSystem):
         # surgery) -- which is exactly why FIX 4 below hard-fails any
         # remaining unclassified live proxy row instead of trusting it.
         # Function-local import: avoids a solver->polymer module cycle.
-        from rmgpy.polymer import stamp_gas_association_refusal
+        # pool_registry (r87 shape B): the reference-state-split
+        # isomerization row has no Polymer participant, so the restamp
+        # supplies the registered pools collected from the SPECIES lists --
+        # real Polymer objects with monomer structures (the r85 dual-axis
+        # size gate stays computable), NOT the structureless
+        # PolymerPoolConfig sidecars. Collected once per rebuild.
+        from rmgpy.polymer import collect_polymer_pool_registry, stamp_gas_association_refusal
+        restamp_pool_registry = collect_polymer_pool_registry(
+            core_species or [], edge_species or [])
         for rxn in itertools.chain(core_reactions, edge_reactions):
-            stamp_gas_association_refusal(rxn)
+            stamp_gas_association_refusal(rxn, pool_registry=restamp_pool_registry)
 
         # item 18: capture the Task-3 refusal stamp in the SAME chain(core, edge)
         # order so self.reaction_refused[r_idx] aligns with the residual's r_idx

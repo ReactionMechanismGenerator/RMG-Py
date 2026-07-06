@@ -2885,7 +2885,7 @@ def stamp_polymer_flux_archetype(forward, reactants, polymer_reactants) -> None:
                 not is_qssa_eliminating_radical(lost))
 
 
-def stamp_gas_association_refusal(forward) -> None:
+def stamp_gas_association_refusal(forward, pool_registry=None) -> None:
     """PP v1 campaign refusal (adjudicated adversarial round 63, grounded in
     the run-5 rerun): an R_Recombination-style row that bridges PURE gas-phase
     radicals into a condensed polymer proxy -- e.g.
@@ -2964,6 +2964,36 @@ def stamp_gas_association_refusal(forward) -> None:
     proxy-derivation is not traceable at this seam), which keeps DP-2 dimer
     volatiles (e.g. hexene off polypropylene, 2.0 monomer-equivalents --
     pinned negative control) live.
+
+    FOURTH and FIFTH refused shapes (adjudicated adversarial round 87,
+    grounded in FR1 run-3, /home/alon/Projects/polymer/FR1/rmg/run3): rows
+    coupling an UNREPRESENTED chain-scale proxy-DERIVED discrete species to
+    polymer pool state (Br-ring-addition adducts of the FR1 trimer proxy:
+    de-aromatized defect states, neither pool-representable nor genuinely
+    gas -- run-3's (110)-(119) cohort, C36H32Br19O3 = proxy + 2 Br).
+
+    * Shape A (:func:`_stamp_chain_scale_defect_refusal`): UNEQUAL-count
+      same-pool fold-back, ``adduct + pool <=> pool + pool`` -- run-3
+      serialized 20 such rows LIVE as ``same_pool/1`` (the [pool] vs
+      [pool, pool] participant-count step escapes both r74's
+      identical-pairing conjunct and the classifier's discrete-VE reroute,
+      which requires exactly one polymer product), so SAME_POOL's zero
+      moment change fabricated/annihilated the whole adduct mass
+      (element-unbalanced by 2 Br).
+    * Shape B (:func:`_stamp_reference_state_split_refusal`): the
+      discrete<=>discrete isomerization between such adducts that SPLITS
+      the reference-state classification (run-3 ``(117) <=> (111)``, one
+      side melt-classified, the other veto-suppressed, U ~ 13 decades) --
+      the row has no Polymer participant at all, so the monomer scale is
+      taken from ``pool_registry`` (a list of registered :class:`Polymer`
+      pools, or a zero-arg callable returning one, resolved lazily; when
+      absent the stamp stays conservative and the solver tripwire remains
+      the loud backstop).
+
+    Same contract as r63/r74/r82: stamp-but-keep, conduit-deferred, both
+    written orientations; the third shape (BrBr + pool <=> adduct) was
+    already refused qssa-invalid by the item-18 detector and the top
+    early-return keeps that census reason.
     """
     if getattr(forward, "polymer_refused", False):
         return  # already refused upstream; keep that census reason
@@ -2975,12 +3005,24 @@ def stamp_gas_association_refusal(forward) -> None:
     p_condensed = bool(polymer_p)
     if r_condensed and p_condensed:
         # condensed on BOTH sides: ordinarily routing chemistry, EXCEPT the
-        # r74 same-proxy degenerate shape (run-5 H fountain).
+        # r74 same-proxy degenerate shape (run-5 H fountain) and the r87
+        # unequal-count same-pool fold-back coupling a chain-scale
+        # proxy-derived discrete adduct (FR1 run-3; checked second so an
+        # r74 stamp -- same census reason -- is never re-derived).
         _stamp_same_proxy_refusal(forward, reactants, products,
                                   polymer_r, polymer_p)
+        if not getattr(forward, "polymer_refused", False):
+            _stamp_chain_scale_defect_refusal(forward, reactants, products,
+                                              polymer_r, polymer_p)
         return
     if not r_condensed and not p_condensed:
-        # no condensed participant at all -- ordinary gas chemistry.
+        # no condensed participant at all: ordinary gas chemistry, EXCEPT
+        # the r87 reference-state-SPLIT isomerization between chain-scale
+        # proxy-derived discretes (FR1 run-3 ``(117) <=> (111)``) -- the
+        # row carries no Polymer participant, so the monomer scale comes
+        # from ``pool_registry``.
+        _stamp_reference_state_split_refusal(forward, reactants, products,
+                                             pool_registry)
         return
 
     def _all_gas_radicals(side):
@@ -3110,6 +3152,147 @@ def _discrete_is_polymer_sized(species, poly) -> bool:
                    else ("mass" if not mass_computable else "structure"))
         _warn_impostor_axis_undecidable(species, poly, missing)
     return False
+
+
+def _discrete_is_chain_scale_proxy_derived(species, pools) -> bool:
+    """r87 classifier (FR1 run-3): True when the non-``Polymer`` participant
+    ``species`` is a CHAIN-SCALE PROXY-DERIVED discrete -- it carries
+    proxy-derivation evidence AND is polymer-sized against at least one pool
+    in ``pools``.
+
+    Evidence is the sticky ``is_polymer_proxy`` melt tag OR the durable gas
+    veto (:func:`has_polymer_gas_veto`) -- both are stamped only by
+    proxy-touching machinery, and the run-3 adduct cohort splits across
+    them ((111)/(116) melt-tagged, (117) gas-vetoed), so r87 requires the
+    OR: veto status must NOT change the refusal outcome.
+
+    Size is :func:`_discrete_is_polymer_sized` -- the r82/r85 dual-axis
+    (mass AND heavy-atom) polymer-sized threshold at
+    ``_IMPOSTOR_DISCRETE_MONOMER_UNITS`` (2.5) monomer-equivalents, NOT the
+    solver tripwire's per-repeat-unit MW window (monomer + 10 g/mol).
+    Deliberate, r87 over-refusal pin: declared-monomer-routing volatiles
+    clear the tripwire window (AMS 118.2 vs the styrene window 114.2,
+    hexene 84.2 vs the propene window 52.1) and are routinely
+    proxy-contaminated and/or gas-vetoed, so a window-based conjunct would
+    refuse them -- 'the next over-refusal bug'. The polymer-sized threshold
+    keeps all of them (propene 1.0, hexene 2.0, AMS 1.13
+    monomer-equivalents) below the bar while the run-3 adducts (3.13
+    monomer-equivalents, 2030.8 g/mol) clear it on both axes."""
+    if isinstance(species, Polymer):
+        return False
+    if not (getattr(species, 'is_polymer_proxy', False)
+            or has_polymer_gas_veto(species)):
+        return False
+    return any(_discrete_is_polymer_sized(species, poly) for poly in pools)
+
+
+def _stamp_chain_scale_defect_refusal(forward, reactants, products,
+                                      polymer_r, polymer_p) -> None:
+    """r87 shape A (FR1 run-3): refuse (stamp-but-keep, census reason
+    "conduit-deferred") the UNEQUAL-count same-pool fold-back coupling a
+    chain-scale proxy-derived discrete adduct to pool state, e.g. run-3's
+    20 live ``same_pool/1`` Disproportionation-Y rows
+    ``adduct + pool <=> pool + pool`` (element-unbalanced by 2 Br). All
+    conjuncts required -- dropping any one keeps the row LIVE (pinned):
+
+    1. every Polymer participant folds back (reactant and product pool
+       label SETS equal -- label-changing rows are MIGRATION's routing
+       business);
+    2. Polymer participant COUNTS differ between the sides (the [pool] vs
+       [pool, pool] step that escaped r74's identical-pairing conjunct and
+       that the classifier's SAME_POOL/VE fork cannot represent: SAME_POOL
+       applies zero moment change, and the discrete-VE reroute requires
+       exactly one polymer product -- equal-count fold-backs are the
+       legitimate VE/deprop/chip shapes and stay live);
+    3. some discrete participant on either side is chain-scale
+       proxy-derived against a pool of THIS row
+       (:func:`_discrete_is_chain_scale_proxy_derived`).
+
+    Orientation-independent by construction (both written orientations
+    present the same label sets, count asymmetry and participants)."""
+    if ({getattr(p, 'label', None) for p in polymer_r}
+            != {getattr(p, 'label', None) for p in polymer_p}):
+        return  # cross-pool routing chemistry
+    if len(polymer_r) == len(polymer_p):
+        return  # equal-count fold-back: representable VE/deprop/chip shapes
+    pools = polymer_r + polymer_p
+    for s in list(reactants) + list(products):
+        if _discrete_is_chain_scale_proxy_derived(s, pools):
+            forward.polymer_refused = True
+            forward.polymer_refused_accumulating = False  # "conduit-deferred"
+            return
+
+
+def _stamp_reference_state_split_refusal(forward, reactants, products,
+                                         pool_registry) -> None:
+    """r87 shape B (FR1 run-3): refuse (stamp-but-keep, "conduit-deferred")
+    the discrete<=>discrete row -- NO Polymer participant on either side --
+    that (a) involves a chain-scale proxy-derived discrete
+    (:func:`_discrete_is_chain_scale_proxy_derived`) and (b) SPLITS the
+    thermo reference-state classification: the per-side multisets of
+    melt-classified participant MWs differ, so the solver tripwire's U
+    cannot pair off and the build dies on the cliff-sign ValueError (run-3:
+    ``(117) <=> (111)``/``(116)``, U = 13.10 decades, RMG.out:5140-5144).
+
+    The melt classification mirrors the tripwire's tag branch EXACTLY
+    (polymer.pyx ``_reference_state_tripwire``, spec 5.1 C3-amended):
+    ``is_polymer_proxy`` AND MW >= (largest registered pool monomer MW +
+    ``REFERENCE_STATE_MW_SLACK_G_MOL``) AND NOT gas-vetoed -- one
+    definition, imported function-locally like
+    :func:`_chain_radical_lost_to_gas`, so the stamp and the sensor cannot
+    drift apart. A NO-split row (both sides melt-classified isomers) pairs
+    off exactly in U and stays LIVE (pinned negative control).
+
+    ``pool_registry`` is a list of registered :class:`Polymer` pools or a
+    zero-arg callable returning one (resolved lazily, AFTER the cheap
+    evidence pre-gate, so gas-only decks never pay the collection); with no
+    registry the stamp answers conservatively (live) and the tripwire
+    remains the loud backstop. Both chokepoints supply real ``Polymer``
+    objects (make_new_reaction collects core/edge/new species; the r71
+    solver rebuild restamp collects core/edge species), keeping the r85
+    dual-axis size gate computable -- the solver's ``PolymerPoolConfig``
+    sidecars carry no monomer structure and are deliberately NOT used."""
+    participants = list(reactants) + list(products)
+    if not any(getattr(s, 'is_polymer_proxy', False)
+               or has_polymer_gas_veto(s) for s in participants):
+        return  # cheap evidence pre-gate: no proxy-derivation anywhere
+    if callable(pool_registry):
+        pool_registry = pool_registry()
+    pools = [p for p in (pool_registry or []) if isinstance(p, Polymer)]
+    if not pools:
+        return  # no pool context: conservative; tripwire stays the backstop
+    if not any(_discrete_is_chain_scale_proxy_derived(s, pools)
+               for s in participants):
+        return
+    # Function-local import (solver <-> polymer module cycle, same posture
+    # as _chain_radical_lost_to_gas).
+    from rmgpy.solver.polymer import REFERENCE_STATE_MW_SLACK_G_MOL
+    window_g = (max(float(getattr(p, 'monomer_mw_g_mol', 0.0) or 0.0)
+                    for p in pools)
+                + REFERENCE_STATE_MW_SLACK_G_MOL)
+
+    def _melt_mws(side):
+        out = []
+        for s in side:
+            if not getattr(s, 'is_polymer_proxy', False):
+                continue
+            if has_polymer_gas_veto(s):
+                continue
+            mol_list = getattr(s, 'molecule', None)
+            mol = mol_list[0] if mol_list else (
+                s if isinstance(s, Molecule) else None)
+            if mol is None:
+                continue
+            mw = mol.get_molecular_weight() * 1000.0
+            if mw >= window_g:
+                # Round away summation-order ulps so isomers pair exactly.
+                out.append(round(mw, 6))
+        return sorted(out)
+
+    if _melt_mws(reactants) == _melt_mws(products):
+        return  # classification pairs off; the tripwire's U cancels
+    forward.polymer_refused = True
+    forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
 
 
 def _polymer_participants_identical(polymer_reactants, polymer_products) -> bool:
