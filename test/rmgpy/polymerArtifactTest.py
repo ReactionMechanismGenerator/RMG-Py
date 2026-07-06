@@ -2003,36 +2003,266 @@ def _khom_triplet(A=1.0e13, n=0.5, Ea=1.2e5):
     return dict(A=A, n=n, Ea=Ea)
 
 
-class TestDepropagationProducerRefusal:
-    """End-radical depropagation kernel (r74 SS2) has NO sidecar schema
-    block yet (schema 2.8 pending; K-pattern precedent: k_homolysis before
-    schema 2.6). The producer must HARD-FAIL rather than emit an artifact
-    that silently omits a live consumption channel -- a TA replay of such
-    an artifact would un-conserve mass."""
+class TestEndRadicalDepropagationSidecar:
+    """Emitter side of the schema-2.8 end_radical_depropagation contract
+    (r74 SS2 kernel; r78 serialization rulings) -- the real serialization
+    that replaced the 'schema 2.8 pending' producer hard-refusal. The block
+    rides the two spawned end-radical DAUGHTER pool entries (where the
+    kernel actually integrates), never the parent's declaration surface,
+    and pins the ARTIFACT's as-integrated behavior: Arrhenius triplet +
+    units, gas monomer identity/MW, the smooth exhaustion gate form + the
+    machine-readable gate_width, the gated mu2 smooth-pos law (disclosed
+    under-drain), and the UN-gated dmu0 half-bin N1 gamma closure."""
 
     @staticmethod
-    def _kdep_pool(**kw):
-        p = Polymer(label='PP_rad_primary_end', monomer='[CH2][CH](C)',
-                    end_groups=['[H]', '[H]'], cutoff=3,
-                    moments=[0.0, 0.0, 0.0], initial_mass=0.0,
-                    end_radical_site='primary', **kw)
-        p.k_depropagation = dict(A=9.4e14, n=0.0, Ea=117152.0)
-        return p
+    def _kdep_triplet():
+        return dict(A=9.4e14, n=0.0, Ea=117152.0)
 
-    def test_serializer_refuses_k_depropagation_carrying_pool(self):
-        pool = self._kdep_pool()
-        with pytest.raises(ValueError,
-                           match=r"PP_rad_primary_end.*k_depropagation.*schema"):
-            _serialize_pool_for_sidecar(pool)
+    def _setup(self):
+        """Parent (k_homolysis + k_depropagation declaration context +
+        monomer routing) + both end-radical daughters through the REAL
+        Stage-1 producer, plus a core carrying the proxies, mu-dummies and
+        the released-monomer GAS species."""
+        pp = Polymer(label='PP', monomer='[CH2][CH](C)',
+                     end_groups=['[H]', '[H]'], cutoff=3,
+                     moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                     k_homolysis=_khom_triplet(),
+                     k_depropagation=self._kdep_triplet())
+        monomer_gas = _spc("C=CC", "C3H6", index=5)
+        pp.monomer_product_species = monomer_gas
+        prim, sec = pp.generate_end_radical_daughters()
+        core = [_spc("CCC(C)CC(C)C", "PP", index=2), monomer_gas]
+        for base in ("PP", prim.label, sec.label):
+            core += [_mu_dummy(f"{base}_mu{k}") for k in range(3)]
+        core[0].is_polymer_proxy = True
+        # The routed monomer is GAS (recipe revision 2026-07-03-monomer-gas):
+        # everything else is condensed.
+        condensed = [core[0]] + core[2:]
+        return pp, prim, sec, core, condensed
+
+    def _payload(self, pp, prim, sec, core, condensed):
+        return build_polymer_moments_artifact(
+            [pp, prim, sec], core_species=core,
+            configured_pool_labels=["PP", prim.label, sec.label],
+            condensed_species=condensed)
+
+    def test_deprop_daughters_emit_block_and_2_8_stamp(self):
+        """RED pin: both end-radical daughter entries carry the full
+        end_radical_depropagation block (structured kinetics with explicit
+        units, gas monomer identity/MW, machine-pinned gate_width, kernel,
+        block recipe_revision + pinned recipe) and the artifact stamps
+        schema 2.8."""
+        pp, prim, sec, core, condensed = self._setup()
+        payload = self._payload(pp, prim, sec, core, condensed)
+        assert payload["schema_version"] == "2.8"
+        for lbl in (prim.label, sec.label):
+            entry = next(p for p in payload["pools"] if p["label"] == lbl)
+            block = entry.get("end_radical_depropagation")
+            assert isinstance(block, dict), (
+                f"kernel-carrying daughter {lbl!r} must carry the "
+                f"pool-level end_radical_depropagation block")
+            assert block["enabled"] is True
+            assert block["kinetics"] == {
+                "A": 9.4e14, "n": 0.0, "Ea": 117152.0,
+                "units": {"A": "s^-1", "Ea": "J/mol"},
+            }
+            # r78: the gas product (monomer) identity/MW are IN the block,
+            # cross-pinned to the pool surface (monomer_routing /
+            # monomer_mw_g_mol).
+            assert block["gas_species"] == "C3H6(5)"
+            assert entry["monomer_routing"] == "C3H6(5)"
+            assert block["gas_mw_g_mol"] == pytest.approx(42.0797,
+                                                          rel=1e-4)
+            assert block["gas_mw_g_mol"] == pytest.approx(
+                entry["monomer_mw_g_mol"], rel=1e-9)
+            # r78: the gate WIDTH is a machine-readable field pinned to the
+            # solver constant (bitwise -- the 1e-12 TA-twin contract).
+            assert block["gate_width"] == 1.0e-2
+            assert block["kernel"] == "end_radical_depropagation/1"
+            assert block["recipe_revision"] == \
+                "2026-07-06-end-radical-depropagation"
+            recipe = block["recipe"]
+            assert isinstance(recipe, dict) and recipe
+            joined = " ".join(str(v) for v in recipe.values())
+            for needle in (
+                    # the C2 smooth positive-part + gate form (r74 SS5)
+                    "x^3/(x^2 + W^2)", "1 - sp(1 - mu1/mu0)",
+                    # runtime-T Arrhenius with the pinned gas constant
+                    "R_gas = 8.314",
+                    # gated smooth-pos mu2 law (disclosed under-drain)
+                    "k*mu0*(g + 2*sp(mu1/mu0 - 1))",
+                    # dmu0 is UN-gated, N1 from the half-bin gamma closure
+                    "UN-gated", "F(1.5) - F(0.5)",
+                    "k_shape = 1/(PDI - 1)", "PDI = mu2*mu0/mu1^2",
+                    # the C1 smoothstep terminal floor (never dmu0 = 0)
+                    "1 - (3*t^2 - 2*t^3)"):
+                assert needle in joined, (
+                    f"recipe must pin the as-implemented law term "
+                    f"{needle!r}")
+        # Block-local revision only: artifact-level recipe_revision is
+        # untouched (the 2.6/2.7 precedent).
+        assert payload["conventions"]["recipe_revision"] == \
+            POLYMER_RATE_RECIPE_REVISION
+
+    def test_parent_declaration_surface_emits_no_block(self):
+        """The parent pool carries k_depropagation as DECK DECLARATION
+        surface only (the kernel never integrates there: validate_
+        configuration excludes k_depropagation + k_homolysis on one pool
+        and parent configs never carry the triplet) -- its sidecar entry
+        must NOT carry the block."""
+        pp, prim, sec, core, condensed = self._setup()
+        payload = self._payload(pp, prim, sec, core, condensed)
+        entry = next(p for p in payload["pools"] if p["label"] == "PP")
+        assert "end_radical_depropagation" not in entry
+        assert "homolysis_initiation" in entry
+
+    def test_no_deprop_artifact_keeps_2_6_stamp(self):
+        """Negative control (presence gate): a homolysis-only artifact
+        (no k_depropagation anywhere) stays byte-identical at 2.6 and no
+        pool carries the block."""
+        pp, prim, sec, core, condensed = self._setup()
+        for p in (pp, prim, sec):
+            p.k_depropagation = None
+        payload = self._payload(pp, prim, sec, core, condensed)
+        assert payload["schema_version"] == "2.6"
+        assert all("end_radical_depropagation" not in p
+                   for p in payload["pools"])
 
     def test_kernel_free_pool_still_serializes(self):
-        """The refusal is presence-gated: a kernel-free end-radical pool
-        keeps serializing exactly as before."""
-        pool = self._kdep_pool()
-        pool.k_depropagation = None
+        """A kernel-free end-radical pool keeps serializing exactly as
+        before (presence-gated emission)."""
+        pool = Polymer(label='PP_rad_primary_end', monomer='[CH2][CH](C)',
+                       end_groups=['[H]', '[H]'], cutoff=3,
+                       moments=[0.0, 0.0, 0.0], initial_mass=0.0,
+                       end_radical_site='primary')
         d = _serialize_pool_for_sidecar(pool)
         assert d["label"] == "PP_rad_primary_end"
-        assert "k_depropagation" not in d
+        assert "end_radical_depropagation" not in d
+
+    def test_dead_knob_parentless_kernel_refused(self):
+        """A pool carrying k_depropagation with NEITHER a k_homolysis
+        declaration context NOR an end-radical daughter identity is a
+        dead-knob shape no deck can produce -- the serializer refuses it
+        (the narrowed successor of the pre-2.8 blanket refusal)."""
+        pool = Polymer(label='PPX', monomer='[CH2][CH](C)',
+                       end_groups=['[H]', '[H]'], cutoff=3,
+                       moments=[0.0, 0.0, 0.0], initial_mass=0.0)
+        pool.k_depropagation = self._kdep_triplet()
+        with pytest.raises(ValueError,
+                           match=r"PPX.*k_depropagation"):
+            _serialize_pool_for_sidecar(pool)
+
+    def test_producer_refuses_missing_gas_routing(self):
+        """A kernel-carrying daughter without monomer_product_species has
+        no resolvable gas emission target -- the released units would leave
+        the condensed phase silently un-conserved; the producer refuses."""
+        pp, prim, sec, core, condensed = self._setup()
+        prim.monomer_product_species = None
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*(routing|monomer)"):
+            self._payload(pp, prim, sec, core, condensed)
+
+    def test_producer_refuses_unresolvable_gas_routing(self):
+        """The routed monomer Species must live in the core universe the
+        artifact labels come from (IDENTITY check, the QSSA routing
+        posture)."""
+        pp, prim, sec, core, condensed = self._setup()
+        stranger = _spc("C=CC", "C3H6_other", index=9)
+        prim.monomer_product_species = stranger
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*core"):
+            self._payload(pp, prim, sec, core, condensed)
+
+    def test_producer_refuses_gas_mw_mismatch(self):
+        """r78 mass pin: each unzip event moves exactly ONE repeat unit
+        from the condensed basis (mass monomer_mw_g_mol) into ONE mole of
+        gas_species -- a routed species whose molar mass diverges from the
+        pool's repeat-unit mass would mint/destroy mass on every event; the
+        producer refuses to serialize it."""
+        pp, prim, sec, core, condensed = self._setup()
+        h2 = _spc("[H][H]", "H2", index=6)
+        core = core + [h2]
+        prim.monomer_product_species = h2
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*(mw|mass)"):
+            self._payload(pp, prim, sec, core, condensed)
+
+    def test_producer_refuses_sibling_asymmetry(self):
+        """The producer copies ONE parent-declared triplet onto BOTH
+        spawned daughters -- an artifact where only one daughter carries
+        the block is corrupted (the consumer hard-rejects it), so the
+        producer refuses to emit it."""
+        pp, prim, sec, core, condensed = self._setup()
+        sec.k_depropagation = None
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_.*end.*sibling"):
+            self._payload(pp, prim, sec, core, condensed)
+
+    def test_producer_refuses_defect_bearing_carrier(self):
+        """r79 P1 (RED-pinned): a deprop carrier that ALSO carries the
+        X-loss chain_mass_defect_g_mol contract mints mass at terminal DP1
+        events -- its condensed mass is mu1*MW - mu0*defect, so a DP1
+        terminal event (dmu0 = dmu1 = -R) drains only R*(MW - defect) of
+        condensed mass while the gas monomer credits R*MW: net +R*defect
+        minted per event. The side-group guards deliberately legalize
+        copied defect pools, so without THIS refusal the shape serializes;
+        v2 defect-chain depropagation would need a different mass law /
+        gas product."""
+        pp, prim, sec, core, condensed = self._setup()
+        prim.chain_mass_defect_g_mol = 79.904
+        with pytest.raises(
+                ValueError,
+                match=r"PP_rad_primary_end.*chain_mass_defect"):
+            self._payload(pp, prim, sec, core, condensed)
+
+    def test_producer_refuses_scission_deprop_combination(self):
+        """r78 adjudication: k_scission > 0 on a kernel-carrying pool is a
+        direct-config-only shape production cannot generate (end-radical
+        daughters are born with k_scission = 0 by
+        generate_end_radical_daughters), so no generating run ever
+        integrated the combined law -- refuse rather than serialize an
+        unvalidated combination (consumers hard-reject it)."""
+        pp, prim, sec, core, condensed = self._setup()
+        prim.k_scission = 5.0
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*scission"):
+            self._payload(pp, prim, sec, core, condensed)
+
+    def test_closure_refuses_non_daughter_carrier(self):
+        """Dict-level defense (r68 broken-caller posture): a serialized
+        block on a pool whose label is not an end-radical daughter's is
+        refused by the closure guard directly."""
+        from rmgpy.polymer import _assert_depropagation_serialization_closure
+        pp, prim, sec, core, condensed = self._setup()
+        payload = self._payload(pp, prim, sec, core, condensed)
+        carrier = next(p for p in payload["pools"]
+                       if p["label"] == prim.label)
+        carrier["label"] = "NOT_A_DAUGHTER"
+        conv = payload["conventions"]
+        with pytest.raises(ValueError, match=r"NOT_A_DAUGHTER"):
+            _assert_depropagation_serialization_closure(
+                payload["pools"], [carrier],
+                set(conv["condensed_species"]),
+                set(conv["configured_pools"]) | {"NOT_A_DAUGHTER"},
+                [])
+
+    def test_closure_refuses_unzip_carrying_carrier(self):
+        """Dict-level mirror of the solver's validate_configuration
+        exclusion set: a carrier entry claiming legacy unzip A > 0 beside
+        the block double-carries the SAME chain-end release event."""
+        from rmgpy.polymer import _assert_depropagation_serialization_closure
+        pp, prim, sec, core, condensed = self._setup()
+        payload = self._payload(pp, prim, sec, core, condensed)
+        carrier = next(p for p in payload["pools"]
+                       if p["label"] == prim.label)
+        carrier["channels"]["unzip"]["A"] = 0.5
+        conv = payload["conventions"]
+        with pytest.raises(ValueError,
+                           match=r"PP_rad_primary_end.*unzip"):
+            _assert_depropagation_serialization_closure(
+                payload["pools"], [carrier],
+                set(conv["condensed_species"]),
+                set(conv["configured_pools"]), [])
 
 
 class TestHomolysisInitiationSidecar:

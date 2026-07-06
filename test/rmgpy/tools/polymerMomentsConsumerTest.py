@@ -602,3 +602,43 @@ class TestRefusedRowAndHomolysisGuards:
         with pytest.raises(ValueError,
                            match=r"chain_mass_defect_g_mol"):
             ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    def test_rejects_end_radical_depropagation_block_loudly(self):
+        """RED pin (schema 2.8, r74 SS2 kernel): this consumer does not
+        implement the end-radical depropagation kernel, so a daughter pool
+        carrying the end_radical_depropagation block must fail at
+        construction -- the silent path integrates radical-end pools with
+        no consumption channel (the run-6 no-outlet wall) and drops the
+        gas monomer source (un-conserved mass)."""
+        c3h6 = _spc("C=CC", "C3H6", index=5)
+        pool = Polymer(label="PP", monomer="[CH2][CH](C)",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                       k_homolysis={"A": 1.0e13, "n": 0.5, "Ea": 1.2e5},
+                       k_depropagation={"A": 9.4e14, "n": 0.0,
+                                        "Ea": 117152.0})
+        pool.monomer_product_species = c3h6
+        prim, sec = pool.generate_end_radical_daughters()
+        core = [_spc("N#N", "N2"), c3h6]
+        for base in ("PP", prim.label, sec.label):
+            core += [_mu(f"{base}_mu{k}") for k in range(3)]
+        artifact = build_polymer_moments_artifact(
+            [pool, prim, sec], core_species=core, core_reactions=[],
+            configured_pool_labels=["PP", prim.label, sec.label],
+            condensed_species=core[2:],
+            cantera_index_map={})
+        artifact = json.loads(json.dumps(artifact))
+        assert artifact["schema_version"] == "2.8"
+        # Isolate THIS guard from the parent's sibling 2.6 rejection
+        # (which fires first in pool order) -- the chain_mass_defect
+        # precedent: strip the other kernel's block and pin the deprop
+        # rejection specifically.
+        for p in artifact["pools"]:
+            p.pop("homolysis_initiation", None)
+        assert any("end_radical_depropagation" in p
+                   for p in artifact["pools"])
+        order = [_yaml_label(s) for s in core]
+        with pytest.raises(
+                ValueError,
+                match=r"PP_rad_.*end.*end_radical_depropagation"):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)

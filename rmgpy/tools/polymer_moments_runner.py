@@ -617,6 +617,94 @@ _SIDE_GROUP_PINNED_RECIPE = {
 }
 
 
+# --- Pinned end_radical_depropagation contract (schema 2.8, the r74 SS2
+# kernel under the r78 serialization rulings; the sibling of the 2.6/2.7
+# pool-level kernel surfaces). Pinned HERE independently of the emitter
+# (rmgpy/polymer.py DEPROPAGATION_*), the same boundary-guard idiom: the
+# loader guards the artifact BOUNDARY -- a sidecar claiming a different
+# kernel, recipe, unit system, gate width or gas-routing contract must
+# ERROR, never be adapted to. Each recipe string matches the implemented
+# oracle law (rmgpy/solver/polymer.pyx, the kdep_* RHS section +
+# _smooth_pos + _deprop_dp1_fraction) -- the r78 ruling: the block pins the
+# ARTIFACT's actual integrated behavior (gated smooth-pos mu2 under-drain,
+# UN-gated dmu0 half-bin N1 gamma closure), the 1e-12 TA-twin contract.
+_DEPROP_PINNED_KERNEL = "end_radical_depropagation/1"
+_DEPROP_PINNED_REVISION = "2026-07-06-end-radical-depropagation"
+_DEPROP_BLOCK_KEYS = frozenset(
+    ("enabled", "kinetics", "gas_species", "gas_mw_g_mol", "gate_width",
+     "kernel", "recipe_revision", "recipe"))
+_DEPROP_KINETICS_KEYS = frozenset(("A", "n", "Ea", "units"))
+# Pinned units: the kernel triplet is SI (A [s^-1] -- per-chain-end unzip
+# event frequency; Ea [J/mol]), the k_homolysis convention.
+_DEPROP_PINNED_UNITS = {"A": "s^-1", "Ea": "J/mol"}
+# The smooth exhaustion gate width the RHS integrates with
+# (rmgpy/solver/polymer.pyx KDEP_GATE_WIDTH), pinned BITWISE: any other
+# serialized value claims a different law.
+_DEPROP_PINNED_GATE_WIDTH = 1.0e-2
+_DEPROP_PINNED_RECIPE = {
+    "event_rate": ("R = k(T)*mu0*g [mol/(m^3 s)] per radical-end pool "
+                   "(ONE active radical end per chain); "
+                   "k(T) = A*T^n*exp(-Ea/(R_gas*T)) with "
+                   "R_gas = 8.314 J/(mol K), evaluated at the RUNTIME "
+                   "temperature (round 66: never a precomputed scalar); "
+                   "the kernel contributes only while mu0 > 0"),
+    "gate": ("g = 1 - sp(1 - mu1/mu0) with sp(x) = x^3/(x^2 + W^2) for "
+             "x > 0 else exactly 0 (C2 smooth positive-part), "
+             "W = gate_width; g == 1 EXACTLY in the realizable region "
+             "mean DP >= 1 and rolls off C2-smoothly below (r74 SS5: no "
+             "max(...,0) cliff); the mu1/mu2/gas contributions apply only "
+             "when R > 0"),
+    "gas_credit": ("dn(gas_species) += R via the small-source -> "
+                   "dn_dt*V_poly path, the SAME float as the mu1 drain: "
+                   "d(condensed units) + d(gas monomer) = 0 exactly"),
+    "moment_law": ("dmu1 = -R; dmu2 = -k*mu0*(g + 2*sp(mu1/mu0 - 1)) -- "
+                   "the GATED smooth-pos form of -k*(2*mu1 - mu0), a "
+                   "DELIBERATE O(W^2) mu2 under-drain near exhaustion "
+                   "(disclosed closure orphan, r78); dmu0 = -k*mu0*p1, "
+                   "deliberately UN-gated (applies whenever mu0 > 0, even "
+                   "at mean DP < 1: there p1 = 1 while g < 1, so chains "
+                   "drain at least as fast as units and mu1 - mu0 is "
+                   "pushed back toward the realizable cone mu1 >= mu0 -- "
+                   "a cone property ONLY, not a mu1 nonnegativity "
+                   "guarantee: an unphysical mu1 = 0, mu0 > 0 state still "
+                   "releases a small bounded monomer flux "
+                   "(<= k*mu0*W^2) and can drive mu1 slightly negative, "
+                   "r78 -- never a permanent dmu0 = 0)"),
+    "dp1_closure": ("p1 = min(1, max(0, max(p_gamma, p_floor))), and 0 "
+                    "when mu0 <= 1e-30; p_floor = 1 - (3*t^2 - 2*t^3) "
+                    "with t = clamp(mu1/mu0 - 1, 0, 1) (C1 smoothstep "
+                    "terminal floor over mean DP in [1, 2]); p_gamma = "
+                    "max(0, F(1.5) - F(0.5)) / max(0, 1 - F(0.5)) on the "
+                    "half-integer-bin gamma CDF F(x) = "
+                    "gammainc_reg_lower(k_shape, x/theta) "
+                    "(scipy.special.gammainc), zero when the conditioning "
+                    "tail 1 - F(0.5) <= 1e-12; k_shape = 1/(PDI - 1), "
+                    "theta = (mu1/mu0)/k_shape, PDI = mu2*mu0/mu1^2; the "
+                    "gamma leg is 0 (floor-only) when any of mu0/mu1/mu2 "
+                    "<= 1e-30 or PDI is nonfinite or PDI <= 1 + 1e-6 or "
+                    "k_shape/theta is nonpositive/nonfinite; the scipy "
+                    "gammainc leg is NORMATIVE (the scipy-absent discrete "
+                    "fallback is not part of this contract)"),
+    "out_of_domain": ("a degenerate k(T) -- anything failing "
+                      "0 < k(T) < +inf (nonpositive, NaN, overflow) -- "
+                      "RAISES (refusing to integrate a poisoned kernel); "
+                      "there is no zero-flux fallback"),
+    "exclusions": ("mutually exclusive on one pool with legacy "
+                   "k_unzip > 0 (the scalar form of the SAME chain-end "
+                   "release event), with radical_qssa_unzip (its "
+                   "depropagation block IS this lumped channel), and with "
+                   "k_homolysis (multi-generation homolysis DEFERRED, r74 "
+                   "SS3); k_scission is likewise absent on every "
+                   "production carrier (end-radical daughters are born "
+                   "with k_scission = 0)"),
+    "mass": ("NO condensed-mass formula change: condensed_mass_g stays "
+             "mu1*monomer_mw_g_mol (minus mu0*chain_mass_defect_g_mol "
+             "only on defect-carrying pools); each unzip event moves "
+             "exactly one repeat unit of mass gas_mw_g_mol == the pool's "
+             "monomer_mw_g_mol from the condensed basis to gas_species"),
+}
+
+
 def _side_group_sanitize(channel_label):
     """The ratified channel-label sanitizer (pinned here independently of
     the solver's sanitize_side_group_channel_label, boundary-guard idiom):
@@ -637,6 +725,7 @@ _REFUSED_MIN_SCHEMA_MINOR = 4
 _SPAWNED_MIN_SCHEMA_MINOR = 5
 _HOMOLYSIS_MIN_SCHEMA_MINOR = 6
 _SIDE_GROUP_MIN_SCHEMA_MINOR = 7
+_DEPROP_MIN_SCHEMA_MINOR = 8
 # The CLOSED refused_reason vocabulary (format doc §12): the emitter derives
 # the reason bijectively from the accumulating stamp, so exactly these two
 # strings can exist. _restamp_and_extend reconstructs the accumulating class
@@ -674,9 +763,19 @@ REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid"})
 # into the reconstructed pool configs, so the rebuilt oracle's RHS
 # carries the generating solver's side-group flux, its exact mass
 # contract re-enforces at initialize_model (_flatten_side_group_state)
-# and its supersession census re-runs -- 2.7 acceptance is truthful;
-# 2.8+ stays rejected.
-_MAX_KNOWN_SCHEMA_MINOR = 7
+# and its supersession census re-runs -- 2.7 acceptance is truthful.
+# Raised to 8 with the pool-level end_radical_depropagation block (r74
+# SS2 kernel, r78 serialization rulings): this loader validates the block
+# strictly (_check_end_radical_depropagation /
+# _parse_end_radical_depropagation_block -- pinned kernel/units/recipe/
+# BITWISE gate_width, daughter/parent/sibling closure, the solver
+# exclusion mirror incl. the r78 k_scission rejection, and the gas
+# routing/MW cross-pins) and wires the kernel triplet into the
+# reconstructed pool configs (PolymerPoolConfig.k_depropagation), so the
+# rebuilt oracle's RHS carries the generating solver's depropagation flux
+# and its monomer volatile source through the SAME kdep_* flattened
+# arrays -- 2.8 acceptance is truthful; 2.9+ stays rejected.
+_MAX_KNOWN_SCHEMA_MINOR = 8
 
 
 def _check_schema_version_known(artifact):
@@ -1146,6 +1245,412 @@ def _check_homolysis_initiation(artifact):
                     f"daughters are producer-spawned pools, never user "
                     f"pools -- a row claiming other provenance is "
                     f"hand-edited. Fix the artifact.")
+
+
+def _parse_end_radical_depropagation_block(lab, pool_entry):
+    """Parse + validate a pool entry's pool-level end_radical_depropagation
+    block (schema 2.8, r74 SS2). Returns the validated payload -- a dict
+    with the kinetics triplet flattened to A/n/Ea floats plus gas_species /
+    gas_mw_g_mol -- or ``None`` when the block is absent.
+
+    Boundary rules mirror _parse_homolysis_initiation_block: closed key
+    vocabulary, boolean ``enabled`` (present-disabled REJECTED),
+    key-presence + SHAPE validation (never truthiness), pinned
+    kernel/units/recipe/recipe_revision by exact match (reject, never
+    adapt). Additionally pinned for this kernel: ``gate_width`` must equal
+    the solver constant KDEP_GATE_WIDTH BITWISE (the RHS the artifact
+    claims to replicate integrates with exactly that width -- any other
+    value is a different law, the 1e-12 TA-twin contract), and
+    ``gas_species`` / ``gas_mw_g_mol`` must be shaped here (their
+    cross-pins against the pool surface live in
+    _check_end_radical_depropagation)."""
+    raw = pool_entry.get("end_radical_depropagation")
+    if raw is None:
+        return None
+    if not isinstance(raw, dict):
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation must be a dict, got "
+            f"{type(raw).__name__}. Fix the artifact.")
+    unknown = sorted(set(raw) - _DEPROP_BLOCK_KEYS)
+    if unknown:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation has unknown key(s) "
+            f"{unknown}; allowed keys are {sorted(_DEPROP_BLOCK_KEYS)}. "
+            f"Fix the artifact (unknown vocabulary is never dropped "
+            f"permissively).")
+    missing = sorted(_DEPROP_BLOCK_KEYS - set(raw))
+    if missing:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation is missing key(s) "
+            f"{missing}. The emitter always writes the full block "
+            f"(kinetics, gas_species, gas_mw_g_mol, gate_width, kernel, "
+            f"recipe_revision, recipe) -- regenerate the sidecar.")
+    enabled = raw["enabled"]
+    if not isinstance(enabled, bool):
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation must carry a boolean "
+            f"'enabled' field, got {enabled!r}. Fix the artifact.")
+    if not enabled:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation carries "
+            f"enabled=false. The emitter never writes disabled blocks: a "
+            f"disabled kernel must be ABSENT from the sidecar, not "
+            f"present-disabled. Fix the artifact (remove the block).")
+    kernel = raw["kernel"]
+    if kernel != _DEPROP_PINNED_KERNEL:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation names kernel "
+            f"{kernel!r}; this loader implements exactly "
+            f"{_DEPROP_PINNED_KERNEL!r}. An unknown kernel is flux this "
+            f"consumer cannot reproduce -- upgrade the loader or "
+            f"regenerate the sidecar.")
+    if raw["recipe_revision"] != _DEPROP_PINNED_REVISION:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation recipe_revision "
+            f"must equal {_DEPROP_PINNED_REVISION!r} exactly, got "
+            f"{raw['recipe_revision']!r}. An artifact claiming a "
+            f"different kernel recipe must be fixed at the source; this "
+            f"loader validates, never adapts.")
+    recipe = raw["recipe"]
+    if not isinstance(recipe, dict):
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation must carry the "
+            f"normative 'recipe' dict (schema 2.8), got {recipe!r} -- "
+            f"regenerate the sidecar.")
+    unknown_recipe = sorted(set(recipe) - set(_DEPROP_PINNED_RECIPE))
+    if unknown_recipe:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation recipe has unknown "
+            f"key(s) {unknown_recipe}; allowed keys are "
+            f"{sorted(_DEPROP_PINNED_RECIPE)}. Fix the artifact.")
+    for key, pinned in _DEPROP_PINNED_RECIPE.items():
+        if key not in recipe or recipe[key] != pinned:
+            raise ValueError(
+                f"Pool {lab!r}: end_radical_depropagation recipe[{key!r}] "
+                f"must equal the pinned normative recipe exactly (the "
+                f"as-implemented RHS law, r78); got {recipe.get(key)!r}, "
+                f"expected {pinned!r}. An artifact claiming a different "
+                f"kernel algebra must be fixed at the source; this loader "
+                f"validates, never adapts.")
+    kin = raw["kinetics"]
+    if not isinstance(kin, dict):
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation kinetics must be a "
+            f"dict {{A, n, Ea, units}}, got {type(kin).__name__}. Fix the "
+            f"artifact.")
+    unknown_kin = sorted(set(kin) - _DEPROP_KINETICS_KEYS)
+    missing_kin = sorted(_DEPROP_KINETICS_KEYS - set(kin))
+    if unknown_kin or missing_kin:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation kinetics must carry "
+            f"exactly the keys {sorted(_DEPROP_KINETICS_KEYS)} (unknown: "
+            f"{unknown_kin}, missing: {missing_kin}). Fix the artifact.")
+    if kin["units"] != dict(_DEPROP_PINNED_UNITS):
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation kinetics units must "
+            f"be exactly {_DEPROP_PINNED_UNITS!r} (SI, the k_homolysis "
+            f"convention), got {kin['units']!r}. A sidecar claiming any "
+            f"other unit system must ERROR, never be silently converted.")
+    out = {}
+    for key in ("A", "n", "Ea"):
+        val = kin[key]
+        if isinstance(val, bool) or not isinstance(val, (int, float)) or \
+                not math.isfinite(float(val)):
+            raise ValueError(
+                f"Pool {lab!r}: end_radical_depropagation kinetics {key}="
+                f"{val!r} must be a finite number (shape validation, "
+                f"never truthiness). Fix the artifact.")
+        out[key] = float(val)
+    if out["A"] <= 0.0:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation kinetics "
+            f"A={out['A']:g} must be > 0 (a zero/negative kernel must be "
+            f"ABSENT, not present-inert). Fix the artifact.")
+    if out["Ea"] < 0.0:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation kinetics "
+            f"Ea={out['Ea']:g} must be >= 0 [J/mol]. Fix the artifact.")
+    gw = raw["gate_width"]
+    if isinstance(gw, bool) or not isinstance(gw, (int, float)) or \
+            float(gw) != _DEPROP_PINNED_GATE_WIDTH:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation gate_width={gw!r} "
+            f"must equal the solver constant "
+            f"{_DEPROP_PINNED_GATE_WIDTH!r} BITWISE -- the generating RHS "
+            f"integrates its smooth exhaustion gate with exactly that "
+            f"width, so any other value claims a different law (the "
+            f"1e-12 TA-twin contract). Fix the artifact.")
+    gs = raw["gas_species"]
+    if not isinstance(gs, str) or not gs.strip():
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation gas_species={gs!r} "
+            f"must be a non-empty artifact species label -- the routing "
+            f"target of the kernel's +R monomer release (the released "
+            f"units would silently vanish otherwise). Fix the artifact.")
+    out["gas_species"] = gs
+    gmw = raw["gas_mw_g_mol"]
+    if isinstance(gmw, bool) or not isinstance(gmw, (int, float)) or \
+            not math.isfinite(float(gmw)) or float(gmw) <= 0.0:
+        raise ValueError(
+            f"Pool {lab!r}: end_radical_depropagation gas_mw_g_mol="
+            f"{gmw!r} must be a finite number > 0 (the repeat-unit mass "
+            f"each unzip event moves from the condensed basis into the "
+            f"gas monomer). Fix the artifact.")
+    out["gas_mw_g_mol"] = float(gmw)
+    return out
+
+
+def _check_end_radical_depropagation(artifact):
+    """Vocabulary/version cross-check + daughter/parent closure for the
+    schema-2.8 pool-level end_radical_depropagation block. Mirrors
+    _check_homolysis_initiation on the version axis (the block anywhere
+    under a below-2.8 stamp is malformed) and enforces, per carrier:
+
+    * the carrier is an end-radical DAUGHTER pool entry: ratified
+      '<parent><suffix>' label (suffixes _rad_primary_end /
+      _rad_secondary_end) AND the Stage-1 spawn provenance pin
+      (spawn_event_metadata.source == 'k_homolysis_end_radical') -- the
+      kernel only integrates on producer-spawned daughters;
+    * the carrier is in conventions.configured_pools (the loader only
+      builds configured pools -- a block elsewhere is a silently dropped
+      kernel), never in conventions.spawned_pools, and condensed per the
+      condensed closure (its moment slots drain condensed mass);
+    * its PARENT entry exists and carries the homolysis_initiation block
+      naming this carrier at the matching open-site field (the kernel's
+      initiation feed -- a deprop daughter with no feed is an orphan
+      shape production cannot generate);
+    * its SIBLING daughter carries the block with an IDENTICAL kinetics
+      triplet (the producer copies ONE parent-declared triplet onto both
+      spawned daughters);
+    * the solver's validate_configuration exclusion set holds on the
+      entry: no legacy unzip A > 0, no radical_qssa_unzip channel, no
+      homolysis_initiation block -- PLUS the r78-adjudicated k_scission
+      rejection (end-radical daughters are born with k_scission = 0, so
+      a scission-carrying carrier is a direct-config-only shape no
+      generating run ever integrated: reject, never adapt);
+    * the gas routing/mass cross-pins hold: block.gas_species ==
+      entry.monomer_routing (ONE routing) and block.gas_mw_g_mol ==
+      entry.monomer_mw_g_mol (each event moves exactly one repeat unit --
+      anything else mints/destroys mass on every event)."""
+    carriers = [p for p in artifact.get("pools", [])
+                if isinstance(p, dict)
+                and "end_radical_depropagation" in p]
+    if not carriers:
+        return
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    minor = (int(parts[1]) if len(parts) == 2 and parts[0] == "2"
+             and parts[1].isdigit() else -1)
+    if minor < _DEPROP_MIN_SCHEMA_MINOR:
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry a pool-level "
+            f"end_radical_depropagation block (pools "
+            f"{[p.get('label') for p in carriers]}): the end-radical "
+            f"depropagation vocabulary was introduced in schema 2.8, and "
+            f"the emitter stamps 2.8 whenever it writes it. This artifact "
+            f"is malformed -- regenerate the sidecar with a current "
+            f"RMG-Py polymer branch.")
+    conv = artifact.get("conventions") or {}
+    configured = set(conv.get("configured_pools") or [])
+    spawned_raw = conv.get("spawned_pools")
+    spawned = (set(spawned_raw)
+               if isinstance(spawned_raw, (list, tuple)) else set())
+    condensed = set(conv.get("condensed_species") or [])
+    by_label = {p.get("label"): p for p in artifact.get("pools", [])
+                if isinstance(p, dict)}
+    open_site_field = {
+        _HOMOLYSIS_DAUGHTER_SUFFIXES[0]: "open_site_1_radical_pool",
+        _HOMOLYSIS_DAUGHTER_SUFFIXES[1]: "open_site_2_radical_pool",
+    }
+    for carrier in carriers:
+        lab = carrier.get("label", "")
+        parsed = _parse_end_radical_depropagation_block(lab, carrier)
+        suffix = next((s for s in _HOMOLYSIS_DAUGHTER_SUFFIXES
+                       if lab.endswith(s) and len(lab) > len(s)), None)
+        if suffix is None:
+            raise ValueError(
+                f"Pool {lab!r}: carries an end_radical_depropagation "
+                f"block but is not an end-radical daughter pool (label "
+                f"does not follow the ratified '<parent><suffix>' "
+                f"convention, suffixes {_HOMOLYSIS_DAUGHTER_SUFFIXES}). "
+                f"The kernel only integrates on producer-spawned "
+                f"end-radical daughters. Fix the artifact.")
+        # Spawned conjunct FIRST (the 2.6 ordering rationale): the
+        # contradiction is named even when the carrier is also missing
+        # from the configured set.
+        if lab in spawned:
+            raise ValueError(
+                f"Pool {lab!r}: carries an end_radical_depropagation "
+                f"block but is classified in conventions.spawned_pools "
+                f"(the configured set's complement, schema 2.5) -- "
+                f"contradicts the eager-configured daughter design. Fix "
+                f"the artifact.")
+        if lab not in configured:
+            raise ValueError(
+                f"Pool {lab!r}: carries an end_radical_depropagation "
+                f"block but is not listed in "
+                f"conventions.configured_pools. The loader only builds "
+                f"configured pools, so the kernel would be silently "
+                f"dropped (never integrated) and the radical-end pool "
+                f"would sit outlet-free. Fix the artifact.")
+        members = carrier.get("phase_species") or []
+        not_condensed = sorted(m for m in members if m not in condensed)
+        if not members or not_condensed:
+            raise ValueError(
+                f"Pool {lab!r}: carries an end_radical_depropagation "
+                f"block but is not condensed per the condensed closure "
+                f"(phase_species={members}, not condensed="
+                f"{not_condensed}); the kernel drains this pool's "
+                f"condensed moment slots (the item-16 mass-balance "
+                f"hazard otherwise). Fix the artifact.")
+        meta = carrier.get("spawn_event_metadata")
+        if not isinstance(meta, dict) or \
+                meta.get("source") != _HOMOLYSIS_SPAWN_SOURCE:
+            raise ValueError(
+                f"Pool {lab!r}: carries an end_radical_depropagation "
+                f"block but lacks the Stage-1 spawn provenance (expected "
+                f"spawn_event_metadata.source == "
+                f"{_HOMOLYSIS_SPAWN_SOURCE!r}, got {meta!r}). The "
+                f"kernel's home is a producer-spawned end-radical "
+                f"daughter, never a user pool -- a row claiming other "
+                f"provenance is hand-edited. Fix the artifact.")
+        # Solver validate_configuration exclusion mirror + r78 k_scission.
+        channels = carrier.get("channels") or {}
+        try:
+            unzip_a = float((channels.get("unzip") or {})
+                            .get("A", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            unzip_a = 0.0
+        if unzip_a > 0.0:
+            raise ValueError(
+                f"Pool {lab!r}: artifact declares an "
+                f"end_radical_depropagation block AND unzip "
+                f"A={unzip_a:g} > 0 (k_unzip). Legacy k_unzip is the "
+                f"phenomenological scalar form of the SAME chain-end "
+                f"monomer-release event; the two are mutually exclusive "
+                f"on a pool (generation-side validate_configuration "
+                f"enforces the same). Fix the artifact.")
+        if "radical_qssa_unzip" in channels:
+            raise ValueError(
+                f"Pool {lab!r}: artifact declares an "
+                f"end_radical_depropagation block AND a "
+                f"radical_qssa_unzip channel. The QSSA channel's "
+                f"depropagation block IS this lumped chain-end channel; "
+                f"the two are mutually exclusive on a pool "
+                f"(generation-side validate_configuration enforces the "
+                f"same). Fix the artifact.")
+        if "homolysis_initiation" in carrier:
+            raise ValueError(
+                f"Pool {lab!r}: artifact declares an "
+                f"end_radical_depropagation block AND a "
+                f"homolysis_initiation block. Multi-generation homolysis "
+                f"of radical-ended chains is DEFERRED (r74 SS3); the two "
+                f"kernels are mutually exclusive on a pool "
+                f"(generation-side validate_configuration enforces the "
+                f"same). Fix the artifact.")
+        try:
+            scission_a = float((channels.get("scission") or {})
+                               .get("A", 0.0) or 0.0)
+        except (TypeError, ValueError):
+            scission_a = 0.0
+        if scission_a > 0.0:
+            raise ValueError(
+                f"Pool {lab!r}: artifact declares an "
+                f"end_radical_depropagation block AND scission "
+                f"A={scission_a:g} > 0. End-radical daughters are born "
+                f"with k_scission = 0 (generate_end_radical_daughters), "
+                f"so a scission-carrying kernel pool is a "
+                f"direct-config-only shape no generating run ever "
+                f"integrated (r78 adjudication) -- reject, never adapt. "
+                f"Fix the artifact.")
+        # Gas routing + mass cross-pins.
+        routing = carrier.get("monomer_routing")
+        if not routing or routing != parsed["gas_species"]:
+            raise ValueError(
+                f"Pool {lab!r}: end_radical_depropagation gas_species="
+                f"{parsed['gas_species']!r} does not match the pool "
+                f"surface's monomer_routing={routing!r} -- ONE routing, "
+                f"cross-pinned (the released monomer would land in an "
+                f"unreproducible target otherwise). Fix the artifact.")
+        carrier_mw = carrier.get("monomer_mw_g_mol")
+        if (not isinstance(carrier_mw, float) or carrier_mw <= 0.0
+                or abs(parsed["gas_mw_g_mol"] - carrier_mw) >
+                1.0e-6 * carrier_mw):
+            raise ValueError(
+                f"Pool {lab!r}: end_radical_depropagation gas_mw_g_mol="
+                f"{parsed['gas_mw_g_mol']!r} does not pin the carrier's "
+                f"monomer_mw_g_mol={carrier_mw!r}. Each unzip event "
+                f"moves exactly ONE repeat unit into ONE mole of gas "
+                f"monomer, so a diverging molar mass mints/destroys mass "
+                f"on every event. Fix the artifact.")
+        # r79 P1: a defect-bearing deprop carrier mints mass. The block's
+        # mass contract moves one FULL repeat unit per event, but a
+        # defect-bearing pool's condensed mass is mu1*monomer_mw -
+        # mu0*defect: a terminal DP1 event (dmu0 = dmu1 = -R) drains only
+        # R*(monomer_mw - defect) of condensed mass while the gas monomer
+        # credits R*monomer_mw -- net +R*defect minted per event. The
+        # side-group orphan guard deliberately legalizes copied defect
+        # pools (non-side-group provenance), so THIS is the closing
+        # conjunct.
+        defect = carrier.get("chain_mass_defect_g_mol")
+        if defect is not None and defect != 0:
+            raise ValueError(
+                f"Pool {lab!r}: artifact declares an "
+                f"end_radical_depropagation block AND "
+                f"chain_mass_defect_g_mol={defect!r} (r79 P1). The "
+                f"block's mass contract moves one FULL repeat unit "
+                f"(gas_mw_g_mol == monomer_mw_g_mol) per unzip event, "
+                f"but a defect-bearing pool's condensed mass is "
+                f"mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol: a "
+                f"terminal DP1 event (dmu0 = dmu1 = -R) drains only "
+                f"R*(monomer_mw - defect) of condensed mass while the "
+                f"gas monomer credits R*monomer_mw -- minting R*defect "
+                f"of mass per event. Depropagation of defect-bearing "
+                f"chains (v2) needs a different mass law / gas product. "
+                f"Fix the artifact.")
+        # Parent closure: the initiation feed exists and names this
+        # carrier at the matching open-site field.
+        parent_lab = lab[:-len(suffix)]
+        parent = by_label.get(parent_lab)
+        if parent is None or "homolysis_initiation" not in parent:
+            raise ValueError(
+                f"Pool {lab!r}: carries an end_radical_depropagation "
+                f"block but its parent pool {parent_lab!r} is "
+                f"{'missing from pools[]' if parent is None else 'not a homolysis_initiation carrier'}. "
+                f"The kernel's home is a homolysis-spawned daughter with "
+                f"a live initiation feed -- an orphan deprop daughter is "
+                f"a shape production cannot generate. Fix the artifact.")
+        if parent["homolysis_initiation"].get(
+                open_site_field[suffix]) != lab:
+            raise ValueError(
+                f"Pool {lab!r}: parent pool {parent_lab!r} "
+                f"homolysis_initiation does not name this carrier at "
+                f"{open_site_field[suffix]!r} -- broken daughter/parent "
+                f"closure. Fix the artifact.")
+        # Sibling symmetry: ONE parent-declared triplet on BOTH daughters.
+        other = next(s for s in _HOMOLYSIS_DAUGHTER_SUFFIXES
+                     if s != suffix)
+        sibling_lab = f"{parent_lab}{other}"
+        sibling = by_label.get(sibling_lab)
+        sib_block = (sibling or {}).get("end_radical_depropagation")
+        if not isinstance(sib_block, dict):
+            raise ValueError(
+                f"Pool {lab!r}: carries an end_radical_depropagation "
+                f"block but its sibling daughter {sibling_lab!r} does "
+                f"not. The producer copies ONE parent-declared triplet "
+                f"onto BOTH spawned daughters "
+                f"(generate_end_radical_daughters), so a one-sided block "
+                f"is a corrupted artifact. Fix the artifact.")
+        mine = {k: parsed[k] for k in ("A", "n", "Ea")}
+        theirs = {k: (sib_block.get("kinetics") or {}).get(k)
+                  for k in ("A", "n", "Ea")}
+        if mine != theirs:
+            raise ValueError(
+                f"Pool {lab!r}: end_radical_depropagation kinetics "
+                f"{mine} diverge from sibling {sibling_lab!r} kinetics "
+                f"{theirs}. The producer copies ONE parent-declared "
+                f"triplet onto BOTH daughters, so asymmetric siblings "
+                f"are a corrupted artifact. Fix the artifact.")
 
 
 def _parse_side_group_homolysis_block(lab, pool_entry):
@@ -2155,6 +2660,16 @@ def build_system_from_artifact(artifact, species, reactions,
     # before any pool config is built -- as is any orphan X-loss pool no
     # channel claims.
     _check_side_group_homolysis(artifact)
+    # End-radical depropagation vocabulary/version cross-check +
+    # daughter/parent closure (schema 2.8, r74 SS2 / r78): a 2.0-2.7
+    # artifact carrying the pool-level block is malformed; a 2.8 block
+    # whose carrier is not a provenance-pinned, configured, condensed
+    # end-radical daughter of a serialized homolysis carrier, whose
+    # sibling is asymmetric, whose entry violates the solver exclusion
+    # mirror (unzip/QSSA/homolysis -- plus the r78 k_scission rejection),
+    # or whose gas routing/MW/gate_width cross-pins break is rejected
+    # before any pool config is built.
+    _check_end_radical_depropagation(artifact)
     # ... and the explicit-dp token/vocabulary pairing is exact in both
     # directions (P2 gates): token without block, block without token --
     # both hand-edited shapes fail loud.
@@ -2348,6 +2863,32 @@ def build_system_from_artifact(artifact, species, reactions,
                         f"to name a species present in chem.yaml.")
                 gas_idx.append(g_idx)
             sgh_gas_indices = tuple(gas_idx)
+        # End-radical depropagation kernel (schema 2.8, r74 SS2): parse +
+        # validate the pool-level block (pinned kernel/units/recipe/
+        # gate_width; artifact-level daughter/parent/sibling closure, the
+        # solver exclusion mirror and the gas routing/MW cross-pins
+        # already enforced by _check_end_radical_depropagation above) and
+        # wire the triplet into the reconstructed config -- so the rebuilt
+        # oracle's RHS carries the generating solver's depropagation flux
+        # and monomer volatile source through the SAME kdep_* flattened
+        # arrays (truthful 2.8 acceptance; without it the radical-end
+        # pools would sit outlet-free, the run-6 no-outlet wall). The
+        # solver's own validate_configuration + _flatten_depropagation_
+        # state re-enforce the exclusions and the monomer_poly_index
+        # requirement natively on initialize_model.
+        kdep_cfg = None
+        kdep_parsed = _parse_end_radical_depropagation_block(lab, p)
+        if kdep_parsed is not None:
+            if not routing:
+                raise ValueError(
+                    f"Pool {lab!r}: artifact declares an enabled "
+                    f"end_radical_depropagation block but no "
+                    f"monomer_routing target. The kernel releases one "
+                    f"monomer volatile per unzip event through the "
+                    f"pool's monomer routing; without a target the "
+                    f"condensed mass would leave silently un-conserved. "
+                    f"Fix the artifact's monomer_routing.")
+            kdep_cfg = {k: kdep_parsed[k] for k in ("A", "n", "Ea")}
         pools.append(PolymerPoolConfig(
             label=lab, xs=int(p.get("cutoff") or 0),
             explicit_dp_to_species_index=explicit_map,
@@ -2362,6 +2903,7 @@ def build_system_from_artifact(artifact, species, reactions,
             k_unzip=k_unzip,
             radical_qssa_unzip=qssa_cfg,
             k_homolysis=khom_cfg,
+            k_depropagation=kdep_cfg,
             side_group_homolysis=sgh_channels,
             side_group_gas_indices=sgh_gas_indices,
             # X-loss feature-pool EXACT mass contract (schema 2.7): the

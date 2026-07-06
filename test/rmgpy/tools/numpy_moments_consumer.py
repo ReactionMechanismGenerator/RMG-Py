@@ -165,6 +165,22 @@ class ArtifactConsumer:
             # while gas X appears (the round-70 P1 trap), and the refused
             # explicit rows the kernel supersedes carry zero flux by
             # contract, so nothing here may stand in for it.
+            # Schema-2.8 end-radical depropagation kernel: NOT implemented
+            # by this consumer. Fail at construction, never drop
+            # permissively -- integrating a kernel-enabled melt without
+            # the channel leaves the radical-end pools outlet-free (the
+            # run-6 no-outlet wall) and drops the gas monomer source the
+            # generating solver emitted (un-conserved mass), silently
+            # producing a wrong trajectory.
+            if "end_radical_depropagation" in p:
+                raise ValueError(
+                    f"pool {lab!r}: unsupported pool-level "
+                    f"end_radical_depropagation block (schema 2.8 "
+                    f"end-radical depropagation kernel); this consumer "
+                    f"implements channels {sorted(SUPPORTED_CHANNELS)} "
+                    f"only. Integrating without the kernel would silently "
+                    f"produce a wrong trajectory (outlet-free radical-end "
+                    f"pools, missing gas monomer source).")
             if "side_group_homolysis" in p or \
                     "chain_mass_defect_g_mol" in p:
                 raise ValueError(

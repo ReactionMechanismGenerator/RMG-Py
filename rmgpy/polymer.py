@@ -4482,6 +4482,29 @@ POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_HOMOLYSIS = "2.6"
 # 2.7 sits BESIDE 2.5/2.6, never subsumes them. NO artifact-level
 # recipe_revision change (the 2.3/2.6 block-local precedent).
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SIDE_GROUP = "2.7"
+# Schema 2.8 = 2.7 + the POOL-LEVEL end_radical_depropagation block (r74
+# SS2 kernel, r78 serialization rulings -- the real serialization that
+# replaced the 'schema 2.8 pending' producer hard-refusal): each spawned
+# end-radical DAUGHTER pool carrying the k_depropagation kernel serializes
+# its full Arrhenius triplet (structured kinetics with pinned SI units),
+# the released gas monomer identity + MW (cross-pinned to the pool
+# surface's monomer_routing / monomer_mw_g_mol -- each unzip event moves
+# exactly ONE repeat unit from the condensed basis into ONE mole of
+# gas_species), the machine-readable smooth-gate width (bitwise ==
+# KDEP_GATE_WIDTH, the 1e-12 TA-twin contract), the solver kernel name, a
+# block-local recipe_revision, and the machine-pinned AS-IMPLEMENTED
+# moment law (gated smooth-pos mu2 under-drain disclosed; UN-gated dmu0
+# half-bin N1 gamma closure with its terminal smoothstep floor). The
+# PARENT pool's k_depropagation is deck DECLARATION surface only (the
+# kernel never integrates there: validate_configuration excludes
+# k_depropagation + k_homolysis on one pool and parent configs never
+# carry the triplet), so the parent entry emits NO block. Same
+# presence-based minor-bump policy as 2.1-2.7: emitter stamps 2.8 exactly
+# when at least one serialized pool carries the block; a kernel-free
+# artifact keeps its older stamp byte-identically (pinned). 2.8 sits
+# BESIDE 2.5/2.6/2.7, never subsumes them. NO artifact-level
+# recipe_revision change (the 2.3/2.6/2.7 block-local precedent).
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_DEPROPAGATION = "2.8"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 
@@ -5497,6 +5520,425 @@ def _assert_side_group_serialization_closure(pools: List[Dict[str, Any]],
                 f"hard-reject it).")
 
 
+# Block-local revision token of the pool-level ``end_radical_depropagation``
+# block (schema 2.8, r74 SS2). Same contract as
+# HOMOLYSIS_BLOCK_RECIPE_REVISION / SIDE_GROUP_BLOCK_RECIPE_REVISION: names
+# the kernel's rate recipe itself, independent of the artifact-level token;
+# consumers pin it by exact match and reject on mismatch or absence.
+DEPROPAGATION_BLOCK_RECIPE_REVISION = "2026-07-06-end-radical-depropagation"
+# The solver kernel the block serializes: versioned term-type style.
+# Consumers pin it by exact match -- an unknown kernel is flux they cannot
+# reproduce.
+DEPROPAGATION_KERNEL_NAME = "end_radical_depropagation/1"
+# Normative AS-IMPLEMENTED moment law of the end-radical depropagation
+# kernel, pinned in the forms the RHS actually integrates
+# (rmgpy/solver/polymer.pyx, the kdep_* RHS section + _smooth_pos +
+# _deprop_dp1_fraction). r78 ruling: the block pins the ARTIFACT's actual
+# integrated behavior, not the idealized r74 law -- everything a TA twin
+# needs to replicate the RHS bitwise (1e-12 cross-code parity target) from
+# the artifact + this block alone. Same contract as
+# HOMOLYSIS_SIDECAR_RECIPE: consumers pin these strings independently and
+# reject on mismatch -- editing the solver algebra without re-verifying and
+# re-dating these strings (and DEPROPAGATION_BLOCK_RECIPE_REVISION) breaks
+# the contract.
+DEPROPAGATION_SIDECAR_RECIPE = {
+    "event_rate": ("R = k(T)*mu0*g [mol/(m^3 s)] per radical-end pool "
+                   "(ONE active radical end per chain); "
+                   "k(T) = A*T^n*exp(-Ea/(R_gas*T)) with "
+                   "R_gas = 8.314 J/(mol K), evaluated at the RUNTIME "
+                   "temperature (round 66: never a precomputed scalar); "
+                   "the kernel contributes only while mu0 > 0"),
+    "gate": ("g = 1 - sp(1 - mu1/mu0) with sp(x) = x^3/(x^2 + W^2) for "
+             "x > 0 else exactly 0 (C2 smooth positive-part), "
+             "W = gate_width; g == 1 EXACTLY in the realizable region "
+             "mean DP >= 1 and rolls off C2-smoothly below (r74 SS5: no "
+             "max(...,0) cliff); the mu1/mu2/gas contributions apply only "
+             "when R > 0"),
+    "gas_credit": ("dn(gas_species) += R via the small-source -> "
+                   "dn_dt*V_poly path, the SAME float as the mu1 drain: "
+                   "d(condensed units) + d(gas monomer) = 0 exactly"),
+    "moment_law": ("dmu1 = -R; dmu2 = -k*mu0*(g + 2*sp(mu1/mu0 - 1)) -- "
+                   "the GATED smooth-pos form of -k*(2*mu1 - mu0), a "
+                   "DELIBERATE O(W^2) mu2 under-drain near exhaustion "
+                   "(disclosed closure orphan, r78); dmu0 = -k*mu0*p1, "
+                   "deliberately UN-gated (applies whenever mu0 > 0, even "
+                   "at mean DP < 1: there p1 = 1 while g < 1, so chains "
+                   "drain at least as fast as units and mu1 - mu0 is "
+                   "pushed back toward the realizable cone mu1 >= mu0 -- "
+                   "a cone property ONLY, not a mu1 nonnegativity "
+                   "guarantee: an unphysical mu1 = 0, mu0 > 0 state still "
+                   "releases a small bounded monomer flux "
+                   "(<= k*mu0*W^2) and can drive mu1 slightly negative, "
+                   "r78 -- never a permanent dmu0 = 0)"),
+    "dp1_closure": ("p1 = min(1, max(0, max(p_gamma, p_floor))), and 0 "
+                    "when mu0 <= 1e-30; p_floor = 1 - (3*t^2 - 2*t^3) "
+                    "with t = clamp(mu1/mu0 - 1, 0, 1) (C1 smoothstep "
+                    "terminal floor over mean DP in [1, 2]); p_gamma = "
+                    "max(0, F(1.5) - F(0.5)) / max(0, 1 - F(0.5)) on the "
+                    "half-integer-bin gamma CDF F(x) = "
+                    "gammainc_reg_lower(k_shape, x/theta) "
+                    "(scipy.special.gammainc), zero when the conditioning "
+                    "tail 1 - F(0.5) <= 1e-12; k_shape = 1/(PDI - 1), "
+                    "theta = (mu1/mu0)/k_shape, PDI = mu2*mu0/mu1^2; the "
+                    "gamma leg is 0 (floor-only) when any of mu0/mu1/mu2 "
+                    "<= 1e-30 or PDI is nonfinite or PDI <= 1 + 1e-6 or "
+                    "k_shape/theta is nonpositive/nonfinite; the scipy "
+                    "gammainc leg is NORMATIVE (the scipy-absent discrete "
+                    "fallback is not part of this contract)"),
+    "out_of_domain": ("a degenerate k(T) -- anything failing "
+                      "0 < k(T) < +inf (nonpositive, NaN, overflow) -- "
+                      "RAISES (refusing to integrate a poisoned kernel); "
+                      "there is no zero-flux fallback"),
+    "exclusions": ("mutually exclusive on one pool with legacy "
+                   "k_unzip > 0 (the scalar form of the SAME chain-end "
+                   "release event), with radical_qssa_unzip (its "
+                   "depropagation block IS this lumped channel), and with "
+                   "k_homolysis (multi-generation homolysis DEFERRED, r74 "
+                   "SS3); k_scission is likewise absent on every "
+                   "production carrier (end-radical daughters are born "
+                   "with k_scission = 0)"),
+    "mass": ("NO condensed-mass formula change: condensed_mass_g stays "
+             "mu1*monomer_mw_g_mol (minus mu0*chain_mass_defect_g_mol "
+             "only on defect-carrying pools); each unzip event moves "
+             "exactly one repeat unit of mass gas_mw_g_mol == the pool's "
+             "monomer_mw_g_mol from the condensed basis to gas_species"),
+}
+
+
+def _species_mw_g_mol(spc: Any) -> float:
+    """Molar mass [g/mol] of a live core Species, from its first molecule
+    graph (kg/mol -> g/mol). Returns 0.0 when no structure is available --
+    callers treat that as unresolvable and refuse."""
+    mols = getattr(spc, "molecule", None) or []
+    getter = getattr(mols[0], "get_molecular_weight", None) if mols else None
+    if getter is None:
+        return 0.0
+    return float(getter()) * 1000.0
+
+
+def _serialize_end_radical_depropagation_block(
+        pool: 'Polymer',
+        core_species: Optional[List['Species']] = None
+        ) -> Optional[Dict[str, Any]]:
+    """Serialize the pool's k_depropagation kernel as the pool-level
+    ``end_radical_depropagation`` block (schema 2.8, r74 SS2), or return
+    None when the kernel is absent OR the pool is the PARENT declaration
+    surface (kernel-free / parent entries emit nothing -- presence-gated
+    artifacts stay byte-identical, pinned by test).
+
+    Placement ruling (r78): the block rides the two spawned end-radical
+    DAUGHTER pool entries, where the kernel actually integrates. A pool
+    carrying both k_depropagation and k_homolysis is the parent's deck
+    declaration context (generate_end_radical_daughters copies the triplet
+    onto both daughters; validate_configuration excludes the pair on one
+    pool and parent configs never carry the triplet), so it emits NO
+    block. A pool carrying k_depropagation with NEITHER k_homolysis NOR an
+    end-radical daughter identity is a dead-knob shape no deck can produce
+    (rmgpy/rmg/input.py requires k_homolysis) -- refuse, the narrowed
+    successor of the pre-2.8 blanket producer refusal.
+
+    The triplet is re-normalized through ``validate_k_depropagation`` (the
+    shared single source of truth) so a directly-constructed Polymer
+    carrying a garbage dict raises here instead of poisoning the artifact.
+    The gas monomer routing is resolved from ``monomer_product_species``
+    (held BY REFERENCE from the spawn copy) by IDENTITY against the core
+    universe, the QSSA routing posture; its molar mass must pin the pool's
+    monomer_mw_g_mol exactly (each event moves ONE repeat unit) or the
+    artifact would mint/destroy mass on every unzip event."""
+    kdep = getattr(pool, "k_depropagation", None)
+    if kdep is None:
+        return None
+    label = getattr(pool, "label", "")
+    if getattr(pool, "k_homolysis", None) is not None:
+        # Parent declaration surface: the live blocks ride the daughters.
+        return None
+    if getattr(pool, "end_radical_site", None) not in ("primary",
+                                                       "secondary"):
+        raise ValueError(
+            f"Pool '{label}': carries a k_depropagation kernel but is "
+            f"NEITHER a k_homolysis declaration context (parent) NOR an "
+            f"end-radical daughter pool (end_radical_site unset). The "
+            f"kernel only integrates on spawned end-radical daughters, so "
+            f"this is a dead-knob shape no deck can produce "
+            f"(rmgpy/rmg/input.py requires k_homolysis beside "
+            f"k_depropagation); refusing to serialize an artifact that "
+            f"would carry an unreproducible declaration.")
+    # Lazy import (the QSSA serializer's cycle-avoidance idiom).
+    from rmgpy.solver.polymer import (KDEP_GATE_WIDTH,
+                                      validate_k_depropagation)
+    trip = validate_k_depropagation(label, kdep)
+    mps = getattr(pool, "monomer_product_species", None)
+    if mps is None:
+        raise ValueError(
+            f"Pool '{label}': carries the k_depropagation kernel but no "
+            f"monomer_product_species gas routing -- the kernel releases "
+            f"ONE monomer volatile per unzip event, and without a "
+            f"resolvable emission target the released units would leave "
+            f"the condensed phase silently un-conserved. Refusing to "
+            f"serialize (consumers hard-reject a routing-free block).")
+    if core_species and not any(spc is mps for spc in core_species):
+        raise ValueError(
+            f"Pool '{label}': k_depropagation gas routing target "
+            f"('{getattr(mps, 'label', '')}') is not in the core species "
+            f"universe the artifact labels come from (identity check). "
+            f"Refusing to serialize a gas routing the consumer cannot "
+            f"resolve.")
+    gas_mw = _species_mw_g_mol(mps)
+    pool_mw = float(getattr(pool, "monomer_mw_g_mol", 0.0) or 0.0)
+    if (not (pool_mw > 0.0) or not (gas_mw > 0.0)
+            or abs(gas_mw - pool_mw) > 1.0e-6 * pool_mw):
+        raise ValueError(
+            f"Pool '{label}': k_depropagation gas monomer "
+            f"('{getattr(mps, 'label', '')}', M = {gas_mw:g} g/mol) does "
+            f"not pin the pool's repeat-unit mass "
+            f"(monomer_mw_g_mol = {pool_mw:g}). Each unzip event moves "
+            f"exactly ONE repeat unit from the condensed basis into ONE "
+            f"mole of the gas monomer, so a diverging molar mass "
+            f"mints/destroys mass on every event; refusing to serialize "
+            f"(consumers hard-reject it).")
+    return {
+        "enabled": True,
+        "kinetics": {
+            "A": float(trip["A"]), "n": float(trip["n"]),
+            "Ea": float(trip["Ea"]),
+            "units": {"A": "s^-1", "Ea": "J/mol"},
+        },
+        "gas_species": _artifact_species_label(mps),
+        "gas_mw_g_mol": float(gas_mw),
+        "gate_width": float(KDEP_GATE_WIDTH),
+        "kernel": DEPROPAGATION_KERNEL_NAME,
+        "recipe_revision": DEPROPAGATION_BLOCK_RECIPE_REVISION,
+        "recipe": dict(DEPROPAGATION_SIDECAR_RECIPE),
+    }
+
+
+def _assert_depropagation_serialization_closure(pools: List[Dict[str, Any]],
+                                                carriers: List[Dict[str, Any]],
+                                                condensed_labels,
+                                                configured_labels,
+                                                spawned_labels) -> None:
+    """Producer-side closure guard for the schema-2.8 block, the exact
+    mirror of the consumer's _check_end_radical_depropagation (the r68
+    producer/consumer mirror-property): every carrier must be an
+    end-radical DAUGHTER pool entry (ratified suffix + Stage-1 spawn
+    provenance pin), solver-configured, never spawned-classified,
+    condensed per the artifact's condensed closure; its PARENT entry must
+    exist and carry the homolysis_initiation block naming this carrier at
+    the matching open-site field (the kernel's initiation feed); its
+    SIBLING daughter must carry the block with an IDENTICAL kinetics
+    triplet (the producer copies ONE parent-declared triplet onto both);
+    the solver's validate_configuration exclusion set must hold on the
+    carrier entry (no legacy unzip A > 0, no radical_qssa_unzip channel,
+    no homolysis_initiation block -- PLUS the r78-adjudicated k_scission
+    rejection: daughters are born with k_scission = 0, so a
+    scission-carrying carrier is a direct-config-only shape no generating
+    run ever integrated); and the gas routing/mass cross-pins must hold
+    (block.gas_species == entry.monomer_routing; block.gas_mw_g_mol ==
+    entry.monomer_mw_g_mol)."""
+    from rmgpy.solver.polymer import (K_HOMOLYSIS_DAUGHTER_SUFFIXES,
+                                      KDEP_GATE_WIDTH)
+    by_label = {p.get("label"): p for p in pools}
+    configured_labels = set(configured_labels)
+    spawned_labels = set(spawned_labels)
+    open_site_field = {
+        K_HOMOLYSIS_DAUGHTER_SUFFIXES[0]: "open_site_1_radical_pool",
+        K_HOMOLYSIS_DAUGHTER_SUFFIXES[1]: "open_site_2_radical_pool",
+    }
+    for carrier in carriers:
+        lab = carrier.get("label", "")
+        block = carrier["end_radical_depropagation"]
+        suffix = next((s for s in K_HOMOLYSIS_DAUGHTER_SUFFIXES
+                       if lab.endswith(s) and len(lab) > len(s)), None)
+        if suffix is None:
+            raise ValueError(
+                f"Pool '{lab}': carries an end_radical_depropagation "
+                f"block but is not an end-radical daughter pool (label "
+                f"does not follow the ratified "
+                f"'<parent><suffix>' convention, suffixes "
+                f"{K_HOMOLYSIS_DAUGHTER_SUFFIXES}). The kernel only "
+                f"integrates on spawned end-radical daughters; refusing "
+                f"to serialize (consumers hard-reject it).")
+        # Spawned conjunct FIRST (the 2.6 ordering rationale): the
+        # contradiction is named even when the carrier is also missing
+        # from the configured set.
+        if lab in spawned_labels:
+            raise ValueError(
+                f"Pool '{lab}': carries an end_radical_depropagation "
+                f"block but is classified in the spawned-pool closure "
+                f"(conventions.spawned_pools, the configured set's "
+                f"complement per schema 2.5) -- contradicts the "
+                f"eager-configured daughter design; refusing to serialize "
+                f"(consumers hard-reject it).")
+        if lab not in configured_labels:
+            raise ValueError(
+                f"Pool '{lab}': carries an end_radical_depropagation "
+                f"block but is not among the solver-configured pools "
+                f"(configured_pool_labels). The consumer only builds "
+                f"configured pools, so the kernel would be silently "
+                f"dropped on load; refusing to serialize (consumers "
+                f"hard-reject it).")
+        members = carrier.get("phase_species") or []
+        missing = sorted(m for m in members if m not in condensed_labels)
+        if not members or missing:
+            raise ValueError(
+                f"Pool '{lab}': carries an end_radical_depropagation "
+                f"block but is not condensed per the artifact's condensed "
+                f"closure (phase_species={members}, not "
+                f"condensed={missing}). The kernel drains this pool's "
+                f"condensed moment slots, so an un-condensed carrier is "
+                f"the item-16 mass-balance hazard shape; refusing to "
+                f"serialize.")
+        meta = carrier.get("spawn_event_metadata")
+        if not isinstance(meta, dict) or \
+                meta.get("source") != HOMOLYSIS_SPAWN_SOURCE:
+            raise ValueError(
+                f"Pool '{lab}': carries an end_radical_depropagation "
+                f"block but lacks the Stage-1 spawn provenance pin "
+                f"(expected spawn_event_metadata.source == "
+                f"{HOMOLYSIS_SPAWN_SOURCE!r}, got {meta!r}). The kernel's "
+                f"home is a producer-spawned end-radical daughter, never "
+                f"a user pool; refusing to serialize (consumers "
+                f"hard-reject it).")
+        # Solver validate_configuration exclusion mirror + r78 k_scission.
+        channels = carrier.get("channels") or {}
+        unzip_a = float((channels.get("unzip") or {}).get("A", 0.0) or 0.0)
+        if unzip_a > 0.0:
+            raise ValueError(
+                f"Pool '{lab}': serializes an end_radical_depropagation "
+                f"block AND legacy unzip A={unzip_a:g} > 0. Legacy "
+                f"k_unzip is the scalar form of the SAME chain-end "
+                f"release event (validate_configuration excludes the "
+                f"pair); refusing to serialize (consumers hard-reject "
+                f"it).")
+        if "radical_qssa_unzip" in channels:
+            raise ValueError(
+                f"Pool '{lab}': serializes an end_radical_depropagation "
+                f"block AND a radical_qssa_unzip channel. The QSSA "
+                f"channel's depropagation block IS this lumped chain-end "
+                f"channel (validate_configuration excludes the pair); "
+                f"refusing to serialize (consumers hard-reject it).")
+        if "homolysis_initiation" in carrier:
+            raise ValueError(
+                f"Pool '{lab}': serializes an end_radical_depropagation "
+                f"block AND a homolysis_initiation block. "
+                f"Multi-generation homolysis of radical-ended chains is "
+                f"DEFERRED (r74 SS3; validate_configuration excludes the "
+                f"pair); refusing to serialize (consumers hard-reject "
+                f"it).")
+        scission_a = float((channels.get("scission") or {})
+                           .get("A", 0.0) or 0.0)
+        if scission_a > 0.0:
+            raise ValueError(
+                f"Pool '{lab}': serializes an end_radical_depropagation "
+                f"block AND scission A={scission_a:g} > 0. End-radical "
+                f"daughters are born with k_scission = 0 "
+                f"(generate_end_radical_daughters), so a "
+                f"scission-carrying kernel pool is a direct-config-only "
+                f"shape no generating run ever integrated (r78 "
+                f"adjudication); refusing to serialize (consumers "
+                f"hard-reject it).")
+        # Gas routing + mass cross-pins.
+        routing = carrier.get("monomer_routing")
+        if not routing or routing != block.get("gas_species"):
+            raise ValueError(
+                f"Pool '{lab}': end_radical_depropagation gas_species="
+                f"{block.get('gas_species')!r} does not match the pool "
+                f"surface's monomer_routing={routing!r} -- ONE routing, "
+                f"cross-pinned (the released monomer would land in an "
+                f"unreproducible target); refusing to serialize "
+                f"(consumers hard-reject it).")
+        carrier_mw = carrier.get("monomer_mw_g_mol")
+        gas_mw = block.get("gas_mw_g_mol")
+        if (not isinstance(carrier_mw, float) or carrier_mw <= 0.0
+                or not isinstance(gas_mw, float)
+                or abs(gas_mw - carrier_mw) > 1.0e-6 * carrier_mw):
+            raise ValueError(
+                f"Pool '{lab}': end_radical_depropagation gas_mw_g_mol="
+                f"{gas_mw!r} does not pin the carrier's "
+                f"monomer_mw_g_mol={carrier_mw!r}. Each unzip event moves "
+                f"exactly ONE repeat unit into ONE mole of gas monomer, "
+                f"so a diverging molar mass mints/destroys mass on every "
+                f"event; refusing to serialize (consumers hard-reject "
+                f"it).")
+        # r79 P1: a defect-bearing deprop carrier mints mass. The block's
+        # mass contract moves exactly one FULL repeat unit (gas_mw_g_mol
+        # == monomer_mw_g_mol) per event, but a defect-bearing pool's
+        # condensed mass is mu1*monomer_mw - mu0*defect: a terminal DP1
+        # event (dmu0 = dmu1 = -R) drains only R*(monomer_mw - defect) of
+        # condensed mass while the gas monomer credits R*monomer_mw --
+        # net +R*defect minted per event. The side-group guards
+        # deliberately legalize copied defect pools (non-side-group
+        # provenance), so THIS is the closing conjunct.
+        defect = carrier.get("chain_mass_defect_g_mol")
+        if defect is not None and defect != 0:
+            raise ValueError(
+                f"Pool '{lab}': serializes an end_radical_depropagation "
+                f"block AND chain_mass_defect_g_mol={defect!r} (r79 P1). "
+                f"The block's mass contract moves one FULL repeat unit "
+                f"(gas_mw_g_mol == monomer_mw_g_mol) per unzip event, "
+                f"but a defect-bearing pool's condensed mass is "
+                f"mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol: a "
+                f"terminal DP1 event (dmu0 = dmu1 = -R) drains only "
+                f"R*(monomer_mw - defect) of condensed mass while the "
+                f"gas monomer credits R*monomer_mw -- minting R*defect "
+                f"of mass per event. Depropagation of defect-bearing "
+                f"chains (v2) needs a different mass law / gas product; "
+                f"refusing to serialize (consumers hard-reject it).")
+        if block.get("gate_width") != KDEP_GATE_WIDTH:
+            raise ValueError(
+                f"Pool '{lab}': end_radical_depropagation gate_width="
+                f"{block.get('gate_width')!r} does not pin the solver "
+                f"constant KDEP_GATE_WIDTH={KDEP_GATE_WIDTH!r} BITWISE "
+                f"(the RHS integrates with exactly that width -- any "
+                f"other value is a different law); refusing to serialize "
+                f"(consumers hard-reject it).")
+        # Parent closure: the initiation feed exists and names this
+        # carrier at the matching open-site field.
+        parent_lab = lab[:-len(suffix)]
+        parent = by_label.get(parent_lab)
+        if parent is None or "homolysis_initiation" not in parent:
+            raise ValueError(
+                f"Pool '{lab}': carries an end_radical_depropagation "
+                f"block but its parent pool '{parent_lab}' is "
+                f"{'missing from the serialized registry' if parent is None else 'not a homolysis_initiation carrier'}. "
+                f"The kernel's home is a homolysis-spawned daughter with "
+                f"a live initiation feed; refusing to serialize "
+                f"(consumers hard-reject it).")
+        if parent["homolysis_initiation"][open_site_field[suffix]] != lab:
+            raise ValueError(
+                f"Pool '{lab}': parent pool '{parent_lab}' "
+                f"homolysis_initiation does not name this carrier at "
+                f"{open_site_field[suffix]!r} -- broken daughter/parent "
+                f"closure; refusing to serialize (consumers hard-reject "
+                f"it).")
+        # Sibling symmetry: ONE parent-declared triplet on BOTH daughters.
+        other = next(s for s in K_HOMOLYSIS_DAUGHTER_SUFFIXES
+                     if s != suffix)
+        sibling_lab = f"{parent_lab}{other}"
+        sibling = by_label.get(sibling_lab)
+        sib_block = (sibling or {}).get("end_radical_depropagation")
+        if not isinstance(sib_block, dict):
+            raise ValueError(
+                f"Pool '{lab}': carries an end_radical_depropagation "
+                f"block but its sibling daughter '{sibling_lab}' does "
+                f"not. The producer copies ONE parent-declared triplet "
+                f"onto BOTH spawned daughters "
+                f"(generate_end_radical_daughters), so a one-sided block "
+                f"is a corrupted artifact; refusing to serialize "
+                f"(consumers hard-reject it).")
+        mine = {k: block["kinetics"][k] for k in ("A", "n", "Ea")}
+        theirs = {k: sib_block.get("kinetics", {}).get(k)
+                  for k in ("A", "n", "Ea")}
+        if mine != theirs:
+            raise ValueError(
+                f"Pool '{lab}': end_radical_depropagation kinetics "
+                f"{mine} diverge from sibling '{sibling_lab}' kinetics "
+                f"{theirs}. The producer copies ONE parent-declared "
+                f"triplet onto BOTH daughters, so asymmetric siblings are "
+                f"a corrupted artifact; refusing to serialize (consumers "
+                f"hard-reject it).")
+
+
 def _serialize_radical_qssa_channel(pool: 'Polymer') -> Optional[Dict[str, Any]]:
     """Serialize the pool's radical_qssa_unzip config for the sidecar, or
     return None when the channel is absent (legacy pools emit nothing).
@@ -5667,24 +6109,6 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
     only; ignored for pools without a handshake species. Absent entries
     default to 0.0 (the species starts empty), never a hole.
     """
-    # End-radical depropagation PRODUCER REFUSAL (r74 SS2 kernel; K-pattern
-    # precedent: k_homolysis before schema 2.6): NO sidecar schema block
-    # exists yet for k_depropagation (schema 2.8 pending), and the emitter
-    # must never silently serialize an artifact that omits a LIVE
-    # consumption channel -- a TA replay of such an artifact would
-    # un-conserve mass (the condensed drain and the monomer volatile source
-    # would both be missing). HARD, LOUD failure until the schema block +
-    # TA twin land.
-    if getattr(pool, "k_depropagation", None) is not None:
-        raise ValueError(
-            f"Pool '{getattr(pool, 'label', '')}': carries a "
-            f"k_depropagation end-radical depropagation kernel, but the "
-            f"polymer-pools sidecar has no schema block for it yet "
-            f"(schema 2.8 pending; K-pattern precedent: k_homolysis "
-            f"before schema 2.6). Refusing to serialize an artifact that "
-            f"would silently omit a live consumption channel (a TA replay "
-            f"would un-conserve mass: no condensed drain, no monomer "
-            f"volatile source).")
     # FR1-K2 fallthrough guard (the successor of the K1 'schema 2.7
     # pending' hard-fail): an X-loss feature-pool identity whose exact
     # mass-defect contract the schema-2.7 vocabulary cannot express
@@ -5836,6 +6260,25 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
         _assert_side_group_adj_list_alignment(
             d["label"], pool.monomer, monomer_adj_list)
         d["side_group_homolysis"] = side_group_block
+    # End-radical depropagation block (schema 2.8, r74 SS2 -- the real
+    # serialization that replaced the 'schema 2.8 pending' producer
+    # hard-refusal). Absent -> emit nothing (kernel-free pools AND the
+    # parent's declaration surface stay byte-identical, presence-gated).
+    # POOL-LEVEL like homolysis_initiation; an old consumer is stopped by
+    # the 2.8 schema stamp itself (STRICT-MINOR acceptance). Monomer
+    # routing REUSES the existing top-level monomer_routing field (the
+    # QSSA/unzip idiom): the live save_everything hook keys routing on the
+    # ENGINE's monomer_poly_index (non-None for every kernel daughter by
+    # three layers of guards), and a daughter serialized without an engine
+    # routing entry derives it from its own monomer_product_species (held
+    # BY REFERENCE from the spawn copy) -- the block's gas_species and the
+    # pool field are cross-pinned by the closure guard.
+    deprop_block = _serialize_end_radical_depropagation_block(
+        pool, core_species=core_species)
+    if deprop_block is not None:
+        d["end_radical_depropagation"] = deprop_block
+        if monomer_routing is None:
+            monomer_routing = deprop_block["gas_species"]
     # X-loss feature-pool mass contract (schema 2.7): the pool-level
     # chain_mass_defect_g_mol POOL PROPERTY (= M_X of the spawning
     # channel's gas_product; producer-pinned). Emitted ONLY when the pool
@@ -6341,6 +6784,16 @@ def build_polymer_moments_artifact(pool_registry,
         "chain_mass_defect_g_mol" in p for p in pools)
     if side_group_present:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SIDE_GROUP
+    # End-radical depropagation vocabulary (schema 2.8, r74 SS2) is
+    # POOL-level on the end-radical daughter entries; its presence is the
+    # strongest SHAPE stamp of all (2.8 > 2.7 > ...), presence-gated like
+    # every prior minor -- a deprop-free artifact keeps its older stamp
+    # byte-identically (negative-control pinned). Artifact-level
+    # recipe_revision stays untouched (the block-local token precedent).
+    deprop_carriers = [p for p in pools
+                       if "end_radical_depropagation" in p]
+    if deprop_carriers:
+        schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_DEPROPAGATION
 
     # conventions.condensed_species closure (schema 2.5): a spawned pool's
     # phase_species (canonical proxy + mu-dummies collected from the same
@@ -6381,6 +6834,18 @@ def build_polymer_moments_artifact(pool_registry,
     if side_group_present:
         _assert_side_group_serialization_closure(
             pools, side_group_carriers, condensed_labels,
+            configured_set, spawned_pool_labels)
+    # Producer-side schema-2.8 closure guard (the r68 mirror-property,
+    # depropagation edition): every carrier is a provenance-pinned,
+    # configured, condensed end-radical daughter of a serialized
+    # homolysis carrier; siblings symmetric; the solver exclusion set
+    # (unzip/QSSA/homolysis, plus the r78 k_scission adjudication) holds
+    # on the entry; gas routing/MW/gate_width cross-pins hold -- the
+    # consumer hard-rejects any other shape, so the producer refuses to
+    # emit it.
+    if deprop_carriers:
+        _assert_depropagation_serialization_closure(
+            pools, deprop_carriers, condensed_labels,
             configured_set, spawned_pool_labels)
 
     conventions = {

@@ -344,22 +344,23 @@ class TestQssaSchemaVersionGate:
         unknown-key guards never see (new conventions, new pool fields),
         so an older loader must fail loud instead of loading additively.
         Per-bump precedent: each schema bump moves this probe one minor up
-        (2.7 -> 2.8 at the side-group block)."""
-        artifact = _load_artifact(qssa_deck)
-        artifact["schema_version"] = "2.8"
-        with pytest.raises(ValueError, match=r"schema_version.*2\.8"):
-            _build_qssa(qssa_deck, artifact)
+        (2.8 -> 2.9 at the end-radical depropagation block; 2.7 -> 2.8 at
+        the side-group block)."""
         artifact = _load_artifact(qssa_deck)
         artifact["schema_version"] = "2.9"
+        with pytest.raises(ValueError, match=r"schema_version.*2\.9"):
+            _build_qssa(qssa_deck, artifact)
+        artifact = _load_artifact(qssa_deck)
+        artifact["schema_version"] = "2.10"
         with pytest.raises(ValueError, match=r"schema_version"):
             _build_qssa(qssa_deck, artifact)
         # no-QSSA legacy artifact: same envelope pin
         chem_path, art_path = deck
         with open(art_path) as fh:
             legacy = json.load(fh)
-        legacy["schema_version"] = "2.8"
+        legacy["schema_version"] = "2.9"
         species, reactions = load_chem_yaml(chem_path)
-        with pytest.raises(ValueError, match=r"schema_version.*2\.8"):
+        with pytest.raises(ValueError, match=r"schema_version.*2\.9"):
             build_system_from_artifact(
                 legacy, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
                 initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
@@ -3090,3 +3091,343 @@ class TestSideGroupHomolysisConsumer:
         # ...while the live kernel credits the feature pool and gas Br
         assert dn[i[f"{_SG_FEAT}_mu0"]] > 0.0
         assert dn[i["Br(2)"]] > 0.0
+
+
+# ---------------------------------------------------------------------------
+# End-radical depropagation block, consumer side (schema 2.8, r74 SS2 kernel;
+# r78 serialization rulings): strict block guard (closed keys, pinned
+# kernel/units/recipe/gate_width), version cross-check, daughter/parent
+# closure (carrier is a provenance-pinned end-radical daughter of a
+# homolysis carrier; sibling symmetry), the solver's validate_configuration
+# exclusion mirror (k_unzip / radical_qssa_unzip / k_homolysis -- plus the
+# r78-adjudicated k_scission rejection), the gas routing/MW cross-pins, and
+# truthful 2.8 acceptance (the kernel triplet is wired into the rebuilt
+# oracle's kdep_* flattened arrays).
+# ---------------------------------------------------------------------------
+
+
+def _deprop_deck(tmp_path):
+    """A parent pool declaring k_homolysis + k_depropagation + monomer
+    routing, plus its two eagerly-configured end-radical daughter pools
+    (which carry the live kernel), written out as chem.yaml +
+    polymer_pools.json exactly like an RMG run would."""
+    n2 = _spc("N#N", "N2", index=1)
+    c3h6 = _spc("C=CC", "C3H6", index=5)
+    pool = Polymer(label="PP", monomer="[CH2][CH](C)",
+                   end_groups=["[H]", "[H]"], cutoff=3,
+                   moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                   k_homolysis={"A": 1.0e13, "n": 0.5, "Ea": 1.2e5},
+                   k_depropagation={"A": 9.4e14, "n": 0.0, "Ea": 117152.0})
+    pool.monomer_product_species = c3h6
+    prim, sec = pool.generate_end_radical_daughters()
+    mus = []
+    for base in ("PP", prim.label, sec.label):
+        mus += [_mu(f"{base}_mu{k}") for k in range(3)]
+    core = [n2, c3h6] + mus
+    data, index_map = generate_cantera_data(core, [],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+    artifact = build_polymer_moments_artifact(
+        [pool, prim, sec], core_species=core, core_reactions=[],
+        configured_pool_labels=["PP", prim.label, sec.label],
+        condensed_species=mus, cantera_index_map=index_map)
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+@pytest.fixture
+def deprop_deck(tmp_path):
+    return _deprop_deck(tmp_path)
+
+
+def _deprop_artifact(deck):
+    with open(deck[1]) as fh:
+        return json.load(fh)
+
+
+def _build_deprop(deck, artifact=None, initial_moles=None):
+    chem_path, art_path = deck
+    if artifact is None:
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+        initial_moles=initial_moles or {"N2(1)": 1.0},
+        mass_transfer_spec=[])
+
+
+class TestEndRadicalDepropagationConsumer:
+    """Schema 2.8 end_radical_depropagation contract, consumer side."""
+
+    def test_round_trip_kernel_flattened_on_daughters(self, deprop_deck):
+        """RED pin (full round trip, truthful 2.8 acceptance): a real
+        kernel-enabled deck serialized by the emitter loads GREEN, wires
+        the triplet into BOTH daughter pools' kdep_* flattened arrays with
+        the gas routing resolved -- and leaves the parent kernel-free."""
+        artifact = _deprop_artifact(deprop_deck)
+        assert artifact["schema_version"] == "2.8"
+        for lbl in ("PP_rad_primary_end", "PP_rad_secondary_end"):
+            entry = next(p for p in artifact["pools"] if p["label"] == lbl)
+            block = entry.get("end_radical_depropagation")
+            assert isinstance(block, dict)
+            assert block["kernel"] == "end_radical_depropagation/1"
+            assert block["recipe_revision"] == \
+                "2026-07-06-end-radical-depropagation"
+            assert block["gate_width"] == 1.0e-2
+
+        rs, core, _ = _build_deprop(deprop_deck, artifact)
+        assert len(rs.polymer_pools) == 3
+        by_label = {p.label: i for i, p in enumerate(rs.polymer_pools)}
+        i_gas = [s.label for s in core].index("C3H6(5)")
+        assert rs.kdep_enabled[by_label["PP"]] == 0
+        for lbl in ("PP_rad_primary_end", "PP_rad_secondary_end"):
+            k = by_label[lbl]
+            assert rs.kdep_enabled[k] == 1
+            assert rs.kdep_A[k] == pytest.approx(9.4e14)
+            assert rs.kdep_n[k] == pytest.approx(0.0)
+            assert rs.kdep_Ea[k] == pytest.approx(117152.0)
+            assert int(rs.kdep_gas[k]) == i_gas
+
+    def test_accepts_2_8_without_deprop(self, deck):
+        """2.8 is now an implemented minor: a 2.8 stamp with no
+        end_radical_depropagation block anywhere loads (mirror of
+        test_accepts_2_6_without_homolysis)."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact["schema_version"] = "2.8"
+        species, reactions = load_chem_yaml(chem_path)
+        rs, _, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert len(rs.polymer_pools) == 1
+        assert rs.kdep_enabled[0] == 0
+
+    def test_rejects_block_in_2_7_stamped_artifact(self, deprop_deck):
+        """Vocabulary/version cross-check (the 2.6/2.7 precedent): a
+        below-2.8 artifact carrying an end_radical_depropagation block is
+        malformed -- the emitter stamps 2.8 whenever it writes one."""
+        artifact = _deprop_artifact(deprop_deck)
+        artifact["schema_version"] = "2.7"
+        with pytest.raises(ValueError,
+                           match=r"end_radical_depropagation.*2\.8"):
+            _build_deprop(deprop_deck, artifact)
+
+    def _shape_case(self, deck, mutate, match):
+        artifact = _deprop_artifact(deck)
+        mutate(artifact)
+        with pytest.raises(ValueError, match=match):
+            _build_deprop(deck, artifact)
+
+    @staticmethod
+    def _entry(artifact, label="PP_rad_primary_end"):
+        return next(p for p in artifact["pools"] if p["label"] == label)
+
+    @classmethod
+    def _block(cls, artifact, label="PP_rad_primary_end"):
+        return cls._entry(artifact, label)["end_radical_depropagation"]
+
+    def test_rejects_missing_kinetics_key(self, deprop_deck):
+        def cut(a):
+            del self._block(a)["kinetics"]["Ea"]
+        self._shape_case(deprop_deck, cut, r"kinetics")
+
+    def test_rejects_wrong_kinetics_units(self, deprop_deck):
+        def cut(a):
+            self._block(a)["kinetics"]["units"]["A"] = "1/min"
+        self._shape_case(deprop_deck, cut, r"units")
+
+    def test_rejects_non_positive_A(self, deprop_deck):
+        def cut(a):
+            self._block(a)["kinetics"]["A"] = 0.0
+        self._shape_case(deprop_deck, cut, r"A")
+
+    def test_rejects_boolean_kinetics_value(self, deprop_deck):
+        def cut(a):
+            self._block(a)["kinetics"]["A"] = True
+        self._shape_case(deprop_deck, cut, r"A")
+
+    def test_rejects_present_disabled_block(self, deprop_deck):
+        def cut(a):
+            self._block(a)["enabled"] = False
+        self._shape_case(deprop_deck, cut, r"present-disabled|enabled")
+
+    def test_rejects_unknown_block_key(self, deprop_deck):
+        def cut(a):
+            self._block(a)["turbo"] = True
+        self._shape_case(deprop_deck, cut, r"unknown key")
+
+    def test_rejects_unknown_kernel_name(self, deprop_deck):
+        def cut(a):
+            self._block(a)["kernel"] = "beta_scission_zip/9"
+        self._shape_case(deprop_deck, cut, r"kernel")
+
+    def test_rejects_unknown_recipe_revision(self, deprop_deck):
+        def cut(a):
+            self._block(a)["recipe_revision"] = "2026-01-01-bogus"
+        self._shape_case(deprop_deck, cut, r"recipe_revision")
+
+    def test_rejects_tampered_recipe(self, deprop_deck):
+        def cut(a):
+            block = self._block(a)
+            key = sorted(block["recipe"])[0]
+            block["recipe"][key] = "dmu0 = 0 forever (stall recipe)"
+        self._shape_case(deprop_deck, cut, r"recipe")
+
+    def test_rejects_wrong_gate_width(self, deprop_deck):
+        """The gate_width field is pinned BITWISE to the solver constant
+        (KDEP_GATE_WIDTH = 1e-2): the RHS the artifact claims to replicate
+        integrates with exactly that width, so any other value is a
+        different law (the 1e-12 TA-twin contract)."""
+        def cut(a):
+            self._block(a)["gate_width"] = 5.0e-2
+        self._shape_case(deprop_deck, cut, r"gate_width")
+
+    def test_rejects_missing_gate_width(self, deprop_deck):
+        def cut(a):
+            del self._block(a)["gate_width"]
+        self._shape_case(deprop_deck, cut, r"gate_width|missing")
+
+    def test_rejects_gas_species_routing_mismatch(self, deprop_deck):
+        """block.gas_species and the pool surface's monomer_routing must
+        name the SAME species (one routing, cross-pinned)."""
+        def cut(a):
+            self._block(a)["gas_species"] = "N2(1)"
+        self._shape_case(deprop_deck, cut, r"gas_species|routing")
+
+    def test_rejects_gas_mw_mismatch(self, deprop_deck):
+        """r78 mass pin: gas_mw_g_mol must equal the carrier's
+        monomer_mw_g_mol (each event moves exactly one repeat unit) --
+        anything else mints/destroys mass on every unzip event."""
+        def cut(a):
+            self._block(a)["gas_mw_g_mol"] = 2.016
+        self._shape_case(deprop_deck, cut, r"mw|mass")
+
+    def test_rejects_missing_monomer_routing(self, deprop_deck):
+        def cut(a):
+            self._entry(a)["monomer_routing"] = None
+        self._shape_case(deprop_deck, cut, r"routing")
+
+    def test_rejects_sibling_block_dropped(self, deprop_deck):
+        """The producer copies ONE parent triplet onto BOTH daughters; an
+        artifact where only one sibling carries the block is corrupted."""
+        def cut(a):
+            del self._entry(a, "PP_rad_secondary_end")[
+                "end_radical_depropagation"]
+        self._shape_case(deprop_deck, cut, r"sibling")
+
+    def test_rejects_sibling_kinetics_divergence(self, deprop_deck):
+        def cut(a):
+            self._block(a, "PP_rad_secondary_end")["kinetics"]["A"] = 1.0e3
+        self._shape_case(deprop_deck, cut, r"sibling")
+
+    def test_rejects_provenance_stripped_carrier(self, deprop_deck):
+        """The kernel's home is a producer-spawned end-radical daughter; a
+        carrier claiming user/input provenance is hand-edited."""
+        def cut(a):
+            self._entry(a)["spawn_event_metadata"] = {"source": "input"}
+        self._shape_case(deprop_deck, cut, r"provenance|spawn")
+
+    def test_rejects_carrier_without_parent_homolysis(self, deprop_deck):
+        """Daughter/parent closure: the carrier's parent pool entry must
+        carry the homolysis_initiation block that spawned it -- a deprop
+        daughter with no initiation feed is an orphan shape production
+        cannot generate."""
+        def cut(a):
+            del self._entry(a, "PP")["homolysis_initiation"]
+        self._shape_case(deprop_deck, cut, r"homolysis")
+
+    def test_rejects_unzip_on_carrier(self, deprop_deck):
+        """Solver validate_configuration exclusion mirror #1: legacy
+        k_unzip is the scalar form of the SAME chain-end release event."""
+        def cut(a):
+            self._entry(a)["channels"]["unzip"]["A"] = 0.5
+        self._shape_case(deprop_deck, cut,
+                         r"PP_rad_primary_end.*unzip")
+
+    def test_rejects_scission_on_carrier(self, deprop_deck):
+        """r78 adjudication (RED-pinned): k_scission + k_depropagation on
+        one pool is a direct-config-only shape production cannot generate
+        (daughters are born with k_scission = 0), so no generating run
+        ever integrated the combined law -- reject, never adapt."""
+        def cut(a):
+            self._entry(a)["channels"]["scission"]["A"] = 0.5
+        self._shape_case(deprop_deck, cut,
+                         r"PP_rad_primary_end.*scission")
+
+    def test_rejects_homolysis_block_on_carrier(self, deprop_deck):
+        """Solver validate_configuration exclusion mirror #3:
+        multi-generation homolysis of radical-ended chains is DEFERRED
+        (r74 SS3) -- a carrier entry claiming both kernels is malformed."""
+        def cut(a):
+            entry = self._entry(a)
+            entry["homolysis_initiation"] = _dc(
+                self._entry(a, "PP")["homolysis_initiation"])
+        self._shape_case(deprop_deck, cut, r"homolysis")
+
+    def test_rejects_unconfigured_carrier(self, deprop_deck):
+        def cut(a):
+            conv = a["conventions"]
+            conv["configured_pools"] = [
+                lbl for lbl in conv["configured_pools"]
+                if lbl != "PP_rad_primary_end"]
+        self._shape_case(deprop_deck, cut,
+                         r"PP_rad_primary_end.*(configured|classif)")
+
+    def test_rejects_defect_bearing_carrier(self, deprop_deck):
+        """r79 P1 (RED-pinned): chain_mass_defect_g_mol on a deprop
+        carrier mints mass at terminal DP1 events (condensed drains
+        R*(MW - defect) while gas credits R*MW -> +R*defect per event);
+        the side-group orphan guard deliberately legalizes copied defect
+        pools (non-side-group provenance), so without THIS rejection the
+        shape loads. v2 defect-chain depropagation would need a different
+        mass law / gas product."""
+        def cut(a):
+            self._entry(a)["chain_mass_defect_g_mol"] = 79.904
+        self._shape_case(deprop_deck, cut,
+                         r"PP_rad_primary_end.*chain_mass_defect")
+
+    def test_rejects_spawned_classified_carrier(self, deprop_deck):
+        """r79 item 2: the spawned-classified conjunct, named even when
+        the carrier is ALSO missing from configured_pools (the 2.6
+        spawned-first ordering rationale). Isolated from the sibling 2.6
+        daughter guard by stripping the parent's homolysis block (which
+        fires first on shared shapes)."""
+        def cut(a):
+            del self._entry(a, "PP")["homolysis_initiation"]
+            conv = a["conventions"]
+            conv["configured_pools"] = [
+                lbl for lbl in conv["configured_pools"]
+                if lbl != "PP_rad_primary_end"]
+            conv["spawned_pools"] = ["PP_rad_primary_end"]
+        self._shape_case(deprop_deck, cut,
+                         r"PP_rad_primary_end.*spawned_pools")
+
+    def test_rejects_uncondensed_carrier(self, deprop_deck):
+        """r79 item 2: an un-condensed carrier's moment slots would be
+        phase-classified GAS (the item-16 mass-balance hazard) while the
+        kernel drains them as condensed mass. Isolated from the sibling
+        2.6 daughter guard by stripping the parent's homolysis block."""
+        def cut(a):
+            del self._entry(a, "PP")["homolysis_initiation"]
+            a["conventions"]["condensed_species"] = [
+                lbl for lbl in a["conventions"]["condensed_species"]
+                if not lbl.startswith("PP_rad_primary_end")]
+        self._shape_case(deprop_deck, cut,
+                         r"PP_rad_primary_end.*condensed")
+
+    def test_rejects_qssa_channel_on_carrier(self, deprop_deck):
+        """r79 item 2 / solver validate_configuration exclusion mirror
+        #2: the QSSA channel's depropagation block IS this lumped
+        chain-end channel -- a carrier entry claiming both double-counts
+        the unzip flux."""
+        def cut(a):
+            self._entry(a)["channels"]["radical_qssa_unzip"] = {
+                "enabled": True}
+        self._shape_case(deprop_deck, cut,
+                         r"PP_rad_primary_end.*radical_qssa_unzip")
