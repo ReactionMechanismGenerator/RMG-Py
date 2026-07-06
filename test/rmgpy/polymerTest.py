@@ -4759,6 +4759,78 @@ def test_impostor_refusal_leaves_feature_pool_abstraction_alone():
     assert habs.polymer_refused_accumulating is False
 
 
+def test_impostor_undecidable_axis_never_degenerates_to_mass_only(caplog):
+    """r85 P2(a) pin (r86 ride-along): when a Polymer participant lacks the
+    monomer STRUCTURE (defensive copy / stripped monomer), the heavy-atom
+    axis is uncomputable and the impostor predicate must NOT degenerate to
+    mass-only -- BOTH axes must be computable AND at/above threshold to
+    refuse. Negative pin: the PP+Br2-shaped row (Br2 = 3.8 propene
+    monomer-equivalents of MASS but only 0.67 of heavy atoms) with the
+    monomer structure stripped is NOT refused; the undecidable case is
+    ANNOUNCED through a census/log warning instead of a blind refusal."""
+    import logging
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    pp.monomer = None  # structure axis uncomputable (monomer_mw_g_mol kept)
+    br2 = Species(molecule=[Molecule().from_smiles("BrBr")])
+    rxn = Reaction(reactants=[br2], products=[pp], reversible=True)
+    with caplog.at_level(logging.WARNING):
+        stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+    assert any("IMPOSTOR AXIS UNDECIDABLE" in r.getMessage()
+               for r in caplog.records)
+    # Reverse orientation: same undecidable shape, same non-refusal.
+    rxn_rev = Reaction(reactants=[pp], products=[br2], reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is False
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_impostor_undecidable_mass_axis_also_refuses_to_refuse():
+    """r85 P2(a), symmetric half: a missing MASS axis (monomer_mw_g_mol
+    unavailable on a defensive copy) with a structure axis that says
+    proxy-scale is equally undecidable -- both axes must be computable to
+    refuse, so the discrete stays live."""
+    from rmgpy.polymer import Polymer, _discrete_is_polymer_sized
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    pp.monomer_mw_g_mol = 0.0  # mass axis uncomputable (structure kept)
+    impostor = Species(molecule=[Molecule().from_smiles("C=CCC(C)CC(C)C")])
+    assert _discrete_is_polymer_sized(impostor, pp) is False
+
+
+def test_impostor_threshold_is_proxy_derived():
+    """r85 P2(b) pin (r86 ride-along): the polymer-sized threshold is
+    DERIVED from the actual proxy construction, not hard-coded --
+    threshold = proxy_repeat_units - 0.5, with proxy_repeat_units coming
+    from the stitched-proxy recipe (Polymer._stitch_trimer spans exactly
+    PROXY_STITCH_REPEAT_UNITS = 3 repeat units today). A future proxy-size
+    change moves the threshold automatically."""
+    from rmgpy.polymer import (_IMPOSTOR_DISCRETE_MONOMER_UNITS,
+                               PROXY_STITCH_REPEAT_UNITS, Polymer)
+    assert PROXY_STITCH_REPEAT_UNITS == 3
+    assert _IMPOSTOR_DISCRETE_MONOMER_UNITS == \
+        PROXY_STITCH_REPEAT_UNITS - 0.5
+    # ... and the constant reflects the REAL construction: the stitched
+    # baseline proxy of a PP pool carries exactly PROXY_STITCH_REPEAT_UNITS
+    # monomer units of heavy atoms (H end-caps add none).
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    proxy = pp.baseline_proxy
+    assert proxy is not None
+    heavy_proxy = sum(1 for a in proxy.molecule[0].atoms
+                      if not a.is_hydrogen())
+    heavy_monomer = sum(1 for a in pp.monomer.atoms if not a.is_hydrogen())
+    assert heavy_proxy == PROXY_STITCH_REPEAT_UNITS * heavy_monomer
+
+
 def _build_compile_inputs(moles, initial_mass=1.0, Mn=5000.0, Mw=6000.0,
                           label="PS", monomer="[CH2][CH]c1ccccc1"):
     """Build the (blueprint, initial_moles, species_dict) triple that

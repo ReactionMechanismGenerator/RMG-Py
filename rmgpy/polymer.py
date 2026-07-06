@@ -979,12 +979,22 @@ class Polymer(Species):
         head = self.end_groups[0].copy(deep=True)
         tail = self.end_groups[1].copy(deep=True)
 
-        trimer = stitch_molecules_by_labeled_atoms(head, baseline)
-        if trimer is None: return None
-        trimer = stitch_molecules_by_labeled_atoms(trimer, center)
-        if trimer is None: return None
-        trimer = stitch_molecules_by_labeled_atoms(trimer, baseline)
-        if trimer is None: return None
+        # The repeat units stitched between the end-caps. This list IS the
+        # proxy size: PROXY_STITCH_REPEAT_UNITS (and the impostor threshold
+        # derived from it, r85 P2(b)) must move with it.
+        repeat_units = [baseline, center, baseline]
+        if len(repeat_units) != PROXY_STITCH_REPEAT_UNITS:
+            raise ValueError(
+                "Polymer._stitch_trimer stitches "
+                f"{len(repeat_units)} repeat units but "
+                f"PROXY_STITCH_REPEAT_UNITS = {PROXY_STITCH_REPEAT_UNITS}; "
+                "update the constant together with the construction "
+                "(the impostor threshold is derived from it).")
+
+        trimer = head
+        for unit in repeat_units:
+            trimer = stitch_molecules_by_labeled_atoms(trimer, unit)
+            if trimer is None: return None
         trimer = stitch_molecules_by_labeled_atoms(trimer, tail)
         if trimer is None: return None
 
@@ -2509,20 +2519,30 @@ def _nonpolymer_product_mw_g_mol(product) -> Optional[float]:
 _VE_NET_MASS_EPS_G = 1e-6      # g/mol; |net| below this is a mass-conserving relabel
 _VE_ATOM_TRANSFER_UNITS = 0.5  # source-monomer-equivalents; below => census-only warn
 
+# Number of REPEAT UNITS spanned by the stitched pool proxy
+# (Polymer._stitch_trimer: head-cap + [baseline, center, baseline] + tail-cap
+# -- the construction asserts against this constant, so a future proxy-size
+# change must move it and everything derived from it moves too).
+PROXY_STITCH_REPEAT_UNITS = 3
+
 # r82 impostor-row refusal (FR1 run-2): a discrete (non-Polymer) participant at
-# or above this many source-monomer-equivalents on EVERY measurable axis (mass
-# AND heavy-atom count, see _discrete_is_polymer_sized) is "polymer-sized" --
-# proxy-scale, not volatile-scale. Proxy-derivation is NOT traceable at the
-# stamp/restamp seam (r82 probe 3), so the conservative monomer-scale threshold
-# form is adjudicated instead: the stitched proxy spans 3 repeat units
-# (Polymer._stitch_trimer), and the run-2 impostors (proxy minus Br2/HBr)
-# sit at 2.76-3.00 monomer-equivalents on both axes, while the largest
-# adjudicated-LIVE volatile shape (DP-2 dimer volatiles, e.g. hexene off
-# polypropylene -- pinned negative control) sits at exactly 2.0. 2.5 splits
-# the two conservatively: only clearly proxy-scale discretes are refused;
-# anything smaller stays live for the r71 unstamped-proxy hard-fail to catch
-# LOUDLY rather than being silently refused.
-_IMPOSTOR_DISCRETE_MONOMER_UNITS = 2.5
+# or above this many source-monomer-equivalents on EVERY axis (mass AND
+# heavy-atom count, see _discrete_is_polymer_sized -- r85 P2(a): BOTH axes
+# must be COMPUTABLE and at/above threshold to refuse; an uncomputable axis
+# makes the case undecidable and it is warned, never refused) is
+# "polymer-sized" -- proxy-scale, not volatile-scale. Proxy-derivation is NOT
+# traceable at the stamp/restamp seam (r82 probe 3), so the conservative
+# monomer-scale threshold form is adjudicated instead, DERIVED from the
+# actual proxy construction (r85 P2(b)): the stitched proxy spans
+# PROXY_STITCH_REPEAT_UNITS repeat units, and the run-2 impostors (proxy
+# minus Br2/HBr) sit at 2.76-3.00 monomer-equivalents on both axes, while
+# the largest adjudicated-LIVE volatile shape (DP-2 dimer volatiles, e.g.
+# hexene off polypropylene -- pinned negative control) sits at exactly 2.0.
+# proxy_repeat_units - 0.5 = 2.5 splits the two conservatively: only clearly
+# proxy-scale discretes are refused; anything smaller stays live for the r71
+# unstamped-proxy hard-fail to catch LOUDLY rather than being silently
+# refused.
+_IMPOSTOR_DISCRETE_MONOMER_UNITS = PROXY_STITCH_REPEAT_UNITS - 0.5
 
 
 def _net_nonpolymer_mass_g_mol(reactants, products) -> float:
@@ -3015,14 +3035,34 @@ def _heavy_atom_count(mol) -> int:
     return mol.get_num_atoms() - mol.get_num_atoms('H')
 
 
+def _warn_impostor_axis_undecidable(species, poly, missing) -> None:
+    """Warn-once census (r85 P2(a)): an impostor-sized decision arrived with
+    an UNCOMPUTABLE axis and the computable evidence (if any) did not
+    already decide False -- the case is undecidable and the predicate
+    refuses to refuse. Announced instead of silently degenerating to a
+    single-axis refusal. Reuses the ``_flux_archetype_warned`` warn-once
+    set, keyed to avoid spam."""
+    pool_label = getattr(poly, 'label', None)
+    spc_label = getattr(species, 'label', None) or repr(species)
+    key = ("impostor_axis_undecidable", pool_label, spc_label, missing)
+    if key not in _flux_archetype_warned:
+        _flux_archetype_warned.add(key)
+        logging.warning(
+            "IMPOSTOR AXIS UNDECIDABLE (r85 P2a census): discrete '%s' vs "
+            "pool '%s' -- the %s axis is uncomputable, so the r82 "
+            "polymer-sized conjunct cannot be established on BOTH axes; "
+            "NOT refusing (never refuse blind; the r71 unstamped-proxy "
+            "hard-fail stays the loud backstop).",
+            spc_label, pool_label, missing)
+
+
 def _discrete_is_polymer_sized(species, poly) -> bool:
     """True when the non-``Polymer`` participant ``species`` is POLYMER-SIZED
     relative to pool ``poly``'s monomer: at/above
-    ``_IMPOSTOR_DISCRETE_MONOMER_UNITS`` monomer-equivalents on EVERY
-    measurable axis (r82 impostor conjunct).
+    ``_IMPOSTOR_DISCRETE_MONOMER_UNITS`` monomer-equivalents on BOTH axes,
+    and BOTH axes computable (r82 impostor conjunct, hardened r85 P2(a)).
 
-    Two axes, both conservative-by-conjunction (a discrete is refused only
-    when every axis that CAN be measured says proxy-scale):
+    Two axes, conservative-by-conjunction:
 
     * mass: ``MW(species) / poly.monomer_mw_g_mol``;
     * structure: heavy-atom count ratio vs the monomer structure. This axis
@@ -3030,10 +3070,13 @@ def _discrete_is_polymer_sized(species, poly) -> bool:
       equivalents of MASS but 0.67 of heavy atoms (a diatomic is never
       polymer-sized).
 
-    An axis whose denominator is unavailable (no monomer_mw / no monomer
-    structure on a defensive copy) defers to the other; if NO axis is
-    measurable the answer is False (never refuse blind).
-    """
+    r85 P2(a): an axis whose denominator is unavailable (no monomer_mw / no
+    monomer structure on a defensive copy) does NOT defer to the other --
+    a single-axis refusal is exactly the Br2-with-stripped-monomer false
+    positive. Both axes must be computable AND at/above threshold to
+    refuse; otherwise the answer is False, and the genuinely undecidable
+    case (the computable evidence did not already decide False) is
+    announced through the warn-once census."""
     if isinstance(species, Polymer):
         return False
     mol_list = getattr(species, 'molecule', None)
@@ -3041,22 +3084,32 @@ def _discrete_is_polymer_sized(species, poly) -> bool:
         species if isinstance(species, Molecule) else None)
     if mol is None:
         return False
-    measured_any = False
     # Mass axis.
     monomer_mw = float(getattr(poly, 'monomer_mw_g_mol', 0.0) or 0.0)
-    if monomer_mw > 0.0:
-        measured_any = True
-        mw = mol.get_molecular_weight() * 1000.0
-        if mw < _IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_mw:
-            return False
+    mass_computable = monomer_mw > 0.0
+    mass_polymer_sized = (
+        mass_computable
+        and mol.get_molecular_weight() * 1000.0
+        >= _IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_mw)
     # Structure (heavy-atom) axis.
     monomer_heavy = _heavy_atom_count(getattr(poly, 'monomer', None))
-    if monomer_heavy > 0:
-        measured_any = True
-        if (_heavy_atom_count(mol)
-                < _IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_heavy):
-            return False
-    return measured_any
+    structure_computable = monomer_heavy > 0
+    structure_polymer_sized = (
+        structure_computable
+        and _heavy_atom_count(mol)
+        >= _IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_heavy)
+    if mass_computable and structure_computable:
+        return mass_polymer_sized and structure_polymer_sized
+    # At least one axis uncomputable: never refuse. Announce the case as
+    # undecidable UNLESS a computable axis already decided False (then the
+    # answer is a decided False, not an undecidable one).
+    if not any([mass_computable and not mass_polymer_sized,
+                structure_computable and not structure_polymer_sized]):
+        missing = ("mass and structure" if not mass_computable
+                   and not structure_computable
+                   else ("mass" if not mass_computable else "structure"))
+        _warn_impostor_axis_undecidable(species, poly, missing)
+    return False
 
 
 def _polymer_participants_identical(polymer_reactants, polymer_products) -> bool:
