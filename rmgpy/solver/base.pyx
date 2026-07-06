@@ -762,28 +762,55 @@ cdef class ReactionSystem(DASx):
                             conversion = 1 - (y_core_species[index] / y0[index])
 
                     if invalid_objects == []:
+                        # Resurrection zero-metric guard (adjudicated round
+                        # 81, the PP run-7 amplifier): resurrection must
+                        # NEVER promote an object whose selected metric is
+                        # <= 0 or below the normal movement threshold --
+                        # adding species "at rate ratio 0.0" grows the core
+                        # on zero flux and re-integrates into the same
+                        # DASPK wall. Each criterion keeps its argmax
+                        # selection (positive-rate resurrection unchanged)
+                        # but the winner must clear the SAME bar normal
+                        # enlargement applies (tol_move_to_core for species
+                        # / network ratios, tol_move_edge_reaction_to_core
+                        # in ln space for dynamics numbers) AND be strictly
+                        # positive (a zero metric never qualifies, even
+                        # when the threshold is 0).
                         #species flux criterion
                         if len(edge_species_rate_ratios) > 0:
                             ind = np.argmax(edge_species_rate_ratios)
-                            obj = edge_species[ind]
-                            logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core '
-                                         'in model resurrection process'.format(self.t, obj,edge_species_rates[ind]))
-                            invalid_objects.append(obj)
+                            val = edge_species_rate_ratios[ind]
+                            if val > 0.0 and val >= tol_move_to_core:
+                                obj = edge_species[ind]
+                                logging.info('At time {0:10.4e} s, species {1} at rate ratio {2} was added to model core '
+                                             'in model resurrection process'.format(self.t, obj,edge_species_rates[ind]))
+                                invalid_objects.append(obj)
 
                         if total_div_accum_nums is not None and len(total_div_accum_nums) > 0:  #if dynamics data available
                             ind = np.argmax(total_div_accum_nums)
-                            obj = edge_reactions[ind]
-                            logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
-                                         'in model resurrection process'.format(self.t, obj,total_div_accum_nums[ind]))
-                            invalid_objects.append(obj)
+                            val = total_div_accum_nums[ind]
+                            if val > 1.0 and np.log(val) >= tol_move_edge_reaction_to_core:
+                                obj = edge_reactions[ind]
+                                logging.info('At time {0:10.4e} s, Reaction {1} at dynamics number {2} was added to model core '
+                                             'in model resurrection process'.format(self.t, obj,total_div_accum_nums[ind]))
+                                invalid_objects.append(obj)
 
                         if len(pdep_networks) > 0 and len(network_leak_rate_ratios) > 0:
                             ind = np.argmax(network_leak_rate_ratios)
-                            obj = pdep_networks[ind]
-                            logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} '
-                                         'was sent for exploring during model resurrection process'
-                                         ''.format(self.t, obj.index, network_leak_rate_ratios[ind]))
-                            invalid_objects.append(obj)
+                            val = network_leak_rate_ratios[ind]
+                            if val > 0.0 and val >= tol_move_to_core:
+                                obj = pdep_networks[ind]
+                                logging.info('At time {0:10.4e} s, PDepNetwork #{1:d} at network leak rate {2} '
+                                             'was sent for exploring during model resurrection process'
+                                             ''.format(self.t, obj.index, network_leak_rate_ratios[ind]))
+                                invalid_objects.append(obj)
+
+                        if invalid_objects == []:
+                            logging.error(
+                                'no positive resurrection candidate: the DASPK failure at t={0:10.4e} s found every '
+                                'edge species / edge reaction / network candidate metric zero or below its normal '
+                                'movement threshold -- refusing to grow the core on zero flux (r81); the solver '
+                                'failure is surfaced below instead.'.format(self.t))
 
                     if invalid_objects != []:
                         return False, True, invalid_objects, surface_species, surface_reactions, self.t, conversion

@@ -9621,3 +9621,101 @@ class TestR81ExhaustionTailConditioning:
         assert pool_stats["A"][0] == 0.0
         assert any("POOL EXHAUSTION CENSUS" in r.getMessage()
                    for r in caplog.records)
+
+
+class _R81FailingStepSystem(HybridPolymerSystem):
+    """step() reproduces the run-7 DASPK wall unconditionally: every
+    attempted integration step dies with the IDID=-7 convergence failure."""
+
+    def step(self, step_time):
+        from pydas.dassl import DASSLError
+        raise DASSLError(
+            "DASSL returned with an IDID = -7, Repeated convergence test "
+            "failures occurred on the last attempted step in DDASSL.")
+
+
+def _r81_resurrection_rs(edge_reactant_key):
+    """Resurrection-guard fixture: pool A, gas seed X, gas driver X -> Y
+    (positive char_rate), and ONE edge species G fed by
+    sp[edge_reactant_key] -> G. edge_reactant_key='Y' (zero moles) gives the
+    exact run-7 shape -- edge rate ratio 0.0; 'X' (the 1-mol seed) gives a
+    strictly positive edge rate."""
+    sp = _gate17_species()
+    core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"], sp["X"], sp["Y"]]
+    mask = np.array([False, False, False, False, True, True], dtype=bool)
+    driver = Reaction(
+        reactants=[sp["X"]], products=[sp["Y"]],
+        kinetics=Arrhenius(A=(1.0e-3, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"),
+                           T0=(298.15, "K")),
+        reversible=False)
+    gated = Reaction(reactants=[sp[edge_reactant_key]], products=[sp["G"]],
+                     **_KIN)
+    cfg = PolymerPoolConfig(label="A", xs=2,
+                            explicit_dp_to_species_index={},
+                            mu_indices=(1, 2, 3), monomer_poly_index=None)
+    rs = _R81FailingStepSystem(
+        T=800.0, P=1.0e5, initial_mole_fractions={core[4]: 1.0},
+        V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+        gas_species_mask=mask, constant_gas_volume=False,
+        initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+        allow_default_prospective_edge=True,
+        allow_unstamped_proxy_rows=True)
+    return rs, core, [driver], [sp["G"]], [gated]
+
+
+def _r81_simulate(rs, core, rxns_core, edge_spcs, rxns_edge, ms):
+    from rmgpy.rmg.settings import SimulatorSettings
+    from rmgpy.solver.base import TerminationTime
+    rs.termination.append(TerminationTime((1.0, "s")))
+    return rs.simulate(list(core), list(rxns_core), list(edge_spcs),
+                       list(rxns_edge), [], [],
+                       model_settings=ms,
+                       simulator_settings=SimulatorSettings())
+
+
+class TestR81ResurrectionZeroMetricGuard:
+    """(C) Model Resurrection must never promote an object whose selected
+    metric is <= 0 or below the normal movement threshold; when every
+    candidate is zero it logs 'no positive resurrection candidate' and stops
+    resurrecting -- the DASPK failure is surfaced honestly instead of
+    growing the core on zero flux (the run-7 amplifier)."""
+
+    def test_run7_shape_zero_edge_rates_do_not_add_species(self, caplog):
+        """RED (the exact run-7 shape): DASPK error + ALL edge rates zero
+        must NOT add a species at rate ratio 0.0 -- resurrection stops and
+        the failure surfaces as the loud resurrection-failed error."""
+        from rmgpy.rmg.settings import ModelSettings
+        rs, core, rxns_core, edge_spcs, rxns_edge = _r81_resurrection_rs("Y")
+        ms = ModelSettings(tol_keep_in_edge=0.0, tol_move_to_core=1.0e-3,
+                           tol_interrupt_simulation=1.0e8)
+        with caplog.at_level(logging.INFO):
+            with pytest.raises(ValueError,
+                               match="invalid_objects could not be filled"):
+                _r81_simulate(rs, core, rxns_core, edge_spcs, rxns_edge, ms)
+        msgs = [r.getMessage() for r in caplog.records]
+        assert not any(
+            "was added to model core in model resurrection process" in m
+            for m in msgs)
+        assert any("no positive resurrection candidate" in m for m in msgs)
+
+    def test_positive_edge_rate_resurrection_unchanged(self, caplog):
+        """No-regression pin (r81 C3): with a strictly positive edge rate
+        at/above the movement threshold, resurrection still promotes the
+        candidate and simulate returns resurrected=True."""
+        from rmgpy.rmg.settings import ModelSettings
+        rs, core, rxns_core, edge_spcs, rxns_edge = _r81_resurrection_rs("X")
+        # ignore_overall_flux_criterion keeps normal enlargement from
+        # collecting G first, so the DASPK failure exercises the
+        # resurrection selection itself; tol_move_to_core=0 makes any
+        # strictly positive ratio qualify.
+        ms = ModelSettings(tol_keep_in_edge=0.0, tol_move_to_core=0.0,
+                           tol_interrupt_simulation=1.0e8,
+                           ignore_overall_flux_criterion=True)
+        with caplog.at_level(logging.INFO):
+            terminated, resurrected, invalid_objects, _, _, _, _ = \
+                _r81_simulate(rs, core, rxns_core, edge_spcs, rxns_edge, ms)
+        assert resurrected is True
+        assert edge_spcs[0] in invalid_objects
+        assert any(
+            "was added to model core in model resurrection process"
+            in r.getMessage() for r in caplog.records)
