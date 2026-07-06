@@ -6872,18 +6872,50 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
         if arch == NONE_ and src is None and dst is None:
             continue  # ordinary chemistry — Cantera handles it untouched
 
-        # Mirror solver demotions (polymer.pyx:557-578).
+        # Mirror solver demotions (polymer.pyx:557-578) and the r91
+        # spawned-pool demotion REFUSAL: a stamped pool-coupled row whose
+        # missing required endpoint is attributable to a spawned config-less
+        # Polymer participant is refused by the generating solver
+        # (conduit-deferred, zero flux), so the artifact must carry the
+        # refused marker with the STAMPED archetype -- never a live
+        # legacy_mu1/1 row. Computed here (not read off the object): the
+        # solver re-derives the refusal per rebuild without stamping
+        # polymer_refused, so the emitter mirrors the same predicate against
+        # the same configured-pool set.
         unresolved = False
+        spawned_refused = False
         if arch == NONE_:
             arch, unresolved = UNR, True
         elif arch == UNR:
             unresolved = True
-        elif arch in (MIG, SCI, VE) and (src is None or dst is None):
+        elif ((arch in (MIG, SCI, VE) and (src is None or dst is None))
+              or (arch == CHIP and src is None)):
             # VOLATILE_EJECTION is cross-pool like MIGRATION: it needs both a
-            # configured source and destination pool, else it runs as legacy.
-            arch, unresolved = UNR, True
-        elif arch == CHIP and src is None:
-            arch, unresolved = UNR, True
+            # configured source and destination pool.
+            sides = []
+            if src is None:
+                sides.append(rxn.reactants or [])
+            if dst is None and arch != CHIP:
+                sides.append(rxn.products or [])
+            attributable = bool(sides)
+            for side in sides:
+                if not any(isinstance(s, Polymer)
+                           and _species_base_label(s) not in pool_set
+                           for s in side):
+                    attributable = False
+            if attributable and (src is not None or dst is not None):
+                # Pool-mapped spawned-refused row: stamped archetype kept,
+                # refused marker added below.
+                spawned_refused = True
+            elif attributable:
+                # Spawned-refused but NOT pool-mapped (no configured-pool
+                # participant): the refused marker is illegal here (loader
+                # guard), so keep the legacy demotion emission; the refused
+                # block below still warn-louds the over-integration hazard.
+                spawned_refused = True
+                arch, unresolved = UNR, True
+            else:
+                arch, unresolved = UNR, True
 
         equation = get_reaction_equation(rxn, core_species)
         indices = cantera_index_map.get(id(rxn))
@@ -6963,7 +6995,10 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
         # listing). refused_reason mirrors the solver census reason built
         # from the same stamps (polymer.pyx:1526-1530). Non-refused rows
         # gain NO key (absent, not false — byte-identical artifacts).
-        if getattr(rxn, "polymer_refused", False):
+        # spawned_refused (r91): the solver refuses the row conduit-deferred
+        # at initialize_model (spawned config-less pool endpoint); the
+        # emitter mirrors that refusal so consumers zero the row too.
+        if getattr(rxn, "polymer_refused", False) or spawned_refused:
             if entry["proxy_reactants"] or entry["proxy_products"]:
                 entry["refused"] = True
                 entry["refused_reason"] = (

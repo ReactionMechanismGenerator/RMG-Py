@@ -10649,3 +10649,222 @@ class TestTerminationPolymerConversion:
         src = inspect.getsource(hybrid_polymer_reactor)
         assert ("terminationPolymerConversion=terminationPolymerConversion"
                 in src)
+
+
+class TestSpawnedPoolDemotionRefusal:
+    """r91 (PP run-10 death): a stamped pool-coupled row whose required pool
+    endpoint resolves to -1 BECAUSE the endpoint is a mid-run-SPAWNED,
+    config-less pool (a Polymer species present in the species lists but
+    absent from the solver's pool configs) must be REFUSED conduit-deferred
+    (reaction_refused -> zero flux, same mechanics as every other refused
+    row) instead of DEMOTED to the legacy mu1-only transfer. The legacy
+    demotion applied an unapportioned mu1-only drain that drove pool
+    polypropylene_mod to mu0=+0.0047 / mu1=-5.6e-5 / mu2=+0.235 at
+    simulate-leg 21 (the r81 negative-beyond-floor tripwire killed run-10).
+    Unresolved endpoints NOT attributable to a spawned config-less pool
+    (e.g. a plain-Species daughter) keep the legacy demotion, censused
+    separately as a loud anomaly."""
+
+    @staticmethod
+    def _daughter(label="poly_mod"):
+        from rmgpy.polymer import Polymer
+        return Polymer(label=label, monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+
+    @staticmethod
+    def _species():
+        return {
+            "Proxy": _spc("CCCC", "poly"),
+            "Mu0": _spc("CO", "poly_mu0"),
+            "Mu1": _spc("C=O", "poly_mu1"),
+            "Mu2": _spc("C#N", "poly_mu2"),
+            "Vol": _spc("C=C", "vol_gas"),
+            "B": _spc("[CH3]", "B_gas"),
+        }
+
+    @staticmethod
+    def _build(core, mask, rxns, moments=(1.0, 5.0, 30.0)):
+        pool = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+        )
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=np.array(mask, dtype=bool),
+            constant_gas_volume=False,
+            initial_polymer_moments={"poly": moments}, termination=[],
+        )
+        rs.initialize_model(core, list(rxns), [], [])
+        return rs
+
+    def test_run10_shape_migration_to_spawned_pool_refused_not_demoted(self, caplog):
+        """RED-matrix 1: the run-10 shape. A stamped MIGRATION row whose dst
+        is a spawned config-less Polymer core species must be refused
+        (zero flux), not demoted to legacy mu1-only."""
+        import rmgpy.solver.polymer as sp_mod
+        s = self._species()
+        d = self._daughter()
+        core = [s["Proxy"], s["Mu0"], s["Mu1"], s["Mu2"], d]
+        mask = [False] * 5
+        rxn = Reaction(reactants=[s["Proxy"]], products=[d], **_KIN)
+        rxn.polymer_flux_archetype = sp_mod.FLUX_MIGRATION
+        with caplog.at_level(logging.WARNING):
+            rs = self._build(core, mask, [rxn])
+        assert rs.reaction_refused[0] == 1
+        assert rs.reaction_flux_archetype[0] == sp_mod.FLUX_NONE
+        # zero flux: elementwise identical to the row-free system
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        rs0 = self._build(core, mask, [])
+        dn0 = rs0.residual(0.0, rs0.y, np.zeros_like(rs0.y))[0]
+        assert np.array_equal(dn, dn0)
+        assert any("SPAWNED-POOL DEMOTION REFUSAL" in r.getMessage()
+                   for r in caplog.records)
+        assert not any("could not resolve their solver pool(s)"
+                       in r.getMessage() for r in caplog.records)
+
+    @pytest.mark.parametrize("shape", ["scission_fragment", "discrete_chip",
+                                       "volatile_ejection"])
+    def test_all_archetypes_targeting_spawned_pool_are_refused(self, shape):
+        """RED-matrix 1 (archetype coverage): SCISSION_FRAGMENT with a
+        spawned dst, DISCRETE_CHIP with a spawned src, and VOLATILE_EJECTION
+        with a spawned (unresolved) required endpoint all refuse."""
+        import rmgpy.solver.polymer as sp_mod
+        s = self._species()
+        d = self._daughter()
+        if shape == "scission_fragment":
+            core = [s["Proxy"], s["Mu0"], s["Mu1"], s["Mu2"], d]
+            mask = [False] * 5
+            rxn = Reaction(reactants=[s["Proxy"]], products=[d], **_KIN)
+            rxn.polymer_flux_archetype = sp_mod.FLUX_SCISSION_FRAGMENT
+        elif shape == "discrete_chip":
+            core = [s["Proxy"], s["Mu0"], s["Mu1"], s["Mu2"], d, s["B"]]
+            mask = [False] * 5 + [True]
+            rxn = Reaction(reactants=[d], products=[s["B"]], **_KIN)
+            rxn.polymer_flux_archetype = sp_mod.FLUX_DISCRETE_CHIP
+            rxn.polymer_chip_units = 2
+        else:
+            core = [s["Proxy"], s["Mu0"], s["Mu1"], s["Mu2"], d, s["Vol"]]
+            mask = [False] * 5 + [True]
+            rxn = Reaction(reactants=[s["Proxy"]], products=[d, s["Vol"]],
+                           **_KIN)
+            rxn.polymer_flux_archetype = sp_mod.FLUX_VOLATILE_EJECTION
+            rxn.polymer_eject_units = 0.5
+        rs = self._build(core, mask, [rxn])
+        assert rs.reaction_refused[0] == 1
+        assert rs.reaction_flux_archetype[0] == sp_mod.FLUX_NONE
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        rs0 = self._build(core, mask, [])
+        dn0 = rs0.residual(0.0, rs0.y, np.zeros_like(rs0.y))[0]
+        assert np.array_equal(dn, dn0)
+
+    def test_refused_row_contributes_zero_to_all_three_moment_legs(self):
+        """RED-matrix 2 (residual-level): the run-10 shape no longer drives
+        mu1 negative -- the refused row contributes exactly zero to mu0, mu1
+        and mu2 (baseline demotion applied dn[mu1] = -k*mu1 < 0)."""
+        import rmgpy.solver.polymer as sp_mod
+        s = self._species()
+        d = self._daughter()
+        core = [s["Proxy"], s["Mu0"], s["Mu1"], s["Mu2"], d]
+        mask = [False] * 5
+        rxn = Reaction(reactants=[s["Proxy"]], products=[d], **_KIN)
+        rxn.polymer_flux_archetype = sp_mod.FLUX_MIGRATION
+        rs = self._build(core, mask, [rxn])
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn[1] == 0.0    # mu0 leg
+        assert dn[2] == 0.0    # mu1 leg: baseline drove this negative
+        assert dn[3] == 0.0    # mu2 leg
+        assert dn[4] == 0.0    # spawned daughter gains nothing
+
+    def test_census_line_format_and_payload(self, caplog):
+        """r91 census format + solver-side census attribute."""
+        import re
+        import rmgpy.solver.polymer as sp_mod
+        s = self._species()
+        d = self._daughter()
+        core = [s["Proxy"], s["Mu0"], s["Mu1"], s["Mu2"], d]
+        rxn = Reaction(reactants=[s["Proxy"]], products=[d], **_KIN)
+        rxn.polymer_flux_archetype = sp_mod.FLUX_MIGRATION
+        with caplog.at_level(logging.WARNING):
+            rs = self._build(core, [False] * 5, [rxn])
+        msgs = [r.getMessage() for r in caplog.records
+                if "SPAWNED-POOL DEMOTION REFUSAL" in r.getMessage()]
+        assert len(msgs) == 1, msgs
+        assert re.search(
+            r"SPAWNED-POOL DEMOTION REFUSAL: 1 stamped pool-coupled row\(s\) "
+            r"targeting unconfigured spawned pools refused conduit-deferred "
+            r"instead of demoted to legacy mu1-only; item-16 pending; "
+            r"archetypes=MIGRATION, pools=poly_mod, first_rows=core row 0:",
+            msgs[0]), msgs[0]
+        census = rs.spawned_pool_refusal_census
+        assert len(census) == 1
+        assert census[0]["reason"] == "conduit-deferred"
+        assert census[0]["archetype"] == "MIGRATION"
+        assert census[0]["pools"] == ["poly_mod"]
+
+    def test_refusal_not_sticky_object_stays_unstamped(self):
+        """The refusal is re-derived per rebuild and must NOT stamp
+        polymer_refused on the reaction object: once item 16 configures the
+        spawned pool, the SAME row must resolve and run fully apportioned."""
+        import rmgpy.solver.polymer as sp_mod
+        s = self._species()
+        d = self._daughter()
+        core = [s["Proxy"], s["Mu0"], s["Mu1"], s["Mu2"], d]
+        rxn = Reaction(reactants=[s["Proxy"]], products=[d], **_KIN)
+        rxn.polymer_flux_archetype = sp_mod.FLUX_MIGRATION
+        rs = self._build(core, [False] * 5, [rxn])
+        assert rs.reaction_refused[0] == 1
+        assert not getattr(rxn, "polymer_refused", False)
+        # negative control (RED-matrix 4): the same row against a
+        # configuration that RESOLVES both pools stays fully live.
+        dmu0 = _spc("CCO", "poly_mod_mu0")
+        dmu1 = _spc("CC=O", "poly_mod_mu1")
+        dmu2 = _spc("CC#N", "poly_mod_mu2")
+        core2 = core + [dmu0, dmu1, dmu2]
+        parent = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        spawned = PolymerPoolConfig(
+            label="poly_mod", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(5, 6, 7), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        rs2 = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={}, V_poly=1.0,
+            polymer_pools=[parent, spawned], mass_transfer=[],
+            gas_species_mask=np.array([False] * 8, dtype=bool),
+            constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0),
+                                     "poly_mod": (0.0, 0.0, 0.0)},
+            termination=[])
+        rs2.initialize_model(core2, [rxn], [], [])
+        assert rs2.reaction_refused[0] == 0
+        assert rs2.reaction_flux_archetype[0] == sp_mod.FLUX_MIGRATION
+
+    def test_plain_species_daughter_keeps_demotion_and_censuses_anomaly(self, caplog):
+        """Negative control + anomaly census: an unresolved endpoint NOT
+        attributable to a spawned config-less Polymer (plain-Species
+        daughter, the test_stamped_scission_without_daughter_pool shape)
+        keeps the legacy mu1-only demotion, is NOT refused, and is censused
+        as a loud anomaly."""
+        import rmgpy.solver.polymer as sp_mod
+        s = self._species()
+        plain = _spc("CCC", "poly_scission_tail")   # NOT a Polymer
+        core = [s["Proxy"], s["Mu0"], s["Mu1"], s["Mu2"], plain]
+        rxn = Reaction(reactants=[s["Proxy"]], products=[plain], **_KIN)
+        rxn.polymer_flux_archetype = sp_mod.FLUX_SCISSION_FRAGMENT
+        with caplog.at_level(logging.WARNING):
+            rs = self._build(core, [False] * 5, [rxn])
+        assert rs.reaction_refused[0] == 0
+        assert rs.reaction_flux_archetype[0] == sp_mod.FLUX_UNRESOLVED
+        assert rs.spawned_pool_refusal_census == []
+        # legacy mu1 drain still applies (behavior unchanged)
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        assert np.isclose(dn[2], -kf * 5.0)
+        assert any("demoted to legacy" in r.getMessage()
+                   for r in caplog.records)
+        assert any("DEMOTION ANOMALY" in r.getMessage()
+                   for r in caplog.records)

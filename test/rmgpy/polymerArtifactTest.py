@@ -3017,3 +3017,80 @@ class TestR81RecipeStringsUntouched:
         assert DEPROPAGATION_BLOCK_RECIPE_REVISION == \
             "2026-07-06-end-radical-depropagation"
         assert DEPROPAGATION_KERNEL_NAME == "end_radical_depropagation/1"
+
+
+class TestSpawnedPoolRefusalMirror:
+    """r91 artifact lockstep: the emitter must mirror the solver's
+    spawned-pool demotion refusal -- a stamped pool-coupled row whose
+    unresolved endpoint is a spawned config-less Polymer emits refused
+    (refused: true, refused_reason conduit-deferred) with its STAMPED
+    archetype, never a live legacy_mu1/1 row."""
+
+    @staticmethod
+    def _spawned(label="A_mod"):
+        return Polymer(label=label, monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+
+    def test_migration_to_spawned_pool_emits_refused_not_live_legacy(self):
+        core = _two_pool_core()
+        d = self._spawned()
+        core = core + [d]
+        rxn = Reaction(reactants=[core[0]], products=[d],
+                       kinetics=_arrhenius(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["A", "B"],
+            cantera_index_map={id(rxn): [0]})
+        assert len(entries) == 1
+        e = entries[0]
+        assert e.get("refused") is True
+        assert e.get("refused_reason") == "conduit-deferred"
+        assert e["archetype"] == "migration/1"   # NOT a live legacy_mu1/1 row
+        assert e["archetype"] != "legacy_mu1/1"
+        assert e["unresolved"] is False
+
+    def test_volatile_ejection_to_spawned_pool_emits_refused(self):
+        core = _two_pool_core()
+        d = self._spawned()
+        core = core + [d]
+        rxn = Reaction(reactants=[core[0]], products=[d, core[8]],
+                       kinetics=_arrhenius(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = 0.5
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["A", "B"],
+            cantera_index_map={id(rxn): [3]})
+        e = entries[0]
+        assert e.get("refused") is True
+        assert e.get("refused_reason") == "conduit-deferred"
+        assert e["archetype"] == "volatile_ejection/1"
+
+    def test_refused_marker_round_trips_runner_loader(self):
+        from rmgpy.tools.polymer_moments_runner import _validate_refused_entry
+        core = _two_pool_core()
+        d = self._spawned()
+        core = core + [d]
+        rxn = Reaction(reactants=[core[0]], products=[d],
+                       kinetics=_arrhenius(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["A", "B"],
+            cantera_index_map={id(rxn): [0]})
+        assert _validate_refused_entry(entries[0])
+
+    def test_plain_species_dst_keeps_legacy_demotion_mirror(self):
+        """Negative control: the existing demotion mirror is untouched when
+        the unresolved endpoint is NOT a spawned Polymer (plain Species dst,
+        the test_stamped_migration_without_configured_dst shape)."""
+        core = _two_pool_core()
+        rxn = Reaction(reactants=[core[0]], products=[core[4]],
+                       kinetics=_arrhenius(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["A"],   # B not configured
+            cantera_index_map={id(rxn): [0]})
+        e = entries[0]
+        assert e["archetype"] == "legacy_mu1/1"
+        assert e["unresolved"] is True
+        assert "refused" not in e

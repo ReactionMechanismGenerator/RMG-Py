@@ -2958,6 +2958,34 @@ class HybridPolymerSystem(ReactionSystem):
         n_unresolvable = 0
         unstamped_live_rows = []
         combined_rxns = list(itertools.chain(core_reactions, edge_reactions))
+        # r91 (PP run-10, spar-adjudicated): spawned-pool demotion refusal
+        # bookkeeping. A stamped pool-coupled row whose required pool
+        # endpoint resolves to -1 BECAUSE the endpoint is a mid-run-SPAWNED,
+        # config-less pool (a Polymer species present in the species lists
+        # but absent from self.polymer_pools) is REFUSED conduit-deferred
+        # (reaction_refused -> zero whole-row flux, the same mechanics as
+        # every other refused row) instead of demoted to the legacy mu1-only
+        # transfer: the legacy path applied an unapportioned mu1-only drain
+        # (run-10 drove pool polypropylene_mod to mu0=+0.0047 / mu1=-5.6e-5
+        # at simulate-leg 21; the r81 negative-beyond-floor tripwire killed
+        # the run). The refusal is re-derived EVERY rebuild and deliberately
+        # NOT stamped on the reaction object: once item 16 configures the
+        # spawned pool, the SAME row resolves and runs fully apportioned.
+        # Unresolved endpoints NOT attributable to a spawned config-less
+        # Polymer keep the legacy demotion unchanged, censused separately as
+        # a loud anomaly (should be impossible for configured pools; the
+        # constructible routes are a non-Polymer daughter species, an
+        # edge-only proxy, or a duplicate core base label).
+        from rmgpy.polymer import Polymer as _Polymer
+        from rmgpy.polymer import strip_rmg_index_suffix as _strip_idx
+        _configured_pool_labels = {p.label for p in self.polymer_pools}
+        _arch_names = {FLUX_MIGRATION: "MIGRATION",
+                       FLUX_SCISSION_FRAGMENT: "SCISSION_FRAGMENT",
+                       FLUX_DISCRETE_CHIP: "DISCRETE_CHIP",
+                       FLUX_VOLATILE_EJECTION: "VOLATILE_EJECTION"}
+        spawned_refusals = []      # (row_idx, rxn, archetype name, labels)
+        demotion_anomalies = []    # (row_idx, rxn, archetype name)
+        self.spawned_pool_refusal_census = []
         for i in range(n_rxn):
             src = -1
             for slot in range(3):
@@ -2994,9 +3022,10 @@ class HybridPolymerSystem(ReactionSystem):
                         "%s row %d: %s" % (
                             "core" if i < len(core_reactions) else "edge",
                             i, str(combined_rxns[i])))
-            if ((self.reaction_flux_archetype[i] in (FLUX_MIGRATION, FLUX_SCISSION_FRAGMENT, FLUX_VOLATILE_EJECTION)
+            arch_i = self.reaction_flux_archetype[i]
+            if ((arch_i in (FLUX_MIGRATION, FLUX_SCISSION_FRAGMENT, FLUX_VOLATILE_EJECTION)
                     and (src == -1 or dst == -1))
-                    or (self.reaction_flux_archetype[i] == FLUX_DISCRETE_CHIP
+                    or (arch_i == FLUX_DISCRETE_CHIP
                         and src == -1)):
                 # A stamped archetype needs its pool(s) resolved in the
                 # solver: MIGRATION/SCISSION_FRAGMENT/VOLATILE_EJECTION need
@@ -3004,21 +3033,86 @@ class HybridPolymerSystem(ReactionSystem):
                 # (e.g. scission daughters are registered as core Polymer
                 # species but have no pool config yet); DISCRETE_CHIP needs
                 # only src (no dst: complement folds back to the same pool
-                # and the chip is a plain gas species). Demote to the legacy
-                # mu1-only transfer so the parent drain is never silently
-                # zeroed (mass would otherwise be duplicated).
-                # src == dst is deliberately NOT demoted: for that shape
+                # and the chip is a plain gas species).
+                # src == dst is deliberately NOT touched: for that shape
                 # (fold-back proxy product + non-pool daughter) the dispatch
                 # skip and the legacy transfer produce identical pool flux
-                # (reactant -r and fold-back +r cancel on the same mu1), so
-                # demotion would change nothing.
-                self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
-                n_unresolvable += 1
+                # (reactant -r and fold-back +r cancel on the same mu1).
+                #
+                # r91: attribute each MISSING required endpoint. If every
+                # missing endpoint is explained by a spawned config-less
+                # Polymer participant on that side, REFUSE the row
+                # (conduit-deferred, zero flux -- archetype cleared to NONE
+                # so no dispatch/census path sees a live stamped shape; the
+                # generation stamp survives in
+                # reaction_pre_demotion_archetype). Otherwise keep the
+                # legacy mu1-only demotion (parent drain never silently
+                # zeroed) and census the anomaly loudly.
+                rxn_i = combined_rxns[i]
+                spawned_labels = set()
+                attributable = True
+                sides = []
+                if src == -1:
+                    sides.append(rxn_i.reactants or [])
+                if dst == -1 and arch_i != FLUX_DISCRETE_CHIP:
+                    sides.append(rxn_i.products or [])
+                for side in sides:
+                    side_labels = [
+                        _strip_idx(s.label) for s in side
+                        if isinstance(s, _Polymer)
+                        and _strip_idx(s.label) not in _configured_pool_labels]
+                    if side_labels:
+                        spawned_labels.update(side_labels)
+                    else:
+                        attributable = False
+                if attributable and spawned_labels:
+                    self.reaction_refused[i] = 1
+                    self.reaction_flux_archetype[i] = FLUX_NONE
+                    spawned_refusals.append(
+                        (i, rxn_i, _arch_names[arch_i],
+                         sorted(spawned_labels)))
+                else:
+                    self.reaction_flux_archetype[i] = FLUX_UNRESOLVED
+                    n_unresolvable += 1
+                    demotion_anomalies.append((i, rxn_i, _arch_names[arch_i]))
+        if spawned_refusals:
+            self.spawned_pool_refusal_census = [
+                {"reaction": _reaction_census_label(r_rxn),
+                 "archetype": r_arch,
+                 "pools": r_pools,
+                 "reason": "conduit-deferred"}
+                for (_, r_rxn, r_arch, r_pools) in spawned_refusals]
+            logging.warning(
+                "SPAWNED-POOL DEMOTION REFUSAL: %d stamped pool-coupled "
+                "row(s) targeting unconfigured spawned pools refused "
+                "conduit-deferred instead of demoted to legacy mu1-only; "
+                "item-16 pending; archetypes=%s, pools=%s, first_rows=%s",
+                len(spawned_refusals),
+                ",".join(sorted({a for (_, _, a, _) in spawned_refusals})),
+                ",".join(sorted({lbl for (_, _, _, ls) in spawned_refusals
+                                 for lbl in ls})),
+                "; ".join("%s row %d: %s" % (
+                    "core" if r_i < len(core_reactions) else "edge",
+                    r_i, str(r_rxn))
+                    for (r_i, r_rxn, _, _) in spawned_refusals[:3]))
         if n_unresolvable:
             logging.warning(
                 "%d reactions stamped MIGRATION/SCISSION_FRAGMENT/DISCRETE_CHIP "
                 "could not resolve their solver pool(s); demoted to legacy "
                 "mu1-only moment flux (UNRESOLVED).", n_unresolvable)
+            logging.warning(
+                "CONFIGURED-POOL UNRESOLVED DEMOTION ANOMALY: %d stamped "
+                "pool-coupled row(s) had an unresolved required pool "
+                "endpoint NOT attributable to an unconfigured spawned pool "
+                "(should be impossible for configured pools; constructible "
+                "routes: non-Polymer daughter species, edge-only proxy, "
+                "duplicate core base label); legacy mu1-only demotion kept "
+                "unchanged. rows=%s",
+                len(demotion_anomalies),
+                "; ".join("%s row %d [%s]: %s" % (
+                    "core" if a_i < len(core_reactions) else "edge",
+                    a_i, a_arch, str(a_rxn))
+                    for (a_i, a_rxn, a_arch) in demotion_anomalies[:5]))
         if unstamped_live_rows:
             raise ValueError(
                 "UNSTAMPED PROXY ROW(S): %d proxy-touching reaction(s) "
