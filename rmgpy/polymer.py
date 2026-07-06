@@ -2509,6 +2509,21 @@ def _nonpolymer_product_mw_g_mol(product) -> Optional[float]:
 _VE_NET_MASS_EPS_G = 1e-6      # g/mol; |net| below this is a mass-conserving relabel
 _VE_ATOM_TRANSFER_UNITS = 0.5  # source-monomer-equivalents; below => census-only warn
 
+# r82 impostor-row refusal (FR1 run-2): a discrete (non-Polymer) participant at
+# or above this many source-monomer-equivalents on EVERY measurable axis (mass
+# AND heavy-atom count, see _discrete_is_polymer_sized) is "polymer-sized" --
+# proxy-scale, not volatile-scale. Proxy-derivation is NOT traceable at the
+# stamp/restamp seam (r82 probe 3), so the conservative monomer-scale threshold
+# form is adjudicated instead: the stitched proxy spans 3 repeat units
+# (Polymer._stitch_trimer), and the run-2 impostors (proxy minus Br2/HBr)
+# sit at 2.76-3.00 monomer-equivalents on both axes, while the largest
+# adjudicated-LIVE volatile shape (DP-2 dimer volatiles, e.g. hexene off
+# polypropylene -- pinned negative control) sits at exactly 2.0. 2.5 splits
+# the two conservatively: only clearly proxy-scale discretes are refused;
+# anything smaller stays live for the r71 unstamped-proxy hard-fail to catch
+# LOUDLY rather than being silently refused.
+_IMPOSTOR_DISCRETE_MONOMER_UNITS = 2.5
+
 
 def _net_nonpolymer_mass_g_mol(reactants, products) -> float:
     """SIGNED net non-polymer mass (g/mol) that leaves the chain in a reaction:
@@ -2912,6 +2927,23 @@ def stamp_gas_association_refusal(forward) -> None:
     meaningless BY CONSTRUCTION. See :func:`_stamp_same_proxy_refusal` for
     the three-conjunct predicate (incl. the DP-scale carve-out that keeps
     genuine same-pool depropagation/unzip/chip rows live).
+
+    THIRD refused shape (adjudicated adversarial round 82, grounded in FR1
+    run-2): IMPOSTOR row, e.g. ``BrBr + <C36-scale unsaturated discrete>
+    <=> FR1`` (XY_Addition_MultipleBond, 15 rows in run-2). Exactly one
+    side carries a Polymer participant; the other side carries NO Polymer
+    but at least one POLYMER-SIZED discrete molecule (the pool proxy minus
+    a small closed-shell partner, living in the model as an ordinary gas
+    Species). The gas partner is closed-shell, so the r63 all-gas-radicals
+    conjunct never fires -- pre-r82 these rows arrived UNSTAMPED at the
+    solver rebuild and died at the r71 unstamped-proxy hard-fail. Same
+    reference-state bridge, same contract: stamp-but-keep,
+    conduit-deferred, both written orientations. "Polymer-sized" is decided
+    by the conservative monomer-scale threshold
+    ``_IMPOSTOR_DISCRETE_MONOMER_UNITS`` (2.5 source-monomer-equivalents;
+    proxy-derivation is not traceable at this seam), which keeps DP-2 dimer
+    volatiles (e.g. hexene off polypropylene, 2.0 monomer-equivalents --
+    pinned negative control) live.
     """
     if getattr(forward, "polymer_refused", False):
         return  # already refused upstream; keep that census reason
@@ -2948,6 +2980,83 @@ def stamp_gas_association_refusal(forward) -> None:
             or (r_condensed and _all_gas_radicals(products))):
         forward.polymer_refused = True
         forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
+        return
+
+    # THIRD refused shape (adjudicated adversarial round 82, grounded in FR1
+    # run-2, /home/alon/Projects/polymer/FR1/rmg/run2/RMG.out ~line 1774):
+    # IMPOSTOR row. Exactly one side carries the Polymer participant
+    # (guaranteed here -- the both-condensed and no-condensed branches
+    # returned above); the other side carries NO Polymer but at least one
+    # POLYMER-SIZED discrete molecule (>= _IMPOSTOR_DISCRETE_MONOMER_UNITS
+    # source-monomer-equivalents) -- a proxy-scale structure living in the
+    # model as an ordinary gas Species. Run-2: XY_Addition_MultipleBond
+    # generated 15 rows ``Br/BrBr + <C36-scale unsaturated proxy-minus-XY>
+    # <=> FR1``; the gas partner is CLOSED-SHELL, so the r63
+    # all-gas-radicals conjunct never fires, and the rows arrived UNSTAMPED
+    # at the solver rebuild (r71 hard-fail killed the run). The shape is
+    # the same reference-state bridge as r63 -- a discrete gas-referenced
+    # participant with no same-mass counterparty crossing into the
+    # condensed pool -- and is refused identically: stamp-but-keep,
+    # conduit-deferred, orientation-independent by construction.
+    poly_side = polymer_p if p_condensed else polymer_r
+    discrete_side = reactants if p_condensed else products
+    for s in discrete_side:
+        if any(_discrete_is_polymer_sized(s, poly)
+               for poly in poly_side):
+            forward.polymer_refused = True
+            forward.polymer_refused_accumulating = False  # "conduit-deferred"
+            return
+
+
+def _heavy_atom_count(mol) -> int:
+    """Number of non-hydrogen atoms in ``mol`` (0 when structureless)."""
+    if mol is None:
+        return 0
+    return mol.get_num_atoms() - mol.get_num_atoms('H')
+
+
+def _discrete_is_polymer_sized(species, poly) -> bool:
+    """True when the non-``Polymer`` participant ``species`` is POLYMER-SIZED
+    relative to pool ``poly``'s monomer: at/above
+    ``_IMPOSTOR_DISCRETE_MONOMER_UNITS`` monomer-equivalents on EVERY
+    measurable axis (r82 impostor conjunct).
+
+    Two axes, both conservative-by-conjunction (a discrete is refused only
+    when every axis that CAN be measured says proxy-scale):
+
+    * mass: ``MW(species) / poly.monomer_mw_g_mol``;
+    * structure: heavy-atom count ratio vs the monomer structure. This axis
+      is what keeps a HEAVY small gas honest -- Br2 is 3.8 propene-monomer-
+      equivalents of MASS but 0.67 of heavy atoms (a diatomic is never
+      polymer-sized).
+
+    An axis whose denominator is unavailable (no monomer_mw / no monomer
+    structure on a defensive copy) defers to the other; if NO axis is
+    measurable the answer is False (never refuse blind).
+    """
+    if isinstance(species, Polymer):
+        return False
+    mol_list = getattr(species, 'molecule', None)
+    mol = mol_list[0] if mol_list else (
+        species if isinstance(species, Molecule) else None)
+    if mol is None:
+        return False
+    measured_any = False
+    # Mass axis.
+    monomer_mw = float(getattr(poly, 'monomer_mw_g_mol', 0.0) or 0.0)
+    if monomer_mw > 0.0:
+        measured_any = True
+        mw = mol.get_molecular_weight() * 1000.0
+        if mw < _IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_mw:
+            return False
+    # Structure (heavy-atom) axis.
+    monomer_heavy = _heavy_atom_count(getattr(poly, 'monomer', None))
+    if monomer_heavy > 0:
+        measured_any = True
+        if (_heavy_atom_count(mol)
+                < _IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_heavy):
+            return False
+    return measured_any
 
 
 def _polymer_participants_identical(polymer_reactants, polymer_products) -> bool:

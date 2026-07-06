@@ -4671,6 +4671,94 @@ def test_gas_association_refusal_does_not_overwrite_existing_refusal_reason():
     assert rxn.polymer_refused_accumulating is True   # reason preserved
 
 
+def test_impostor_polymer_scale_discrete_row_refused_both_orientations():
+    """r82 impostor-row refusal (FR1 run-2 forensics,
+    /home/alon/Projects/polymer/FR1/rmg/run2/RMG.out): XY_Addition-generated
+    rows shaped ``Br/BrBr + <proxy-scale unsaturated discrete> <=> FR1``
+    bridge a POLYMER-SIZED discrete molecule (the pool proxy minus a small
+    closed-shell gas partner, 2.76-3.00 monomer-equivalents in run-2) into
+    the condensed pool proxy. The gas partner is closed-shell, so the r63
+    all-gas-radicals conjunct never fires, and the 15 run-2 rows arrived
+    UNSTAMPED at the solver rebuild (r71 hard-fail). The predicate must
+    refuse the shape conduit-deferred in BOTH written orientations."""
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # Proxy-minus-H2 impostor: the stitched trimer proxy (C9H20) with one
+    # double bond -- C9H18, 126.24 g/mol = 3.0 monomer-equivalents.
+    impostor = Species(molecule=[Molecule().from_smiles("C=CCC(C)CC(C)C")])
+    br2 = Species(molecule=[Molecule().from_smiles("BrBr")])  # closed-shell
+    # Association orientation (run-2 written direction): gas + impostor -> proxy.
+    rxn = Reaction(reactants=[br2, impostor], products=[pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False   # -> "conduit-deferred"
+    # Reverse orientation (proxy -> gas + impostor) is the SAME bridge.
+    rxn_rev = Reaction(reactants=[pp], products=[br2, impostor],
+                       reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is True
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_impostor_threshold_spares_dp2_volatile_and_gas_only_rows():
+    """Negative controls for the r82 impostor conjunct (pinned):
+
+    (a) threshold boundary: a DP-2 dimer volatile (hexene off polypropylene,
+        exactly 2.0 monomer-equivalents -- the largest adjudicated-LIVE
+        volatile scale, see
+        test_gas_association_refusal_leaves_abstraction_and_scission_alone)
+        on the polymer-free side is NOT polymer-sized;
+    (b) ordinary gas-only XY_Addition_MultipleBond chemistry (no condensed
+        participant on either side) is untouched regardless of size."""
+    from rmgpy.polymer import Polymer, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    hexene = Species(molecule=[Molecule().from_smiles("C=CCCCC")])
+    br2 = Species(molecule=[Molecule().from_smiles("BrBr")])
+    # (a) 2.0 monomer-equivalents: below the 2.5 polymer-sized threshold.
+    rxn = Reaction(reactants=[br2, hexene], products=[pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+    assert rxn.polymer_refused_accumulating is False
+    # (b) gas-only XY addition: Br2 + hexene -> 1,2-dibromohexane.
+    dibromide = Species(molecule=[Molecule().from_smiles("CCCCC(Br)CBr")])
+    gas_only = Reaction(reactants=[br2, hexene], products=[dibromide],
+                        reversible=True)
+    stamp_gas_association_refusal(gas_only)
+    assert gas_only.polymer_refused is False
+    assert gas_only.polymer_refused_accumulating is False
+
+
+def test_impostor_refusal_leaves_feature_pool_abstraction_alone():
+    """Negative control (pinned): H/Br abstraction feature-pool rows carry a
+    Polymer participant on BOTH sides (chain + Br. -> FEATURE daughter + HBr),
+    so they route through the r74 same-proxy branch and keep their existing
+    adjudication -- the r82 impostor conjunct (one-side-polymer only) must
+    never see them."""
+    from rmgpy.polymer import Polymer, PolymerClass, stamp_gas_association_refusal
+    from rmgpy.species import Species
+    from rmgpy.molecule import Molecule
+    from rmgpy.reaction import Reaction
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    daughter = pp.copy()
+    daughter._reacted_class = PolymerClass.FEATURE
+    br = Species(molecule=[Molecule().from_smiles("[Br]")])
+    hbr = Species(molecule=[Molecule().from_smiles("Br")])
+    habs = Reaction(reactants=[pp, br], products=[daughter, hbr],
+                    reversible=True)
+    stamp_gas_association_refusal(habs)
+    assert habs.polymer_refused is False
+    assert habs.polymer_refused_accumulating is False
+
+
 def _build_compile_inputs(moles, initial_mass=1.0, Mn=5000.0, Mw=6000.0,
                           label="PS", monomer="[CH2][CH]c1ccccc1"):
     """Build the (blueprint, initial_moles, species_dict) triple that

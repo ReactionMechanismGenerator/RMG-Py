@@ -9446,6 +9446,196 @@ class TestSameProxyRefusalFluxDead:
         self._with_db(body)
 
 
+class TestImpostorRowRefusalFluxDead:
+    """r82 adjudication (FR1 run-2 impostor rows, forensics
+    /home/alon/Projects/polymer/FR1/rmg/run2/RMG.out ~line 1774): 15
+    XY_Addition_MultipleBond rows shaped
+    ``Br/BrBr + <C36-scale unsaturated discrete> <=> FR1`` bridge a
+    POLYMER-SIZED discrete molecule (the pool proxy minus a small
+    closed-shell gas partner) into the condensed proxy. The gas partner is
+    closed-shell, so the r63 all-gas-radicals conjunct never fires; the
+    rows arrived at the solver rebuild UNSTAMPED and killed the run at the
+    r71 unstamped-proxy hard-fail. The r82 impostor refusal must ride the
+    FULL r71 refusal contract: stamped at generation, re-derived at the
+    rebuild restamp regardless of upstream stamp loss, zero core RHS flux,
+    zero edge enlargement inputs, conduit-deferred census reason.
+
+    RED-FIRST: pre-fix (3521caead) the fixture row is NOT refused at
+    generation and ``initialize_model`` raises the r71
+    ``UNSTAMPED PROXY ROW(S)`` ValueError -- the exact run-2 death."""
+
+    @staticmethod
+    def _impostor_fixture():
+        """Run-2-shaped impostor row built through the REAL generation route
+        (make_new_reaction + species_dict isomorphism fold-back onto the
+        registered pool): H2 + <proxy-with-one-double-bond> <=> polypropylene.
+        The unsaturated C9H18 discrete (126.24 g/mol = 3.0
+        monomer-equivalents) is the proxy-minus-H2 impostor, mirroring
+        run-2's proxy-minus-Br2/HBr molecules at 2.76-3.00
+        monomer-equivalents."""
+        from rmgpy.data.kinetics import TemplateReaction
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer import Polymer
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+
+        cerm = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        cerm._register_polymer(pp, generate_thermo=False)
+        forward = TemplateReaction(
+            reactants=[Molecule().from_smiles('[H][H]'),
+                       Molecule().from_smiles('C=CCC(C)CC(C)C')],
+            products=[Molecule().from_smiles('CCCC(C)CC(C)C')],
+            family='XY_Addition_MultipleBond', is_forward=True,
+            reversible=True,
+            kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
+                               Ea=(0.0, 'kJ/mol')))
+        out, is_new = cerm.make_new_reaction(
+            forward, check_existing=False, generate_thermo=False,
+            generate_kinetics=False)
+        assert out is not None and is_new
+        # LIVENESS: the run-2 impostor mechanism itself -- the saturated
+        # addition product resolved onto the registered pool Polymer via
+        # species_dict isomorphism, while the unsaturated impostor stayed a
+        # discrete gas Species.
+        polymer_p = [s for s in out.products if isinstance(s, Polymer)]
+        assert polymer_p and polymer_p[0] is pp, (
+            "FIXTURE BROKEN: addition product did not fold onto the pool")
+        assert not any(isinstance(s, Polymer) for s in out.reactants), (
+            "FIXTURE BROKEN: impostor side must carry no Polymer")
+        gas_spc = next(s for s in out.reactants
+                       if s.molecule[0].get_formula() == 'H2')
+        imp_spc = next(s for s in out.reactants
+                       if s.molecule[0].get_formula() == 'C9H18')
+
+        cerm.add_species_to_edge(pp)
+        cerm.add_species_to_core(pp)      # brings the mu dummies along
+        cerm.add_species_to_core(gas_spc)
+        cerm.add_species_to_core(imp_spc)
+        core_species = list(cerm.core.species)
+        for s in core_species:
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        # The reversible row's Keq needs the pool's proxy thermo resolvable
+        # without a thermo database.
+        pp.baseline_proxy.thermo = _trivial_nasa(_GAV_COMMENT)
+        idx = {s.label: i for i, s in enumerate(core_species)}
+        mask = np.ones(len(core_species), dtype=bool)
+        for lbl in ('polypropylene', 'polypropylene_mu0',
+                    'polypropylene_mu1', 'polypropylene_mu2'):
+            mask[idx[lbl]] = False
+        pool = PolymerPoolConfig(
+            label='polypropylene', xs=2, explicit_dp_to_species_index={},
+            mu_indices=(idx['polypropylene_mu0'], idx['polypropylene_mu1'],
+                        idx['polypropylene_mu2']),
+            monomer_poly_index=None, monomer_mw_g_mol=42.08,
+            k_scission=0.0, k_unzip=0.0)
+        return out, gas_spc, core_species, mask, pool
+
+    def _build_rs(self, out, gas_spc, core_species, mask, pool,
+                  core_rxns, edge_rxns):
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={gas_spc: 0.0},
+            V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={pool.label: (1.0, 50.0, 3000.0)},
+            termination=[], allow_default_prospective_edge=True)
+        # The adjudicated run-2 arrival state (r71, binding): by rebuild
+        # time the row can arrive UNSTAMPED (stamps are ad-hoc attributes,
+        # losable across canonical dedup / __reduce__) -- the rebuild
+        # restamp must re-derive the refusal regardless.
+        out.polymer_refused = False
+        out.polymer_refused_accumulating = False
+        rs.initialize_model(core_species, core_rxns, [], edge_rxns)
+        return rs
+
+    def _with_db(self, body):
+        import rmgpy.data.rmg as rmg_data
+        from rmgpy.data.base import ForbiddenStructures
+        from rmgpy.data.rmg import RMGDatabase
+
+        old_db = rmg_data.database
+        db = RMGDatabase()
+        db.forbidden_structures = ForbiddenStructures()
+        rmg_data.database = db
+        try:
+            return body()
+        finally:
+            rmg_data.database = old_db
+
+    def test_red_impostor_row_refused_at_generation(self):
+        """RED (generation half): make_new_reaction must stamp the impostor
+        row refused conduit-deferred at classification time. Pre-fix
+        (3521caead): no classifier sees the shape (the gas partner is
+        closed-shell, so the r63 conjunct passes it) and polymer_refused
+        stays False -- run-2's 15 rows entered the model live."""
+        def body():
+            out, _, _, _, _ = self._impostor_fixture()
+            assert getattr(out, 'polymer_refused', False) is True, (
+                "impostor row not refused at generation -- the run-2 shape "
+                "enters the model unadjudicated")
+            assert getattr(out, 'polymer_refused_accumulating', True) is False
+        self._with_db(body)
+
+    def test_red_impostor_core_row_restamped_refused_and_rhs_dead(self):
+        """RED (rebuild restamp + core RHS): the rebuild restamp must
+        re-derive the impostor refusal on an UNSTAMPED-arriving core row,
+        and the refused row must apply ZERO RHS flux. Pre-fix (3521caead):
+        initialize_model raises the r71 ``UNSTAMPED PROXY ROW(S)``
+        ValueError -- the exact FR1 run-2 death at RMG.out ~line 1774."""
+        def body():
+            import rmgpy.solver.polymer as solver_mod
+            out, gas_spc, core_species, mask, pool = self._impostor_fixture()
+            rs = self._build_rs(out, gas_spc, core_species, mask, pool,
+                                [out], [])
+            # LIVENESS PIN -- BEFORE the red asserts: the row genuinely
+            # carries a forward rate coefficient, so the zeros below cannot
+            # mean "fixture dead".
+            assert rs.kf[0] > 0.0, (
+                "FIXTURE BROKEN, not a valid red: the impostor row carries "
+                "no forward rate coefficient at all")
+            # THE red asserts (r82 riding r71 FIX 2 + item-18 flux gate):
+            assert getattr(out, 'polymer_refused', False) is True, (
+                "rebuild restamp did not re-derive the impostor refusal "
+                "(the run-2 arrival state runs live)")
+            assert rs.reaction_refused[0] == 1, (
+                "reaction_refused missed the impostor core row")
+            assert rs.reaction_flux_archetype[0] == solver_mod.FLUX_NONE, (
+                "refused impostor row was demoted onto the legacy "
+                "mu1-only path")
+            assert any(c['reason'] == 'conduit-deferred'
+                       for c in rs.refused_reaction_census)
+            dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+            assert np.all(dn == 0.0), (
+                "impostor-refused core row applied nonzero RHS flux")
+        self._with_db(body)
+
+    def test_red_impostor_edge_row_flux_dead_for_enlargement(self):
+        """RED (edge half, r71 FIX 3 inheritance): the impostor refusal must
+        zero the refused EDGE row's enlargement inputs
+        (edge_reaction_rates); only the ungated per-reaction counterfactual
+        survives (diagnostic, never flux). Pre-fix (3521caead):
+        initialize_model raises the r71 hard-fail on the unstamped edge row
+        (run-2's rows were edge rows 53-67)."""
+        def body():
+            out, gas_spc, core_species, mask, pool = self._impostor_fixture()
+            rs = self._build_rs(out, gas_spc, core_species, mask, pool,
+                                [], [out])
+            rs.residual(0.0, rs.y, np.zeros_like(rs.y))
+            # LIVENESS PIN -- BEFORE the red asserts: the row genuinely
+            # carries flux; the ungated counterfactual sees it, so the zero
+            # below cannot mean "fixture dead".
+            assert rs.edge_reaction_rates_ungated[0] != 0.0, (
+                "FIXTURE BROKEN, not a valid red: the impostor edge row "
+                "carries no flux at all")
+            # THE red asserts:
+            assert rs.reaction_refused[0] == 1, (
+                "restamp missed the impostor EDGE row")
+            assert rs.edge_reaction_rates[0] == 0.0, (
+                "impostor-refused edge row leaked into edge_reaction_rates "
+                "(the enlargement input)")
+        self._with_db(body)
+
+
 class TestSpawnGateDefectAwareMass:
     """FR1-K2 mass-consumer audit (round-72 P2): the spawn-gate snapshot's
     per-chain event mass must use the EXACT condensed mass

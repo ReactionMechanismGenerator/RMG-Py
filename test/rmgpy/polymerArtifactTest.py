@@ -1090,6 +1090,35 @@ class TestRefusedRowSerialization:
         assert e["refused_reason"] == "conduit-deferred"
         assert e["proxy_products"] == ["polypropylene(2)"]
 
+    def test_impostor_refused_row_round_trips_conduit_deferred(self):
+        """r82 impostor-row refusal (FR1 run-2): a run-2-shaped row (small
+        closed-shell gas + polymer-sized discrete <=> condensed pool proxy)
+        stamped by ``stamp_gas_association_refusal`` round-trips the sidecar
+        with the same shipped schema-2.4 vocabulary as the r63/r74 shapes:
+        ``refused: true`` + ``refused_reason: "conduit-deferred"``. RED at
+        3521caead: the impostor conjunct does not exist, the row is never
+        stamped, and the sidecar carries no refused keys."""
+        from rmgpy.polymer import stamp_gas_association_refusal
+        pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        pp.index = 2
+        br2 = _spc("BrBr", "Br2", index=4)                    # closed-shell
+        impostor = _spc("C=CCC(C)CC(C)C", "C9H18", index=5)   # 3.0 mono-eq
+        core = [pp, br2, impostor]
+        rxn = Reaction(reactants=[br2, impostor], products=[pp],
+                       kinetics=_arrhenius(A=(3.0, "m^3/(mol*s)")),
+                       reversible=True)
+        stamp_gas_association_refusal(rxn)
+        assert rxn.polymer_refused is True   # classifier fired (RED half)
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["polypropylene"],
+            cantera_index_map={id(rxn): [0]})
+        assert len(entries) == 1   # stamp-but-keep: the row stays listed
+        e = entries[0]
+        assert e["refused"] is True
+        assert e["refused_reason"] == "conduit-deferred"
+        assert e["proxy_products"] == ["polypropylene(2)"]
+
     def test_non_refused_rows_carry_no_refused_keys(self):
         """Non-refused rows: NO new key — absent, not false (byte-identical
         pin; TA-side loaders treat key PRESENCE as the 2.4 vocabulary)."""
