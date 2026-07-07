@@ -1297,6 +1297,36 @@ multiplicity 2
         groups["NX"].data = _nstardata
         groups["OX"].data = _ostardata
 
+    def test_binding_energy_correction_with_van_der_waals_bond(self):
+        """Binding energy correction must handle van der Waals (order 0) bonds.
+
+        Regression test for issue #2987: a species with a surface site attached
+        by a van der Waals bond (e.g. the Surface_Dissociation_vdWBidentate_Beta
+        product [Pt]~[O]=C[O][Pt]) 
+
+        X..O=CH-O-X
+        """
+        spec = Species(
+            molecule=[
+                Molecule().from_adjacency_list(
+                    """
+1 X u0 p0 c0 {2,vdW}
+2 O u0 p2 c0 {1,vdW} {3,D}
+3 C u0 p0 c0 {2,D} {4,S} {5,S}
+4 O u0 p2 c0 {3,S} {6,S}
+5 H u0 p0 c0 {3,S}
+6 X u0 p0 c0 {4,S}
+"""
+                )
+            ]
+        )
+        spec.generate_resonance_structures()
+        thermo = self.database.get_thermo_data(spec)
+        corrected = self.database.correct_binding_energy(
+            thermo, spec, metal_to_scale_from="Pt111", metal_to_scale_to="Ni111"
+        )
+        assert "Binding energy corrected by LSR" in corrected.comment
+
     def test_adsorbate_thermo_generation_bidentate_weird_CO(self):
         """Test thermo generation for a bidentate adsorbate weird resonance of CO
 
