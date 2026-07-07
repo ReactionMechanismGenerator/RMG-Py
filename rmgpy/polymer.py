@@ -3112,14 +3112,15 @@ def stamp_gas_association_refusal(forward, pool_registry=None) -> None:
     de-aromatized defect states, neither pool-representable nor genuinely
     gas -- run-3's (110)-(119) cohort, C36H32Br19O3 = proxy + 2 Br).
 
-    * Shape A (:func:`_stamp_chain_scale_defect_refusal`): UNEQUAL-count
-      same-pool fold-back, ``adduct + pool <=> pool + pool`` -- run-3
-      serialized 20 such rows LIVE as ``same_pool/1`` (the [pool] vs
-      [pool, pool] participant-count step escapes both r74's
-      identical-pairing conjunct and the classifier's discrete-VE reroute,
-      which requires exactly one polymer product), so SAME_POOL's zero
-      moment change fabricated/annihilated the whole adduct mass
-      (element-unbalanced by 2 Br).
+    * Shape A (UNEQUAL-count same-pool fold-back,
+      ``adduct + pool <=> pool + pool`` -- run-3 serialized 20 such rows LIVE
+      as ``same_pool/1``, the [pool] vs [pool, pool] participant-count step
+      that escaped both r74's identical-pairing conjunct and the
+      classifier's discrete-VE reroute, so SAME_POOL's zero moment change
+      fabricated/annihilated the whole adduct mass, element-unbalanced by 2
+      Br) is now refused by the r93 general branch above -- the former
+      ``_stamp_chain_scale_defect_refusal`` is REMOVED as dead code
+      (adjudicated round 93; see the general-branch comment).
     * Shape B (:func:`_stamp_reference_state_split_refusal`): the
       discrete<=>discrete isomerization between such adducts that SPLITS
       the reference-state classification (run-3 ``(117) <=> (111)``, one
@@ -3143,17 +3144,50 @@ def stamp_gas_association_refusal(forward, pool_registry=None) -> None:
     polymer_p = [s for s in products if isinstance(s, Polymer)]
     r_condensed = bool(polymer_r)
     p_condensed = bool(polymer_p)
+    # r93 GENERAL branch (adjudicated adversarial round 93, grounded in FR1
+    # run-5 shape D, /home/alon/Projects/polymer/FR1/rmg/run5): a CLASS-level
+    # conjunct that SUBSUMES the enumerated r87 shape-A/C/D bridges, which
+    # generation depth kept out-running one row-shape at a time (Codex r93:
+    # "shape enumeration loses to generation depth"). Refuse (stamp-but-keep,
+    # conduit-deferred) ANY stampable row where BOTH:
+    #   (i)  at least one participant is a chain-scale proxy-derived discrete
+    #        (:func:`_discrete_is_chain_scale_proxy_derived`) that is NOT
+    #        itself resolvable to pool state
+    #        (:func:`_discrete_resolves_to_pool_state`), AND
+    #   (ii) any Polymer/pool participant co-occurs anywhere in the row.
+    # Orientation/side/label-set/count independent. Run-5's
+    # ``FR1(1) + FR1_sidegrp(4) <=> (5) + FR1(1)`` (a vetoed chain-scale
+    # discrete (5), 1871 g/mol / ~2.9 dual-axis units; U = 13.05 decades at
+    # the reference-state tripwire, RMG.out) escaped r87 shape A: its
+    # two-pool-vs-one-pool participant-count step trips shape A's equal-count
+    # fold-back conjunct (read as cross-pool routing) AND the r74 same-proxy
+    # identical-pairing conjunct, so (5) reached the tripwire unrefused. The
+    # size axis for conjunct (i) is measured against the row's OWN Polymer
+    # participants (exactly as r87 shape A did), so no ``pool_registry`` is
+    # needed here; shape B below stays SEPARATE (a no-Polymer-participant row
+    # fails conjunct (ii) by construction, and its monomer scale comes from
+    # ``pool_registry``, not the row).
+    row_pools = polymer_r + polymer_p
+    if row_pools and any(
+            _discrete_is_chain_scale_proxy_derived(s, row_pools)
+            and not _discrete_resolves_to_pool_state(s, row_pools)
+            for s in list(reactants) + list(products)):
+        forward.polymer_refused = True
+        forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
+        _warn_general_chain_scale_pool_coupling(
+            _reaction_census_label(forward))
+        return
     if r_condensed and p_condensed:
         # condensed on BOTH sides: ordinarily routing chemistry, EXCEPT the
-        # r74 same-proxy degenerate shape (run-5 H fountain) and the r87
-        # unequal-count same-pool fold-back coupling a chain-scale
-        # proxy-derived discrete adduct (FR1 run-3; checked second so an
-        # r74 stamp -- same census reason -- is never re-derived).
+        # r74 same-proxy degenerate shape (run-5 H fountain). The r87 shape-A
+        # unequal-count same-pool fold-back branch (formerly
+        # ``_stamp_chain_scale_defect_refusal``) is DEAD under the r93 general
+        # conjunct above -- every row it refused carries a chain-scale
+        # proxy-derived discrete AND a Polymer participant, so the general
+        # branch refuses it first -- and has been removed; its tests are kept
+        # as pins of the general branch.
         _stamp_same_proxy_refusal(forward, reactants, products,
                                   polymer_r, polymer_p)
-        if not getattr(forward, "polymer_refused", False):
-            _stamp_chain_scale_defect_refusal(forward, reactants, products,
-                                              polymer_r, polymer_p)
         return
     if not r_condensed and not p_condensed:
         # no condensed participant at all: ordinary gas chemistry, EXCEPT
@@ -3326,41 +3360,48 @@ def _discrete_is_chain_scale_proxy_derived(species, pools) -> bool:
     return any(_discrete_is_polymer_sized(species, poly) for poly in pools)
 
 
-def _stamp_chain_scale_defect_refusal(forward, reactants, products,
-                                      polymer_r, polymer_p) -> None:
-    """r87 shape A (FR1 run-3): refuse (stamp-but-keep, census reason
-    "conduit-deferred") the UNEQUAL-count same-pool fold-back coupling a
-    chain-scale proxy-derived discrete adduct to pool state, e.g. run-3's
-    20 live ``same_pool/1`` Disproportionation-Y rows
-    ``adduct + pool <=> pool + pool`` (element-unbalanced by 2 Br). All
-    conjuncts required -- dropping any one keeps the row LIVE (pinned):
+def _discrete_resolves_to_pool_state(species, pools) -> bool:
+    """r93 general-branch guard: True when the non-``Polymer`` ``species`` is
+    DIRECTLY resolvable to a registered pool's state -- it is isomorphic to
+    some pool's reactive proxy representation, so it IS a representable pool
+    member (a pool proxy appearing loose as a discrete Species) rather than an
+    unrepresented chain-scale defect. The general branch SPARES such a species
+    (refusing a pool's own proxy would be over-refusal). A de-aromatized
+    Br-addition adduct / gas-vetoed radical (run-5's (5), the run-3 cohort's
+    element-unbalanced +2 Br adducts) is NOT isomorphic to any pool proxy and
+    is therefore NOT resolvable -- it is refused. Conservative toward LIVE:
+    only an exact proxy image is spared; anything the wing-matcher cannot map
+    onto a pool proxy is treated as an unrepresented discrete."""
+    if isinstance(species, Polymer):
+        return True
+    for poly in pools:
+        try:
+            if poly.is_isomorphic(species):
+                return True
+        except (ValueError, AttributeError):
+            continue
+    return False
 
-    1. every Polymer participant folds back (reactant and product pool
-       label SETS equal -- label-changing rows are MIGRATION's routing
-       business);
-    2. Polymer participant COUNTS differ between the sides (the [pool] vs
-       [pool, pool] step that escaped r74's identical-pairing conjunct and
-       that the classifier's SAME_POOL/VE fork cannot represent: SAME_POOL
-       applies zero moment change, and the discrete-VE reroute requires
-       exactly one polymer product -- equal-count fold-backs are the
-       legitimate VE/deprop/chip shapes and stay live);
-    3. some discrete participant on either side is chain-scale
-       proxy-derived against a pool of THIS row
-       (:func:`_discrete_is_chain_scale_proxy_derived`).
 
-    Orientation-independent by construction (both written orientations
-    present the same label sets, count asymmetry and participants)."""
-    if ({getattr(p, 'label', None) for p in polymer_r}
-            != {getattr(p, 'label', None) for p in polymer_p}):
-        return  # cross-pool routing chemistry
-    if len(polymer_r) == len(polymer_p):
-        return  # equal-count fold-back: representable VE/deprop/chip shapes
-    pools = polymer_r + polymer_p
-    for s in list(reactants) + list(products):
-        if _discrete_is_chain_scale_proxy_derived(s, pools):
-            forward.polymer_refused = True
-            forward.polymer_refused_accumulating = False  # "conduit-deferred"
-            return
+_general_chain_scale_pool_warned = set()
+
+
+def _warn_general_chain_scale_pool_coupling(reaction_label: str) -> None:
+    """Log each distinct r93 general-branch refusal once (correct-but-loud,
+    mirroring the other refusal censuses). Names the branch so a refused row
+    is attributable to the CLASS-level conjunct rather than an enumerated r87
+    shape: the fixed reason detail is "chain-scale-discrete/pool coupling
+    (general)"."""
+    if reaction_label in _general_chain_scale_pool_warned:
+        return
+    _general_chain_scale_pool_warned.add(reaction_label)
+    logging.warning(
+        "POLYMER REFUSAL CENSUS (r93 general branch): %s -- refused "
+        "conduit-deferred: chain-scale-discrete/pool coupling (general). A "
+        "chain-scale proxy-derived discrete not resolvable to pool state "
+        "co-occurs with a polymer pool participant; the whole-row flux is "
+        "zeroed (stamp-but-keep) pending the moment-credit conduit.",
+        reaction_label)
 
 
 def _stamp_reference_state_split_refusal(forward, reactants, products,

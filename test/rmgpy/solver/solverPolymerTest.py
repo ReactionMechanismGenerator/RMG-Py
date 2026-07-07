@@ -4914,6 +4914,119 @@ class TestThermoReferenceStateTripwire:
         assert not any(c["reason"] == "conduit-deferred"
                        for c in rs.refused_reaction_census)
 
+    @staticmethod
+    def _two_pool_shape_d_fixture():
+        """r93 shape-D fixture (FR1 run-5 ``FR1 + FR1_sidegrp <=> (5) + FR1``,
+        U = 13.05, RMG.out): a real PP-scale Polymer pool A in core (the
+        restamp's pool registry is collected from the SPECIES lists, so the
+        general branch sees a real Polymer participant) plus a second
+        chain-scale melt participant B (mask-False, the FR1_sidegrp stand-in)
+        and a chain-scale proxy-derived GAS-VETOED discrete D5 (the (5)
+        stand-in, 286.05 g/mol, 11 heavy = 3.7 monomer-equivalents). D5 is
+        gas-vetoed, so it is EXCLUDED from the melt sum -- the two-melt-vs-one
+        imbalance (B unpaired) is what the tripwire scores, exactly run-5."""
+        from rmgpy.polymer import Polymer, set_polymer_gas_veto
+        pool = Polymer(label="A", monomer="[CH2][CH]C",
+                       Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        sp = {
+            "A": pool,
+            "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
+            "A_mu2": _spc("C#N", "A_mu2"),
+            # B: chain-scale melt participant (mask-False), the second pool
+            # of the two-pool abstraction; distinct MW so it is UNPAIRED.
+            "B": _spc("CC(C)CC(C)CC(C)CC(C)C", "B"),
+            "D5": _spc("CC(CBr)CC(C)CC(C)Br", "D5"),
+        }
+        sp["D5"].is_polymer_proxy = True
+        set_polymer_gas_veto(sp["D5"])
+        for s in sp.values():
+            s.thermo = _trivial_nasa(_GAV_COMMENT)
+        # The refused row still has its Keq computed by generate_rate_coefficients
+        # (refusal only zeroes flux), so the pool proxy needs usable thermo.
+        pool.get_proxy_species().thermo = _trivial_nasa(_GAV_COMMENT)
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"],
+                sp["B"], sp["D5"]]
+        # A, A_mu*, B are condensed/melt (mask False); D5 is gas (mask True).
+        mask = np.array([False] * 5 + [True], dtype=bool)
+        return sp, core, mask
+
+    def test_two_pool_shape_d_row_refused_at_restamp(self, caplog):
+        """r93 RED matrix #1 (FR1 run-5 shape D, RED-first, LIVE path): the
+        two-pool abstraction ``A + B <=> D5 + A`` (D5 a vetoed chain-scale
+        proxy-derived discrete) arrives UNSTAMPED at initialize_model and must
+        be refused (conduit-deferred) by the r71 rebuild restamp BEFORE the
+        thermo reference-state tripwire scans core rows, so the build COMPLETES
+        with the row quarantined instead of dying on the cliff-sign ValueError.
+
+        RED at f271af2ce: r74 same-proxy carves the row out (net gas mass
+        change >= 0.5 monomer) and r87 shape A skips it (equal 1v1 pool count),
+        so the live row reaches the tripwire and initialize_model raises with
+        U = Sackur-Tetrode(B) unpaired.
+
+        Census pin (run-5 'gas-veto census unchanged'): the vetoed chain-scale
+        discrete still surfaces through the THERMO REFERENCE-STATE GAS VETO
+        warning -- refusal must not eat it."""
+        import logging as _logging
+        sp, core, mask = self._two_pool_shape_d_fixture()
+        rxn = Reaction(reactants=[sp["A"], sp["B"]],
+                       products=[sp["D5"], sp["A"]], **_REV_KIN)
+
+        # LIVENESS PIN -- BEFORE the red assertion: the unpaired melt
+        # participant B genuinely carries chain-scale unpaired U above the
+        # 3.0-decade refuse bound (independently recomputed). A failure HERE
+        # means the fixture is dead, not a valid red.
+        assert rxn.reversible
+        mw_b = sp["B"].molecule[0].get_molecular_weight()
+        u_expected = (_sackur_tetrode_decades(mw_b, 800.0)
+                      + math.log10(1.0e5 / (constants.R * 800.0 * 1.0)))
+        assert u_expected > 3.0, (
+            "FIXTURE BROKEN, not a valid red: independently recomputed U "
+            f"({u_expected:.2f}) is not above the refuse bound"
+        )
+        assert not getattr(rxn, "polymer_refused", False)
+
+        # THE red assertion: pre-change the unstamped shape-D row reaches the
+        # tripwire and initialize_model raises; post-change the restamp
+        # refuses it first and the build completes.
+        with caplog.at_level(_logging.WARNING):
+            rs = _refstate_rs(core, [rxn], mask,
+                              [_gate_pool_config(monomer_mw_g_mol=42.08,
+                                                 monomer_heavy_atoms=3)],
+                              {"A": (1.0, 5.0, 30.0)})
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False  # conduit-deferred
+        assert any(c["reason"] == "conduit-deferred"
+                   for c in rs.refused_reaction_census)
+        # Gas-veto census unchanged: the vetoed chain-scale discrete is still
+        # announced (run-5 RMG.out gas-veto census posture).
+        assert any("THERMO REFERENCE-STATE GAS VETO" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_two_pool_shape_d_row_unrefused_still_trips(self):
+        """r93 RED matrix #1 pin-pair second half: the SAME shape-D row, if the
+        restamp is prevented from seeing a Polymer participant (both melt
+        participants plain gas-referenced Species, no pool object in the row),
+        still trips the tripwire -- the build's refusal is via the general
+        branch's Polymer-participant conjunct ONLY, no other relaxation."""
+        sp, core, mask = self._two_pool_shape_d_fixture()
+        # Swap the Polymer pool A OUT of the row for a plain melt Species with
+        # the same reference state, so conjunct (ii) (a Polymer participant)
+        # fails and the general branch cannot fire -- the row stays live and
+        # the unpaired melt term still trips the tripwire.
+        a_plain = _spc("CC(C)CC(C)CC(C)C", "A_plain")
+        a_plain.thermo = _trivial_nasa(_GAV_COMMENT)
+        core2 = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"],
+                 sp["B"], sp["D5"], a_plain]
+        mask2 = np.array([False] * 5 + [True, False], dtype=bool)
+        rxn = Reaction(reactants=[a_plain, sp["B"]],
+                       products=[sp["D5"], a_plain], **_REV_KIN)
+        assert not getattr(rxn, "polymer_refused", False)
+        with pytest.raises(ValueError, match="unpaired reference-state"):
+            _refstate_rs(core2, [rxn], mask2,
+                         [_gate_pool_config(monomer_mw_g_mol=42.08,
+                                            monomer_heavy_atoms=3)],
+                         {"A": (1.0, 5.0, 30.0)})
+
     def test_mixed_provenance_chain_counterparty_warns(self, caplog):
         """Spec §8.4: one melt-class species takes library thermo while its
         chain-scale counterparty takes GAV -> the mixed-provenance warning

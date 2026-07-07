@@ -5038,31 +5038,39 @@ def test_chain_scale_proxy_derived_adduct_same_pool_row_refused_both_orientation
 
 
 def test_chain_scale_defect_refusal_negative_controls_stay_live():
-    """r87 negative controls (pinned): the new conjunct is a tight AND --
-    dropping ANY conjunct must keep the row LIVE.
+    """r87/r93 conjunct pins for the general branch (formerly shape-A's
+    negative controls). The RETAINED conjuncts of
+    :func:`_discrete_is_chain_scale_proxy_derived` (evidence + dual-axis size)
+    still keep a row LIVE when either fails:
 
     (a) no proxy-derivation evidence (untagged, unvetoed) chain-scale
         discrete in the same shape: live (evidence conjunct);
     (b) proxy-tagged but sub-polymer-sized volatile (hexene, 2.0
         monomer-equivalents) in the same shape: live (size conjunct;
-        'otherwise this fix becomes the next over-refusal bug');
-    (c) EQUAL-count same-pool fold-back carrying the same chain-scale
-        tagged adduct on both sides: live (participant-count conjunct --
-        legitimate VE/deprop/chip fold-backs are 1v1);
-    (d) cross-pool (label-changing) shape with the adduct: live (fold-back
-        conjunct -- routing chemistry is MIGRATION's business)."""
+        'otherwise this fix becomes the next over-refusal bug').
+
+    r93 (adjudicated round 93) REMOVED shape-A's participant-count and
+    fold-back conjuncts -- the general branch is side/count independent -- so
+    the former (c)/(d) LIVE controls now REFUSE by the general branch and are
+    re-purposed here as pins of that behavior:
+
+    (c) equal-count same-pool fold-back with the chain-scale tagged adduct on
+        both sides: REFUSED (a chain-scale proxy-derived discrete not
+        resolvable to pool co-occurs with a pool -- count-independent);
+    (d) cross-pool (label-changing) shape with the adduct: REFUSED (this is
+        exactly the run-5 shape-D class the general branch targets)."""
     from rmgpy.molecule import Molecule
     from rmgpy.polymer import stamp_gas_association_refusal
     from rmgpy.reaction import Reaction
     from rmgpy.species import Species
 
-    # (a) evidence conjunct.
+    # (a) evidence conjunct (retained): live.
     pp, adduct = _chain_scale_adduct_fixture()
     rxn = Reaction(reactants=[adduct, pp], products=[pp, pp], reversible=True)
     stamp_gas_association_refusal(rxn)
     assert rxn.polymer_refused is False
 
-    # (b) size conjunct: hexene = 2.0 monomer-equivalents < 2.5 threshold.
+    # (b) size conjunct (retained): hexene = 2.0 monomer-equivalents < 2.5.
     pp_b, _ = _chain_scale_adduct_fixture()
     hexene = Species(molecule=[Molecule().from_smiles("C=CCCCC")])
     hexene.is_polymer_proxy = True   # blanket-tag (family.py posture)
@@ -5071,16 +5079,19 @@ def test_chain_scale_defect_refusal_negative_controls_stay_live():
     stamp_gas_association_refusal(rxn_b)
     assert rxn_b.polymer_refused is False
 
-    # (c) participant-count conjunct: equal-count fold-back stays live even
-    # with the chain-scale tagged adduct present on both sides.
+    # (c) r93 count-independence: equal-count fold-back with the chain-scale
+    # tagged adduct present now REFUSES (was shape-A's participant-count LIVE
+    # control).
     pp_c, adduct_c = _chain_scale_adduct_fixture()
     adduct_c.is_polymer_proxy = True
     rxn_c = Reaction(reactants=[adduct_c, pp_c], products=[pp_c, adduct_c],
                      reversible=True)
     stamp_gas_association_refusal(rxn_c)
-    assert rxn_c.polymer_refused is False
+    assert rxn_c.polymer_refused is True
+    assert rxn_c.polymer_refused_accumulating is False
 
-    # (d) fold-back conjunct: pool label changes across the row.
+    # (d) r93 side-independence: cross-pool (label-changing) shape now REFUSES
+    # (was shape-A's fold-back LIVE control; it is the run-5 shape-D class).
     pp_d, adduct_d = _chain_scale_adduct_fixture()
     adduct_d.is_polymer_proxy = True
     other = Polymer(label="polypropylene_tail", monomer="[CH2][CH]C",
@@ -5088,7 +5099,8 @@ def test_chain_scale_defect_refusal_negative_controls_stay_live():
     rxn_d = Reaction(reactants=[adduct_d, pp_d], products=[pp_d, other],
                      reversible=True)
     stamp_gas_association_refusal(rxn_d)
-    assert rxn_d.polymer_refused is False
+    assert rxn_d.polymer_refused is True
+    assert rxn_d.polymer_refused_accumulating is False
 
 
 def test_chain_scale_classifier_spares_declared_volatiles():
@@ -5212,6 +5224,196 @@ def test_split_refusal_mirror_excludes_dp2_volatile_from_melt_multiset():
         ", r89) -- a window-based mirror refuses a row the tripwire keeps, "
         "drifting the refused/live sets"
     )
+
+
+# ---------------------------------------------------------------------------
+# r93 GENERAL branch (adjudicated adversarial round 93, grounded in FR1 run-5
+# shape D, /home/alon/Projects/polymer/FR1/rmg/run5): a CLASS-level conjunct
+# that subsumes the enumerated r87 shape-A/C/D bridges. Refuse ANY stampable
+# row where a chain-scale proxy-derived discrete NOT resolvable to pool state
+# co-occurs with any Polymer/pool participant (orientation/side/label-set/count
+# independent). Shape B (no Polymer participant) stays separate.
+# ---------------------------------------------------------------------------
+
+_R93_CENSUS = "chain-scale-discrete/pool coupling (general)"
+
+
+def _r93_two_pool_shape_d_fixture():
+    """The run-5 shape-D cohort shape (RMG.out:
+    ``FR1(1) + FR1_sidegrp(4) <=> (5) + FR1(1)``, U = 13.05 tripwire): two
+    distinct PP-scale pools plus a chain-scale gas-vetoed proxy-derived
+    discrete radical (stands in for (5), 1871 g/mol / ~2.9 dual-axis units).
+    The discrete is net-produced on ONE side only, so the two-pool-vs-one-pool
+    melt imbalance is what the tripwire scores -- exactly the run-5 wall."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import set_polymer_gas_veto
+    from rmgpy.species import Species
+
+    fr1 = Polymer(label="FR1", monomer="[CH2][CH]C",
+                  Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    sidegrp = Polymer(label="FR1_sidegrp", monomer="[CH2][CH]C",
+                      Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    # Chain-scale proxy-derived discrete radical, gas-vetoed like run-5's (5).
+    discrete = Species(molecule=[Molecule().from_smiles(
+        "[CH2]C(CBr)CC(C)CC(C)CC(C)Br")])
+    discrete.label = "(5)"
+    set_polymer_gas_veto(discrete)
+    return fr1, sidegrp, discrete
+
+
+def test_r93_general_branch_refuses_two_pool_abstraction_both_orientations(caplog):
+    """r93 RED matrix #1/#4 (unit seam, FR1 run-5 shape D): the two-pool
+    abstraction ``FR1 + FR1_sidegrp <=> (5) + FR1`` -- a vetoed chain-scale
+    proxy-derived discrete (5) co-occurring with pool participants -- must be
+    refused conduit-deferred BY THE GENERAL BRANCH, in BOTH written
+    orientations. Shape A (unequal-count same-pool fold-back) and r74
+    same-proxy both skip it (2-pool-vs-1-pool count step), so pre-r93 it
+    reached the reference-state tripwire (U = 13.05) unrefused."""
+    import logging
+    from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                               stamp_gas_association_refusal)
+    from rmgpy.reaction import Reaction
+
+    fr1, sidegrp, discrete = _r93_two_pool_shape_d_fixture()
+    _general_chain_scale_pool_warned.clear()
+    rxn = Reaction(reactants=[fr1, sidegrp], products=[discrete, fr1],
+                   reversible=True)
+    with caplog.at_level(logging.WARNING):
+        stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False  # -> "conduit-deferred"
+    assert any(_R93_CENSUS in r.getMessage() for r in caplog.records), (
+        "census must identify the r93 general branch")
+
+    # Reverse written orientation: SAME class-level coupling, refused
+    # identically (orientation-independent).
+    fr1_r, sidegrp_r, discrete_r = _r93_two_pool_shape_d_fixture()
+    rxn_rev = Reaction(reactants=[discrete_r, fr1_r], products=[fr1_r, sidegrp_r],
+                       reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is True
+    assert rxn_rev.polymer_refused_accumulating is False
+
+
+def test_r93_general_branch_subsumes_shape_a_and_c_fixtures(caplog):
+    """r93 RED matrix #2: the r87 shape-A fixture row
+    (``adduct + pool <=> pool + pool``) and a shape-C cross-pool fixture row
+    (``adduct + pool <=> pool + other_pool``) are now refused BY THE GENERAL
+    BRANCH -- census identifies the general branch. The old shape-A positive
+    test stays green as a behavior pin; here we additionally assert the census
+    attribution."""
+    import logging
+    from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                               stamp_gas_association_refusal)
+    from rmgpy.reaction import Reaction
+
+    # Shape A: unequal-count same-pool fold-back.
+    pp, adduct = _chain_scale_adduct_fixture()
+    adduct.is_polymer_proxy = True
+    _general_chain_scale_pool_warned.clear()
+    rxn_a = Reaction(reactants=[adduct, pp], products=[pp, pp], reversible=True)
+    with caplog.at_level(logging.WARNING):
+        stamp_gas_association_refusal(rxn_a)
+    assert rxn_a.polymer_refused is True
+    assert rxn_a.polymer_refused_accumulating is False
+    assert any(_R93_CENSUS in r.getMessage() for r in caplog.records)
+
+    # Shape C: cross-pool (label-changing) coupling with the chain-scale
+    # adduct -- the run-5 shape-D class, refused by the same general branch.
+    caplog.clear()
+    pp_c, adduct_c = _chain_scale_adduct_fixture()
+    adduct_c.is_polymer_proxy = True
+    other = Polymer(label="polypropylene_tail", monomer="[CH2][CH]C",
+                    Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    _general_chain_scale_pool_warned.clear()
+    rxn_c = Reaction(reactants=[adduct_c, pp_c], products=[pp_c, other],
+                     reversible=True)
+    with caplog.at_level(logging.WARNING):
+        stamp_gas_association_refusal(rxn_c)
+    assert rxn_c.polymer_refused is True
+    assert rxn_c.polymer_refused_accumulating is False
+    assert any(_R93_CENSUS in r.getMessage() for r in caplog.records)
+
+
+def test_r93_general_branch_refuses_unvetoed_tag_only_chain_scale_discrete():
+    """r93 RED matrix #3: the OR conjunct -- shape-D happened to be gas-vetoed,
+    but an UNVETOED (proxy-TAGGED only) chain-scale discrete net-produced in a
+    mixed pool row must ALSO be refused, or the tag-only variant leaks. The
+    discrete appears on ONE side only (net imbalance), the pool on the other."""
+    from rmgpy.polymer import (has_polymer_gas_veto,
+                               stamp_gas_association_refusal)
+    from rmgpy.reaction import Reaction
+
+    pp, adduct = _chain_scale_adduct_fixture()
+    adduct.is_polymer_proxy = True          # tag ONLY -- no gas veto
+    assert not has_polymer_gas_veto(adduct)
+    rxn = Reaction(reactants=[pp], products=[pp, adduct], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is True
+    assert rxn.polymer_refused_accumulating is False
+
+
+def test_r93_general_branch_negative_controls_stay_live():
+    """r93-named negative controls (pinned, must stay LIVE):
+
+    (1) a DP-2 declared volatile (hexene, 2.0 monomer-equivalents < 2.5) in a
+        pool row -- below the chain-scale bar, so the predicate cannot fire;
+    (2) gas+gas chemistry with no pool participant -- conjunct (ii) fails;
+    (3) pool<->pool migration WITHOUT any chain-scale discrete -- conjunct (i)
+        fails (no chain-scale proxy-derived discrete anywhere);
+    (4) a chain-scale discrete that IS resolvable to pool state (isomorphic to
+        the pool's own reactive proxy) co-occurring with that pool -- spared by
+        the not-resolvable guard (refusing a pool's own proxy is over-refusal).
+    """
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (_discrete_is_chain_scale_proxy_derived,
+                               _discrete_resolves_to_pool_state,
+                               stamp_gas_association_refusal)
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+
+    # (1) DP-2 volatile in a pool row.
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    hexene = Species(molecule=[Molecule().from_smiles("C=CCCCC")])
+    hexene.is_polymer_proxy = True
+    rxn1 = Reaction(reactants=[pp, hexene], products=[pp], reversible=True)
+    stamp_gas_association_refusal(rxn1)
+    assert rxn1.polymer_refused is False
+
+    # (2) gas+gas, no pool participant.
+    allyl = Species(molecule=[Molecule().from_smiles("[CH2]C=C")])
+    hexadiene = Species(molecule=[Molecule().from_smiles("C=CCCC=C")])
+    hexadiene.is_polymer_proxy = True
+    rxn2 = Reaction(reactants=[allyl, hexadiene],
+                    products=[Species(molecule=[Molecule().from_smiles(
+                        "C=CCCCCC=C")])], reversible=True)
+    stamp_gas_association_refusal(rxn2)
+    assert rxn2.polymer_refused is False
+
+    # (3) pool<->pool feature migration WITHOUT a chain-scale discrete: a
+    # genuine H-abstraction to a FEATURE daughter (distinct pool state, so
+    # r74 same-proxy does not fire) with only small gas partners.
+    daughter = pp.copy()
+    daughter._reacted_class = PolymerClass.FEATURE
+    ch4 = Species(molecule=[Molecule().from_smiles("C")])
+    ch3 = Species(molecule=[Molecule().from_smiles("[CH3]")])
+    rxn3 = Reaction(reactants=[pp, ch3], products=[daughter, ch4],
+                    reversible=True)
+    stamp_gas_association_refusal(rxn3)
+    assert rxn3.polymer_refused is False
+
+    # (4) a chain-scale discrete that IS the pool's own reactive proxy
+    # (isomorphic) -- resolvable to pool state, spared.
+    proxy_spc = pp.get_proxy_species('auto')
+    resolvable = Species(molecule=[m.copy(deep=True)
+                                   for m in proxy_spc.molecule])
+    resolvable.is_polymer_proxy = True
+    assert _discrete_is_chain_scale_proxy_derived(resolvable, [pp]) is True
+    assert _discrete_resolves_to_pool_state(resolvable, [pp]) is True
+    rxn4 = Reaction(reactants=[pp], products=[pp, resolvable], reversible=True)
+    stamp_gas_association_refusal(rxn4)
+    assert rxn4.polymer_refused is False
 
 
 def _build_compile_inputs(moles, initial_mass=1.0, Mn=5000.0, Mw=6000.0,
