@@ -16,6 +16,7 @@
     <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
     <script src="../../_static/doctools.js"></script>
     <script src="../../_static/sphinx_highlight.js"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
@@ -64,7 +65,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <section id="rmg-py-version-4-0-0">
 <h2><span class="section-number">18.1. </span>RMG-Py Version 4.0.0<a class="headerlink" href="#rmg-py-version-4-0-0" title="Permalink to this heading">¶</a></h2>
 <p>Date: June 10, 2026</p>
-<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/compare/3.3.0...4.0.0">Official RMG-Py Release Page</a>.</p>
+<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/4.0.0">Official RMG-Py v4.0.0 Release Page</a>.</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>New Features</dt><dd><ul>
@@ -97,7 +98,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <li><dl class="simple">
 <dt>Bug Fixes</dt><dd><ul>
 <li><p>Fixed duplicate reactions from identical templates being erroneously added to mechanisms</p></li>
-<li><p>Fixed energy correction calculations in pressure-dependent reactions and ensured consistency of transition state $E_0$ values in Arkane output files</p></li>
+<li><p>Fixed energy correction calculations in pressure-dependent reactions and ensured consistency of transition state <span class="math notranslate nohighlight">\(E_0\)</span> values in Arkane output files</p></li>
 <li><p>Corrected constant-species index mapping in <cite>SimpleReactor</cite></p></li>
 <li><p>Improved RDKit <cite>GetSSSR</cite> non-determinism</p></li>
 <li><p>Removed deprecated <cite>imp.load_source</cite> calls and eliminated unreachable code segments</p></li>
@@ -111,14 +112,14 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <section id="rmg-database-version-4-0-0">
 <h2><span class="section-number">18.2. </span>RMG-Database Version 4.0.0<a class="headerlink" href="#rmg-database-version-4-0-0" title="Permalink to this heading">¶</a></h2>
 <p>Date: June 10, 2026</p>
-<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-database/compare/3.3.0...4.0.0">Official RMG-Database Release Page</a>.</p>
+<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/4.0.0">Official RMG-Database v4.0.0 Release Page</a>.</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>Features</dt><dd><ul>
 <li><p>Expanded datasets with a new Formic Acid library and example coverage-dependent thermo libraries</p></li>
-<li><p>Added data for electrocatalytic $text{CO}_2$ reduction ($text{CO}_2text{RR}$) kinetics and adsorbates</p></li>
+<li><p>Added data for electrocatalytic <span class="math notranslate nohighlight">\(CO_2\)</span> reduction (<span class="math notranslate nohighlight">\(CO_2\mathrm{RR}\)</span>) kinetics and adsorbates</p></li>
 <li><p>Added BEEF uncertainty covariance data support</p></li>
-<li><p>Implemented new surface nitrogen reaction families, BEP rules, and NOx chemistry for $text{Pt}(111)$</p></li>
+<li><p>Implemented new surface nitrogen reaction families, BEP rules, and NOx chemistry for <span class="math notranslate nohighlight">\(\mathrm{Pt}(111)\)</span></p></li>
 <li><p>Introduced a <cite>recommended_libraries.yml</cite> configuration file</p></li>
 </ul>
 </dd>
@@ -128,7 +129,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <dt>Bugfixes</dt><dd><ul>
 <li><p>Fixed incorrect entry details in the <cite>Glarborg/C2</cite> database</p></li>
 <li><p>Fixed thermodynamic discontinuity issues found in the formic acid dataset</p></li>
-<li><p>Corrected temperature minimum settings ($T_{min}$) from 300 K to 298 K in NASA polynomials for $text{CO}_2text{RR}$ adsorbates on $text{Ag}(111)$</p></li>
+<li><p>Corrected temperature minimum settings (<span class="math notranslate nohighlight">\(T_{min}\)</span>) from 300 K to 298 K in NASA polynomials for <span class="math notranslate nohighlight">\(CO_2\mathrm{RR}\)</span> adsorbates on <span class="math notranslate nohighlight">\(\mathrm{Ag}(111)\)</span></p></li>
 </ul>
 </dd>
 </dl>
@@ -138,11 +139,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <section id="rmg-py-version-3-3-0">
 <h2><span class="section-number">18.3. </span>RMG-Py Version 3.3.0<a class="headerlink" href="#rmg-py-version-3-3-0" title="Permalink to this heading">¶</a></h2>
 <p>Date: July 10, 2025</p>
-<aside class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 5); <em><a href="#id1">backlink</a></em></p>
-<p>Duplicate explicit target name: “official rmg-py release page”.</p>
-</aside>
-<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0">Official RMG-Py Release Page</a>.</p>
+<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-Py/releases/tag/3.3.0">Official RMG-Py v3.3.0 Release Page</a>.</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>Software Improvements</dt><dd><ul>
@@ -180,11 +177,7 @@ MathJax.Hub.Register.StartupHook("TeX Jax Ready",function () {
 <section id="rmg-database-version-3-3-0">
 <h2><span class="section-number">18.4. </span>RMG-Database Version 3.3.0<a class="headerlink" href="#rmg-database-version-3-3-0" title="Permalink to this heading">¶</a></h2>
 <p>Date: July 10, 2025</p>
-<aside class="system-message">
-<p class="system-message-title">System Message: WARNING/2 (<span class="docutils literal">/home/runner/work/RMG-Py/RMG-Py/documentation/source/users/rmg/releaseNotes.rst</span>, line 5); <em><a href="#id2">backlink</a></em></p>
-<p>Duplicate explicit target name: “official rmg-database release page”.</p>
-</aside>
-<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0">Official RMG-Database Release Page</a>.</p>
+<p>The below list is a summary. For a complete list of all changes, see the <a class="reference external" href="https://github.com/ReactionMechanismGenerator/RMG-database/releases/tag/3.3.0">Official RMG-Database v3.3.0 Release Page</a>.</p>
 <ul class="simple">
 <li><dl class="simple">
 <dt>Features</dt><dd><ul>
