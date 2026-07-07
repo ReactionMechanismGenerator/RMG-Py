@@ -1673,18 +1673,19 @@ class TestReferenceStateTripwireConsumerWorld:
         ``reversible_melt_deck``, whose melt reaction has no pool participant
         and so compiles to zero entries). The EPDM-shaped reversible capture
 
-            PR + C2H5 <=> poly        (C15H31 + C2H5 -> C17H36, balanced)
+            PR + C2H5 <=> poly        (C22H45 + C2H5 -> C24H50, balanced)
 
         has the POOL PROXY itself as a product, so the artifact compiler
         (rmgpy/polymer.py compile_polymer_reaction_entries) emits an entry,
         and the runner's _restamp_and_extend tag restoration + window plumbing
         are both LIVE on this deck:
 
-        * PR (C15H31, 211.4 g/mol) is a GAS chain-scale counterparty: it is in
-          the entry's reactants but NOT in proxy_reactants/proxy_products, so
-          its physically-melt membership in the consumer world exists ONLY via
-          the runner's blanket tag restoration. Paired against the condensed
-          proxy (240.5 g/mol) it keeps U ~ 0.08 decades -> SILENT.
+        * PR (C22H45, 309.6 g/mol) is a GAS chain-scale counterparty (clears
+          the r95 absolute floor): it is in the entry's reactants but NOT in
+          proxy_reactants/proxy_products, so its physically-melt membership in
+          the consumer world exists ONLY via the runner's blanket tag
+          restoration. Paired against the condensed proxy (338.6 g/mol) it
+          keeps U ~ 0.06 decades -> SILENT.
         * C2H5 (29.1 g/mol) sits in the bare-slack..window MW band: above the
           10 g/mol bare slack the chain window degrades to if the
           monomer_mw_g_mol plumb is deleted, below the real window
@@ -1693,8 +1694,11 @@ class TestReferenceStateTripwireConsumerWorld:
           melt sum and U blows up to ~10 decades -> refusal."""
         n2 = _spc("N#N", "N2", index=1)
         et = _spc("C[CH2]", "C2H5")              # ethyl, 29.06 g/mol: band species
-        pr = _spc("[CH2]CCCCCCCCCCCCCC", "PR")   # C15H31, GAS chain radical
-        proxy = _spc("CCCCCCCCCCCCCCCCC", "poly")  # C17H36 pool-proxy species
+        # C22 GAS chain radical (309.60 g/mol / 22 heavy): a genuine
+        # multi-repeat chain clearing the r95 absolute floor, so its restored
+        # tag makes it melt. PR + C2H5 -> C24H50 proxy (balanced).
+        pr = _spc("[CH2]CCCCCCCCCCCCCCCCCCCCC", "PR")   # C22H45, GAS chain radical
+        proxy = _spc("CCCCCCCCCCCCCCCCCCCCCCCC", "poly")  # C24H50 pool-proxy species
         mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
         core = [n2, et, pr, proxy] + mus
         melt_rxn = Reaction(reactants=[pr, et], products=[proxy],

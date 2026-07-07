@@ -1207,12 +1207,21 @@ def _dual_axis_polymer_sized(mw_g_mol, heavy_count, pool_axes, units):
     (a single-axis melt call is exactly the run-9 false positive in reverse),
     the answer degrades to conservative-gas, and the caller must announce it
     (mirroring rmgpy.polymer._warn_impostor_axis_undecidable semantics)."""
+    # r95 absolute chain-scale floor: mirror rmgpy.polymer._discrete_is_polymer_sized
+    # EXACTLY (the drift guard test_solver_dual_axis_gate_agrees_with_polymer_module_classifier
+    # depends on it). ONE source of truth for the two constants -- imported from
+    # rmgpy.polymer, never re-hardcoded here (lazy import, matching the tripwire's
+    # lazy import of _IMPOSTOR_DISCRETE_MONOMER_UNITS; avoids the circular
+    # rmgpy.polymer <-> rmgpy.solver.polymer top-level import).
+    from rmgpy.polymer import ABS_CHAIN_SCALE_MW, ABS_CHAIN_SCALE_HEAVY
     missing = None
     for monomer_mw, monomer_heavy in pool_axes:
         mass_computable = monomer_mw > 0.0 and mw_g_mol > 0.0
-        mass_sized = mass_computable and mw_g_mol >= units * monomer_mw
+        mass_sized = mass_computable and mw_g_mol >= max(units * monomer_mw,
+                                                         ABS_CHAIN_SCALE_MW)
         heavy_computable = monomer_heavy > 0 and heavy_count >= 0
-        heavy_sized = heavy_computable and heavy_count >= units * monomer_heavy
+        heavy_sized = heavy_computable and heavy_count >= max(units * monomer_heavy,
+                                                              ABS_CHAIN_SCALE_HEAVY)
         if mass_computable and heavy_computable:
             if mass_sized and heavy_sized:
                 return True, None

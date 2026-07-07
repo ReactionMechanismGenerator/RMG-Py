@@ -827,6 +827,62 @@ def _two_pool_core():
     return core
 
 
+class TestPoolLivenessAlarm:
+    """r95 run-gate POOL LIVENESS census (review-gated alarm at artifact-write
+    time, NOT a hard-fail). build_polymer_moments_artifact lists EVERY
+    pool-coupled row -- refused rows stamp-but-kept alongside live ones -- so if
+    a pool has coupled rows but ZERO survive live, the refusal predicates may be
+    over-broad (the r95 PP-rerun regression: 106 rows all refused, pool 12->0
+    live). Census/warning ONLY: a legitimately deck-incomplete polymer may
+    honestly refuse every row, so this must NEVER raise."""
+
+    @staticmethod
+    def _artifact_with(refused):
+        # One pool-coupled reversible row (proxy 'poly' resolves the configured
+        # pool). refused=True stamps it conduit-deferred (still listed).
+        pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                       k_scission=1.0, k_unzip=0.0)
+        pr = _spc("[CH2]CCCCCCCCCCCCCCCCCCCCC", "PR")
+        et = _spc("C[CH2]", "C2H5")
+        proxy = _spc("CCCCCCCCCCCCCCCCCCCCCCCC", "poly")
+        mus = [_mu_dummy("poly_mu0"), _mu_dummy("poly_mu1"),
+               _mu_dummy("poly_mu2")]
+        core = [pr, et, proxy] + mus
+        rxn = Reaction(reactants=[pr, et], products=[proxy],
+                       kinetics=_arrhenius(A=(3.0, "m^3/(mol*s)")),
+                       reversible=True)
+        if refused:
+            rxn.polymer_refused = True
+            rxn.polymer_refused_accumulating = False
+        return build_polymer_moments_artifact(
+            [pool], core_species=core, core_reactions=[rxn],
+            configured_pool_labels=["poly"],
+            condensed_species=mus + [proxy],
+            cantera_index_map={id(rxn): [0]})
+
+    def test_all_refused_pool_emits_liveness_alarm(self, caplog):
+        import logging
+        with caplog.at_level(logging.WARNING):
+            art = self._artifact_with(refused=True)
+        # stamp-but-keep: the row is still listed, but refused ...
+        assert len(art["reactions"]) == 1
+        assert art["reactions"][0]["refused"] is True
+        # ... and the alarm fired (census/warning only -- the build SUCCEEDED).
+        assert any("POOL LIVENESS ALARM" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_healthy_pool_emits_no_liveness_alarm(self, caplog):
+        import logging
+        with caplog.at_level(logging.WARNING):
+            art = self._artifact_with(refused=False)
+        assert len(art["reactions"]) == 1
+        assert not art["reactions"][0].get("refused")
+        assert not any("POOL LIVENESS ALARM" in r.getMessage()
+                       for r in caplog.records)
+
+
 class TestCompileReactionEntries:
     def test_migration_entry(self):
         core = _two_pool_core()
@@ -1103,7 +1159,11 @@ class TestRefusedRowSerialization:
                      Mn=5000.0, Mw=8000.0, initial_mass=1.0)
         pp.index = 2
         br2 = _spc("BrBr", "Br2", index=4)                    # closed-shell
-        impostor = _spc("C=CCC(C)CC(C)C", "C9H18", index=5)   # 3.0 mono-eq
+        # Genuine chain-scale unsaturated impostor (C24H48, 336.6 g/mol / 24
+        # heavy), clearing the r95 absolute floor -- an honest FR1 run-2-class
+        # proxy-minus-XY discrete, not a light-monomer ratio artifact.
+        impostor = _spc("C=CCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)C",
+                        "C24H48", index=5)
         core = [pp, br2, impostor]
         rxn = Reaction(reactants=[br2, impostor], products=[pp],
                        kinetics=_arrhenius(A=(3.0, "m^3/(mol*s)")),

@@ -4830,9 +4830,13 @@ def test_impostor_polymer_scale_discrete_row_refused_both_orientations():
     from rmgpy.reaction import Reaction
     pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
                  Mn=5000.0, Mw=8000.0, initial_mass=1.0)
-    # Proxy-minus-H2 impostor: the stitched trimer proxy (C9H20) with one
-    # double bond -- C9H18, 126.24 g/mol = 3.0 monomer-equivalents.
-    impostor = Species(molecule=[Molecule().from_smiles("C=CCC(C)CC(C)C")])
+    # Genuine chain-scale unsaturated impostor mirroring FR1 run-2's C36-scale
+    # proxy-minus-XY discretes (a multi-repeat PP oligomer with one double
+    # bond): C24H48, 336.6 g/mol / 24 heavy -- clears the r95 absolute
+    # chain-scale floor (>= ABS_CHAIN_SCALE_MW/HEAVY), so it is HONESTLY
+    # polymer-sized in absolute terms, not merely a light-monomer ratio artifact.
+    impostor = Species(molecule=[Molecule().from_smiles(
+        "C=CCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)C")])
     br2 = Species(molecule=[Molecule().from_smiles("BrBr")])  # closed-shell
     # Association orientation (run-2 written direction): gas + impostor -> proxy.
     rxn = Reaction(reactants=[br2, impostor], products=[pp], reversible=True)
@@ -4919,7 +4923,12 @@ def test_impostor_undecidable_axis_never_degenerates_to_mass_only(caplog):
     pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
                  Mn=5000.0, Mw=8000.0, initial_mass=1.0)
     pp.monomer = None  # structure axis uncomputable (monomer_mw_g_mol kept)
-    br2 = Species(molecule=[Molecule().from_smiles("BrBr")])
+    # A heavy-but-few-atoms gas that is MASS-polymer-sized under the r95
+    # absolute floor (CBr4, 331.6 g/mol >= ABS_CHAIN_SCALE_MW, but only 5 heavy
+    # atoms): the mass axis says "sized" while the structure axis is
+    # uncomputable (monomer stripped), so the predicate must NOT degenerate to
+    # a mass-only refusal -- it announces the case undecidable instead.
+    br2 = Species(molecule=[Molecule().from_smiles("BrC(Br)(Br)Br")])
     rxn = Reaction(reactants=[br2], products=[pp], reversible=True)
     with caplog.at_level(logging.WARNING):
         stamp_gas_association_refusal(rxn)
@@ -4977,17 +4986,21 @@ def test_impostor_threshold_is_proxy_derived():
 def _chain_scale_adduct_fixture():
     """PP pool + a chain-scale proxy-derived discrete adduct mirroring the
     FR1 run-3 cohort shape (/home/alon/Projects/polymer/FR1/rmg/run3):
-    adduct = proxy-scale skeleton + 2 Br (run-3: C36H32Br19O3 adducts vs
-    C36H32Br17O3 pool proxies -- element-unbalanced by exactly 2 Br).
-    C9H18Br2 = 286.05 g/mol = 6.8 monomer-equivalents of mass and 11 heavy
-    atoms = 3.7 monomer-equivalents of structure vs the C3H6 monomer --
-    polymer-sized on BOTH axes (r85 dual-axis conjunct)."""
+    adduct = multi-repeat proxy-scale skeleton + 2 Br (run-3: C36H32Br19O3
+    adducts vs C36H32Br17O3 pool proxies -- element-unbalanced by exactly 2 Br).
+    C21H42Br2 = 454.37 g/mol / 23 heavy atoms -- a GENUINE multi-repeat
+    chain-scale defect that clears the r95 absolute floor
+    (ABS_CHAIN_SCALE_MW=300 / ABS_CHAIN_SCALE_HEAVY=20) on BOTH axes, not a
+    light-monomer ratio artifact (an ordinary C8 PP fragment at 2.7
+    monomer-equivalents does NOT clear the absolute floor and is correctly
+    spared -- see the r95 RED-matrix tests)."""
     from rmgpy.molecule import Molecule
     from rmgpy.species import Species
 
     pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
                  Mn=5000.0, Mw=8000.0, initial_mass=1.0)
-    adduct = Species(molecule=[Molecule().from_smiles("CC(CBr)CC(C)CC(C)Br")])
+    adduct = Species(molecule=[Molecule().from_smiles(
+        "CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
     adduct.label = "adduct"
     return pp, adduct
 
@@ -5155,7 +5168,10 @@ def test_reference_state_split_isomerization_refused_with_pool_registry():
 
     pp, d_melt = _chain_scale_adduct_fixture()
     d_melt.is_polymer_proxy = True                    # (111): melt-classified
-    d_gas = Species(molecule=[Molecule().from_smiles("BrCC(C)CC(C)CC(C)Br")])
+    # (117): a chain-scale isomer of the adduct (same C21H42Br2 formula, Br
+    # positions moved), so the no-split control below pairs off exactly in U.
+    d_gas = Species(molecule=[Molecule().from_smiles(
+        "BrCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
     d_gas.is_polymer_proxy = True
     set_polymer_gas_veto(d_gas)                       # (117): veto-suppressed
 
@@ -5179,7 +5195,8 @@ def test_reference_state_split_isomerization_refused_with_pool_registry():
     # exactly in the tripwire, so the row stays LIVE.
     pp3, d_melt_a = _chain_scale_adduct_fixture()
     d_melt_a.is_polymer_proxy = True
-    d_melt_b = Species(molecule=[Molecule().from_smiles("BrCC(C)CC(C)CC(C)Br")])
+    d_melt_b = Species(molecule=[Molecule().from_smiles(
+        "BrCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
     d_melt_b.is_polymer_proxy = True
     rxn3 = Reaction(reactants=[d_melt_a], products=[d_melt_b], reversible=True)
     stamp_gas_association_refusal(rxn3, pool_registry=[pp3])
@@ -5206,7 +5223,11 @@ def test_split_refusal_mirror_excludes_dp2_volatile_from_melt_multiset():
 
     pp, d_melt_a = _chain_scale_adduct_fixture()
     d_melt_a.is_polymer_proxy = True
-    d_melt_b = Species(molecule=[Molecule().from_smiles("BrCC(C)CC(C)CC(C)Br")])
+    # Chain-scale isomer of the adduct (C21H42Br2, 454 g/mol), so the two
+    # adducts pair off in the melt multiset and any split can only come from
+    # the DP-2 volatile spectator -- which the dual-axis gate excludes.
+    d_melt_b = Species(molecule=[Molecule().from_smiles(
+        "BrCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
     d_melt_b.is_polymer_proxy = True
     hexadiene = Species(molecule=[Molecule().from_smiles("C=CCCC=C")])
     hexadiene.is_polymer_proxy = True   # blanket over-tagging fingerprint
@@ -5253,9 +5274,11 @@ def _r93_two_pool_shape_d_fixture():
                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
     sidegrp = Polymer(label="FR1_sidegrp", monomer="[CH2][CH]C",
                       Mn=5000.0, Mw=8000.0, initial_mass=1.0)
-    # Chain-scale proxy-derived discrete radical, gas-vetoed like run-5's (5).
+    # Chain-scale proxy-derived discrete radical, gas-vetoed like run-5's (5):
+    # a genuine multi-repeat brominated radical, C21H41Br2 = 453.4 g/mol / 23
+    # heavy, clearing the r95 absolute floor (the real (5) is 1871 g/mol).
     discrete = Species(molecule=[Molecule().from_smiles(
-        "[CH2]C(CBr)CC(C)CC(C)CC(C)Br")])
+        "[CH2]C(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
     discrete.label = "(5)"
     set_polymer_gas_veto(discrete)
     return fr1, sidegrp, discrete
@@ -5404,16 +5427,157 @@ def test_r93_general_branch_negative_controls_stay_live():
     assert rxn3.polymer_refused is False
 
     # (4) a chain-scale discrete that IS the pool's own reactive proxy
-    # (isomorphic) -- resolvable to pool state, spared.
-    proxy_spc = pp.get_proxy_species('auto')
+    # (isomorphic) -- resolvable to pool state, spared. Uses a POLYSTYRENE pool
+    # because a PS trimer proxy (C24H26, 314.5 g/mol / 24 heavy) is itself
+    # genuinely chain-scale (clears the r95 absolute floor), so this test
+    # exercises the not-resolvable guard -- the proxy is spared by RESOLVABILITY,
+    # not merely by being sub-floor. (A light-monomer PP proxy is only 128 g/mol
+    # and is spared by the size floor instead, a different conjunct.)
+    ps = Polymer(label="polystyrene", monomer="[CH2][CH]c1ccccc1",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    proxy_spc = ps.get_proxy_species('auto')
     resolvable = Species(molecule=[m.copy(deep=True)
                                    for m in proxy_spc.molecule])
     resolvable.is_polymer_proxy = True
-    assert _discrete_is_chain_scale_proxy_derived(resolvable, [pp]) is True
-    assert _discrete_resolves_to_pool_state(resolvable, [pp]) is True
-    rxn4 = Reaction(reactants=[pp], products=[pp, resolvable], reversible=True)
+    assert _discrete_is_chain_scale_proxy_derived(resolvable, [ps]) is True
+    assert _discrete_resolves_to_pool_state(resolvable, [ps]) is True
+    rxn4 = Reaction(reactants=[ps], products=[ps, resolvable], reversible=True)
     stamp_gas_association_refusal(rxn4)
     assert rxn4.polymer_refused is False
+
+
+# ---------------------------------------------------------------------------
+# r95 absolute chain-scale floor (adjudicated adversarial round 95, grounded in
+# the polypropylene rerun over-refusal). _discrete_is_polymer_sized conjoins the
+# monomer-relative 2.5-equivalents ratio with an ABSOLUTE floor
+# (ABS_CHAIN_SCALE_MW=300 g/mol / ABS_CHAIN_SCALE_HEAVY=20) via max(): a discrete
+# must clear BOTH bars. This narrows the over-broad r93 general branch, which
+# (ratio-only) mis-classified ordinary C5-C10 fragments on light-monomer pools
+# as chain-scale and refused legitimate pool coupling (573 rows on the PP rerun,
+# pool 12->0 live). FR1 behavior is unchanged: for its heavy monomer (~645
+# g/mol) max() picks the ratio (2.5*645=1613), so shape-D (1871 g/mol) is still
+# refused.
+# ---------------------------------------------------------------------------
+
+
+def test_r95_pp_c8_fragment_coupling_stays_live():
+    """r95 RED matrix #1 (the PP-rerun smoking gun): an ordinary C8 secondary
+    radical (CCC[CH]CC(C)C, 113 g/mol / 8 heavy) proxy-tagged (worst case for
+    refusal), coupling to PP pool state in the r93 general-branch shape
+    (``C8 + pool <=> pool + pool``), must stay LIVE after r95. C8 is 2.69/2.67
+    monomer-equivalents (clears the scale-blind 2.5 ratio) but 113 < 300 g/mol
+    and 8 < 20 heavy, so it is NOT chain-scale and the general branch must not
+    refuse it. RED at cd0994381 (ratio-only: 113>=2.5*42 and 8>=2.5*3 -> C8 is
+    chain-scale -> general branch refuses, zeroing legitimate PP channels);
+    GREEN after the absolute floor.
+
+    NB: the two-radical association ``C8 + [CH3] <=> pool`` is a DIFFERENT
+    shape refused by the r63 all-gas-radicals branch (unchanged by r95 and out
+    of scope); the general-branch over-refusal the r95 floor targets is the
+    pool-coupling shape exercised here."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import stamp_gas_association_refusal
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    c8 = Species(molecule=[Molecule().from_smiles("CCC[CH]CC(C)C")])
+    c8.is_polymer_proxy = True
+    rxn = Reaction(reactants=[c8, pp], products=[pp, pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
+    # Orientation-independent: the reverse is equally live.
+    rxn_rev = Reaction(reactants=[pp, pp], products=[c8, pp], reversible=True)
+    stamp_gas_association_refusal(rxn_rev)
+    assert rxn_rev.polymer_refused is False
+
+
+def test_r95_above_ratio_below_floor_is_not_chain_scale():
+    """r95 RED matrix #2: a proxy-tagged fragment ABOVE 2.5 monomer-equivalents
+    but BELOW the absolute floor (the C8 above: 2.69 mass- / 2.67 heavy-units
+    but 113 < 300 g/mol and 8 < 20 heavy) is classified NOT chain-scale by
+    _discrete_is_polymer_sized. RED at cd0994381 (ratio-only -> True)."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (_discrete_is_polymer_sized, ABS_CHAIN_SCALE_MW,
+                               ABS_CHAIN_SCALE_HEAVY)
+    from rmgpy.species import Species
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    c8 = Species(molecule=[Molecule().from_smiles("CCC[CH]CC(C)C")])
+    mw = c8.molecule[0].get_molecular_weight() * 1000.0
+    heavy = (c8.molecule[0].get_num_atoms()
+             - c8.molecule[0].get_num_atoms('H'))
+    # Above the scale-blind ratio on BOTH axes ...
+    assert mw >= 2.5 * pp.monomer_mw_g_mol
+    assert heavy >= 2.5 * 3
+    # ... but below the absolute floor on BOTH axes ...
+    assert mw < ABS_CHAIN_SCALE_MW and heavy < ABS_CHAIN_SCALE_HEAVY
+    # ... therefore NOT chain-scale (max() picks the floor for a light monomer).
+    assert _discrete_is_polymer_sized(c8, pp) is False
+
+
+def test_r95_heavy_monomer_shape_d_still_refused():
+    """r95 RED matrix #3/#4 (the genuine catch must survive): for a HEAVY
+    monomer (FR1-class, 2.5*monomer > the absolute floor) max() picks the
+    monomer-relative ratio, so a genuine chain-scale discrete ABOVE the ratio
+    remains refused by the r93 general branch -- both the gas-vetoed shape-D
+    impostor (#3) and the proxy-tag-only adduct (#4). A mid-size fragment above
+    the absolute floor but BELOW the heavy-monomer ratio is spared, proving
+    max() picks the ratio (not the floor) for heavy monomers. GREEN both at
+    cd0994381 and after (regression guard: the fix must not weaken the catch)."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (stamp_gas_association_refusal,
+                               set_polymer_gas_veto, _discrete_is_polymer_sized)
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+    # Heavy monomer: 2.5*monomer_mw ~ 648 g/mol > the 300 floor (FR1's real
+    # ~645 monomer pushes it to 1613; this stand-in preserves the mechanism).
+    hp = Polymer(label="FR1like",
+                 monomer="[CH2][CH]c1ccc(-c2ccc(Br)cc2)cc1",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    assert 2.5 * hp.monomer_mw_g_mol > 300.0  # ratio dominates the floor
+    # Genuine chain-scale discrete ABOVE the ratio (716 g/mol / 40 heavy).
+    big = ("[CH2]C(c1ccc(-c2ccc(Br)cc2)cc1)CC(c1ccc(-c2ccc(Br)cc2)cc1)"
+           "CC(c1ccc(Br)cc1)C")
+    # #3: gas-vetoed shape-D impostor remains refused.
+    d3 = Species(molecule=[Molecule().from_smiles(big)])
+    set_polymer_gas_veto(d3)
+    assert _discrete_is_polymer_sized(d3, hp) is True
+    rxn3 = Reaction(reactants=[d3, hp], products=[hp, hp], reversible=True)
+    stamp_gas_association_refusal(rxn3)
+    assert rxn3.polymer_refused is True
+    # #4: proxy-tag-only (unvetoed) adduct above the ratio remains refused.
+    d4 = Species(molecule=[Molecule().from_smiles(big)])
+    d4.is_polymer_proxy = True
+    rxn4 = Reaction(reactants=[d4, hp], products=[hp, hp], reversible=True)
+    stamp_gas_association_refusal(rxn4)
+    assert rxn4.polymer_refused is True
+    # Contrast: a 454 g/mol fragment clears the ABSOLUTE floor but is BELOW the
+    # heavy-monomer ratio (648) -> NOT chain-scale (max() picks the ratio).
+    mid = Species(molecule=[Molecule().from_smiles(
+        "CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br")])
+    assert _discrete_is_polymer_sized(mid, hp) is False
+
+
+def test_r95_dp2_volatile_stays_live():
+    """r95 RED matrix #5: a declared DP-2 volatile (1,5-hexadiene off PP, 82
+    g/mol = 1.95 monomer-equivalents) coupling to the pool stays LIVE -- below
+    both the ratio and the floor, so never chain-scale. GREEN both at cd0994381
+    and after (the floor must not newly refuse volatiles that were already
+    live)."""
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import (stamp_gas_association_refusal,
+                               _discrete_is_polymer_sized)
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+    pp = Polymer(label="polypropylene", monomer="[CH2][CH]C",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    hexadiene = Species(molecule=[Molecule().from_smiles("C=CCCC=C")])
+    hexadiene.is_polymer_proxy = True
+    assert _discrete_is_polymer_sized(hexadiene, pp) is False
+    rxn = Reaction(reactants=[hexadiene, pp], products=[pp, pp], reversible=True)
+    stamp_gas_association_refusal(rxn)
+    assert rxn.polymer_refused is False
 
 
 def _build_compile_inputs(moles, initial_mass=1.0, Mn=5000.0, Mw=6000.0,

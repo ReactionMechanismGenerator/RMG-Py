@@ -4807,11 +4807,12 @@ class TestThermoReferenceStateTripwire:
         """r87 shape-B fixture (FR1 run-3 ``(117) <=> (111)``): a real
         Polymer pool A in core (the restamp's pool registry is collected
         from the SPECIES lists, so the monomer scale must be discoverable
-        there) plus two chain-scale proxy-derived C9H18Br2 adduct isomers:
-        D_melt melt-classified (tagged, 286.05 g/mol >= window 42.08 + 10,
-        unvetoed) and D_gas veto-suppressed (tagged AND gas-vetoed, run-3's
-        (117) posture). 286.05 g/mol = 6.8 monomer-equivalents of mass, 11
-        heavy atoms = 3.7 of structure -- polymer-sized on both r85 axes."""
+        there) plus two chain-scale proxy-derived C21H42Br2 adduct isomers:
+        D_melt melt-classified (tagged, 454.37 g/mol, unvetoed) and D_gas
+        veto-suppressed (tagged AND gas-vetoed, run-3's (117) posture). Both
+        are genuine multi-repeat chain-scale defects (454.37 g/mol / 23 heavy)
+        clearing the r95 absolute floor on both r85 axes -- and isomers, so
+        they pair off exactly in the tripwire U."""
         from rmgpy.polymer import Polymer, set_polymer_gas_veto
         pool = Polymer(label="A", monomer="[CH2][CH]C",
                        Mn=5000.0, Mw=8000.0, initial_mass=1.0)
@@ -4819,8 +4820,8 @@ class TestThermoReferenceStateTripwire:
             "A": pool,
             "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
             "A_mu2": _spc("C#N", "A_mu2"),
-            "D_gas": _spc("BrCC(C)CC(C)CC(C)Br", "D_gas"),
-            "D_melt": _spc("CC(CBr)CC(C)CC(C)Br", "D_melt"),
+            "D_gas": _spc("BrCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", "D_gas"),
+            "D_melt": _spc("CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", "D_melt"),
         }
         sp["D_melt"].is_polymer_proxy = True
         sp["D_gas"].is_polymer_proxy = True
@@ -4895,8 +4896,8 @@ class TestThermoReferenceStateTripwire:
             "A": pool,
             "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
             "A_mu2": _spc("C#N", "A_mu2"),
-            "D1": _spc("BrCC(C)CC(C)CC(C)Br", "D1"),
-            "D2": _spc("CC(CBr)CC(C)CC(C)Br", "D2"),
+            "D1": _spc("BrCC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", "D1"),
+            "D2": _spc("CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", "D2"),
         }
         sp["D1"].is_polymer_proxy = True
         sp["D2"].is_polymer_proxy = True
@@ -4922,7 +4923,8 @@ class TestThermoReferenceStateTripwire:
         general branch sees a real Polymer participant) plus a second
         chain-scale melt participant B (mask-False, the FR1_sidegrp stand-in)
         and a chain-scale proxy-derived GAS-VETOED discrete D5 (the (5)
-        stand-in, 286.05 g/mol, 11 heavy = 3.7 monomer-equivalents). D5 is
+        stand-in, C21H42Br2 454.37 g/mol / 23 heavy, a genuine multi-repeat
+        chain-scale defect clearing the r95 absolute floor). D5 is
         gas-vetoed, so it is EXCLUDED from the melt sum -- the two-melt-vs-one
         imbalance (B unpaired) is what the tripwire scores, exactly run-5."""
         from rmgpy.polymer import Polymer, set_polymer_gas_veto
@@ -4934,8 +4936,8 @@ class TestThermoReferenceStateTripwire:
             "A_mu2": _spc("C#N", "A_mu2"),
             # B: chain-scale melt participant (mask-False), the second pool
             # of the two-pool abstraction; distinct MW so it is UNPAIRED.
-            "B": _spc("CC(C)CC(C)CC(C)CC(C)C", "B"),
-            "D5": _spc("CC(CBr)CC(C)CC(C)Br", "D5"),
+            "B": _spc("CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)C", "B"),
+            "D5": _spc("CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", "D5"),
         }
         sp["D5"].is_polymer_proxy = True
         set_polymer_gas_veto(sp["D5"])
@@ -5031,21 +5033,21 @@ class TestThermoReferenceStateTripwire:
         """Spec §8.4: one melt-class species takes library thermo while its
         chain-scale counterparty takes GAV -> the mixed-provenance warning
         must fire. The counterparty is the §2 decoupling shape: a
-        gas-classified but proxy-TAGGED same-mass radical (butyl 57.11 vs
-        butane 58.12 g/mol), so the pair is mass-paired
-        (U = 1.5*log10(58.12/57.11) = 0.011 -- no census, no refusal) and
+        gas-classified but proxy-TAGGED same-mass radical (n-C22H45 309.60 vs
+        n-C22H46 310.61 g/mol), so the pair is mass-paired
+        (U = 1.5*log10(310.61/309.60) = 0.0021 -- no census, no refusal) and
         ONLY the sensor can speak. The small gas H also takes library thermo
-        and must NOT matter (outside the counterparty window). r89 lockstep:
-        the pool is a CH2-repeat (14.03 g/mol, 1 heavy atom) so butyl clears
-        the dual-axis polymer-sized melt gate (4.07 mass-units, 4.0
-        heavy-units >= 2.5) -- under the r89 class a below-threshold tagged
+        and must NOT matter (outside the counterparty window). r89/r95 lockstep:
+        both A and B are GENUINE multi-repeat chains (C22, 22 heavy) clearing
+        the r95 absolute chain-scale floor (ABS_CHAIN_SCALE_MW/HEAVY), so B
+        clears the dual-axis polymer-sized melt gate -- a below-floor tagged
         radical would be conservative-gas and A would be UNPAIRED (refusal),
         which is a different test."""
         import logging
         sp = {
-            "A": _spc("CCCC", "A"),
+            "A": _spc("CCCCCCCCCCCCCCCCCCCCCC", "A"),
             "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"), "A_mu2": _spc("C#N", "A_mu2"),
-            "B": _spc("[CH2]CCC", "B"),
+            "B": _spc("[CH2]CCCCCCCCCCCCCCCCCCCCC", "B"),
             "H": _spc("[H]", "H"),
         }
         sp["A"].thermo = _trivial_nasa(_LIB_COMMENT)   # melt proxy: library
@@ -5068,14 +5070,15 @@ class TestThermoReferenceStateTripwire:
         mw_a = sp["A"].molecule[0].get_molecular_weight() * 1000.0
         mw_b = sp["B"].molecule[0].get_molecular_weight() * 1000.0
         assert abs(mw_a - mw_b) <= 14.03 + 10.0
-        # amended-class pin (spec §5.1 C3, r89 dual-axis): B must clear the
-        # polymer-sized threshold on BOTH axes, or it would not be
-        # physically-melt at all and the sensor would have no
+        # amended-class pin (spec §5.1 C3, r89 dual-axis + r95 absolute floor):
+        # B must clear the polymer-sized threshold on BOTH axes, or it would
+        # not be physically-melt at all and the sensor would have no
         # melt-vs-counterparty pair to warn on
-        assert mw_b >= 2.5 * 14.03
+        from rmgpy.polymer import ABS_CHAIN_SCALE_MW, ABS_CHAIN_SCALE_HEAVY
+        assert mw_b >= ABS_CHAIN_SCALE_MW
         heavy_b = (sp["B"].molecule[0].get_num_atoms()
                    - sp["B"].molecule[0].get_num_atoms('H'))
-        assert heavy_b >= 2.5 * 1
+        assert heavy_b >= ABS_CHAIN_SCALE_HEAVY
         with caplog.at_level(logging.WARNING):
             _refstate_rs(core, [rxn], mask,
                          [_gate_pool_config(monomer_mw_g_mol=14.03,
@@ -5107,10 +5110,10 @@ class TestThermoReferenceStateTripwire:
         units = 2.5
         # Valid members never raise: a condensed-branch member (gate-exempt,
         # pool-configured by input -- any size, even below threshold) and a
-        # polymer-sized tag-branch member (C15 backbone radical: 211.4 g/mol
-        # = 5.0 mass-units, 15 heavy = 5.0 heavy-units).
+        # genuine chain-scale tag-branch member (C22 backbone radical: 309.6
+        # g/mol / 22 heavy -- clears the r95 absolute floor on both axes).
         _assert_chain_scale_melt_member("M1", 0.016043, 1, False, pp_axes, units)
-        _assert_chain_scale_melt_member("Erad", 0.211407, 15, True, pp_axes, units)
+        _assert_chain_scale_melt_member("Erad", 0.309602, 22, True, pp_axes, units)
         # The hand-built violations: gas-classified (tag-branch) members
         # below the dual-axis threshold inside the melt sum. The message must
         # steer the operator to CLASSIFICATION, never to reference states.
@@ -5282,9 +5285,9 @@ class TestThermoReferenceStateTripwire:
 
     def test_gas_volatile_veto_excludes_from_melt_tag_branch(self, caplog):
         """Spec §5.1 (durable gas-volatile veto), r89 form: a POLYMER-SIZED
-        proxy-derived discrete (the FR1 run-3 adduct shape, C9H18Br2,
-        286.05 g/mol = 6.8 mass-units / 11 heavy = 3.67 heavy-units vs the
-        propene pool -- both axes >= 2.5) reaches the solver gas-masked but
+        proxy-derived discrete (the FR1 run-3 adduct shape, C21H42Br2,
+        454.37 g/mol / 23 heavy vs the propene pool -- a genuine multi-repeat
+        chain-scale defect clearing the r95 absolute floor) reaches the solver gas-masked but
         proxy-TAGGED. Because is_polymer_proxy is a monotonic multi-writer
         sticky cache with no gas authority, the durable verdict lives in
         ``Species.props['polymer_reference_state_gas_veto']`` (set once at
@@ -5304,15 +5307,17 @@ class TestThermoReferenceStateTripwire:
         # (proves the volatile-as-melt asymmetry is the cause and pins that
         # r87 tripwire behavior on chain-scale adducts is unchanged).
         with pytest.raises(ValueError, match="unpaired reference-state"):
-            self._volatile_vs_pool_build("CC(CBr)CC(C)CC(C)Br", 42.08, 3,
-                                         set_veto=False)
+            self._volatile_vs_pool_build(
+                "CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", 42.08, 3,
+                set_veto=False)
 
         # r89 RED 4 (veto precedence unchanged): WITH the durable veto the
         # adduct is excluded from the melt sum -> the build SUCCEEDS.
         caplog.clear()
         with caplog.at_level(logging.WARNING):
-            rs = self._volatile_vs_pool_build("CC(CBr)CC(C)CC(C)Br", 42.08, 3,
-                                              set_veto=True)
+            rs = self._volatile_vs_pool_build(
+                "CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", 42.08, 3,
+                set_veto=True)
         assert rs.reference_state_max_decades < 3.0, (
             "durable gas-volatile veto must exclude the discrete from the "
             "melt tag branch so the reference-state term stays paired/benign"
@@ -5340,9 +5345,9 @@ class TestThermoReferenceStateTripwire:
         a_mu0, a_mu1, a_mu2 = (_spc("CO", "A_mu0"), _spc("C=O", "A_mu1"),
                                _spc("C#N", "A_mu2"))
         tail = _spc("CCCCCCCC", "TAIL")
-        # polymer-sized vetoed member: the FR1 adduct shape vs propene pool
-        # (286.05 g/mol = 6.8 mass-units, 11 heavy = 3.67 heavy-units)
-        vol = _spc("CC(CBr)CC(C)CC(C)Br", "VOL")
+        # chain-scale vetoed member: the FR1 adduct shape vs propene pool
+        # (C21H42Br2, 454.37 g/mol / 23 heavy -- clears the r95 absolute floor)
+        vol = _spc("CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", "VOL")
         vol.is_polymer_proxy = True
         vol.props[VETO_KEY] = True
         # below-scale vetoed volatile: DP-2 hexadiene (1.95 mass-units, 2.0
@@ -5468,11 +5473,13 @@ class TestThermoReferenceStateTripwire:
         degradation is announced through the census warning + the
         reference_state_axis_undecidable record."""
         import logging
-        # The polymer-sized adduct vs a pool WITHOUT a heavy denominator:
-        # mass axis 6.8 units (computable, True), heavy axis uncomputable.
+        # The chain-scale adduct (454.37 g/mol, clears the r95 mass floor) vs a
+        # pool WITHOUT a heavy denominator: mass axis computable and above the
+        # floor (True), heavy axis uncomputable -> undecidable.
         with caplog.at_level(logging.WARNING):
-            rs = self._volatile_vs_pool_build("CC(CBr)CC(C)CC(C)Br", 42.08,
-                                              0, set_veto=False)
+            rs = self._volatile_vs_pool_build(
+                "CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", 42.08,
+                0, set_veto=False)
         # conservative-gas: the build completes, no refusal
         assert rs.reference_state_max_decades < 3.0
         # ...and the degradation is announced, naming species and axis
@@ -5529,9 +5536,12 @@ class TestThermoReferenceStateTripwire:
         matrix = [
             ("C=CC", pp), ("C=CCCCC", pp), ("C=CCCC=C", pp),   # 1.0/2.0/1.95u
             ("C=C(C)c1ccccc1", ps),                            # AMS 1.13u
-            ("CC(CBr)CC(C)CC(C)Br", pp),                       # adduct 6.8u
+            ("CC(CBr)CC(C)CC(C)Br", pp),                       # 286 g/mol: below r95 floor
             ("[H][H]", pp), ("BrBr", pp),                      # heavy-vs-mass split
-            ("CCC(C)CCCC(C)CCCC(C)C", pp),                     # C15 chain 5u
+            ("CCC(C)CCCC(C)CCCC(C)C", pp),                     # C15 212 g/mol: below r95 floor
+            # Genuine chain-scale (454 g/mol / 23 heavy): clears the r95
+            # absolute floor -> both gates must AGREE on a TRUE verdict too.
+            ("CC(CBr)CC(C)CC(C)CC(C)CC(C)CC(C)CC(C)Br", pp),
         ]
         for smiles, pool in matrix:
             spc = Species(molecule=[Molecule().from_smiles(smiles)])
@@ -5722,21 +5732,23 @@ class TestDaughterPoolRegistration:
 class TestThermoReferenceStateEpdmShaped:
     """Spec §8.2/§8.3 -- the EPDM shape stays quantitatively clean.
 
-    Fixture geometry mirrors the real deck (T = 1000 K): proxy C15H32
-    (212.41 g/mol, GAV), same-length radical C15H31 (211.41 g/mol, GAV,
-    gas-classified + proxy-tagged; dual-axis polymer-sized vs the C5H10
-    repeat unit: 3.02 mass-units, 15/5 = 3.0 heavy-units >= 2.5), H/H2
-    library. Counterparty window = 70 (pool monomer) + 10 = 80 g/mol: Erad
-    is inside (|dMW| = 1.0), H/H2 far outside (|dMW| >= 209)."""
+    Fixture geometry mirrors the real deck (T = 1000 K): proxy C22H46
+    (310.61 g/mol, GAV), same-length radical C22H45 (309.60 g/mol, GAV,
+    gas-classified + proxy-tagged; genuine multi-repeat chain clearing the r95
+    absolute floor -- 22 heavy atoms, 309.6 g/mol -- vs the C5H10 repeat unit),
+    H/H2 library. Counterparty window = 70 (pool monomer) + 10 = 80 g/mol: Erad
+    is inside (|dMW| = 1.0), H/H2 far outside (|dMW| >= 308)."""
 
     @staticmethod
     def _build():
-        c15h32 = "CCC(C)CCCC(C)CCCC(C)C"
-        c15h31 = "CCC(C)CCCC(C)CCCC(C)[CH2]"
+        # C22 same-length pair (r95): both clear the absolute chain-scale floor
+        # (310.61 / 309.60 g/mol, 22 heavy), still mass-paired (|dMW| = 1.0).
+        c22h46 = "CCCCCCCCCCCCCCCCCCCCCC"
+        c22h45 = "[CH2]CCCCCCCCCCCCCCCCCCCCC"
         sp = {
-            "E": _spc(c15h32, "E"),
+            "E": _spc(c22h46, "E"),
             "E_mu0": _spc("CO", "E_mu0"), "E_mu1": _spc("C=O", "E_mu1"), "E_mu2": _spc("C#N", "E_mu2"),
-            "Erad": _spc(c15h31, "Erad"),
+            "Erad": _spc(c22h45, "Erad"),
             "H": _spc("[H]", "H"), "H2": _spc("[H][H]", "H2"),
         }
         for k in ("E", "Erad"):
@@ -5773,13 +5785,13 @@ class TestThermoReferenceStateEpdmShaped:
     def test_max_u_below_benign_ceiling(self, caplog):
         """Spec §8.2: the boundary-crossing H-abstraction pair comes in at
         the paired-cancellation scale -- max U <= 0.33 + margin ASSERTED
-        (not just 'no exception'); in fact 1.5*log10(212.41/211.41) =
-        0.0031 decades. The census is empty."""
+        (not just 'no exception'); in fact 1.5*log10(310.61/309.60) =
+        0.0021 decades. The census is empty."""
         import logging
         with caplog.at_level(logging.WARNING):
             rs = self._build()
         assert rs.reference_state_max_decades <= 0.33 + 0.1
-        assert rs.reference_state_max_decades == pytest.approx(0.0031, abs=0.002)
+        assert rs.reference_state_max_decades == pytest.approx(0.0021, abs=0.002)
         assert rs.reference_state_census == []
         assert not any("THERMO REFERENCE-STATE CENSUS" in r.getMessage()
                        for r in caplog.records)
@@ -5801,7 +5813,7 @@ class TestThermoReferenceStateEpdmShaped:
         # provenance classifier genuinely sees the library/GAV mix on the
         # fixture's comment strings -- the sensor stays silent on SCOPE
         # (H/H2 outside the MW window), not on blindness.
-        assert rs.reference_state_max_decades == pytest.approx(0.0031, abs=0.002)
+        assert rs.reference_state_max_decades == pytest.approx(0.0021, abs=0.002)
         probe_lib, probe_gav = _spc("C", "PL"), _spc("CC", "PG")
         probe_lib.thermo = _trivial_nasa(_LIB_COMMENT)
         probe_gav.thermo = _trivial_nasa(_GAV_COMMENT)
@@ -9984,24 +9996,29 @@ class TestImpostorRowRefusalFluxDead:
     def _impostor_fixture():
         """Run-2-shaped impostor row built through the REAL generation route
         (make_new_reaction + species_dict isomorphism fold-back onto the
-        registered pool): H2 + <proxy-with-one-double-bond> <=> polypropylene.
-        The unsaturated C9H18 discrete (126.24 g/mol = 3.0
-        monomer-equivalents) is the proxy-minus-H2 impostor, mirroring
-        run-2's proxy-minus-Br2/HBr molecules at 2.76-3.00
-        monomer-equivalents."""
+        registered pool): H2 + <proxy-with-one-double-bond> <=> PS pool.
+        Uses a POLYSTYRENE pool because its stitched trimer proxy is itself
+        genuinely chain-scale (C24H26, 314.5 g/mol / 24 heavy, clearing the r95
+        absolute floor) -- a PP proxy (C9, 128 g/mol) is below the floor and
+        would make an honest chain-scale impostor unrepresentable. The
+        unsaturated C24H24 discrete (312.5 g/mol / 24 heavy) is the
+        proxy-minus-H2 impostor, mirroring FR1 run-2's C36-scale
+        proxy-minus-Br2/HBr molecules that folded onto the condensed proxy."""
         from rmgpy.data.kinetics import TemplateReaction
         from rmgpy.molecule import Molecule
         from rmgpy.polymer import Polymer
         from rmgpy.rmg.model import CoreEdgeReactionModel
 
         cerm = CoreEdgeReactionModel()
-        pp = Polymer(label='polypropylene', monomer='[CH2][CH]C',
+        pp = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
                      Mn=5000.0, Mw=8000.0, initial_mass=1.0)
         cerm._register_polymer(pp, generate_thermo=False)
         forward = TemplateReaction(
             reactants=[Molecule().from_smiles('[H][H]'),
-                       Molecule().from_smiles('C=CCC(C)CC(C)C')],
-            products=[Molecule().from_smiles('CCCC(C)CC(C)C')],
+                       Molecule().from_smiles(
+                           'C=C(CC(CCc1ccccc1)c1ccccc1)c1ccccc1')],
+            products=[Molecule().from_smiles(
+                'CC(CC(CCc1ccccc1)c1ccccc1)c1ccccc1')],
             family='XY_Addition_MultipleBond', is_forward=True,
             reversible=True,
             kinetics=Arrhenius(A=(1.0e7, 'm^3/(mol*s)'), n=0.0,
@@ -10022,7 +10039,7 @@ class TestImpostorRowRefusalFluxDead:
         gas_spc = next(s for s in out.reactants
                        if s.molecule[0].get_formula() == 'H2')
         imp_spc = next(s for s in out.reactants
-                       if s.molecule[0].get_formula() == 'C9H18')
+                       if s.molecule[0].get_formula() == 'C24H24')
 
         cerm.add_species_to_edge(pp)
         cerm.add_species_to_core(pp)      # brings the mu dummies along
@@ -10036,14 +10053,12 @@ class TestImpostorRowRefusalFluxDead:
         pp.baseline_proxy.thermo = _trivial_nasa(_GAV_COMMENT)
         idx = {s.label: i for i, s in enumerate(core_species)}
         mask = np.ones(len(core_species), dtype=bool)
-        for lbl in ('polypropylene', 'polypropylene_mu0',
-                    'polypropylene_mu1', 'polypropylene_mu2'):
+        for lbl in ('PS', 'PS_mu0', 'PS_mu1', 'PS_mu2'):
             mask[idx[lbl]] = False
         pool = PolymerPoolConfig(
-            label='polypropylene', xs=2, explicit_dp_to_species_index={},
-            mu_indices=(idx['polypropylene_mu0'], idx['polypropylene_mu1'],
-                        idx['polypropylene_mu2']),
-            monomer_poly_index=None, monomer_mw_g_mol=42.08,
+            label='PS', xs=2, explicit_dp_to_species_index={},
+            mu_indices=(idx['PS_mu0'], idx['PS_mu1'], idx['PS_mu2']),
+            monomer_poly_index=None, monomer_mw_g_mol=104.15,
             k_scission=0.0, k_unzip=0.0)
         return out, gas_spc, core_species, mask, pool
 

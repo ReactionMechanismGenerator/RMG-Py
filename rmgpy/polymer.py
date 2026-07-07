@@ -2544,6 +2544,29 @@ PROXY_STITCH_REPEAT_UNITS = 3
 # refused.
 _IMPOSTOR_DISCRETE_MONOMER_UNITS = PROXY_STITCH_REPEAT_UNITS - 0.5
 
+# r95 absolute chain-scale floor (adjudicated adversarial round 95, grounded in
+# the polypropylene rerun over-refusal). The monomer-RELATIVE ratio above is
+# scale-blind: for a LIGHT monomer (PP is C3H6, 42 g/mol) 2.5 monomer-
+# equivalents is only ~105 g/mol, so an ordinary C8 pyrolysis fragment
+# (113 g/mol, 8 heavy = 2.69/2.67 monomer-equivalents) trivially clears it and
+# is mis-classified "polymer-sized", collapsing legitimate pool chemistry (the
+# PP rerun refused 573 ordinary secondary-radical rows, taking the pool from 12
+# live coupling rows to 0). This ABSOLUTE floor is CONJOINED with the ratio via
+# max() (below): a discrete must clear BOTH the monomer-relative bar AND this
+# floor to count as chain-scale.
+#
+# These are a chain-scale CLASSIFIER floor, NOT a per-polymer tuning knob -- do
+# NOT derive them from PP or FR1 specifically. Rationale: a genuine multi-repeat
+# chain-scale defect (the thing the refusal predicates exist to catch) clears
+# any reasonable absolute floor, while ordinary small pyrolysis fragments
+# (C5-C10) and DP-2 volatiles do not. For a HEAVY-monomer polymer (FR1 monomer
+# ~645 g/mol) the max() picks the monomer-relative value (2.5*645 = 1613), so
+# FR1 behavior is UNCHANGED and the run-5 shape-D impostor (1871 g/mol) is still
+# refused; for a LIGHT-monomer polymer (PP, 42 g/mol) the max() picks this
+# floor (300), sparing the ordinary fragments.
+ABS_CHAIN_SCALE_MW = 300.0     # g/mol -- absolute chain-scale mass floor
+ABS_CHAIN_SCALE_HEAVY = 20     # heavy (non-H) atoms -- absolute structure floor
+
 
 def _net_nonpolymer_mass_g_mol(reactants, products) -> float:
     """SIGNED net non-polymer mass (g/mol) that leaves the chain in a reaction:
@@ -3300,20 +3323,27 @@ def _discrete_is_polymer_sized(species, poly) -> bool:
         species if isinstance(species, Molecule) else None)
     if mol is None:
         return False
-    # Mass axis.
+    # Mass axis. r95: the monomer-relative ratio is CONJOINED with the absolute
+    # chain-scale floor via max() -- a discrete must clear BOTH bars. For a
+    # light monomer (PP, 42 g/mol) max() picks ABS_CHAIN_SCALE_MW (300), sparing
+    # ordinary C5-C10 fragments; for a heavy monomer (FR1, ~645 g/mol) max()
+    # picks the ratio (2.5*645 = 1613), leaving the FR1 shape-D catch unchanged.
     monomer_mw = float(getattr(poly, 'monomer_mw_g_mol', 0.0) or 0.0)
     mass_computable = monomer_mw > 0.0
     mass_polymer_sized = (
         mass_computable
         and mol.get_molecular_weight() * 1000.0
-        >= _IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_mw)
-    # Structure (heavy-atom) axis.
+        >= max(_IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_mw,
+               ABS_CHAIN_SCALE_MW))
+    # Structure (heavy-atom) axis -- same r95 max() conjunction of the
+    # monomer-relative ratio with the absolute heavy-atom floor.
     monomer_heavy = _heavy_atom_count(getattr(poly, 'monomer', None))
     structure_computable = monomer_heavy > 0
     structure_polymer_sized = (
         structure_computable
         and _heavy_atom_count(mol)
-        >= _IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_heavy)
+        >= max(_IMPOSTOR_DISCRETE_MONOMER_UNITS * monomer_heavy,
+               ABS_CHAIN_SCALE_HEAVY))
     if mass_computable and structure_computable:
         return mass_polymer_sized and structure_polymer_sized
     # At least one axis uncomputable: never refuse. Announce the case as
@@ -7288,6 +7318,31 @@ def build_polymer_moments_artifact(pool_registry,
     reactions = compile_polymer_reaction_entries(
         core_reactions or [], core_species or [],
         configured_pool_labels, cantera_index_map)
+
+    # r95 run-gate POOL LIVENESS census (review-gated alarm, NOT a hard-fail).
+    # compile_polymer_reaction_entries lists EVERY pool-coupled row -- refused
+    # rows are stamp-but-kept alongside live ones -- so len()/refused-count is
+    # the live/refused split at artifact-write time. If a pool has coupled rows
+    # but ZERO survive live, the refusal predicates may be over-broad (the r95
+    # PP-rerun regression: 106 rows, all refused, took the pool 12->0 live and
+    # zeroed legitimate secondary channels). This is census/warning ONLY: a
+    # legitimately deck-incomplete polymer (e.g. FR1 with an undecked Br cohort)
+    # may honestly refuse every row, so we must NEVER raise here -- only flag it
+    # loudly for review before the artifact is trusted.
+    _n_pool_rxn = len(reactions)
+    _n_refused = sum(1 for e in reactions if e.get("refused"))
+    _n_live = _n_pool_rxn - _n_refused
+    if _n_pool_rxn > 0 and _n_live == 0:
+        logging.warning(
+            "POOL LIVENESS ALARM: %d pool-coupled reaction row(s), 0 live "
+            "(all refused) -- the refusal predicates may be over-broad; review "
+            "before trusting this artifact.", _n_pool_rxn)
+    elif _n_pool_rxn > 0 and _n_refused > 0.9 * _n_pool_rxn:
+        logging.warning(
+            "POOL LIVENESS ALARM: %d of %d pool-coupled reaction row(s) refused "
+            "(%.0f%%) -- an unusually high refused fraction; review whether the "
+            "refusal predicates are over-broad before trusting this artifact.",
+            _n_refused, _n_pool_rxn, 100.0 * _n_refused / _n_pool_rxn)
 
     # Version contract: the radical_qssa_unzip channel grows the closed
     # channel vocabulary (schema minor bump -> 2.1) and adds new channel/flux
