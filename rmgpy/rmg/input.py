@@ -47,7 +47,7 @@ from rmgpy.molecule import Molecule
 from rmgpy.molecule.fragment import Fragment
 from rmgpy.molecule.group import Group
 from rmgpy.quantity import Energy, Quantity, RateCoefficient, SurfaceConcentration, Concentration
-from rmgpy.polymer import Polymer
+from rmgpy.polymer import Polymer, validate_thermal_analysis_inputs
 from rmgpy.rmg.model import CoreEdgeReactionModel
 from rmgpy.rmg.polymer_input import (
     HybridPolymerReactor,
@@ -267,6 +267,7 @@ def polymer(label: str,
             k_homolysis: Optional[dict] = None,
             k_depropagation: Optional[dict] = None,
             side_group_homolysis: Optional[list] = None,
+            thermal_analysis_inputs: Optional[dict] = None,
             ):
     """
     Helper function exposed in the input file to define a Polymer Pool.
@@ -582,6 +583,22 @@ def polymer(label: str,
                 f"initiation carriers on one pool would double-carry "
                 f"initiation. Remove one of them.")
 
+    # thermal_analysis_inputs (schema 2.9): DECLARED thermal-analysis inputs
+    # for the downstream DTA/TGA consumer, threaded verbatim from the deck.
+    # Field/provenance rules (recognized field names; each value a
+    # {value, units, basis, temperature_K, provenance} object; a declared
+    # value REQUIRES an author-supplied provenance citation) live in
+    # validate_thermal_analysis_inputs -- the shared single source of truth.
+    # These are declared inputs with provenance, NOT RMG-computed chemistry;
+    # RMG never hardcodes literature values here, it only passes through what
+    # the deck declares.
+    if thermal_analysis_inputs is not None:
+        try:
+            thermal_analysis_inputs = validate_thermal_analysis_inputs(
+                label, thermal_analysis_inputs)
+        except ValueError as e:
+            raise InputError(str(e))
+
     poly_obj = Polymer(
         label=label,
         monomer=monomer,
@@ -598,6 +615,7 @@ def polymer(label: str,
         k_depropagation=k_depropagation,
         side_group_homolysis=side_group_homolysis,
         discrete_dp_threshold=discrete_dp_threshold,
+        thermal_analysis_inputs=thermal_analysis_inputs,
     )
 
     # 1b. Round-72 P1 STRUCTURAL layer of the side-group channel law,

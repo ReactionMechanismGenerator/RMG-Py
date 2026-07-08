@@ -329,6 +329,15 @@ class Polymer(Species):
         # (a 3-unit proxy never does). Defined-but-documented beats undefined
         # intent; no behavioral use yet.
         self.discrete_dp_threshold = kwargs.pop('discrete_dp_threshold', 4)
+        # Declared thermal-analysis inputs (schema 2.9): a normalized dict
+        # {field: {value, units, basis, temperature_K, provenance}} threaded
+        # verbatim from the input deck (validated by
+        # validate_thermal_analysis_inputs). Passive storage here; the
+        # serializer passes it through unchanged. None on ordinary pools (no
+        # thermal declaration -> byte-identical legacy behavior). NEVER a
+        # place for literature values -- RMG only carries what the deck
+        # declares, with the deck author's provenance citation.
+        self.thermal_analysis_inputs = kwargs.pop('thermal_analysis_inputs', None)
 
         super(Polymer, self).__init__(label=label, **kwargs)
 
@@ -5079,7 +5088,216 @@ POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SIDE_GROUP = "2.7"
 # BESIDE 2.5/2.6/2.7, never subsumes them. NO artifact-level
 # recipe_revision change (the 2.3/2.6/2.7 block-local precedent).
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_DEPROPAGATION = "2.8"
+# Schema 2.9 = 2.8 + two ADDITIVE, presence-gated blocks that complete the
+# DTA/TGA "input state" the downstream thermal-analysis consumer (~/Code/TA)
+# needs, WITHOUT fabricating any RMG-computed chemistry:
+#
+#  (A) thermal_analysis_inputs -- DECLARED thermal-analysis inputs threaded
+#      verbatim from the input deck (never hardcoded here): per-pool
+#      dH_depoly_J_per_mol / dH_vap_J_per_mol / cp_condensed_J_per_kg_K land
+#      inside each declaring pool's entry; top-level instrument fields
+#      (htc_W_per_m2_K / wall_area_m2 / pan_area_m2) land under
+#      conventions.thermal_analysis_inputs. Every value is the provenance
+#      object {value, units, basis, temperature_K, provenance}; a field the
+#      deck did NOT declare is emitted as {value: null, provenance: "unset"}
+#      -- HONEST incompleteness, never a made-up number. RMG is
+#      method-of-moments (per-pool state = [mu0,mu1,mu2]); these are
+#      declared inputs with author-supplied citations, NOT computed here.
+#
+#  (B) explicit_dp.inventory -- the FULL real sparse discrete-chip
+#      population the solver actually tracks (explicit_dp_to_species_index),
+#      one {DP, species_label, moles} entry per tracked DP. Emitted only
+#      when MORE THAN ONE chip is tracked, so the single-cutoff-chip 2.3
+#      block stays byte-identical (golden-pinned). Emitting a
+#      closure-expanded n(DP) histogram would be FABRICATED data (there is
+#      no n(DP) distribution in a moment method), so we serialize only the
+#      real chips RMG holds.
+#
+# Same presence-based minor-bump policy as 2.1-2.8: the emitter stamps 2.9
+# exactly when a deck-declared thermal_analysis_inputs OR a multi-chip
+# explicit-DP inventory is present; an artifact with neither keeps its older
+# stamp byte-identically. 2.9 sits BESIDE 2.5/2.6/2.7/2.8, never subsumes
+# them. NO artifact-level recipe_revision change (thermal inputs are
+# declared provenance, not rate algebra; the block-local token precedent).
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_THERMAL = "2.9"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
+
+# Recognized thermal_analysis_inputs fields (schema 2.9). Per-pool fields
+# land inside each declaring pool's entry; instrument fields are top-level
+# (conventions.thermal_analysis_inputs). Any other key is a deck typo and
+# is rejected at deck-read time by validate_thermal_analysis_inputs.
+THERMAL_ANALYSIS_PER_POOL_FIELDS = (
+    "dH_depoly_J_per_mol",
+    "dH_vap_J_per_mol",
+    "cp_condensed_J_per_kg_K",
+)
+THERMAL_ANALYSIS_INSTRUMENT_FIELDS = (
+    "htc_W_per_m2_K",
+    "wall_area_m2",
+    "pan_area_m2",
+)
+
+
+def validate_thermal_analysis_inputs(label, thermal_analysis_inputs):
+    """Validate + normalize a deck-declared ``thermal_analysis_inputs`` dict
+    (schema 2.9). Shared single source of truth, called at deck-read time by
+    ``rmgpy.rmg.input.polymer``.
+
+    Contract: ``thermal_analysis_inputs`` maps a RECOGNIZED field name (one
+    of THERMAL_ANALYSIS_PER_POOL_FIELDS or THERMAL_ANALYSIS_INSTRUMENT_FIELDS)
+    to a provenance OBJECT ``{value, units, basis, temperature_K,
+    provenance}``. ``value`` is a finite number or ``None``; when it is not
+    ``None`` the deck author MUST supply a non-empty ``provenance`` citation
+    string (these are DECLARED inputs, and an unsourced number is exactly
+    the fabrication this schema is designed to forbid). ``temperature_K`` (if
+    given) must be a finite number; ``units``/``basis``/``provenance`` (if
+    given) must be strings. Missing optional sub-keys normalize to ``None``;
+    a value-less field normalizes its ``provenance`` to ``"unset"``.
+
+    Returns a new normalized dict; raises ``ValueError`` on any violation
+    (the caller re-raises as ``InputError`` for deck-grade feedback).
+    """
+    if not isinstance(thermal_analysis_inputs, dict):
+        raise ValueError(
+            f"Polymer pool '{label}': thermal_analysis_inputs must be a dict "
+            f"of {{field: {{value, units, basis, temperature_K, provenance}}}}, "
+            f"got {type(thermal_analysis_inputs).__name__}.")
+    recognized = set(THERMAL_ANALYSIS_PER_POOL_FIELDS) | set(
+        THERMAL_ANALYSIS_INSTRUMENT_FIELDS)
+    normalized = {}
+    for field, obj in thermal_analysis_inputs.items():
+        if field not in recognized:
+            raise ValueError(
+                f"Polymer pool '{label}': thermal_analysis_inputs has "
+                f"unrecognized field {field!r}. Recognized fields: "
+                f"{sorted(recognized)}.")
+        if not isinstance(obj, dict):
+            raise ValueError(
+                f"Polymer pool '{label}': thermal_analysis_inputs[{field!r}] "
+                f"must be an object {{value, units, basis, temperature_K, "
+                f"provenance}}, got {type(obj).__name__}.")
+        unknown_sub = set(obj) - {
+            "value", "units", "basis", "temperature_K", "provenance"}
+        if unknown_sub:
+            raise ValueError(
+                f"Polymer pool '{label}': thermal_analysis_inputs[{field!r}] "
+                f"has unrecognized sub-keys {sorted(unknown_sub)}; allowed: "
+                f"value, units, basis, temperature_K, provenance.")
+        value = obj.get("value")
+        if value is not None:
+            try:
+                value = float(value)
+            except (TypeError, ValueError):
+                raise ValueError(
+                    f"Polymer pool '{label}': thermal_analysis_inputs"
+                    f"[{field!r}].value must be a finite number or None, got "
+                    f"{obj.get('value')!r}.")
+            if not math.isfinite(value):
+                raise ValueError(
+                    f"Polymer pool '{label}': thermal_analysis_inputs"
+                    f"[{field!r}].value is non-finite ({value!r}).")
+        temperature_k = obj.get("temperature_K")
+        if temperature_k is not None:
+            try:
+                temperature_k = float(temperature_k)
+            except (TypeError, ValueError):
+                raise ValueError(
+                    f"Polymer pool '{label}': thermal_analysis_inputs"
+                    f"[{field!r}].temperature_K must be a finite number or "
+                    f"None, got {obj.get('temperature_K')!r}.")
+            if not math.isfinite(temperature_k):
+                raise ValueError(
+                    f"Polymer pool '{label}': thermal_analysis_inputs"
+                    f"[{field!r}].temperature_K is non-finite "
+                    f"({temperature_k!r}).")
+        for str_key in ("units", "basis"):
+            if obj.get(str_key) is not None and not isinstance(
+                    obj.get(str_key), str):
+                raise ValueError(
+                    f"Polymer pool '{label}': thermal_analysis_inputs"
+                    f"[{field!r}].{str_key} must be a string or None, got "
+                    f"{type(obj.get(str_key)).__name__}.")
+        provenance = obj.get("provenance")
+        if value is not None:
+            if not isinstance(provenance, str) or not provenance.strip():
+                raise ValueError(
+                    f"Polymer pool '{label}': thermal_analysis_inputs"
+                    f"[{field!r}] declares value={value!r} but no provenance "
+                    f"citation. Declared thermal-analysis inputs REQUIRE a "
+                    f"non-empty provenance string (an unsourced number is the "
+                    f"fabrication this schema forbids). Supply provenance or "
+                    f"drop the field.")
+        else:
+            if provenance is not None and not isinstance(provenance, str):
+                raise ValueError(
+                    f"Polymer pool '{label}': thermal_analysis_inputs"
+                    f"[{field!r}].provenance must be a string or None, got "
+                    f"{type(provenance).__name__}.")
+            provenance = provenance if provenance else "unset"
+        normalized[field] = {
+            "value": value,
+            "units": obj.get("units"),
+            "basis": obj.get("basis"),
+            "temperature_K": temperature_k,
+            "provenance": provenance,
+        }
+    return normalized
+
+
+def _thermal_field_or_unset(obj):
+    """Return a full schema-2.9 provenance object for a thermal-analysis
+    field: the normalized object verbatim when the deck declared it, or the
+    HONEST-incompleteness sentinel {value: null, provenance: "unset"} when
+    it did not."""
+    if obj is None:
+        return {"value": None, "units": None, "basis": None,
+                "temperature_K": None, "provenance": "unset"}
+    return {
+        "value": obj.get("value"),
+        "units": obj.get("units"),
+        "basis": obj.get("basis"),
+        "temperature_K": obj.get("temperature_K"),
+        "provenance": obj.get("provenance", "unset"),
+    }
+
+
+def _serialize_thermal_analysis_inputs_block(pool):
+    """Per-pool thermal_analysis_inputs block (schema 2.9): the three
+    per-pool DTA fields, each completed to a full provenance object (declared
+    -> the deck value; undeclared -> {value: null, provenance: "unset"}).
+    Returns None when the pool declared NONE of the per-pool fields (so pools
+    with no thermal declaration stay byte-identical, presence-gated)."""
+    tai = getattr(pool, "thermal_analysis_inputs", None)
+    if not tai:
+        return None
+    if not any(f in tai for f in THERMAL_ANALYSIS_PER_POOL_FIELDS):
+        return None
+    return {f: _thermal_field_or_unset(tai.get(f))
+            for f in THERMAL_ANALYSIS_PER_POOL_FIELDS}
+
+
+def _collect_thermal_instrument_inputs(pool_registry):
+    """Top-level (instrument) thermal_analysis_inputs block (schema 2.9),
+    collected across the registry. Returns None when NO pool declared ANY
+    thermal input at all (so thermal-free artifacts stay byte-identical);
+    otherwise returns every instrument field completed to a full provenance
+    object (first declaring pool wins; undeclared -> null/unset). Because the
+    block enumerates the COMPLETE instrument input set, a DTA consumer can
+    read exactly which fields are set vs. genuinely unset."""
+    any_declared = any(getattr(p, "thermal_analysis_inputs", None)
+                       for p in pool_registry)
+    if not any_declared:
+        return None
+    collected = {}
+    for field in THERMAL_ANALYSIS_INSTRUMENT_FIELDS:
+        found = None
+        for p in pool_registry:
+            tai = getattr(p, "thermal_analysis_inputs", None) or {}
+            if tai.get(field) is not None:
+                found = tai.get(field)
+                break
+        collected[field] = _thermal_field_or_unset(found)
+    return collected
 
 
 def collect_polymer_pool_registry(*species_lists) -> List['Polymer']:
@@ -5412,7 +5630,8 @@ EXPLICIT_DP_SIDECAR_RECIPE = {
 
 def _serialize_explicit_dp_block(pool: 'Polymer',
                                  core_species: Optional[List['Species']] = None,
-                                 initial_explicit_moles: Optional[Dict[int, float]] = None
+                                 initial_explicit_moles: Optional[Dict[int, float]] = None,
+                                 explicit_dp_species_by_dp: Optional[Dict[int, str]] = None
                                  ) -> Optional[Dict[str, Any]]:
     """Serialize the pool's explicit-DP handshake target (schema 2.3), or
     return None when the pool carries none (legacy pools emit nothing —
@@ -5453,8 +5672,9 @@ def _serialize_explicit_dp_block(pool: 'Polymer',
             f"Refusing to serialize an explicit_dp block whose species the "
             f"artifact cannot name consistently.")
     dp = int(getattr(pool, "cutoff", 0))
-    moles = float((initial_explicit_moles or {}).get(dp, 0.0))
-    return {
+    moles_map = initial_explicit_moles or {}
+    moles = float(moles_map.get(dp, 0.0))
+    block = {
         "enabled": True,
         "species": {str(dp): _artifact_species_label(dp_spc)},
         "initial_moles": {str(dp): moles},
@@ -5462,6 +5682,33 @@ def _serialize_explicit_dp_block(pool: 'Polymer',
         "recipe_revision": EXPLICIT_DP_BLOCK_RECIPE_REVISION,
         "recipe": dict(EXPLICIT_DP_SIDECAR_RECIPE),
     }
+    # Schema 2.9, part B: the FULL real explicit-DP chip inventory. The
+    # single cutoff chip above is the v1 case (one map entry, no DP ladder);
+    # when the solver actually tracks MORE THAN ONE discrete DP chip
+    # (explicit_dp_to_species_index resolved to artifact labels by the live
+    # save_everything hook and threaded as explicit_dp_species_by_dp), emit
+    # every real chip as {DP, species_label, moles}. This is the actual
+    # sparse discrete-chip population RMG holds -- NOT a closure-expanded
+    # n(DP) histogram (there is no distribution in a moment method; emitting
+    # one would be fabricated data). Single-chip artifacts add NO inventory
+    # key, so the 2.3 block stays byte-identical (golden-pinned).
+    species_by_dp = dict(explicit_dp_species_by_dp or {})
+    # The pool's own cutoff chip is always present (identity-verified above);
+    # fold it in so a routing map that happens to omit it still lists it.
+    species_by_dp.setdefault(dp, _artifact_species_label(dp_spc))
+    if len(species_by_dp) > 1:
+        block["inventory"] = [
+            {
+                "DP": int(d),
+                "species_label": species_by_dp[d],
+                "moles": float(moles_map.get(d, 0.0)),
+            }
+            for d in sorted(species_by_dp)
+        ]
+        block["inventory_basis"] = (
+            "real explicit-DP chips tracked by the solver; moles = t=0 "
+            "initial_moles (extensive mol), NOT a closure-expanded n(DP)")
+    return block
 
 
 # Block-local revision token of the pool-level ``homolysis_initiation``
@@ -6666,7 +6913,8 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
                                 core_species: Optional[List['Species']] = None,
                                 monomer_routing: Optional[str] = None,
                                 spawned: bool = False,
-                                initial_explicit_moles: Optional[Dict[int, float]] = None
+                                initial_explicit_moles: Optional[Dict[int, float]] = None,
+                                explicit_dp_species_by_dp: Optional[Dict[int, str]] = None
                                 ) -> Dict[str, Any]:
     """Convert a :class:`Polymer` instance to a JSON-serialisable dict.
 
@@ -6807,7 +7055,8 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
     # rather than by the channel-key guard.
     explicit_dp_block = _serialize_explicit_dp_block(
         pool, core_species=core_species,
-        initial_explicit_moles=initial_explicit_moles)
+        initial_explicit_moles=initial_explicit_moles,
+        explicit_dp_species_by_dp=explicit_dp_species_by_dp)
     if explicit_dp_block is not None:
         d["explicit_dp"] = explicit_dp_block
     # Radical-homolysis initiation block (schema 2.6, Stage 2). Absent ->
@@ -6910,6 +7159,19 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
     # rate recipe), and no emitted value changes for any pool that exists
     # today.
     d["moments_provenance"] = "spawned_empty" if spawned else "input_declared"
+
+    # Per-pool thermal_analysis_inputs block (schema 2.9, part A). DECLARED
+    # DTA inputs threaded verbatim from the deck (dH_depoly / dH_vap /
+    # cp_condensed), each completed to a full provenance object; a field the
+    # deck did not declare emits {value: null, provenance: "unset"} (honest
+    # incompleteness). Emitted ONLY when the pool declared at least one
+    # per-pool thermal field, so pools with no thermal declaration stay
+    # byte-identical (presence-gated). Top-level instrument fields
+    # (htc/wall_area/pan) are hoisted to conventions.thermal_analysis_inputs
+    # by build_polymer_moments_artifact, not here.
+    thermal_block = _serialize_thermal_analysis_inputs_block(pool)
+    if thermal_block is not None:
+        d["thermal_analysis_inputs"] = thermal_block
     return d
 
 
@@ -6928,6 +7190,7 @@ def write_polymer_pools_sidecar(
     initial_explicit_by_pool=None,
     generation_mass_transfer=None,
     generation_v_poly_m3=None,
+    explicit_dp_species_by_pool=None,
 ) -> str:
     """Emit ``polymer_pools.json`` alongside ``chem.yaml`` (design doc §6).
 
@@ -7001,6 +7264,7 @@ def write_polymer_pools_sidecar(
         initial_explicit_by_pool=initial_explicit_by_pool,
         generation_mass_transfer=generation_mass_transfer,
         generation_v_poly_m3=generation_v_poly_m3,
+        explicit_dp_species_by_pool=explicit_dp_species_by_pool,
     )
     path = os.path.join(output_dir, filename)
     with open(path, "w", encoding="utf-8") as fh:
@@ -7256,7 +7520,8 @@ def build_polymer_moments_artifact(pool_registry,
                                    rmg_commit=None,
                                    initial_explicit_by_pool=None,
                                    generation_mass_transfer=None,
-                                   generation_v_poly_m3=None):
+                                   generation_v_poly_m3=None,
+                                   explicit_dp_species_by_pool=None):
     """Assemble the full schema-2.0 polymer moments artifact payload.
 
     Normative contract: docs/polymer_moments_format.md. The payload mirrors
@@ -7281,6 +7546,13 @@ def build_polymer_moments_artifact(pool_registry,
     # passes the engine's attribute verbatim). Feeds the schema-2.3
     # explicit_dp block's initial_moles; pools without an entry default 0.0.
     initial_explicit_by_pool = initial_explicit_by_pool or {}
+    # {pool_label: {dp: species_label}} -- the FULL real explicit-DP chip
+    # roster the solver tracks (explicit_dp_to_species_index resolved to
+    # artifact labels by the live save_everything hook). Feeds the schema-2.9
+    # explicit_dp.inventory; absent/empty -> single-cutoff-chip 2.3 block
+    # (byte-identical). Never fabricates chips: it lists only what the solver
+    # actually holds.
+    explicit_dp_species_by_pool = explicit_dp_species_by_pool or {}
     # input-vs-spawned for moments_provenance (item #14a amended, spec s4):
     # Path-C scission tails carry NO spawn markers on the pool object (the
     # serializer defaults their spawn_event_metadata to {'source':'input'}),
@@ -7311,6 +7583,8 @@ def build_polymer_moments_artifact(pool_registry,
             monomer_routing=monomer_routing_by_pool.get(getattr(p, "label", "")),
             spawned=_pool_is_spawned(p),
             initial_explicit_moles=initial_explicit_by_pool.get(
+                getattr(p, "label", "")),
+            explicit_dp_species_by_dp=explicit_dp_species_by_pool.get(
                 getattr(p, "label", "")),
         )
         for p in pool_registry
@@ -7440,6 +7714,24 @@ def build_polymer_moments_artifact(pool_registry,
                        if "end_radical_depropagation" in p]
     if deprop_carriers:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_DEPROPAGATION
+    # Thermal-analysis / explicit-DP-inventory vocabulary (schema 2.9) is
+    # the strongest SHAPE stamp of all (2.9 > 2.8 > ...), presence-gated
+    # like every prior minor. Two independent, ADDITIVE triggers:
+    #   (A) a deck-declared thermal_analysis_inputs anywhere -- per-pool
+    #       blocks in pools[] OR top-level instrument fields (collected
+    #       below); and
+    #   (B) a multi-chip explicit_dp.inventory on any pool.
+    # An artifact with neither keeps its older stamp byte-identically
+    # (negative-control pinned). Artifact-level recipe_revision stays
+    # untouched (thermal inputs are declared provenance, not rate algebra;
+    # the block-local token precedent).
+    thermal_instrument = _collect_thermal_instrument_inputs(pool_registry)
+    thermal_present = (thermal_instrument is not None
+                       or any("thermal_analysis_inputs" in p for p in pools))
+    explicit_dp_inventory_present = any(
+        (p.get("explicit_dp") or {}).get("inventory") for p in pools)
+    if thermal_present or explicit_dp_inventory_present:
+        schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_THERMAL
 
     # conventions.condensed_species closure (schema 2.5): a spawned pool's
     # phase_species (canonical proxy + mu-dummies collected from the same
@@ -7564,6 +7856,17 @@ def build_polymer_moments_artifact(pool_registry,
             "generation-run values; consumer experiment config takes "
             "precedence")
         conventions["generation_defaults"] = generation_defaults
+
+    # conventions.thermal_analysis_inputs (schema 2.9, part A -- instrument
+    # fields): the top-level DTA instrument inputs (htc_W_per_m2_K /
+    # wall_area_m2 / pan_area_m2), each a full provenance object (declared ->
+    # the deck value; undeclared -> {value: null, provenance: "unset"}).
+    # Emitted ONLY when the deck declared SOME thermal input anywhere
+    # (per-pool or instrument), so thermal-free artifacts stay byte-identical
+    # (golden-pinned). These are DECLARED inputs with author-supplied
+    # provenance, never RMG-computed numbers.
+    if thermal_instrument is not None:
+        conventions["thermal_analysis_inputs"] = thermal_instrument
 
     return {
         "schema_version": schema_version,

@@ -11,6 +11,7 @@ from rmgpy.kinetics import Arrhenius, MultiArrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.polymer import (
     POLYMER_POOLS_SIDECAR_SCHEMA_VERSION,
+    POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_THERMAL,
     POLYMER_RATE_RECIPE_REVISION,
     Polymer,
     PolymerFluxArchetype,
@@ -18,6 +19,7 @@ from rmgpy.polymer import (
     build_polymer_moments_artifact,
     compile_polymer_reaction_entries,
     derive_condensed_species,
+    validate_thermal_analysis_inputs,
     write_polymer_pools_sidecar,
 )
 from rmgpy.reaction import Reaction
@@ -3199,3 +3201,210 @@ class TestSpawnedPoolRefusalMirror:
         assert e["archetype"] == "legacy_mu1/1"
         assert e["unresolved"] is True
         assert "refused" not in e
+
+
+class TestThermalAnalysisInputsValidation:
+    """validate_thermal_analysis_inputs (schema 2.9, part A): the shared
+    deck-read validator. Declared thermal-analysis inputs are threaded
+    verbatim with provenance; the validator is the guard against unsourced
+    numbers and typo'd fields."""
+
+    def test_declared_field_normalizes_to_full_object(self):
+        norm = validate_thermal_analysis_inputs("PS", {
+            "dH_depoly_J_per_mol": {
+                "value": 70000.0, "units": "J/mol", "basis": "per monomer",
+                "temperature_K": 298.15, "provenance": "Smith 2020"},
+        })
+        assert norm["dH_depoly_J_per_mol"] == {
+            "value": 70000.0, "units": "J/mol", "basis": "per monomer",
+            "temperature_K": 298.15, "provenance": "Smith 2020"}
+
+    def test_value_without_provenance_is_rejected(self):
+        with pytest.raises(ValueError, match="provenance"):
+            validate_thermal_analysis_inputs("PS", {
+                "dH_vap_J_per_mol": {"value": 40000.0, "units": "J/mol"}})
+
+    def test_unrecognized_field_is_rejected(self):
+        with pytest.raises(ValueError, match="unrecognized field"):
+            validate_thermal_analysis_inputs("PS", {
+                "dH_sublimation": {"value": 1.0, "provenance": "x"}})
+
+    def test_non_finite_value_is_rejected(self):
+        with pytest.raises(ValueError, match="non-finite"):
+            validate_thermal_analysis_inputs("PS", {
+                "cp_condensed_J_per_kg_K": {
+                    "value": float("inf"), "provenance": "x"}})
+
+    def test_value_null_normalizes_provenance_to_unset(self):
+        norm = validate_thermal_analysis_inputs("PS", {
+            "dH_vap_J_per_mol": {"value": None}})
+        assert norm["dH_vap_J_per_mol"]["value"] is None
+        assert norm["dH_vap_J_per_mol"]["provenance"] == "unset"
+
+
+class TestThermalAnalysisInputsSerialization:
+    """Schema 2.9, part A: DECLARED thermal-analysis inputs threaded from the
+    deck into the sidecar with provenance. Per-pool fields inside the pool
+    entry; instrument fields under conventions. Undeclared fields emit the
+    honest {value: null, provenance: "unset"} sentinel -- never a made-up
+    number."""
+
+    def _pool(self, tai=None):
+        p = Polymer(
+            label="PS", monomer="[CH2][CH](c1ccccc1)",
+            end_groups=["[H]", "[H]"], cutoff=3, Mn=1500.0, Mw=1800.0,
+            initial_mass=1.0, k_scission=1.0)
+        if tai is not None:
+            p.thermal_analysis_inputs = validate_thermal_analysis_inputs(
+                "PS", tai)
+        return p
+
+    def test_declared_per_pool_value_round_trips_with_provenance(self):
+        p = self._pool({
+            "dH_depoly_J_per_mol": {
+                "value": 70000.0, "units": "J/mol", "basis": "per monomer",
+                "temperature_K": 298.15, "provenance": "Smith 2020"}})
+        d = _serialize_pool_for_sidecar(p)
+        got = d["thermal_analysis_inputs"]["dH_depoly_J_per_mol"]
+        assert got["value"] == pytest.approx(70000.0)
+        assert got["units"] == "J/mol"
+        assert got["provenance"] == "Smith 2020"
+
+    def test_undeclared_per_pool_field_emits_null_unset(self):
+        p = self._pool({
+            "dH_depoly_J_per_mol": {"value": 70000.0, "provenance": "S20"}})
+        d = _serialize_pool_for_sidecar(p)
+        # dH_vap / cp_condensed were NOT declared -> honest incompleteness
+        assert d["thermal_analysis_inputs"]["dH_vap_J_per_mol"] == {
+            "value": None, "units": None, "basis": None,
+            "temperature_K": None, "provenance": "unset"}
+        assert d["thermal_analysis_inputs"]["cp_condensed_J_per_kg_K"][
+            "provenance"] == "unset"
+
+    def test_instrument_fields_land_under_conventions(self):
+        p = self._pool({
+            "htc_W_per_m2_K": {
+                "value": 25.0, "units": "W/m^2/K", "provenance": "pan calib"}})
+        art = build_polymer_moments_artifact(
+            [p], core_species=None, core_reactions=[],
+            configured_pool_labels=["PS"])
+        conv = art["conventions"]["thermal_analysis_inputs"]
+        assert conv["htc_W_per_m2_K"]["value"] == pytest.approx(25.0)
+        assert conv["htc_W_per_m2_K"]["provenance"] == "pan calib"
+        # undeclared instrument fields -> null/unset
+        assert conv["wall_area_m2"]["provenance"] == "unset"
+        assert conv["pan_area_m2"]["value"] is None
+        # instrument fields are NOT duplicated into the pool entry
+        assert "thermal_analysis_inputs" not in art["pools"][0]
+
+    def test_thermal_inputs_bump_schema_to_2_9(self):
+        p = self._pool({
+            "dH_depoly_J_per_mol": {"value": 70000.0, "provenance": "S20"}})
+        art = build_polymer_moments_artifact(
+            [p], core_species=None, core_reactions=[],
+            configured_pool_labels=["PS"])
+        assert art["schema_version"] == POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_THERMAL
+        assert art["schema_version"] == "2.9"
+
+    def test_no_thermal_declaration_keeps_legacy_stamp_and_no_keys(self):
+        """Negative control: a pool with no thermal declaration is
+        byte-identical to the pre-2.9 shape (no thermal keys anywhere, older
+        stamp preserved)."""
+        p = self._pool()
+        art = build_polymer_moments_artifact(
+            [p], core_species=None, core_reactions=[],
+            configured_pool_labels=["PS"])
+        assert art["schema_version"] != "2.9"
+        assert "thermal_analysis_inputs" not in art["conventions"]
+        assert "thermal_analysis_inputs" not in art["pools"][0]
+
+    def test_thermal_inputs_survive_json_round_trip(self):
+        p = self._pool({
+            "dH_vap_J_per_mol": {
+                "value": 40000.0, "units": "J/mol", "provenance": "NIST"},
+            "wall_area_m2": {
+                "value": 1.5e-4, "units": "m^2", "provenance": "pan spec"}})
+        art = build_polymer_moments_artifact(
+            [p], core_species=None, core_reactions=[],
+            configured_pool_labels=["PS"])
+        reloaded = json.loads(json.dumps(art, default=str))
+        assert reloaded["pools"][0]["thermal_analysis_inputs"][
+            "dH_vap_J_per_mol"]["provenance"] == "NIST"
+        assert reloaded["conventions"]["thermal_analysis_inputs"][
+            "wall_area_m2"]["value"] == pytest.approx(1.5e-4)
+
+
+class TestExplicitDpInventorySerialization:
+    """Schema 2.9, part B: the FULL real explicit-DP chip inventory. When the
+    solver tracks MORE THAN ONE discrete DP chip, every real chip is emitted
+    as {DP, species_label, moles} -- the actual sparse discrete-chip
+    population RMG holds, NOT a closure-expanded n(DP) histogram. The
+    single-cutoff-chip case stays byte-identical 2.3 (no inventory key)."""
+
+    def _pool(self):
+        p = Polymer(
+            label="PS", monomer="[CH2][CH](c1ccccc1)",
+            end_groups=["[H]", "[H]"], cutoff=3, Mn=1500.0, Mw=1800.0,
+            initial_mass=1.0, k_scission=0.0, k_unzip=0.01)
+        p.explicit_dp = True
+        p.explicit_dp_species = _spc("CCC", "PS_dp3", index=42)
+        return p
+
+    def _core(self, pool):
+        return [
+            _spc("CC", "PS", index=2),
+            _mu_dummy("PS_mu0"), _mu_dummy("PS_mu1"), _mu_dummy("PS_mu2"),
+            pool.explicit_dp_species,
+            _spc("CCCC", "PS_dp4", index=43),
+            _spc("CCCCC", "PS_dp5", index=44),
+        ]
+
+    def test_single_chip_stays_byte_identical_2_3(self):
+        """One tracked chip -> no inventory key, schema stays 2.3 (the
+        golden-pinned 2.3 block is untouched)."""
+        p = self._pool()
+        d = _serialize_pool_for_sidecar(
+            p, core_species=self._core(p), initial_explicit_moles={3: 0.25})
+        assert "inventory" not in d["explicit_dp"]
+        art = build_polymer_moments_artifact(
+            [p], core_species=self._core(p), core_reactions=[],
+            configured_pool_labels=["PS"],
+            initial_explicit_by_pool={"PS": {3: 0.25}})
+        assert art["schema_version"] == "2.3"
+
+    def test_multi_chip_inventory_serializes_real_populations(self):
+        p = self._pool()
+        core = self._core(p)
+        by_dp = {3: "PS_dp3(42)", 4: "PS_dp4(43)", 5: "PS_dp5(44)"}
+        d = _serialize_pool_for_sidecar(
+            p, core_species=core,
+            initial_explicit_moles={3: 0.25, 4: 0.10, 5: 0.05},
+            explicit_dp_species_by_dp=by_dp)
+        inv = d["explicit_dp"]["inventory"]
+        assert inv == [
+            {"DP": 3, "species_label": "PS_dp3(42)", "moles": 0.25},
+            {"DP": 4, "species_label": "PS_dp4(43)", "moles": 0.10},
+            {"DP": 5, "species_label": "PS_dp5(44)", "moles": 0.05},
+        ]
+
+    def test_multi_chip_artifact_stamps_2_9(self):
+        p = self._pool()
+        core = self._core(p)
+        by_dp = {3: "PS_dp3(42)", 4: "PS_dp4(43)", 5: "PS_dp5(44)"}
+        art = build_polymer_moments_artifact(
+            [p], core_species=core, core_reactions=[],
+            configured_pool_labels=["PS"],
+            initial_explicit_by_pool={"PS": {3: 0.25, 4: 0.10, 5: 0.05}},
+            explicit_dp_species_by_pool={"PS": by_dp})
+        assert art["schema_version"] == "2.9"
+        assert len(art["pools"][0]["explicit_dp"]["inventory"]) == 3
+
+    def test_explicit_dp_off_has_no_inventory(self):
+        """explicit_dp disabled -> no explicit_dp block at all, so no
+        inventory is fabricated."""
+        p = Polymer(
+            label="PS", monomer="[CH2][CH](c1ccccc1)",
+            end_groups=["[H]", "[H]"], cutoff=3, Mn=1500.0, Mw=1800.0,
+            k_scission=1.0)
+        d = _serialize_pool_for_sidecar(p)
+        assert "explicit_dp" not in d

@@ -2163,6 +2163,7 @@ class RMG(util.Subject):
                 # full registry) so the fallback mirrors the same demotion.
                 configured = None
                 routing = {}
+                explicit_dp_species_by_pool = {}
                 solver_mask = None
                 engine_pools_cfg = None
                 initial_explicit_by_pool = None
@@ -2209,6 +2210,25 @@ class RMG(util.Subject):
                         idx = getattr(p, "monomer_poly_index", None)
                         if idx is not None and 0 <= idx < len(core_species):
                             routing[p.label] = _artifact_species_label(core_species[idx])
+                        # schema-2.9 explicit-DP inventory: resolve the
+                        # solver's real DP->core-species-index roster
+                        # (explicit_dp_to_species_index) into artifact labels
+                        # against the SAME core universe every other label
+                        # comes from. These are the actual discrete chips the
+                        # solver tracks; a pool with a single cutoff chip
+                        # keeps the byte-identical 2.3 block, a multi-chip
+                        # pool emits the full inventory. Never fabricated:
+                        # only real, in-range tracked chips are listed.
+                        edp = getattr(p, "explicit_dp_to_species_index", None)
+                        if edp:
+                            chip_labels = {
+                                int(dp): _artifact_species_label(
+                                    core_species[cidx])
+                                for dp, cidx in edp.items()
+                                if 0 <= cidx < len(core_species)
+                            }
+                            if chip_labels:
+                                explicit_dp_species_by_pool[p.label] = chip_labels
                     break
 
                 if engine_pools_cfg is not None:
@@ -2243,6 +2263,7 @@ class RMG(util.Subject):
                     initial_explicit_by_pool=initial_explicit_by_pool,
                     generation_mass_transfer=generation_mass_transfer,
                     generation_v_poly_m3=generation_v_poly_m3,
+                    explicit_dp_species_by_pool=explicit_dp_species_by_pool,
                 )
         except Exception as e:
             logging.warning(f"Failed to write polymer_pools.json sidecar: {e}", exc_info=True)
