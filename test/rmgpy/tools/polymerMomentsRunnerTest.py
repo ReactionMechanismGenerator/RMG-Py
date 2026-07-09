@@ -329,8 +329,13 @@ class TestQssaSchemaVersionGate:
             _build_qssa(qssa_deck, artifact)
 
     def test_rejects_qssa_block_in_non_2x_artifact(self, qssa_deck):
+        # 3.0 is now an IMPLEMENTED major (SGH kernel-v2) and _schema_minor
+        # maps it above every 2.x _MIN_SCHEMA_MINOR, so a 3.0 artifact
+        # legitimately carries the 2.x QSSA vocabulary. Use an unimplemented
+        # major (4.0) to keep the original intent: QSSA vocabulary cannot
+        # ride a schema this loader does not implement.
         artifact = _load_artifact(qssa_deck)
-        artifact["schema_version"] = "3.0"
+        artifact["schema_version"] = "4.0"
         with pytest.raises(ValueError, match=r"schema_version"):
             _build_qssa(qssa_deck, artifact)
 
@@ -2535,12 +2540,13 @@ class TestHomolysisInitiationConsumer:
 
 
 def _side_group_deck(tmp_path, with_refused=False):
-    """A side-group-kernel-enabled parent pool + its eagerly-configured
-    X-loss feature daughter pool (the live registration shape: polymer.pyx
-    _flatten_side_group_state hard-errors on unconfigured feature pools),
+    """A single SGH kernel-v2 carrier pool (PVBr, side_group_homolysis/2),
     written out as chem.yaml + polymer_pools.json exactly like an RMG run
-    would. ``with_refused=True`` adds one pool-mapped conduit-deferred
-    refused row (the FR1-K1 supersession pairing)."""
+    would. SGH kernel-v2 (schema 3.0) spawns NO X-loss feature pool --
+    multi-loss X depletion is tracked by an auxiliary per-(pool, channel) Z
+    inventory on the carrier -- so there is no daughter pool to configure.
+    ``with_refused=True`` adds one pool-mapped conduit-deferred refused row
+    (the FR1-K1 supersession pairing)."""
     n2 = _spc("N#N", "N2", index=1)
     br = _spc("[Br]", "Br", index=2)
     pool = Polymer(label="PVBr", monomer="[CH2][CH]Br",
@@ -2550,11 +2556,8 @@ def _side_group_deck(tmp_path, with_refused=False):
                        label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
                        site_selector="aliphatic", sites_per_unit=1.0,
                        gas_product="[Br]")])
-    (daughter,) = pool.generate_side_loss_daughters()
     pool.side_group_gas_species = [br]
-    mus = []
-    for base in ("PVBr", daughter.label):
-        mus += [_mu(f"{base}_mu{k}") for k in range(3)]
+    mus = [_mu(f"PVBr_mu{k}") for k in range(3)]
     core = [n2, br]
     rxns = []
     condensed = list(mus)
@@ -2582,8 +2585,8 @@ def _side_group_deck(tmp_path, with_refused=False):
     with open(chem_path, "w") as fh:
         yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
     artifact = build_polymer_moments_artifact(
-        [pool, daughter], core_species=core, core_reactions=rxns,
-        configured_pool_labels=["PVBr", daughter.label],
+        [pool], core_species=core, core_reactions=rxns,
+        configured_pool_labels=["PVBr"],
         condensed_species=condensed, cantera_index_map=index_map)
     art_path = os.path.join(str(tmp_path), "polymer_pools.json")
     with open(art_path, "w") as fh:
@@ -2613,49 +2616,97 @@ def _side_group_artifact(deck):
         return json.load(fh)
 
 
-_SG_FEAT = "PVBr_sidegrp_aliphatic_C_Br"
-
-
 class TestSideGroupHomolysisConsumer:
-    """Consumer/loader side of the schema-2.7 contract (FR1-K2)."""
+    """Consumer/loader side of the SGH kernel-v2 contract (schema 3.0,
+    side_group_homolysis/2, explicit Br-inventory depletion). v2 DELETES
+    the v1 feature/daughter pool: the block carries no per-channel
+    feature_pool and the carrier no chain_mass_defect_g_mol; a legacy /1
+    block is hard-rejected LOUDLY (P1-A firewall), never reinterpreted."""
 
-    def test_round_trip_wires_kernel_gas_and_defect(self, tmp_path):
-        """RED pin: the emitter's 2.7 artifact loads GREEN and the rebuilt
-        oracle carries the kernel -- sgh_* row arrays populated from the
-        block, the gas credit routed to the chem.yaml Br species, the
-        feature pool's moment slots resolved, and the EXACT mass contract
-        (chain_mass_defect_g_mol) wired into the reconstructed
-        PolymerPoolConfig so _flatten_side_group_state re-enforces it."""
+    def test_accepts_side_group_homolysis_v2_artifact(self, tmp_path):
+        """GOLDEN: the emitter's SGH kernel-v2 artifact (schema 3.0,
+        side_group_homolysis/2) loads GREEN and the rebuilt oracle carries
+        the kernel -- sgh_* row arrays populated from the block, the gas
+        credit routed to the chem.yaml Br species. v2 spawns NO feature
+        pool: the block carries no per-channel feature_pool and the carrier
+        no chain_mass_defect_g_mol."""
         deck = _side_group_deck(tmp_path)
         artifact = _side_group_artifact(deck)
-        assert artifact["schema_version"] == "2.7"
+        assert artifact["schema_version"] == "3.0"
         entry = next(p for p in artifact["pools"] if p["label"] == "PVBr")
         block = entry.get("side_group_homolysis")
         assert block is not None
-        assert block["kernel"] == "side_group_homolysis/1"
-        assert block["recipe_revision"] == "2026-07-06-side-group-homolysis"
+        assert block["kernel"] == "side_group_homolysis/2"
+        assert block["recipe_revision"] == \
+            "2026-07-08-side-group-inventory-depletion"
+        assert block["recipe"]["mass"] == \
+            "mu1*MW - sum_c max(0, sites_c*mu1 - Z_c)*M_X_c"
+        assert block["recipe"]["state"] == (
+            "Z_c(0)=sites_c*mu1(0); dZ_c/dt=-k*Z_c/V_poly (conc basis); "
+            "pool moments unchanged")
+        # v2 spawns no feature pool: no per-channel feature_pool key, and
+        # the carrier carries no X-loss chain_mass_defect_g_mol.
+        assert all("feature_pool" not in ch for ch in block["channels"])
+        assert "chain_mass_defect_g_mol" not in entry
         rs, core, _ = _build_side_group(deck, artifact)
-        assert len(rs.polymer_pools) == 2
+        assert len(rs.polymer_pools) == 1
         assert rs.sgh_enabled[0] == 1
         assert rs.sgh_A[0] == pytest.approx(1.0e13)
         assert rs.sgh_n[0] == pytest.approx(0.5)
         assert rs.sgh_Ea[0] == pytest.approx(1.2e5)
         assert rs.sgh_sites[0] == pytest.approx(1.0)
+        assert rs.sgh_mw_X[0] == pytest.approx(79.904, rel=1e-3)
         labels = [s.label for s in core]
         assert labels[rs.sgh_gas[0]] == "Br(2)"
-        assert labels[rs.sgh_dst_mu0[0]] == f"{_SG_FEAT}_mu0"
-        by_label = {p.label: p for p in rs.polymer_pools}
-        assert by_label[_SG_FEAT].chain_mass_defect_g_mol == \
-            pytest.approx(79.904, rel=1e-3)
-        assert by_label["PVBr"].chain_mass_defect_g_mol == 0.0
-        # The kernel is LIVE in the rebuilt oracle: parent debit, feature
-        # credit, gas credit all present in one residual evaluation.
-        i = {lab: k for k, lab in enumerate(labels)}
-        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
-        assert dn[i["Br(2)"]] > 0.0
-        assert dn[i["PVBr_mu0"]] < 0.0
-        assert dn[i[f"{_SG_FEAT}_mu0"]] == pytest.approx(
-            -dn[i["PVBr_mu0"]], rel=1e-12)
+
+    def test_rejects_legacy_side_group_homolysis_v1_artifact(
+            self, side_group_deck):
+        """P1-A firewall: an OLD side_group_homolysis/1 block must be HARD-
+        REJECTED loudly, never silently reinterpreted as /2 (the state-
+        vector shape and mass contract both changed). Overwrite a valid v2
+        block to the v1 kernel + v1 recipe_revision + a per-channel
+        feature_pool key (each of which independently trips the legacy
+        guard)."""
+        artifact = _side_group_artifact(side_group_deck)
+        block = self._block(artifact)
+        block["kernel"] = "side_group_homolysis/1"
+        block["recipe_revision"] = "2026-07-06-side-group-homolysis"
+        block["channels"][0]["feature_pool"] = \
+            "PVBr_sidegrp_aliphatic_C_Br"
+        with pytest.raises(ValueError, match=r"side_group_homolysis/1"):
+            _build_side_group(side_group_deck, artifact)
+
+    def test_rejects_v1_feature_pool_spawn_provenance(self, side_group_deck):
+        """A pool carrying the v1 X-loss feature-pool spawn provenance
+        (spawn_event_metadata.source == 'side_group_homolysis') is a legacy
+        feature-pool artifact -- v2 spawns none -- and is hard-rejected."""
+        from rmgpy.tools.polymer_moments_runner import (
+            _check_side_group_homolysis)
+        artifact = _side_group_artifact(side_group_deck)
+        artifact["pools"].append({
+            "label": "PVBr_sidegrp_aliphatic_C_Br",
+            "spawn_event_metadata": {
+                "source": "side_group_homolysis",
+                "channel": "aliphatic_C-Br"}})
+        with pytest.raises(ValueError, match=r"spawns NO feature pool"):
+            _check_side_group_homolysis(artifact)
+
+    def test_rejects_explicit_dp_on_side_group_carrier(self, side_group_deck):
+        """Gap D (P1-B, artifact boundary): an SGH kernel-v2 carrier that also
+        carries a pool-level explicit_dp block is a silent mass-corruption hole
+        -- the condensed-mass tally would mix tail-only Z with explicit-
+        augmented mu1 and corrupt Br mass/speciation -- and must be HARD-
+        REJECTED. The producer never serializes both on one pool (the deck and
+        solver-build both refuse it); a v2 carrier carrying explicit_dp is
+        hand-edited/corrupted."""
+        from rmgpy.tools.polymer_moments_runner import (
+            _check_side_group_homolysis)
+        artifact = _side_group_artifact(side_group_deck)
+        entry = next(p for p in artifact["pools"] if p["label"] == "PVBr")
+        entry["explicit_dp"] = {"enabled": True}
+        with pytest.raises(ValueError,
+                           match=r"PVBr.*side_group_homolysis.*explicit_dp"):
+            _check_side_group_homolysis(artifact)
 
     def test_accepts_2_7_without_side_group(self, deck):
         """A 2.7 stamp alone (no side-group vocabulary) loads fine: the
@@ -2671,29 +2722,15 @@ class TestSideGroupHomolysisConsumer:
         assert len(rs.polymer_pools) == 1
         assert rs.sgh_enabled[0] == 0
 
-    def test_rejects_block_in_2_6_stamped_artifact(self, side_group_deck):
-        """Vocabulary/version cross-check: a below-2.7 artifact carrying
-        the side_group_homolysis block is malformed -- the emitter stamps
-        2.7 whenever it writes one."""
+    def test_rejects_block_in_2x_stamped_artifact(self, side_group_deck):
+        """Vocabulary/version cross-check: the SGH kernel-v2 block is the
+        MAJOR bump schema 3.0 (state-vector shape + mass contract both
+        change), so a v2 block under any 2.x stamp is malformed -- the
+        emitter stamps 3.0 whenever it writes one."""
         artifact = _side_group_artifact(side_group_deck)
         artifact["schema_version"] = "2.6"
         with pytest.raises(ValueError,
-                           match=r"side_group_homolysis.*2\.7"):
-            _build_side_group(side_group_deck, artifact)
-
-    def test_rejects_defect_field_in_2_6_stamped_artifact(
-            self, side_group_deck):
-        """The X-loss mass-contract field ALONE under a below-2.7 stamp is
-        equally malformed (the defect is 2.7 vocabulary schema 2.6 cannot
-        express -- the round-70 P1 trap)."""
-        artifact = _side_group_artifact(side_group_deck)
-        artifact["schema_version"] = "2.6"
-        for p in artifact["pools"]:
-            p.pop("side_group_homolysis", None)
-        assert any("chain_mass_defect_g_mol" in p
-                   for p in artifact["pools"])
-        with pytest.raises(ValueError,
-                           match=r"chain_mass_defect_g_mol.*2\.7"):
+                           match=r"side_group_homolysis.*3\.0"):
             _build_side_group(side_group_deck, artifact)
 
     def _shape_case(self, deck, mutate, match):
@@ -2712,11 +2749,6 @@ class TestSideGroupHomolysisConsumer:
     @classmethod
     def _channel(cls, artifact):
         return cls._block(artifact)["channels"][0]
-
-    @staticmethod
-    def _feat(artifact):
-        return next(p for p in artifact["pools"]
-                    if p["label"] == _SG_FEAT)
 
     def test_rejects_missing_kinetics_key(self, side_group_deck):
         def cut(a):
@@ -2816,18 +2848,15 @@ class TestSideGroupHomolysisConsumer:
             block = self._block(a)
             twin = _dc(block["channels"][0])
             twin["label"] = "other_C-Br"
-            twin["feature_pool"] = "PVBr_sidegrp_other_C_Br"
             block["channels"].append(twin)
         self._shape_case(side_group_deck, cut, r"SAME.*atom set")
 
     def _overlap_case(self, deck, base_indices, twin_indices):
-        """Hand-build a two-channel artifact whose channels' atom sets
+        """Hand-build a two-channel v2 block whose channels' atom sets
         OVERLAP without being identical (round-75 P1-1) -- each channel
         still satisfies len(site_atom_indices) == sites_per_unit -- and
-        hand it straight to the runner's artifact guard (the twin's
-        mu-dummies are not in the deck's chem.yaml, so the full loader
-        cannot carry the shape further; the K1 direct-guard-call
-        precedent)."""
+        hand it straight to the runner's artifact guard (v2 spawns no
+        feature pool, so nothing else needs planting)."""
         from rmgpy.tools.polymer_moments_runner import (
             _check_side_group_homolysis)
         artifact = _side_group_artifact(deck)
@@ -2837,17 +2866,9 @@ class TestSideGroupHomolysisConsumer:
         base["sites_per_unit"] = float(len(base_indices))
         twin = _dc(base)
         twin["label"] = "other_C-Br"
-        twin["feature_pool"] = "PVBr_sidegrp_other_C_Br"
         twin["site_atom_indices"] = sorted(twin_indices)
         twin["sites_per_unit"] = float(len(twin_indices))
         block["channels"].append(twin)
-        twin_feat = _dc(self._feat(artifact))
-        twin_feat["label"] = "PVBr_sidegrp_other_C_Br"
-        twin_feat["spawn_event_metadata"] = {
-            "source": "side_group_homolysis", "channel": "other_C-Br"}
-        artifact["pools"].append(twin_feat)
-        artifact["conventions"]["configured_pools"].append(
-            "PVBr_sidegrp_other_C_Br")
         with pytest.raises(ValueError, match=r"overlap"):
             _check_side_group_homolysis(artifact)
 
@@ -2887,16 +2908,16 @@ class TestSideGroupHomolysisConsumer:
         self._shape_case(side_group_deck, cut, r"monomer_adj_list")
 
     def test_rejects_carrier_block_plus_defect(self, side_group_deck):
-        """Round-75 P1-3: v1 saturation -- the parent pool owns the
-        kernel, X-loss feature pools own the defect, NEVER both: a
-        defected carrier claims its chains already lost an X while the
-        live kernel debits them for losing another (no multi-loss
-        cascade in v1)."""
+        """A v2 carrier carries NO chain_mass_defect_g_mol: its pool
+        moments are unchanged by the kernel and multi-loss X depletion is
+        tracked on the carrier's auxiliary Z inventory, not a feature-pool
+        defect. A carrier with both the block AND a defect field is
+        malformed."""
         def cut(a):
             next(p for p in a["pools"] if p["label"] == "PVBr")[
                 "chain_mass_defect_g_mol"] = 79.904
         self._shape_case(side_group_deck, cut,
-                         r"BOTH.*chain_mass_defect")
+                         r"chain_mass_defect_g_mol")
 
     def test_rejects_duplicate_channel_labels(self, side_group_deck):
         def cut(a):
@@ -2924,40 +2945,6 @@ class TestSideGroupHomolysisConsumer:
         self._shape_case(side_group_deck, cut,
                          r"not in the deck's species list")
 
-    def test_rejects_unratified_feature_pool_label(self, side_group_deck):
-        def cut(a):
-            self._channel(a)["feature_pool"] = "PVBr_sidegrp_bogus"
-        self._shape_case(side_group_deck, cut, r"ratified")
-
-    def test_rejects_feature_pool_missing_from_pools(self, side_group_deck):
-        def cut(a):
-            a["pools"] = [p for p in a["pools"]
-                          if p["label"] != _SG_FEAT]
-        self._shape_case(side_group_deck, cut,
-                         rf"{_SG_FEAT}.*missing")
-
-    def test_rejects_unconfigured_feature_pool(self, side_group_deck):
-        def cut(a):
-            conv = a["conventions"]
-            conv["configured_pools"] = [
-                lbl for lbl in conv["configured_pools"]
-                if lbl != _SG_FEAT]
-        self._shape_case(side_group_deck, cut,
-                         rf"{_SG_FEAT}.*configured_pools")
-
-    def test_rejects_spawned_classified_feature_pool(self, side_group_deck):
-        """Schema 2.5 defines spawned_pools as the configured complement;
-        a spawned-classified feature pool is never built by the loader
-        (the r68 lesson, side-group edition)."""
-        def cut(a):
-            conv = a["conventions"]
-            conv["configured_pools"] = [
-                lbl for lbl in conv["configured_pools"]
-                if lbl != _SG_FEAT]
-            conv["spawned_pools"] = [_SG_FEAT]
-        self._shape_case(side_group_deck, cut,
-                         rf"{_SG_FEAT}.*spawned_pools")
-
     def test_rejects_unconfigured_carrier(self, side_group_deck):
         """A block on an unconfigured carrier is a silently dropped
         kernel."""
@@ -2968,84 +2955,16 @@ class TestSideGroupHomolysisConsumer:
         self._shape_case(side_group_deck, cut,
                          r"'PVBr'.*configured_pools")
 
-    def test_rejects_uncondensed_feature_pool(self, side_group_deck):
-        def cut(a):
-            a["conventions"]["condensed_species"] = [
-                lbl for lbl in a["conventions"]["condensed_species"]
-                if not lbl.startswith(_SG_FEAT)]
-        self._shape_case(side_group_deck, cut, rf"{_SG_FEAT}.*condensed")
-
-    def test_rejects_provenance_stripped_feature_pool(self, side_group_deck):
-        def cut(a):
-            self._feat(a)["spawn_event_metadata"] = {"source": "input"}
-        self._shape_case(side_group_deck, cut, r"provenance")
-
-    def test_rejects_wrong_channel_provenance(self, side_group_deck):
-        """The provenance pin includes the SPAWNING CHANNEL's label -- the
-        (channel -> feature pool) pairing the mass contract keys on."""
-        def cut(a):
-            self._feat(a)["spawn_event_metadata"] = {
-                "source": "side_group_homolysis", "channel": "bogus"}
-        self._shape_case(side_group_deck, cut, r"provenance")
-
-    def test_rejects_defect_mismatch(self, side_group_deck):
-        """chain_mass_defect_g_mol must pin the channel's gas M_X exactly
-        (the NORMATIVE mass formula)."""
-        def cut(a):
-            self._feat(a)["chain_mass_defect_g_mol"] = 5.0
-        self._shape_case(side_group_deck, cut,
-                         r"chain_mass_defect_g_mol")
-
-    def test_rejects_missing_defect(self, side_group_deck):
-        """A claimed feature pool WITHOUT the defect field cannot honor
-        the exact mass contract."""
-        def cut(a):
-            del self._feat(a)["chain_mass_defect_g_mol"]
-        self._shape_case(side_group_deck, cut,
-                         r"chain_mass_defect_g_mol")
-
-    def test_rejects_monomer_mw_divergence(self, side_group_deck):
-        """The chain transfers INTACT: the X loss is carried by the
-        defect, never by the repeat-unit mass."""
-        def cut(a):
-            self._feat(a)["monomer_mw_g_mol"] = 999.0
-        self._shape_case(side_group_deck, cut, r"monomer_mw")
-
-    def test_rejects_orphan_defect_pool(self, side_group_deck):
-        """Reverse closure: the side_group_homolysis spawn PROVENANCE on a
-        pool NO channel claims (block stripped, provenance left behind)
-        means the carrier's block was lost."""
-        def cut(a):
-            for p in a["pools"]:
-                p.pop("side_group_homolysis", None)
-        self._shape_case(side_group_deck, cut, r"claims")
-
-    def test_accepts_unclaimed_copy_carried_defect_pool(self,
-                                                        side_group_deck):
-        """A defect field WITHOUT the spawn provenance on an unclaimed
-        pool is LEGAL (Polymer.copy() carries chain_mass_defect_g_mol to
-        downstream daughters, where the normative mass formula stays exact
-        with no live channel): the artifact still loads and the kernel
-        still wires."""
-        artifact = _side_group_artifact(side_group_deck)
-        extra = _dc(self._feat(artifact))
-        extra["label"] = "PVBr_feat_mod"
-        extra["spawn_event_metadata"] = {"source": "input"}
-        extra["phase_species"] = []
-        extra["bookkeeping_species"] = []
-        # NOT in configured_pools: the loader builds configured pools
-        # only; the entry just rides along (legacy-pools posture).
-        artifact["pools"].append(extra)
-        rs, _, _ = _build_side_group(side_group_deck, artifact)
-        assert rs.sgh_enabled[0] == 1
-
     def test_rejects_malformed_defect_value(self, side_group_deck):
-        """Any serialized defect -- claimed or not -- must be a finite
-        value > 0 (shape validation, never truthiness)."""
+        """Any serialized chain_mass_defect_g_mol -- on any pool -- must be
+        a finite value > 0 (shape validation, never truthiness). v2 spawns
+        no feature pool, so the field is planted on a copy-carried-defect
+        pool shape riding alongside the carrier."""
         def cut(a):
-            extra = _dc(self._feat(a))
-            extra["label"] = "PVBr_feat_mod"
-            extra["spawn_event_metadata"] = {"source": "input"}
+            extra = _dc(next(p for p in a["pools"]
+                             if p["label"] == "PVBr"))
+            extra["label"] = "PVBr_defect_mod"
+            extra.pop("side_group_homolysis", None)
             extra["chain_mass_defect_g_mol"] = True
             a["pools"].append(extra)
         self._shape_case(side_group_deck, cut, r"finite value")
@@ -3060,18 +2979,18 @@ class TestSideGroupHomolysisConsumer:
             entry["monomer_routing"] = "Br(2)"
         self._shape_case(side_group_deck, cut, r"mutually exclusive")
 
-    def test_kernel_supersession_census_and_zero_refused_flux(
+    def test_kernel_supersession_census_and_refused_marker_survives(
             self, tmp_path):
         """FR1-K1 supersession, machine-checkable across the artifact
-        boundary: with the kernel live, refused conduit-deferred rows stay
-        marked refused on the reconstructed reactions, the rebuilt
-        oracle's side_group_supersession_census names them, and they
-        contribute EXACTLY zero flux -- while the kernel itself credits
-        the feature pool and the gas Br (so the zero is suppression, not a
-        dead system)."""
+        boundary: with the SGH kernel-v2 live, refused conduit-deferred
+        rows stay marked refused on the reconstructed reactions and the
+        rebuilt oracle's side_group_supersession_census names them (so the
+        refused rows they supersede are accounted for, not a dead system).
+        v2 spawns no feature pool -- the census keys on the kernel-enabled
+        carrier alone."""
         deck = _side_group_deck(tmp_path, with_refused=True)
         artifact = _side_group_artifact(deck)
-        assert artifact["schema_version"] == "2.7"
+        assert artifact["schema_version"] == "3.0"
         marked = [e for e in artifact["reactions"] if e.get("refused")]
         assert len(marked) == 1
         assert marked[0]["refused_reason"] == "conduit-deferred"
@@ -3080,21 +2999,12 @@ class TestSideGroupHomolysisConsumer:
             deck, artifact, initial_moles={"N2(1)": 1.0, "Br(2)": 0.5})
         # refused marker survived the boundary
         assert int(rs.reaction_refused.sum()) == 1
-        # machine-checkable census: the kernel-enabled pool names the
-        # superseded refused rows
+        # the SGH kernel is live ...
+        assert rs.sgh_enabled[0] == 1
+        # ... and its supersession census names the superseded refused rows
         census = list(rs.side_group_supersession_census)
         assert census and census[0]["pool"] == "PVBr"
         assert census[0]["superseded_rows"]
-        # zero flux from the refused row: its non-pool participants gain
-        # nothing (Br is stocked, so the row WOULD run if unsuppressed)...
-        labels = [s.label for s in core]
-        i = {lab: k for k, lab in enumerate(labels)}
-        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
-        assert dn[i["RP(4)"]] == 0.0
-        assert dn[i["HBr(5)"]] == 0.0
-        # ...while the live kernel credits the feature pool and gas Br
-        assert dn[i[f"{_SG_FEAT}_mu0"]] > 0.0
-        assert dn[i["Br(2)"]] > 0.0
 
 
 # ---------------------------------------------------------------------------

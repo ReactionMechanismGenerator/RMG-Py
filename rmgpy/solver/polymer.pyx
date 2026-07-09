@@ -480,8 +480,11 @@ def validate_k_depropagation(pool_label, triplet):
 # mid-chain backbone radical; the chain length is UNCHANGED -- this is NOT a
 # chain cut, so it is deliberately a distinct kernel from k_homolysis, and
 # the S2 H-loss conduit is NOT reused: the ruling requires its own machinery
-# and fingerprint class). One X-loss feature pool per (parent, channel),
-# labeled '{parent}_sidegrp_{sanitized channel label}'.
+# and fingerprint class). SGH kernel-v2 spawns NO feature pool -- Br leaves
+# through the auxiliary Z-inventory depletion, not a moment-debited daughter.
+# The v1 X-loss-feature-pool label convention '{parent}_sidegrp_{sanitized
+# channel label}' is RETAINED only for diagnostic tagging / legacy-artifact
+# detection (never spawned in v2).
 SIDE_GROUP_DAUGHTER_INFIX = "_sidegrp_"
 
 _SIDE_GROUP_CHANNEL_KEYS = ("label", "A", "n", "Ea", "site_selector",
@@ -559,8 +562,10 @@ def sanitize_side_group_channel_label(channel_label):
 
 
 def side_group_daughter_pool_label(pool_label, channel_label):
-    """The ratified label of the X-loss feature pool spawned for one
-    (parent, channel) pair: '{parent}_sidegrp_{sanitized channel label}'."""
+    """The ratified v1 X-loss-feature-pool label convention for one
+    (parent, channel) pair: '{parent}_sidegrp_{sanitized channel label}'.
+    SGH kernel-v2 spawns no feature pool; this label is retained only for
+    diagnostic tagging / legacy-artifact detection."""
     return (f"{pool_label}{SIDE_GROUP_DAUGHTER_INFIX}"
             f"{sanitize_side_group_channel_label(channel_label)}")
 
@@ -870,18 +875,20 @@ class PolymerPoolConfig:
     # exactly {label, A, n, Ea, site_selector, sites_per_unit, gas_product};
     # site_selector is the round-72 REQUIRED structural site selector) or
     # None. Per
-    # channel with s = sites_per_unit and k(T) = A*T^n*exp(-Ea/(R_gas*T))
-    # per site: total sites = s*mu1, so the event rate is R = k(T)*s*mu1 and
-    # the reacting chain is picked with probability ~ its length n
-    # (site-weighted). Parent debit dmu_j -= k*s*mu_{j+1} (j = 0, 1, 2; mu3
-    # from the log-Lagrange closure); the '{label}_sidegrp_{channel}' X-loss
-    # feature pool is credited EXACTLY the parent debit (the chain transfers
-    # INTACT -- no chain cut); the gas X radical is credited +R. Mutually
-    # exclusive with k_unzip > 0 and with radical_qssa_unzip (double-carry);
-    # MAY coexist with k_homolysis / k_scission (different bonds: side-group
-    # C-X vs backbone C-C). v1 LIMITATION: the kernel acts on the PARENT
-    # pool only -- feature pools carry no further side-group loss (they
-    # saturate as terminal X-loss sinks; no multi-loss cascade).
+    # None. SGH kernel-v2 (explicit Br-inventory depletion): per channel with
+    # s = sites_per_unit and k(T) = A*T^n*exp(-Ea/(R_gas*T)) per site, the
+    # reacting chain stays INTACT (no chain cut) and the removable X leaves
+    # via a solver-owned auxiliary inventory Z (Z(0) = s*mu1(0), dZ/dt = -k*Z)
+    # rather than a moment-debited feature pool. The carrier's mu0/mu1/mu2 are
+    # STATIONARY (no debit, no feature-pool credit); the gas X radical is
+    # credited +R and the carrier's condensed mass is booked the lost-X mass
+    # directly (mu1*MW - Sum_row max(0, s*mu1 - Z)*M_X). v2 spawns NO feature
+    # pool. Mutually exclusive with k_unzip > 0, with radical_qssa_unzip
+    # (double-carry), and with any kernel that MOVES the carrier's mu1 --
+    # k_homolysis / k_depropagation / explicit_dp (the §1h build guard also
+    # refuses tail_kinetics and resolved row-flux touching the carrier) --
+    # because inventory-depletion SGH requires a STATIONARY carrier mu1. MAY
+    # coexist only with k_scission (verified mu1-preserving backbone scission).
     side_group_homolysis: Optional[List[Dict[str, object]]] = None
     # Resolved core index of each channel's gas_product species, aligned
     # with side_group_homolysis (PolymerPool.to_config resolves it; a
@@ -1437,6 +1444,14 @@ class HybridPolymerSystem(ReactionSystem):
         # num_qssa_u == 0 and the pre-milestone neq == n_core layout.
         self.num_qssa_u = 0
         self._scratch_du_dt = None
+        # SGH kernel-v2 auxiliary Br-inventory depletion state (Z slots): the
+        # number of appended per-(pool, SGH-channel-row) Z slots and their
+        # dZ/dt scratch. Z = moles of remaining removable X sites for the row;
+        # Z(0) = sgh_sites[row]*mu1(0). 0/None until initiate_tolerances /
+        # validate_configuration lay the state out; legacy/non-SGH systems keep
+        # num_sgh_z == 0 and the residual path is bit-for-bit unchanged.
+        self.num_sgh_z = 0
+        self._scratch_dz_dt = None
 
         self.pool_mu0_indices = np.full(len(self.polymer_pools), -1, dtype=np.int32)
         self.pool_mu1_indices = np.full(len(polymer_pools), -1, dtype=np.int32)
@@ -1475,19 +1490,42 @@ class HybridPolymerSystem(ReactionSystem):
             if isinstance(q, dict) and "initiation_allyl" in q:
                 n_weak += 1
         self.num_qssa_u = n_weak
-        if n_weak == 0:
+        # SGH kernel-v2 (§1c): one trailing Z aux-state slot per (pool, SGH
+        # channel row). Counted here on the RAW configs (before validation),
+        # mirroring the U-slot count posture above; _flatten_side_group_state
+        # cross-checks this count against the slots it binds. State-vector
+        # order is [core | U slots | Z slots]; the Z block is concatenated
+        # AFTER the U block so the appended-slot ordering matches the absolute
+        # slot indices bound in flatten (num_core_species + num_qssa_u +
+        # z_count).
+        n_sgh_z = 0
+        for pool in self.polymer_pools:
+            channels = pool.side_group_homolysis
+            if channels:
+                n_sgh_z += len(channels)
+        self.num_sgh_z = n_sgh_z
+        if n_weak == 0 and n_sgh_z == 0:
             return
         if sensitivity:
             raise ValueError(
-                f"{n_weak} weak-link allyl/U-state pool(s) configured with "
+                f"{n_weak} weak-link allyl/U-state pool(s) and {n_sgh_z} "
+                f"side-group-homolysis Z aux-state slot(s) configured with "
                 f"sensitivity analysis enabled: the DASPK sensitivity state "
-                f"layout has no room for the appended U slots. Disable "
-                f"sensitivity or remove the weak-link channel(s).")
-        self.neq += n_weak
-        self.atol_array = np.concatenate(
-            [self.atol_array, np.full(n_weak, atol, dtype=float)])
-        self.rtol_array = np.concatenate(
-            [self.rtol_array, np.full(n_weak, rtol, dtype=float)])
+                f"layout interleaves per-species blocks and has no room for "
+                f"the appended trailing U/Z slots. Disable sensitivity or "
+                f"remove the weak-link / side_group_homolysis channel(s).")
+        if n_weak > 0:
+            self.neq += n_weak
+            self.atol_array = np.concatenate(
+                [self.atol_array, np.full(n_weak, atol, dtype=float)])
+            self.rtol_array = np.concatenate(
+                [self.rtol_array, np.full(n_weak, rtol, dtype=float)])
+        if n_sgh_z > 0:
+            self.neq += n_sgh_z
+            self.atol_array = np.concatenate(
+                [self.atol_array, np.full(n_sgh_z, atol, dtype=float)])
+            self.rtol_array = np.concatenate(
+                [self.rtol_array, np.full(n_sgh_z, rtol, dtype=float)])
 
     def validate_configuration(self):
         """Strict validation of indices and masks."""
@@ -1714,9 +1752,11 @@ class HybridPolymerSystem(ReactionSystem):
             # round 70). LAST line of defense, same rationale as the two
             # kernels above: deck helper and PolymerPool.to_config guard
             # these shapes, but a directly-constructed PolymerPoolConfig
-            # bypasses both. NOTE the adjudicated coexistence: k_homolysis /
-            # k_scission act on backbone C-C bonds while this kernel acts on
-            # side-group C-X bonds -- no exclusion between them.
+            # bypasses both. NOTE (SGH kernel-v2): this kernel is mutually
+            # exclusive with k_homolysis (k_homolysis MOVES the carrier mu1,
+            # which inventory-depletion SGH forbids -- refused by the §1h
+            # build guard). It MAY coexist only with k_scission, which acts on
+            # backbone C-C bonds and is verified mu1-preserving.
             if (not math.isfinite(pool.chain_mass_defect_g_mol)
                     or pool.chain_mass_defect_g_mol < 0.0):
                 raise ValueError(
@@ -1741,11 +1781,11 @@ class HybridPolymerSystem(ReactionSystem):
                         f"configured AND k_unzip={pool.k_unzip:g} > 0. "
                         f"Legacy k_unzip is a phenomenological closed-chain "
                         f"monomer-loss channel, while side_group_homolysis "
-                        f"creates radical-defect feature pools that feed "
-                        f"explicit degradation chemistry; the two are "
-                        f"mutually exclusive on a pool -- enabling both "
-                        f"would double-carry degradation. Set k_unzip=0 or "
-                        f"remove side_group_homolysis.")
+                        f"(kernel-v2) drives explicit side-group degradation "
+                        f"chemistry via the auxiliary Z-inventory depletion; "
+                        f"the two are mutually exclusive on a pool -- enabling "
+                        f"both would double-carry degradation. Set k_unzip=0 "
+                        f"or remove side_group_homolysis.")
                 if pool.radical_qssa_unzip is not None:
                     raise ValueError(
                         f"Pool {pool.label}: side_group_homolysis is "
@@ -1812,8 +1852,10 @@ class HybridPolymerSystem(ReactionSystem):
         self._flatten_homolysis_state()
 
         # Flatten the (now validated + normalized) side_group_homolysis
-        # channels and resolve each enabled parent's X-loss feature pools +
-        # gas destinations (FR1-K1). Same timing contract.
+        # channels and seed each enabled carrier's per-channel Z inventory +
+        # gas destinations (FR1-K1, kernel-v2). v2 spawns NO feature pool --
+        # Br leaves through the Z depletion state, not a moment-debited
+        # daughter. Same timing contract.
         self._flatten_side_group_state()
 
         # Flatten the (now validated + normalized) k_depropagation kernels
@@ -1924,42 +1966,49 @@ class HybridPolymerSystem(ReactionSystem):
 
     def _flatten_side_group_state(self):
         """Flatten each pool's validated+normalized side_group_homolysis
-        channel list into solver-owned per-channel row arrays, resolve each
-        channel's X-loss feature pool + gas destination, and ENFORCE the
-        exact mass-defect contract (FR1-K1, adjudicated round 70).
+        channel list into solver-owned per-channel row arrays (SGH kernel-v2,
+        explicit Br-inventory depletion; adjudicated spar r103 / plan r104).
 
         Contract (mirrors _flatten_homolysis_state):
         - Populated ONLY here, on the initialize_model ->
           validate_configuration path, from the normalized channel lists.
         - The RHS reads ONLY these arrays, never the pool dicts.
 
-        Layout:
+        Layout (one row per (pool, channel)):
         - sgh_enabled[i] (int8, per pool): 1 iff pool i has channels.
         - sgh_row_start[i]/sgh_row_end[i] (int32, per pool): this pool's
           contiguous slice of the row arrays below (one row per channel).
         - sgh_A/n/Ea/sites[row]: the channel's Arrhenius triplet
           (A [s^-1 per site], Ea [J/mol]) and sites_per_unit.
         - sgh_gas[row] (int32): core index of the ejected X radical.
-        - sgh_dst_mu0/mu1/mu2[row] (int32): the X-loss feature pool's
-          moment slots.
+        - sgh_mw_X[row] (float): molar mass M_X [g/mol] of the ejected X
+          radical (the channel's gas_product); the condensed-mass tally uses
+          it to book Br leaving via Z as lost*M_X.
+        - sgh_z_slot[row] (int32): ABSOLUTE ODE index of this row's Z
+          aux-state slot (num_core_species + num_qssa_u + z_count); Z = moles
+          of remaining removable X sites, Z(0) = sites*mu1(0), dZ/dt = -R.
         - sgh_channel_labels[row]: channel label (guard warn-once keys and
           error messages).
 
-        HARD ERRORS (never silent):
-        - a channel whose feature pool is missing from the configured pools
-          (the transferred chains would silently vanish);
-        - a feature pool whose chain_mass_defect_g_mol does not pin the
-          channel's gas_product molar mass M_X (the round-70 #1 P1 trap:
-          same-monomer_mw feature pools double-count X unless the defect is
-          explicit and exact);
-        - a feature pool whose monomer_mw_g_mol diverges from the parent's
-          (the chain transfers intact -- a diverging repeat-unit mass
-          fabricates/destroys condensed mass).
+        v2 deletes the SGH X-loss FEATURE pool entirely: Br leaves the melt
+        through the Z depletion state, not a moment-debited daughter pool, so
+        the feature-pool resolution / mass-defect-pin / monomer_mw-divergence
+        guards are gone (Br mass is now carried by sgh_mw_X on the Z path).
+
+        HARD BUILD ERRORS (§1h + P1-B, never silent): an SGH carrier pool
+        that ALSO carries a mu1-MOVING kernel or has any live resolved
+        row-flux touching its mu1 is refused -- inventory-depletion SGH
+        requires a STATIONARY carrier mu1 (Z(0) = sites*mu1(0) is seeded once
+        and depletes independently; a moving mu1 would strand or double-count
+        the Br inventory).
         """
         n_pools = len(self.polymer_pools)
-        # warn-once registry for the runtime out-of-domain guard, keyed
-        # (pool label, channel label); one loud line per key per rebuild.
+        # warn-once registries keyed (pool label, channel label); one loud
+        # line per key per rebuild. _sgh_guard_warned is retained for
+        # sibling-kernel API parity; _sgh_inventory_census_emitted backs the
+        # accepted-state Z-inventory in-band census (§1g).
         self._sgh_guard_warned = set()
+        self._sgh_inventory_census_emitted = set()
         self.sgh_enabled = np.zeros(n_pools, dtype=np.int8)
         self.sgh_row_start = np.zeros(n_pools, dtype=np.int32)
         self.sgh_row_end = np.zeros(n_pools, dtype=np.int32)
@@ -1968,69 +2017,35 @@ class HybridPolymerSystem(ReactionSystem):
         rows_Ea = []
         rows_sites = []
         rows_gas = []
-        rows_d0 = []
-        rows_d1 = []
-        rows_d2 = []
+        rows_mw_x = []
+        rows_z_slot = []
         self.sgh_channel_labels = []
 
-        label_to_pool = {p.label: p for p in self.polymer_pools}
+        # Absolute Z-slot base: state vector is [core | U slots | Z slots], so
+        # the first Z slot follows the core block and every U slot. Mirrors
+        # qssa_u_slot's absolute-index binding (num_core_species + u_count).
+        z_base = self.num_core_species + int(self.num_qssa_u)
+        z_count = 0
         for i, pool in enumerate(self.polymer_pools):
             self.sgh_row_start[i] = len(rows_A)
             self.sgh_row_end[i] = len(rows_A)
             channels = pool.side_group_homolysis
             if not channels:
                 continue
+            # §1h mu1-mover exclusion (SOLVER-BUILD guard, deck-kernel arm):
+            # inventory-depletion SGH requires a stationary carrier mu1.
+            self._assert_sgh_carrier_mu1_stationary(i, pool)
             for ci, ch in enumerate(channels):
-                d_label = side_group_daughter_pool_label(
-                    pool.label, ch["label"])
-                dst = label_to_pool.get(d_label)
-                if dst is None:
-                    raise ValueError(
-                        f"Pool {pool.label}: side_group_homolysis channel "
-                        f"'{ch['label']}' is enabled but its X-loss feature "
-                        f"pool '{d_label}' is not among the configured "
-                        f"solver pools. The producer spawns it at model "
-                        f"setup (rmgpy/rmg/input.py); without it the "
-                        f"kernel's transferred chains would silently vanish "
-                        f"(mass laundered out of the melt).")
-                # Exact mass-defect contract (round-70 P1 trap): the feature
-                # pool keeps the parent's monomer_mw, so its condensed mass
-                # is mu1*MW - mu0*M_X -- the defect MUST pin the channel's
-                # gas_product molar mass, and the repeat-unit mass must not
-                # diverge from the parent's.
-                mw_x = _side_group_gas_mw_g_mol(ch["gas_product"])
-                defect = float(dst.chain_mass_defect_g_mol)
-                if not (defect > 0.0) or abs(defect - mw_x) > 1.0e-6 * mw_x:
-                    raise ValueError(
-                        f"Pool {pool.label}: X-loss feature pool "
-                        f"'{d_label}' has chain_mass_defect_g_mol="
-                        f"{defect!r} but channel '{ch['label']}' ejects "
-                        f"gas_product={ch['gas_product']!r} with M_X="
-                        f"{mw_x:g} g/mol. The mass contract (feature-pool "
-                        f"condensed mass = mu1*MW - mu0*M_X) requires the "
-                        f"defect to pin M_X exactly -- anything else mints "
-                        f"or destroys condensed mass while gas X appears.")
-                mw_parent = float(pool.monomer_mw_g_mol)
-                mw_dst = float(dst.monomer_mw_g_mol)
-                if abs(mw_dst - mw_parent) > 1.0e-9 * max(abs(mw_parent),
-                                                          1.0):
-                    raise ValueError(
-                        f"Pool {pool.label}: X-loss feature pool "
-                        f"'{d_label}' monomer_mw_g_mol={mw_dst:g} diverges "
-                        f"from the parent's {mw_parent:g}. The chain "
-                        f"transfers INTACT (same repeat unit; the X loss is "
-                        f"carried by chain_mass_defect_g_mol, never by the "
-                        f"monomer mass), so a diverging monomer_mw "
-                        f"fabricates/destroys condensed mass.")
                 rows_A.append(ch["A"])
                 rows_n.append(ch["n"])
                 rows_Ea.append(ch["Ea"])
                 rows_sites.append(ch["sites_per_unit"])
                 rows_gas.append(int(pool.side_group_gas_indices[ci]))
-                d0, d1, d2 = dst.mu_indices
-                rows_d0.append(d0)
-                rows_d1.append(d1)
-                rows_d2.append(d2)
+                # M_X of the ejected X radical -- the value v1 threw away; v2
+                # carries Br mass out of the melt through the Z inventory.
+                rows_mw_x.append(_side_group_gas_mw_g_mol(ch["gas_product"]))
+                rows_z_slot.append(z_base + z_count)
+                z_count += 1
                 self.sgh_channel_labels.append(ch["label"])
             self.sgh_enabled[i] = 1
             self.sgh_row_end[i] = len(rows_A)
@@ -2040,9 +2055,185 @@ class HybridPolymerSystem(ReactionSystem):
         self.sgh_Ea = np.asarray(rows_Ea, dtype=float)
         self.sgh_sites = np.asarray(rows_sites, dtype=float)
         self.sgh_gas = np.asarray(rows_gas, dtype=np.int32)
-        self.sgh_dst_mu0 = np.asarray(rows_d0, dtype=np.int32)
-        self.sgh_dst_mu1 = np.asarray(rows_d1, dtype=np.int32)
-        self.sgh_dst_mu2 = np.asarray(rows_d2, dtype=np.int32)
+        self.sgh_mw_X = np.asarray(rows_mw_x, dtype=float)
+        self.sgh_z_slot = np.asarray(rows_z_slot, dtype=np.int32)
+
+        # Layout cross-check (mirrors the U-slot drift guard): initiate_
+        # tolerances allocated num_sgh_z Z slots from the raw configs; the
+        # flattening above bound z_count of them. A mismatch means the pool
+        # configs changed between ODE layout and validation -- the Z slots
+        # would alias core/U state. Fail loud, never integrate a misaligned
+        # vector.
+        if z_count != self.num_sgh_z:
+            raise ValueError(
+                f"SGH Z-state layout drift: initiate_tolerances allocated "
+                f"{self.num_sgh_z} Z slot(s) but validate_configuration bound "
+                f"{z_count} side_group_homolysis channel row(s). The pool "
+                f"configs changed between ODE layout and validation; rebuild "
+                f"the reactor (initialize_model) instead of mutating pool "
+                f"configs in place.")
+
+    def _assert_sgh_carrier_mu1_stationary(self, int pool_i, pool):
+        """§1h + P1-B (SGH kernel-v2): refuse any SGH carrier pool whose mu1
+        is NOT stationary. Inventory-depletion SGH seeds Z(0) = sites*mu1(0)
+        ONCE and lets Z deplete on its own (dZ/dt = -R); the carrier's
+        mu0/mu1/mu2 are UNCHANGED by the SGH kernel. If some OTHER kernel or
+        resolved reaction row moves the carrier's mu1, the seeded Br inventory
+        would strand (mu1 grows) or double-count (mu1 shrinks), so it is a
+        hard build error.
+
+        Two arms:
+        - DECK-KERNEL arm: the carrier pool config also declares a mu1-moving
+          kernel -- k_homolysis (dmu1 -= ...), k_depropagation (dmu1 -= ...),
+          tail_kinetics (arbitrary dmu1), k_unzip (dmu1 -= k_unzip*mu0),
+          radical_qssa_unzip (its depropagation drains mu1). k_scission is
+          ALLOWED: verified mu1-PRESERVING (RHS touches only dmu0/dmu2, never
+          dmu1, and routes nothing to another pool). k_unzip / radical_qssa_
+          unzip are already mutually exclusive with SGH at the deck level;
+          the refusal here is a defensive backstop.
+        - RUNTIME-ROW-FLUX arm (P1-B, r104): a live resolved pool moment-flux
+          archetype row (MIGRATION / SCISSION_FRAGMENT / DISCRETE_CHIP /
+          VOLATILE_EJECTION, or the legacy UNRESOLVED mu1 transfer) whose
+          source or destination pool is this carrier -- every such row writes
+          the pool's mu_indices[1]. Deck-kernel enumeration alone is
+          insufficient (a resolved apportionment/migration row can move mu1
+          with no carrier-side kernel declared). Also catches an
+          end-radical-daughter mu1 CREDIT if the carrier were ever spawned as
+          a k_homolysis daughter.
+        """
+        label = pool.label
+        # --- Deck-kernel arm (read pool config directly; robust to the
+        # per-kernel flatten ordering) ---
+        if pool.k_homolysis is not None:
+            self._raise_sgh_mu1_mover(label, "k_homolysis")
+        if pool.k_depropagation is not None:
+            self._raise_sgh_mu1_mover(label, "k_depropagation")
+        if pool.tail_kinetics is not None:
+            self._raise_sgh_mu1_mover(label, "tail_kinetics")
+        if float(pool.k_unzip or 0.0) > 0.0:
+            self._raise_sgh_mu1_mover(label, "k_unzip")
+        if pool.radical_qssa_unzip is not None:
+            self._raise_sgh_mu1_mover(label, "radical_qssa_unzip")
+        # P1-B (solver-build, covers BOTH deck-built and directly-built /
+        # artifact-replay configs): an SGH carrier that ALSO carries explicit
+        # DP is a silent mass-corruption hole. get_total_polymer_condensed_
+        # mass_g counts the explicit-DP repeat-unit mass in mu1_mol, but the
+        # SGH `lost` term and Z(0) use the tail-only mu1 -- so the Br inventory
+        # is tracked only for the tail population while explicit-DP repeat
+        # units are silently reported as still brominated. The deck refuses
+        # this pairing, but a direct PolymerPoolConfig or an artifact replay
+        # can still build it, so refuse it here at the solver-build layer.
+        if pool.explicit_dp_to_species_index:
+            raise ValueError(
+                f"SGH-v2 carrier pool '{label}' also carries a non-empty "
+                f"explicit_dp_to_species_index ("
+                f"{dict(pool.explicit_dp_to_species_index)}). Inventory-"
+                f"depletion side_group_homolysis (kernel-v2) seeds and "
+                f"depletes the Z inventory on the TAIL mu1 basis "
+                f"(Z(0) = sites*mu1, and the lost-X term uses tail-only mu1) "
+                f"and cannot coexist with explicit-DP on the same carrier: "
+                f"get_total_polymer_condensed_mass_g counts the explicit-DP "
+                f"repeat-unit mass in mu1_mol, so the condensed-mass tally "
+                f"would mix tail-only Z with explicit-augmented mu1 and "
+                f"silently corrupt Br mass/speciation (explicit-DP repeat "
+                f"units would be reported as still brominated). Move SGH to a "
+                f"pool without explicit DP.")
+        # k_scission is intentionally NOT listed: it is mu1-PRESERVING
+        # (dmu0_dt += k_s*(mu1-mu0); dmu2_dt += k_s*(mu1-mu3)/3; mu1 untouched,
+        # no cross-pool routing). Verified against the RHS.
+
+        mu1_idx = int(pool.mu_indices[1])
+
+        # --- End-radical-daughter mu1 CREDIT arm: if any pool's k_homolysis
+        # credits a fragment mu1 into THIS carrier's mu1 slot (only possible
+        # if the carrier were spawned as a homolysis daughter). khom arrays
+        # are flattened before this pass. ---
+        prim_mu1 = getattr(self, "khom_prim_mu1", None)
+        sec_mu1 = getattr(self, "khom_sec_mu1", None)
+        khom_en = getattr(self, "khom_enabled", None)
+        if khom_en is not None and prim_mu1 is not None and sec_mu1 is not None:
+            for j in range(len(khom_en)):
+                if not khom_en[j]:
+                    continue
+                if int(prim_mu1[j]) == mu1_idx or int(sec_mu1[j]) == mu1_idx:
+                    self._raise_sgh_mu1_mover(
+                        label,
+                        f"k_homolysis end-radical fragment credit from pool "
+                        f"'{self.polymer_pools[j].label}'")
+
+        # --- Runtime-row-flux arm (P1-B): scan resolved flux archetypes.
+        # reaction_flux_archetype / reaction_src_pool / reaction_dst_pool are
+        # resolved (initialize_model) BEFORE validate_configuration calls this
+        # flattener; if absent (e.g. a direct validate_configuration in a unit
+        # test with no reaction rows) there is nothing to scan. ---
+        arch = getattr(self, "reaction_flux_archetype", None)
+        if arch is None:
+            return
+        src = getattr(self, "reaction_src_pool", None)
+        dst = getattr(self, "reaction_dst_pool", None)
+        stp = getattr(self, "species_to_pool_indices", None)
+        proxy = getattr(self, "is_pool_proxy", None)
+        ir = getattr(self, "reactant_indices", None)
+        ip = getattr(self, "product_indices", None)
+        refused = getattr(self, "reaction_refused", None)
+        n_core = self.num_core_species
+        for r in range(arch.shape[0]):
+            # Refused / conduit-deferred ("stamp-but-keep") rows hit the RHS
+            # `continue` guard before ANY reactant/product/moment write, so
+            # they apply zero mu1 flux and cannot violate carrier-mu1
+            # stationarity. Excluding them keeps this guard aligned with what
+            # the RHS actually integrates (a non-refused row on the carrier
+            # still raises below).
+            if refused is not None and refused[r]:
+                continue
+            a = arch[r]
+            if a == FLUX_NONE or a == FLUX_SAME_POOL:
+                continue
+            if a == FLUX_UNRESOLVED:
+                # Legacy mu1-only transfer: the moved pools are the ROW's
+                # proxy species' pools (src/dst stay -1). Map via the proxy
+                # membership arrays.
+                if (proxy is None or stp is None
+                        or ir is None or ip is None):
+                    continue
+                touched = False
+                for slot in range(3):
+                    for tbl in (ir, ip):
+                        sp = tbl[r, slot]
+                        if (sp != -1 and sp < n_core and proxy[sp]
+                                and int(stp[sp]) == pool_i):
+                            touched = True
+                            break
+                    if touched:
+                        break
+                if touched:
+                    self._raise_sgh_mu1_mover(
+                        label, f"live FLUX_UNRESOLVED mu1 transfer (row {r})")
+                continue
+            # MIGRATION / SCISSION_FRAGMENT / DISCRETE_CHIP / VOLATILE_EJECTION
+            # all write a src (and possibly dst) pool's mu_indices[1].
+            if src is not None and int(src[r]) == pool_i:
+                self._raise_sgh_mu1_mover(
+                    label,
+                    f"live resolved row flux (archetype={int(a)}, row {r}, "
+                    f"source pool)")
+            if dst is not None and int(dst[r]) == pool_i:
+                self._raise_sgh_mu1_mover(
+                    label,
+                    f"live resolved row flux (archetype={int(a)}, row {r}, "
+                    f"destination pool)")
+
+    def _raise_sgh_mu1_mover(self, label, competitor):
+        raise ValueError(
+            f"SGH-v2 carrier pool '{label}' requires a stationary mu1, but "
+            f"it also carries a competing mu1-moving kernel/row: "
+            f"{competitor}. Inventory-depletion side_group_homolysis "
+            f"(kernel-v2) seeds the removable-X inventory once as "
+            f"Z(0) = sites*mu1(0) and depletes it independently of the "
+            f"carrier moments; a moving carrier mu1 would strand or "
+            f"double-count the Br inventory. Remove the competing "
+            f"kernel/flux from the SGH carrier (or move SGH to a stationary "
+            f"pool).")
 
     def _flatten_radical_qssa_state(self):
         """Flatten each pool's validated+normalized radical_qssa_unzip channel
@@ -3270,6 +3461,7 @@ class HybridPolymerSystem(ReactionSystem):
         self._scratch_C_poly = np.zeros(n_core, float)
         self._scratch_dn_dt = np.zeros(n_core, float)
         self._scratch_du_dt = np.zeros(self.num_qssa_u, float)
+        self._scratch_dz_dt = np.zeros(self.num_sgh_z, float)
         self._scratch_proxy_activity = np.zeros(n_core, float)
 
         # RIDER R2 dynamic half (item 17, spec 2026-06-12 SS3(e)): the edge
@@ -3377,11 +3569,21 @@ class HybridPolymerSystem(ReactionSystem):
                   f"k_depropagation={kdep_str}, "
                   f"side_group_homolysis={sgh_str}){role_tag} ---")
             if sgh_channels:
-                print(f"  side_group_homolysis v1 saturation: the kernel "
-                      f"acts on THIS parent pool only; its X-loss feature "
-                      f"pools carry no further side-group loss (no "
-                      f"multi-loss cascade -- they saturate as terminal "
-                      f"X-loss sinks).")
+                # SGH kernel-v2: Br leaves the melt through an explicit
+                # per-channel Z inventory (Z = moles of removable X sites,
+                # Z(0) = sites*mu1(0), dZ/dt = -R). Report each row's seeded
+                # inventory and Z slot so a reader can trace the depletion.
+                rs = int(self.sgh_row_start[pool_i])
+                re_ = int(self.sgh_row_end[pool_i])
+                for sgh_row in range(rs, re_):
+                    z_slot = int(self.sgh_z_slot[sgh_row])
+                    z0 = self.y0[z_slot] if 0 <= z_slot < len(self.y0) \
+                        else float('nan')
+                    print(f"  side_group_homolysis[v2] channel "
+                          f"'{self.sgh_channel_labels[sgh_row]}': "
+                          f"Z inventory slot {z_slot}, Z(0)={z0:.4e} mol "
+                          f"(= sites*mu1(0)), M_X={self.sgh_mw_X[sgh_row]:g} "
+                          f"g/mol -> gas index {int(self.sgh_gas[sgh_row])}.")
             print(f"  {'Role':<16} {'Species Label':<30} {'Index':<7} {'y0':>13}")
             print(f"  {'-'*16} {'-'*30} {'-'*7} {'-'*13}")
 
@@ -3599,6 +3801,26 @@ class HybridPolymerSystem(ReactionSystem):
                         f"the amount basis or the value.")
                 self.y0[slot] = u0
 
+        # 8. SGH kernel-v2 Z aux-state slots (§1c): Z(0) = sites * mu1(0)
+        # [mol], the moles of removable X (Br) sites initially present on the
+        # carrier's tail chains. AMOUNT basis, NOT per-volume: mu1(0) is the
+        # extensive moment slot value written in step 3/clamped in step 6
+        # (the SAME tail-mu1 the condensed-mass tally and the RHS Z-bound
+        # guard read back). The §1h build guard has already refused any
+        # carrier whose mu1 moves, so this seed stays consistent with
+        # sites*mu1(t) for all t. A mol-vs-per-volume typo here would silently
+        # mis-seed the entire Br budget, so the amount basis is explicit.
+        z_slots = getattr(self, "sgh_z_slot", None)
+        if z_slots is not None and len(z_slots) > 0:
+            for i, pool in enumerate(self.polymer_pools):
+                if not self.sgh_enabled[i]:
+                    continue
+                mu1_amount = max(0.0, self.y0[pool.mu_indices[1]])
+                for sgh_row in range(int(self.sgh_row_start[i]),
+                                     int(self.sgh_row_end[i])):
+                    z_slot = int(z_slots[sgh_row])
+                    self.y0[z_slot] = self.sgh_sites[sgh_row] * mu1_amount
+
     def generate_rate_coefficients(self, core_reactions, edge_reactions):
         for rxn in itertools.chain(core_reactions, edge_reactions):
             j = self.reaction_index[rxn]
@@ -3653,6 +3875,14 @@ class HybridPolymerSystem(ReactionSystem):
         of the enlargement read it audits (amendment A2 -- a feature).
         String assembly happens here (python level, once per emission),
         never in the residual."""
+        # SGH kernel-v2 ACCEPTED-state Z-inventory invariant (§1g, P1-A):
+        # base.pyx invokes this override once per ACCEPTED snapshot with
+        # self.y holding the integrator's accepted solution (the stale-array
+        # note above governs the ungated-rate ARRAYS this census audits, not
+        # self.y), so this is the right context for the HARD physical-band
+        # check the residual guard (trial state) deliberately does not make.
+        # Self-guards on num_sgh_z == 0, so non-SGH runs pay ~nothing.
+        self._assert_sgh_inventory_accepted()
         if char_rate == 0.0:
             return  # the base.pyx singularity path owns the no-flux case
         gate_codes = getattr(self, "edge_reaction_gate_code", None)
@@ -3955,6 +4185,25 @@ class HybridPolymerSystem(ReactionSystem):
                 # (mu0=1, mu1=E_n) = E_n*mw - chain_mass_defect. Ordinary
                 # pools (defect 0) reduce to the legacy E_n*mw
                 # bit-identically; max(0, .) errs toward deferral.
+                # SGH kernel-v2 (§1e.2): an SGH carrier's Br leaves through
+                # the Z inventory, NOT the chain_mass_defect (which v2 pins to
+                # 0.0), so this per-chain CHAIN-population event mass is inert
+                # to SGH and reduces to E_n*mw. Assert that invariant here so
+                # a future defect-bearing SGH carrier can't silently
+                # double-book Br into both Z and the spawn-gate snapshot;
+                # tied to the §1h stationary-mu1 contract (the FR1 carrier is
+                # not a spawn-gate proxy on the reference deck, so this branch
+                # is not even reached for it).
+                sgh_en2 = getattr(self, "sgh_enabled", None)
+                if (sgh_en2 is not None and p < len(sgh_en2) and sgh_en2[p]
+                        and abs(float(pool.chain_mass_defect_g_mol)) > 0.0):
+                    raise ValueError(
+                        f"SGH-v2 carrier pool '{pool.label}' is a spawn-gate "
+                        f"proxy with a nonzero chain_mass_defect_g_mol="
+                        f"{pool.chain_mass_defect_g_mol!r}; v2 carries Br "
+                        f"through the Z inventory and pins the carrier defect "
+                        f"to 0.0, so a nonzero defect would double-book Br "
+                        f"into both Z and the spawn-gate event mass.")
                 proxy_event_mass_total += g * max(
                     0.0, pool.condensed_mass_g(1.0, e_n))
         return gross, pool_stats, proxy_event_mass_total
@@ -4086,6 +4335,141 @@ class HybridPolymerSystem(ReactionSystem):
             " (first rows: %s)" % coupled_rows[:8]
             if coupled_rows else "")
 
+    def _update_sgh_inventory_guard(self, y):
+        """SGH kernel-v2 Z-inventory census on a TRIAL state (§1g, P1-A).
+        Called from residual() on the RAW Newton trial state -- which is NOT
+        an accepted solution -- so this method is TRIAL-STATE-SAFE: it NEVER
+        raises and NEVER mutates ``y``. Z decays stiffly (dZ/dt = -kZ, FR1 k
+        huge), so a recoverable Newton trial can momentarily undershoot the
+        tiny -floor as Z -> 0; hard-raising here would turn that transient
+        into a fatal integration error (the trial-state-hard-raise bug class).
+        The RHS's local ``max(0.0, y[z_slot])`` read already sanitizes a
+        negative trial Z, so this method only CENSUSES (warn-once per
+        (pool, channel)) any Z sitting outside the physical band
+        ``[0, sites*mu1]`` -- BOTH the beyond-floor case and the in-band case
+        emit ``_emit_sgh_inventory_census``.
+
+        The HARD physical-band invariant is enforced on the ACCEPTED state
+        ONLY, by ``_assert_sgh_inventory_accepted`` (self.y), where an
+        out-of-band Z is genuine corruption rather than a recoverable Newton
+        trial excursion. This mirrors the TA-side resolution (clamp/sanitize
+        the trial state, hard-check the accepted state); the residual is not
+        an accepted-state context. Physical band ``0 <= Z <= sites*mu1``: mu1
+        is pinned STATIONARY by the §1h build guard, so the upper bound equals
+        the seeded Z(0). Cheap no-op when ``num_sgh_z == 0`` (legacy/non-SGH
+        runs untouched)."""
+        cdef int p, sgh_row, z_slot
+        cdef double z_val, upper, floor_z, mu1_amount, a_z
+        if self.num_sgh_z == 0:
+            return
+        sgh_en = getattr(self, "sgh_enabled", None)
+        if sgh_en is None:
+            return
+        atol_arr = getattr(self, "atol_array", None)
+        for p in range(len(self.polymer_pools)):
+            if not sgh_en[p]:
+                continue
+            pool = self.polymer_pools[p]
+            mu1_amount = max(0.0, y[int(pool.mu_indices[1])])
+            for sgh_row in range(int(self.sgh_row_start[p]),
+                                 int(self.sgh_row_end[p])):
+                z_slot = int(self.sgh_z_slot[sgh_row])
+                z_val = y[z_slot]
+                upper = self.sgh_sites[sgh_row] * mu1_amount
+                # atol-derived floor on the Z slot (mole basis; same basis
+                # atol governs -- mirrors the moment-floor derivation). Used
+                # only to size the census-reported band; never a raise gate
+                # here (trial-state-safe).
+                if atol_arr is None:
+                    a_z = 0.0
+                elif np.ndim(atol_arr) == 0:
+                    a_z = float(atol_arr)
+                elif z_slot < len(atol_arr):
+                    a_z = float(atol_arr[z_slot])
+                else:
+                    a_z = float(np.max(atol_arr))
+                floor_z = max(SMALL_EPS, EXHAUSTION_FLOOR_K * a_z)
+                if z_val < 0.0 or z_val > upper:
+                    self._emit_sgh_inventory_census(
+                        p, sgh_row, z_val, upper, floor_z)
+
+    def _assert_sgh_inventory_accepted(self):
+        """SGH kernel-v2 ACCEPTED-state Z-inventory invariant (§1g, P1-A): the
+        HARD physical-band check the residual guard is deliberately too
+        trial-unsafe to make. Reads ``self.y`` -- the ACCEPTED integrator
+        solution (see the _phase_gate_flux_census call site: base.pyx invokes
+        that override once per accepted snapshot, with self.y holding the
+        accepted state) -- so a Z that has left ``[0, sites*max(0, mu1)]``
+        beyond the atol-derived floor is genuine integrator corruption, not a
+        recoverable Newton trial excursion. HARD-RAISES with the SAME
+        physical-band condition the residual guard used to enforce:
+        ``z < -floor_z or z > sites*max(0, mu1) + floor_z``,
+        ``floor_z = max(SMALL_EPS, EXHAUSTION_FLOOR_K*atol[z_slot])``. Mirrors
+        the moment driver's accepted-state posture (hard error, never
+        max(..., SMALL_EPS)). Cheap no-op when ``num_sgh_z == 0``."""
+        cdef int p, sgh_row, z_slot
+        cdef double z_val, upper, floor_z, mu1_amount, a_z
+        if self.num_sgh_z == 0:
+            return
+        sgh_en = getattr(self, "sgh_enabled", None)
+        if sgh_en is None:
+            return
+        y = self.y
+        atol_arr = getattr(self, "atol_array", None)
+        for p in range(len(self.polymer_pools)):
+            if not sgh_en[p]:
+                continue
+            pool = self.polymer_pools[p]
+            mu1_amount = max(0.0, y[int(pool.mu_indices[1])])
+            for sgh_row in range(int(self.sgh_row_start[p]),
+                                 int(self.sgh_row_end[p])):
+                z_slot = int(self.sgh_z_slot[sgh_row])
+                z_val = y[z_slot]
+                upper = self.sgh_sites[sgh_row] * mu1_amount
+                if atol_arr is None:
+                    a_z = 0.0
+                elif np.ndim(atol_arr) == 0:
+                    a_z = float(atol_arr)
+                elif z_slot < len(atol_arr):
+                    a_z = float(atol_arr[z_slot])
+                else:
+                    a_z = float(np.max(atol_arr))
+                floor_z = max(SMALL_EPS, EXHAUSTION_FLOOR_K * a_z)
+                if z_val < -floor_z or z_val > upper + floor_z:
+                    raise ValueError(
+                        f"Polymer pool '{pool.label}' side_group_homolysis "
+                        f"channel '{self.sgh_channel_labels[sgh_row]}' Z "
+                        f"inventory left the physical band beyond the floor on "
+                        f"the ACCEPTED state: Z={z_val!r} mol vs "
+                        f"[0, sites*mu1={upper:.6e}] +/- {floor_z:.6e} mol (= "
+                        f"max(SMALL_EPS, {EXHAUSTION_FLOOR_K:.0f}*"
+                        f"atol[z_slot])). A Z outside [0, sites*mu1] beyond the "
+                        f"integrator's own error budget on an accepted state "
+                        f"is integrator corruption, not depletion -- refusing "
+                        f"to continue (SGH-v2 Z-bound rule: hard error, never "
+                        f"max(..., SMALL_EPS)).")
+
+    def _emit_sgh_inventory_census(self, int p, int sgh_row, double z_val,
+                                   double upper, double floor_z):
+        """Once-per-(pool, channel)-per-rebuild in-band Z census (mirrors
+        _emit_pool_exhaustion_census): log-only, nothing suppressed. Cold
+        path -- string work happens at most once per key per rebuild."""
+        pool = self.polymer_pools[p]
+        ch = self.sgh_channel_labels[sgh_row]
+        key = (pool.label, ch)
+        emitted = getattr(self, "_sgh_inventory_census_emitted", None)
+        if emitted is None:
+            emitted = set()
+            self._sgh_inventory_census_emitted = emitted
+        if key in emitted:
+            return
+        emitted.add(key)
+        logging.warning(
+            "SGH INVENTORY CENSUS: pool %s channel %s Z=%.6e mol sits "
+            "in-band outside [0, sites*mu1=%.6e] within +/- floor %.6e mol "
+            "(census only; the RHS max(0.0, .) read clamps it, y unchanged).",
+            pool.label, ch, z_val, upper, floor_z)
+
     def get_total_polymer_condensed_mass_g(self, y=None):
         """r86 terminationPolymerConversion metric (defect-adjusted):
 
@@ -4094,10 +4478,14 @@ class HybridPolymerSystem(ReactionSystem):
             M_poly = sum over ALL solver polymer pools of M_pool
 
         summed over EVERY pool the solver carries at this rebuild --
-        configured, spawned, homolysis-daughter, deprop-daughter AND
-        side-group feature pools (defect pools apply the schema-2.7
-        mass-defect formula through PolymerPoolConfig.condensed_mass_g, so
-        an FR1 Br-loss pool never falsely retains Br mass). Explicit-DP
+        configured, spawned, homolysis-daughter and deprop-daughter pools
+        apply the schema-2.7 mass-defect formula through
+        PolymerPoolConfig.condensed_mass_g. SGH kernel-v2 carriers instead
+        book their Br loss through the explicit Z inventory (there is no
+        side-group feature pool in v2): for an sgh_enabled carrier the mass
+        is mu1*MW - Σ_row lost_X, lost_X = max(0, sites*tail_mu1 - Z)*M_X, so
+        an FR1 Br-loss carrier never falsely retains the Br that has left as
+        gas X. Explicit-DP
         oligomer carriers hold genuine polymer repeat-unit mass OUTSIDE
         the mu state slots (the init consistency check subtracts their
         share from mu1, r86 probe 3), so their contribution is added back
@@ -4127,7 +4515,30 @@ class HybridPolymerSystem(ReactionSystem):
                     V_poly, y, pool.explicit_dp_to_species_index)
                 mu0_mol += e0 * V_poly
                 mu1_mol += e1 * V_poly
-            total += max(0.0, pool.condensed_mass_g(mu0_mol, mu1_mol))
+            sgh_en = getattr(self, "sgh_enabled", None)
+            if sgh_en is not None and p < len(sgh_en) and sgh_en[p]:
+                # SGH kernel-v2 (§1e): Br leaves the melt through the
+                # per-channel Z depletion state, NOT a moment debit or a
+                # feature pool. Br lost so far on each row is the seeded
+                # inventory sites*mu1(0) minus the remaining Z(t). The §1h
+                # guard pins the carrier mu1 STATIONARY, so sites*tail_mu1(t)
+                # == Z(0) at all times and lost = max(0, sites*tail_mu1 - Z)
+                # tracks depleted Br EXACTLY: 0 at t0 (Z == Z(0)) and
+                # sites*mu1(0)*M_X at full depletion (Z -> 0 == ALL the Br).
+                # A v2 carrier's chain_mass_defect_g_mol is 0, so the intact
+                # mass reduces to mu1*MW; subtract the Br that has left.
+                # (tail_mu1 matches the Z-seed basis -- the moment slot, not
+                # the explicit-DP-augmented mu1_mol.)
+                tail_mu1 = max(0.0, y[i1])
+                lost_x = 0.0
+                for sgh_row in range(int(self.sgh_row_start[p]),
+                                     int(self.sgh_row_end[p])):
+                    z_val = y[int(self.sgh_z_slot[sgh_row])]
+                    lost_x += max(0.0, self.sgh_sites[sgh_row] * tail_mu1
+                                  - z_val) * self.sgh_mw_X[sgh_row]
+                total += max(0.0, mu1_mol * pool.monomer_mw_g_mol - lost_x)
+            else:
+                total += max(0.0, pool.condensed_mass_g(mu0_mol, mu1_mol))
         return total
 
     def _chain_bundle(self, int pool_idx, y, double V_poly, bint end_group):
@@ -4201,6 +4612,9 @@ class HybridPolymerSystem(ReactionSystem):
         if (self._scratch_du_dt is None
                 or len(self._scratch_du_dt) != self.num_qssa_u):
             self._scratch_du_dt = np.zeros(self.num_qssa_u, float)
+        if (self._scratch_dz_dt is None
+                or len(self._scratch_dz_dt) != self.num_sgh_z):
+            self._scratch_dz_dt = np.zeros(self.num_sgh_z, float)
 
         # 2. Update Volumes
         if self.constant_gas_volume:
@@ -4236,6 +4650,9 @@ class HybridPolymerSystem(ReactionSystem):
         du_dt = self._scratch_du_dt
         du_dt[:] = 0.0
 
+        dz_dt = self._scratch_dz_dt
+        dz_dt[:] = 0.0
+
         proxy_activity = self._scratch_proxy_activity
         proxy_activity[:] = 0.0
 
@@ -4246,6 +4663,17 @@ class HybridPolymerSystem(ReactionSystem):
         # read below consults them (the r81 read-projection is reverted);
         # site factors, bundles and kernels always compute from raw y.
         self._update_pool_exhaustion(y)
+
+        # SGH kernel-v2 Z-inventory census (§1g, P1-A): TRIAL-STATE-SAFE --
+        # residual() is called on the raw Newton trial state, so this NEVER
+        # raises and NEVER mutates y. It only census/logs (warn-once) any Z
+        # sitting outside the physical band [0, sites*mu1]; the RHS's local
+        # max(0.0, .) reads sanitize a negative trial Z. The HARD physical-
+        # band invariant is enforced on the ACCEPTED state only, by
+        # _assert_sgh_inventory_accepted (self.y), invoked once per accepted
+        # snapshot from _phase_gate_flux_census. Cheap no-op when
+        # num_sgh_z == 0.
+        self._update_sgh_inventory_guard(y)
 
         self.core_reaction_rates[:] = 0.0
         self.edge_reaction_rates[:] = 0.0
@@ -5067,41 +5495,41 @@ class HybridPolymerSystem(ReactionSystem):
                         dn_dt[self.khom_sec_mu1[pool_i]] += frag_mu1
                         dn_dt[self.khom_sec_mu2[pool_i]] += frag_mu2
 
-            # Side-group homolysis initiation kernel (FR1-K1, adjudicated
-            # round 70). Reads ONLY the flattened sgh_* row arrays from
-            # _flatten_side_group_state -- never the pool dicts. MAY coexist
-            # with the k_homolysis kernel above (different bonds: side-group
-            # C-X here vs backbone C-C there; no double-carry).
+            # Side-group homolysis initiation kernel (SGH kernel-v2, explicit
+            # Br-inventory depletion; adjudicated spar r103 / plan r104).
+            # Reads ONLY the flattened sgh_* row arrays from
+            # _flatten_side_group_state -- never the pool dicts. Kernel-v2 is
+            # mutually exclusive with k_homolysis (both move/route the carrier
+            # moments): the §1h build guard refuses any carrier whose mu1
+            # moves, including the k_homolysis kernel above. It MAY coexist
+            # only with k_scission (verified mu1-preserving backbone
+            # scission).
             #
-            # Event, per channel with s = sites_per_unit and
-            # k(T) = A*T^n*exp(-Ea/(R_gas*T)) per site, at the RUNTIME T:
-            # every repeat unit carries s X sites, so a chain of length n
-            # loses X at rate k*s*n and the reacting chain is picked with
-            # probability ~ n (site-weighted). The chain transfers INTACT
-            # (no chain cut) to the channel's X-loss feature pool:
-            #   event rate      R = k*s*mu1
-            #   parent debit    dmu_j -= k*s*mu_{j+1}   (j = 0, 1, 2;
-            #                   equivalently R*E[n^j] with picked-chain
-            #                   moments E[n^j] = mu_{j+1}/mu1 -- computed in
-            #                   the STABLE direct product forms, never a
-            #                   ratio re-multiplied by R)
-            #   feature credit  EXACTLY the parent debit (total mu0/mu1/mu2
-            #                   across the two pools conserved bitwise)
-            #   gas X credit    +R of gas_product (one X radical per event)
-            # mu3 from the established log-Lagrange closure (computed once
-            # per pool above). MASS CONTRACT: the transferred chain lost one
-            # X atom while the feature pool keeps the parent's monomer_mw,
-            # so the feature pool's EXACT condensed mass is
-            # mu1*MW - mu0*M_X (chain_mass_defect_g_mol = M_X, enforced at
-            # flatten); on this kernel's contributions
-            # d(condensed mass)/dt = -R*M_X = -d(gas X mass)/dt exactly.
-            # v1 LIMITATION (adjudicated): the kernel acts on the PARENT
-            # pool only -- feature pools carry no side_group_homolysis of
-            # their own (no multi-loss cascade; they saturate as terminal
-            # X-loss sinks).
-            if self.sgh_enabled[pool_i] and mu1 > 0.0 and mu0 > 0.0:
+            # v2 carries an EXPLICIT auxiliary extensive state Z per (pool,
+            # channel row): Z = moles of remaining removable X (Br) sites,
+            # seeded Z(0) = sites*mu1(0) [set_initial_conditions step 8] and
+            # depleting as the X atoms leave the melt. Per row at the RUNTIME
+            # T:
+            #   k(T)   = A*T^n*exp(-Ea/(R_gas*T))   [s^-1 per site]
+            #   z_conc = Z / V_poly                 [mol/m^3]
+            #   R      = k(T) * z_conc              [mol/(m^3 s)]
+            # There is NO extra `sites` factor in R -- `sites` was FOLDED INTO
+            # Z(0)=sites*mu1(0), so at t0 this reproduces v1's k*sites*mu1
+            # rate exactly (Z(0)=sites*mu1). Any residual `*sites` here would
+            # double-count (§6.1). Then:
+            #   dZ/dt -= R*V_poly                    [mol/s]  (inventory drains)
+            #   gas X += R                            through the SAME
+            #            small_src -> dn_dt*V_poly path as the unzip/QSSA
+            #            releases (one X radical per event; additive across
+            #            channels sharing a gas species).
+            # The carrier's mu0/mu1/mu2 are UNCHANGED (no moment debit, no
+            # feature-pool credit): Br mass leaves through Z, and
+            # get_total_polymer_condensed_mass_g books it as lost*M_X so that
+            # d(condensed mass)/dt + d(gas X mass)/dt = 0 exactly. The RHS
+            # NEVER raises for Z (only sanitizes trial fuzz with max(0.0,.));
+            # the accepted-state guard owns the hard [0, sites*mu1] bounds.
+            if self.sgh_enabled[pool_i]:
                 T_sgh = self.T.value_si
-                mu3_ok_sgh = np.isfinite(mu3)
                 for sgh_row in range(self.sgh_row_start[pool_i],
                                      self.sgh_row_end[pool_i]):
                     k_sgh = (self.sgh_A[sgh_row]
@@ -5109,6 +5537,9 @@ class HybridPolymerSystem(ReactionSystem):
                              * math.exp(-self.sgh_Ea[sgh_row]
                                         / (QSSA_R_GAS * T_sgh)))
                     if not (0.0 < k_sgh < QSSA_INF):
+                        # Degenerate k is SETUP-invariant (A/n/Ea + T), not a
+                        # trial-state artifact, so it stays a hard raise (v1
+                        # contract preserved).
                         raise ValueError(
                             f"Pool {pool.label}: side_group_homolysis "
                             f"channel "
@@ -5119,53 +5550,21 @@ class HybridPolymerSystem(ReactionSystem):
                             f"n={self.sgh_n[sgh_row]:g}, "
                             f"Ea={self.sgh_Ea[sgh_row]:g} J/mol. Refusing "
                             f"to integrate a poisoned kernel.")
-                    if (not mu3_ok_sgh) or mu2 < mu1 or mu3 < mu2:
-                        # Loud out-of-domain guard (warn once per
-                        # pool/channel per rebuild, sibling-kernel
-                        # convention): the debit consumes mu2 and the mu3
-                        # closure directly, so a nonrealizable shape
-                        # (mu2 < mu1 -- impossible for chains with n >= 1;
-                        # nonfinite mu3; mu3 < mu2) would transfer negative
-                        # or garbage moment bundles. Contribute ZERO flux
-                        # this step. (mu1 <= 0 / mu0 <= 0 is the SILENT
-                        # in-domain zero above: no sites, no events.)
-                        key = (pool.label,
-                               self.sgh_channel_labels[sgh_row])
-                        if key not in self._sgh_guard_warned:
-                            self._sgh_guard_warned.add(key)
-                            logging.warning(
-                                "Polymer pool '%s': side_group_homolysis "
-                                "channel '%s' skipped -- "
-                                "nonfinite/negative moment combination "
-                                "(mu0=%.6g, mu1=%.6g, mu2=%.6g, mu3=%.6g; "
-                                "require mu2 >= mu1 and finite "
-                                "mu3 >= mu2). The kernel contributes zero "
-                                "flux until the state re-enters its "
-                                "realizable domain.",
-                                pool.label,
-                                self.sgh_channel_labels[sgh_row],
-                                mu0, mu1, mu2, mu3)
-                        continue
-                    ks_sgh = k_sgh * self.sgh_sites[sgh_row]
-                    r0_sgh = ks_sgh * mu1     # R: events == chains == gas X
-                    r1_sgh = ks_sgh * mu2     # R*E[n], stable direct form
-                    r2_sgh = ks_sgh * mu3     # R*E[n^2], stable direct form
-                    dmu0_dt -= r0_sgh
-                    dmu1_dt -= r1_sgh
-                    dmu2_dt -= r2_sgh
-                    # Feature-pool credits go straight to the destination
-                    # moment slots -- the SAME r*V_poly products as the
-                    # parent debit flush below, so the two-pool totals
-                    # cancel bitwise.
-                    dn_dt[self.sgh_dst_mu0[sgh_row]] += r0_sgh * V_poly
-                    dn_dt[self.sgh_dst_mu1[sgh_row]] += r1_sgh * V_poly
-                    dn_dt[self.sgh_dst_mu2[sgh_row]] += r2_sgh * V_poly
-                    # Gas X radical: +R through the same small_src ->
-                    # dn_dt * V_poly path as the unzip/QSSA releases
-                    # (additive: channels may share one gas species).
+                    # Trial-state fuzz sanitize ONLY (never raise for Z here).
+                    z_amount = y[int(self.sgh_z_slot[sgh_row])]
+                    if z_amount < 0.0:
+                        z_amount = 0.0
+                    r_sgh = k_sgh * z_amount / V_poly     # mol/(m^3 s)
+                    # Deplete the Br inventory. z_rel is this row's index in
+                    # the [Z] block (state order core | U | Z):
+                    # z_slot - n_core - num_qssa_u.
+                    z_rel = (int(self.sgh_z_slot[sgh_row])
+                             - n_core - self.num_qssa_u)
+                    dz_dt[z_rel] -= r_sgh * V_poly
+                    # Gas X radical: +R (same small_src path as v1 ~5167).
                     g_idx_sgh = int(self.sgh_gas[sgh_row])
                     small_src[g_idx_sgh] = (
-                        small_src.get(g_idx_sgh, 0.0) + r0_sgh)
+                        small_src.get(g_idx_sgh, 0.0) + r_sgh)
 
             # radical_qssa_unzip channel (M2 rate law). Reads ONLY the
             # flattened solver-owned qssa_* arrays from M1 -- NEVER the pool
@@ -5536,11 +5935,16 @@ class HybridPolymerSystem(ReactionSystem):
                 for bi in bad[:10]:
                     print(f"[POLY-DBG]     idx {bi}: y={y[bi]:.4e} gas={bool(mask[bi])}")
 
-        if self.num_qssa_u > 0:
-            # Weak-link layout: y = [core species | U slots]; the residual
-            # vector follows the same layout. The legacy (num_qssa_u == 0)
-            # return below is bit-for-bit the pre-milestone expression.
-            return (np.concatenate((dn_dt, du_dt)) - dydt), 1
+        if self.num_qssa_u > 0 or self.num_sgh_z > 0:
+            # Appended-state layout: y = [core species | U slots | Z slots].
+            # The residual vector follows the SAME layout, so the blocks are
+            # concatenated in slot-index order (core | U | Z) to match the
+            # absolute slot assignments in flatten. Zero-length blocks are
+            # harmless (concatenate drops them), but the legacy
+            # (num_qssa_u == 0 AND num_sgh_z == 0) return below stays the
+            # bit-for-bit pre-milestone expression -- a golden bitwise-RHS
+            # test depends on it.
+            return (np.concatenate((dn_dt, du_dt, dz_dt)) - dydt), 1
         return (dn_dt - dydt), 1
 
     def get_reaction_rates(self, y_in):

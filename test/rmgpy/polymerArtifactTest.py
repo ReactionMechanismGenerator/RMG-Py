@@ -2609,14 +2609,16 @@ class TestHomolysisInitiationSidecar:
 
 
 class TestSideGroupHomolysisSidecar:
-    """Emitter side of the schema-2.7 side_group_homolysis contract
-    (FR1-K2, adjudicated rounds 72/73) -- the real serialization that
-    replaced the K1 'schema 2.7 pending' hard-fail: full channel list
+    """Emitter side of the schema-3.0 side_group_homolysis kernel-v2
+    (explicit Br-inventory depletion) contract: the full channel list
     (kinetics + site_selector + serialized site_atom_indices + gas
-    routing + M_X pin + ratified feature-pool label), the X-loss feature
-    pools' chain_mass_defect_g_mol mass contract, presence-gated 2.7
-    stamp, and the producer closure guard mirroring the consumer
-    conjunct-for-conjunct (the r68 mirror-property)."""
+    routing + M_X pin), NO X-loss feature pool (v2 tracks multi-loss X
+    depletion via the carrier's per-(pool, channel) Z inventory, so
+    generate_side_loss_daughters() returns ()), the carrier's moments
+    unchanged and carrying NO chain_mass_defect_g_mol, the presence-gated
+    MAJOR 3.0 stamp, and the producer closure guard mirroring the
+    consumer (the r68 mirror-property): carrier-configured, no-defect-on-
+    carrier, site_atom_indices in range, channels atom-set disjoint."""
 
     @staticmethod
     def _sgh_channel(label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
@@ -2627,12 +2629,13 @@ class TestSideGroupHomolysisSidecar:
                     sites_per_unit=sites_per_unit, gas_product=gas_product)
 
     def _setup(self, channels=None, monomer='[CH2][CH]Br'):
-        """Kernel-enabled pool + its X-loss feature daughters through the
-        REAL FR1-K1 producer (generate_side_loss_daughters), plus a core
-        carrying the gas Species (identity is load-bearing for routing)
-        and every pool's mu-dummies (the live registration shape:
-        daughters eagerly solver-CONFIGURED -- polymer.pyx
-        _flatten_side_group_state hard-errors otherwise)."""
+        """Kernel-enabled pool built for the SGH kernel-v2 artifact. v2
+        deletes the X-loss feature pool, so generate_side_loss_daughters()
+        returns () and ``daughters`` is empty; the artifact is built from
+        the single carrier + its gas Species (identity is load-bearing for
+        routing) + the carrier's mu-dummies (no feature-pool mu-dummies).
+        The list-comprehensions over ``daughters`` below degrade to the
+        single-carrier registry."""
         channels = channels or [self._sgh_channel()]
         pool = Polymer(label='PVBr', monomer=monomer,
                        end_groups=['[H]', '[H]'], cutoff=3,
@@ -2658,79 +2661,67 @@ class TestSideGroupHomolysisSidecar:
             condensed_species=condensed if condensed is not None
             else core[1:])
 
-    def test_kernel_pool_emits_block_and_2_7_stamp(self):
-        """RED pin (was the K1 'schema 2.7 pending' hard-fail): the
-        kernel-enabled pool's sidecar entry carries the pool-level
-        side_group_homolysis block -- structured per-channel kinetics with
-        explicit PER-SITE units, the round-72 site_selector, the
-        loader-checkable site_atom_indices, gas routing + M_X pin, the
-        ratified feature-pool label, kernel/recipe_revision pins and the
-        NORMATIVE mass formula -- and the artifact stamps 2.7."""
+    def test_side_group_homolysis_v2_artifact_stamps_schema_3_0(self):
+        """SGH kernel-v2 (schema 3.0) election, golden: a v2
+        side_group_homolysis artifact stamps schema_version 3.0 -- the MAJOR
+        rung wins DETERMINISTICALLY over the 2.7/2.8/2.9 rungs a v2 block
+        would otherwise touch. The v2 block reuses the side_group_homolysis
+        key, so it trips the 2.7 rung, but the /2 kernel marker unconditionally
+        overrides to 3.0 with NO '2.x fallback' (the 2.7 chain_mass_defect
+        trigger never fires -- v2 emits no defect field).
+
+        v2 tracks multi-loss X depletion via the carrier's auxiliary
+        per-(pool, channel) Z inventory instead of a one-lost-X feature pool,
+        so generate_side_loss_daughters() returns () and the artifact is built
+        from the SINGLE PVBr carrier: the block emits NO per-channel
+        feature_pool and the carrier carries NO chain_mass_defect_g_mol."""
         pool, daughters, br, core = self._setup()
+        # v2 DELETES the feature/daughter pool entirely.
+        assert daughters == []
         payload = self._payload(pool, daughters, core)
-        assert payload["schema_version"] == "2.7"
+        # Deterministic MAJOR election: exactly 3.0, never a 2.x fallback.
+        assert payload["schema_version"] == "3.0"
+        assert not payload["schema_version"].startswith("2.")
         entry = next(p for p in payload["pools"] if p["label"] == "PVBr")
-        block = entry.get("side_group_homolysis")
-        assert isinstance(block, dict), (
-            "kernel-enabled pool must carry the pool-level "
-            "side_group_homolysis block")
-        assert block["enabled"] is True
-        assert block["kernel"] == "side_group_homolysis/1"
-        assert block["recipe_revision"] == "2026-07-06-side-group-homolysis"
-        (ch,) = block["channels"]
-        assert ch["label"] == "aliphatic_C-Br"
+        block = entry["side_group_homolysis"]
+        assert block["kernel"] == "side_group_homolysis/2"
+        assert block["recipe_revision"] == (
+            "2026-07-08-side-group-inventory-depletion")
+        assert block["recipe"]["mass"] == (
+            "mu1*MW - sum_c max(0, sites_c*mu1 - Z_c)*M_X_c")
+        assert block["recipe"]["state"] == (
+            "Z_c(0)=sites_c*mu1(0); dZ_c/dt=-k*Z_c/V_poly (conc basis); "
+            "pool moments unchanged")
+        # Per-channel detail (preserved from the deleted v1 block/2.7 test):
+        # kinetics (units UNCHANGED from v1), selector, serialized site
+        # indices, gas routing + M_X pin.
+        ch = block["channels"][0]
         assert ch["kinetics"] == {
             "A": 1.0e13, "n": 0.5, "Ea": 1.2e5,
             "units": {"A": "s^-1 per site", "Ea": "J/mol"},
         }
         assert ch["site_selector"] == "aliphatic"
         assert ch["sites_per_unit"] == 1.0
-        # Loader-side structural closure from data alone (round-73): the
-        # selector's resolved match indices, count == sites_per_unit.
-        assert isinstance(ch["site_atom_indices"], list)
-        assert len(ch["site_atom_indices"]) == 1
-        assert all(isinstance(i, int) and i >= 0
-                   for i in ch["site_atom_indices"])
+        assert (isinstance(ch["site_atom_indices"], list)
+                and len(ch["site_atom_indices"]) == 1
+                and all(isinstance(i, int) and i >= 0
+                        for i in ch["site_atom_indices"]))
         assert ch["gas_product"] == "[Br]"
         assert ch["gas_species"] == "Br(7)"
         assert ch["gas_mw_g_mol"] == pytest.approx(79.904, rel=1e-3)
-        assert ch["feature_pool"] == "PVBr_sidegrp_aliphatic_C_Br"
-        # Machine-pinned law + NORMATIVE mass formula.
-        recipe = block["recipe"]
-        joined = " ".join(str(v) for v in recipe.values())
-        for needle in ("R = k(T)*s*mu1", "dmu_j -= k*s*mu_{j+1}",
-                       "credited EXACTLY the parent debit",
-                       "condensed_mass_g = mu1*monomer_mw_g_mol - "
-                       "mu0*chain_mass_defect_g_mol"):
-            assert needle in joined, (
-                f"recipe must pin law/mass term {needle!r}")
-        # Feature-pool entries carry the POOL-property mass contract.
-        (d,) = daughters
-        d_entry = next(p for p in payload["pools"]
-                       if p["label"] == d.label)
-        assert d_entry["chain_mass_defect_g_mol"] == pytest.approx(
-            ch["gas_mw_g_mol"], rel=1e-12)
-        assert d_entry["monomer_mw_g_mol"] == pytest.approx(
-            entry["monomer_mw_g_mol"], rel=1e-12)
-        assert d_entry["spawn_event_metadata"] == {
-            "source": "side_group_homolysis",
-            "channel": "aliphatic_C-Br"}
-        conv = payload["conventions"]
-        assert d.label in conv["configured_pools"]
-        assert d_entry["phase_species"]
-        for member in d_entry["phase_species"]:
-            assert member in conv["condensed_species"]
-        # Block-local revision only: artifact-level recipe_revision is
-        # untouched (the 2.3/2.6 precedent).
-        assert conv["recipe_revision"] == POLYMER_RATE_RECIPE_REVISION
-        # Ordinary pools never grow the defect key (byte-identical).
+        # v2 SHAPE: no per-channel feature_pool anywhere in the block, and no
+        # chain_mass_defect_g_mol on the carrier pool entry.
+        for ch in block["channels"]:
+            assert "feature_pool" not in ch
         assert "chain_mass_defect_g_mol" not in entry
 
     def test_mixed_site_channels_serialize_disjoint_atom_sets(self):
-        """Round-72 mixed-site fixture end-to-end: the aryl and aliphatic
-        C-Br channels of one FR1-like repeat unit serialize with DISJOINT
-        site_atom_indices and distinct feature pools -- the serialized
-        rendering the loader's same-atom-set double-carry guard keys on."""
+        """Round-72 mixed-site fixture end-to-end (v2): the aryl and
+        aliphatic C-Br channels of one FR1-like repeat unit serialize with
+        DISJOINT site_atom_indices -- the serialized rendering the loader's
+        same-atom-set double-carry guard keys on -- under the MAJOR 3.0
+        stamp. v2 has no feature pools, so neither channel carries a
+        feature_pool key."""
         channels = [
             self._sgh_channel(label="aryl_C-Br", site_selector="aryl"),
             self._sgh_channel(label="aliphatic_C-Br",
@@ -2739,7 +2730,7 @@ class TestSideGroupHomolysisSidecar:
         pool, daughters, br, core = self._setup(
             channels=channels, monomer='[CH2][C](c1ccc(Br)cc1)CBr')
         payload = self._payload(pool, daughters, core)
-        assert payload["schema_version"] == "2.7"
+        assert payload["schema_version"] == "3.0"
         block = next(p for p in payload["pools"]
                      if p["label"] == "PVBr")["side_group_homolysis"]
         ch_aryl, ch_ali = block["channels"]
@@ -2747,15 +2738,15 @@ class TestSideGroupHomolysisSidecar:
         assert ch_ali["site_selector"] == "aliphatic"
         assert not (set(ch_aryl["site_atom_indices"])
                     & set(ch_ali["site_atom_indices"]))
-        assert ch_aryl["feature_pool"] != ch_ali["feature_pool"]
-        assert {p["label"] for p in payload["pools"]} >= {
-            ch_aryl["feature_pool"], ch_ali["feature_pool"]}
+        assert "feature_pool" not in ch_aryl
+        assert "feature_pool" not in ch_ali
 
-    def test_2_7_sits_beside_2_6_homolysis_block(self):
-        """2.7 OUTRANKS but never subsumes 2.6: an artifact carrying BOTH
-        kernels keeps the homolysis_initiation block byte-identical beside
-        the side_group_homolysis block, under the single strongest
-        stamp."""
+    def test_v2_sgh_sits_beside_2_6_homolysis_block(self):
+        """SGH-v2 (schema 3.0) OUTRANKS but never subsumes 2.6: an artifact
+        carrying BOTH kernels on DIFFERENT pools (SGH-v2 on PVBr,
+        k_homolysis on PP) keeps the homolysis_initiation block
+        byte-identical beside the side_group_homolysis block, under the
+        single strongest (MAJOR 3.0) stamp."""
         pool, daughters, br, core = self._setup()
         pp = Polymer(label='PP', monomer='[CH2][CH](C)',
                      end_groups=['[H]', '[H]'], cutoff=3,
@@ -2770,7 +2761,7 @@ class TestSideGroupHomolysisSidecar:
                                     + [d.label for d in daughters]
                                     + ["PP", prim.label, sec.label]),
             condensed_species=core[1:])
-        assert payload["schema_version"] == "2.7"
+        assert payload["schema_version"] == "3.0"
         assert "homolysis_initiation" in next(
             p for p in payload["pools"] if p["label"] == "PP")
         assert "side_group_homolysis" in next(
@@ -2797,91 +2788,17 @@ class TestSideGroupHomolysisSidecar:
                    and "chain_mass_defect_g_mol" not in p
                    for p in payload["pools"])
 
-    def test_producer_refuses_missing_feature_daughter(self):
-        """Producer closure (r68 mirror-property): serializing the
-        kernel-enabled pool with its X-loss feature pool absent from the
-        registry would emit exactly what the consumer hard-rejects -- the
-        producer refuses instead."""
-        pool, daughters, br, core = self._setup()
-        with pytest.raises(ValueError,
-                           match=r"PVBr_sidegrp_aliphatic_C_Br.*missing"):
-            self._payload(pool, daughters, core, registry=[pool])
-
     def test_producer_refuses_unconfigured_carrier(self):
         """A block on an unconfigured carrier is a silently dropped kernel
         on the consumer side; the producer must refuse to emit it."""
         pool, daughters, br, core = self._setup()
+        # v2 spawns no daughters, so `configured` must be a NON-EMPTY list that
+        # excludes the carrier PVBr; an empty list would trip the legacy
+        # "no configured labels => all pools configured" fallback and mask the
+        # refusal this test exists to exercise.
         with pytest.raises(ValueError, match=r"'PVBr'.*configured"):
             self._payload(pool, daughters, core,
-                          configured=[d.label for d in daughters])
-
-    def test_producer_refuses_unconfigured_feature_daughter(self):
-        """Feature daughters are eagerly solver-configured by design; an
-        unconfigured one has no solver home for the kernel's credits."""
-        pool, daughters, br, core = self._setup()
-        with pytest.raises(
-                ValueError,
-                match=r"PVBr_sidegrp_aliphatic_C_Br.*configured"):
-            self._payload(pool, daughters, core, configured=["PVBr"])
-
-    def test_producer_refuses_uncondensed_feature_daughter(self):
-        """An un-condensed feature pool is the item-16 mass-balance hazard
-        shape (the kernel's intact-chain credits would be phase-classified
-        GAS)."""
-        pool, daughters, br, core = self._setup()
-        with pytest.raises(
-                ValueError,
-                match=r"PVBr_sidegrp_aliphatic_C_Br.*condensed"):
-            # condensed closure covers only the parent's mu-dummies.
-            self._payload(pool, daughters, core, condensed=core[1:4])
-
-    def test_producer_refuses_provenance_stripped_daughter(self):
-        """A feature pool without the FR1-K1 spawn provenance pin
-        serializes with the {'source': 'input'} default -- a shape the
-        loader hard-rejects; the producer must refuse to emit it."""
-        pool, daughters, br, core = self._setup()
-        daughters[0].spawn_metadata = None
-        with pytest.raises(ValueError, match=r"provenance|spawn"):
-            self._payload(pool, daughters, core)
-
-    def test_producer_refuses_wrong_channel_provenance(self):
-        """The provenance pin includes the SPAWNING CHANNEL's label: a
-        feature pool claiming another channel breaks the (channel ->
-        feature pool) pairing the mass contract keys on."""
-        pool, daughters, br, core = self._setup()
-        daughters[0].spawn_metadata = {
-            "source": "side_group_homolysis", "channel": "bogus"}
-        with pytest.raises(ValueError, match=r"provenance|spawn"):
-            self._payload(pool, daughters, core)
-
-    def test_producer_refuses_defect_mismatch(self):
-        """chain_mass_defect_g_mol must pin the channel's gas M_X exactly
-        (the NORMATIVE mass formula); anything else mints/destroys
-        condensed mass while gas X appears."""
-        pool, daughters, br, core = self._setup()
-        daughters[0].chain_mass_defect_g_mol = 5.0
-        with pytest.raises(ValueError,
-                           match=r"chain_mass_defect_g_mol.*M_X"):
-            self._payload(pool, daughters, core)
-
-    def test_producer_refuses_inexpressible_defect(self):
-        """The K1 fallthrough survives: an X-loss feature-pool identity
-        whose defect the schema cannot express (0.0/None) HARD-FAILS the
-        pool serializer, never emits a defect-less feature pool."""
-        pool, daughters, br, core = self._setup()
-        daughters[0].chain_mass_defect_g_mol = 0.0
-        with pytest.raises(ValueError,
-                           match=r"mass-defect contract"):
-            self._payload(pool, daughters, core)
-
-    def test_producer_refuses_monomer_mw_divergence(self):
-        """The chain transfers INTACT: a feature pool whose repeat-unit
-        mass diverges from the parent's fabricates/destroys condensed
-        mass."""
-        pool, daughters, br, core = self._setup()
-        daughters[0].monomer_mw_g_mol = 999.0
-        with pytest.raises(ValueError, match=r"monomer_mw"):
-            self._payload(pool, daughters, core)
+                          configured=["__not_PVBr__"])
 
     def test_producer_refuses_unresolvable_gas_routing(self):
         """Enabled kernel without a registered/resolvable gas Species is
@@ -2896,28 +2813,16 @@ class TestSideGroupHomolysisSidecar:
         with pytest.raises(ValueError, match=r"core species universe"):
             self._payload(pool, daughters, core)
 
-    def test_producer_refuses_orphan_feature_pool(self):
-        """Reverse closure: a pool stamped with the side_group_homolysis
-        spawn PROVENANCE serialized WITHOUT its carrier's block (no
-        channel claims it) means the block was lost -- refuse, never emit
-        (replaces the K1 'schema 2.7 pending' daughter guard)."""
-        pool, daughters, br, core = self._setup()
-        (d,) = daughters
-        with pytest.raises(ValueError, match=r"claims"):
-            build_polymer_moments_artifact(
-                [d], core_species=core,
-                configured_pool_labels=[d.label],
-                condensed_species=core[1:])
-
     def test_producer_refuses_carrier_block_plus_defect(self):
-        """Round-75 P1-3 (producer mirror): a pool serializing BOTH the
-        side_group_homolysis block and a positive chain_mass_defect_g_mol
-        violates v1 saturation (the parent pool owns the kernel, X-loss
-        feature pools own the defect, never both) -- the consumer
-        hard-rejects it, so the producer refuses to emit it."""
+        """Producer mirror (v2): a pool serializing the side_group_homolysis
+        block AND a chain_mass_defect_g_mol field is contradictory -- SGH
+        kernel-v2 tracks multi-loss X depletion via the carrier's auxiliary
+        Z inventory, so the pool moments are unchanged and a v2 carrier
+        carries no defect. The consumer hard-rejects it, so the producer
+        refuses to emit it."""
         pool, daughters, br, core = self._setup()
         pool.chain_mass_defect_g_mol = 79.904
-        with pytest.raises(ValueError, match=r"BOTH.*chain_mass_defect"):
+        with pytest.raises(ValueError, match=r"chain_mass_defect_g_mol"):
             self._payload(pool, daughters, core)
 
     def test_producer_guard_rejects_overlapping_atom_sets(self):
@@ -2926,7 +2831,8 @@ class TestSideGroupHomolysisSidecar:
         so the overlap shape is only reachable via a broken caller; the
         r68 spawned-overlap precedent): two serialized channels whose
         site_atom_indices intersect WITHOUT being identical double-carry
-        the shared site and must refuse."""
+        the shared site and must refuse. v2 channels have no feature pool,
+        so the overlap is checkable from the carrier block alone."""
         from copy import deepcopy
         from rmgpy.polymer import _assert_side_group_serialization_closure
         pool, daughters, br, core = self._setup()
@@ -2937,25 +2843,14 @@ class TestSideGroupHomolysisSidecar:
         base = block["channels"][0]
         twin = deepcopy(base)
         twin["label"] = "other_C-Br"
-        twin["feature_pool"] = "PVBr_sidegrp_other_C_Br"
         twin["site_atom_indices"] = sorted(
             set(base["site_atom_indices"]) | {4})  # strict superset
         twin["sites_per_unit"] = float(len(twin["site_atom_indices"]))
         block["channels"].append(twin)
-        d_entry = next(p for p in pools
-                       if p["label"] == daughters[0].label)
-        twin_feat = deepcopy(d_entry)
-        twin_feat["label"] = "PVBr_sidegrp_other_C_Br"
-        twin_feat["spawn_event_metadata"] = {
-            "source": "side_group_homolysis", "channel": "other_C-Br"}
-        pools.append(twin_feat)
         conv = payload["conventions"]
         with pytest.raises(ValueError, match=r"overlap"):
             _assert_side_group_serialization_closure(
-                pools, [carrier], set(conv["condensed_species"]),
-                set(conv["configured_pools"])
-                | {"PVBr_sidegrp_other_C_Br"},
-                set())
+                pools, [carrier], set(conv["configured_pools"]))
 
     def test_producer_guard_rejects_out_of_range_indices(self):
         """Round-75 P1-2 (producer mirror, direct guard call): indices
@@ -2972,8 +2867,7 @@ class TestSideGroupHomolysisSidecar:
         conv = payload["conventions"]
         with pytest.raises(ValueError, match=r"out of range"):
             _assert_side_group_serialization_closure(
-                pools, [carrier], set(conv["condensed_species"]),
-                set(conv["configured_pools"]), set())
+                pools, [carrier], set(conv["configured_pools"]))
 
     def test_adjacency_list_round_trip_preserves_atom_order(self):
         """Round-75 P1-2 order-stability pin: site_atom_indices are
@@ -3038,18 +2932,18 @@ class TestSideGroupHomolysisSidecar:
                 'PVBr', mol, other.to_adjacency_list())
 
     def test_copy_carried_defect_without_provenance_serializes(self):
-        """A defect-carrying pool WITHOUT the spawn provenance is LEGAL
-        (Polymer.copy() carries chain_mass_defect_g_mol to downstream
-        daughters, e.g. an S2 _mod child of a feature pool -- its chains
-        each lost one X too, so the normative mass formula stays exact
-        with no live channel): it serializes with the defect field and
-        the 2.7 stamp, unclaimed."""
+        """A defect-carrying NON-carrier pool serializes legally in v2: the
+        serializer still emits chain_mass_defect_g_mol for any pool that
+        carries it nonzero, refusing it ONLY on an SGH carrier. Here a
+        downstream _mod child carries the defect (e.g. its chains each lost
+        one X too) while the SGH-v2 carrier PVBr drives the MAJOR 3.0 stamp;
+        the child is unclaimed and serializes with its defect field."""
         pool, daughters, br, core = self._setup()
         grandchild = Polymer(label='PVBr_feat_mod', monomer='[CH2][CH]Br',
                              end_groups=['[H]', '[H]'], cutoff=3,
                              moments=[0.0, 0.0, 0.0], initial_mass=0.0)
-        grandchild.chain_mass_defect_g_mol = \
-            daughters[0].chain_mass_defect_g_mol
+        # M_X of the channel's Br gas product (79.904 g/mol).
+        grandchild.chain_mass_defect_g_mol = 79.904
         core = core + [_mu_dummy(f"PVBr_feat_mod_mu{k}")
                        for k in range(3)]
         payload = self._payload(
@@ -3057,11 +2951,11 @@ class TestSideGroupHomolysisSidecar:
             registry=[pool] + daughters + [grandchild],
             configured=(["PVBr"] + [d.label for d in daughters]
                         + ["PVBr_feat_mod"]))
-        assert payload["schema_version"] == "2.7"
+        assert payload["schema_version"] == "3.0"
         g_entry = next(p for p in payload["pools"]
                        if p["label"] == "PVBr_feat_mod")
         assert g_entry["chain_mass_defect_g_mol"] == pytest.approx(
-            daughters[0].chain_mass_defect_g_mol, rel=1e-12)
+            79.904, rel=1e-12)
         assert g_entry["spawn_event_metadata"].get("source") != \
             "side_group_homolysis"
 

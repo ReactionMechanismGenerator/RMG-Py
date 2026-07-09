@@ -370,18 +370,20 @@ def polymer(label: str,
             selector's structural match count (channels stay SEPARATE,
             never lumped -- e.g. aryl C-Br = 4 vs benzylic C-Br = 2);
             gas_product is the ejected X radical's SMILES
-            (v1: monoatomic mono-radical only, e.g. '[Br]'). Per channel
-            the event rate is R = k(T)*sites_per_unit*mu1 and the reacting
-            chain is picked length-weighted; the chain transfers INTACT (no
-            chain cut) to an auto-spawned X-loss feature pool
-            '{label}_sidegrp_{channel}' carrying the exact per-chain mass
-            defect M_X, while gas_product receives +R. Mutually exclusive
-            with k_unzip > 0 and with radical_qssa_unzip (double-carry);
-            MAY coexist with k_homolysis/k_scission (different bonds:
-            side-group C-X vs backbone C-C). v1 limitation: the kernel acts
-            on the parent pool only (feature pools saturate; no multi-loss
-            cascade), and no sidecar schema exists yet (schema 2.7 pending
-            -- serialization of kernel-carrying pools hard-fails).
+            (monoatomic mono-radical only, e.g. '[Br]'). Per channel the
+            event rate is R = k(T)*sites_per_unit*mu1; the reacting chain
+            stays INTACT (no chain cut, no feature pool) and the ejected X
+            leaves via a solver-owned auxiliary inventory Z (kernel-v2
+            multi-loss, the DEFAULT semantics: Z(0) = sites_per_unit*mu1(0),
+            dZ/dt = -k*Z), while gas_product receives +R and the carrier
+            pool's condensed mass is credited the lost X mass directly.
+            Mutually exclusive with k_unzip > 0, with radical_qssa_unzip
+            (double-carry), and with any kernel that MOVES the carrier's mu1
+            -- k_homolysis, k_depropagation, explicit_dp (the solver-build
+            guard additionally refuses tail_kinetics and apportionment flux
+            targeting the carrier) -- because inventory-depletion SGH
+            requires a STATIONARY mu1 on the carrier pool. MAY coexist with
+            k_scission (mu1-preserving backbone scission).
             Default None (kernel absent).
     """
     # HARD ERROR at deck-read time: a non-finite k_unzip/k_scission is not a
@@ -556,11 +558,13 @@ def polymer(label: str,
     #   monomer-loss channel; enabling both double-carries degradation.
     # - radical_qssa_unzip: two lumped initiation carriers on one pool
     #   double-carry initiation.
-    # DELIBERATE coexistence (round-70 ruling): k_homolysis / k_scission act
-    # on backbone C-C bonds, this kernel on side-group C-X bonds -- both may
-    # run on one pool with no double-carry. Refused explicit
-    # gas-radical<->condensed rows + this kernel are FINE (zero flux); the
-    # solver's supersession census pairs them explicitly.
+    # DELIBERATE coexistence (SGH kernel-v2): k_scission acts on backbone C-C
+    # bonds and is verified mu1-preserving, so it MAY run alongside this
+    # kernel on one pool with no double-carry. k_homolysis is NOT allowed --
+    # it MOVES the carrier mu1, which inventory-depletion SGH forbids (refused
+    # below). Refused explicit gas-radical<->condensed rows + this kernel are
+    # FINE (zero flux); the solver's supersession census pairs them
+    # explicitly.
     if side_group_homolysis is not None:
         try:
             side_group_homolysis = validate_side_group_homolysis(
@@ -572,16 +576,52 @@ def polymer(label: str,
                 f"Polymer pool '{label}': side_group_homolysis and k_unzip="
                 f"{k_unzip:g} > 0 are mutually exclusive -- legacy k_unzip "
                 f"is a phenomenological closed-chain monomer-loss channel, "
-                f"while side_group_homolysis creates radical-defect feature "
-                f"pools that feed explicit degradation chemistry; enabling "
-                f"both would double-carry degradation. Set k_unzip=0 or "
-                f"remove side_group_homolysis.")
+                f"while side_group_homolysis drives explicit side-group "
+                f"degradation chemistry; enabling both would double-carry "
+                f"degradation. Set k_unzip=0 or remove side_group_homolysis.")
         if radical_qssa_unzip is not None:
             raise InputError(
                 f"Polymer pool '{label}': side_group_homolysis and "
                 f"radical_qssa_unzip are mutually exclusive -- two lumped "
                 f"initiation carriers on one pool would double-carry "
                 f"initiation. Remove one of them.")
+        # mu1-mover exclusion (kernel-v2, P1 contract). Inventory-depletion
+        # SGH keeps the reacting chain INTACT and tracks the ejected-X
+        # inventory Z(0) = sites*mu1(0), depleting it via dZ/dt = -k*Z; the Z
+        # bound (0 <= Z <= sites*mu1) and the condensed-mass credit (lost*M_X)
+        # both require the carrier pool's mu1 to stay STATIONARY. Any kernel
+        # that MOVES the carrier's mu1 breaks that contract, so it is refused
+        # here at deck-read time for the common per-pool kernels. k_scission
+        # is mu1-preserving (drives only dmu0/dmu2) and stays ALLOWED;
+        # k_unzip / radical_qssa_unzip are already refused above. This is the
+        # early deck-level refusal; the solver-build guard (polymer.pyx) is the
+        # backstop over runtime resolved-row flux (tail_kinetics, apportionment
+        # flux, explicit-DP handshake on spawned pools).
+        if k_homolysis is not None:
+            raise InputError(
+                f"Polymer pool '{label}': side_group_homolysis and "
+                f"k_homolysis are mutually exclusive -- k_homolysis MOVES the "
+                f"carrier pool's mu1 (random backbone homolysis drains the "
+                f"chain moments into the end-radical pools), but "
+                f"inventory-depletion SGH (side_group_homolysis) requires a "
+                f"stationary mu1 on the carrier pool. Remove one of them.")
+        if k_depropagation is not None:
+            raise InputError(
+                f"Polymer pool '{label}': side_group_homolysis and "
+                f"k_depropagation are mutually exclusive -- k_depropagation "
+                f"MOVES the carrier pool's mu1 (end-radical unzip drains the "
+                f"chain moments), but inventory-depletion SGH "
+                f"(side_group_homolysis) requires a stationary mu1 on the "
+                f"carrier pool. Remove one of them.")
+        if explicit_dp:
+            raise InputError(
+                f"Polymer pool '{label}': side_group_homolysis and "
+                f"explicit_dp are mutually exclusive -- the explicit-DP "
+                f"handshake MOVES the carrier pool's mu1 (chains crossing the "
+                f"hybrid cutoff drain mu0/mu1/mu2 into the explicit oligomer), "
+                f"but inventory-depletion SGH (side_group_homolysis) requires "
+                f"a stationary mu1 on the carrier pool. Set explicit_dp=False "
+                f"or remove side_group_homolysis.")
 
     # thermal_analysis_inputs (schema 2.9): DECLARED thermal-analysis inputs
     # for the downstream DTA/TGA consumer, threaded verbatim from the deck.
@@ -760,43 +800,12 @@ def polymer(label: str,
             species_dict[g_spc.label] = g_spc
             poly_obj.side_group_gas_species.append(g_spc)
 
-    # 4f. Side-group X-loss feature pools (FR1-K1): ONE daughter pool per
-    #     channel ('{label}_sidegrp_{channel}'), created HERE at model setup
-    #     -- not lazily -- through the same registration path as the
-    #     homolysis end-radical daughters (step 4d). The solver's
-    #     _flatten_side_group_state hard-errors if a kernel-enabled pool's
-    #     feature pool is missing, so this step is load-bearing. Each
-    #     daughter carries the exact mass-defect contract
-    #     (chain_mass_defect_g_mol = M_X) pinned by the producer.
-    poly_obj.side_loss_daughter_labels = []
-    if side_group_homolysis is not None:
-        for daughter in poly_obj.generate_side_loss_daughters():
-            daughter.creation_iteration = rmg.reaction_model.iteration_num
-            d_spc, _ = rmg.reaction_model.make_new_species(
-                daughter, generate_thermo=False)
-            if d_spc not in rmg.initial_species:
-                rmg.initial_species.append(d_spc)
-            species_dict[d_spc.label] = d_spc
-            for suffix in ['_mu0', '_mu1', '_mu2']:
-                m_label = f"{d_spc.label}{suffix}"
-                for spc in rmg.reaction_model.new_species_list:
-                    if spc.label == m_label:
-                        rmg.initial_species.append(spc)
-                        species_dict[m_label] = spc
-                        break
-            poly_obj.side_loss_daughter_labels.append(d_spc.label)
-
     # 5. Generate Thermo for the Polymer (Delegates to the trimer proxy)
     rmg.reaction_model.generate_thermo(poly_obj)
     # 5b. Thermo for the end-radical daughters (delegates to their
     #     end-radical oligomer proxies).
     if k_homolysis is not None:
         for d_label in poly_obj.end_radical_daughter_labels:
-            rmg.reaction_model.generate_thermo(species_dict[d_label])
-    # 5c. Thermo for the side-group X-loss feature daughters (delegates to
-    #     their mid-chain-radical feature trimer proxies).
-    if side_group_homolysis is not None:
-        for d_label in poly_obj.side_loss_daughter_labels:
             rmg.reaction_model.generate_thermo(species_dict[d_label])
 
     return poly_obj

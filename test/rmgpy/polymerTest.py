@@ -8641,10 +8641,23 @@ def test_polymer_input_helper_k_depropagation_reaches_spawned_daughters():
 
 
 # ---------------------------------------------------------------------------
-# Side-group homolysis (FR1-K1, adjudicated round 70) -- producer + deck
-# surfaces: per-pool side_group_homolysis channel list, one X-loss feature
-# pool per (parent, channel), gas X radical registration, exact mass-defect
-# contract (chain_mass_defect_g_mol = M_X pinned on the feature pool).
+# Side-group homolysis (FR1-K1) kernel-v2 -- producer + deck surfaces. v2 is
+# explicit Br-inventory depletion: there is NO X-loss feature/daughter pool.
+# Instead each (pool, channel) carries an auxiliary Z inventory on the CARRIER
+# (Z_c(0) = sites_c * mu1(0), dZ_c/dt = -k * Z_c / V_poly; the pool moments are
+# unchanged and the condensed mass reads
+# mu1*MW - sum_c max(0, sites_c*mu1 - Z_c)*M_X_c). Consequences pinned here:
+#   - Polymer.generate_side_loss_daughters() ALWAYS returns () (explicit
+#     no-daughter path, P1-A) -- no feature pool is ever spawned.
+#   - the deck helper KEEPS gas-product registration (step 4e: each channel's
+#     ejected X radical, populating poly.side_group_gas_species) but DELETES
+#     the feature-pool spawn (step 4f) -- no PVBr_sidegrp_* species.
+#   - the deck REJECTS an SGH carrier that also declares a mu1-moving kernel
+#     (k_homolysis / k_depropagation / explicit_dp): inventory-depletion SGH
+#     requires a STATIONARY carrier mu1.
+#   - the structural site-selector law (round-72) now lives in the solver:
+#     rmgpy.solver.polymer.side_group_site_atom_indices(monomer, sym, selector)
+#     and validate_side_group_homolysis(pool_label, channels, monomer=...).
 # ---------------------------------------------------------------------------
 
 def _sgh_channel(label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
@@ -8691,56 +8704,41 @@ def _defect_radical_on_ring(unit):
     return rads[0] in ring_atoms
 
 
-def test_generate_side_loss_daughters_proxy_fingerprint_and_mass_defect():
-    """Producer pin (round-70 milestone 2 red list): one X-loss feature pool
-    per (parent, channel), label '{parent}_sidegrp_{sanitized}', born-zero,
-    monomer_mw pinned to the parent, provenance
-    {'source': 'side_group_homolysis', 'channel': <label>}, exact
-    chain_mass_defect_g_mol = M_X, a distinct _SideLoss fingerprint class,
-    and a mono-radical mid-chain proxy missing exactly one Br."""
+def test_generate_side_loss_daughters_v2_emits_no_feature_pool():
+    """Producer pin (kernel-v2): side_group_homolysis spawns NO feature/
+    daughter pool. Multi-loss X depletion is tracked on an auxiliary Z
+    inventory on the CARRIER, so generate_side_loss_daughters() ALWAYS
+    returns () -- an EXPLICIT no-daughter path (P1-A) -- for both a
+    single-channel carrier and a multi-channel one."""
     poly = _pvbr(side_group_homolysis=[_sgh_channel()])
-    daughters = poly.generate_side_loss_daughters()
-    assert len(daughters) == 1
-    d = daughters[0]
+    assert poly.generate_side_loss_daughters() == ()
 
-    assert d.label == "PVBr_sidegrp_aliphatic_C_Br"
-    assert np.allclose(d.moments, 0.0)          # born at zero
-    assert d.monomer_mw_g_mol == poly.monomer_mw_g_mol
-    assert d.parent_pool_label == "PVBr"
-    assert d.spawn_metadata == {"source": "side_group_homolysis",
-                                "channel": "aliphatic_C-Br"}
-    m_x = Molecule().from_smiles("[Br]").get_molecular_weight() * 1000.0
-    assert d.chain_mass_defect_g_mol == m_x
-
-    # Distinct fingerprint class: _SideLoss, never _EndRad / plain _Feat
-    assert "_SideLoss-aliphatic_C_Br" in d.fingerprint
-    assert "_EndRad" not in d.fingerprint
-    assert d.fingerprint != poly.fingerprint
-
-    # Proxy: mid-chain radical trimer with ONE Br removed at the channel site
-    proxy = d.get_proxy_species()
-    mol = proxy.molecule[0]
-    assert mol.get_radical_count() == 1
-    n_br_proxy = sum(1 for a in mol.atoms if a.symbol == "Br")
-    n_br_parent = sum(1 for a in poly.get_proxy_species().molecule[0].atoms
-                      if a.symbol == "Br")
-    assert n_br_proxy == n_br_parent - 1 == 2
+    fr1 = _fr1(side_group_homolysis=[
+        _sgh_channel(),
+        _sgh_channel(label="aryl_C-Br", site_selector="aryl")])
+    assert fr1.generate_side_loss_daughters() == ()
 
 
 def test_side_loss_channels_never_lump_distinct_labels():
-    """Round-70 ruling: channels stay SEPARATE, never lumped -- two channels
-    of the SAME element yield two distinct pools with distinct fingerprints
-    (the channel label keys pool identity). Round-72: the two channels must
-    select structurally DISJOINT sites (here aryl vs aliphatic Br on the
-    mixed FR1-like unit)."""
+    """The "never lump" ruling now lives in validation, not daughters: two
+    channels of the SAME element stay SEPARATE, normalized to two distinct
+    channels keyed by label. v2 spawns no daughters (== ()), so the property
+    is asserted through validate_side_group_homolysis instead."""
+    from rmgpy.solver.polymer import (validate_side_group_homolysis,
+                                       side_group_site_atom_indices)
     poly = _fr1(side_group_homolysis=[
         _sgh_channel(),
         _sgh_channel(label="aryl_C-Br", site_selector="aryl")])
-    d1, d2 = poly.generate_side_loss_daughters()
-    assert d1.label != d2.label
-    assert d1.fingerprint != d2.fingerprint
-    assert "_SideLoss-aliphatic_C_Br" in d1.fingerprint
-    assert "_SideLoss-aryl_C_Br" in d2.fingerprint
+    assert poly.generate_side_loss_daughters() == ()
+
+    channels = [_sgh_channel(),
+                _sgh_channel(label="aryl_C-Br", site_selector="aryl")]
+    normalized = validate_side_group_homolysis("FR1", channels,
+                                               monomer=poly.monomer)
+    assert len(normalized) == 2
+    assert normalized[0]["label"] != normalized[1]["label"]
+    assert {normalized[0]["label"], normalized[1]["label"]} == {
+        "aliphatic_C-Br", "aryl_C-Br"}
 
 
 # --- Round-72 P1: REQUIRED structural site selector -----------------------
@@ -8754,122 +8752,103 @@ def test_side_loss_channels_never_lump_distinct_labels():
 
 
 def test_side_loss_selector_aliphatic_channel_removes_aliphatic_br():
-    """RED 1 (round-72): on the mixed aryl/aliphatic monomer the channel
-    with site_selector='aliphatic' must remove the ALIPHATIC Br -- defect
-    radical on a NON-ring carbon, aryl Br untouched. (Pre-fix the code
-    removed the first Br in atom order: the ARYL one.)"""
+    """RED 1 (round-72), v2 home: on the mixed aryl/aliphatic monomer the
+    'aliphatic' selector must resolve to the ALIPHATIC Br (neighbor carbon
+    NOT aromatic), while the 'aryl' selector resolves to a DIFFERENT (aryl)
+    Br. The structural law now lives in side_group_site_atom_indices."""
+    from rmgpy.solver.polymer import side_group_site_atom_indices
     poly = _fr1(side_group_homolysis=[_sgh_channel()])
-    d, = poly.generate_side_loss_daughters()
-    unit = d.feature_monomer
-    assert not _defect_radical_on_ring(unit), (
-        "aliphatic channel removed an ARYL Br (round-72 P1 corruption)")
-    ring_atoms = set()
-    for ring in unit.get_aromatic_rings()[0]:
-        ring_atoms.update(ring)
-    n_aryl_br = sum(1 for a in unit.atoms if a.symbol == "Br"
-                    and next(iter(a.bonds.keys())) in ring_atoms)
-    assert n_aryl_br == 1, "the aryl Br must survive an aliphatic-site loss"
+    ali = side_group_site_atom_indices(poly.monomer, "Br", "aliphatic")
+    aryl = side_group_site_atom_indices(poly.monomer, "Br", "aryl")
+    assert ali, "aliphatic selector matched no Br"
+    assert aryl, "aryl selector matched no Br"
+    assert set(ali).isdisjoint(aryl), (
+        "aliphatic and aryl selectors resolved to the SAME Br")
+
+    aromatic_atoms = set()
+    for ring in poly.monomer.get_aromatic_rings()[0]:
+        aromatic_atoms.update(ring)
+    for idx in ali:
+        neighbor = next(iter(poly.monomer.atoms[idx].bonds.keys()))
+        assert neighbor not in aromatic_atoms, (
+            "aliphatic channel picked an ARYL Br (round-72 P1 corruption)")
 
 
 def test_side_loss_selector_channels_mint_distinct_defect_structures():
-    """RED 2 (round-72): the 'aryl' channel must remove an ARYL Br and its
-    feature unit must DIFFER structurally from the 'aliphatic' channel's
-    (pre-fix both channels minted the identical -- aryl -- defect)."""
-    poly = _fr1(side_group_homolysis=[
-        _sgh_channel(),
-        _sgh_channel(label="aryl_C-Br", site_selector="aryl")])
-    d_ali, d_aryl = poly.generate_side_loss_daughters()
-    assert not _defect_radical_on_ring(d_ali.feature_monomer)
-    assert _defect_radical_on_ring(d_aryl.feature_monomer)
-    assert not d_ali.feature_monomer.is_isomorphic(d_aryl.feature_monomer), (
-        "different channels (different rates) minted the SAME defect "
-        "structure -- the round-72 double-carry")
+    """RED 2 (round-72), v2 home: the aliphatic and aryl selectors must
+    resolve to DISJOINT, non-empty atom-index sets on the mixed FR1 monomer
+    -- the round-72 guarantee that different channels (different rates)
+    target different structural sites, never the same one twice."""
+    from rmgpy.solver.polymer import side_group_site_atom_indices
+    poly = _fr1(side_group_homolysis=[_sgh_channel()])
+    ali = side_group_site_atom_indices(poly.monomer, "Br", "aliphatic")
+    aryl = side_group_site_atom_indices(poly.monomer, "Br", "aryl")
+    assert ali and aryl
+    assert set(ali).isdisjoint(aryl), (
+        "different channels resolved to the SAME defect site -- the "
+        "round-72 double-carry")
 
 
 def test_side_loss_selector_missing_hard_fails():
-    """RED 3 (round-72): site_selector is REQUIRED -- a channel without it
-    hard-fails naming the missing key (label-only site identity is
-    forbidden), never a silently mis-targeted removal."""
+    """RED 3 (round-72), v2 home: site_selector is a REQUIRED channel key --
+    a channel dict lacking it hard-fails the shared validator naming the
+    missing key (no monomer structure needed for this field-shape error)."""
+    from rmgpy.solver.polymer import validate_side_group_homolysis
     ch = _sgh_channel()
     del ch["site_selector"]
-    poly = _fr1(side_group_homolysis=[ch])
-    with pytest.raises(ValueError, match=r"missing.*site_selector"):
-        poly.generate_side_loss_daughters()
+    with pytest.raises(ValueError, match=r"missing"):
+        validate_side_group_homolysis("PP", [ch])
 
 
 def test_side_loss_selector_same_atom_set_hard_fails():
-    """RED 4 (round-72): two channels whose selectors resolve to the SAME
-    atom set in the monomer are a double-carry the labels were hiding --
-    hard-fail naming both channels."""
-    poly = _fr1(side_group_homolysis=[
-        _sgh_channel(),
-        _sgh_channel(label="backbone_C-Br", A=2.0e13)])
+    """RED 4 (round-72), v2 home: two channels whose selectors resolve to the
+    SAME atom set in the monomer are a double-carry the distinct labels were
+    hiding -- validate_side_group_homolysis(monomer=...) hard-fails naming
+    both channels."""
+    from rmgpy.solver.polymer import validate_side_group_homolysis
+    poly = _fr1()
+    channels = [_sgh_channel(),
+                _sgh_channel(label="backbone_C-Br", A=2.0e13)]
     with pytest.raises(ValueError,
                        match=r"aliphatic_C-Br.*backbone_C-Br.*SAME"):
-        poly.generate_side_loss_daughters()
+        validate_side_group_homolysis("FR1", channels, monomer=poly.monomer)
 
 
 def test_side_loss_selector_checks_sites_per_unit_against_match_count():
-    """RED 5 (round-72): sites_per_unit is CHECKED against the selector's
-    structural match count in the monomer, no longer trusted -- a
-    contradiction hard-fails naming both numbers."""
-    poly = _fr1(side_group_homolysis=[_sgh_channel(sites_per_unit=2.0)])
+    """RED 5 (round-72), v2 home: sites_per_unit is CHECKED against the
+    selector's structural match count in the monomer, no longer trusted --
+    a contradiction hard-fails naming both numbers (FR1 has ONE aliphatic
+    Br, so sites_per_unit=2 contradicts the match count of 1)."""
+    from rmgpy.solver.polymer import validate_side_group_homolysis
+    poly = _fr1()
     with pytest.raises(ValueError,
                        match=r"sites_per_unit=2.*matches 1"):
-        poly.generate_side_loss_daughters()
+        validate_side_group_homolysis(
+            "FR1", [_sgh_channel(sites_per_unit=2.0)], monomer=poly.monomer)
 
 
-def test_side_loss_daughter_fingerprint_distinct_from_end_radical_and_h_loss():
-    """Fingerprint-class distinctness (round-70 red list): the _SideLoss pool
-    must not collide with the parent's _EndRad daughters nor with an S2
-    H-loss _mod feature pool of the same parent."""
-    poly = _pvbr(side_group_homolysis=[_sgh_channel()],
-                 k_homolysis=_khom_triplet())
-    side = poly.generate_side_loss_daughters()[0]
-    prim, sec = poly.generate_end_radical_daughters()
-    fps = {side.fingerprint, prim.fingerprint, sec.fingerprint,
-           poly.fingerprint}
-    assert len(fps) == 4, "all pool identities must stay distinct"
-    # H-loss _mod daughter (radical-feature producer path) of the same parent
-    unit = poly.monomer.copy(deep=True)
-    ch_atom = next(a for a in unit.atoms
-                   if a.is_carbon()
-                   and any(nb.is_hydrogen() for nb in a.bonds))
-    h_atom = next(nb for nb in ch_atom.bonds if nb.is_hydrogen())
-    unit.remove_atom(h_atom)
-    ch_atom.increment_radical()
-    unit.update()
-    mod = poly._born_at_zero_mod_daughter(unit, source="radical_feature_h_loss")
-    assert mod.fingerprint != side.fingerprint
-
-
-def test_side_loss_feature_unit_rejects_absent_element():
-    """A channel whose gas_product element is absent from the monomer cannot
-    build its feature unit -- hard error naming the channel, never a silent
-    no-op pool."""
+def test_side_loss_selector_rejects_absent_element():
+    """A channel whose gas_product element is absent from the monomer matches
+    NO removable side-group atom -- validate_side_group_homolysis(monomer=...)
+    hard-fails naming the channel and the missing element, never a silent
+    no-op."""
+    from rmgpy.solver.polymer import validate_side_group_homolysis
     poly = Polymer(label='PP', monomer='[CH2][CH](C)',
                    end_groups=['[H]', '[H]'], cutoff=3,
-                   Mn=1500.0, Mw=1800.0, initial_mass=0.1,
-                   side_group_homolysis=[_sgh_channel()])
+                   Mn=1500.0, Mw=1800.0, initial_mass=0.1)
     with pytest.raises(ValueError, match=r"aliphatic_C-Br.*Br"):
-        poly.generate_side_loss_daughters()
+        validate_side_group_homolysis("PP", [_sgh_channel()],
+                                      monomer=poly.monomer)
 
 
 def test_polymer_copy_preserves_side_group_fields():
-    """copy() must carry side_group_homolysis (parent kernel), and the
-    daughter's side_loss_channel + chain_mass_defect_g_mol + fingerprint
-    (losing any would disable the kernel or collapse pool identity /
-    the mass contract)."""
+    """copy() must carry side_group_homolysis (the carrier kernel) as an
+    independent object; losing it would disable the kernel. v2 spawns no
+    daughter, so only the parent-copy invariant is asserted."""
     poly = _pvbr(side_group_homolysis=[_sgh_channel()])
     cp = poly.copy(deep=True)
     assert cp.side_group_homolysis == poly.side_group_homolysis
     assert cp.side_group_homolysis is not poly.side_group_homolysis
-
-    d = poly.generate_side_loss_daughters()[0]
-    d_cp = d.copy(deep=True)
-    assert d_cp.side_loss_channel == d.side_loss_channel
-    assert d_cp.chain_mass_defect_g_mol == d.chain_mass_defect_g_mol
-    assert d_cp.fingerprint == d.fingerprint
 
 
 def test_polymer_input_helper_rejects_side_group_with_positive_k_unzip():
@@ -8989,11 +8968,11 @@ def test_pool_to_config_resolves_side_group_gas_indices():
         pool2.to_config(spc_map2)
 
 
-def test_polymer_input_helper_side_group_spawns_feature_pools_and_gas():
-    """GREEN round-trip (producer wiring): polymer(...) with
-    side_group_homolysis registers the X-loss feature pool AND the gas X
-    radical at model setup (not lazily), stores the normalized channel list
-    on the parent, and appends everything to initial_species."""
+def test_polymer_input_helper_side_group_registers_gas_no_feature_pool():
+    """GREEN round-trip (kernel-v2 wiring): polymer(...) with
+    side_group_homolysis registers ONLY the gas X radical at model setup
+    (step 4e), stores the normalized channel list on the parent, and spawns
+    NO feature pool (step 4f deleted) -- no PVBr_sidegrp_* species."""
     from unittest.mock import MagicMock
     import rmgpy.rmg.input as rmg_input
 
@@ -9021,21 +9000,18 @@ def test_polymer_input_helper_side_group_spawns_feature_pools_and_gas():
         assert poly.side_group_homolysis == [_sgh_channel()]
         assert len(poly.side_group_gas_species) == 1
         assert poly.side_group_gas_species[0] in mock_rmg.initial_species
-        d_label = "PVBr_sidegrp_aliphatic_C_Br"
-        assert d_label in sd, f"{d_label} not registered by the deck helper"
-        d = sd[d_label]
-        assert isinstance(d, Polymer)
-        assert np.allclose(d.moments, 0.0)
-        assert d in mock_rmg.initial_species
-        assert poly.side_loss_daughter_labels == [d_label]
+        # v2 spawns NO feature pool (step 4f deleted)
+        assert "PVBr_sidegrp_aliphatic_C_Br" not in sd
     finally:
         rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
 
 
-def test_side_group_homolysis_coexists_with_k_homolysis_at_deck():
-    """Adjudicated coexistence: side-group C-X loss and backbone C-C
-    homolysis are different bonds -- the deck accepts both on one pool and
-    spawns BOTH daughter families."""
+def test_side_group_homolysis_rejects_coexistence_with_k_homolysis_at_deck():
+    """kernel-v2 P1 contract: side-group C-X loss depletes an inventory on a
+    STATIONARY carrier mu1, whereas k_homolysis (random backbone homolysis)
+    MOVES the carrier's mu1 -- so the two are mutually exclusive and the deck
+    REJECTS the combination at deck-read validation, before any daughter
+    spawn."""
     from unittest.mock import MagicMock
     import rmgpy.rmg.input as rmg_input
 
@@ -9055,38 +9031,12 @@ def test_side_group_homolysis_coexists_with_k_homolysis_at_deck():
     old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
     rmg_input.rmg, rmg_input.species_dict = mock_rmg, {}
     try:
-        rmg_input.polymer(label="PVBr", monomer="[CH2][CH]Br",
-                          end_groups=["[H]", "[H]"], cutoff=3,
-                          Mn=1500.0, Mw=1800.0, initial_mass=0.001,
-                          k_homolysis=_khom_triplet(),
-                          side_group_homolysis=[_sgh_channel()])
-        sd = rmg_input.species_dict
-        for label in ("PVBr_sidegrp_aliphatic_C_Br",
-                      "PVBr_rad_primary_end", "PVBr_rad_secondary_end"):
-            assert label in sd, f"{label} missing under kernel coexistence"
+        with pytest.raises(InputError,
+                           match=r"PVBr.*side_group_homolysis.*k_homolysis.*mutually exclusive"):
+            rmg_input.polymer(label="PVBr", monomer="[CH2][CH]Br",
+                              end_groups=["[H]", "[H]"], cutoff=3,
+                              Mn=1500.0, Mw=1800.0, initial_mass=0.001,
+                              k_homolysis=_khom_triplet(),
+                              side_group_homolysis=[_sgh_channel()])
     finally:
         rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
-
-
-def test_derive_daughter_pool_configs_carries_chain_mass_defect():
-    """The mass contract must survive the daughter config derivation: a
-    side-loss daughter registered as a core species gets its
-    chain_mass_defect_g_mol carried into the derived PolymerPoolConfig
-    (dropping it re-opens the round-70 P1 mass-minting trap)."""
-    from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
-
-    poly = _pvbr(side_group_homolysis=[_sgh_channel()])
-    d = poly.generate_side_loss_daughters()[0]
-    mu = []
-    for k, smi in ((0, "CO"), (1, "C=O"), (2, "C#N")):
-        m = _moment_dummy(f"{d.label}_mu{k}")
-        mu.append(m)
-    core = [d] + mu
-    spc_map = {s: i for i, s in enumerate(core)}
-    configs = derive_daughter_pool_configs(core, spc_map, {"PVBr"})
-    assert len(configs) == 1
-    cfg = configs[0]
-    assert cfg.label == d.label
-    m_x = Molecule().from_smiles("[Br]").get_molecular_weight() * 1000.0
-    assert cfg.chain_mass_defect_g_mol == m_x
-    assert cfg.monomer_mw_g_mol == poly.monomer_mw_g_mol
