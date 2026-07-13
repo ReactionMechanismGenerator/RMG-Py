@@ -8317,16 +8317,32 @@ def is_h_loss_radical_daughter(molecule: Molecule, proxy_element_counts) -> bool
     return False
 
 
-def compute_h_loss_feature_verdicts(reactants, products, polymer_reactants):
-    """Per-product H-loss conduit verdicts (stage S2, feature-pool conduit
-    arc, adjudicated design): a list of bools parallel to ``products``,
-    ``True`` iff that product may route through the radical-feature producer
-    path (``create_reacted_copy(..., h_loss_feature=True)``).
+def _h_loss_participant_mol(item):
+    """Molecule of a non-polymer participant; None for Polymers (pool
+    chains do not count) and a ValueError for unweighable non-polymers
+    (fail closed)."""
+    if isinstance(item, Polymer) or getattr(item, 'is_polymer', False):
+        return None
+    if isinstance(item, Molecule):
+        return item
+    mols = getattr(item, 'molecule', None)
+    if mols and mols[0] is not None:
+        return mols[0]
+    raise ValueError("unweighable non-polymer participant")
+
+
+def compute_h_loss_shape_evidence(reactants, products, polymer_reactants):
+    """Per-product pure H-loss SHAPE EVIDENCE (adversarial ruling round 20,
+    conduit collapse B -- split (i) of the former
+    ``compute_h_loss_feature_verdicts``): a list of bools parallel to
+    ``products``, ``True`` iff that product may route through the
+    radical-feature producer path
+    (``create_reacted_copy(..., h_loss_feature=True)``).
 
     Computed at the ONE place where resolved reactants and raw products are
     both visible (the ``make_new_reaction`` handshake call site in
     rmgpy/rmg/model.py) -- NEVER inferred inside :class:`Polymer` from a
-    single molecule. A product's verdict is True iff ALL of:
+    single molecule. A product's evidence bit is True iff ALL of:
 
     * exactly ONE polymer reactant source (``len(polymer_reactants) == 1``);
     * the product is a same-heavy-skeleton SINGLE-H-loss radical daughter of
@@ -8337,11 +8353,14 @@ def compute_h_loss_feature_verdicts(reactants, products, polymer_reactants):
       exactly ONE hydrogen and no heavy atoms -- the H atom / H2 / RH
       co-product actually carries the abstracted H, not just a formula
       coincidence. Fails closed if any non-polymer participant cannot be
-      weighed;
-    * the daughter radical is QSSA-eliminating
-      (:func:`is_qssa_eliminating_radical`); accumulating
-      (resonance-stabilized) daughters stay refused and pick up the
-      ``qssa-invalid`` refuse stamp downstream.
+      weighed.
+
+    Deliberately carries NO QSSA-eliminating gate: the resonance-count
+    proxy (:func:`is_qssa_eliminating_radical`) false-positively refused
+    live chain radicals (poly_102 r29-r31, real k_out 1.1e5-1.7e8 1/s) as
+    'qssa-invalid'. The routing conduit consumes THIS path only; the QSSA
+    verdict survives as the DIAGNOSTIC composite
+    :func:`compute_h_loss_feature_verdicts`.
     """
     verdicts = [False] * len(products)
     if len(polymer_reactants) != 1:
@@ -8354,22 +8373,9 @@ def compute_h_loss_feature_verdicts(reactants, products, polymer_reactants):
     except Exception:
         return verdicts
 
-    def _participant_mol(item):
-        """Molecule of a non-polymer participant; None for Polymers (pool
-        chains do not count) and a ValueError for unweighable non-polymers
-        (fail closed)."""
-        if isinstance(item, Polymer) or getattr(item, 'is_polymer', False):
-            return None
-        if isinstance(item, Molecule):
-            return item
-        mols = getattr(item, 'molecule', None)
-        if mols and mols[0] is not None:
-            return mols[0]
-        raise ValueError("unweighable non-polymer participant")
-
     for i, item in enumerate(products):
         try:
-            mol = _participant_mol(item)
+            mol = _h_loss_participant_mol(item)
         except ValueError:
             continue
         if mol is None:
@@ -8388,13 +8394,13 @@ def compute_h_loss_feature_verdicts(reactants, products, polymer_reactants):
             for j, other in enumerate(products):
                 if j == i:
                     continue
-                omol = _participant_mol(other)
+                omol = _h_loss_participant_mol(other)
                 if omol is None:
                     continue
                 for el, n in omol.get_element_count().items():
                     delta[el] = delta.get(el, 0) + n
             for r in reactants:
-                rmol = _participant_mol(r)
+                rmol = _h_loss_participant_mol(r)
                 if rmol is None:
                     continue
                 for el, n in rmol.get_element_count().items():
@@ -8405,9 +8411,33 @@ def compute_h_loss_feature_verdicts(reactants, products, polymer_reactants):
             continue
         if delta.get('H', 0) != 1:
             continue
-        if not is_qssa_eliminating_radical(mol):
-            continue
         verdicts[i] = True
+    return verdicts
+
+
+def compute_h_loss_feature_verdicts(reactants, products, polymer_reactants):
+    """DIAGNOSTIC composite -- split (ii) of the round-20 ruling: the pure
+    shape evidence (:func:`compute_h_loss_shape_evidence`) AND the optional
+    per-daughter QSSA-eliminating verdict
+    (:func:`is_qssa_eliminating_radical`). Semantics identical to the
+    pre-split helper. NOT consumed by the routing conduit any more
+    (rmgpy/rmg/model.py routes on the evidence path only -- reusing this
+    composite would preserve the poly_102 r29-r31 false 'qssa-invalid'
+    refusal); retained for census/diagnostics and API compatibility.
+    """
+    evidence = compute_h_loss_shape_evidence(reactants, products,
+                                             polymer_reactants)
+    verdicts = [False] * len(products)
+    for i, ok in enumerate(evidence):
+        if not ok:
+            continue
+        try:
+            mol = _h_loss_participant_mol(products[i])
+        except ValueError:
+            continue
+        if mol is None:
+            continue
+        verdicts[i] = is_qssa_eliminating_radical(mol)
     return verdicts
 
 

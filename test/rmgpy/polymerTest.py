@@ -8087,6 +8087,46 @@ class TestFeaturePoolConduitRouting:
         assert row['refused'] is True
         assert row['refused_reason'] == 'qssa-invalid'
 
+    # --- pin 5b (adversarial ruling round 20, conduit collapse B): the ----
+    # --- H-loss SHAPE EVIDENCE is split from the QSSA-eliminating verdict -
+
+    def test_shape_evidence_is_split_from_qssa_verdict(self):
+        """poly_102 r29-r31 forensics: the resonance-count proxy
+        (is_qssa_eliminating_radical) false-positively diagnosed live
+        chain radicals (real k_out 1.1e5-1.7e8 1/s) as accumulating. The
+        ruling splits compute_h_loss_feature_verdicts into (i) pure
+        H-loss/same-heavy-skeleton shape EVIDENCE (no QSSA gate -- the
+        conduit route consumes THIS) and (ii) the optional QSSA verdict
+        (diagnostic composite, unchanged semantics)."""
+        from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+                                   compute_h_loss_shape_evidence)
+        daughter = self._benzylic_h_loss_daughter(self.ps)
+        assert polymer.is_qssa_eliminating_radical(daughter) is False
+        h = Species(label='H', molecule=[Molecule(smiles='[H]')])
+        h2 = Species(label='H2', molecule=[Molecule(smiles='[H][H]')])
+        d_spc = Species(label='PSrad', molecule=[daughter])
+        reactants, products = [h, self.ps], [h2, d_spc]
+        # (i) pure shape evidence: True regardless of resonance count
+        assert compute_h_loss_shape_evidence(
+            reactants, products, [self.ps]) == [False, True]
+        # (ii) composite diagnostic verdict keeps the QSSA gate
+        assert compute_h_loss_feature_verdicts(
+            reactants, products, [self.ps]) == [False, False]
+        # eliminating daughter: evidence and composite agree
+        tert = Molecule(smiles=self.TERTIARY)
+        assert compute_h_loss_shape_evidence(
+            [h, self.pp], [h2, tert], [self.pp]) == [False, True]
+        assert compute_h_loss_feature_verdicts(
+            [h, self.pp], [h2, tert], [self.pp]) == [False, True]
+        # evidence path preserves every negative shape gate (no co-product
+        # evidence / ambiguous polymer source stay refused)
+        ch3 = Species(label='CH3', molecule=[Molecule(smiles='[CH3]')])
+        assert compute_h_loss_shape_evidence(
+            [ch3, self.pp], [ch3, tert], [self.pp]) == [False, False]
+        assert compute_h_loss_shape_evidence(
+            [h, self.pp, self.ps], [h2, tert],
+            [self.pp, self.ps]) == [False, False]
+
     # --- pin 7: feature pool born zero, parent monomer MW, sidecar --------
 
     def test_routed_feature_pool_born_zero_with_parent_monomer_mw(self):
