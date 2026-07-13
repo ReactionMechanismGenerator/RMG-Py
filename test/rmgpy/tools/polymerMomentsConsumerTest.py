@@ -322,6 +322,159 @@ class TestTwoPoolSufficiency:
         np.testing.assert_allclose(mine, oracle, rtol=1e-7, atol=1e-12)
 
 
+class TestVolatileEjectionSufficiency:
+    """Ruling round 20, increment 5 (consumer parity): the reference
+    consumer implements the volatile_ejection/1 branch, mirroring the
+    generating solver's dispatch -- cross-pool a-shifted bundle exchange
+    with direction-specific source availability, same-pool chip-style
+    signed single-pool write including the a<0 forward-mu2 clamp
+    convention, and the same-pool a>0 end-group exhaustion throttle.
+    Before this branch existed, VE rows integrated species-only with NO
+    moment flux: the gas volatile appeared while the melt kept its mass --
+    exactly the fabrication class the r29 conduit rows must not re-open."""
+
+    def test_cross_pool_ve_deck_matches_oracle(self):
+        """r29 conduit shape at deck level (pool -> pool_mod + volatile,
+        a = +MW(H)/monomer_MW scale): consumer matches oracle on every
+        species and every pool moment."""
+        a = 0.01008
+        sp, core, mask = _two_pool_setup()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       kinetics=_kin1(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = a
+        rs = _oracle_system(core, mask, [rxn])
+        y0 = rs.y.copy()
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        artifact = _artifact_for(core, [rxn])
+        (entry,) = artifact["reactions"]
+        assert entry["archetype"] == "volatile_ejection/1"
+        assert entry["params"] == {"eject_units": pytest.approx(a)}
+
+        consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                                    P=P_PA, V_poly=V_POLY)
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-9, atol=1e-12)
+        # the row really fired: volatile released, chains migrated A -> B
+        assert mine[-1, 8] > y0[8]
+        assert mine[-1, 1] < y0[1]
+        assert mine[-1, 5] > y0[5]
+
+    def test_cross_pool_ve_reversible_directional_scaling(self):
+        """Reversible cross-pool VE: the reverse leg debits the DST pool,
+        so its rate scales with the dst pool's OWN moments (adjudicated
+        Part C in the solver). The consumer must mirror that directional
+        source-availability scaling or a reversible deck diverges."""
+        sp, core, mask = _two_pool_setup(with_thermo=True)
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       kinetics=_kin1(), reversible=True)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = 1.135
+        rs = _oracle_system(core, mask, [rxn])
+        y0 = rs.y.copy()
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        artifact = _artifact_for(core, [rxn])
+        nasa = {}
+        for lab in ("A", "B", "G"):
+            th = sp[lab].thermo
+            nasa[lab] = {"Tmid": 1000.0,
+                         "low": [float(c) for c in th.polynomials[0].coeffs],
+                         "high": [float(c) for c in th.polynomials[1].coeffs]}
+        consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                                    P=P_PA, V_poly=V_POLY, nasa=nasa)
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-7, atol=1e-12)
+
+    def test_same_pool_ve_positive_a_matches_oracle(self):
+        """Same-pool unzip shape (A -> A + G, a > 0): single-pool signed
+        mu1/mu2 write; mu0 untouched; volatile through the species path."""
+        sp, core, mask = _two_pool_setup()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]],
+                       kinetics=_kin1(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = 1.135
+        rs = _oracle_system(core, mask, [rxn])
+        y0 = rs.y.copy()
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        artifact = _artifact_for(core, [rxn])
+        consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                                    P=P_PA, V_poly=V_POLY)
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-9, atol=1e-12)
+        assert mine[-1, 2] < y0[2]                    # A mu1 drained
+        assert mine[-1, 1] == pytest.approx(y0[1])    # mu0 untouched
+        assert mine[-1, 8] > y0[8]                    # volatile released
+
+    def test_same_pool_ve_negative_a_clamp_matches_oracle(self):
+        """Signed a < 0 (gas addition onto the same pool, G + A -> A):
+        forward mu1 RISES by |a|*ev; the forward mu2 decrement
+        2a*E[n] - a^2 is always negative for a < 0, so the `> 0` clamp
+        SKIPS the mu2 write -- the documented a<0 convention the consumer
+        must reproduce bit-for-bit."""
+        kin2 = Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                         T0=(298.15, "K"))
+        sp, core, mask = _two_pool_setup()
+        rxn = Reaction(reactants=[sp["G"], sp["A"]], products=[sp["A"]],
+                       kinetics=kin2, reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = -1.135
+        rs = _oracle_system(core, mask, [rxn])
+        y0 = rs.y.copy()
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        artifact = _artifact_for(core, [rxn])
+        (entry,) = artifact["reactions"]
+        assert entry["params"]["eject_units"] == pytest.approx(-1.135)
+        consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                                    P=P_PA, V_poly=V_POLY)
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-9, atol=1e-12)
+        assert mine[-1, 2] > y0[2]     # mu1 rises (mass gained from gas)
+        assert mine[-1, 8] < y0[8]     # gas consumed
+
+    def test_same_pool_ve_end_group_throttle_parity(self):
+        """Same-pool a>0 END-GROUP VE: the mu0-scaled drain carries the
+        min(mu0, mu1/a) exhaustion throttle in the solver's site scaling;
+        the consumer must apply the SAME throttle (a=6 with A moments
+        (1, 5, 30): mu1/a = 5/6 < mu0 = 1 -- the throttle bites)."""
+        sp, core, mask = _two_pool_setup()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["A"], sp["G"]],
+                       kinetics=_kin1(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = 6.0
+        rxn.is_end_group_reaction = True
+        rs = _oracle_system(core, mask, [rxn])
+        y0 = rs.y.copy()
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        artifact = _artifact_for(core, [rxn])
+        (entry,) = artifact["reactions"]
+        assert entry["scaling"] == "mu0"
+        consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                                    P=P_PA, V_poly=V_POLY)
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-9, atol=1e-12)
+
+    def test_rejects_ve_row_without_eject_units(self):
+        """A volatile_ejection/1 entry without the exact
+        params = {'eject_units': ...} shape must fail LOUDLY at
+        construction -- defaulting to 0.0 would launder the atom-transfer
+        debit away (fabricated mass)."""
+        sp, core, mask = _two_pool_setup()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       kinetics=_kin1(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = 1.0
+        artifact = _artifact_for(core, [rxn])
+        del artifact["reactions"][0]["params"]
+        with pytest.raises(ValueError, match="eject_units"):
+            ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                             P=P_PA, V_poly=V_POLY)
+
+
 class TestSmilesBranchPoolLabel:
     def test_legacy_mu1_deck_with_smiles_branch_pool_label(self):
         """PP run-5 erratum parity: base labels strip ONLY a trailing

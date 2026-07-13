@@ -69,6 +69,35 @@ def _validated_refused(e):
     return True
 
 
+def _validated_eject_units(e):
+    """Validate + return a volatile_ejection/1 row's SIGNED eject_units
+    (rmgpy-free mirror of the reference loader's _validated_eject_units,
+    rmgpy/tools/polymer_moments_runner.py): the emitter writes exactly ONE
+    VE params sub-shape, ``params = {"eject_units": <signed float>}``.
+    Reject anything else loudly, never KeyError and never a silent 0.0
+    default -- defaulting would launder the atom-transfer debit away (the
+    moved chain lands un-shrunk while the gas volatile still appears:
+    fabricated mass)."""
+    eid = e.get("id")
+    params = e.get("params")
+    if not isinstance(params, dict) or set(params) != {"eject_units"}:
+        raise ValueError(
+            f"reactions[] entry {eid!r} (volatile_ejection/1) must carry "
+            f"params = {{'eject_units': <signed float>}} exactly -- the "
+            f"only VE params shape the emitter writes -- got {params!r}. "
+            f"Fix the artifact; defaulting would silently zero the "
+            f"atom-transfer debit.")
+    a = params["eject_units"]
+    if isinstance(a, bool) or not isinstance(a, (int, float)) \
+            or not np.isfinite(float(a)):
+        raise ValueError(
+            f"reactions[] entry {eid!r} (volatile_ejection/1) has "
+            f"eject_units={a!r}; it must be a finite SIGNED number (the "
+            f"source-monomer-equivalents transferred to the gas "
+            f"co-participants). Fix the artifact.")
+    return float(a)
+
+
 def safe_mu3(mu0, mu1, mu2):
     """log_lagrange/1 closure with realizability guard (format doc §6)."""
     if mu0 <= SMALL_EPS or mu1 <= SMALL_EPS or mu2 <= SMALL_EPS:
@@ -238,6 +267,12 @@ class ArtifactConsumer:
                 "src": e["src_pool"], "dst": e["dst_pool"],
                 "arch": e["archetype"],
                 "a": int(e.get("params", {}).get("a", 0)),
+                # volatile_ejection/1 rows carry the SIGNED atom-transfer
+                # stamp; validated strictly (never defaulted -- see
+                # _validated_eject_units).
+                "eject": (_validated_eject_units(e)
+                          if e["archetype"] == "volatile_ejection/1"
+                          else 0.0),
             })
 
         self.mass_transfer = []
@@ -314,13 +349,33 @@ class ArtifactConsumer:
             # step 4: site scaling
             if e["src"] is not None:
                 i0, i1, _ = self.pools[e["src"]]["mu"]
+                is_ve = e["arch"] == "volatile_ejection/1"
                 if e["arch"] == "discrete_chip/1" and e["scaling"] == "mu0" and e["a"] > 0:
                     site = min(max(0.0, y[i0]), max(0.0, y[i1]) / e["a"]) / Vp
+                elif (is_ve and e["scaling"] == "mu0"
+                        and e["src"] == e["dst"] and e["eject"] > 0.0):
+                    # Same-pool a>0 VE exhaustion throttle -- parity with
+                    # the generating solver's section-2 site scaling
+                    # (polymer.pyx; keep in sync): site = min(mu0, mu1/a);
+                    # a<0 GROWS the chain (exempt, no spurious negative
+                    # site from mu1/a).
+                    site = min(max(0.0, y[i0]),
+                               max(0.0, y[i1]) / e["eject"]) / Vp
                 else:
                     mi = i0 if e["scaling"] == "mu0" else i1
                     site = max(0.0, y[mi]) / Vp
                 rf *= site
-                rr *= site
+                if is_ve and e["dst"] is not None and e["dst"] != e["src"]:
+                    # Direction-specific source availability for cross-pool
+                    # VE (parity with the solver's adjudicated Part C
+                    # scaling): the reverse leg debits the DST pool, so its
+                    # site factor comes from the dst pool's own moments
+                    # (same moment order as the forward site).
+                    d0, d1, _ = self.pools[e["dst"]]["mu"]
+                    di = d0 if e["scaling"] == "mu0" else d1
+                    rr *= max(0.0, y[di]) / Vp
+                else:
+                    rr *= site
 
             r_mol = (rf - rr) * V_rxn
 
@@ -381,6 +436,60 @@ class ArtifactConsumer:
                 if src:
                     a = float(e["a"])
                     b0, b1, _b2, _ok = self._chain_bundle(src, y, e["scaling"] == "mu0")
+                    if b0 != 0.0:
+                        s = self.pools[src]["mu"]
+                        e_n = b1
+                        if rf > 0.0:
+                            rf_mol = rf * V_rxn
+                            dn[s[1]] -= rf_mol * a
+                            dmu2 = 2.0 * a * e_n - a * a
+                            if dmu2 > 0.0:
+                                dn[s[2]] -= rf_mol * dmu2
+                        if rr > 0.0:
+                            rr_mol = rr * V_rxn
+                            dn[s[1]] += rr_mol * a
+                            dn[s[2]] += rr_mol * (2.0 * a * e_n + a * a)
+            elif arch == "volatile_ejection/1":
+                # Mirrors the generating solver's VE dispatch (polymer.pyx
+                # section 5; keep in sync). The gas volatile itself flows
+                # through the standard step-5 species path -- NO gas moles
+                # are written here (single-count mass booking, ruling
+                # round 20 increment 5).
+                src, dst = e["src"], e["dst"]
+                a = float(e["eject"])
+                if src and dst and src != dst:
+                    # Cross-pool: from-leg loses the FULL bundle; to-leg
+                    # gains the a-SHIFTED bundle (sa = -a forward, +a
+                    # reverse; mu2 shift is the exact quadratic
+                    # 2*sa*E[n] + sa^2, sa*sa == a*a both directions).
+                    for ev, frm, to, sa in ((rf, src, dst, -a),
+                                            (rr, dst, src, +a)):
+                        if ev <= 0.0:
+                            continue
+                        ev_mol = ev * V_rxn
+                        b0, b1, b2, ok = self._chain_bundle(
+                            frm, y, e["scaling"] == "mu0")
+                        if b0 == 0.0:
+                            continue
+                        f = self.pools[frm]["mu"]
+                        t = self.pools[to]["mu"]
+                        dn[f[0]] -= ev_mol * b0
+                        dn[f[1]] -= ev_mol * b1
+                        dn[t[0]] += ev_mol * b0
+                        dn[t[1]] += ev_mol * (b1 + sa * b0)
+                        if ok:
+                            dn[f[2]] -= ev_mol * b2
+                            dn[t[2]] += ev_mol * (
+                                b2 + 2.0 * sa * b1 + a * a * b0)
+                elif src and src == dst:
+                    # Same-pool (src == dst fold-back): chip-style signed
+                    # single-pool write; mu0 untouched. Forward mu2
+                    # decrement carries the DISCRETE_CHIP `> 0` clamp --
+                    # for a < 0 it is ALWAYS negative, so the forward mu2
+                    # growth term is dropped (the exact +extension lives
+                    # on the reverse leg), the documented a<0 convention.
+                    b0, b1, _b2, _ok = self._chain_bundle(
+                        src, y, e["scaling"] == "mu0")
                     if b0 != 0.0:
                         s = self.pools[src]["mu"]
                         e_n = b1
