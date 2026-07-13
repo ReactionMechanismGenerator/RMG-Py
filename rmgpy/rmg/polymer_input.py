@@ -370,7 +370,9 @@ class HybridPolymerReactor(ReactionSystem):
         # their pool configs from the live core species so their stamped
         # SCISSION_FRAGMENT/MIGRATION flux resolves instead of demoting to UNRESOLVED.
         static_pool_labels = {p.label for p in self.polymerPhase.pools}
-        pool_configs += derive_daughter_pool_configs(core_species, spc_map, static_pool_labels)
+        pool_configs += derive_daughter_pool_configs(
+            core_species, spc_map, static_pool_labels,
+            edge_species=edge_species)
 
         # r86 terminationPolymerConversion: materialize AFTER the pool
         # configs are final (deck pools + runtime daughter pools), so the
@@ -1472,7 +1474,8 @@ def _monomer_heavy_atom_count(monomer):
         return 0
 
 
-def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
+def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels,
+                                 edge_species=None):
     """
     Build a :class:`PolymerPoolConfig` for each daughter Polymer registered as a
     core species but not covered by a static deck pool.
@@ -1496,8 +1499,22 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
     ``strip_rmg_index_suffix(label) == pool.label`` (trailing-index strip ONLY
     -- structural SMILES parentheses survive). So the derived pool label and
     the moment-dummy lookup both use that same base label.
+
+    Item 16 discovery extension: ``edge_species`` (optional) widens DISCOVERY
+    -- not configuration -- beyond the core. Configs are ONLY ever built from
+    core-resident daughters whose full mu-dummy triplet is core-resident: a
+    PolymerPoolConfig points at mu indices in the integrated core state, and
+    an edge-only config would invent indices or integrate nothing (the
+    rejected "narrower" alternative). A spawned daughter Polymer discovered
+    in the EDGE therefore means the item-16 spawn/enlarge-boundary promotion
+    (CoreEdgeReactionModel._promote_spawned_polymer_pools) did not reach it;
+    it is censused LOUDLY here (the solver's r91 refusal will keep any of
+    its stamped rows conduit-deferred, zero-flux) instead of silently
+    re-entering the pre-item-16 self-sealing loop. Likewise a core-resident
+    daughter missing part of its mu triplet is now a loud skip, not a
+    silent one.
     """
-    from rmgpy.polymer import Polymer
+    from rmgpy.polymer import Polymer, is_engine_spawned_pool_daughter
 
     base = _base_label
 
@@ -1521,7 +1538,17 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
         mu_indices = tuple(base_to_index.get(f"{b}_mu{k}") for k in (0, 1, 2))
         if any(i is None for i in mu_indices):
             # Daughter registered without its full moment-dummy triplet in the
-            # core map; skip rather than build an unresolvable pool.
+            # core map; skip rather than build an unresolvable pool -- but
+            # LOUDLY (item 16): the daughter stays config-less, so the r91
+            # refusal keeps every stamped row targeting it conduit-deferred.
+            logging.warning(
+                "Item 16: core-resident spawned polymer daughter '%s' is "
+                "missing part of its %s_mu0/_mu1/_mu2 moment-dummy triplet "
+                "in the core (present: %s); no pool config derived -- its "
+                "stamped rows stay refused conduit-deferred (r91).",
+                b, b,
+                [f"{b}_mu{k}" for k, i in zip((0, 1, 2), mu_indices)
+                 if i is not None])
             continue
         seen.add(b)
         # Carry the daughter's own monomer MW [g/mol] (same repeat unit as the
@@ -1632,6 +1659,28 @@ def derive_daughter_pool_configs(core_species, spc_map, existing_pool_labels):
             chain_mass_defect_g_mol=float(
                 getattr(spc, "chain_mass_defect_g_mol", 0.0) or 0.0),
         ))
+
+    # Item 16 discovery census over the EDGE (never configuration): any
+    # spawned daughter Polymer still edge-resident at rebuild time escaped
+    # the spawn/enlarge-boundary core promotion, so it cannot be configured
+    # (its mu dummies carry no integrated state) and the r91 refusal will
+    # zero its stamped rows. Say so loudly instead of leaving the
+    # pre-item-16 silence.
+    if edge_species:
+        configured = static | seen
+        stranded = sorted({
+            base(spc.label) for spc in edge_species
+            if is_engine_spawned_pool_daughter(spc)
+            and base(spc.label) not in configured})
+        if stranded:
+            logging.warning(
+                "Item 16: %d spawned polymer daughter pool(s) are still "
+                "EDGE-resident at solver rebuild time and cannot be "
+                "configured (a pool config needs integrated core mu "
+                "indices; the enlarge-boundary promotion did not reach "
+                "them): %s. Their stamped rows stay refused "
+                "conduit-deferred (r91).",
+                len(stranded), ", ".join(stranded))
     return configs
 
 

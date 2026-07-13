@@ -11713,3 +11713,98 @@ class TestItem16EngineCreatedSpawnedPoolConfig:
         # (5) the r91 refusal did NOT fire for the engine-configured pool.
         assert not any("SPAWNED-POOL DEMOTION REFUSAL" in rec.getMessage()
                        for rec in caplog.records)
+
+    def test_umbrella_parity_edge_rate_equals_core_rate_engine_configs(
+            self, monkeypatch):
+        """Must-pin (b) -- the item-17 umbrella invariant RE-RUN under
+        ENGINE-created configs (solverPolymerTest TestUmbrellaPhaseGateParity
+        is the hand-fed ("G", ...) expression of this axis; item 16 IS its
+        activation stage): promotion-time flux == post-promotion flux under
+        full configured-pool semantics. The same stamped VE row is evaluated
+        once as an EDGE row (H2 still edge-resident) and once as a CORE row
+        (H2 admitted, the row moves to the core) -- the rates must be equal
+        and nonzero."""
+        model, pp, daughter, h, h2, rxn = \
+            self._build_model_with_spawned_daughter()
+        self._run_enlarge_boundary(model, monkeypatch)
+
+        # Promotion-time build: the row is an edge row (H2 edge-resident).
+        solver_edge = self._rebuild_solver(model, h)
+        solver_edge.residual(0.0, solver_edge.y,
+                             np.zeros_like(solver_edge.y))
+        edge_rate = float(np.asarray(solver_edge.edge_reaction_rates)[0])
+
+        # Post-promotion build: H2 admitted to the core; the all-core row
+        # moves with it (add_species_to_core moves qualifying edge rows).
+        moved = model.add_species_to_core(h2)
+        assert rxn in moved and rxn in model.core.reactions
+        solver_core = self._rebuild_solver(model, h)
+        solver_core.residual(0.0, solver_core.y,
+                             np.zeros_like(solver_core.y))
+        core_rate = float(np.asarray(solver_core.core_reaction_rates)[0])
+
+        assert edge_rate > 0.0
+        assert edge_rate == pytest.approx(core_rate, rel=1e-12), (
+            f"umbrella parity broken under engine-created configs: edge "
+            f"rate {edge_rate} vs post-promotion core rate {core_rate}")
+
+    def test_prospective_classification_sees_engine_configs_before_rates(
+            self, monkeypatch):
+        """Classification ordering (item-16 step: prospective condensed
+        classification must see ENGINE-created configured labels BEFORE
+        edge-rate evaluation). After the boundary + rebuild: the daughter
+        proxy and its mu dummies classify CONDENSED in gas_species_mask
+        (stage 2 binds the engine-created config label), the prospective
+        core prefix equals the core mask (rider R1 held -- the build did
+        not raise), and the edge H2 slot stays prospectively GAS."""
+        model, pp, daughter, h, h2, rxn = \
+            self._build_model_with_spawned_daughter()
+        self._run_enlarge_boundary(model, monkeypatch)
+        solver = self._rebuild_solver(model, h)
+
+        core = model.core.species
+        gm = np.asarray(solver.gas_species_mask, dtype=bool)
+        pm = np.asarray(solver.prospective_gas_mask, dtype=bool)
+        n_core = len(core)
+        d_idx = core.index(daughter)
+        assert gm[d_idx] == False                      # noqa: E712
+        for k in (0, 1, 2):
+            m_idx = next(i for i, s in enumerate(core)
+                         if s.label == f"polypropylene_mod_mu{k}")
+            assert gm[m_idx] == False                  # noqa: E712
+        # R1: prospective core prefix == core mask, every build.
+        assert np.array_equal(pm[:n_core], gm)
+        # The ejected volatile stays prospectively GAS in its edge slot.
+        h2_idx = n_core + list(model.edge.species).index(h2)
+        assert pm[h2_idx] == True                      # noqa: E712
+        # And the daughter's pool endpoints resolved BEFORE any rate was
+        # evaluated (init-time pool resolution, not a flux side effect).
+        r = len(model.core.reactions)
+        assert solver.reaction_dst_pool[r] != -1
+
+    def test_stranded_edge_daughter_censused_loudly(self, monkeypatch, caplog):
+        """Item-16 discovery extension: a spawned daughter Polymer still
+        EDGE-resident at rebuild time (the enlarge-boundary promotion never
+        ran -- e.g. a legacy/restart state) is DISCOVERED and censused
+        loudly by derive_daughter_pool_configs; it gets NO config (a pool
+        config needs integrated core mu indices -- edge-only configs are
+        banned) and its stamped row stays refused conduit-deferred (r91),
+        with no legacy mu1-only fallback."""
+        model, pp, daughter, h, h2, rxn = \
+            self._build_model_with_spawned_daughter()
+        # NO boundary run: the daughter stays edge-resident.
+        with caplog.at_level(logging.WARNING):
+            solver = self._rebuild_solver(model, h)
+        assert "polypropylene_mod" not in {
+            p.label for p in solver.polymer_pools}
+        assert any("still" in rec.getMessage()
+                   and "EDGE-resident" in rec.getMessage()
+                   and "polypropylene_mod" in rec.getMessage()
+                   for rec in caplog.records)
+        r = len(model.core.reactions)
+        assert solver.reaction_refused[r] == 1
+        assert any("SPAWNED-POOL DEMOTION REFUSAL" in rec.getMessage()
+                   for rec in caplog.records)
+        # No legacy mu1-only demotion for the spawned Polymer endpoint.
+        assert not any("could not resolve their solver pool(s)"
+                       in rec.getMessage() for rec in caplog.records)
