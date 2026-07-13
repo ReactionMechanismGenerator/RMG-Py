@@ -11534,3 +11534,182 @@ class TestSpawnedPoolDemotionRefusal:
                    for r in caplog.records)
         assert any("DEMOTION ANOMALY" in r.getMessage()
                    for r in caplog.records)
+
+
+class TestItem16EngineCreatedSpawnedPoolConfig:
+    """Item 16 (r91 closure): ENGINE-created solver pool configs for
+    mid-run-spawned daughter pools, exercised end-to-end at the PRODUCTION
+    seam -- no hand-fed daughter PolymerPoolConfig anywhere in this class.
+
+    The production failure this closes (PP run-10/12 forensics): the H-loss
+    conduit collapse spawns a born-at-zero ``{label}_mod`` daughter mid-run
+    and stamps a live cross-pool volatile_ejection/1 row
+    (H + parent <=> H2 + parent_mod). The daughter is EDGE-resident, so
+    ``derive_daughter_pool_configs`` (a core-only scan at solver-build time)
+    created no config, the rebuild refused the row (SPAWNED-POOL DEMOTION
+    REFUSAL, r91), the refused row contributed ZERO flux everywhere
+    including ``edge_species_rates`` -- and since that row is the daughter's
+    ONLY formation route, the daughter could never earn core promotion:
+    a self-sealing loop. Item 16 breaks the loop at the spawn/enlarge
+    boundary: the engine promotes the registered daughter Polymer + its
+    ``_mu0/_mu1/_mu2`` dummies into the integrated core state, and the next
+    rebuild derives the pool config from the registered species (source of
+    truth: ``_register_polymer``, model.py) -- NOT via flux admission.
+
+    The r91 refusal stays ARMED for genuinely unconfigured endpoints
+    (TestSpawnedPoolDemotionRefusal, unchanged), and there is still NO
+    fallback to the legacy mu1-only demotion for spawned Polymer endpoints
+    (that fallback drove polypropylene_mod mu1 negative and killed PP
+    run-10)."""
+
+    KIN_BI = dict(kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                                     Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+                  reversible=False)
+
+    @staticmethod
+    def _build_model_with_spawned_daughter():
+        """Reproduce the production state the moment the H-loss conduit
+        collapse has stamped its VE row: parent deck pool resident in the
+        CORE (proxy + mu dummies), gas H seeded in the core, and the
+        engine-spawned ``polypropylene_mod`` daughter + the ejected volatile
+        H2 EDGE-resident as products of the stamped edge row -- exactly what
+        ``process_new_reactions`` leaves behind."""
+        import rmgpy.solver.polymer as sp_mod
+        from rmgpy.polymer import Polymer
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+
+        model = CoreEdgeReactionModel()
+        pp = Polymer(label='polypropylene', monomer='[CH2][CH](C)',
+                     end_groups=['[H]', '[H]'], cutoff=3,
+                     Mn=1500.0, Mw=1800.0, initial_mass=0.1485)
+        model._register_polymer(pp, generate_thermo=False)
+        # Deck residency: proxy + mu dummies + seed gas are core species.
+        model.core.species.append(pp)
+        for m in list(model.new_species_list):
+            if getattr(m, 'is_moment_dummy', False):
+                model.core.species.append(m)
+        h = _spc("[H]", "H")
+        model.core.species.append(h)
+        model.new_species_list = []
+
+        # Mid-run spawn through the REAL producer path (stage S1a/S1b):
+        # the H-loss handshake creates the born-at-zero _mod daughter.
+        daughter = pp.create_reacted_copy(
+            Molecule(smiles='CCCC(C)[CH]C(C)C'), h_loss_feature=True)
+        assert isinstance(daughter, Polymer)
+        daughter, is_new = model.make_new_species(daughter,
+                                                  generate_thermo=False)
+        assert is_new
+
+        # The stamped conduit row: H + parent <=> H2 + parent_mod
+        # (volatile_ejection/1, a = MW(H)/monomer_MW).
+        h2 = _spc("[H][H]", "H2")
+        a = 1.008 / pp.monomer_mw_g_mol
+        rxn = Reaction(reactants=[h, pp], products=[h2, daughter],
+                       **TestItem16EngineCreatedSpawnedPoolConfig.KIN_BI)
+        rxn.polymer_flux_archetype = sp_mod.FLUX_VOLATILE_EJECTION
+        rxn.polymer_eject_units = a
+
+        # process_new_reactions edge placement: non-core participants go to
+        # the edge (add_species_to_edge pulls the daughter's mu dummies from
+        # new_species_list along with it); the row is an edge reaction.
+        for spec in rxn.products:
+            if spec not in model.core.species and spec not in model.edge.species:
+                model.add_species_to_edge(spec)
+        model.add_reaction_to_edge(rxn)
+        return model, pp, daughter, h, h2, rxn
+
+    @staticmethod
+    def _run_enlarge_boundary(model, monkeypatch):
+        """Run the end-of-enlarge boundary passes (production runs them at
+        the end of EVERY enlarge). All-False react flags make reaction
+        generation a no-op, so only the boundary passes execute. The
+        forbidden-structures lookup inside add_species_to_core is stubbed
+        (no database in unit tests)."""
+        import rmgpy.rmg.model as model_mod
+
+        class _NoForbidden:
+            @staticmethod
+            def is_molecule_forbidden(mol):
+                return False
+
+        monkeypatch.setattr(model_mod, "get_db",
+                            lambda name: _NoForbidden())
+        n = len(model.core.species)
+        model.enlarge(react_edge=True,
+                      unimolecular_react=np.zeros(n, dtype=bool),
+                      bimolecular_react=np.zeros((n, n), dtype=bool))
+
+    @staticmethod
+    def _rebuild_solver(model, h, moments=(1.0, 5.0, 30.0)):
+        """The production rebuild: HybridPolymerReactor.to_solver_object over
+        the LIVE model lists. Only the PARENT pool is deck-configured; any
+        daughter config must come from the engine
+        (derive_daughter_pool_configs)."""
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import (HybridPolymerReactor,
+                                             PolymerPhase, PolymerPool)
+
+        mono = Molecule().from_smiles("C=CC")  # repeat unit (42.08 g/mol)
+        mu = [next(s for s in model.core.species
+                   if s.label == f"polypropylene_mu{k}") for k in (0, 1, 2)]
+        pp = next(s for s in model.core.species
+                  if s.label == "polypropylene")
+        deck_pool = PolymerPool(label="polypropylene", xs=3, monomer=mono,
+                                explicit_map={}, mu_species=mu,
+                                proxy_species=pp)
+        phase = PolymerPhase(density=Quantity(900.0, "kg/m^3"),
+                             initial_moments={"polypropylene": moments},
+                             initial_explicit={}, pools=[deck_pool])
+        reactor = HybridPolymerReactor(temperature=(800.0, "K"),
+                                       pressure=(1.0e5, "Pa"),
+                                       initialMoles={h: 1.0},
+                                       polymerPhase=phase)
+        solver = reactor.to_solver_object(
+            model.core.species, model.core.reactions,
+            model.edge.species, model.edge.reactions)
+        solver.initialize_model(
+            model.core.species, model.core.reactions,
+            model.edge.species, model.edge.reactions)
+        return solver
+
+    def test_edge_mod_ve_row_engine_config_goes_live(self, monkeypatch, caplog):
+        """Must-pin (a) -- THE item-16 regression, red at pre-16 HEAD:
+        an edge-resident ``_mod`` VE row with NO deck config must run LIVE
+        under the ENGINE-created daughter config after the spawn/enlarge
+        boundary: reaction_refused=0, valid src/dst pools, nonzero
+        edge_reaction_rates and nonzero H2 edge promotion flux, and no
+        SPAWNED-POOL DEMOTION REFUSAL."""
+        import rmgpy.solver.polymer as sp_mod
+        model, pp, daughter, h, h2, rxn = \
+            self._build_model_with_spawned_daughter()
+        with caplog.at_level(logging.WARNING):
+            self._run_enlarge_boundary(model, monkeypatch)
+            solver = self._rebuild_solver(model, h)
+
+        # (1) the ENGINE created the daughter pool config (nothing in this
+        #     test hands one in).
+        assert "polypropylene_mod" in {p.label for p in solver.polymer_pools}
+        # (2) the daughter proxy + mu dummies were promoted into the
+        #     integrated core state at the boundary (they carry real state
+        #     indices; edge-only configs are banned).
+        assert daughter in model.core.species
+        for k in (0, 1, 2):
+            assert any(s.label == f"polypropylene_mod_mu{k}"
+                       for s in model.core.species)
+        # (3) the row is LIVE: not refused, stamped archetype intact, both
+        #     pool endpoints resolved (cross-pool).
+        r = len(model.core.reactions)  # first edge row
+        assert solver.reaction_refused[r] == 0
+        assert solver.reaction_flux_archetype[r] == sp_mod.FLUX_VOLATILE_EJECTION
+        src, dst = solver.reaction_src_pool[r], solver.reaction_dst_pool[r]
+        assert src != -1 and dst != -1 and src != dst
+        # (4) nonzero edge promotion flux -- the loop-breaking observable:
+        #     the ejected volatile finally has a route into the core.
+        solver.residual(0.0, solver.y, np.zeros_like(solver.y))
+        assert float(np.asarray(solver.edge_reaction_rates)[0]) > 0.0
+        h2_idx = list(model.edge.species).index(h2)
+        assert float(np.asarray(solver.edge_species_rates)[h2_idx]) > 0.0
+        # (5) the r91 refusal did NOT fire for the engine-configured pool.
+        assert not any("SPAWNED-POOL DEMOTION REFUSAL" in rec.getMessage()
+                       for rec in caplog.records)
