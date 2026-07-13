@@ -3845,6 +3845,85 @@ class TestHybridPolymerReactor:
         assert not np.isclose(rate, kf * mom_a[0])
         assert np.isclose(rate, dn_dt[2] / (-a))          # parity with residual
 
+    def test_r29_conduit_ve_row_books_mass_exactly_once(self):
+        """
+        poly_102 r29 conduit collapse (adversarial ruling round 20,
+        increment 4): the collapsed row ``H + A -> H2 + A_mod`` (cross-pool
+        VE, a = +MW(H)/monomer_MW) books the polymer mass EXACTLY once:
+
+        * gas gains H2 at the event rate ONCE (the VE dispatch adds no gas
+          moles; the standard section-4 path is the only H2 writer);
+        * the chain-scale radical is NOT an independently integrated gas
+          species (it is the dst pool's chain population) -- the rejected
+          alternative (hand-stamped VE with the radical still gas-tracked)
+          would double-represent ~E[n]*monomer_MW per event;
+        * total chain-phase mu1 is debited exactly a per event, so the
+          MW-weighted closure gas_mass_gain == -chain_mass_loss holds;
+        * qssa_double_count_census stays quiet (no QSSA channel configured).
+        """
+        monomer_mw = 100.0
+        mw_h = 1.008
+        a = mw_h / monomer_mw
+        sp = {
+            "A": _spc("CCCC", "A"),
+            "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
+            "A_mu2": _spc("C#N", "A_mu2"),
+            "B": _spc("CCCCC", "B"),
+            "B_mu0": _spc("CCO", "B_mu0"), "B_mu1": _spc("CC=O", "B_mu1"),
+            "B_mu2": _spc("CC#N", "B_mu2"),
+            "H": _spc("[H]", "H"), "H2": _spc("[H][H]", "H2"),
+        }
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"],
+                sp["B"], sp["B_mu0"], sp["B_mu1"], sp["B_mu2"],
+                sp["H"], sp["H2"]]
+        mask = np.array([False] * 8 + [True, True], dtype=bool)
+        kin = dict(kinetics=Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0,
+                                      Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
+                   reversible=False)
+        rxn = Reaction(reactants=[sp["H"], sp["A"]],
+                       products=[sp["H2"], sp["B"]], **kin)
+        rxn.polymer_flux_archetype = 6      # VOLATILE_EJECTION
+        rxn.polymer_eject_units = a
+        pool_a = PolymerPoolConfig(label="A", xs=2,
+                                   explicit_dp_to_species_index={},
+                                   mu_indices=(1, 2, 3),
+                                   monomer_poly_index=None, k_scission=0.0,
+                                   k_unzip=0.0, tail_kinetics=None)
+        pool_b = PolymerPoolConfig(label="B", xs=2,
+                                   explicit_dp_to_species_index={},
+                                   mu_indices=(5, 6, 7),
+                                   monomer_poly_index=None, k_scission=0.0,
+                                   k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5,
+            initial_mole_fractions={sp["H"]: 1.0, sp["H2"]: 0.0},
+            V_poly=1.0, polymer_pools=[pool_a, pool_b], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0),
+                                     "B": (2.0, 4.0, 10.0)},
+            termination=[],
+        )
+        rs.initialize_model(core, [rxn], [], [])
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+
+        ev = dn_dt[9]                       # H2 production == event rate
+        assert ev > 0.0
+        assert np.isclose(dn_dt[8], -ev)    # one H consumed per event
+        # chain count conserved: the chain migrates A -> A_mod, never gas
+        assert np.isclose(dn_dt[1], -ev)
+        assert np.isclose(dn_dt[5], +ev)
+        assert np.isclose(dn_dt[1] + dn_dt[5], 0.0, atol=1e-14)
+        # total chain-phase mu1 debited exactly a per event (once)
+        assert np.isclose(dn_dt[2] + dn_dt[6], -a * ev)
+        # MW-weighted single-count closure: what the melt loses is exactly
+        # what the gas gains -- no fabrication, no double representation.
+        gas_mass_rate = 2.0 * mw_h * dn_dt[9] + mw_h * dn_dt[8]
+        chain_mass_rate = monomer_mw * (dn_dt[2] + dn_dt[6])
+        assert np.isclose(gas_mass_rate, -chain_mass_rate)
+        # the double-count census (polymer.pyx) stays quiet: no
+        # QSSA-enabled pool overlaps this generated VE row
+        assert list(rs.qssa_double_count_census) == []
+
     def test_discrete_chip_monodisperse_closed_form_both_picks(self):
         """
         Spec test 10: monodisperse pool (mu_j = N*L^j) -> E[n] = L under BOTH
