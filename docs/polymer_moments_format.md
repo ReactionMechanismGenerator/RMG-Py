@@ -270,7 +270,8 @@ parameters only; the equations live here and only here.
   "params": {"a": <int>},               // discrete_chip/1 only
   "unresolved": bool,                   // true => legacy fallback emission
   "refused": true,                      // schema 2.4, refused rows ONLY (absent otherwise, never false)
-  "refused_reason": "conduit-deferred" | "qssa-invalid"   // schema 2.4, paired with refused
+  "refused_reason": "conduit-deferred" | "qssa-invalid"
+                  | "qssa-unassessable"        // schema 2.4 (+round-20), paired with refused
 }
 ```
 
@@ -786,7 +787,7 @@ block is.
 | key | value | semantics |
 | --- | --- | --- |
 | `refused` | `true` | the generating solver zeroed this reaction's ENTIRE flux (item 18 stamp-but-keep, §8: `Reaction.polymer_refused` → `polymer.pyx` `reaction_refused`). Emitted ONLY as literal `true`; a non-refused row carries NO key (absent, never `false`) |
-| `refused_reason` | `"conduit-deferred"` \| `"qssa-invalid"` | the stamp-time census reason (`polymer.pyx:1526-1530`): `conduit-deferred` = QSSA-eliminating radical awaiting the item-20 flux conduit; `qssa-invalid` = accumulating radical the QSSA closure cannot represent. Informative for consumers (the suppression is identical); REQUIRED on refused rows (non-empty string) |
+| `refused_reason` | `"conduit-deferred"` \| `"qssa-invalid"` \| `"qssa-unassessable"` | the census reason: `conduit-deferred` = QSSA-eliminating radical awaiting the item-20 flux conduit; `qssa-invalid` = accumulating radical the QSSA closure cannot represent; `qssa-unassessable` (round-20 increment 7) = accumulating refusal whose lost radical / consuming reactions were NOT visible at the solver rebuild's rate-derived k_out census -- missing evidence is never spelled `qssa-invalid` ('slow'). Single-sourced: the rebuild census writes `Reaction.polymer_refused_reason` and the emitter reads that same attr. Informative for consumers (the suppression is identical); REQUIRED on refused rows (non-empty string) |
 
 ### Consumer semantics (normative)
 
@@ -808,10 +809,11 @@ reject at load. The emitter guarantees this (a refused reaction whose pool
 is not solver-configured emits UNMARKED, warn-loud). Consumers likewise
 reject `refused: false` (never emitter-produced), a refused row without a
 valid `refused_reason`, and a `refused_reason` without the marker.
-The `refused_reason` vocabulary is CLOSED — exactly `"conduit-deferred"` and
-`"qssa-invalid"` — and consumers MUST reject any other value at load
-(consumers reconstruct the accumulating class from the reason, so an unknown
-reason would silently change solver semantics).
+The `refused_reason` vocabulary is CLOSED — exactly `"conduit-deferred"`,
+`"qssa-invalid"` and `"qssa-unassessable"` (round-20) — and consumers MUST
+reject any other value at load (consumers reconstruct the accumulating class
+from the reason — `qssa-invalid` and `qssa-unassessable` are both
+accumulating — so an unknown reason would silently change solver semantics).
 
 ### Stamp + version-acceptance semantics
 

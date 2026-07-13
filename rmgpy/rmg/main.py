@@ -542,6 +542,21 @@ class RMG(util.Subject):
         # Properly set filter_reactions to initialize flags properly
         if len(self.model_settings_list) > 0:
             self.filter_reactions = self.model_settings_list[0].filter_reactions
+            # Round-20 increment 7 plumbing (Codex round-22 P1): carry the
+            # deck's filterThreshold into the polymer reactors' census-only
+            # QSSA k_out policy floor (qssa_kout_floor_s), so the rebuild
+            # census's logged threshold really is
+            # max(filterThreshold, 1/terminationTime) as ruled. Only
+            # meaningful when the deck filters at all; guarded by the
+            # to_solver_object duck-type so cdef reactors (SimpleReactor
+            # etc.), which reject arbitrary attributes and never read the
+            # knob, are left untouched.
+            if self.filter_reactions:
+                for reaction_system in (self.reaction_systems or []):
+                    if hasattr(reaction_system, "to_solver_object"):
+                        reaction_system.qssa_kout_floor_s = float(
+                            self.model_settings_list[0].filter_threshold
+                            or 0.0)
 
         # Make output subdirectories
         util.make_output_subdirectory(self.output_directory, "pdep")

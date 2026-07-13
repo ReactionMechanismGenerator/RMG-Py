@@ -4511,6 +4511,68 @@ class TestEnlargePolymerPipeline:
             )
 
 
+def test_assess_refused_qssa_kout_never_calls_missing_evidence_slow():
+    """Round-20 increment 7 semantics pins for the rate-derived QSSA
+    diagnostic helper: (a) no consuming rows -> NOT visible (the census
+    spells that 'qssa-unassessable', never 'slow'); (b) consumers whose
+    co-reactant concentrations are unknown stay visible but UNQUANTIFIED
+    (k_out None); (c) a partially quantified k_out is flagged as a LOWER
+    BOUND (safe for 'fast', never for 'slow')."""
+    from rmgpy.data.kinetics.family import _handshake_structures  # noqa: F401 (env parity)
+    from rmgpy.kinetics import Arrhenius
+    from rmgpy.polymer import assess_refused_qssa_kout
+    from rmgpy.reaction import Reaction
+    epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                   Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    allyl = Species(label="allyl_macro",
+                    molecule=[Molecule(smiles="CCC(C)CCCC=C[C](C)CCC(C)CC")])
+    sat = Species(label="sat_chain",
+                  molecule=[Molecule(smiles="CCC(C)CCCC(C)CCCC(C)C")])
+    h = Species(label="H", molecule=[Molecule(smiles="[H]")])
+    h2 = Species(label="H2", molecule=[Molecule(smiles="[H][H]")])
+    kin_bi = Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                       T0=(298.15, "K"))
+    kin_uni = Arrhenius(A=(5.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"),
+                        T0=(298.15, "K"))
+    refused = Reaction(reactants=[epdm, h], products=[h2, allyl],
+                       kinetics=kin_bi, reversible=False)
+    spcs = [epdm, h, h2, allyl, sat]
+    # (a) no consuming rows -> not visible, no k_out
+    out = assess_refused_qssa_kout(refused, [refused], spcs, 800.0, 1.0e5)
+    assert out["visible"] is False
+    assert out["k_out_s"] is None
+    # (b) one bimolecular consumer, co-reactant concentration unknown ->
+    # visible but unquantified: never a 0.0 masquerading as 'slow'
+    c_bi = Reaction(reactants=[allyl, h], products=[sat, h2],
+                    kinetics=kin_bi, reversible=False)
+    out = assess_refused_qssa_kout(refused, [refused, c_bi], spcs,
+                                   800.0, 1.0e5,
+                                   concentration_of=lambda s: None)
+    assert out["visible"] is True
+    assert out["n_consumer_directions"] == 1
+    assert out["n_quantified"] == 0
+    assert out["k_out_s"] is None
+    # (c) add a quantifiable unimolecular consumer -> k_out is a LOWER
+    # BOUND (the bimolecular direction stays unquantified)
+    c_uni = Reaction(reactants=[allyl], products=[sat],
+                     kinetics=kin_uni, reversible=False)
+    out = assess_refused_qssa_kout(refused, [refused, c_bi, c_uni], spcs,
+                                   800.0, 1.0e5,
+                                   concentration_of=lambda s: None)
+    assert out["visible"] is True
+    assert out["n_consumer_directions"] == 2
+    assert out["n_quantified"] == 1
+    assert out["k_out_s"] == pytest.approx(5.0)
+    assert out["k_out_is_lower_bound"] is True
+    # fully quantified: bimolecular direction picks up C(H)
+    out = assess_refused_qssa_kout(
+        refused, [refused, c_bi, c_uni], spcs, 800.0, 1.0e5,
+        concentration_of=lambda s: 3.0 if s is h else None)
+    assert out["n_quantified"] == 2
+    assert out["k_out_s"] == pytest.approx(5.0 + 2.0 * 3.0)
+    assert out["k_out_is_lower_bound"] is False
+
+
 def test_is_qssa_eliminating_radical_distinguishes_allylic():
     from rmgpy.molecule import Molecule
     from rmgpy.polymer import is_qssa_eliminating_radical

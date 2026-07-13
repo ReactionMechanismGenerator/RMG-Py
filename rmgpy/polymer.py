@@ -1755,6 +1755,9 @@ class Polymer(Species):
         resonance-expanded with the SAME recipe as
         :meth:`_h_loss_positional_species` so an aromatic-representation
         daughter still matches the Kekule-rendered positional variants
+        (TODO Codex round-22 P2a: cache this normalization and
+        _h_loss_feature_units per Polymer -- both are recomputed per
+        candidate in the generation loop)
         (poly_102 r29-r31 class: aromatic-pool daughters arrive in aromatic
         bond representation; representation-sensitive matching would
         silently refuse the conduit for EVERY aromatic pool). Falls back to
@@ -2985,10 +2988,14 @@ def restamp_flipped_polymer_archetype(forward) -> None:
 
     before = int(getattr(forward, 'polymer_flux_archetype', 0))
     # CLEAR the stale direction-bound archetype fields (written for the
-    # pre-flip direction) before re-classifying.
+    # pre-flip direction) before re-classifying. polymer_refused_reason is
+    # a rebuild-census product of the OLD direction too: clear it so the
+    # emitter falls back to the accumulating-bit ternary until the next
+    # solver rebuild re-derives it (single-source stamp, round-20 inc. 7).
     forward.polymer_flux_archetype = int(PolymerFluxArchetype.NONE)
     forward.polymer_chip_units = 0
     forward.polymer_eject_units = 0.0
+    forward.polymer_refused_reason = None
 
     new_arch = classify_reaction_flux_archetype(
         forward.reactants or [], forward.products or [],
@@ -3683,6 +3690,18 @@ def _chain_radical_lost_to_gas(forward, polymer_reactants):
     The handshake leaves the leaked radical a plain ``Molecule``; the returned
     value is the ``Molecule`` (the downstream ``is_qssa_eliminating_radical``
     probe needs a ``Molecule``)."""
+    prod = _chain_radical_lost_to_gas_product(forward, polymer_reactants)
+    if prod is None:
+        return None
+    return prod.molecule[0] if isinstance(prod, Species) else prod
+
+
+def _chain_radical_lost_to_gas_product(forward, polymer_reactants):
+    """Participant-returning sibling of :func:`_chain_radical_lost_to_gas`
+    (same mechanism-keyed size gate; see its docstring): returns the
+    PRODUCT PARTICIPANT (Species or Molecule) instead of its Molecule, so
+    the solver-rebuild QSSA k_out census (round-20 increment 7) can look
+    the lost radical up in the rebuilt species lists."""
     from rmgpy.solver.polymer import REFERENCE_STATE_MW_SLACK_G_MOL
     for poly in polymer_reactants:               # Polymer instances
         threshold = poly.monomer_mw_g_mol + REFERENCE_STATE_MW_SLACK_G_MOL
@@ -3691,8 +3710,124 @@ def _chain_radical_lost_to_gas(forward, polymer_reactants):
                 continue
             mol = prod.molecule[0] if isinstance(prod, Species) else prod
             if mol.get_molecular_weight() * 1000.0 >= threshold:
-                return mol
+                return prod
     return None
+
+
+def assess_refused_qssa_kout(rxn, reactions, species, T_K, P_Pa,
+                             concentration_of=None):
+    """Rate-derived QSSA outflux diagnostic for ONE refused accumulating
+    FEATURE-radical row (adversarial ruling round 20, increment 7).
+    CENSUS-ONLY: callers must not let the result change any flux -- it
+    replaces nothing; it reports whether the resonance-count proxy's
+    'accumulating' diagnosis is contradicted by the rebuilt model's own
+    directional kinetics (poly_102 r29-r31: the proxy called radicals
+    with real k_out 1.1e5-1.7e8 1/s 'qssa-invalid').
+
+    Finds the chain-scale radical the refused row dropped to gas
+    (:func:`_chain_radical_lost_to_gas_product`) and sums its consuming
+    DIRECTIONAL pseudo-first-order rate coefficients over ``reactions``
+    (excluding the refused row itself, whose flux is zeroed):
+
+    * radical among a row's REACTANTS -> forward direction, ``kf(T, P)``;
+    * radical among a row's PRODUCTS on a REVERSIBLE row -> reverse
+      direction, ``kr = kf/Keq(T)``;
+    * each direction is converted to pseudo-first-order [1/s] by
+      multiplying the concentrations of the OTHER same-side participants
+      via ``concentration_of`` (callable: participant -> mol/m^3, or
+      None when unknown). A direction with any unknown co-participant
+      concentration is UNQUANTIFIED: it still counts as a visible
+      consumer, but contributes no rate, and the returned ``k_out_s`` is
+      then a LOWER BOUND (``k_out_is_lower_bound``).
+
+    Returns a dict:
+
+    * ``visible``: the radical Species is present in ``species`` AND at
+      least one consuming direction exists. NOT visible -> the caller
+      must report 'qssa-unassessable', never 'slow' (missing evidence is
+      not slowness).
+    * ``radical_label``: label/SMILES of the lost radical (or None).
+    * ``k_out_s``: summed pseudo-first-order outflux coefficient [1/s],
+      or None when no direction could be quantified. CAVEAT (Codex
+      round-22 P2c): concentrations are the DECK INITIAL state, not the
+      evolving trajectory -- k_out is a t=0 diagnostic, not a
+      time-resolved rate.
+    * ``k_out_is_lower_bound``: True when >= 1 direction was left
+      unquantified (a 'fast' call from the bound is safe; a 'slow' call
+      is not).
+    * ``n_consumer_directions`` / ``n_quantified``.
+    """
+    polymer_reactants = [r for r in rxn.reactants if isinstance(r, Polymer)]
+    lost = _chain_radical_lost_to_gas_product(rxn, polymer_reactants)
+    result = {
+        "visible": False,
+        "radical_label": None,
+        "k_out_s": None,
+        "k_out_is_lower_bound": False,
+        "n_consumer_directions": 0,
+        "n_quantified": 0,
+    }
+    if lost is None:
+        return result
+    result["radical_label"] = getattr(lost, "label", None) or str(lost)
+
+    def _same(a, b):
+        if a is b:
+            return True
+        la = getattr(a, "label", None)
+        lb = getattr(b, "label", None)
+        return bool(la) and la == lb
+
+    in_model = any(_same(s, lost) for s in species)
+    if not in_model:
+        return result
+
+    n_directions = 0
+    n_quantified = 0
+    k_sum = 0.0
+    for other in reactions:
+        if other is rxn:
+            continue
+        for side, is_forward in ((other.reactants, True),
+                                 (other.products, False)):
+            if not is_forward and not getattr(other, "reversible", True):
+                continue
+            n_lost = sum(1 for p in side if _same(p, lost))
+            if n_lost == 0:
+                continue
+            n_directions += 1
+            try:
+                k_dir = float(other.get_rate_coefficient(T_K, P_Pa))
+                if not is_forward:
+                    keq = float(other.get_equilibrium_constant(T_K))
+                    if not (keq > 0.0) or not math.isfinite(keq):
+                        raise ValueError("non-positive/inf Keq")
+                    k_dir /= keq
+            except Exception:
+                continue                     # direction visible, unquantified
+            quantified = True
+            skipped_one_lost = False
+            for p in side:
+                if _same(p, lost) and not skipped_one_lost:
+                    # the radical's own concentration is NOT part of a
+                    # pseudo-FIRST-order coefficient (one instance).
+                    skipped_one_lost = True
+                    continue
+                conc = concentration_of(p) if concentration_of else None
+                if conc is None:
+                    quantified = False
+                    break
+                k_dir *= float(conc)
+            if quantified and math.isfinite(k_dir) and k_dir >= 0.0:
+                n_quantified += 1
+                k_sum += k_dir
+    result["visible"] = n_directions > 0
+    result["n_consumer_directions"] = n_directions
+    result["n_quantified"] = n_quantified
+    if n_quantified > 0:
+        result["k_out_s"] = k_sum
+        result["k_out_is_lower_bound"] = n_quantified < n_directions
+    return result
 
 
 MatchMapping = Mapping[Any, Any]
@@ -7393,10 +7528,22 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
         if getattr(rxn, "polymer_refused", False) or spawned_refused:
             if entry["proxy_reactants"] or entry["proxy_products"]:
                 entry["refused"] = True
-                entry["refused_reason"] = (
-                    "qssa-invalid"
-                    if getattr(rxn, "polymer_refused_accumulating", False)
-                    else "conduit-deferred")
+                # Single-source stamping (round-20 increment 7): the solver
+                # rebuild's rate-derived QSSA census writes its computed
+                # reason back onto the OBJECT ATTR polymer_refused_reason
+                # ('qssa-unassessable' when the lost radical / its
+                # consumers are not visible in the rebuilt model); the
+                # emitter reads THAT first so census and artifact can never
+                # disagree. Without a rebuild stamp, fall back to the
+                # stamp-time accumulating-bit ternary (pre-round-20
+                # behavior, byte-identical artifacts).
+                reason = getattr(rxn, "polymer_refused_reason", None)
+                if reason is None:
+                    reason = (
+                        "qssa-invalid"
+                        if getattr(rxn, "polymer_refused_accumulating", False)
+                        else "conduit-deferred")
+                entry["refused_reason"] = reason
             else:
                 # r92 artifact P1 -- HARD-FAIL, never emit. Adjudicated
                 # choice (b) over (a): representing the refusal on a

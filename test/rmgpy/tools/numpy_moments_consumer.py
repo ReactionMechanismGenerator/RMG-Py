@@ -35,7 +35,8 @@ SUPPORTED_CHANNELS = frozenset({"scission", "unzip"})
 # (c): refused explicit homolysis rows superseded by a live k_homolysis
 # kernel stay zero). Unknown reasons are rejected at construction, never
 # adapted.
-REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid"})
+REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid",
+                             "qssa-unassessable"})
 
 
 def _validated_refused(e):

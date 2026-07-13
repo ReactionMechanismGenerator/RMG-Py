@@ -490,6 +490,14 @@ class HybridPolymerReactor(ReactionSystem):
             pdep_collider_kinetics=pdep_kinetics,
             collider_efficiencies=collider_eff,
             allow_unpaired_reference_state=self.allow_unpaired_reference_state,
+            # Round-20 increment 7 plumbing (Codex round-22 P1): the deck's
+            # filterThreshold reaches this reactor as an attribute stamped
+            # by RMG.initialize (rmgpy/rmg/main.py) -- forward it so the
+            # census-only QSSA k_out policy really is
+            # max(filterThreshold, 1/terminationTime), not the bare
+            # 1/terminationTime fallback. Default 0.0 = no deck floor.
+            qssa_kout_floor_s=float(
+                getattr(self, "qssa_kout_floor_s", 0.0) or 0.0),
         )
 
         solver.V = (V_gas0 if V_gas0 is not None else 0.0) + V_poly

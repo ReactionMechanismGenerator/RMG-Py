@@ -676,11 +676,17 @@ class TestRefusedRowConsumer:
             self, tmp_path):
         """The emitter bijection round-trips: a valid 'qssa-invalid' reason
         restores the accumulating stamp on restamp, 'conduit-deferred'
-        restores non-accumulating. (A 'bogus' reason never reaches this
-        coercion -- test_rejects_unknown_refused_reason pins the earlier
+        restores non-accumulating, and 'qssa-unassessable' (round-20
+        increment 7: an accumulating refusal whose radical/consumers were
+        not visible at the rebuild census) restores accumulating. The
+        reason attr itself is restored too (single-source stamp: a re-emit
+        reads Reaction.polymer_refused_reason and must round-trip
+        byte-identically). (A 'bogus' reason never reaches this coercion
+        -- test_rejects_unknown_refused_reason pins the earlier
         rejection.)"""
         for reason, accumulating in (("qssa-invalid", True),
-                                     ("conduit-deferred", False)):
+                                     ("conduit-deferred", False),
+                                     ("qssa-unassessable", True)):
             chem_path, artifact = self._artifact(tmp_path)
             (row,) = [e for e in artifact["reactions"] if e.get("refused")]
             row["refused_reason"] = reason
@@ -691,6 +697,9 @@ class TestRefusedRowConsumer:
             assert rxn.polymer_refused_accumulating is accumulating, (
                 f"reason {reason!r} must restore accumulating="
                 f"{accumulating}")
+            assert rxn.polymer_refused_reason == reason, (
+                f"single-source stamp: the restored reason attr must "
+                f"round-trip {reason!r}")
 
 
 def _ve_deck(tmp_path, eject_units=2.0, mark_refused=False):

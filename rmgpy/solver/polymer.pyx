@@ -1338,6 +1338,7 @@ class HybridPolymerSystem(ReactionSystem):
         debug_check_realizability: bool = False,
         allow_unpaired_reference_state: bool = False,
         allow_unstamped_proxy_rows: bool = False,
+        qssa_kout_floor_s: float = 0.0,
     ):
         super().__init__(termination=termination,
                          sensitive_species=sensitive_species,
@@ -1346,6 +1347,11 @@ class HybridPolymerSystem(ReactionSystem):
 
         self.T = Quantity(T)
         self.P = Quantity(P)
+        # Deck-tied floor for the census-only QSSA k_out threshold policy
+        # (round-20 increment 7): callers may set it from the RMG filter
+        # threshold; the rebuild census uses
+        # max(qssa_kout_floor_s, 1/terminationTime).
+        self.qssa_kout_floor_s = float(qssa_kout_floor_s or 0.0)
         self.initial_mole_fractions = initial_mole_fractions
 
         self.V_poly = float(V_poly)
@@ -2882,22 +2888,131 @@ class HybridPolymerSystem(ReactionSystem):
 
         # item 18 (T3): correct-but-loud census of refused FEATURE-radical
         # reactions, tagged by radical class (eliminating vs accumulating) and
-        # refuse reason (conduit-deferred vs qssa-invalid). Built once per
-        # rebuild over the SAME chain(core, edge) order as the capture above so
+        # refuse reason (conduit-deferred vs qssa-invalid /
+        # qssa-unassessable). Built once per rebuild over the SAME
+        # chain(core, edge) order as the capture above so
         # reaction_refused[i] aligns. Changes NO flux/state -- it only reports
         # (mirrors the thermo reference_state_census posture). Helpers are
         # function-local imports to avoid a solver->polymer module cycle.
-        from rmgpy.polymer import _warn_once_refused, _reaction_census_label, _warn_once_double_count
+        #
+        # Round-20 increment 7 (rate-derived QSSA diagnostic, CENSUS-ONLY):
+        # for each ACCUMULATING refusal the rebuild computes the lost
+        # radical's directional pseudo-first-order outflux k_out [1/s] from
+        # the rebuilt model's own kinetics (kf forward / kf/Keq reverse per
+        # consuming orientation; co-participant concentrations from the
+        # deck's initial state). The census entry carries k_out, the
+        # explicit threshold policy and the reactor T. When the radical or
+        # its consumers are NOT visible in the rebuilt model the reason is
+        # the distinct 'qssa-unassessable' -- missing evidence is never
+        # called 'slow'. The computed reason is written back onto
+        # rxn.polymer_refused_reason: the artifact emitter
+        # (compile_polymer_reaction_entries) reads that same attr, so
+        # census and artifact stay single-sourced. reaction_refused is
+        # UNTOUCHED -- no flux changes here.
+        from rmgpy.polymer import (_warn_once_refused, _reaction_census_label,
+                                   _warn_once_double_count,
+                                   assess_refused_qssa_kout)
+        # Threshold policy (explicit, logged, deck-tied; never a bare
+        # constant): at least 1/terminationTime, raised by the optional
+        # deck-tied floor self.qssa_kout_floor_s (callers may set it from
+        # the RMG filter threshold). None when the deck provides neither.
+        t_term = None
+        for _term in (self.termination or []):
+            if type(_term).__name__ == "TerminationTime":
+                _tv = float(_term.time.value_si)
+                t_term = _tv if t_term is None else min(t_term, _tv)
+        _kout_floor = float(getattr(self, "qssa_kout_floor_s", 0.0) or 0.0)
+        kout_threshold_s = None
+        if t_term is not None and t_term > 0.0:
+            kout_threshold_s = max(_kout_floor, 1.0 / t_term)
+        elif _kout_floor > 0.0:
+            kout_threshold_s = _kout_floor
+        _T_census = float(self.T.value_si)
+        _P_census = float(self.P.value_si)
+
+        def _initial_concentration(spc):
+            """Deck-tied initial concentration of a census co-participant
+            [mol/m^3]; None when unknown (the direction is then counted
+            visible but unquantified). Pool proxies use the pool's initial
+            mu1 site density; gas species use the ideal-gas initial state."""
+            lbl = getattr(spc, "label", None)
+            if lbl and lbl in (self.initial_polymer_moments or {}):
+                mom = self.initial_polymer_moments[lbl]
+                return max(0.0, float(mom[1])) / self.V_poly
+            x = None
+            try:
+                x = self.initial_mole_fractions.get(spc)
+                if x is None and lbl is not None:
+                    x = self.initial_mole_fractions.get(lbl)
+            except Exception:
+                x = None
+            if x is None:
+                return None
+            return float(x) * _P_census / (constants.R * _T_census)
+
+        all_census_rxns = list(itertools.chain(core_reactions, edge_reactions))
+        all_census_spcs = list(itertools.chain(core_species or [],
+                                               edge_species or []))
+        _kout_policy_logged = False
         self.refused_reaction_census = []
-        for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
+        for i, rxn in enumerate(all_census_rxns):
             if not self.reaction_refused[i]:
                 continue
             accumulating = bool(getattr(rxn, "polymer_refused_accumulating", False))
+            reason = "qssa-invalid" if accumulating else "conduit-deferred"
+            # Single-source stamp for EVERY refused row (a stale reason from
+            # an earlier rebuild -- e.g. across an r92 flip-restamp that
+            # changed the accumulating bit -- must never survive into the
+            # artifact emitter). The accumulating branch below may overwrite
+            # it with 'qssa-unassessable'.
+            rxn.polymer_refused_reason = reason
             entry = {
                 "reaction": _reaction_census_label(rxn),
                 "radical_class": "accumulating" if accumulating else "eliminating",
-                "reason": "qssa-invalid" if accumulating else "conduit-deferred",
+                "reason": reason,
             }
+            if accumulating:
+                if not _kout_policy_logged:
+                    _kout_policy_logged = True
+                    logging.warning(
+                        "QSSA k_out census policy (round-20, census-only): "
+                        "threshold = max(deck floor qssa_kout_floor_s=%.6g "
+                        "1/s, 1/terminationTime=%s 1/s) = %s 1/s at reactor "
+                        "T = %.2f K. k_out below/without evidence is "
+                        "reported, never converted into flux.",
+                        _kout_floor,
+                        ("%.6g" % (1.0 / t_term)) if t_term else "n/a",
+                        ("%.6g" % kout_threshold_s)
+                        if kout_threshold_s is not None else "n/a",
+                        _T_census)
+                diag = assess_refused_qssa_kout(
+                    rxn, all_census_rxns, all_census_spcs,
+                    _T_census, _P_census,
+                    concentration_of=_initial_concentration)
+                if not diag["visible"]:
+                    # the radical / its consumers are not visible in the
+                    # rebuilt model: distinct reason, never 'slow'.
+                    reason = "qssa-unassessable"
+                    entry["reason"] = reason
+                k_out = diag["k_out_s"]
+                if not diag["visible"] or k_out is None or kout_threshold_s is None:
+                    verdict = "unassessable"
+                elif k_out >= kout_threshold_s:
+                    # a lower bound >= threshold is safely 'fast'
+                    verdict = "fast"
+                elif diag["k_out_is_lower_bound"]:
+                    # under-threshold LOWER BOUND is not evidence of
+                    # slowness (unquantified directions remain)
+                    verdict = "unassessable"
+                else:
+                    verdict = "slow"
+                entry["k_out_s"] = k_out
+                entry["k_out_threshold_s"] = kout_threshold_s
+                entry["k_out_verdict"] = verdict
+                entry["reactor_T_K"] = _T_census
+                entry["radical_label"] = diag["radical_label"]
+                # Single-source stamp: the artifact emitter reads this attr.
+                rxn.polymer_refused_reason = reason
             self.refused_reaction_census.append(entry)
             _warn_once_refused(entry)
 
@@ -4896,7 +5011,11 @@ class HybridPolymerSystem(ReactionSystem):
                         # item C extends this from same-pool to CROSS-POOL
                         # rows too (the forward leg debits src and sheds a
                         # units/event it must be able to source; previously
-                        # only the b0==0 skip guarded it). (mirrored in
+                        # only the b0==0 skip guarded it). INTERIOR
+                        # (mu1-scaled) rows stay unthrottled, relying on the
+                        # linear self-limit of the mu1 site -- TODO (Codex
+                        # round-22 P2b): add a near-exhaustion stress-pin
+                        # test for that reliance. (mirrored in
                         # get_reaction_rates' hijack block -- keep in sync)
                         mu_idx = self.polymer_pools[target_pool_idx].mu_indices
                         site = min(

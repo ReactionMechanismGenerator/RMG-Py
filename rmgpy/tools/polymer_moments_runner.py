@@ -333,8 +333,14 @@ def _restamp_and_extend(artifact, species, reactions):
         # whole-reaction.
         if _validate_refused_entry(e):
             rxn.polymer_refused = True
+            # 'qssa-unassessable' (round-20 increment 7) is the rebuild
+            # census's re-spelling of an ACCUMULATING refusal whose lost
+            # radical/consumers were not visible; restore the bit
+            # accordingly, and restore the reason attr itself so a
+            # re-emit round-trips byte-identically (single-source stamp).
             rxn.polymer_refused_accumulating = (
-                e["refused_reason"] == "qssa-invalid")
+                e["refused_reason"] in ("qssa-invalid", "qssa-unassessable"))
+            rxn.polymer_refused_reason = e["refused_reason"]
         if e["kinetics"] is not None:
             # Belt-and-braces reversibility for listed entries: post-fix
             # chem.yaml records reversibility in the equation arrow
@@ -822,7 +828,8 @@ _SIDE_GROUP_V2_MIN_SCHEMA_ORDINAL = 10
 # strings can exist. _restamp_and_extend reconstructs the accumulating class
 # FROM the reason (== "qssa-invalid", else non-accumulating), so an unknown
 # reason would silently change solver semantics -- reject, never adapt.
-REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid"})
+REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid",
+                             "qssa-unassessable"})
 # Maximum schema minor this loader implements. Weak-link milestone iv
 # POLICY CHANGE (was minor-permissive): a newer-minor artifact may carry
 # vocabulary OUTSIDE the channel blocks (new conventions, new pool fields)

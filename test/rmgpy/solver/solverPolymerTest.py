@@ -1004,7 +1004,149 @@ class TestHybridPolymerReactor:
         census = rs.refused_reaction_census
         assert len(census) == 2
         assert any(c["radical_class"] == "eliminating" and c["reason"] == "conduit-deferred" for c in census)
-        assert any(c["radical_class"] == "accumulating" and c["reason"] == "qssa-invalid" for c in census)
+        # Round-20 increment 7: this synthetic deck gives the rebuild census
+        # NO way to identify the lost radical (the 'epdm' reactant is a
+        # plain Species, not a Polymer) and no consuming rows -- missing
+        # evidence is spelled 'qssa-unassessable', never 'qssa-invalid'.
+        acc = next(c for c in census if c["radical_class"] == "accumulating")
+        assert acc["reason"] == "qssa-unassessable"
+        assert acc["k_out_s"] is None
+        assert acc["k_out_threshold_s"] is None          # termination=[]
+        assert acc["k_out_verdict"] == "unassessable"
+        assert acc["reactor_T_K"] == pytest.approx(800.0)
+        # single-source stamp: the artifact emitter reads the same attr
+        # (stamped for EVERY refused row so a stale reason can never
+        # survive a later restamp into the emitter)
+        assert r2.polymer_refused_reason == "qssa-unassessable"
+        assert r1.polymer_refused_reason == "conduit-deferred"
+
+    def test_refused_qssa_kout_census_rate_derived_diagnostic(self):
+        """
+        Round-20 increment 7 (LAST, flux-unchanged): for an ACCUMULATING
+        refusal whose lost chain-scale radical IS visible in the rebuilt
+        model with consuming rows, the census carries a rate-derived
+        pseudo-first-order k_out (kf per forward orientation; co-reactant
+        concentrations from the deck's initial state), the explicit
+        threshold policy max(qssa_kout_floor_s, 1/terminationTime), the
+        reactor T, and the 'fast'/'slow' verdict. The refusal itself stays
+        'qssa-invalid' and the row's flux stays ZERO (census-only), and the
+        artifact emitter reads the SAME single-source stamp.
+        """
+        from rmgpy.polymer import (Polymer,
+                                   compile_polymer_reaction_entries)
+        from rmgpy.solver.base import TerminationTime
+        epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                       Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        Mu0 = _spc("CO", "epdm_mu0"); Mu1 = _spc("C=O", "epdm_mu1")
+        Mu2 = _spc("C#N", "epdm_mu2")
+        AllylRad = _spc("CCC(C)CCCC=C[C](C)CCC(C)CC", "allyl_macro")
+        SatChain = _spc("CCC(C)CCCC(C)CCCC(C)C", "sat_chain")
+        H = _spc("[H]", "H"); H2 = _spc("[H][H]", "H2")
+        core = [epdm, Mu0, Mu1, Mu2, AllylRad, SatChain, H, H2]
+        mask = np.array([False] * 6 + [True, True], dtype=bool)
+        kin2 = Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                         T0=(298.15, "K"))
+        refused = Reaction(reactants=[epdm, H], products=[H2, AllylRad],
+                           kinetics=kin2, reversible=False)
+        refused.polymer_flux_archetype = 4      # UNRESOLVED
+        refused.polymer_refused = True
+        refused.polymer_refused_accumulating = True
+        # consumers of the lost radical: one unimolecular (k = 5 1/s), one
+        # bimolecular with H (k*C_H, C_H = P/(R*T) from x_H = 1)
+        c_uni = Reaction(reactants=[AllylRad], products=[SatChain],
+                         kinetics=Arrhenius(A=(5.0, "1/s"), n=0.0,
+                                            Ea=(0.0, "kcal/mol"),
+                                            T0=(298.15, "K")),
+                         reversible=False)
+        c_bi = Reaction(reactants=[AllylRad, H], products=[SatChain, H2],
+                        kinetics=kin2, reversible=False)
+        pool = PolymerPoolConfig(label="epdm", xs=2,
+                                 explicit_dp_to_species_index={},
+                                 mu_indices=(1, 2, 3),
+                                 monomer_poly_index=None, k_scission=0.0,
+                                 k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={H: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"epdm": (1.0, 50.0, 3000.0)},
+            termination=[TerminationTime((10.0, "s"))],
+        )
+        rs.initialize_model(core, [refused, c_uni, c_bi], [], [])
+
+        import rmgpy.constants as constants
+        c_h = 1.0e5 / (constants.R * 800.0)
+        k_out_expected = 5.0 + 2.0 * c_h
+        (acc,) = rs.refused_reaction_census
+        assert acc["radical_class"] == "accumulating"
+        assert acc["reason"] == "qssa-invalid"     # visible: diagnosis stands
+        assert acc["k_out_s"] == pytest.approx(k_out_expected, rel=1e-9)
+        assert acc["k_out_threshold_s"] == pytest.approx(0.1)  # 1/10 s
+        assert acc["k_out_verdict"] == "fast"      # 35 1/s >> 0.1 1/s
+        assert acc["reactor_T_K"] == pytest.approx(800.0)
+        assert acc["radical_label"] == "allyl_macro"
+        # single-source: artifact emitter reads the SAME object attr
+        assert refused.polymer_refused_reason == "qssa-invalid"
+        entries = compile_polymer_reaction_entries(
+            [refused], core, ["epdm"])
+        assert entries[0]["refused"] is True
+        assert entries[0]["refused_reason"] == "qssa-invalid"
+        # FLUX-UNCHANGED: the refused row is still fully suppressed
+        assert rs.reaction_refused[0] == 1
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        idx = {s.label: k for k, s in enumerate(core)}
+        # residual contributions on H2 come only from c_bi (H2 product);
+        # the refused row itself adds nothing: suppressing c_bi's rate by
+        # construction is not possible here, so pin the refusal via the
+        # moment rows the refused UNRESOLVED leg would have written.
+        assert np.isclose(dn[idx["epdm_mu1"]], 0.0, atol=1e-30)
+
+    def test_refused_qssa_kout_unassessable_reaches_artifact(self):
+        """
+        Round-20 single-source stamping, invisibility case: the rebuild
+        census computes 'qssa-unassessable' (accumulating refusal, radical
+        has NO consuming rows), writes it onto the object attr, and the
+        artifact emitter emits the SAME reason -- census and artifact can
+        never disagree.
+        """
+        from rmgpy.polymer import (Polymer,
+                                   compile_polymer_reaction_entries)
+        epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                       Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        Mu0 = _spc("CO", "epdm_mu0"); Mu1 = _spc("C=O", "epdm_mu1")
+        Mu2 = _spc("C#N", "epdm_mu2")
+        AllylRad = _spc("CCC(C)CCCC=C[C](C)CCC(C)CC", "allyl_macro")
+        H = _spc("[H]", "H"); H2 = _spc("[H][H]", "H2")
+        core = [epdm, Mu0, Mu1, Mu2, AllylRad, H, H2]
+        mask = np.array([False] * 5 + [True, True], dtype=bool)
+        kin2 = Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                         T0=(298.15, "K"))
+        refused = Reaction(reactants=[epdm, H], products=[H2, AllylRad],
+                           kinetics=kin2, reversible=False)
+        refused.polymer_flux_archetype = 4
+        refused.polymer_refused = True
+        refused.polymer_refused_accumulating = True
+        pool = PolymerPoolConfig(label="epdm", xs=2,
+                                 explicit_dp_to_species_index={},
+                                 mu_indices=(1, 2, 3),
+                                 monomer_poly_index=None, k_scission=0.0,
+                                 k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={H: 1.0}, V_poly=1.0,
+            polymer_pools=[pool], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"epdm": (1.0, 50.0, 3000.0)},
+            termination=[],
+        )
+        rs.initialize_model(core, [refused], [], [])
+        (acc,) = rs.refused_reaction_census
+        assert acc["reason"] == "qssa-unassessable"
+        assert refused.polymer_refused_reason == "qssa-unassessable"
+        entries = compile_polymer_reaction_entries([refused], core, ["epdm"])
+        assert entries[0]["refused"] is True
+        assert entries[0]["refused_reason"] == "qssa-unassessable"
+        # flux still fully suppressed (census-only, stamp-but-keep)
+        assert rs.reaction_refused[0] == 1
 
     def test_stamped_chip_without_src_pool_demotes_to_unresolved(self):
         """
@@ -5810,6 +5952,91 @@ class TestAllowUnpairedReferenceStateKnobPlumb:
         # this test cheap while making a silent kwarg drop impossible.
         src = inspect.getsource(hybrid_polymer_reactor)
         assert "allow_unpaired_reference_state=allow_unpaired_reference_state" in src
+
+
+class TestQssaKoutFloorPlumb:
+    """Codex round-22 P1: the deck's filterThreshold must actually reach
+    the census-only QSSA k_out policy in PRODUCTION construction --
+    RMG.initialize stamps qssa_kout_floor_s on each polymer reactor,
+    HybridPolymerReactor.to_solver_object forwards it into
+    HybridPolymerSystem, and the rebuild census threshold becomes
+    max(filterThreshold, 1/terminationTime) instead of silently
+    collapsing to the bare 1/terminationTime fallback."""
+
+    @staticmethod
+    def _reactor():
+        from rmgpy.quantity import Quantity
+        from rmgpy.rmg.polymer_input import HybridPolymerReactor, PolymerPhase
+        a = _spc("CCCC", "A")
+        phase = PolymerPhase(density=Quantity(1000.0, "kg/m^3"),
+                             initial_moments={}, initial_explicit={a: 1.0},
+                             pools=[], mass_transfer=[])
+        return a, HybridPolymerReactor(
+            temperature=(800.0, "K"), pressure=(1.0e5, "Pa"),
+            initialMoles={a: 1.0}, polymerPhase=phase,
+            terminationTime=(1.0, "s"))
+
+    def test_to_solver_object_forwards_deck_filter_floor(self):
+        a, reactor = self._reactor()
+        # default: no deck floor
+        solver = reactor.to_solver_object([a], [], [], [])
+        assert solver.qssa_kout_floor_s == 0.0
+        # RMG.initialize stamps the attribute from the deck's
+        # filterThreshold; to_solver_object must forward it verbatim
+        reactor.qssa_kout_floor_s = 5.0e7
+        solver = reactor.to_solver_object([a], [], [], [])
+        assert solver.qssa_kout_floor_s == pytest.approx(5.0e7)
+
+    def test_main_initialize_stamps_polymer_reactors(self):
+        """Static source pin of the RMG.initialize stamping site (running a
+        full RMG.initialize needs a database): the deck's filter_threshold
+        is copied onto every reactor that exposes to_solver_object."""
+        import inspect
+        from rmgpy.rmg.main import RMG
+        src = inspect.getsource(RMG.initialize)
+        assert "qssa_kout_floor_s" in src
+        assert "filter_threshold" in src
+        assert "to_solver_object" in src   # duck-type guard for cdef reactors
+
+    def test_census_threshold_reflects_deck_filter_floor(self):
+        """End-to-end: a solver constructed WITH the deck floor reports
+        census k_out_threshold_s = max(floor, 1/t_term) = floor, and the
+        same deck WITHOUT the floor still falls back to 1/t_term."""
+        from rmgpy.polymer import Polymer
+        from rmgpy.solver.base import TerminationTime
+        epdm = Polymer(label="epdm", monomer="[CH2]CC(C)[CH2]",
+                       Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        Mu0 = _spc("CO", "epdm_mu0"); Mu1 = _spc("C=O", "epdm_mu1")
+        Mu2 = _spc("C#N", "epdm_mu2")
+        AllylRad = _spc("CCC(C)CCCC=C[C](C)CCC(C)CC", "allyl_macro")
+        H = _spc("[H]", "H"); H2 = _spc("[H][H]", "H2")
+        core = [epdm, Mu0, Mu1, Mu2, AllylRad, H, H2]
+        mask = np.array([False] * 5 + [True, True], dtype=bool)
+        kin2 = Arrhenius(A=(2.0, "m^3/(mol*s)"), n=0.0, Ea=(0.0, "kcal/mol"),
+                         T0=(298.15, "K"))
+        pool = PolymerPoolConfig(label="epdm", xs=2,
+                                 explicit_dp_to_species_index={},
+                                 mu_indices=(1, 2, 3),
+                                 monomer_poly_index=None, k_scission=0.0,
+                                 k_unzip=0.0, tail_kinetics=None)
+        for floor, expected in ((5.0e7, 5.0e7), (0.0, 0.1)):
+            refused = Reaction(reactants=[epdm, H], products=[H2, AllylRad],
+                               kinetics=kin2, reversible=False)
+            refused.polymer_flux_archetype = 4
+            refused.polymer_refused = True
+            refused.polymer_refused_accumulating = True
+            rs = HybridPolymerSystem(
+                T=800.0, P=1.0e5, initial_mole_fractions={H: 1.0},
+                V_poly=1.0, polymer_pools=[pool], mass_transfer=[],
+                gas_species_mask=mask.copy(), constant_gas_volume=False,
+                initial_polymer_moments={"epdm": (1.0, 50.0, 3000.0)},
+                termination=[TerminationTime((10.0, "s"))],
+                qssa_kout_floor_s=floor,
+            )
+            rs.initialize_model(core, [refused], [], [])
+            (acc,) = rs.refused_reaction_census
+            assert acc["k_out_threshold_s"] == pytest.approx(expected), (
+                f"floor={floor}: threshold must be max(floor, 1/t_term)")
 
 
 class TestDaughterPoolRegistration:

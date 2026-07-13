@@ -705,6 +705,19 @@ class TestRefusedRowAndHomolysisGuards:
         assert dn[i["R(3)"]] > 0.0
         assert dn[i["poly_mu1"]] < 0.0
 
+    def test_qssa_unassessable_reason_accepted_and_zero_flux(self):
+        """Round-20 increment 7: 'qssa-unassessable' joins the CLOSED
+        refused_reason vocabulary (the rebuild census's spelling of an
+        accumulating refusal whose radical/consumers were not visible --
+        missing evidence is never 'qssa-invalid'). Suppression semantics
+        identical: whole-row zero flux."""
+        artifact, core = self._refused_artifact(mark_refused=True)
+        (row,) = [e for e in artifact["reactions"] if e.get("refused")]
+        row["refused_reason"] = "qssa-unassessable"
+        consumer, y0, _ = self._consumer_and_y0(artifact, core)
+        dn = consumer.rhs(y0, 800.0)
+        assert np.all(dn == 0.0)
+
     def test_rejects_unknown_refused_reason(self):
         """The refused_reason vocabulary is CLOSED (format doc §12):
         reject at construction, never adapt."""

@@ -165,6 +165,15 @@ class Reaction:
         # __reduce__; the solver re-derives them at initialize_model.
         self.polymer_refused = False
         self.polymer_refused_accumulating = False
+        # Single-source refused_reason stamp (round-20 increment 7): the
+        # solver rebuild's rate-derived QSSA census writes its computed
+        # census reason here ('qssa-invalid' / 'qssa-unassessable'); the
+        # artifact emitter reads THIS attr first so census and artifact can
+        # never disagree. None = no rebuild assessment ran (the emitter
+        # falls back to the stamp-time accumulating-bit ternary). Like its
+        # siblings it is NOT serialized in __reduce__; the solver re-derives
+        # it at initialize_model.
+        self.polymer_refused_reason = None
         # Pool moment-flux archetype (int values of
         # rmgpy.polymer.PolymerFluxArchetype), stamped by the polymer handshake
         # in rmgpy.rmg.model.make_new_reaction. 0 = NONE. Like

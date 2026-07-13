@@ -66,6 +66,7 @@ cdef class Reaction:
     cdef public bint is_end_group_reaction
     cdef public bint polymer_refused
     cdef public bint polymer_refused_accumulating
+    cdef public object polymer_refused_reason
     cdef public int polymer_flux_archetype
     cdef public int polymer_chip_units
     cdef public double polymer_eject_units
