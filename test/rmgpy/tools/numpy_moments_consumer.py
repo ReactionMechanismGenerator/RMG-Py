@@ -352,13 +352,14 @@ class ArtifactConsumer:
                 is_ve = e["arch"] == "volatile_ejection/1"
                 if e["arch"] == "discrete_chip/1" and e["scaling"] == "mu0" and e["a"] > 0:
                     site = min(max(0.0, y[i0]), max(0.0, y[i1]) / e["a"]) / Vp
-                elif (is_ve and e["scaling"] == "mu0"
-                        and e["src"] == e["dst"] and e["eject"] > 0.0):
-                    # Same-pool a>0 VE exhaustion throttle -- parity with
+                elif (is_ve and e["scaling"] == "mu0" and e["eject"] > 0.0):
+                    # a>0 END-GROUP VE exhaustion throttle -- parity with
                     # the generating solver's section-2 site scaling
                     # (polymer.pyx; keep in sync): site = min(mu0, mu1/a);
                     # a<0 GROWS the chain (exempt, no spurious negative
-                    # site from mu1/a).
+                    # site from mu1/a). Ruling round 20 item C: applies to
+                    # same-pool AND cross-pool rows (the forward leg debits
+                    # src either way).
                     site = min(max(0.0, y[i0]),
                                max(0.0, y[i1]) / e["eject"]) / Vp
                 else:
@@ -370,10 +371,17 @@ class ArtifactConsumer:
                     # VE (parity with the solver's adjudicated Part C
                     # scaling): the reverse leg debits the DST pool, so its
                     # site factor comes from the dst pool's own moments
-                    # (same moment order as the forward site).
+                    # (same moment order as the forward site). Item C mirror
+                    # direction: for a<0 the reverse leg sheds |a|/event
+                    # from dst, so its end-group availability carries the
+                    # same min(mu0, mu1/|a|) throttle.
                     d0, d1, _ = self.pools[e["dst"]]["mu"]
-                    di = d0 if e["scaling"] == "mu0" else d1
-                    rr *= max(0.0, y[di]) / Vp
+                    if e["scaling"] == "mu0" and e["eject"] < 0.0:
+                        rr *= min(max(0.0, y[d0]),
+                                  max(0.0, y[d1]) / (-e["eject"])) / Vp
+                    else:
+                        di = d0 if e["scaling"] == "mu0" else d1
+                        rr *= max(0.0, y[di]) / Vp
                 else:
                     rr *= site
 

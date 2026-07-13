@@ -4886,14 +4886,17 @@ class HybridPolymerSystem(ReactionSystem):
                     elif (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
                             and self.is_end_group_reaction[r_idx]
                             and self.reaction_src_pool[r_idx] != -1
-                            and self.reaction_src_pool[r_idx] == self.reaction_dst_pool[r_idx]
                             and self.reaction_eject_units[r_idx] > 0.0):
-                        # Same-pool a>0 VE shares the DISCRETE_CHIP exhaustion
+                        # a>0 VE shares the DISCRETE_CHIP exhaustion
                         # structure: mu0-scaled drain of mu1 that never touches
                         # mu0, so it would run mu1 linearly negative past
                         # exhaustion. Throttle site = min(mu0, mu1/a). Guard
                         # a>0: a<0 GROWS the chain (no exhaustion) and mu1/a<0
-                        # would be a spurious negative site. (mirrored in
+                        # would be a spurious negative site. Ruling round 20
+                        # item C extends this from same-pool to CROSS-POOL
+                        # rows too (the forward leg debits src and sheds a
+                        # units/event it must be able to source; previously
+                        # only the b0==0 skip guarded it). (mirrored in
                         # get_reaction_rates' hijack block -- keep in sync)
                         mu_idx = self.polymer_pools[target_pool_idx].mu_indices
                         site = min(
@@ -4928,7 +4931,25 @@ class HybridPolymerSystem(ReactionSystem):
                         moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[1]
                         if self.is_end_group_reaction[r_idx]:
                             moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[0]
-                        rr *= max(0.0, y[moment_idx]) / V_poly
+                        if (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
+                                and self.is_end_group_reaction[r_idx]
+                                and self.reaction_eject_units[r_idx] < 0.0):
+                            # Ruling round 20 item C, mirror direction: for
+                            # a<0 the REVERSE leg of a cross-pool VE sheds
+                            # |a| units/event from the dst pool it debits
+                            # (sa = +a < 0 shrinks the chain landing back
+                            # in src), so its availability carries the same
+                            # min(mu0, mu1/|a|) exhaustion throttle as the
+                            # a>0 forward site above. The forward leg (chain
+                            # GROWTH landing in dst) stays exempt. (mirrored
+                            # in get_reaction_rates -- keep in sync)
+                            mu_idx_dst = self.polymer_pools[dst_pool_idx].mu_indices
+                            rr *= min(
+                                max(0.0, y[mu_idx_dst[0]]),
+                                max(0.0, y[mu_idx_dst[1]]) / (-float(self.reaction_eject_units[r_idx])),
+                            ) / V_poly
+                        else:
+                            rr *= max(0.0, y[moment_idx]) / V_poly
                     else:
                         rr *= site
             elif has_any_prod and not has_edge_prod:
@@ -6128,11 +6149,12 @@ class HybridPolymerSystem(ReactionSystem):
                 elif (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
                         and self.is_end_group_reaction[r_idx]
                         and self.reaction_src_pool[r_idx] != -1
-                        and self.reaction_src_pool[r_idx] == self.reaction_dst_pool[r_idx]
                         and self.reaction_eject_units[r_idx] > 0.0):
-                    # Same-pool a>0 VE exhaustion throttle -- parity with the
+                    # a>0 VE exhaustion throttle -- parity with the
                     # residual's section-2 site scaling (keep in sync). site =
                     # min(mu0, mu1/a); guard a>0 (a<0 grows, no throttle).
+                    # Ruling round 20 item C: covers same-pool AND cross-pool
+                    # rows (the forward leg debits src either way).
                     mu1_idx = self.polymer_pools[p0_pool_idx].mu_indices[1]
                     if self.pool_mu1_indices[p0_pool_idx] != -1:
                         mu1_idx = self.pool_mu1_indices[p0_pool_idx]
@@ -6156,7 +6178,22 @@ class HybridPolymerSystem(ReactionSystem):
                         moment_idx = self.pool_mu1_indices[dst_pool_idx]
                     if self.is_end_group_reaction[r_idx]:
                         moment_idx = self.pool_mu0_indices[dst_pool_idx]
-                    rr *= max(0.0, y[moment_idx]) / V_poly
+                    if (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
+                            and self.is_end_group_reaction[r_idx]
+                            and self.reaction_eject_units[r_idx] < 0.0):
+                        # Ruling round 20 item C mirror direction -- parity
+                        # with the residual (keep in sync): a<0 reverse leg
+                        # sheds |a|/event from the dst pool it debits, so
+                        # its availability is min(mu0, mu1/|a|).
+                        dst_mu1_idx = self.polymer_pools[dst_pool_idx].mu_indices[1]
+                        if self.pool_mu1_indices[dst_pool_idx] != -1:
+                            dst_mu1_idx = self.pool_mu1_indices[dst_pool_idx]
+                        rr *= min(
+                            max(0.0, y[self.pool_mu0_indices[dst_pool_idx]]),
+                            max(0.0, y[dst_mu1_idx]) / (-float(self.reaction_eject_units[r_idx])),
+                        ) / V_poly
+                    else:
+                        rr *= max(0.0, y[moment_idx]) / V_poly
                 else:
                     rr *= site
             elif rr != 0.0:

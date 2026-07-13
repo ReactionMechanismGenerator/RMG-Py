@@ -458,6 +458,54 @@ class TestVolatileEjectionSufficiency:
         _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
         np.testing.assert_allclose(mine, oracle, rtol=1e-9, atol=1e-12)
 
+    def test_cross_pool_ve_end_group_forward_throttle_parity(self):
+        """Item C consumer parity (ruling round 20): cross-pool a>0
+        END-GROUP VE -- the forward (src-debiting) leg carries the same
+        min(mu0, mu1/a) source-availability throttle as the solver
+        (a=6, A moments (1, 5, 30): mu1/a = 5/6 < mu0 = 1, it bites)."""
+        sp, core, mask = _two_pool_setup()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       kinetics=_kin1(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = 6.0
+        rxn.is_end_group_reaction = True
+        rs = _oracle_system(core, mask, [rxn])
+        y0 = rs.y.copy()
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        artifact = _artifact_for(core, [rxn])
+        consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                                    P=P_PA, V_poly=V_POLY)
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-9, atol=1e-12)
+
+    def test_cross_pool_ve_end_group_reverse_throttle_parity(self):
+        """Item C mirror direction, consumer parity: a<0 END-GROUP
+        cross-pool VE -- the reverse leg sheds |a|/event from the dst pool
+        it debits, so its availability carries min(mu0_dst, mu1_dst/|a|)
+        (B moments (2, 4, 10), |a|=6: 4/6 < 2, it bites)."""
+        sp, core, mask = _two_pool_setup(with_thermo=True)
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       kinetics=_kin1(), reversible=True)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = -6.0
+        rxn.is_end_group_reaction = True
+        rs = _oracle_system(core, mask, [rxn])
+        y0 = rs.y.copy()
+        oracle = _euler_oracle(rs, y0, DT, N_STEPS)
+
+        artifact = _artifact_for(core, [rxn])
+        nasa = {}
+        for lab in ("A", "B", "G"):
+            th = sp[lab].thermo
+            nasa[lab] = {"Tmid": 1000.0,
+                         "low": [float(c) for c in th.polynomials[0].coeffs],
+                         "high": [float(c) for c in th.polynomials[1].coeffs]}
+        consumer = ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                                    P=P_PA, V_poly=V_POLY, nasa=nasa)
+        _, mine = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        np.testing.assert_allclose(mine, oracle, rtol=1e-7, atol=1e-12)
+
     def test_rejects_ve_row_without_eject_units(self):
         """A volatile_ejection/1 entry without the exact
         params = {'eject_units': ...} shape must fail LOUDLY at

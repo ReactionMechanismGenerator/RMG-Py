@@ -3845,6 +3845,103 @@ class TestHybridPolymerReactor:
         assert not np.isclose(rate, kf * mom_a[0])
         assert np.isclose(rate, dn_dt[2] / (-a))          # parity with residual
 
+    def test_cross_pool_ve_end_group_forward_exhaustion_guard(self):
+        """
+        Item C (ruling round 20): a>0 END-GROUP cross-pool VE. The forward
+        (src-debiting) leg's mu0-scaled site must carry the SAME
+        min(mu0, mu1/a) source-availability throttle as the same-pool shape
+        -- previously the cross-pool dispatch had NO exhaustion guard beyond
+        the b0==0 skip, so near src exhaustion the mu0-scaled event rate
+        kept shedding a units/event it could not source. mu0=1, mu1=5, a=6:
+        site = 5/6, NOT the unthrottled mu0 = 1. Gas volatile and moment
+        legs move at the SAME throttled event rate (single-count), and
+        get_reaction_rates mirrors it.
+        """
+        a = 6.0
+        mom_a = (1.0, 5.0, 30.0)              # mu1/a = 5/6 < mu0 = 1
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rxn.is_end_group_reaction = True
+        rs = _two_pool_rs(rxn, core, mask, mom_a, (2.0, 4.0, 10.0))
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        site = min(mom_a[0], mom_a[1] / a)    # 5/6
+        ev = kf * site
+        e_n = mom_a[1] / mom_a[0]             # uniform pick E[n] = 5
+        # forward leg throttled: A loses the full uniform-pick bundle at ev
+        assert np.isclose(dn_dt[1], -ev * 1.0)
+        assert not np.isclose(dn_dt[1], -kf * mom_a[0] * 1.0)
+        assert np.isclose(dn_dt[2], -ev * e_n)
+        # dst gains the a-shifted bundle at the SAME throttled rate
+        assert np.isclose(dn_dt[5], +ev * 1.0)
+        assert np.isclose(dn_dt[6], +ev * (e_n - a))
+        # gas volatile at the throttled event rate too (single count)
+        assert np.isclose(dn_dt[8], +ev)
+        # diagnostic mirror parity
+        rate = rs.get_reaction_rates(rs.y)[0]
+        assert np.isclose(rate, ev)
+        assert np.isclose(rate, dn_dt[1] / (-1.0))
+
+    def test_cross_pool_ve_end_group_reverse_exhaustion_guard(self):
+        """
+        Item C, mirror direction: a<0 END-GROUP cross-pool VE. The REVERSE
+        leg sheds |a| units/event from the dst pool it debits, so ITS
+        availability factor carries min(mu0_dst, mu1_dst/|a|); the forward
+        leg (chain GROWTH landing in dst) stays exempt, exactly like the
+        same-pool a<0 exemption. dst mu0=2, mu1=4, |a|=6: factor =
+        min(2, 4/6) = 2/3, NOT the unthrottled mu0_dst = 2.
+        """
+        a = -6.0
+        mu_a = (1.0, 5.0, 30.0)
+        mu_b = (2.0, 4.0, 10.0)               # mu1/|a| = 2/3 < mu0 = 2
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rxn.is_end_group_reaction = True
+        rs = _two_pool_rs(rxn, core, mask, mu_a, mu_b)
+        rs.kf[0] = 0.0                        # isolate the reverse leg
+        rs.kb[0] = 0.6
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        avail = min(mu_b[0], mu_b[1] / abs(a))    # 2/3
+        ev = 0.6 * avail
+        bB1 = mu_b[1] / mu_b[0]               # uniform pick E[n_dst] = 2
+        # dst (B) loses its full bundle at the THROTTLED reverse rate
+        assert np.isclose(dn_dt[5], -ev * 1.0)
+        assert not np.isclose(dn_dt[5], -0.6 * mu_b[0] * 1.0)
+        assert np.isclose(dn_dt[6], -ev * bB1)
+        # src (A) gains the +a-shifted bundle (a<0: shrinks landing in A)
+        assert np.isclose(dn_dt[1], +ev * 1.0)
+        assert np.isclose(dn_dt[2], +ev * (bB1 + a))
+
+    def test_cross_pool_ve_interior_rows_unthrottled(self):
+        """
+        Item C scope pin: INTERIOR (mu1-scaled) cross-pool VE rows keep the
+        plain mu1 site -- the mu1-proportional event rate already vanishes
+        linearly with the debited pool (same exemption rationale as the
+        same-pool throttle's is_end_group gate). a>0 forward: site == mu1,
+        never min(mu0, mu1/a).
+        """
+        a = 6.0
+        mom_a = (1.0, 5.0, 30.0)              # min() would give 5/6 != 5
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rs = _two_pool_rs(rxn, core, mask, mom_a, (2.0, 4.0, 10.0))
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        ev = kf * mom_a[1]                    # plain mu1 site
+        assert np.isclose(dn_dt[1], -ev * 1.0)
+        rate = rs.get_reaction_rates(rs.y)[0]
+        assert np.isclose(rate, ev)
+
     def test_r29_conduit_ve_row_books_mass_exactly_once(self):
         """
         poly_102 r29 conduit collapse (adversarial ruling round 20,
