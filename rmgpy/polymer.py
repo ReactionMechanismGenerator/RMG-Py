@@ -7612,8 +7612,12 @@ def build_polymer_moments_artifact(pool_registry,
     # split below is gated on this: the legacy default-label call keeps its
     # documented behavior byte-identically (everything "configured", no
     # spawned surface).
-    explicit_configured = bool(configured_pool_labels)
-    if not configured_pool_labels:
+    # The sentinel is None, NOT emptiness: an explicitly EMPTY configured
+    # set means "nothing is root-configured" (a daughters-only artifact)
+    # and must keep the spawned classification + 2.5 stamp, never default
+    # everything configured.
+    explicit_configured = configured_pool_labels is not None
+    if configured_pool_labels is None:
         configured_pool_labels = [getattr(p, "label", "") for p in pool_registry]
     monomer_routing_by_pool = monomer_routing_by_pool or {}
     # Stage-A solver contract {pool_label: {dp: moles}} — the same shape

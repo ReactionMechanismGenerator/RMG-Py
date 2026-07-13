@@ -302,10 +302,12 @@ def _restamp_and_extend(artifact, species, reactions):
         #   NOT restorable -- three divergence classes whose tag source never
         #                    reaches the artifact: (1) explicit-oligomer
         #                    reactions (oligomer participants are not pool
-        #                    proxies, so no entry is compiled), (2) spawned
-        #                    UNCONFIGURED daughter proxies (registry pools
-        #                    without solver configs; their reactions are not
-        #                    entry-listed under configured_pools), and
+        #                    proxies, so no entry is compiled), (2) LEGACY
+        #                    spawned daughter proxies with no live
+        #                    entry-listed row (pre-item-16-split emitters
+        #                    refused rows with unconfigured endpoints; an
+        #                    item-16 mid-run daughter's live conduit rows DO
+        #                    entry-list its proxy, so its tag restores), and
         #                    (3) edge-reaction tag sources (only CORE
         #                    reactions compile to entries).
         # Direction is FAIL-LOUD: a chain-scale species that loses its tag
@@ -843,8 +845,12 @@ REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid",
 # §13): conventions.spawned_pools is classification vocabulary whose
 # runtime effect rides conventions.condensed_species -- which this loader
 # already honors verbatim for its phase mask -- while pool moment blocks
-# stay keyed on configured_pools (spawned pools remain solver-inert, §2),
-# so 2.5 acceptance is truthful. Raised to 6 with the pool-level
+# are keyed on configured_pools PLUS the buildable spawned pools (item-16
+# emission/resolution split, §2/§13: a spawned-declared pool with a live
+# coupled row and a mechanism-resident mu triplet was solver-configured in
+# the generating engine and is built for replay fidelity; legacy spawned
+# pools with no live coupled row remain solver-inert), so 2.5 acceptance
+# is truthful. Raised to 6 with the pool-level
 # homolysis_initiation block (Stage 2, rounds 66/67): this loader validates
 # the block strictly (_check_homolysis_initiation /
 # _parse_homolysis_initiation_block) and wires the kernel triplet into the
@@ -1040,9 +1046,11 @@ def _check_spawned_pools_schema_version(artifact):
     non-list (a bare string would be consumed as an iterable of
     CHARACTERS), non-string / empty entries, or duplicate labels are all
     malformed -- reject, never adapt. Also rejects an overlap with
-    configured_pools: the closure is the complement of the configured set
-    by construction (a label in both would be simultaneously
-    solver-configured and solver-inert -- the emitter never produces
+    configured_pools: the closure is the complement of the EMITTED
+    configured set by construction (item-16 emission/resolution split,
+    format doc §2/§13: configured_pools names root/setup-time pools only,
+    spawned_pools the mid-run engine-spawned daughters -- disjoint lists;
+    a label in both is contradictory and the emitter never produces
     it)."""
     conv = artifact.get("conventions") or {}
     if "spawned_pools" not in conv:
@@ -1093,8 +1101,9 @@ def _check_spawned_pools_schema_version(artifact):
         raise ValueError(
             f"conventions.spawned_pools overlaps configured_pools on "
             f"{overlap}: the spawned closure is the complement of the "
-            f"configured set (format doc §13; a pool cannot be both "
-            f"solver-configured and runtime-spawned/inert). This artifact "
+            f"emitted configured set (format doc §2/§13; a pool cannot be "
+            f"both a root/setup-time configured pool and a mid-run "
+            f"engine-spawned daughter). This artifact "
             f"is malformed -- fix/regenerate it at the source; this loader "
             f"never adapts it.")
 
@@ -1240,21 +1249,22 @@ def _check_homolysis_initiation(artifact):
     anywhere under a below-2.6 stamp is malformed) and adds the daughter
     closure the emitter guarantees (round-67 §Stage 2 Scope, tightened by
     the round-68 adjudication): the kernel-carrying pool itself must be in
-    conventions.configured_pools (build_system_from_artifact only builds
-    configured pools -- a block on an unconfigured carrier would be a
-    silently dropped kernel), and each kernel-carrying pool's two
-    end-radical daughter pools must
+    conventions.configured_pools (build_system_from_artifact builds only
+    configured pools plus live-coupled buildable spawned pools, and a
+    homolysis carrier is a root/setup-time pool by design -- a block on an
+    unconfigured carrier would be a silently dropped kernel), and each
+    kernel-carrying pool's two end-radical daughter pools must
 
     * be present in pools[] (their moment slots receive the kernel's
       fragment credits),
     * be in conventions.configured_pools (the daughters are eagerly
-      solver-configured by design, polymer.pyx _flatten_homolysis_state
-      hard-errors otherwise; build_system_from_artifact never builds a
-      pool outside configured_pools, so any other classification has no
+      solver-configured AT SETUP TIME by design -- exempt from the item-16
+      mid-run-spawned subtraction; polymer.pyx _flatten_homolysis_state
+      hard-errors otherwise, so any other classification has no
       solver home for the kernel's credits) and NOT in
-      conventions.spawned_pools (schema 2.5 defines that list as the
-      configured set's complement -- membership there contradicts the
-      eager-configured daughter design),
+      conventions.spawned_pools (that list names mid-run engine-spawned
+      daughters, the emitted configured set's complement -- membership
+      there contradicts the setup-configured daughter design),
     * be condensed per the condensed closure (phase_species non-empty and
       fully inside conventions.condensed_species -- the item-16
       mass-balance hazard otherwise), and
@@ -1286,10 +1296,12 @@ def _check_homolysis_initiation(artifact):
                 if isinstance(p, dict)}
     for carrier in carriers:
         lab = carrier.get("label")
-        # Round-68 P1: the carrier itself must be solver-configured.
-        # build_system_from_artifact only constructs PolymerPoolConfigs
-        # for conventions.configured_pools, so a valid-looking block on an
-        # unconfigured pool would be SKIPPED -- a silently dropped kernel.
+        # Round-68 P1: the carrier itself must be root-configured.
+        # build_system_from_artifact constructs PolymerPoolConfigs for
+        # conventions.configured_pools (plus buildable spawned pools,
+        # which the producer never stamps kernel blocks on), so a
+        # valid-looking block on an unconfigured, non-buildable pool
+        # would be SKIPPED -- a silently dropped kernel.
         if lab not in configured:
             raise ValueError(
                 f"Pool {lab!r}: carries a homolysis_initiation block but "
@@ -1312,9 +1324,11 @@ def _check_homolysis_initiation(artifact):
                     f"pools[] -- the kernel's fragment credits would have "
                     f"no moment slots. This artifact is malformed; "
                     f"regenerate the sidecar.")
-            # Round-68 P1: daughters are eagerly solver-CONFIGURED by
-            # design; spawned_pools is the configured set's complement
-            # (schema 2.5), so membership there contradicts that design.
+            # Round-68 P1: daughters are eagerly solver-CONFIGURED at
+            # SETUP TIME by design (exempt from the item-16 mid-run
+            # subtraction); spawned_pools names mid-run engine-spawned
+            # daughters (the emitted configured set's complement, schema
+            # 2.5), so membership there contradicts that design.
             # Check the spawned conjunct first so the contradiction is
             # named even when the 2.5 overlap guard was bypassed.
             if d_label in spawned:
@@ -1526,9 +1540,11 @@ def _check_end_radical_depropagation(artifact):
       _rad_secondary_end) AND the Stage-1 spawn provenance pin
       (spawn_event_metadata.source == 'k_homolysis_end_radical') -- the
       kernel only integrates on producer-spawned daughters;
-    * the carrier is in conventions.configured_pools (the loader only
-      builds configured pools -- a block elsewhere is a silently dropped
-      kernel), never in conventions.spawned_pools, and condensed per the
+    * the carrier is in conventions.configured_pools (end-radical
+      daughters are setup-time-configured spawn sources, exempt from the
+      item-16 mid-run-spawned subtraction -- a block on an unconfigured
+      carrier is a silently dropped kernel), never in
+      conventions.spawned_pools, and condensed per the
       condensed closure (its moment slots drain condensed mass);
     * its PARENT entry exists and carries the homolysis_initiation block
       naming this carrier at the matching open-site field (the kernel's
@@ -2964,6 +2980,48 @@ def _parse_radical_qssa_channel(lab, pool_entry):
     return validate_radical_qssa_unzip(lab, channel)
 
 
+def _buildable_spawned_pools(artifact, idx):
+    """Spawned-declared pools this loader builds (item-16 split, format doc
+    §2/§13): the subset of conventions.spawned_pools with (a) at least one
+    live (non-refused, resolved) pool-coupled reactions[] row AND (b) a
+    mechanism-resident _mu0/_mu1/_mu2 triplet in ``idx`` (chem.yaml label ->
+    core index). Both hold exactly for engine-configured mid-run daughters;
+    legacy spawned pools (no live coupled row) stay solver-inert. Returns a
+    set of labels. Single source of truth for build_system_from_artifact
+    (pool construction) and run_segments/_csv_header (output columns)."""
+    conv = artifact["conventions"]
+    spawned_declared = {str(lbl)
+                        for lbl in (conv.get("spawned_pools") or [])}
+    live_row_pools = set()
+    for row in artifact.get("reactions") or []:
+        if row.get("refused") or row.get("unresolved"):
+            continue
+        for key in ("src_pool", "dst_pool"):
+            if row.get(key):
+                live_row_pools.add(str(row[key]))
+    return {lab for lab in (spawned_declared & live_row_pools)
+            if all(f"{lab}_mu{k}" in idx for k in range(3))}
+
+
+def _output_pool_labels(artifact, idx):
+    """Pool labels whose moment columns the replay output carries: the
+    emitted configured set first (in conventions order), then the buildable
+    spawned pools (item-16 split) in artifact pools[] registry order --
+    deterministic columns that mirror exactly the pools
+    build_system_from_artifact constructed, so the CSV never silently drops
+    integrated spawned-pool (_mod) state."""
+    conv = artifact["conventions"]
+    labels = list(conv["configured_pools"])
+    seen = set(labels)
+    buildable = _buildable_spawned_pools(artifact, idx)
+    for p in artifact["pools"]:
+        lab = p["label"]
+        if lab in buildable and lab not in seen:
+            labels.append(lab)
+            seen.add(lab)
+    return labels
+
+
 def build_system_from_artifact(artifact, species, reactions,
                                T0, P, V_poly, initial_moles,
                                mass_transfer_spec, initial_moments=None):
@@ -3053,18 +3111,7 @@ def build_system_from_artifact(artifact, species, reactions,
     # daughters. Legacy spawned pools (no live coupled row: pre-split
     # emitters refused rows with unconfigured endpoints) stay solver-inert
     # exactly as documented in section 2 above.
-    spawned_declared = {str(lbl)
-                        for lbl in (conv.get("spawned_pools") or [])}
-    live_row_pools = set()
-    for row in artifact.get("reactions") or []:
-        if row.get("refused") or row.get("unresolved"):
-            continue
-        for key in ("src_pool", "dst_pool"):
-            if row.get(key):
-                live_row_pools.add(str(row[key]))
-    buildable_spawned = {
-        lab for lab in (spawned_declared & live_row_pools)
-        if all(f"{lab}_mu{k}" in idx for k in range(3))}
+    buildable_spawned = _buildable_spawned_pools(artifact, idx)
     for p in artifact["pools"]:
         lab = p["label"]
         if (lab not in conv["configured_pools"]
@@ -3360,16 +3407,19 @@ def run_segments(rs, core, artifact, all_reactions, segments,
                  n_points_per_segment=50):
     """Piecewise-isothermal integration. ``segments`` = [(t_end, T_K), ...]
     with strictly increasing t_end. Returns rows:
-    [t, T, <pool>_mu0.., <pool>_mu1.., <pool>_mu2.. per configured pool,
-     n(monomer_routing) per routed pool]."""
-    conv = artifact["conventions"]
+    [t, T, <pool>_mu0.., <pool>_mu1.., <pool>_mu2.. per OUTPUT pool --
+     every configured pool plus every buildable spawned pool (item-16
+     split: the loader integrates live-coupled _mod daughters, so the
+     replay output must report their state, _output_pool_labels) --
+     n(monomer_routing) per routed output pool]."""
     idx = {s.label: i for i, s in enumerate(core)}
-    pool_labels = list(conv["configured_pools"])
+    pool_labels = _output_pool_labels(artifact, idx)
     mu_cols = [(lab, tuple(idx[f"{lab}_mu{k}"] for k in range(3)))
                for lab in pool_labels]
+    out_pool_set = set(pool_labels)
     routed = [(p["label"], idx[p["monomer_routing"]])
               for p in artifact["pools"]
-              if p["label"] in pool_labels and p.get("monomer_routing")]
+              if p["label"] in out_pool_set and p.get("monomer_routing")]
 
     t_ends = [t for t, _ in segments]
     if any(t <= 0 for t in t_ends) or t_ends != sorted(t_ends) or len(t_ends) != len(set(t_ends)):
@@ -3403,13 +3453,19 @@ def run_segments(rs, core, artifact, all_reactions, segments,
     return rows
 
 
-def _csv_header(artifact):
-    conv = artifact["conventions"]
+def _csv_header(artifact, core):
+    """Column names matching run_segments rows exactly: configured pools
+    first, then buildable spawned pools (item-16 split; the same
+    _output_pool_labels order), each as <label>_mu{0,1,2}_mol, then
+    n_<monomer_routing>_mol per routed output pool."""
+    idx = {s.label: i for i, s in enumerate(core)}
+    pool_labels = _output_pool_labels(artifact, idx)
     header = ["t_s", "T_K"]
-    for lab in conv["configured_pools"]:
+    for lab in pool_labels:
         header.extend([f"{lab}_mu0_mol", f"{lab}_mu1_mol", f"{lab}_mu2_mol"])
+    out_pool_set = set(pool_labels)
     for p in artifact["pools"]:
-        if p["label"] in conv["configured_pools"] and p.get("monomer_routing"):
+        if p["label"] in out_pool_set and p.get("monomer_routing"):
             header.append(f"n_{p['monomer_routing']}_mol")
     return header
 
@@ -3467,7 +3523,7 @@ def main(argv=None):
 
     with open(args.output, "w", newline="") as fh:
         writer = csv.writer(fh)
-        writer.writerow(_csv_header(artifact))
+        writer.writerow(_csv_header(artifact, core))
         writer.writerows(rows)
     print(f"wrote {len(rows)} rows to {args.output}")
 

@@ -2107,6 +2107,29 @@ class TestSpawnedPoolConfiguredSurface:
                      if p["label"] == daughter.label)
         assert entry["moments_provenance"] == "spawned_empty"
 
+    def test_explicit_empty_configured_set_keeps_daughter_spawned(
+            self, pe_pool):
+        """P2 sentinel pin: the caller-supplied sentinel is None, NOT
+        emptiness. An explicitly EMPTY configured set (a daughters-only
+        artifact: nothing is root-configured) must NOT fall back to the
+        legacy default-to-all-registry-labels behavior -- the spawned
+        daughter is emitted in conventions.spawned_pools with the 2.5
+        stamp, never in configured_pools."""
+        from rmgpy.polymer import SpawnIntent, drain_spawn_intents
+        intent = SpawnIntent(parent_pool=pe_pool, monomer=pe_pool.monomer,
+                             end_groups=["[H]", "[H]"], triggering_dp=4)
+        daughter = drain_spawn_intents([intent], iteration=7,
+                                       existing_pools=[pe_pool])[0]
+        payload = build_polymer_moments_artifact(
+            [daughter], configured_pool_labels=[])
+        conv = payload["conventions"]
+        assert conv["configured_pools"] == []
+        assert conv.get("spawned_pools") == [daughter.label]
+        assert payload["schema_version"] == "2.5"
+        entry = next(p for p in payload["pools"]
+                     if p["label"] == daughter.label)
+        assert entry["moments_provenance"] == "spawned_empty"
+
 
 # ---------------------------------------------------------------------------
 # Radical-homolysis initiation sidecar block (Stage 2, adjudicated rounds

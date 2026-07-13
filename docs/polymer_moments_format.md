@@ -99,9 +99,11 @@ those artifacts (e.g. TA) over-integrate moment flux the generating solver
 zeroed. Regenerate; the artifact alone cannot identify the affected rows.
 
 **Schema 2.5** = 2.4 + the **spawned-pool closure** on the conventions block
-(§13): `conventions.spawned_pools` lists every registry pool that is NOT
-solver-configured (runtime-spawned scission daughters and radical-feature
-`<parent>_mod` pools), disjoint from `configured_pools` by construction, and
+(§13): `conventions.spawned_pools` lists every registry pool that is NOT in
+the emitted `configured_pools` (runtime-spawned scission daughters and
+radical-feature `<parent>_mod` pools; under the item-16 emission/resolution
+split these mid-run daughters ARE solver-configured in the generating engine
+— see §2 and §13), disjoint from `configured_pools` by construction, and
 `conventions.condensed_species` is CLOSED over those pools' `phase_species`
 (canonical proxy + µ-dummies) so consumers classify a late-spawned pool's
 bookkeeping species CONDENSED instead of defaulting them GAS. The emitter
@@ -112,8 +114,9 @@ byte-identical (pinned by test). A `2.0`–`2.4` artifact carrying the key is
 malformed; the reference loader rejects it, as it does a
 `spawned_pools`/`configured_pools` overlap (the emitter never writes
 either). `recipe_revision` is NOT touched: the closure is SHAPE vocabulary
-with classification semantics, not new rate algebra (spawned pools stay
-solver-inert, §2), and STRICT-MINOR acceptance already stops pre-2.5
+with classification semantics, not new rate algebra (a spawned pool's solver
+semantics ride its rows — legacy spawned pools with no live coupled row stay
+solver-inert, §2/§13), and STRICT-MINOR acceptance already stops pre-2.5
 consumers at the envelope.
 
 **Recipe revision 2026-07-03-monomer-gas** (incident 2026-07-03, PS
@@ -191,14 +194,28 @@ solver state-vector indices from the generating run).
 | `monomer_routing` | label \| null | chem.yaml species receiving the unzip/QSSA released-monomer flux. **Revision 2026-07-03-monomer-gas (incident 2026-07-03): this is a GAS-phase species** — release is direct devolatilization into the gas amount basis (`dn(monomer_routing)/dt += r·V_poly` [mol/s]; the species contributes to `V_gas`/headspace and is NOT in `phase_species` or `conventions.condensed_species`). Under the superseded pre-revision text it was declared condensed ("reaches the gas only via mass transfer"); that classification conflated the release target with the deck's principal gas volatile and is exactly what the reference-state tripwire refuses — consumers reading pre-revision artifacts (recipe_revision `2026-06-10`/`2026-07-02`/`2026-07-03-weaklink-u`) must keep the old condensed semantics for those artifacts only. `null` ⇒ unzip µ-flux applies but no monomer species is credited |
 | `mu3_closure` | `"log_lagrange/1"` | §6 |
 
-A pool listed here is **solver-configured** iff its `label` appears in
-`conventions.configured_pools`. Non-configured pools (spawned daughters) are
-inert containers: their proxies behave as ordinary species (no site scaling,
-no concentration-1.0 rule, no channels integration by the oracle). Since
-schema 2.5 they are additionally enumerated in `conventions.spawned_pools`
-and their `phase_species` join `conventions.condensed_species` (the
-spawned-pool closure, §13) — solver-inertness is unchanged; the closure
-carries PHASE-CLASSIFICATION membership only.
+**Pool classification (normative; amended by the item-16
+emission/resolution split).** `conventions.configured_pools` names the
+ROOT/SETUP-TIME load-bearing pools only: deck-declared pools plus
+setup-time-configured spawn sources (e.g. the `k_homolysis_end_radical`
+end-radical daughters, which the 2.6/2.8 closure guards REQUIRE
+configured). It is deliberately NOT the full solver-configured set.
+Mid-run engine-spawned daughters (radical-feature `<parent>_mod` pools,
+`_d<N>` spawn-intent pools, scission tails) gain solver configs through the
+enlarge-boundary promotion (item 16) — they ARE solver-configured and
+integrated by the generating RMG run — yet they are published in
+`conventions.spawned_pools`, never in `configured_pools`. A spawned pool
+MAY therefore carry live (non-refused, resolved) rows, e.g. a cross-pool
+`volatile_ejection/1` conduit into a `<parent>_mod` pool; it is
+**replay-buildable** when at least one live row is pool-coupled to it AND
+its `_mu0/_mu1/_mu2` triplet is mechanism-resident (both hold exactly for
+engine-configured daughters). A spawned pool with NO live coupled row
+(the legacy shape: pre-split emitters refused rows with unconfigured
+endpoints) remains solver-inert for consumers: its proxies behave as
+ordinary species (no site scaling, no concentration-1.0 rule, no channels
+integration by the oracle). Since schema 2.5 spawned pools are enumerated
+in `conventions.spawned_pools` and their `phase_species` join
+`conventions.condensed_species` (the spawned-pool closure, §13).
 
 **Moments are initial conditions (normative; item #14a, 2026-06-12).**
 `pools[].moments` is the pool's state at **t = 0 of the simulated
@@ -455,11 +472,14 @@ way.
 ## 8. Conventions block
 
 `conventions` carries (informative duplicates of this doc, plus normative
-lists): `configured_pools` (pool labels with solver configs — §2/§3 semantics),
-`condensed_species` (chem.yaml labels with phase = condensed; everything
-else is gas), and — schema 2.5, presence-based — `spawned_pools` (labels of
-runtime-spawned registry pools with NO solver config; §13). Consumers MUST
-use these lists, not name heuristics.
+lists): `configured_pools` (root/setup-time load-bearing pool labels —
+deck-declared plus setup-configured spawn sources; NOT the full
+solver-configured set — §2/§3 semantics), `condensed_species` (chem.yaml
+labels with phase = condensed; everything else is gas), and — schema 2.5,
+presence-based — `spawned_pools` (labels of runtime-spawned registry pools;
+mid-run engine-spawned daughters are solver-configured in the generating
+engine under the item-16 split — §2/§13). Consumers MUST use these lists,
+not name heuristics.
 
 `conventions.generation_defaults` (optional, **NON-normative** — see §7):
 generation-run provenance for consumer-supplied operating conditions.
@@ -498,8 +518,10 @@ Consumer guidance — melt-class reconstruction is fail-loud-incomplete: a
 consumer rebuilding the physically-melt class (the `is_polymer_proxy` tags)
 from `reactions[]` entries recovers it ONLY for participants of entry-listed
 reactions. Tags whose generation-world source is not an entry-listed reaction
-(explicit-oligomer reactions, spawned unconfigured daughter proxies,
-edge-reaction tag sources) are lost, and the loss is FAIL-LOUD: the thermo
+(explicit-oligomer reactions, legacy spawned daughter proxies with no live
+entry-listed row — an item-16 mid-run daughter's live conduit rows DO
+entry-list its proxy, so its tag restores — and edge-reaction tag sources)
+are lost, and the loss is FAIL-LOUD: the thermo
 reference-state tripwire refuses (U ≈ 11 decades, false-unpaired chains) on a
 deck whose generation run was silent — never a silent acceptance. Diagnose
 such a consumer-only REFUSAL as a melt-classification divergence (compare the
@@ -847,10 +869,14 @@ affected rows; regenerate with a 2.4-capable emitter.
 
 | key | value | semantics |
 | --- | --- | --- |
-| `conventions.spawned_pools` | `[labels]` | every `pools[]` entry whose `label` is NOT in `conventions.configured_pools` — runtime-spawned scission daughters (`<parent>_d<N>`, gate-path drain) and radical-feature pools (`<parent>_mod`, S1a/S2 producer path), in registry order. Disjoint from `configured_pools` by construction. Emitted ONLY when non-empty (never an empty list) |
+| `conventions.spawned_pools` | `[labels]` | every `pools[]` entry whose `label` is NOT in the emitted `conventions.configured_pools` — runtime-spawned scission daughters (`<parent>_d<N>`, gate-path drain) and radical-feature pools (`<parent>_mod`, S1a/S2 producer path), in registry order. Under the item-16 emission/resolution split these mid-run daughters ARE solver-configured in the generating engine (§2); `configured_pools` keeps naming root/setup-time pools only. Disjoint from `configured_pools` by construction. Emitted ONLY when non-empty (never an empty list) |
 
-Rows referenced by `spawned_pools` keep full §2 semantics: solver-inert
-(no site scaling, no concentration-1.0 rule, no channels integration),
+Rows referenced by `spawned_pools` keep full §2 semantics: mid-run
+engine-spawned daughters are solver-configured and integrated in the
+generating run and MAY carry live rows (replay-buildable when a live row
+couples to them and their µ triplet is mechanism-resident, §2); legacy
+spawned pools with no live coupled row stay solver-inert (no site scaling,
+no concentration-1.0 rule, no channels integration). All spawned pools:
 `moments = [0, 0, 0]` with `moments_provenance = "spawned_empty"` (honest
 t = 0 initial conditions, item #14a), spawn provenance preserved
 (`parent_pool`, `spawn_iteration`, `spawn_event_metadata`), and
@@ -873,19 +899,37 @@ daughters are condensed-masked (edge-daughter condensed-mask,
 real flux. The membership change ships only inside 2.5-stamped artifacts,
 which the STRICT-MINOR envelope hides from every pre-2.5 consumer.
 
-### Consumer semantics (normative)
+### Consumer semantics (normative; amended by the item-16 emission/resolution split)
 
+* `configured_pools` = the ROOT/SETUP-TIME load-bearing pools only:
+  deck-declared pools plus setup-time-configured spawn sources (e.g. the
+  `k_homolysis_end_radical` end-radical daughters). `spawned_pools` =
+  mid-run engine-spawned daughters, which ARE solver-configured and
+  integrated in the generating RMG run once promoted at the enlarge
+  boundary (item 16) and MAY carry live rows (e.g. cross-pool
+  `volatile_ejection/1` conduits into a `<parent>_mod` pool).
 * Classify every `spawned_pools` row's `phase_species` /
   `bookkeeping_species` CONDENSED (they arrive via
   `conventions.condensed_species`, so a consumer honoring §8 needs no new
   code path beyond accepting the 2.5 envelope).
-* Do NOT integrate moment ODEs, apply site scaling, or honor channels for a
-  spawned pool (it has no solver config — §2). The reference runner keeps
-  its pool state keyed on `configured_pools` unchanged.
+* A spawned pool is REPLAY-BUILDABLE iff (a) at least one live
+  (non-refused, resolved) row is pool-coupled to it AND (b) its
+  `_mu0/_mu1/_mu2` triplet is mechanism-resident. The reference runner
+  builds such pools alongside the configured set and reports their moment
+  columns in its output. A legacy spawned pool with no live coupled row
+  stays solver-inert for consumers: do NOT integrate moment ODEs, apply
+  site scaling, or honor channels for it (§2).
+* Consumers MUST NOT treat spawned pools as certification-root pools —
+  e.g. a born-empty daughter with no outgoing edge is NOT "structurally
+  dead configured" (the split exists precisely so root-pool liveness
+  checks never fire on engine-spawned daughters). Consumers MUST NOT
+  treat `configured_pools` as the full solver-configured set — it
+  deliberately subtracts mid-run spawned daughters, whose live rows
+  resolve against the generating solver's FULL configured set.
 * Reject (never adapt): `spawned_pools` on a `2.0`–`2.4` stamp (the emitter
   stamps `"2.5"` whenever it writes the key), and any
-  `spawned_pools`/`configured_pools` overlap (the closure is the configured
-  set's complement; a label in both is contradictory).
+  `spawned_pools`/`configured_pools` overlap (the two lists are disjoint by
+  construction; a label in both is contradictory).
 
 ### Stamp + version-acceptance semantics
 
@@ -896,6 +940,9 @@ byte-identical to the pre-2.5 emitter (pinned by test). Spawned presence is
 the strongest SHAPE stamp (2.5 > 2.4 > …); `conventions.format_doc` mirrors
 it. `recipe_revision` is untouched — the closure is shape vocabulary with
 classification semantics, not new rate algebra. The legacy default-label
-builder call (no `configured_pool_labels` ⇒ configured defaults to ALL
-registry labels) has an empty complement and emits nothing, mirroring the
-documented legacy-default limitation of `moments_provenance` (§2).
+builder call (`configured_pool_labels` omitted/None ⇒ configured defaults
+to ALL registry labels) has an empty complement and emits nothing,
+mirroring the documented legacy-default limitation of `moments_provenance`
+(§2). The sentinel is None, NOT emptiness: an explicitly EMPTY configured
+set means "nothing is root-configured" (a daughters-only artifact) and
+classifies every registry pool into `spawned_pools` with the 2.5 stamp.

@@ -23,6 +23,7 @@ from rmgpy.tools.polymer_moments_runner import (
     build_system_from_artifact,
     load_chem_yaml,
     run_segments,
+    _csv_header,
     _restamp_and_extend,
     main,
 )
@@ -2226,6 +2227,47 @@ class TestS2ConduitVEMassInvariant:
         assert gas_mass_rate == pytest.approx(+ev * mw_h, rel=1e-9)
         assert chain_mass_rate + gas_mass_rate == pytest.approx(
             0.0, abs=abs(chain_mass_rate) * 1e-9)
+
+    def test_replay_csv_reports_buildable_spawned_pool_state(self, tmp_path):
+        """Item-16 P1 replay-output pin: the CSV surface must not hide
+        integrated spawned-pool state. The live-VE artifact's buildable
+        spawned pool (polypropylene_mod: live cross-pool row + mechanism-
+        resident mu triplet) gets its own mu0/mu1/mu2 columns AFTER the
+        configured pool's (same <label>_muN_mol naming), the header matches
+        the run_segments row shape exactly, and the emitted values ARE the
+        integrated solver state (which the VE conduit feeds, so mu0 is
+        live-nonzero, never a padded 0 column)."""
+        deck = _s2_conduit_ve_deck(tmp_path)
+        chem_path, art_path = deck[0], deck[1]
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        species, reactions = load_chem_yaml(chem_path)
+        rs, core, all_rxns = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0, "H(2)": 0.5},
+            mass_transfer_spec=[])
+        header = _csv_header(artifact, core)
+        assert header[:2] == ["t_s", "T_K"]
+        assert header[2:5] == ["polypropylene_mu0_mol",
+                               "polypropylene_mu1_mol",
+                               "polypropylene_mu2_mol"]
+        assert header[5:8] == ["polypropylene_mod_mu0_mol",
+                               "polypropylene_mod_mu1_mol",
+                               "polypropylene_mod_mu2_mol"]
+        # t_end pinned at 1 ns: the born-empty _mod pool makes DASPK's
+        # first-step heuristic stall for larger first targets (pre-existing
+        # integrator quirk, unrelated to the CSV surface); ~2e-4 mol of VE
+        # flux lands in the daughter by then -- ample to pin live columns.
+        rows = run_segments(rs, core, artifact, all_rxns,
+                            [(1.0e-9, 800.0)], n_points_per_segment=3)
+        last = rows[-1]
+        assert len(last) == len(header)
+        i = {s.label: k for k, s in enumerate(core)}
+        y = np.asarray(rs.y)
+        for k in range(3):
+            col = header.index(f"polypropylene_mod_mu{k}_mol")
+            assert last[col] == float(y[i[f"polypropylene_mod_mu{k}"]])
+        assert last[header.index("polypropylene_mod_mu0_mol")] > 0.0
 
 
 # ---------------------------------------------------------------------------
