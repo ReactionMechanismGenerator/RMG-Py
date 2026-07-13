@@ -8313,6 +8313,26 @@ def register_spawned_pools(
         reaction_model.make_new_species(poly)
 
 
+def is_engine_spawned_pool_daughter(spc: Any) -> bool:
+    """True iff ``spc`` is a mid-run engine-SPAWNED daughter Polymer pool.
+
+    Item 16 predicate (single source): the spawn provenance markers are
+    stamped at every daughter creation point --
+    ``Polymer._born_at_zero_mod_daughter`` (H-loss ``{label}_mod`` feature
+    daughters, ``parent_pool_label`` + ``spawn_metadata``),
+    ``drain_spawn_intents`` (``{label}_d{n}`` spawn-intent daughters,
+    ``parent_pool_label`` + ``spawn_metadata``), and the scission/side-loss
+    daughter producers that set ``parent_pool_label``. Deck-declared pools
+    never carry either marker. Consumers: the item-16 spawn/enlarge-boundary
+    core promotion (``CoreEdgeReactionModel._promote_spawned_polymer_pools``)
+    and any census that must distinguish spawned from input-declared pools
+    without relying on the configured-label set."""
+    if not isinstance(spc, Polymer):
+        return False
+    return (getattr(spc, "parent_pool_label", None) is not None
+            or bool(getattr(spc, "spawn_metadata", None)))
+
+
 def _tag_polymer_proxy(cand: 'Species', *, is_proxy: bool) -> None:
     """Stamp an ``is_polymer_proxy`` flag on a Species and its Molecules.
 

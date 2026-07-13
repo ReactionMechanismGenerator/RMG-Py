@@ -1173,7 +1173,56 @@ class CoreEdgeReactionModel:
         if self.new_species_list:
             self._apply_multipool_spawn_pass(self.new_species_list)
 
+        # Item 16: engine-owned core promotion for mid-run-spawned daughter
+        # Polymer pools (r91 closure). Runs at the spawn/enlarge boundary,
+        # every enlarge, so daughters spawned during THIS enlarge and any
+        # left edge-resident by an earlier iteration both promote.
+        self._promote_spawned_polymer_pools(requires_rms=requires_rms)
+
         logging.info("")
+
+    def _promote_spawned_polymer_pools(self, requires_rms=False):
+        """Item 16 (r91 closure): promote every mid-run-spawned daughter
+        Polymer pool -- plus its ``_mu0/_mu1/_mu2`` moment dummies, handled
+        inside :meth:`add_species_to_core` -- from the edge (or a fresh
+        registration in ``new_species_list``) into the integrated CORE state
+        at the spawn/enlarge boundary.
+
+        Why not flux admission: a spawned daughter's ONLY formation route is
+        the stamped pool-coupled row that created it, and while the daughter
+        has no solver pool config the rebuild REFUSES that row
+        conduit-deferred (SPAWNED-POOL DEMOTION REFUSAL,
+        rmgpy/solver/polymer.pyx r91) -- zero flux everywhere including
+        ``edge_species_rates``, so the standard flux-based promotion can
+        never fire: a self-sealing loop. A daughter pool is not an ordinary
+        edge candidate anyway -- it is a moment-integrated population whose
+        PolymerPoolConfig must point at mu indices in the integrated core
+        state (edge-only configs would invent indices or integrate nothing).
+        Promotion here lets the next solver rebuild derive its config from
+        the registered species (``derive_daughter_pool_configs``), after
+        which the SAME stamped row resolves and runs fully apportioned (the
+        refusal is deliberately non-sticky). The r91 refusal stays ARMED for
+        any endpoint that still has no config.
+
+        Spawned daughters are born honest-empty (moments [0,0,0]; no copied
+        parent mass), so admitting them to the core adds zero mass and zero
+        initial flux -- only state slots and a config."""
+        from rmgpy.polymer import is_engine_spawned_pool_daughter
+
+        promoted = []
+        for spc in list(self.edge.species) + list(self.new_species_list):
+            if not is_engine_spawned_pool_daughter(spc):
+                continue
+            if spc in self.core.species:
+                continue
+            self.add_species_to_core(spc, requires_rms=requires_rms)
+            promoted.append(spc.label)
+        if promoted:
+            logging.info(
+                "Item 16: promoted %d spawned polymer daughter pool(s) into "
+                "the core at the enlarge boundary: %s",
+                len(promoted), ", ".join(promoted))
+        return promoted
 
     def add_new_surface_objects(self, obj, new_surface_species, new_surface_reactions, reaction_system):
         """
@@ -1586,6 +1635,12 @@ class CoreEdgeReactionModel:
 
         # If the species is a Polymer, also promote its moment-tracking
         # dummies (_mu0, _mu1, _mu2) so the solver can track the distribution.
+        # The dummies live in the edge when the Polymer went through
+        # add_species_to_edge, but a freshly-registered daughter promoted
+        # straight from new_species_list (item 16 spawn/enlarge-boundary
+        # promotion) still holds its dummies there -- pull from both, else
+        # the daughter pool would be core-resident with an incomplete mu
+        # triplet (unresolvable config; derive_daughter_pool_configs skips).
         if isinstance(spec, Polymer):
             for suffix in ('_mu0', '_mu1', '_mu2'):
                 m_label = f"{spec.label}{suffix}"
@@ -1595,6 +1650,12 @@ class CoreEdgeReactionModel:
                         if dummy not in self.core.species:
                             self.core.species.append(dummy)
                         break
+                else:
+                    for dummy in self.new_species_list:
+                        if dummy.label == m_label:
+                            if dummy not in self.core.species:
+                                self.core.species.append(dummy)
+                            break
 
         rxn_list = []
         if spec in self.edge.species:
