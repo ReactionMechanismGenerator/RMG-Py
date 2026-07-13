@@ -2165,10 +2165,11 @@ class TestS2ConduitVEMassInvariant:
 
     def test_routed_row_emits_configured_cross_pool_ve(self, tmp_path):
         """The routed row's sidecar shape: volatile_ejection/1, src the
-        parent pool, dst the (configured) feature pool, NOT unresolved,
-        signed atom-transfer eject_units = +MW(H)/monomer_MW; the feature
-        pool itself is spawned_empty at [0,0,0] with the parent monomer
-        MW."""
+        parent pool, dst the engine-configured feature pool, NOT
+        unresolved, signed atom-transfer eject_units = +MW(H)/monomer_MW;
+        the feature pool itself is spawned_empty at [0,0,0] with the
+        parent monomer MW -- and (item-16 P1 split) it is PUBLISHED via
+        conventions.spawned_pools, never configured_pools."""
         deck, artifact, _, _ = self._build(tmp_path)
         _, _, monomer_mw, mw_h, _, eject_units = deck
         assert eject_units == pytest.approx(mw_h / monomer_mw, rel=1e-9)
@@ -2186,6 +2187,16 @@ class TestS2ConduitVEMassInvariant:
         assert mod["moments_provenance"] == "spawned_empty"
         assert mod["parent_pool"] == "polypropylene"
         assert mod["monomer_mw_g_mol"] == pytest.approx(monomer_mw)
+        # Item-16 P1 split: the engine-configured daughter is published
+        # through conventions.spawned_pools, NEVER configured_pools (the
+        # CKMG consumer hard-flags dead configured pools), while the row
+        # above stays live -- build_system_from_artifact still builds the
+        # pool (live-coupled, mu triplet mechanism-resident), which the
+        # RHS mass-conservation pin below exercises numerically.
+        conv = artifact["conventions"]
+        assert "polypropylene_mod" not in conv["configured_pools"]
+        assert conv["spawned_pools"] == ["polypropylene_mod"]
+        assert artifact["schema_version"] == "2.5"
 
     def test_rhs_mass_conservation_including_transferred_h(self, tmp_path):
         """Numeric pin through the real solver residual: with a = MW(H)/

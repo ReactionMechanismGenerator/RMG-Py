@@ -10,6 +10,7 @@ import pytest
 from rmgpy.kinetics import Arrhenius, MultiArrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.polymer import (
+    HOMOLYSIS_SPAWN_SOURCE,
     POLYMER_POOLS_SIDECAR_SCHEMA_VERSION,
     POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_THERMAL,
     POLYMER_RATE_RECIPE_REVISION,
@@ -19,6 +20,7 @@ from rmgpy.polymer import (
     build_polymer_moments_artifact,
     compile_polymer_reaction_entries,
     derive_condensed_species,
+    is_midrun_spawned_pool_daughter,
     validate_thermal_analysis_inputs,
     write_polymer_pools_sidecar,
 )
@@ -3165,6 +3167,95 @@ class TestItem16SpawnedConfiguredPoolArtifact:
         assert "refused" not in art["reactions"][0]
         assert not any("POOL LIVENESS ALARM" in r.getMessage()
                        for r in caplog.records)
+
+    def test_sidecar_configured_pools_excludes_midrun_spawned_daughter(self):
+        """Item-16 P1 (adversarial review, CKMG contract): the EMITTED
+        conventions.configured_pools names DECK/root pools only. The
+        engine-configured _mod daughter stays OUT of it -- the consumer
+        treats configured pools as load-bearing and hard-flags structurally
+        dead ones, and a born-empty daughter with no outgoing edge is dead
+        by construction -- while its volatile_ejection row still serializes
+        LIVE off the full solver-configured set, and the daughter is
+        published through conventions.spawned_pools (schema 2.5) with its
+        phase species joining the condensed closure."""
+        core, d, rxn, configured = self._engine_configured_core()
+        assert "A_mod" in configured        # solver truth: engine-configured
+        pool_a = Polymer(label="A", monomer="[CH2][CH]c1ccccc1",
+                         end_groups=["[CH3]", "[H]"], cutoff=3,
+                         Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+        art = build_polymer_moments_artifact(
+            [pool_a, d], core_species=core, core_reactions=[rxn],
+            configured_pool_labels=configured,
+            condensed_species=[core[0], core[4]],
+            cantera_index_map={id(rxn): [0]})
+        conv = art["conventions"]
+        # The P1 pins: _mod NOT configured, published spawned instead.
+        assert "A_mod" not in conv["configured_pools"]
+        assert "A" in conv["configured_pools"]
+        assert "B" in conv["configured_pools"]
+        assert conv["spawned_pools"] == ["A_mod"]
+        assert set(conv["spawned_pools"]).isdisjoint(conv["configured_pools"])
+        # Row resolution keeps running off the FULL engine set: the
+        # cross-pool VE row serializes live, refused-absent.
+        assert len(art["reactions"]) == 1
+        assert "refused" not in art["reactions"][0]
+        assert "refused_reason" not in art["reactions"][0]
+        assert art["reactions"][0]["dst_pool"] == "A_mod"
+        # Spawned-pool vocabulary is the strongest shape stamp here (2.5),
+        # and the daughter's condensed bookkeeping joins the closure.
+        assert art["schema_version"] == "2.5"
+        by_label = {p["label"]: p for p in art["pools"]}
+        for lbl in by_label["A_mod"].get("phase_species") or []:
+            assert lbl in conv["condensed_species"]
+
+    def test_setup_time_homolysis_daughter_stays_configured(self):
+        """Negative control for the P1 split: a SETUP-TIME homolysis
+        end-radical daughter carries the same spawn markers but source
+        HOMOLYSIS_SPAWN_SOURCE -- the 2.6/2.8 closure guards require it
+        configured and never spawned-classified, so the emitted
+        configured_pools keeps it and no spawned surface appears."""
+        pool_a = Polymer(label="A", monomer="[CH2][CH]c1ccccc1",
+                         end_groups=["[CH3]", "[H]"], cutoff=3,
+                         Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+        hd = Polymer(label="A_rad_primary_end", monomer="[CH2][CH]c1ccccc1",
+                     end_groups=["[CH3]", "[H]"], cutoff=3,
+                     Mn=5000.0, Mw=6000.0, initial_mass=0.0)
+        hd.parent_pool_label = "A"
+        hd.spawn_metadata = {"source": HOMOLYSIS_SPAWN_SOURCE}
+        art = build_polymer_moments_artifact(
+            [pool_a, hd], core_species=None, core_reactions=[],
+            configured_pool_labels=["A", "A_rad_primary_end"])
+        conv = art["conventions"]
+        assert conv["configured_pools"] == ["A", "A_rad_primary_end"]
+        assert "spawned_pools" not in conv
+
+    def test_midrun_spawn_predicate_classification(self):
+        """is_midrun_spawned_pool_daughter: the single-source split the
+        emission keys on. _mod H-loss daughter (mid-run) True; setup-time
+        homolysis daughter False; markerless deck pool False; markerless
+        parent_pool_label-only scission tail True."""
+        deck = Polymer(label="A", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+        assert not is_midrun_spawned_pool_daughter(deck)
+        mod = Polymer(label="A_mod", monomer="[CH2][CH]c1ccccc1",
+                      end_groups=["[CH3]", "[H]"], cutoff=3,
+                      Mn=5000.0, Mw=6000.0, initial_mass=0.0)
+        mod.parent_pool_label = "A"
+        mod.spawn_metadata = {"source": "radical_feature_h_loss"}
+        assert is_midrun_spawned_pool_daughter(mod)
+        homolysis = Polymer(label="A_rad_primary_end",
+                            monomer="[CH2][CH]c1ccccc1",
+                            end_groups=["[CH3]", "[H]"], cutoff=3,
+                            Mn=5000.0, Mw=6000.0, initial_mass=0.0)
+        homolysis.parent_pool_label = "A"
+        homolysis.spawn_metadata = {"source": HOMOLYSIS_SPAWN_SOURCE}
+        assert not is_midrun_spawned_pool_daughter(homolysis)
+        tail = Polymer(label="A_scission_tail", monomer="[CH2][CH]c1ccccc1",
+                       end_groups=["[CH3]", "[H]"], cutoff=3,
+                       Mn=5000.0, Mw=6000.0, initial_mass=0.0)
+        tail.parent_pool_label = "A"
+        assert is_midrun_spawned_pool_daughter(tail)
 
 
 class TestThermalAnalysisInputsValidation:

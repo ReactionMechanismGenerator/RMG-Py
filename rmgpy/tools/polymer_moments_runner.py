@@ -3041,9 +3041,34 @@ def build_system_from_artifact(artifact, species, reactions,
     pools = []
     moments0 = {}
     initial_explicit_by_pool = {}
+    # Item-16 sidecar-contract split (adversarial-review P1): mid-run
+    # engine-spawned daughters are published through
+    # conventions.spawned_pools, NOT configured_pools -- but their
+    # cross-pool rows serialize LIVE (the live engine holds a derived
+    # config for them: enlarge-boundary promotion +
+    # derive_daughter_pool_configs). Replay fidelity therefore ALSO builds
+    # a spawned-declared pool whenever (a) some live (non-refused,
+    # resolved) row is pool-coupled to it AND (b) its mu-dummy triplet is
+    # mechanism-resident -- both hold only for engine-configured
+    # daughters. Legacy spawned pools (no live coupled row: pre-split
+    # emitters refused rows with unconfigured endpoints) stay solver-inert
+    # exactly as documented in section 2 above.
+    spawned_declared = {str(lbl)
+                        for lbl in (conv.get("spawned_pools") or [])}
+    live_row_pools = set()
+    for row in artifact.get("reactions") or []:
+        if row.get("refused") or row.get("unresolved"):
+            continue
+        for key in ("src_pool", "dst_pool"):
+            if row.get(key):
+                live_row_pools.add(str(row[key]))
+    buildable_spawned = {
+        lab for lab in (spawned_declared & live_row_pools)
+        if all(f"{lab}_mu{k}" in idx for k in range(3))}
     for p in artifact["pools"]:
         lab = p["label"]
-        if lab not in conv["configured_pools"]:
+        if (lab not in conv["configured_pools"]
+                and lab not in buildable_spawned):
             continue
         mu_idx = tuple(idx[f"{lab}_mu{k}"] for k in range(3))
         routing = p.get("monomer_routing")

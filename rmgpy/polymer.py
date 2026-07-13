@@ -5124,10 +5124,15 @@ EXPLICIT_DP_BLOCK_RECIPE_REVISION = "2026-07-04-explicit-dp"
 # existed carry such rows UNMARKED and consumers over-integrate them.
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_REFUSED = "2.4"
 # Schema 2.5 = 2.4 + the spawned-pool closure on the conventions block
-# (S4 serializer closure): conventions.spawned_pools lists every registry
-# pool that is NOT solver-configured (runtime-spawned scission daughters and
-# S2 feature pools <parent>_mod), disjoint from configured_pools by
-# construction, and conventions.condensed_species is CLOSED over those
+# (S4 serializer closure; item-16 emission/resolution split contract):
+# conventions.spawned_pools lists registry pools by SPAWN PROVENANCE --
+# mid-run engine-created pools (runtime-spawned scission daughters and S2
+# feature pools <parent>_mod) that are not in the deck/setup-time ROOT
+# configured set -- disjoint from configured_pools by construction. The
+# split records how a pool came to EXIST, not its live-solver status: a
+# spawned pool MAY be solver-configured and replay-buildable (it runs live
+# in the post-rebuild engine and the replay CSV emits its moment columns
+# when buildable). conventions.condensed_species is CLOSED over those
 # pools' phase_species (proxy + mu-dummies, already declared condensed
 # row-side) so the TA consumer classifies them CONDENSED instead of
 # defaulting them GAS (the item-16 mass-balance hazard). Same presence-based
@@ -5135,10 +5140,10 @@ POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_REFUSED = "2.4"
 # least one spawned pool is present in the registry; no spawned pool
 # anywhere -> the key is ABSENT (never an empty list) and the 2.4/2.3/...
 # stamps apply byte-identically (golden-pinned). NO recipe_revision change:
-# spawned_pools is SHAPE vocabulary with classification semantics, not new
-# rate algebra (spawned pools still carry no solver-config channels
-# integration), and STRICT-MINOR acceptance already stops older consumers
-# at the envelope — the exact 2.4 refused-row precedent.
+# spawned_pools is SHAPE vocabulary with classification/provenance
+# semantics, not new rate algebra, and STRICT-MINOR acceptance already
+# stops older consumers at the envelope — the exact 2.4 refused-row
+# precedent.
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SPAWNED = "2.5"
 # Schema 2.6 = 2.5 + the POOL-LEVEL homolysis_initiation block (Stage 2 of
 # the radical-homolysis initiation arc, adjudicated rounds 66/67): a pool
@@ -7602,6 +7607,12 @@ def build_polymer_moments_artifact(pool_registry,
     ``conventions.condensed_species``; the unzip/QSSA release deposits into
     the gas amount basis).
     """
+    # Whether the caller passed an EXPLICIT solver-configured set (the live
+    # main.py hook always does). The item-16 configured/spawned emission
+    # split below is gated on this: the legacy default-label call keeps its
+    # documented behavior byte-identically (everything "configured", no
+    # spawned surface).
+    explicit_configured = bool(configured_pool_labels)
     if not configured_pool_labels:
         configured_pool_labels = [getattr(p, "label", "") for p in pool_registry]
     monomer_routing_by_pool = monomer_routing_by_pool or {}
@@ -7721,8 +7732,51 @@ def build_polymer_moments_artifact(pool_registry,
     # default-label call (configured defaults to ALL registry labels) has
     # an empty complement -> key absent, stamps untouched — mirroring the
     # documented legacy-default limitation of moments_provenance above.
+    #
+    # Item-16 sidecar-contract split (adversarial-review P1): after the
+    # enlarge-boundary promotion, mid-run engine-spawned daughters (_mod
+    # feature pools, _d{n} spawn intents, scission tails) DO carry solver
+    # configs, so the caller's configured_pool_labels names them -- and the
+    # FULL set keeps driving row resolution above (their volatile_ejection
+    # rows serialize live, no refused marker). But the CKMG consumer treats
+    # conventions.configured_pools as load-bearing ROOT pools and hard-flags
+    # structurally dead configured pools; a born-empty daughter with no
+    # outgoing edge is structurally dead by construction. So the EMITTED
+    # configured set subtracts mid-run spawned daughters (marker predicate
+    # is_midrun_spawned_pool_daughter; setup-time homolysis end-radical
+    # daughters are exempt -- the 2.6/2.8 closure guards REQUIRE them
+    # configured), and the 2.5 spawned closure is the complement of THAT
+    # set: the daughters stay in pools[] and conventions.spawned_pools.
+    # Gated on an explicit caller-supplied configured set, so the legacy
+    # default-label call stays byte-identical.
+    emitted_configured_labels = list(configured_pool_labels)
+    if explicit_configured:
+        # Labels referenced BY ROLE as end-radical daughters of a serialized
+        # homolysis_initiation block are required-configured by the 2.6/2.8
+        # closure -- the split never subtracts them, so a defective daughter
+        # (e.g. provenance-stripped) still reaches the closure guards' own
+        # precise refusal instead of a misleading "not configured" one.
+        role_required = set()
+        for p in pools:
+            block = p.get("homolysis_initiation")
+            if isinstance(block, dict):
+                for field in ("open_site_1_radical_pool",
+                              "open_site_2_radical_pool"):
+                    if block.get(field):
+                        role_required.add(str(block[field]))
+        midrun_spawned = set()
+        for p in pool_registry:
+            if not is_midrun_spawned_pool_daughter(p):
+                continue
+            lbl = str(getattr(p, "label", ""))
+            midrun_spawned.update({lbl, strip_rmg_index_suffix(lbl)})
+        midrun_spawned -= role_required
+        emitted_configured_labels = [
+            lbl for lbl in configured_pool_labels
+            if str(lbl) not in midrun_spawned]
+    emitted_configured_set = {str(lbl) for lbl in emitted_configured_labels}
     spawned_pool_labels = [p["label"] for p in pools
-                           if p["label"] not in configured_set]
+                           if p["label"] not in emitted_configured_set]
     if explicit_dp_present:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_EXPLICIT_DP
         recipe_revision = (
@@ -7846,9 +7900,11 @@ def build_polymer_moments_artifact(pool_registry,
     # included), and provenance-pinned -- the consumer hard-rejects any
     # other shape, so the producer refuses to emit it.
     if homolysis_carriers:
+        # Guards mirror the CONSUMER's checks, so they key on the EMITTED
+        # configured set (item-16 P1 split above), not the solver-full one.
         _assert_homolysis_serialization_closure(
             pools, homolysis_carriers, condensed_labels,
-            configured_set, spawned_pool_labels)
+            emitted_configured_set, spawned_pool_labels)
     # Producer-side schema-3.0 closure guard (the r68 mirror-property, SGH
     # kernel-v2 edition): carrier configured; carrier carries NO
     # chain_mass_defect_g_mol (v2 has no feature-pool defect); per-block
@@ -7858,7 +7914,7 @@ def build_polymer_moments_artifact(pool_registry,
     # emit it.
     if side_group_present:
         _assert_side_group_serialization_closure(
-            pools, side_group_carriers, configured_set)
+            pools, side_group_carriers, emitted_configured_set)
     # Producer-side schema-2.8 closure guard (the r68 mirror-property,
     # depropagation edition): every carrier is a provenance-pinned,
     # configured, condensed end-radical daughter of a serialized
@@ -7870,7 +7926,7 @@ def build_polymer_moments_artifact(pool_registry,
     if deprop_carriers:
         _assert_depropagation_serialization_closure(
             pools, deprop_carriers, condensed_labels,
-            configured_set, spawned_pool_labels)
+            emitted_configured_set, spawned_pool_labels)
 
     conventions = {
         # format_doc mirrors schema_version (same vocabulary fork above):
@@ -7886,7 +7942,10 @@ def build_polymer_moments_artifact(pool_registry,
             "V_poly": "constant, consumer-supplied [m^3]",
             "V_gas": "ideal gas, dynamic: V_gas = n_gas*R*T/P (1.0 m^3 floor when n_gas <= 0)",
         },
-        "configured_pools": list(configured_pool_labels),
+        # DECK/SETUP-configured ROOT pools only (item-16 P1 split above):
+        # mid-run engine-spawned daughters run live solver-side but are
+        # published through conventions.spawned_pools instead.
+        "configured_pools": list(emitted_configured_labels),
         "condensed_species": sorted(condensed_labels),
         "site_scaling": ("site = max(0, mu_scaling)/V_poly read from the first proxy "
                          "reactant's pool; multiplies ONCE; scales rf AND rr"),
@@ -8331,6 +8390,37 @@ def is_engine_spawned_pool_daughter(spc: Any) -> bool:
         return False
     return (getattr(spc, "parent_pool_label", None) is not None
             or bool(getattr(spc, "spawn_metadata", None)))
+
+
+#: Spawn sources whose daughter pools are created at MODEL SETUP by the deck
+#: compiler (rmgpy/rmg/input.py step 4d) and are REQUIRED solver-configured by
+#: the serialization closure guards (schema 2.6/2.8: configured, never
+#: spawned-classified). Every other spawn provenance -- including the
+#: markerless scission tails, whose spawn_metadata is absent -- is MID-RUN.
+SETUP_CONFIGURED_SPAWN_SOURCES = frozenset({HOMOLYSIS_SPAWN_SOURCE})
+
+
+def is_midrun_spawned_pool_daughter(spc: Any) -> bool:
+    """True iff ``spc`` is an engine-spawned daughter Polymer born MID-RUN.
+
+    The item-16 sidecar-contract split (adversarial-review P1): mid-run
+    daughters (H-loss ``{label}_mod`` feature pools, ``drain_spawn_intents``
+    ``{label}_d{n}`` pools, scission/side-loss tails) gain solver configs
+    through the enlarge-boundary promotion + ``derive_daughter_pool_configs``,
+    so their stamped rows resolve and run live -- but the sidecar's
+    ``conventions.configured_pools`` must keep naming DECK/SETUP-configured
+    ROOT pools only: the CKMG consumer treats configured pools as
+    load-bearing and hard-flags structurally dead configured pools, and a
+    born-empty daughter with no outgoing edge is structurally dead by
+    construction. Setup-time homolysis end-radical daughters
+    (:data:`SETUP_CONFIGURED_SPAWN_SOURCES`) are engine-spawned by marker but
+    NOT mid-run: the 2.6/2.8 closure guards require them configured and never
+    spawned-classified.
+    """
+    if not is_engine_spawned_pool_daughter(spc):
+        return False
+    meta = getattr(spc, "spawn_metadata", None) or {}
+    return meta.get("source") not in SETUP_CONFIGURED_SPAWN_SOURCES
 
 
 def _tag_polymer_proxy(cand: 'Species', *, is_proxy: bool) -> None:
