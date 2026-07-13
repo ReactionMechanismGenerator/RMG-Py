@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_h_loss_feature_verdicts, is_end_group_reaction, merge_polymer_adjudication_stamps, restamp_flipped_polymer_archetype, stamp_gas_association_refusal, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_h_loss_shape_evidence, is_end_group_reaction, merge_polymer_adjudication_stamps, restamp_flipped_polymer_archetype, stamp_gas_association_refusal, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -679,7 +679,11 @@ class CoreEdgeReactionModel:
                 # HERE, the one place where resolved reactants and raw
                 # products are both visible, then threaded through the
                 # handshake into create_reacted_copy(h_loss_feature=...).
-                h_loss_verdicts = compute_h_loss_feature_verdicts(
+                # Ruling round 20 (conduit collapse B): route on the pure
+                # SHAPE EVIDENCE only -- the QSSA-eliminating composite
+                # false-positively refused live chain radicals
+                # (poly_102 r29-r31, 'qssa-invalid').
+                h_loss_verdicts = compute_h_loss_shape_evidence(
                     reactants, forward.products, polymer_reactants)
                 try:
                     relabeled = _handshake_structures(forward.products, polymer_reactants,
@@ -738,8 +742,10 @@ class CoreEdgeReactionModel:
                 polymer_reactants = [r for r in reactants if isinstance(r, Polymer)]
                 if polymer_reactants:
                     real_products_snapshot = [p.copy(deep=True) for p in forward.products]
-                    # Same S2 verdict computation as the is_forward branch.
-                    h_loss_verdicts = compute_h_loss_feature_verdicts(
+                    # Same S2 evidence computation as the is_forward
+                    # branch (round-20 conduit collapse: evidence, not the
+                    # QSSA composite).
+                    h_loss_verdicts = compute_h_loss_shape_evidence(
                         reactants, forward.products, polymer_reactants)
                     relabeled = _handshake_structures(forward.products, polymer_reactants,
                                                       h_loss_verdicts=h_loss_verdicts)

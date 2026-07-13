@@ -1744,6 +1744,36 @@ class Polymer(Species):
             envs.append((n_h, n_heavy))
         return envs
 
+    @staticmethod
+    def _h_loss_normalized_product_species(product: Molecule) -> Species:
+        """Representation-robust view of a candidate H-loss daughter for the
+        positional-variant isomorphism check in
+        :meth:`_create_h_loss_feature_copy`: a deep copy with labels cleared
+        and connectivity caches refreshed (a caller graph edited in place --
+        e.g. via ``remove_atom`` -- can carry stale connectivity values that
+        false-negative VF2 even against its own adjacency-list round-trip),
+        resonance-expanded with the SAME recipe as
+        :meth:`_h_loss_positional_species` so an aromatic-representation
+        daughter still matches the Kekule-rendered positional variants
+        (poly_102 r29-r31 class: aromatic-pool daughters arrive in aromatic
+        bond representation; representation-sensitive matching would
+        silently refuse the conduit for EVERY aromatic pool). Falls back to
+        the bare normalized copy if resonance generation fails."""
+        mol = product.copy(deep=True)
+        mol.clear_labeled_atoms()
+        try:
+            mol.update_connectivity_values()
+        except Exception:
+            pass
+        spc = Species(molecule=[mol])
+        try:
+            spc.molecule = generate_resonance_structures(
+                mol, clar_structures=False, keep_isomorphic=False,
+                filter_structures=True, save_order=True)
+        except Exception:
+            spc.molecule = [mol]
+        return spc
+
     def _create_h_loss_feature_copy(self, product: Molecule) -> Optional['Polymer']:
         """
         Radical-feature producer path (stage S1a, feature-pool conduit arc,
@@ -1774,11 +1804,12 @@ class Polymer(Species):
         product's radical atom, falling back to deterministic monomer-atom
         order.
         """
+        product_spc = self._h_loss_normalized_product_species(product)
         matched_units = []
         for unit in self._h_loss_feature_units():
             for position in (1, 0, 2):  # center first: canonical representative
                 spc = self._h_loss_positional_species(unit, position)
-                if spc is not None and spc.is_isomorphic(product):
+                if spc is not None and spc.is_isomorphic(product_spc):
                     matched_units.append(unit)
                     break
         if not matched_units:

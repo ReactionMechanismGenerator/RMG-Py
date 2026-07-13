@@ -7960,7 +7960,7 @@ class TestFeaturePoolConduitRouting:
         handshake runs: per-product verdicts (reactants AND products
         visible) -> _handshake_structures -> archetype stamping."""
         from rmgpy.data.kinetics.family import _handshake_structures
-        from rmgpy.polymer import (compute_h_loss_feature_verdicts,
+        from rmgpy.polymer import (compute_h_loss_shape_evidence,
                                    is_end_group_reaction,
                                    stamp_polymer_flux_archetype)
         from rmgpy.reaction import Reaction
@@ -7970,7 +7970,9 @@ class TestFeaturePoolConduitRouting:
                        products=[h2, Molecule(smiles=self.TERTIARY)],
                        reversible=False)
         polymer_reactants = [self.pp]
-        verdicts = compute_h_loss_feature_verdicts(
+        # Live-wiring mirror (round 20): model.py routes on the pure shape
+        # EVIDENCE, not the QSSA composite.
+        verdicts = compute_h_loss_shape_evidence(
             rxn.reactants, rxn.products, polymer_reactants)
         _handshake_structures(rxn.products, polymer_reactants,
                               h_loss_verdicts=verdicts)
@@ -8051,12 +8053,25 @@ class TestFeaturePoolConduitRouting:
             [h, self.pp, self.ps], [h2, daughter],
             [self.pp, self.ps]) == [False, False]
 
-    # --- pin 5: eliminating routes; accumulating stays refused ------------
+    # --- pin 5 (REWRITTEN, adversarial ruling round 20): accumulating -----
+    # --- daughters route through the conduit too (poly_102 r29-r31) -------
 
-    def test_accumulating_h_loss_stays_refused_qssa_invalid(self):
+    def test_accumulating_h_loss_routes_live_conduit_ve_row(self):
+        """poly_102 r29-r31 characterization: ``pool + H -> chain radical +
+        H2`` with a resonance-stabilized (accumulating-by-the-proxy)
+        daughter must collapse through the conduit into a LIVE
+        volatile_ejection/1 row with signed eject_units -- NOT the former
+        'qssa-invalid' refusal (a false-positive diagnosis: the real
+        radicals had k_out 1.1e5-1.7e8 1/s at 673-1173 K), and NOT a
+        gas-tracked chain radical (enabling the refused stamp as
+        legacy_mu1/FLUX_UNRESOLVED would fabricate ~270 g/mol per event).
+        The polymer mass is accounted exactly once: gas gets H2, the chain
+        stays chain-phase (routed into the radical feature pool), and the
+        stamped signed eject_units debit the pool by the net ejected mass
+        (+MW(H) per event) through the existing VE accounting."""
         from rmgpy.data.kinetics.family import _handshake_structures
         from rmgpy.polymer import (compile_polymer_reaction_entries,
-                                   compute_h_loss_feature_verdicts,
+                                   compute_h_loss_shape_evidence,
                                    is_end_group_reaction,
                                    stamp_polymer_flux_archetype)
         from rmgpy.reaction import Reaction
@@ -8068,24 +8083,39 @@ class TestFeaturePoolConduitRouting:
         d_spc = Species(label='PSrad', molecule=[daughter])
         rxn = Reaction(reactants=[h, self.ps], products=[h2, d_spc],
                        reversible=False)
-        verdicts = compute_h_loss_feature_verdicts(
+        evidence = compute_h_loss_shape_evidence(
             rxn.reactants, rxn.products, [self.ps])
-        assert verdicts == [False, False], (
-            "accumulating (resonance-stabilized) H-loss daughter must not "
-            "route through the conduit")
+        assert evidence == [False, True], (
+            "shape evidence (the routing input post-split) must accept the "
+            "accumulating H-loss daughter")
         _handshake_structures(rxn.products, [self.ps],
-                              h_loss_verdicts=verdicts)
-        assert not isinstance(rxn.products[1], Polymer)
+                              h_loss_verdicts=evidence)
+        d = rxn.products[1]
+        assert isinstance(d, Polymer), (
+            "the chain-scale radical must NOT remain an independently "
+            "integrated gas species (double mass representation)")
+        assert d.label == 'PS_mod'
         rxn.is_end_group_reaction = is_end_group_reaction(rxn.products)
         stamp_polymer_flux_archetype(rxn, rxn.reactants, [self.ps])
         assert rxn.polymer_flux_archetype == int(
-            polymer.PolymerFluxArchetype.UNRESOLVED)
-        assert rxn.polymer_refused is True
-        assert rxn.polymer_refused_accumulating is True
+            polymer.PolymerFluxArchetype.VOLATILE_EJECTION)
+        mw_h = Molecule(smiles='[H]').get_molecular_weight() * 1000.0
+        assert rxn.polymer_eject_units == pytest.approx(
+            mw_h / self.ps.monomer_mw_g_mol, rel=1e-6), (
+            "signed eject_units: the chain sheds exactly one H per event, "
+            "a = +MW(H)/monomer_MW (existing signed accounting, not a "
+            "bespoke formula)")
+        assert rxn.polymer_eject_units > 0.0
+        assert getattr(rxn, 'polymer_refused', False) is False
         (row,) = compile_polymer_reaction_entries(
-            [rxn], [h, h2, d_spc, self.ps], ['PS'])
-        assert row['refused'] is True
-        assert row['refused_reason'] == 'qssa-invalid'
+            [rxn], [h, h2, d, self.ps], ['PS', 'PS_mod'])
+        assert 'refused' not in row, "the r29 row must be LIVE, not refused"
+        assert row['archetype'] == 'volatile_ejection/1'
+        assert row['params']['eject_units'] == pytest.approx(
+            mw_h / self.ps.monomer_mw_g_mol, rel=1e-6)
+        assert row['scaling'] == 'mu1'
+        assert row['src_pool'] == 'PS'
+        assert row['dst_pool'] == 'PS_mod'
 
     # --- pin 5b (adversarial ruling round 20, conduit collapse B): the ----
     # --- H-loss SHAPE EVIDENCE is split from the QSSA-eliminating verdict -
