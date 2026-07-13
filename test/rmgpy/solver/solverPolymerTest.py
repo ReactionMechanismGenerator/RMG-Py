@@ -11688,8 +11688,13 @@ class TestItem16EngineCreatedSpawnedPoolConfig:
             solver = self._rebuild_solver(model, h)
 
         # (1) the ENGINE created the daughter pool config (nothing in this
-        #     test hands one in).
-        assert "polypropylene_mod" in {p.label for p in solver.polymer_pools}
+        #     test hands one in) -- carrying the inherited monomer MW and
+        #     heavy-atom axis, with no copied parent mass (moments seed 0).
+        cfg = {p.label: p for p in solver.polymer_pools}
+        assert "polypropylene_mod" in cfg
+        assert cfg["polypropylene_mod"].monomer_mw_g_mol == pytest.approx(
+            pp.monomer_mw_g_mol)
+        assert cfg["polypropylene_mod"].monomer_heavy_atoms == 3  # C3 repeat
         # (2) the daughter proxy + mu dummies were promoted into the
         #     integrated core state at the boundary (they carry real state
         #     indices; edge-only configs are banned).
@@ -11781,6 +11786,152 @@ class TestItem16EngineCreatedSpawnedPoolConfig:
         # evaluated (init-time pool resolution, not a flux side effect).
         r = len(model.core.reactions)
         assert solver.reaction_dst_pool[r] != -1
+
+    def test_ve_row_books_mass_exactly_once_engine_config(self, monkeypatch):
+        """Must-pin (c) -- the r29 conduit single-count mass booking RE-PINNED
+        under the ENGINE-created config (the original pin,
+        test_r29_conduit_ve_row_books_mass_exactly_once, hand-feeds both pool
+        configs): H2 gas credited once, H consumed once, chain count
+        conserved parent -> _mod (the chain never becomes a gas species),
+        total chain mu1 debited exactly a = MW(H)/monomer_MW per event, and
+        the MW-weighted closure gas_gain == -chain_loss holds."""
+        model, pp, daughter, h, h2, rxn = \
+            self._build_model_with_spawned_daughter()
+        self._run_enlarge_boundary(model, monkeypatch)
+        model.add_species_to_core(h2)      # the VE row becomes a core row
+        assert rxn in model.core.reactions
+        solver = self._rebuild_solver(model, h)
+        dn = solver.residual(0.0, solver.y, np.zeros_like(solver.y))[0]
+
+        core = model.core.species
+        i_h, i_h2 = core.index(h), core.index(h2)
+        pools = {p.label: p for p in solver.polymer_pools}
+        mu_p = pools["polypropylene"].mu_indices
+        mu_d = pools["polypropylene_mod"].mu_indices
+        a = float(rxn.polymer_eject_units)
+        mono_mw = pp.monomer_mw_g_mol
+
+        ev = dn[i_h2]                       # H2 credited once per event
+        assert ev > 0.0
+        assert np.isclose(dn[i_h], -ev)     # one H consumed per event
+        # chain count conserved: the chain migrates parent -> _mod
+        assert np.isclose(dn[mu_p[0]], -ev)
+        assert np.isclose(dn[mu_d[0]], +ev)
+        assert np.isclose(dn[mu_p[0]] + dn[mu_d[0]], 0.0, atol=1e-14)
+        # total chain-phase mu1 debited exactly a per event (single count):
+        # the parent loses the full bundle, _mod gains the a-shifted bundle
+        assert np.isclose(dn[mu_p[1]] + dn[mu_d[1]], -a * ev)
+        # MW-weighted single-count closure
+        gas_mass_rate = 2.0 * 1.008 * dn[i_h2] + 1.008 * dn[i_h]
+        chain_mass_rate = mono_mw * (dn[mu_p[1]] + dn[mu_d[1]])
+        assert np.isclose(gas_mass_rate, -chain_mass_rate)
+        assert list(solver.qssa_double_count_census) == []
+
+    def test_born_empty_engine_configured_daughter_is_stable(self, monkeypatch):
+        """Must-pin (d): the engine-configured daughter initializes exactly
+        (0,0,0) -- no copied parent mass -- and a born-empty configured pool
+        cannot be driven negative: the spawn row only ADDS to its moments and
+        a stamped row draining the empty pool carries a zero chain bundle."""
+        import rmgpy.solver.polymer as sp_mod
+        model, pp, daughter, h, h2, rxn = \
+            self._build_model_with_spawned_daughter()
+        self._run_enlarge_boundary(model, monkeypatch)
+        model.add_species_to_core(h2)
+        # A stamped MIGRATION row draining the (empty) daughter back into
+        # the parent pool -- the run-10 hazard direction.
+        drain = Reaction(reactants=[daughter], products=[pp],
+                         kinetics=Arrhenius(A=(5.0, "1/s"), n=0.0,
+                                            Ea=(0.0, "kcal/mol"),
+                                            T0=(298.15, "K")),
+                         reversible=False)
+        drain.polymer_flux_archetype = sp_mod.FLUX_MIGRATION
+        model.core.reactions.append(drain)
+        solver = self._rebuild_solver(model, h)
+
+        mu_d = {p.label: p
+                for p in solver.polymer_pools}["polypropylene_mod"].mu_indices
+        y0 = np.asarray(solver.y)
+        assert all(y0[i] == 0.0 for i in mu_d)     # honest-empty seed
+        dn = solver.residual(0.0, solver.y, np.zeros_like(solver.y))[0]
+        # no negative mu0/mu1/mu2 flux from the born-empty configured pool
+        assert all(dn[i] >= 0.0 for i in mu_d)
+        # the drain row is availability-throttled to zero (empty bundle)
+        assert float(np.asarray(solver.core_reaction_rates)[
+            list(model.core.reactions).index(drain)]) == 0.0
+
+    def test_five_hloss_daughter_pools_unique_configs(self, monkeypatch):
+        """Must-pin (e): five distinct spawned H-loss daughters of the same
+        parent (distinct fingerprints, colliding 'polypropylene_mod' labels)
+        register through _register_polymer's label dedup, promote at the
+        boundary, and each gets its OWN engine-created config with a disjoint
+        mu-index triplet -- no dedup collision, no shared dummies."""
+        from rmgpy.polymer import Polymer
+        model, pp, daughter, h, h2, rxn = \
+            self._build_model_with_spawned_daughter()
+        for i in range(2, 6):
+            # drain_spawn_intents-style construction: same structure, a
+            # distinct spawn fingerprint per feature event.
+            d = Polymer(label="polypropylene_mod", monomer=pp.monomer,
+                        end_groups=[eg.copy(deep=True)
+                                    for eg in pp.end_groups],
+                        cutoff=pp.cutoff, Mn=pp.Mn, Mw=pp.Mw,
+                        initial_mass=0.0)
+            d._fingerprint = f"{pp.fingerprint}_hloss-feature-{i}"
+            d.parent_pool_label = pp.label
+            d.spawn_metadata = {"source": f"radical_feature_h_loss_{i}"}
+            d, is_new = model.make_new_species(d, generate_thermo=False)
+            assert is_new
+            model.add_species_to_edge(d)
+        self._run_enlarge_boundary(model, monkeypatch)
+        solver = self._rebuild_solver(model, h)
+
+        labels = [p.label for p in solver.polymer_pools]
+        assert len(labels) == 6
+        assert set(labels) == {
+            "polypropylene", "polypropylene_mod", "polypropylene_mod_2",
+            "polypropylene_mod_3", "polypropylene_mod_4",
+            "polypropylene_mod_5"}
+        all_mu = [i for p in solver.polymer_pools for i in p.mu_indices]
+        assert len(all_mu) == len(set(all_mu)) == 18   # disjoint triplets
+        # every dummy resolves to its OWN pool in the solver's index map
+        s2p = np.asarray(solver.species_to_pool_indices)
+        for p_i, p in enumerate(solver.polymer_pools):
+            for i in p.mu_indices:
+                assert s2p[i] == p_i
+
+    def test_incomplete_mu_triplet_daughter_still_refuses(self, monkeypatch,
+                                                          caplog):
+        """Must-pin (g), engine seam: a daughter whose registration is
+        INCOMPLETE (mu-dummy triplet lost before the boundary) yields NO
+        derived config -- a loud skip -- and its stamped row stays refused
+        conduit-deferred with NO fallback to the legacy mu1-only demotion
+        (that fallback drove mu1 negative and killed PP run-10; the refusal
+        posture exists for a reason)."""
+        model, pp, daughter, h, h2, rxn = \
+            self._build_model_with_spawned_daughter()
+        # Simulate the incomplete registration: the daughter's mu dummies
+        # vanish (e.g. pruned) before the boundary runs.
+        model.edge.species = [
+            s for s in model.edge.species
+            if not s.label.startswith("polypropylene_mod_mu")]
+        with caplog.at_level(logging.WARNING):
+            self._run_enlarge_boundary(model, monkeypatch)
+            solver = self._rebuild_solver(model, h)
+        assert daughter in model.core.species      # proxy promoted anyway
+        assert "polypropylene_mod" not in {
+            p.label for p in solver.polymer_pools}  # no invented config
+        assert any("missing part of its" in rec.getMessage()
+                   and "moment-dummy triplet" in rec.getMessage()
+                   for rec in caplog.records)       # loud skip, not silent
+        r = len(model.core.reactions)
+        assert solver.reaction_refused[r] == 1      # refusal stays armed
+        import rmgpy.solver.polymer as sp_mod
+        assert solver.reaction_flux_archetype[r] == sp_mod.FLUX_NONE
+        # zero flux everywhere; NO legacy mu1-only demotion
+        solver.residual(0.0, solver.y, np.zeros_like(solver.y))
+        assert float(np.asarray(solver.edge_reaction_rates)[0]) == 0.0
+        assert not any("could not resolve their solver pool(s)"
+                       in rec.getMessage() for rec in caplog.records)
 
     def test_stranded_edge_daughter_censused_loudly(self, monkeypatch, caplog):
         """Item-16 discovery extension: a spawned daughter Polymer still

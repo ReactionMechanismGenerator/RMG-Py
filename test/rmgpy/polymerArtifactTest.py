@@ -3097,6 +3097,76 @@ class TestSpawnedPoolRefusalMirror:
         assert "refused" not in e
 
 
+class TestItem16SpawnedConfiguredPoolArtifact:
+    """Item 16 artifact lockstep (must-pin f): once the ENGINE configures a
+    spawned daughter pool (derive_daughter_pool_configs over the promoted
+    core -- nothing hand-fed), its volatile_ejection/1 row serializes LIVE
+    (no refused marker, not unresolved), the spawned pool is listed in
+    pools[] and STILL classifies moments_provenance spawned_empty (the
+    item-#14a s7 coupling re-confirmed, not silently inherited), and the
+    r95 POOL LIVENESS census stays quiet. The refusal mirror for genuinely
+    config-less spawned pools (TestSpawnedPoolRefusalMirror) is unchanged."""
+
+    @staticmethod
+    def _engine_configured_core():
+        from rmgpy.rmg.polymer_input import derive_daughter_pool_configs
+        core = _two_pool_core()
+        d = Polymer(label="A_mod", monomer="[CH2][CH]c1ccccc1",
+                    end_groups=["[CH3]", "[H]"], cutoff=3,
+                    Mn=5000.0, Mw=6000.0, initial_mass=0.0)
+        d.parent_pool_label = "A"
+        d.spawn_metadata = {"source": "radical_feature_h_loss"}
+        core = core + [d, _mu_dummy("A_mod_mu0"), _mu_dummy("A_mod_mu1"),
+                       _mu_dummy("A_mod_mu2")]
+        spc_map = {s: i for i, s in enumerate(core)}
+        derived = derive_daughter_pool_configs(core, spc_map, {"A", "B"})
+        configured = ["A", "B"] + [c.label for c in derived]
+        assert "A_mod" in configured        # ENGINE-created, not hand-fed
+        rxn = Reaction(reactants=[core[0]], products=[d, core[8]],
+                       kinetics=_arrhenius(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+        rxn.polymer_eject_units = 0.5
+        return core, d, rxn, configured
+
+    def test_ve_row_to_engine_configured_pool_serializes_live(self):
+        core, d, rxn, configured = self._engine_configured_core()
+        entries = compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=configured,
+            cantera_index_map={id(rxn): [0]})
+        assert len(entries) == 1
+        e = entries[0]
+        assert "refused" not in e           # live, no refused marker
+        assert "refused_reason" not in e
+        assert e["archetype"] == "volatile_ejection/1"
+        assert e["unresolved"] is False
+        assert e["src_pool"] == "A"
+        assert e["dst_pool"] == "A_mod"
+        assert e["params"] == {"eject_units": 0.5}
+
+    def test_artifact_lists_spawned_pool_and_liveness_stays_quiet(self, caplog):
+        import logging
+        core, d, rxn, configured = self._engine_configured_core()
+        pool_a = Polymer(label="A", monomer="[CH2][CH]c1ccccc1",
+                         end_groups=["[CH3]", "[H]"], cutoff=3,
+                         Mn=5000.0, Mw=6000.0, initial_mass=0.001)
+        with caplog.at_level(logging.WARNING):
+            art = build_polymer_moments_artifact(
+                [pool_a, d], core_species=core, core_reactions=[rxn],
+                configured_pool_labels=configured,
+                condensed_species=[core[0], core[4]],
+                cantera_index_map={id(rxn): [0]})
+        by_label = {p["label"]: p for p in art["pools"]}
+        assert "A_mod" in by_label          # spawned pool listed
+        # s7 coupling re-confirmed: configured AND still spawned_empty (the
+        # spawn provenance markers, not the configured set, decide).
+        assert by_label["A_mod"]["moments_provenance"] == "spawned_empty"
+        assert list(by_label["A_mod"]["moments"]) == [0.0, 0.0, 0.0]
+        assert len(art["reactions"]) == 1
+        assert "refused" not in art["reactions"][0]
+        assert not any("POOL LIVENESS ALARM" in r.getMessage()
+                       for r in caplog.records)
+
+
 class TestThermalAnalysisInputsValidation:
     """validate_thermal_analysis_inputs (schema 2.9, part A): the shared
     deck-read validator. Declared thermal-analysis inputs are threaded
