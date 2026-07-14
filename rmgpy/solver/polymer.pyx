@@ -3602,6 +3602,9 @@ class HybridPolymerSystem(ReactionSystem):
         # Census keying is per-rebuild, mirroring the sibling warn-once sets.
         n_pools_exh = len(self.polymer_pools)
         self._pool_exhausted = np.zeros(n_pools_exh, dtype=np.uint8)
+        # P1-3: most-negative moment value seen per pool on TRIAL states
+        # since the last rebuild (diagnostic census; residual never raises).
+        self._pool_worst_trial_excursion = np.zeros(n_pools_exh, dtype=float)
         self._exhaustion_census_emitted = set()
         self._pool_mu_floors = np.full((n_pools_exh, 3), SMALL_EPS,
                                        dtype=float)
@@ -3998,6 +4001,10 @@ class HybridPolymerSystem(ReactionSystem):
         # check the residual guard (trial state) deliberately does not make.
         # Self-guards on num_sgh_z == 0, so non-SGH runs pay ~nothing.
         self._assert_sgh_inventory_accepted()
+        # P1-3: pool-moment negative tripwire, same accepted-state hook --
+        # the r81 hard-error semantics live here now (the residual's
+        # trial-state census never raises).
+        self._assert_pool_moments_accepted()
         if char_rate == 0.0:
             return  # the base.pyx singularity path owns the no-flux case
         gate_codes = getattr(self, "edge_reaction_gate_code", None)
@@ -4337,9 +4344,14 @@ class HybridPolymerSystem(ReactionSystem):
           below their per-state floors
           ``max(SMALL_EPS, EXHAUSTION_FLOOR_K * atol[state])`` (never mu0
           alone: tiny mu0 with nontrivial mu1 is a few long chains);
-        * any moment more negative than ``-floor_k`` is a HARD error
-          (integrator corruption, never ``max(..., SMALL_EPS)``) -- this
-          tripwire is unchanged from r81;
+        * any moment more negative than ``-floor_k`` on this TRIAL state
+          is CENSUSED (worst excursion recorded per pool, warn-once) --
+          never raised here (P1-3): residual() runs on raw Newton TRIAL
+          states and pydas cannot propagate the exception (SystemError ->
+          "ITERATION MATRIX IS SINGULAR" -> dead run). The r81 hard-error
+          tripwire (integrator corruption, never ``max(..., SMALL_EPS)``)
+          moved verbatim to ``_assert_pool_moments_accepted()`` on the
+          ACCEPTED state (the SGH accepted-state-hook precedent);
         * a negative inside ``[-floor_k, +floor_k]`` is ANNOUNCED through
           the exhaustion census instead of silence (the RHS's
           pre-existing local ``max(0.0, .)`` reads are what clamp it).
@@ -4359,18 +4371,30 @@ class HybridPolymerSystem(ReactionSystem):
             raw1 = y[idx1]
             raw2 = y[idx2]
             if raw0 < -f0 or raw1 < -f1 or raw2 < -f2:
-                pool = self.polymer_pools[p]
-                raise ValueError(
-                    f"Polymer pool '{pool.label}' moment state went "
-                    f"negative beyond the exhaustion floor: mu0={raw0!r}, "
-                    f"mu1={raw1!r}, mu2={raw2!r} mol vs floors "
-                    f"-{f0:.6e}/-{f1:.6e}/-{f2:.6e} mol "
-                    f"(= -max(SMALL_EPS, {EXHAUSTION_FLOOR_K:.0f}*"
-                    f"atol[state])). A negative moment beyond the "
-                    f"integrator's own error budget is integrator "
-                    f"corruption, not exhaustion -- refusing to integrate "
-                    f"it (r81 negative-moment rule: hard error, never "
-                    f"max(..., SMALL_EPS)).")
+                # TRIAL-STATE-SAFE (P1-3, regen-#2 forensics): residual() is
+                # evaluated on RAW Newton TRIAL states -- pydas cannot
+                # propagate a Python exception out of the corrector loop, so
+                # a raise here surfaces as SystemError -> "ITERATION MATRIX
+                # IS SINGULAR" -> dead run even when the trial would simply
+                # have been rejected. Census only: record the worst
+                # excursion per pool and warn once per rebuild. The r81
+                # hard-error semantics (negative moment beyond
+                # -max(SMALL_EPS, 100*atol) on an ACCEPTED state =
+                # integrator corruption, hard stop, never
+                # max(..., SMALL_EPS)) live verbatim in
+                # _assert_pool_moments_accepted(), invoked per accepted
+                # snapshot from _phase_gate_flux_census beside the SGH
+                # accepted-state hook (the SGH precedent).
+                worst = min(raw0, raw1, raw2)
+                if (self._pool_worst_trial_excursion is not None
+                        and worst < self._pool_worst_trial_excursion[p]):
+                    self._pool_worst_trial_excursion[p] = worst
+                self._emit_pool_exhaustion_census(
+                    p, raw0, raw1, raw2,
+                    "beyond-floor negative moment on a TRIAL state (census "
+                    "only -- accepted-state hard check owns the r81 raise)")
+                self._pool_exhausted[p] = 0
+                continue
             if (abs(raw0) <= f0 and abs(raw1) <= f1 and abs(raw2) <= f2):
                 self._pool_exhausted[p] = 1
                 self._emit_pool_exhaustion_census(
@@ -4449,6 +4473,45 @@ class HybridPolymerSystem(ReactionSystem):
             len(coupled_rows), n_rows,
             " (first rows: %s)" % coupled_rows[:8]
             if coupled_rows else "")
+
+    def _assert_pool_moments_accepted(self):
+        """Pool-moment ACCEPTED-state negative tripwire (P1-3): the r81
+        hard-error semantics moved verbatim off the residual's TRIAL
+        states. Reads the trial-unsafe ``self.y`` -- base.pyx invokes
+        ``_phase_gate_flux_census`` once per ACCEPTED snapshot with
+        ``self.y`` holding the integrator's accepted solution (the SGH
+        ``_assert_sgh_inventory_accepted`` precedent). Any moment more
+        negative than ``-max(SMALL_EPS, EXHAUSTION_FLOOR_K*atol[state])``
+        on an ACCEPTED state is integrator corruption, not exhaustion:
+        HARD stop, never ``max(..., SMALL_EPS)``."""
+        cdef int p, n_pools
+        cdef double f0, f1, f2, raw0, raw1, raw2
+        if self.polymer_pools is None or self._pool_mu_floors is None:
+            return
+        y = self.y
+        n_pools = len(self.polymer_pools)
+        for p in range(n_pools):
+            idx0, idx1, idx2 = self.polymer_pools[p].mu_indices
+            f0 = self._pool_mu_floors[p, 0]
+            f1 = self._pool_mu_floors[p, 1]
+            f2 = self._pool_mu_floors[p, 2]
+            raw0 = y[idx0]
+            raw1 = y[idx1]
+            raw2 = y[idx2]
+            if raw0 < -f0 or raw1 < -f1 or raw2 < -f2:
+                pool = self.polymer_pools[p]
+                raise ValueError(
+                    f"Polymer pool '{pool.label}' moment state went "
+                    f"negative beyond the exhaustion floor on the "
+                    f"ACCEPTED state: mu0={raw0!r}, "
+                    f"mu1={raw1!r}, mu2={raw2!r} mol vs floors "
+                    f"-{f0:.6e}/-{f1:.6e}/-{f2:.6e} mol "
+                    f"(= -max(SMALL_EPS, {EXHAUSTION_FLOOR_K:.0f}*"
+                    f"atol[state])). A negative moment beyond the "
+                    f"integrator's own error budget is integrator "
+                    f"corruption, not exhaustion -- refusing to integrate "
+                    f"it (r81 negative-moment rule: hard error, never "
+                    f"max(..., SMALL_EPS)).")
 
     def _update_sgh_inventory_guard(self, y):
         """SGH kernel-v2 Z-inventory census on a TRIAL state (§1g, P1-A).

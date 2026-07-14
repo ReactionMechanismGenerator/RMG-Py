@@ -649,14 +649,25 @@ class TestHybridPolymerReactor:
                 f"Non-finite dn_dt for moment state (mu0,mu1,mu2)=({mu0},{mu1},{mu2}): {dn_dt}. "
                 "This would trigger an unrecoverable model resurrection."
             )
-        # Negatives beyond the atol-derived exhaustion floor are NO LONGER
-        # silently max(0,.)-clamped: r81's negative-moment rule makes them a
-        # HARD error (integrator corruption must surface, not integrate).
-        # The pre-r81 pin ((-1,-2,-3) stays finite) is superseded.
+        # Negatives beyond the atol-derived exhaustion floor on a TRIAL
+        # state are CENSUSED, never raised from residual() (P1-3, regen-#2:
+        # pydas cannot propagate the exception off Newton trial states --
+        # SystemError -> "ITERATION MATRIX IS SINGULAR" -> dead run). The
+        # RHS stays finite (local max(0,.) reads); the r81 hard-error
+        # semantics moved verbatim to the ACCEPTED-state hook,
+        # _assert_pool_moments_accepted (exercised below and in
+        # TestR81ExhaustionTailConditioning).
         y = rxn_system.y.copy()
         y[1], y[2], y[3] = -1.0, -2.0, -3.0
+        dn_dt = rxn_system.residual(0.0, y, np.zeros_like(y))[0]
+        assert np.all(np.isfinite(dn_dt))
+        # worst trial excursion recorded for the census
+        assert rxn_system._pool_worst_trial_excursion[0] == -3.0
+        # The SAME state on the integrator's ACCEPTED solution is integrator
+        # corruption: the accepted-state hook hard-errors (r81 verbatim).
+        rxn_system.y[1], rxn_system.y[2], rxn_system.y[3] = -1.0, -2.0, -3.0
         with pytest.raises(ValueError, match="beyond the exhaustion floor"):
-            rxn_system.residual(0.0, y, np.zeros_like(y))
+            rxn_system._assert_pool_moments_accepted()
 
     def test_mu3_closure_realizability_guard(self):
         """
@@ -4530,14 +4541,20 @@ class TestHybridPolymerReactor:
         dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
         assert np.all(np.isfinite(dn_dt))
         # Overshoot mu2 negative with one huge explicit step, then
-        # re-evaluate. Pre-r81 this pinned "finite + cone warning"; under
-        # the r81 negative-moment rule a moment this far beyond -floor
-        # (-1e10 mol vs -1e-14) is integrator corruption and HARD-errors
-        # instead of being silently max(0,.)-clamped.
+        # re-evaluate. P1-3: an explicit-step overshoot is exactly the kind
+        # of TRIAL state the integrator probes and rejects, so residual()
+        # must stay finite and CENSUS the excursion, never raise (pydas
+        # cannot propagate the exception; regen-#2 died on it). The r81
+        # hard error fires only on an ACCEPTED state
+        # (_assert_pool_moments_accepted).
         y2 = y + 1e3 * dn_dt
         assert y2[3] < 0.0, "test setup: expected a mu2 overshoot"
+        dn_dt2 = rs.residual(0.0, y2, np.zeros_like(y2))[0]
+        assert np.all(np.isfinite(dn_dt2))
+        rs.y[:] = y2
         with pytest.raises(ValueError, match="beyond the exhaustion floor"):
-            rs.residual(0.0, y2, np.zeros_like(y2))
+            rs._assert_pool_moments_accepted()
+        rs.y[:] = y
         # The cone diagnostic itself (debug_check_realizability) survives
         # for NONNEGATIVE out-of-cone states: mu0*mu2 < mu1^2 with all
         # moments >= 0 still warns once and stays finite.
@@ -10880,15 +10897,35 @@ class TestR81ExhaustionTailConditioning:
         assert not any("POOL EXHAUSTION CENSUS" in r.getMessage()
                        for r in caplog.records)
 
-    def test_negative_moment_beyond_floor_hard_errors(self):
-        """RED (r81 negative-moment rule): a moment more negative than
-        -floor is integrator corruption -- the residual must raise loudly,
-        never max(..., SMALL_EPS) it back to zero."""
+    def test_negative_moment_beyond_floor_hard_errors(self, caplog):
+        """r81 negative-moment rule, P1-3 re-siting (regression pin 4): a
+        moment more negative than -floor is integrator corruption -- but
+        residual() is evaluated on Newton TRIAL states, where pydas cannot
+        propagate a raise (SystemError -> "ITERATION MATRIX IS SINGULAR" ->
+        dead run, the regen-#2 crash surface). So:
+
+        * residual() on the trial state must NOT raise -- it censuses the
+          excursion (worst value recorded per pool) and stays finite;
+        * the SAME state on the integrator's ACCEPTED solution (self.y,
+          the _phase_gate_flux_census hook beside the SGH accepted-state
+          assert) hard-errors verbatim per r81 -- never
+          max(..., SMALL_EPS)."""
         rs, _, _ = _r81_pool_rs((1.0, 5.0, 30.0))
         y2 = np.array(rs.y, dtype=float).copy()
         y2[rs.polymer_pools[0].mu_indices[0]] = -1.0e-12  # << -1e-14 floor
+        with caplog.at_level(logging.WARNING):
+            dn_dt = rs.residual(0.0, y2, np.zeros_like(y2))[0]
+        assert np.all(np.isfinite(dn_dt))
+        assert any("TRIAL state" in r.getMessage() for r in caplog.records)
+        assert rs._pool_worst_trial_excursion[0] == -1.0e-12
+        # Accepted-state hook: the r81 hard error, verbatim semantics.
+        rs.y[rs.polymer_pools[0].mu_indices[0]] = -1.0e-12
         with pytest.raises(ValueError, match="beyond the exhaustion floor"):
-            rs.residual(0.0, y2, np.zeros_like(y2))
+            rs._assert_pool_moments_accepted()
+        # In-band accepted negatives (within the integrator's own error
+        # budget) do NOT raise.
+        rs.y[rs.polymer_pools[0].mu_indices[0]] = -5.0e-15
+        rs._assert_pool_moments_accepted()
 
     def test_negative_moment_within_band_projects_with_census(self, caplog):
         """r81 negative-moment rule, band half (kept under r86 as a
