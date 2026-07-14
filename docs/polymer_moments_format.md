@@ -525,6 +525,44 @@ relative offset shifts every gas-phase term off the oracle.
 
 7. **Channels** (per configured pool, §5), then **mass transfer** (§7).
 
+### 4b. Solver `atol` is a MODEL knob (deck-author contract; rounds 28/31)
+
+The polymer kernel anchors its numerical-regularization envelope to the
+solver's absolute tolerance, so `atol` is NOT just an integrator accuracy
+setting — it parameterizes the model near exhaustion and near the
+realizability cone:
+
+- the r81 accepted-state floors are `f_k = max(SMALL_EPS, 100·atol[state])`
+  (the negative-moment tripwire, the exhaustion censuses, and the
+  limiter's distance measures all read them);
+- the exhaustion tail band engages at `E = softmin_p(µ_k/f_k)` in
+  `[E_lo, E_hi] = [1e2, 1e4]` floors, i.e. absolute moments in
+  `[1e4·atol, 1e6·atol]` mol on the thinnest moment;
+- the cone-margin gate band engages at `M = Q10/max(f0, f1)` in
+  `[M_lo, M_hi] = [1e2, 1e4]` floors, i.e. cone margins
+  `Q10 = µ1 − µ0` in `[1e4·atol, 1e6·atol]` mol.
+
+Deck-author rule of thumb (normative guidance): set `atol` at least FOUR
+decades below the smallest pool moment you intend to treat as physically
+meaningful. poly_102 uses `atol = 1e-12` (floors `1e-10` mol, bands up to
+`1e-6` mol) against pool moments of order `1e-3`–`1e0` mol. A loose
+`atol` (e.g. `1e-6`) raises the floors to `1e-4` mol and pushes the
+regularization envelope INTO physically real pool scales: healthy pools
+would feel the tail limiter and the cone gate in ordinary operation,
+which changes reported kinetics (bulk-exactness only holds ABOVE the
+bands). Conversely an ultra-tight `atol` shrinks the envelope and leaves
+near-singular states (the regen-#2/#3 crash families) protected only in
+a very thin shell.
+
+Replay parity (round-31): a consumer replaying a run MUST use the
+generating deck's tolerances or its regularization envelope will not
+match the generating solver's. The reference runner exposes them as
+`--atol` / `--rtol` (`rmgpy/tools/polymer_moments_runner.py`,
+propagated to `initialize_model`); the numpy oracle consumer takes the
+same `atol` at construction (its `mu_floor` anchoring). Defaults
+(`1e-16`/`1e-8`) preserve historical runner behavior; they are NOT the
+poly_102 deck values (`1e-12`/`1e-4`).
+
 ## 5. Channel equations (versioned; oracle `polymer.pyx:1318-1340`; see also
 `docs/multi_pool_design.md` §5)
 

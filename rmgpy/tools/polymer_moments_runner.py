@@ -3049,7 +3049,7 @@ def _output_pool_labels(artifact, idx):
 def build_system_from_artifact(artifact, species, reactions,
                                T0, P, V_poly, initial_moles,
                                mass_transfer_spec, initial_moments=None,
-                               allow_stale=False):
+                               allow_stale=False, atol=1e-16, rtol=1e-8):
     """Assemble the HybridPolymerSystem oracle from consumer-world inputs.
 
     Returns (system, core_species, all_reactions) — all_reactions includes
@@ -3065,6 +3065,18 @@ def build_system_from_artifact(artifact, species, reactions,
     gas-mask, refused/dst_pool row state) describes the PRE-rebuild model
     and may lie about liveness. Pass ``allow_stale=True`` (CLI:
     ``--allow-stale``) only to debug such an emission deliberately.
+
+    ``atol``/``rtol`` (round-31 P2, replay parity; CLI: ``--atol``,
+    ``--rtol``): solver tolerances forwarded to ``initialize_model``.
+    atol is a MODEL knob for the polymer kernel, not just an integrator
+    tolerance -- it anchors the r81 accepted-state floors
+    ``max(SMALL_EPS, 100*atol)`` and with them the exhaustion band
+    (E in [1e2, 1e4] floors) and the cone-margin band (M in [1e2, 1e4]
+    floors) of the near-exhaustion bundle limiter (see
+    docs/polymer_moments_format.md section 4). A replay MUST pass the
+    generating deck's atol (poly_102: 1e-12) to reproduce the generating
+    solver's regularization envelope; the defaults (1e-16/1e-8) keep the
+    historical runner behavior byte-identical.
     """
     # Stale-emission gate before anything else: a stale artifact's shape
     # may be internally consistent, so no later validator would catch it.
@@ -3435,7 +3447,7 @@ def build_system_from_artifact(artifact, species, reactions,
         # default-False and hard-fail on unstamped live proxy rows.
         allow_unstamped_proxy_rows=True)
     with contextlib.redirect_stdout(io.StringIO()):  # mute the mapping banner
-        rs.initialize_model(core, all_reactions, [], [])
+        rs.initialize_model(core, all_reactions, [], [], atol=atol, rtol=rtol)
     return rs, core, all_reactions
 
 
@@ -3533,6 +3545,19 @@ def main(argv=None):
                              "conventions.stale_topology: true (emitted "
                              "after a topology change, before the solver "
                              "rebuild); its liveness/refusal state may lie")
+    parser.add_argument("--atol", type=float, default=1e-16,
+                        help="solver absolute tolerance (default 1e-16). "
+                             "REPLAY PARITY: atol is a MODEL knob for the "
+                             "polymer kernel -- it anchors the r81 floors "
+                             "max(SMALL_EPS, 100*atol) and the exhaustion/"
+                             "cone-margin regularization bands; pass the "
+                             "generating deck's value (poly_102: 1e-12) to "
+                             "reproduce the generating solver's envelope "
+                             "(format doc section 4)")
+    parser.add_argument("--rtol", type=float, default=1e-8,
+                        help="solver relative tolerance (default 1e-8); "
+                             "pass the generating deck's value for replay "
+                             "parity (poly_102: 1e-4)")
     args = parser.parse_args(argv)
 
     with open(args.artifact) as fh:
@@ -3558,7 +3583,8 @@ def main(argv=None):
         artifact, species, reactions,
         T0=profile[0][1], P=args.pressure, V_poly=args.v_poly,
         initial_moles=initial_moles, mass_transfer_spec=mass_transfer_spec,
-        initial_moments=initial_moments, allow_stale=args.allow_stale)
+        initial_moments=initial_moments, allow_stale=args.allow_stale,
+        atol=args.atol, rtol=args.rtol)
     rows = run_segments(rs, core, artifact, all_reactions, profile,
                         n_points_per_segment=args.n_points)
 

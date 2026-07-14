@@ -5,6 +5,8 @@ import csv
 import json
 import logging
 import os
+import sys
+import time
 from copy import deepcopy as _dc
 
 import numpy as np
@@ -3475,3 +3477,250 @@ class TestEndRadicalDepropagationConsumer:
                 "enabled": True}
         self._shape_case(deprop_deck, cut,
                          r"PP_rad_primary_end.*radical_qssa_unzip")
+
+
+# ---------------------------------------------------------------------------
+# Round-31 P2: --atol/--rtol replay parity. atol is a MODEL knob for the
+# polymer kernel -- it anchors the r81 accepted-state floors
+# max(SMALL_EPS, 100*atol) and with them the exhaustion band (E) and the
+# cone-margin band (M) of the near-exhaustion bundle limiter (format doc
+# section 4b). A replay must be able to match the generating deck's
+# tolerances, and BOTH consumers (the solver-backed runner and the numpy
+# oracle consumer) must anchor the SAME floors from the same atol.
+# ---------------------------------------------------------------------------
+_HERE = os.path.dirname(os.path.abspath(__file__))
+if _HERE not in sys.path:
+    sys.path.insert(0, _HERE)
+from numpy_moments_consumer import ArtifactConsumer  # noqa: E402
+
+
+class TestAtolReplayParity:
+
+    def _load(self, deck):
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        species, reactions = load_chem_yaml(chem_path)
+        return chem_path, art_path, artifact, species, reactions
+
+    def test_atol_reaches_solver_floors_and_numpy_consumer(self, deck):
+        """build_system_from_artifact(atol=...) must anchor the solver's
+        per-pool r81 floors at max(SMALL_EPS, 100*atol) AND the DASPK
+        atol array; ArtifactConsumer(atol=...) must anchor the identical
+        mu_floor -- the two consumers share one regularization envelope."""
+        _, _, artifact, species, reactions = self._load(deck)
+        rs, core, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=650.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[],
+            atol=1e-12, rtol=1e-4)
+        floors = np.asarray(rs._pool_mu_floors)
+        assert floors.shape == (1, 3)
+        assert np.all(floors == 1.0e-10)          # max(SMALL_EPS, 100*atol)
+        atol_arr = np.asarray(rs.atol_array)
+        assert np.all(atol_arr == 1.0e-12)
+        assert np.all(np.asarray(rs.rtol_array) == 1.0e-4)
+        # the numpy oracle consumer anchors the SAME floor from the same
+        # deck atol (scalar-atol form).
+        consumer = ArtifactConsumer(
+            artifact, [s.label for s in core], P=1.0e5, V_poly=1.0,
+            atol=1e-12)
+        assert consumer.mu_floor == floors[0, 0] == 1.0e-10
+
+    def test_default_tolerances_unchanged(self, deck):
+        """Backward compatibility: omitting atol/rtol keeps the historical
+        runner defaults (1e-16/1e-8 -> floors 1e-14), byte-identical
+        replays for existing invocations."""
+        _, _, artifact, species, reactions = self._load(deck)
+        rs, core, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=650.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert np.all(np.asarray(rs._pool_mu_floors) == 1.0e-14)
+        assert np.all(np.asarray(rs.atol_array) == 1.0e-16)
+        assert np.all(np.asarray(rs.rtol_array) == 1.0e-8)
+        consumer = ArtifactConsumer(
+            artifact, [s.label for s in core], P=1.0e5, V_poly=1.0)
+        assert consumer.mu_floor == 1.0e-14
+
+    def test_cli_atol_propagates_through_main(self, deck, tmp_path,
+                                              monkeypatch):
+        """--atol/--rtol reach build_system_from_artifact from the CLI
+        (captured via a pass-through wrapper; the run itself completes,
+        so the wrapper exercised the real replay path)."""
+        import rmgpy.tools.polymer_moments_runner as runner_mod
+        chem_path, art_path, artifact, species, reactions = self._load(deck)
+        captured = {}
+        real_build = runner_mod.build_system_from_artifact
+
+        def capturing_build(*args, **kwargs):
+            captured["atol"] = kwargs.get("atol")
+            captured["rtol"] = kwargs.get("rtol")
+            return real_build(*args, **kwargs)
+
+        monkeypatch.setattr(runner_mod, "build_system_from_artifact",
+                            capturing_build)
+        profile_path = os.path.join(str(tmp_path), "profile.json")
+        with open(profile_path, "w") as fh:
+            json.dump([{"t_end": 1.0e-4, "T": 650.0}], fh)
+        moles_path = os.path.join(str(tmp_path), "moles.json")
+        with open(moles_path, "w") as fh:
+            json.dump({"N2(1)": 1.0}, fh)
+        out_path = os.path.join(str(tmp_path), "out.csv")
+        runner_mod.main([
+            "--artifact", art_path, "--chem", chem_path,
+            "--t-profile", profile_path, "--n-points", "2",
+            "--v-poly", "1.0", "--initial-moles", moles_path,
+            "--output", out_path,
+            "--atol", "1e-12", "--rtol", "1e-4"])
+        assert captured == {"atol": 1e-12, "rtol": 1e-4}
+        assert os.path.exists(out_path)
+
+
+# ---------------------------------------------------------------------------
+# M18.1 item 2 (rounds 30-31): the poly_102 regen-#3 79-species/82-reaction
+# DEATH-CONFIGURATION replay, reconstructed from the run's own artifacts.
+# Requires the READ-ONLY forensic run dir; skipped wherever it is absent.
+# ---------------------------------------------------------------------------
+_POLY102_RUN = "/home/alon/runs/RMG/poly_102_conduit3"
+
+
+@pytest.mark.functional
+@pytest.mark.skipif(not os.path.isdir(_POLY102_RUN),
+                    reason="poly_102_conduit3 forensic run dir not present")
+class TestRegen3SavedCoreReplay:
+    """Replay the ACTUAL regen-#3 death configuration under the fixed law
+    (round-29 N2 soft-min + round-30 N1 independent cone gate).
+
+    Reconstruction sources (and their fidelity):
+    * cantera/chem0079.yaml -- the POST-rebuild 79-species/82-reaction
+      core the crashing stage-1 simulate integrated (FAITHFUL: species,
+      kinetics, ordering match the crash dump's core list).
+    * chemkin/polymer_pools.json -- iteration-6 sidecar, stamped
+      stale_topology=true (PRE-rebuild emission): pool configs/moments
+      are deck-faithful, but per-row refusal/liveness state may differ
+      from what the post-rebuild solver ran (6 of 21 pool-coupled rows
+      refused pre-rebuild). Loaded via allow_stale=True -- DIAGNOSTIC
+      reconstruction, not a certified artifact replay.
+    * RMG.log crash dump (t = 22.936 s IDID=-7 failure) -- the EXACT
+      accepted-state y vector (79 entries), core label order, and total
+      volume, parsed from the last "Core species names/moles" dump.
+    * input.py deck -- T = 1100 K, P = 1 bar, initialMoles
+      {N2: 0.9, H: 0.001}, atol = 1e-12, rtol = 1e-4 (via the round-31
+      --atol/--rtol replay-parity plumbing); V_poly = 1.182975e-4 m^3
+      (validated below: the reconstructed system's total volume at the
+      crash state matches the dump's 0.08252302901147644 m^3 to ~3e-10
+      relative).
+
+    Known fidelity gaps (documented, not fabricated): (a) the stale
+    sidecar's row liveness may not equal the post-rebuild solver's -- the
+    retained-row set is the pre-rebuild one; (b) the crashing simulate's
+    DASPK internal state (step history, order, Jacobian age) is not
+    recoverable -- we re-initialize AT the accepted crash state; (c) the
+    0 -> 22.936 s trajectory of the original run is not replayed here
+    (the from-deck replay reproduces its shape but grinds for minutes in
+    the t ~ 10-20 s multi-daughter decay regime; done out-of-band in the
+    round-31 forensics, not in-test).
+
+    Pins: at the EXACT logged crash state the RHS is finite, the
+    out-of-cone daughter (mu = [9.956e-4, 1.497e-7, 1.819e-3],
+    b1 = mu2/mu1 ~ 1.2e4) has its cone-deepening drain OFF (nonnegative
+    net moment rates; FD-Jacobian entries w.r.t. its mu1 finite and
+    BOUNDED -- the old law fed DASPK d(b1)/d(mu1) ~ 8e10 here), and
+    DASPK integrates THROUGH the death point across the full 20-30 s
+    crash window without IDID=-7 (the 100 s horizon was verified
+    out-of-band: completes at ~400 s wall, daughter parks at
+    mu1 ~ 4.5e-6 with the gate holding the drain off)."""
+
+    _CRASH_T = 22.936          # s, from the IDID=-7 resurrection error
+    _DUMP_V = 0.08252302901147644   # m^3, "Error: Volume:" crash dump
+
+    def _reconstruct(self):
+        with open(os.path.join(_POLY102_RUN,
+                               "chemkin/polymer_pools.json")) as fh:
+            artifact = json.load(fh)
+        species, reactions = load_chem_yaml(
+            os.path.join(_POLY102_RUN, "cantera/chem0079.yaml"))
+        rs, core, all_rxns = build_system_from_artifact(
+            artifact, species, reactions,
+            T0=1100.0, P=1.0e5, V_poly=1.182975e-4,
+            initial_moles={"N2": 0.90, "H(1)": 0.001},
+            mass_transfer_spec=[], initial_moments=None,
+            allow_stale=True, atol=1e-12, rtol=1e-4)
+        return rs, core
+
+    def _crash_state(self, core):
+        """Parse the LAST crash dump (the 79-core one) from RMG.log and
+        map it positionally onto the reconstructed core (the dump prints
+        formula-based labels for a few species and compressed chemkin
+        ids for the mu slots; the ORDER is the core order -- anchored
+        below on the shared trailing RMG indices)."""
+        import re as _re
+        with open(os.path.join(_POLY102_RUN, "RMG.log")) as fh:
+            log = fh.read()
+        labels = [s.strip().strip("'") for s in _re.findall(
+            r"Error: Core species names: \[(.*?)\]", log, _re.S)[-1].split(",")]
+        moles = eval(_re.findall(
+            r"Error: Core species moles: array\((\[.*?\])\)",
+            log, _re.S)[-1].replace("\n", " "))
+        core_labels = [s.label for s in core]
+        assert len(core_labels) == len(labels) == 79
+        for i, (cl, dl) in enumerate(zip(core_labels, labels)):
+            mc = _re.search(r"\((\d+)\)$", cl)
+            md = _re.search(r"\((\d+)\)$", dl)
+            if mc and md:
+                assert mc.group(1) == md.group(1), (i, cl, dl)
+        return np.array(moles, dtype=float)
+
+    def test_death_configuration_replay_through_crash_window(self):
+        rs, core = self._reconstruct()
+        # reconstruction shape: the death configuration
+        assert len(core) == 79
+        assert len(rs.kf) == 82
+        assert len(rs.polymer_pools) == 6
+        assert np.all(np.asarray(rs._pool_mu_floors) == 1.0e-10)
+        pools = {p.label: p.mu_indices for p in rs.polymer_pools}
+        mod = pools["phenol_formaldehyde_mod"]
+
+        y = np.zeros(len(rs.y))
+        y[:79] = self._crash_state(core)
+        # the parked out-of-cone daughter, exactly as logged
+        assert y[mod[0]] == pytest.approx(9.95590522e-04, rel=1e-8, abs=0.0)
+        assert y[mod[1]] == pytest.approx(1.49748726e-07, rel=1e-8, abs=0.0)
+        assert y[mod[2]] == pytest.approx(1.81855523e-03, rel=1e-8, abs=0.0)
+        assert y[mod[1]] < y[mod[0]]            # out of cone
+
+        # RHS finite at the exact crash state; volume fidelity
+        dn = np.asarray(rs.residual(self._CRASH_T, y.copy(),
+                                    np.zeros_like(y))[0])
+        assert np.all(np.isfinite(dn))
+        assert rs.V == pytest.approx(self._DUMP_V, rel=1e-8, abs=0.0)
+        # the cone gate holds the killer drain OFF: the out-of-cone
+        # daughter's moments are not drained deeper into the cone
+        for k in range(3):
+            assert dn[mod[k]] >= 0.0, (k, dn[mod[k]])
+        # FD-Jacobian entries w.r.t. the daughter's mu1: finite and
+        # BOUNDED (the pre-fix law carried d(b1)/d(mu1) ~ 8e10 here)
+        for h in (1.0e-10, 1.0e-8):
+            yp = y.copy()
+            yp[mod[1]] += h
+            dnp = np.asarray(rs.residual(self._CRASH_T, yp,
+                                         np.zeros_like(y))[0])
+            jac = (dnp - dn) / h
+            assert np.all(np.isfinite(jac))
+            assert np.max(np.abs(jac)) < 1.0e6
+
+        # DASPK integrates THROUGH the death point across the crash
+        # window (the run died at t = 22.936 stepping toward 100).
+        rs.initialize(self._CRASH_T, y.copy(), dn.copy(),
+                      atol=1e-12, rtol=1e-4)
+        wall = time.monotonic()
+        for t in (23.0, 23.5, 24.0, 25.0, 26.0, 28.0, 30.0):
+            rs.advance(t)
+            yv = np.asarray(rs.y)
+            assert np.all(np.isfinite(yv)), t
+            rs._assert_pool_moments_accepted()
+            # accepted daughter mu1 never dragged negative
+            assert yv[mod[1]] >= 0.0, (t, yv[mod[1]])
+        assert rs.t >= 30.0 - 1e-9
+        # generous wall bound: observed ~170 s; a stepsize collapse
+        # would blow this by orders of magnitude
+        assert time.monotonic() - wall < 900.0

@@ -30,6 +30,7 @@
 import dataclasses
 import logging
 import math
+import time
 
 import numpy as np
 import pytest
@@ -2226,7 +2227,8 @@ class TestHybridPolymerReactor:
         # event rate; 1 unsaturated end per event), amount basis *V_poly.
         B = 4.0  # mu1 - mu0 = 5 - 1 [mol/m^3, V_poly = 1]
         R_ss = math.sqrt(1.0e-3 * B / 1.0e8)  # sqrt(f*ki*B/kt_total), f=1
-        assert dn_weak[6] == pytest.approx(5.0e7 * R_ss * R_ss, rel=1e-12)
+        assert dn_weak[6] == pytest.approx(5.0e7 * R_ss * R_ss, rel=1e-12,
+                                            abs=0.0)
 
     def test_weaklink_all_zero_state_is_inert(self):
         """PIN 2b (exact construction): B = 0 (mu1 == mu0) AND U = 0 -> the
@@ -2265,7 +2267,8 @@ class TestHybridPolymerReactor:
             return 2.0 * kt * (r / kdp) ** 2
 
         g0 = g_r_at(0.0)
-        assert g0 == pytest.approx(2.0 * ki * 4.0, rel=1e-10)  # chain term
+        assert g0 == pytest.approx(2.0 * ki * 4.0, rel=1e-10,
+                                   abs=0.0)  # chain term
         u1, u2 = 0.02, 0.04  # << B = 4 and << capacity 2: clamp inactive
         g1, g2 = g_r_at(u1), g_r_at(u2)
         # levels: G_R(u) - G_R(0) == 1 * kia * u (u = U/V_poly, V_poly = 1)
@@ -2427,7 +2430,7 @@ class TestHybridPolymerReactor:
         for i in range(6):
             assert dn_hi[i] == dn_lo[i], i
         assert dn_lo[6] > 0.0
-        assert dn_hi[6] == pytest.approx(3.0 * dn_lo[6], rel=1e-12)
+        assert dn_hi[6] == pytest.approx(3.0 * dn_lo[6], rel=1e-12, abs=0.0)
 
     # ------------------------------------------------------------------
     # milestone (vi) equivalence pins: inert-by-values / allyl-off /
@@ -3753,7 +3756,8 @@ class TestHybridPolymerReactor:
         # drain vanishes linearly near exhaustion), THROUGH the floor.
         assert drains[4] / drains[3] == pytest.approx(1.0e-3, rel=1e-9)
         assert drains[3] == pytest.approx(
-            0.6 * _s_eff((1.9e-15, 26.0e-15, 610.0e-15)) * bB2, rel=1e-9)
+            0.6 * _s_eff((1.9e-15, 26.0e-15, 610.0e-15)) * bB2, rel=1e-9,
+            abs=0.0)
         # The in-band point interpolates strictly between the two lines:
         # below the bulk line, above the tail line (both scaled to s).
         assert drains[2] < 0.6 * 26.0e-12 * bB2
@@ -3761,7 +3765,8 @@ class TestHybridPolymerReactor:
             * bB2 * 1.0e6
         # And matches the two-regime law mirror exactly.
         assert drains[2] == pytest.approx(
-            0.6 * _s_eff((1.9e-12, 26.0e-12, 610.0e-12)) * bB2, rel=1e-9)
+            0.6 * _s_eff((1.9e-12, 26.0e-12, 610.0e-12)) * bB2, rel=1e-9,
+            abs=0.0)
 
     def test_volatile_ejection_fractional_a_not_rounded(self):
         """
@@ -3976,10 +3981,12 @@ class TestHybridPolymerReactor:
         assert abs(dn_dt[8]) <= 1e-9 * ev
         # Statistics-exchange residue, exact (probe: +0.0627, +1.5957645,
         # -0.0627, -1.4534355 at ev = 0.02).
-        assert dn_dt[2] == pytest.approx(+ev * (bB1 + a - bA1), rel=1e-12)
+        assert dn_dt[2] == pytest.approx(+ev * (bB1 + a - bA1), rel=1e-12,
+                                         abs=0.0)
         assert dn_dt[3] == pytest.approx(
             +ev * (bB2 + 2.0 * a * bB1 + a * a - bA2), rel=1e-12)
-        assert dn_dt[6] == pytest.approx(-ev * (bB1 + a - bA1), rel=1e-12)
+        assert dn_dt[6] == pytest.approx(-ev * (bB1 + a - bA1), rel=1e-12,
+                                         abs=0.0)
         assert dn_dt[7] == pytest.approx(
             -ev * (bB2 - (bA2 - 2.0 * a * bA1 + a * a)), rel=1e-12)
         # mu1 residue is a pure A<->B transfer (conserved); mu2 is not.
@@ -4138,7 +4145,7 @@ class TestHybridPolymerReactor:
         w = e_n * e_n * (3.0 - 2.0 * e_n)
         assert 0.0 < w < 1.0
         assert s_eff == pytest.approx(
-            w * s_base + (1.0 - w) * fold(s_base, cap), rel=1e-12)
+            w * s_base + (1.0 - w) * fold(s_base, cap), rel=1e-12, abs=0.0)
         # Strictly between the two regime laws.
         assert fold(s_base, cap) < s_eff < s_base
 
@@ -4155,7 +4162,8 @@ class TestHybridPolymerReactor:
         v = v_n * v_n * (3.0 - 2.0 * v_n)
         s_cone = q10 / (b1c - 1.0)
         assert s_eff == pytest.approx(
-            v * s_free + (1.0 - v) * fold(s_free, s_cone), rel=1e-12)
+            v * s_free + (1.0 - v) * fold(s_free, s_cone), rel=1e-12,
+            abs=0.0)
         assert s_eff < s_free < s_base     # both gates strictly active
 
     def test_bundle_limiter_smoothstep_c1_across_band_edges(self):
@@ -4321,7 +4329,7 @@ class TestHybridPolymerReactor:
         # mu1 site law, not the cone-capped one.
         dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
-        assert dn_dt[1] == pytest.approx(-kf * mu_a[1], rel=1e-12)
+        assert dn_dt[1] == pytest.approx(-kf * mu_a[1], rel=1e-12, abs=0.0)
         assert dn_dt[1] != pytest.approx(-kf * s_cone, rel=1e-2)
 
     def test_cone_guard_out_of_cone_pool_unit_pins(self):
@@ -4392,7 +4400,7 @@ class TestHybridPolymerReactor:
         m = min(s_base, s_cone)
         fold2 = m * ((m / s_base) ** 8.0 + (m / s_cone) ** 8.0) ** (-1.0 / 8.0)
         assert s_eff == pytest.approx(v * s_base + (1.0 - v) * fold2,
-                                      rel=1e-12)
+                                      rel=1e-12, abs=0.0)
         assert 0.0 < s_eff < s_base
 
         # (d) Q10 > 0, M >= M_hi: margin safely bulk, bitwise s_base.
@@ -4485,7 +4493,8 @@ class TestHybridPolymerReactor:
         the singular-cone drain that fed DASPK the intermittent IDID=-7
         at T ~ 23 s in the full run. Post-fix (round-30 N1 independent
         cone gate + round-29 N2 soft-min): DASPK integrates through the
-        20-30 s window and the drain turns fully OFF at the CONE boundary
+        20-30 s crash window and on to the FULL 100 s regen horizon
+        (round-31 P2) and the drain turns fully OFF at the CONE boundary
         (not merely at exhaustion): the daughter is first fed back into
         the cone by the forward leg, then drains only down to mu1 ~ mu0
         -- observed trajectory parks at mu1 ~ mu0 ~ 2.0e-3 mol with the
@@ -4551,8 +4560,16 @@ class TestHybridPolymerReactor:
         rs.initialize(0.0, y0.copy(),
                       rs.residual(0.0, y0, np.zeros_like(y0))[0],
                       atol=1e-12, rtol=1e-4)
-        # integrate THROUGH the 20-30 s window that killed regen #3.
-        for t_target in (1.0, 5.0, 10.0, 15.0, 20.0, 23.0, 25.0, 30.0):
+        # Integrate THROUGH the 20-30 s window that killed regen #3 and
+        # on to the FULL 100 s regen horizon (round-31 P2: the Q10 -> 0+
+        # asymptote is a valid boundary steady state and must stay CHEAP
+        # over the deck's whole terminationTime, not just the crash
+        # window -- observed: the entire 0-100 s integration takes < 1 s
+        # wall; Q10 decays through the M band to ~1e-13, i.e. atol
+        # scale, and mu1 stays parked at the cone boundary ~2e-3 mol).
+        wall_start = time.monotonic()
+        for t_target in (1.0, 5.0, 10.0, 15.0, 20.0, 23.0, 25.0, 30.0,
+                         40.0, 50.0, 75.0, 100.0):
             rs.advance(t_target)
             y = np.asarray(rs.y)
             assert np.all(np.isfinite(y)), t_target
@@ -4564,9 +4581,15 @@ class TestHybridPolymerReactor:
             # which parked the daughter OUT-OF-CONE at
             # mu1 ~ 1e-8 << mu0 ~ 2e-3): the round-30 independent gate
             # keeps the daughter AT/INSIDE the cone up to in-band
-            # integrator slack (100 floors = 1e-8 mol).
+            # integrator slack (100 floors = 1e-8 mol; observed terminal
+            # Q10 ~ -7e-13, i.e. sub-atol noise around the boundary).
             assert y[6] >= y[5] - 1.0e-8, (t_target, y[5], y[6])
-        assert rs.t >= 30.0 - 1e-9      # the integrator finished
+        # DASPK completed the full regen horizon (no IDID=-7 raise above)
+        # and did NOT grind: a stepsize collapse on the asymptote would
+        # blow the wall clock by orders of magnitude (generous 60x
+        # headroom over the observed < 2 s).
+        assert rs.t >= 100.0 - 1e-9      # the integrator finished
+        assert time.monotonic() - wall_start < 120.0
         # Terminal state: parked at the cone boundary with the margin
         # still nonnegative-to-slack and mu1 at pool scale (~2e-3 mol),
         # nowhere near the exhaustion floor.
@@ -7760,7 +7783,7 @@ class TestPhaseGateFluxCensus:
             assert _census_lines(caplog) == []
             rs.residual(0.0, rs.y, np.zeros_like(rs.y))
             assert float(np.asarray(rs.edge_reaction_rates)[0]) == \
-                pytest.approx(expected, rel=1e-3)
+                pytest.approx(expected, rel=1e-3, abs=0.0)
             assert int(np.asarray(rs.edge_reaction_gate_code)[0]) == \
                 expected_gate
             if expected_gate:
@@ -11712,7 +11735,7 @@ class TestR81ExhaustionTailConditioning:
         with caplog.at_level(logging.WARNING):
             delta, _ = rs.residual(0.0, rs.y, np.zeros_like(rs.y))
         assert float(np.asarray(rs.core_reaction_rates)[0]) == \
-            pytest.approx(2.0 * self._EXHAUSTED[1], rel=1e-12)
+            pytest.approx(2.0 * self._EXHAUSTED[1], rel=1e-12, abs=0.0)
         assert float(np.max(np.abs(np.asarray(delta)))) > 0.0
         assert any("POOL EXHAUSTION CENSUS" in r.getMessage()
                    for r in caplog.records)
