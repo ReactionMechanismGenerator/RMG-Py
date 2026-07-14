@@ -828,14 +828,21 @@ class TestVolatileEjectionConsumer:
         hand-computed against the solver VE law (polymer.pyx VE branch +
         _chain_bundle):
 
-          event rate  ev = kf * mu1 = 25 mol/s   (interior: mu1-scaled site)
           length-biased bundle: b0 = 1, b1 = mu2/mu1 = 12,
               mu3 = mu0*(mu2/mu1)^3 = 1728 (log-Lagrange closure),
               b2 = mu3/mu1 = 172.8
-          src debit (full bundle):  -ev*(b0, b1, b2) = (-25, -300, -4320)
+          event rate: the pool is HEALTHY (mu0 = 1 mol sits ~1e14 r81
+              floors above exhaustion), so the near-exhaustion bundle
+              limiter (tail-only smoothstep, round-27 P1-A) is exactly
+              inactive and the row runs at the plain adjudicated site law
+              S_base = mu1/V_poly: ev = kf * mu1 = 2.5 * 10 (the P1-1
+              bundle cap min(10, 1, 10/12, 120/172.8) applies only inside
+              the depletion band)
+          src debit (full bundle):  -ev*(b0, b1, b2)
           dst credit (a-shifted, sa = -a): +ev*(b0, b1 - a,
-              b2 - 2*a*b1 + a^2) = (+25, +250, +3220)
-          gas volatile (standard net-rate product path): +ev = +25
+              b2 - 2*a*b1 + a^2)
+          gas volatile (standard net-rate product path, the SAME rate --
+              gas flux and moment flux never diverge): +ev
         """
         chem_path, artifact = self._artifact(tmp_path)
         rs, core, _ = _build_ve(chem_path, artifact)
@@ -2200,13 +2207,25 @@ class TestS2ConduitVEMassInvariant:
         assert artifact["schema_version"] == "2.5"
 
     def test_rhs_mass_conservation_including_transferred_h(self, tmp_path):
-        """Numeric pin through the real solver residual: with a = MW(H)/
-        monomer_MW, per event the source pool loses a full length-biased
-        bundle, the feature pool gains the a-shifted bundle, and the gas
-        side nets +MW(H2) - MW(H) = +MW(H) -- total mass rate exactly
-        zero."""
-        deck, _, rs, core = self._build(tmp_path)
+        """Numeric pin through the real solver residual, defect-aware
+        (P1-2): a = MW(H)/monomer_MW is a MASS defect, not a DP decrement.
+        The H-loss feature pool carries chain_mass_defect_g_mol = MW(H)
+        (emitted by the real serializer, restored by the runner), so the
+        row's MOMENT shift is a_moment = a - defect/monomer_MW = 0: per
+        event the source pool loses a full length-biased bundle and the
+        feature pool gains the SAME bundle UNSHIFTED (booking the a
+        decrement landed monomeric chains below the realizability cone
+        mu1 >= mu0 by construction -- the regen-#2 seed defect). The
+        condensed-mass closure books the loss through the defect ledger
+        (mu1*MW - mu0*defect), and the gas side nets
+        +MW(H2) - MW(H) = +MW(H) -- total mass rate exactly zero."""
+        deck, artifact, rs, core = self._build(tmp_path)
         _, _, monomer_mw, mw_h, mw_h2, a = deck
+        # the serialized feature pool carries the exact per-chain defect
+        (mod_pool,) = [p for p in artifact["pools"]
+                       if p["label"] == "polypropylene_mod"]
+        defect = mod_pool["chain_mass_defect_g_mol"]
+        assert defect == pytest.approx(mw_h, rel=1e-9)
         dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
         i = {s.label: k for k, s in enumerate(core)}
         ev = float(dn[i["H2(3)"]])
@@ -2218,10 +2237,14 @@ class TestS2ConduitVEMassInvariant:
         assert dn[i["polypropylene_mu1"]] == pytest.approx(-ev * b1,
                                                            rel=1e-9)
         assert dn[i["polypropylene_mod_mu0"]] == pytest.approx(+ev, rel=1e-9)
+        # chains land with UNCHANGED mu1 (a_moment == 0), NOT b1 - a
         assert dn[i["polypropylene_mod_mu1"]] == pytest.approx(
+            +ev * b1, rel=1e-9)
+        assert dn[i["polypropylene_mod_mu1"]] != pytest.approx(
             +ev * (b1 - a), rel=1e-9)
-        chain_mass_rate = monomer_mw * (dn[i["polypropylene_mu1"]]
-                                        + dn[i["polypropylene_mod_mu1"]])
+        chain_mass_rate = (monomer_mw * (dn[i["polypropylene_mu1"]]
+                                         + dn[i["polypropylene_mod_mu1"]])
+                           - defect * dn[i["polypropylene_mod_mu0"]])
         gas_mass_rate = mw_h2 * dn[i["H2(3)"]] + mw_h * dn[i["H(2)"]]
         assert chain_mass_rate == pytest.approx(-ev * mw_h, rel=1e-9)
         assert gas_mass_rate == pytest.approx(+ev * mw_h, rel=1e-9)

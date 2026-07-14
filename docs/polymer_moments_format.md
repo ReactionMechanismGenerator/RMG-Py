@@ -185,6 +185,7 @@ solver state-vector indices from the generating run).
 | `moments` | `[µ0, µ1, µ2]` floats \| null | the pool's **initial conditions at t = 0 of the simulated experiment** (normative — see the provenance paragraphs below this table; item #14a), **extensive mol, DP basis** (µ1 = moles of repeat units). Input-declared pools: the input-derived state; spawned pools: `[0, 0, 0]` honest-empty |
 | `moments_provenance` | `"input_declared"` \| `"spawned_empty"` | where the `moments` initial conditions come from (see below). **Additive** key — consumers must tolerate its absence in artifacts written before this revision |
 | `monomer_mw_g_mol` | float | repeat-unit MW [g/mol] |
+| `chain_mass_defect_g_mol` | float, optional (**additive** -- key absent means 0.0) | per-chain mass [g/mol] already shed to the gas by the events that created this pool's chains (e.g. exactly one abstracted H per chain on an H-loss `<parent>_mod` daughter: `defect_dst = defect_src + MW(H)`, accumulating if chained). NORMATIVE mass contract: condensed mass [g] = `mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol`. NORMATIVE booking contract (P1-2 atom-transfer defect, regen-#2 adjudication): a cross-pool `volatile_ejection/1` row's `params.eject_units` is the MASS defect `a_mass`; the MOMENT shift applied to the transferred bundle is `a_moment = a_mass - (defect_dst - defect_src)/monomer_mw_src` (snapped to exactly 0 when the residual is pure float roundoff). For H-loss conduits `a_moment = 0`: chains transfer with UNCHANGED mu1 while the gas co-products carry the H mass through the ordinary species path -- booking `a_mass` on the moments would land monomeric chains at `mu1/mu0 = 1 - a`, below the realizability cone `mu1 >= mu0` by construction. Rows between equal-defect pools (true monomer/chip ejection) keep `a_moment = a_mass` byte-identically. Emitted only when > 0; consumers validate it finite and non-negative when present |
 | `mn_g_mol`, `mw_g_mol` | float \| null | number-/weight-average MW at generation time |
 | `initial_mass_g` | float \| null | as configured (grams) |
 | `channels` | `{"scission": {A,n,Ea,units}, "unzip": {...}}` | Arrhenius-capable; today RMG emits `A=k, n=0, Ea=0`, `units = {"A": "s^-1", "Ea": "J/mol"}`. Channel equations: §5 (versioned `scission/1`, `unzip/1`) |
@@ -371,7 +372,116 @@ relative offset shifts every gas-phase term off the oracle.
    (`archetype=="discrete_chip/1"` ∧ `scaling=="mu0"` ∧ `a > 0`):
    `site = min(max(0, y[µ0]), max(0, y[µ1])/a)/V_poly` (exhaustion throttle).
    The site multiplies **once** (even with two proxy reactants) and scales
-   BOTH `rf` and `rr` (the reverse is NOT scaled by the dst pool).
+   BOTH `rf` and `rr` (the reverse is NOT scaled by the dst pool) -- EXCEPT
+   cross-pool exchange rows (`dst_pool != null`, `dst_pool != src_pool`),
+   whose two directions scale INDEPENDENTLY by the availability of the pool
+   each direction DEBITS (run-5 Part C adjudication + P1-1 regen-#2
+   adjudication; oracle: `polymer.pyx` section-2 scaling and its
+   `get_reaction_rates` mirror):
+
+   - forward (`rf`) debits `src_pool`: `S_base` = the µ0/µ1 site above
+     (including the end-group `a>0` VE throttle `min(µ0, µ1/a)` where it
+     applies);
+   - reverse (`rr`) debits `dst_pool`: `S_base` = the SAME moment order read
+     from the dst pool's own moments (for end-group `a<0` VE, with the
+     mirror `min(µ0, µ1/|a|)` throttle);
+   - **near-exhaustion bundle limiter (tail-only smoothstep; C1 soft-min,
+     cone-margin drain guard)** (P1-1 as re-adjudicated round-27 P1-A,
+     regularized round-29 N2, cone gate made independent round-30 N1;
+     `volatile_ejection/1` and `migration/1` cross-pool rows): each
+     direction's site runs TWO structurally independent gates in series.
+
+     Stage 1 — exhaustion tail limiter (E band):
+
+     ```
+     softmin_p(x_i) = (Σ x_i^(−p))^(−1/p)        reciprocal p-norm soft-min
+                                                 over positive terms,
+                                                 p = 8 (normative)
+     S_cap  = softmin_p(µ0/b0, µ1/b1, µ2/b2) / V_poly
+                                                 over POSITIVE bundle terms
+     E      = softmin_p(µ0/f0, µ1/f1, µ2/f2)     accepted-state floor distance
+     w      = smoothstep(E; E_lo, E_hi) = 3e² − 2e³,
+              e = clamp((E − E_lo)/(E_hi − E_lo), 0, 1)
+     S_free = w·S_base + (1 − w)·softmin_p(S_base, S_cap)
+     ```
+
+     Stage 2 — cone-margin drain gate (M band; normative round-30: this
+     gate is INDEPENDENT of `E` — it applies to cone-shrinking debits
+     (`b1 > b0`) even when `E ≥ E_hi`, and it is never diluted by the
+     `w` blend):
+
+     ```
+     Q10    = µ1 − µ0                            realizability cone margin
+     Q10 ≤ 0                    ⇒ S_eff = 0      REGARDLESS of E
+     M      = Q10 / max(f0, f1)                  margin distance, floor units
+     M ≥ M_hi                   ⇒ S_eff = S_free EXACTLY
+     S_cone = Q10 / (V_poly·(b1 − b0))           event-site density that would
+                                                 spend the whole margin
+     M ≤ M_lo                   ⇒ S_eff = softmin_p(S_free, S_cone)
+     between                    ⇒ v-smoothstep blend of the two laws
+     ```
+
+     over the debited pool's per-event bundle `(b0, b1, b2)` (step-6
+     bundles; a `b_k` that is 0 or skipped contributes no cap; an empty
+     bundle, `b0 = 0`, means `S_cap = 0`, and empty pools skip stage 2 —
+     stage 1 already throttled them; debits with `b1 ≤ b0` pass stage 2
+     untouched). `f_k` is the debited pool's r81 accepted-state floor
+     `max(SMALL_EPS, 100·atol[state])` (the same per-moment floor the
+     negative-moment tripwire uses), so `E` and `M` are the DIMENSIONLESS
+     numbers of floors the thinnest debited moment / the cone margin sit
+     above their singular manifolds — deck-independent and scale-aware.
+     Band edges (normative): `E_lo = 1e2`, `E_hi = 1e4`; `M_lo = 1e2`,
+     `M_hi = 1e4` (same numbers, separate constants — independent jobs).
+
+     Regimes: for healthy IN-CONE bulk pools both early returns fire and
+     `S_eff == S_base` EXACTLY (bit-for-bit the plain µ0/µ1 site law
+     above — healthy pools NEVER feel the limiter or the cone gate; for
+     healthy polydisperse pools the µ1-scaled cap `µ1/b1 = µ1²/µ2 < µ1`
+     would otherwise bind in bulk whenever PDI > 1, which is why the
+     original global hard-min form was rejected: it rewrote healthy
+     cross-pool kinetics and displaced reversible-row detailed balance by
+     PDI ratios). `E ≤ E_lo` ⇒ the soft cap `softmin_p(S_base, S_cap)` is
+     fully active. Rationale for the stage-1 cap (normative): one event
+     debits the FULL per-chain bundle, so a µ1-scaled leg drains µ1 at
+     `ev*b1 ~ k*C*µ2` -- the per-event `µ2/µ1` debit cancels the linear
+     µ1-site self-limit and goes constant-rate once the out-of-cone µ3
+     closure freezes; the soft cap bounds EVERY moment's drain by
+     `~k*C*µ_k` (softmin_p ≤ every term) so it vanishes linearly near
+     exhaustion (the regen-#2 crash fix). Rationale for stage 2
+     (normative, round-30): a length-biased debit with `b1 > b0` shrinks
+     the realizability cone margin `Q10` by `(b1 − b0)` per event and
+     self-accelerates as µ1 → 0 (`d(b1)/dµ1 = −µ2/µ1²`), so the gate
+     throttles the EVENT RATE by cone-margin availability — the bundle
+     itself stays length-biased (per-event moment ratios and mass
+     bookkeeping unchanged) and a pool at or outside the cone (`Q10 ≤ 0`)
+     has its cone-deepening drain turned OFF outright, whatever its
+     moment scale (the regen-#3 crash fix; folding `S_cone` into the
+     stage-1 blend was rejected round-30 because the `w` blend diluted it
+     in-band and the `E ≥ E_hi` early return skipped it entirely).
+     Soft-min rationale (round-29 N2): every in-band hard min is the
+     reciprocal p-norm soft-min (positive, scale-homogeneous of degree 1
+     — NOT log-sum-exp, which needs a dimensional temperature and can go
+     negative), so `S_eff` is C1 inside both bands: the hard-min argmin
+     switches were C0 kinks that fed quasi-Newton integrators
+     intermittent convergence failures (the regen-#3 IDID=-7).
+     Quantitative tie bias (normative consequence of p = 8): where cap
+     terms tie, `softmin_p` sits BELOW the hard min — `2^(−1/8) ≈ 0.917·min`
+     at a two-term tie, `3^(−1/8) ≈ 0.872·min` at a three-term tie. This
+     is numerical regularization of near-exhaustion / near-cone states,
+     NOT physical kinetics: ties can only bind inside the bands; bulk is
+     exact. The band edges introduce no derivative cliff (w′ = v′ = 0 at
+     all four edges, and none at the r81 floor, which sits at
+     `E ≤ 1 << E_lo`); the single accepted C0 kink is at `Q10 = 0`
+     exactly, where `softmin_p(S_free, S_cone) → 0` meets the hard zero
+     continuously with a bounded one-sided slope. `S_eff` applies to the
+     direction's event rate BEFORE `r = rf - rr`, so species flux,
+     reported reaction rates and the step-6 moment dispatch all see the
+     SAME limited directional rate (gas flux and moment flux must never
+     diverge). Detailed balance: in bulk a reversible cross-pool row
+     balances at `C_G* = Keq·S_base(A)/S_base(B)` (the advertised law);
+     only inside the depletion/cone bands does it move to
+     `C_G* = Keq·S_eff(A)/S_eff(B)` with the regularized `S_eff`.
+
    `legacy_mu1/1` entries that look chip-shaped are deliberately NOT
    throttled (bit-exact legacy contract).
 5. **Gas/explicit stoichiometric flux:** `r = rf − rr`, `r_mol = r·V_rxn`.

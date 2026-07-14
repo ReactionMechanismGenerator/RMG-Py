@@ -81,6 +81,103 @@ def _two_pool_rs(rxn, core, mask, mom_a, mom_b):
     rs.initialize_model(core, [rxn], [], [])
     return rs
 
+
+def _softmin_p(terms, p=8.0):
+    """Reciprocal p-norm soft-min over positive terms (round-29 N2; keep p
+    in sync with the solver's BUNDLE_LIMITER_SOFTMIN_P):
+    softmin_p(x_i) = (sum x_i^(-p))^(-1/p), evaluated in the overflow-safe
+    factored form m*(sum (m/x_i)^p)^(-1/p). Any non-positive term zeroes
+    the result (softmin_p <= min)."""
+    m = min(terms)
+    if m <= 0.0:
+        return 0.0
+    return m * sum((m / x) ** p for x in terms) ** (-1.0 / p)
+
+
+def _s_eff(mu, end_group=False, s_base=None, v_poly=1.0, atol=1e-16):
+    """Near-exhaustion bundle limiter (tail-only smoothstep; C1 soft-min,
+    cone-margin drain guard), round-27 P1-A throttle + round-29 N2
+    soft-min + round-30 N1 independent cone gate (keep in sync with
+    HybridPolymerSystem._bundle_limited_site): the debited direction of a
+    cross-pool VE/MIGRATION leg runs TWO independent gates in series.
+
+    Stage 1 (exhaustion, E band):
+        S_cap  = softmin_p(mu0/b0, mu1/b1, mu2/b2)/v_poly (POSITIVE terms)
+        E      = softmin_p(mu0, mu1, mu2)/max(1e-30, 100*atol)
+        w      = 3e^2 - 2e^3 on e = clamp((E - 1e2)/(1e4 - 1e2), 0, 1)
+        S_free = w*S_base + (1-w)*softmin_p(S_base, S_cap)
+                 (== S_base EXACTLY at E >= 1e4 floors: bulk untouched)
+
+    Stage 2 (cone margin, M band -- INDEPENDENT of E; only for
+    cone-shrinking debits b1 > b0 = 1):
+        Q10 = mu1 - mu0 <= 0        -> 0 REGARDLESS of E
+        M = Q10[mol]/floor >= 1e4   -> S_free EXACTLY (margin safely bulk)
+        M <= 1e2                    -> softmin_p(S_free, S_cone),
+                                       S_cone = Q10/(v_poly*(b1 - 1))
+        between                     -> C1 v-smoothstep blend
+
+    ``s_base`` defaults to the leg's plain site (mu1, or mu0 end-group);
+    ``atol`` must match what the reaction system was initialized with."""
+    mu0, mu1, mu2 = (max(0.0, m) / v_poly for m in mu)
+    floor = max(1e-30, 100.0 * atol)
+    e_dist = _softmin_p([max(0.0, m) for m in mu]) / floor
+    base = ((mu0 if end_group else mu1) if s_base is None else s_base)
+    # stage 1: exhaustion tail limiter
+    if e_dist >= 1.0e4:
+        s_free = base
+    else:
+        if end_group:
+            if mu0 <= 1e-30:
+                return 0.0
+            b1, b2 = mu1 / mu0, mu2 / mu0
+        else:
+            if mu1 <= 1e-30:
+                return 0.0
+            with np.errstate(over="ignore"):
+                mu3 = (mu0 * (np.float64(mu2) / mu1) ** 3
+                       if mu0 > 0.0 else float("inf"))
+            b1 = mu2 / mu1
+            b2 = mu3 / mu1 if np.isfinite(mu3) else 0.0
+        terms = [base, mu0]
+        if b1 > 0.0:
+            terms.append(mu1 / b1)
+        if b2 > 0.0:
+            terms.append(mu2 / b2)
+        cap = _softmin_p(terms)
+        if e_dist <= 1.0e2:
+            s_free = cap
+        else:
+            e_n = (e_dist - 1.0e2) / (1.0e4 - 1.0e2)
+            w = e_n * e_n * (3.0 - 2.0 * e_n)
+            s_free = w * base + (1.0 - w) * cap
+    # stage 2: cone-margin drain gate (independent of E)
+    if end_group:
+        if mu0 <= 1e-30:
+            return s_free
+        b1c = mu1 / mu0
+    else:
+        if mu1 <= 1e-30:
+            return s_free
+        b1c = mu2 / mu1
+    if b1c <= 1.0:                    # b0 = 1: debit does not shrink Q10
+        return s_free
+    q10 = mu1 - mu0
+    if q10 <= 0.0:
+        return 0.0
+    m_dist = q10 * v_poly / floor     # margin in MOLES vs the mol floor
+    if m_dist >= 1.0e4:
+        return s_free
+    s_cone = q10 / (b1c - 1.0)
+    if s_free <= 0.0:
+        return s_free
+    cap = _softmin_p([s_free, s_cone])
+    if m_dist <= 1.0e2:
+        return cap
+    v_n = (m_dist - 1.0e2) / (1.0e4 - 1.0e2)
+    v = v_n * v_n * (3.0 - 2.0 * v_n)
+    return v * s_free + (1.0 - v) * cap
+
+
 _KIN = dict(kinetics=Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"), T0=(298.15, "K")),
             reversible=False)
 
@@ -3147,7 +3244,13 @@ class TestHybridPolymerReactor:
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
 
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        # Round-27 P1-A: healthy pool (E >> E_hi floors above exhaustion),
+        # so the near-exhaustion bundle limiter is EXACTLY inactive and the
+        # cross-pool leg runs at the plain adjudicated site law -- the
+        # bundle hard cap binds only inside the depletion band (see
+        # test_bundle_limiter_* below).
         r = kf * mu1a                       # site-scaled by A's mu1, V_poly=1
+        assert r == kf * _s_eff((mu0a, mu1a, mu2a))  # limiter exact no-op
         mu3a = mu0a * (mu2a / mu1a) ** 3    # 216.0
         b1 = mu2a / mu1a                    # 6.0
         b2 = mu3a / mu1a                    # 43.2
@@ -3190,8 +3293,10 @@ class TestHybridPolymerReactor:
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
 
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
-        rf = kf * mu_a[1]               # 2.0 * 5 = 10 (site-scaled by A mu1)
-        rr = 0.6 * mu_b[1]              # kb * C(proxyB)=1, then *= B site -> 2.4
+        # P1-1: each direction runs at the bundle-throttled site of the pool
+        # it debits (forward debits A, reverse debits B).
+        rf = kf * _s_eff(mu_a)          # 2.0 * 0.69444...
+        rr = 0.6 * _s_eff(mu_b)         # kb * C(proxyB)=1, then *= B S_eff
         mu3_a = mu_a[0] * (mu_a[2] / mu_a[1]) ** 3   # 216.0
         mu3_b = mu_b[0] * (mu_b[2] / mu_b[1]) ** 3   # 31.25
         bA1, bA2 = mu_a[2] / mu_a[1], mu3_a / mu_a[1]    # 6.0, 43.2
@@ -3320,7 +3425,15 @@ class TestHybridPolymerReactor:
 
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        # Round-27 P1-A: every moment sits far above the exhaustion floors
+        # (mu0 = 1 => E = 1e14 floors at the default atol), so the
+        # near-exhaustion bundle limiter is EXACTLY inactive: the event rate
+        # is the plain mu1 site law even though mu3 = inf froze the b2
+        # bundle component (the frozen-closure super-linear drain is a
+        # DEPLETION-band hazard; in bulk the pre-hard-min law is preserved
+        # bit-for-bit).
         r = kf * mu1a
+        assert r == kf * _s_eff((mu0a, mu1a, mu2a))  # limiter exact no-op
         assert np.all(np.isfinite(dn_dt))
         assert np.isclose(dn_dt[1], -r)                       # mu0 applied
         assert np.isclose(dn_dt[2], -r * mu2a / mu1a)         # mu1 applied
@@ -3354,7 +3467,9 @@ class TestHybridPolymerReactor:
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
 
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
-        ev = kf * mu1a                       # site-scaled by A's mu1, V_poly=1
+        # P1-1: cross-pool forward leg runs at the bundle-throttled site of
+        # the debited pool A, S_eff = min(mu1, mu0, mu1/b1, mu2/b2).
+        ev = kf * _s_eff((mu0a, mu1a, mu2a))
         mu3a = mu0a * (mu2a / mu1a) ** 3     # 216.0
         b1 = mu2a / mu1a                     # E[n]  = 6.0
         b2 = mu3a / mu1a                     # E[n^2]= 43.2
@@ -3391,11 +3506,11 @@ class TestHybridPolymerReactor:
 
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
 
-        # rr = kb * C(proxyB=1), then site-scaled by the DEBITED pool (B) mu1
-        # (direction-specific availability, adjudicated Part C -- this
-        # resolves the previously deferred reverse-site question: the
-        # reverse leg drains B, so its availability comes from B).
-        ev = 0.6 * mu_b[1]                              # 2.4
+        # rr = kb * C(proxyB=1), then site-scaled by the DEBITED pool (B)
+        # (direction-specific availability, adjudicated Part C; P1-1 adds
+        # the directional bundle throttle on the same debited pool, so the
+        # reverse leg runs at S_eff(B) = min(mu1_B, mu0_B, mu1/b1, mu2/b2)).
+        ev = 0.6 * _s_eff(mu_b)                         # 0.6 * 1.28
         mu3_b = mu_b[0] * (mu_b[2] / mu_b[1]) ** 3      # 31.25
         bB1 = mu_b[2] / mu_b[1]                         # E[n_dst] = 2.5
         bB2 = mu3_b / mu_b[1]                           # E[n_dst^2] = 7.8125
@@ -3429,10 +3544,11 @@ class TestHybridPolymerReactor:
         polypropylene_mod_3 moments rescaled x1e4 to sit just ABOVE the r81
         exhaustion floor of 1e-14 mol, preserving the pool's shape) with a
         finite reverse driving force on a cross-pool VOLATILE_EJECTION row.
-        The outbound B fluxes must scale with B's own moments
-        (ev = kb * mu1_B ~ 1.6e-13), not with healthy pool A's
-        (ev = kb * mu1_A = 3.0, which pre-fix drained B's mu2 at -2831 mol/s
-        -- 1e12 times B's entire mu2 content per second). r86
+        The outbound B fluxes must scale with B's own moments (round-27
+        P1-A: B is deep in the limiter tail, so ev = kb * S_eff(B) with
+        the hard bundle cap fully active, ~ 3.9e-15), not with healthy
+        pool A's (ev = kb * mu1_A = 3.0, which pre-fix drained B's mu2 at
+        -2831 mol/s -- 1e12 times B's entire mu2 content per second). r86
         re-adjudication (Codex-adjudicated, spar r86 -- r81 read-projection
         reverted): BELOW the floor the SAME availability law keeps holding
         from the raw state -- the ORIGINAL in-band forensic values yield a
@@ -3452,10 +3568,26 @@ class TestHybridPolymerReactor:
 
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
 
-        ev = 0.6 * mu_b[1]                          # kb * mu1 of the DEBITED pool
+        # Round-27 P1-A two-regime law (tail-only re-adjudication of the
+        # P1-1 regen-#2 ruling, which itself superseded the r86
+        # "ev = kb*mu1_B" law): B sits at E = 1.9 floors above exhaustion
+        # (<= E_lo = 1e2), squarely in the limiter TAIL, so the reverse
+        # leg -- which debits B's FULL per-chain bundle, making an
+        # uncapped kb*mu1_B*b1 = kb*mu2_B a CONSTANT-rate mu1 drain
+        # whenever mu2_B stays fed (the per-event mu2/mu1 debit cancels
+        # the mu1-site self-limit; the regen-#2 mu1-negative crash law) --
+        # runs at the fully-active hard cap
+        # S_eff = min(S_base, mu0/b0, mu1/b1, mu2/b2) over B's own
+        # positive bundle terms: dn_dt[mu1_B] = -kb*S_eff*b1 is bounded
+        # by kb*mu1_B and every moment's drain vanishes linearly. (In BULK
+        # the limiter is exactly inactive and the leg runs at plain
+        # kb*mu1_B -- see the healthy-pools regression pin.)
+        ev = 0.6 * _s_eff(mu_b)
         mu3_b = mu_b[0] * (mu_b[2] / mu_b[1]) ** 3
         bB1 = mu_b[2] / mu_b[1]
         bB2 = mu3_b / mu_b[1]
+        assert ev <= 0.6 * mu_b[1]                  # never above the old law
+        assert ev * bB1 <= 0.6 * mu_b[1] * (1 + 1e-12)   # mu1 drain linear-bounded
         # Outbound legs scale with B's own content (exact law, atol=0 so the
         # tiny magnitudes are pinned relatively, not swallowed by a default
         # absolute tolerance).
@@ -3480,7 +3612,7 @@ class TestHybridPolymerReactor:
         rs2.kf[0] = 0.0
         rs2.kb[0] = 0.6
         dn_dt2 = rs2.residual(0.0, rs2.y, np.zeros_like(rs2.y))[0]
-        ev2 = 0.6 * mu_b2[1]
+        ev2 = 0.6 * _s_eff(mu_b2)                   # same S_eff law below floor
         mu3_b2 = mu_b2[0] * (mu_b2[2] / mu_b2[1]) ** 3
         bB1_2 = mu_b2[2] / mu_b2[1]
         bB2_2 = mu3_b2 / mu_b2[1]
@@ -3538,42 +3670,64 @@ class TestHybridPolymerReactor:
         Numeric regression pin captured at db76881b9 (PRE-fix head): with
         equal availability moments (mu1_A == mu1_B) the directional law
         coincides with the old shared-site law, so the full dn_dt vector is
-        byte-identical. Guards the fix against collateral factor changes.
+        byte-identical. Round-27 P1-A: these pools sit E ~ 1e11 floors
+        above exhaustion, so the near-exhaustion bundle limiter is EXACTLY
+        inactive and the pre-hard-min captured values hold again verbatim
+        (the 340e63700 global hard-min re-capture is REVERTED -- for these
+        polydisperse pools the mu2/b2 cap would bind in bulk, which is the
+        adjudicated bug). Guards the fix against collateral factor changes.
         """
         a = 1.135
         sp, core, mask = _two_pool_species()
         rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
         rxn.polymer_flux_archetype = 6
         rxn.polymer_eject_units = a
-        rs = _two_pool_rs(rxn, core, mask, (1.0e-3, 4.0e-3, 2.0e-2),
-                          (2.0e-3, 4.0e-3, 1.0e-2))
+        mu_a = (1.0e-3, 4.0e-3, 2.0e-2)
+        mu_b = (2.0e-3, 4.0e-3, 1.0e-2)
+        rs = _two_pool_rs(rxn, core, mask, mu_a, mu_b)
         rs.kb[0] = 0.6
 
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
 
+        # The limiter is a no-op here even though the old global cap WOULD
+        # bind (mu1^2/mu2 = 8e-4 < mu1 = 4e-3 on A): S_eff == S_base.
+        assert _s_eff(mu_a) == mu_a[1]
+        assert _s_eff(mu_b) == mu_b[1]
         expected = np.array([
-            0.0, -0.0056, -0.031276, -0.21453825999999995,
-            0.0, +0.0056, +0.02492, +0.15075579999999994, 0.0,
+            0.0,
+            -0.0056,
+            -0.031276,
+            -0.21453825999999995,
+            0.0,
+            +0.0056,
+            +0.02492,
+            +0.15075579999999994,
+            0.0,
         ])
         assert np.allclose(dn_dt[:9], expected, rtol=1e-12, atol=0.0)
 
     def test_cross_pool_reverse_flux_vanishes_continuously(self):
         """
         Continuity: as the debited pool's moments -> 0 (fixed distribution
-        shape, amplitude s = 1e-6, 1e-9, 1e-12, 1e-18 -- spanning the live
-        region above the 1e-14 mol census floor AND the census band inside
-        it, r86 re-adjudication: the r81 read-projection is reverted, so
-        the linear law continues THROUGH the floor with no step at any
-        threshold, no cliff -- the run-9d H-early wake-up shape must see a
-        continuous RHS across the floor crossing) the outbound mu2 drain
-        decreases monotonically and LINEARLY with s. Pre-fix the drain was
-        CONSTANT (-2831.2 mol/s at every s: availability taken from the
-        healthy source pool).
+        shape, amplitudes spanning the healthy bulk, the limiter band and
+        the census band under the 1e-14 mol floor) the outbound mu2 drain
+        decreases monotonically toward 0 with no step at any threshold and
+        no cliff at the floor (r86 re-adjudication; the run-9d H-early
+        wake-up shape must see a continuous RHS across the floor crossing).
+        Round-27 P1-A two-regime law: LINEAR in s at the plain S_base law
+        in bulk (E >= 1e4 floors), LINEAR in s at the hard-capped law in
+        the tail (E <= 1e2 floors), C1-blended in between. Pre-fix the
+        drain was CONSTANT (-2831.2 mol/s at every s: availability taken
+        from the healthy source pool).
         """
         a = 1.135
         mu_a = (1.0, 5.0, 30.0)
+        # E(s) = 1.9*s/1e-14 floors: 1e-6, 1e-9 are bulk; 1e-12 is inside
+        # the limiter band (E = 190); 1e-15, 1e-18 are tail (hard cap),
+        # 1e-18 sitting below the census floor itself.
+        amps = (1.0e-6, 1.0e-9, 1.0e-12, 1.0e-15, 1.0e-18)
         drains = []
-        for s in (1.0e-6, 1.0e-9, 1.0e-12, 1.0e-18):
+        for s in amps:
             sp, core, mask = _two_pool_species()
             rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
             rxn.polymer_flux_archetype = 6
@@ -3585,14 +3739,29 @@ class TestHybridPolymerReactor:
             dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
             drains.append(-dn_dt[7])
         # Monotone decrease toward 0, all finite and positive (still live --
-        # INCLUDING the in-band amplitude s = 1e-18: census only, no
+        # INCLUDING the sub-floor amplitude s = 1e-18: census only, no
         # projected-to-zero cliff at the floor).
-        assert drains[0] > drains[1] > drains[2] > drains[3] > 0.0
-        # Linear in the pool amplitude: successive ratios == amplitude ratio.
+        assert (drains[0] > drains[1] > drains[2] > drains[3]
+                > drains[4] > 0.0)
+        # Bulk regime: linear in s at the UNCAPPED S_base law -- the
+        # limiter is exactly inactive.
         assert drains[1] / drains[0] == pytest.approx(1.0e-3, rel=1e-9)
-        assert drains[2] / drains[1] == pytest.approx(1.0e-3, rel=1e-9)
-        # Through the floor: the SAME line continues into the census band.
-        assert drains[3] / drains[2] == pytest.approx(1.0e-6, rel=1e-9)
+        mu3_b = 1.9 * (610.0 / 26.0) ** 3
+        bB2 = mu3_b / 26.0
+        assert drains[0] == pytest.approx(0.6 * 26.0e-6 * bB2, rel=1e-9)
+        # Tail regime: linear in s at the hard-capped law (every moment's
+        # drain vanishes linearly near exhaustion), THROUGH the floor.
+        assert drains[4] / drains[3] == pytest.approx(1.0e-3, rel=1e-9)
+        assert drains[3] == pytest.approx(
+            0.6 * _s_eff((1.9e-15, 26.0e-15, 610.0e-15)) * bB2, rel=1e-9)
+        # The in-band point interpolates strictly between the two lines:
+        # below the bulk line, above the tail line (both scaled to s).
+        assert drains[2] < 0.6 * 26.0e-12 * bB2
+        assert drains[2] > 0.6 * _s_eff((1.9e-18, 26.0e-18, 610.0e-18)) \
+            * bB2 * 1.0e6
+        # And matches the two-regime law mirror exactly.
+        assert drains[2] == pytest.approx(
+            0.6 * _s_eff((1.9e-12, 26.0e-12, 610.0e-12)) * bB2, rel=1e-9)
 
     def test_volatile_ejection_fractional_a_not_rounded(self):
         """
@@ -3610,7 +3779,7 @@ class TestHybridPolymerReactor:
 
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
-        ev = kf * 5.0
+        ev = kf * _s_eff((1.0, 5.0, 30.0))   # P1-1 bundle-throttled site
         net_mu1 = dn_dt[2] + dn_dt[6]
         assert np.isclose(net_mu1, -a * ev)          # exact fractional a
         assert not np.isclose(net_mu1, -1.0 * ev)    # NOT rounded to 1
@@ -3690,14 +3859,23 @@ class TestHybridPolymerReactor:
 
     def test_cross_pool_ve_detailed_balance_at_new_law_equilibrium(self):
         """
-        Detailed-balance regression (round-64 P2 pin): BOTH pools populated
-        with UNEQUAL moments (every component differs), reversible VE row,
-        kb generated by the solver from Keq. At the new law's equilibrium
-        gas concentration C_G* = (kf/kb) * (mu1_A/mu1_B) = Keq * mu1_A/mu1_B
-        the residual's net exchange flux is zero on EVERY affected row
-        (both pools' mu0/mu1/mu2 and the gas row) to rtol 1e-9, and
-        perturbing the gas away from C_G* produces net flux of the correct
-        sign toward equilibrium with the exact magnitude -delta*kf*mu1_A.
+        Detailed-balance regression (round-64 P2 pin; round-27 P1-A BULK
+        pin): BOTH pools populated with healthy, UNEQUAL-PDI moments
+        (every component differs, PDI_A = 1.1028 != PDI_B = 1.12),
+        reversible VE row, kb generated by the solver from Keq. In BULK
+        the balance point is C_G* = (kf/kb) * S_base(A)/S_base(B) =
+        Keq * mu1_A/mu1_B -- the ADVERTISED plain site law. This is the
+        round-27 required pin that the bundle cap is INACTIVE for healthy
+        pools: for both these polydisperse pools mu1^2/mu2 < mu1 (PDI > 1),
+        so the rejected 340e63700 global hard-min WOULD have bound in bulk
+        and displaced this balance point by the PDI ratio; the tail-only
+        limiter must not. Only inside the depletion band does the balance
+        move to C_G* = Keq * S_eff(A)/S_eff(B) (see the _depletion_band
+        companion test). At C_G* the residual's net exchange flux is zero
+        on EVERY affected row (both pools' mu0/mu1/mu2 and the gas row) to
+        rtol 1e-9, and perturbing the gas away from C_G* produces net flux
+        of the correct sign toward equilibrium with the exact magnitude
+        -delta*kf*S_base(A).
 
         A full moment-space fixed point needs, beyond event-flux balance,
         consistency of the exchanged chain-length statistics: the forward
@@ -3705,10 +3883,7 @@ class TestHybridPolymerReactor:
         leg B's (1, bB1, bB2) with the +a shift, so the mu1/mu2 rows cancel
         iff bA1 = bB1 + a and bA2 = bB2 + 2*a*bB1 + a^2 (mu3 closure
         mu3 = mu0*(mu2/mu1)^3). The moments below satisfy exactly that
-        while staying componentwise unequal (mu1_A/mu1_B = 2), so C_G* =
-        2*Keq -- visibly DIFFERENT from the naive C_G = Keq point, which is
-        precisely the adjudicated semantics (reverse availability from the
-        debited pool).
+        while staying componentwise unequal.
         """
         a = 1.135
         mu_b = (4.0e-4, 5.0e-3, 0.07)
@@ -3727,14 +3902,23 @@ class TestHybridPolymerReactor:
         assert rs.Keq[0] == pytest.approx(
             rxn.get_equilibrium_constant(800.0), rel=1e-12)
 
+        # Round-27 P1-A: healthy unequal-PDI pools, cap PROVABLY inactive.
+        # The global hard-min would have bound on both sides (mu1^2/mu2 <
+        # mu1 whenever PDI > 1) -- the tail-only limiter must return
+        # S_base exactly.
+        assert mu_a[1] ** 2 / mu_a[2] < mu_a[1]    # cap would bind (A)
+        assert mu_b[1] ** 2 / mu_b[2] < mu_b[1]    # cap would bind (B)
+        s_a, s_b = _s_eff(mu_a), _s_eff(mu_b)
+        assert s_a == mu_a[1]                      # S_eff == S_base exactly
+        assert s_b == mu_b[1]
+        # Bulk balance point: the ADVERTISED plain law ratio.
         c_g_star = (rs.kf[0] / rs.kb[0]) * (mu_a[1] / mu_b[1])
-        assert c_g_star == pytest.approx(2.0 * rs.Keq[0], rel=1e-12)
         y = rs.y.copy()
         y[8] = c_g_star * 1.0  # V_gas0 = 1 m^3: moles == concentration
 
         dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
 
-        ev = rs.kf[0] * mu_a[1]  # one-way event flux at balance (V_poly=1)
+        ev = rs.kf[0] * s_a      # one-way event flux at balance (V_poly=1)
         assert ev > 0.0          # fixture liveness: both legs actually flow
         # Every affected row zero, pinned RELATIVE to its own one-way flux
         # magnitude (rtol 1e-9), not swallowed by an absolute tolerance.
@@ -3777,12 +3961,15 @@ class TestHybridPolymerReactor:
         bB1 = mu_b[2] / mu_b[1]                    # 14.0
         bB2 = mu_b[0] * bB1 ** 3 / mu_b[1]         # 219.52
 
+        # Round-27 P1-A bulk: healthy pools, limiter exactly inactive, so
+        # the balance point is the plain-law ratio C_G* = Keq*mu1_A/mu1_B.
+        assert _s_eff(mu_a) == mu_a[1] and _s_eff(mu_b) == mu_b[1]
         c_g_star = (rs.kf[0] / rs.kb[0]) * (mu_a[1] / mu_b[1])
         y = rs.y.copy()
         y[8] = c_g_star
         dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
 
-        ev = rs.kf[0] * mu_a[1]
+        ev = rs.kf[0] * _s_eff(mu_a)
         # Event balance: chain-count and gas rows zero.
         assert abs(dn_dt[1]) <= 1e-9 * ev
         assert abs(dn_dt[5]) <= 1e-9 * ev
@@ -3797,6 +3984,665 @@ class TestHybridPolymerReactor:
             -ev * (bB2 - (bA2 - 2.0 * a * bA1 + a * a)), rel=1e-12)
         # mu1 residue is a pure A<->B transfer (conserved); mu2 is not.
         assert dn_dt[2] + dn_dt[6] == pytest.approx(0.0, abs=1e-12)
+
+    def test_cross_pool_ve_detailed_balance_in_depletion_band(self):
+        """
+        Round-27 P1-A DEPLETION-BAND companion to the bulk detailed-balance
+        pin, re-pinned round-30 to the SOFT law: the SAME closure-matched
+        unequal-PDI construction scaled by 1e-10 puts both pools inside
+        the limiter tail (E_A ~ 7.3, E_B ~ 4 floors, both <= E_lo = 1e2)
+        AND inside the cone-margin band (M_A ~ 93, M_B ~ 46 floors, both
+        <= M_lo = 1e2), where each leg runs at the fully active SOFT cap
+        (round-29 N2 softmin_p + round-30 N1 cone gate) of the pool it
+        debits. Only here does the balance point move off the advertised
+        law to C_G* = Keq * S_eff(A)/S_eff(B), with the regularized S_eff
+        strictly below S_base on both sides. The soft-law pin is
+        TIE-SENSITIVE (round-30 P2: the old hard-min assertion was
+        vacuous at this 1e-14 scale -- pytest.approx's default abs=1e-12
+        swallowed a ~9% deviation): S_eff must sit measurably BELOW the
+        hard min of its own terms (the softmin tie bias, >= 2% here) and
+        match the two-stage serial-fold mirror to rel 1e-12 with abs=0.
+        At the soft-law C_G* every affected row is zero to rtol 1e-9 (the
+        bundle matching bA1 = bB1 + a, bA2 = bB2 + 2*a*bB1 + a^2 is
+        scale-invariant).
+        """
+        a = 1.135
+        scale = 1.0e-10
+        mu_b = (4.0e-4 * scale, 5.0e-3 * scale, 0.07 * scale)
+        bB1 = mu_b[2] / mu_b[1]                    # 14.0 (scale-invariant)
+        bB2 = mu_b[0] * bB1 ** 3 / mu_b[1]         # 219.52
+        bA1 = bB1 + a                              # 15.135
+        bA2 = bB2 + 2.0 * a * bB1 + a * a          # 252.588225
+        mu1_a = 1.0e-2 * scale
+        mu_a = (mu1_a * bA2 / bA1 ** 3, mu1_a, bA1 * mu1_a)
+        rxn, rs = self._detailed_balance_rs(mu_a, mu_b, a)
+
+        # Tail + cone-band regime on both sides: S_eff is the fully
+        # active SOFT cap, strictly below the plain site (the defining
+        # contrast with the bulk pin above).
+        s_a, s_b = _s_eff(mu_a), _s_eff(mu_b)
+        assert s_a < mu_a[1] * (1.0 - 1e-9)
+        assert s_b < mu_b[1] * (1.0 - 1e-9)
+
+        def soft_mirror(mu, b1, b2):
+            # independent serial-fold recompute: stage 1 fold of
+            # (s_base, softmin over per-moment caps), then stage 2 fold
+            # with the cone-margin cap (M < M_lo on both pools here).
+            s_free = _softmin_p([mu[1],
+                                 _softmin_p([mu[0], mu[1] / b1,
+                                             mu[2] / b2])])
+            return _softmin_p([s_free, (mu[1] - mu[0]) / (b1 - 1.0)])
+
+        for s_eff, mu, b1, b2 in ((s_a, mu_a, bA1, bA2),
+                                  (s_b, mu_b, bB1, bB2)):
+            hard = min(mu[1], mu[0], mu[1] / b1, mu[2] / b2,
+                       (mu[1] - mu[0]) / (b1 - 1.0))
+            # tie-sensitive: measurably BELOW the hard min (abs=0!)...
+            assert s_eff < hard * 0.98
+            # ... and exactly the soft two-stage law, to rel 1e-12.
+            assert s_eff == pytest.approx(soft_mirror(mu, b1, b2),
+                                          rel=1e-12, abs=0.0)
+
+        c_g_star = (rs.kf[0] / rs.kb[0]) * (s_a / s_b)
+        y = rs.y.copy()
+        y[8] = c_g_star
+        dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+        ev = rs.kf[0] * s_a
+        assert ev > 0.0
+        refs = ev * np.array([1.0, bA1, bA2, 1.0, bA1, bA2, 1.0])
+        for row, ref in zip((1, 2, 3, 5, 6, 7, 8), refs):
+            assert abs(dn_dt[row]) <= 1e-9 * ref
+
+    def test_bundle_limiter_two_regime_unit_pins(self):
+        """
+        Round-27 P1-A + round-29 N2 + round-30 N1 unit pins on the
+        solver's _bundle_limited_site (the near-exhaustion bundle limiter,
+        tail-only smoothstep; C1 soft-min, cone-margin drain guard) for an
+        IN-CONE polydisperse shape (mu1 > mu0, b1 > 1: BOTH gates see it):
+
+        * BULK (E >= E_hi AND M >= M_hi): returns s_base EXACTLY (bitwise
+          ==, not approx) -- healthy pools never feel the limiter, even
+          when the bundle cap sits far below s_base (PDI > 1 shape).
+        * TAIL (E <= E_lo AND M <= M_lo): both soft caps fully active --
+          returns fold(fold(s_base, cap), s_cone) EXACTLY (the same
+          serial two-stage folds the solver computes), strictly at or
+          below the old hard min of all terms.
+        * E-BAND with bulk margin (M >= M_hi): stage 2 exactly inactive;
+          the C1 smoothstep blend w*s_base + (1-w)*fold(s_base, cap) with
+          the SOFT floor distance E, pinned against a hand mirror.
+        * DUAL-BAND (E and M both mid-band): stage 1 blend feeds stage 2's
+          v-blend -- full serial law pinned against a hand mirror.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = 1.135
+        shape = np.array([1.9, 26.0, 610.0])   # polydisperse: cap << mu1
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), tuple(shape))
+        floor = 1.0e-14   # max(SMALL_EPS, 100*atol) at the default 1e-16
+        b1c = shape[2] / shape[1]              # 23.4615..., > 1
+        q10_shape = shape[1] - shape[0]        # 24.1 per unit amplitude
+        y = rs.y.copy()
+
+        def solver_s_eff(s):
+            y[5:8] = shape * s
+            return y[6], rs._bundle_limited_site(1, y, 1.0, False, y[6])
+
+        def fold(a, b, p=8.0):
+            # the solver's exact one-fold softmin_p(a, b)
+            m = min(a, b)
+            return m * ((m / a) ** p + (m / b) ** p) ** (-1.0 / p)
+
+        def stage1(s_base, cap):
+            e_dist = _softmin_p(list(y[5:8])) / floor
+            if e_dist >= 1.0e4:
+                return s_base
+            if e_dist <= 1.0e2:
+                return fold(s_base, cap)
+            e_n = (e_dist - 1.0e2) / (1.0e4 - 1.0e2)
+            w = e_n * e_n * (3.0 - 2.0 * e_n)
+            return w * s_base + (1.0 - w) * fold(s_base, cap)
+
+        # BULK: E = 1.9e5, M = 2.41e6 floors -> bitwise s_base.
+        s_base, s_eff = solver_s_eff(1.0e-9)
+        assert s_eff == s_base
+        # ... even though the cap is far below s_base for this shape.
+        assert rs._bundle_availability_cap(1, y, 1.0, False) < 0.05 * s_base
+
+        # TAIL: E = 0.19, M = 2.41 floors -> both soft caps fully active,
+        # exact serial folds: stage 1 fold(s_base, cap), then stage 2
+        # fold(., s_cone).
+        s_base, s_eff = solver_s_eff(1.0e-15)
+        cap = rs._bundle_availability_cap(1, y, 1.0, False)
+        b1y = y[7] / y[6]                  # exactly the solver's ratio
+        s_cone = (y[6] - y[5]) / (b1y - 1.0)
+        assert s_eff == fold(fold(s_base, cap), s_cone)
+        assert s_eff <= min(s_base, cap, s_cone)   # softmin_p <= hard min
+        assert s_eff < s_base
+        # ... and the stage-1 cap sits at/below EVERY per-moment term
+        # (the cone term is stage 2's job now, NOT part of this cap).
+        b2 = (y[5] * b1y ** 3) / y[6]
+        assert cap <= min(y[5], y[6] / b1y, y[7] / b2) * (1.0 + 1e-12)
+
+        # E-BAND, bulk margin (E ~ 1e3 floors, M ~ 1.27e4 >= M_hi):
+        # stage 2 exactly inactive; exact stage-1 smoothstep blend mirror
+        # with the soft floor distance.
+        s_base, s_eff = solver_s_eff(1.0e3 * floor / 1.9)
+        assert q10_shape * (1.0e3 * floor / 1.9) / floor >= 1.0e4
+        cap = rs._bundle_availability_cap(1, y, 1.0, False)
+        e_dist = _softmin_p([y[5], y[6], y[7]]) / floor
+        assert e_dist == pytest.approx(rs._pool_floor_distance(1, y),
+                                       rel=1e-14)
+        assert 1.0e2 < e_dist < 1.0e4
+        e_n = (e_dist - 1.0e2) / (1.0e4 - 1.0e2)
+        w = e_n * e_n * (3.0 - 2.0 * e_n)
+        assert 0.0 < w < 1.0
+        assert s_eff == pytest.approx(
+            w * s_base + (1.0 - w) * fold(s_base, cap), rel=1e-12)
+        # Strictly between the two regime laws.
+        assert fold(s_base, cap) < s_eff < s_base
+
+        # DUAL-BAND (s = 1e-12: E = 190, M = 2410, both mid-band): the
+        # full serial law -- stage 1 blend, then stage 2 v-blend against
+        # fold(s_free, s_cone).
+        s_base, s_eff = solver_s_eff(1.0e-12)
+        cap = rs._bundle_availability_cap(1, y, 1.0, False)
+        s_free = stage1(s_base, cap)
+        q10 = y[6] - y[5]
+        m_dist = q10 / floor
+        assert 1.0e2 < m_dist < 1.0e4
+        v_n = (m_dist - 1.0e2) / (1.0e4 - 1.0e2)
+        v = v_n * v_n * (3.0 - 2.0 * v_n)
+        s_cone = q10 / (b1c - 1.0)
+        assert s_eff == pytest.approx(
+            v * s_free + (1.0 - v) * fold(s_free, s_cone), rel=1e-12)
+        assert s_eff < s_free < s_base     # both gates strictly active
+
+    def test_bundle_limiter_smoothstep_c1_across_band_edges(self):
+        """
+        Round-27 P1-A smoothness pin: sweeping a fixed distribution shape's
+        amplitude across BOTH band edges (E_lo = 1e2, E_hi = 1e4 floors),
+        S_eff(s) is continuous with no derivative cliff anywhere -- the
+        successive finite-difference slope jumps stay two orders below the
+        slope scale (the smoothstep is C1: w' = 0 at both edges). A
+        hard-min switching on at either edge would jump the slope by
+        ~ d(s_base)/ds - d(cap)/ds ~ the slope scale itself, which this
+        bound rejects.
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = 1.135
+        shape = np.array([1.9, 26.0, 610.0])
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), tuple(shape))
+        floor = 1.0e-14
+        y = rs.y.copy()
+
+        s_lo_edge = 1.0e2 * floor / shape[0]   # E = E_lo
+        s_hi_edge = 1.0e4 * floor / shape[0]   # E = E_hi
+        grid = np.linspace(0.5 * s_lo_edge, 1.2 * s_hi_edge, 3001)
+        vals = []
+        for s in grid:
+            y[5:8] = shape * s
+            vals.append(rs._bundle_limited_site(1, y, 1.0, False, y[6]))
+        vals = np.array(vals)
+        # Positive, monotone non-decreasing in amplitude across the band.
+        assert np.all(vals > 0.0)
+        assert np.all(np.diff(vals) >= 0.0)
+        slopes = np.diff(vals) / np.diff(grid)
+        max_jump = np.max(np.abs(np.diff(slopes)))
+        assert max_jump <= 2e-2 * np.max(np.abs(slopes))
+
+    def test_regen2_born_empty_daughter_conduit_integration_repro(self):
+        """
+        P1 regression pin 1 (poly_102 regen-#2 crash, adjudicated
+        forensics; numerical repro full_repro.py/daspk_final.py): a
+        born-empty daughter pool fed by a REVERSIBLE cross-pool
+        mu1-scaled volatile_ejection conduit (H + parent <=> H2 +
+        daughter, a = +MW(H)/MW_monomer = 0.00751), with the parent
+        ground toward DP ~ 1 by k_scission = 1.0 and H/H2
+        partial-equilibrium cycling (H + H <=> H2), integrated PAST the
+        DP -> 1 point (pre-fix: daughter mu1 crossed the r81 floor at
+        t ~ 4.68 s -- each forward event landed (1, b1p - a) below the
+        realizability cone, the frozen mu3 closure stopped debiting mu2,
+        and the reverse leg's mu1 drain went constant-rate; the residual
+        raise then killed DASPK from a trial state). Post-fix (P1-1
+        directional bundle throttle; P1-3 keeps the floor census off
+        trial states): the daughter stays in the realizable cone, no
+        moment crosses the hard floor, and the integrator finishes.
+        """
+        sp = {
+            "A": _spc("CCCC", "A"),
+            "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
+            "A_mu2": _spc("C#N", "A_mu2"),
+            "B": _spc("CCCCC", "B"),
+            "B_mu0": _spc("CCO", "B_mu0"), "B_mu1": _spc("CC=O", "B_mu1"),
+            "B_mu2": _spc("CC#N", "B_mu2"),
+            "H": _spc("[H]", "H"), "H2": _spc("[H][H]", "H2"),
+        }
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"],
+                sp["B"], sp["B_mu0"], sp["B_mu1"], sp["B_mu2"],
+                sp["H"], sp["H2"]]
+        mask = np.array([False] * 8 + [True, True], dtype=bool)
+        kin_bi = dict(kinetics=Arrhenius(A=(1.0, "m^3/(mol*s)"), n=0.0,
+                                         Ea=(0.0, "kcal/mol"),
+                                         T0=(298.15, "K")),
+                      reversible=False)
+        ve = Reaction(reactants=[sp["H"], sp["A"]],
+                      products=[sp["H2"], sp["B"]], **kin_bi)
+        ve.polymer_flux_archetype = 6
+        ve.polymer_eject_units = 0.00751236784792197
+        hh = Reaction(reactants=[sp["H"], sp["H"]], products=[sp["H2"]],
+                      **kin_bi)
+        pool_a = PolymerPoolConfig(
+            label="A", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=1.0, k_unzip=0.0, tail_kinetics=None)
+        pool_b = PolymerPoolConfig(
+            label="B", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(5, 6, 7), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5,
+            initial_mole_fractions={sp["H"]: 1.0, sp["H2"]: 0.0},
+            V_poly=1.182975e-4, polymer_pools=[pool_a, pool_b],
+            mass_transfer=[], gas_species_mask=mask.copy(),
+            constant_gas_volume=True, V_gas0=8.240473e-2,
+            initial_polymer_moments={
+                "A": (0.099, 0.7378430664798724, 16.4973451743158),
+                "B": (0.0, 0.0, 0.0)},
+            termination=[],
+        )
+        rs.initialize_model(core, [ve, hh], [], [], atol=1e-12, rtol=1e-4)
+        # regen-#2 forensic rate constants (phenol_formaldehyde_mod row).
+        rs.kf[0] = 4.237e5     # H + parent -> H2 + daughter [m^3/mol/s]
+        rs.kb[0] = 8.732       # reverse leg
+        rs.kf[1] = 27439.76    # H + H -> H2
+        # scale H to the forensic 1e-3 mol (initialize_model seeded mole
+        # fractions against P*V/RT).
+        y0 = np.array(rs.y, dtype=float).copy()
+        y0[8] = 1.0e-3
+        y0[9] = 0.0
+        rs.initialize(0.0, y0.copy(),
+                      rs.residual(0.0, y0, np.zeros_like(y0))[0],
+                      atol=1e-12, rtol=1e-4)
+        floors = np.asarray(rs._pool_mu_floors)
+        # integrate PAST the pre-fix crash point (t ~ 4.68 s) to t = 8 s.
+        for t_target in (1.0, 3.0, 4.0, 4.5, 4.7, 5.0, 6.0, 8.0):
+            rs.advance(t_target)
+            y = np.asarray(rs.y)
+            assert np.all(np.isfinite(y)), t_target
+            # accepted-state hard check (r81 semantics, P1-3 site): quiet.
+            rs._assert_pool_moments_accepted()
+            for p, mu_idx in ((0, (1, 2, 3)), (1, (5, 6, 7))):
+                mu0, mu1, mu2 = (y[k] for k in mu_idx)
+                # no moment beyond the hard floor
+                assert mu0 >= -floors[p, 0], (t_target, p)
+                assert mu1 >= -floors[p, 1], (t_target, p)
+                assert mu2 >= -floors[p, 2], (t_target, p)
+                # a LIVE pool stays in the realizable cone (pre-fix the
+                # daughter sat at mu1/mu0 = 1 - a by construction and then
+                # went mu1-negative): allow only floor-scale slack.
+                if mu0 > 100.0 * floors[p, 0]:
+                    assert mu1 >= mu0 * (1.0 - 1e-6) - 100.0 * floors[p, 0], \
+                        (t_target, p, mu0, mu1)
+        assert rs.t >= 8.0 - 1e-9   # the integrator finished
+
+    def test_cone_guard_bulk_healthy_pool_bitwise_untouched(self):
+        """
+        Round-30 N1 P1 invariant: the cone-margin drain gate must NOT
+        perturb IN-CONE bulk. A healthy IN-CONE polydisperse pool
+        (PDI > 1) whose cone cap S_cone = (mu1-mu0)/(b1-b0) sits WELL
+        BELOW s_base -- i.e. a pool the cone cap WOULD throttle if it
+        were global -- must get s_base back bit-for-bit from
+        _bundle_limited_site (E >= E_hi early return AND the gate's own
+        M >= M_hi early return: the margin Q10 = 3e-3 mol sits ~3e11
+        floors above the cone), and the full residual must carry the
+        plain advertised law.
+        """
+        a = 1.135
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        mu_a = (1.0e-3, 4.0e-3, 2.0e-2)     # PDI = 1.25, in cone
+        mu_b = (2.0e-3, 4.0e-3, 1.0e-2)
+        rs = _two_pool_rs(rxn, core, mask, mu_a, mu_b)
+        y = rs.y.copy()
+        # The cone cap WOULD bind if applied in bulk...
+        b1 = mu_a[2] / mu_a[1]              # 5.0 > b0 = 1
+        s_cone = (mu_a[1] - mu_a[0]) / (b1 - 1.0)   # 7.5e-4 < mu1 = 4e-3
+        assert s_cone < mu_a[1]
+        # ... but in-cone bulk is bitwise untouched (E ~ 1e11 floors
+        # >= E_hi, M ~ 3e11 floors >= M_hi).
+        assert rs._bundle_limited_site(0, y, 1.0, False, y[2]) == y[2]
+        assert rs._bundle_limited_site(1, y, 1.0, False, y[6]) == y[6]
+        # Full-residual liveness: the forward event runs at the PLAIN
+        # mu1 site law, not the cone-capped one.
+        dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        assert dn_dt[1] == pytest.approx(-kf * mu_a[1], rel=1e-12)
+        assert dn_dt[1] != pytest.approx(-kf * s_cone, rel=1e-2)
+
+    def test_cone_guard_out_of_cone_pool_unit_pins(self):
+        """
+        Round-30 N1 unit pins on the regen-#3 crash state family: the
+        cone-margin drain gate is INDEPENDENT of the exhaustion band. For
+        a cone-shrinking debit (b1 = mu2/mu1 > 1 = b0):
+
+        * OUT-OF-CONE (Q10 = mu1 - mu0 <= 0): S_eff == 0.0 EXACTLY,
+          REGARDLESS of E -- pinned both at the observed crash state
+          (E in the exhaustion band) and at a bulk-scale out-of-cone
+          state (E >= E_hi, where the round-29 folded form slipped
+          through the early return and the in-band form kept w*s_base
+          alive: BOTH rejected round-30);
+        * Q10 > 0 with M = Q10/max(f0, f1) mid-band: the v-smoothstep
+          blend toward fold(S_free, S_cone), strictly below S_free,
+          pinned against a hand mirror;
+        * Q10 > 0 with M >= M_hi: S_eff == s_base bitwise (margin safely
+          bulk, both gates exactly inactive).
+        """
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = 0.00751236784792197
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0),
+                          (1.0e-3, 1.5e-7, 1.8e-3))
+        rs.initialize_model(core, [rxn], [], [], atol=1e-12, rtol=1e-4)
+        floor = 1.0e-10                     # max(SMALL_EPS, 100*atol)
+        y = rs.y.copy()
+
+        # (a) the observed crash state: out-of-cone, E INSIDE the
+        # exhaustion band (b1 = 12000, d(b1)/d(mu1) ~ -8e10): drain OFF.
+        assert y[6] < y[5]                  # out of cone
+        e_dist = rs._pool_floor_distance(1, y)
+        assert 1.0e2 < e_dist < 1.0e4       # E mid-band...
+        assert rs._bundle_limited_site(1, y, 1.0, False, y[6]) == 0.0
+        # ... and NOT the round-29 diluted w*s_base law.
+        e_n = (e_dist - 1.0e2) / (1.0e4 - 1.0e2)
+        w = e_n * e_n * (3.0 - 2.0 * e_n)
+        assert 0.0 < w * y[6]               # the rejected law was nonzero
+
+        # (b) bulk-scale out-of-cone state (E >= E_hi): the E early
+        # return must NOT bypass the cone gate -- drain still OFF.
+        y[5], y[6], y[7] = 1.0e-2, 1.0e-3, 1.8e-2
+        assert y[6] < y[5]
+        assert rs._pool_floor_distance(1, y) >= 1.0e4
+        assert rs._bundle_limited_site(1, y, 1.0, False, y[6]) == 0.0
+        # the stage-1 exhaustion cap alone would NOT have throttled this
+        # state to zero (it is strictly positive here): only the
+        # independent cone gate zeroes it.
+        assert rs._bundle_availability_cap(1, y, 1.0, False) > 0.0
+
+        # (c) Q10 > 0, M mid-band, E bulk: v-blend toward
+        # fold(S_free = s_base, S_cone), strictly below s_base.
+        q10 = 5.0e-7                        # M = 5e3, mid-band
+        y[5], y[6], y[7] = 1.0e-3, 1.0e-3 + q10, 1.8e-3
+        assert rs._pool_floor_distance(1, y) >= 1.0e4   # E bulk
+        s_base = y[6]
+        s_eff = rs._bundle_limited_site(1, y, 1.0, False, s_base)
+        b1c = y[7] / y[6]
+        assert b1c > 1.0
+        q10y = y[6] - y[5]
+        m_dist = q10y / floor
+        assert 1.0e2 < m_dist < 1.0e4
+        s_cone = q10y / (b1c - 1.0)
+        v_n = (m_dist - 1.0e2) / (1.0e4 - 1.0e2)
+        v = v_n * v_n * (3.0 - 2.0 * v_n)
+        m = min(s_base, s_cone)
+        fold2 = m * ((m / s_base) ** 8.0 + (m / s_cone) ** 8.0) ** (-1.0 / 8.0)
+        assert s_eff == pytest.approx(v * s_base + (1.0 - v) * fold2,
+                                      rel=1e-12)
+        assert 0.0 < s_eff < s_base
+
+        # (d) Q10 > 0, M >= M_hi: margin safely bulk, bitwise s_base.
+        y[5], y[6], y[7] = 1.0e-3, 1.0e-3 + 2.0e-6, 1.8e-3
+        assert (y[6] - y[5]) / floor >= 1.0e4
+        assert rs._bundle_limited_site(1, y, 1.0, False, y[6]) == y[6]
+
+    def test_regen3_rhs_band_sweep_c1_and_finite(self):
+        """
+        Round-29 N2 / round-30 N1 smoothness+finiteness pins on the FULL
+        RHS (residual level, the same reverse-leg geometry that fed DASPK
+        the regen-#3 IDID=-7), sweeping the daughter's mu1 through the
+        adjudicated [1e-9, 1e-2] window at the FIXED crash-state
+        mu0 = 1e-3, mu2 = 1.8e-3 (atol = 1e-12, floors 1e-10 mol):
+
+        * OUT-OF-CONE segment (mu1 in [1e-9, 1e-3], log grid, spanning
+          E << E_lo through E >> E_hi): every RHS entry finite AND the
+          daughter's mu1 drain row is EXACTLY 0.0 everywhere -- the
+          round-30 cone gate is independent of E (the round-29 folded
+          form leaked w*S_base drain across this whole segment; pre-fix
+          HEAD drained at full band strength).
+        * CONE-BAND segment (mu1 in [1e-3, 1e-3 + 2e-6], linear 3001-pt
+          grid crossing M_lo and M_hi): every RHS / FD-Jacobian entry
+          finite, and TWO slope-jump bounds (round-30 P2 split):
+          - TIGHT kink detector (2e-2 of the slope scale) everywhere
+            OUTSIDE a narrow window around the M_hi edge -- this is the
+            bound a hard-min C0 kink (the old law's ~0.7 relative jump)
+            fails by more than an order of magnitude;
+          - a looser 5e-2 curvature bound INSIDE the M_hi window: the
+            smoothstep is C1-but-not-C2 at its edges, so the FD slope
+            jump there is grid-step-LINEAR curvature, not a kink (a C0
+            kink is h-independent).
+          The single accepted C0 kink at Q10 = 0 exactly (segment
+          boundary) has a bounded one-sided slope and is covered by the
+          tight bound.
+        """
+        def build(mom_b):
+            sp, core, mask = _two_pool_species()
+            rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+            rxn.polymer_flux_archetype = 6
+            rxn.polymer_eject_units = 0.00751236784792197
+            rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0), mom_b)
+            rs.initialize_model(core, [rxn], [], [], atol=1e-12, rtol=1e-4)
+            rs.kf[0] = 0.0          # isolate the daughter-debiting leg
+            rs.kb[0] = 0.6
+            return rs
+
+        rs = build((1.0e-3, 1.5e-7, 1.8e-3))
+        y = rs.y.copy()
+
+        # -- out-of-cone segment: drain exactly OFF, whatever E ----------
+        for mu1 in np.logspace(-9.0, -3.0, 1501):
+            y[5], y[6], y[7] = 1.0e-3, mu1, 1.8e-3
+            dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+            assert np.all(np.isfinite(dn_dt)), mu1
+            assert dn_dt[6] == 0.0, mu1
+            assert dn_dt[7] == 0.0, mu1
+
+        # -- cone-band segment: C1 through M_lo/M_hi ---------------------
+        grid = np.linspace(1.0e-3, 1.0e-3 + 2.0e-6, 3001)
+        drains = np.empty_like(grid)
+        for i, mu1 in enumerate(grid):
+            y[5], y[6], y[7] = 1.0e-3, mu1, 1.8e-3
+            dn_dt = rs.residual(0.0, y, np.zeros_like(y))[0]
+            assert np.all(np.isfinite(dn_dt)), mu1
+            drains[i] = dn_dt[6]
+        slopes = np.diff(drains) / np.diff(grid)
+        assert np.all(np.isfinite(slopes))          # FD Jacobian entries
+        jumps = np.abs(np.diff(slopes))
+        scale = np.max(np.abs(slopes))
+        # M_hi edge (Q10 = M_hi*floor = 1e-6) window: +/- 5% of the band.
+        mid = 0.5 * (grid[1:-1] + grid[2:])         # jump locations
+        edge = 1.0e-3 + 1.0e-6
+        window = np.abs(mid - edge) <= 5.0e-8
+        assert np.max(jumps[~window]) <= 2.0e-2 * scale   # tight detector
+        assert np.max(jumps) <= 5.0e-2 * scale            # edge curvature
+
+    def test_regen3_out_of_cone_parked_daughter_integration_repro(self):
+        """
+        P1 regression pin (poly_102 regen-#3 crash, adjudicated rounds
+        29-30 forensics): the regen-2 conduit fixture with the daughter
+        pool PARKED at the observed crash state mu = [1e-3, 1.5e-7,
+        1.8e-3] (OUT-OF-CONE: mu1 < mu0, b1 = mu2/mu1 = 12000,
+        d(b1)/d(mu1) ~ -8e10), reversible cross-pool VE shuttle against a
+        DP ~ 1 parent (k_scission grinding), H/H2 cycling. Pre-fix the
+        reverse leg's length-biased debit ran in the band with only the
+        self-cancelling mu1/b1 cap: mu1 was dragged through zero (accepted
+        states parked NEGATIVE, in-band) while Newton trial states
+        excursed DECADES beyond the r81 floor -- the C0-kinked band law +
+        the singular-cone drain that fed DASPK the intermittent IDID=-7
+        at T ~ 23 s in the full run. Post-fix (round-30 N1 independent
+        cone gate + round-29 N2 soft-min): DASPK integrates through the
+        20-30 s window and the drain turns fully OFF at the CONE boundary
+        (not merely at exhaustion): the daughter is first fed back into
+        the cone by the forward leg, then drains only down to mu1 ~ mu0
+        -- observed trajectory parks at mu1 ~ mu0 ~ 2.0e-3 mol with the
+        margin Q10 decaying toward 0 INSIDE the M band (Q10 ~ 1.5e-10
+        mol at t = 30, still positive), NOT at the round-29 diluted
+        law's mu1 ~ E_lo*floor = 1e-8 << mu0 (out-of-cone park:
+        RED against that law via the cone pin below), and NOT negative
+        (pre-round-29 HEAD: RED via the positivity pin). Newton TRIAL
+        states remain the integrator's prerogative (the predictor may
+        probe beyond-floor values; the P1-3 trial-state census owns
+        those) -- only accepted states are pinned here.
+        """
+        sp = {
+            "A": _spc("CCCC", "A"),
+            "A_mu0": _spc("CO", "A_mu0"), "A_mu1": _spc("C=O", "A_mu1"),
+            "A_mu2": _spc("C#N", "A_mu2"),
+            "B": _spc("CCCCC", "B"),
+            "B_mu0": _spc("CCO", "B_mu0"), "B_mu1": _spc("CC=O", "B_mu1"),
+            "B_mu2": _spc("CC#N", "B_mu2"),
+            "H": _spc("[H]", "H"), "H2": _spc("[H][H]", "H2"),
+        }
+        core = [sp["A"], sp["A_mu0"], sp["A_mu1"], sp["A_mu2"],
+                sp["B"], sp["B_mu0"], sp["B_mu1"], sp["B_mu2"],
+                sp["H"], sp["H2"]]
+        mask = np.array([False] * 8 + [True, True], dtype=bool)
+        kin_bi = dict(kinetics=Arrhenius(A=(1.0, "m^3/(mol*s)"), n=0.0,
+                                         Ea=(0.0, "kcal/mol"),
+                                         T0=(298.15, "K")),
+                      reversible=False)
+        ve = Reaction(reactants=[sp["H"], sp["A"]],
+                      products=[sp["H2"], sp["B"]], **kin_bi)
+        ve.polymer_flux_archetype = 6
+        ve.polymer_eject_units = 0.00751236784792197
+        hh = Reaction(reactants=[sp["H"], sp["H"]], products=[sp["H2"]],
+                      **kin_bi)
+        pool_a = PolymerPoolConfig(
+            label="A", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=1.0, k_unzip=0.0, tail_kinetics=None)
+        pool_b = PolymerPoolConfig(
+            label="B", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(5, 6, 7), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5,
+            initial_mole_fractions={sp["H"]: 1.0, sp["H2"]: 0.0},
+            V_poly=1.182975e-4, polymer_pools=[pool_a, pool_b],
+            mass_transfer=[], gas_species_mask=mask.copy(),
+            constant_gas_volume=True, V_gas0=8.240473e-2,
+            initial_polymer_moments={
+                "A": (0.099, 0.7378430664798724, 16.4973451743158),
+                "B": (1.0e-3, 1.5e-7, 1.8e-3)},   # the parked crash state
+            termination=[],
+        )
+        rs.initialize_model(core, [ve, hh], [], [], atol=1e-12, rtol=1e-4)
+        # regen-#2/#3 forensic rate constants.
+        rs.kf[0] = 4.237e5     # H + parent -> H2 + daughter [m^3/mol/s]
+        rs.kb[0] = 8.732       # reverse leg (debits the parked daughter)
+        rs.kf[1] = 27439.76    # H + H -> H2
+        y0 = np.array(rs.y, dtype=float).copy()
+        y0[8] = 1.0e-3
+        y0[9] = 1.0e-3         # H2 present: the reverse leg is live at t=0
+        rs.initialize(0.0, y0.copy(),
+                      rs.residual(0.0, y0, np.zeros_like(y0))[0],
+                      atol=1e-12, rtol=1e-4)
+        # integrate THROUGH the 20-30 s window that killed regen #3.
+        for t_target in (1.0, 5.0, 10.0, 15.0, 20.0, 23.0, 25.0, 30.0):
+            rs.advance(t_target)
+            y = np.asarray(rs.y)
+            assert np.all(np.isfinite(y)), t_target
+            rs._assert_pool_moments_accepted()   # r81 hard check: quiet
+            # Positivity pin (RED on pre-round-29 HEAD, which dragged
+            # mu1 through 1e-9 by t = 25 s toward negative parks):
+            assert y[6] >= 1.0e-9, (t_target, y[6])
+            # Cone pin (RED against the rejected round-29 folded law,
+            # which parked the daughter OUT-OF-CONE at
+            # mu1 ~ 1e-8 << mu0 ~ 2e-3): the round-30 independent gate
+            # keeps the daughter AT/INSIDE the cone up to in-band
+            # integrator slack (100 floors = 1e-8 mol).
+            assert y[6] >= y[5] - 1.0e-8, (t_target, y[5], y[6])
+        assert rs.t >= 30.0 - 1e-9      # the integrator finished
+        # Terminal state: parked at the cone boundary with the margin
+        # still nonnegative-to-slack and mu1 at pool scale (~2e-3 mol),
+        # nowhere near the exhaustion floor.
+        assert y[6] >= 1.0e-4
+
+    def test_atom_transfer_defect_zeroes_moment_shift(self):
+        """
+        P1-2 unit pin (regression pin 3, solver level): a cross-pool VE
+        row whose dst pool carries chain_mass_defect_g_mol equal to the
+        transferred atom mass books a MOMENT shift of
+        a_moment = a_mass - (defect_dst - defect_src)/monomer_mw = 0
+        exactly: chains land with UNCHANGED mu1 (the a_mass decrement
+        seeded daughters below the realizability cone by construction),
+        the gas co-products move at the same event rate, and the
+        defect-aware condensed-mass closure (mu1*MW - mu0*defect) closes
+        against the gas gain exactly. A defect-free row (true
+        monomer/chip ejection, defect_delta = 0) keeps a_moment == a_mass
+        byte-identically.
+        """
+        monomer_mw = 100.0
+        mw_h = 1.00794
+        a = mw_h / monomer_mw
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        mu_a = (1.0, 5.0, 30.0)
+        pool_a = PolymerPoolConfig(
+            label="A", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+            monomer_mw_g_mol=monomer_mw)
+        pool_b = PolymerPoolConfig(
+            label="B", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(5, 6, 7), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+            monomer_mw_g_mol=monomer_mw,
+            chain_mass_defect_g_mol=mw_h)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={core[8]: 0.0},
+            V_poly=1.0, polymer_pools=[pool_a, pool_b], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": mu_a, "B": (2.0, 4.0, 10.0)},
+            termination=[],
+        )
+        rs.initialize_model(core, [rxn], [], [])
+
+        # the row's moment-space eject units snapped to a TRUE zero
+        assert float(rs.reaction_eject_units_moment[0]) == 0.0
+        assert float(rs.reaction_eject_units[0]) == a   # mass stamp kept
+
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        ev = dn_dt[8]                    # gas volatile, one per event
+        kf = rxn.get_rate_coefficient(800.0, 1.0e5)
+        assert ev == pytest.approx(kf * _s_eff(mu_a), rel=1e-12)
+        b1 = mu_a[2] / mu_a[1]
+        b2 = mu_a[0] * b1 ** 3 / mu_a[1]
+        # chains transfer INTACT: dst gains the UNSHIFTED bundle
+        assert np.isclose(dn_dt[5], +ev * 1.0)
+        assert np.isclose(dn_dt[6], +ev * b1)
+        assert np.isclose(dn_dt[7], +ev * b2)
+        assert np.isclose(dn_dt[2] + dn_dt[6], 0.0, atol=1e-12 * ev * b1)
+        # defect-aware condensed-mass closure: the melt loses exactly
+        # MW(H) per event through the mu0*defect ledger, not through mu1.
+        condensed_rate = (monomer_mw * (dn_dt[2] + dn_dt[6])
+                          - mw_h * dn_dt[5])
+        assert condensed_rate == pytest.approx(-mw_h * ev, rel=1e-12)
+
+        # control: equal-defect pools (here: none) keep a_moment == a_mass
+        rxn2 = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                        **_KIN)
+        rxn2.polymer_flux_archetype = 6
+        rxn2.polymer_eject_units = 1.135
+        rs2 = _two_pool_rs(rxn2, core, mask, mu_a, (2.0, 4.0, 10.0))
+        assert float(rs2.reaction_eject_units_moment[0]) == 1.135
 
     # ------------------------------------------------------------------
     # SAME-POOL volatile ejection (signed a, spec 2026-06-2x round-13):
@@ -4072,16 +4918,30 @@ class TestHybridPolymerReactor:
         assert np.isclose(dn_dt[1], +ev * 1.0)
         assert np.isclose(dn_dt[2], +ev * (bB1 + a))
 
-    def test_cross_pool_ve_interior_rows_unthrottled(self):
+    def test_cross_pool_ve_interior_rows_bulk_unthrottled_tail_capped(self):
         """
-        Item C scope pin: INTERIOR (mu1-scaled) cross-pool VE rows keep the
-        plain mu1 site -- the mu1-proportional event rate already vanishes
-        linearly with the debited pool (same exemption rationale as the
-        same-pool throttle's is_end_group gate). a>0 forward: site == mu1,
-        never min(mu0, mu1/a).
+        Round-27 P1-A scope pin for INTERIOR (mu1-scaled) cross-pool VE
+        rows, two regimes:
+
+        * BULK (healthy pool, E >> E_hi floors): the plain mu1 site law,
+          bit-for-bit -- the P1-1 bundle cap must NOT bind even though for
+          this polydisperse pool it would (mu2/b2 = 30/43.2 < mu1 = 5; the
+          340e63700 global hard-min asserted exactly that binding, which
+          the round-27 ruling rejected as rewriting healthy kinetics).
+          The a>0 end-group min(mu0, mu1/a) throttle still does not apply
+          to interior rows.
+        * TAIL (same distribution shape scaled into the depletion band):
+          the bundle hard cap IS fully active -- the leg debits the full
+          per-chain bundle, so an uncapped mu1 drain would be
+          ev*b1 = kf*mu2, constant-rate whenever mu2 stays fed (the
+          regen-#2 crash law); near exhaustion every moment's drain is
+          bounded by ~kf*mu_k and vanishes linearly.
+
+        get_reaction_rates mirrors the same rate in both regimes so gas
+        flux and moment flux never diverge.
         """
         a = 6.0
-        mom_a = (1.0, 5.0, 30.0)              # min() would give 5/6 != 5
+        mom_a = (1.0, 5.0, 30.0)
         sp, core, mask = _two_pool_species()
         rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
                        **_KIN)
@@ -4090,10 +4950,37 @@ class TestHybridPolymerReactor:
         rs = _two_pool_rs(rxn, core, mask, mom_a, (2.0, 4.0, 10.0))
         dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
         kf = rxn.get_rate_coefficient(800.0, 1.0e5)
-        ev = kf * mom_a[1]                    # plain mu1 site
+        ev = kf * mom_a[1]                    # plain mu1 site (bulk law)
+        assert _s_eff(mom_a) == mom_a[1]      # limiter exact no-op
+        assert ev != pytest.approx(kf * 30.0 / 43.2)   # cap must NOT bind
+        assert ev != pytest.approx(kf * min(mom_a[0], mom_a[1] / a))
         assert np.isclose(dn_dt[1], -ev * 1.0)
+        # gas H2-analog (G) moves at the SAME event rate
+        assert np.isclose(dn_dt[8], +ev)
         rate = rs.get_reaction_rates(rs.y)[0]
         assert np.isclose(rate, ev)
+
+        # TAIL: identical shape, amplitude s = 1e-16 => E = 1e-2 floors,
+        # hard cap fully active.
+        s = 1.0e-16
+        mom_t = tuple(m * s for m in mom_a)
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"], sp["G"]],
+                       **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = a
+        rs = _two_pool_rs(rxn, core, mask, mom_t, (2.0, 4.0, 10.0))
+        dn_dt = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        ev_t = kf * _s_eff(mom_t)             # hard-capped site
+        assert ev_t == pytest.approx(kf * 30.0e-16 / 43.2)  # mu2/b2 binds
+        assert np.isclose(dn_dt[1], -ev_t * 1.0)
+        # every moment drain bounded by kf*mu_k (linear near exhaustion)
+        assert -dn_dt[1] <= kf * mom_t[0] * (1 + 1e-12)
+        assert -dn_dt[2] <= kf * mom_t[1] * (1 + 1e-12)
+        assert -dn_dt[3] <= kf * mom_t[2] * (1 + 1e-12)
+        assert np.isclose(dn_dt[8], +ev_t)
+        rate = rs.get_reaction_rates(rs.y)[0]
+        assert np.isclose(rate, ev_t)
 
     def test_r29_conduit_ve_row_books_mass_exactly_once(self):
         """
@@ -11639,9 +12526,17 @@ class TestItem16EngineCreatedSpawnedPoolConfig:
         assert is_new
 
         # The stamped conduit row: H + parent <=> H2 + parent_mod
-        # (volatile_ejection/1, a = MW(H)/monomer_MW).
+        # (volatile_ejection/1, a = MW(H)/monomer_MW). Stamped with the
+        # production formula (net non-polymer product mass / monomer MW,
+        # compute_volatile_ejection_units) so the mass stamp and the
+        # daughter's structural chain_mass_defect_g_mol agree exactly --
+        # the hand-rounded 1.008 approximation would leave a spurious
+        # ~7e-7 residual moment shift (P1-2 books a_moment = a_mass -
+        # defect_delta/monomer_MW = 0 for this row).
         h2 = _spc("[H][H]", "H2")
-        a = 1.008 / pp.monomer_mw_g_mol
+        mw_h_exact = (Molecule(smiles='[H][H]').get_molecular_weight()
+                      - Molecule(smiles='[H]').get_molecular_weight()) * 1000.0
+        a = mw_h_exact / pp.monomer_mw_g_mol
         rxn = Reaction(reactants=[h, pp], products=[h2, daughter],
                        **TestItem16EngineCreatedSpawnedPoolConfig.KIN_BI)
         rxn.polymer_flux_archetype = sp_mod.FLUX_VOLATILE_EJECTION
@@ -11855,13 +12750,29 @@ class TestItem16EngineCreatedSpawnedPoolConfig:
         assert np.isclose(dn[mu_p[0]], -ev)
         assert np.isclose(dn[mu_d[0]], +ev)
         assert np.isclose(dn[mu_p[0]] + dn[mu_d[0]], 0.0, atol=1e-14)
-        # total chain-phase mu1 debited exactly a per event (single count):
-        # the parent loses the full bundle, _mod gains the a-shifted bundle
-        assert np.isclose(dn[mu_p[1]] + dn[mu_d[1]], -a * ev)
-        # MW-weighted single-count closure
-        gas_mass_rate = 2.0 * 1.008 * dn[i_h2] + 1.008 * dn[i_h]
-        chain_mass_rate = mono_mw * (dn[mu_p[1]] + dn[mu_d[1]])
-        assert np.isclose(gas_mass_rate, -chain_mass_rate)
+        # P1-2 (atom-transfer mass defect): the ENGINE-created _mod daughter
+        # carries chain_mass_defect_g_mol = MW(H) (+ the parent's defect),
+        # so the row's MOMENT shift is a_moment = a - defect_delta/MW = 0:
+        # chains transfer with UNCHANGED mu1 (booking the a decrement here
+        # landed monomeric chains at mu1/mu0 = 1 - a, below the
+        # realizability cone BY CONSTRUCTION -- the regen-#2 seed defect).
+        defect_p = float(getattr(pools["polypropylene"],
+                                 "chain_mass_defect_g_mol", 0.0) or 0.0)
+        defect_d = float(pools["polypropylene_mod"].chain_mass_defect_g_mol)
+        assert defect_d - defect_p == pytest.approx(a * mono_mw, rel=1e-9)
+        assert np.isclose(dn[mu_p[1]] + dn[mu_d[1]], 0.0,
+                          atol=1e-12 * abs(dn[mu_p[1]]))
+        # MW-weighted single-count closure NOW INCLUDES the defect ledger:
+        # condensed mass = sum(mu1*MW - mu0*defect), so its rate is
+        # MW*(dmu1_p + dmu1_d) - defect_delta*dmu0_d = -ev*MW(H) exactly.
+        mw_h_g = Molecule(smiles='[H]').get_molecular_weight() * 1000.0
+        mw_h2_g = Molecule(smiles='[H][H]').get_molecular_weight() * 1000.0
+        gas_mass_rate = mw_h2_g * dn[i_h2] + mw_h_g * dn[i_h]
+        chain_mass_rate = (mono_mw * (dn[mu_p[1]] + dn[mu_d[1]])
+                           - (defect_d * dn[mu_d[0]]
+                              + defect_p * dn[mu_p[0]]))
+        assert np.isclose(gas_mass_rate, -chain_mass_rate, rtol=1e-9)
+        assert np.isclose(chain_mass_rate, -a * mono_mw * ev, rtol=1e-9)
         assert list(solver.qssa_double_count_census) == []
 
     def test_born_empty_engine_configured_daughter_is_stable(self, monkeypatch):

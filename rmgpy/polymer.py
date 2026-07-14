@@ -7814,17 +7814,20 @@ def build_polymer_moments_artifact(pool_registry,
     homolysis_carriers = [p for p in pools if "homolysis_initiation" in p]
     if homolysis_carriers:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_HOMOLYSIS
-    # Side-group homolysis vocabulary (schema 2.7, FR1-K2) is POOL-level
-    # twice over: the carrier's side_group_homolysis block AND the X-loss
-    # feature pools' chain_mass_defect_g_mol mass contract. Either one is
-    # the strongest SHAPE stamp of all (2.7 > 2.6 > ...), presence-gated
-    # like every prior minor; a homolysis-only artifact stays 2.6
-    # byte-identically (negative-control pinned). Artifact-level
-    # recipe_revision stays untouched (the block-local token precedent).
+    # Side-group homolysis vocabulary (schema 2.7, FR1-K2) is POOL-level:
+    # the carrier's side_group_homolysis block is the strongest SHAPE stamp
+    # of all (2.7 > 2.6 > ...), presence-gated like every prior minor; a
+    # homolysis-only artifact stays 2.6 byte-identically (negative-control
+    # pinned). Artifact-level recipe_revision stays untouched (the
+    # block-local token precedent). chain_mass_defect_g_mol alone is NOT a
+    # 2.7 trigger (P1-2 re-adjudication): it is an ADDITIVE OPTIONAL
+    # pool-level mass-contract field (normative closure
+    # mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol) that H-loss _mod
+    # daughters now carry inside plain 2.5-stamped spawned-pool artifacts;
+    # every v1 SGH artifact still stamps 2.7 through its carrier's block
+    # (the X-loss feature pools never appear without it).
     side_group_carriers = [p for p in pools if "side_group_homolysis" in p]
-    side_group_present = bool(side_group_carriers) or any(
-        "chain_mass_defect_g_mol" in p for p in pools)
-    if side_group_present:
+    if side_group_carriers:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SIDE_GROUP
     # End-radical depropagation vocabulary (schema 2.8, r74 SS2) is
     # POOL-level on the end-radical daughter entries; its presence is the
@@ -7916,7 +7919,10 @@ def build_polymer_moments_artifact(pool_registry,
     # spawns no feature pool, so the feature-pool/orphan closure is gone --
     # the consumer hard-rejects any other shape, so the producer refuses to
     # emit it.
-    if side_group_present:
+    # Keyed on the carriers' block presence, NOT on chain_mass_defect_g_mol
+    # (P1-2: a bare pool-level defect -- an H-loss _mod daughter -- is an
+    # additive 2.5 field with no SGH closure to assert).
+    if side_group_carriers:
         _assert_side_group_serialization_closure(
             pools, side_group_carriers, emitted_configured_set)
     # Producer-side schema-2.8 closure guard (the r68 mirror-property,
@@ -7951,8 +7957,22 @@ def build_polymer_moments_artifact(pool_registry,
         # published through conventions.spawned_pools instead.
         "configured_pools": list(emitted_configured_labels),
         "condensed_species": sorted(condensed_labels),
+        # Round-27 P1-B: the bulk law IS the advertised plain law (the P1-1
+        # cross-pool bundle cap is tail-only, S_eff == S_base exactly for
+        # healthy pools -- no recipe_revision bump; round-29's C1 soft-min
+        # is likewise tail-only, and round-30's INDEPENDENT cone-margin
+        # drain gate has its own exact early return for safely-bulk cone
+        # margins, so healthy IN-CONE bulk stays bitwise -- out-of-cone
+        # pools are throttled off at ANY moment scale, by design), but the
+        # string names the regularization honestly. Keep the phrase
+        # "near-exhaustion bundle limiter (tail-only smoothstep; C1
+        # soft-min, cone-margin drain guard)" in sync with
+        # docs/polymer_moments_format.md section 4 and the solver's
+        # _bundle_limited_site.
         "site_scaling": ("site = max(0, mu_scaling)/V_poly read from the first proxy "
-                         "reactant's pool; multiplies ONCE; scales rf AND rr"),
+                         "reactant's pool; multiplies ONCE; scales rf AND rr; "
+                         "near-exhaustion bundle limiter (tail-only smoothstep; "
+                         "C1 soft-min, cone-margin drain guard)"),
         "chip_site_throttle": ("site = min(max(0,mu0), max(0,mu1)/a)/V_poly when "
                                "archetype=discrete_chip/1 and scaling=mu0 and a>0"),
         "kb_recipe": ("kb = kf/Keq; Keq(T) = (P0/(R*T))^dn * exp(-dG0/(R*T)), "

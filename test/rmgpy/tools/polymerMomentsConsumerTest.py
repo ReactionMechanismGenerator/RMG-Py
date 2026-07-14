@@ -798,27 +798,37 @@ class TestRefusedRowAndHomolysisGuards:
                            match=r"PVBr.*side_group_homolysis"):
             ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
 
-    def test_rejects_chain_mass_defect_pool_loudly(self):
-        """The X-loss mass-contract field ALONE (a pool carrying
-        chain_mass_defect_g_mol, no block) must also fail loudly: this
-        reference consumer's mass accounting does not implement the
-        normative condensed_mass_g formula, so integrating such a pool
-        would silently carry a wrong condensed mass. SGH kernel-v2 spawns
-        no feature pool and its carrier carries no defect, so the field is
-        planted directly on the carrier pool dict (the copy-carried-defect
-        shape, legal per Polymer.copy()) to keep the guard's coverage."""
+    def test_accepts_chain_mass_defect_pool_with_normative_closure(self):
+        """P1-2 flip of the former RED pin: this consumer now IMPLEMENTS
+        the normative defect-aware condensed-mass closure
+        (mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol) and the
+        defect-aware VE moment booking, so a pool carrying
+        chain_mass_defect_g_mol (additive optional field, e.g. an H-loss
+        _mod daughter) constructs cleanly and its mass closure applies the
+        per-chain defect. A malformed defect still fails loudly."""
         artifact, core = self._side_group_artifact()
         for p in artifact["pools"]:
             p.pop("side_group_homolysis", None)
-        # v2 leaves no defect behind; plant the copy-carried defect field.
-        next(p for p in artifact["pools"]
-             if p["label"] == "PVBr")["chain_mass_defect_g_mol"] = 79.904
-        assert any("chain_mass_defect_g_mol" in p
-                   for p in artifact["pools"])
+        pool = next(p for p in artifact["pools"] if p["label"] == "PVBr")
+        pool["chain_mass_defect_g_mol"] = 79.904
         order = [_yaml_label(s) for s in core]
-        with pytest.raises(ValueError,
-                           match=r"chain_mass_defect_g_mol"):
-            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+        consumer = ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+        assert consumer.pools["PVBr"]["defect"] == 79.904
+        y = np.zeros(len(order))
+        i0, i1, _ = consumer.pools["PVBr"]["mu"]
+        y[i0] = 2.0
+        y[i1] = 10.0
+        mw = consumer.pools["PVBr"]["mw"]
+        assert mw > 0.0
+        assert np.isclose(consumer.condensed_mass_g(y),
+                          10.0 * mw - 2.0 * 79.904, rtol=1e-12)
+        # Malformed defect (negative / non-finite / boolean) stays a loud
+        # construction error -- never a silent 0.0 default.
+        for bad in (-1.0, float("nan"), True):
+            pool["chain_mass_defect_g_mol"] = bad
+            with pytest.raises(ValueError,
+                               match=r"chain_mass_defect_g_mol"):
+                ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
 
     def test_rejects_end_radical_depropagation_block_loudly(self):
         """RED pin (schema 2.8, r74 SS2 kernel): this consumer does not

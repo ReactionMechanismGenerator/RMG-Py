@@ -96,6 +96,115 @@ ATTRIBUTION_TRUST_K = 100.0
 # max(..., SMALL_EPS). Generic solver infrastructure OUTSIDE the 2.8 kernel
 # contract -- the sidecar recipe strings are deliberately untouched.
 EXHAUSTION_FLOOR_K = 100.0
+# Near-exhaustion bundle limiter band (P1-A, round-27 re-adjudication of the
+# P1-1 hard-min): the cross-pool bundle cap S_cap is TAIL-ONLY. The band is
+# measured by the debited pool's ACCEPTED-STATE FLOOR DISTANCE
+#     E = min(mu0/f0, mu1/f1, mu2/f2),   f_k = self._pool_mu_floors[p, k]
+#                                            = max(SMALL_EPS, 100*atol[state])
+# i.e. E is DIMENSIONLESS: how many r81 accepted-state floors the pool's
+# thinnest debited moment sits above zero. f_k is the SAME per-state floor
+# the r81 negative-moment tripwire and the exhaustion census use, so the
+# limiter is deck-independent (no absolute mole constant) and scale-aware
+# (tracks the integrator's own atol basis), and it is guaranteed to be fully
+# active BEFORE any moment can approach the r81 floor (-f_k) -- no cliff at
+# the floor. Band edges (dimensionless floor distances):
+#   E <= E_LO (100 floors  = two decades above the census band |mu_k|<=f_k):
+#             the soft cap is fully active, S_free = softmin_p(S_base,
+#             S_cap terms) -- every debited moment's drain vanishes
+#             linearly near exhaustion (softmin_p <= every term);
+#   E >= E_HI (1e4 floors = four decades above the floor): S_free == S_base
+#             EXACTLY (early return -- bit-for-bit the pre-hard-min bulk
+#             law; healthy pools never feel the limiter);
+#   between:  C1 smoothstep blend w = 3e^2 - 2e^3 on the normalized
+#             e = (E - E_LO)/(E_HI - E_LO),
+#             S_free = w*S_base + (1-w)*softmin_p(S_base, S_cap terms).
+# S_free then passes through the INDEPENDENT cone-margin drain gate
+# (round-30 N1 below) to give the direction's S_eff.
+# With the default atol = 1e-16 the band spans ~[1e-12, 1e-10] mol on the
+# thinnest moment -- far below any healthy pool, exactly the depletion band
+# where the regen-#2 crash lives. (Mirrored in the numpy oracle consumer --
+# keep in sync.)
+#
+# Round-29/30 adjudication (regen-#3 IDID=-7 post-mortem): the
+# near-exhaustion bundle limiter (tail-only smoothstep; C1 soft-min,
+# cone-margin drain guard) adds two pieces. N2 lives strictly inside the
+# tail-only exhaustion structure; N1 is a STRUCTURALLY INDEPENDENT second
+# gate with its own band (round-30 re-adjudication: folding S_cone into
+# the E blend diluted the guard to w*S_base in-band and IGNORED it
+# entirely for out-of-cone pools with bulk-scale moments, E >= E_hi).
+# Bulk healthy IN-CONE pools stay bitwise S_base through both gates:
+#
+# (N1) CONE-MARGIN DRAIN GATE (S_cone), independent of E: a length-biased
+#      bundle debit (b1 = mu2/mu1; mu1/mu0 for end-group picks) moves the
+#      realizability cone margin Q10 = mu1 - mu0 by -(b1 - b0) per event;
+#      when b1 > b0 the drain pushes the pool toward/deeper into the
+#      unrealizable mu1 < mu0 cone, where b1 self-accelerates
+#      (d(b1)/d(mu1) = -mu2/mu1^2) and the mu3 closure freezes (regen-#3
+#      forensics: daughter parked at mu = [1e-3, 1.5e-7, 1.8e-3] carried
+#      b1 ~ 1.2e4 and d(b1)/d(mu1) ~ 8e10 into the RHS). For a
+#      cone-shrinking debit (b1 > b0):
+#        * Q10 <= 0 (pool AT or OUTSIDE the cone): the debited direction
+#          returns 0 REGARDLESS of E -- the cone-deepening drain is off
+#          even at bulk-scale moments;
+#        * Q10 > 0: the gate runs on its own dimensionless margin
+#          distance M = Q10 / max(f0, f1) (r81 floor units -- the same
+#          deck-independent, scale-aware anchoring as E; degree-1
+#          homogeneous in the moments over fixed floors), with band
+#          edges M_LO/M_HI mirroring E_LO/E_HI: M >= M_HI returns the
+#          exhaustion-limited S_free EXACTLY (margin safely bulk),
+#          M <= M_LO applies the soft cap softmin_p(S_free, S_cone) with
+#          S_cone = Q10/(V_poly*(b1 - b0)) (the event-site density that
+#          would spend the whole margin), and the band between blends
+#          the two C1 laws with the same 3m^2 - 2m^3 smoothstep.
+#      The gate throttles the EVENT RATE only (per-event moment ratios
+#      and mass bookkeeping untouched -- the bundle pick stays
+#      length-biased) and is direction-aware exactly like the exhaustion
+#      cap (forward debits src, reverse debits dst).
+#
+# (N2) C1 SOFT-MIN: every in-band hard min() -- the moment-min in E, the
+#      per-moment cap min, and min(S_base, S_cap) -- is a RECIPROCAL
+#      P-NORM soft-min over positive terms,
+#          softmin_p(x_i) = (sum_i x_i^(-p))^(-1/p),  p = SOFTMIN_P
+#      (positive, scale-homogeneous of degree 1, C^inf where all terms are
+#      positive, softmin_p <= min <= every term; NOT log-sum-exp, which
+#      needs a dimensional temperature and can go negative). Quantitative
+#      tie bias at p = 8: a two-term tie returns 2^(-1/8) = 0.917*min, a
+#      three-term tie 3^(-1/8) = 0.872*min -- a numerical regularization
+#      of near-exhaustion / near-cone states, NOT physical kinetics (ties
+#      only bind inside the bands; bulk is exact). The hard min()s put C0
+#      kinks INSIDE the band wherever an argmin switches, which is what
+#      fed DASPK's quasi-Newton the regen-#3 intermittent IDID=-7. The
+#      band edges stay C1: w' = 0 at both smoothstep ends and the soft
+#      term carries the (1-w) -> 0 factor at E_HI, so the exact early
+#      return introduces no derivative cliff. (The single accepted C0
+#      kink is at Q10 = 0 exactly, where the N1 hard zero meets the
+#      softmin_p(S_free, S_cone) -> 0 limit CONTINUOUSLY with a bounded
+#      one-sided slope -- adjudicated round-30, unlike the unbounded
+#      hard-min kinks this change removes.)
+BUNDLE_LIMITER_E_LO = 1.0e2
+BUNDLE_LIMITER_E_HI = 1.0e4
+# Cone-margin gate band (round-30 N1): dimensionless margin distance
+# M = Q10 / max(f0, f1) = how many r81 accepted-state floors of cone
+# margin remain. Same numeric edges as the exhaustion band on purpose
+# (both measure "distance to a singular manifold" in floor units), but
+# SEPARATE constants -- the two gates are independent jobs and their
+# bands may diverge under future adjudication. (Mirrored in the numpy
+# oracle consumer -- keep in sync.)
+CONE_MARGIN_M_LO = 1.0e2
+CONE_MARGIN_M_HI = 1.0e4
+# Soft-min sharpness p (round-29 N2), moderate by design. Chosen by the
+# Lipschitz slope-jump sweeps (the 3001-point C1 band sweep, the regen-#3
+# broken-state RHS sweep, and a targeted in-band cone-crossing sweep that
+# drives mu1 through mu0 inside the band -- the state family whose argmin
+# switches carried the old hard-min's C0 kinks): the old hard-min law
+# jumps its finite-difference slope by ~0.72 of the slope scale at the
+# crossing (an O(1) kink); the soft law measures ~1.8e-3 for p in
+# {6, 8, 12} (grid-curvature floor, statistically flat in p) rising to
+# ~2.5e-3 at p = 16 as the corner re-sharpens toward the hard min. p = 8
+# is the adjudicated moderate choice: on the smooth plateau, while staying
+# within ~8.3% of the hard min when two terms tie (2^(-1/8) = 0.917).
+# Smaller p over-throttles states with several comparable terms.
+BUNDLE_LIMITER_SOFTMIN_P = 8.0
 LN_EXP_OVERFLOW_GUARD = 700.0
 TAIL_CONC_MIN = 1e-9  # Minimum concentration (mol/m^3) to actuate handshake
 
@@ -1466,6 +1575,7 @@ class HybridPolymerSystem(ReactionSystem):
         # initialize_model lays out the state vector and the atol-derived
         # per-moment floors; the census set is per-rebuild (cleared there).
         self._pool_exhausted = None
+        self._pool_worst_trial_excursion = None
         self._pool_mu_floors = None
         self._exhaustion_census_emitted = set()
 
@@ -3452,6 +3562,57 @@ class HybridPolymerSystem(ReactionSystem):
                 "runner construction only).",
                 n_unstamped)
 
+        # P1-2 (atom-transfer mass defect): per-row MOMENT-space eject units.
+        # reaction_eject_units stores the MASS defect a_mass = (net
+        # non-polymer mass)/monomer_mw. For an atom-transfer conduit
+        # (H + parent <=> H2 + daughter) that mass is carried by the dst
+        # pool's per-chain chain_mass_defect_g_mol, NOT by a repeat-unit
+        # decrement: booking the moment shift with a_mass lands monomeric
+        # chains at mu1/mu0 = 1 - a, below the realizability cone mu1 >= mu0
+        # BY CONSTRUCTION (regen-#2 forensics: parent ground to DP~1 by
+        # scission, every forward event seeds the daughter unrealizable, the
+        # mu3 closure freezes, the reverse mu1 drain loses its self-limit).
+        # The moment shift must instead use
+        #     a_moment = a_mass - (defect_dst - defect_src)/monomer_mw,
+        # which is exactly 0 for H-loss conduits (chains transfer with
+        # UNCHANGED mu1; the gas still gains the H mass through the ordinary
+        # species stoichiometry, and the condensed-mass closure
+        # mu1*MW - mu0*defect books the loss) and exactly a_mass for true
+        # monomer/chip ejection rows (defect_delta = 0 -- byte-identical).
+        # Placement is load-bearing: AFTER the demotion loop, so src/dst are
+        # FINAL. Exact-cancellation roundoff (structural defect vs
+        # reaction-mass a, both g/mol sums differing by summation order) is
+        # snapped to a true zero shift.
+        self.reaction_eject_units_moment = self.reaction_eject_units.copy()
+        for r_ve in range(n_rxn):
+            if self.reaction_flux_archetype[r_ve] != FLUX_VOLATILE_EJECTION:
+                continue
+            src_ve = self.reaction_src_pool[r_ve]
+            dst_ve = self.reaction_dst_pool[r_ve]
+            if src_ve == -1 or dst_ve == -1 or src_ve == dst_ve:
+                continue
+            defect_src_ve = float(getattr(
+                self.polymer_pools[src_ve], "chain_mass_defect_g_mol", 0.0) or 0.0)
+            defect_dst_ve = float(getattr(
+                self.polymer_pools[dst_ve], "chain_mass_defect_g_mol", 0.0) or 0.0)
+            if defect_dst_ve == defect_src_ve:
+                continue
+            mw_src_ve = float(getattr(
+                self.polymer_pools[src_ve], "monomer_mw_g_mol", 0.0) or 0.0)
+            if mw_src_ve <= 0.0:
+                raise ValueError(
+                    f"VOLATILE_EJECTION row {r_ve} connects pools with "
+                    f"differing chain_mass_defect_g_mol "
+                    f"({defect_src_ve!r} -> {defect_dst_ve!r}) but source "
+                    f"pool '{self.polymer_pools[src_ve].label}' has no "
+                    f"positive monomer_mw_g_mol; cannot convert the mass "
+                    f"defect to a moment shift without fabricating mass.")
+            a_mass_ve = float(self.reaction_eject_units[r_ve])
+            a_mom_ve = a_mass_ve - (defect_dst_ve - defect_src_ve) / mw_src_ve
+            if abs(a_mom_ve) <= 1.0e-9 * max(1.0, abs(a_mass_ve)):
+                a_mom_ve = 0.0
+            self.reaction_eject_units_moment[r_ve] = a_mom_ve
+
         # item 18 (T2): double-count tripwire. A pool carrying BOTH a surviving
         # explicit beta-scission/chip reaction sourced from it (archetype
         # SCISSION_FRAGMENT or DISCRETE_CHIP) AND a nonzero phenomenological
@@ -4744,6 +4905,228 @@ class HybridPolymerSystem(ReactionSystem):
             return 1.0, mu2 / mu1, mu3 / mu1, True
         return 1.0, mu2 / mu1, 0.0, False
 
+    def _bundle_availability_cap(self, int pool_idx, y, double V_poly,
+                                 bint end_group):
+        """P1-1 directional bundle throttle cap (adjudicated regen-#2 fix):
+        the largest event-site density [mol/m^3_poly] the DEBITED pool can
+        sustain so that EVERY moment's drain vanishes linearly near
+        exhaustion:
+
+            S_cap = min over POSITIVE bundle terms b_k of mu_k/(V_poly*b_k)
+
+        One cross-pool VE/MIGRATION event debits the FULL per-chain bundle
+        (b0, b1, b2) from the debited pool, so a leg whose event rate scales
+        with mu1 drains mu1 at rate ~ k*C*mu1*(mu2/mu1) = k*C*mu2 -- the
+        per-event mu2/mu1 debit CANCELS the linear mu1-site self-limit the
+        pre-P1-1 code relied on (that round-22 P2b TODO's premise is FALSE),
+        and once the out-of-cone mu3 closure freezes (returns 0) the mu2
+        debit stops while the mu1 drain stays constant-rate: the regen-#2
+        mu1-negative crash. Scaling the direction's event rate by
+        min(S_base, S_cap) bounds every moment's drain by ~k*C*mu_k.
+        For end-group bundles at a consistent state all three caps equal
+        mu0/V_poly == S_base (no-op). Returns 0.0 for an empty bundle: no
+        chains to move, so the direction's GAS flux is throttled off WITH
+        its moment flux (they must never diverge).
+
+        Round-27 P1-A re-adjudication: for healthy polydisperse pools the
+        mu1-scaled cap mu1/b1 = mu1^2/mu2 < mu1 binds IN BULK whenever
+        PDI > 1, rewriting healthy cross-pool kinetics -- so this cap is
+        applied TAIL-ONLY via _bundle_limited_site (near-exhaustion bundle
+        limiter, tail-only smoothstep; C1 soft-min, cone-margin drain
+        guard), never as a global hard-min. Callers must go through
+        _bundle_limited_site.
+
+        Round-29 N2 (regen-#3 IDID=-7 adjudication; see the
+        BUNDLE_LIMITER_SOFTMIN_P block comment): the min over cap terms
+        is the reciprocal p-norm soft-min
+        softmin_p(x_i) = (sum x_i^(-p))^(-1/p) (C1 in-band; evaluated in
+        the overflow-safe factored form m*(sum (m/x_i)^p)^(-1/p), m the
+        hard min, algebraically identical). The round-30 N1 cone-margin
+        drain gate is NOT part of this cap: it is a structurally
+        independent second gate inside _bundle_limited_site (folding it
+        in here would dilute it through the E blend).
+        (mirrored in the numpy oracle consumer -- keep in sync)"""
+        cdef double m, acc, p, t0, t1, t2
+        b0, b1, b2, mu2_ok = self._chain_bundle(pool_idx, y, V_poly,
+                                                end_group)
+        if b0 <= 0.0:
+            return 0.0
+        mu_idx = self.polymer_pools[pool_idx].mu_indices
+        t0 = max(0.0, y[mu_idx[0]]) / (V_poly * b0)
+        t1 = -1.0
+        t2 = -1.0
+        if b1 > 0.0:
+            t1 = max(0.0, y[mu_idx[1]]) / (V_poly * b1)
+        if b2 > 0.0:
+            t2 = max(0.0, y[mu_idx[2]]) / (V_poly * b2)
+        # softmin_p over the included (non-negative) terms; any zero term
+        # zeroes the whole cap (softmin_p <= min).
+        m = t0
+        if t1 >= 0.0 and t1 < m:
+            m = t1
+        if t2 >= 0.0 and t2 < m:
+            m = t2
+        if m <= 0.0:
+            return 0.0
+        p = BUNDLE_LIMITER_SOFTMIN_P
+        acc = (m / t0) ** p
+        if t1 >= 0.0:
+            acc += (m / t1) ** p
+        if t2 >= 0.0:
+            acc += (m / t2) ** p
+        return m * acc ** (-1.0 / p)
+
+    def _pool_floor_distance(self, int pool_idx, y):
+        """E: the debited pool's accepted-state floor distance,
+
+            E = softmin_p(mu0/f0, mu1/f1, mu2/f2)
+
+        with f_k = self._pool_mu_floors[pool_idx, k]
+                 = max(SMALL_EPS, EXHAUSTION_FLOOR_K*atol[state]) -- the SAME
+        per-state r81 accepted-state floors the negative-moment tripwire
+        uses, so E is a dimensionless "how many r81 floors above exhaustion
+        is the thinnest moment" measure (deck-independent, scale-aware; see
+        the BUNDLE_LIMITER_E_LO/_E_HI block comment). Round-29 N2: the
+        moment-min is the reciprocal p-norm SOFT-min (softmin_p <= min;
+        within a factor 3^(-1/p) ~ 0.87 of it when all three terms tie), so
+        E is C1 in y and the smoothstep weight w(E) carries no argmin-switch
+        kink into the band. Moments are read from raw y with the same
+        max(0, .) clamp as every site factor. Falls back to per-moment
+        floors of max(SMALL_EPS, EXHAUSTION_FLOOR_K*atol) semantics via
+        _pool_mu_floors, which initialize_model always lays out for
+        configured pools."""
+        cdef double m, acc, p, e_k
+        cdef int k
+        mu_idx = self.polymer_pools[pool_idx].mu_indices
+        floors = self._pool_mu_floors
+        cdef double e0 = max(0.0, y[mu_idx[0]]) / floors[pool_idx, 0]
+        cdef double e1 = max(0.0, y[mu_idx[1]]) / floors[pool_idx, 1]
+        cdef double e2 = max(0.0, y[mu_idx[2]]) / floors[pool_idx, 2]
+        m = e0
+        if e1 < m:
+            m = e1
+        if e2 < m:
+            m = e2
+        if m <= 0.0:
+            return 0.0
+        p = BUNDLE_LIMITER_SOFTMIN_P
+        acc = (m / e0) ** p + (m / e1) ** p + (m / e2) ** p
+        return m * acc ** (-1.0 / p)
+
+    def _bundle_limited_site(self, int pool_idx, y, double V_poly,
+                             bint end_group, double s_base):
+        """Near-exhaustion bundle limiter (tail-only smoothstep; C1
+        soft-min, cone-margin drain guard) -- round-27 P1-A directional
+        bundle throttle, round-29 N2 soft-min, round-30 N1 independent
+        cone gate. TWO structurally independent gates in series:
+
+        Stage 1, exhaustion tail limiter (E band):
+            S_cap  = softmin_p over POSITIVE bundle terms mu_k/(V_poly*b_k)
+            E      = softmin_p(mu0/f0, mu1/f1, mu2/f2)  (accepted-state
+                                                  floor distance, unitless)
+            w      = smoothstep(E; E_lo, E_hi) = 3e^2 - 2e^3,
+                     e = clamp((E - E_lo)/(E_hi - E_lo), 0, 1)
+            S_free = w*S_base + (1-w)*softmin_p(S_base, S_cap)
+                     (== s_base EXACTLY when E >= E_hi -- early return,
+                     bit-for-bit the pre-hard-min bulk law)
+
+        Stage 2, cone-margin drain gate (M band, round-30: INDEPENDENT of
+        E -- an out-of-cone pool with bulk-scale moments must not slip
+        through the E early return, and an in-band out-of-cone pool must
+        not keep draining at w*S_base). Only for cone-shrinking debits
+        (b1 > b0, with b1 = mu2/mu1, or mu1/mu0 end-group; b0 = 1):
+            Q10    = mu1 - mu0            (realizability cone margin)
+            Q10 <= 0            -> S_eff = 0 REGARDLESS of E
+            M      = Q10 / max(f0, f1)    (margin distance, floor units)
+            M >= M_hi           -> S_eff = S_free EXACTLY (early return)
+            S_cone = Q10 / (V_poly*(b1 - b0))
+            M <= M_lo           -> S_eff = softmin_p(S_free, S_cone)
+            between             -> v-smoothstep blend of the two laws
+        Non-cone-shrinking debits (b1 <= b0) pass S_free through
+        untouched, as do empty pools (stage 1 already throttled those).
+
+        softmin_p(x_i) = (sum x_i^(-p))^(-1/p), the reciprocal p-norm
+        soft-min (p = BUNDLE_LIMITER_SOFTMIN_P; see its block comment and
+        the CONE_MARGIN_M_LO/_M_HI comment for the adjudication and the
+        band design).
+
+        Healthy IN-CONE bulk pools take both early returns: s_base comes
+        back bitwise, so byte-pins and bulk reversible-row detailed
+        balance (C_G* = Keq*S_base(A)/S_base(B)) are untouched. Inside
+        the bands every law is C1 (no hard-min argmin switches; w' = v' =
+        0 at all four band edges); the single accepted C0 kink is at
+        Q10 = 0 exactly, where softmin_p(S_free, S_cone) -> 0 meets the
+        hard zero CONTINUOUSLY with a bounded one-sided slope. s_base is
+        the direction's adjudicated site law (mu1/V_poly or mu0/V_poly
+        per row scaling, including the pre-existing a>0/a<0 VE
+        min(mu0, mu1/|a|) throttle), computed by the caller from the pool
+        this direction DEBITS (forward debits src, reverse debits dst).
+        (mirrored in get_reaction_rates and in the numpy oracle consumer --
+        keep in sync)"""
+        cdef double e_dist, e_n, w, cap, m, acc, p, s_free
+        cdef double y0c, y1c, y2c, b1c, q10, m_dist, v_n, v, s_cone, f_c
+        # ---- stage 1: near-exhaustion tail limiter --------------------
+        e_dist = self._pool_floor_distance(pool_idx, y)
+        if e_dist >= BUNDLE_LIMITER_E_HI:
+            s_free = s_base
+        else:
+            cap = self._bundle_availability_cap(pool_idx, y, V_poly,
+                                                end_group)
+            # softmin_p(s_base, cap): the reciprocal p-norm is
+            # associative, so folding s_base into the cap's own softmin
+            # IS the flat softmin over all terms. A zero cap (empty
+            # bundle) zeroes the whole soft cap.
+            if cap <= 0.0 or s_base <= 0.0:
+                cap = 0.0
+            else:
+                m = cap if cap < s_base else s_base
+                p = BUNDLE_LIMITER_SOFTMIN_P
+                acc = (m / s_base) ** p + (m / cap) ** p
+                cap = m * acc ** (-1.0 / p)
+            if e_dist <= BUNDLE_LIMITER_E_LO:
+                s_free = cap
+            else:
+                e_n = ((e_dist - BUNDLE_LIMITER_E_LO)
+                       / (BUNDLE_LIMITER_E_HI - BUNDLE_LIMITER_E_LO))
+                w = e_n * e_n * (3.0 - 2.0 * e_n)
+                s_free = w * s_base + (1.0 - w) * cap
+        # ---- stage 2: cone-margin drain gate (independent of E) -------
+        mu_idx = self.polymer_pools[pool_idx].mu_indices
+        y0c = max(0.0, y[mu_idx[0]])
+        y1c = max(0.0, y[mu_idx[1]])
+        y2c = max(0.0, y[mu_idx[2]])
+        if end_group:
+            if y0c / V_poly <= SMALL_EPS:
+                return s_free       # empty pool: stage 1 owns it
+            b1c = y1c / y0c         # uniform pick E[k]
+        else:
+            if y1c / V_poly <= SMALL_EPS:
+                return s_free
+            b1c = y2c / y1c         # length-biased pick E[k]
+        if b1c <= 1.0:              # b0 = 1: debit does not shrink Q10
+            return s_free
+        q10 = y1c - y0c
+        if q10 <= 0.0:
+            return 0.0              # out of cone: drain OFF, whatever E
+        floors = self._pool_mu_floors
+        f_c = max(floors[pool_idx, 0], floors[pool_idx, 1])
+        m_dist = q10 / f_c
+        if m_dist >= CONE_MARGIN_M_HI:
+            return s_free           # margin safely bulk: gate inactive
+        s_cone = q10 / (V_poly * (b1c - 1.0))
+        if s_free <= 0.0:
+            return s_free
+        m = s_cone if s_cone < s_free else s_free
+        p = BUNDLE_LIMITER_SOFTMIN_P
+        acc = (m / s_free) ** p + (m / s_cone) ** p
+        cap = m * acc ** (-1.0 / p)
+        if m_dist <= CONE_MARGIN_M_LO:
+            return cap
+        v_n = ((m_dist - CONE_MARGIN_M_LO)
+               / (CONE_MARGIN_M_HI - CONE_MARGIN_M_LO))
+        v = v_n * v_n * (3.0 - 2.0 * v_n)
+        return v * s_free + (1.0 - v) * cap
+
     @cython.boundscheck(False)
     def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y,
                  np.ndarray[np.float64_t, ndim=1] dydt,
@@ -5064,7 +5447,7 @@ class HybridPolymerSystem(ReactionSystem):
                     elif (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
                             and self.is_end_group_reaction[r_idx]
                             and self.reaction_src_pool[r_idx] != -1
-                            and self.reaction_eject_units[r_idx] > 0.0):
+                            and self.reaction_eject_units_moment[r_idx] > 0.0):
                         # a>0 VE shares the DISCRETE_CHIP exhaustion
                         # structure: mu0-scaled drain of mu1 that never touches
                         # mu0, so it would run mu1 linearly negative past
@@ -5083,8 +5466,52 @@ class HybridPolymerSystem(ReactionSystem):
                         mu_idx = self.polymer_pools[target_pool_idx].mu_indices
                         site = min(
                             max(0.0, y[mu_idx[0]]),
-                            max(0.0, y[mu_idx[1]]) / float(self.reaction_eject_units[r_idx]),
+                            max(0.0, y[mu_idx[1]]) / float(self.reaction_eject_units_moment[r_idx]),
                         ) / V_poly
+
+                    # P1-1 DIRECTIONAL BUNDLE THROTTLE, round-27 P1-A
+                    # tail-only form (cross-pool VE/MIGRATION legs; closes
+                    # the round-22 P2b TODO -- its "linear self-limit of the
+                    # mu1 site" premise is FALSE for the reverse leg, whose
+                    # per-event mu2/mu1 debit cancels the mu1 scaling and
+                    # drains mu1 at constant rate once the frozen
+                    # out-of-cone closure stops debiting mu2; regen-#2
+                    # forensics). Each debited direction's event rate runs
+                    # at the near-exhaustion bundle limiter (tail-only
+                    # smoothstep; C1 soft-min, cone-margin drain guard)
+                    # site -- two independent gates in series:
+                    #   S_free = w*S_base + (1-w)*softmin_p(S_base, S_cap),
+                    #   S_cap  = softmin_p(mu0/b0, mu1/b1, mu2/b2)/V_poly
+                    #            over the POSITIVE bundle terms of the
+                    #            POOL BEING DEBITED,
+                    #   then the round-30 cone-margin drain gate on the
+                    #   margin Q10 = mu1 - mu0 (only for b1 > b0 debits;
+                    #   INDEPENDENT of E): Q10 <= 0 -> 0 regardless of E;
+                    #   otherwise its own M = Q10/max(f0,f1) band blends
+                    #   toward softmin_p(S_free, S_cone),
+                    #   S_cone = Q10/(V_poly*(b1 - b0)),
+                    #   w = smoothstep of the debited pool's accepted-state
+                    #       floor distance E (see _bundle_limited_site) --
+                    # S_eff == S_base EXACTLY in bulk (E >= E_hi; healthy
+                    # pools keep the adjudicated site law bit-for-bit), and
+                    # the hard cap is fully active near exhaustion
+                    # (E <= E_lo). Applied BEFORE rate = rf - rr so species
+                    # writes, core_reaction_rates, edge promotion and the
+                    # section-5 moment dispatch all see the SAME limited
+                    # directional rate -- gas flux and moment flux must
+                    # never diverge. Forward debits src; the reverse limiter
+                    # is applied in the dst block below. (mirrored in
+                    # get_reaction_rates -- keep in sync)
+                    cross_bundle_throttle = False
+                    if self.reaction_flux_archetype[r_idx] in (
+                            FLUX_MIGRATION, FLUX_VOLATILE_EJECTION):
+                        src_bt = self.reaction_src_pool[r_idx]
+                        dst_bt = self.reaction_dst_pool[r_idx]
+                        if src_bt != -1 and dst_bt != -1 and src_bt != dst_bt:
+                            cross_bundle_throttle = True
+                            site = self._bundle_limited_site(
+                                src_bt, y, V_poly,
+                                self.is_end_group_reaction[r_idx], site)
 
                     rf *= site
                     # Direction-specific source availability (run-5 DASPK
@@ -5115,7 +5542,7 @@ class HybridPolymerSystem(ReactionSystem):
                             moment_idx = self.polymer_pools[dst_pool_idx].mu_indices[0]
                         if (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
                                 and self.is_end_group_reaction[r_idx]
-                                and self.reaction_eject_units[r_idx] < 0.0):
+                                and self.reaction_eject_units_moment[r_idx] < 0.0):
                             # Ruling round 20 item C, mirror direction: for
                             # a<0 the REVERSE leg of a cross-pool VE sheds
                             # |a| units/event from the dst pool it debits
@@ -5126,12 +5553,26 @@ class HybridPolymerSystem(ReactionSystem):
                             # GROWTH landing in dst) stays exempt. (mirrored
                             # in get_reaction_rates -- keep in sync)
                             mu_idx_dst = self.polymer_pools[dst_pool_idx].mu_indices
-                            rr *= min(
+                            site_rev = min(
                                 max(0.0, y[mu_idx_dst[0]]),
-                                max(0.0, y[mu_idx_dst[1]]) / (-float(self.reaction_eject_units[r_idx])),
+                                max(0.0, y[mu_idx_dst[1]]) / (-float(self.reaction_eject_units_moment[r_idx])),
                             ) / V_poly
                         else:
-                            rr *= max(0.0, y[moment_idx]) / V_poly
+                            site_rev = max(0.0, y[moment_idx]) / V_poly
+                        # P1-1 mirror direction (round-27 P1-A tail-only
+                        # form): the reverse leg debits the dst pool's FULL
+                        # per-chain bundle, so it carries the same
+                        # near-exhaustion bundle limiter (tail-only
+                        # smoothstep; C1 soft-min, cone-margin drain guard)
+                        # S_eff as the forward leg -- computed from the dst
+                        # pool's OWN moments, floor distance and cone
+                        # margin. (mirrored in get_reaction_rates --
+                        # keep in sync)
+                        if cross_bundle_throttle:
+                            site_rev = self._bundle_limited_site(
+                                dst_pool_idx, y, V_poly,
+                                self.is_end_group_reaction[r_idx], site_rev)
+                        rr *= site_rev
                     else:
                         rr *= site
             elif has_any_prod and not has_edge_prod:
@@ -5342,7 +5783,7 @@ class HybridPolymerSystem(ReactionSystem):
                     # (NO gas moles added inside this branch).
                     src = self.reaction_src_pool[r_idx]
                     dst = self.reaction_dst_pool[r_idx]
-                    a = float(self.reaction_eject_units[r_idx])
+                    a = float(self.reaction_eject_units_moment[r_idx])
                     # -1 cannot reach here (init demotes unresolved pools);
                     # the checks are defensive only (mirror MIGRATION).
                     if src != -1 and dst != -1 and src != dst:
@@ -6331,7 +6772,7 @@ class HybridPolymerSystem(ReactionSystem):
                 elif (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
                         and self.is_end_group_reaction[r_idx]
                         and self.reaction_src_pool[r_idx] != -1
-                        and self.reaction_eject_units[r_idx] > 0.0):
+                        and self.reaction_eject_units_moment[r_idx] > 0.0):
                     # a>0 VE exhaustion throttle -- parity with the
                     # residual's section-2 site scaling (keep in sync). site =
                     # min(mu0, mu1/a); guard a>0 (a<0 grows, no throttle).
@@ -6342,8 +6783,29 @@ class HybridPolymerSystem(ReactionSystem):
                         mu1_idx = self.pool_mu1_indices[p0_pool_idx]
                     site = min(
                         max(0.0, y[moment_idx]),
-                        max(0.0, y[mu1_idx]) / float(self.reaction_eject_units[r_idx]),
+                        max(0.0, y[mu1_idx]) / float(self.reaction_eject_units_moment[r_idx]),
                     ) / V_poly
+
+                # P1-1 directional bundle throttle, round-27 P1-A tail-only
+                # form -- parity with the residual's section-2 scaling
+                # (keep in sync): cross-pool VE/MIGRATION legs run each
+                # debited direction at the near-exhaustion bundle limiter
+                # (tail-only smoothstep; C1 soft-min, cone-margin drain
+                # guard): the E-band S_free = w*S_base +
+                # (1-w)*softmin_p(S_base, S_cap) of the debited pool
+                # (forward debits src) followed by the independent
+                # cone-margin drain gate (Q10 <= 0 -> 0 regardless of E);
+                # S_eff == S_base exactly for in-cone bulk pools.
+                cross_bundle_throttle = False
+                if self.reaction_flux_archetype[r_idx] in (
+                        FLUX_MIGRATION, FLUX_VOLATILE_EJECTION):
+                    src_bt = self.reaction_src_pool[r_idx]
+                    dst_bt = self.reaction_dst_pool[r_idx]
+                    if src_bt != -1 and dst_bt != -1 and src_bt != dst_bt:
+                        cross_bundle_throttle = True
+                        site = self._bundle_limited_site(
+                            src_bt, y_arr, V_poly,
+                            self.is_end_group_reaction[r_idx], site)
 
                 rf *= site
                 # Direction-specific source availability -- keep in sync with
@@ -6362,7 +6824,7 @@ class HybridPolymerSystem(ReactionSystem):
                         moment_idx = self.pool_mu0_indices[dst_pool_idx]
                     if (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
                             and self.is_end_group_reaction[r_idx]
-                            and self.reaction_eject_units[r_idx] < 0.0):
+                            and self.reaction_eject_units_moment[r_idx] < 0.0):
                         # Ruling round 20 item C mirror direction -- parity
                         # with the residual (keep in sync): a<0 reverse leg
                         # sheds |a|/event from the dst pool it debits, so
@@ -6370,12 +6832,23 @@ class HybridPolymerSystem(ReactionSystem):
                         dst_mu1_idx = self.polymer_pools[dst_pool_idx].mu_indices[1]
                         if self.pool_mu1_indices[dst_pool_idx] != -1:
                             dst_mu1_idx = self.pool_mu1_indices[dst_pool_idx]
-                        rr *= min(
+                        site_rev = min(
                             max(0.0, y[self.pool_mu0_indices[dst_pool_idx]]),
-                            max(0.0, y[dst_mu1_idx]) / (-float(self.reaction_eject_units[r_idx])),
+                            max(0.0, y[dst_mu1_idx]) / (-float(self.reaction_eject_units_moment[r_idx])),
                         ) / V_poly
                     else:
-                        rr *= max(0.0, y[moment_idx]) / V_poly
+                        site_rev = max(0.0, y[moment_idx]) / V_poly
+                    # P1-1 mirror direction, round-27 P1-A tail-only form
+                    # -- parity with the residual (keep in sync): reverse
+                    # leg debits the dst pool's full bundle, same tail-only
+                    # smoothstep (C1 soft-min, cone-margin drain guard)
+                    # S_eff from dst's own moments, floor distance and cone
+                    # margin.
+                    if cross_bundle_throttle:
+                        site_rev = self._bundle_limited_site(
+                            dst_pool_idx, y_arr, V_poly,
+                            self.is_end_group_reaction[r_idx], site_rev)
+                    rr *= site_rev
                 else:
                     rr *= site
             elif rr != 0.0:

@@ -19,6 +19,39 @@ R = 8.314472          # J/(mol K)
 P0 = 1.0e5            # Pa, Keq reference pressure
 SMALL_EPS = 1e-30
 LN_EXP_OVERFLOW_GUARD = 700.0
+# Near-exhaustion bundle limiter band (round-27 P1-A + round-29 N2 C1
+# soft-min; keep in sync with the generating solver's
+# BUNDLE_LIMITER_E_LO/_E_HI/_SOFTMIN_P, rmgpy/solver/polymer.pyx):
+# dimensionless accepted-state floor distances E = softmin_p(mu_k/f_k) with
+# f_k = max(SMALL_EPS, 100*atol). E >= E_HI: S_free == S_base exactly (bulk
+# untouched); E <= E_LO: soft bundle cap fully active (softmin_p over the
+# per-moment caps and S_base); between: C1 smoothstep blend. S_free then
+# passes the INDEPENDENT round-30 cone-margin drain gate (its own M band
+# below) to give S_eff.
+BUNDLE_LIMITER_E_LO = 1.0e2
+BUNDLE_LIMITER_E_HI = 1.0e4
+BUNDLE_LIMITER_SOFTMIN_P = 8.0
+# Cone-margin drain gate band (round-30 N1; keep in sync with the
+# generating solver's CONE_MARGIN_M_LO/_M_HI): dimensionless margin
+# distance M = Q10/f with Q10 = mu1 - mu0 and f the r81 floor. For
+# cone-shrinking debits (b1 > b0 = 1): Q10 <= 0 returns 0 REGARDLESS of
+# E; M >= M_HI returns S_free exactly; M <= M_LO applies
+# softmin_p(S_free, S_cone), S_cone = Q10/(V_poly*(b1 - 1)); between: C1
+# smoothstep blend.
+CONE_MARGIN_M_LO = 1.0e2
+CONE_MARGIN_M_HI = 1.0e4
+
+
+def softmin_p(terms, p=BUNDLE_LIMITER_SOFTMIN_P):
+    """Reciprocal p-norm soft-min over positive terms (round-29 N2):
+    softmin_p(x_i) = (sum x_i^(-p))^(-1/p), evaluated in the overflow-safe
+    factored form m*(sum (m/x_i)^p)^(-1/p) with m the hard min
+    (algebraically identical). Any non-positive term zeroes the result
+    (softmin_p <= min <= every term)."""
+    m = min(terms)
+    if m <= 0.0:
+        return 0.0
+    return m * sum((m / x) ** p for x in terms) ** (-1.0 / p)
 
 # The only channel kinds this consumer dispatches. Any other key inside a
 # pool's ``channels`` (e.g. radical_qssa_unzip) must fail at construction,
@@ -149,13 +182,24 @@ class ArtifactConsumer:
     mass_transfer : [dict]    [{"gas": label, "poly": label, "K": f, "kLa": f}]
     nasa : {label: {"Tmid": f, "low": [7], "high": [7]}}, optional
                               NASA7 data for Keq of reversible entries
+    atol : float, optional    generating solver's absolute tolerance (mole
+                              basis). Sets the near-exhaustion bundle
+                              limiter's per-moment floor
+                              f_k = max(SMALL_EPS, 100*atol), mirroring the
+                              solver's _pool_mu_floors (scalar-atol form).
+                              Must match the oracle's atol for parity.
     """
 
     def __init__(self, artifact, species_order, P, V_poly,
-                 mass_transfer=None, nasa=None):
+                 mass_transfer=None, nasa=None, atol=1e-16):
         self.P = float(P)
         self.V_poly = float(V_poly)
         self.nasa = nasa or {}
+        # Near-exhaustion bundle limiter floor (round-27 P1-A; keep in sync
+        # with the generating solver's initialize_model floors
+        # max(SMALL_EPS, EXHAUSTION_FLOOR_K*atol[state]) -- this consumer
+        # takes the scalar-atol form, uniform across moment slots).
+        self.mu_floor = max(SMALL_EPS, 100.0 * float(atol))
         self.idx = {lab: i for i, lab in enumerate(species_order)}
         n = len(species_order)
 
@@ -211,19 +255,32 @@ class ArtifactConsumer:
                     f"only. Integrating without the kernel would silently "
                     f"produce a wrong trajectory (outlet-free radical-end "
                     f"pools, missing gas monomer source).")
-            if "side_group_homolysis" in p or \
-                    "chain_mass_defect_g_mol" in p:
+            if "side_group_homolysis" in p:
                 raise ValueError(
                     f"pool {lab!r}: unsupported schema-2.7 side-group "
                     f"homolysis vocabulary (pool-level "
-                    f"side_group_homolysis block and/or the X-loss "
-                    f"feature-pool chain_mass_defect_g_mol mass "
-                    f"contract); this consumer implements channels "
+                    f"side_group_homolysis block); this consumer "
+                    f"implements channels "
                     f"{sorted(SUPPORTED_CHANNELS)} only. Integrating "
-                    f"without the kernel/defect would silently produce a "
-                    f"wrong trajectory and a wrong condensed mass, and "
-                    f"refused rows must never be converted into its "
-                    f"flux.")
+                    f"without the kernel would silently produce a "
+                    f"wrong trajectory, and refused rows must never be "
+                    f"converted into its flux.")
+            # Pool-level chain_mass_defect_g_mol (additive optional field,
+            # P1-2 atom-transfer mass defect): per-chain mass [g/mol]
+            # already shed to the gas (e.g. one abstracted H per chain on
+            # an H-loss _mod daughter). This consumer implements the SAME
+            # defect-aware booking as the generating solver: the VE moment
+            # shift uses a_moment = a_mass - (defect_dst - defect_src)/
+            # monomer_mw_src (exactly 0 for H-loss conduits -- chains
+            # transfer with UNCHANGED mu1), and the condensed-mass closure
+            # is mu1*monomer_mw_g_mol - mu0*chain_mass_defect_g_mol.
+            defect = p.get("chain_mass_defect_g_mol", 0.0)
+            if isinstance(defect, bool) or not isinstance(defect, (int, float)) \
+                    or not np.isfinite(float(defect)) or float(defect) < 0.0:
+                raise ValueError(
+                    f"pool {lab!r}: chain_mass_defect_g_mol={defect!r} "
+                    f"must be a finite non-negative per-chain g/mol mass "
+                    f"defect. Fix the artifact.")
             if lab not in self.configured:
                 continue
             unknown = sorted(set(p["channels"]) - SUPPORTED_CHANNELS)
@@ -240,6 +297,8 @@ class ArtifactConsumer:
                 "k_s": p["channels"]["scission"]["A"],
                 "k_u": p["channels"]["unzip"]["A"],
                 "routing": self.idx[routing] if routing else None,
+                "mw": float(p.get("monomer_mw_g_mol", 0.0) or 0.0),
+                "defect": float(defect),
             }
 
         # reactions: precompute index forms
@@ -275,6 +334,37 @@ class ArtifactConsumer:
                           if e["archetype"] == "volatile_ejection/1"
                           else 0.0),
             })
+            # P1-2 atom-transfer mass defect (keep in sync with the
+            # generating solver's reaction_eject_units_moment): the artifact
+            # eject_units stamp is the MASS defect a_mass; the MOMENT shift
+            # for a cross-pool VE row is
+            #   a_moment = a_mass - (defect_dst - defect_src)/monomer_mw_src
+            # (exactly 0 for H-loss conduits: chains transfer with UNCHANGED
+            # mu1 while the gas gains the H mass through the ordinary step-5
+            # species path; byte-identical a_moment == a_mass when the pools
+            # carry equal defects, e.g. true monomer/chip ejection rows).
+            ent = self.entries[-1]
+            a_mom = float(ent["eject"])
+            if (ent["arch"] == "volatile_ejection/1"
+                    and ent["src"] is not None and ent["dst"] is not None
+                    and ent["src"] != ent["dst"]
+                    and ent["src"] in self.pools
+                    and ent["dst"] in self.pools):
+                d_src = self.pools[ent["src"]]["defect"]
+                d_dst = self.pools[ent["dst"]]["defect"]
+                if d_dst != d_src:
+                    mw_src = self.pools[ent["src"]]["mw"]
+                    if mw_src <= 0.0:
+                        raise ValueError(
+                            f"entry {e['id']}: pools {ent['src']!r} -> "
+                            f"{ent['dst']!r} carry differing "
+                            f"chain_mass_defect_g_mol but the source pool "
+                            f"has no positive monomer_mw_g_mol; cannot "
+                            f"convert the mass defect to a moment shift.")
+                    a_mom = a_mom - (d_dst - d_src) / mw_src
+                    if abs(a_mom) <= 1.0e-9 * max(1.0, abs(ent["eject"])):
+                        a_mom = 0.0
+            ent["eject_moment"] = a_mom
 
         self.mass_transfer = []
         for mt in (mass_transfer or []):
@@ -309,6 +399,112 @@ class ArtifactConsumer:
         if np.isfinite(mu3):
             return 1.0, mu2 / mu1, mu3 / mu1, True
         return 1.0, mu2 / mu1, 0.0, False
+
+    def _bundle_cap(self, pool, y, end_group):
+        """P1-1 directional bundle throttle cap (keep in sync with the
+        generating solver's _bundle_availability_cap): the largest
+        event-site density [mol/m^3] the debited pool sustains so every
+        moment's drain vanishes linearly near exhaustion --
+        S_cap = softmin_p over positive bundle terms b_k of
+        mu_k/(V_poly*b_k) (round-29 N2 soft-min). 0.0 for an empty bundle
+        (gas and moment flux throttle off together). The round-30
+        cone-margin drain gate is NOT part of this cap -- it is an
+        independent second gate in _bundle_limited_site."""
+        b0, b1, b2, _ok = self._chain_bundle(pool, y, end_group)
+        if b0 <= 0.0:
+            return 0.0
+        i0, i1, i2 = self.pools[pool]["mu"]
+        terms = [max(0.0, y[i0]) / (self.V_poly * b0)]
+        if b1 > 0.0:
+            terms.append(max(0.0, y[i1]) / (self.V_poly * b1))
+        if b2 > 0.0:
+            terms.append(max(0.0, y[i2]) / (self.V_poly * b2))
+        return softmin_p(terms)
+
+    def _floor_distance(self, pool, y):
+        """E: the debited pool's accepted-state floor distance,
+        E = softmin_p(mu0/f0, mu1/f1, mu2/f2) with
+        f_k = max(SMALL_EPS, 100*atol) (round-29 N2 soft moment-min; keep
+        in sync with the generating solver's _pool_floor_distance)."""
+        i0, i1, i2 = self.pools[pool]["mu"]
+        return softmin_p([max(0.0, y[i0]), max(0.0, y[i1]),
+                          max(0.0, y[i2])]) / self.mu_floor
+
+    def _bundle_limited_site(self, pool, y, end_group, s_base):
+        """Near-exhaustion bundle limiter (tail-only smoothstep; C1
+        soft-min, cone-margin drain guard), round-27 P1-A throttle +
+        round-29 N2 soft-min + round-30 N1 independent cone gate (keep in
+        sync with the generating solver's _bundle_limited_site). Stage 1
+        (E band):
+            S_free = w*S_base + (1-w)*softmin_p(S_base, S_cap),
+            w = 3e^2 - 2e^3 on e = clamp((E - E_lo)/(E_hi - E_lo), 0, 1);
+            E >= E_hi returns s_base EXACTLY (bulk law untouched).
+        Stage 2 (M band, INDEPENDENT of E; only cone-shrinking debits,
+        b1 > b0 = 1): Q10 = mu1 - mu0 <= 0 -> 0 regardless of E;
+        M = Q10/floor >= M_hi -> S_free exactly; M <= M_lo ->
+        softmin_p(S_free, S_cone) with S_cone = Q10/(V_poly*(b1 - 1));
+        between: C1 v-smoothstep blend."""
+        # stage 1: exhaustion tail limiter
+        e_dist = self._floor_distance(pool, y)
+        if e_dist >= BUNDLE_LIMITER_E_HI:
+            s_free = s_base
+        else:
+            cap = self._bundle_cap(pool, y, end_group)
+            if cap <= 0.0 or s_base <= 0.0:
+                cap = 0.0
+            else:
+                cap = softmin_p([s_base, cap])
+            if e_dist <= BUNDLE_LIMITER_E_LO:
+                s_free = cap
+            else:
+                e_n = ((e_dist - BUNDLE_LIMITER_E_LO)
+                       / (BUNDLE_LIMITER_E_HI - BUNDLE_LIMITER_E_LO))
+                w = e_n * e_n * (3.0 - 2.0 * e_n)
+                s_free = w * s_base + (1.0 - w) * cap
+        # stage 2: cone-margin drain gate (independent of E)
+        i0, i1, i2 = self.pools[pool]["mu"]
+        y0c = max(0.0, y[i0])
+        y1c = max(0.0, y[i1])
+        y2c = max(0.0, y[i2])
+        if end_group:
+            if y0c / self.V_poly <= SMALL_EPS:
+                return s_free       # empty pool: stage 1 owns it
+            b1c = y1c / y0c
+        else:
+            if y1c / self.V_poly <= SMALL_EPS:
+                return s_free
+            b1c = y2c / y1c
+        if b1c <= 1.0:              # b0 = 1: debit does not shrink Q10
+            return s_free
+        q10 = y1c - y0c
+        if q10 <= 0.0:
+            return 0.0              # out of cone: drain OFF, whatever E
+        m_dist = q10 / self.mu_floor
+        if m_dist >= CONE_MARGIN_M_HI:
+            return s_free           # margin safely bulk: gate inactive
+        s_cone = q10 / (self.V_poly * (b1c - 1.0))
+        if s_free <= 0.0:
+            return s_free
+        cap = softmin_p([s_free, s_cone])
+        if m_dist <= CONE_MARGIN_M_LO:
+            return cap
+        v_n = ((m_dist - CONE_MARGIN_M_LO)
+               / (CONE_MARGIN_M_HI - CONE_MARGIN_M_LO))
+        v = v_n * v_n * (3.0 - 2.0 * v_n)
+        return v * s_free + (1.0 - v) * cap
+
+    def condensed_mass_g(self, y):
+        """Defect-aware condensed-mass closure over all configured pools
+        (P1-2; keep in sync with the generating solver's
+        get_total_polymer_condensed_mass_g):
+        sum_p max(0, mu1_p*monomer_mw_g_mol_p -
+        mu0_p*chain_mass_defect_g_mol_p) [g]."""
+        total = 0.0
+        for pool in self.pools.values():
+            i0, i1, _ = pool["mu"]
+            total += max(0.0, max(0.0, y[i1]) * pool["mw"]
+                         - max(0.0, y[i0]) * pool["defect"])
+        return total
 
     # ----- RHS (format doc §4-§7) ----------------------------------------
 
@@ -353,36 +549,64 @@ class ArtifactConsumer:
                 is_ve = e["arch"] == "volatile_ejection/1"
                 if e["arch"] == "discrete_chip/1" and e["scaling"] == "mu0" and e["a"] > 0:
                     site = min(max(0.0, y[i0]), max(0.0, y[i1]) / e["a"]) / Vp
-                elif (is_ve and e["scaling"] == "mu0" and e["eject"] > 0.0):
+                elif (is_ve and e["scaling"] == "mu0"
+                        and e["eject_moment"] > 0.0):
                     # a>0 END-GROUP VE exhaustion throttle -- parity with
                     # the generating solver's section-2 site scaling
                     # (polymer.pyx; keep in sync): site = min(mu0, mu1/a);
                     # a<0 GROWS the chain (exempt, no spurious negative
                     # site from mu1/a). Ruling round 20 item C: applies to
                     # same-pool AND cross-pool rows (the forward leg debits
-                    # src either way).
+                    # src either way). P1-2: the throttle rides the MOMENT
+                    # shift a_moment, not the mass stamp.
                     site = min(max(0.0, y[i0]),
-                               max(0.0, y[i1]) / e["eject"]) / Vp
+                               max(0.0, y[i1]) / e["eject_moment"]) / Vp
                 else:
                     mi = i0 if e["scaling"] == "mu0" else i1
                     site = max(0.0, y[mi]) / Vp
+                # P1-1 directional bundle throttle, round-27 P1-A tail-only
+                # form -- parity with the generating solver's section-2
+                # scaling (keep in sync): each debited direction of a
+                # cross-pool VE/MIGRATION leg runs at the near-exhaustion
+                # bundle limiter (tail-only smoothstep; C1 soft-min,
+                # cone-margin drain guard)
+                # S_eff = w*S_base + (1-w)*softmin_p(S_base, S_cap) of the
+                # pool it debits, BEFORE rf - rr, so species flux and
+                # moment flux never diverge; S_eff == S_base exactly in
+                # bulk.
+                cross_bt = (e["arch"] in ("volatile_ejection/1",
+                                          "migration/1")
+                            and e["dst"] is not None
+                            and e["dst"] != e["src"])
+                if cross_bt:
+                    site = self._bundle_limited_site(
+                        e["src"], y, e["scaling"] == "mu0", site)
                 rf *= site
-                if is_ve and e["dst"] is not None and e["dst"] != e["src"]:
+                if cross_bt:
                     # Direction-specific source availability for cross-pool
-                    # VE (parity with the solver's adjudicated Part C
-                    # scaling): the reverse leg debits the DST pool, so its
-                    # site factor comes from the dst pool's own moments
-                    # (same moment order as the forward site). Item C mirror
-                    # direction: for a<0 the reverse leg sheds |a|/event
-                    # from dst, so its end-group availability carries the
-                    # same min(mu0, mu1/|a|) throttle.
+                    # VE/MIGRATION (parity with the solver's adjudicated
+                    # Part C scaling): the reverse leg debits the DST pool,
+                    # so its site factor comes from the dst pool's own
+                    # moments (same moment order as the forward site). Item
+                    # C mirror direction: for a<0 the reverse leg sheds
+                    # |a|/event from dst, so its end-group availability
+                    # carries the same min(mu0, mu1/|a|) throttle. P1-1
+                    # (round-27 P1-A tail-only form): plus the same
+                    # near-exhaustion bundle limiter (tail-only smoothstep;
+                    # C1 soft-min, cone-margin drain guard) from dst's own
+                    # moments, floor distance and cone margin.
                     d0, d1, _ = self.pools[e["dst"]]["mu"]
-                    if e["scaling"] == "mu0" and e["eject"] < 0.0:
-                        rr *= min(max(0.0, y[d0]),
-                                  max(0.0, y[d1]) / (-e["eject"])) / Vp
+                    if (is_ve and e["scaling"] == "mu0"
+                            and e["eject_moment"] < 0.0):
+                        site_rev = min(
+                            max(0.0, y[d0]),
+                            max(0.0, y[d1]) / (-e["eject_moment"])) / Vp
                     else:
                         di = d0 if e["scaling"] == "mu0" else d1
-                        rr *= max(0.0, y[di]) / Vp
+                        site_rev = max(0.0, y[di]) / Vp
+                    site_rev = self._bundle_limited_site(
+                        e["dst"], y, e["scaling"] == "mu0", site_rev)
+                    rr *= site_rev
                 else:
                     rr *= site
 
@@ -465,7 +689,7 @@ class ArtifactConsumer:
                 # are written here (single-count mass booking, ruling
                 # round 20 increment 5).
                 src, dst = e["src"], e["dst"]
-                a = float(e["eject"])
+                a = float(e["eject_moment"])
                 if src and dst and src != dst:
                     # Cross-pool: from-leg loses the FULL bundle; to-leg
                     # gains the a-SHIFTED bundle (sa = -a forward, +a

@@ -433,7 +433,9 @@ class TestRadicalQssaChannelSerialization:
                 "condensed_species": [],
                 "site_scaling": ("site = max(0, mu_scaling)/V_poly read from "
                                  "the first proxy reactant's pool; multiplies "
-                                 "ONCE; scales rf AND rr"),
+                                 "ONCE; scales rf AND rr; near-exhaustion "
+                                 "bundle limiter (tail-only smoothstep; "
+                                 "C1 soft-min, cone-margin drain guard)"),
                 "chip_site_throttle": ("site = min(max(0,mu0), max(0,mu1)/a)"
                                        "/V_poly when archetype=discrete_chip/1 "
                                        "and scaling=mu0 and a>0"),
