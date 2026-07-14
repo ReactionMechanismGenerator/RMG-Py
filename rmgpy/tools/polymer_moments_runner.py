@@ -906,6 +906,30 @@ def _schema_minor(ver):
     return -1
 
 
+def _check_stale_topology(artifact, allow_stale=False):
+    """Reject an artifact stamped ``conventions.stale_topology: true``
+    unless the caller explicitly opted in (round-27 P1-C enforcement).
+
+    A stale artifact was emitted AFTER the model topology changed but
+    BEFORE the next solver rebuild (format doc section 8): its
+    engine-derived surfaces (configured_pools, gas-mask-derived
+    condensed_species, per-pool index maps, refused/dst_pool row state)
+    describe the PRE-rebuild model and may lie about liveness. Replaying
+    it as if fresh silently reproduces those lies, so the default is a
+    loud rejection naming the explicit debug override."""
+    conv = artifact.get("conventions") or {}
+    if conv.get("stale_topology") and not allow_stale:
+        raise ValueError(
+            "artifact carries conventions.stale_topology: true -- it was "
+            "emitted after a model topology change but before the next "
+            "solver rebuild, so its engine-derived surfaces "
+            "(configured_pools, condensed gas mask, refused/dst_pool row "
+            "state) describe the PRE-rebuild model and may lie about "
+            "liveness. Refusing to replay it as if fresh. Pass "
+            "allow_stale=True (CLI: --allow-stale) ONLY to debug this "
+            "stale emission deliberately.")
+
+
 def _check_schema_version_known(artifact):
     """Reject any artifact whose schema_version is not one this loader
     implements (2.0 .. 2.8, or the SGH kernel-v2 major bump 3.0)."""
@@ -3024,7 +3048,8 @@ def _output_pool_labels(artifact, idx):
 
 def build_system_from_artifact(artifact, species, reactions,
                                T0, P, V_poly, initial_moles,
-                               mass_transfer_spec, initial_moments=None):
+                               mass_transfer_spec, initial_moments=None,
+                               allow_stale=False):
     """Assemble the HybridPolymerSystem oracle from consumer-world inputs.
 
     Returns (system, core_species, all_reactions) — all_reactions includes
@@ -3032,8 +3057,19 @@ def build_system_from_artifact(artifact, species, reactions,
     per-segment generate_rate_coefficients call (HybridPolymerSystem is a
     cdef class; do not hang extra attributes on it). The system is fully
     initialized at T0 (initialize_model runs through initialize_solver,
-    rmgpy/solver/polymer.pyx:601-610)."""
-    # Envelope gate first (schema minor must be one this loader implements),
+    rmgpy/solver/polymer.pyx:601-610).
+
+    ``allow_stale`` (round-27 P1-C, debug-only): a
+    ``conventions.stale_topology: true`` artifact is REJECTED by default --
+    every engine-derived surface in it (configured_pools, condensed
+    gas-mask, refused/dst_pool row state) describes the PRE-rebuild model
+    and may lie about liveness. Pass ``allow_stale=True`` (CLI:
+    ``--allow-stale``) only to debug such an emission deliberately.
+    """
+    # Stale-emission gate before anything else: a stale artifact's shape
+    # may be internally consistent, so no later validator would catch it.
+    _check_stale_topology(artifact, allow_stale)
+    # Envelope gate next (schema minor must be one this loader implements),
     # then the QSSA-vocabulary/version cross-check: a 2.0 artifact carrying a
     # radical_qssa_unzip block (or a 2.1 artifact carrying the weak-link
     # sub-vocabulary) is malformed regardless of pool configuration.
@@ -3492,6 +3528,11 @@ def main(argv=None):
                         help="JSON: [{gas, poly, K, kLa}] (labels; operating "
                              "condition, not artifact content)")
     parser.add_argument("--output", required=True, help="CSV path")
+    parser.add_argument("--allow-stale", action="store_true",
+                        help="DEBUG ONLY: accept an artifact stamped "
+                             "conventions.stale_topology: true (emitted "
+                             "after a topology change, before the solver "
+                             "rebuild); its liveness/refusal state may lie")
     args = parser.parse_args(argv)
 
     with open(args.artifact) as fh:
@@ -3517,7 +3558,7 @@ def main(argv=None):
         artifact, species, reactions,
         T0=profile[0][1], P=args.pressure, V_poly=args.v_poly,
         initial_moles=initial_moles, mass_transfer_spec=mass_transfer_spec,
-        initial_moments=initial_moments)
+        initial_moments=initial_moments, allow_stale=args.allow_stale)
     rows = run_segments(rs, core, artifact, all_reactions, profile,
                         n_points_per_segment=args.n_points)
 

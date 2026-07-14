@@ -2944,6 +2944,17 @@ class HybridPolymerSystem(ReactionSystem):
             atol, rtol, sensitivity, sens_atol, sens_rtol, filter_reactions, conditions
         )
 
+        # Round-27 P1-C: engine rebuild signature for the sidecar
+        # stale_topology predicate -- stable (label, index) identity keys of
+        # the core this engine was ACTUALLY built against. save_everything
+        # compares it against the current model core at sidecar write; any
+        # mismatch (including a same-count species/reaction swap the old
+        # count predicate missed) marks the emission stale in-band.
+        # Function-local import: avoids a solver->polymer module cycle.
+        from rmgpy.polymer import core_topology_signature
+        self.core_topology_signature = core_topology_signature(
+            core_species, core_reactions)
+
         cdef int n_core = self.num_core_species
         cdef int n_rxn = len(core_reactions) + len(edge_reactions)
         # Flag end-group (terminal) reactions so their proxy rate scales by

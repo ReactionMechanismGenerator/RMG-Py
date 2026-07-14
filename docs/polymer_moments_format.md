@@ -591,6 +591,32 @@ mid-run engine-spawned daughters are solver-configured in the generating
 engine under the item-16 split — §2/§13). Consumers MUST use these lists,
 not name heuristics.
 
+`conventions.stale_topology` (optional boolean, **additive** — absent on
+fresh artifacts; P1-4, regen-#2 stale-sidecar adjudication; enforcement
+hardened round-27 P1-C): `true` means the generating RMG wrote this
+artifact AFTER the model topology changed (enlarge/promotion) but BEFORE
+the next solver rebuild, so every engine-derived surface in it —
+`configured_pools`, the gas-mask-derived `condensed_species`, per-pool
+index maps, and the `refused`/`dst_pool` state on `reactions[]` rows —
+describes the PRE-rebuild model and may lie about liveness (regen #2: all
+8 conduit rows emitted `refused: true` / `dst_pool: null` while the
+post-rebuild solver ran 5 of them live). Staleness is decided by
+comparing an ENGINE REBUILD SIGNATURE captured at `initialize_model`
+(stable `(label, index)` identity keys of the core species + core
+reactions the engine was built against) with the same signature of the
+current core at sidecar write — bare count equality is not enough (a
+same-count species/reaction swap between rebuilds is stale). On a stale
+emission the generating side replaces the unqualified POOL LIVENESS ALARM
+with a qualified WARNING (grep token: `POOL LIVENESS ALARM
+(STALE_TOPOLOGY)`) — the census numbers are reported but disclaimed as
+pre-rebuild. Consumers MUST treat a stale artifact's refusal/liveness
+census as advisory, never load-bearing; pool identity/moments remain
+usable. The reference runner (`rmgpy/tools/polymer_moments_runner.py`)
+REJECTS a stale artifact outright unless the explicit debug flag
+`--allow-stale` (API: `allow_stale=True`) is passed. Mid-run
+per-iteration saves are stale by construction; the final artifact of a
+normally-converged run is fresh (key absent).
+
 `conventions.generation_defaults` (optional, **NON-normative** — see §7):
 generation-run provenance for consumer-supplied operating conditions.
 Shape: `{"mass_transfer": [{"gas_species", "poly_species", "K", "kLa",

@@ -843,7 +843,7 @@ class TestPoolLivenessAlarm:
     honestly refuse every row, so this must NEVER raise."""
 
     @staticmethod
-    def _artifact_with(refused):
+    def _artifact_with(refused, stale_topology=False):
         # One pool-coupled reversible row (proxy 'poly' resolves the configured
         # pool). refused=True stamps it conduit-deferred (still listed).
         pool = Polymer(label="poly", monomer="[CH2][CH2]",
@@ -866,7 +866,8 @@ class TestPoolLivenessAlarm:
             [pool], core_species=core, core_reactions=[rxn],
             configured_pool_labels=["poly"],
             condensed_species=mus + [proxy],
-            cantera_index_map={id(rxn): [0]})
+            cantera_index_map={id(rxn): [0]},
+            stale_topology=stale_topology)
 
     def test_all_refused_pool_emits_liveness_alarm(self, caplog):
         import logging
@@ -887,6 +888,154 @@ class TestPoolLivenessAlarm:
         assert not art["reactions"][0].get("refused")
         assert not any("POOL LIVENESS ALARM" in r.getMessage()
                        for r in caplog.records)
+
+
+class TestStaleTopologySidecar:
+    """P1-4 stale-sidecar contract (regen-#2 forensics; enforcement
+    hardened round-27 P1-C): save_everything() runs after
+    enlarge/promotion but before the next solver rebuild, so the
+    artifact's engine-derived surfaces (configured_pools, refusal state)
+    can describe a core the engine never saw -- regen #2 emitted all 8
+    conduit rows refused=true/dst_pool null (POOL LIVENESS ALARM 8/0)
+    while the post-rebuild solver ran 5 of them live. The artifact must
+    say so IN-BAND: conventions.stale_topology = true, and the liveness
+    alarm (computed from the stale refusal census) becomes a QUALIFIED
+    warning with the grep token "POOL LIVENESS ALARM (STALE_TOPOLOGY)"
+    (the round-26 downgrade to info is reversed). Fresh artifacts stay
+    byte-identical (key absent). Staleness is decided by the engine
+    rebuild SIGNATURE (stable (label, index) identity keys captured at
+    initialize_model), not bare counts: a same-count swap is stale."""
+
+    def test_stale_marker_emitted_and_alarm_qualified(self, caplog):
+        import logging
+        with caplog.at_level(logging.INFO):
+            art = TestPoolLivenessAlarm._artifact_with(refused=True,
+                                                       stale_topology=True)
+        assert art["conventions"]["stale_topology"] is True
+        # rows still emitted (stamp-but-keep)
+        assert len(art["reactions"]) == 1
+        assert art["reactions"][0]["refused"] is True
+        # Round-27 P1-C: the stale emission is a WARNING with the
+        # qualified grep token; the UNQUALIFIED alarm stays absent.
+        stale_alarms = [r for r in caplog.records
+                        if "POOL LIVENESS ALARM (STALE_TOPOLOGY)"
+                        in r.getMessage()]
+        assert stale_alarms and all(
+            r.levelno == logging.WARNING for r in stale_alarms)
+        assert not any(
+            "POOL LIVENESS ALARM" in r.getMessage()
+            and "(STALE_TOPOLOGY)" not in r.getMessage()
+            for r in caplog.records)
+        assert any("stale_topology" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_fresh_artifact_has_no_marker_and_alarm_still_fires(self, caplog):
+        import logging
+        with caplog.at_level(logging.WARNING):
+            art = TestPoolLivenessAlarm._artifact_with(refused=True)
+        assert "stale_topology" not in art["conventions"]
+        assert any("POOL LIVENESS ALARM" in r.getMessage()
+                   for r in caplog.records)
+        # Fresh emission: the stale-qualified WARNING must be absent.
+        assert not any("POOL LIVENESS ALARM (STALE_TOPOLOGY)"
+                       in r.getMessage() for r in caplog.records)
+
+    def test_save_everything_marks_pre_rebuild_sidecar_stale(self, tmp_path):
+        """End-to-end pin through the live save path (regression pin 5):
+        a save BEFORE any rebuild of the changed topology marks the
+        sidecar stale; a save with a signature-matched engine emits fresh.
+        Round-27 P1-C: staleness is the engine rebuild SIGNATURE (stable
+        (label, index) identity keys captured at initialize_model), so a
+        SAME-COUNT species swap between rebuilds is caught stale -- the
+        exact case the old core/reaction count predicate missed."""
+        import time as _time
+        from types import SimpleNamespace
+
+        import numpy as np
+
+        from rmgpy.rmg.main import RMG
+        from rmgpy.rmg.model import CoreEdgeReactionModel
+        from rmgpy.solver.polymer import (HybridPolymerSystem,
+                                          PolymerPoolConfig)
+
+        pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                       end_groups=["[H]", "[H]"], cutoff=3,
+                       moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                       k_scission=1.0, k_unzip=0.0)
+        proxy = _spc("CCCCCCCCCCCCCCCCCCCCCCCC", "poly")
+        mus = [_mu_dummy("poly_mu0"), _mu_dummy("poly_mu1"),
+               _mu_dummy("poly_mu2")]
+        n2 = _spc("N#N", "N2")
+        core_species = [pool, proxy] + mus + [n2]
+
+        cfg = PolymerPoolConfig(
+            label="poly", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(2, 3, 4), monomer_poly_index=None,
+            k_scission=1.0, k_unzip=0.0, tail_kinetics=None)
+        mask = np.array([False, False, False, False, False, True])
+        engine = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={n2: 1.0},
+            V_poly=1.0, polymer_pools=[cfg], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"poly": (1.0, 5.0, 30.0)},
+            termination=[])
+        engine.initialize_model(list(core_species), [], [], [])
+
+        model = CoreEdgeReactionModel()
+        model.core.species.extend(core_species)
+        model.new_species_list = []
+
+        rmg = RMG.__new__(RMG)
+        rmg._observers = []
+        rmg.reaction_libraries = []
+        rmg.exec_time = []
+        rmg.initialization_time = _time.time()
+        rmg.profiler = None
+        rmg.reaction_model = model
+        rmg.output_directory = str(tmp_path)
+        rmg.reaction_systems = [SimpleNamespace(solver=engine)]
+
+        # Engine counts match the current core: fresh artifact, no marker.
+        rmg.save_everything()
+        with open(tmp_path / "polymer_pools.json") as fh:
+            art = json.load(fh)
+        assert "stale_topology" not in art["conventions"]
+
+        # SAME-COUNT SWAP (round-27 P1-C required pin): one core species
+        # replaced by a different one -- counts unchanged, so the old
+        # count predicate would emit FRESH; the identity-key signature
+        # must mark it stale.
+        swapped_out = model.core.species[-1]
+        model.core.species[-1] = _spc("C", "CH4")
+        assert len(model.core.species) == engine.num_core_species
+        rmg.save_everything()
+        with open(tmp_path / "polymer_pools.json") as fh:
+            art = json.load(fh)
+        assert art["conventions"]["stale_topology"] is True
+
+        # Restoring the original species restores signature equality:
+        # fresh again (the predicate keys on identity, not history).
+        model.core.species[-1] = swapped_out
+        rmg.save_everything()
+        with open(tmp_path / "polymer_pools.json") as fh:
+            art = json.load(fh)
+        assert "stale_topology" not in art["conventions"]
+
+        # Enlarge-equivalent: the core grows, the engine is NOT rebuilt
+        # (exactly the save-after-enlarge-before-rebuild window).
+        model.core.species.append(_spc("C", "CH4"))
+        rmg.save_everything()
+        with open(tmp_path / "polymer_pools.json") as fh:
+            art = json.load(fh)
+        assert art["conventions"]["stale_topology"] is True
+
+        # A polymer run whose engine was never built at all (the initial
+        # save path) is pre-rebuild by definition.
+        rmg.reaction_systems = [SimpleNamespace(solver=None)]
+        rmg.save_everything()
+        with open(tmp_path / "polymer_pools.json") as fh:
+            art = json.load(fh)
+        assert art["conventions"]["stale_topology"] is True
 
 
 class TestCompileReactionEntries:

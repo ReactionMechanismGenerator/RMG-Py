@@ -2123,7 +2123,8 @@ class RMG(util.Subject):
         try:
             from rmgpy.polymer import (Polymer, write_polymer_pools_sidecar,
                                        _artifact_species_label, collect_polymer_pool_registry,
-                                       derive_condensed_species)
+                                       derive_condensed_species,
+                                       core_topology_signature)
             # Identity-deduped: a freshly-promoted daughter Polymer sits in
             # BOTH core.species and new_species_list until the next enlarge
             # clears it, so a plain concatenation would serialize the same
@@ -2184,12 +2185,43 @@ class RMG(util.Subject):
                 initial_explicit_by_pool = None
                 generation_mass_transfer = None
                 generation_v_poly_m3 = None
+                sidecar_stale_topology = False
                 for system in (self.reaction_systems or []):
                     engine = getattr(system, "solver", None) or system
                     pools_cfg = getattr(engine, "polymer_pools", None)
                     if not pools_cfg:
                         continue
                     engine_pools_cfg = pools_cfg
+                    # P1-4 stale-sidecar tripwire (regen-#2 forensics):
+                    # save_everything() runs AFTER enlarge but BEFORE the
+                    # next solver rebuild, so every engine-frozen surface
+                    # read below (polymer_pools, gas_species_mask, per-pool
+                    # index maps) plus the rebuild-stamped refusal state on
+                    # the Reaction objects can describe a core the engine
+                    # has never seen (regen #2: all 8 conduit rows emitted
+                    # refused=true/dst_pool null while the post-rebuild
+                    # solver ran 5 live). Round-27 P1-C predicate: compare
+                    # the ENGINE REBUILD SIGNATURE the solver captured at
+                    # initialize_model (stable (label, index) identity keys
+                    # of the core species + reactions it was built against;
+                    # rmgpy.polymer.core_topology_signature) with the same
+                    # signature of the CURRENT core. Bare count equality is
+                    # NOT enough -- a same-count species/reaction swap or
+                    # restamp between rebuilds must be caught. Signature
+                    # unavailable (pre-P1-C engine, or an engine never
+                    # rebuilt) => stale. Forcing initialize_model here
+                    # instead would clobber live filter-threshold state
+                    # mid-run, so the honest marker is the non-perturbing
+                    # fix.
+                    engine_sig = getattr(
+                        engine, "core_topology_signature", None)
+                    try:
+                        sidecar_stale_topology = (
+                            engine_sig is None
+                            or engine_sig != core_topology_signature(
+                                core_species, core_reactions))
+                    except (TypeError, ValueError):
+                        sidecar_stale_topology = True
                     solver_mask = getattr(engine, "gas_species_mask", None)
                     # Stage-A explicit-DP loadings ({pool_label: {dp: moles}},
                     # the exact shape set_initial_conditions step 2 seeds) —
@@ -2251,12 +2283,19 @@ class RMG(util.Subject):
                     configured = [getattr(p, "label", "") for p in engine_pools_cfg] or None
                     configured_pools_cfg = engine_pools_cfg
                 else:
-                    # No live engine (direct/test invocation): fall back to the
+                    # No live engine (direct/test invocation, or the initial
+                    # save before any solver was ever built): fall back to the
                     # full registry. build_polymer_moments_artifact's own default
                     # would do the same; passing it explicitly keeps the fallback
                     # condensed-species derivation keyed on the SAME pool set.
                     configured = [getattr(p, "label", "") for p in pool_registry] or None
                     configured_pools_cfg = pool_registry
+                    # P1-4: a polymer run that HAS reaction systems but no
+                    # live polymer engine yet (initial save at main.py's
+                    # "Completed initial enlarge edge step" path) is by
+                    # definition pre-rebuild -- mark it.
+                    if self.reaction_systems:
+                        sidecar_stale_topology = True
 
                 # condensed_species: the engine's final-core mask is honored
                 # verbatim when length-matched; otherwise derive membership from
@@ -2279,6 +2318,7 @@ class RMG(util.Subject):
                     generation_mass_transfer=generation_mass_transfer,
                     generation_v_poly_m3=generation_v_poly_m3,
                     explicit_dp_species_by_pool=explicit_dp_species_by_pool,
+                    stale_topology=sidecar_stale_topology,
                 )
         except Exception as e:
             logging.warning(f"Failed to write polymer_pools.json sidecar: {e}", exc_info=True)

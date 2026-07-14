@@ -1869,6 +1869,33 @@ class Polymer(Species):
         )
         daughter.parent_pool_label = self.label
         daughter.spawn_metadata = {"source": source}
+        # P1-2 atom-transfer mass defect (adjudicated regen-#2 ruling): an
+        # H-loss feature daughter's chains carry the parent's repeat units
+        # INTACT minus the abstracted atom(s) -- a MASS defect, not a DP
+        # decrement. Booking the shed mass through the VE moment shift
+        # (a = MW(H)/MW_monomer) lands monomeric chains at mu1/mu0 = 1 - a,
+        # below the realizability cone BY CONSTRUCTION. Instead the pool
+        # carries the exact per-chain defect,
+        #     defect_dst = defect_src + (MW(parent unit) - MW(feature unit))
+        # (accumulates if chained), the conduit's moment shift becomes
+        # a_moment = a_mass - (defect_dst - defect_src)/monomer_mw = 0, and
+        # the condensed-mass closure mu1*MW - mu0*defect books the loss.
+        # Gated to atom-transfer scale (< _VE_ATOM_TRANSFER_UNITS of a
+        # repeat unit): a monomer-scale structural difference is not an
+        # atom transfer, and a mass-GAIN feature (delta < 0) keeps the
+        # inherited defect (its conduit stays a growth leg, existing
+        # behavior).
+        basis = self.feature_monomer if self.feature_monomer is not None \
+            else self.monomer
+        defect_src = float(getattr(self, "chain_mass_defect_g_mol", 0.0)
+                           or 0.0)
+        daughter.chain_mass_defect_g_mol = defect_src
+        if basis is not None and feature_monomer is not None:
+            delta_g = (basis.get_molecular_weight()
+                       - feature_monomer.get_molecular_weight()) * 1000.0
+            if (0.0 < delta_g
+                    < _VE_ATOM_TRANSFER_UNITS * self.monomer_mw_g_mol):
+                daughter.chain_mass_defect_g_mol = defect_src + delta_g
         return daughter
 
     def _stitch_wing(self, side: str) -> Molecule:
@@ -7232,6 +7259,31 @@ def _serialize_pool_for_sidecar(pool: 'Polymer',
     return d
 
 
+def core_topology_signature(core_species, core_reactions):
+    """Stable identity signature of a (core species, core reactions) pair
+    (round-27 P1-C stale_topology predicate).
+
+    The generating solver captures this at ``initialize_model`` time
+    (``HybridPolymerSystem.core_topology_signature``) and
+    ``RMG.save_everything`` recomputes it from the CURRENT core at sidecar
+    write: any difference means the model topology changed after the last
+    engine rebuild, so the emitted artifact's engine-derived surfaces are
+    stale (``conventions.stale_topology``).
+
+    Identity keys are ``(label, index)`` per species and
+    ``(index, label)`` per reaction -- stable across the save/rebuild
+    window, unlike ``id()`` (recyclable across GC), and strictly stronger
+    than the bare count equality this replaces: a same-count species or
+    reaction swap/restamp between rebuilds flips the signature.
+    """
+    return (
+        tuple((getattr(s, "label", None), getattr(s, "index", None))
+              for s in (core_species or [])),
+        tuple((getattr(r, "index", None), getattr(r, "label", None))
+              for r in (core_reactions or [])),
+    )
+
+
 def write_polymer_pools_sidecar(
     pool_registry: List['Polymer'],
     output_dir: str,
@@ -7248,6 +7300,7 @@ def write_polymer_pools_sidecar(
     generation_mass_transfer=None,
     generation_v_poly_m3=None,
     explicit_dp_species_by_pool=None,
+    stale_topology=False,
 ) -> str:
     """Emit ``polymer_pools.json`` alongside ``chem.yaml`` (design doc §6).
 
@@ -7322,6 +7375,7 @@ def write_polymer_pools_sidecar(
         generation_mass_transfer=generation_mass_transfer,
         generation_v_poly_m3=generation_v_poly_m3,
         explicit_dp_species_by_pool=explicit_dp_species_by_pool,
+        stale_topology=stale_topology,
     )
     path = os.path.join(output_dir, filename)
     with open(path, "w", encoding="utf-8") as fh:
@@ -7590,7 +7644,8 @@ def build_polymer_moments_artifact(pool_registry,
                                    initial_explicit_by_pool=None,
                                    generation_mass_transfer=None,
                                    generation_v_poly_m3=None,
-                                   explicit_dp_species_by_pool=None):
+                                   explicit_dp_species_by_pool=None,
+                                   stale_topology=False):
     """Assemble the full schema-2.0 polymer moments artifact payload.
 
     Normative contract: docs/polymer_moments_format.md. The payload mirrors
@@ -7685,7 +7740,26 @@ def build_polymer_moments_artifact(pool_registry,
     _n_pool_rxn = len(reactions)
     _n_refused = sum(1 for e in reactions if e.get("refused"))
     _n_live = _n_pool_rxn - _n_refused
-    if _n_pool_rxn > 0 and _n_live == 0:
+    if stale_topology and _n_pool_rxn > 0 and _n_refused > 0:
+        # P1-4 / round-27 P1-C: the refusal census below would be computed
+        # against a PRE-REBUILD configured-pool set (regen-#2: 8/8 rows
+        # refused, dst_pool null, alarm 8/0 -- a lie relative to the
+        # solver's post-rebuild 5-live state). The artifact carries an
+        # explicit stale_topology marker, and the emission is flagged as a
+        # QUALIFIED warning (grep token: POOL LIVENESS ALARM
+        # (STALE_TOPOLOGY)) rather than the unqualified alarm -- the census
+        # numbers are reported but explicitly disclaimed as stale (the
+        # round-26 downgrade to info is reversed: a stale emission is
+        # operationally alarming and must stay grep-visible).
+        logging.warning(
+            "POOL LIVENESS ALARM (STALE_TOPOLOGY): %d of %d pool-coupled "
+            "reaction row(s) refused, but the model topology changed after "
+            "the last solver rebuild -- refusal/liveness state is STALE "
+            "(artifact carries stale_topology: true); the unqualified pool "
+            "liveness alarm is suppressed because this census reflects the "
+            "pre-rebuild model.",
+            _n_refused, _n_pool_rxn)
+    elif _n_pool_rxn > 0 and _n_live == 0:
         logging.warning(
             "POOL LIVENESS ALARM: %d pool-coupled reaction row(s), 0 live "
             "(all refused) -- the refusal predicates may be over-broad; review "
@@ -8036,6 +8110,22 @@ def build_polymer_moments_artifact(pool_registry,
     # provenance, never RMG-computed numbers.
     if thermal_instrument is not None:
         conventions["thermal_analysis_inputs"] = thermal_instrument
+
+    # conventions.stale_topology (P1-4, regen-#2 stale-sidecar forensics):
+    # save_everything() can run after an enlarge/promotion but before the
+    # next solver rebuild, so every engine-derived surface in this artifact
+    # (configured_pools, gas-mask condensed_species, refusal/dst_pool state
+    # on reactions[]) describes the PRE-rebuild model -- regen #2's artifact
+    # showed all 8 conduit rows refused=true/dst_pool null against a solver
+    # that ran 5 of them live after its rebuild. When the caller detects
+    # that the model topology changed after the last rebuild it passes
+    # stale_topology=True and the artifact says so IN-BAND instead of lying
+    # silently ("a completed run probably rebuilds later" is not a
+    # contract). Purely ADDITIVE conventions key: fresh artifacts stay
+    # byte-identical (key absent), TA-side loaders ignore unknown
+    # conventions keys (probed 2026-07-04).
+    if stale_topology:
+        conventions["stale_topology"] = True
 
     return {
         "schema_version": schema_version,

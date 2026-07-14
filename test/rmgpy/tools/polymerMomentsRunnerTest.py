@@ -146,6 +146,51 @@ def _load_artifact(qssa_deck):
         return json.load(fh)
 
 
+class TestStaleTopologyRejection:
+    """Round-27 P1-C enforcement: the reference runner must REJECT an
+    artifact stamped conventions.stale_topology: true (its engine-derived
+    surfaces describe the PRE-rebuild model and may lie about liveness)
+    unless the explicit allow_stale=True / --allow-stale debug flag is
+    passed, with a loud error naming the flag."""
+
+    def test_stale_artifact_rejected_without_flag(self, deck):
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact.setdefault("conventions", {})["stale_topology"] = True
+        species, reactions = load_chem_yaml(chem_path)
+        with pytest.raises(ValueError, match=r"stale_topology.*--allow-stale"
+                                             r"|--allow-stale"):
+            build_system_from_artifact(
+                artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+                initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+    def test_stale_artifact_accepted_with_flag(self, deck):
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        artifact.setdefault("conventions", {})["stale_topology"] = True
+        species, reactions = load_chem_yaml(chem_path)
+        rs, core, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[],
+            allow_stale=True)
+        assert rs is not None and len(core) > 0
+
+    def test_fresh_artifact_unaffected_by_default(self, deck):
+        """No marker => the gate is a no-op (fresh artifacts load exactly
+        as before, flag or no flag)."""
+        chem_path, art_path = deck
+        with open(art_path) as fh:
+            artifact = json.load(fh)
+        assert "stale_topology" not in artifact.get("conventions", {})
+        species, reactions = load_chem_yaml(chem_path)
+        rs, core, _ = build_system_from_artifact(
+            artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+            initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+        assert rs is not None and len(core) > 0
+
+
 class TestRadicalQssaArtifactLoader:
     """build_system_from_artifact must parse + validate the sidecar's
     radical_qssa_unzip block (milestone 3): shared-validator field rules,
