@@ -2320,6 +2320,15 @@ class PolymerFluxArchetype(IntEnum):
                            # + cross-pool polymer B; mass leaves the chain as
                            # the ejected volatile (a = fractional source-monomer
                            # equivalents ejected). Mass-losing, unlike MIGRATION.
+    MOMENT_CREDIT_CONDUIT = 7  # M18.3 surrogate archetype
+                           # moment_credit_conduit/1: an admitted refused-class
+                           # row (shapes A/B) consuming a real chain-scale
+                           # discrete and crediting the destination pool a
+                           # point-mass bundle (1, u, u^2) per event; single
+                           # gas product, irreversible-only (DESIGN §2). DEAD
+                           # in M18.3: stamped only behind the disabled
+                           # CONDUIT_ADMISSION_ENABLED flag (no solver
+                           # dispatch arm exists yet -- that is M18.4).
 
 
 _flux_archetype_warned = set()
@@ -2524,6 +2533,13 @@ def subatol_export_clamp_count():
 
 
 _refused_census_warned = set()
+
+# M18.3 re-export (import-safe: rmgpy.polymer_conduit has no module-level
+# RMG imports): the run-boundary hard reset for the conduit candidate
+# ledger + the warn-once sets that feed it (_refused_census_warned above and
+# the conduit keys of _flux_archetype_warned) -- DESIGN §3.3 "reset both or
+# neither". Called once per run from RMG.initialize (rmgpy/rmg/main.py).
+from rmgpy.polymer_conduit import reset_conduit_state  # noqa: E402,F401
 
 _pool_cap_warned = set()
 
@@ -3278,6 +3294,32 @@ def restamp_flipped_polymer_archetype(forward) -> None:
         _reaction_census_label(forward))
 
 
+def _apply_conduit_irreversible_rewrite(forward, verdict) -> None:
+    """[r39-P1] irreversible export rewrite (DESIGN §4.2), applied ONLY on
+    an ADMIT verdict: an ALIGNED reversible source needs no kinetics
+    fabrication -- its forward Arrhenius already IS the admitted-direction
+    rate -- so the ONE mutation is ``forward.reversible = False``. All
+    downstream directionality then agrees bit-for-bit automatically: the
+    generating solver computes kb = 0, chem.yaml prints the ``=>`` arrow
+    (rmgpy/cantera.py keys the arrow on ``reversible``), and the sidecar
+    row serializes ``kinetics.reversible: false``. Idempotent; DEAD CODE in
+    M18.3 (the admit arm is behind the disabled flag) -- unit-tested
+    directly. A REVOKED row keeps the rewrite (irreversibility only removes
+    flux; conservative). The what-else-reads-.reversible mutation-safety
+    audit is OQ-2 and MUST close before the M18.4 flag flip."""
+    if not getattr(verdict, "needs_irreversible_rewrite", False):
+        return
+    if not getattr(forward, "reversible", True):
+        return  # already rewritten (idempotent): no second census line
+    forward.reversible = False
+    logging.warning(
+        "MOMENT-CREDIT CONDUIT: reverse killed (irreversible export "
+        "rewrite, [r39-P1]) on %s key=%s -- the reaction object now "
+        "exports as an irreversible '=>' row in the admitted direction.",
+        _reaction_census_label(forward),
+        getattr(verdict, "candidate_key", ""))
+
+
 def stamp_gas_association_refusal(forward, pool_registry=None) -> None:
     """PP v1 campaign refusal (adjudicated adversarial round 63, grounded in
     the run-5 rerun): an R_Recombination-style row that bridges PURE gas-phase
@@ -3425,16 +3467,73 @@ def stamp_gas_association_refusal(forward, pool_registry=None) -> None:
             _discrete_is_chain_scale_proxy_derived(s, row_pools)
             and not _discrete_resolves_to_pool_state(s, row_pools)
             for s in list(reactants) + list(products)):
+        # M18.3 (DESIGN §3.1): the ONLY object-side admission site in v1.
+        # evaluate_conduit_admission is default-DENY (gates G0-G7); the
+        # admit arm below is FAIL-CLOSED DEAD CODE this increment
+        # (CONDUIT_ADMISSION_ENABLED is False), so every row still refuses
+        # exactly as M18.2 left it while the census suffix carries the
+        # would-be verdict (WOULD-ADMIT / deny reason) for OQ-1 sizing.
+        from rmgpy.polymer_conduit import (CONDUIT_ADMISSION_ENABLED,
+                                           CANDIDATE_KEY_NOTE,
+                                           AdmissionVerdict,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission,
+                                           lookup_candidate)
+        verdict = evaluate_conduit_admission(forward, row_pools)
+        if verdict.admitted:
+            # r42 P1-4(b): G1 consulted the ledger at EVALUATION time;
+            # re-consult at the STAMPING decision point so a
+            # feature-radical sighting registered since (the FR census is
+            # warn-once and runs in either order relative to this site)
+            # deterministically blocks the admit arm. Fail-closed
+            # narrowing only -- dead code in M18.3 like the arm itself.
+            _entry = lookup_candidate(verdict.candidate_key)
+            if _entry is not None and "feature_radical" in _entry["censuses"]:
+                verdict = AdmissionVerdict(
+                    admitted=False,
+                    deny_reason="feature-radical-overlap",
+                    candidate_key=verdict.candidate_key)
+        if verdict.admitted and CONDUIT_ADMISSION_ENABLED:
+            # M18.4 live-admission arm (dead in M18.3; no solver dispatch
+            # arm exists yet). Stamp the conduit archetype + row params
+            # (§2.1), apply the [r39-P1] irreversible export rewrite, and
+            # census the admission LOUDLY.
+            forward.polymer_refused = False
+            forward.polymer_refused_accumulating = False
+            forward.polymer_flux_archetype = int(
+                PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+            forward.polymer_conduit_dst_pool = verdict.dst_pool
+            forward.polymer_conduit_params = {
+                "admission_direction": "chain_to_pool",
+                "chain_units": float(verdict.chain_units),
+                "gas_products": [{
+                    "species": verdict.gas_product[0],
+                    "stoich": 1,
+                    "mw_g_mol": float(verdict.gas_product[1]),
+                }],
+                "gas_units": float(verdict.gas_units),
+                "candidate_key": verdict.candidate_key,
+                "candidate_key_note": CANDIDATE_KEY_NOTE,
+            }
+            _apply_conduit_irreversible_rewrite(forward, verdict)
+            logging.warning(
+                "MOMENT-CREDIT CONDUIT ADMITTED (moment_credit_conduit/1): "
+                "%s -> dst_pool=%s chain_units=%.6g gas_units=%.6g "
+                "key=%s rewrite=%s",
+                _reaction_census_label(forward), verdict.dst_pool,
+                verdict.chain_units, verdict.gas_units,
+                verdict.candidate_key, verdict.needs_irreversible_rewrite)
+            return
         forward.polymer_refused = True
         forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
         # M18.2 (census-only): classify the refused row for the future
         # moment_credit_conduit/1 and APPEND the structured annotation to
         # the unchanged census line below. Zero behavior change: the row
         # stays refused, nothing is stamped, the suffix is append-only
-        # (round-36 P1(b)) and the hook never raises.
-        from rmgpy.polymer_conduit import annotate_refused_row
+        # (round-36 P1(b)) and the hook never raises. M18.3: the suffix
+        # additionally carries the admission verdict (would_admit / deny).
         _conduit_suffix = annotate_refused_row(
-            forward, row_pools, census="r93_general")
+            forward, row_pools, census="r93_general", verdict=verdict)
         _warn_general_chain_scale_pool_coupling(
             _reaction_census_label(forward), _conduit_suffix)
         return
@@ -7603,6 +7702,7 @@ ARCHETYPE_TERM_NAMES = {
     int(PolymerFluxArchetype.UNRESOLVED): "legacy_mu1/1",
     int(PolymerFluxArchetype.DISCRETE_CHIP): "discrete_chip/1",
     int(PolymerFluxArchetype.VOLATILE_EJECTION): "volatile_ejection/1",
+    int(PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT): "moment_credit_conduit/1",
 }
 
 _ARRHENIUS_A_UNITS = {1: "s^-1", 2: "m^3/(mol*s)", 3: "m^6/(mol^2*s)"}

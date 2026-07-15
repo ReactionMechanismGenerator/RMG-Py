@@ -54,6 +54,7 @@ from rmgpy import settings
 from rmgpy.cantera import CanteraWriter
 from rmgpy.chemkin import ChemkinWriter
 from rmgpy.constraints import fails_species_constraints, reset_polymer_warning, validate_explicit_dp_oligomers
+from rmgpy.polymer_conduit import reset_conduit_state
 from rmgpy.data.base import Entry
 from rmgpy.data.kinetics.library import KineticsLibrary
 from rmgpy.data.rmg import RMGDatabase
@@ -508,6 +509,14 @@ class RMG(util.Subject):
 
         # Reset the once-per-run unbounded-polymer warning.
         reset_polymer_warning()
+
+        # M18.3 run-boundary HARD reset (polymer conduit, DESIGN §3.3):
+        # clear the candidate ledger AND the warn-once census sets that
+        # feed it, together ("reset both or neither") -- candidate keys are
+        # run-scoped label(index) strings, and a cleared ledger with
+        # un-cleared warn-once sets would starve the FEATURE-RADICAL side
+        # of re-sightings.
+        reset_conduit_state()
 
         # Log start timestamp
         logging.info("RMG execution initiated at " + time.asctime() + "\n")

@@ -99,8 +99,11 @@ Round-36 landing P1s carried by this module:
 """
 
 import logging
+import math
 import threading
 from collections import Counter
+from dataclasses import dataclass
+from typing import Optional, Tuple
 
 # ---------------------------------------------------------------------------
 # Configuration (round-32 adjudicated constants)
@@ -418,14 +421,20 @@ class _CensusRegistry:
         self._entries = {}
         self.unclassified_total = 0
 
-    def register(self, key, census, bucket):
+    def register(self, key, census, bucket, epoch=None):
         with self._lock:
             entry = self._entries.setdefault(
                 key, {"censuses": set(), "bucket_by_census": {},
                       "effective_bucket": None, "shadow_bucket": None,
-                      "precedence": None})
+                      "precedence": None, "epochs": set()})
             first_sighting = census not in entry["censuses"]
             entry["censuses"].add(census)
+            # M18.3 ledger epochs (DESIGN §3.3): the engine rebuild-signature
+            # id (or RMG iteration int) under which this sighting was
+            # recorded. Bookkeeping only -- FR stickiness stays set-membership
+            # of "feature_radical" in censuses, across ALL epochs of the run.
+            if epoch is not None:
+                entry["epochs"].add(epoch)
             entry["bucket_by_census"][census] = bucket
             if bucket == "UNCLASSIFIED" and first_sighting:
                 self.unclassified_total += 1
@@ -439,14 +448,16 @@ class _CensusRegistry:
                 entry["effective_bucket"] = bucket
                 entry["shadow_bucket"] = None
                 entry["precedence"] = None
-            return dict(entry, censuses=set(entry["censuses"]))
+            return dict(entry, censuses=set(entry["censuses"]),
+                        epochs=set(entry["epochs"]))
 
     def lookup(self, key):
         with self._lock:
             entry = self._entries.get(key)
             if entry is None:
                 return None
-            return dict(entry, censuses=set(entry["censuses"]))
+            return dict(entry, censuses=set(entry["censuses"]),
+                        epochs=set(entry["epochs"]))
 
     def counts(self):
         with self._lock:
@@ -466,9 +477,9 @@ class _CensusRegistry:
 CENSUS_REGISTRY = _CensusRegistry()
 
 
-def register_candidate(key, census, bucket):
+def register_candidate(key, census, bucket, epoch=None):
     """Record a candidate sighting; returns the resolved registry entry."""
-    return CENSUS_REGISTRY.register(key, census, bucket)
+    return CENSUS_REGISTRY.register(key, census, bucket, epoch=epoch)
 
 
 def lookup_candidate(key):
@@ -476,9 +487,38 @@ def lookup_candidate(key):
     return CENSUS_REGISTRY.lookup(key)
 
 
-def reset_census_registry():
-    """Test hook: clear the process-wide ledger."""
+def reset_conduit_state():
+    """Run-boundary HARD reset (DESIGN §3.3, called once from RMG
+    initialization -- rmgpy/rmg/main.py RMG.initialize): clears the
+    process-wide candidate ledger AND the warn-once sets that feed it,
+    together ("reset both or neither"). The FEATURE-RADICAL census is
+    warn-once per (reaction, reason) (rmgpy/polymer.py
+    _refused_census_warned); resetting the ledger without that set would
+    silently starve the FR side of re-sightings in the new run, so a
+    fresh run could admit a candidate its own censuses never got to
+    re-block. Also clears the run-level conduit flux accumulator (§4.4).
+    Import-safe: the rmgpy.polymer sets are cleared lazily so this module
+    keeps its no-module-level-RMG-imports contract."""
     CENSUS_REGISTRY.reset()
+    _CONDUIT_FLUX_TOTALS.clear()
+    try:
+        import rmgpy.polymer as _polymer
+        _polymer._refused_census_warned.clear()
+        # Conduit keys of the archetype warn-once set (none exist in
+        # M18.3 -- no conduit census line is keyed there yet -- but the
+        # both-or-neither rule is cheap to keep exhaustive).
+        _polymer._flux_archetype_warned.difference_update(
+            {k for k in _polymer._flux_archetype_warned
+             if "conduit" in str(k).lower()})
+    except ImportError:  # pragma: no cover - pure-core usage
+        pass
+
+
+def reset_census_registry():
+    """Historical test hook, kept as an ALIAS of :func:`reset_conduit_state`
+    (M18.3 W1.5): the ledger and its warn-once feeder sets reset together
+    or not at all (DESIGN §3.3)."""
+    reset_conduit_state()
 
 
 def census_summary():
@@ -640,13 +680,19 @@ def _apply_iso_overrides(record):
     return record
 
 
-def annotate_refused_row(forward, row_pools, census="r93_general"):
+def annotate_refused_row(forward, row_pools, census="r93_general",
+                         verdict=None, epoch=None):
     """CENSUS-ONLY annotation hook for the refusal warning sites in
     :mod:`rmgpy.polymer`. Classifies the refused row, registers it in the
     candidate ledger, and returns the APPEND-ONLY suffix for the existing
     warning line. NEVER raises (a census annotation must not be able to
     change generation behavior): on any internal error it census-logs the
-    failure loudly and returns an empty suffix."""
+    failure loudly and returns an empty suffix.
+
+    M18.3: when the caller evaluated admission (the r93 stamp site), it
+    passes the :class:`AdmissionVerdict` so the suffix carries the would-be
+    verdict while :data:`CONDUIT_ADMISSION_ENABLED` is False
+    (``would_admit=1 ...`` / ``deny=<reason>``, append-only)."""
     try:
         record = _apply_iso_overrides(
             record_from_reaction(forward, row_pools, census=census))
@@ -655,14 +701,293 @@ def annotate_refused_row(forward, row_pools, census="r93_general"):
         if record.get("label_isomorphism_divergence"):
             result["flags"].append("label-isomorphism-divergence")
         entry = register_candidate(result["candidate_key"], census,
-                                   result["bucket"])
-        return census_suffix(result, entry)
+                                   result["bucket"], epoch=epoch)
+        # r42 P1-4(b) ordering pin: the caller's admission verdict was
+        # evaluated BEFORE this row's sighting was registered, so its G1
+        # ledger consult can miss a feature-radical sighting that landed in
+        # between (the FR census is warn-once and runs in either order
+        # relative to the r93 stamp site). Re-check against the
+        # POST-registration entry so the emitted line is deterministic
+        # w.r.t. ledger state that includes the current row: an
+        # FR-overlapped key NEVER prints would_admit=1.
+        if (verdict is not None and verdict.admitted
+                and "feature_radical" in entry["censuses"]):
+            verdict = _deny(verdict.candidate_key or result["candidate_key"],
+                            "feature-radical-overlap")
+        return census_suffix(result, entry) + admission_census_suffix(verdict)
     except Exception as exc:  # pragma: no cover - defensive fail-open
         logging.warning(
             "MOMENT-CREDIT CONDUIT CENSUS (M18.2): annotation failed for a "
             "refused row (%s: %s); the refusal itself is unaffected "
             "(census-only code path).", type(exc).__name__, exc)
         return ""
+
+
+# ---------------------------------------------------------------------------
+# M18.3: admission layer (FAIL-CLOSED DEAD CODE behind the census)
+# ---------------------------------------------------------------------------
+
+#: MASTER admission switch. M18.3 lands the admission gates + stamping arm as
+#: fail-closed DEAD CODE behind the census: every row still refuses exactly
+#: as M18.2 left it while the census logs the would-be verdict (WOULD-ADMIT /
+#: deny reason) for sizing. Flipping this to True is M18.4, gated on THREE
+#: open items (BUILD_SPEC / OPEN_QUESTIONS):
+#:   OQ-1  sizing of the deferred populations (FR-overlap +
+#:         direction-requires-flip-rewrite denial counts),
+#:   OQ-2  the .reversible in-place-mutation safety audit,
+#:   OQ-10 TA's cert-path answer (sidecar rows vs classic-Cantera-only).
+CONDUIT_ADMISSION_ENABLED = False
+
+#: In-band caveat serialized beside every candidate_key (DESIGN §2.1):
+#: keys are built from label(index) census strings whose indices do not
+#: survive regeneration.
+CANDIDATE_KEY_NOTE = ("run-scoped provenance only; species indices are not "
+                      "stable across regenerations -- never join across "
+                      "artifacts")
+
+#: Closed deny-reason vocabulary (BUILD_SPEC W1.3; used by census + tests).
+#: admission-evaluation-error:* is the G7 family (suffixed with the
+#: exception type name).
+ADMISSION_DENY_REASONS = frozenset({
+    "classifier-not-admissible", "classifier-divergence",
+    "feature-radical-overlap", "direction-inadmissible",
+    "direction-requires-flip-rewrite", "gas-product-count",
+    "gas-mw-threshold-unresolvable", "gas-mw-over-threshold",
+    "landing-cone-violation", "destination-unresolvable",
+    "chain-not-condensed", "not-balanced", "kinetics-not-exportable",
+})
+
+
+@dataclass(frozen=True)
+class AdmissionVerdict:
+    """Result of :func:`evaluate_conduit_admission`. Default-DENY: every
+    field starts at its refusing value; admission is built ONLY through
+    affirmative gate passes."""
+    admitted: bool = False
+    deny_reason: Optional[str] = None
+    chain_units: Optional[float] = None          # u (DESIGN §2.3)
+    gas_product: Optional[Tuple[str, float]] = None  # (species_token, mw)
+    gas_units: Optional[float] = None            # a = mw_gas / M(dst)
+    dst_pool: Optional[str] = None
+    candidate_key: str = ""
+    needs_irreversible_rewrite: bool = False     # True for aligned-reversible
+
+
+def _deny(key, reason):
+    return AdmissionVerdict(admitted=False, deny_reason=reason,
+                            candidate_key=key)
+
+
+def evaluate_conduit_admission(forward, row_pools):
+    """Admission gates G0-G7 (DESIGN §3.2) over a live RMG reaction at the
+    r93 general-branch stamp site. FAIL-CLOSED: the default is DENY; any
+    exception anywhere denies (G7) -- admission code never "recovers into
+    admit". M18.3: the caller's admit arm is dead behind
+    :data:`CONDUIT_ADMISSION_ENABLED`; this evaluator only feeds the census.
+    """
+    key = ""
+    try:
+        from rmgpy.polymer import (Polymer,
+                                   _discrete_is_chain_scale_proxy_derived,
+                                   strip_rmg_index_suffix)
+
+        record = _apply_iso_overrides(
+            record_from_reaction(forward, row_pools, census="r93_general"))
+        key = conduit_candidate_key(record)
+
+        # G0 (part 1) -- classifier divergence: a label/isomorphism
+        # divergence is a finding, never an admission basis.
+        if record.get("label_isomorphism_divergence"):
+            return _deny(key, "classifier-divergence")
+
+        # G1 -- ledger: an FR sighting in ANY epoch of this process blocks
+        # admission for the whole run (sticky, fail-closed).
+        entry = lookup_candidate(key)
+        if entry is not None and "feature_radical" in entry["censuses"]:
+            return _deny(key, "feature-radical-overlap")
+
+        # Unresolved species data (no MW on a non-pool participant): the
+        # classifier buckets such rows UNCLASSIFIED; uncertainty never
+        # admits.
+        r_side, p_side = record["reactants"], record["products"]
+        if any(species_role(s) == UNKNOWN
+               for s in list(r_side) + list(p_side)):
+            return _deny(key, "classifier-not-admissible")
+
+        # G2 -- direction/orientation [r39-P1]: the shape must resolve with
+        # a UNIQUE chain_to_pool admitted direction (chain strictly on the
+        # consumed side, pool participation strictly on the credited side).
+        r_roles = [species_role(s) for s in r_side]
+        p_roles = [species_role(s) for s in p_side]
+        if (POOL in p_roles and POOL not in r_roles
+                and CHAIN in r_roles and CHAIN not in p_roles):
+            direction = "forward"
+            consumed, produced = r_side, p_side
+            consumed_objs = list(getattr(forward, "reactants", None) or [])
+            produced_objs = list(getattr(forward, "products", None) or [])
+        elif (POOL in r_roles and POOL not in p_roles
+                and CHAIN in p_roles and CHAIN not in r_roles):
+            direction = "reverse"
+            consumed, produced = p_side, r_side
+            consumed_objs = list(getattr(forward, "products", None) or [])
+            produced_objs = list(getattr(forward, "reactants", None) or [])
+        else:
+            return _deny(key, "classifier-not-admissible")
+        if direction == "reverse":
+            # The admitted direction is the written-REVERSE orientation:
+            # (i) an irreversible source written against it can never run
+            # it; (ii) a reversible source would need FABRICATED reverse
+            # kinetics (an Arrhenius fit of kf/Keq(T)) -- real rewriting
+            # with real fit error -- deferred until that rewrite is
+            # implemented and adjudicated (v2). Counted separately so the
+            # deferred population can be sized (OQ-1).
+            if record["reversible"]:
+                return _deny(key, "direction-requires-flip-rewrite")
+            return _deny(key, "direction-inadmissible")
+
+        # G3 -- gas product: EXACTLY ONE non-pool species on the credited
+        # side, with stoichiometric multiplicity 1 [r39-P5] (tokens counted
+        # WITH repeats: a stoich-2 product appears twice).
+        gas_entries = [s for s in produced if species_role(s) != POOL]
+        if len(gas_entries) != 1:
+            return _deny(key, "gas-product-count")
+        gas = gas_entries[0]
+
+        # G3 threshold -- derived from the ROW'S OWN pools; the census-time
+        # module-default fallback (gas_mw_threshold_for_pools) is FORBIDDEN
+        # on the admission path: no usable pool MW -> DENY.
+        pool_mws = []
+        for poly in row_pools or []:
+            mw = float(getattr(poly, "monomer_mw_g_mol", 0.0) or 0.0)
+            if mw > 0.0:
+                pool_mws.append(mw)
+        if not pool_mws:
+            return _deny(key, "gas-mw-threshold-unresolvable")
+        threshold = GAS_MW_FACTOR * min(pool_mws)
+        gas_mw = gas.get("mw")
+        if gas_mw is None:
+            return _deny(key, "gas-mw-threshold-unresolvable")
+        if gas_mw > threshold:
+            return _deny(key, "gas-mw-over-threshold")
+
+        # G0 (part 2) -- the classifier's own verdict, with the admission
+        # threshold: nothing broader than shapes A/B is admitted.
+        result = classify_record(record, gas_mw_threshold=threshold)
+        if result["bucket"] not in ("ADMISSIBLE_A", "ADMISSIBLE_B"):
+            return _deny(key, "classifier-not-admissible")
+
+        # G5 -- destination: exactly one pool participant on the credited
+        # side, resolving to a solver-configured pool with a usable monomer
+        # MW. v1 keeps chip-resolved (pool-state) destinations deferred:
+        # only a real Polymer participant is a resolvable destination.
+        dst_polys = [s for s in produced_objs if isinstance(s, Polymer)]
+        if len(dst_polys) != 1:
+            return _deny(key, "destination-unresolvable")
+        dst_poly = dst_polys[0]
+        monomer_mw = float(getattr(dst_poly, "monomer_mw_g_mol", 0.0) or 0.0)
+        if monomer_mw <= 0.0:
+            return _deny(key, "destination-unresolvable")
+        dst_label = strip_rmg_index_suffix(
+            str(getattr(dst_poly, "label", "")))
+        if not dst_label:
+            return _deny(key, "destination-unresolvable")
+
+        # G5 (chain phase): the chain species must be melt-classified
+        # (chain-scale proxy-derived) so the consumer's step-2 phase gate
+        # passes the event (V_rxn = V_poly).
+        chain_positions = [i for i, s in enumerate(consumed)
+                           if species_role(s) == CHAIN]
+        if len(chain_positions) != 1:
+            return _deny(key, "classifier-not-admissible")
+        chain_obj = consumed_objs[chain_positions[0]]
+        if not _discrete_is_chain_scale_proxy_derived(chain_obj, row_pools):
+            return _deny(key, "chain-not-condensed")
+
+        # G4 -- landing cone (DESIGN §2.3, exact MWs; closed >= 1.0
+        # semantics, equality-boundary rider T6 / OQ-4):
+        #   u_raw = (MW(chain) + sum MW(disc reactants)) / M
+        #   a     = mw_gas / M
+        #   u     = u_raw - a + d/M
+        # guard: u >= 1.0  (per-event surplus mu1 - mu0 = u - 1 >= 0).
+        consumed_mws = [s.get("mw") for s in consumed
+                        if species_role(s) != POOL]
+        if any(mw is None for mw in consumed_mws):
+            return _deny(key, "classifier-not-admissible")
+        defect = float(
+            getattr(dst_poly, "chain_mass_defect_g_mol", 0.0) or 0.0)
+        u_raw = sum(float(mw) for mw in consumed_mws) / monomer_mw
+        a = float(gas_mw) / monomer_mw
+        u = u_raw - a + defect / monomer_mw
+        if not math.isfinite(u) or u < 1.0:
+            return _deny(key, "landing-cone-violation")
+
+        # G6 -- exportability [P1-5]: the chem.yaml export is load-bearing;
+        # only balanced rows with plain-Arrhenius (directly serializable,
+        # rmgpy/cantera.py) kinetics are admissible, which makes the
+        # emission-time cantera:null outcome unreachable except by bugs
+        # (which the serializer tripwire then catches by RAISING).
+        if not forward.is_balanced():
+            return _deny(key, "not-balanced")
+        from rmgpy.kinetics.arrhenius import Arrhenius as _Arrhenius
+        if type(forward.kinetics) is not _Arrhenius:
+            return _deny(key, "kinetics-not-exportable")
+
+        # All gates passed affirmatively -> ADMIT (dead behind the flag).
+        return AdmissionVerdict(
+            admitted=True,
+            deny_reason=None,
+            chain_units=float(u),
+            gas_product=(str(gas.get("token") or ""), float(gas_mw)),
+            gas_units=float(a),
+            dst_pool=dst_label,
+            candidate_key=key,
+            needs_irreversible_rewrite=bool(record["reversible"]),
+        )
+    except Exception as exc:  # G7 -- anything else: DENY, loudly.
+        logging.warning(
+            "MOMENT-CREDIT CONDUIT ADMISSION (M18.3): evaluation failed for "
+            "a candidate row (%s: %s); DENYING fail-closed "
+            "(admission-evaluation-error). Admission code never recovers "
+            "into admit.", type(exc).__name__, exc)
+        return _deny(key, f"admission-evaluation-error:{type(exc).__name__}")
+
+
+def admission_census_suffix(verdict):
+    """APPEND-ONLY census tokens carrying the would-be admission verdict
+    while :data:`CONDUIT_ADMISSION_ENABLED` is False (BUILD_SPEC W1.6):
+    an ADMISSIBLE verdict appends ``would_admit=1 deny=None
+    rewrite=<bool>``; a denied verdict appends ``deny=<reason>``. The
+    tokens ride their own bracketed group AFTER the M18.2
+    ``[conduit-census/1 ...]`` suffix, so the existing header/tokens (and
+    the line's closing bracket) stay byte-identical (round-36 P1(b))."""
+    if verdict is None:
+        return ""
+    if verdict.admitted:
+        return (f" [conduit-admission/1 would_admit=1 deny=None "
+                f"rewrite={verdict.needs_irreversible_rewrite}]")
+    return (f" [conduit-admission/1 would_admit=0 "
+            f"deny={verdict.deny_reason}]")
+
+
+# ---------------------------------------------------------------------------
+# M18.3: run-level conduit flux accumulator API (DESIGN §4.4)
+# ---------------------------------------------------------------------------
+
+#: Run-level admitted-conduit gas-mass accumulator,
+#: {candidate_key: {"grams": float, "revoked": bool}}. ALWAYS EMPTY in
+#: M18.3: the writer that populates it is the solver's conduit dispatch arm
+#: (M18.4); the artifact-side census writer + both loaders land now so the
+#: block's contract is pinned before any real number exists.
+_CONDUIT_FLUX_TOTALS = {}
+
+
+def get_conduit_flux_totals():
+    """Snapshot of the run-level conduit gas-mass accumulator:
+    ``{candidate_key: {"grams": <float g>, "revoked": <bool>}}``.
+    Cumulative over the generating run, additive across rebuild epochs; a
+    REVOKED row's accumulated mass stays counted (it happened). Empty until
+    the M18.4 solver dispatch populates it."""
+    return {k: dict(v) for k, v in _CONDUIT_FLUX_TOTALS.items()}
 
 
 def annotate_feature_radical(reaction_label):
@@ -675,7 +1000,15 @@ def annotate_feature_radical(reaction_label):
         key = candidate_key_from_label(reaction_label)
         entry = register_candidate(key, "feature_radical", "FEATURE_RADICAL")
         result = {"candidate_key": key, "shape": None, "admissible": False}
-        return census_suffix(result, entry)
+        # r42 P1-4(a): EVERY census line carries the admission verdict
+        # tokens (BUILD_SPEC W1.6 promised them on every line, and the FR
+        # line lacked them). An FR sighting is the upstream blocker: once
+        # registered (the line above), any admission evaluation of this
+        # key G1-denies feature-radical-overlap -- printed here so the FR
+        # census line and the ledger can never disagree.
+        return (census_suffix(result, entry)
+                + admission_census_suffix(
+                    _deny(key, "feature-radical-overlap")))
     except Exception as exc:  # pragma: no cover - defensive fail-open
         logging.warning(
             "MOMENT-CREDIT CONDUIT CENSUS (M18.2): feature-radical "

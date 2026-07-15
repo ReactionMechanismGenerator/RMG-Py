@@ -1134,3 +1134,508 @@ class TestAdapterDivergenceAndThreshold:
         assert record["label_isomorphism_divergence"] is False
         assert not any("CONDUIT CLASSIFIER DIVERGENCE" in r.getMessage()
                        for r in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# M18.3: admission gates G0-G7 (T3), ledger epochs + run-boundary reset (T8)
+# ---------------------------------------------------------------------------
+
+def _admissible_fixture(reversible=True, aligned=True, extra_gas=0,
+                        pool_mw=True, kinetics=True, label="CHAIN"):
+    """Live shape-A admission fixture: CHAIN => phenol_formaldehyde + CH2O,
+    element-balanced against the pool's real representative molecule (the
+    chain is the proxy molecule with one H replaced by CH2OH, so
+    chain = proxy + CH2O exactly)."""
+    from rmgpy.kinetics import Arrhenius
+    from rmgpy.molecule import Molecule
+    from rmgpy.polymer import Polymer, set_polymer_gas_veto
+    from rmgpy.reaction import Reaction
+    from rmgpy.species import Species
+
+    pf = Polymer(label="phenol_formaldehyde",
+                 monomer="[CH2]c1ccc(cc1)C([CH2])O",
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    if not pool_mw:
+        pf.monomer_mw_g_mol = 0.0
+    proxy_smiles = pf.molecule[0].to_smiles()
+    assert proxy_smiles.startswith("C")
+    chain = Species(molecule=[Molecule().from_smiles("OCC" + proxy_smiles[1:])])
+    chain.label = label
+    set_polymer_gas_veto(chain)
+    gas = Species(molecule=[Molecule().from_smiles("C=O")])
+    gas.label = "CH2O"
+    products = [pf, gas] + [gas] * extra_gas
+    kin = (Arrhenius(A=(1.0, "s^-1"), n=0.0, Ea=(0.0, "J/mol"))
+           if kinetics else None)
+    if aligned:
+        rxn = Reaction(reactants=[chain], products=products,
+                       reversible=reversible, kinetics=kin)
+    else:
+        rxn = Reaction(reactants=products, products=[chain],
+                       reversible=reversible, kinetics=kin)
+    return rxn, pf
+
+
+class TestAdmissionGates:
+    """T3 -- evaluate_conduit_admission unit tests (fail-closed dead code:
+    CONDUIT_ADMISSION_ENABLED stays False; these tests drive the evaluator
+    directly)."""
+
+    def test_flag_is_false(self):
+        from rmgpy.polymer_conduit import CONDUIT_ADMISSION_ENABLED
+        assert CONDUIT_ADMISSION_ENABLED is False
+
+    def test_irreversible_aligned_admits_no_rewrite(self, clean_registry):
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(reversible=False)
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is True
+        assert v.deny_reason is None
+        assert v.needs_irreversible_rewrite is False
+        assert v.dst_pool == "phenol_formaldehyde"
+        # landing-cone numbers: u = (MW(chain) - MW(gas))/M, a = MW(gas)/M
+        chain_mw = rxn.reactants[0].molecule[0].get_molecular_weight() * 1e3
+        gas_mw = 30.026
+        m = pf.monomer_mw_g_mol
+        assert v.gas_units == pytest.approx(gas_mw / m, rel=1e-3)
+        assert v.chain_units == pytest.approx((chain_mw - gas_mw) / m,
+                                              rel=1e-3)
+        assert v.chain_units >= 1.0
+        assert v.gas_product[0] == "CH2O"
+
+    def test_reversible_aligned_admits_with_rewrite(self, clean_registry):
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(reversible=True)
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is True
+        assert v.needs_irreversible_rewrite is True
+
+    def test_apply_rewrite_flips_and_is_idempotent(self, caplog,
+                                                   clean_registry):
+        import logging as _logging
+        from rmgpy.polymer import _apply_conduit_irreversible_rewrite
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(reversible=True)
+        v = evaluate_conduit_admission(rxn, [pf])
+        with caplog.at_level(_logging.WARNING):
+            _apply_conduit_irreversible_rewrite(rxn, v)
+        assert rxn.reversible is False
+        killed = [r.getMessage() for r in caplog.records
+                  if "reverse killed" in r.getMessage()]
+        assert len(killed) == 1
+        # idempotent: second call neither flips back nor re-logs
+        with caplog.at_level(_logging.WARNING):
+            _apply_conduit_irreversible_rewrite(rxn, v)
+        assert rxn.reversible is False
+        killed = [r.getMessage() for r in caplog.records
+                  if "reverse killed" in r.getMessage()]
+        assert len(killed) == 1
+
+    def test_rewrite_noop_without_flag(self, clean_registry):
+        from rmgpy.polymer import _apply_conduit_irreversible_rewrite
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(reversible=False)
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.needs_irreversible_rewrite is False
+        rxn.reversible = True  # simulate: rewrite must NOT touch it
+        _apply_conduit_irreversible_rewrite(rxn, v)
+        assert rxn.reversible is True
+
+    def test_reversible_anti_aligned_denies_flip_rewrite(self,
+                                                         clean_registry):
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(reversible=True, aligned=False)
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "direction-requires-flip-rewrite"
+
+    def test_irreversible_anti_aligned_denies_direction(self,
+                                                        clean_registry):
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(reversible=False, aligned=False)
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "direction-inadmissible"
+
+    def test_multi_gas_denies_count(self, clean_registry):
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(extra_gas=1)  # stoich-2 gas product
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "gas-product-count"
+
+    def test_missing_pool_mw_denies_unresolvable_no_fallback(
+            self, clean_registry):
+        """No usable pool monomer MW must DENY -- the census-time module
+        default (gas_mw_threshold_for_pools fallback) is forbidden on the
+        admission path (uncertainty never admits)."""
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(pool_mw=False)
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "gas-mw-threshold-unresolvable"
+
+    def test_gas_over_threshold_denies(self, clean_registry):
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture()
+        pf.monomer_mw_g_mol = 15.0   # threshold 22.5 < CH2O's 30.03
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "gas-mw-over-threshold"
+
+    def test_fr_overlapped_key_denies(self, clean_registry):
+        from rmgpy.polymer import _reaction_census_label
+        from rmgpy.polymer_conduit import (candidate_key_from_label,
+                                           evaluate_conduit_admission,
+                                           register_candidate)
+        rxn, pf = _admissible_fixture()
+        key = candidate_key_from_label(_reaction_census_label(rxn))
+        register_candidate(key, "feature_radical", "FEATURE_RADICAL")
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "feature-radical-overlap"
+
+    def test_classifier_divergence_denies(self, caplog, clean_registry):
+        """A label/isomorphism divergence is a finding, never an admission
+        basis: relabel the gas product as a pool-state-resolvable chip."""
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture()
+        gas = rxn.products[1]
+        gas.label = "trimer_rad33"   # label claims pool-state; structure no
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "classifier-divergence"
+
+    def test_unbalanced_denies(self, clean_registry):
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        from rmgpy.species import Species
+        rxn, pf = _admissible_fixture()
+        heavy_gas = Species(molecule=[Molecule().from_smiles("CC=O")])
+        heavy_gas.label = "CH3CHO"
+        rxn.products[1] = heavy_gas   # breaks element balance only
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "not-balanced"
+
+    def test_non_arrhenius_kinetics_denies(self, clean_registry):
+        from rmgpy.kinetics import Chebyshev
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture()
+        rxn.kinetics = Chebyshev()
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "kinetics-not-exportable"
+
+    def test_internal_exception_denies_evaluation_error(self, caplog,
+                                                        clean_registry):
+        import logging as _logging
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+
+        class _Boom:
+            def __getattr__(self, name):
+                raise RuntimeError("boom")
+
+        with caplog.at_level(_logging.WARNING):
+            v = evaluate_conduit_admission(_Boom(), [])
+        assert v.admitted is False
+        assert v.deny_reason.startswith("admission-evaluation-error:")
+        assert any("DENYING fail-closed" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_non_chain_scale_chain_denies_condensed(self, clean_registry):
+        """The consumed species must be melt-classified (chain-scale
+        proxy-derived) so the consumer's phase gate passes the event."""
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture()
+        # A huge pool monomer MW pushes the pool-relative chain-scale bar
+        # above the chain while the record-level CHAIN role (module
+        # constants) still holds.
+        pf.monomer_mw_g_mol = 400.0
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        # chain 464.6 g/mol < 2.5*400: fails the pool-relative dual-axis
+        # chain-scale conjunct -> chain-not-condensed
+        assert v.deny_reason == "chain-not-condensed"
+
+
+class TestAdmissionEndToEndDeadFlag:
+    """T3 END-TO-END: with CONDUIT_ADMISSION_ENABLED False, the r93 stamp
+    site refuses a WOULD-ADMIT row exactly as before (attrs, census
+    reason), and the census suffix carries the verdict."""
+
+    def test_would_admit_row_still_refuses(self, caplog, clean_registry):
+        import logging as _logging
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   stamp_gas_association_refusal)
+        rxn, pf = _admissible_fixture(reversible=True)
+        _general_chain_scale_pool_warned.clear()
+        with caplog.at_level(_logging.WARNING):
+            stamp_gas_association_refusal(rxn)
+        # byte-for-byte today's refusal state
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False
+        assert rxn.reversible is True                      # NO rewrite
+        assert int(getattr(rxn, "polymer_flux_archetype", 0)) != int(
+            PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+        assert not hasattr(rxn, "polymer_conduit_params")  # NO stamp
+        msgs = [r.getMessage() for r in caplog.records
+                if "[conduit-admission/1" in r.getMessage()]
+        assert len(msgs) == 1
+        assert "would_admit=1 deny=None rewrite=True" in msgs[0]
+        # append-only: the M18.2 census suffix is intact before it
+        assert "[conduit-census/1 key=" in msgs[0]
+        assert msgs[0].index("[conduit-census/1") < msgs[0].index(
+            "[conduit-admission/1")
+
+    def test_denied_row_suffix_carries_reason(self, caplog, clean_registry):
+        import logging as _logging
+        from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                                   stamp_gas_association_refusal)
+        rxn, pf = _admissible_fixture(reversible=True, extra_gas=1)
+        _general_chain_scale_pool_warned.clear()
+        with caplog.at_level(_logging.WARNING):
+            stamp_gas_association_refusal(rxn)
+        assert rxn.polymer_refused is True
+        msgs = [r.getMessage() for r in caplog.records
+                if "[conduit-admission/1" in r.getMessage()]
+        assert len(msgs) == 1
+        assert "would_admit=0 deny=gas-product-count" in msgs[0]
+
+
+class TestR42AdmissionCensusDeterminism:
+    """r42 P1-4 -- (a) EVERY census line carries the admission verdict
+    tokens (the FR line lacked them); (b) the would_admit evaluation must
+    be deterministic w.r.t. ledger state that includes the current row
+    (an FR sighting landing between evaluation and the census line / the
+    stamping decision must win)."""
+
+    def test_feature_radical_line_carries_admission_suffix(
+            self, caplog, clean_registry):
+        """r42 P1-4(a): the FEATURE-RADICAL census line carries the
+        [conduit-admission/1 ...] tokens like every other census line."""
+        import logging as _logging
+
+        from rmgpy.polymer import _refused_census_warned, _warn_once_refused
+
+        entry = {"reaction": "SYN_R42(1) + SYN_P42(2) <=> SYN_Q42(3)",
+                 "radical_class": "eliminating",
+                 "reason": "conduit-deferred"}
+        _refused_census_warned.discard((entry["reaction"], entry["reason"]))
+        with caplog.at_level(_logging.WARNING):
+            _warn_once_refused(entry)
+        msgs = [r.getMessage() for r in caplog.records
+                if r.getMessage().startswith("FEATURE-RADICAL REFUSED "
+                                             "CENSUS: ")]
+        assert len(msgs) == 1
+        assert ("[conduit-admission/1 would_admit=0 "
+                "deny=feature-radical-overlap]") in msgs[0]
+        # append-only: the M18.2 census suffix rides before it
+        assert msgs[0].index("[conduit-census/1") < msgs[0].index(
+            "[conduit-admission/1")
+
+    def test_fr_registered_after_evaluation_downgrades_would_admit(
+            self, clean_registry):
+        """r42 P1-4(b), census-line half: a verdict evaluated BEFORE the
+        FR sighting landed must NOT print would_admit=1 -- the suffix is
+        re-checked against the POST-registration ledger entry."""
+        from rmgpy.polymer_conduit import (annotate_refused_row,
+                                           evaluate_conduit_admission,
+                                           register_candidate)
+        rxn, pf = _admissible_fixture(reversible=True)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        assert verdict.admitted is True          # ledger has no FR yet
+        # the FR census sights the same key AFTER evaluation:
+        register_candidate(verdict.candidate_key, "feature_radical",
+                           "FEATURE_RADICAL")
+        suffix = annotate_refused_row(rxn, [pf], census="r93_general",
+                                      verdict=verdict)
+        assert "would_admit=1" not in suffix
+        assert ("[conduit-admission/1 would_admit=0 "
+                "deny=feature-radical-overlap]") in suffix
+
+    def test_stamp_site_rechecks_ledger_before_admitting(
+            self, caplog, clean_registry, monkeypatch):
+        """r42 P1-4(b), decision-point half: even under a (test-scoped)
+        flipped admission flag, an FR sighting that lands between
+        evaluation and stamping deterministically blocks the admit arm --
+        the row refuses exactly as today (fail-closed narrowing; the
+        production flag stays False, pinned by test_flag_is_false)."""
+        import logging as _logging
+
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   stamp_gas_association_refusal)
+
+        real_evaluate = pc.evaluate_conduit_admission
+
+        def evaluate_then_fr_sighting(forward, row_pools):
+            v = real_evaluate(forward, row_pools)
+            # the FR census fires for the same key right after evaluation
+            pc.register_candidate(v.candidate_key, "feature_radical",
+                                  "FEATURE_RADICAL")
+            return v
+
+        monkeypatch.setattr(pc, "evaluate_conduit_admission",
+                            evaluate_then_fr_sighting)
+        monkeypatch.setattr(pc, "CONDUIT_ADMISSION_ENABLED", True)
+        rxn, pf = _admissible_fixture(reversible=True)
+        _general_chain_scale_pool_warned.clear()
+        with caplog.at_level(_logging.WARNING):
+            stamp_gas_association_refusal(rxn)
+        # the admit arm did NOT run: refusal state byte-identical to today
+        assert rxn.polymer_refused is True
+        assert rxn.reversible is True                       # NO rewrite
+        assert int(getattr(rxn, "polymer_flux_archetype", 0)) != int(
+            PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+        assert getattr(rxn, "polymer_conduit_params", None) is None
+        msgs = [r.getMessage() for r in caplog.records
+                if "[conduit-admission/1" in r.getMessage()]
+        assert len(msgs) == 1
+        assert "would_admit=0 deny=feature-radical-overlap" in msgs[0]
+
+
+class TestLandingConeEqualityBoundary:
+    """T6 (admission-side leg) -- the ratified equality-boundary fixture:
+    u_raw EXACTLY a + 1 (credit u == 1.0, point mass ON the cone). The
+    closed `>=` semantics do NOT freeze until this fixture reports (OQ-4).
+
+    Constructed at the exact class boundary: chain = 2.5 monomer-equiv of
+    mass, gas = 1.5 monomer-equiv (proxy = 1.0), compositionally
+    proportional molecules (C25H50 -> C10H20 + C15H30) so every ratio is
+    exact up to float rounding."""
+
+    def _boundary_fixture(self):
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer import Polymer, set_polymer_gas_veto
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+
+        pf = Polymer(label="phenol_formaldehyde", monomer="[CH2][CH2]",
+                     Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        proxy = Molecule().from_smiles("C=C" + "C" * 8)      # C10H20
+        pf.molecule = [proxy]
+        gas = Species(molecule=[Molecule().from_smiles("C=C" + "C" * 13)])
+        gas.label = "C15H30"
+        chain = Species(molecule=[Molecule().from_smiles("C=C" + "C" * 23)])
+        chain.label = "CHAIN25"
+        set_polymer_gas_veto(chain)
+        gas_mw = gas.molecule[0].get_molecular_weight() * 1000.0
+        # M := gas_mw / 1.5 == proxy MW (compositional 2:3 proportionality)
+        pf.monomer_mw_g_mol = gas_mw / 1.5
+        rxn = Reaction(reactants=[chain], products=[pf, gas],
+                       reversible=False,
+                       kinetics=Arrhenius(A=(1.0, "s^-1"), n=0.0,
+                                          Ea=(0.0, "J/mol")))
+        return rxn, pf
+
+    def test_boundary_row_report(self, clean_registry):
+        """REPORTING test (rider): drive the exact-boundary row through the
+        full gate chain and pin whatever the closed `>=` semantics produce.
+        As built, u sits AT 1.0 up to float rounding; the assertion pins
+        the ADMIT outcome and u == 1.0 -- if float rounding ever flips this
+        to a landing-cone denial, that is the boundary-stiffness signal
+        that moves the guard to `1 + eps` (OQ-4), not a regression."""
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = self._boundary_fixture()
+        v = evaluate_conduit_admission(rxn, [pf])
+        # chain is EXACTLY 2.5 monomer-equiv (closed >=): still chain-scale
+        # gas is EXACTLY 1.5 monomer-equiv (closed <=): still under
+        assert v.admitted is True, (
+            f"equality-boundary row denied ({v.deny_reason}): if this is "
+            f"float rounding at the closed boundary, record it for OQ-4")
+        assert v.chain_units == pytest.approx(1.0, abs=1e-12)
+        assert v.gas_units == pytest.approx(1.5, abs=1e-12)
+
+
+class TestLedgerEpochsAndReset:
+    """T8 -- ledger epochs, sticky FR across epochs, run-boundary reset
+    (both-or-neither with the warn-once census sets)."""
+
+    KEY = "EPOCH_chain(1)<>EPOCH_gas(2)+EPOCH_pool(3)"
+
+    def test_epoch_recorded_per_sighting(self, clean_registry):
+        from rmgpy.polymer_conduit import (lookup_candidate,
+                                           register_candidate)
+        register_candidate(self.KEY, "r93_general", "ADMISSIBLE_A",
+                           epoch="sig-1")
+        register_candidate(self.KEY, "feature_radical", "FEATURE_RADICAL",
+                           epoch="sig-3")
+        entry = lookup_candidate(self.KEY)
+        assert entry["epochs"] == {"sig-1", "sig-3"}
+
+    def test_epoch_none_allowed(self, clean_registry):
+        from rmgpy.polymer_conduit import (lookup_candidate,
+                                           register_candidate)
+        register_candidate(self.KEY, "r93_general", "ADMISSIBLE_A")
+        assert lookup_candidate(self.KEY)["epochs"] == set()
+
+    def test_fr_sticky_across_epochs(self, clean_registry):
+        """An FR sighting in epoch 1 still blocks admission when the row is
+        re-evaluated in epoch 3 (sticky, fail-closed: it can only defer)."""
+        from rmgpy.polymer import _reaction_census_label
+        from rmgpy.polymer_conduit import (candidate_key_from_label,
+                                           evaluate_conduit_admission,
+                                           register_candidate)
+        rxn, pf = _admissible_fixture()
+        key = candidate_key_from_label(_reaction_census_label(rxn))
+        register_candidate(key, "feature_radical", "FEATURE_RADICAL",
+                           epoch="epoch-1")
+        register_candidate(key, "r93_general", "ADMISSIBLE_A",
+                           epoch="epoch-3")
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "feature-radical-overlap"
+
+    def test_reset_clears_registry_and_warn_once_together(self):
+        """DESIGN §3.3 'reset both or neither': reset_conduit_state clears
+        the ledger AND _refused_census_warned, so a post-reset FR
+        re-sighting re-registers AND re-warns."""
+        import logging as _logging
+        from rmgpy.polymer import (_refused_census_warned,
+                                   _warn_once_refused)
+        from rmgpy.polymer_conduit import (lookup_candidate,
+                                           register_candidate,
+                                           reset_conduit_state,
+                                           candidate_key_from_label)
+        label = "RESET_R(1) + RESET_P(2) <=> RESET_Q(3)"
+        entry = {"reaction": label, "radical_class": "eliminating",
+                 "reason": "conduit-deferred"}
+        _warn_once_refused(entry)
+        key = candidate_key_from_label(label)
+        assert lookup_candidate(key) is not None
+        assert (label, "conduit-deferred") in _refused_census_warned
+        reset_conduit_state()
+        assert lookup_candidate(key) is None
+        assert (label, "conduit-deferred") not in _refused_census_warned
+        # post-reset re-sighting re-registers (would be starved if the
+        # warn-once set had survived the ledger reset)
+        _warn_once_refused(entry)
+        assert lookup_candidate(key)["effective_bucket"] == "FEATURE_RADICAL"
+        reset_conduit_state()
+
+    def test_reset_census_registry_is_alias(self):
+        from rmgpy import polymer_conduit as pc
+        from rmgpy.polymer import _refused_census_warned, _warn_once_refused
+        label = "ALIAS_R(1) <=> ALIAS_Q(2)"
+        _warn_once_refused({"reaction": label,
+                            "radical_class": "eliminating",
+                            "reason": "conduit-deferred"})
+        pc.reset_census_registry()
+        assert pc.lookup_candidate(
+            pc.candidate_key_from_label(label)) is None
+        assert (label, "conduit-deferred") not in _refused_census_warned
+
+    def test_reset_clears_flux_totals(self):
+        from rmgpy import polymer_conduit as pc
+        pc._CONDUIT_FLUX_TOTALS["k"] = {"grams": 1.0, "revoked": False}
+        pc.reset_conduit_state()
+        assert pc.get_conduit_flux_totals() == {}
+
+    def test_polymer_reexports_reset(self):
+        import rmgpy.polymer as rp
+        from rmgpy import polymer_conduit as pc
+        assert rp.reset_conduit_state is pc.reset_conduit_state
