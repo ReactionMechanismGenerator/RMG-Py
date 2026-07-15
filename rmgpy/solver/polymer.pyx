@@ -60,6 +60,7 @@ from dataclasses import dataclass
 from typing import Callable, Dict, List, Optional, Tuple
 
 cimport cython
+from libc.math cimport exp as _c_exp
 import numpy as np
 cimport numpy as np
 
@@ -69,6 +70,59 @@ from rmgpy.solver.base import ReactionSystem
 
 
 SMALL_EPS = 1e-30
+
+
+# M18.2d (round-40 adjudicated one-shot): C1 extension of the max(0, y)
+# state clamp into NEGATIVE trial-state territory ONLY.
+#   v >= 0:  returns v EXACTLY (bit-for-bit the old clamp -- all valid
+#            nonnegative states, and every place a pool can PARK, see the
+#            identity law untouched; no epsilon, no multiplier);
+#   v <  0:  v * exp(v / lam) -- slope 1 at 0- (C1 joint with the v > 0
+#            side), bounded extremum -lam/e at v = -lam, decaying to the
+#            old clamped 0 for deeply negative v.
+# lam is the r81 floor scale max(SMALL_EPS, 100*atol), used purely as the
+# DECAY LENGTH in v < 0 territory (the region only BDF predictor
+# overshoots and Newton trial states visit).
+#
+# MECHANISM (M18.2c/d forensics, rounds 38-41): every pathologically
+# parked pool (poly_102 mod_5 at 0.2-5 floors) sits within one BDF
+# predictor overshoot of the {y_i = 0} kink planes of its own moment
+# slots, and measured Newton trial states cross them (trial
+# mu0 = -1.7e-10 against accepted ~2e-11). At a negative trial base the
+# hard clamp flattened every row fed by that slot, so one-sided FD
+# Jacobian columns were EXACTLY ZERO -- a bistable Newton matrix that
+# flipped between zero and full columns across trial sequences, at every
+# park. Gas radicals in QSS (H at 1e-9..1e-12 mol) contributed the same
+# structure through the concentration clamp. The C1 extension gives the
+# corrector a bounded restoring derivative instead of a blind zero
+# column. Battery evidence (round-40): both standing IDID=-7 deaths
+# eliminated (exact-crash rtol=1e-6 at t=24.639; from-deck rtol=1e-4 at
+# t=14.2445, first-ever full 0-100 s traversal) with ~3.4x wall speedup
+# on the deck-tolerance crash window; K2 accuracy fixtures bit-for-bit
+# unchanged (the kink field was never their mechanism).
+#
+# SITE INVENTORY (of 48 direct max(0, y[...]) state reads): 41 VALUE
+# sites carry the softclamp -- the vectorized C_gas/C_poly concentration
+# reads (the widest field: one kink plane per species), the dispatch
+# site scalings and throttle pairs (forward/reverse/chip/VE a>0/a<0/
+# legacy), scission/channel/QSSA kernel moment reads, the limiter/cone
+# machinery state reads, and their get_reaction_rates mirrors (accepted
+# states can park in-band-negative, and reported rates must never
+# diverge from the residual's law). 7 sites keep the hard clamp:
+# bookkeeping (_explicit_moment_contributions, condensed-mass, SGH
+# census/tripwire reads on accepted states) and branch-guard
+# COMPARISONS (equivalent branch structure either way, and piecewise-
+# constant selectors are not differentiated). Two pre-existing normative
+# structures deliberately re-flatten parts of the extension downstream:
+# pool-moment reads inside the limiter/cone machinery hit its internal
+# <= 0 guards (rounds 29/30 law), and the section-4 moment dispatch is
+# gated on rf > 0 / rr > 0, so MOMENT rows ignore reversed flux while
+# GAS-SPECIES rows carry the full smooth extension -- the battery shows
+# the gas-row field is the load-bearing one.
+cdef inline double _softclamp(double v, double lam):
+    if v >= 0.0:
+        return v
+    return v * _c_exp(v / lam)
 # Attribution trust floor multiplier (item #14a, spec 2026-06-11 §2/§3):
 # trust = max(SMALL_EPS, ATTRIBUTION_TRUST_K * atol_mu0). K = 100 buys ~two
 # decades of separation between the integrator's own error budget (the atol
@@ -1461,6 +1515,10 @@ class HybridPolymerSystem(ReactionSystem):
         # threshold; the rebuild census uses
         # max(qssa_kout_floor_s, 1/terminationTime).
         self.qssa_kout_floor_s = float(qssa_kout_floor_s or 0.0)
+        # M18.2d softclamp decay length (finalized from atol in
+        # initialize_model; SMALL_EPS default keeps the extension
+        # numerically OFF until tolerances are known).
+        self._softclamp_lam = SMALL_EPS
         self.initial_mole_fractions = initial_mole_fractions
 
         self.V_poly = float(V_poly)
@@ -3796,6 +3854,12 @@ class HybridPolymerSystem(ReactionSystem):
                 self._pool_mu_floors[p, k] = max(
                     SMALL_EPS, EXHAUSTION_FLOOR_K * a_exh)
 
+        # M18.2d: softclamp decay length = the r81 floor scale (scalar-atol
+        # decks; uniform across slots -- per-state generalization deferred,
+        # see the m18d design doc).
+        self._softclamp_lam = max(SMALL_EPS,
+                                  EXHAUSTION_FLOOR_K * float(atol))
+
         self.get_const_spc_indices(core_species)
         self.set_initial_conditions()
 
@@ -4902,9 +4966,9 @@ class HybridPolymerSystem(ReactionSystem):
         mu2_ok False means apply b0/b1 but skip the mu2 component (mu3 = inf).
         """
         idx0, idx1, idx2 = self.polymer_pools[pool_idx].mu_indices
-        mu0 = max(0.0, y[idx0]) / V_poly
-        mu1 = max(0.0, y[idx1]) / V_poly
-        mu2 = max(0.0, y[idx2]) / V_poly
+        mu0 = _softclamp(y[idx0], self._softclamp_lam) / V_poly
+        mu1 = _softclamp(y[idx1], self._softclamp_lam) / V_poly
+        mu2 = _softclamp(y[idx2], self._softclamp_lam) / V_poly
         if end_group:
             if mu0 <= SMALL_EPS:
                 return 0.0, 0.0, 0.0, False
@@ -4963,13 +5027,13 @@ class HybridPolymerSystem(ReactionSystem):
         if b0 <= 0.0:
             return 0.0
         mu_idx = self.polymer_pools[pool_idx].mu_indices
-        t0 = max(0.0, y[mu_idx[0]]) / (V_poly * b0)
+        t0 = _softclamp(y[mu_idx[0]], self._softclamp_lam) / (V_poly * b0)
         t1 = -1.0
         t2 = -1.0
         if b1 > 0.0:
-            t1 = max(0.0, y[mu_idx[1]]) / (V_poly * b1)
+            t1 = _softclamp(y[mu_idx[1]], self._softclamp_lam) / (V_poly * b1)
         if b2 > 0.0:
-            t2 = max(0.0, y[mu_idx[2]]) / (V_poly * b2)
+            t2 = _softclamp(y[mu_idx[2]], self._softclamp_lam) / (V_poly * b2)
         # softmin_p over the included (non-negative) terms; any zero term
         # zeroes the whole cap (softmin_p <= min).
         m = t0
@@ -5010,9 +5074,9 @@ class HybridPolymerSystem(ReactionSystem):
         cdef int k
         mu_idx = self.polymer_pools[pool_idx].mu_indices
         floors = self._pool_mu_floors
-        cdef double e0 = max(0.0, y[mu_idx[0]]) / floors[pool_idx, 0]
-        cdef double e1 = max(0.0, y[mu_idx[1]]) / floors[pool_idx, 1]
-        cdef double e2 = max(0.0, y[mu_idx[2]]) / floors[pool_idx, 2]
+        cdef double e0 = _softclamp(y[mu_idx[0]], self._softclamp_lam) / floors[pool_idx, 0]
+        cdef double e1 = _softclamp(y[mu_idx[1]], self._softclamp_lam) / floors[pool_idx, 1]
+        cdef double e2 = _softclamp(y[mu_idx[2]], self._softclamp_lam) / floors[pool_idx, 2]
         m = e0
         if e1 < m:
             m = e1
@@ -5103,9 +5167,9 @@ class HybridPolymerSystem(ReactionSystem):
                 s_free = w * s_base + (1.0 - w) * cap
         # ---- stage 2: cone-margin drain gate (independent of E) -------
         mu_idx = self.polymer_pools[pool_idx].mu_indices
-        y0c = max(0.0, y[mu_idx[0]])
-        y1c = max(0.0, y[mu_idx[1]])
-        y2c = max(0.0, y[mu_idx[2]])
+        y0c = _softclamp(y[mu_idx[0]], self._softclamp_lam)
+        y1c = _softclamp(y[mu_idx[1]], self._softclamp_lam)
+        y2c = _softclamp(y[mu_idx[2]], self._softclamp_lam)
         if end_group:
             if y0c / V_poly <= SMALL_EPS:
                 return s_free       # empty pool: stage 1 owns it
@@ -5208,8 +5272,21 @@ class HybridPolymerSystem(ReactionSystem):
         pmask = self.prospective_gas_mask  # gate-input only (rider R3)
         # NOTE the [:n_core] slice: y may carry trailing weak-link U slots
         # beyond the core-species block; the mask covers only the prefix.
-        C_gas[mask] = np.maximum(0.0, y[:n_core][mask]) / V_gas
-        C_poly[~mask] = np.maximum(0.0, y[:n_core][~mask]) / V_poly
+        # M18.2d (round-40 one-shot): the concentration clamp is the widest
+        # kink field the corrector differentiates (one {y_i = 0} kink plane
+        # per species). softclamp extends it C1 into NEGATIVE trial-state
+        # territory only; for y >= 0 (all valid states) the fast path below
+        # is bit-for-bit the old np.maximum law (positives untouched).
+        _y_head = y[:n_core]
+        _neg = _y_head < 0.0
+        if _neg.any():
+            # evaluate the extension ONLY on the negative entries (no exp
+            # overflow on large positives; positives stay untouched views)
+            _y_head = _y_head.copy()
+            _yn = _y_head[_neg]
+            _y_head[_neg] = _yn * np.exp(_yn / self._softclamp_lam)
+        C_gas[mask] = _y_head[mask] / V_gas
+        C_poly[~mask] = _y_head[~mask] / V_poly
 
         # Sync diagnostic concentrations
         self.core_species_concentrations[mask] = C_gas[mask]
@@ -5433,7 +5510,7 @@ class HybridPolymerSystem(ReactionSystem):
 
                     # Calculate the site/chain concentration
                     # Note: We use the *mapped* index from the pool, ensuring we grab the real state variable
-                    site = max(0.0, y[moment_idx]) / V_poly
+                    site = _softclamp(y[moment_idx], self._softclamp_lam) / V_poly
 
                     # Exhaustion throttle (spec 2026-06-10 s5 AMENDMENT): a
                     # mu0-scaled DISCRETE_CHIP drains mu1 but never mu0, so
@@ -5452,8 +5529,8 @@ class HybridPolymerSystem(ReactionSystem):
                             and self.reaction_chip_units[r_idx] > 0):
                         mu_idx = self.polymer_pools[target_pool_idx].mu_indices
                         site = min(
-                            max(0.0, y[mu_idx[0]]),
-                            max(0.0, y[mu_idx[1]]) / float(self.reaction_chip_units[r_idx]),
+                            _softclamp(y[mu_idx[0]], self._softclamp_lam),
+                            _softclamp(y[mu_idx[1]], self._softclamp_lam) / float(self.reaction_chip_units[r_idx]),
                         ) / V_poly
                     elif (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
                             and self.is_end_group_reaction[r_idx]
@@ -5476,8 +5553,8 @@ class HybridPolymerSystem(ReactionSystem):
                         # get_reaction_rates' hijack block -- keep in sync)
                         mu_idx = self.polymer_pools[target_pool_idx].mu_indices
                         site = min(
-                            max(0.0, y[mu_idx[0]]),
-                            max(0.0, y[mu_idx[1]]) / float(self.reaction_eject_units_moment[r_idx]),
+                            _softclamp(y[mu_idx[0]], self._softclamp_lam),
+                            _softclamp(y[mu_idx[1]], self._softclamp_lam) / float(self.reaction_eject_units_moment[r_idx]),
                         ) / V_poly
 
                     # P1-1 DIRECTIONAL BUNDLE THROTTLE, round-27 P1-A
@@ -5565,11 +5642,11 @@ class HybridPolymerSystem(ReactionSystem):
                             # in get_reaction_rates -- keep in sync)
                             mu_idx_dst = self.polymer_pools[dst_pool_idx].mu_indices
                             site_rev = min(
-                                max(0.0, y[mu_idx_dst[0]]),
-                                max(0.0, y[mu_idx_dst[1]]) / (-float(self.reaction_eject_units_moment[r_idx])),
+                                _softclamp(y[mu_idx_dst[0]], self._softclamp_lam),
+                                _softclamp(y[mu_idx_dst[1]], self._softclamp_lam) / (-float(self.reaction_eject_units_moment[r_idx])),
                             ) / V_poly
                         else:
-                            site_rev = max(0.0, y[moment_idx]) / V_poly
+                            site_rev = _softclamp(y[moment_idx], self._softclamp_lam) / V_poly
                         # P1-1 mirror direction (round-27 P1-A tail-only
                         # form): the reverse leg debits the dst pool's FULL
                         # per-chain bundle, so it carries the same
@@ -5610,7 +5687,7 @@ class HybridPolymerSystem(ReactionSystem):
                     moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[1]
                     if self.is_end_group_reaction[r_idx]:
                         moment_idx = self.polymer_pools[prod_pool_idx].mu_indices[0]
-                    rr *= max(0.0, y[moment_idx]) / V_poly
+                    rr *= _softclamp(y[moment_idx], self._softclamp_lam) / V_poly
 
             # Net rate (volumetric, in the phase volume chosen earlier)
             rate = rf - rr
@@ -5872,9 +5949,9 @@ class HybridPolymerSystem(ReactionSystem):
                         # _chain_bundle's non-end-group branch (kept inline
                         # because the scission factors 1/2, 2/3, 1/3 differ
                         # per moment and per side).
-                        mu0_p = max(0.0, y[s_idx[0]]) / V_poly
-                        mu1_p = max(0.0, y[s_idx[1]]) / V_poly
-                        mu2_p = max(0.0, y[s_idx[2]]) / V_poly
+                        mu0_p = _softclamp(y[s_idx[0]], self._softclamp_lam) / V_poly
+                        mu1_p = _softclamp(y[s_idx[1]], self._softclamp_lam) / V_poly
+                        mu2_p = _softclamp(y[s_idx[2]], self._softclamp_lam) / V_poly
                         ok = mu1_p > SMALL_EPS
                         if ok and r_mol_s < 0.0:
                             # Net reverse = coupling bookkeeping; it depletes
@@ -5988,9 +6065,9 @@ class HybridPolymerSystem(ReactionSystem):
             idx_mu0, idx_mu1, idx_mu2 = pool.mu_indices
             xs = pool.xs
 
-            mu0_mol = max(0.0, y[idx_mu0])
-            mu1_mol = max(0.0, y[idx_mu1])
-            mu2_mol = max(0.0, y[idx_mu2])
+            mu0_mol = _softclamp(y[idx_mu0], self._softclamp_lam)
+            mu1_mol = _softclamp(y[idx_mu1], self._softclamp_lam)
+            mu2_mol = _softclamp(y[idx_mu2], self._softclamp_lam)
 
             mu0 = mu0_mol / V_poly
             mu1 = mu1_mol / V_poly
@@ -6297,7 +6374,7 @@ class HybridPolymerSystem(ReactionSystem):
                     #   Volume convention matches the moment ODEs below
                     #   exactly: concentration-rate * V_poly -> amount-rate
                     #   (dn_dt[idx_mu1] += dmu1_dt * V_poly).
-                    u_amount = max(0.0, y[self.qssa_u_slot[pool_i]])
+                    u_amount = _softclamp(y[self.qssa_u_slot[pool_i]], self._softclamp_lam)
                     if B_qssa > 0.0:
                         u_active = u_amount / V_poly
                         if u_active > B_qssa:
@@ -6647,9 +6724,9 @@ class HybridPolymerSystem(ReactionSystem):
         # 3. Concentrations
         for i in range(n_core):
             if self.gas_species_mask[i]:
-                C_gas[i] = max(0.0, y[i]) / V_gas
+                C_gas[i] = _softclamp(y[i], self._softclamp_lam) / V_gas
             else:
-                C_poly[i] = max(0.0, y[i]) / V_poly
+                C_poly[i] = _softclamp(y[i], self._softclamp_lam) / V_poly
 
         ir = self.reactant_indices
         ip = self.product_indices
@@ -6760,7 +6837,7 @@ class HybridPolymerSystem(ReactionSystem):
                 if self.is_end_group_reaction[r_idx]:
                     moment_idx = self.pool_mu0_indices[p0_pool_idx]
 
-                site = max(0.0, y[moment_idx]) / V_poly
+                site = _softclamp(y[moment_idx], self._softclamp_lam) / V_poly
 
                 # Exhaustion throttle -- parity with the residual's exhaustion
                 # throttle (spec 2026-06-10 s5 AMENDMENT): the diagnostic rate
@@ -6777,8 +6854,8 @@ class HybridPolymerSystem(ReactionSystem):
                     if self.pool_mu1_indices[p0_pool_idx] != -1:
                         mu1_idx = self.pool_mu1_indices[p0_pool_idx]
                     site = min(
-                        max(0.0, y[moment_idx]),
-                        max(0.0, y[mu1_idx]) / float(self.reaction_chip_units[r_idx]),
+                        _softclamp(y[moment_idx], self._softclamp_lam),
+                        _softclamp(y[mu1_idx], self._softclamp_lam) / float(self.reaction_chip_units[r_idx]),
                     ) / V_poly
                 elif (self.reaction_flux_archetype[r_idx] == FLUX_VOLATILE_EJECTION
                         and self.is_end_group_reaction[r_idx]
@@ -6793,8 +6870,8 @@ class HybridPolymerSystem(ReactionSystem):
                     if self.pool_mu1_indices[p0_pool_idx] != -1:
                         mu1_idx = self.pool_mu1_indices[p0_pool_idx]
                     site = min(
-                        max(0.0, y[moment_idx]),
-                        max(0.0, y[mu1_idx]) / float(self.reaction_eject_units_moment[r_idx]),
+                        _softclamp(y[moment_idx], self._softclamp_lam),
+                        _softclamp(y[mu1_idx], self._softclamp_lam) / float(self.reaction_eject_units_moment[r_idx]),
                     ) / V_poly
 
                 # P1-1 directional bundle throttle, round-27 P1-A tail-only
@@ -6844,11 +6921,11 @@ class HybridPolymerSystem(ReactionSystem):
                         if self.pool_mu1_indices[dst_pool_idx] != -1:
                             dst_mu1_idx = self.pool_mu1_indices[dst_pool_idx]
                         site_rev = min(
-                            max(0.0, y[self.pool_mu0_indices[dst_pool_idx]]),
-                            max(0.0, y[dst_mu1_idx]) / (-float(self.reaction_eject_units_moment[r_idx])),
+                            _softclamp(y[self.pool_mu0_indices[dst_pool_idx]], self._softclamp_lam),
+                            _softclamp(y[dst_mu1_idx], self._softclamp_lam) / (-float(self.reaction_eject_units_moment[r_idx])),
                         ) / V_poly
                     else:
-                        site_rev = max(0.0, y[moment_idx]) / V_poly
+                        site_rev = _softclamp(y[moment_idx], self._softclamp_lam) / V_poly
                     # P1-1 mirror direction, round-27 P1-A tail-only form
                     # -- parity with the residual (keep in sync): reverse
                     # leg debits the dst pool's full bundle, same tail-only
@@ -6883,7 +6960,7 @@ class HybridPolymerSystem(ReactionSystem):
                         moment_idx = self.pool_mu1_indices[prod_pool_idx]
                     if self.is_end_group_reaction[r_idx]:
                         moment_idx = self.pool_mu0_indices[prod_pool_idx]
-                    rr *= max(0.0, y[moment_idx]) / V_poly
+                    rr *= _softclamp(y[moment_idx], self._softclamp_lam) / V_poly
 
             reaction_rates[r_idx] = (rf - rr)
 

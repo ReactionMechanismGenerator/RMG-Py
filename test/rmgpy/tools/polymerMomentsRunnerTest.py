@@ -3715,33 +3715,30 @@ class TestRegen3SavedCoreReplay:
         rs._assert_pool_moments_accepted()
 
     def test_prestress_crash_window_rtol_1e6(self):
-        """Round-35 pre-regen stress gate 5a: the exact-crash replay at
-        rtol=1e-6, atol=1e-12 crosses t = 23.0 (and 24.0) clean and
-        fast under the no-F-gate law (measured ~2.7 s to t = 24.0).
-        (Round-37 policy note: 1e-6 fixes the minimal K2 fixture but is
-        NOT full-system safe -- see the canary below -- so NO regen deck
-        tolerance is currently certified.)
+        """Round-35 pre-regen stress gate 5a, UPDATED round-40 (M18.2d):
+        the exact-crash replay at rtol=1e-6, atol=1e-12 now traverses
+        the FULL crash window.
 
-        DOCUMENTED CANARY (round-35 finding, P1 input for round-36): at
-        rtol=1e-6 this replay then dies IDID=-7 at t = 24.639 -- where
-        the SAME law at rtol=1e-4 integrates to t = 100 (389 s wall).
-        Tightening rtol inverts the failure mode on the 79-dim system.
-        The canary below asserts the death so the finding stays pinned;
-        if a future round fixes it, the canary raises loudly here and
-        this test must be updated to assert full-window health instead."""
+        LINEAGE: under the rounds-32/35 law this replay crossed
+        t = 23-24 cleanly and then died IDID=-7 at t = 24.639 (where
+        rtol=1e-4 survived) -- pinned here as a pytest.raises canary
+        designed to flip loudly when fixed. The M18.2d softclamp (C1
+        extension of the max(0,y) clamp field into negative trial-state
+        territory only; identity for y >= 0) ELIMINATED that death: the
+        canary fired in the round-40 battery, and this test now asserts
+        full-window health as its own docstring required (measured:
+        t = 30 at 41.5 s, t = 100 at 207.9 s wall)."""
         rs = self._crash_ready(rtol=1e-6)
         wall = time.monotonic()
-        rs.advance(23.0)
-        rs.advance(24.0)
-        assert time.monotonic() - wall < 60.0
-        yv = np.asarray(rs.y)
-        assert np.all(np.isfinite(yv))
-        rs._assert_pool_moments_accepted()
-        # the documented canary: the 1e-6 death at t ~ 24.639
-        from pydas.daspk import DASPKError
-        with pytest.raises(DASPKError):
-            rs.advance(25.0)
-        assert 24.0 < rs.t < 25.0     # died inside the window, as logged
+        for t in (23.0, 24.0, 25.0, 26.0, 28.0, 30.0):
+            rs.advance(t)
+            yv = np.asarray(rs.y)
+            assert np.all(np.isfinite(yv)), t
+            rs._assert_pool_moments_accepted()
+        assert rs.t >= 30.0 - 1e-9
+        # generous wall bound (observed 41.5 s; a return of the death or
+        # a grind-class regression blows this loudly)
+        assert time.monotonic() - wall < 300.0
 
     @pytest.mark.xfail(
         strict=True,

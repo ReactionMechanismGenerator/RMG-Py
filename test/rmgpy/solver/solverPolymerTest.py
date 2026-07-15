@@ -11632,6 +11632,139 @@ class TestImpostorRowRefusalFluxDead:
         self._with_db(body)
 
 
+class TestSoftclampKinkField:
+    """M18.2d (round-40 one-shot): the max(0,y) state clamp is extended C1
+    into NEGATIVE trial-state territory only. One-shot rules pinned here:
+    (1) EXACT identity for y >= 0 -- no epsilon, bit-for-bit; (2) the
+    extension lives only at y < 0; (3) no floor-anchored multiplier where
+    pools park (parks are at positive floors where the law is identity by
+    construction); (4) nonnegative-state residuals are bitwise unchanged
+    (the suite's golden bitwise-RHS and healthy-bulk byte-pins all run on
+    y >= 0 states and pass unchanged -- this class adds the direct
+    law-level pins)."""
+
+    def _rs(self):
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["A"]], products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = 0.00751236784792197
+        rs = _two_pool_rs(rxn, core, mask, (1.0, 5.0, 30.0),
+                          (1.0e-3, 1.5e-7, 1.8e-3))
+        rs.initialize_model(core, [rxn], [], [], atol=1e-12, rtol=1e-4)
+        return rs
+
+    def test_lambda_is_floor_scale(self):
+        rs = self._rs()
+        assert rs._softclamp_lam == 1.0e-10          # 100 * atol
+
+    def test_identity_for_nonnegative_states_bitwise(self):
+        """Residual at strictly nonnegative states: the softclamp branch
+        returns y untouched, so dn_dt equals the historical clamped law
+        bit-for-bit -- pinned against the hand law at a healthy state
+        (the full byte-pin suite provides the broad coverage)."""
+        rs = self._rs()
+        y = np.array(rs.y, dtype=float).copy()
+        assert np.all(y >= 0.0)
+        dn = np.asarray(rs.residual(0.0, y.copy(), np.zeros_like(y))[0])
+        kf = 2.0
+        # bulk plain law: forward drains parent mu0 at kf*mu1 exactly
+        assert dn[1] == pytest.approx(-kf * 5.0, rel=1e-12, abs=0.0)
+        assert np.all(np.isfinite(dn))
+
+    def test_negative_territory_is_smooth_bounded_and_decaying(self):
+        """The extension at y < 0: continuous at 0, C1 (slope matching
+        across 0), bounded, decaying to the old clamped 0 for deeply
+        negative y -- probed through the CONCENTRATION path (a gas
+        reactant slot driven negative), the widest smoothed field.
+
+        SCOPE NOTE (findings, kept honest): two pre-existing normative
+        structures re-flatten parts of the extension downstream --
+        (a) pool-moment reads that flow through the near-exhaustion
+        limiter/cone machinery hit that machinery's internal `<= 0`
+        guards (empty-bundle/empty-pool branches, rounds 29/30), and
+        (b) the section-4 moment DISPATCH is gated on rf > 0 / rr > 0,
+        so MOMENT rows ignore reversed (negative-C) flux entirely while
+        GAS-SPECIES rows carry the full smooth extension. The field
+        that reaches the corrector smoothly is therefore: every
+        gas-species row through every concentration read, plus
+        un-limited site scalings. The 18.2d battery shows this is
+        sufficient (both crash-replay deaths vanish); the probes below
+        pin the GAS row."""
+        sp, core, mask = _two_pool_species()
+        rxn = Reaction(reactants=[sp["G"], sp["A"]],
+                       products=[sp["B"]], **_KIN)
+        rxn.polymer_flux_archetype = 6
+        rxn.polymer_eject_units = 0.00751236784792197
+        # CONSTANT gas volume: keeps C_G = softclamp(y_G)/V_gas0 linear
+        # (the dynamic V_gas = nRT/P law saturates C_G and floors V at
+        # n <= 0 -- a pre-existing structure that would mask the probe).
+        pool_a = PolymerPoolConfig(
+            label="A", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        pool_b = PolymerPoolConfig(
+            label="B", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(5, 6, 7), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={sp["G"]: 0.0},
+            V_poly=1.0, polymer_pools=[pool_a, pool_b],
+            mass_transfer=[], gas_species_mask=mask.copy(),
+            constant_gas_volume=True, V_gas0=1.0,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0),
+                                     "B": (1.0e-3, 1.5e-7, 1.8e-3)},
+            termination=[],
+        )
+        rs.initialize_model(core, [rxn], [], [], atol=1e-12, rtol=1e-4)
+        lam = rs._softclamp_lam
+        y = np.array(rs.y, dtype=float).copy()
+
+        def drain(g_moles):
+            yy = y.copy()
+            yy[8] = g_moles                 # gas reactant G
+            # the GAS row (dn[8]) carries the extension; moment rows are
+            # rf>0-gated (see the scope note)
+            return float(np.asarray(
+                rs.residual(0.0, yy, np.zeros_like(yy))[0])[8])
+
+        d0 = drain(0.0)                     # rate 0 at C_G = 0
+        # continuity at 0 from below: the deviation shrinks LINEARLY with
+        # h (finite slope through 0; no jump)
+        dev16 = abs(drain(-1e-16) - d0)
+        dev18 = abs(drain(-1e-18) - d0)
+        assert dev18 < 2.0e-2 * dev16
+        # C1: one-sided slopes match across 0
+        h = 1e-16
+        slope_plus = (drain(+h) - d0) / h
+        slope_minus = (d0 - drain(-h)) / h
+        assert slope_minus == pytest.approx(slope_plus, rel=1e-6)
+        # bounded, sign-reversed extension near -lam...
+        d_ext = drain(-lam)
+        assert abs(d_ext - d0) > 0.0
+        assert np.isfinite(d_ext)
+        # ... decayed back to the OLD hard-clamp law (rate 0) by -20*lam
+        assert abs(drain(-20.0 * lam) - d0) < 1e-6 * abs(d_ext - d0)
+        # far negative: exactly the old clamped behavior
+        assert drain(-1.0) == pytest.approx(d0, rel=0.0, abs=1e-25)
+
+    def test_no_multiplier_where_pools_park(self):
+        """Parks are POSITIVE multiples of the floor: the law there is the
+        identity branch -- residuals at 0.2, 1, 2.6, 5, 100 floors are
+        IDENTICAL whether computed through the softclamp build or the
+        hand-evaluated hard-clamp law (max(0,y)=y for y>0)."""
+        rs = self._rs()
+        lam = rs._softclamp_lam
+        y = np.array(rs.y, dtype=float).copy()
+        for floors in (0.2, 1.0, 2.6, 5.0, 100.0):
+            yy = y.copy()
+            yy[6] = floors * lam            # positive park
+            dn = np.asarray(rs.residual(0.0, yy, np.zeros_like(yy))[0])
+            assert np.all(np.isfinite(dn))
+            # the site read must be EXACTLY the raw positive value: the
+            # forward drain of pool A's mu0 is untouched by pool B's park
+            assert dn[1] == pytest.approx(-2.0 * 5.0, rel=1e-12, abs=0.0)
+
+
 class TestSubatolExportClamp:
     """Round-37 adjudicated: the sub-atol export clamp. Bookkeeping-surface
     hygiene only: |moment| <= atol-scale -> exactly 0.0 with a recorded
