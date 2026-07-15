@@ -3670,6 +3670,125 @@ class TestRegen3SavedCoreReplay:
                 assert mc.group(1) == md.group(1), (i, cl, dl)
         return np.array(moles, dtype=float)
 
+    def _crash_ready(self, rtol):
+        """Build the death configuration and initialize AT the exact
+        logged crash state (deck atol 1e-12; rtol per test)."""
+        with open(os.path.join(_POLY102_RUN,
+                               "chemkin/polymer_pools.json")) as fh:
+            artifact = json.load(fh)
+        species, reactions = load_chem_yaml(
+            os.path.join(_POLY102_RUN, "cantera/chem0079.yaml"))
+        rs, core, _ = build_system_from_artifact(
+            artifact, species, reactions,
+            T0=1100.0, P=1.0e5, V_poly=1.182975e-4,
+            initial_moles={"N2": 0.90, "H(1)": 0.001},
+            mass_transfer_spec=[], initial_moments=None,
+            allow_stale=True, atol=1e-12, rtol=rtol)
+        y = np.zeros(len(rs.y))
+        y[:79] = self._crash_state(core)
+        dn = np.asarray(rs.residual(self._CRASH_T, y.copy(),
+                                    np.zeros_like(y))[0])
+        rs.initialize(self._CRASH_T, y.copy(), dn.copy(),
+                      atol=1e-12, rtol=rtol)
+        return rs
+
+    def test_crash_window_cost_bar_deck_tolerances(self):
+        """CHEAP cost-bar regression at the deck tolerances (rtol=1e-4,
+        atol=1e-12) under the no-F-gate law (round-35 revert).
+
+        LINEAGE (rounds 33-35): this pin descends from the strict-xfail
+        cost-bar test of rounds 33-34. The round-33 linear sub-floor
+        ramp re-tripped IDID=-7 at t = 22.996 here; the round-34 wide
+        log-floor ramp survived but took 1240.7 s wall to reach t = 23.0
+        (~388x the round-32 law). Round-35 CONVICTED the floor-anchored
+        ramp mechanism class (parked pools sit 2-4 floors inside any
+        such ramp = permanent Jacobian resident; du/dmu = u'(F)/f peaks
+        near the floor) and reverted the gate; the xfail flips to this
+        plain green pin. The round-32 law does 22.936 -> 23.0 in ~3.4 s;
+        <60 s catches any grind-class regression without flakiness."""
+        rs = self._crash_ready(rtol=1e-4)
+        wall = time.monotonic()
+        rs.advance(23.0)
+        assert time.monotonic() - wall < 60.0, "crash-window cost bar"
+        yv = np.asarray(rs.y)
+        assert np.all(np.isfinite(yv))
+        rs._assert_pool_moments_accepted()
+
+    def test_prestress_crash_window_rtol_1e6(self):
+        """Round-35 pre-regen stress gate 5a: the exact-crash replay at
+        rtol=1e-6, atol=1e-12 crosses t = 23.0 (and 24.0) clean and
+        fast under the no-F-gate law (measured ~2.7 s to t = 24.0).
+        (Round-37 policy note: 1e-6 fixes the minimal K2 fixture but is
+        NOT full-system safe -- see the canary below -- so NO regen deck
+        tolerance is currently certified.)
+
+        DOCUMENTED CANARY (round-35 finding, P1 input for round-36): at
+        rtol=1e-6 this replay then dies IDID=-7 at t = 24.639 -- where
+        the SAME law at rtol=1e-4 integrates to t = 100 (389 s wall).
+        Tightening rtol inverts the failure mode on the 79-dim system.
+        The canary below asserts the death so the finding stays pinned;
+        if a future round fixes it, the canary raises loudly here and
+        this test must be updated to assert full-window health instead."""
+        rs = self._crash_ready(rtol=1e-6)
+        wall = time.monotonic()
+        rs.advance(23.0)
+        rs.advance(24.0)
+        assert time.monotonic() - wall < 60.0
+        yv = np.asarray(rs.y)
+        assert np.all(np.isfinite(yv))
+        rs._assert_pool_moments_accepted()
+        # the documented canary: the 1e-6 death at t ~ 24.639
+        from pydas.daspk import DASPKError
+        with pytest.raises(DASPKError):
+            rs.advance(25.0)
+        assert 24.0 < rs.t < 25.0     # died inside the window, as logged
+
+    @pytest.mark.xfail(
+        strict=True,
+        reason="round-35 pre-regen stress gate 5b, RED (round-36 "
+               "finding): the from-deck 79/82 window at rtol=1e-6 "
+               "(atol=1e-12; NO regen tolerance is certified -- "
+               "round-37 policy) GRINDS worse "
+               "than at the convicted rtol=1e-4 -- 0 -> 13 s took "
+               "202.3 s wall (1e-4: 16.5 s) and 13 -> 14 took 1765.8 s "
+               "(29.4 min per sim-second; 1e-4 pre-gate law: ~16 min "
+               "then IDID=-7 at t = 14.2445). Worse, mod_5 is STILL "
+               "dragged sub-floor at 1e-6 (accepted 1.82e-11 mol at "
+               "t = 14 vs the 1e-10 floor -- the H1 signature the "
+               "tolerance conviction was expected to remove). "
+               "Tightening rtol does NOT resolve the multi-daughter "
+               "near-floor regime on the full system; combined with the "
+               "crash-state replay's 1e-6 death at t = 24.639 (see the "
+               "prestress canary), the tolerance interaction is a "
+               "round-36 P1. This xfail asserts a 120 s budget at the "
+               "t = 13 checkpoint so it burns ~3.5 min, not the full "
+               "grind; a law/tolerance combination that traverses the "
+               "window flips it loudly.")
+    def test_prestress_fromdeck_window_rtol_1e6(self):
+        with open(os.path.join(_POLY102_RUN,
+                               "chemkin/polymer_pools.json")) as fh:
+            artifact = json.load(fh)
+        species, reactions = load_chem_yaml(
+            os.path.join(_POLY102_RUN, "cantera/chem0079.yaml"))
+        rs, core, _ = build_system_from_artifact(
+            artifact, species, reactions,
+            T0=1100.0, P=1.0e5, V_poly=1.0 / 1050.0,
+            initial_moles={"N2": 0.90, "H(1)": 0.001},
+            mass_transfer_spec=[], initial_moments=None,
+            allow_stale=True, atol=1e-12, rtol=1e-6)
+        y0 = np.array(rs.y, dtype=float).copy()
+        dn0 = rs.residual(0.0, y0, np.zeros_like(y0))[0]
+        rs.initialize(0.0, y0.copy(), dn0, atol=1e-12, rtol=1e-6)
+        wall = time.monotonic()
+        budgets = {13.0: 120.0, 14.0: 400.0, 14.5: 500.0}
+        for t, budget in budgets.items():
+            rs.advance(t)
+            assert time.monotonic() - wall < budget, (t, "wall budget")
+            y = np.asarray(rs.y)
+            assert np.all(np.isfinite(y)), t
+            rs._assert_pool_moments_accepted()
+        assert rs.t >= 14.5 - 1e-9    # crossed the old death locus
+
     def test_death_configuration_replay_through_crash_window(self):
         rs, core = self._reconstruct()
         # reconstruction shape: the death configuration

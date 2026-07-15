@@ -3446,6 +3446,19 @@ def build_system_from_artifact(artifact, species, reactions,
         # Production RMG builds (rmgpy/rmg/polymer_input.py) leave the flag
         # default-False and hard-fail on unstamped live proxy rows.
         allow_unstamped_proxy_rows=True)
+    if rtol > 1.0e-6:
+        # Rounds 35/37 K2 conviction (format doc section 4b): warn, don't
+        # hard-fail -- the runner's job is FAITHFUL replay of historical
+        # decks, including convicted ones (poly_102 ran rtol=1e-4), and
+        # the warning keeps the conviction visible on every such replay.
+        logging.warning(
+            "REPLAY TOLERANCE CONVICTION (rounds 35/37): rtol=%.1e > 1e-6 "
+            "-- near-floor pool trajectories at this tolerance are "
+            "convicted (accepted states decouple from the RHS by decades; "
+            "see docs/polymer_moments_format.md section 4b). Note lowering "
+            "rtol is NOT a full-system fix (rtol=1e-6 trips IDID=-7 on the "
+            "poly_102 crash replay); no regen tolerance is currently "
+            "certified. Replaying faithfully anyway.", rtol)
     with contextlib.redirect_stdout(io.StringIO()):  # mute the mapping banner
         rs.initialize_model(core, all_reactions, [], [], atol=atol, rtol=rtol)
     return rs, core, all_reactions
@@ -3557,7 +3570,16 @@ def main(argv=None):
     parser.add_argument("--rtol", type=float, default=1e-8,
                         help="solver relative tolerance (default 1e-8); "
                              "pass the generating deck's value for replay "
-                             "parity (poly_102: 1e-4)")
+                             "parity (poly_102: 1e-4). NOTE: rtol=1e-4 "
+                             "is convicted for pool moments near the r81 "
+                             "floors (accepted trajectories decouple from "
+                             "the RHS; format doc section 4b) -- a replay "
+                             "at such rtol reproduces the generating "
+                             "run's artifacts, faithfully including that "
+                             "one; a warning is emitted. Lowering rtol is "
+                             "NOT a full-system fix (1e-6 trips IDID=-7 "
+                             "at t=24.6 on the crash replay); no regen "
+                             "tolerance is currently certified")
     args = parser.parse_args(argv)
 
     with open(args.artifact) as fh:

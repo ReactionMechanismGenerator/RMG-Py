@@ -11632,6 +11632,122 @@ class TestImpostorRowRefusalFluxDead:
         self._with_db(body)
 
 
+class TestRtolNearFloorConviction:
+    """Round-35 K2 conviction of deck rtol=1e-4 for pool moments near the
+    r81 floors (pre-regen P1 of record; format doc section 4b). Post
+    round-37 policy: rtol=1e-6 fixes THIS minimal fixture but is NOT
+    full-system safe (IDID=-7 at t = 24.639 on the exact-crash replay;
+    grind + sub-floor drag on the from-deck window) -- NO regen deck
+    tolerance is currently certified; regen attempts before the
+    solver-conditioning fix are forensic-only at rtol=1e-4 with an
+    abort-on-H1/IDID protocol.
+
+    Minimal two-pool fixture: pool C (1e-8 mol, 100 floors at atol=1e-12)
+    drained by a single irreversible end-group VE conduit
+    G1 + C -> G2 + D (a = 0), so the ONLY dynamics is C's inventory
+    transferring to gas G2 chain-by-chain. Ground truth: the RHS drains C
+    at ~1e-7 mol/s -- C empties within ~0.5 s of integrated flux.
+
+    Measured (round-35, no-F-gate law): at rtol=1e-6 DASPK follows the
+    RHS faithfully (C fully drained by t = 50, final |C| ~ 3.6e-14 mol,
+    sub-atol; G2 receives the exact initial inventory; dn -> 0). At
+    rtol=1e-4 the ACCEPTED trajectory decouples from the RHS by ~4
+    decades: C retains ~90% of its inventory at t = 100 while its own
+    RHS says -9.6e-8 mol/s throughout (books between C and G2 stay
+    consistent -- the corruption is trajectory-vs-RHS, not
+    book-vs-book on this fixture; the gated rounds-33/34 laws showed
+    the harder signature, sign-violating climbs with G2 driven
+    negative). NOTE (spec conflict pinned, round-35): the adjudication
+    described the clean 1e-6 endpoint as "parks ~1.18 floors with
+    dn -> 0" -- that park was an artifact of the (reverted) sub-floor
+    F-gate; under the reverted law the correct 1e-6 behavior is a FULL
+    drain through the floor to ~0, which is what this pin asserts."""
+
+    def _fixture(self, rtol):
+        sp = {
+            "C": _spc("CCCCCC", "C"), "C_mu0": _spc("CCCO", "C_mu0"),
+            "C_mu1": _spc("CCC=O", "C_mu1"),
+            "C_mu2": _spc("CCC#N", "C_mu2"),
+            "D": _spc("CCCCCCC", "D"), "D_mu0": _spc("CCCCO", "D_mu0"),
+            "D_mu1": _spc("CCCC=O", "D_mu1"),
+            "D_mu2": _spc("CCCC#N", "D_mu2"),
+            "G1": _spc("C", "G1"), "G2": _spc("[CH3]", "G2"),
+        }
+        core = [sp["C"], sp["C_mu0"], sp["C_mu1"], sp["C_mu2"],
+                sp["D"], sp["D_mu0"], sp["D_mu1"], sp["D_mu2"],
+                sp["G1"], sp["G2"]]
+        mask = np.array([False] * 8 + [True, True], dtype=bool)
+        ve = Reaction(reactants=[sp["G1"], sp["C"]],
+                      products=[sp["G2"], sp["D"]],
+                      kinetics=Arrhenius(A=(1.0, "m^3/(mol*s)"), n=0.0,
+                                         Ea=(0.0, "kcal/mol"),
+                                         T0=(298.15, "K")),
+                      reversible=False)
+        ve.polymer_flux_archetype = 6
+        ve.polymer_eject_units = 0.0
+        ve.is_end_group_reaction = True
+        mk = lambda lab, mi: PolymerPoolConfig(
+            label=lab, xs=2, explicit_dp_to_species_index={},
+            mu_indices=mi, monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={sp["G1"]: 1.0},
+            V_poly=1.182975e-4,
+            polymer_pools=[mk("C", (1, 2, 3)), mk("D", (5, 6, 7))],
+            mass_transfer=[], gas_species_mask=mask.copy(),
+            constant_gas_volume=True, V_gas0=8.240473e-2,
+            initial_polymer_moments={"C": (1.0e-8, 1.0e-8, 1.0e-8),
+                                     "D": (1.0e-3, 2.0e-3, 5.0e-3)},
+            termination=[],
+        )
+        rs.initialize_model(core, [ve], [], [], atol=1e-12, rtol=rtol)
+        rs.kf[0] = 1.0e3
+        y0 = np.array(rs.y, dtype=float).copy()
+        y0[8] = 1.0e-3            # G1
+        dn0 = rs.residual(0.0, y0, np.zeros_like(y0))[0]
+        rs.initialize(0.0, y0.copy(), dn0, atol=1e-12, rtol=rtol)
+        return rs
+
+    def test_rtol_1e6_near_floor_trajectory_faithful(self):
+        """HARD PIN: at rtol=1e-6 the accepted trajectory follows the
+        RHS -- C drains fully through the floor, G2 books the entire
+        inventory, the terminal state is quiescent."""
+        rs = self._fixture(rtol=1e-6)
+        prev = 1.0e-8
+        for t in (0.1, 1.0, 5.0, 10.0, 50.0, 100.0):
+            rs.advance(t)
+            y = np.asarray(rs.y)
+            assert np.all(np.isfinite(y)), t
+            # monotone drain, book-consistent with G2 at every step
+            assert y[2] <= prev + 1e-12, t
+            assert y[1] + y[9] == pytest.approx(1.0e-8, rel=1e-6)
+            prev = y[2]
+        # fully drained: sub-atol remnant, full inventory in G2, dn ~ 0
+        assert abs(y[1]) <= 1.0e-12 and abs(y[2]) <= 1.0e-12
+        assert y[9] == pytest.approx(1.0e-8, rel=1e-4, abs=0.0)
+        dn = np.asarray(rs.residual(100.0, y.copy(),
+                                    np.zeros_like(y))[0])
+        assert abs(dn[2]) <= 1.0e-12
+
+    def test_rtol_1e4_near_floor_conviction_canary(self):
+        """DOCUMENTED CANARY (loose by design; round-35 K2 conviction):
+        at rtol=1e-4 the accepted trajectory decouples from the RHS by
+        decades -- C retains most of its inventory at t = 100 while the
+        RHS at every accepted state drains it ~1e4x faster than the
+        realized rate. If DASPK behavior changes and this starts
+        tracking the RHS, the canary fails LOUDLY: re-measure, update
+        the format doc section 4b conviction, and report."""
+        rs = self._fixture(rtol=1e-4)
+        rs.advance(100.0)
+        y = np.asarray(rs.y)
+        dn = np.asarray(rs.residual(100.0, y.copy(),
+                                    np.zeros_like(y))[0])
+        # C should be EMPTY by now per its own RHS; it is not even close.
+        assert y[2] > 0.3 * 1.0e-8            # observed ~0.90e-8
+        realized = (1.0e-8 - y[2]) / 100.0    # average realized drain
+        assert abs(dn[2]) > 100.0 * realized  # observed ~1.2e4x
+
+
 class TestSpawnGateDefectAwareMass:
     """FR1-K2 mass-consumer audit (round-72 P2): the spawn-gate snapshot's
     per-chain event mass must use the EXACT condensed mass

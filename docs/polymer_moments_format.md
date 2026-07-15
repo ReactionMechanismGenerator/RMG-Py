@@ -554,6 +554,23 @@ bands). Conversely an ultra-tight `atol` shrinks the envelope and leaves
 near-singular states (the regen-#2/#3 crash families) protected only in
 a very thin shell.
 
+`rtol` clause (rounds 35/37 — NO regen deck tolerance is currently
+CERTIFIED): `rtol = 1e-4` is convicted on near-floor minimal fixtures
+(round-35 K2: the ACCEPTED trajectory decouples from its own RHS by ~4
+decades — a pool retaining ~90% of its inventory at t = 100 s against
+an RHS that empties it in ~0.5 s; under the rounds-33/34 gate laws the
+same setting produced sign-violating accepted states with gas species
+driven negative). `rtol = 1e-6` FIXES the minimal fixture (faithful
+full drain, sub-atol remnant, exact books) but is NOT full-system safe:
+on the 79-species crash-state replay it crosses t = 23-24 cleanly then
+trips IDID=-7 at t = 24.639 where `rtol = 1e-4` survives to t = 100,
+and on the from-deck 79/82 window it grinds ~29 min wall per
+sim-second through t = 13-14 while STILL dragging a daughter sub-floor
+(1.8e-11 mol vs the 1e-10 floor). Until the solver-conditioning fix
+lands, regen attempts are FORENSIC-ONLY, at `rtol = 1e-4`
+(`atol = 1e-12`), with an abort-on-H1/IDID protocol. poly_102
+(regen #1-3) ran `rtol = 1e-4`.
+
 Replay parity (round-31): a consumer replaying a run MUST use the
 generating deck's tolerances or its regularization envelope will not
 match the generating solver's. The reference runner exposes them as
