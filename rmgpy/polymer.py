@@ -2363,14 +2363,26 @@ def _warn_pool_cap_exhausted(cand_label: str, n_pools: int, max_pools: int) -> N
 
 
 def _warn_once_refused(entry: dict) -> None:
-    """Log each distinct refused-FEATURE-radical reaction once (correct-but-loud)."""
+    """Log each distinct refused-FEATURE-radical reaction once (correct-but-loud).
+
+    M18.2 (census-only): the moment-credit conduit classifier annotation is
+    APPENDED after the unchanged historical message (round-36 P1(b) append-
+    only rule). The hook works from the census label string alone -- the
+    caller lives in the solver (untouched by M18.2), and every feature-
+    radical row buckets FEATURE_RADICAL regardless of shape, so no RMG
+    objects are needed. It registers the candidate key so the overlap
+    ledger can apply feature-radical-wins precedence to r93 sightings of
+    the same row (round-36 P1(a)); the hook never raises."""
     key = (entry["reaction"], entry["reason"])
     if key not in _refused_census_warned:
         _refused_census_warned.add(key)
+        from rmgpy.polymer_conduit import annotate_feature_radical
         logging.warning(
             "FEATURE-RADICAL REFUSED CENSUS: %s -- %s radical refused (%s); "
-            "no flux applied (stamp-but-keep). Deferred to item 20's conduit.",
-            entry["reaction"], entry["radical_class"], entry["reason"])
+            "no flux applied (stamp-but-keep). Deferred to item 20's "
+            "conduit.%s",
+            entry["reaction"], entry["radical_class"], entry["reason"],
+            annotate_feature_radical(entry["reaction"]))
 
 
 def _reaction_census_label(rxn) -> str:
@@ -3228,8 +3240,16 @@ def stamp_gas_association_refusal(forward, pool_registry=None) -> None:
             for s in list(reactants) + list(products)):
         forward.polymer_refused = True
         forward.polymer_refused_accumulating = False  # -> "conduit-deferred"
+        # M18.2 (census-only): classify the refused row for the future
+        # moment_credit_conduit/1 and APPEND the structured annotation to
+        # the unchanged census line below. Zero behavior change: the row
+        # stays refused, nothing is stamped, the suffix is append-only
+        # (round-36 P1(b)) and the hook never raises.
+        from rmgpy.polymer_conduit import annotate_refused_row
+        _conduit_suffix = annotate_refused_row(
+            forward, row_pools, census="r93_general")
         _warn_general_chain_scale_pool_coupling(
-            _reaction_census_label(forward))
+            _reaction_census_label(forward), _conduit_suffix)
         return
     if r_condensed and p_condensed:
         # condensed on BOTH sides: ordinarily routing chemistry, EXCEPT the
@@ -3447,7 +3467,8 @@ def _discrete_resolves_to_pool_state(species, pools) -> bool:
 _general_chain_scale_pool_warned = set()
 
 
-def _warn_general_chain_scale_pool_coupling(reaction_label: str) -> None:
+def _warn_general_chain_scale_pool_coupling(reaction_label: str,
+                                            conduit_suffix: str = "") -> None:
     """Log each distinct r93 general-branch refusal once (correct-but-loud,
     mirroring the other refusal censuses). Names the branch so a refused row
     is attributable to the CLASS-level conjunct rather than an enumerated r87
@@ -3456,13 +3477,17 @@ def _warn_general_chain_scale_pool_coupling(reaction_label: str) -> None:
     if reaction_label in _general_chain_scale_pool_warned:
         return
     _general_chain_scale_pool_warned.add(reaction_label)
+    # M18.2: ``conduit_suffix`` is the census-only classifier annotation,
+    # APPENDED after the unchanged historical message (round-36 P1(b):
+    # append-only -- headers/refusal tokens/reason strings are stable
+    # grep targets and are never renamed or restructured).
     logging.warning(
         "POLYMER REFUSAL CENSUS (r93 general branch): %s -- refused "
         "conduit-deferred: chain-scale-discrete/pool coupling (general). A "
         "chain-scale proxy-derived discrete not resolvable to pool state "
         "co-occurs with a polymer pool participant; the whole-row flux is "
-        "zeroed (stamp-but-keep) pending the moment-credit conduit.",
-        reaction_label)
+        "zeroed (stamp-but-keep) pending the moment-credit conduit.%s",
+        reaction_label, conduit_suffix)
 
 
 def _stamp_reference_state_split_refusal(forward, reactants, products,
