@@ -2336,6 +2336,38 @@ def _warn_unresolved_archetype(reason: str, detail: tuple) -> None:
             reason, detail)
 
 
+# ---------------------------------------------------------------------------
+# Round-37 adjudicated: sub-atol export clamp.
+# At EXPORT/BOOKKEEPING surfaces only (the reference runner's CSV rows;
+# any future live-moment emission), a pool moment with |value| <= the
+# run's atol scale is numerical noise around zero (far below the r81
+# floors = 100*atol) and is clamped to exactly 0.0, with every clamp
+# counted and retrievable. Beyond-scale negatives are NOT clamped -- they
+# pass through unchanged so the r81 accepted-state hard check (and any
+# downstream consumer validation) still owns them as hard failures. No
+# RHS/solver semantics change: this is bookkeeping hygiene for exported
+# artifacts.
+# ---------------------------------------------------------------------------
+SUBATOL_EXPORT_CLAMP_COUNT = {"count": 0}
+
+
+def clamp_subatol_moment(value, atol_scale):
+    """Clamp |value| <= atol_scale to exactly 0.0 (counted); pass everything
+    else through unchanged (beyond-scale negatives stay hard failures for
+    the checks that own them)."""
+    if value is not None and atol_scale and abs(value) <= atol_scale:
+        if value != 0.0:
+            SUBATOL_EXPORT_CLAMP_COUNT["count"] += 1
+        return 0.0
+    return value
+
+
+def subatol_export_clamp_count():
+    """Total sub-atol export clamps applied in this process (loud census
+    accessor; see docs/polymer_moments_format.md section 4b)."""
+    return SUBATOL_EXPORT_CLAMP_COUNT["count"]
+
+
 _refused_census_warned = set()
 
 _pool_cap_warned = set()

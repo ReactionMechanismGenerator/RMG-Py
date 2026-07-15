@@ -11632,6 +11632,61 @@ class TestImpostorRowRefusalFluxDead:
         self._with_db(body)
 
 
+class TestSubatolExportClamp:
+    """Round-37 adjudicated: the sub-atol export clamp. Bookkeeping-surface
+    hygiene only: |moment| <= atol-scale -> exactly 0.0 with a recorded
+    count; beyond-scale negatives pass through UNCHANGED (the r81
+    accepted-state hard check still owns them); healthy nonnegative
+    in-scale exports are a strict NO-OP."""
+
+    def test_clamp_law_and_count(self):
+        from rmgpy.polymer import (clamp_subatol_moment,
+                                   subatol_export_clamp_count)
+        start = subatol_export_clamp_count()
+        atol = 1.0e-12
+        assert clamp_subatol_moment(3.6e-14, atol) == 0.0     # sub-atol +
+        assert clamp_subatol_moment(-3.6e-14, atol) == 0.0    # sub-atol -
+        assert clamp_subatol_moment(1.0e-12, atol) == 0.0     # boundary
+        assert subatol_export_clamp_count() == start + 3
+        # exact zero: clamped value unchanged, no count churn
+        assert clamp_subatol_moment(0.0, atol) == 0.0
+        assert subatol_export_clamp_count() == start + 3
+        # BEYOND-SCALE NEGATIVE: passes through UNCHANGED (stays a hard
+        # failure for the checks that own it -- never masked)
+        assert clamp_subatol_moment(-5.0e-11, atol) == -5.0e-11
+        assert subatol_export_clamp_count() == start + 3
+
+    def test_noop_for_nonnegative_in_scale_exports(self):
+        """Round-40 ruling pin: every healthy export value (nonnegative,
+        above the atol scale) is returned BIT-IDENTICAL and uncounted --
+        the clamp cannot perturb ordinary artifacts."""
+        from rmgpy.polymer import (clamp_subatol_moment,
+                                   subatol_export_clamp_count)
+        start = subatol_export_clamp_count()
+        atol = 1.0e-12
+        for v in (2.0e-12, 2.5e-10, 1.0e-8, 4.35e-10, 1.5e-7,
+                  1.8e-3, 0.099, 0.7378430664798724, 16.4973451743158):
+            assert clamp_subatol_moment(v, atol) == v         # bitwise
+        assert subatol_export_clamp_count() == start          # uncounted
+        # zero atol_scale (no tolerance context): clamp disabled entirely
+        assert clamp_subatol_moment(3.6e-14, 0.0) == 3.6e-14
+        assert subatol_export_clamp_count() == start
+
+    def test_runner_csv_surface_clamps(self):
+        """The reference runner's CSV rows pass pool moments through the
+        clamp at the run's atol scale (integration pin at the export
+        surface; sub-atol negative parks like K2's -3.6e-14 leave the
+        artifact as clean zeros while the live state is untouched)."""
+        from rmgpy.polymer import subatol_export_clamp_count
+        from rmgpy.tools import polymer_moments_runner as runner_mod
+        vals = [-3.6e-14, 2.5e-10, 0.0]
+        atol_scale = 1.0e-12
+        start = subatol_export_clamp_count()
+        out = [runner_mod.clamp_subatol_moment(v, atol_scale) for v in vals]
+        assert out == [0.0, 2.5e-10, 0.0]
+        assert subatol_export_clamp_count() == start + 1
+
+
 class TestRtolNearFloorConviction:
     """Round-35 K2 conviction of deck rtol=1e-4 for pool moments near the
     r81 floors (pre-regen P1 of record; format doc section 4b). Post

@@ -55,7 +55,8 @@ import yaml
 from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.element import get_element
-from rmgpy.polymer import POLYMER_HEAVY_ATOM_COUNT_KEY
+from rmgpy.polymer import (POLYMER_HEAVY_ATOM_COUNT_KEY,
+                           clamp_subatol_moment)
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction
 from rmgpy.solver.polymer import (
@@ -3488,6 +3489,11 @@ def run_segments(rs, core, artifact, all_reactions, segments,
             f"t-profile t_end values must be strictly increasing and positive; "
             f"got {t_ends}")
 
+    # Round-37 sub-atol export clamp scale: the run's atol (per-slot
+    # minimum when an array was used).
+    _atol_arr = np.atleast_1d(np.asarray(
+        getattr(rs, "atol_array", 0.0), dtype=float))
+    _atol_scale = float(np.min(_atol_arr)) if _atol_arr.size else 0.0
     rows = []
     t_start = 0.0
     y_carry = None
@@ -3505,7 +3511,15 @@ def run_segments(rs, core, artifact, all_reactions, segments,
             y = np.asarray(rs.y)
             row = [float(t), float(T_k)]
             for _lab, (i0, i1, i2) in mu_cols:
-                row.extend([float(y[i0]), float(y[i1]), float(y[i2])])
+                # Round-37: sub-atol export clamp on the CSV surface --
+                # |mu| <= the run's atol scale is numerical noise around
+                # zero (counted via
+                # rmgpy.polymer.subatol_export_clamp_count; beyond-scale
+                # negatives pass through and stay downstream hard
+                # failures).
+                row.extend([clamp_subatol_moment(float(y[i0]), _atol_scale),
+                            clamp_subatol_moment(float(y[i1]), _atol_scale),
+                            clamp_subatol_moment(float(y[i2]), _atol_scale)])
             for _lab, ri in routed:
                 row.append(float(y[ri]))
             rows.append(row)
