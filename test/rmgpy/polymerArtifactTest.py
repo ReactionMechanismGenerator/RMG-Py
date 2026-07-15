@@ -3637,3 +3637,362 @@ class TestExplicitDpInventorySerialization:
             k_scission=1.0)
         d = _serialize_pool_for_sidecar(p)
         assert "explicit_dp" not in d
+
+
+# ---------------------------------------------------------------------------
+# M18.3: moment_credit_conduit/1 serializer arm + tripwires (T2), 3.1
+# election golden pins (T1), edge-unserialized flux census (T4, emitter side)
+# ---------------------------------------------------------------------------
+
+def _conduit_fixture():
+    """Serializable admitted conduit row: CHAIN => phenol_formaldehyde + CH2O,
+    element-balanced against the pool's real representative molecule, with
+    the §2.1 admission stamp attrs a live admission would have written."""
+    pf = Polymer(label="phenol_formaldehyde",
+                 monomer="[CH2]c1ccc(cc1)C([CH2])O",
+                 end_groups=["[H]", "[H]"], cutoff=3,
+                 Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+    proxy_smiles = pf.molecule[0].to_smiles()
+    assert proxy_smiles.startswith("C")
+    chain = _spc("OCC" + proxy_smiles[1:], "CHAIN", index=3)
+    gas = _spc("C=O", "CH2O", index=4)
+    core = [pf,
+            _mu_dummy("phenol_formaldehyde_mu0"),
+            _mu_dummy("phenol_formaldehyde_mu1"),
+            _mu_dummy("phenol_formaldehyde_mu2"),
+            chain, gas]
+    rxn = Reaction(reactants=[chain], products=[pf, gas],
+                   kinetics=_arrhenius(), reversible=False)
+    rxn.polymer_flux_archetype = int(
+        PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+    m = pf.monomer_mw_g_mol
+    chain_mw = chain.molecule[0].get_molecular_weight() * 1000.0
+    gas_mw = gas.molecule[0].get_molecular_weight() * 1000.0
+    rxn.polymer_conduit_dst_pool = "phenol_formaldehyde"
+    rxn.polymer_conduit_params = {
+        "admission_direction": "chain_to_pool",
+        "chain_units": (chain_mw - gas_mw) / m,
+        "gas_products": [{"species": "CH2O(4)", "stoich": 1,
+                          "mw_g_mol": gas_mw}],
+        "gas_units": gas_mw / m,
+        "candidate_key": "CH2O(4)+phenol_formaldehyde<>CHAIN(3)",
+        "candidate_key_note": "run-scoped provenance only; species indices "
+                              "are not stable across regenerations -- never "
+                              "join across artifacts",
+    }
+    return pf, core, rxn
+
+
+class TestConduitSerializerArm:
+    """T2 -- the moment_credit_conduit/1 params arm + all seven §3.4
+    tripwires (every one RAISES; none demotes)."""
+
+    def _entries(self, rxn, core, index_map=None):
+        return compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["phenol_formaldehyde"],
+            cantera_index_map=(
+                {id(rxn): [0]} if index_map is None else index_map))
+
+    def test_valid_conduit_row_serializes_design_s2_shape(self):
+        pf, core, rxn = _conduit_fixture()
+        e = self._entries(rxn, core)[0]
+        assert e["archetype"] == "moment_credit_conduit/1"
+        assert e["src_pool"] is None                       # MUST be null
+        assert e["dst_pool"] == "phenol_formaldehyde"      # from the stamp
+        assert e["scaling"] == "mu0"                       # pinned, inert
+        assert e["cantera"]["index"] == 0
+        assert "=>" in e["cantera"]["equation"]
+        assert "<=>" not in e["cantera"]["equation"]
+        assert e["kinetics"]["reversible"] is False
+        assert e["proxy_reactants"] == []
+        assert e["proxy_products"] == ["phenol_formaldehyde(2)"] or \
+            e["proxy_products"][0].startswith("phenol_formaldehyde")
+        p = e["params"]
+        assert set(p) == {"admission_direction", "chain_units",
+                          "gas_products", "gas_units", "candidate_key",
+                          "candidate_key_note"}
+        assert p["admission_direction"] == "chain_to_pool"
+        assert p["chain_units"] == pytest.approx(3.015, rel=1e-3)
+        assert p["gas_units"] == pytest.approx(0.2238, rel=1e-3)
+        assert p["gas_products"] == [
+            {"species": "CH2O(4)", "stoich": 1,
+             "mw_g_mol": pytest.approx(30.026, rel=1e-3)}]
+        assert "refused" not in e
+        assert e["unresolved"] is False
+
+    def test_tripwire_1_cantera_null_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        with pytest.raises(RuntimeError, match="cantera: null"):
+            self._entries(rxn, core, index_map={})
+        # never-demote: nothing was written for the row
+        # (the raise aborts the artifact build entirely)
+
+    def test_tripwire_2_reversible_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        rxn.reversible = True
+        with pytest.raises(RuntimeError, match="still reversible"):
+            self._entries(rxn, core)
+
+    def test_tripwire_3_refused_conduit_mutual_exclusion_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_refused = True
+        with pytest.raises(RuntimeError, match="mutually"):
+            self._entries(rxn, core)
+
+    def test_tripwire_4_landing_cone_recompute_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        # Independent recompute: a huge dst monomer MW makes
+        # u_rec = (MW(chain) - MW(gas))/M < 1 regardless of the stamp.
+        pf.monomer_mw_g_mol = 1000.0
+        with pytest.raises(RuntimeError, match="landing cone"):
+            self._entries(rxn, core)
+
+    def test_tripwire_5_gas_product_count_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_conduit_params["gas_products"].append(
+            {"species": "X", "stoich": 1, "mw_g_mol": 1.0})
+        with pytest.raises(RuntimeError, match="EXACTLY[ \n]+ONE|EXACTLY"):
+            self._entries(rxn, core)
+        rxn.polymer_conduit_params["gas_products"] = [
+            {"species": "CH2O(4)", "stoich": 2, "mw_g_mol": 30.026}]
+        with pytest.raises(RuntimeError, match="stoich 1"):
+            self._entries(rxn, core)
+
+    def test_tripwire_6_unconfigured_dst_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        entries_fn = lambda: compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["OTHER"],
+            cantera_index_map={id(rxn): [0]})
+        with pytest.raises(RuntimeError,
+                           match="not a configured/serialized pool"):
+            entries_fn()
+
+    def test_missing_stamp_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_conduit_params = None
+        with pytest.raises(RuntimeError, match="no admission stamp"):
+            self._entries(rxn, core)
+
+    def test_tripwire_7_sgh_v1_coexistence_raises(self, monkeypatch):
+        """Conduit vocabulary + SGH kernel-v1 vocabulary must never
+        co-serialize (§1.3): a legacy/corrupt v1 block is simulated by
+        rewriting the serialized block's kernel marker."""
+        import rmgpy.polymer as rp
+        pf, core, rxn = _conduit_fixture()
+        sgh = Polymer(label="PVBr", monomer="[CH2][CH]Br",
+                      end_groups=["[H]", "[H]"], cutoff=3,
+                      moments=[1.0, 50.0, 3000.0], initial_mass=0.0,
+                      side_group_homolysis=[dict(
+                          label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
+                          site_selector="aliphatic", sites_per_unit=1.0,
+                          gas_product="[Br]")])
+        br = _spc("[Br]", "Br", index=7)
+        sgh.side_group_gas_species = [br]
+        core = core + [br] + [_mu_dummy(f"PVBr_mu{k}") for k in range(3)]
+        original = rp._serialize_side_group_homolysis_block
+
+        def _v1_block(*args, **kwargs):
+            block = original(*args, **kwargs)
+            if block is not None:      # kernel-free pools emit nothing
+                block["kernel"] = "side_group_homolysis/1"
+                block.pop("recipe_revision", None)
+            return block
+
+        monkeypatch.setattr(rp, "_serialize_side_group_homolysis_block",
+                            _v1_block)
+        with pytest.raises(RuntimeError, match="kernel-v1"):
+            build_polymer_moments_artifact(
+                [pf, sgh], core_species=core, core_reactions=[rxn],
+                configured_pool_labels=["phenol_formaldehyde", "PVBr"],
+                condensed_species=core[:5],
+                cantera_index_map={id(rxn): [0]})
+
+
+class TestConduitSerializerStampCrossChecks:
+    """r42 P1-2/P1-3/P1-5 -- serializer tripwires 8-11: the admission
+    stamp must agree with the serializer's OWN recompute from the row's
+    ACTUAL species before anything is written (every one RAISES; none
+    demotes)."""
+
+    def _entries(self, rxn, core):
+        return compile_polymer_reaction_entries(
+            [rxn], core, configured_pool_labels=["phenol_formaldehyde"],
+            cantera_index_map={id(rxn): [0]})
+
+    def test_tripwire_10_stale_chain_units_stamp_raises(self):
+        """r42 P1-2: a corrupted/stale chain_units stamp that still lands
+        inside the cone (u >= 1) must RAISE, never serialize."""
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_conduit_params["chain_units"] += 0.5
+        with pytest.raises(RuntimeError,
+                           match=r"chain_units.*stale admission stamp"):
+            self._entries(rxn, core)
+
+    def test_tripwire_10_stale_gas_units_stamp_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_conduit_params["gas_units"] += 0.5
+        with pytest.raises(RuntimeError,
+                           match=r"gas_units.*stale admission stamp"):
+            self._entries(rxn, core)
+
+    def test_tripwire_10_nonfinite_chain_units_stamp_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_conduit_params["chain_units"] = float("nan")
+        with pytest.raises(RuntimeError, match=r"chain_units"):
+            self._entries(rxn, core)
+
+    def test_tripwire_8_actual_second_gas_product_raises(self):
+        """r42 P1-3: the stamp says one gas product but the row's ACTUAL
+        product side carries two -- the stamp cannot describe this row."""
+        pf, core, rxn = _conduit_fixture()
+        h2 = _spc("[H][H]", "H2", index=5)
+        core.append(h2)
+        rxn.products = list(rxn.products) + [h2]
+        with pytest.raises(RuntimeError, match=r"ACTUAL product side"):
+            self._entries(rxn, core)
+
+    def test_tripwire_9_mw_stamp_disagrees_raises(self):
+        """r42 P1-3: the stamped gas mw_g_mol must agree with the ACTUAL
+        product's recomputed MW (1e-3 relative)."""
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_conduit_params["gas_products"][0]["mw_g_mol"] *= 1.05
+        with pytest.raises(RuntimeError,
+                           match=r"mw_g_mol.*does not describe"):
+            self._entries(rxn, core)
+
+    def test_tripwire_9_gas_over_admission_bound_raises(self):
+        """r42 P1-3: the recomputed gas MW must satisfy the G3 admission
+        bound (<= 1.5 x monomer MW of the destination pool)."""
+        pf, core, rxn = _conduit_fixture()
+        pf.monomer_mw_g_mol = 15.0        # bound 22.5 < CH2O's 30.03
+        with pytest.raises(RuntimeError, match=r"admission bound"):
+            self._entries(rxn, core)
+
+    def test_tripwire_11_foreign_candidate_key_raises(self):
+        """r42 P1-5: the stamped candidate_key must recompute from the
+        row's own census identity -- the flux-census partition is keyed
+        on it."""
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_conduit_params["candidate_key"] = "BOGUS<>KEY"
+        with pytest.raises(RuntimeError, match=r"candidate_key"):
+            self._entries(rxn, core)
+
+    def test_tripwire_11_empty_candidate_key_raises(self):
+        pf, core, rxn = _conduit_fixture()
+        rxn.polymer_conduit_params["candidate_key"] = ""
+        with pytest.raises(RuntimeError, match=r"candidate_key"):
+            self._entries(rxn, core)
+
+    def test_consistent_stamp_still_serializes(self):
+        """Negative control: the untouched consistent fixture passes every
+        r42 cross-check and serializes the DESIGN §2 shape."""
+        pf, core, rxn = _conduit_fixture()
+        e = self._entries(rxn, core)[0]
+        assert e["archetype"] == "moment_credit_conduit/1"
+        assert e["params"]["candidate_key"] == \
+            "CH2O(4)+phenol_formaldehyde<>CHAIN(3)"
+
+
+class TestConduitElection:
+    """T1 -- 3.1 election golden pins (a-c; (d) lives with the loaders)."""
+
+    def test_plain_artifact_keeps_stamp_and_has_no_conduit_vocabulary(
+            self, pe_pool):
+        """T1(a): a conduit-free artifact stamps its pre-M18.3 version and
+        carries ZERO conduit vocabulary (the full-byte golden pin is
+        test_legacy_artifact_serialization_pinned, unchanged)."""
+        artifact = build_polymer_moments_artifact(
+            [pe_pool], core_species=None, core_reactions=[],
+            configured_pool_labels=["PE"], monomer_routing_by_pool={},
+            rmg_commit="PINNED-FOR-TEST")
+        assert artifact["schema_version"] == "2.0"
+        dumped = json.dumps(artifact)
+        assert "moment_credit_conduit" not in dumped
+        assert "conduit_flux_census" not in dumped
+
+    def test_conduit_row_elects_3_1_and_mirrors_format_doc(self):
+        """T1(b): one serialized conduit row => schema 3.1 + format_doc
+        mirror; recipe_revision NOT bumped [r39-P6]."""
+        pf, core, rxn = _conduit_fixture()
+        artifact = build_polymer_moments_artifact(
+            [pf], core_species=core, core_reactions=[rxn],
+            configured_pool_labels=["phenol_formaldehyde"],
+            condensed_species=core[:5],
+            cantera_index_map={id(rxn): [0]})
+        assert artifact["schema_version"] == "3.1"
+        assert artifact["conventions"]["format_doc"] == (
+            "docs/polymer_moments_format.md (polymer_moments_format/3.1)")
+        rows = [r for r in artifact["reactions"]
+                if r["archetype"] == "moment_credit_conduit/1"]
+        assert len(rows) == 1
+        # [r39-P6]: the recipe_revision token family is untouched.
+        assert artifact["conventions"]["recipe_revision"] == \
+            POLYMER_RATE_RECIPE_REVISION
+        # r42 P1-1: the census block is emitted WHENEVER conduit rows
+        # serialize -- the runner REJECTS conduit rows without it, so the
+        # producer must never emit that shape. With the M18.3 accumulator
+        # empty by design the block is truthfully all-zero.
+        census = artifact["conventions"]["conduit_flux_census"]
+        assert census["serialized_gas_mass_g"] == 0.0
+        assert census["unserialized_gas_mass_g"] == 0.0
+        assert census["revoked_gas_mass_g"] == 0.0
+        assert census["units"] == "g"
+        assert "no consumer can replay" in census["note"]
+
+    def test_census_block_alone_elects_3_1(self, pe_pool, monkeypatch):
+        """T1(c): a non-empty accumulator with ZERO conduit rows still
+        stamps 3.1 (edge-unserialized flux must never hide under an older
+        stamp) and emits the census block, fully unserialized."""
+        import rmgpy.polymer_conduit as pc
+        monkeypatch.setattr(
+            pc, "get_conduit_flux_totals",
+            lambda: {"K1": {"grams": 0.5, "revoked": False}})
+        artifact = build_polymer_moments_artifact(
+            [pe_pool], core_species=None, core_reactions=[],
+            configured_pool_labels=["PE"], monomer_routing_by_pool={})
+        assert artifact["schema_version"] == "3.1"
+        census = artifact["conventions"]["conduit_flux_census"]
+        assert census["serialized_gas_mass_g"] == 0.0
+        assert census["unserialized_gas_mass_g"] == pytest.approx(0.5)
+        assert census["revoked_gas_mass_g"] == 0.0
+        assert census["units"] == "g"
+        assert "no consumer can replay" in census["note"]
+
+
+class TestConduitFluxCensusPartition:
+    """T4(a-c), emitter side -- partition + byte-identity golden pins."""
+
+    def test_partition_serialized_unserialized_revoked(self, monkeypatch):
+        import rmgpy.polymer_conduit as pc
+        pf, core, rxn = _conduit_fixture()
+        key = rxn.polymer_conduit_params["candidate_key"]
+        monkeypatch.setattr(
+            pc, "get_conduit_flux_totals",
+            lambda: {
+                key: {"grams": 2.0, "revoked": False},        # serialized
+                "EDGE_ONLY": {"grams": 0.25, "revoked": False},
+                "WAS_REVOKED": {"grams": 0.125, "revoked": True},
+            })
+        artifact = build_polymer_moments_artifact(
+            [pf], core_species=core, core_reactions=[rxn],
+            configured_pool_labels=["phenol_formaldehyde"],
+            condensed_species=core[:5],
+            cantera_index_map={id(rxn): [0]})
+        census = artifact["conventions"]["conduit_flux_census"]
+        assert census["serialized_gas_mass_g"] == pytest.approx(2.0)
+        assert census["unserialized_gas_mass_g"] == pytest.approx(0.25)
+        assert census["revoked_gas_mass_g"] == pytest.approx(0.125)
+        assert artifact["schema_version"] == "3.1"
+
+    def test_empty_accumulator_is_byte_identical(self, pe_pool):
+        """T4(c): the empty accumulator (the ONLY real M18.3 state) leaves
+        the artifact byte-identical -- no block, no stamp change."""
+        import re
+        artifact = build_polymer_moments_artifact(
+            [pe_pool], core_species=None, core_reactions=[],
+            configured_pool_labels=["PE"], monomer_routing_by_pool={},
+            rmg_commit="PINNED-FOR-TEST")
+        artifact.pop("generated_at")
+        dumped = json.dumps(artifact, sort_keys=True)
+        assert "conduit" not in dumped
+        assert artifact["schema_version"] == "2.0"

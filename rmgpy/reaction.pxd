@@ -70,6 +70,8 @@ cdef class Reaction:
     cdef public int polymer_flux_archetype
     cdef public int polymer_chip_units
     cdef public double polymer_eject_units
+    cdef public object polymer_conduit_params
+    cdef public object polymer_conduit_dst_pool
     cdef public object rank
 
     cpdef bint is_isomerization(self)

@@ -1379,7 +1379,7 @@ class TestAdmissionEndToEndDeadFlag:
         assert rxn.reversible is True                      # NO rewrite
         assert int(getattr(rxn, "polymer_flux_archetype", 0)) != int(
             PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
-        assert not hasattr(rxn, "polymer_conduit_params")  # NO stamp
+        assert getattr(rxn, "polymer_conduit_params", None) is None  # NO stamp
         msgs = [r.getMessage() for r in caplog.records
                 if "[conduit-admission/1" in r.getMessage()]
         assert len(msgs) == 1

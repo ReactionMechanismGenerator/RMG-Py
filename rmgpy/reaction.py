@@ -194,6 +194,14 @@ class Reaction:
         # the fields above it is NOT serialized in __reduce__; the solver demotes
         # unstamped arrivals at initialize_model.
         self.polymer_eject_units = polymer_eject_units
+        # moment_credit_conduit/1 admission stamp (M18.3, DESIGN §2.1/§3.1):
+        # the §2.1 params dict + destination pool label written by the r93
+        # stamp site's admit arm (dead behind CONDUIT_ADMISSION_ENABLED
+        # until M18.4). None means "not an admitted conduit row". Like the
+        # polymer fields above, NOT serialized in __reduce__; admission is
+        # re-evaluated at every solver rebuild (DESIGN §3.3).
+        self.polymer_conduit_params = None
+        self.polymer_conduit_dst_pool = None
 
     def __repr__(self):
         """

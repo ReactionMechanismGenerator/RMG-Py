@@ -5602,6 +5602,23 @@ POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_THERMAL = "2.9"
 # whenever any pool carries a side_group_homolysis block naming kernel
 # side_group_homolysis/2 (or the v2 recipe_revision).
 POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SIDE_GROUP_V2 = "3.0"
+# Schema 3.1 = 3.0 + the moment_credit_conduit/1 row vocabulary + the
+# conventions.conduit_flux_census block (M18.3, round-39 ratified DESIGN).
+# ADDITIVE archetype vocabulary on the 3.x line (the 2.x line is CLOSED at
+# 2.9: "2.10" would collide with 3.0 on the comparable-ordinal ladder
+# 3.y -> 10 + y). Presence-elected like every prior minor: the emitter
+# stamps 3.1 exactly when at least one serialized reactions[] row carries
+# archetype moment_credit_conduit/1 OR the artifact carries the
+# conduit_flux_census block (a run whose admitted conduit flux was entirely
+# edge-unserialized has ZERO conduit rows but must still stamp 3.1 so the
+# census -- and the certification refusal it feeds -- can never hide under
+# an older stamp); a conduit-free artifact keeps its older stamp
+# byte-identically (golden-pinned). NO artifact-level recipe_revision
+# change [r39-P6]: the bundle law is carried by the versioned archetype
+# name plus the 3.1 envelope (the volatile_ejection/1 precedent); a future
+# in-place amendment of the conduit LAW is /2 on the archetype name, never
+# a recipe token.
+POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_MOMENT_CREDIT = "3.1"
 POLYMER_POOLS_SIDECAR_FILENAME = "polymer_pools.json"
 
 # Recognized thermal_analysis_inputs fields (schema 2.9). Per-pool fields
@@ -7707,6 +7724,15 @@ ARCHETYPE_TERM_NAMES = {
 
 _ARRHENIUS_A_UNITS = {1: "s^-1", 2: "m^3/(mol*s)", 3: "m^6/(mol^2*s)"}
 
+# Conduit stamp cross-check tolerances (r42 P1-2/P1-3, producer mirror of
+# the runner's §2.4 cross-pins -- keep in sync with
+# rmgpy/tools/polymer_moments_runner.py _CONDUIT_UNITS_ABS_TOL /
+# _CONDUIT_MW_REL_TOL): stamped chain_units/gas_units must agree with the
+# serializer's own recompute ABSOLUTELY within 0.01 monomer-equivalents;
+# the stamped gas mw_g_mol RELATIVELY within 1e-3 of the actual product MW.
+_CONDUIT_UNITS_ABS_TOL = 0.01
+_CONDUIT_MW_REL_TOL = 1.0e-3
+
 
 def _resolve_reaction_pools(rxn, pool_set):
     """Mirror the solver's src/dst pool resolution (polymer.pyx:535-556):
@@ -7763,6 +7789,7 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
     UNR = int(PolymerFluxArchetype.UNRESOLVED)
     CHIP = int(PolymerFluxArchetype.DISCRETE_CHIP)
     VE = int(PolymerFluxArchetype.VOLATILE_EJECTION)
+    CONDUIT = int(PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
 
     for rxn in core_reactions:
         arch = int(getattr(rxn, "polymer_flux_archetype", 0))
@@ -7885,6 +7912,235 @@ def compile_polymer_reaction_entries(core_reactions, core_species,
             entry["params"] = {"a": int(getattr(rxn, "polymer_chip_units", 0))}
         elif arch == VE:
             entry["params"] = {"eject_units": float(getattr(rxn, "polymer_eject_units", 0.0))}
+        elif arch == CONDUIT:
+            # moment_credit_conduit/1 row (M18.3, DESIGN §2 + §3.4). Every
+            # tripwire RAISES; none demotes (ratified rider): demotion would
+            # write an artifact that zeroes flux the generating trajectory
+            # integrated -- the pre-2.4 over-integration erratum in mirror
+            # image. All params come from the admission-time stamp.
+            params = getattr(rxn, "polymer_conduit_params", None)
+            dst_stamp = getattr(rxn, "polymer_conduit_dst_pool", None)
+            if not isinstance(params, dict) or not dst_stamp:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s carries no admission "
+                    "stamp (polymer_conduit_params/polymer_conduit_dst_pool "
+                    "missing) -- a moment_credit_conduit/1 archetype without "
+                    "its §2.1 params is an admission-path bug, never "
+                    "serializable." % equation)
+            # Tripwire 1 [P1-5]: cantera export is load-bearing. A run that
+            # integrated conduit flux it cannot export must fail loudly at
+            # artifact build.
+            if cantera is None:
+                raise RuntimeError(
+                    "Polymer artifact: admitted conduit row %s is absent "
+                    "from the Cantera index map (cantera: null). The "
+                    "chem.yaml export is load-bearing for "
+                    "moment_credit_conduit/1 (admission gate G6 makes this "
+                    "unreachable except by bugs); REFUSING to emit -- "
+                    "demotion is forbidden (never-demote rider)." % equation)
+            # Tripwire 3: refused/conduit mutual exclusion.
+            if getattr(rxn, "polymer_refused", False) or spawned_refused:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s also carries refusal "
+                    "state (polymer_refused/spawned-refusal) -- the refused "
+                    "marker and moment_credit_conduit/1 are mutually "
+                    "exclusive (DESIGN §2.1); an admitted row that was "
+                    "re-refused must be REVOKED (archetype cleared), never "
+                    "serialized as both." % equation)
+            # Tripwire 2 [r39-P1]: the irreversible rewrite is an admission
+            # invariant; the exported equation must carry '=>'.
+            if bool(getattr(rxn, "reversible", True)) or "<=>" in equation:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s is still reversible "
+                    "(reversible=%s, equation %r) -- the [r39-P1] "
+                    "irreversible export rewrite is an admission invariant; "
+                    "a '<=>' conduit row is corrupt." % (
+                        equation, getattr(rxn, "reversible", True),
+                        equation))
+            # Tripwire 5 [r39-P5]: exactly one gas product, stoich 1.
+            gps = params.get("gas_products")
+            if (not isinstance(gps, list) or len(gps) != 1
+                    or not isinstance(gps[0], dict)
+                    or int(gps[0].get("stoich", 0)) != 1):
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s must carry EXACTLY "
+                    "ONE gas product with stoich 1 (got params.gas_products "
+                    "= %r) -- nothing broader than admission shapes A/B "
+                    "serializes ([r39-P5])." % (equation, gps))
+            # Tripwire 8 [r42 P1-3]: the stamp's shape (tripwire 5) is not
+            # enough -- the row's ACTUAL product side must realize it:
+            # exactly one non-pool product with stoichiometric multiplicity
+            # 1 (a stoich-2 product appears twice in rxn.products). A row
+            # whose products drifted since admission would otherwise
+            # serialize behind a well-formed but foreign stamp.
+            actual_gas = [s for s in rxn.products
+                          if not isinstance(s, Polymer)]
+            if len(actual_gas) != 1:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s carries %d non-pool "
+                    "product(s) on its ACTUAL product side -- the admission "
+                    "contract is EXACTLY ONE gas product with stoich 1 "
+                    "([r39-P5]), so the stamp (%r) cannot describe this "
+                    "row; REFUSING to serialize (r42 P1-3)."
+                    % (equation, len(actual_gas), gps))
+            # Tripwire 6: destination pool must be solver-configured (and
+            # therefore serialized in pools[]).
+            if str(dst_stamp) not in pool_set:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s stamps dst_pool %r, "
+                    "which is not a configured/serialized pool (configured: "
+                    "%s) -- the credited destination would be invisible to "
+                    "every consumer." % (equation, dst_stamp,
+                                         sorted(pool_set)))
+            # Tripwire 4: landing-cone recompute (§2.3 enforcement point 2)
+            # from the row's OWN species MWs -- independent of the stamp.
+            dst_polys = [s for s in rxn.products
+                         if isinstance(s, Polymer)
+                         and _species_base_label(s) == str(dst_stamp)]
+            if len(dst_polys) != 1:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s does not carry "
+                    "exactly one %r pool participant on the product side "
+                    "(found %d) -- cannot recompute the landing cone."
+                    % (equation, dst_stamp, len(dst_polys)))
+            dst_poly = dst_polys[0]
+            try:
+                m_dst = float(getattr(dst_poly, "monomer_mw_g_mol", 0.0)
+                              or 0.0)
+                d_dst = float(getattr(dst_poly, "chain_mass_defect_g_mol",
+                                      0.0) or 0.0)
+                consumed_mw = sum(
+                    s.molecule[0].get_molecular_weight() * 1000.0
+                    for s in rxn.reactants if not isinstance(s, Polymer))
+                gas_mw = sum(
+                    s.molecule[0].get_molecular_weight() * 1000.0
+                    for s in rxn.products if not isinstance(s, Polymer))
+            except (AttributeError, IndexError, TypeError) as exc:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s landing-cone "
+                    "recompute failed (%s: %s) -- an unverifiable cone is "
+                    "a refusal, never a pass-through." % (
+                        equation, type(exc).__name__, exc))
+            if m_dst <= 0.0:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s destination pool %r "
+                    "has no usable monomer_mw_g_mol -- cannot recompute "
+                    "the landing cone." % (equation, dst_stamp))
+            # Tripwire 9 [r42 P1-3]: the stamped gas product must BE the
+            # actual product -- its mw_g_mol stamp must agree with the
+            # actual product's own MW (the §2.4 relative tolerance), and
+            # the ACTUAL MW must satisfy the G3 admission bound
+            # (<= GAS_MW_FACTOR x monomer MW of the destination pool).
+            # Both recomputed from the row's own species, never the stamp.
+            from rmgpy.polymer_conduit import GAS_MW_FACTOR
+            mw_stamp = gps[0].get("mw_g_mol")
+            if (isinstance(mw_stamp, bool)
+                    or not isinstance(mw_stamp, (int, float))
+                    or not math.isfinite(float(mw_stamp))
+                    or float(mw_stamp) <= 0.0
+                    or abs(float(mw_stamp) - gas_mw)
+                    > _CONDUIT_MW_REL_TOL * gas_mw):
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s stamps gas product "
+                    "mw_g_mol=%r but the row's ACTUAL gas product weighs "
+                    "%.6g g/mol (relative tolerance %s) -- the stamp does "
+                    "not describe this row's products; REFUSING to "
+                    "serialize (r42 P1-3)."
+                    % (equation, mw_stamp, gas_mw, _CONDUIT_MW_REL_TOL))
+            if gas_mw > GAS_MW_FACTOR * m_dst * (1.0 + _CONDUIT_MW_REL_TOL):
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s gas product weighs "
+                    "%.6g g/mol, above the admission bound %s x "
+                    "monomer_mw_g_mol(dst) = %.6g (gate G3) -- an admitted "
+                    "row cannot out-weigh its own admission threshold; "
+                    "REFUSING to serialize (r42 P1-3)."
+                    % (equation, gas_mw, GAS_MW_FACTOR,
+                       GAS_MW_FACTOR * m_dst))
+            u_recomputed = (consumed_mw - gas_mw + d_dst) / m_dst
+            if not (u_recomputed >= 1.0):
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s violates the landing "
+                    "cone on recompute (u = %.6g < 1.0; §2.3): the credited "
+                    "point mass would land OUTSIDE the destination pool's "
+                    "realizability cone. The stamp said chain_units = %r."
+                    % (equation, u_recomputed,
+                       params.get("chain_units")))
+            # Tripwire 10 [r42 P1-2]: the row serializes the STAMPED
+            # chain_units/gas_units, so the stamp must agree with this
+            # serializer's OWN recompute before anything is written
+            # (producer mirror of the runner's §2.4 cross-pins; tolerance
+            # kept in sync). A stale/corrupted stamp that still lands
+            # inside the cone would otherwise poison the artifact and only
+            # fail at load -- or worse, replay wrong credits.
+            u_stamp = params.get("chain_units")
+            if (isinstance(u_stamp, bool)
+                    or not isinstance(u_stamp, (int, float))
+                    or not math.isfinite(float(u_stamp))
+                    or abs(float(u_stamp) - u_recomputed)
+                    > _CONDUIT_UNITS_ABS_TOL):
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s stamps chain_units=%r "
+                    "but the serializer recomputes u = %.6g from the row's "
+                    "own species MWs (absolute tolerance %s "
+                    "monomer-equivalents) -- a stale admission stamp is "
+                    "artifact corruption; REFUSING to serialize (r42 P1-2)."
+                    % (equation, u_stamp, u_recomputed,
+                       _CONDUIT_UNITS_ABS_TOL))
+            a_recomputed = gas_mw / m_dst
+            a_stamp = params.get("gas_units")
+            if (isinstance(a_stamp, bool)
+                    or not isinstance(a_stamp, (int, float))
+                    or not math.isfinite(float(a_stamp))
+                    or abs(float(a_stamp) - a_recomputed)
+                    > _CONDUIT_UNITS_ABS_TOL):
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s stamps gas_units=%r "
+                    "but the serializer recomputes a = mw_gas/M(dst) = "
+                    "%.6g from the row's own species MWs (absolute "
+                    "tolerance %s monomer-equivalents) -- a stale admission "
+                    "stamp is artifact corruption; REFUSING to serialize "
+                    "(r42 P1-2)."
+                    % (equation, a_stamp, a_recomputed,
+                       _CONDUIT_UNITS_ABS_TOL))
+            # Tripwire 11 [r42 P1-5]: the §4.4 flux-census partition and
+            # the M18.4 accumulator are keyed on candidate_key, so the
+            # stamped key must be non-empty AND recompute from the row's
+            # OWN census identity (same label form the admission stamp
+            # used) -- an empty/foreign key silently corrupts the
+            # serialized-vs-edge accounting partition.
+            from rmgpy.polymer_conduit import candidate_key_from_label
+            key_stamp = str(params.get("candidate_key") or "")
+            key_recomputed = candidate_key_from_label(
+                _reaction_census_label(rxn))
+            if not key_stamp or key_stamp != key_recomputed:
+                raise RuntimeError(
+                    "Polymer artifact: conduit row %s stamps candidate_key="
+                    "%r but the row's own census identity recomputes to %r "
+                    "-- the conduit flux-census accounting is keyed on the "
+                    "candidate key, so an empty or foreign key is artifact "
+                    "corruption; REFUSING to serialize (r42 P1-5)."
+                    % (equation, key_stamp, key_recomputed))
+            # Row shape (DESIGN §2): src null, dst from the stamp, pinned
+            # inert mu0 scaling, params verbatim from the admission stamp
+            # (verbatim is now safe: tripwires 8-11 above pinned the stamp
+            # to this row's own recomputed identity/values).
+            entry["src_pool"] = None
+            entry["dst_pool"] = str(dst_stamp)
+            entry["scaling"] = "mu0"
+            entry["params"] = {
+                "admission_direction": str(
+                    params.get("admission_direction")),
+                "chain_units": float(params.get("chain_units")),
+                "gas_products": [{
+                    "species": str(gps[0].get("species")),
+                    "stoich": 1,
+                    "mw_g_mol": float(gps[0].get("mw_g_mol")),
+                }],
+                "gas_units": float(params.get("gas_units")),
+                "candidate_key": str(params.get("candidate_key")),
+                "candidate_key_note": str(params.get(
+                    "candidate_key_note", "")),
+            }
         # Refused-row marker (schema 2.4, format doc §12): the generating
         # solver zeroes this reaction's WHOLE flux (polymer.pyx
         # reaction_refused), so the row must say so or a consumer integrates
@@ -8265,6 +8521,36 @@ def build_polymer_moments_artifact(pool_registry,
              == SIDE_GROUP_RECIPE_REVISION_V2)]
     if side_group_v2_carriers:
         schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_SIDE_GROUP_V2
+    # Moment-credit conduit vocabulary (schema 3.1, M18.3) -- evaluated
+    # LAST, the strongest rung (comparable ordinal 11): stamp 3.1 iff at
+    # least one serialized reactions[] row carries moment_credit_conduit/1
+    # OR the run-level conduit flux accumulator is non-empty (the
+    # conduit_flux_census block below is itself 3.1 vocabulary: a run whose
+    # admitted conduit flux was entirely edge-unserialized has ZERO conduit
+    # rows but must still stamp 3.1, DESIGN §1.4/§4.4). A conduit-free
+    # artifact keeps its older stamp byte-identically (golden-pinned).
+    # recipe_revision deliberately untouched [r39-P6].
+    conduit_rows = [r for r in reactions
+                    if r.get("archetype") == "moment_credit_conduit/1"]
+    from rmgpy.polymer_conduit import get_conduit_flux_totals
+    conduit_totals = get_conduit_flux_totals()
+    if conduit_rows or conduit_totals:
+        # Serializer tripwire 7 (DESIGN §3.4 / §1.3): conduit vocabulary
+        # must NEVER co-serialize with SGH kernel-v1 vocabulary -- a 3.1
+        # stamp puts the artifact in the SGH-v2 world by construction (TA
+        # hard-rejects v1 blocks under major >= 3), so emitting both would
+        # stamp a self-contradictory artifact. RAISE, never demote.
+        sgh_v1_carriers = [p["label"] for p in side_group_carriers
+                           if p not in side_group_v2_carriers]
+        if sgh_v1_carriers:
+            raise RuntimeError(
+                "Polymer artifact: conduit vocabulary (schema 3.1) cannot "
+                "co-serialize with SGH kernel-v1 vocabulary (pools %s carry "
+                "a side_group_homolysis/1 block): a 3.1 stamp lives in the "
+                "SGH-v2 world by construction (consumers hard-reject v1 "
+                "blocks under major >= 3). Migrate the deck to the v2 "
+                "kernel first (DESIGN §1.3)." % sgh_v1_carriers)
+        schema_version = POLYMER_POOLS_SIDECAR_SCHEMA_VERSION_MOMENT_CREDIT
 
     # conventions.condensed_species closure (schema 2.5): a spawned pool's
     # phase_species (canonical proxy + mu-dummies collected from the same
@@ -8438,6 +8724,44 @@ def build_polymer_moments_artifact(pool_registry,
     # conventions keys (probed 2026-07-04).
     if stale_topology:
         conventions["stale_topology"] = True
+
+    # conventions.conduit_flux_census (schema 3.1, DESIGN §4.4): the
+    # run-level admitted-conduit gas-mass accumulator, partitioned at
+    # artifact write into rows that serialized (core, present in
+    # reactions[]) vs rows that did not (still edge -- flux NO consumer can
+    # replay) vs revoked rows (mass integrated before an FR revocation;
+    # counted, it happened). Emitted whenever conduit rows serialize OR the
+    # accumulator is non-empty (r42 P1-1: the runner REJECTS conduit rows
+    # without the census block, format doc §14, so the producer must never
+    # emit that shape -- with an empty accumulator the block is truthfully
+    # all-zero). Conduit-free artifacts with an empty accumulator stay
+    # byte-identical (golden-pinned). The block's presence forces the 3.1
+    # stamp above. The CKMG certification refusal (unserialized fraction
+    # tolerance) consumes these numbers; the RMG reference runner WARNS on
+    # unserialized_gas_mass_g > 0. The accumulator is ALWAYS empty in M18.3
+    # (its writer is the M18.4 solver dispatch arm).
+    if conduit_rows or conduit_totals:
+        serialized_keys = {
+            (r.get("params") or {}).get("candidate_key")
+            for r in conduit_rows}
+        serialized_g = unserialized_g = revoked_g = 0.0
+        for key, rec in conduit_totals.items():
+            grams = float((rec or {}).get("grams", 0.0))
+            if (rec or {}).get("revoked"):
+                revoked_g += grams
+            elif key in serialized_keys:
+                serialized_g += grams
+            else:
+                unserialized_g += grams
+        conventions["conduit_flux_census"] = {
+            "serialized_gas_mass_g": serialized_g,
+            "unserialized_gas_mass_g": unserialized_g,
+            "revoked_gas_mass_g": revoked_g,
+            "units": "g",
+            "note": ("cumulative admitted-conduit gas mass over the "
+                     "generating run; unserialized mass is flux no "
+                     "consumer can replay"),
+        }
 
     return {
         "schema_version": schema_version,
