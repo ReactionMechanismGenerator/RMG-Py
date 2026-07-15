@@ -869,3 +869,68 @@ class TestRefusedRowAndHomolysisGuards:
                 ValueError,
                 match=r"PP_rad_.*end.*end_radical_depropagation"):
             ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+
+# ---------------------------------------------------------------------------
+# M18.3 T7, COMMIT 1 (ratified test-first rider): PROOF of the numpy
+# consumer's silent mass fabrication on unknown archetypes.
+# ---------------------------------------------------------------------------
+
+class TestSilentMassFabricationProof:
+    """T7 commit 1 -- these assertions are written TO THE BUGGY BEHAVIOR
+    and prove the fabrication BEFORE the fix lands (ratified round-39
+    rider; the fix commit inverts them into raise-assertions):
+
+    the consumer has NO schema_version gate and an if/elif archetype
+    dispatch with NO else, so a one-row artifact carrying an UNKNOWN
+    archetype (under an arbitrary future stamp) is accepted silently and
+    its step-5 species dispatch still runs -- the gas product G appears
+    out of nothing while both pool-mapped participants and every pool
+    moment stay EXACTLY untouched: silent condensed-mass fabrication with
+    no error and no warning."""
+
+    def _unknown_archetype_artifact(self, core):
+        rxn = Reaction(reactants=[core[0]], products=[core[4], core[8]],
+                       kinetics=_kin1(), reversible=False)
+        rxn.polymer_flux_archetype = int(PolymerFluxArchetype.MIGRATION)
+        artifact = _artifact_for(core, [rxn])
+        (row,) = artifact["reactions"]
+        row["archetype"] = "mystery_channel/1"     # unknown to every loader
+        artifact["schema_version"] = "9.9"         # no consumer ceiling either
+        return artifact
+
+    def test_current_consumer_silently_fabricates_gas_mass(self):
+        sp, core, mask = _two_pool_setup()
+        artifact = self._unknown_archetype_artifact(core)
+
+        # (1) construction ACCEPTS the unknown version and the unknown
+        # archetype without a raise or a warning -- the proof of the
+        # missing envelope gate + missing closed-set dispatch.
+        import warnings
+        with warnings.catch_warnings():
+            warnings.simplefilter("error")
+            consumer = ArtifactConsumer(artifact,
+                                        [_yaml_label(s) for s in core],
+                                        P=P_PA, V_poly=V_POLY)
+
+        # (2) integration moves the gas species while crediting NOTHING:
+        y0 = np.zeros(len(core))
+        y0[0] = 1.0          # pool proxy A amount (bookkeeping)
+        for i in (1, 2, 3):  # pool A moments (1, 5, 30)
+            y0[i] = (1.0, 5.0, 30.0)[i - 1]
+        for i in (5, 6, 7):  # pool B moments
+            y0[i] = (1.0, 5.0, 30.0)[i - 5]
+        _, traj = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        y_end = traj[-1]
+        # gas G fabricated out of nothing (step-5 dispatch ran)...
+        assert y_end[8] > 0.0
+        # ... while the pool-mapped species amounts are untouched...
+        assert y_end[0] == pytest.approx(y0[0], abs=0.0)
+        assert y_end[4] == pytest.approx(y0[4], abs=0.0)
+        # ... and EVERY pool moment is bit-identical (no step-6 arm ran):
+        for i in (1, 2, 3, 5, 6, 7):
+            assert y_end[i] == y0[i]
+        # Fabrication quantified: gas moles appeared with zero condensed
+        # debit anywhere -- condensed mass is NOT conserved.
+        fabricated_mol = float(y_end[8] - y0[8])
+        assert fabricated_mol > 1.0e-4  # a real, macroscopic leak
