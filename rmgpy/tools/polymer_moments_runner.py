@@ -75,6 +75,7 @@ ARCHETYPE_INTS = {
     "legacy_mu1/1": 4,
     "discrete_chip/1": 5,
     "volatile_ejection/1": 6,
+    "moment_credit_conduit/1": 7,
 }
 
 
@@ -285,6 +286,47 @@ def _restamp_and_extend(artifact, species, reactions):
         # _validated_eject_units).
         if arch_name == "volatile_ejection/1":
             rxn.polymer_eject_units = _validated_eject_units(e)
+        # moment_credit_conduit/1 (schema 3.1, DESIGN §2.2): validate every
+        # §2.1 reject rule (incl. the §2.4 cross-pins against the chem.yaml
+        # composition MWs), then REFUSE the replay FAIL-CLOSED. The
+        # compiled oracle has NO conduit dispatch arm yet (that is the
+        # M18.4 solver increment), and its moment-isolation invariant
+        # (validate_configuration: "Moments must evolve only via
+        # tail_kinetics") forbids any consumer-side moment write -- so a
+        # live conduit row is UNREPLAYABLE here in M18.3. Restamping it
+        # anyway would integrate its species flux (chain consumed, gas
+        # released) while crediting NO pool moments: silent condensed-mass
+        # fabrication, the exact failure class the closed archetype
+        # vocabulary exists to stop (and the one the numpy consumer's T7
+        # proof pins). The bundle law's trajectory verification lives in
+        # the numpy reference consumer (test/rmgpy/tools/
+        # numpy_moments_consumer.py, DESIGN §2.2) until the solver arm
+        # lands.
+        if arch_name == "moment_credit_conduit/1":
+            # g/mol from the chem.yaml composition MWs. The
+            # Species.molecular_weight quantity stores SI kg/molecule
+            # (MolecularWeight quantity type), so g/mol = value_si*Na*1e3.
+            import rmgpy.constants as _constants
+            species_mw = {
+                s.label: (float(s.molecular_weight.value_si)
+                          * _constants.Na * 1000.0
+                          if getattr(s, "molecular_weight", None) is not None
+                          else None)
+                for s in species}
+            _validate_conduit_entry(
+                e, artifact.get("pools", []),
+                artifact.get("conventions") or {}, species_mw=species_mw)
+            raise ValueError(
+                f"reactions[] entry {e.get('id')!r} is a LIVE "
+                f"moment_credit_conduit/1 row: this runner's compiled "
+                f"oracle has no conduit dispatch arm yet (M18.4; the "
+                f"solver's moment-isolation invariant forbids any "
+                f"consumer-side moment write), so the row cannot be "
+                f"replayed faithfully -- integrating it without the pool "
+                f"moment credit would silently fabricate condensed-mass "
+                f"loss. Refusing the whole replay (fail-closed). Use the "
+                f"numpy reference consumer for conduit-bundle trajectories "
+                f"until the M18.4 solver dispatch lands.")
         # Physically-melt classification, like MW, must cross the artifact
         # boundary: the reference-state tripwire's tag branch reads
         # is_polymer_proxy, which generation world stamps by blanket-tagging
@@ -884,8 +926,34 @@ REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid",
 # MAJOR bump 3.0 is implemented (side_group_homolysis/2, the
 # inventory-depletion kernel) -- see _MAX_KNOWN_SCHEMA_MAJOR3_MINOR.
 _MAX_KNOWN_SCHEMA_MINOR = 8
-# Highest 3.x minor this loader implements (3.0 = SGH kernel-v2).
-_MAX_KNOWN_SCHEMA_MAJOR3_MINOR = 0
+# Highest 3.x minor this loader implements (3.0 = SGH kernel-v2;
+# 3.1 = the moment_credit_conduit/1 row vocabulary + the
+# conventions.conduit_flux_census block, M18.3 -- validated by
+# _validate_conduit_entry / _check_conduit_schema_version /
+# _check_conduit_flux_census and replayed through the exact DESIGN §2.2
+# bundle law, so 3.1 acceptance is truthful).
+_MAX_KNOWN_SCHEMA_MAJOR3_MINOR = 1
+# The conduit vocabulary entered at 3.1 (comparable ordinal 11 on the
+# _schema_minor ladder). Conduit rows or the census block under any older
+# stamp are malformed.
+_CONDUIT_MIN_SCHEMA_ORDINAL = 11
+# §2.4 cross-pin tolerances (the TA _VE_DECLARED_A_ABS_TOL /
+# _MW_CROSS_PIN_REL_TOL precedent, ta/mechanism.py): chain_units/gas_units
+# recomputed from the row's own species MWs must agree ABSOLUTELY within
+# 0.01 monomer-equivalents; the gas mw_g_mol stamp agrees RELATIVELY.
+_CONDUIT_UNITS_ABS_TOL = 0.01
+_CONDUIT_MW_REL_TOL = 1.0e-3
+# Closed params vocabulary of a moment_credit_conduit/1 row (DESIGN §2.1).
+_CONDUIT_PARAMS_REQUIRED = frozenset(
+    ("admission_direction", "chain_units", "gas_products", "gas_units",
+     "candidate_key"))
+_CONDUIT_PARAMS_KEYS = _CONDUIT_PARAMS_REQUIRED | frozenset(
+    ("candidate_key_note",))
+# Closed key/units vocabulary of conventions.conduit_flux_census (§4.4).
+_CONDUIT_CENSUS_KEYS = frozenset(
+    ("serialized_gas_mass_g", "unserialized_gas_mass_g",
+     "revoked_gas_mass_g", "units", "note"))
+_CONDUIT_GAS_MW_FACTOR = 1.5
 
 
 def _schema_minor(ver):
@@ -933,7 +1001,8 @@ def _check_stale_topology(artifact, allow_stale=False):
 
 def _check_schema_version_known(artifact):
     """Reject any artifact whose schema_version is not one this loader
-    implements (2.0 .. 2.8, or the SGH kernel-v2 major bump 3.0)."""
+    implements (2.0 .. 2.8, the SGH kernel-v2 major bump 3.0, or the
+    moment-credit conduit vocabulary 3.1)."""
     ver = str(artifact.get("schema_version", ""))
     parts = ver.split(".")
     ok = (len(parts) == 2 and parts[1].isdigit()
@@ -988,6 +1057,263 @@ def _check_qssa_schema_version(artifact):
             f"A 2.1-stamped artifact must not smuggle U keys (schema/"
             f"vocabulary consistency; never loaded permissively) -- "
             f"regenerate the sidecar with a current RMG-Py polymer branch.")
+
+
+def _conduit_entries(artifact):
+    return [e for e in artifact.get("reactions", [])
+            if isinstance(e, dict)
+            and e.get("archetype") == "moment_credit_conduit/1"]
+
+
+def _check_conduit_schema_version(artifact):
+    """Reject conduit vocabulary (moment_credit_conduit/1 rows or the
+    conventions.conduit_flux_census block) under any stamp below 3.1
+    (mirror of _check_qssa_schema_version: the emitter stamps 3.1 whenever
+    it writes either -- an older stamp smuggling them is malformed), and
+    reject conduit rows WITHOUT the census block (a 3.1 artifact carrying
+    admitted-conduit rows but no run-level flux accounting is malformed,
+    DESIGN §4.4)."""
+    rows = _conduit_entries(artifact)
+    census = (artifact.get("conventions") or {}).get("conduit_flux_census")
+    if not rows and census is None:
+        return
+    ver = str(artifact.get("schema_version", ""))
+    if _schema_minor(ver) < _CONDUIT_MIN_SCHEMA_ORDINAL:
+        what = ("moment_credit_conduit/1 reactions[] rows" if rows
+                else "a conventions.conduit_flux_census block")
+        raise ValueError(
+            f"artifact schema_version {ver!r} cannot carry {what}: the "
+            f"moment-credit conduit vocabulary was introduced in schema "
+            f"3.1, and the emitter stamps 3.1 whenever it writes it "
+            f"(presence-elected, DESIGN §1.4). This artifact is malformed "
+            f"-- regenerate the sidecar with a current RMG-Py polymer "
+            f"branch.")
+    if rows and census is None:
+        raise ValueError(
+            f"artifact carries {len(rows)} moment_credit_conduit/1 row(s) "
+            f"but NO conventions.conduit_flux_census block: the generating "
+            f"engine accumulates run-level conduit gas mass whenever "
+            f"admission is live, so a conduit-row-bearing artifact without "
+            f"the census is malformed (DESIGN §4.4) -- its "
+            f"edge-unserialized conduit flux would be unbounded and "
+            f"invisible to certification. Fix the artifact.")
+
+
+def _check_conduit_flux_census(artifact):
+    """Shape/units validation of conventions.conduit_flux_census (§4.4) +
+    the WARN (not refuse) surfacing of unserialized conduit gas mass, so
+    the number is visible in every replay, not only at certification."""
+    census = (artifact.get("conventions") or {}).get("conduit_flux_census")
+    if census is None:
+        return
+    if not isinstance(census, dict) or set(census) != _CONDUIT_CENSUS_KEYS:
+        raise ValueError(
+            f"conventions.conduit_flux_census must carry exactly the keys "
+            f"{sorted(_CONDUIT_CENSUS_KEYS)} (DESIGN §4.4); got "
+            f"{census!r}. Fix the artifact.")
+    if census.get("units") != "g":
+        raise ValueError(
+            f"conventions.conduit_flux_census.units must be 'g' (grams of "
+            f"admitted-conduit gas mass); got {census.get('units')!r}. A "
+            f"different unit claim must ERROR, never be converted.")
+    for key in ("serialized_gas_mass_g", "unserialized_gas_mass_g",
+                "revoked_gas_mass_g"):
+        v = census.get(key)
+        if isinstance(v, bool) or not isinstance(v, (int, float)) \
+                or not math.isfinite(float(v)) or float(v) < 0.0:
+            raise ValueError(
+                f"conventions.conduit_flux_census.{key}={v!r} must be a "
+                f"finite non-negative gram mass. Fix the artifact.")
+    unserialized = float(census["unserialized_gas_mass_g"])
+    if unserialized > 0.0:
+        logging.warning(
+            "CONDUIT FLUX CENSUS: this artifact's generating run "
+            "integrated %.6g g of admitted-conduit gas mass through rows "
+            "that never serialized (still edge, or revoked: %.6g g) -- "
+            "flux NO consumer can replay. Certification refuses above the "
+            "unserialized-fraction tolerance (CKMG, DESIGN §4.4); this "
+            "replay proceeds WITHOUT that mass.",
+            unserialized, float(census["revoked_gas_mass_g"]))
+
+
+def _validate_conduit_entry(e, pools, conventions, species_mw=None):
+    """Every §2.1 reject rule for one moment_credit_conduit/1 reactions[]
+    entry (reject, never adapt). ``pools`` is artifact pools[];
+    ``conventions`` the artifact conventions block; ``species_mw`` an
+    optional {chem.yaml label: MW g/mol} map enabling the §2.4 cross-pins
+    (the caller passes it when species are loaded; absence of an MW for a
+    participant then rejects -- fail-closed, never skip)."""
+    eid = e.get("id")
+
+    def _bad(msg):
+        raise ValueError(
+            f"reactions[] entry {eid!r} (moment_credit_conduit/1) {msg} "
+            f"Fix the artifact.")
+
+    # cantera MUST be non-null [P1-5]: the chem.yaml export is load-bearing.
+    if e.get("cantera") is None:
+        _bad("carries cantera: null -- the conduit contract requires the "
+             "row to exist in chem.yaml at its index (an admitted row the "
+             "generating run could not export is artifact corruption).")
+    # '=>' + kinetics.reversible false [r39-P1].
+    equation = str((e.get("cantera") or {}).get("equation", ""))
+    if "<=>" in equation or "=>" not in equation:
+        _bad(f"must export the irreversible arrow '=>' (got equation "
+             f"{equation!r}) -- the [r39-P1] irreversible rewrite is an "
+             f"admission invariant.")
+    kin = e.get("kinetics")
+    if not isinstance(kin, dict) or kin.get("reversible") is not False:
+        _bad(f"must carry kinetics.reversible: false (got "
+             f"{None if not isinstance(kin, dict) else kin.get('reversible')!r}).")
+    # src_pool MUST be null (INVERTED polarity vs the null-src corruption
+    # rule for VE/migration/scission/chip rows -- its own branch).
+    if e.get("src_pool") is not None:
+        _bad(f"must carry src_pool: null (the conduit debits no pool "
+             f"moments; got src_pool={e.get('src_pool')!r}).")
+    # dst_pool REQUIRED, present in pools[] and configured.
+    dst = e.get("dst_pool")
+    pool_labels = {p.get("label") for p in pools if isinstance(p, dict)}
+    configured = set(conventions.get("configured_pools") or [])
+    if not dst or dst not in pool_labels or dst not in configured:
+        _bad(f"must name a serialized AND configured destination pool "
+             f"(dst_pool={dst!r}; pools[]={sorted(pool_labels)}, "
+             f"configured={sorted(configured)}).")
+    # proxy orientation: no pool participant consumed, credited side pool.
+    if e.get("proxy_reactants") != []:
+        _bad(f"must carry proxy_reactants: [] (the admitted direction "
+             f"consumes no pool participant; got "
+             f"{e.get('proxy_reactants')!r}).")
+    if not e.get("proxy_products"):
+        _bad("must carry non-empty proxy_products (the credited "
+             "destination pool's participant).")
+    # refused/conduit mutual exclusion.
+    if "refused" in e or "refused_reason" in e:
+        _bad("also carries refused vocabulary -- the refused marker and "
+             "the conduit archetype are mutually exclusive (§2.1).")
+    # params: closed set, admission_direction pin + orientation cross-check.
+    params = e.get("params")
+    if not isinstance(params, dict) \
+            or not _CONDUIT_PARAMS_REQUIRED <= set(params) \
+            or not set(params) <= _CONDUIT_PARAMS_KEYS:
+        _bad(f"must carry params with exactly the closed §2.1 vocabulary "
+             f"(required {sorted(_CONDUIT_PARAMS_REQUIRED)}, optional "
+             f"candidate_key_note); got "
+             f"{sorted(params) if isinstance(params, dict) else params!r}.")
+    if params.get("admission_direction") != "chain_to_pool":
+        _bad(f"params.admission_direction is CLOSED to 'chain_to_pool' in "
+             f"v1 (got {params.get('admission_direction')!r}).")
+    # orientation cross-check: the pool participant rides the product side.
+    prods = list(e.get("products") or [])
+    if not any(str(p) in prods for p in (e.get("proxy_products") or [])):
+        _bad("orientation cross-check failed: proxy_products must appear "
+             "among products (pool participant on the credited side).")
+    # candidate_key semantic pin [r42 P1-5]: the §4.4 flux-census
+    # accounting is PARTITIONED on candidate_key, so the stamp must be
+    # non-empty AND recompute from the row's OWN serialized identity
+    # (each side's labels sorted and joined with '+', the two sides
+    # ordered lexicographically around '<>' -- the emitter's
+    # candidate_key_from_label contract, orientation-independent). A
+    # bad/empty/colliding key would silently corrupt the
+    # serialized-vs-edge partition; refuse, never adapt.
+    key = params.get("candidate_key")
+    if not isinstance(key, str) or not key.strip():
+        _bad(f"params.candidate_key={key!r} must be a non-empty string "
+             f"(the conduit flux-census accounting partition is keyed on "
+             f"it; r42 P1-5).")
+    side_a = "+".join(sorted(str(t) for t in (e.get("reactants") or [])))
+    side_b = "+".join(sorted(str(t) for t in prods))
+    lo, hi = sorted((side_a, side_b))
+    key_recomputed = f"{lo}<>{hi}"
+    if key != key_recomputed:
+        _bad(f"params.candidate_key={key!r} does not recompute from the "
+             f"row's own serialized reactants/products (expected "
+             f"{key_recomputed!r}) -- the conduit flux-census accounting "
+             f"partition is keyed on it, so a foreign key silently "
+             f"corrupts the census (r42 P1-5).")
+    # chain_units finite, >= 1.0 (landing cone, load-time enforcement pt 3).
+    u = params.get("chain_units")
+    if isinstance(u, bool) or not isinstance(u, (int, float)) \
+            or not math.isfinite(float(u)) or float(u) < 1.0:
+        _bad(f"params.chain_units={u!r} must be a finite float >= 1.0 "
+             f"(landing cone, §2.3; a credit below one monomer unit would "
+             f"land OUTSIDE the destination pool's realizability cone).")
+    u = float(u)
+    # exactly one gas product, stoich exactly 1 [r39-P5].
+    gps = params.get("gas_products")
+    if not isinstance(gps, list) or len(gps) != 1 \
+            or not isinstance(gps[0], dict) \
+            or set(gps[0]) != {"species", "stoich", "mw_g_mol"}:
+        _bad(f"params.gas_products must be EXACTLY ONE "
+             f"{{species, stoich, mw_g_mol}} entry [r39-P5]; got {gps!r}.")
+    gp = gps[0]
+    if gp.get("stoich") != 1:
+        _bad(f"gas product stoich must be EXACTLY 1 [r39-P5]; got "
+             f"{gp.get('stoich')!r}.")
+    gas_label = str(gp.get("species"))
+    if gas_label not in prods:
+        _bad(f"gas product {gas_label!r} is not among the row's products "
+             f"{prods}.")
+    condensed = set(conventions.get("condensed_species") or [])
+    if gas_label in condensed:
+        _bad(f"gas product {gas_label!r} is listed in "
+             f"conventions.condensed_species -- a condensed 'gas' product "
+             f"contradicts the conduit's gas-release semantics.")
+    # the event itself must be condensed (§2.2: V_rxn = V_poly through the
+    # melt-classified chain) -- at least one reactant condensed.
+    reacts = list(e.get("reactants") or [])
+    if not any(r in condensed for r in reacts):
+        _bad(f"no reactant is melt-classified (condensed_species): the "
+             f"conduit event is condensed by contract (§2.2 -- the chain "
+             f"is melt-classified so V_rxn = V_poly); reactants={reacts}.")
+    # gas MW threshold + mw cross-pin against the destination pool.
+    dst_entry = next(p for p in pools if p.get("label") == dst)
+    m_dst = float(dst_entry.get("monomer_mw_g_mol") or 0.0)
+    d_dst = float(dst_entry.get("chain_mass_defect_g_mol") or 0.0)
+    if m_dst <= 0.0:
+        _bad(f"destination pool {dst!r} has no positive monomer_mw_g_mol; "
+             f"the landing cone and gas threshold are unverifiable.")
+    mw_gas = gp.get("mw_g_mol")
+    if isinstance(mw_gas, bool) or not isinstance(mw_gas, (int, float)) \
+            or not math.isfinite(float(mw_gas)) or float(mw_gas) <= 0.0:
+        _bad(f"gas product mw_g_mol={mw_gas!r} must be a finite positive "
+             f"g/mol mass.")
+    mw_gas = float(mw_gas)
+    if mw_gas > _CONDUIT_GAS_MW_FACTOR * m_dst * (1.0 + _CONDUIT_MW_REL_TOL):
+        _bad(f"gas product mw_g_mol={mw_gas:.6g} exceeds the admission "
+             f"threshold {_CONDUIT_GAS_MW_FACTOR} x monomer_mw_g_mol(dst) "
+             f"= {_CONDUIT_GAS_MW_FACTOR * m_dst:.6g}.")
+    # gas_units finite + internal pin a = mw_gas/M (abs tol, §2.4).
+    a = params.get("gas_units")
+    if isinstance(a, bool) or not isinstance(a, (int, float)) \
+            or not math.isfinite(float(a)):
+        _bad(f"params.gas_units={a!r} must be a finite float.")
+    a = float(a)
+    if abs(a - mw_gas / m_dst) > _CONDUIT_UNITS_ABS_TOL:
+        _bad(f"params.gas_units={a:.6g} disagrees with mw_g_mol/"
+             f"monomer_mw_g_mol(dst) = {mw_gas / m_dst:.6g} beyond the "
+             f"{_CONDUIT_UNITS_ABS_TOL} monomer-equivalent tolerance "
+             f"(§2.4 cross-pin).")
+    # §2.4 cross-pins from the row's OWN species MWs (chem.yaml).
+    if species_mw is not None:
+        missing = [s for s in reacts + [gas_label]
+                   if not species_mw.get(s)]
+        if missing:
+            _bad(f"cross-pin unresolvable: no chem.yaml MW for "
+                 f"participant(s) {missing} -- an unverifiable conduit "
+                 f"row is a refusal, never a pass-through.")
+        mw_gas_yaml = float(species_mw[gas_label])
+        if abs(mw_gas_yaml - mw_gas) > _CONDUIT_MW_REL_TOL * mw_gas_yaml:
+            _bad(f"gas product mw_g_mol stamp {mw_gas:.6g} disagrees with "
+                 f"the chem.yaml composition MW {mw_gas_yaml:.6g} beyond "
+                 f"rel tol {_CONDUIT_MW_REL_TOL} (§2.4 cross-pin).")
+        u_rec = (sum(float(species_mw[s]) for s in reacts)
+                 - mw_gas_yaml + d_dst) / m_dst
+        if abs(u_rec - u) > _CONDUIT_UNITS_ABS_TOL:
+            _bad(f"params.chain_units={u:.6g} disagrees with the "
+                 f"recomputed credit u = (sum MW(reactants) - MW(gas) + "
+                 f"d)/M = {u_rec:.6g} beyond the {_CONDUIT_UNITS_ABS_TOL} "
+                 f"monomer-equivalent tolerance (§2.4 cross-pin).")
+    return u
 
 
 # Recipe-revision gate for the monomer-gas contract (P1-B, incident
@@ -3128,6 +3454,16 @@ def build_system_from_artifact(artifact, species, reactions,
     # or whose gas routing/MW/gate_width cross-pins break is rejected
     # before any pool config is built.
     _check_end_radical_depropagation(artifact)
+    # Moment-credit conduit vocabulary/version cross-check (schema 3.1,
+    # M18.3): conduit rows or the conduit_flux_census block under a 2.x/3.0
+    # stamp are malformed; conduit rows WITHOUT the census block are
+    # malformed (unbounded invisible edge flux); the block's shape/units
+    # validate strictly and unserialized mass > 0 WARNS in every replay
+    # (the refusal lives in CKMG certification, DESIGN §4.4). Per-row §2.1
+    # validation + the §2.2 replay bundle wiring happen in
+    # _restamp_and_extend.
+    _check_conduit_schema_version(artifact)
+    _check_conduit_flux_census(artifact)
     # ... and the explicit-dp token/vocabulary pairing is exact in both
     # directions (P2 gates): token without block, block without token --
     # both hand-edited shapes fail loud.
@@ -3613,9 +3949,15 @@ def main(argv=None):
 
     with open(args.artifact) as fh:
         artifact = json.load(fh)
-    if not str(artifact.get("schema_version", "")).startswith("2."):
+    # Fast CLI pre-gate on the major only; the real envelope gate is
+    # _check_schema_version_known inside build_system_from_artifact.
+    # (Pre-M18.3 this line rejected ALL 3.x at the CLI while the loader
+    # already implemented 3.0 -- a stale gate, now deferring to the
+    # loader's single source of truth.)
+    if not str(artifact.get("schema_version", "")).split(".")[0] in ("2", "3"):
         sys.exit(f"artifact schema_version {artifact.get('schema_version')!r} "
-                 "is not 2.x — regenerate with a current RMG-Py polymer branch")
+                 "is not 2.x/3.x — regenerate with a current RMG-Py polymer "
+                 "branch")
     with open(args.t_profile) as fh:
         profile = [(float(seg["t_end"]), float(seg["T"])) for seg in json.load(fh)]
     with open(args.initial_moles) as fh:

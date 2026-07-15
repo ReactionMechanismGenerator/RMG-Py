@@ -3872,3 +3872,465 @@ class TestRegen3SavedCoreReplay:
         for other in tracker.episodes:
             assert other["negative_beyond_tolerance"] is False
             assert other["classification"] in ("warning", "open-censored")
+
+
+# ---------------------------------------------------------------------------
+# M18.3: moment_credit_conduit/1 loader + replay (T5), flux census (T4,
+# runner side), forced-stamp rejection (T1(d), runner half), equality
+# boundary (T6, replay leg)
+# ---------------------------------------------------------------------------
+
+def _conduit_deck(tmp_path, chain_units=None, rate_a=0.05,
+                  inject_census=True):
+    """A deck whose artifact carries ONE admitted conduit row
+    CHAIN => poly + CH2O (element-balanced against the pool's real
+    representative molecule), written out by the REAL emitter (serializer
+    arm + tripwires + 3.1 election), plus the §4.4 census block the M18.4
+    generating engine will always write beside serialized conduit rows
+    (``inject_census=True`` overwrites the emitter's own all-zero block
+    with non-zero M18.4-shaped numbers; ``False`` keeps the emitter's
+    block verbatim -- the r42 P1-1 producer->runner round-trip).
+
+    ``chain_units`` overrides the pool's monomer_mw_g_mol to pin u exactly
+    (T6 equality boundary: chain_units=1.0 sets M := MW(chain) - MW(gas))."""
+    n2 = _spc("N#N", "N2", index=1)
+    pf = Polymer(label="poly", monomer="[CH2]c1ccc(cc1)C([CH2])O",
+                 end_groups=["[H]", "[H]"], cutoff=3,
+                 moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                 k_scission=0.0, k_unzip=0.0)
+    pf.index = 2
+    rows = [NASAPolynomial(coeffs=[2.5, 0, 0, 0, 0, -745.375, 3.35532],
+                           Tmin=(tmin, "K"), Tmax=(tmax, "K"))
+            for tmin, tmax in ((200.0, 1000.0), (1000.0, 6000.0))]
+    pf.thermo = NASA(polynomials=rows, Tmin=(200.0, "K"), Tmax=(6000.0, "K"))
+    pf.get_proxy_species().thermo = pf.thermo
+    proxy_smiles = pf.molecule[0].to_smiles()
+    assert proxy_smiles.startswith("C")
+    chain = _spc("OCC" + proxy_smiles[1:], "CHAIN", index=3)
+    gas = _spc("C=O", "CH2O", index=4)
+    mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+    core = [n2, pf, chain, gas] + mus
+
+    chain_mw = chain.molecule[0].get_molecular_weight() * 1000.0
+    gas_mw = gas.molecule[0].get_molecular_weight() * 1000.0
+    if chain_units is not None:
+        # Pin u exactly: u = (MW(chain) - MW(gas)) / M
+        pf.monomer_mw_g_mol = (chain_mw - gas_mw) / float(chain_units)
+    m = pf.monomer_mw_g_mol
+    u = (chain_mw - gas_mw) / m
+
+    rxn = Reaction(reactants=[chain], products=[pf, gas],
+                   kinetics=Arrhenius(A=(rate_a, "1/s"), n=0.0,
+                                      Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+                   reversible=False)
+    rxn.polymer_flux_archetype = int(
+        PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+    rxn.polymer_conduit_dst_pool = "poly"
+    rxn.polymer_conduit_params = {
+        "admission_direction": "chain_to_pool",
+        "chain_units": u,
+        "gas_products": [{"species": "CH2O(4)", "stoich": 1,
+                          "mw_g_mol": gas_mw}],
+        "gas_units": gas_mw / m,
+        "candidate_key": "CH2O(4)+poly(2)<>CHAIN(3)",
+        "candidate_key_note": "run-scoped provenance only",
+    }
+    data, index_map = generate_cantera_data(core, [rxn],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+    artifact = build_polymer_moments_artifact(
+        [pf], core_species=core, core_reactions=[rxn],
+        configured_pool_labels=["poly"],
+        condensed_species=[pf, chain] + mus,
+        cantera_index_map=index_map)
+    # §4.4: the M18.4 generating engine always writes the census block
+    # beside serialized conduit rows (their integrated flux accumulates);
+    # the M18.3 emitter's accumulator is empty by design, so its own block
+    # is all-zero (r42 P1-1) -- overwrite it with M18.4-shaped non-zero
+    # numbers unless the caller wants the emitter's block verbatim.
+    if inject_census:
+        artifact["conventions"]["conduit_flux_census"] = {
+            "serialized_gas_mass_g": 0.125,
+            "unserialized_gas_mass_g": 0.0,
+            "revoked_gas_mass_g": 0.0,
+            "units": "g",
+            "note": ("cumulative admitted-conduit gas mass over the "
+                     "generating run; unserialized mass is flux no "
+                     "consumer can replay"),
+        }
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path, u
+
+
+def _build_conduit(chem_path, artifact, chain_moles=1.0e-3):
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+        initial_moles={"N2(1)": 1.0, "CHAIN(3)": chain_moles},
+        mass_transfer_spec=[])
+
+
+def _load_conduit_artifact(art_path):
+    with open(art_path) as fh:
+        return json.load(fh)
+
+def _census_only_deck(tmp_path, unserialized=0.0):
+    """A 3.1 artifact carrying the conduit_flux_census block with ZERO
+    conduit rows (the entirely-edge-unserialized shape, DESIGN §1.4/§4.4),
+    emitted by the REAL emitter with a temporarily populated run-level
+    accumulator."""
+    import rmgpy.polymer_conduit as pc
+    n2 = _spc("N#N", "N2", index=1)
+    g = _spc("[CH3]", "G", index=2)
+    g2 = _spc("C", "C1", index=3)
+    mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+    core = [n2, g, g2] + mus
+    gas_rxn = Reaction(reactants=[g], products=[g2],
+                       kinetics=Arrhenius(A=(5.0, "1/s"), n=0.0,
+                                          Ea=(10.0, "kJ/mol"), T0=(1.0, "K")),
+                       reversible=False)
+    data, index_map = generate_cantera_data(core, [gas_rxn],
+                                            return_reaction_index_map=True)
+    chem_path = os.path.join(str(tmp_path), "chem.yaml")
+    with open(chem_path, "w") as fh:
+        yaml.dump(data, fh, sort_keys=False, default_flow_style=None)
+    pool = Polymer(label="poly", monomer="[CH2][CH2]",
+                   end_groups=["[H]", "[H]"], cutoff=3,
+                   moments=[1.0, 5.0, 30.0], initial_mass=0.0,
+                   k_scission=1.0, k_unzip=0.0)
+    pc._CONDUIT_FLUX_TOTALS["EDGE_ROW_KEY"] = {
+        "grams": max(unserialized, 0.125), "revoked": False}
+    try:
+        artifact = build_polymer_moments_artifact(
+            [pool], core_species=core, core_reactions=[gas_rxn],
+            configured_pool_labels=["poly"], condensed_species=mus,
+            cantera_index_map=index_map)
+    finally:
+        pc._CONDUIT_FLUX_TOTALS.clear()
+    if unserialized == 0.0:
+        # move the injected mass into the serialized bucket shape: the
+        # block stays present with zero unserialized mass
+        artifact["conventions"]["conduit_flux_census"][
+            "serialized_gas_mass_g"] = 0.125
+        artifact["conventions"]["conduit_flux_census"][
+            "unserialized_gas_mass_g"] = 0.0
+    art_path = os.path.join(str(tmp_path), "polymer_pools.json")
+    with open(art_path, "w") as fh:
+        json.dump(artifact, fh, indent=2, default=str)
+    return chem_path, art_path
+
+
+def _build_census_only(chem_path, artifact):
+    species, reactions = load_chem_yaml(chem_path)
+    return build_system_from_artifact(
+        artifact, species, reactions, T0=800.0, P=1.0e5, V_poly=1.0,
+        initial_moles={"N2(1)": 1.0}, mass_transfer_spec=[])
+
+
+
+class TestConduitLoader:
+    """T5 (loader half) + T1(d) runner half + T4(d)/(e) runner side."""
+
+    def test_3_1_census_only_deck_loads(self, tmp_path):
+        """A 3.1 stamp is ACCEPTED by the envelope gate: the census-block-
+        only artifact (zero conduit rows) loads and builds."""
+        chem_path, art_path = _census_only_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        assert artifact["schema_version"] == "3.1"
+        rs, core, all_rxns = _build_census_only(chem_path, artifact)
+        assert rs is not None
+
+    def test_live_conduit_row_refuses_replay_until_m18_4(self, tmp_path):
+        """M18.3 fail-closed pin: the compiled oracle has NO conduit
+        dispatch arm (its moment-isolation invariant forbids any
+        consumer-side moment write), so a LIVE conduit row must refuse the
+        whole replay LOUDLY -- restamping it would integrate species flux
+        with no pool credit (silent condensed-mass fabrication, the T7
+        class). The row VALIDATES first (all reject rules run), then the
+        replay seam refuses. Flip this pin when the M18.4 solver dispatch
+        lands."""
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        assert artifact["schema_version"] == "3.1"
+        with pytest.raises(ValueError, match=r"M18\.4"):
+            _build_conduit(chem_path, artifact)
+
+    def test_3_2_rejected_loudly(self, tmp_path):
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        artifact["schema_version"] = "3.2"
+        with pytest.raises(ValueError, match=r"3\.2.*not implemented|not implemented"):
+            _build_conduit(chem_path, artifact)
+
+    def test_conduit_row_under_2_8_stamp_rejected(self, tmp_path):
+        """T1(d), runner half: conduit vocabulary under a pre-3.1 stamp is
+        malformed regardless of row validity."""
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        artifact["schema_version"] = "2.8"
+        with pytest.raises(ValueError, match=r"schema 3\.1|3\.1"):
+            _build_conduit(chem_path, artifact)
+
+    def test_conduit_row_under_3_0_stamp_rejected(self, tmp_path):
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        artifact["schema_version"] = "3.0"
+        with pytest.raises(ValueError, match=r"3\.1"):
+            _build_conduit(chem_path, artifact)
+
+    def test_census_block_alone_requires_3_1(self, tmp_path):
+        """The census block is 3.1 vocabulary even with zero conduit rows
+        (the forces-3.1 election mirror)."""
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        artifact["reactions"] = [e for e in artifact["reactions"]
+                                 if e["archetype"] != "moment_credit_conduit/1"]
+        artifact["schema_version"] = "2.0"
+        with pytest.raises(ValueError, match=r"conduit_flux_census.*3\.1|3\.1"):
+            _build_conduit(chem_path, artifact)
+
+    def test_conduit_rows_without_census_block_rejected(self, tmp_path):
+        """T4(e): conduit rows present but NO census block -> malformed
+        (unbounded invisible edge flux)."""
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        del artifact["conventions"]["conduit_flux_census"]
+        with pytest.raises(ValueError, match=r"NO conventions\.conduit_flux_census|census"):
+            _build_conduit(chem_path, artifact)
+
+    def test_producer_emitted_conduit_artifact_reaches_m18_4_seam(
+            self, tmp_path):
+        """r42 P1-1 producer->runner ROUND-TRIP pin: the REAL emitter with
+        an EMPTY accumulator (the only M18.3 state) writes the all-zero
+        census block beside its conduit row, and the runner accepts that
+        exact shape through every census/row gate -- refusing ONLY at the
+        M18.4 fail-closed replay seam (the W5.4 pin, unchanged). Before
+        r42 the emitter omitted the block and its own runner rejected the
+        artifact as malformed (self-incompatibility)."""
+        chem_path, art_path, u = _conduit_deck(tmp_path,
+                                               inject_census=False)
+        artifact = _load_conduit_artifact(art_path)
+        census = artifact["conventions"]["conduit_flux_census"]
+        assert census["serialized_gas_mass_g"] == 0.0
+        assert census["unserialized_gas_mass_g"] == 0.0
+        assert census["revoked_gas_mass_g"] == 0.0
+        assert census["units"] == "g"
+        with pytest.raises(ValueError, match=r"M18\.4"):
+            _build_conduit(chem_path, artifact)
+
+    def test_runner_warns_on_unserialized_mass(self, tmp_path, caplog):
+        """T4(d): unserialized_gas_mass_g > 0 WARNS (not refuses) so the
+        number is visible in every replay."""
+        chem_path, art_path = _census_only_deck(tmp_path, unserialized=0.5)
+        artifact = _load_conduit_artifact(art_path)
+        with caplog.at_level(logging.WARNING):
+            _build_census_only(chem_path, artifact)
+        msgs = [r.getMessage() for r in caplog.records
+                if "CONDUIT FLUX CENSUS" in r.getMessage()]
+        assert len(msgs) == 1
+        assert "0.5" in msgs[0]
+        assert "NO consumer can replay" in msgs[0]
+
+    def test_zero_unserialized_does_not_warn(self, tmp_path, caplog):
+        chem_path, art_path = _census_only_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        with caplog.at_level(logging.WARNING):
+            _build_census_only(chem_path, artifact)
+        assert not any("CONDUIT FLUX CENSUS" in r.getMessage()
+                       for r in caplog.records)
+
+    def test_census_block_shape_rejections(self, tmp_path):
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        for mutate, pattern in (
+                (lambda c: c.__setitem__("units", "kg"), r"units.*'g'|'g'"),
+                (lambda c: c.__setitem__("serialized_gas_mass_g", -1.0),
+                 r"non-negative"),
+                (lambda c: c.__setitem__("extra", 1), r"exactly the keys"),
+                (lambda c: c.pop("revoked_gas_mass_g"),
+                 r"exactly the keys"),
+        ):
+            artifact = _load_conduit_artifact(art_path)
+            mutate(artifact["conventions"]["conduit_flux_census"])
+            with pytest.raises(ValueError, match=pattern):
+                _build_conduit(chem_path, artifact)
+
+
+class TestConduitEntryRejectRules:
+    """T5: one fixture per §2.1 reject rule (reject, never adapt)."""
+
+    def _reject(self, tmp_path, mutate, pattern):
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        (row,) = [e for e in artifact["reactions"]
+                  if e["archetype"] == "moment_credit_conduit/1"]
+        mutate(row, artifact)
+        with pytest.raises(ValueError, match=pattern):
+            _build_conduit(chem_path, artifact)
+
+    def test_cantera_null_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["cantera"] = None
+        self._reject(tmp_path, mutate, r"cantera: null")
+
+    def test_reversible_kinetics_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["kinetics"]["reversible"] = True
+        self._reject(tmp_path, mutate, r"reversible")
+
+    def test_reversible_equation_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["cantera"]["equation"] = row["cantera"]["equation"].replace(
+                "=>", "<=>")
+        self._reject(tmp_path, mutate, r"'=>'|irreversible arrow")
+
+    def test_nonnull_src_pool_rejected_inverted_polarity(self, tmp_path):
+        """src_pool MUST be null on a conduit row -- the INVERTED polarity
+        vs the null-src corruption rule for VE/migration rows."""
+        def mutate(row, art):
+            row["src_pool"] = "poly"
+        self._reject(tmp_path, mutate, r"src_pool: null")
+
+    def test_missing_dst_pool_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["dst_pool"] = None
+        self._reject(tmp_path, mutate, r"destination pool")
+
+    def test_unconfigured_dst_pool_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["dst_pool"] = "ghost"
+        self._reject(tmp_path, mutate, r"destination pool")
+
+    def test_nonempty_proxy_reactants_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["proxy_reactants"] = ["poly(2)"]
+        self._reject(tmp_path, mutate, r"proxy_reactants")
+
+    def test_empty_proxy_products_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["proxy_products"] = []
+        self._reject(tmp_path, mutate, r"proxy_products")
+
+    def test_refused_conduit_mutual_exclusion_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["refused"] = True
+            row["refused_reason"] = "conduit-deferred"
+        self._reject(tmp_path, mutate, r"mutually exclusive")
+
+    def test_unknown_params_key_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["params"]["site_scaling"] = "mu1"
+        self._reject(tmp_path, mutate, r"closed §2\.1|closed")
+
+    def test_missing_params_key_rejected(self, tmp_path):
+        def mutate(row, art):
+            del row["params"]["gas_units"]
+        self._reject(tmp_path, mutate, r"closed")
+
+    def test_bad_admission_direction_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["params"]["admission_direction"] = "pool_to_chain"
+        self._reject(tmp_path, mutate, r"chain_to_pool")
+
+    def test_chain_units_below_one_rejected(self, tmp_path):
+        """Landing cone, load-time enforcement point 3 (§2.3)."""
+        def mutate(row, art):
+            row["params"]["chain_units"] = 0.9
+        self._reject(tmp_path, mutate, r"landing cone|>= 1\.0")
+
+    def test_chain_units_nonfinite_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["params"]["chain_units"] = float("nan")
+        self._reject(tmp_path, mutate, r"finite")
+
+    def test_multi_gas_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["params"]["gas_products"].append(
+                {"species": "N2(1)", "stoich": 1, "mw_g_mol": 28.014})
+        self._reject(tmp_path, mutate, r"EXACTLY ONE")
+
+    def test_stoich_2_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["params"]["gas_products"][0]["stoich"] = 2
+        self._reject(tmp_path, mutate, r"EXACTLY 1")
+
+    def test_condensed_gas_product_rejected(self, tmp_path):
+        def mutate(row, art):
+            art["conventions"]["condensed_species"].append("CH2O(4)")
+        self._reject(tmp_path, mutate, r"condensed")
+
+    def test_no_condensed_reactant_rejected(self, tmp_path):
+        def mutate(row, art):
+            art["conventions"]["condensed_species"] = [
+                s for s in art["conventions"]["condensed_species"]
+                if s != "CHAIN(3)"]
+        self._reject(tmp_path, mutate, r"melt-classified")
+
+    def test_gas_over_threshold_rejected(self, tmp_path):
+        def mutate(row, art):
+            pool = next(p for p in art["pools"] if p["label"] == "poly")
+            pool["monomer_mw_g_mol"] = 15.0
+        self._reject(tmp_path, mutate,
+                     r"threshold|landing cone|chain_units")
+
+    def test_gas_units_cross_pin_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["params"]["gas_units"] = row["params"]["gas_units"] + 0.05
+        self._reject(tmp_path, mutate, r"gas_units.*disagrees")
+
+    def test_chain_units_cross_pin_rejected(self, tmp_path):
+        """§2.4: chain_units must agree with the recompute from the row's
+        own chem.yaml MWs within 0.01 monomer-equivalents ABSOLUTE."""
+        def mutate(row, art):
+            row["params"]["chain_units"] = row["params"]["chain_units"] + 0.05
+        self._reject(tmp_path, mutate, r"chain_units.*disagrees")
+
+    def test_mw_stamp_cross_pin_rejected(self, tmp_path):
+        def mutate(row, art):
+            row["params"]["gas_products"][0]["mw_g_mol"] *= 1.01
+            # keep gas_units consistent with the (corrupt) mw stamp so the
+            # mw pin, not the units pin, is what fires
+            pool = next(p for p in art["pools"] if p["label"] == "poly")
+            row["params"]["gas_units"] = (
+                row["params"]["gas_products"][0]["mw_g_mol"]
+                / pool["monomer_mw_g_mol"])
+        self._reject(tmp_path, mutate, r"mw_g_mol stamp.*disagrees")
+
+    def test_empty_candidate_key_rejected(self, tmp_path):
+        """r42 P1-5: the flux-census accounting partition is keyed on
+        candidate_key -- an empty key silently corrupts it."""
+        def mutate(row, art):
+            row["params"]["candidate_key"] = ""
+        self._reject(tmp_path, mutate, r"candidate_key.*non-empty")
+
+    def test_foreign_candidate_key_rejected(self, tmp_path):
+        """r42 P1-5: the key must recompute from the row's OWN serialized
+        reactants/products (sorted sides around '<>')."""
+        def mutate(row, art):
+            row["params"]["candidate_key"] = "TOTALLY+BOGUS<>KEY"
+        self._reject(tmp_path, mutate,
+                     r"candidate_key.*does not recompute")
+
+    def test_reordered_key_sides_rejected(self, tmp_path):
+        """r42 P1-5: even a key with the right tokens but the wrong
+        side ordering is foreign -- the recompute is canonical."""
+        def mutate(row, art):
+            row["params"]["candidate_key"] = "CHAIN(3)<>CH2O(4)+poly(2)"
+        self._reject(tmp_path, mutate,
+                     r"candidate_key.*does not recompute")
+
+
+# NOTE (M18.3 spec-vs-reality finding, pinned by
+# TestConduitLoader.test_live_conduit_row_refuses_replay_until_m18_4):
+# BUILD_SPEC W5.4 asked for the runner-side §2.2 replay bundle, but the
+# compiled oracle's moment-isolation invariant (polymer.pyx
+# validate_configuration: "Moments must evolve only via tail_kinetics")
+# forbids ANY consumer-side moment write, and the conduit dispatch arm is
+# the prohibited M18.4 solver edit. The runner therefore validates conduit
+# rows fully and refuses the replay fail-closed; the §2.2 bundle-law
+# trajectory verification (including the T6 equality-boundary replay leg)
+# lives in the numpy reference consumer's twin tests
+# (test/rmgpy/tools/polymerMomentsConsumerTest.py).
