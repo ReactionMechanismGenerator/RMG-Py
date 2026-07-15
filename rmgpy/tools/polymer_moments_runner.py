@@ -56,7 +56,7 @@ from rmgpy.kinetics import Arrhenius
 from rmgpy.molecule import Molecule
 from rmgpy.molecule.element import get_element
 from rmgpy.polymer import (POLYMER_HEAVY_ATOM_COUNT_KEY,
-                           clamp_subatol_moment)
+                           NearFloorEpisodeTracker, clamp_subatol_moment)
 from rmgpy.quantity import Quantity
 from rmgpy.reaction import Reaction
 from rmgpy.solver.polymer import (
@@ -3494,6 +3494,17 @@ def run_segments(rs, core, artifact, all_reactions, segments,
     _atol_arr = np.atleast_1d(np.asarray(
         getattr(rs, "atol_array", 0.0), dtype=float))
     _atol_scale = float(np.min(_atol_arr)) if _atol_arr.size else 0.0
+    # Round-41 near-floor episode diagnostic (reporting only, no law
+    # change): per-pool sub-floor episodes over the ACCEPTED output
+    # points, surfaced as NEAR-FLOOR EPISODE / NEAR-FLOOR HARD-FAIL
+    # census lines at the end of the run and stored on the system as
+    # rs.near_floor_episodes for the caller / regen abort protocol.
+    _floors_arr = np.asarray(rs._pool_mu_floors, dtype=float)
+    _ep_tracker = NearFloorEpisodeTracker(
+        {p.label: tuple(int(i) for i in p.mu_indices)
+         for p in rs.polymer_pools},
+        {p.label: tuple(_floors_arr[k])
+         for k, p in enumerate(rs.polymer_pools)})
     rows = []
     t_start = 0.0
     y_carry = None
@@ -3509,6 +3520,7 @@ def run_segments(rs, core, artifact, all_reactions, segments,
         for t in np.linspace(t_start, t_end, n_points_per_segment + 1)[1:]:
             rs.advance(t)
             y = np.asarray(rs.y)
+            _ep_tracker.observe(float(t), y)
             row = [float(t), float(T_k)]
             for _lab, (i0, i1, i2) in mu_cols:
                 # Round-37: sub-atol export clamp on the CSV surface --
@@ -3525,6 +3537,9 @@ def run_segments(rs, core, artifact, all_reactions, segments,
             rows.append(row)
         y_carry = np.asarray(rs.y).copy()
         t_start = t_end
+    _ep_tracker.finalize(t_ends[-1])
+    _ep_tracker.log_episodes()
+    rs.near_floor_episodes = _ep_tracker.episodes
     return rows
 
 

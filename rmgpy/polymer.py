@@ -2348,6 +2348,161 @@ def _warn_unresolved_archetype(reason: str, detail: tuple) -> None:
 # RHS/solver semantics change: this is bookkeeping hygiene for exported
 # artifacts.
 # ---------------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Round-41: near-floor episode diagnostic (runner/reporting side; NOT a law
+# change). The regen-#4 abort protocol and the reference runner consume
+# per-pool EPISODE records whenever any moment of a pool goes below its r81
+# floor: how deep (min floor ratio), how long (sim-time below one floor),
+# whether it RECOVERED (came back above one floor), wall time spent inside
+# the episode, and whether any accepted value went negative beyond the
+# tolerance band (below -floor: r81 hard territory). Classification:
+#   * WARNING class -- a positive-or-in-band transient dip that recovered
+#     (e.g. mod_5's measured dip to ~0.02 floors during the from-deck
+#     traversal, recovering after t ~ 15): census-logged, run continues.
+#   * HARD-FAIL class (the abort protocol's triggers) -- any of:
+#     negative beyond tolerance (accepted mu < -floor), NO recovery by the
+#     end of the observation window, an integrator failure (IDID /
+#     resurrection) recorded into the tracker, or a conservation failure
+#     recorded by the caller (the tracker carries the flag; conservation
+#     checking itself stays with the harness that owns the books).
+# ---------------------------------------------------------------------------
+
+
+class NearFloorEpisodeTracker:
+    """Track sub-floor episodes of pool moments over accepted states.
+
+    Usage (the reference runner wires this per segment run; a regen
+    babysitter feeds accepted checkpoints the same way):
+
+        tracker = NearFloorEpisodeTracker(pool_labels, floors)
+        tracker.observe(t, y_accepted)        # per accepted checkpoint
+        tracker.record_integrator_failure(t, "IDID=-7")   # on failure
+        tracker.finalize(t_end)
+        for ep in tracker.episodes: ...       # dict records
+        tracker.log_episodes()                # census-style warnings
+
+    ``floors`` is a mapping pool_label -> (f0, f1, f2) in mol (the r81
+    accepted-state floors); ``mu_indices`` maps pool_label -> the three
+    state-vector slots.
+    """
+
+    def __init__(self, mu_indices, floors):
+        self.mu_indices = dict(mu_indices)
+        self.floors = {k: tuple(v) for k, v in floors.items()}
+        self.episodes = []
+        self._open = {}           # pool_label -> open episode dict
+        self._wall0 = None
+        self.integrator_failure = None
+        self.conservation_failure = None
+
+    def _ratio(self, y, label):
+        idx = self.mu_indices[label]
+        fl = self.floors[label]
+        return min(float(y[idx[k]]) / fl[k] for k in range(3))
+
+    def observe(self, t, y, wall=None):
+        import time as _time
+        wall = _time.monotonic() if wall is None else wall
+        if self._wall0 is None:
+            self._wall0 = wall
+        for label in self.mu_indices:
+            ratio = self._ratio(y, label)
+            ep = self._open.get(label)
+            if ratio < 1.0:
+                if ep is None:
+                    ep = {"pool": label, "t_start": t, "t_end": None,
+                          "min_floor_ratio": ratio, "recovered": False,
+                          "negative_beyond_tolerance": False,
+                          "wall_start": wall, "wall_in_episode_s": 0.0,
+                          "classification": None}
+                    self._open[label] = ep
+                ep["min_floor_ratio"] = min(ep["min_floor_ratio"], ratio)
+                ep["wall_in_episode_s"] = wall - ep["wall_start"]
+                if ratio < -1.0:          # accepted mu < -floor: r81 land
+                    ep["negative_beyond_tolerance"] = True
+            elif ep is not None:
+                ep["t_end"] = t
+                ep["recovered"] = True
+                ep["wall_in_episode_s"] = wall - ep["wall_start"]
+                self._close(ep)
+                del self._open[label]
+
+    def record_integrator_failure(self, t, detail):
+        self.integrator_failure = {"t": float(t), "detail": str(detail)}
+
+    def record_conservation_failure(self, detail):
+        self.conservation_failure = str(detail)
+
+    def finalize(self, t_end, censored=False):
+        """Close any still-open episodes at the end of observation.
+
+        ``censored=False`` (default; the regen abort-protocol semantics):
+        the observation window IS the run, so an episode with no recovery
+        by the end is a HARD-FAIL trigger. ``censored=True`` (bounded
+        diagnostic windows that cut a longer trajectory): the episode is
+        UNRESOLVED, classified "open-censored" -- surfaced loudly but not
+        counted as a hard failure, because the trajectory beyond the
+        window may recover (e.g. the 22.936-30 s test window truncates
+        pools that recover later in the 100 s run)."""
+        for label in list(self._open):
+            ep = self._open.pop(label)
+            ep["t_end"] = float(t_end)
+            ep["recovered"] = False
+            ep["censored"] = bool(censored)
+            self._close(ep)
+
+    def _close(self, ep):
+        ep["duration_below_floor_s"] = float(ep["t_end"]) - float(ep["t_start"])
+        ep.setdefault("censored", False)
+        hard = (ep["negative_beyond_tolerance"]
+                or (not ep["recovered"] and not ep["censored"])
+                or self.integrator_failure is not None
+                or self.conservation_failure is not None)
+        if hard:
+            ep["classification"] = "hard-fail"
+        elif not ep["recovered"]:
+            ep["classification"] = "open-censored"
+        else:
+            ep["classification"] = "warning"
+        self.episodes.append(ep)
+
+    def hard_failures(self):
+        return [e for e in self.episodes
+                if e["classification"] == "hard-fail"]
+
+    def log_episodes(self):
+        """Census-style surfacing: one warning per episode (warning class)
+        and one loud line per hard-fail (the regen abort protocol greps
+        NEAR-FLOOR EPISODE / NEAR-FLOOR HARD-FAIL)."""
+        for ep in self.episodes:
+            if ep["classification"] == "open-censored":
+                logging.warning(
+                    "NEAR-FLOOR EPISODE (OPEN at window end, censored): "
+                    "pool %s at %.3g floors since t = %.6g; the bounded "
+                    "observation window ended before recovery could be "
+                    "judged -- NOT an abort trigger by itself.",
+                    ep["pool"], ep["min_floor_ratio"], ep["t_start"])
+            elif ep["classification"] == "warning":
+                logging.warning(
+                    "NEAR-FLOOR EPISODE (transient, recovered): pool %s "
+                    "dipped to %.3g floors over t = [%.6g, %.6g] s "
+                    "(%.6g s below one floor; %.1f s wall); no accepted "
+                    "value beyond -floor. Run continues.",
+                    ep["pool"], ep["min_floor_ratio"], ep["t_start"],
+                    ep["t_end"], ep["duration_below_floor_s"],
+                    ep["wall_in_episode_s"])
+            else:
+                logging.warning(
+                    "NEAR-FLOOR HARD-FAIL: pool %s min ratio %.3g floors, "
+                    "t = [%.6g, %.6g], recovered=%s, "
+                    "negative_beyond_tolerance=%s, integrator_failure=%s, "
+                    "conservation_failure=%s -- ABORT-PROTOCOL TRIGGER.",
+                    ep["pool"], ep["min_floor_ratio"], ep["t_start"],
+                    ep["t_end"], ep["recovered"],
+                    ep["negative_beyond_tolerance"],
+                    self.integrator_failure, self.conservation_failure)
+
+
 SUBATOL_EXPORT_CLAMP_COUNT = {"count": 0}
 
 

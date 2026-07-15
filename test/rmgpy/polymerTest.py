@@ -9172,3 +9172,108 @@ def test_side_group_homolysis_rejects_coexistence_with_k_homolysis_at_deck():
                               side_group_homolysis=[_sgh_channel()])
     finally:
         rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+
+
+class TestNearFloorEpisodeTracker:
+    """Round-41 near-floor episode diagnostic (reporting only, no law
+    change): per-pool sub-floor episode records for the regen-#4 abort
+    protocol and the reference runner. WARNING class = transient dip
+    with recovery and nothing beyond -floor; HARD-FAIL class = negative
+    beyond tolerance, no recovery, integrator failure, or conservation
+    failure recorded by the caller."""
+
+    def _tracker(self):
+        from rmgpy.polymer import NearFloorEpisodeTracker
+        return NearFloorEpisodeTracker(
+            {"P": (0, 1, 2)}, {"P": (1e-10, 1e-10, 1e-10)})
+
+    def _y(self, m0, m1, m2):
+        import numpy as np
+        return np.array([m0, m1, m2], dtype=float)
+
+    def test_transient_dip_with_recovery_is_one_warning_episode(self, caplog):
+        import logging
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-10, 5e-10, 5e-10), wall=0.0)
+        tr.observe(2.0, self._y(5e-11, 5e-11, 5e-11), wall=1.0)   # 0.5 fl
+        tr.observe(3.0, self._y(2e-12, 3e-12, 2e-12), wall=2.5)   # 0.02 fl
+        tr.observe(4.0, self._y(3e-10, 3e-10, 3e-10), wall=4.0)   # recover
+        tr.finalize(4.0)
+        assert len(tr.episodes) == 1
+        ep = tr.episodes[0]
+        assert ep["classification"] == "warning"
+        assert ep["pool"] == "P"
+        assert ep["recovered"] is True
+        assert ep["negative_beyond_tolerance"] is False
+        assert ep["min_floor_ratio"] == pytest.approx(0.02, rel=1e-9)
+        assert ep["t_start"] == 2.0 and ep["t_end"] == 4.0
+        assert ep["duration_below_floor_s"] == 2.0
+        assert ep["wall_in_episode_s"] == pytest.approx(3.0)
+        with caplog.at_level(logging.WARNING):
+            tr.log_episodes()
+        assert any("NEAR-FLOOR EPISODE (transient, recovered)"
+                   in r.getMessage() for r in caplog.records)
+        assert not tr.hard_failures()
+
+    def test_no_recovery_is_hard_fail(self, caplog):
+        import logging
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-11, 5e-11, 5e-11), wall=0.0)
+        tr.finalize(9.0)
+        assert len(tr.episodes) == 1
+        ep = tr.episodes[0]
+        assert ep["classification"] == "hard-fail"
+        assert ep["recovered"] is False
+        assert ep["t_end"] == 9.0
+        with caplog.at_level(logging.WARNING):
+            tr.log_episodes()
+        assert any("NEAR-FLOOR HARD-FAIL" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_negative_beyond_tolerance_is_hard_fail_even_with_recovery(self):
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-10, 5e-10, 5e-10), wall=0.0)
+        tr.observe(2.0, self._y(-2e-10, 5e-11, 5e-11), wall=1.0)  # < -floor
+        tr.observe(3.0, self._y(3e-10, 3e-10, 3e-10), wall=2.0)   # recovers
+        tr.finalize(3.0)
+        ep = tr.episodes[0]
+        assert ep["negative_beyond_tolerance"] is True
+        assert ep["classification"] == "hard-fail"
+
+    def test_in_band_negative_is_warning_class(self):
+        # accepted values in (-floor, 0) are the tolerated numerical band
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-10, 5e-10, 5e-10), wall=0.0)
+        tr.observe(2.0, self._y(-3e-11, 5e-11, 5e-11), wall=1.0)  # in-band
+        tr.observe(3.0, self._y(3e-10, 3e-10, 3e-10), wall=2.0)
+        tr.finalize(3.0)
+        ep = tr.episodes[0]
+        assert ep["negative_beyond_tolerance"] is False
+        assert ep["classification"] == "warning"
+
+    def test_integrator_failure_makes_open_episode_hard(self):
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-11, 5e-11, 5e-11), wall=0.0)
+        tr.record_integrator_failure(1.5, "IDID=-7")
+        tr.finalize(1.5)
+        assert tr.episodes[0]["classification"] == "hard-fail"
+
+    def test_censored_finalize_is_not_a_hard_fail(self, caplog):
+        import logging
+        tr = self._tracker()
+        tr.observe(1.0, self._y(5e-11, 5e-11, 5e-11), wall=0.0)
+        tr.finalize(2.0, censored=True)      # bounded window cut
+        ep = tr.episodes[0]
+        assert ep["classification"] == "open-censored"
+        assert not tr.hard_failures()
+        with caplog.at_level(logging.WARNING):
+            tr.log_episodes()
+        assert any("OPEN at window end, censored" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_healthy_run_has_no_episodes(self):
+        tr = self._tracker()
+        for t in (1.0, 2.0, 3.0):
+            tr.observe(t, self._y(5e-10, 6e-10, 7e-10), wall=t)
+        tr.finalize(3.0)
+        assert tr.episodes == []

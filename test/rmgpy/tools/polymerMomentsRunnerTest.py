@@ -3828,6 +3828,18 @@ class TestRegen3SavedCoreReplay:
         # window (the run died at t = 22.936 stepping toward 100).
         rs.initialize(self._CRASH_T, y.copy(), dn.copy(),
                       atol=1e-12, rtol=1e-4)
+        # Round-41 near-floor episode diagnostic riding the same window
+        # (reporting only, no law change): under the softclamped law
+        # mod_5 dips to ~0.03 floors around t = 25-26 and RECOVERS by
+        # t = 28 -- exactly one WARNING-class episode, no hard-fail
+        # triggers (the regen-#4 abort-protocol contract).
+        from rmgpy.polymer import NearFloorEpisodeTracker
+        floors_arr = np.asarray(rs._pool_mu_floors, dtype=float)
+        tracker = NearFloorEpisodeTracker(
+            {p.label: tuple(int(i) for i in p.mu_indices)
+             for p in rs.polymer_pools},
+            {p.label: tuple(floors_arr[k])
+             for k, p in enumerate(rs.polymer_pools)})
         wall = time.monotonic()
         for t in (23.0, 23.5, 24.0, 25.0, 26.0, 28.0, 30.0):
             rs.advance(t)
@@ -3836,7 +3848,27 @@ class TestRegen3SavedCoreReplay:
             rs._assert_pool_moments_accepted()
             # accepted daughter mu1 never dragged negative
             assert yv[mod[1]] >= 0.0, (t, yv[mod[1]])
+            tracker.observe(t, yv)
         assert rs.t >= 30.0 - 1e-9
         # generous wall bound: observed ~170 s; a stepsize collapse
         # would blow this by orders of magnitude
         assert time.monotonic() - wall < 900.0
+        # bounded diagnostic window (30 s of a 100 s trajectory):
+        # censored finalize -- pools still below floor at the cut are
+        # UNRESOLVED, not abort triggers (they recover later in the
+        # full run; the from-deck evidence run judges the full horizon)
+        tracker.finalize(30.0, censored=True)
+        m5_eps = [e for e in tracker.episodes
+                  if e["pool"] == "phenol_formaldehyde_mod_5"]
+        assert len(m5_eps) == 1
+        ep = m5_eps[0]
+        assert ep["classification"] == "warning"
+        assert ep["recovered"] is True
+        assert ep["negative_beyond_tolerance"] is False
+        assert 0.0 < ep["min_floor_ratio"] < 1.0
+        # nothing beyond -floor anywhere, no integrator failure: the
+        # only non-warning records are window-censored open episodes
+        assert not tracker.hard_failures()
+        for other in tracker.episodes:
+            assert other["negative_beyond_tolerance"] is False
+            assert other["classification"] in ("warning", "open-censored")
