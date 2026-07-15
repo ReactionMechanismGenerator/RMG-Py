@@ -1,7 +1,8 @@
-# Polymer Moments Artifact — Normative Format Spec (`polymer_moments_format/2.5`)
+# Polymer Moments Artifact — Normative Format Spec (`polymer_moments_format/3.1`)
 
 **Artifact:** `polymer_pools.json`, emitted next to `chem.yaml` at the end of an
-RMG run (`save_everything`). **Schema versions:** `2.0`–`2.5`, stamped per
+RMG run (`save_everything`). **Schema versions:** `2.0`–`2.9` and `3.0`–`3.1`,
+stamped per
 artifact by the strongest vocabulary present (`conventions.format_doc` mirrors
 the stamp, e.g. `polymer_moments_format/2.3`; 2.0 was the major bump over the
 1.0 pools-only sidecar — every 1.0 field is preserved verbatim).
@@ -14,12 +15,34 @@ oracle itself) at `rmgpy/tools/polymer_moments_runner.py`.
 **Versioning policy:** minor bump = additive term types / fields; major bump
 = breaking. Acceptance is STRICT-MINOR (ratified at 2.2, superseding the
 earlier minor-permissive rule): a consumer accepts only the schema minors it
-implements (currently `2.0`–`2.5`) and hard-rejects anything newer — these
+implements and hard-rejects anything newer — these
 are physical-ODE artifacts, and a newer minor may carry vocabulary outside
 the blocks a consumer's unknown-key guards inspect, so loading it additively
 could silently change the physics (§10). Within an accepted minor, consumers
-SHOULD warn on unknown `archetype` values. This document versions with the
-schema.
+MUST reject unknown `archetype` values with a hard error (a CLOSED term-type
+vocabulary — hardened from the earlier SHOULD-warn after the
+silent-acceptance hazard was proven on the numpy reference consumer, §14).
+This document versions with the schema.
+
+**The 2.x line is CLOSED at 2.9.** Consumers compare stamps on the ordinal
+ladder `2.x -> x`, `3.y -> 10 + y` (3.0 sits strictly after 2.9), so a
+hypothetical `"2.10"` would collide with 3.0's ordinal and is illegal —
+every rung after 2.9 lives on the 3.x line. 3.0 was the SGH kernel-v2 MAJOR
+(breaking: state-vector shape + mass contract); subsequent 3.x minors are
+ADDITIVE again under the same strict-minor acceptance (3.1 = the
+moment-credit conduit vocabulary, §14).
+
+**2.9 is TA-only vocabulary (r42 P2 lockstep note).** The producer stamps
+`"2.9"` (thermal-analysis inputs / explicit-DP inventory, §13) but neither
+in-repo reference loader implements it: the reference runner and the numpy
+reference consumer both accept 2.x only through **2.8** and hard-reject
+2.9 — only TA's thermal certification path consumes 2.9 artifacts. This
+producer/consumer offset is deliberate, NOT a ceiling to "fix": consumers
+MUST gate acceptance with an EXPLICIT allowlist of the minors they
+actually implement (the runner's known-set check), never a tuple/ceiling
+comparison like `minor <= N` — a ceiling silently admits every future
+minor's unknown vocabulary, which is exactly the strict-minor hazard
+above.
 `schema_version` governs artifact SHAPE only; revisions to the RATE RECIPE
 (§4/§5 semantics) are tracked separately by `conventions.recipe_revision`
 (§8) and do NOT bump `schema_version`.
@@ -1146,3 +1169,206 @@ mirroring the documented legacy-default limitation of `moments_provenance`
 (§2). The sentinel is None, NOT emptiness: an explicitly EMPTY configured
 set means "nothing is root-configured" (a daughters-only artifact) and
 classifies every registry pool into `spawned_pools` with the 2.5 stamp.
+
+## 14. Moment-credit conduit rows (schema 3.1) — `moment_credit_conduit/1`
+
+**Schema 3.1** = 3.0 + the `moment_credit_conduit/1` `reactions[]` row
+vocabulary + the `conventions.conduit_flux_census` block. ADDITIVE on the
+3.x line (row-local params + one conventions block; nothing existing
+changes shape). The election is presence-based, evaluated LAST (the
+strongest rung): the emitter stamps `"3.1"` exactly when at least one
+serialized `reactions[]` row carries `archetype: "moment_credit_conduit/1"`
+**OR** the artifact carries the `conduit_flux_census` block — the block is
+itself 3.1 vocabulary: a run whose admitted conduit flux was entirely
+edge-unserialized has ZERO conduit rows but must still stamp 3.1 so the
+census (and the certification refusal it feeds) can never hide under an
+older stamp. A conduit-free artifact keeps its older stamp byte-identically
+(golden-pinned). A `2.0`–`2.9`/`3.0` artifact carrying a conduit row or the
+census block anywhere is MALFORMED; both reference loaders reject it (the
+2.1-QSSA precedent). **`conventions.recipe_revision` is NOT bumped**: the
+bundle law is carried by the versioned archetype name plus the 3.1 envelope
+(the `volatile_ejection/1` precedent); an in-place amendment of the conduit
+LAW is `/2` on the archetype name, never a recipe token.
+
+A 3.1 artifact lives in the SGH-v2 world by construction (major-3
+dispatch): the producer HARD-REFUSES to serialize conduit vocabulary
+together with SGH kernel-v1 vocabulary (a `side_group_homolysis` block
+naming `side_group_homolysis/1`); such a deck must migrate to the v2
+kernel first.
+
+### Row contract (normative; reject on ANY violation, never adapt)
+
+One `reactions[]` entry per CORE admitted reaction (edge rows never
+serialize; their flux is bounded by the census block below). Shared
+top-level keys keep their §3 semantics; conduit vocabulary rides `params`:
+
+```json
+{
+  "id": "r<cantera.index>",
+  "cantera": {"index": 412, "equation": "CHAIN(5) => phenol_formaldehyde(1) + CH2O(12)"},
+  "kinetics": {"A": 1.0, "n": 0.0, "Ea": 0.0,
+               "units": {"A": "s^-1", "Ea": "J/mol"}, "reversible": false},
+  "reactants": ["CHAIN(5)"],
+  "products":  ["phenol_formaldehyde(1)", "CH2O(12)"],
+  "proxy_reactants": [],
+  "proxy_products":  ["phenol_formaldehyde(1)"],
+  "scaling": "mu0",
+  "src_pool": null,
+  "dst_pool": "phenol_formaldehyde",
+  "archetype": "moment_credit_conduit/1",
+  "params": {
+    "admission_direction": "chain_to_pool",
+    "chain_units": 3.42,
+    "gas_products": [{"species": "CH2O(12)", "stoich": 1, "mw_g_mol": 30.026}],
+    "gas_units": 0.224,
+    "candidate_key": "CHAIN(5)<>CH2O(12)+phenol_formaldehyde(1)",
+    "candidate_key_note": "run-scoped provenance only; species indices are not stable across regenerations -- never join across artifacts"
+  }
+}
+```
+
+Reject rules (every one enforced by both reference loaders):
+
+* `cantera` MUST be non-null — the chem.yaml export is load-bearing; a
+  conduit row the generating run could not export is artifact corruption.
+* `cantera.equation` MUST use the irreversible arrow `=>` and
+  `kinetics.reversible` MUST be `false`: every admitted reaction is made
+  irreversible IN PLACE at admission time (`reversible = False` is the ONE
+  mutation — the generating solver then computes kb = 0, chem.yaml prints
+  `=>`, and the sidecar mirrors it, all from the same bit). A non-conforming
+  loader that never reads the sidecar therefore CANNOT integrate the killed
+  reverse. Reversible sources aligned with the admitted direction are
+  admitted WITH this rewrite; anti-aligned reversible sources are DENIED
+  (`direction-requires-flip-rewrite`) until a fitted reverse-Arrhenius
+  rewrite is adjudicated (v2).
+* `src_pool` MUST be null (the conduit debits NO pool moments; the event
+  rate is driven by the real chain-species concentration). `proxy_reactants`
+  MUST be `[]`; `proxy_products` MUST be non-empty (the credited pool
+  participant). `dst_pool` is REQUIRED and must name a pool present in
+  `pools[]` AND in `conventions.configured_pools`.
+* `scaling` is the pinned literal `"mu0"` and is INERT (no site scaling is
+  ever applied — null src; kept only so the shared row shape stays uniform).
+* `params.admission_direction` is CLOSED to `"chain_to_pool"`.
+* `params.chain_units` (`u`) MUST be finite and `>= 1.0` — the landing-cone
+  guard (below). `params.gas_products` MUST be EXACTLY ONE
+  `{species, stoich, mw_g_mol}` entry with `stoich` EXACTLY 1; the species
+  must be a chem.yaml species NOT in `conventions.condensed_species`, with
+  `mw_g_mol <= 1.5 x monomer_mw_g_mol(dst)`. At least one reactant must be
+  condensed (the event is a melt event; the consumer's §4 step 2 selects
+  `V_rxn = V_poly` through the melt-classified chain).
+* `refused` is MUTUALLY EXCLUSIVE with this archetype.
+* Cross-pins (reference-runner side, which holds the chem.yaml
+  compositions): `chain_units` and `gas_units` recomputed from the row's
+  own species MWs must agree within 0.01 monomer-equivalents ABSOLUTE; the
+  `mw_g_mol` stamp within 1e-3 RELATIVE. Disagreement rejects.
+* `candidate_key` is RUN-SCOPED PROVENANCE ONLY (label(index) strings do
+  not survive regeneration): consumers MUST NOT use it for cross-artifact
+  identity, dedup, or any load-bearing decision — the note travels in-band
+  so the caveat cannot be lost. WITHIN the artifact it is load-bearing
+  (the `conduit_flux_census` partition below is keyed on it), so both
+  reference loaders recompute it from the row's OWN serialized
+  reactants/products (each side's labels sorted and `+`-joined, the two
+  sides ordered lexicographically around `<>`) and reject an empty or
+  non-matching stamp (r42 P1-5); the emitter enforces the same pin at
+  serialization.
+* Serialization-time stamp cross-checks (producer side, r42 P1-2/P1-3):
+  the emitter RAISES (never demotes) unless the row's ACTUAL product side
+  carries exactly one non-pool product, the stamped `mw_g_mol` agrees with
+  that product's recomputed MW (1e-3 relative), the recomputed gas MW
+  satisfies the G3 admission bound, and the stamped
+  `chain_units`/`gas_units` agree with the emitter's own landing-cone
+  recompute within 0.01 monomer-equivalents ABSOLUTE — a stale or foreign
+  admission stamp must never serialize.
+
+### Consumer rate/flux law (§4 extension; step-6 bundle)
+
+Per accepted row, §4 steps 0–5 run unchanged (step 0 zeroes the Cantera
+multiplier; steps 1–3 give `rf` with `kb = 0` by the irreversibility
+contract; step 5 dispatches every non-pool-mapped species — the chain is
+consumed and the gas released there). New step 6:
+
+* event rate `r = rf`, FORWARD-ONLY (any nonzero reverse contribution is
+  impossible-by-construction); `ev_mol = rf * V_rxn` with `V_rxn = V_poly`;
+* moment credit to `dst_pool` ONLY:
+  `mu0 += ev_mol`, `mu1 += ev_mol * u`, `mu2 += ev_mol * u^2`;
+* NO site scaling, NO exhaustion-tail limiter, NO cone-margin drain gate:
+  the conduit never debits pool moments, and its consumed species is a real
+  amount clamped >= 0 by the ordinary step-3 concentration clamp. The
+  credited point mass `(1, u, u^2)` with `u >= 1` is inside the
+  realizability cone by construction (`mu1 - mu0` change `= u - 1 >= 0`;
+  `mu2*mu0 >= mu1^2` with equality for a point mass).
+
+### Landing-cone guard (three enforcement points)
+
+With dst pool `d = chain_mass_defect_g_mol(dst)`, `M = monomer_mw_g_mol(dst)`:
+
+```
+u_raw = (MW(chain) + sum MW(disc reactants)) / M
+a     = mw_gas / M
+u     = u_raw - a + d/M          # credited units (defect-aware)
+```
+
+Guard: `u >= 1.0` (equivalently `u_raw - (a + 1) >= -d/M`), enforced (1) at
+admission, (2) at serialization — the emitter RECOMPUTES from the row's own
+species MWs and RAISES on violation (never demotes), and (3) at load —
+consumers reject `chain_units < 1` and cross-pin. The `>=` is CLOSED at
+exactly 1.0: the ratified equality-boundary fixture (`u == 1.0` exactly, a
+point mass ON the cone) passes admission, serialization and replay cleanly
+(equal credits across mu0/mu1/mu2; whole-pool `Q10 = mu1 - mu0` unchanged;
+mu3 closure finite) — no boundary stiffness was observed, so the closed
+semantics stand.
+
+### `conventions.conduit_flux_census` (run-level; edge-unserialized flux)
+
+Admitted-EDGE conduit rows shape the generating trajectory while absent
+from chem.yaml and the sidecar — flux NO consumer can replay. The
+generating engine accumulates, per admitted row, the cumulative gas-mass
+throughput `∫ ev_mol * MW(gas) dt` [g] (additive across rebuild epochs; a
+REVOKED row's mass stays counted), and the artifact writer partitions it:
+
+```json
+"conventions": {
+  "conduit_flux_census": {
+    "serialized_gas_mass_g":   1.9,
+    "unserialized_gas_mass_g": 0.02,
+    "revoked_gas_mass_g":      0.0,
+    "units": "g",
+    "note": "cumulative admitted-conduit gas mass over the generating run; unserialized mass is flux no consumer can replay"
+  }
+}
+```
+
+Present whenever the artifact serializes at least one conduit row OR the
+run-level accumulator is non-empty (so also when every admitted row stayed
+edge — zero conduit rows, block present, stamp 3.1). The emitter writes
+the block beside serialized conduit rows even when the accumulator is
+empty (all three masses truthfully 0.0 — the only M18.3 state, where the
+accumulator's writer is the M18.4 solver dispatch arm): an artifact
+carrying conduit rows but MISSING the block is MALFORMED — reject at load
+— so the producer must never emit that shape (r42 P1-1). Absent when no
+conduit vocabulary exists at all (byte-identity preserved, golden-pinned). Consumer guidance: the reference runner WARNS (never
+refuses) whenever `unserialized_gas_mass_g > 0`, so the number is visible
+in every replay; the hard refusal on the unserialized FRACTION lives at
+CKMG certification, not in the loaders.
+
+### Reference-consumer status note
+
+* The **numpy reference consumer** (`test/rmgpy/tools/
+  numpy_moments_consumer.py`) implements the full step-6 bundle. WARNING
+  for anyone who template-copied its PRE-3.1 shape: before this section
+  landed, that module had NO `schema_version` gate and an if/elif archetype
+  dispatch with NO else — a one-row artifact with an unknown archetype
+  under any stamp was accepted silently and its step-5 species dispatch
+  still ran, fabricating gas mass with zero condensed debit (proven by a
+  committed synthetic test: ~2 mol of gas over a 0.2 s window with every
+  pool moment bit-identical, no error, no warning). Any consumer derived
+  from the pre-3.1 module MUST adopt the envelope gate + the closed
+  archetype vocabulary (hard else-refusal) before touching 3.1 artifacts.
+* The **reference runner** (`rmgpy/tools/polymer_moments_runner.py`)
+  validates every reject rule above (including the cross-pins) but REFUSES
+  to replay a live conduit row until the generating solver's conduit
+  dispatch arm lands: its compiled oracle's moment-isolation invariant
+  ("moments evolve only via tail kinetics") forbids any consumer-side
+  moment write, and integrating the row without the pool credit would
+  fabricate condensed-mass loss. The refusal is loud and names the missing
+  arm.
