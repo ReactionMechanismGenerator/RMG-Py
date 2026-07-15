@@ -1,5 +1,18 @@
 """Numpy-only reference consumer for the polymer moments artifact.
 
+TEST / TA-REFERENCE TWIN -- NOT A PRODUCTION LOADER (r42 P2). This module
+lives under test/ and exists to verify the format doc's trajectory
+semantics independently of the compiled oracle. It INTENTIONALLY DIVERGES
+from the production reference runner on one point: it SIMULATES
+moment_credit_conduit/1 rows (the DESIGN §2.2 step-6 bundle) that
+rmgpy/tools/polymer_moments_runner.py hard-REFUSES to replay pending the
+M18.4 solver dispatch arm (the runner's compiled oracle forbids any
+consumer-side moment write). That divergence is deliberate -- it is the
+only normative trajectory verification of the conduit bundle law -- and
+it MUST NOT leak into production dispatch: never route a production
+replay through this module, and never relax the runner's fail-closed
+refusal to match this twin.
+
 Implements docs/polymer_moments_format.md §4-§7 with numpy + stdlib ONLY.
 THIS MODULE MUST NOT IMPORT rmgpy (that is the artifact's entire point);
 test_consumer_module_is_rmgpy_free enforces it.
@@ -70,6 +83,149 @@ SUPPORTED_CHANNELS = frozenset({"scission", "unzip"})
 # adapted.
 REFUSED_REASONS = frozenset({"conduit-deferred", "qssa-invalid",
                              "qssa-unassessable"})
+
+# ---------------------------------------------------------------------------
+# M18.3 (T7 commit 2): envelope gate + CLOSED archetype vocabulary.
+# Before this fix the module had NO schema_version reference and an if/elif
+# archetype dispatch with no else -- a one-row artifact with an unknown
+# archetype under an arbitrary stamp integrated its step-5 species dispatch
+# while crediting zero pool moments: silent condensed-mass fabrication,
+# PROVEN by TestSilentMassFabricationProof (commit 1 of the ratified
+# test-first rider) at ~2 mol of gas fabricated over the standard 0.2 s
+# window with every pool moment bit-identical.
+# ---------------------------------------------------------------------------
+
+# Accepted envelope, IDENTICAL to the reference runner's
+# (rmgpy/tools/polymer_moments_runner.py _check_schema_version_known):
+# 2.0 .. 2.8 and 3.0 .. 3.1. Local pins -- this module never imports rmgpy.
+KNOWN_SCHEMA_2_MAX_MINOR = 8
+KNOWN_SCHEMA_3_MAX_MINOR = 1
+# Comparable ordinal ladder (the runner's _schema_minor): 2.x -> x,
+# 3.y -> 10 + y (the 2.x line is CLOSED at 2.9). Malformed -> -1.
+CONDUIT_MIN_SCHEMA_ORDINAL = 11
+
+# The CLOSED archetype vocabulary this consumer dispatches (mirror of the
+# runner's ARCHETYPE_INTS). An unknown archetype is flux this consumer
+# cannot reproduce -- reject at construction, never integrate around it.
+KNOWN_ARCHETYPES = frozenset({
+    "same_pool/1", "migration/1", "scission_fragment/1", "legacy_mu1/1",
+    "discrete_chip/1", "volatile_ejection/1", "moment_credit_conduit/1",
+})
+
+
+def _schema_ordinal(ver):
+    parts = str(ver).split(".")
+    if len(parts) == 2 and parts[1].isdigit():
+        if parts[0] == "2":
+            return int(parts[1])
+        if parts[0] == "3":
+            return 10 + int(parts[1])
+    return -1
+
+
+def _check_schema_version(artifact):
+    """Envelope gate (M18.3): accept exactly the reference runner's set --
+    2.0..2.8 and 3.0..3.1 -- so the two reference consumers agree on the
+    refusal surface. A newer minor may carry vocabulary this consumer
+    would silently ignore; refuse loud, never load permissively."""
+    ver = str(artifact.get("schema_version", ""))
+    parts = ver.split(".")
+    ok = (len(parts) == 2 and parts[1].isdigit()
+          and ((parts[0] == "2"
+                and int(parts[1]) <= KNOWN_SCHEMA_2_MAX_MINOR)
+               or (parts[0] == "3"
+                   and int(parts[1]) <= KNOWN_SCHEMA_3_MAX_MINOR)))
+    if not ok:
+        raise ValueError(
+            f"artifact schema_version {ver!r} is not implemented by this "
+            f"consumer (known: 2.0 .. 2.{KNOWN_SCHEMA_2_MAX_MINOR}, "
+            f"3.0 .. 3.{KNOWN_SCHEMA_3_MAX_MINOR}). A newer minor may "
+            f"carry vocabulary this consumer would silently ignore -- "
+            f"upgrade the consumer or regenerate the sidecar.")
+
+
+def _validated_conduit(e, pools, configured, condensed):
+    """rmgpy-free mirror of the reference loader's load-bearing
+    moment_credit_conduit/1 reject rules (DESIGN §2.1; the full §2.4
+    chem.yaml cross-pins live in the reference runner, which holds the
+    composition data this consumer deliberately does not). Returns the
+    validated (u, dst) pair."""
+    eid = e.get("id")
+
+    def _bad(msg):
+        raise ValueError(
+            f"reactions[] entry {eid!r} (moment_credit_conduit/1) {msg} "
+            f"Fix the artifact.")
+
+    if e.get("cantera") is None:
+        _bad("carries cantera: null -- the conduit contract requires the "
+             "row to exist in chem.yaml at its index.")
+    equation = str((e.get("cantera") or {}).get("equation", ""))
+    if "<=>" in equation or "=>" not in equation:
+        _bad(f"must export the irreversible arrow '=>' (got {equation!r}).")
+    kin = e.get("kinetics")
+    if not isinstance(kin, dict) or kin.get("reversible") is not False:
+        _bad("must carry kinetics.reversible: false.")
+    if e.get("src_pool") is not None:
+        _bad(f"must carry src_pool: null (got {e.get('src_pool')!r}).")
+    dst = e.get("dst_pool")
+    if not dst or dst not in pools or dst not in configured:
+        _bad(f"must name a serialized AND configured destination pool "
+             f"(dst_pool={dst!r}).")
+    if e.get("proxy_reactants") != []:
+        _bad(f"must carry proxy_reactants: [] (got "
+             f"{e.get('proxy_reactants')!r}).")
+    if not e.get("proxy_products"):
+        _bad("must carry non-empty proxy_products.")
+    if "refused" in e or "refused_reason" in e:
+        _bad("also carries refused vocabulary -- mutually exclusive.")
+    params = e.get("params")
+    required = {"admission_direction", "chain_units", "gas_products",
+                "gas_units", "candidate_key"}
+    allowed = required | {"candidate_key_note"}
+    if not isinstance(params, dict) or not required <= set(params) \
+            or not set(params) <= allowed:
+        _bad(f"must carry the closed §2.1 params vocabulary; got "
+             f"{sorted(params) if isinstance(params, dict) else params!r}.")
+    if params.get("admission_direction") != "chain_to_pool":
+        _bad(f"admission_direction is CLOSED to 'chain_to_pool' (got "
+             f"{params.get('admission_direction')!r}).")
+    u = params.get("chain_units")
+    if isinstance(u, bool) or not isinstance(u, (int, float)) \
+            or not np.isfinite(float(u)) or float(u) < 1.0:
+        _bad(f"params.chain_units={u!r} must be a finite float >= 1.0 "
+             f"(landing cone, §2.3).")
+    gps = params.get("gas_products")
+    if not isinstance(gps, list) or len(gps) != 1 \
+            or not isinstance(gps[0], dict) or gps[0].get("stoich") != 1:
+        _bad(f"must carry EXACTLY ONE gas product with stoich 1 "
+             f"[r39-P5]; got {gps!r}.")
+    gas_label = str(gps[0].get("species"))
+    if gas_label not in (e.get("products") or []):
+        _bad(f"gas product {gas_label!r} is not among the row's products.")
+    if gas_label in condensed:
+        _bad(f"gas product {gas_label!r} is condensed-classified.")
+    if not any(r in condensed for r in (e.get("reactants") or [])):
+        _bad("no reactant is melt-classified: the conduit event is "
+             "condensed by contract (§2.2).")
+    # candidate_key semantic pin [r42 P1-5] (mirror of the reference
+    # runner's check): non-empty AND recomputes from the row's OWN
+    # serialized identity (sides sorted + '+'-joined, ordered
+    # lexicographically around '<>'); the §4.4 flux-census accounting is
+    # partitioned on it.
+    key = params.get("candidate_key")
+    if not isinstance(key, str) or not key.strip():
+        _bad(f"params.candidate_key={key!r} must be a non-empty string "
+             f"(r42 P1-5).")
+    side_a = "+".join(sorted(str(t) for t in (e.get("reactants") or [])))
+    side_b = "+".join(sorted(str(t) for t in (e.get("products") or [])))
+    lo, hi = sorted((side_a, side_b))
+    key_recomputed = f"{lo}<>{hi}"
+    if key != key_recomputed:
+        _bad(f"params.candidate_key={key!r} does not recompute from the "
+             f"row's own serialized reactants/products (expected "
+             f"{key_recomputed!r}; r42 P1-5).")
+    return float(u), dst
 
 
 def _validated_refused(e):
@@ -192,6 +348,10 @@ class ArtifactConsumer:
 
     def __init__(self, artifact, species_order, P, V_poly,
                  mass_transfer=None, nasa=None, atol=1e-16):
+        # M18.3 envelope gate FIRST: refuse unknown schema versions loudly
+        # (this consumer used to accept ANY stamp silently -- the proven
+        # fabrication precondition).
+        _check_schema_version(artifact)
         self.P = float(P)
         self.V_poly = float(V_poly)
         self.nasa = nasa or {}
@@ -303,7 +463,36 @@ class ArtifactConsumer:
 
         # reactions: precompute index forms
         self.entries = []
+        pool_labels = {p.get("label") for p in artifact.get("pools", [])
+                       if isinstance(p, dict)}
         for e in artifact["reactions"]:
+            # M18.3 CLOSED archetype dispatch (mirror of the reference
+            # runner's raise): an unknown archetype is flux this consumer
+            # cannot reproduce -- integrating its step-5 species dispatch
+            # anyway fabricates gas mass with no condensed debit (the
+            # proven pre-fix behavior). Hard else-refusal, never skip.
+            if e["archetype"] not in KNOWN_ARCHETYPES:
+                raise ValueError(
+                    f"reactions[] entry {e.get('id')!r} carries unknown "
+                    f"archetype {e['archetype']!r}; this consumer's "
+                    f"term-type vocabulary is CLOSED to "
+                    f"{sorted(KNOWN_ARCHETYPES)} (docs/"
+                    f"polymer_moments_format.md §3). An unknown archetype "
+                    f"is flux this consumer cannot reproduce -- upgrade "
+                    f"the consumer or regenerate the sidecar.")
+            conduit_u = None
+            conduit_dst = None
+            if e["archetype"] == "moment_credit_conduit/1":
+                if (_schema_ordinal(artifact.get("schema_version"))
+                        < CONDUIT_MIN_SCHEMA_ORDINAL):
+                    raise ValueError(
+                        f"artifact schema_version "
+                        f"{artifact.get('schema_version')!r} cannot carry "
+                        f"moment_credit_conduit/1 rows: the conduit "
+                        f"vocabulary was introduced in schema 3.1 "
+                        f"(presence-elected). This artifact is malformed.")
+                conduit_u, conduit_dst = _validated_conduit(
+                    e, pool_labels, set(self.configured), condensed)
             kin = e["kinetics"]
             assert kin is not None, f"entry {e['id']} has no kinetics"
             ridx = [self.idx[s] for s in e["reactants"]]
@@ -333,6 +522,10 @@ class ArtifactConsumer:
                 "eject": (_validated_eject_units(e)
                           if e["archetype"] == "volatile_ejection/1"
                           else 0.0),
+                # moment_credit_conduit/1 (M18.3, DESIGN §2.2): the
+                # validated credit u and destination pool.
+                "conduit_u": conduit_u,
+                "conduit_dst": conduit_dst,
             })
             # P1-2 atom-transfer mass defect (keep in sync with the
             # generating solver's reaction_eject_units_moment): the artifact
@@ -741,6 +934,25 @@ class ArtifactConsumer:
                     dn[self.pools[pool]["mu"][1]] -= r_mol
                 for pool in e["proxy_p_pools"]:
                     dn[self.pools[pool]["mu"][1]] += r_mol
+            elif arch == "moment_credit_conduit/1":
+                # M18.3 step-6 bundle (DESIGN §2.2): forward-only r = rf
+                # (kb = 0 structurally -- the row is irreversible by
+                # contract, and any nonzero reverse contribution is
+                # impossible-by-construction); point-mass credit
+                # (1, u, u^2) * ev_mol to the destination pool ONLY. NO
+                # site scaling (src_pool is null, so step 4 never ran), NO
+                # exhaustion-tail limiter, NO cone-margin drain gate: the
+                # conduit never debits pool moments, and its consumed
+                # species is a real amount clamped >= 0 by the ordinary
+                # step-3 concentration clamp. The credited bundle with
+                # u >= 1 is inside the realizability cone by construction.
+                if rf > 0.0:
+                    ev_mol = rf * V_rxn
+                    u = e["conduit_u"]
+                    d = self.pools[e["conduit_dst"]]["mu"]
+                    dn[d[0]] += ev_mol
+                    dn[d[1]] += ev_mol * u
+                    dn[d[2]] += ev_mol * u * u
             # same_pool/1: no moment flux
 
         # step 7a: channels (format doc §5)

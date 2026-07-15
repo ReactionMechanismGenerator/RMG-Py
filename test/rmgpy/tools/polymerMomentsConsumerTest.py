@@ -872,22 +872,19 @@ class TestRefusedRowAndHomolysisGuards:
 
 
 # ---------------------------------------------------------------------------
-# M18.3 T7, COMMIT 1 (ratified test-first rider): PROOF of the numpy
-# consumer's silent mass fabrication on unknown archetypes.
+# M18.3 T7, COMMIT 2 (the fix): the commit-1 fabrication proof INVERTED into
+# raise-assertions, + envelope-gate tests, + the conduit bundle (DESIGN
+# §2.2) with the trajectory twin of the runner's T5 replay (which the
+# runner itself cannot integrate until the M18.4 solver dispatch arm --
+# see polymerMomentsRunnerTest.py's M18.4 refusal pin).
 # ---------------------------------------------------------------------------
 
 class TestSilentMassFabricationProof:
-    """T7 commit 1 -- these assertions are written TO THE BUGGY BEHAVIOR
-    and prove the fabrication BEFORE the fix lands (ratified round-39
-    rider; the fix commit inverts them into raise-assertions):
-
-    the consumer has NO schema_version gate and an if/elif archetype
-    dispatch with NO else, so a one-row artifact carrying an UNKNOWN
-    archetype (under an arbitrary future stamp) is accepted silently and
-    its step-5 species dispatch still runs -- the gas product G appears
-    out of nothing while both pool-mapped participants and every pool
-    moment stay EXACTLY untouched: silent condensed-mass fabrication with
-    no error and no warning."""
+    """T7 -- commit 1 of the ratified test-first rider PROVED the silent
+    fabrication with assertions written to the buggy behavior (2.0 mol of
+    gas fabricated over the 0.2 s window, ~30 g, with every pool moment
+    bit-identical and no raise/warning). This commit INVERTS them: the
+    same fixture must now refuse at construction, at BOTH gates."""
 
     def _unknown_archetype_artifact(self, core):
         rxn = Reaction(reactants=[core[0]], products=[core[4], core[8]],
@@ -896,41 +893,254 @@ class TestSilentMassFabricationProof:
         artifact = _artifact_for(core, [rxn])
         (row,) = artifact["reactions"]
         row["archetype"] = "mystery_channel/1"     # unknown to every loader
-        artifact["schema_version"] = "9.9"         # no consumer ceiling either
+        artifact["schema_version"] = "9.9"         # unknown envelope
         return artifact
 
-    def test_current_consumer_silently_fabricates_gas_mass(self):
+    def test_unknown_version_now_refused_at_the_envelope(self):
         sp, core, mask = _two_pool_setup()
         artifact = self._unknown_archetype_artifact(core)
+        with pytest.raises(ValueError, match=r"schema_version '9\.9'"):
+            ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                             P=P_PA, V_poly=V_POLY)
 
-        # (1) construction ACCEPTS the unknown version and the unknown
-        # archetype without a raise or a warning -- the proof of the
-        # missing envelope gate + missing closed-set dispatch.
-        import warnings
-        with warnings.catch_warnings():
-            warnings.simplefilter("error")
-            consumer = ArtifactConsumer(artifact,
-                                        [_yaml_label(s) for s in core],
-                                        P=P_PA, V_poly=V_POLY)
+    def test_unknown_archetype_now_refused_at_the_closed_set(self):
+        """Even under an ACCEPTED stamp, the unknown archetype refuses at
+        the closed-set dispatch guard (the step-5 fabrication is
+        unreachable)."""
+        sp, core, mask = _two_pool_setup()
+        artifact = self._unknown_archetype_artifact(core)
+        artifact["schema_version"] = "2.4"         # accepted envelope
+        with pytest.raises(ValueError, match=r"mystery_channel/1.*CLOSED"):
+            ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                             P=P_PA, V_poly=V_POLY)
 
-        # (2) integration moves the gas species while crediting NOTHING:
-        y0 = np.zeros(len(core))
-        y0[0] = 1.0          # pool proxy A amount (bookkeeping)
-        for i in (1, 2, 3):  # pool A moments (1, 5, 30)
-            y0[i] = (1.0, 5.0, 30.0)[i - 1]
-        for i in (5, 6, 7):  # pool B moments
-            y0[i] = (1.0, 5.0, 30.0)[i - 5]
+
+class TestConsumerEnvelopeGate:
+    """T7 commit 2: the consumer's accepted set is IDENTICAL to the
+    reference runner's (2.0..2.8 + 3.0..3.1) so the two reference
+    consumers agree on the refusal surface."""
+
+    def _plain_artifact(self, core):
+        return _artifact_for(core, [])
+
+    @pytest.mark.parametrize("ver", ["2.0", "2.4", "2.8", "3.0", "3.1"])
+    def test_known_versions_accepted(self, ver):
+        sp, core, mask = _two_pool_setup()
+        artifact = self._plain_artifact(core)
+        artifact["schema_version"] = ver
+        ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                         P=P_PA, V_poly=V_POLY)
+
+    @pytest.mark.parametrize("ver", ["2.9", "2.10", "3.2", "4.0", "1.0",
+                                     "garbage", "3", "3.1.1"])
+    def test_unknown_versions_refused_loudly(self, ver):
+        sp, core, mask = _two_pool_setup()
+        artifact = self._plain_artifact(core)
+        artifact["schema_version"] = ver
+        with pytest.raises(ValueError, match=r"not implemented"):
+            ArtifactConsumer(artifact, [_yaml_label(s) for s in core],
+                             P=P_PA, V_poly=V_POLY)
+
+
+def _conduit_setup(chain_units=None, rate_a=0.05):
+    """Consumer-world conduit deck: CHAIN => poly + CH2O, emitted by the
+    REAL serializer (cantera-indexed so the row carries kinetics +
+    cantera), balanced against the pool's representative molecule.
+    ``chain_units`` pins u exactly by overriding the pool monomer MW
+    (T6 equality boundary: 1.0)."""
+    pf = Polymer(label="poly", monomer="[CH2]c1ccc(cc1)C([CH2])O",
+                 end_groups=["[H]", "[H]"], cutoff=3,
+                 moments=[1.0, 5.0, 30.0], initial_mass=0.0)
+    pf.index = 2
+    proxy_smiles = pf.molecule[0].to_smiles()
+    assert proxy_smiles.startswith("C")
+    chain = _spc("OCC" + proxy_smiles[1:], "CHAIN", index=3)
+    gas = _spc("C=O", "CH2O", index=4)
+    mus = [_mu("poly_mu0"), _mu("poly_mu1"), _mu("poly_mu2")]
+    core = [pf] + mus + [chain, gas]
+
+    chain_mw = chain.molecule[0].get_molecular_weight() * 1000.0
+    gas_mw = gas.molecule[0].get_molecular_weight() * 1000.0
+    if chain_units is not None:
+        pf.monomer_mw_g_mol = (chain_mw - gas_mw) / float(chain_units)
+    m = pf.monomer_mw_g_mol
+    u = (chain_mw - gas_mw) / m
+
+    rxn = Reaction(reactants=[chain], products=[pf, gas],
+                   kinetics=Arrhenius(A=(rate_a, "1/s"), n=0.0,
+                                      Ea=(0.0, "J/mol"), T0=(1.0, "K")),
+                   reversible=False)
+    rxn.polymer_flux_archetype = int(
+        PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+    rxn.polymer_conduit_dst_pool = "poly"
+    rxn.polymer_conduit_params = {
+        "admission_direction": "chain_to_pool",
+        "chain_units": u,
+        "gas_products": [{"species": "CH2O(4)", "stoich": 1,
+                          "mw_g_mol": gas_mw}],
+        "gas_units": gas_mw / m,
+        "candidate_key": "CH2O(4)+poly(2)<>CHAIN(3)",
+        "candidate_key_note": "run-scoped provenance only",
+    }
+    artifact = build_polymer_moments_artifact(
+        [pf], core_species=core, core_reactions=[rxn],
+        configured_pool_labels=["poly"],
+        condensed_species=[pf, chain] + mus,
+        cantera_index_map={id(rxn): [0]})
+    artifact = json.loads(json.dumps(artifact))
+    order = [_yaml_label(s) for s in core]
+    return artifact, order, u
+
+
+class TestConduitBundleConsumer:
+    """T7 commit 2 / T5-twin / T6 replay leg: the DESIGN §2.2 bundle law
+    in the numpy reference consumer (the runner refuses conduit replays
+    until M18.4 -- this is the normative trajectory verification)."""
+
+    def _y0(self, order, chain_moles=1.0e-3):
+        y0 = np.zeros(len(order))
+        y0[order.index("poly_mu0")] = 1.0
+        y0[order.index("poly_mu1")] = 5.0
+        y0[order.index("poly_mu2")] = 30.0
+        y0[order.index("CHAIN(3)")] = chain_moles
+        return y0
+
+    def test_artifact_stamps_3_1_and_loads(self):
+        artifact, order, u = _conduit_setup()
+        assert artifact["schema_version"] == "3.1"
+        ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    def test_conduit_row_under_2_4_stamp_refused(self):
+        """T1(d), numpy half: conduit vocabulary under an accepted-but-old
+        stamp is malformed."""
+        artifact, order, u = _conduit_setup()
+        artifact["schema_version"] = "2.4"
+        with pytest.raises(ValueError, match=r"3\.1"):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    def test_conduit_row_under_3_0_stamp_refused(self):
+        artifact, order, u = _conduit_setup()
+        artifact["schema_version"] = "3.0"
+        with pytest.raises(ValueError, match=r"3\.1"):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    @pytest.mark.parametrize("mutate, pattern", [
+        (lambda row: row.__setitem__("cantera", None), r"cantera: null"),
+        (lambda row: row["kinetics"].__setitem__("reversible", True),
+         r"reversible"),
+        (lambda row: row.__setitem__("src_pool", "poly"), r"src_pool"),
+        (lambda row: row.__setitem__("dst_pool", "ghost"), r"destination"),
+        (lambda row: row.__setitem__("proxy_reactants", ["poly(2)"]),
+         r"proxy_reactants"),
+        (lambda row: row.__setitem__("proxy_products", []),
+         r"proxy_products"),
+        (lambda row: row["params"].__setitem__("chain_units", 0.5),
+         r"landing cone|>= 1\.0"),
+        (lambda row: row["params"].__setitem__("admission_direction",
+                                               "pool_to_chain"),
+         r"chain_to_pool"),
+        (lambda row: row["params"]["gas_products"][0].__setitem__(
+            "stoich", 2), r"EXACTLY ONE"),
+        (lambda row: row["params"].__setitem__("extra", 1), r"closed"),
+        # r42 P1-5: candidate_key semantic pin (mirror of the runner's)
+        (lambda row: row["params"].__setitem__("candidate_key", ""),
+         r"candidate_key.*non-empty"),
+        (lambda row: row["params"].__setitem__("candidate_key",
+                                               "TOTALLY+BOGUS<>KEY"),
+         r"candidate_key.*does not recompute"),
+    ])
+    def test_conduit_reject_rules_mirror(self, mutate, pattern):
+        artifact, order, u = _conduit_setup()
+        (row,) = [e for e in artifact["reactions"]
+                  if e["archetype"] == "moment_credit_conduit/1"]
+        mutate(row)
+        with pytest.raises(ValueError, match=pattern):
+            ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+
+    def test_bundle_trajectory_matches_hand_computed_credit(self):
+        """T5-twin: CHAIN (n0 = 1e-3 mol) decays first-order at
+        k = 0.05 s^-1 (unimolecular, condensed V_rxn = V_poly); every
+        consumed mole credits the pool (1, u, u^2) and releases one CH2O:
+        mu_k(t) = mu_k(0) + u^k * n0 * (1 - e^-kt)."""
+        artifact, order, u = _conduit_setup()
+        consumer = ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+        n0, k = 1.0e-3, 0.05
+        y0 = self._y0(order, n0)
         _, traj = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
-        y_end = traj[-1]
-        # gas G fabricated out of nothing (step-5 dispatch ran)...
-        assert y_end[8] > 0.0
-        # ... while the pool-mapped species amounts are untouched...
-        assert y_end[0] == pytest.approx(y0[0], abs=0.0)
-        assert y_end[4] == pytest.approx(y0[4], abs=0.0)
-        # ... and EVERY pool moment is bit-identical (no step-6 arm ran):
-        for i in (1, 2, 3, 5, 6, 7):
-            assert y_end[i] == y0[i]
-        # Fabrication quantified: gas moles appeared with zero condensed
-        # debit anywhere -- condensed mass is NOT conserved.
-        fabricated_mol = float(y_end[8] - y0[8])
-        assert fabricated_mol > 1.0e-4  # a real, macroscopic leak
+        y = traj[-1]
+        t_end = DT * N_STEPS
+        converted = n0 * (1.0 - np.exp(-k * t_end))
+        i_mu = [order.index(f"poly_mu{j}") for j in range(3)]
+        # forward-Euler discretization error is ~k*dt/2 = 2.5e-6 relative;
+        # 1e-5 pins the LAW (a wrong u or a missing credit errs at O(1)).
+        assert y[i_mu[0]] - 1.0 == pytest.approx(converted, rel=1e-5)
+        assert y[i_mu[1]] - 5.0 == pytest.approx(u * converted, rel=1e-5)
+        assert y[i_mu[2]] - 30.0 == pytest.approx(u * u * converted,
+                                                  rel=1e-5)
+        # species side: chain consumed, one gas released per event
+        assert y[order.index("CHAIN(3)")] == pytest.approx(n0 - converted,
+                                                           rel=1e-5)
+        assert y[order.index("CH2O(4)")] == pytest.approx(converted,
+                                                          rel=1e-5)
+        # mass audit (§4.5): condensed pool mass gained == chain mass lost
+        # minus gas mass released, per element balance
+        m = next(p for p in artifact["pools"]
+                 if p["label"] == "poly")["monomer_mw_g_mol"]
+        gained_g = (y[i_mu[1]] - 5.0) * m
+        chain_mw = 434.57                       # C28H34O4
+        gas_mw = 30.026
+        assert gained_g == pytest.approx(converted * (chain_mw - gas_mw),
+                                         rel=1e-3)
+
+    def test_forward_only_credit_saturates(self):
+        """r = rf with NO reverse leg: at t >> 1/k the credit saturates at
+        exactly n0 * (1, u, u^2) -- a reverse contribution would pull the
+        moments back."""
+        artifact, order, u = _conduit_setup(rate_a=50.0)
+        consumer = ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+        n0 = 1.0e-3
+        y0 = self._y0(order, n0)
+        _, traj = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        y = traj[-1]
+        i_mu = [order.index(f"poly_mu{j}") for j in range(3)]
+        assert y[i_mu[0]] - 1.0 == pytest.approx(n0, rel=1e-3)
+        assert y[i_mu[1]] - 5.0 == pytest.approx(u * n0, rel=1e-3)
+        assert y[order.index("CHAIN(3)")] == pytest.approx(0.0, abs=1e-7)
+
+    def test_equality_boundary_replay_reports_clean(self):
+        """T6 (replay leg, rider; OQ-4): chain_units == 1.0 credits a
+        POINT MASS ON the cone (per-event mu1 - mu0 surplus exactly zero).
+        The trajectory must integrate cleanly: equal credits across
+        mu0/mu1/mu2, whole-pool Q10 = mu1 - mu0 unchanged, mu3 closure
+        finite, no negative moments, no spurious refusal. REPORT: the
+        closed >= semantics survive the boundary -- no stiffness or
+        corruption observed (admission-side leg agrees,
+        polymerConduitTest.TestLandingConeEqualityBoundary)."""
+        artifact, order, u = _conduit_setup(chain_units=1.0)
+        assert u == pytest.approx(1.0, abs=1e-12)
+        consumer = ArtifactConsumer(artifact, order, P=P_PA, V_poly=V_POLY)
+        n0, k = 1.0e-3, 0.05
+        y0 = self._y0(order, n0)
+        _, traj = consumer.integrate_euler(y0, T_K, DT, N_STEPS)
+        y = traj[-1]
+        t_end = DT * N_STEPS
+        converted = n0 * (1.0 - np.exp(-k * t_end))
+        i_mu = [order.index(f"poly_mu{j}") for j in range(3)]
+        d = [y[i_mu[j]] - (1.0, 5.0, 30.0)[j] for j in range(3)]
+        assert d[0] == pytest.approx(converted, rel=1e-5)
+        assert d[1] == pytest.approx(converted, rel=1e-5)   # u == 1
+        assert d[2] == pytest.approx(converted, rel=1e-5)   # u^2 == 1
+        # The three PER-STEP increments are bitwise equal at u == 1.0;
+        # the accumulated deltas differ only by float-addition rounding
+        # against the different base magnitudes (1.0 / 5.0 / 30.0) --
+        # benign, and part of the T6 boundary REPORT (no stiffness).
+        assert d[1] == pytest.approx(d[0], rel=1e-8)
+        assert d[2] == pytest.approx(d[0], rel=1e-8)
+        # whole-pool cone margin unchanged by the ON-cone credit
+        assert (y[i_mu[1]] - y[i_mu[0]]) == pytest.approx(4.0, rel=1e-9)
+        # trajectory clean: no negative moments anywhere
+        assert np.all(traj[:, i_mu] >= 0.0)
+        # mu3 closure stays finite on the final state
+        from numpy_moments_consumer import safe_mu3
+        mu3 = safe_mu3(y[i_mu[0]], y[i_mu[1]], y[i_mu[2]])
+        assert np.isfinite(mu3)
