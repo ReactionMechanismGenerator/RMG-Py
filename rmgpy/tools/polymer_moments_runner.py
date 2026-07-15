@@ -3376,7 +3376,8 @@ def _output_pool_labels(artifact, idx):
 def build_system_from_artifact(artifact, species, reactions,
                                T0, P, V_poly, initial_moles,
                                mass_transfer_spec, initial_moments=None,
-                               allow_stale=False, atol=1e-16, rtol=1e-8):
+                               allow_stale=False, atol=1e-16, rtol=1e-8,
+                               polymer_scoped_jacobian=False):
     """Assemble the HybridPolymerSystem oracle from consumer-world inputs.
 
     Returns (system, core_species, all_reactions) — all_reactions includes
@@ -3404,6 +3405,11 @@ def build_system_from_artifact(artifact, species, reactions,
     generating deck's atol (poly_102: 1e-12) to reproduce the generating
     solver's regularization envelope; the defaults (1e-16/1e-8) keep the
     historical runner behavior byte-identical.
+
+    ``polymer_scoped_jacobian`` (18.2e P5 prototype, default False): arm
+    the scoped-RHS user-side FD Jacobian on the assembled system. OFF
+    means no ``jacobian`` attribute exists and DASPK keeps its internal
+    dense FD -- replay behavior byte-identical to before the flag existed.
     """
     # Stale-emission gate before anything else: a stale artifact's shape
     # may be internally consistent, so no later validator would catch it.
@@ -3782,7 +3788,11 @@ def build_system_from_artifact(artifact, species, reactions,
         # solver, and the oracle must reproduce that flux, not refuse it.
         # Production RMG builds (rmgpy/rmg/polymer_input.py) leave the flag
         # default-False and hard-fail on unstamped live proxy rows.
-        allow_unstamped_proxy_rows=True)
+        allow_unstamped_proxy_rows=True,
+        # 18.2e P5 prototype: scoped-RHS user-side FD Jacobian (default
+        # OFF; when off no `jacobian` attribute exists and DASPK keeps
+        # its internal dense FD -- bit-identical to today).
+        polymer_scoped_jacobian=polymer_scoped_jacobian)
     if rtol > 1.0e-6:
         # Rounds 35/37 K2 conviction (format doc section 4b): warn, don't
         # hard-fail -- the runner's job is FAITHFUL replay of historical

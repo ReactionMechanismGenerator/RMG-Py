@@ -1502,6 +1502,7 @@ class HybridPolymerSystem(ReactionSystem):
         allow_unpaired_reference_state: bool = False,
         allow_unstamped_proxy_rows: bool = False,
         qssa_kout_floor_s: float = 0.0,
+        polymer_scoped_jacobian: bool = False,
     ):
         super().__init__(termination=termination,
                          sensitive_species=sensitive_species,
@@ -1607,6 +1608,35 @@ class HybridPolymerSystem(ReactionSystem):
         self.polymer_species_labels = set(polymer_species_labels) if polymer_species_labels else set()
 
         self.jacobian_matrix = None
+
+        # 18.2e P5 (option (d), spar round-44): scoped-RHS user-side FD
+        # Jacobian -- feature-gated, DEFAULT OFF. When OFF, no `jacobian`
+        # attribute is EVER set on this instance, so pydas' attribute-
+        # presence detection (checked inside DASPK.initialize, proven by
+        # probe) sees nothing and DASPK keeps its internal dense FD: the
+        # shipped default path is bit-identical to today. When requested,
+        # _setup_scoped_jacobian() (called from initialize_model just
+        # before initialize_solver) validates the layout assumptions and
+        # either arms self.jacobian = self._scoped_fd_jacobian or falls
+        # back LOUDLY to no-jacobian (guard 5, one warning).
+        self._scoped_jacobian_requested = bool(polymer_scoped_jacobian)
+        self._scoped_jacobian_active = False
+        # J-scope flag read by residual(): True ONLY inside
+        # _scoped_fd_jacobian's FD sweep. Every real (DASPK-originated)
+        # residual call runs with False -> the RHS path is untouched.
+        self._jac_scope = False
+        # Guard-2 tripwire: True while the LAST residual-kernel activity
+        # was a scoped J-sweep (edge_*/census diagnostics stale from a
+        # perturbed, edge-skipped call); every real residual call clears
+        # it. DDASPK always follows a Jacobian (re)form with corrector
+        # residual calls, so after any step()/advance() this must read
+        # False (pinned by test) -- i.e. the diagnostics the enlargement
+        # loop reads after step() always come from a REAL residual call.
+        self._scoped_jac_diag_stale = False
+        # DDAWTS weight vectors captured at _setup_scoped_jacobian time
+        # (pydas' own atol/rtol arrays are cdef-private).
+        self._jac_wt_atol = None
+        self._jac_wt_rtol = None
 
         self._scratch_C_gas = None
         self._scratch_C_poly = None
@@ -3869,6 +3899,12 @@ class HybridPolymerSystem(ReactionSystem):
         ReactionSystem.compute_network_variables(self, pdep_networks)
 
         ReactionSystem.set_initial_derivative(self)
+        # 18.2e P5: (re)arm or clear the pydas `jacobian` capability
+        # attribute BEFORE initialize_solver -- pydas detects the user
+        # Jacobian by attribute presence inside DASPK.initialize (probe-
+        # proven; detection does NOT re-run per step). Runs on every
+        # rebuild so the layout validation tracks the live model.
+        self._setup_scoped_jacobian()
         ReactionSystem.initialize_solver(self)
 
         self.diagnose_polymer_mapping(core_species)
@@ -5202,6 +5238,177 @@ class HybridPolymerSystem(ReactionSystem):
         v = v_n * v_n * (3.0 - 2.0 * v_n)
         return v * s_free + (1.0 - v) * cap
 
+    # ------------------------------------------------------------------
+    # 18.2e P5 (option (d), spar round-44): scoped-RHS user-side FD
+    # Jacobian. PROTOTYPE pending spar review; feature-gated, default OFF
+    # (constructor kwarg polymer_scoped_jacobian=False). The Jacobian
+    # path is purely ADDITIVE: no residual law, softclamp, r81 floor, or
+    # §4 dispatch semantics change anywhere.
+    # ------------------------------------------------------------------
+    def request_scoped_jacobian(self, enable=True):
+        """Toggle the scoped-Jacobian request on an already-constructed
+        system and re-run the arming validation immediately (the caller
+        must still (re)run initialize_solver()/initialize() afterwards --
+        pydas detects the capability inside DASPK.initialize)."""
+        self._scoped_jacobian_requested = bool(enable)
+        self._setup_scoped_jacobian()
+        return self._scoped_jacobian_active
+
+    def _setup_scoped_jacobian(self):
+        """Arm or clear the pydas `jacobian` capability attribute.
+
+        Guard 5 (fail-safe fallback): every layout assumption the scoped
+        FD sweep relies on is validated here against the LIVE model; any
+        mismatch clears the capability (DASPK falls back to its internal
+        dense FD -- today's behavior) with ONE loud warning naming the
+        failed assumption. When the feature is not requested this method
+        only guarantees the attribute is absent (default-off path:
+        hasattr(self, 'jacobian') stays False, bit-identical to today).
+        """
+        cdef int n_core, neq_expected
+        self._scoped_jacobian_active = False
+        self._jac_scope = False
+        # Default OFF: make sure pydas can see no capability attribute.
+        self.__dict__.pop("jacobian", None)
+        if not getattr(self, "_scoped_jacobian_requested", False):
+            return
+
+        problems = []
+        n_core = self.num_core_species
+        neq_expected = n_core + self.num_qssa_u + self.num_sgh_z
+        # Guard 3 baseline: appended U/Z slots must exactly close the
+        # state vector (initiate_tolerances extended neq by ITS count).
+        if self.neq != neq_expected:
+            problems.append(
+                f"neq {self.neq} != n_core+U+Z {neq_expected}")
+        # DDAWTS weights need the full tolerance arrays.
+        if (self.atol_array is None or self.rtol_array is None
+                or len(self.atol_array) != self.neq
+                or len(self.rtol_array) != self.neq):
+            problems.append("atol/rtol arrays missing or wrong length")
+        elif not np.all(np.asarray(self.atol_array) > 0.0):
+            # wt_j > 0 for every component is what makes the DMATD
+            # increment nonzero at y_j = dydt_j = 0.
+            problems.append("non-positive atol entries (FD del could be 0)")
+        # Edge rows must be the contiguous row suffix the scope drops.
+        if (self.reactant_indices is None
+                or self.reactant_indices.shape[0]
+                != self.num_core_reactions + self.num_edge_reactions):
+            problems.append("reactant_indices rows != core+edge count")
+        # Sensitivity mode drives extra residual semantics pydas-side;
+        # the scoped sweep has no sensitivity arm -- refuse.
+        if getattr(self, "sensitivity", False):
+            problems.append("sensitivity mode enabled")
+        if self.gas_species_mask is None \
+                or self.gas_species_mask.shape[0] != n_core:
+            problems.append("gas_species_mask missing/mismatched")
+
+        if problems:
+            logging.warning(
+                "18.2e scoped Jacobian REQUESTED but NOT armed -- "
+                "falling back to DASPK internal FD (no user jacobian): %s",
+                "; ".join(problems))
+            return
+
+        self._jac_wt_atol = np.array(self.atol_array, dtype=float)
+        self._jac_wt_rtol = np.array(self.rtol_array, dtype=float)
+        # Arm: instance attribute only (pydas dispatches by attribute
+        # presence; the class itself never grows a `jacobian` member).
+        self.jacobian = self._scoped_fd_jacobian
+        self._scoped_jacobian_active = True
+        logging.info(
+            "18.2e scoped-RHS FD Jacobian ARMED (neq=%d, core rows=%d, "
+            "edge rows skipped in J-sweeps=%d)",
+            self.neq, self.num_core_reactions, self.num_edge_reactions)
+
+    def _scoped_fd_jacobian(self, t, y, dydt, cj,
+                            senpar=np.zeros(1, float)):
+        """Dense one-sided FD iteration matrix J = dG/dy + cj*dG/dy',
+        mirroring DDASPK's internal DMATD column increments exactly:
+
+            del_j = sqrt(uround) * max(|y_j|, |h*y'_j|, |wt_j|)
+            del_j = sign(del_j, h*y'_j);  del_j = (y_j + del_j) - y_j
+            perturb y_j += del_j AND y'_j += cj*del_j, one column per
+            residual call, column = (G_pert - G_base)/del_j
+
+        with h approximated by 1/cj (DMATD receives the true step h; the
+        callback signature only carries cj = alpha_s/h, alpha_s ~ O(1) --
+        an increment-size choice, not a law change) and wt_j the DDAWTS
+        weight rtol_j*|y_j| + atol_j.
+
+        Each of the neq+1 residual calls runs the SAME residual() code
+        path with _jac_scope=True, which prunes ONLY (i) edge rows and
+        (ii) the two diagnostic censuses -- both proven residual-
+        invisible (P4 probe: returned delta bitwise identical; pinned by
+        the golden-J guard tests). In particular EVERY column -- gas,
+        moment, proxy, U/Z -- differences the full core RHS including the
+        V_gas = f(sum gas y) global-volume coupling and the pdep
+        collider-efficiency recomputation (guard 1: no coupling column is
+        omitted or approximated).
+        """
+        cdef int j, neq, n_core
+        cdef double h, ysave, ypsave, hyp, delj
+
+        neq = len(y)
+        n_core = self.num_core_species
+        # Guard 3 (shape assert, loud): the scoped J shape must track the
+        # appended-U/Z state layout EXACTLY; a drifted layout must never
+        # produce a silently wrong-shaped/misaligned J.
+        if (neq != self.neq
+                or neq != n_core + self.num_qssa_u + self.num_sgh_z
+                or len(dydt) != neq
+                or self._jac_wt_atol is None
+                or len(self._jac_wt_atol) != neq
+                or len(self._jac_wt_rtol) != neq):
+            raise RuntimeError(
+                "18.2e scoped Jacobian: state layout drifted from armed "
+                f"assumptions (len(y)={neq}, self.neq={self.neq}, "
+                f"n_core+U+Z={n_core + self.num_qssa_u + self.num_sgh_z})"
+                " -- refusing to return a misaligned J.")
+        if cj == 0.0:
+            raise RuntimeError("18.2e scoped Jacobian: cj == 0")
+
+        h = 1.0 / cj
+        squr = np.sqrt(np.finfo(np.float64).eps)
+        wt = self._jac_wt_rtol * np.abs(y) + self._jac_wt_atol
+
+        ycol = np.array(y, dtype=float, copy=True)
+        ypcol = np.array(dydt, dtype=float, copy=True)
+        pd = np.empty((neq, neq), dtype=float)
+        self._jac_scope = True
+        try:
+            # base residual (scoped): residual() returns a FRESH array
+            # (dn_dt - dydt allocates), safe to hold across the sweep.
+            base = np.asarray(
+                self.residual(t, ycol, ypcol, senpar)[0])
+            for j in range(neq):
+                ysave = ycol[j]
+                ypsave = ypcol[j]
+                hyp = h * ypsave
+                delj = squr * max(abs(ysave), abs(hyp), abs(wt[j]))
+                # Fortran SIGN(del, hyp): |del| if hyp >= 0 else -|del|
+                if hyp < 0.0:
+                    delj = -delj
+                # representable increment, exactly as DMATD forms it
+                delj = (ysave + delj) - ysave
+                if delj == 0.0:
+                    # unreachable while wt_j > 0 (validated at arming);
+                    # defensive: never divide by zero below
+                    delj = squr * wt[j] if wt[j] > 0.0 else squr
+                ycol[j] = ysave + delj
+                ypcol[j] = ypsave + cj * delj
+                col = np.asarray(
+                    self.residual(t, ycol, ypcol, senpar)[0])
+                pd[:, j] = (col - base) / delj
+                ycol[j] = ysave
+                ypcol[j] = ypsave
+        finally:
+            self._jac_scope = False
+            # Guard-2 tripwire: diagnostics (edge_* arrays, censuses) are
+            # stale until the next REAL residual call clears this.
+            self._scoped_jac_diag_stale = True
+        return pd
+
     @cython.boundscheck(False)
     def residual(self, double t, np.ndarray[np.float64_t, ndim=1] y,
                  np.ndarray[np.float64_t, ndim=1] dydt,
@@ -5213,7 +5420,17 @@ class HybridPolymerSystem(ReactionSystem):
         cdef int n_core = len(self.core_species_rates)
         cdef int n_rxn = len(self.core_reaction_rates)
         cdef int p0_idx, p1_idx, p2_idx, prod_p_idx, p_slot, p_idx_tmp
+        cdef int n_rows_scope
+        cdef bint jac_scope
         cdef double mu1_0, mu1_1, rf_hijack
+
+        # 18.2e P5: J-scope flag -- True ONLY inside _scoped_fd_jacobian's
+        # FD sweep. It prunes work PROVEN residual-invisible (edge rows:
+        # every dn_dt/du_dt/dz_dt write below is core_rxn-gated; the two
+        # exhaustion/SGH censuses: diagnostic-only per r86/§1g) and
+        # changes NOTHING else -- same code path, same laws. Every real
+        # (DASPK-originated) call runs with the flag False.
+        jac_scope = self._jac_scope
 
         if self.gas_species_mask.shape[0] != n_core:
             raise ValueError(f"State/Mask mismatch: y={n_core}, mask={self.gas_species_mask.shape[0]}")
@@ -5311,7 +5528,11 @@ class HybridPolymerSystem(ReactionSystem):
         # per pool per rebuild). The flags are DIAGNOSTIC ONLY -- no RHS
         # read below consults them (the r81 read-projection is reverted);
         # site factors, bundles and kernels always compute from raw y.
-        self._update_pool_exhaustion(y)
+        # 18.2e P5: skipped under jac_scope (diagnostic-only; guard-2
+        # tripwire below pins that a REAL call always follows a J-sweep
+        # before any consumer reads these diagnostics).
+        if not jac_scope:
+            self._update_pool_exhaustion(y)
 
         # SGH kernel-v2 Z-inventory census (§1g, P1-A): TRIAL-STATE-SAFE --
         # residual() is called on the raw Newton trial state, so this NEVER
@@ -5322,7 +5543,12 @@ class HybridPolymerSystem(ReactionSystem):
         # _assert_sgh_inventory_accepted (self.y), invoked once per accepted
         # snapshot from _phase_gate_flux_census. Cheap no-op when
         # num_sgh_z == 0.
-        self._update_sgh_inventory_guard(y)
+        # 18.2e P5: skipped under jac_scope (census-only); real calls also
+        # clear the guard-2 staleness tripwire here -- after any step()/
+        # advance() the diagnostics were refreshed by a REAL call.
+        if not jac_scope:
+            self._update_sgh_inventory_guard(y)
+            self._scoped_jac_diag_stale = False
 
         self.core_reaction_rates[:] = 0.0
         self.edge_reaction_rates[:] = 0.0
@@ -5357,7 +5583,15 @@ class HybridPolymerSystem(ReactionSystem):
                 pass
 
         # 6. Standard Kinetics (Optimized Loop)
-        for r_idx in range(ir.shape[0]):
+        # 18.2e P5: under jac_scope only the n_rxn CORE rows run. Edge
+        # rows (r_idx >= n_rxn; contiguous suffix by construction in
+        # generate_reactant_product_indices) write ONLY edge_*/proxy-
+        # activity diagnostics, never dn_dt/du_dt/dz_dt (every state
+        # write is core_rxn-gated) -- P4 probe: the returned delta is
+        # BITWISE identical with edge rows skipped, and the golden-J
+        # guard tests pin it.
+        n_rows_scope = n_rxn if jac_scope else ir.shape[0]
+        for r_idx in range(n_rows_scope):
             r0, r1, r2 = ir[r_idx, 0], ir[r_idx, 1], ir[r_idx, 2]
 
             if r0 == -1:
