@@ -1404,6 +1404,221 @@ class TestAdmissionEndToEndDeadFlag:
         assert "would_admit=0 deny=gas-product-count" in msgs[0]
 
 
+class TestG6ReadjudicationProvisionalKinetics:
+    """G6 re-adjudication defect fix (adjudicated): the r93 stamp site
+    (stamp_gas_association_refusal <- make_new_reaction) runs BEFORE
+    make_new_reaction assigns kinetics, so family-generated rows always
+    reached G6 with kinetics=None and were denied kinetics-not-exportable
+    -- a reason that said nothing about their eventual kinetics (conduit4
+    forensics: exactly 18 ADMISSIBLE_B rows denied solely on this
+    artifact). Now: kinetics=None denies PROVISIONALLY
+    (kinetics-not-yet-assigned, NEVER would_admit=1) and
+    readjudicate_conduit_admission resolves the FINAL verdict once the
+    kinetics exists -- on the new-reaction path after the kinetics
+    conversion/barrier block, and across the check_existing canonical-dedup
+    merge (the trap: a provisional stamp merged onto an existing canonical
+    must not escape re-adjudication)."""
+
+    def test_vocabulary_gains_exactly_the_provisional_token(self):
+        from rmgpy.polymer_conduit import (ADMISSION_DENY_REASONS,
+                                           PROVISIONAL_DENY_REASONS)
+        assert "kinetics-not-yet-assigned" in ADMISSION_DENY_REASONS
+        assert PROVISIONAL_DENY_REASONS == {"kinetics-not-yet-assigned"}
+        # provisional reasons stay inside the closed deny vocabulary
+        assert PROVISIONAL_DENY_REASONS <= ADMISSION_DENY_REASONS
+
+    def test_kinetics_none_denies_provisionally(self, clean_registry):
+        """(a) kinetics=None -> provisional kinetics-not-yet-assigned;
+        a provisional row NEVER has would_admit=1."""
+        from rmgpy.polymer_conduit import evaluate_conduit_admission
+        rxn, pf = _admissible_fixture(kinetics=False)
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
+        assert v.deny_reason == "kinetics-not-yet-assigned"
+
+    def test_stamp_site_marks_pending_and_censuses_provisional(
+            self, caplog, clean_registry):
+        import logging as _logging
+        from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                                   stamp_gas_association_refusal)
+        rxn, pf = _admissible_fixture(kinetics=False)
+        _general_chain_scale_pool_warned.clear()
+        with caplog.at_level(_logging.WARNING):
+            stamp_gas_association_refusal(rxn)
+        # refusal state byte-identical to any other r93 refusal
+        assert rxn.polymer_refused is True
+        assert rxn.polymer_refused_accumulating is False
+        assert rxn.polymer_conduit_admission_pending is True
+        msgs = [r.getMessage() for r in caplog.records
+                if "[conduit-admission/1" in r.getMessage()]
+        assert len(msgs) == 1
+        assert "would_admit=0 deny=kinetics-not-yet-assigned" in msgs[0]
+        assert "would_admit=1" not in msgs[0]
+
+    def test_readjudication_with_final_arrhenius_would_admit(
+            self, caplog, clean_registry):
+        """(b) provisional row + final plain Arrhenius -> would_admit=1
+        (census-only: admission stays disabled, refusal untouched)."""
+        import logging as _logging
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+        rxn, pf = _admissible_fixture(kinetics=False)
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(rxn)
+        rxn.kinetics = Arrhenius(A=(1.0, "s^-1"), n=0.0, Ea=(0.0, "J/mol"))
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(rxn)
+        assert rxn.polymer_conduit_admission_pending is False
+        assert rxn.polymer_conduit_admission_readjudicated is True
+        msgs = [r.getMessage() for r in caplog.records
+                if "G6 re-adjudication" in r.getMessage()
+                and "[conduit-admission/1" in r.getMessage()]
+        assert len(msgs) == 1
+        assert "would_admit=1 deny=None rewrite=True" in msgs[0]
+        # census-only while CONDUIT_ADMISSION_ENABLED is False: the refusal
+        # state is untouched, nothing is stamped, nothing is rewritten.
+        assert rxn.polymer_refused is True
+        assert rxn.reversible is True
+        assert int(getattr(rxn, "polymer_flux_archetype", 0)) != int(
+            PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+        assert getattr(rxn, "polymer_conduit_params", None) is None
+
+    @pytest.mark.parametrize("kin_name", ["Chebyshev", "MultiArrhenius"])
+    def test_readjudication_non_arrhenius_final_denies_exportable(
+            self, caplog, clean_registry, kin_name):
+        """(c) provisional row + genuinely non-Arrhenius final kinetics ->
+        FINAL kinetics-not-exportable (the strict type check stays the
+        fail-closed last word)."""
+        import logging as _logging
+        import rmgpy.kinetics as _kinetics
+        from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+        rxn, pf = _admissible_fixture(kinetics=False)
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(rxn)
+        rxn.kinetics = getattr(_kinetics, kin_name)()
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(rxn)
+        assert rxn.polymer_conduit_admission_pending is False
+        assert rxn.polymer_conduit_admission_readjudicated is True
+        msgs = [r.getMessage() for r in caplog.records
+                if "G6 re-adjudication" in r.getMessage()
+                and "[conduit-admission/1" in r.getMessage()]
+        assert len(msgs) == 1
+        assert "would_admit=0 deny=kinetics-not-exportable" in msgs[0]
+
+    def test_readjudication_waits_while_kinetics_still_none(
+            self, caplog, clean_registry):
+        """generate_kinetics-disabled callers: the hook keeps the pending
+        marker and the provisional deny stands (uncertainty never
+        admits)."""
+        import logging as _logging
+        from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+        rxn, pf = _admissible_fixture(kinetics=False)
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(rxn)
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(rxn)
+        assert rxn.polymer_conduit_admission_pending is True
+        assert getattr(rxn, "polymer_conduit_admission_readjudicated",
+                       False) is False
+        assert not any("G6 re-adjudication" in r.getMessage()
+                       for r in caplog.records)
+
+    def test_dedup_merge_transfers_pending_and_resolves_on_canonical(
+            self, caplog, clean_registry):
+        """(d) THE TRAP: check_for_existing_reaction's early return
+        discards the freshly (provisionally) stamped candidate. Mirrors
+        make_new_reaction's dedup arm exactly -- merge, then re-adjudicate
+        the CANONICAL object against its own final kinetics."""
+        import logging as _logging
+        from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                                   merge_polymer_adjudication_stamps,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+        canonical, pf = _admissible_fixture()  # final plain Arrhenius
+        dup, _ = _admissible_fixture(kinetics=False)  # pre-kinetics twin
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(dup)
+        assert dup.polymer_conduit_admission_pending is True
+        # make_new_reaction dedup arm: merge stamps, then re-adjudicate rxn
+        merge_polymer_adjudication_stamps(dup, canonical)
+        assert canonical.polymer_conduit_admission_pending is True
+        assert canonical.polymer_refused is True  # refusal merged too
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(canonical)
+        assert canonical.polymer_conduit_admission_pending is False
+        assert canonical.polymer_conduit_admission_readjudicated is True
+        msgs = [r.getMessage() for r in caplog.records
+                if "G6 re-adjudication" in r.getMessage()
+                and "[conduit-admission/1" in r.getMessage()]
+        assert len(msgs) == 1
+        assert "would_admit=1 deny=None rewrite=True" in msgs[0]
+
+    def test_merge_never_demotes_a_final_verdict(self, caplog,
+                                                 clean_registry):
+        """(d) corollary: a canonical whose verdict is already FINAL
+        (re-adjudicated) is never demoted back to provisional by a later
+        duplicate's merge -- and re-running the hook emits nothing new."""
+        import logging as _logging
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                                   merge_polymer_adjudication_stamps,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+        canonical, pf = _admissible_fixture(kinetics=False)
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(canonical)
+        canonical.kinetics = Arrhenius(A=(1.0, "s^-1"), n=0.0,
+                                       Ea=(0.0, "J/mol"))
+        readjudicate_conduit_admission(canonical)
+        assert canonical.polymer_conduit_admission_readjudicated is True
+        dup, _ = _admissible_fixture(kinetics=False)
+        stamp_gas_association_refusal(dup)
+        assert dup.polymer_conduit_admission_pending is True
+        merge_polymer_adjudication_stamps(dup, canonical)
+        assert canonical.polymer_conduit_admission_pending is False
+        caplog.clear()  # drop the first (legitimate) re-adjudication line
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(canonical)
+        assert not any("G6 re-adjudication" in r.getMessage()
+                       for r in caplog.records)
+
+    def test_census_lines_deterministic_final_verdict_last(
+            self, caplog, clean_registry):
+        """(e) census-line determinism: the stamp-time line carries the
+        provisional token; the re-adjudication line carries the FINAL
+        verdict, appears LAST, and keeps the append-only census+admission
+        suffix shape."""
+        import logging as _logging
+        from rmgpy.kinetics import Chebyshev
+        from rmgpy.polymer import (_general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+        rxn, pf = _admissible_fixture(kinetics=False)
+        _general_chain_scale_pool_warned.clear()
+        with caplog.at_level(_logging.WARNING):
+            stamp_gas_association_refusal(rxn)
+            rxn.kinetics = Chebyshev()
+            readjudicate_conduit_admission(rxn)
+        msgs = [r.getMessage() for r in caplog.records
+                if "[conduit-admission/1" in r.getMessage()]
+        assert len(msgs) == 2
+        assert "would_admit=0 deny=kinetics-not-yet-assigned" in msgs[0]
+        assert "would_admit=0 deny=kinetics-not-exportable" in msgs[1]
+        # the FINAL line keeps the append-only suffix shape (census tokens
+        # first, admission tokens after -- round-36 P1(b) ordering)
+        assert "[conduit-census/1 key=" in msgs[1]
+        assert msgs[1].index("[conduit-census/1") < msgs[1].index(
+            "[conduit-admission/1")
+
+
 class TestR42AdmissionCensusDeterminism:
     """r42 P1-4 -- (a) EVERY census line carries the admission verdict
     tokens (the FR line lacked them); (b) the would_admit evaluation must
