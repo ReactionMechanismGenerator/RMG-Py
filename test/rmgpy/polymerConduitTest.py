@@ -5942,3 +5942,1031 @@ class TestP23WarnOnceLockDiscipline:
         reset_conduit_state()
         assert not _bucket_anomaly_warned
         assert not _admission_token_anomaly_warned
+
+
+# ---------------------------------------------------------------------------
+# M18.4 commit 3: standing-admit registry (design §2) + round-72 P3 folds.
+# ---------------------------------------------------------------------------
+
+class _FakeSpeciesInchiHostile:
+    """Duck-typed species stand-in whose ``.copy()`` raises -- used to
+    force :func:`canonical_species_id` off the InChI-on-a-copy path and
+    onto the adjacency-list fallback, WITHOUT monkeypatching the
+    compiled/extension ``rmgpy.species.Species`` class (its ``copy``
+    cannot be reassigned -- it is a built-in type). ``.molecule`` carries
+    a REAL :class:`rmgpy.molecule.Molecule`, so the fallback branch
+    exercises the genuine ``sort_atoms``/``to_adjacency_list`` recipe."""
+
+    def __init__(self, molecule):
+        self.molecule = molecule
+
+    def copy(self, deep=False):
+        raise RuntimeError("forced-inchi-copy-failure")
+
+
+class _FakeSpeciesFullyBroken:
+    """Duck-typed species stand-in with no usable Molecule AND a raising
+    ``.copy()`` -- both recipe steps in :func:`canonical_species_id` fail,
+    forcing the terminal ``csid-unresolved:`` sentinel."""
+
+    molecule = []
+
+    def copy(self, deep=False):
+        raise RuntimeError("forced-inchi-copy-failure")
+
+
+class TestCanonicalSpeciesIdRecipe:
+    """design §2.4.2 (amendment 5) -- the named test gate for
+    :func:`canonical_species_id`, required to pass before this identity is
+    used by the reaction signature. InChI-on-a-copy -> label-stripped
+    atom-canonical adjacency-list fallback -> ``csid-unresolved`` terminal
+    sentinel; never mutates the live species; never raises."""
+
+    def test_inchi_path_is_atom_order_invariant(self):
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer_conduit import canonical_species_id
+        from rmgpy.species import Species
+
+        s1 = Species(molecule=[Molecule().from_smiles("CCO")])
+        s2 = Species(molecule=[Molecule().from_smiles("OCC")])
+        id1 = canonical_species_id(s1)
+        id2 = canonical_species_id(s2)
+        assert id1 == id2
+        assert id1.startswith("inchi:")
+
+    def test_inchi_path_never_mutates_the_live_species(self):
+        """Copy-isolation proof: ``generate_resonance_structures()`` (which
+        InChI generation triggers) mutates the species it runs ON; this
+        recipe must run it on a COPY only, leaving the live species'
+        ``.aug_inchi`` cache and ``.molecule`` list untouched."""
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer_conduit import canonical_species_id
+        from rmgpy.species import Species
+
+        s = Species(molecule=[Molecule().from_smiles("CCO")])
+        assert s.aug_inchi is None
+        n_molecules_before = len(s.molecule)
+        canonical_species_id(s)
+        assert s.aug_inchi is None
+        assert len(s.molecule) == n_molecules_before
+
+    def test_inchi_hostile_species_falls_back_to_adjacency_list(self):
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer_conduit import canonical_species_id
+
+        fake = _FakeSpeciesInchiHostile([Molecule().from_smiles("CCO")])
+        result = canonical_species_id(fake)
+        assert result.startswith("adjlist:")
+
+    def test_fallback_path_is_atom_order_invariant(self):
+        """The SAME atom-order-invariance property, proven on the
+        fallback recipe itself (``sort_atoms`` + label-stripped
+        adjacency-list), not merely inherited from InChI's own
+        canonicalization."""
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer_conduit import canonical_species_id
+
+        fake1 = _FakeSpeciesInchiHostile([Molecule().from_smiles("CCO")])
+        fake2 = _FakeSpeciesInchiHostile([Molecule().from_smiles("OCC")])
+        id1 = canonical_species_id(fake1)
+        id2 = canonical_species_id(fake2)
+        assert id1 == id2
+        assert id1.startswith("adjlist:")
+
+    def test_fallback_is_label_independent(self):
+        """``to_adjacency_list(label="", ...)`` (design §2.4.2) forces the
+        serialized identity to never carry the live SPECIES' label,
+        regardless of what that label is -- two species with the SAME
+        structure but DIFFERENT labels resolve to the same fallback
+        identity."""
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer_conduit import canonical_species_id
+
+        left = _FakeSpeciesInchiHostile([Molecule().from_smiles("CCO")])
+        left.label = "left"
+        right = _FakeSpeciesInchiHostile([Molecule().from_smiles("CCO")])
+        right.label = "right"
+        id_a = canonical_species_id(left)
+        id_b = canonical_species_id(right)
+        assert id_a == id_b
+
+    def test_fallback_is_atom_label_independent(self):
+        """round-73 P2 pin: ``to_adjacency_list(label="", ...)`` only
+        suppresses the MOLECULE header -- per-atom ``.label`` values still
+        serialize (molecule.py ``Atom.copy()`` preserves ``atom.label``),
+        so two copies of the SAME graph differing only in PER-ATOM labels
+        (e.g. reaction/template atom-mapping labels like ``*1``/``*2``)
+        must resolve to the SAME fallback csid. This is distinct from
+        ``test_fallback_is_label_independent`` above, which only pins the
+        species-level label; this pins the atom-level one, which is what
+        actually broke before the ``clear_labeled_atoms()`` fix."""
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer_conduit import canonical_species_id
+
+        mol_a = Molecule().from_smiles("CCO")
+        mol_a.atoms[0].label = "*1"
+        mol_a.atoms[1].label = "*2"
+        left = _FakeSpeciesInchiHostile([mol_a])
+
+        mol_b = Molecule().from_smiles("CCO")
+        mol_b.atoms[0].label = "*3"
+        # mol_b's second atom stays unlabeled -- a different labeling
+        # PATTERN, not just different label values, must still collide.
+        right = _FakeSpeciesInchiHostile([mol_b])
+
+        id_a = canonical_species_id(left)
+        id_b = canonical_species_id(right)
+        assert id_a == id_b
+        # Sanity: the live molecules' own labels are never mutated by
+        # canonical_species_id (it only clears labels on its OWN deep
+        # copy) -- same non-mutation contract as the species-copy path.
+        assert mol_a.atoms[0].label == "*1"
+        assert mol_a.atoms[1].label == "*2"
+        assert mol_b.atoms[0].label == "*3"
+
+    def test_fully_broken_species_returns_deterministic_sentinel(self):
+        from rmgpy.polymer_conduit import canonical_species_id
+
+        id1 = canonical_species_id(_FakeSpeciesFullyBroken())
+        id2 = canonical_species_id(_FakeSpeciesFullyBroken())
+        assert id1.startswith("csid-unresolved:")
+        assert id1 == id2  # same failure mode -> deterministic collision
+
+    def test_empty_molecule_list_species_returns_sentinel_never_raises(self):
+        from rmgpy.polymer_conduit import canonical_species_id
+        from rmgpy.species import Species
+
+        s = Species(molecule=[])
+        result = canonical_species_id(s)
+        assert result.startswith("csid-unresolved:")
+
+    def test_polymer_pool_object_resolves_via_the_same_recipe(self):
+        """A destination-pool :class:`Polymer` (a ``Species`` subclass)
+        must be canonicalizable through the exact same function, never
+        raising."""
+        from rmgpy.polymer import Polymer
+        from rmgpy.polymer_conduit import canonical_species_id
+
+        pf = Polymer(label="phenol_formaldehyde",
+                    monomer="[CH2]c1ccc(cc1)C([CH2])O",
+                    Mn=5000.0, Mw=8000.0, initial_mass=1.0)
+        result = canonical_species_id(pf)
+        assert result  # never raises, never empty
+
+
+class TestCanonicalReactionSignatureRecipe:
+    """design §2.4.1 (amendment 4): side-separated, multiplicity-preserving
+    reaction-signature anti-aliasing pins, and the index-reshuffle
+    stability property that motivates using ``rxn_sig_hash`` (not
+    ``candidate_key``) as the registry's primary key."""
+
+    @staticmethod
+    def _sig(rxn, pf):
+        from rmgpy.polymer_conduit import (_apply_iso_overrides,
+                                           _canonical_reaction_signature,
+                                           classify_record,
+                                           evaluate_conduit_admission,
+                                           gas_mw_threshold_for_pools,
+                                           record_from_reaction)
+        record = _apply_iso_overrides(record_from_reaction(rxn, [pf]))
+        threshold = gas_mw_threshold_for_pools([pf])
+        result = classify_record(record, gas_mw_threshold=threshold)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        rxn_sig_hash, ok = _canonical_reaction_signature(
+            rxn, record, result, verdict)
+        return rxn_sig_hash, ok, verdict, record, result
+
+    def test_baseline_admitted_row_resolves_a_signature(self,
+                                                        clean_registry):
+        rxn, pf = _admissible_fixture(reversible=False)
+        rxn_sig_hash, ok, verdict, _, _ = self._sig(rxn, pf)
+        assert ok is True
+        assert verdict.admitted is True
+        assert not rxn_sig_hash.startswith("rxnsig-unresolved:")
+
+    def test_extra_gas_product_multiplicity_changes_the_hash(
+            self, clean_registry):
+        base_rxn, base_pf = _admissible_fixture(reversible=False,
+                                                extra_gas=0)
+        base_hash, _, _, _, _ = self._sig(base_rxn, base_pf)
+        extra_rxn, extra_pf = _admissible_fixture(reversible=False,
+                                                  extra_gas=1)
+        extra_hash, ok, _, _, _ = self._sig(extra_rxn, extra_pf)
+        assert ok is True
+        assert extra_hash != base_hash
+
+    def test_orientation_rewrite_basis_changes_the_hash(self,
+                                                        clean_registry):
+        """Same aligned shape, but reversible (needs_irreversible_rewrite
+        True) vs irreversible (False) -- the orientation tuple must make
+        these two distinguishable identities."""
+        irr_rxn, irr_pf = _admissible_fixture(reversible=False)
+        irr_hash, _, irr_v, _, _ = self._sig(irr_rxn, irr_pf)
+        rev_rxn, rev_pf = _admissible_fixture(reversible=True)
+        rev_hash, ok, rev_v, _, _ = self._sig(rev_rxn, rev_pf)
+        assert ok is True
+        assert irr_v.needs_irreversible_rewrite is False
+        assert rev_v.needs_irreversible_rewrite is True
+        assert rev_hash != irr_hash
+
+    def test_gas_product_identity_changes_the_hash(self, clean_registry):
+        from rmgpy.molecule import Molecule
+        from rmgpy.species import Species
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        base_hash, _, _, _, _ = self._sig(rxn, pf)
+        alt_gas = Species(molecule=[Molecule().from_smiles("O=C=O")])
+        alt_gas.label = "CO2"
+        rxn.products[1] = alt_gas
+        alt_hash, ok, _, _, _ = self._sig(rxn, pf)
+        assert ok is True
+        assert alt_hash != base_hash
+
+    def test_destination_pool_identity_changes_the_hash(self,
+                                                        clean_registry):
+        from dataclasses import replace
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        base_hash, _, verdict, record, result = self._sig(rxn, pf)
+        from rmgpy.polymer_conduit import _canonical_reaction_signature
+        alt_verdict = replace(verdict, dst_pool="some_other_pool")
+        alt_hash, ok = _canonical_reaction_signature(
+            rxn, record, result, alt_verdict)
+        assert ok is True
+        assert alt_hash != base_hash
+
+    def test_index_reshuffle_preserves_hash_but_not_candidate_key(
+            self, clean_registry):
+        """design §2.4 motivation: ``rxn_sig_hash`` survives an index
+        reshuffle across regeneration; the legacy ``candidate_key``
+        (label(index)-based) does not."""
+        base_rxn, base_pf = _admissible_fixture(reversible=False)
+        base_hash, _, base_v, _, _ = self._sig(base_rxn, base_pf)
+        idx_rxn, idx_pf = _admissible_fixture(reversible=False)
+        idx_rxn.reactants[0].index = 7
+        idx_hash, ok, idx_v, _, _ = self._sig(idx_rxn, idx_pf)
+        assert ok is True
+        assert idx_hash == base_hash
+        assert idx_v.candidate_key != base_v.candidate_key
+
+    def test_unresolvable_orientation_returns_fallback_and_not_ok(
+            self, clean_registry):
+        """A row with no POOL participant at all can never resolve a
+        chain-to-pool direction -- the signature degrades to the
+        deterministic ``rxnsig-unresolved:`` fallback with ``ok=False``,
+        never raising."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.molecule import Molecule
+        from rmgpy.polymer_conduit import (_apply_iso_overrides,
+                                           _canonical_reaction_signature,
+                                           classify_record,
+                                           evaluate_conduit_admission,
+                                           gas_mw_threshold_for_pools,
+                                           record_from_reaction)
+        from rmgpy.reaction import Reaction
+        from rmgpy.species import Species
+
+        a = Species(molecule=[Molecule().from_smiles("CCO")])
+        a.label = "A"
+        b = Species(molecule=[Molecule().from_smiles("C=O")])
+        b.label = "B"
+        rxn = Reaction(reactants=[a], products=[b], reversible=False,
+                      kinetics=Arrhenius(A=(1.0, "s^-1"), n=0.0,
+                                        Ea=(0.0, "J/mol")))
+        record = _apply_iso_overrides(record_from_reaction(rxn, []))
+        result = classify_record(
+            record, gas_mw_threshold=gas_mw_threshold_for_pools([]))
+        verdict = evaluate_conduit_admission(rxn, [])
+        rxn_sig_hash, ok = _canonical_reaction_signature(
+            rxn, record, result, verdict)
+        assert ok is False
+        assert rxn_sig_hash.startswith("rxnsig-unresolved:")
+
+
+class TestStandingAdmitRegistryPopulation:
+    """design §2.2/§2.3, ruling D (adjudicated): the registry is populated
+    from WOULD-ADMIT rows only, pre-flip -- ``admitted`` stays provably
+    zero (round-53 exists-and-reads-zero) because
+    :data:`CONDUIT_ADMISSION_ENABLED` is False, never because the
+    population path chooses to withhold anything."""
+
+    def test_would_admit_row_populates_registry_as_would_admit(
+            self, clean_registry):
+        from rmgpy.polymer_conduit import (CONDUIT_ADMISSION_ENABLED,
+                                           _STANDING_ADMITS,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission)
+
+        assert CONDUIT_ADMISSION_ENABLED is False
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        assert verdict.admitted is True
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+        entries = list(_STANDING_ADMITS._entries.values())
+        assert len(entries) == 1
+        entry = entries[0]
+        assert entry["status"] == "would-admit"
+        assert entry["candidate_key"] == verdict.candidate_key
+        assert entry["live_ref"] == (rxn, [pf])
+        # round-53 exists-and-reads-zero: the health line's admitted=0
+        # is a structural proof, not a withholding choice made here.
+        assert sum(1 for e in entries if e["status"] == "admitted") == 0
+
+    def test_denied_verdict_does_not_populate(self, clean_registry):
+        from rmgpy.polymer_conduit import (_STANDING_ADMITS,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission)
+
+        rxn, pf = _admissible_fixture(reversible=False, extra_gas=1)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        assert verdict.admitted is False
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+        assert not _STANDING_ADMITS._entries
+
+    def test_none_verdict_does_not_populate(self, clean_registry):
+        from rmgpy.polymer_conduit import (_STANDING_ADMITS,
+                                           annotate_refused_row)
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        annotate_refused_row(rxn, [pf], verdict=None)
+        assert not _STANDING_ADMITS._entries
+
+    def test_fr_overlap_downgrade_prevents_population(self, clean_registry):
+        """r42 P1-4(b) ordering pin, extended: a candidate whose OWN row
+        registers a feature-radical census sighting (so the post-
+        registration FR re-check inside annotate_refused_row downgrades
+        an admitted verdict to denied) must never be populated as a
+        would-admit standing entry."""
+        from rmgpy.polymer_conduit import (_STANDING_ADMITS,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission,
+                                           register_candidate)
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        assert verdict.admitted is True
+        register_candidate(verdict.candidate_key, "feature_radical",
+                           "FEATURE_RADICAL")
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+        assert not _STANDING_ADMITS._entries
+
+    def test_readjudication_does_not_clobber_admit_epoch_or_snapshot(
+            self, clean_registry):
+        """ruling G-Q7: a re-sighting of the SAME structure (a later
+        readjudication re-registration) refreshes ``last_seen_epoch``/
+        ``live_ref`` only -- ``admit_epoch``/``snapshot`` are write-once,
+        set at first insert and never overwritten."""
+        from rmgpy.polymer_conduit import (_STANDING_ADMITS,
+                                           advance_conduit_epoch,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission)
+
+        rxn1, pf1 = _admissible_fixture(reversible=False)
+        v1 = evaluate_conduit_admission(rxn1, [pf1])
+        annotate_refused_row(rxn1, [pf1], verdict=v1)
+        entries = list(_STANDING_ADMITS._entries.items())
+        assert len(entries) == 1
+        rxn_sig_hash, first_entry = entries[0]
+        first_admit_epoch = first_entry["admit_epoch"]
+        first_snapshot = first_entry["snapshot"]
+
+        advance_conduit_epoch(("readjudication-resight",))
+        rxn2, pf2 = _admissible_fixture(reversible=False)
+        v2 = evaluate_conduit_admission(rxn2, [pf2])
+        annotate_refused_row(rxn2, [pf2], verdict=v2)
+
+        entries_after = _STANDING_ADMITS._entries
+        assert set(entries_after) == {rxn_sig_hash}  # same key, not a dup
+        refreshed = entries_after[rxn_sig_hash]
+        assert refreshed["admit_epoch"] == first_admit_epoch
+        assert refreshed["snapshot"] == first_snapshot
+        assert refreshed["last_seen_epoch"] != first_admit_epoch
+        assert refreshed["live_ref"] == (rxn2, [pf2])
+
+    def test_hash_cache_never_aliases_across_reversibility_orientation(
+            self, clean_registry):
+        """round-73 P1 pin (hash-cache aliasing): ``candidate_key``
+        deliberately omits arrow/reversibility (see
+        :func:`conduit_candidate_key`), but
+        :func:`_canonical_reaction_signature` folds
+        ``needs_irreversible_rewrite`` into the identity it hashes -- so
+        the SAME species/sides sighted once as ``=>`` (irreversible) and
+        once as ``<=>`` (reversible) share a ``candidate_key`` but must
+        resolve to DISTINCT ``rxn_sig_hash`` values and DISTINCT registry
+        entries. A ``candidate_key``-only memo would silently alias the
+        second sighting onto the first's hash instead."""
+        from rmgpy.polymer_conduit import (_STANDING_ADMITS,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission)
+
+        irr_rxn, irr_pf = _admissible_fixture(reversible=False)
+        irr_v = evaluate_conduit_admission(irr_rxn, [irr_pf])
+        assert irr_v.admitted is True
+        assert irr_v.needs_irreversible_rewrite is False
+        annotate_refused_row(irr_rxn, [irr_pf], verdict=irr_v)
+
+        rev_rxn, rev_pf = _admissible_fixture(reversible=True)
+        rev_v = evaluate_conduit_admission(rev_rxn, [rev_pf])
+        assert rev_v.admitted is True
+        assert rev_v.needs_irreversible_rewrite is True
+        # Confirms the aliasing hazard is real: the two verdicts DO share
+        # a candidate_key despite differing reversibility.
+        assert rev_v.candidate_key == irr_v.candidate_key
+        annotate_refused_row(rev_rxn, [rev_pf], verdict=rev_v)
+
+        entries = _STANDING_ADMITS._entries
+        assert len(entries) == 2  # two distinct rxn_sig_hash, never aliased
+        snapshots = {e["snapshot"]["needs_irreversible_rewrite"]
+                    for e in entries.values()}
+        assert snapshots == {False, True}
+
+
+class TestStandingAdmitHealthLine:
+    """design §2.5: the ``CONDUIT STANDING ADMIT HEALTH/1`` line format,
+    the round-53 exists-and-reads-zero proof, and the virgin-lifecycle
+    guard (consistent with the epoch provider's ``_opened`` pattern)."""
+
+    def test_health_line_format_after_one_would_admit_row(
+            self, clean_registry):
+        from rmgpy.polymer_conduit import (annotate_refused_row,
+                                           close_conduit_lifecycle,
+                                           evaluate_conduit_admission,
+                                           _STANDING_ADMITS)
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+        line = _STANDING_ADMITS.close_lifecycle()
+        assert line == (
+            "CONDUIT STANDING ADMIT HEALTH/1 epochs_seen=0 burned=0 "
+            "would_admit=1 admitted=0 revoked=0 orphaned=0 "
+            "frozen_grams=0.0")
+
+    def test_close_is_idempotent_per_lifecycle(self, clean_registry):
+        from rmgpy.polymer_conduit import (annotate_refused_row,
+                                           evaluate_conduit_admission,
+                                           _STANDING_ADMITS)
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+        first = _STANDING_ADMITS.close_lifecycle()
+        second = _STANDING_ADMITS.close_lifecycle()
+        assert first == second
+
+    def test_virgin_lifecycle_close_emits_nothing(self, caplog,
+                                                   clean_registry):
+        """round-73 P2 (deliberate semantics change): 'virgin' now means
+        ZERO census registrations of ANY kind (admit or deny) this
+        lifecycle -- not merely zero would-admit inserts. This test's
+        body is already the strictest case (no ``annotate_refused_row``
+        call at all, so no ``register_candidate`` -> ``note_sighted``/
+        ``note_lifecycle_activity`` choke point ever fires), so it stays
+        virgin under both the old and the new definition; see
+        ``test_denied_only_lifecycle_emits_health_line_with_zero_would_admit``
+        below for the case that actually changed behavior -- a
+        denied-only lifecycle used to stay silent here (old ``_opened``
+        flipped only inside ``register_would_admit``) and now correctly
+        emits a ``would_admit=0`` health line instead."""
+        import logging as _logging
+        from rmgpy.polymer_conduit import _STANDING_ADMITS
+
+        with caplog.at_level(_logging.WARNING):
+            result = _STANDING_ADMITS.close_lifecycle()
+        assert result is None
+        assert not _r55_lines(caplog, "CONDUIT STANDING ADMIT HEALTH/1")
+
+    def test_denied_only_lifecycle_emits_health_line_with_zero_would_admit(
+            self, caplog, clean_registry):
+        """round-73 P2 fix (virgin-guard false negative): a lifecycle that
+        only ever produces DENIED rows (never a would-admit) must still
+        open the registry and emit a health line at close, with
+        ``would_admit=0`` -- an honest zero, not indistinguishable
+        silence from a broken emission path. Before the fix, ``_opened``
+        flipped only inside ``register_would_admit``, so this exact
+        scenario emitted NOTHING."""
+        import logging as _logging
+        from rmgpy.polymer_conduit import (_STANDING_ADMITS,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission)
+
+        rxn, pf = _admissible_fixture(reversible=False, extra_gas=1)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        assert verdict.admitted is False  # denied: extra gas product
+        with caplog.at_level(_logging.WARNING):
+            annotate_refused_row(rxn, [pf], verdict=verdict)
+            result = _STANDING_ADMITS.close_lifecycle()
+        assert not _STANDING_ADMITS._entries  # never populated as an admit
+        assert result == (
+            "CONDUIT STANDING ADMIT HEALTH/1 epochs_seen=0 burned=0 "
+            "would_admit=0 admitted=0 revoked=0 orphaned=0 "
+            "frozen_grams=0.0")
+        assert _r55_lines(caplog, "CONDUIT STANDING ADMIT HEALTH/1")
+
+    def test_reset_closes_outgoing_lifecycle_and_clears(self,
+                                                        clean_registry):
+        from rmgpy.polymer_conduit import (annotate_refused_row,
+                                           evaluate_conduit_admission,
+                                           _STANDING_ADMITS)
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+        assert _STANDING_ADMITS._entries
+        _STANDING_ADMITS.reset()
+        assert not _STANDING_ADMITS._entries
+        assert _STANDING_ADMITS._closed is False
+        assert _STANDING_ADMITS._opened is False
+
+    def test_reset_conduit_state_resets_the_registry_too(self,
+                                                         clean_registry):
+        from rmgpy.polymer_conduit import (annotate_refused_row,
+                                           evaluate_conduit_admission,
+                                           reset_conduit_state,
+                                           _STANDING_ADMITS)
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+        assert _STANDING_ADMITS._entries
+        reset_conduit_state()
+        assert not _STANDING_ADMITS._entries
+
+    def test_reset_emits_standing_health_with_live_epoch_counts(
+            self, caplog, clean_registry):
+        """round-73 P2 fix (reset ordering zeroed epoch counters in
+        standing health): the standing registry's own close reads
+        ``_EPOCH_PROVIDER.attempted_and_burned()`` (design §2.5).
+        Before the fix, ``reset_conduit_state()`` reset the epoch
+        provider's counters BEFORE the standing registry's close ran, so
+        a lifecycle closed via reset always reported ``epochs_seen=0
+        burned=0`` regardless of real prior activity. Real activity
+        happens here (two epoch advances, one burned), THEN
+        ``reset_conduit_state()`` runs -- the health line it emits during
+        that reset must carry the TRUE (non-zero) pre-reset counts."""
+        import logging as _logging
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission,
+                                           note_conduit_rebuild_failed,
+                                           reset_conduit_state)
+
+        advance_conduit_epoch(("r73-reset-order-1",))
+        token, created = advance_conduit_epoch(("r73-reset-order-2",))
+        note_conduit_rebuild_failed(token=token, created=created)
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+
+        with caplog.at_level(_logging.WARNING):
+            reset_conduit_state()
+        lines = _r55_lines(caplog, "CONDUIT STANDING ADMIT HEALTH/1")
+        assert len(lines) == 1
+        assert lines[0] == (
+            "CONDUIT STANDING ADMIT HEALTH/1 epochs_seen=2 burned=1 "
+            "would_admit=1 admitted=0 revoked=0 orphaned=0 "
+            "frozen_grams=0.0")
+
+
+class TestFailedAfterSightingTokenIdempotency:
+    """round-72 P3 fold-in #1: ``failed_after_sighting`` is a token SET,
+    not a bare counter -- a duplicate failure report for the same
+    already-sighted ordinal must not double-count."""
+
+    def test_duplicate_report_same_token_counts_once(self, clean_registry):
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed,
+                                           register_candidate)
+
+        token, created = advance_conduit_epoch(("p3-dup-token",))
+        register_candidate("P3_DUP(1)<>P3_DUP(2)", "r93_general",
+                           "ADMISSIBLE_A", epoch=token)
+        note_conduit_rebuild_failed(token=token, created=created)
+        note_conduit_rebuild_failed(token=token, created=created)
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._failed_after_sighting == 1
+        assert _EPOCH_PROVIDER._failed_after_sighting_tokens == {token}
+
+    def test_distinct_sighted_tokens_count_separately(self, clean_registry):
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed,
+                                           register_candidate)
+
+        token1, created1 = advance_conduit_epoch(("p3-tok-1",))
+        register_candidate("P3_A(1)<>P3_A(2)", "r93_general",
+                           "ADMISSIBLE_A", epoch=token1)
+        note_conduit_rebuild_failed(token=token1, created=created1)
+
+        token2, created2 = advance_conduit_epoch(("p3-tok-2",))
+        register_candidate("P3_B(1)<>P3_B(2)", "r93_general",
+                           "ADMISSIBLE_A", epoch=token2)
+        note_conduit_rebuild_failed(token=token2, created=created2)
+
+        assert _EPOCH_PROVIDER._failed_after_sighting == 2
+        assert _EPOCH_PROVIDER._failed_after_sighting_tokens == {
+            token1, token2}
+
+    def test_reset_clears_the_token_set(self, clean_registry):
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed,
+                                           register_candidate)
+
+        token, created = advance_conduit_epoch(("p3-reset",))
+        register_candidate("P3_RESET(1)<>P3_RESET(2)", "r93_general",
+                           "ADMISSIBLE_A", epoch=token)
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._failed_after_sighting == 1
+        _EPOCH_PROVIDER.reset()
+        assert _EPOCH_PROVIDER._failed_after_sighting == 0
+        assert _EPOCH_PROVIDER._failed_after_sighting_tokens == set()
+
+
+class TestCloseConduitLifecycleThreeSurfaceIsolation:
+    """round-72 P3 fold-in #2: each of the three surfaces (oracle, epoch
+    provider, standing-admit registry) is closed under its OWN never-raise
+    guard inside :func:`close_conduit_lifecycle`, so one surface's close
+    raising cannot skip the other two surfaces' emission."""
+
+    def test_all_three_surfaces_close_normally(self, caplog, clean_registry):
+        import logging as _logging
+        from rmgpy.polymer_conduit import (annotate_refused_row,
+                                           close_conduit_lifecycle,
+                                           evaluate_conduit_admission,
+                                           reset_conduit_state)
+
+        reset_conduit_state()
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = evaluate_conduit_admission(rxn, [pf])
+        annotate_refused_row(rxn, [pf], verdict=verdict)
+        with caplog.at_level(_logging.WARNING):
+            close_conduit_lifecycle()
+        assert _r55_lines(caplog, "CONDUIT CLASSIFIER ORACLE HEALTH/1")
+        assert _r55_lines(caplog, "CONDUIT STANDING ADMIT HEALTH/1")
+
+    def test_oracle_close_raising_does_not_skip_the_other_two_surfaces(
+            self, caplog, clean_registry, monkeypatch):
+        import logging as _logging
+        import rmgpy.polymer_conduit as pc
+
+        reset_conduit_state = pc.reset_conduit_state
+        reset_conduit_state()
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict = pc.evaluate_conduit_admission(rxn, [pf])
+        pc.annotate_refused_row(rxn, [pf], verdict=verdict)
+        pc.advance_conduit_epoch(("p3-close-isolation",))
+
+        def boom():
+            raise RuntimeError("forced-oracle-close-failure")
+
+        monkeypatch.setattr(pc._LABEL_ORACLE, "close_lifecycle", boom)
+        with caplog.at_level(_logging.WARNING):
+            result = pc.close_conduit_lifecycle()
+        # The oracle's own broken close is caught and logged, not
+        # propagated -- close_conduit_lifecycle() itself never raises.
+        assert result is None
+        anomalies = _r55_lines(
+            caplog, "CONDUIT LIFECYCLE CLOSE ANOMALY/1 surface=oracle")
+        assert len(anomalies) == 1
+        # The OTHER two surfaces still closed and emitted their lines.
+        assert _r55_lines(caplog, "CONDUIT EPOCH MAP/1")
+        assert _r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")
+        assert _r55_lines(caplog, "CONDUIT STANDING ADMIT HEALTH/1")
+
+    def test_registry_close_raising_does_not_skip_the_other_two_surfaces(
+            self, caplog, clean_registry, monkeypatch):
+        import logging as _logging
+        import rmgpy.polymer_conduit as pc
+
+        pc.reset_conduit_state()
+        pc.advance_conduit_epoch(("p3-close-isolation-registry",))
+
+        def boom():
+            raise RuntimeError("forced-registry-close-failure")
+
+        monkeypatch.setattr(pc._STANDING_ADMITS, "close_lifecycle", boom)
+        with caplog.at_level(_logging.WARNING):
+            result = pc.close_conduit_lifecycle()
+        assert result is not None  # oracle's own line still returned
+        anomalies = _r55_lines(
+            caplog,
+            "CONDUIT LIFECYCLE CLOSE ANOMALY/1 surface=standing-admits")
+        assert len(anomalies) == 1
+        assert _r55_lines(caplog, "CONDUIT CLASSIFIER ORACLE HEALTH/1")
+        assert _r55_lines(caplog, "CONDUIT EPOCH MAP/1")
+        assert _r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")
+
+    def test_hostile_exception_name_is_sanitized_in_close_anomaly_line(
+            self, caplog, clean_registry, monkeypatch):
+        """round-73 P3 pin (unsanitized dynamic exception names): a
+        surface whose close raises with a dynamically-created exception
+        class carrying a non-charset ``__name__`` (e.g. embedded unicode)
+        must never leak that raw name into the ``/1`` line -- the
+        ``reason=`` field is routed through the shared
+        ``_sanitize_dynamic_token`` charset sanitizer, same as every
+        other value in this module's ``/1`` lines."""
+        import logging as _logging
+        import re as _re
+        import rmgpy.polymer_conduit as pc
+
+        pc.reset_conduit_state()
+        hostile_cls = type("BadéName Injected=token", (Exception,), {})
+
+        def boom():
+            raise hostile_cls("forced-hostile-close-failure")
+
+        monkeypatch.setattr(pc._LABEL_ORACLE, "close_lifecycle", boom)
+        with caplog.at_level(_logging.WARNING):
+            pc.close_conduit_lifecycle()
+        anomalies = _r55_lines(
+            caplog, "CONDUIT LIFECYCLE CLOSE ANOMALY/1 surface=oracle")
+        assert len(anomalies) == 1
+        reason = anomalies[0].split("reason=")[1].split()[0]
+        assert _re.match(r"^[A-Za-z0-9_.-]+$", reason)
+        # The hostile raw name must not survive verbatim into the line.
+        assert "é" not in anomalies[0]
+        assert "=" not in reason
+        assert " " not in reason
+
+    def test_hostile_exception_name_is_sanitized_in_standing_admit_anomaly(
+            self, caplog, clean_registry, monkeypatch):
+        """Same pin as above, for the standing-admit registry's OWN
+        never-raise anomaly line (``register_would_admit``'s
+        ``event=register-failed``)."""
+        import logging as _logging
+        import re as _re
+        import rmgpy.polymer_conduit as pc
+
+        pc.reset_conduit_state()
+        hostile_cls = type("Evilé=Name here", (Exception,), {})
+
+        def boom(*args, **kwargs):
+            raise hostile_cls("forced-hostile-register-failure")
+
+        monkeypatch.setattr(pc, "current_epoch", boom)
+        with caplog.at_level(_logging.WARNING):
+            pc._STANDING_ADMITS.register_would_admit(
+                "sig", "key", {}, (None, None))
+        anomalies = _r55_lines(
+            caplog, "CONDUIT STANDING ADMIT ANOMALY/1 event=register-failed")
+        assert len(anomalies) == 1
+        reason = anomalies[0].split("reason=")[1].split()[0]
+        assert _re.match(r"^[A-Za-z0-9_.-]+$", reason)
+        assert "é" not in anomalies[0]
+
+    def test_sanitize_dynamic_token_directly(self):
+        """Direct unit pin for the shared sanitizer helper itself: hostile
+        input is collapsed to the strict charset, capped at 64 chars, and
+        an all-hostile input never collapses to an empty string."""
+        import re as _re
+        from rmgpy.polymer_conduit import _sanitize_dynamic_token
+
+        charset = _re.compile(r"^[A-Za-z0-9_.-]+$")
+        assert charset.match(_sanitize_dynamic_token("BadéName=x y"))
+        assert _sanitize_dynamic_token("ééé") == "unsanitizable" \
+            or charset.match(_sanitize_dynamic_token("ééé"))
+        long_hostile = "x" * 200
+        assert len(_sanitize_dynamic_token(long_hostile)) == 64
+        assert len(_sanitize_dynamic_token(long_hostile, max_len=None)) == 200
+
+
+class TestRound74P3EpochProviderSanitizerCoverageAndAudit:
+    """round-74 P3 findings from the round-74 code review:
+
+    Finding 1 (sanitizer coverage gap): ``_EpochProvider.advance()`` and
+    ``_EpochProvider.close_lifecycle()`` each have their OWN internal
+    never-raise catch that previously interpolated the raw
+    ``type(exc).__name__`` straight into a ``CONDUIT EPOCH PROVIDER
+    ANOMALY/1`` line, unlike every other dynamic-exception-name site in
+    this module (round-73 P3) -- these two are now routed through the
+    same shared ``_sanitize_dynamic_token`` charset sanitizer.
+
+    Finding 2 (audit trail for sanitized-name collisions): every one of
+    those sanitized-exception-name ``/1`` sites (the round-73 sites, the
+    two Finding-1 sites here, and the ~line-2281 cluster) now appends a
+    minimal `` raw_sha=<12 hex>`` fragment -- computed ONLY when
+    sanitization actually changed the string -- via the new
+    ``_raw_sha_suffix`` helper, so two distinct hostile names that
+    collapse to the SAME sanitized token stay forensically
+    distinguishable."""
+
+    def test_hostile_exception_name_is_sanitized_in_advance_failed_anomaly(
+            self, caplog, clean_registry, monkeypatch):
+        """Finding 1: the ``event=advance-failed`` internal catch inside
+        :meth:`_EpochProvider.advance` must never leak a raw hostile
+        exception ``__name__`` into its ``/1`` line -- same hostile-name
+        style as the existing round-73 P3 pins above."""
+        import logging as _logging
+        import re as _re
+        import rmgpy.polymer_conduit as pc
+
+        pc.reset_conduit_state()
+        hostile_cls = type("BadéAdvance Name=x", (Exception,), {})
+
+        def boom(signature):
+            raise hostile_cls("forced-hostile-advance-failure")
+
+        monkeypatch.setattr(pc, "_canonical_sig_sha16", boom)
+        with caplog.at_level(_logging.WARNING):
+            pc._EPOCH_PROVIDER.advance(("hostile-advance-sig",))
+        anomalies = _r55_lines(
+            caplog, "CONDUIT EPOCH PROVIDER ANOMALY/1 event=advance-failed")
+        assert len(anomalies) == 1
+        reason = anomalies[0].split("reason=")[1].split()[0]
+        assert _re.match(r"^[A-Za-z0-9_.-]+$", reason)
+        # The hostile raw name must not survive verbatim into the line.
+        assert "é" not in anomalies[0]
+        assert "=" not in reason
+        assert " " not in reason
+
+    def test_hostile_exception_name_is_sanitized_in_epoch_close_lifecycle_anomaly(
+            self, caplog, clean_registry):
+        """Finding 1: the ``event=close-lifecycle-failed`` internal catch
+        inside :meth:`_EpochProvider.close_lifecycle` must never leak a raw
+        hostile exception ``__name__`` into its ``/1`` line either."""
+        import logging as _logging
+        import re as _re
+        import rmgpy.polymer_conduit as pc
+
+        pc.reset_conduit_state()
+        pc.advance_conduit_epoch(("hostile-close-lifecycle-sig",))
+
+        hostile_cls = type("Closeé Hostile=Name", (Exception,), {})
+
+        class _HostileLen:
+            def __len__(self):
+                raise hostile_cls("forced-hostile-close-lifecycle-failure")
+
+        pc._EPOCH_PROVIDER._burned_ordinals = _HostileLen()
+        try:
+            with caplog.at_level(_logging.WARNING):
+                pc._EPOCH_PROVIDER.close_lifecycle()
+        finally:
+            pc._EPOCH_PROVIDER._burned_ordinals = set()
+        anomalies = _r55_lines(
+            caplog,
+            "CONDUIT EPOCH PROVIDER ANOMALY/1 event=close-lifecycle-failed")
+        assert len(anomalies) == 1
+        reason = anomalies[0].split("reason=")[1].split()[0]
+        assert _re.match(r"^[A-Za-z0-9_.-]+$", reason)
+        assert "é" not in anomalies[0]
+        assert "=" not in reason
+        assert " " not in reason
+
+    def test_colliding_hostile_names_get_distinct_raw_sha(
+            self, caplog, clean_registry, monkeypatch):
+        """Finding 2: two DISTINCT hostile exception names that sanitize
+        down to the IDENTICAL token (``"Bad Name"`` and ``"Bad=Name"`` both
+        -> ``"Bad_Name"``) must still produce two anomaly lines carrying
+        two DIFFERENT ``raw_sha=`` values -- the minimal forensic audit
+        trail added by :func:`_raw_sha_suffix` (round-74 P3), so the
+        collision does not silently erase which raw name actually fired."""
+        import logging as _logging
+        import re as _re
+        import rmgpy.polymer_conduit as pc
+
+        pc.reset_conduit_state()
+        hostile_cls_1 = type("Bad Name", (Exception,), {})
+        hostile_cls_2 = type("Bad=Name", (Exception,), {})
+
+        def boom_1():
+            raise hostile_cls_1("forced-hostile-close-failure-1")
+
+        def boom_2():
+            raise hostile_cls_2("forced-hostile-close-failure-2")
+
+        monkeypatch.setattr(pc._LABEL_ORACLE, "close_lifecycle", boom_1)
+        with caplog.at_level(_logging.WARNING):
+            pc.close_conduit_lifecycle()
+        first_anomalies = _r55_lines(
+            caplog, "CONDUIT LIFECYCLE CLOSE ANOMALY/1 surface=oracle")
+        assert len(first_anomalies) == 1
+
+        # Undo the first patch (boom_1) BEFORE resetting -- reset_conduit_
+        # state() closes the oracle's lifecycle directly (unguarded), and
+        # the oracle's own close_lifecycle() is idempotent-but-still-
+        # raising while a broken patch is left in place (it never reached
+        # ``self._closed = True`` on the earlier failed attempt).
+        monkeypatch.undo()
+        caplog.clear()
+        pc.reset_conduit_state()
+        monkeypatch.setattr(pc._LABEL_ORACLE, "close_lifecycle", boom_2)
+        with caplog.at_level(_logging.WARNING):
+            pc.close_conduit_lifecycle()
+        second_anomalies = _r55_lines(
+            caplog, "CONDUIT LIFECYCLE CLOSE ANOMALY/1 surface=oracle")
+        assert len(second_anomalies) == 1
+
+        reason_1 = first_anomalies[0].split("reason=")[1].split()[0]
+        reason_2 = second_anomalies[0].split("reason=")[1].split()[0]
+        # Both hostile names collide onto the SAME sanitized token.
+        assert reason_1 == reason_2 == "Bad_Name"
+
+        raw_sha_re = _re.compile(r"raw_sha=([0-9a-f]{12})\b")
+        match_1 = raw_sha_re.search(first_anomalies[0])
+        match_2 = raw_sha_re.search(second_anomalies[0])
+        assert match_1 is not None
+        assert match_2 is not None
+        # ...but the raw_sha fragments distinguish the two colliding raws.
+        assert match_1.group(1) != match_2.group(1)
+
+    def test_raw_sha_suffix_omitted_when_sanitization_is_a_no_op(self):
+        """Finding 2 (no-noise clause): when the name needs no sanitization
+        at all (``sanitized == raw``), ``_raw_sha_suffix`` must return the
+        empty string -- no extra field on the common/clean path."""
+        from rmgpy.polymer_conduit import (_raw_sha_suffix,
+                                           _sanitize_dynamic_token)
+
+        clean_name = "ValueError"
+        assert _sanitize_dynamic_token(clean_name) == clean_name
+        assert _raw_sha_suffix(clean_name, _sanitize_dynamic_token(
+            clean_name)) == ""
+
+        hostile_name = "Bad Name"
+        sanitized = _sanitize_dynamic_token(hostile_name)
+        assert sanitized != hostile_name
+        suffix = _raw_sha_suffix(hostile_name, sanitized)
+        assert suffix.startswith(" raw_sha=")
+        assert len(suffix) == len(" raw_sha=") + 12
+
+
+class TestRound74P3HashCacheDstPoolGasNonSelfVerification:
+    """round-74 P3 Finding 3 (cache-path test gap): the existing hash-cache
+    key tests (``test_hash_cache_never_aliases_across_reversibility_
+    orientation``) only exercise reversibility/orientation of the memo
+    key. Production invariants make it structurally impossible for two
+    would-admit rows to share the SAME ``candidate_key`` and the SAME
+    orientation triple (direction/shape/needs_irreversible_rewrite) while
+    differing in ``dst_pool``/gas identity via TWO DISTINCT REACTIONS (per
+    the round-74 ruling) -- but the SAME reaction re-adjudicated with a
+    verdict whose ``dst_pool`` differs (a `dataclasses.replace` of the
+    real :class:`AdmissionVerdict`) drives exactly this memo_key collision
+    through the real production path
+    (:func:`register_standing_admit_would_admit`, called from
+    :func:`annotate_refused_row`), not a synthetic memo_key crafted by
+    hand.
+
+    round-75 (made binding): the memo_key itself is never hand-constructed
+    here. If a future change widens
+    :meth:`_StandingAdmitRegistry.cached_hash`/:meth:`cache_hash`'s memo
+    key to include ``dst_pool``/gas, row B below resolves a DISTINCT
+    ``rxn_sig_hash`` (see ``test_destination_pool_identity_changes_the_
+    hash``, which proves ``_canonical_reaction_signature`` is already
+    sensitive to ``dst_pool``) and the second-entry assertions below fail
+    -- this test is a genuine tripwire, not a self-fulfilling one."""
+
+    def test_hash_cache_aliases_when_two_would_admit_rows_share_memo_key_but_differ_in_dst_pool(
+            self, clean_registry):
+        """round-74 ruling: the hash-cache ``memo_key`` is
+        ``(candidate_key, direction, shape, needs_irreversible_rewrite)``
+        -- it carries NO ``dst_pool``/gas dimension. This is a known,
+        deliberate non-self-verifying boundary (option (a) of the round-74
+        P3 Finding 3 ruling): two would-admit rows sharing the identical
+        memo_key but representing DIFFERENT ``dst_pool`` identities alias
+        onto the SAME cached ``rxn_sig_hash`` -- row B's registration
+        never even recomputes the signature under its own ``dst_pool``,
+        because :meth:`cached_hash` hands back row A's already-cached
+        value first."""
+        from dataclasses import replace
+
+        from rmgpy.polymer_conduit import (_STANDING_ADMITS,
+                                           annotate_refused_row,
+                                           evaluate_conduit_admission)
+
+        rxn, pf = _admissible_fixture(reversible=False)
+        verdict_a = evaluate_conduit_admission(rxn, [pf])
+        assert verdict_a.admitted is True
+        annotate_refused_row(rxn, [pf], verdict=verdict_a)
+
+        entries = _STANDING_ADMITS._entries
+        assert len(entries) == 1
+        (hash_a, entry_a), = entries.items()
+        assert entry_a["snapshot"]["dst_pool"] == verdict_a.dst_pool
+
+        # Row B: the SAME live reaction/pools -- so the SAME candidate_key,
+        # direction, shape and needs_irreversible_rewrite, i.e. the
+        # IDENTICAL memo_key -- re-adjudicated with a verdict whose
+        # dst_pool differs. This is the real AdmissionVerdict production
+        # code would compute for a row landing in a different pool, not a
+        # hand-rolled memo_key.
+        assert verdict_a.dst_pool != "some_other_pool"
+        verdict_b = replace(verdict_a, dst_pool="some_other_pool")
+        annotate_refused_row(rxn, [pf], verdict=verdict_b)
+
+        entries_after = _STANDING_ADMITS._entries
+        # round-74 ruling: the memo_key omits dst_pool, so row B's lookup
+        # collides with row A's cache slot -- cached_hash() hands back
+        # row A's hash instead of computing a fresh one for row B, so no
+        # second entry ever appears.
+        assert set(entries_after) == {hash_a}
+        # ...and the write-once snapshot stays row A's -- it never
+        # observes row B's dst_pool at all. This is the current aliasing
+        # behavior the round-74 ruling accepted; it is NOT a claim that
+        # aliasing is harmless.
+        assert entries_after[hash_a]["snapshot"]["dst_pool"] == (
+            verdict_a.dst_pool)
+        assert entries_after[hash_a]["snapshot"]["dst_pool"] != (
+            "some_other_pool")

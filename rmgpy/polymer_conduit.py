@@ -521,9 +521,49 @@ def close_conduit_lifecycle():
     (:meth:`_EpochProvider.close_lifecycle`) -- idempotent and never-raising
     exactly like the oracle close above. The return value stays the
     oracle's health line (unchanged shape/contract for existing callers);
-    the epoch-provider close is invoked for its emission side effect."""
-    oracle_line = _LABEL_ORACLE.close_lifecycle()
-    _EPOCH_PROVIDER.close_lifecycle()
+    the epoch-provider close is invoked for its emission side effect.
+
+    Design §2.5 (commit-3, round-72 P3 fold-in #2): ALSO closes the
+    standing-admit registry's lifecycle, emitting one
+    ``CONDUIT STANDING ADMIT HEALTH/1`` line. Each of the three surfaces
+    (oracle, epoch provider, standing-admit registry) is now wrapped in ITS
+    OWN never-raise guard: :meth:`_LabelOracleState.close_lifecycle` and
+    :meth:`_EpochProvider.close_lifecycle` and
+    :meth:`_StandingAdmitRegistry.close_lifecycle` are already internally
+    never-raising by contract, but this function no longer trusts that
+    blindly -- a defensive ``try/except`` per surface means one surface
+    raising unexpectedly (e.g. a monkeypatched/broken close in a test, or a
+    future regression) can never skip the other two surfaces' emission.
+    Each guard logs a rate-limited anomaly line and continues; NEVER
+    raises overall."""
+    try:
+        oracle_line = _LABEL_ORACLE.close_lifecycle()
+    except Exception as exc:  # pragma: no cover - defensive fail-closed
+        _raw_name = type(exc).__name__
+        _sanitized_name = _sanitize_dynamic_token(_raw_name)
+        logging.warning(
+            "CONDUIT LIFECYCLE CLOSE ANOMALY/1 surface=oracle reason=%s%s "
+            "action=continue-remaining-surfaces",
+            _sanitized_name, _raw_sha_suffix(_raw_name, _sanitized_name))
+        oracle_line = None
+    try:
+        _EPOCH_PROVIDER.close_lifecycle()
+    except Exception as exc:  # pragma: no cover - defensive fail-closed
+        _raw_name = type(exc).__name__
+        _sanitized_name = _sanitize_dynamic_token(_raw_name)
+        logging.warning(
+            "CONDUIT LIFECYCLE CLOSE ANOMALY/1 surface=epoch-provider "
+            "reason=%s%s action=continue-remaining-surfaces",
+            _sanitized_name, _raw_sha_suffix(_raw_name, _sanitized_name))
+    try:
+        _STANDING_ADMITS.close_lifecycle()
+    except Exception as exc:  # pragma: no cover - defensive fail-closed
+        _raw_name = type(exc).__name__
+        _sanitized_name = _sanitize_dynamic_token(_raw_name)
+        logging.warning(
+            "CONDUIT LIFECYCLE CLOSE ANOMALY/1 surface=standing-admits "
+            "reason=%s%s action=continue-remaining-surfaces",
+            _sanitized_name, _raw_sha_suffix(_raw_name, _sanitized_name))
     return oracle_line
 
 
@@ -653,7 +693,13 @@ class _EpochProvider:
         # round-71 P1: rebuild failures whose token WAS sighted before the
         # failure hook ran -- kept separate from ``_burned_ordinals`` so
         # "burned" stays honestly "attempted, never sighted".
-        self._failed_after_sighting = 0
+        # round-72 P3 (commit-3 fold-in): a SET of tokens, not a bare
+        # counter -- a duplicate failure report for the SAME sighted
+        # ordinal (e.g. two independent tripwires in the same rebuild both
+        # calling :meth:`note_conduit_rebuild_failed` with the same
+        # ``token``) must not double-count. Count is ``len(...)`` via the
+        # :attr:`_failed_after_sighting` property below.
+        self._failed_after_sighting_tokens = set()
         self._closed = False                   # EPOCH MAP emitted this lifecycle
         self._epoch_map_lines = None           # cached lines once closed
         # round-71 P2: set on FIRST ACTIVITY -- the first advance()
@@ -666,6 +712,15 @@ class _EpochProvider:
         # for a run that fails before RMG.initialize ever opens a
         # lifecycle.
         self._opened = False
+
+    @property
+    def _failed_after_sighting(self):
+        """round-72 P3: token-idempotent count -- ``len()`` of the token
+        set, so a duplicate failure report against the same already-sighted
+        ordinal is not double-counted. Read-only; attribute-access syntax
+        is unchanged from the old bare-counter so every existing caller/
+        test keeps working."""
+        return len(self._failed_after_sighting_tokens)
 
     def current_epoch(self):
         """``f"e{ordinal}"`` if an advance has fired, else the sentinel
@@ -729,10 +784,12 @@ class _EpochProvider:
                 "reason=advance-after-close action=return-current-token")
             return (token, False)
         except Exception as exc:  # pragma: no cover - defensive fail-closed
+            _raw_name = type(exc).__name__
+            _sanitized_name = _sanitize_dynamic_token(_raw_name)
             logging.warning(
                 "CONDUIT EPOCH PROVIDER ANOMALY/1 event=advance-failed "
-                "reason=%s action=degrade-to-current-epoch",
-                type(exc).__name__)
+                "reason=%s%s action=degrade-to-current-epoch",
+                _sanitized_name, _raw_sha_suffix(_raw_name, _sanitized_name))
             return (self.current_epoch(), False)
 
     def note_sighted(self, token):
@@ -828,7 +885,11 @@ class _EpochProvider:
                 self._opened = True  # round-71 P2: a failure is activity
                 if created and token:
                     if token in self._sighted_ordinals:
-                        self._failed_after_sighting += 1
+                        # round-72 P3: idempotent by token -- a duplicate
+                        # report for the same already-sighted ordinal is a
+                        # set no-op, mirroring the burned-ordinal-set
+                        # idempotency a few lines below.
+                        self._failed_after_sighting_tokens.add(token)
                     else:
                         self._burned_ordinals.add(token)
                 else:
@@ -903,9 +964,12 @@ class _EpochProvider:
                 logging.warning(line)
             return list(lines)
         except Exception as exc:  # pragma: no cover - defensive fail-closed
+            _raw_name = type(exc).__name__
+            _sanitized_name = _sanitize_dynamic_token(_raw_name)
             logging.warning(
                 "CONDUIT EPOCH PROVIDER ANOMALY/1 event=close-lifecycle-failed "
-                "reason=%s action=skip-map-emission", type(exc).__name__)
+                "reason=%s%s action=skip-map-emission",
+                _sanitized_name, _raw_sha_suffix(_raw_name, _sanitized_name))
             return []
 
     def reset(self):
@@ -925,12 +989,26 @@ class _EpochProvider:
                 self._burned_ordinals = set()
                 self._failed_attempts = 0
                 self._sighted_ordinals = set()
-                self._failed_after_sighting = 0
+                self._failed_after_sighting_tokens = set()
                 self._closed = False
                 self._epoch_map_lines = None
                 self._opened = False
         except Exception:  # pragma: no cover - defensive fail-closed
             pass
+
+    def attempted_and_burned(self):
+        """Read-only snapshot of ``(epochs_seen, burned)`` -- the count of
+        ATTEMPTED core-epoch advances (``ordinal + 1``, 0 if the provider
+        is still virgin) and the size of the burned-ordinal set. Consumed
+        by :class:`_StandingAdmitRegistry`'s own health line (design §2.5)
+        so the two health lines read consistently without that registry
+        reaching into this provider's private attributes directly. NEVER
+        raises."""
+        try:
+            with self._lock:
+                return (self._ordinal + 1, len(self._burned_ordinals))
+        except Exception:  # pragma: no cover - defensive fail-closed
+            return (0, 0)
 
 
 #: Process-wide CORE EPOCH provider instance (design §1.1).
@@ -1410,6 +1488,16 @@ class _CensusRegistry:
             # lock, a different lock than this one -- no cross-singleton
             # deadlock risk).
             _EPOCH_PROVIDER.note_sighted(epoch)
+            # round-73 P2 (virgin-guard false negative, design §2.5): every
+            # registration -- admit AND deny -- is census activity for the
+            # standing-admit registry's own virgin-lifecycle guard, not
+            # only a would-admit insert (see
+            # _StandingAdmitRegistry.note_lifecycle_activity). Forward
+            # reference to _STANDING_ADMITS is safe: this method only ever
+            # runs after full module import, by which point the singleton
+            # below is defined (same late-binding already relied on for
+            # _EPOCH_PROVIDER.note_sighted above).
+            _STANDING_ADMITS.note_lifecycle_activity()
             sightings = entry["bucket_sightings_by_census"].setdefault(
                 census, set())
             sightings.add(bucket)
@@ -1620,15 +1708,40 @@ def reset_conduit_state():
     final lifecycle of the process).
 
     Import-safe: the rmgpy.polymer sets are cleared lazily so this module
-    keeps its no-module-level-RMG-imports contract."""
-    # Close the outgoing label-oracle and CORE EPOCH provider lifecycles
-    # FIRST (their health/MAP lines are computed from pre-clear state),
-    # then clear everything together. m18.4 §1.2 'Lifecycle reset': the
-    # provider joins the "reset both or neither" contract alongside the
-    # registry and flux totals below.
+    keeps its no-module-level-RMG-imports contract.
+
+    round-73 P2 fix (reset ordering zeroed epoch counters in standing
+    health): ALL THREE outgoing-lifecycle closes (oracle, epoch, standing)
+    must run and emit with LIVE counts BEFORE any of the three singletons'
+    state is cleared -- the standing registry's own close reads
+    ``_EPOCH_PROVIDER.attempted_and_burned()`` (design §2.5), so if the
+    epoch provider's state were cleared first (as a naive
+    ``_EPOCH_PROVIDER.reset()`` before ``_STANDING_ADMITS.reset()`` would
+    do), a lifecycle closed via this reset would always report
+    ``epochs_seen=0 burned=0`` regardless of real prior activity. Fixed by
+    literally reusing :func:`close_conduit_lifecycle` (the same
+    three-surface, each-under-its-own-never-raise-guard close helper) as
+    the CLOSE-ONLY phase here, before any clearing happens; each
+    singleton's own ``.reset()`` below then finds its lifecycle already
+    closed (its internal ``close_lifecycle()`` call is idempotent, a
+    no-op) and only CLEARS state -- so reset and an explicit
+    :func:`close_conduit_lifecycle` call can never drift apart in
+    behavior.
+    """
+    # Close all three lifecycles FIRST, with state still live, so the
+    # standing registry's health line reads real (pre-clear) epoch
+    # counts -- see the docstring note above. Each surface is already
+    # isolated under its own never-raise guard inside
+    # close_conduit_lifecycle() itself.
+    close_conduit_lifecycle()
+    # Now clear everything together ("reset both or neither", m18.4
+    # §1.2/design §2.5). Each singleton's .reset() calls its own
+    # close_lifecycle() again first -- a no-op here since the close above
+    # already ran -- then clears state.
     _LABEL_ORACLE.reset()
     _EPOCH_PROVIDER.reset()
     CENSUS_REGISTRY.reset()
+    _STANDING_ADMITS.reset()
     _CONDUIT_FLUX_TOTALS.clear()
     # round-58 P2-B: the unknown-bucket and F3 token-anomaly warn-once
     # dedup sets are part of the same "reset both or neither" contract --
@@ -1889,6 +2002,12 @@ def annotate_refused_row(forward, row_pools, census="r93_general",
                 and "feature_radical" in entry["censuses"]):
             verdict = _deny(verdict.candidate_key or result["candidate_key"],
                             "feature-radical-overlap")
+        # design §2.2/§2.3 (commit 3, ruling D): populate the standing-
+        # admit registry from the FINAL verdict (post FR-overlap
+        # downgrade above), so a would-admit row that just lost its
+        # admission to an FR overlap is never registered as standing.
+        register_standing_admit_would_admit(forward, row_pools, record,
+                                            result, verdict)
         return census_suffix(result, entry) + admission_census_suffix(verdict)
     except Exception as exc:  # pragma: no cover - defensive fail-open
         logging.warning(
@@ -2170,6 +2289,64 @@ def evaluate_conduit_admission(forward, row_pools):
         return _deny(key, f"admission-evaluation-error:{type(exc).__name__}")
 
 
+def _sanitize_dynamic_token(raw, max_len=64):
+    """Shared charset-safe sanitizer for any dynamic fragment (chiefly
+    ``type(exc).__name__``) entering a ``/1`` protocol key=value line
+    (round-60 P2-1 origin, round-73 P3 extraction): collapses every
+    character outside the strict ``[A-Za-z0-9_.-]+`` charset every static
+    token in this module already uses to a single ``_``, falling back to
+    the literal ``"unsanitizable"`` if that would otherwise leave nothing,
+    then caps the result at ``max_len`` characters (round-66 P2: an
+    unbounded sanitized token is itself a log/line-length DoS vector).
+    ``max_len=None`` skips the cap -- used by :func:`admission_census_suffix`,
+    which needs the FULL sanitized string to compute its own
+    dirty-vs-truncated ``action=`` classification before applying its own
+    64-char cap.
+
+    This is the single shared CORE both :func:`admission_census_suffix`'s
+    richer ``admission-evaluation-error:*`` audit trail (which additionally
+    records raw_sha/raw_b64/dirty-vs-truncated ``action=`` for that
+    specific deny-reason family) and every plainer dynamic-exception-name
+    site in this module (the standing-admit/epoch/lifecycle-close anomaly
+    lines) route through -- so no value can ever reach a ``/1`` line
+    carrying embedded whitespace, ``=``, or any other charset-breaking
+    character, regardless of source. NEVER raises."""
+    try:
+        sanitized = re.sub(r"[^A-Za-z0-9_.-]", "_", str(raw)) or "unsanitizable"
+        return sanitized if max_len is None else sanitized[:max_len]
+    except Exception:  # pragma: no cover - defensive fail-closed
+        return "unsanitizable"
+
+
+def _raw_sha_suffix(raw, sanitized):
+    """Minimal forensic audit trail for the plain sanitized-exception-name
+    anomaly sites in this module (round-74 P3): when two distinct hostile
+    exception CLASS names collapse to the SAME sanitized token under
+    :func:`_sanitize_dynamic_token` (e.g. ``"Bad Name"`` and ``"Bad=Name"``
+    both -> ``"Bad_Name"``), the ``/1`` line otherwise loses forensic
+    distinguishability between them. This deliberately does NOT build the
+    full raw_sha/raw_b64/action machinery :func:`admission_census_suffix`
+    carries for its ``admission-evaluation-error:*`` family (round-64) --
+    that machinery exists for a different threat model (attacker/data-
+    influenced raw suffixes). This case is bounded, code-controlled
+    exception class names, so it stays minimal: a `` raw_sha=<12 hex>``
+    fragment (the first 12 hex chars of the sha256 of the raw string,
+    encoded with ``errors="backslashreplace"`` exactly like
+    :func:`admission_census_suffix`'s own raw digest), computed and
+    returned ONLY when sanitization actually changed the string
+    (``sanitized != str(raw)``) -- the clean/common path (no sanitization
+    needed) emits nothing extra, avoiding noise. NEVER raises."""
+    try:
+        raw_str = str(raw)
+        if sanitized == raw_str:
+            return ""
+        digest = hashlib.sha256(
+            raw_str.encode("utf-8", errors="backslashreplace")).hexdigest()
+        return f" raw_sha={digest[:12]}"
+    except Exception:  # pragma: no cover - defensive fail-closed
+        return ""
+
+
 def admission_census_suffix(verdict):
     """APPEND-ONLY census tokens carrying the would-be admission verdict
     while :data:`CONDUIT_ADMISSION_ENABLED` is False (BUILD_SPEC W1.6):
@@ -2291,7 +2468,10 @@ def admission_census_suffix(verdict):
         # never carry embedded whitespace, '=', or brackets that a naive
         # downstream parser could mistake for other structured tokens.
         raw_suffix = verdict.deny_reason[len("admission-evaluation-error:"):]
-        sanitized_full = re.sub(r"[^A-Za-z0-9_.-]", "_", raw_suffix) or "unsanitizable"
+        # round-73 P3: routed through the shared _sanitize_dynamic_token
+        # core (same charset regex, same fallback) rather than a private
+        # copy of the regex -- see that function's docstring.
+        sanitized_full = _sanitize_dynamic_token(raw_suffix, max_len=None)
         was_dirty = sanitized_full != raw_suffix
         # round-66 P2 (Finding 1): the sanitized suffix above was still
         # UNBOUNDED -- a huge raw_suffix (whether charset-dirty or already
@@ -2395,6 +2575,450 @@ def admission_census_suffix(verdict):
              else "final")
     return (f" [conduit-admission/1 would_admit=0 "
             f"deny={verdict.deny_reason} stage={stage}]")
+
+
+# ---------------------------------------------------------------------------
+# M18.4 commit 3: standing-admit registry (design §2, POPULATION + HEALTH
+# ONLY -- the revocation sweep is adjudicated amendment 3, explicitly OUT OF
+# SCOPE for this arc; CONDUIT_ADMISSION_ENABLED stays False throughout, so
+# every entry this registry ever holds is a WOULD-ADMIT row, never a real
+# admit -- see ruling D / the round-53 "exists and reads zero" precedent).
+# ---------------------------------------------------------------------------
+
+def canonical_species_id(species):
+    """design §2.4.2 (amendment 5): a species identity that survives index
+    reshuffle/regeneration, unlike the run-scoped ``label(index)`` tokens
+    :func:`candidate_key_from_label` builds from. Recipe, tried in order,
+    NEVER raising and NEVER mutating the live ``species`` object:
+
+      1. InChI-on-a-COPY: ``species.copy(deep=True)`` then
+         ``get_augmented_inchi()`` on the copy. A deep copy isolates the
+         copy's own ``.molecule``/``.aug_inchi``/resonance-structure cache
+         from the live object -- ``generate_resonance_structures()`` (which
+         InChI generation triggers) mutates the species it runs on, and
+         this recipe must never do that to a species still live in the
+         reaction being classified. Returns ``f"inchi:{aug_inchi}"``.
+      2. Label-stripped, atom-canonical adjacency-list fallback: for a
+         species whose InChI generation fails (e.g. resonance/valence
+         edge cases some polymer proxy structures hit), take the first
+         live ``Molecule``, ``.copy(deep=True)`` it (same live-mutation
+         isolation), ``.clear_labeled_atoms()`` it (round-73 P2 fix:
+         ``to_adjacency_list(label="", ...)`` only suppresses the
+         MOLECULE header -- per-atom ``.label`` values still serialize,
+         and ``Atom.copy()`` preserves them, so two copies of the SAME
+         graph differing only in reaction/template atom labels would
+         otherwise resolve to different, non-canonical ids), then
+         ``.sort_atoms()`` it (deterministic canonical atom order for a
+         given graph), then serialize with ``to_adjacency_list(label="",
+         ...)`` (now genuinely label-independent, molecule header AND
+         every atom). Returns ``f"adjlist:{sha256(...)[:16]}"``.
+      3. Terminal sentinel: if BOTH of the above fail (or there is no
+         usable ``Molecule`` at all -- e.g. an empty ``.molecule`` list),
+         return a deterministic-per-failure ``f"csid-unresolved:{sha8}"``
+         (the sha8 is over the failure's exception repr, so two DIFFERENT
+         failure modes get visibly different sentinels rather than
+         colliding on one opaque string; two IDENTICAL failures collide on
+         purpose -- that is the point of a sentinel).
+
+    NEVER raises."""
+    try:
+        copy = species.copy(deep=True)
+        aug_inchi = copy.get_augmented_inchi()
+        if aug_inchi:
+            return f"inchi:{aug_inchi}"
+    except Exception:
+        pass
+    try:
+        mol_list = getattr(species, "molecule", None)
+        if not mol_list:
+            raise ValueError("no live Molecule to canonicalize")
+        mol_copy = mol_list[0].copy(deep=True)
+        mol_copy.clear_labeled_atoms()
+        mol_copy.sort_atoms()
+        adjlist = mol_copy.to_adjacency_list(label="", remove_h=False)
+        digest = hashlib.sha256(
+            adjlist.encode("utf-8", errors="backslashreplace")).hexdigest()
+        return f"adjlist:{digest[:16]}"
+    except Exception as exc:
+        digest = hashlib.sha256(
+            repr(exc).encode("utf-8", errors="backslashreplace")).hexdigest()
+        return f"csid-unresolved:{digest[:8]}"
+
+
+def _rxn_signature_orientation(record):
+    """Read-only resolution of the G2 admitted-direction basis, DUPLICATED
+    deliberately from :func:`evaluate_conduit_admission`'s own G2 block
+    rather than shared with it: that evaluator is a frozen, heavily-tested
+    fail-closed admission gate this arc must not touch or add a new
+    caller/import edge to, and this helper is pure identity bookkeeping
+    for the standing-admit registry that must never be able to influence
+    an admission decision. Returns ``(direction, produced_side_entries)``
+    -- ``"forward"``/``"reverse"`` and the record-side entry list for the
+    credited side -- or ``(None, None)`` if no unique chain-to-pool
+    direction resolves (mirrors G2's own "classifier-not-admissible"
+    non-resolution). NEVER raises."""
+    try:
+        r_side, p_side = record["reactants"], record["products"]
+        r_roles = [species_role(s) for s in r_side]
+        p_roles = [species_role(s) for s in p_side]
+        if (POOL in p_roles and POOL not in r_roles
+                and CHAIN in r_roles and CHAIN not in p_roles):
+            return "forward", p_side
+        if (POOL in r_roles and POOL not in p_roles
+                and CHAIN in p_roles and CHAIN not in r_roles):
+            return "reverse", r_side
+    except Exception:  # pragma: no cover - defensive fail-closed
+        pass
+    return None, None
+
+
+def _canonical_reaction_signature(forward, record, result, verdict):
+    """design §2.4.1 (amendment 4): the canonical REACTION signature for
+    the standing-admit registry -- SIDE-SEPARATED (never side-merged the
+    way the legacy :func:`candidate_key_from_label` sorts/merges sides),
+    multiplicity-preserving multisets of :func:`canonical_species_id` over
+    the RAW live ``forward.reactants``/``forward.products`` (so
+    ``A+B->C`` and ``C->A+B`` never alias), plus the destination-pool
+    identity (``verdict.dst_pool`` -- already the canonical
+    index-stripped pool label G5 resolved), the gas-product identity
+    (``canonical_species_id`` of the live gas species object, NOT the
+    unstable ``verdict.gas_product[0]`` token), and an explicit
+    ``orientation`` tuple (admitted direction, classifier shape, the G2
+    irreversible-rewrite basis) so the identity captures the SAME
+    direction basis G2 gates admission on -- an aligned and a
+    direction-flipped sighting of otherwise-identical species never
+    collide.
+
+    Returns ``(rxn_sig_hash, ok)``. ``ok`` is False (with a deterministic
+    ``rxnsig-unresolved:*`` fallback hash) if the row's orientation cannot
+    be resolved here -- this should not happen for a
+    ``verdict.admitted=True`` row (G2 already proved a direction resolves
+    for it), but this population path never trusts that invariant
+    blindly; a resolution failure is a no-op upstream (see
+    :func:`register_standing_admit_would_admit`), never a corrupt insert.
+    NEVER raises."""
+    try:
+        direction, produced_side = _rxn_signature_orientation(record)
+        if direction is None:
+            return "rxnsig-unresolved:no-orientation", False
+        produced_objs = (
+            list(getattr(forward, "products", None) or [])
+            if direction == "forward"
+            else list(getattr(forward, "reactants", None) or []))
+        gas_idx = next((i for i, s in enumerate(produced_side)
+                        if species_role(s) != POOL), None)
+        gas_obj = (produced_objs[gas_idx]
+                  if gas_idx is not None and gas_idx < len(produced_objs)
+                  else None)
+        gas_id = (canonical_species_id(gas_obj) if gas_obj is not None
+                 else "gas-unresolved")
+        r_objs = list(getattr(forward, "reactants", None) or [])
+        p_objs = list(getattr(forward, "products", None) or [])
+        r_multiset = tuple(sorted(
+            Counter(canonical_species_id(s) for s in r_objs).items()))
+        p_multiset = tuple(sorted(
+            Counter(canonical_species_id(s) for s in p_objs).items()))
+        orientation = (direction, str(result.get("shape")),
+                      bool(verdict.needs_irreversible_rewrite))
+        sig = (r_multiset, p_multiset, str(verdict.dst_pool), gas_id,
+              orientation)
+        digest = hashlib.sha256(repr(sig).encode("utf-8")).hexdigest()
+        return digest[:16], True
+    except Exception as exc:  # pragma: no cover - defensive fail-closed
+        digest = hashlib.sha256(
+            repr(exc).encode("utf-8", errors="backslashreplace")).hexdigest()
+        return f"rxnsig-unresolved:{digest[:8]}", False
+
+
+class _StandingAdmitRegistry:
+    """Process-wide standing-admit ledger (design §2.1-§2.5). This arc
+    (commit 3) implements POPULATION + HEALTH only -- adjudicated
+    amendment 3 explicitly defers the revocation sweep (no entry's
+    ``status`` ever becomes ``"revoked"`` here; that field/value is
+    reserved for the sweep's own commit). Mirrors
+    :class:`_CensusRegistry`/:class:`_EpochProvider`: one module-global
+    instance, one lock, never-raise, idempotent-per-lifecycle health
+    emission, reset alongside the other singletons.
+
+    Entry, keyed by the canonical ``rxn_sig_hash`` (design §2.4 -- the
+    PRIMARY key; unlike ``candidate_key`` it survives an index reshuffle
+    across regeneration):
+      ``rxn_sig_hash``, ``candidate_key`` (run-scoped, carried for
+      cross-referencing the census/admission lines), ``status``
+      (``"would-admit"`` this arc; ``"admitted"``/``"revoked"`` reserved
+      for later commits), ``admit_epoch`` (write-once, the CORE EPOCH at
+      first insert), ``last_seen_epoch`` (mutable, refreshed every
+      re-sighting), ``snapshot`` (write-once: a plain-dict, no live-object
+      copy of the direction/reversible/bucket basis the verdict was built
+      on, for a future sweep to diff against), ``live_ref`` (mutable
+      ``(forward, row_pools)`` tuple, refreshed every re-sighting -- the
+      DEFERRED sweep's future evaluator input, populated now per ruling
+      G-Q5 so it starts from real data once it lands).
+
+    Ruling G-Q7 (write-once, double-insert protection): re-registering an
+    already-known ``rxn_sig_hash`` (a readjudication re-sighting of the
+    same admitted structure) refreshes ``live_ref``/``last_seen_epoch``
+    ONLY; ``admit_epoch``/``snapshot`` are set exactly once, at first
+    insert, and never overwritten.
+    """
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._entries = {}
+        self._hash_cache = {}  # memo_key -> rxn_sig_hash (run-scoped memo;
+        # memo_key = (candidate_key, direction, shape,
+        # needs_irreversible_rewrite) -- round-73 P1, see cached_hash()
+        self._closed = False
+        self._health_line = None
+        self._opened = False
+
+    def note_lifecycle_activity(self):
+        """round-73 P2 fix (virgin-guard false negative): open this
+        lifecycle on ANY census registration activity -- admit or deny --
+        not only a would-admit insert. Previously :attr:`_opened` flipped
+        only inside :meth:`register_would_admit`, so a real lifecycle that
+        only ever produced DENIED rows (never a would-admit) closed
+        silently -- no ``CONDUIT STANDING ADMIT HEALTH/1`` line at all,
+        indistinguishable from a broken emission path, violating the
+        "exists-and-reads-zero" discipline the rest of this module follows
+        (see :meth:`close_lifecycle`). Called from the SAME choke point
+        that marks every registration's epoch sighting
+        (:meth:`_CensusRegistry.register`), so any run with census
+        activity -- admit or deny -- opens this registry; a truly virgin
+        process (zero registrations of any kind) still closes silently.
+        Cheap: one flag set under the same lock as the rest of the
+        registry. NEVER raises."""
+        try:
+            with self._lock:
+                self._opened = True
+        except Exception:  # pragma: no cover - defensive fail-closed
+            pass
+
+    def register_would_admit(self, rxn_sig_hash, candidate_key, snapshot,
+                             live_ref):
+        """Insert-or-refresh (design §2.3): a NEW ``rxn_sig_hash`` inserts
+        with ``admit_epoch``/``snapshot`` from THIS call (write-once); an
+        EXISTING one refreshes ``live_ref``/``last_seen_epoch`` only
+        (ruling G-Q7). NEVER raises."""
+        try:
+            epoch = current_epoch()
+            with self._lock:
+                self._opened = True
+                entry = self._entries.get(rxn_sig_hash)
+                if entry is None:
+                    self._entries[rxn_sig_hash] = {
+                        "rxn_sig_hash": rxn_sig_hash,
+                        "candidate_key": candidate_key,
+                        "status": "would-admit",
+                        "admit_epoch": epoch,
+                        "last_seen_epoch": epoch,
+                        "snapshot": snapshot,
+                        "live_ref": live_ref,
+                    }
+                else:
+                    entry["last_seen_epoch"] = epoch
+                    entry["live_ref"] = live_ref
+                    entry["candidate_key"] = candidate_key
+        except Exception as exc:  # pragma: no cover - defensive fail-closed
+            _raw_name = type(exc).__name__
+            _sanitized_name = _sanitize_dynamic_token(_raw_name)
+            logging.warning(
+                "CONDUIT STANDING ADMIT ANOMALY/1 event=register-failed "
+                "reason=%s%s action=skip-registration",
+                _sanitized_name, _raw_sha_suffix(_raw_name, _sanitized_name))
+
+    def cached_hash(self, memo_key):
+        """run-scoped memo (design §2.4.2 'compute once, memoize'): a
+        cache of already-computed ``rxn_sig_hash`` values, so a repeated
+        re-sighting of the same live reaction across epochs
+        (readjudication) skips recomputing InChI/adjacency-list identities
+        entirely.
+
+        round-73 P1 fix (hash-cache aliasing): ``memo_key`` is
+        ``(candidate_key, direction, shape, needs_irreversible_rewrite)``,
+        NOT bare ``candidate_key``. ``candidate_key`` deliberately omits
+        arrow/reversibility (:func:`conduit_candidate_key`), but
+        :func:`_canonical_reaction_signature` folds
+        ``needs_irreversible_rewrite`` (and the resolved direction/shape)
+        into the ``orientation`` tuple it hashes -- a bare-candidate_key
+        cache would silently alias a row sighted once as ``=>`` and once
+        as ``<=>`` onto the FIRST sighting's ``rxn_sig_hash``, corrupting
+        the second sighting's write-once ``admit_epoch``/``snapshot``
+        under the wrong identity. Widening the memo key to include every
+        orientation-affecting input the signature depends on (all cheap
+        to read off the verdict/record/result before the full signature
+        is computed) keeps the memo correct without giving up caching.
+        NEVER raises."""
+        try:
+            with self._lock:
+                return self._hash_cache.get(memo_key)
+        except Exception:  # pragma: no cover - defensive fail-closed
+            return None
+
+    def cache_hash(self, memo_key, rxn_sig_hash):
+        try:
+            with self._lock:
+                self._hash_cache[memo_key] = rxn_sig_hash
+        except Exception:  # pragma: no cover - defensive fail-closed
+            pass
+
+    def lookup(self, rxn_sig_hash):
+        try:
+            with self._lock:
+                entry = self._entries.get(rxn_sig_hash)
+                return dict(entry) if entry is not None else None
+        except Exception:  # pragma: no cover - defensive fail-closed
+            return None
+
+    def close_lifecycle(self):
+        """Boundary emitter (design §2.5): exactly ONE
+        ``CONDUIT STANDING ADMIT HEALTH/1`` line, recomputed fresh from
+        final registry state (never incrementally accumulated), emitted
+        once an OPENED lifecycle closes -- present even at zero for an
+        opened lifecycle (the round-53 exists-and-reads-zero witness:
+        ``admitted=0`` here is a PROOF that
+        :data:`CONDUIT_ADMISSION_ENABLED` is False, not a policy choice
+        made by this method) -- exactly once per lifecycle, idempotent
+        exactly like :meth:`_EpochProvider.close_lifecycle`.
+
+        Virgin-lifecycle guard (design §2.5, "consistent with the epoch
+        provider's ``_opened`` pattern"): if NOTHING has happened this
+        lifecycle -- no ``register_would_admit`` call at all
+        (:attr:`_opened` still False, e.g. a run that fails before any
+        row is ever classified) -- this emits NOTHING and returns
+        ``None``, a TRUE no-op that does NOT set :attr:`_closed`, so a
+        later real close (once the lifecycle has since seen activity)
+        still fires normally -- exactly
+        :meth:`_EpochProvider.close_lifecycle`'s own virgin guard.
+
+        ``epochs_seen=``/``burned=`` are read from the epoch provider
+        (:meth:`_EpochProvider.attempted_and_burned`) so the two health
+        lines report consistent epoch accounting. ``orphaned=`` and the
+        real ``revoked=``/``admitted=`` counts stay reserved at 0/0/0 this
+        arc (amendment 3: the sweep that would ever populate them is out
+        of scope). NEVER raises."""
+        try:
+            with self._lock:
+                if self._closed:
+                    return self._health_line
+                if not self._opened:
+                    # Virgin lifecycle -- stay a true no-op (round-71 P2
+                    # pattern, ported per design §2.5).
+                    return None
+                entries = list(self._entries.values())
+                self._closed = True
+            would_admit = sum(
+                1 for e in entries if e["status"] == "would-admit")
+            admitted = sum(1 for e in entries if e["status"] == "admitted")
+            revoked = sum(1 for e in entries if e["status"] == "revoked")
+            orphaned = 0  # sweep out of scope this arc (amendment 3)
+            frozen_grams = 0.0  # pre-flip: no real admit ever contributes
+            epochs_seen, burned = _EPOCH_PROVIDER.attempted_and_burned()
+            line = (
+                "CONDUIT STANDING ADMIT HEALTH/1 "
+                f"epochs_seen={epochs_seen} burned={burned} "
+                f"would_admit={would_admit} admitted={admitted} "
+                f"revoked={revoked} orphaned={orphaned} "
+                f"frozen_grams={frozen_grams}")
+            with self._lock:
+                self._health_line = line
+            logging.warning(line)
+            return line
+        except Exception as exc:  # pragma: no cover - defensive fail-closed
+            _raw_name = type(exc).__name__
+            _sanitized_name = _sanitize_dynamic_token(_raw_name)
+            logging.warning(
+                "CONDUIT STANDING ADMIT ANOMALY/1 "
+                "event=close-lifecycle-failed reason=%s%s "
+                "action=skip-health-emission",
+                _sanitized_name, _raw_sha_suffix(_raw_name, _sanitized_name))
+            return None
+
+    def reset(self):
+        """Lifecycle reset (design §2.5, the same "reset both or neither"
+        discipline every other singleton follows): close the OUTGOING
+        lifecycle first (its health line is computed from pre-clear
+        state), then clear all state. NEVER raises."""
+        self.close_lifecycle()
+        try:
+            with self._lock:
+                self._entries = {}
+                self._hash_cache = {}
+                self._closed = False
+                self._health_line = None
+                self._opened = False
+        except Exception:  # pragma: no cover - defensive fail-closed
+            pass
+
+
+#: Process-wide standing-admit registry instance (design §2.1).
+_STANDING_ADMITS = _StandingAdmitRegistry()
+
+
+def register_standing_admit_would_admit(forward, row_pools, record, result,
+                                        verdict):
+    """design §2.2/§2.3, ruling D (adjudicated): populate the standing-
+    admit registry from a WOULD-ADMIT verdict, pre-flip. Called from
+    :func:`annotate_refused_row` right AFTER the r42 P1-4(b) post-
+    registration FR re-check, so a verdict the FR-overlap check just
+    downgraded to denied is never populated as a would-admit row.
+
+    ``status`` is always ``"would-admit"`` this arc -- a real admit is
+    structurally impossible while :data:`CONDUIT_ADMISSION_ENABLED` is
+    False; the health line's ``admitted=0`` is therefore a PROOF (round-53
+    "exists and reads zero"), not a policy decision made here.
+
+    A no-op (never raises) when ``verdict`` is None or not admitted, or
+    when the canonical reaction signature cannot be resolved -- a
+    malformed/unresolvable row's identity is never trustworthy enough to
+    stand as an admit entry, so it is skipped rather than inserted under a
+    fallback sentinel key that could collide across unrelated rows."""
+    try:
+        if verdict is None or not verdict.admitted:
+            return
+        candidate_key = (verdict.candidate_key or result.get("candidate_key")
+                        or "")
+        # round-73 P1 fix (hash-cache aliasing): the memo key must include
+        # every orientation-affecting input _canonical_reaction_signature
+        # folds into its ``orientation`` tuple that ``candidate_key`` itself
+        # omits (candidate_key deliberately drops arrow/reversibility --
+        # see conduit_candidate_key). direction/shape/rewrite-basis are all
+        # cheap to read off the record/result/verdict already in hand here,
+        # so widening the key (option a) is preferred over dropping the
+        # cache outright: it keeps the memo correct for readjudication
+        # re-sightings within a single orientation while still telling a
+        # `=>` sighting and a `<=>` sighting of the same candidate_key
+        # apart, rather than aliasing the second onto the first's hash.
+        direction, _produced_side = _rxn_signature_orientation(record)
+        memo_key = (candidate_key, direction, str(result.get("shape")),
+                   bool(verdict.needs_irreversible_rewrite))
+        rxn_sig_hash = _STANDING_ADMITS.cached_hash(memo_key)
+        if rxn_sig_hash is None:
+            rxn_sig_hash, ok = _canonical_reaction_signature(
+                forward, record, result, verdict)
+            if not ok:
+                return
+            _STANDING_ADMITS.cache_hash(memo_key, rxn_sig_hash)
+        snapshot = {
+            "reversible": bool(record.get("reversible")),
+            "shape": result.get("shape"),
+            "direction": direction,
+            "needs_irreversible_rewrite": bool(
+                verdict.needs_irreversible_rewrite),
+            "dst_pool": verdict.dst_pool,
+            "gas_product_token": (verdict.gas_product[0]
+                                  if verdict.gas_product else None),
+            "bucket": result.get("bucket"),
+        }
+        _STANDING_ADMITS.register_would_admit(
+            rxn_sig_hash, candidate_key, snapshot, (forward, row_pools))
+    except Exception as exc:  # pragma: no cover - defensive fail-closed
+        _raw_name = type(exc).__name__
+        _sanitized_name = _sanitize_dynamic_token(_raw_name)
+        logging.warning(
+            "CONDUIT STANDING ADMIT ANOMALY/1 event=population-failed "
+            "reason=%s%s action=skip-registration",
+            _sanitized_name, _raw_sha_suffix(_raw_name, _sanitized_name))
 
 
 # ---------------------------------------------------------------------------
