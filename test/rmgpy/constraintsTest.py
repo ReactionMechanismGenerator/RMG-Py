@@ -305,12 +305,13 @@ class TestFailsSpeciesConstraints:
 
 
 class TestPolymerConstraints:
-    """Unit tests for the generatePolymerConstraints bounding behavior."""
+    """Unit tests for size-based polymer/gas constraint routing."""
 
     @classmethod
     def setup_class(cls):
         cls.rmg = RMG()
         rmgpy.rmg.input.rmg = cls.rmg
+        # Strict gas cap so polymer-routed species are discriminated from gas-routed ones.
         rmgpy.rmg.input.generated_species_constraints(maximumCarbonAtoms=2)
 
     @classmethod
@@ -318,69 +319,97 @@ class TestPolymerConstraints:
         rmgpy.rmg.input.rmg = None
 
     def setup_method(self):
-        # Each test controls the polymer block; start absent.
         self.rmg.polymer_constraints = None
         reset_polymer_warning()
 
-    @staticmethod
-    def _proxy_mol(smiles):
-        mol = Molecule(smiles=smiles)
-        mol.is_polymer_proxy = True
-        return mol
+    # --- membership predicate (size-based) ---
 
-    def test_membership_predicate(self):
-        assert not is_polymer_constraint_member(Molecule(smiles="CC"))
-        assert is_polymer_constraint_member(self._proxy_mol("CC"))
-        assert not is_polymer_constraint_member(Species().from_smiles("CC"))
-        spc = Species().from_smiles("CC")
-        spc.molecule[0].is_polymer_proxy = True
-        assert is_polymer_constraint_member(spc)
+    def test_small_species_not_polymer_member(self):
+        pc = {"maximumCarbonAtoms": 30}
+        assert not is_polymer_constraint_member(Molecule(smiles="CC"), pc)          # 2 heavy
+        assert not is_polymer_constraint_member(Species().from_smiles("CCCCCCCCCC"), pc)  # 10 heavy < 15
+
+    def test_large_species_is_polymer_member(self):
+        pc = {"maximumCarbonAtoms": 30}
+        assert is_polymer_constraint_member(Molecule(smiles="C" * 20), pc)          # 20 heavy >= 15
+        assert is_polymer_constraint_member(Species().from_smiles("C" * 20), pc)
+
+    def test_threshold_override(self):
+        pc = {"maximumCarbonAtoms": 30, "polymerSizeThreshold": 8}
+        assert is_polymer_constraint_member(Molecule(smiles="CCCCCCCCCC"), pc)      # 10 heavy >= 8
+
+    def test_threshold_boundary_is_inclusive(self):
+        # The heavy >= threshold comparison is inclusive at the exact line, and the
+        # 15-heavy default is pinned to CKMG's max_heavy_atoms_for_gas_species -- an
+        # off-by-one here silently misaligns the polymer/pyrolysis handoff.
+        default_pc = {"maximumCarbonAtoms": 30}
+        assert is_polymer_constraint_member(Molecule(smiles="C" * 15), default_pc)       # 15 heavy == 15
+        assert not is_polymer_constraint_member(Molecule(smiles="C" * 14), default_pc)   # 14 heavy < 15
+        override_pc = {"maximumCarbonAtoms": 30, "polymerSizeThreshold": 10}
+        assert is_polymer_constraint_member(Molecule(smiles="C" * 10), override_pc)      # 10 heavy == 10
+        assert not is_polymer_constraint_member(Molecule(smiles="C" * 9), override_pc)   # 9 heavy < 10
+
+    def test_is_polymer_flag_fast_path(self):
+        # Real Polymer objects carry is_polymer=True and route to polymer regardless of size
+        # and regardless of whether a polymer block is configured.
+        assert is_polymer_constraint_member(mock.Mock(is_polymer=True), None)
+
+    def test_proxy_flag_no_longer_routes(self):
+        # Regression: the leaky is_polymer_proxy flag must NOT route a tiny species to polymer.
+        pc = {"maximumCarbonAtoms": 30}
+        mol = Molecule(smiles="CC")
+        mol.is_polymer_proxy = True
+        assert not is_polymer_constraint_member(mol, pc)                            # 2 heavy, flag ignored
+
+    def test_no_block_only_real_polymer_is_member(self):
+        # With no polymer block, size routing is inert: only real Polymer objects are members.
+        assert not is_polymer_constraint_member(Molecule(smiles="C" * 20), None)
+
+    # --- _evaluate_constraints purity (unchanged) ---
 
     def test_evaluate_constraints_is_pure(self):
         mol = Molecule(smiles="CCC")  # 3 carbons
         assert _evaluate_constraints(mol, {"maximumCarbonAtoms": 2})
         assert not _evaluate_constraints(mol, {"maximumCarbonAtoms": 10})
 
-    def test_proxy_obeys_polymer_cap_admitted(self):
-        # C10 proxy fails the global cap (2) but passes a polymer cap of 30,
-        # proving it took the polymer path and did NOT bypass all constraints.
-        self.rmg.polymer_constraints = {"maximumCarbonAtoms": 30}
-        assert not fails_species_constraints(self._proxy_mol("CCCCCCCCCC"))
+    # --- fails_species_constraints end-to-end routing ---
 
-    def test_proxy_above_polymer_cap_rejected(self):
+    def test_large_species_admitted_under_polymer_cap(self):
+        # C20 (20 heavy) fails the gas cap (2) but passes a polymer cap of 30 -> took polymer path.
+        self.rmg.polymer_constraints = {"maximumCarbonAtoms": 30}
+        assert not fails_species_constraints(Molecule(smiles="C" * 20))
+
+    def test_large_species_rejected_above_polymer_cap(self):
         self.rmg.polymer_constraints = {"maximumCarbonAtoms": 5}
-        reason = fails_species_constraints(self._proxy_mol("CCCCCCCCCC"))
+        reason = fails_species_constraints(Molecule(smiles="C" * 20))
         assert reason and "maximumCarbonAtoms" in reason
 
-    def test_species_level_proxy_routes_to_polymer_cap(self):
+    def test_species_level_large_routes_to_polymer_cap(self):
         self.rmg.polymer_constraints = {"maximumCarbonAtoms": 5}
-        spc = Species().from_smiles("CCCCCCCCCC")
-        spc.molecule[0].is_polymer_proxy = True
-        reason = fails_species_constraints(spc)
+        reason = fails_species_constraints(Species().from_smiles("C" * 20))
         assert reason and "maximumCarbonAtoms" in reason
 
-    def test_species_level_proxy_admitted_under_polymer_cap(self):
-        # A C10 proxy Species fails the global cap (2) but passes a polymer cap of 30.
-        # If membership wrongly routed to the global path, 10 > 2 would reject it, so this
-        # discriminates Species-level polymer routing from the global path (not a false green).
+    def test_species_level_large_admitted_under_polymer_cap(self):
         self.rmg.polymer_constraints = {"maximumCarbonAtoms": 30}
-        spc = Species().from_smiles("CCCCCCCCCC")
-        spc.molecule[0].is_polymer_proxy = True
-        assert not fails_species_constraints(spc)
+        assert not fails_species_constraints(Species().from_smiles("C" * 20))
 
-    def test_ordinary_species_unchanged_by_polymer_block(self):
-        # Ordinary species obey the global cap (2) whether or not a polymer block exists.
+    def test_small_species_uses_gas_cap_regardless_of_polymer_block(self):
         self.rmg.polymer_constraints = {"maximumCarbonAtoms": 30}
-        assert not fails_species_constraints(Molecule(smiles="CC"))   # 2 C, ok
-        assert fails_species_constraints(Molecule(smiles="CCC"))       # 3 C, fails global
+        assert not fails_species_constraints(Molecule(smiles="CC"))    # 2 C ok under gas cap 2
+        assert fails_species_constraints(Molecule(smiles="CCC"))        # 3 C fails gas cap 2
+
+    def test_threshold_override_reroutes_to_polymer(self):
+        # Lower threshold to 8 -> C10 routes to polymer and escapes the strict gas cap.
+        self.rmg.polymer_constraints = {"maximumCarbonAtoms": 30, "polymerSizeThreshold": 8}
+        assert not fails_species_constraints(Molecule(smiles="CCCCCCCCCC"))  # 10 C, gas cap 2 would reject
 
     @mock.patch("rmgpy.constraints.logging")
-    def test_absent_block_preserves_bypass_and_warns_once(self, mock_logging):
+    def test_absent_block_bypasses_only_real_polymer_and_warns_once(self, mock_logging):
         self.rmg.polymer_constraints = None
-        mol = self._proxy_mol("CCCCCCCCCC")
-        assert not fails_species_constraints(mol)   # bypass preserved
-        assert not fails_species_constraints(mol)   # still bypass
+        poly = mock.Mock(is_polymer=True)
+        assert not fails_species_constraints(poly)   # unbounded bypass
+        assert not fails_species_constraints(poly)   # still bypass, no second warn
         mock_logging.warning.assert_called_once()
         reset_polymer_warning()
-        assert not fails_species_constraints(mol)
+        assert not fails_species_constraints(poly)
         assert mock_logging.warning.call_count == 2

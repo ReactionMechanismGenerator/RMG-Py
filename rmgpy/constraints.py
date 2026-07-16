@@ -38,6 +38,11 @@ from rmgpy.species import Species
 
 _unbounded_polymer_warned = False
 
+# Default heavy-atom count at or above which a discrete species routes to the polymer
+# tier (generatePolymerConstraints) rather than the gas tier. Polymer-independent (a flat
+# count), overridable per deck via generatePolymerConstraints(polymerSizeThreshold=...).
+DEFAULT_POLYMER_SIZE_THRESHOLD = 15
+
 
 def reset_polymer_warning():
     """Reset the once-per-run unbounded-polymer warning flag. Called from RMG.initialize."""
@@ -56,15 +61,28 @@ def _warn_unbounded_polymer_once():
         _unbounded_polymer_warned = True
 
 
-def is_polymer_constraint_member(obj):
+def is_polymer_constraint_member(obj, polymer_constraints=None):
     """
-    True if `obj` (a Species, Polymer, or Molecule) should be bounded by polymer
-    constraints rather than the global generatedSpeciesConstraints. Uses the strongest
-    signal available on the object: `is_polymer` (durable, Species/Polymer only) or
-    `is_polymer_proxy` (the only signal present on a raw Molecule). Duck-typed to avoid a
-    Polymer import / circular dependency.
+    True if `obj` (a Species, Polymer, or Molecule) should be bounded by the polymer tier
+    (generatePolymerConstraints) rather than the global generatedSpeciesConstraints.
+
+    Routing is provenance-by-size, not by the leaky is_polymer_proxy flag:
+      * real Polymer objects carry the durable `is_polymer` flag -> always polymer tier;
+      * any other species is a polymer member iff it is polymer-sized -- heavy-atom count at
+        or above `polymerSizeThreshold` (default DEFAULT_POLYMER_SIZE_THRESHOLD).
+    The heavy-atom threshold is polymer-independent (a flat count), so the same knob works for
+    PE, PP, novolak, etc. Size routing needs a configured polymer tier; when
+    `polymer_constraints` is None only real Polymer objects route to polymer. Duck-typed to
+    avoid a Polymer import / circular dependency.
     """
-    return bool(getattr(obj, 'is_polymer', False) or getattr(obj, 'is_polymer_proxy', False))
+    if getattr(obj, 'is_polymer', False):
+        return True
+    if polymer_constraints is None:
+        return False
+    threshold = polymer_constraints.get('polymerSizeThreshold', DEFAULT_POLYMER_SIZE_THRESHOLD)
+    struct = _normalize(obj)
+    heavy = struct.get_num_atoms() - struct.get_num_atoms('H')
+    return heavy >= threshold
 
 
 def _normalize(species):
@@ -170,18 +188,22 @@ def pass_cutting_threshold(species):
 
 def fails_species_constraints(species):
     """
-    Pass in either a `Species` or `Molecule` object and checks whether it passes
-    the speciesConstraints set by the user.  If the species fails constraints, returns
-    a string `reason` describing which constraint failed. If all constraints pass, returns `False`.
+    Pass in either a `Species` or `Molecule` object and checks whether it passes the
+    speciesConstraints set by the user. If the species fails constraints, returns a string
+    `reason` describing which constraint failed. If all constraints pass, returns `False`.
+
+    Routing: polymer-sized species (or real Polymer objects) are bounded by the polymer tier;
+    everything else by the global gas tier. See is_polymer_constraint_member.
     """
     from rmgpy.rmg.input import get_input
 
-    if is_polymer_constraint_member(species):
-        try:
-            polymer_constraints = get_input('polymer_constraints')
-        except Exception:
-            logging.debug('Polymer constraints could not be found.')
-            polymer_constraints = None
+    try:
+        polymer_constraints = get_input('polymer_constraints')
+    except Exception:
+        logging.debug('Polymer constraints could not be found.')
+        polymer_constraints = None
+
+    if is_polymer_constraint_member(species, polymer_constraints):
         if polymer_constraints is None:
             _warn_unbounded_polymer_once()
             return False
