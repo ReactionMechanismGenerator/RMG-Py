@@ -320,6 +320,16 @@ class Polymer(Species):
         # of the spawning channel's gas_product by
         # generate_side_loss_daughters; 0.0 on ordinary pools.
         self.chain_mass_defect_g_mol = 0.0
+        # Concerted-loss feature-pool identity (regen5 route): sorted tuple
+        # of ejected-gas formulas accumulated along this pool's
+        # concerted-elimination lineage (e.g. ('H2O',) after one
+        # dehydration, ('C7H8O', 'H2O') after a further cresol loss). Empty
+        # tuple on ordinary pools. When set, the fingerprint carries a
+        # _GasLoss segment so channels never lump (H2O-loss vs CH4-loss off
+        # the same source stay distinct pools) while the same channel
+        # applied to the same source reuses its pool. Set by
+        # _create_concerted_loss_feature_copy, never by the deck.
+        self.concerted_loss_channels = ()
         # Discreteness threshold (spec 2026-06-10 §6, D7/D8): chains with
         # literal DP < threshold are candidates for discrete tracking. Default
         # 4 = monomer..trimer explicit. DORMANT under the fixed trimer proxy:
@@ -499,6 +509,18 @@ class Polymer(Species):
                     feat = f'_Feat-{self.feature_monomer.fingerprint}'
                     if self.feature_monomer.get_radical_count() > 2:
                         feat += f'-rad{_radical_site_descriptor(self.feature_monomer)}'
+                gas_channels = getattr(self, 'concerted_loss_channels', None)
+                if gas_channels:
+                    # Concerted-loss feature pools (regen5 route): keyed on
+                    # the SORTED accumulated ejected-gas formula multiset, so
+                    # (i) distinct gas channels off the same source never
+                    # lump, (ii) the same channel applied twice reuses its
+                    # pool via _register_polymer's fingerprint dedup, and
+                    # (iii) multi-stage lineages that shed the same gas
+                    # multiset in different orders merge (their chains carry
+                    # the identical cumulative mass defect). The _GasLoss
+                    # literal never collides with _Feat/_SideLoss/_EndRad.
+                    feat += f"_GasLoss-{'+'.join(gas_channels)}"
                 if getattr(self, 'end_radical_site', None):
                     # End-radical daughter pools (k_homolysis conduit): the
                     # _EndRad segment keys the pool identity on WHICH chain
@@ -680,6 +702,11 @@ class Polymer(Species):
         other.side_loss_channel = getattr(self, 'side_loss_channel', None)
         other.chain_mass_defect_g_mol = getattr(
             self, 'chain_mass_defect_g_mol', 0.0)
+        # Concerted-loss pool identity (regen5 route): like side_loss_channel
+        # this is a fingerprint input -- losing it on copy would collapse a
+        # gas-loss feature pool back onto its source pool.
+        other.concerted_loss_channels = tuple(
+            getattr(self, 'concerted_loss_channels', ()) or ())
         # Released-monomer routing target (input.py:432). Shared BY REFERENCE
         # deliberately, NOT deep-copied: routing resolution downstream
         # (derive_daughter_pool_configs' spc_map, PolymerPool.to_config) is
@@ -1336,7 +1363,9 @@ class Polymer(Species):
         return spc
 
     def create_reacted_copy(self, reacted_proxy: Molecule,
-                            h_loss_feature: bool = False) -> Optional['Polymer']:
+                            h_loss_feature: bool = False,
+                            concerted_loss_gas: Optional[Molecule] = None,
+                            ) -> Optional['Polymer']:
         """
         Wrapper that ensures any generated polymer fragment is sanitized
         (labels stripped, proxy tagged) before returning to the RMG engine.
@@ -1356,6 +1385,20 @@ class Polymer(Species):
                 where reactants AND products are both visible
                 (:func:`compute_h_loss_feature_verdicts`, threaded through
                 ``_handshake_structures`` from ``make_new_reaction``).
+            concerted_loss_gas: HANDSHAKE CONTEXT for the concerted-loss
+                producer path (regen5 route): the small closed-shell gas
+                Molecule ejected alongside ``reacted_proxy`` by an
+                atom-balanced unimolecular concerted elimination
+                (pool -> heavy_product + gas, e.g. dehydration losing H2O or
+                demethanation losing CH4). Like ``h_loss_feature`` it is
+                never inferred from the product alone; the live wiring
+                computes it where reactants AND products are both visible
+                (:func:`compute_concerted_loss_evidence`, threaded through
+                ``_handshake_structures`` from ``make_new_reaction``). When
+                set, the route-first producer path may materialize a
+                ``{label}_loss{gas}`` closed-shell feature daughter carrying
+                the ejected gas MW as cumulative chain mass defect (see
+                :meth:`_create_concerted_loss_feature_copy`).
 
         Raises:
             PolymerCrosslinkError: if the product is a crosslink / chain-coupling
@@ -1402,12 +1445,27 @@ class Polymer(Species):
             new_poly = self.copy(deep=True)
         else:
             new_poly = self._create_reacted_copy_logic(
-                reacted_proxy, h_loss_feature=h_loss_feature)
+                reacted_proxy, h_loss_feature=h_loss_feature,
+                concerted_loss_gas=concerted_loss_gas)
         if new_poly is None:
             return None
         # Stamp the classification verdict so the polymer handshake can flag
         # END_MOD reactions for chain-end (mu0) scaling in the solver. Read by
         # is_end_group_reaction(products); a transient generation-time marker.
+        #
+        # Concerted-loss daughters (regen5 route) override the structural
+        # verdict: classify_structure sees their proxy graph as a broken
+        # chain (single intact wing -> SCISSION), but the routed daughter is
+        # a DP-PRESERVING mid-chain modification -- exactly the FEATURE
+        # class. Leaving the SCISSION stamp would short-circuit
+        # classify_reaction_flux_archetype into SCISSION_FRAGMENT (halved-Mn
+        # bookkeeping) instead of VOLATILE_EJECTION. The spawn-source pin is
+        # set ONLY by _create_concerted_loss_feature_copy on the fresh
+        # daughter (Polymer.copy() does not carry spawn_metadata), so wing-
+        # logic products can never match this predicate.
+        if ((getattr(new_poly, 'spawn_metadata', None) or {}).get('source')
+                == CONCERTED_LOSS_SPAWN_SOURCE):
+            klass = PolymerClass.FEATURE
         new_poly._reacted_class = klass
         # Daughter-pool channel inheritance (radical_qssa_unzip milestone 5),
         # applied at the SINGLE exit point and GATED on same repeat chemistry
@@ -1433,6 +1491,7 @@ class Polymer(Species):
 
     def _create_reacted_copy_logic(self, reacted_proxy: Molecule,
                                    h_loss_feature: bool = False,
+                                   concerted_loss_gas: Optional[Molecule] = None,
                                    ) -> Optional['Polymer']:
         """
         Creates a new Polymer species from a reacted proxy fragment.
@@ -1461,6 +1520,22 @@ class Polymer(Species):
         """
         if h_loss_feature:
             new_poly = self._create_h_loss_feature_copy(reacted_proxy)
+            if new_poly is not None:
+                return new_poly
+        if concerted_loss_gas is not None:
+            # Concerted-loss producer path (regen5 route), ROUTE-FIRST for
+            # the same reason as the H-loss path above: the wing logic has
+            # no both-wings match for these DP-preserving closed-shell
+            # modifications (probed: tail wings find no disjoint pair on the
+            # PF gas-loss daughters), so without routing they fall into the
+            # single-wing scission branch and misbook a same-length chain as
+            # a half-length "{label}_scission_tail" population (Mn/2, zero
+            # defect) -- the poly_102 concerted-elimination booking defect.
+            # The two contexts are mutually exclusive by shape (H-loss
+            # requires a mono-radical product; concerted loss a closed-shell
+            # one), so their relative order is immaterial.
+            new_poly = self._create_concerted_loss_feature_copy(
+                reacted_proxy, concerted_loss_gas)
             if new_poly is not None:
                 return new_poly
         return self._create_reacted_copy_wing_logic(reacted_proxy)
@@ -1896,6 +1971,114 @@ class Polymer(Species):
             if (0.0 < delta_g
                     < _VE_ATOM_TRANSFER_UNITS * self.monomer_mw_g_mol):
                 daughter.chain_mass_defect_g_mol = defect_src + delta_g
+        return daughter
+
+    def _create_concerted_loss_feature_copy(self, product: Molecule,
+                                            gas: Molecule,
+                                            ) -> Optional['Polymer']:
+        """
+        Concerted-loss producer path (regen5 route). ONLY reached when the
+        caller threaded the concerted-loss handshake context
+        (``concerted_loss_gas`` -- the reaction is an atom-balanced
+        unimolecular concerted elimination ``pool -> product + gas``,
+        adjudicated by :func:`compute_concerted_loss_evidence` at the one
+        place where resolved reactants and raw products are both visible);
+        never triggered from the product's structure alone.
+
+        Structural cross-check (so a lying context cannot smuggle garbage),
+        fail-closed on any structure query error:
+
+        * ``product`` and ``gas`` are both CLOSED-SHELL and neutral (a
+          radical co-product is homolysis, a different route);
+        * atom balance: element counts of ``product`` + ``gas`` equal the
+          pool's reacting-proxy element counts -- the operational form of
+          "product is isomorphic to (reactant minus gas)";
+        * gas MW cap: ``MW(gas) < monomer MW`` (strictly below ONE
+          monomer-equivalent). This cap IS the DP-preservation criterion
+          expressed in mass: in an atom-balanced elimination
+          ``heavy = proxy - gas``, so a co-product carrying at least one
+          full monomer mass forces the heavy product to have lost a whole
+          repeat unit of chain mass -- that shape is depropagation /
+          scission (e.g. the PS retro-ene ejecting alpha-methylstyrene at
+          1.135 monomer units, pinned by TestScissionRealDHrxnEndToEnd) and
+          must keep falling through to the wing/scission logic. A
+          sub-monomer co-product cannot have removed a repeat unit, so the
+          chain keeps its DP and the loss is a per-chain mass defect. This
+          is deliberately TIGHTER than the conduit-admission gas cap
+          (GAS_MW_FACTOR = 1.5 x monomer, rmgpy/polymer_conduit.py), which
+          only rejects nonsense rows and cannot separate scission from
+          concerted loss. There is equally deliberately NO lower
+          atom-transfer gate (the H-loss path's < ``_VE_ATOM_TRANSFER_UNITS``
+          defect gate does not apply): a cresol loss at 0.806 monomer units
+          is a legitimate concerted-loss channel and must pass.
+
+        The daughter is a CHANNEL-KEYED feature pool, not a unit-graph
+        feature pool: a concerted elimination need not be a single-repeat-
+        unit substitution (poly_102's dehydration removes H2O ACROSS the
+        unit junction), so no single feature_monomer graph can represent it.
+        Instead the daughter keeps the parent's repeat-unit chemistry
+        (feature_monomer=None) and carries the ejected gas MW as an exact
+        per-chain mass defect -- the SAME accounting contract as the H-loss
+        and side-group X-loss pools (condensed-mass closure
+        mu1*MW - mu0*defect); the fingerprint's _GasLoss segment keeps
+        channels distinct (see :attr:`concerted_loss_channels`).
+
+        Booking mirrors :meth:`_born_at_zero_mod_daughter`: born at zero
+        (initial_mass=0 -> zero moments; the parent keeps its mass), Mn/Mw
+        ride along as lineage metadata, spawn provenance markers set, and
+        the defect composes CUMULATIVELY,
+            defect_dst = defect_src + MW(gas),
+        so a chain that already lost H2O and then loses cresol carries both.
+        """
+        try:
+            if (product.get_radical_count() != 0
+                    or product.get_net_charge() != 0
+                    or gas.get_radical_count() != 0
+                    or gas.get_net_charge() != 0):
+                return None
+            gas_mw_g_mol = gas.get_molecular_weight() * 1000.0
+            product_comp = product.get_element_count()
+            gas_comp = gas.get_element_count()
+            proxy_comp = self.molecule[0].get_element_count()
+        except Exception:
+            return None
+        # DP-preservation cap (see docstring): a balanced-elimination
+        # co-product at >= one monomer mass means the chain lost a whole
+        # repeat unit -> scission/depropagation shape, not this route.
+        if not (0.0 < gas_mw_g_mol < self.monomer_mw_g_mol):
+            return None
+        total = {el: n for el, n in product_comp.items() if n}
+        for el, n in gas_comp.items():
+            if n:
+                total[el] = total.get(el, 0) + n
+        if total != {el: n for el, n in proxy_comp.items() if n}:
+            return None
+        gas_formula = gas.get_formula()
+        daughter = Polymer(
+            label=f"{self.label}_loss{gas_formula}",
+            monomer=self.monomer,
+            feature_monomer=None,
+            end_groups=[eg.copy(deep=True) for eg in self.end_groups],
+            cutoff=self.cutoff,
+            Mn=self.Mn,
+            Mw=self.Mw,
+            moments=None,
+            initial_mass=0.0,
+        )
+        daughter.parent_pool_label = self.label
+        daughter.spawn_metadata = {"source": CONCERTED_LOSS_SPAWN_SOURCE,
+                                   "gas": gas_formula}
+        # Channel identity accumulates along the lineage (sorted multiset --
+        # see the fingerprint property's _GasLoss segment for why sorted).
+        daughter.concerted_loss_channels = tuple(sorted(
+            tuple(getattr(self, 'concerted_loss_channels', ()) or ())
+            + (gas_formula,)))
+        daughter._fingerprint = None  # identity attrs set post-construction
+        # CUMULATIVE exact per-chain mass defect: same composition rule as
+        # _born_at_zero_mod_daughter (defect_dst = defect_src + shed mass).
+        defect_src = float(getattr(self, "chain_mass_defect_g_mol", 0.0)
+                           or 0.0)
+        daughter.chain_mass_defect_g_mol = defect_src + gas_mw_g_mol
         return daughter
 
     def _stitch_wing(self, side: str) -> Molecule:
@@ -6326,6 +6509,12 @@ HOMOLYSIS_SPAWN_SOURCE = "k_homolysis_end_radical"
 # pin it exactly, mirroring the sibling kernel's HOMOLYSIS_SPAWN_SOURCE
 # contract.
 SIDE_GROUP_HOMOLYSIS_SPAWN_SOURCE = "side_group_homolysis"
+# Spawn provenance pin stamped on every concerted-loss feature daughter
+# (regen5 route, Polymer._create_concerted_loss_feature_copy), together
+# with the ejected-gas formula: spawn_metadata = {"source":
+# CONCERTED_LOSS_SPAWN_SOURCE, "gas": <formula>}. Same contract shape as
+# the sibling spawn-source pins above.
+CONCERTED_LOSS_SPAWN_SOURCE = "concerted_loss_ejection"
 # Normative moment law of the radical-homolysis initiation kernel, pinned
 # in the STABLE product forms actually implemented (round-67 P2;
 # rmgpy/solver/polymer.pyx, the khom_* RHS section). Same contract as
@@ -9544,6 +9733,92 @@ def compute_h_loss_shape_evidence(reactants, products, polymer_reactants):
             continue
         verdicts[i] = True
     return verdicts
+
+
+def compute_concerted_loss_evidence(reactants, products, polymer_reactants):
+    """Per-product CONCERTED-LOSS shape evidence (regen5 route): a list
+    parallel to ``products`` whose entry i is the ejected-gas
+    :class:`Molecule` when product i is the closed-shell HEAVY daughter of
+    an atom-balanced unimolecular concerted elimination off the single
+    polymer reactant (``pool -> heavy + gas``, e.g. dehydration losing H2O,
+    demethanation losing CH4, cresol/xylenol elimination), else ``None``.
+
+    Computed at the ONE place where resolved reactants and raw products are
+    both visible (the ``make_new_reaction`` handshake call sites in
+    rmgpy/rmg/model.py) and threaded through ``_handshake_structures`` into
+    ``create_reacted_copy(concerted_loss_gas=...)`` -- never inferred inside
+    :class:`Polymer` from a single molecule (same contract as
+    :func:`compute_h_loss_shape_evidence`). A product's entry is the gas iff
+    ALL of (fail closed on any structure query error):
+
+    * exactly ONE reactant, which is the one Polymer-resolved reactant
+      (``len(reactants) == 1 and len(polymer_reactants) == 1``) -- the
+      unimolecular shape;
+    * exactly TWO products, both non-polymer (a Polymer product means some
+      other route already resolved the shape), both CLOSED-SHELL and
+      neutral (a radical co-product is homolysis, not concerted loss);
+    * an unambiguous heavy/gas split (strictly different MWs; the heavier
+      product is the chain daughter, the lighter one the gas);
+    * atom balance against the source pool's reacting proxy:
+      element counts of heavy + gas == proxy counts -- the operational form
+      of "heavy is isomorphic to (reactant minus gas)";
+    * gas MW cap ``MW(gas) < monomer MW`` -- the DP-preservation criterion
+      in mass form: a balanced-elimination co-product at >= one monomer
+      mass means the chain lost a whole repeat unit, which is
+      depropagation/scission (e.g. PS retro-ene ejecting
+      alpha-methylstyrene at 1.135 units), not a DP-preserving concerted
+      loss. See :meth:`Polymer._create_concerted_loss_feature_copy` for the
+      full rationale and for why there is deliberately NO lower gate.
+    """
+    gases = [None] * len(products)
+    if len(polymer_reactants) != 1 or len(reactants) != 1:
+        return gases
+    source = polymer_reactants[0]
+    proxy_mols = getattr(source, 'molecule', None) or []
+    if not proxy_mols or proxy_mols[0] is None:
+        return gases
+    monomer_mw = float(getattr(source, 'monomer_mw_g_mol', 0.0) or 0.0)
+    if monomer_mw <= 0.0:
+        return gases
+    try:
+        proxy_comp = proxy_mols[0].get_element_count()
+    except Exception:
+        return gases
+    mols = []
+    try:
+        for item in products:
+            mol = _h_loss_participant_mol(item)  # raises if unweighable
+            if mol is None:  # a Polymer product: not this route's shape
+                return gases
+            mols.append(mol)
+    except ValueError:
+        return gases
+    if len(mols) != 2:
+        return gases
+    try:
+        if any(m.get_radical_count() != 0 or m.get_net_charge() != 0
+               for m in mols):
+            return gases
+        mws = [m.get_molecular_weight() * 1000.0 for m in mols]
+        comps = [m.get_element_count() for m in mols]
+    except Exception:
+        return gases
+    if mws[0] == mws[1]:
+        return gases  # ambiguous heavy/gas split: fail closed
+    heavy_i = 0 if mws[0] > mws[1] else 1
+    gas_i = 1 - heavy_i
+    # DP-preservation cap (see docstring / producer): >= one monomer mass
+    # of co-product is a scission/depropagation shape, not this route.
+    if not (0.0 < mws[gas_i] < monomer_mw):
+        return gases
+    total = {el: n for el, n in comps[heavy_i].items() if n}
+    for el, n in comps[gas_i].items():
+        if n:
+            total[el] = total.get(el, 0) + n
+    if total != {el: n for el, n in proxy_comp.items() if n}:
+        return gases
+    gases[heavy_i] = mols[gas_i]
+    return gases
 
 
 def compute_h_loss_feature_verdicts(reactants, products, polymer_reactants):

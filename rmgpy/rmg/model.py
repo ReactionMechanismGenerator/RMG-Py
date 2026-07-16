@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_h_loss_shape_evidence, is_end_group_reaction, merge_polymer_adjudication_stamps, readjudicate_conduit_admission, restamp_flipped_polymer_archetype, stamp_gas_association_refusal, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_concerted_loss_evidence, compute_h_loss_shape_evidence, is_end_group_reaction, merge_polymer_adjudication_stamps, readjudicate_conduit_admission, restamp_flipped_polymer_archetype, stamp_gas_association_refusal, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -685,9 +685,18 @@ class CoreEdgeReactionModel:
                 # (poly_102 r29-r31, 'qssa-invalid').
                 h_loss_verdicts = compute_h_loss_shape_evidence(
                     reactants, forward.products, polymer_reactants)
+                # Concerted-loss evidence (regen5 route): same seam, same
+                # contract -- the ejected-gas Molecule per heavy product of
+                # an atom-balanced unimolecular concerted elimination, so
+                # the handshake can book the closed-shell chain daughter
+                # into its channel-keyed {label}_loss{gas} feature pool
+                # instead of misbooking it as a scission tail.
+                concerted_loss_gases = compute_concerted_loss_evidence(
+                    reactants, forward.products, polymer_reactants)
                 try:
                     relabeled = _handshake_structures(forward.products, polymer_reactants,
-                                                      h_loss_verdicts=h_loss_verdicts)
+                                                      h_loss_verdicts=h_loss_verdicts,
+                                                      concerted_loss_gases=concerted_loss_gases)
                 except PolymerCrosslinkError as e:
                     # Chain-chain coupling is not representable in the method-of-
                     # moments model; discard the reaction rather than leak the
@@ -747,8 +756,15 @@ class CoreEdgeReactionModel:
                     # QSSA composite).
                     h_loss_verdicts = compute_h_loss_shape_evidence(
                         reactants, forward.products, polymer_reactants)
+                    # Same concerted-loss evidence as the is_forward branch
+                    # (regen5 route) -- this else-branch is the LIBRARY
+                    # ingestion path, the live seam for hand-authored
+                    # unimolecular concerted-elimination channels.
+                    concerted_loss_gases = compute_concerted_loss_evidence(
+                        reactants, forward.products, polymer_reactants)
                     relabeled = _handshake_structures(forward.products, polymer_reactants,
-                                                      h_loss_verdicts=h_loss_verdicts)
+                                                      h_loss_verdicts=h_loss_verdicts,
+                                                      concerted_loss_gases=concerted_loss_gases)
                     forward.is_end_group_reaction = is_end_group_reaction(forward.products)
                     # Same surgery + stamping as the is_forward branch.
                     stamp_polymer_flux_archetype(forward, reactants, polymer_reactants)

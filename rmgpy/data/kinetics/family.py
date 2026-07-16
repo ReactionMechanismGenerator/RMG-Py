@@ -4943,7 +4943,8 @@ def _h_loss_daughter_veto_exempt(mol, polymer_reactants):
     return False
 
 
-def _handshake_structures(structure_list, polymer_reactants, h_loss_verdicts=None):
+def _handshake_structures(structure_list, polymer_reactants, h_loss_verdicts=None,
+                          concerted_loss_gases=None):
     """
     Helper to scan a list of Molecules or Species (reactants or products) and
     convert them to Polymer objects if they match an input polymer structure.
@@ -4962,6 +4963,18 @@ def _handshake_structures(structure_list, polymer_reactants, h_loss_verdicts=Non
     ``h_loss_feature=True`` into ``create_reacted_copy`` so the
     radical-feature producer path can route the daughter into its
     ``{label}_mod`` feature pool. ``None`` (legacy callers) means all-False.
+
+    ``concerted_loss_gases`` (regen5 route) is the concerted-loss analog: an
+    optional list parallel to ``structure_list`` whose entry i is the
+    ejected-gas Molecule when entry i is the heavy closed-shell daughter of
+    an atom-balanced unimolecular concerted elimination
+    (:func:`rmgpy.polymer.compute_concerted_loss_evidence`, computed at the
+    same ``make_new_reaction`` call sites), else None. A gas entry threads
+    ``concerted_loss_gas`` into ``create_reacted_copy`` so the
+    concerted-loss producer path can route the daughter into its
+    channel-keyed ``{label}_loss{gas}`` feature pool instead of the
+    single-wing scission misbooking. ``None`` (legacy callers) means
+    all-None.
     """
     from rmgpy.polymer import clear_polymer_proxy, set_polymer_gas_veto
     replaced = False
@@ -4976,10 +4989,14 @@ def _handshake_structures(structure_list, polymer_reactants, h_loss_verdicts=Non
             continue
         h_loss_feature = bool(h_loss_verdicts[i]) if (
             h_loss_verdicts is not None and i < len(h_loss_verdicts)) else False
+        concerted_loss_gas = (concerted_loss_gases[i]
+                              if (concerted_loss_gases is not None
+                                  and i < len(concerted_loss_gases)) else None)
         for polymer_obj in polymer_reactants:
             try:
                 new_polymer = polymer_obj.create_reacted_copy(
-                    mol, h_loss_feature=h_loss_feature)
+                    mol, h_loss_feature=h_loss_feature,
+                    concerted_loss_gas=concerted_loss_gas)
                 if new_polymer:
                     structure_list[i] = new_polymer
                     replaced = True

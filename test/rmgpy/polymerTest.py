@@ -9277,3 +9277,281 @@ class TestNearFloorEpisodeTracker:
             tr.observe(t, self._y(5e-10, 6e-10, 7e-10), wall=t)
         tr.finalize(3.0)
         assert tr.episodes == []
+
+
+class TestConcertedLossFeatureDaughter:
+    """
+    Tests for the concerted-loss producer route (regen5): a unimolecular
+    atom-balanced concerted elimination ``pool -> heavy_closed_shell + gas``
+    must book the heavy chain product as a channel-keyed feature daughter
+    (``{label}_loss{gas}``) carrying the ejected gas MW as CUMULATIVE
+    chain_mass_defect_g_mol -- never as a halved-Mn
+    ``{label}_scission_tail`` population (the poly_102 mis-booking defect).
+
+    Pool: phenol_formaldehyde, proxy C27H32O3 (monomer MW 134.175 g/mol).
+    Balanced products (proxy minus gas):
+      * dehydration:   C27H30O2 + H2O   (loss spans the unit junction)
+      * demethanation: C26H28O3 + CH4
+      * cresol loss:   C20H24O2 + C7H8O (0.806 monomer units -- must pass:
+        this route carries NO <0.5-monomer-unit atom-transfer gate)
+    """
+
+    PF_MONOMER = '[CH2]c1c(O)c([CH2])c(C)cc1'
+    DEHYD = 'Cc1ccc(CCc2c(C)ccc(C=Cc3c(C)ccc(C)c3)c2O)c(O)c1C'   # proxy - H2O
+    DEMETH = 'Cc1ccc(C=Cc2cccc(CCc3c(C)ccc(C)c3O)c2O)c(O)c1C'    # proxy - CH4
+    DECRESOL = 'Cc1ccc(CCc2c(C)ccc(C=CC)c2O)c(O)c1C'             # proxy - cresol
+    CRESOL = 'Cc1ccccc1O'
+
+    @pytest.fixture(autouse=True)
+    def setup(self):
+        from rmgpy.data.kinetics.family import _handshake_structures
+        self._handshake = _handshake_structures
+        self.pf = Polymer(
+            label='phenol_formaldehyde',
+            monomer=self.PF_MONOMER,
+            end_groups=['[H]', '[H]'],
+            cutoff=3,
+            Mn=1000.0,
+            Mw=3000.0,
+            initial_mass=1.0,
+            k_scission=1.0,
+        )
+
+    def _run_pipeline(self, product_smiles, gas_smiles, reversible=False):
+        """Mimic the make_new_reaction seam: evidence -> handshake -> stamp."""
+        from rmgpy.polymer import (compute_concerted_loss_evidence,
+                                   compute_h_loss_shape_evidence,
+                                   is_end_group_reaction,
+                                   stamp_polymer_flux_archetype)
+        from rmgpy.reaction import Reaction
+        fwd = Reaction(reactants=[self.pf],
+                       products=[Molecule(smiles=product_smiles),
+                                 Molecule(smiles=gas_smiles)],
+                       reversible=reversible)
+        h_loss = compute_h_loss_shape_evidence([self.pf], fwd.products, [self.pf])
+        gases = compute_concerted_loss_evidence([self.pf], fwd.products, [self.pf])
+        self._handshake(fwd.products, [self.pf], h_loss_verdicts=h_loss,
+                        concerted_loss_gases=gases)
+        fwd.is_end_group_reaction = is_end_group_reaction(fwd.products)
+        stamp_polymer_flux_archetype(fwd, [self.pf], [self.pf])
+        return fwd
+
+    # ------------------------------------------------------------------
+    # Regression: the original mis-booking scenario
+    # ------------------------------------------------------------------
+    def test_regression_dehydration_books_feature_daughter_not_scission_tail(self):
+        """The poly_102 defect shape (trimer -> (trimer - H2O) + H2O) used to
+        book the closed-shell chain product as phenol_formaldehyde_scission_tail
+        (Mn halved, defect 0). It must now book as a feature daughter."""
+        from rmgpy.polymer import PolymerFluxArchetype
+        fwd = self._run_pipeline(self.DEHYD, 'O')
+        daughter = fwd.products[0]
+        assert isinstance(daughter, Polymer)
+        assert daughter.label == 'phenol_formaldehyde_lossH2O'
+        assert not daughter.label.endswith('_scission_tail')
+        assert daughter._reacted_class == PolymerClass.FEATURE
+        # DP-preserving: Mn/Mw ride along unchanged (lineage metadata),
+        # never halved as the scission branch would do.
+        assert daughter.Mn == self.pf.Mn
+        assert daughter.Mw == self.pf.Mw
+        # Born at zero: the parent keeps its mass.
+        assert daughter.initial_mass_g == 0.0
+        assert int(fwd.polymer_flux_archetype) == int(
+            PolymerFluxArchetype.VOLATILE_EJECTION)
+
+    # ------------------------------------------------------------------
+    # H2O-loss booking (small gas -- below the H-loss route's 0.5 gate)
+    # ------------------------------------------------------------------
+    def test_h2o_loss_booking(self):
+        """H2O (0.134 monomer units, far below the 0.5 atom-transfer gate of
+        the H-loss defect booking) must still book: this route carries no
+        lower gate. Defect = MW(H2O); provenance markers set."""
+        from rmgpy.polymer import CONCERTED_LOSS_SPAWN_SOURCE
+        fwd = self._run_pipeline(self.DEHYD, 'O')
+        daughter = fwd.products[0]
+        h2o_mw = Molecule(smiles='O').get_molecular_weight() * 1000.0
+        assert daughter.chain_mass_defect_g_mol == pytest.approx(h2o_mw)
+        assert daughter.concerted_loss_channels == ('H2O',)
+        assert daughter.parent_pool_label == 'phenol_formaldehyde'
+        assert daughter.spawn_metadata == {
+            'source': CONCERTED_LOSS_SPAWN_SOURCE, 'gas': 'H2O'}
+
+    # ------------------------------------------------------------------
+    # Cresol-loss booking (> 0.5 monomer units)
+    # ------------------------------------------------------------------
+    def test_cresol_loss_booking_above_half_unit(self):
+        """Cresol = 0.806 monomer units books through the same route (the
+        only upper gate is the DP-preservation cap at one monomer MW =
+        134.17 g/mol)."""
+        fwd = self._run_pipeline(self.DECRESOL, self.CRESOL)
+        daughter = fwd.products[0]
+        assert isinstance(daughter, Polymer)
+        assert daughter.label == 'phenol_formaldehyde_lossC7H8O'
+        cresol_mw = Molecule(smiles=self.CRESOL).get_molecular_weight() * 1000.0
+        assert daughter.chain_mass_defect_g_mol == pytest.approx(cresol_mw)
+        assert cresol_mw / self.pf.monomer_mw_g_mol > 0.5  # the gate would bite
+
+    def test_oversized_gas_is_refused(self):
+        """A co-product at/above ONE monomer MW is a chain fragment (the
+        chain lost a whole repeat unit -> scission/depropagation), not a
+        volatile: the producer refuses and the shape falls through to the
+        wing/scission logic (here: swapped heavy/gas cannot book)."""
+        heavy = Molecule(smiles=self.DEHYD)   # 402 g/mol >> 134.17
+        assert self.pf._create_concerted_loss_feature_copy(
+            Molecule(smiles='O'), heavy) is None
+
+    def test_monomer_scale_coproduct_stays_scission(self):
+        """Discrimination pin: a balanced closed-shell retro-ene scission
+        whose co-product weighs >= one monomer (PS trimer ->
+        C16H18 + alpha-methylstyrene C9H10, 1.135 monomer units) must NOT
+        carry concerted-loss evidence -- it keeps booking through the
+        wing/scission logic (TestScissionRealDHrxnEndToEnd pins the full
+        end-to-end behavior)."""
+        from rmgpy.polymer import compute_concerted_loss_evidence
+        ps = Polymer(label='PS', monomer='[CH2][CH]c1ccccc1',
+                     end_groups=['[CH3]', '[H]'], cutoff=3,
+                     Mn=5000.0, Mw=6000.0, initial_mass=1.0, k_scission=1.0)
+        heavy = Molecule(smiles='CC(c1ccccc1)CCc1ccccc1')      # C16H18
+        gas = Molecule(smiles='C=C(C)c1ccccc1')                # C9H10
+        # sanity: the shape is balanced against the PS trimer proxy
+        proxy = ps.molecule[0].get_element_count()
+        total = dict(heavy.get_element_count())
+        for el, n in gas.get_element_count().items():
+            total[el] = total.get(el, 0) + n
+        assert total == {el: n for el, n in proxy.items() if n}
+        gases = compute_concerted_loss_evidence([ps], [heavy, gas], [ps])
+        assert gases == [None, None]
+        assert ps._create_concerted_loss_feature_copy(heavy, gas) is None
+
+    # ------------------------------------------------------------------
+    # Channel distinctness + same-channel pool reuse
+    # ------------------------------------------------------------------
+    def test_channel_distinctness_and_reuse(self):
+        """H2O-loss and CH4-loss off the same source must yield DISTINCT
+        pools (fingerprints); the same channel applied twice must reuse its
+        pool (identical fingerprint => _register_polymer dedups)."""
+        d_h2o = self.pf._create_concerted_loss_feature_copy(
+            Molecule(smiles=self.DEHYD), Molecule(smiles='O'))
+        d_h2o_again = self.pf._create_concerted_loss_feature_copy(
+            Molecule(smiles=self.DEHYD), Molecule(smiles='O'))
+        d_ch4 = self.pf._create_concerted_loss_feature_copy(
+            Molecule(smiles=self.DEMETH), Molecule(smiles='C'))
+        d_cres = self.pf._create_concerted_loss_feature_copy(
+            Molecule(smiles=self.DECRESOL), Molecule(smiles=self.CRESOL))
+        assert d_h2o is not None and d_ch4 is not None and d_cres is not None
+        # distinct channels -> distinct pools
+        fps = {d_h2o.fingerprint, d_ch4.fingerprint, d_cres.fingerprint,
+               self.pf.fingerprint}
+        assert len(fps) == 4
+        # same channel twice -> same pool identity
+        assert d_h2o.fingerprint == d_h2o_again.fingerprint
+        assert d_h2o.label == d_h2o_again.label
+        # copy preserves the channel identity (fingerprint input)
+        assert d_h2o.copy(deep=True).fingerprint == d_h2o.fingerprint
+
+    # ------------------------------------------------------------------
+    # Cumulative defect through a 2-stage chain
+    # ------------------------------------------------------------------
+    def test_cumulative_defect_two_stage_chain(self):
+        """A chain that lost H2O and then loses cresol carries BOTH defects
+        (defect_dst = defect_src + MW(gas), the same composition rule as the
+        H-loss and side-group X-loss pools), and the 2-stage pool identity
+        differs from both single-stage pools."""
+        h2o = Molecule(smiles='O')
+        cresol = Molecule(smiles=self.CRESOL)
+        d1 = self.pf._create_concerted_loss_feature_copy(
+            Molecule(smiles=self.DEHYD), h2o)
+        # Stage 2: the daughter's reacting proxy is its baseline trimer
+        # (feature_monomer=None), so the balanced heavy product is
+        # proxy - cresol = C20H24O2.
+        d2 = d1._create_concerted_loss_feature_copy(
+            Molecule(smiles=self.DECRESOL), cresol)
+        assert d2 is not None
+        h2o_mw = h2o.get_molecular_weight() * 1000.0
+        cresol_mw = cresol.get_molecular_weight() * 1000.0
+        assert d2.chain_mass_defect_g_mol == pytest.approx(h2o_mw + cresol_mw)
+        assert d2.concerted_loss_channels == ('C7H8O', 'H2O')  # sorted multiset
+        assert d2.fingerprint != d1.fingerprint
+        assert d2.label == 'phenol_formaldehyde_lossH2O_lossC7H8O'
+
+    # ------------------------------------------------------------------
+    # eject_units on the emitted row + irreversibility propagation
+    # ------------------------------------------------------------------
+    def test_eject_units_stamped_as_gas_over_source_monomer_mw(self):
+        """eject_units = MW(gas) / monomer MW of the SOURCE pool, matching
+        the poly_102 r29-r33 VE row convention (params.eject_units)."""
+        from rmgpy.polymer import PolymerFluxArchetype
+        h2o_mw = Molecule(smiles='O').get_molecular_weight() * 1000.0
+        fwd = self._run_pipeline(self.DEHYD, 'O')
+        assert int(fwd.polymer_flux_archetype) == int(
+            PolymerFluxArchetype.VOLATILE_EJECTION)
+        assert fwd.polymer_eject_units == pytest.approx(
+            h2o_mw / self.pf.monomer_mw_g_mol)
+
+    def test_emitted_row_eject_units_and_irreversible(self):
+        """Full emitter check against the poly_102 VE row format: the sidecar
+        row carries params.eject_units = MW(gas)/monomer_MW and
+        kinetics.reversible=False when the library reaction is irreversible."""
+        from rmgpy.kinetics import Arrhenius
+        from rmgpy.polymer import compile_polymer_reaction_entries
+        fwd = self._run_pipeline(self.DEHYD, 'O', reversible=False)
+        fwd.kinetics = Arrhenius(A=(1.0e13, 's^-1'), n=0.0,
+                                 Ea=(200.0, 'kJ/mol'))
+        daughter = fwd.products[0]
+        # Post-handshake the real pipeline registers the surviving gas
+        # Molecule as a Species (make_new_species); mirror that so the
+        # emitter's equation builder sees registry-shaped participants.
+        fwd.products[1] = Species(label='H2O', molecule=[fwd.products[1]])
+        entries = compile_polymer_reaction_entries(
+            [fwd], [self.pf, daughter] + fwd.products[1:],
+            configured_pool_labels=['phenol_formaldehyde', daughter.label])
+        rows = [e for e in entries
+                if e['archetype'].startswith('volatile_ejection')]
+        assert len(rows) == 1
+        row = rows[0]
+        h2o_mw = Molecule(smiles='O').get_molecular_weight() * 1000.0
+        assert row['params']['eject_units'] == pytest.approx(
+            h2o_mw / self.pf.monomer_mw_g_mol)
+        assert row['src_pool'] == 'phenol_formaldehyde'
+        assert row['dst_pool'] == daughter.label
+        assert row['unresolved'] is False
+        assert row['kinetics']['reversible'] is False
+        assert row['scaling'] == 'mu1'
+
+    # ------------------------------------------------------------------
+    # Fail-closed shape guards
+    # ------------------------------------------------------------------
+    def test_unbalanced_shape_is_not_routed(self):
+        """An atom-UNBALANCED product/gas pair (the p2c probe shapes) must
+        not book through this route: evidence stays all-None."""
+        from rmgpy.polymer import compute_concerted_loss_evidence
+        # center-demethylated WITHOUT the compensating unsaturation:
+        # C26H30O3 + CH4 = C27H34O3 != proxy C27H32O3
+        unbalanced = Molecule(
+            smiles='Cc1ccc(CCc2cccc(CCc3c(C)ccc(C)c3O)c2O)c(O)c1C')
+        gases = compute_concerted_loss_evidence(
+            [self.pf], [unbalanced, Molecule(smiles='C')], [self.pf])
+        assert gases == [None, None]
+        assert self.pf._create_concerted_loss_feature_copy(
+            unbalanced, Molecule(smiles='C')) is None
+
+    def test_radical_products_are_not_routed(self):
+        """A radical co-product is homolysis, not concerted loss: evidence
+        stays all-None (the H-loss route owns radical daughters)."""
+        from rmgpy.polymer import compute_concerted_loss_evidence
+        proxy = self.pf.baseline_proxy.molecule[0].copy(deep=True)
+        proxy.clear_labeled_atoms()
+        radical_daughter = Molecule(smiles='[CH2]c1ccccc1O')
+        gases = compute_concerted_loss_evidence(
+            [self.pf], [radical_daughter, Molecule(smiles='O')], [self.pf])
+        assert gases == [None, None]
+
+    def test_bimolecular_shape_is_not_routed(self):
+        """Two reactants (non-unimolecular shape) never carry evidence."""
+        from rmgpy.polymer import compute_concerted_loss_evidence
+        other = Species(molecule=[Molecule(smiles='[H]')])
+        gases = compute_concerted_loss_evidence(
+            [self.pf, other],
+            [Molecule(smiles=self.DEHYD), Molecule(smiles='O')],
+            [self.pf])
+        assert gases == [None, None]
