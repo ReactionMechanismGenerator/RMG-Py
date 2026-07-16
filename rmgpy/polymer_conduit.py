@@ -981,18 +981,32 @@ def evaluate_conduit_admission(forward, row_pools):
 def admission_census_suffix(verdict):
     """APPEND-ONLY census tokens carrying the would-be admission verdict
     while :data:`CONDUIT_ADMISSION_ENABLED` is False (BUILD_SPEC W1.6):
-    an ADMISSIBLE verdict appends ``would_admit=1 deny=None
-    rewrite=<bool>``; a denied verdict appends ``deny=<reason>``. The
-    tokens ride their own bracketed group AFTER the M18.2
-    ``[conduit-census/1 ...]`` suffix, so the existing header/tokens (and
-    the line's closing bracket) stay byte-identical (round-36 P1(b))."""
+    an ADMISSIBLE verdict appends ``would_admit=1 deny=None stage=final
+    rewrite=<bool>``; a denied verdict appends ``deny=<reason>
+    stage=<provisional|final>``. The tokens ride their own bracketed group
+    AFTER the M18.2 ``[conduit-census/1 ...]`` suffix, so the existing
+    header/tokens (and the line's closing bracket) stay byte-identical
+    (round-36 P1(b)).
+
+    ``stage=`` (round-49): the G6 re-adjudication hook makes the same
+    candidate emit TWO census lines -- one at stamp time (provisional
+    ``kinetics-not-yet-assigned``) and one after kinetics are final.
+    Without a machine-readable discriminator, grep tallies double-count
+    and naive consumers retain the provisional deny as a real denial.
+    ``stage=provisional`` marks exactly the verdicts in
+    :data:`PROVISIONAL_DENY_REASONS` (subject to re-adjudication); every
+    other line -- every admit and every one-shot deny -- is the final
+    word for its emission and says so with ``stage=final``. Count/filter
+    with ``stage=final``."""
     if verdict is None:
         return ""
     if verdict.admitted:
         return (f" [conduit-admission/1 would_admit=1 deny=None "
-                f"rewrite={verdict.needs_irreversible_rewrite}]")
+                f"stage=final rewrite={verdict.needs_irreversible_rewrite}]")
+    stage = ("provisional" if verdict.deny_reason in PROVISIONAL_DENY_REASONS
+             else "final")
     return (f" [conduit-admission/1 would_admit=0 "
-            f"deny={verdict.deny_reason}]")
+            f"deny={verdict.deny_reason} stage={stage}]")
 
 
 # ---------------------------------------------------------------------------

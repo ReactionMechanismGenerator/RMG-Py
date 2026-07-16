@@ -1383,7 +1383,7 @@ class TestAdmissionEndToEndDeadFlag:
         msgs = [r.getMessage() for r in caplog.records
                 if "[conduit-admission/1" in r.getMessage()]
         assert len(msgs) == 1
-        assert "would_admit=1 deny=None rewrite=True" in msgs[0]
+        assert "would_admit=1 deny=None stage=final rewrite=True" in msgs[0]
         # append-only: the M18.2 census suffix is intact before it
         assert "[conduit-census/1 key=" in msgs[0]
         assert msgs[0].index("[conduit-census/1") < msgs[0].index(
@@ -1401,7 +1401,9 @@ class TestAdmissionEndToEndDeadFlag:
         msgs = [r.getMessage() for r in caplog.records
                 if "[conduit-admission/1" in r.getMessage()]
         assert len(msgs) == 1
-        assert "would_admit=0 deny=gas-product-count" in msgs[0]
+        # (round-49) a plain one-shot deny at stamp time IS the final word
+        # for its key and says so: stage=final rides adjacent to deny=.
+        assert "would_admit=0 deny=gas-product-count stage=final" in msgs[0]
 
 
 class TestG6ReadjudicationProvisionalKinetics:
@@ -1426,6 +1428,29 @@ class TestG6ReadjudicationProvisionalKinetics:
         assert PROVISIONAL_DENY_REASONS == {"kinetics-not-yet-assigned"}
         # provisional reasons stay inside the closed deny vocabulary
         assert PROVISIONAL_DENY_REASONS <= ADMISSION_DENY_REASONS
+
+    def test_stage_token_partitions_the_closed_deny_vocabulary(self):
+        """(round-49) every census line carries exactly one stage= token,
+        adjacent to the would_admit=/deny= tokens: stage=provisional iff
+        the verdict is a PROVISIONAL_DENY_REASONS member (subject to G6
+        re-adjudication), stage=final for every other deny AND for the
+        admit line -- so grep tallies filtered on stage=final never
+        double-count a re-adjudicated candidate."""
+        from rmgpy.polymer_conduit import (ADMISSION_DENY_REASONS,
+                                           PROVISIONAL_DENY_REASONS,
+                                           AdmissionVerdict,
+                                           admission_census_suffix, _deny)
+        for reason in sorted(ADMISSION_DENY_REASONS):
+            suffix = admission_census_suffix(_deny("K", reason))
+            expected = ("provisional" if reason in PROVISIONAL_DENY_REASONS
+                        else "final")
+            assert suffix.endswith(f"deny={reason} stage={expected}]")
+            assert suffix.count("stage=") == 1
+        admit = admission_census_suffix(AdmissionVerdict(
+            admitted=True, deny_reason=None, candidate_key="K"))
+        assert ("would_admit=1 deny=None stage=final rewrite=False"
+                in admit)
+        assert admit.count("stage=") == 1
 
     def test_kinetics_none_denies_provisionally(self, clean_registry):
         """(a) kinetics=None -> provisional kinetics-not-yet-assigned;
@@ -1452,8 +1477,12 @@ class TestG6ReadjudicationProvisionalKinetics:
         msgs = [r.getMessage() for r in caplog.records
                 if "[conduit-admission/1" in r.getMessage()]
         assert len(msgs) == 1
-        assert "would_admit=0 deny=kinetics-not-yet-assigned" in msgs[0]
+        # (round-49) the provisional line is machine-distinguishable from
+        # the later FINAL re-adjudication line: stage=provisional.
+        assert ("would_admit=0 deny=kinetics-not-yet-assigned "
+                "stage=provisional") in msgs[0]
         assert "would_admit=1" not in msgs[0]
+        assert "stage=final" not in msgs[0]
 
     def test_readjudication_with_final_arrhenius_would_admit(
             self, caplog, clean_registry):
@@ -1477,7 +1506,7 @@ class TestG6ReadjudicationProvisionalKinetics:
                 if "G6 re-adjudication" in r.getMessage()
                 and "[conduit-admission/1" in r.getMessage()]
         assert len(msgs) == 1
-        assert "would_admit=1 deny=None rewrite=True" in msgs[0]
+        assert "would_admit=1 deny=None stage=final rewrite=True" in msgs[0]
         # census-only while CONDUIT_ADMISSION_ENABLED is False: the refusal
         # state is untouched, nothing is stamped, nothing is rewritten.
         assert rxn.polymer_refused is True
@@ -1509,7 +1538,9 @@ class TestG6ReadjudicationProvisionalKinetics:
                 if "G6 re-adjudication" in r.getMessage()
                 and "[conduit-admission/1" in r.getMessage()]
         assert len(msgs) == 1
-        assert "would_admit=0 deny=kinetics-not-exportable" in msgs[0]
+        # (round-49) a re-adjudicated FINAL deny is the last word: stage=final.
+        assert ("would_admit=0 deny=kinetics-not-exportable "
+                "stage=final") in msgs[0]
 
     def test_readjudication_waits_while_kinetics_still_none(
             self, caplog, clean_registry):
@@ -1559,7 +1590,7 @@ class TestG6ReadjudicationProvisionalKinetics:
                 if "G6 re-adjudication" in r.getMessage()
                 and "[conduit-admission/1" in r.getMessage()]
         assert len(msgs) == 1
-        assert "would_admit=1 deny=None rewrite=True" in msgs[0]
+        assert "would_admit=1 deny=None stage=final rewrite=True" in msgs[0]
 
     def test_merge_never_demotes_a_final_verdict(self, caplog,
                                                  clean_registry):
@@ -1610,8 +1641,15 @@ class TestG6ReadjudicationProvisionalKinetics:
         msgs = [r.getMessage() for r in caplog.records
                 if "[conduit-admission/1" in r.getMessage()]
         assert len(msgs) == 2
-        assert "would_admit=0 deny=kinetics-not-yet-assigned" in msgs[0]
-        assert "would_admit=0 deny=kinetics-not-exportable" in msgs[1]
+        assert ("would_admit=0 deny=kinetics-not-yet-assigned "
+                "stage=provisional") in msgs[0]
+        assert ("would_admit=0 deny=kinetics-not-exportable "
+                "stage=final") in msgs[1]
+        # (round-49) the stage= token is the double-count discriminator:
+        # a grep tally filtered on stage=final sees this candidate exactly
+        # once even though it emitted two census lines.
+        assert sum("stage=final" in m for m in msgs) == 1
+        assert sum("stage=provisional" in m for m in msgs) == 1
         # the FINAL line keeps the append-only suffix shape (census tokens
         # first, admission tokens after -- round-36 P1(b) ordering)
         assert "[conduit-census/1 key=" in msgs[1]
@@ -1645,7 +1683,7 @@ class TestR42AdmissionCensusDeterminism:
                                              "CENSUS: ")]
         assert len(msgs) == 1
         assert ("[conduit-admission/1 would_admit=0 "
-                "deny=feature-radical-overlap]") in msgs[0]
+                "deny=feature-radical-overlap stage=final]") in msgs[0]
         # append-only: the M18.2 census suffix rides before it
         assert msgs[0].index("[conduit-census/1") < msgs[0].index(
             "[conduit-admission/1")
@@ -1668,7 +1706,7 @@ class TestR42AdmissionCensusDeterminism:
                                       verdict=verdict)
         assert "would_admit=1" not in suffix
         assert ("[conduit-admission/1 would_admit=0 "
-                "deny=feature-radical-overlap]") in suffix
+                "deny=feature-radical-overlap stage=final]") in suffix
 
     def test_stamp_site_rechecks_ledger_before_admitting(
             self, caplog, clean_registry, monkeypatch):
