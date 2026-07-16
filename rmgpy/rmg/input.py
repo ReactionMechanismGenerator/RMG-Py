@@ -2238,6 +2238,7 @@ def generate_polymer_constraints(**kwargs):
         'maximumCarbeneRadicals',
         'allowSingletO2',
         'speciesCuttingThreshold',
+        'polymerSizeThreshold',
     ]
 
     # NOTE: 'allowed', 'allowSingletO2', and 'speciesCuttingThreshold' are accepted only for

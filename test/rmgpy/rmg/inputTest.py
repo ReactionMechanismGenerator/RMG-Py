@@ -29,6 +29,7 @@
 
 from unittest.mock import patch
 
+import rmgpy.rmg.input
 import rmgpy.rmg.input as inp
 from rmgpy.exceptions import InputError
 from rmgpy.rmg.main import RMG
@@ -483,3 +484,23 @@ class TestGeneratePolymerConstraints:
     def test_all_maxima_unlimited_raises(self):
         with pytest.raises(InputError, match="at least one finite"):
             inp.generate_polymer_constraints(maximumCarbonAtoms=-1, maximumHeavyAtoms=-1)
+
+
+class TestPolymerSizeThresholdParsing:
+    def setup_method(self):
+        self.rmg = RMG()
+        rmgpy.rmg.input.rmg = self.rmg
+
+    def teardown_method(self):
+        rmgpy.rmg.input.rmg = None
+
+    def test_polymer_size_threshold_parsed(self):
+        rmgpy.rmg.input.generate_polymer_constraints(
+            maximumHeavyAtoms=30, polymerSizeThreshold=15,
+        )
+        assert self.rmg.polymer_constraints["polymerSizeThreshold"] == 15
+        assert self.rmg.polymer_constraints["maximumHeavyAtoms"] == 30
+
+    def test_polymer_size_threshold_alone_still_requires_a_bound(self):
+        with pytest.raises(InputError):
+            rmgpy.rmg.input.generate_polymer_constraints(polymerSizeThreshold=15)
