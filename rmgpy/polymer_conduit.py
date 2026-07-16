@@ -1,9 +1,12 @@
 """Census-only refusal classifier for the moment-credit conduit
 (item-20, increment M18.2; adjudicated rounds 32/36).
 
-Classifies refused reaction rows (r93 general-branch refusals and upstream
-FEATURE-RADICAL refusals) into admission buckets for the future surrogate
-archetype ``moment_credit_conduit/1``. First increment (round-32
+Classifies refused reaction rows (r93 general-branch refusals and, for
+the narrow slice of upstream FEATURE-RADICAL refusals genuinely gated on
+QSSA validity -- see :data:`GENUINE_FEATURE_RADICAL_REASONS`, currently
+'qssa-invalid' and 'qssa-unassessable' -- FEATURE-RADICAL refusals too)
+into admission buckets for the future surrogate archetype
+``moment_credit_conduit/1``. First increment (round-32
 adjudication): shapes A and B only, admission is IRREVERSIBLE-ONLY, gas
 products must satisfy the gas-phase MW threshold (<= 1.5 x monomer MW).
 
@@ -91,8 +94,10 @@ encode the empirical split, which reproduces the adjudicated counts exactly.
 
 Round-36 landing P1s carried by this module:
 
-(a) STABLE CANDIDATE KEY + OVERLAP PRECEDENCE. 8,561 rows appear in BOTH
-    the r93 and feature-radical censuses. :func:`conduit_candidate_key`
+(a) STABLE CANDIDATE KEY + OVERLAP PRECEDENCE. A non-trivial share of rows
+    appear in BOTH the r93 and feature-radical censuses (the exact overlap
+    count is run-dependent and tracked live by :func:`census_summary`'s
+    ``overlap=`` token, not pinned here). :func:`conduit_candidate_key`
     gives every row a deterministic, orientation- and census-independent
     identity; the process-wide registry (:func:`register_candidate`)
     records which censuses have seen each key. FEATURE-RADICAL refusal
@@ -114,10 +119,38 @@ Round-36 landing P1s carried by this module:
     ``CONDUIT CLASSIFIER DIVERGENCE``) and recorded on the result --
     the in-repo isomorphism verdict is used, never a silent override of
     either side.
+
+    SAME-CENSUS RESIGHT RESOLUTION (round-50 P1, determinism finding):
+    when the SAME (candidate, census) pair is sighted more than once with
+    DIFFERENT buckets (e.g. a row re-classified across rebuild epochs),
+    that census's contribution to ``effective_bucket`` is no longer
+    last-write-wins (which made the final ledger state depend on sighting
+    order). Instead the registry keeps the FULL SET of buckets ever
+    sighted for that (candidate, census) pair and resolves it
+    deterministically via :data:`BUCKET_DECLARATION_ORDER`: the bucket
+    appearing LATEST in that fixed vocabulary order wins ("most
+    conservative wins" -- ADMISSIBLE_* loses to DEFERRED_*, which loses to
+    FEATURE_RADICAL/CONDUIT_ECHO, which loses to UNCLASSIFIED; see
+    :func:`_most_conservative_bucket`). This makes the resolved
+    per-census bucket, and therefore ``effective_bucket``, a pure function
+    of the SET of sightings -- order- and epoch-boundary-independent, as
+    this module's determinism contract requires. A (candidate, census)
+    pair that ever accumulates more than one distinct bucket is a
+    "resight divergence"; the count of such pairs is surfaced, loudly, as
+    an appended ``resight_divergence=<n>`` token on :func:`census_summary`
+    (never inserted into the per-row :func:`census_suffix`, which stays
+    unchanged). ``unclassified_total`` is likewise computed fresh from
+    the current registry state on every access (never incrementally
+    accumulated during ingestion), so it can never desync from the
+    sightings that produced it.
 """
 
+import atexit
+import base64
+import hashlib
 import logging
 import math
+import re
 import threading
 from collections import Counter
 from dataclasses import dataclass
@@ -161,6 +194,360 @@ POOL_LABEL_PREFIXES = ("phenol_formaldehyde",)
 #: classification (this is what separates shape E from shape D).
 POOL_STATE_RESOLVABLE_LABELS = ("trimer_rad33", "trimer_rad38", "trimer_rad44")
 
+# ---------------------------------------------------------------------------
+# round-53 adjudication: DECLARED vs ACTIVE pool-state label oracle
+# ---------------------------------------------------------------------------
+#
+# :data:`POOL_STATE_RESOLVABLE_LABELS` above is the DECLARED set: a
+# deck-curated, human-reviewable snapshot (historically drifted -- an old
+# "conduit3" deck's trimer labels turned out, on a real conduit4 run, to be
+# 108/108 core discrete trimer RADICALS, never pool species: the label
+# oracle and the in-repo isomorphism oracle disagreed on every single
+# sighting). The census layer must never trust DECLARED membership as
+# ground truth on its own; every declared label is validated against the
+# in-repo isomorphism oracle (:func:`rmgpy.polymer._discrete_resolves_to_pool_state`)
+# before it is trusted at runtime, producing the ACTIVE set (declared
+# members that pass validation). The oracle may only validate-or-DROP a
+# DECLARED label -- it never adds a label the deck did not declare.
+#
+# Validation reasons (closed vocabulary):
+LABEL_VALIDATION_ISO_PASS = "iso-pass"              # kept active
+LABEL_VALIDATION_ISO_FAIL = "iso-fail"              # declared, not isomorphic to any pool
+LABEL_VALIDATION_MISSING_SPECIES = "missing-species"  # declared label never sighted
+LABEL_VALIDATION_AMBIGUOUS = "ambiguous"            # matches more than one distinct pool
+
+
+def _validate_declared_label(species, row_pools):
+    """Validate a DECLARED pool-state label against a row's registered
+    pools using the in-repo isomorphism oracle
+    (:func:`rmgpy.polymer._discrete_resolves_to_pool_state`) as the
+    pass/fail gate. Returns ``(status, reason, pool_or_None)``.
+
+    The oracle itself only reports pass/fail; the extra per-pool walk
+    (``poly.is_isomorphic(species)``, the exact same test the oracle
+    applies internally) recovers WHICH pool matched, for the LABEL
+    VALIDATION line's ``pool=`` field, and detects a label mapping onto
+    more than one distinct pool proxy (``ambiguous``)."""
+    from rmgpy.polymer import _discrete_resolves_to_pool_state
+    if not _discrete_resolves_to_pool_state(species, row_pools):
+        return "dropped", LABEL_VALIDATION_ISO_FAIL, None
+    matches = []
+    for poly in row_pools or []:
+        try:
+            if poly.is_isomorphic(species):
+                pool_label = getattr(poly, "label", None) or ""
+                if pool_label not in matches:
+                    matches.append(pool_label)
+        except (ValueError, AttributeError):
+            continue
+    if len(matches) > 1:
+        return "dropped", LABEL_VALIDATION_AMBIGUOUS, None
+    if len(matches) == 1:
+        return "active", LABEL_VALIDATION_ISO_PASS, matches[0]
+    # Defensive: the oracle said True (e.g. species IS a Polymer, the
+    # oracle's isinstance short-circuit) but the re-walk found no named
+    # pool match. Treat as a genuine pass with no named pool rather than
+    # silently dropping a label the oracle itself validated.
+    return "active", LABEL_VALIDATION_ISO_PASS, None
+
+
+class _LabelOracleState:
+    """Process-wide, thread-safe DECLARED -> ACTIVE pool-state label
+    validation ledger (round-53).
+
+    Species/pools become known to this census layer per-refused-row (see
+    :func:`record_from_reaction`'s ``row_pools`` parameter) rather than
+    all up front at a single init point, so validation is LAZY: each
+    declared label is validated ONCE, the first time a species carrying
+    that label is sighted (:meth:`note_sighting`) -- never re-validated,
+    so a later mid-run drift shows up as a runtime DIVERGENCE (see
+    :func:`_species_entry`), not a silent re-validation. A declared label
+    that is never sighted during the run is resolved as
+    ``missing-species`` when the health line is finalized
+    (:meth:`finalize`) -- there is no species to validate it against, so
+    it can never earn ``iso-pass``.
+
+    LIFECYCLE (round-55 P1-2/P1-3 redesign): finalization is an explicit
+    END-OF-LIFECYCLE event, never a read-path side effect.
+    :func:`census_summary` is READ-ONLY; the boundary emitters are the
+    epoch reset (:meth:`reset` -- production-called via
+    :func:`reset_conduit_state` from rmgpy/rmg/main.py RMG.initialize)
+    and the module's process-exit ``atexit`` hook, each of which closes
+    the CURRENT lifecycle (finalize + one-shot health line) before any
+    state is cleared. Exactly one health line exists per lifecycle -- a
+    lifecycle opened by a reset or by any declared-label sighting --
+    even when zero census rows fired in it; the virgin import->first-reset
+    interval is not a lifecycle and emits nothing. A sighting landing
+    AFTER true finalization keeps the finalized verdict and, when that
+    verdict is ``dropped``, surfaces a loud versioned
+    ``CONDUIT CLASSIFIER ORACLE ANOMALY/1`` line (once per label per
+    lifecycle) instead of raising: this module's census-only contract is
+    that its code paths NEVER raise into generation code, and the
+    defensive fail-open handlers upstream (annotate_refused_row / G7)
+    would swallow a raise into a generic annotation failure -- strictly
+    quieter than the anomaly line.
+    """
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._validated = {}   # label -> (status, reason, pool)
+        self._finalized = False
+        self._health_line = None
+        self._open = False               # a lifecycle is in progress
+        self._post_final_warned = set()  # anomaly warn-once, per lifecycle
+        # round-60 P2-2: warn-once dedup for the
+        # concurrent-validation-disagreement anomaly (see note_sighting),
+        # keyed by label, per lifecycle. Cleared in reset() alongside the
+        # other lifecycle-scoped warn-once state below.
+        self._disagreement_warned = set()
+
+    def reset(self):
+        # round-55 P1-2/P1-3: the reset boundary CLOSES the outgoing
+        # lifecycle -- finalize (resolving never-sighted declared labels
+        # as missing-species) and emit its one-shot health line BEFORE
+        # clearing -- then opens a fresh one.
+        self.close_lifecycle()
+        with self._lock:
+            self._validated = {}
+            self._finalized = False
+            self._health_line = None
+            self._post_final_warned = set()
+            self._disagreement_warned = set()
+            self._open = True
+
+    def close_lifecycle(self):
+        """Boundary emitter (round-55 P1-2; round-56 F1): finalize-and-emit
+        the one-shot health line for the CURRENT lifecycle if one is open
+        (opened by a reset or by any declared-label sighting); a no-op on
+        virgin process state, so the process's first reset does not
+        report a lifecycle that never existed.
+
+        round-56 F1(b): idempotent per lifecycle -- a second close on an
+        already-closed (finalized) lifecycle returns the cached health line
+        WITHOUT re-emitting anything. This lets BOTH the initialize-time
+        reset boundary (:meth:`reset`) and the new production end-of-run
+        hook (:func:`close_conduit_lifecycle`, wired at rmgpy/rmg/main.py
+        RMG.finish) call it safely without ever double-emitting. finalize()
+        is itself idempotent via ``_finalized``; this explicit short-circuit
+        makes the no-double-emit contract local to close_lifecycle and
+        independent of finalize internals."""
+        with self._lock:
+            if self._finalized:
+                # Already closed this lifecycle -- no-op, cached line only.
+                return self._health_line
+            active = self._open or bool(self._validated)
+        if not active:
+            return None
+        return self.finalize()
+
+    def note_sighting(self, label, species, row_pools):
+        """Validate a DECLARED label the first time it is sighted attached
+        to a live species; a no-op for already-validated or non-declared
+        labels. NEVER raises (census-only code path).
+
+        round-55 P1-3: a sighting arriving AFTER true finalization keeps
+        the finalized verdict; if that verdict is ``dropped`` (chiefly
+        ``missing-species`` -- a late sighting directly contradicts it)
+        the contradiction is surfaced as a loud versioned ANOMALY/1 line,
+        once per label per lifecycle. See the class docstring for why the
+        anomaly line is chosen over raising.
+
+        round-56 F2 (finalize/note_sighting race, approach ii): the label
+        validation (:func:`_validate_declared_label`) runs OUTSIDE the lock
+        -- it is a cheap in-repo isomorphism check, but re-acquiring the
+        lock inside it would deadlock the deterministic interleave test and,
+        in production, a concurrent :meth:`finalize` can still slip into the
+        gap between the cached check and the setdefault. Approach (ii) is
+        used instead of holding the lock across validation: after the
+        setdefault we RE-CHECK the finalized state under the same lock, and
+        if finalize() won the race and marked this label dropped/
+        missing-species in the gap, we route through the SAME loud
+        post-finalization ANOMALY/1 path a normally-ordered late sighting
+        takes -- never silently returning the dropped verdict with no
+        anomaly. (Approach ii chosen over "hold the lock across validation"
+        precisely because the validation callable can re-enter the oracle:
+        the interleave test drives finalize() from inside it, which a held
+        non-reentrant lock would deadlock.)"""
+        if label not in POOL_STATE_RESOLVABLE_LABELS:
+            return None
+        with self._lock:
+            self._open = True
+            cached = self._validated.get(label)
+            warn_anomaly = (
+                self._finalized and cached is not None
+                and cached[0] == "dropped"
+                and label not in self._post_final_warned)
+            if warn_anomaly:
+                self._post_final_warned.add(label)
+        if warn_anomaly:
+            logging.warning(
+                "CONDUIT CLASSIFIER ORACLE ANOMALY/1 label=%s "
+                "event=post-finalization-sighting status=dropped reason=%s "
+                "action=keep-finalized-verdict", label, cached[1])
+        if cached is not None:
+            return cached
+        try:
+            computed = _validate_declared_label(species, row_pools)
+        except Exception:  # pragma: no cover - defensive fail-closed
+            computed = ("dropped", LABEL_VALIDATION_ISO_FAIL, None)
+        with self._lock:
+            result = self._validated.setdefault(label, computed)
+            won = result is computed
+            # F2 race close: finalize() interleaved and populated this label
+            # as dropped while we validated outside the lock. Do not return
+            # that dropped verdict silently -- flag the post-finalization
+            # anomaly here, under the lock, exactly once per label.
+            race_anomaly = (
+                not won and self._finalized and result[0] == "dropped"
+                and label not in self._post_final_warned)
+            if race_anomaly:
+                self._post_final_warned.add(label)
+            # round-60 P2-2: dedupe the concurrent-validation-disagreement
+            # anomaly below to once per (label, lifecycle) -- the check and
+            # the add happen together under self._lock (same lock/reset
+            # discipline as every other warn-once set in this class) so a
+            # losing race on a hot mistyped/flaky label cannot spam this
+            # line once per losing thread.
+            disagreement_anomaly = (
+                not won and not race_anomaly and result != computed
+                and label not in self._disagreement_warned)
+            if disagreement_anomaly:
+                self._disagreement_warned.add(label)
+        if won:
+            # This call won the (label not yet validated) race -- log it.
+            status, reason, pool = result
+            logging.warning(
+                "CONDUIT CLASSIFIER LABEL VALIDATION/1 label=%s status=%s "
+                "reason=%s pool=%s", label, status, reason, pool or "none")
+        elif race_anomaly:
+            logging.warning(
+                "CONDUIT CLASSIFIER ORACLE ANOMALY/1 label=%s "
+                "event=post-finalization-sighting status=dropped reason=%s "
+                "action=keep-finalized-verdict", label, result[1])
+        elif disagreement_anomaly:
+            # P1-B (round-58): two concurrent FIRST sightings of the SAME
+            # label both validate outside the lock; setdefault() picks a
+            # winner deterministically (first-write-wins), but until now a
+            # disagreement between the winner's cached verdict and this
+            # (losing) call's freshly-computed verdict vanished silently --
+            # the loser's result was simply discarded. Keep the cached
+            # (first-stored) verdict -- first-write-wins is still the
+            # resolution rule -- but make the disagreement loud instead of
+            # silent. round-60 P2-2: rate-limited to once per (label,
+            # lifecycle) -- see disagreement_anomaly above -- since every
+            # losing thread in a race would otherwise re-log this line.
+            logging.warning(
+                "CONDUIT CLASSIFIER ORACLE ANOMALY/1 label=%s "
+                "reason=concurrent-validation-disagreement kept=%s "
+                "discarded=%s", label, result, computed)
+        return result
+
+    def active_labels(self):
+        with self._lock:
+            return frozenset(l for l, (status, _reason, _pool)
+                             in self._validated.items() if status == "active")
+
+    def finalize(self):
+        """Resolve any never-sighted DECLARED label as ``missing-species``
+        and emit the one-shot health line (idempotent: repeat calls --
+        e.g. the reset boundary and the atexit hook racing at process
+        end, or an explicit :func:`finalize_label_oracle` before either --
+        return the already-computed line without re-emitting anything).
+
+        round-55 P1-4: the health line says ``validation=lazy-first-sight``
+        -- validation IS lazy (first-sight per label, finalize-at-boundary
+        for never-sighted labels); the token it replaces
+        (``validation=init``) claimed an init-time validation that never
+        existed. The rename is legal under the append-only token rule
+        because this line class was born in the same unpushed commit."""
+        with self._lock:
+            if self._finalized:
+                return self._health_line
+            newly_missing = []
+            for label in POOL_STATE_RESOLVABLE_LABELS:
+                if label not in self._validated:
+                    self._validated[label] = (
+                        "dropped", LABEL_VALIDATION_MISSING_SPECIES, None)
+                    newly_missing.append(label)
+            configured = len(POOL_STATE_RESOLVABLE_LABELS)
+            active = sum(1 for status, _reason, _pool
+                        in self._validated.values() if status == "active")
+            dropped = configured - active
+            line = (f"CONDUIT CLASSIFIER ORACLE HEALTH/1 configured={configured} "
+                    f"active={active} dropped={dropped} source=deck "
+                    f"validation=lazy-first-sight")
+            self._health_line = line
+            self._finalized = True
+        for label in newly_missing:
+            logging.warning(
+                "CONDUIT CLASSIFIER LABEL VALIDATION/1 label=%s status=dropped "
+                "reason=missing-species pool=none", label)
+        logging.warning(line)
+        return line
+
+
+#: Process-wide DECLARED -> ACTIVE label oracle instance.
+_LABEL_ORACLE = _LabelOracleState()
+
+
+def finalize_label_oracle():
+    """Explicit end-of-lifecycle finalization for the DECLARED/ACTIVE
+    label oracle (round-55 P1-3 redesign): resolve every never-sighted
+    declared label as ``missing-species`` and emit the one-shot
+    ``CONDUIT CLASSIFIER ORACLE HEALTH/1`` line; returns that line.
+    Idempotent within a lifecycle. Production never needs to call this
+    directly -- the epoch-reset boundary (:func:`reset_conduit_state`,
+    called from rmgpy/rmg/main.py RMG.initialize), the production
+    end-of-run hook (:func:`close_conduit_lifecycle`, wired at RMG.finish),
+    and the process-exit ``atexit`` guard below all fire it automatically,
+    which is what keeps :func:`census_summary` READ-ONLY."""
+    return _LABEL_ORACLE.finalize()
+
+
+def close_conduit_lifecycle():
+    """PRODUCTION end-of-run close for the label-oracle lifecycle (round-56
+    F1a): finalize the CURRENT lifecycle and emit its one-shot
+    ``CONDUIT CLASSIFIER ORACLE HEALTH/1`` line if one is open, else no-op.
+    Wired at the deterministic end-of-generation point (rmgpy/rmg/main.py
+    RMG.finish, the tail of RMG.execute) so this run's health line lands in
+    THIS run's log rather than being deferred to the next run's initialize
+    or left to the fragile process-exit path. Idempotent
+    (:meth:`_LabelOracleState.close_lifecycle`): safe to call alongside the
+    reset boundary and the atexit guard without double-emitting."""
+    return _LABEL_ORACLE.close_lifecycle()
+
+
+# round-56 F1(c)(d): atexit is KEPT, but strictly as a LAST-RESORT guard for
+# processes that crash or exit early WITHOUT reaching the RMG.finish hook
+# (:func:`close_conduit_lifecycle`). For a normal run the finish hook is the
+# primary close point and it runs first; because close_lifecycle() is
+# idempotent (no-op once finalized), the atexit guard then emits nothing --
+# so the health line is deterministic and never doubled.
+#
+# Double-registration hazard (importlib.reload re-executes this module body
+# in the SAME module namespace, which would register a second callback):
+# guard the register() call with a flag stored on the persistent ``atexit``
+# module itself (NOT a module-level name, which reload would reset). The
+# registered function references ``_LABEL_ORACLE`` BY NAME, so a reload that
+# rebinds the module global still closes the CURRENT oracle through the same
+# (in-place-updated) module __dict__.
+def _close_conduit_lifecycle_atexit():  # pragma: no cover - process teardown
+    _LABEL_ORACLE.close_lifecycle()
+
+
+if not getattr(atexit, "_conduit_lifecycle_atexit_registered", False):
+    atexit.register(_close_conduit_lifecycle_atexit)
+    atexit._conduit_lifecycle_atexit_registered = True
+
+
+def active_pool_state_labels():
+    """The current ACTIVE (validated) subset of
+    :data:`POOL_STATE_RESOLVABLE_LABELS` (round-53 DECLARED/ACTIVE split).
+    Never ground truth on its own before validation -- see
+    :class:`_LabelOracleState`."""
+    return _LABEL_ORACLE.active_labels()
+
+
 # Species roles
 POOL = "POOL"
 CHAIN = "CHAIN"
@@ -174,6 +561,13 @@ REASON_FEATURE_RADICAL = "feature-radical-upstream-refusal"
 REASON_DIRECTION = "direction-inadmissible-irreversible-source"
 REASON_UNRESOLVED = "unresolved-species-data"
 REASON_UNKNOWN_SHAPE = "shape-outside-vocabulary"
+#: P2a fix (classify_record/conduit_echo contract): reason attached to a
+#: record whose ``census`` is 'conduit_echo' -- a candidate echoing back
+#: through the same warn-once hook a genuine feature_radical sighting
+#: uses, for a non-genuine reason (see GENUINE_FEATURE_RADICAL_REASONS).
+#: Distinct from REASON_FEATURE_RADICAL: an echo sighting is never itself
+#: an upstream blocker.
+REASON_CONDUIT_ECHO = "conduit-echo-non-genuine-refusal"
 
 _SHAPE_TABLE = {
     (("CHAIN",), ("DISC", "POOL")): "A",
@@ -191,32 +585,77 @@ _SHAPE_TABLE = {
 #: > 'conduit_echo'.
 PRECEDENCE_RULE = "feature_radical"
 
+#: round-50 P1 same-census resight resolution: the FULL bucket vocabulary,
+#: in a fixed total order from LEAST conservative (most willing to admit)
+#: to MOST conservative (most willing to keep a row un-admitted/deferred).
+#: round-56 F4: this is an ENFORCED closed vocabulary -- :func:`register_candidate`
+#: coerces any bucket name outside it to UNCLASSIFIED (with a versioned
+#: anomaly line), so it is no longer merely an assumed/documented contract.
+#: When a single (candidate, census) pair is sighted with more than one
+#: DISTINCT bucket across multiple registrations, :func:`_most_conservative_bucket`
+#: picks the one appearing LATEST here -- never the last-write, so the
+#: resolved bucket (and therefore ``effective_bucket``) does not depend on
+#: sighting order. See the module docstring's "SAME-CENSUS RESIGHT
+#: RESOLUTION" paragraph for the full rationale.
+BUCKET_DECLARATION_ORDER = (
+    "ADMISSIBLE_A", "ADMISSIBLE_B",
+    "DEFERRED_A", "DEFERRED_B", "DEFERRED_C", "DEFERRED_D", "DEFERRED_E",
+    "DEFERRED_F",
+    "FEATURE_RADICAL", "CONDUIT_ECHO",
+    "UNCLASSIFIED",
+)
+_BUCKET_CONSERVATISM_RANK = {b: i for i, b in enumerate(BUCKET_DECLARATION_ORDER)}
+
+
+def _most_conservative_bucket(buckets):
+    """Resolve a set of buckets sighted under the SAME census for the SAME
+    candidate to a single deterministic bucket, per the fixed total order
+    :data:`BUCKET_DECLARATION_ORDER`: the bucket appearing LATEST in that
+    order wins. A set of one element returns that element unchanged (the
+    common case, and the only case for a census sighted just once).
+
+    An unrecognized bucket string is now ENFORCED out at registration
+    (round-56 F4): :func:`register_candidate` coerces any name outside the
+    closed :data:`BUCKET_DECLARATION_ORDER` vocabulary to UNCLASSIFIED and
+    emits a versioned anomaly line, so an unknown string can no longer reach
+    this function through the public API. The defensive after-everything
+    rank below is therefore pure defense-in-depth: were an unknown name to
+    arrive anyway it sorts after everything (never losing to a known,
+    less-conservative bucket), with lexicographic tie-breaking.
+
+    round-55 M2 (determinism defect fix): known buckets have pairwise
+    distinct ranks, but every UNKNOWN bucket string shares the defensive
+    after-everything rank -- under the old single-component key, max() over
+    two unknown names returned whichever the set yielded first, and str
+    hash randomization makes set iteration order vary across processes.
+    Rank ties therefore break lexicographically (largest name wins), so
+    the result is a pure function of the SET, never of iteration order."""
+    return max(buckets,
+              key=lambda b: (_BUCKET_CONSERVATISM_RANK.get(
+                  b, len(BUCKET_DECLARATION_ORDER)), str(b)))
+
 
 # ---------------------------------------------------------------------------
 # Species-level classification (pure core)
 # ---------------------------------------------------------------------------
 
-def _role_label(species):
-    """Label used for ROLE decisions. The optional ``label_for_roles``
-    override lets the in-repo adapter fold an isomorphism verdict into the
-    census label test without mutating the display label (round-36 P1(c):
-    the isomorphism test is the in-repo source of truth; the divergence is
-    census-logged, never silent)."""
-    lab = species.get("label_for_roles")
-    if lab is None:
-        lab = species.get("label")
-    return lab or ""
-
-
 def is_pool(species):
     """True if the species is a polymer pool participant (by label)."""
-    label = _role_label(species)
+    label = species.get("label") or ""
     return any(label.startswith(p) for p in POOL_LABEL_PREFIXES)
 
 
 def is_pool_state_resolvable(species):
-    """True for condensed chips that resolve to a pool state (by label)."""
-    return _role_label(species) in POOL_STATE_RESOLVABLE_LABELS
+    """True for condensed chips that resolve to a pool state (by label).
+
+    round-53: consults the VALIDATED ACTIVE label set
+    (:func:`active_pool_state_labels`), never the raw DECLARED set
+    (:data:`POOL_STATE_RESOLVABLE_LABELS`) -- a declared label is not
+    ground truth until the in-repo isomorphism oracle has validated it
+    (see the module's "DECLARED vs ACTIVE pool-state label oracle"
+    section)."""
+    label = species.get("label") or ""
+    return label in active_pool_state_labels()
 
 
 def is_chain_scale(species):
@@ -229,7 +668,35 @@ def is_chain_scale(species):
 
 
 def species_role(species):
-    if is_pool(species) or is_pool_state_resolvable(species):
+    """round-53 crash fix: ``pool_role_override`` (set by
+    :func:`_apply_iso_overrides` from a live per-species isomorphism
+    verdict) is an explicit BOOLEAN and is consulted ahead of the
+    ACTIVE-set label test -- it can assign POOL even with an EMPTY
+    ACTIVE set (an iso=True discrete whose label was never declared, or
+    was dropped), and it can equally veto a stale ACTIVE-set label match
+    (iso=False mid-run drift) by falling through to the size-based role
+    test instead. This replaces the old surrogate-label mechanism
+    (``label_for_roles = POOL_STATE_RESOLVABLE_LABELS[0]``), which raised
+    IndexError whenever the resolvable-label tuple was empty."""
+    # round-55 P2(b), reviewed and kept: is_pool() is consulted BEFORE
+    # pool_role_override, deliberately. The pool-label-prefix test is the
+    # pure core's stand-in for isinstance(..., Polymer) -- a STRUCTURAL
+    # identity of the participant, not an oracle verdict -- so the
+    # oracle-layer override (which exists solely to arbitrate
+    # DECLARED-label vs isomorphism disagreements on discrete chips) never
+    # gets to veto it. The in-repo adapter cannot even produce that
+    # conflict: _species_entry returns Polymer participants before the
+    # oracle/divergence machinery runs, so no pool participant ever
+    # carries an override; only a hand-built core record could combine
+    # the two, and pool identity should still win there.
+    if is_pool(species):
+        return POOL
+    override = species.get("pool_role_override")
+    if override is True:
+        return POOL
+    if override is False:
+        pass  # explicit non-pool verdict wins over a stale ACTIVE match
+    elif is_pool_state_resolvable(species):
         return POOL
     if species.get("mw") is None:
         return UNKNOWN
@@ -317,6 +784,18 @@ def classify_record(record, gas_mw_threshold=GAS_MW_THRESHOLD):
     if record["census"] == "feature_radical":
         result["bucket"] = "FEATURE_RADICAL"
         result["refusal_reason"] = REASON_FEATURE_RADICAL
+        return result
+
+    # P2a fix: conduit_echo census, documented at the top of this module
+    # as a valid ``record["census"]`` value, was previously unhandled here
+    # and fell through to r93-style shape classification (or UNCLASSIFIED)
+    # instead of the CONDUIT_ECHO bucket the docstring promises. Mirrors
+    # the feature_radical branch above: a pure-core caller passing a
+    # conduit_echo record gets CONDUIT_ECHO unconditionally, never a shape
+    # verdict an echo sighting carries no information to support.
+    if record["census"] == "conduit_echo":
+        result["bucket"] = "CONDUIT_ECHO"
+        result["refusal_reason"] = REASON_CONDUIT_ECHO
         return result
 
     if has_unresolved:
@@ -447,20 +926,30 @@ class _CensusRegistry:
     effective_bucket values for what is otherwise an identical sighting
     set -- an order dependency across rebuild epochs that violates this
     module's determinism contract. See :meth:`_effective_bucket_below_fr`.
+
+    SAME-CENSUS RESIGHT RESOLUTION (round-50 P1, determinism finding): the
+    per-census value in ``bucket_by_census`` is not last-write-wins either.
+    Internally each census tracks the FULL SET of buckets ever sighted for
+    it on this candidate (``bucket_sightings_by_census``); the exposed
+    ``bucket_by_census[census]`` is that set resolved via
+    :func:`_most_conservative_bucket`, so it -- and everything downstream
+    of it, including ``effective_bucket`` -- is a pure function of the
+    sighting set, independent of registration order or which rebuild
+    epoch a sighting landed in. See the module docstring's "SAME-CENSUS
+    RESIGHT RESOLUTION" paragraph.
     """
 
     def __init__(self):
         self._lock = threading.Lock()
         self._entries = {}
-        self.unclassified_total = 0
 
     def register(self, key, census, bucket, epoch=None):
         with self._lock:
             entry = self._entries.setdefault(
                 key, {"censuses": set(), "bucket_by_census": {},
+                      "bucket_sightings_by_census": {},
                       "effective_bucket": None, "shadow_bucket": None,
                       "precedence": None, "epochs": set()})
-            first_sighting = census not in entry["censuses"]
             entry["censuses"].add(census)
             # M18.3 ledger epochs (DESIGN §3.3): the engine rebuild-signature
             # id (or RMG iteration int) under which this sighting was
@@ -468,9 +957,13 @@ class _CensusRegistry:
             # of "feature_radical" in censuses, across ALL epochs of the run.
             if epoch is not None:
                 entry["epochs"].add(epoch)
-            entry["bucket_by_census"][census] = bucket
-            if bucket == "UNCLASSIFIED" and first_sighting:
-                self.unclassified_total += 1
+            sightings = entry["bucket_sightings_by_census"].setdefault(
+                census, set())
+            sightings.add(bucket)
+            # round-50 P1: resolve the (possibly multi-valued) sighting set
+            # for this census deterministically -- never last-write-wins.
+            entry["bucket_by_census"][census] = _most_conservative_bucket(
+                sightings)
             if "feature_radical" in entry["censuses"]:
                 entry["effective_bucket"] = "FEATURE_RADICAL"
                 entry["shadow_bucket"] = entry["bucket_by_census"].get(
@@ -482,8 +975,7 @@ class _CensusRegistry:
                     entry)
                 entry["shadow_bucket"] = None
                 entry["precedence"] = None
-            return dict(entry, censuses=set(entry["censuses"]),
-                        epochs=set(entry["epochs"]))
+            return self._copy_entry(entry)
 
     @staticmethod
     def _effective_bucket_below_fr(entry):
@@ -504,34 +996,146 @@ class _CensusRegistry:
             return entry["bucket_by_census"][winner]
         return entry["bucket_by_census"][CONDUIT_ECHO_CENSUS]
 
+    @staticmethod
+    def _copy_entry(entry):
+        """Defensive copy: callers must never be able to mutate internal
+        registry state through a returned entry. EVERY nested mutable
+        container is duplicated: the top-level dict, the censuses/epochs
+        sets, the ``bucket_by_census`` dict (round-55 P1-1: this one was
+        previously returned LIVE, so register/lookup callers could reach
+        registry internals through the "copy"), and each per-census
+        sighting set. All remaining leaf values are strings or None
+        (immutable), so the returned view is fully detached."""
+        return dict(
+            entry,
+            censuses=set(entry["censuses"]),
+            epochs=set(entry["epochs"]),
+            bucket_by_census=dict(entry["bucket_by_census"]),
+            bucket_sightings_by_census={
+                c: set(b) for c, b in entry["bucket_sightings_by_census"].items()
+            },
+        )
+
     def lookup(self, key):
         with self._lock:
             entry = self._entries.get(key)
             if entry is None:
                 return None
-            return dict(entry, censuses=set(entry["censuses"]),
-                        epochs=set(entry["epochs"]))
+            return self._copy_entry(entry)
 
     def counts(self):
+        """Return ``(eff, overlap, total, resight_divergence)``, ALL
+        recomputed fresh from the current final registry state (round-50
+        P1 fix #5): never incrementally accumulated during ingestion, so
+        none of these can desync from the sightings that produced them,
+        and all are permutation-of-sightings independent."""
         with self._lock:
             eff = Counter(e["effective_bucket"] for e in self._entries.values())
             eff.setdefault("UNCLASSIFIED", 0)
             overlap = sum(1 for e in self._entries.values()
                           if len(e["censuses"]) > 1)
-            return eff, overlap, len(self._entries)
+            resight_divergence = sum(
+                1
+                for e in self._entries.values()
+                for sightings in e["bucket_sightings_by_census"].values()
+                if len(sightings) > 1
+            )
+            return eff, overlap, len(self._entries), resight_divergence
+
+    @property
+    def unclassified_total(self):
+        """Candidates whose current ``effective_bucket`` is UNCLASSIFIED,
+        computed fresh from final registry state on every access (round-50
+        P1 fix #5) -- never an incrementally-maintained counter, so it can
+        never desync from a same-census resighting that changes a
+        candidate's resolved bucket after its first sighting."""
+        with self._lock:
+            return sum(1 for e in self._entries.values()
+                      if e["effective_bucket"] == "UNCLASSIFIED")
 
     def reset(self):
         with self._lock:
             self._entries.clear()
-            self.unclassified_total = 0
 
 
 #: The process-wide registry instance.
 CENSUS_REGISTRY = _CensusRegistry()
 
+#: round-60 P2-3: single module-level lock guarding every check-then-add
+#: sequence against the module-level warn-once sets below
+#: (_bucket_anomaly_warned, _admission_token_anomaly_warned). These
+#: previously did an UNLOCKED "if key not in set: add; log" -- two
+#: concurrent threads could both pass the membership check before either
+#: added the key, so both would log (double emission). reset_conduit_state()
+#: clears these same sets under this lock too (:func:`_warn_once_clear`), so
+#: a lifecycle reset can never race a concurrent check-then-add in
+#: :func:`_warn_once` and leave the set in a state where the loser's key
+#: silently vanishes without ever logging.
+_WARN_ONCE_LOCK = threading.Lock()
+
+
+def _warn_once(warned_set, key, message, *args):
+    """Thread-safe check-then-add against a module-level warn-once set
+    (round-60 P2-3): adds ``key`` to ``warned_set`` and logs ``message`` %
+    ``args`` at most once per key, with the check-then-add itself guarded by
+    :data:`_WARN_ONCE_LOCK` so concurrent callers can never both win the
+    race. Returns True iff this call was the one that logged."""
+    with _WARN_ONCE_LOCK:
+        if key in warned_set:
+            return False
+        warned_set.add(key)
+    logging.warning(message, *args)
+    return True
+
+
+def _warn_once_clear(*warned_sets):
+    """Clear one or more warn-once sets atomically under
+    :data:`_WARN_ONCE_LOCK` (round-60 P2-3), so a lifecycle reset can never
+    interleave with a concurrent :func:`_warn_once` check-then-add."""
+    with _WARN_ONCE_LOCK:
+        for s in warned_sets:
+            s.clear()
+
+
+#: round-58 P2-B: warn-once dedup state for the unknown-bucket anomaly line
+#: below, keyed by ``(census, bucket)``. Mirrors the module-level warn-once
+#: set pattern used throughout :mod:`rmgpy.polymer` (e.g.
+#: ``_refused_census_warned``, ``_flux_archetype_warned``): a hot
+#: coercion producer (a persistently-mistyped bucket name feeding
+#: :func:`register_candidate` on every registration) would otherwise spam
+#: one log line PER REGISTRATION. The underlying COERCION below still
+#: applies on EVERY call -- only the LOG LINE is deduplicated. Cleared by
+#: :func:`reset_conduit_state` so a new lifecycle re-arms the line. Checked
+#: and set under :data:`_WARN_ONCE_LOCK` via :func:`_warn_once` (round-60
+#: P2-3).
+_bucket_anomaly_warned = set()
+
 
 def register_candidate(key, census, bucket, epoch=None):
-    """Record a candidate sighting; returns the resolved registry entry."""
+    """Record a candidate sighting; returns the resolved registry entry.
+
+    round-56 F4 (unknown-bucket domination fix): this public entry point is
+    where the bucket vocabulary is ENFORCED. :data:`BUCKET_DECLARATION_ORDER`
+    is a closed vocabulary; a bucket name outside it (e.g. a typo) would --
+    absent this check -- reach :func:`_most_conservative_bucket`, where its
+    defensive after-everything rank sorts it ABOVE every known bucket
+    (including UNCLASSIFIED) and would silently dominate the correct
+    conservative classification. Instead, an out-of-vocabulary bucket is
+    COERCED to UNCLASSIFIED and a loud versioned anomaly line is emitted, so
+    no unknown string ever reaches the registry. Never raises (census-only
+    contract).
+
+    round-58 P2-B: the coercion itself runs on EVERY call (registry state
+    must stay correct every time); the anomaly LOG LINE is deduplicated to
+    once per ``(census, bucket)`` pair per lifecycle (:data:`_bucket_anomaly_warned`)
+    so a hot mistyped-bucket producer cannot spam the log once per
+    registration."""
+    if bucket not in _BUCKET_CONSERVATISM_RANK:
+        _warn_once(
+            _bucket_anomaly_warned, (census, bucket),
+            "CONDUIT CENSUS BUCKET ANOMALY/1 census=%s bucket=%s "
+            "action=coerced-unclassified", census, bucket)
+        bucket = "UNCLASSIFIED"
     return CENSUS_REGISTRY.register(key, census, bucket, epoch=epoch)
 
 
@@ -549,11 +1153,33 @@ def reset_conduit_state():
     _refused_census_warned); resetting the ledger without that set would
     silently starve the FR side of re-sightings in the new run, so a
     fresh run could admit a candidate its own censuses never got to
-    re-block. Also clears the run-level conduit flux accumulator (§4.4).
+    re-block. Also clears the run-level conduit flux accumulator (§4.4) and
+    the round-53 DECLARED/ACTIVE label-oracle ledger (:data:`_LABEL_ORACLE`)
+    so a fresh run re-validates every declared label from scratch.
+
+    round-55 P1-2: this reset is also the label oracle's LIFECYCLE
+    boundary -- before its ledger is cleared, the outgoing lifecycle is
+    finalized (never-sighted declared labels resolve as missing-species)
+    and its one-shot ``CONDUIT CLASSIFIER ORACLE HEALTH/1`` line is
+    emitted, exactly once per epoch-reset cycle, even when zero census
+    rows fired in it (the virgin import->first-reset interval is not a
+    lifecycle and emits nothing; the process-exit atexit hook closes the
+    final lifecycle of the process).
+
     Import-safe: the rmgpy.polymer sets are cleared lazily so this module
     keeps its no-module-level-RMG-imports contract."""
+    # Close the outgoing label-oracle lifecycle FIRST (its health line is
+    # computed from pre-clear state), then clear everything together.
+    _LABEL_ORACLE.reset()
     CENSUS_REGISTRY.reset()
     _CONDUIT_FLUX_TOTALS.clear()
+    # round-58 P2-B: the unknown-bucket and F3 token-anomaly warn-once
+    # dedup sets are part of the same "reset both or neither" contract --
+    # a new lifecycle must re-arm these lines, not inherit an already-fired
+    # dedup key from the previous run. round-60 P2-3: cleared atomically
+    # under _WARN_ONCE_LOCK (via _warn_once_clear) so this reset can never
+    # race a concurrent _warn_once() check-then-add on either set.
+    _warn_once_clear(_bucket_anomaly_warned, _admission_token_anomaly_warned)
     try:
         import rmgpy.polymer as _polymer
         _polymer._refused_census_warned.clear()
@@ -575,11 +1201,27 @@ def reset_census_registry():
 
 
 def census_summary():
-    """One-line loud census summary. ALWAYS names UNCLASSIFIED, zero or not."""
-    eff, overlap, total = CENSUS_REGISTRY.counts()
+    """One-line loud census summary. ALWAYS names UNCLASSIFIED, zero or not.
+
+    round-50 P1: APPENDS a ``resight_divergence=<n>`` token after the
+    existing tokens -- the count of (candidate, census) pairs that were
+    ever sighted with more than one distinct bucket (see the module
+    docstring's "SAME-CENSUS RESIGHT RESOLUTION" paragraph). This is a
+    pure append: every existing token/ordering in this line is unchanged.
+
+    round-55 P1-3: READ-ONLY. This used to be the "summary time"
+    finalization hook for the lazy DECLARED/ACTIVE label oracle, which
+    made any EARLY (diagnostic) summary call permanently resolve every
+    not-yet-sighted declared label as ``missing-species`` -- poisoning
+    legitimate later sightings with the cached dropped verdict. A summary
+    now reports current state without finalizing anything; finalization
+    lives at the explicit end-of-lifecycle boundaries (the epoch reset
+    :func:`reset_conduit_state` and the process-exit atexit hook; see
+    :func:`finalize_label_oracle` and :class:`_LabelOracleState`)."""
+    eff, overlap, total, resight_divergence = CENSUS_REGISTRY.counts()
     parts = " ".join(f"{b}={eff[b]}" for b in sorted(eff))
     return (f"conduit-census/1 summary: candidates={total} overlap={overlap} "
-            f"{parts}")
+            f"{parts} resight_divergence={resight_divergence}")
 
 
 def log_census_summary():
@@ -625,12 +1267,23 @@ def gas_mw_threshold_for_pools(row_pools):
 def _species_entry(species, row_pools):
     """Species record from a live RMG object, reusing the in-repo predicates.
 
-    Round-36 P1(c) divergence rule: the census-side LABEL test for
-    pool-state resolvability is compared against the in-repo ISOMORPHISM
-    test (:func:`rmgpy.polymer._discrete_resolves_to_pool_state`); on
-    divergence the mismatch is census-logged (token: CONDUIT CLASSIFIER
-    DIVERGENCE) and flagged on the entry, and the ISOMORPHISM verdict is
-    used -- neither side is silently overridden.
+    Round-36 P1(c) divergence rule, reshaped by round-53: the census-side
+    LABEL test for pool-state resolvability is now the VALIDATED ACTIVE
+    set (never the raw DECLARED set -- see the module's "DECLARED vs
+    ACTIVE pool-state label oracle" section), compared against the
+    in-repo ISOMORPHISM test
+    (:func:`rmgpy.polymer._discrete_resolves_to_pool_state`) run fresh on
+    THIS row's own species/pools. A DECLARED label is validated once, at
+    its first sighting here (:meth:`_LabelOracleState.note_sighting`), so
+    that same-row validation and the divergence check can never disagree
+    on the very sighting that establishes the label's ACTIVE-set
+    membership; a genuine divergence now means the ACTIVE-set verdict and
+    THIS row's structural verdict disagree -- either real mid-run drift,
+    or a species that is genuinely isomorphic under a label that was
+    never declared (or was dropped). On divergence the mismatch is
+    census-logged (versioned token: CONDUIT CLASSIFIER DIVERGENCE/1) and
+    flagged on the entry, and the ISOMORPHISM verdict is used -- neither
+    side is silently overridden.
     """
     from rmgpy.molecule import Molecule
     from rmgpy.polymer import (Polymer, _discrete_resolves_to_pool_state,
@@ -664,8 +1317,12 @@ def _species_entry(species, row_pools):
         except (ValueError, AttributeError):
             pass
 
-    # Divergence check: census label test vs in-repo isomorphism test.
-    label_says = label in POOL_STATE_RESOLVABLE_LABELS
+    # round-53: validate a DECLARED label at its first sighting (lazy --
+    # species/pools become known to this census layer per-row, not at a
+    # single init point), then compare the resulting ACTIVE-set membership
+    # against THIS row's own structural isomorphism verdict.
+    _LABEL_ORACLE.note_sighting(label, species, row_pools)
+    label_says = label in _LABEL_ORACLE.active_labels()
     try:
         iso_says = bool(_discrete_resolves_to_pool_state(species, row_pools))
     except Exception:  # defensive: census-only code must not raise
@@ -673,19 +1330,14 @@ def _species_entry(species, row_pools):
     if label_says != iso_says:
         entry["_divergence"] = True
         logging.warning(
-            "CONDUIT CLASSIFIER DIVERGENCE (M18.2 census-only): species %s "
-            "pool-state resolvability disagrees between the census label "
-            "test (%s) and the in-repo isomorphism test (%s); using the "
-            "isomorphism verdict. This is a finding, not an override -- "
-            "record it for the next adversarial round.",
-            token, label_says, iso_says)
-    if iso_says and not label_says:
-        # Make the core's role assignment follow the isomorphism verdict
-        # without touching POOL_STATE_RESOLVABLE_LABELS: mark via label
-        # override field the core checks first.
-        entry["_iso_pool_state"] = True
-    if label_says and not iso_says:
-        entry["_iso_pool_state"] = False
+            "CONDUIT CLASSIFIER DIVERGENCE/1 species=%s label=%s "
+            "label_says=%d iso_says=%d active_label=%d action=use-iso",
+            token, label, int(label_says), int(iso_says), int(label_says))
+        # Make the core's role assignment follow the isomorphism verdict via
+        # the explicit boolean override field (round-53 crash fix; see
+        # :func:`_apply_iso_overrides` / :func:`species_role`) -- never a
+        # surrogate label swap.
+        entry["_iso_pool_state"] = iso_says
     return entry, None
 
 
@@ -720,16 +1372,24 @@ def record_from_reaction(forward, row_pools, census="r93_general"):
 
 
 def _apply_iso_overrides(record):
-    """Fold the adapter's isomorphism verdicts into the core's label test:
-    entries carrying _iso_pool_state get their label swapped onto/off the
-    resolvable list surrogate (handled by giving them a role hint)."""
+    """Fold the adapter's per-species isomorphism verdict into the core's
+    role test via an explicit BOOLEAN override field (round-53 crash fix):
+    entries carrying an ``_iso_pool_state`` hint (set by
+    :func:`_species_entry` exactly on divergence) get ``pool_role_override``
+    set to that hint, consumed by :func:`species_role` ahead of the
+    ACTIVE-set label test.
+
+    This replaces the old surrogate-label mechanism
+    (``label_for_roles = POOL_STATE_RESOLVABLE_LABELS[0]``), which raised
+    IndexError whenever the resolvable-label tuple was empty -- exactly
+    the state an all-dropped DECLARED set now reaches routinely. Species
+    with no hint (the overwhelming common case: no divergence) are left
+    untouched."""
     for side in (record["reactants"], record["products"]):
         for s in side:
             hint = s.pop("_iso_pool_state", None)
-            if hint is True and s["label"] not in POOL_STATE_RESOLVABLE_LABELS:
-                s["label_for_roles"] = POOL_STATE_RESOLVABLE_LABELS[0]
-            elif hint is False and s["label"] in POOL_STATE_RESOLVABLE_LABELS:
-                s["label_for_roles"] = ""
+            if hint is not None:
+                s["pool_role_override"] = hint
     return record
 
 
@@ -805,7 +1465,11 @@ CANDIDATE_KEY_NOTE = ("run-scoped provenance only; species indices are not "
 #: reason: a pure conduit_echo sighting never carries a live reaction
 #: object, so G0/G2-G7 never run there -- fail-closed default-deny stays,
 #: with an HONEST reason (never fabricate "feature-radical-overlap" for a
-#: key G1 does not actually block).
+#: key G1 does not actually block). 'admission-token-anomaly' (round-56 F3)
+#: is the fail-closed fallback emitted when a reserved token (currently
+#: 'echo-not-evaluated') is misused: :func:`admission_census_suffix`
+#: deny-by-defaults with this reason instead of propagating the misused
+#: token, and logs a versioned CONDUIT ADMISSION TOKEN ANOMALY/1 line.
 ADMISSION_DENY_REASONS = frozenset({
     "classifier-not-admissible", "classifier-divergence",
     "feature-radical-overlap", "direction-inadmissible",
@@ -814,7 +1478,15 @@ ADMISSION_DENY_REASONS = frozenset({
     "landing-cone-violation", "destination-unresolvable",
     "chain-not-condensed", "not-balanced", "kinetics-not-exportable",
     "kinetics-not-yet-assigned", "echo-not-evaluated",
+    "admission-token-anomaly",
 })
+
+#: round-58 P2-B: warn-once dedup state for the F3 token-anomaly lines in
+#: :func:`admission_census_suffix`, keyed by ``(candidate_key, reason)``.
+#: Same rationale/pattern as :data:`_bucket_anomaly_warned`: the fail-closed
+#: substitution runs on EVERY misuse, only the log line is deduplicated.
+#: Cleared by :func:`reset_conduit_state` so a new lifecycle re-arms it.
+_admission_token_anomaly_warned = set()
 
 #: PROVISIONAL deny reasons (G6 re-adjudication defect fix): the r93 stamp
 #: site (rmgpy/rmg/model.py make_new_reaction, BEFORE check_existing) runs
@@ -1055,12 +1727,208 @@ def admission_census_suffix(verdict):
     :data:`PROVISIONAL_DENY_REASONS` (subject to re-adjudication); every
     other line -- every admit and every one-shot deny -- is the final
     word for its emission and says so with ``stage=final``. Count/filter
-    with ``stage=final``."""
+    with ``stage=final``.
+
+    P2b fix (echo-token reservation, fail-closed): this is the ONE
+    chokepoint every caller (:func:`annotate_refused_row` and
+    :func:`annotate_feature_radical`) routes a verdict through before it
+    is serialized, so it is where ``echo-not-evaluated`` is reserved.
+    That reason means "this key was never evaluated because the sighting
+    is a pure conduit_echo with no live reaction object" -- it is a lie
+    if the SAME candidate key also carries any non-echo census
+    membership (that key WAS genuinely evaluated, under a different
+    census), and it also describes a RECORDED echo sighting, so a key with
+    NO ledger entry at all (never registered under ANY census) misuses it
+    too. Either misuse is a caller bug (the only legitimate producer,
+    :func:`annotate_feature_radical`, registers an echo-only sighting
+    before building the verdict).
+
+    round-56 F3 (never-raise-contract alignment): both misuses previously
+    RAISED :class:`ValueError`. That exception, escaping into the
+    census-only production wrappers, was swallowed into a generic
+    ``annotation-failed`` line -- losing the specific invariant info AND
+    violating this module's never-raise contract (census/bookkeeping code
+    must never raise into generation paths). Each is now surfaced as a
+    loud VERSIONED anomaly line (``CONDUIT ADMISSION TOKEN ANOMALY/1``)
+    naming the key, the token, the specific reason, and the census
+    memberships, and the suffix falls back to a fail-closed deny that does
+    NOT propagate the reserved ``echo-not-evaluated`` token (deny-by-
+    default, but never emit the token that was misused).
+
+    round-58 P2-B: both F3 anomaly lines below are rate-limited to once per
+    ``(candidate_key, reason)`` per lifecycle (:data:`_admission_token_anomaly_warned`),
+    mirroring the same warn-once dedup pattern used for the unknown-bucket
+    anomaly in :func:`register_candidate` -- the fail-closed substitution
+    itself still happens on EVERY call, only the log line is deduplicated.
+
+    round-58 P2-C: a denied verdict's ``deny_reason`` is validated against
+    the closed :data:`ADMISSION_DENY_REASONS` vocabulary (plus the
+    dynamically-suffixed ``admission-evaluation-error:*`` G7 family) before
+    it is serialized, so a future typo'd reason can never leak as a
+    structured token into the census output: an out-of-vocabulary reason is
+    surfaced with a loud ``CONDUIT ADMISSION TOKEN ANOMALY/1`` line and
+    substituted with ``admission-token-anomaly`` -- the same conservative,
+    in-vocabulary fail-closed token this function already uses for the
+    echo-token misuses above.
+
+    round-60 P2-1 (token-injection hole): the dynamic
+    ``admission-evaluation-error:*`` family (G7's fail-closed catch-all,
+    suffixed with the failing exception's TYPE NAME) deliberately bypasses
+    the closed-vocabulary check above -- it is not a fixed literal. That
+    made it the one path that serialized an attacker/data-influenced string
+    into the census line WITHOUT going through any charset validation: a
+    dynamically-constructed exception class with a crafted ``__name__``
+    could embed spaces, ``=``, or brackets and forge what looks like
+    additional ``key=value`` tokens in the line. This chokepoint now
+    sanitizes that dynamic suffix -- same strict charset every other
+    already-safe token value in this module uses -- before it can ever be
+    serialized (see the sanitization block below), so no value can ever
+    produce a token with embedded whitespace or ``=`` regardless of input.
+
+    round-60 P2-3: the anomaly lines in this function (echo-token misuse,
+    dynamic-token sanitization, unknown-deny-reason) are all rate-limited
+    via :func:`_warn_once`, which guards the check-then-add against
+    :data:`_admission_token_anomaly_warned` with :data:`_WARN_ONCE_LOCK` so
+    concurrent callers can never both win the race and double-emit."""
     if verdict is None:
         return ""
+    if verdict.deny_reason == "echo-not-evaluated":
+        entry = lookup_candidate(verdict.candidate_key)
+        if entry is None:
+            # F3: unregistered-key echo token -- loud versioned anomaly,
+            # fail-closed deny WITHOUT the reserved token.
+            _warn_once(
+                _admission_token_anomaly_warned,
+                (verdict.candidate_key, "unregistered-key"),
+                "CONDUIT ADMISSION TOKEN ANOMALY/1 key=%s "
+                "token=echo-not-evaluated reason=unregistered-key "
+                "action=fail-closed-deny", verdict.candidate_key)
+            verdict = _deny(verdict.candidate_key, "admission-token-anomaly")
+        else:
+            non_echo_censuses = entry["censuses"] - {CONDUIT_ECHO_CENSUS}
+            if non_echo_censuses:
+                # F3: mixed-membership echo token -- kept EQUALLY loud and
+                # versioned (not downgraded), fail-closed deny WITHOUT the
+                # reserved token.
+                _warn_once(
+                    _admission_token_anomaly_warned,
+                    (verdict.candidate_key, "mixed-census-membership"),
+                    "CONDUIT ADMISSION TOKEN ANOMALY/1 key=%s "
+                    "token=echo-not-evaluated "
+                    "reason=mixed-census-membership censuses=%s "
+                    "action=fail-closed-deny",
+                    verdict.candidate_key,
+                    "+".join(sorted(non_echo_censuses)))
+                verdict = _deny(verdict.candidate_key,
+                                "admission-token-anomaly")
+    if (verdict.deny_reason or "").startswith("admission-evaluation-error:"):
+        # P2-1: sanitize the dynamic G7 suffix at the serialization
+        # chokepoint. Only a strict [A-Za-z0-9_.-]+ charset survives --
+        # matching the charset every static deny-reason literal in
+        # ADMISSION_DENY_REASONS already satisfies -- so this token can
+        # never carry embedded whitespace, '=', or brackets that a naive
+        # downstream parser could mistake for other structured tokens.
+        raw_suffix = verdict.deny_reason[len("admission-evaluation-error:"):]
+        sanitized_full = re.sub(r"[^A-Za-z0-9_.-]", "_", raw_suffix) or "unsanitizable"
+        was_dirty = sanitized_full != raw_suffix
+        # round-66 P2 (Finding 1): the sanitized suffix above was still
+        # UNBOUNDED -- a huge raw_suffix (whether charset-dirty or already
+        # charset-clean) produced an equally huge sanitized string that was
+        # both logged verbatim in the anomaly line's `sanitized=` field AND
+        # emitted as the final census deny token, so the length-cap half of
+        # the round-65 DoS fix was never actually wired up. Cap the
+        # sanitized form at 64 chars and use the IDENTICAL truncated string
+        # for both the census token and the `sanitized=` field -- they must
+        # never diverge. Truncating an already charset-clean string
+        # trivially still matches [A-Za-z0-9_.-]+ (tested).
+        was_long = len(sanitized_full) > 64
+        sanitized = sanitized_full[:64] if was_long else sanitized_full
+        if was_dirty or was_long:
+            # round-64 P2 (sanitized deny reasons silently collapse distinct
+            # causes): the census TOKEN stays exactly the sanitized value
+            # above (cardinality/vocabulary unchanged), but distinct raw
+            # suffixes that happen to sanitize to the same token (e.g.
+            # "bad token" / "bad=token" / "bad_token") would otherwise be
+            # indistinguishable, and the raw value was never recorded
+            # anywhere auditable.
+            #
+            # round-65 P2 (Findings 1+2+3, joint fix): repr(raw_suffix) could
+            # embed a literal space inside its quotes, breaking the one-line
+            # whitespace-parseable key=value contract (F1); logging the full
+            # raw with no cap is a log/memory DoS vector for a huge raw
+            # suffix (F2); and a 12-hex (48-bit) dedup key risked suppressing
+            # a genuinely distinct second raw on a 48-bit collision (F3).
+            # Fixed by: hashing the FULL raw (never-raise via
+            # errors="backslashreplace" so a malformed/surrogate-bearing raw
+            # can never raise inside this census-only, never-raise path);
+            # keying dedup on the FULL sha256 hexdigest (not the truncated
+            # display form); and replacing the repr'd raw with two
+            # whitespace-free bounded fields -- raw_len (full character
+            # length) and raw_b64 (base64url, unpadded, of only the first 96
+            # encoded bytes, truncated BEFORE base64 so the field itself is
+            # always bounded -- round-66 P3 (Finding 3) switched this from
+            # padded standard base64 to unpadded base64url so the field can
+            # never contain a `=` that could confuse a naive
+            # split-on-first-`=` key=value parser). The DISPLAYED raw_sha
+            # stays the first 12 hex chars of the full digest, unchanged in
+            # shape from round-64.
+            #
+            # round-66 P2 (Finding 1, continued): the anomaly now ALSO
+            # fires when the only problem is over-length (charset-clean but
+            # >64 chars) -- previously such a raw sailed through with no
+            # anomaly line at all, leaving the operator with no way to
+            # audit that a token had been silently truncated. `action=`
+            # distinguishes the cases from a closed vocabulary:
+            # `sanitized-truncated` (both problems), `truncated`
+            # (over-length only), `sanitized` (charset-dirty only,
+            # unchanged from round-65). The raw_sha (12-hex display of the
+            # FULL sha256, still the dedup key) already disambiguates
+            # collisions between distinct raws that truncate to the same
+            # token, so no hash is appended to the token itself -- that
+            # would change census cardinality/vocabulary shape, which
+            # remains forbidden.
+            raw_bytes = raw_suffix.encode("utf-8", errors="backslashreplace")
+            raw_digest = hashlib.sha256(raw_bytes).hexdigest()
+            raw_sha = raw_digest[:12]
+            raw_len = len(raw_suffix)
+            raw_b64 = base64.urlsafe_b64encode(
+                raw_bytes[:96]).rstrip(b"=").decode("ascii")
+            if was_dirty and was_long:
+                action = "sanitized-truncated"
+            elif was_long:
+                action = "truncated"
+            else:
+                action = "sanitized"
+            _warn_once(
+                _admission_token_anomaly_warned,
+                (verdict.candidate_key, raw_digest),
+                "CONDUIT ADMISSION TOKEN ANOMALY/1 key=%s "
+                "reason=unsanitized-error-token raw_sha=%s raw_len=%s "
+                "raw_b64=%s sanitized=%s action=%s",
+                verdict.candidate_key, raw_sha, raw_len, raw_b64, sanitized,
+                action)
+            verdict = _deny(verdict.candidate_key,
+                            f"admission-evaluation-error:{sanitized}")
     if verdict.admitted:
         return (f" [conduit-admission/1 would_admit=1 deny=None "
                 f"stage=final rewrite={verdict.needs_irreversible_rewrite}]")
+    if (verdict.deny_reason not in ADMISSION_DENY_REASONS
+            and not (verdict.deny_reason or "").startswith(
+                "admission-evaluation-error:")):
+        # P2-C: an unknown/typo'd deny reason must never leak as a
+        # structured token -- surface it loudly and fail-closed with the
+        # existing conservative in-vocabulary fallback. round-60 P3-1:
+        # rate-limited (once per (candidate_key, reason) per lifecycle) so
+        # a persistently-misbehaving producer cannot spam this line once
+        # per call, mirroring every other TOKEN ANOMALY line in this
+        # function.
+        _warn_once(
+            _admission_token_anomaly_warned,
+            (verdict.candidate_key, "unknown-deny-reason", verdict.deny_reason),
+            "CONDUIT ADMISSION TOKEN ANOMALY/1 key=%s "
+            "reason=unknown-deny-reason value=%s action=fail-closed-deny",
+            verdict.candidate_key, verdict.deny_reason)
+        verdict = _deny(verdict.candidate_key, "admission-token-anomaly")
     stage = ("provisional" if verdict.deny_reason in PROVISIONAL_DENY_REASONS
              else "final")
     return (f" [conduit-admission/1 would_admit=0 "
