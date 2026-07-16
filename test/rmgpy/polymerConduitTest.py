@@ -927,6 +927,49 @@ class TestOverlapPrecedence:
         assert entry["shadow_bucket"] is None
         assert entry["precedence"] is None
 
+    def test_conduit_echo_ranks_lowest_r93_then_echo(self, clean_registry):
+        """round-50 determinism finding: 'conduit_echo' is the LOWEST
+        precedence rank -- r93_general's bucket must survive a LATER
+        conduit_echo sighting of the same key (echo never overwrites a
+        genuine census's effective_bucket)."""
+        register_candidate(self.KEY, "r93_general", "ADMISSIBLE_A")
+        entry = register_candidate(self.KEY, "conduit_echo", "CONDUIT_ECHO")
+        assert entry["effective_bucket"] == "ADMISSIBLE_A"
+        assert entry["censuses"] == {"r93_general", "conduit_echo"}
+
+    def test_conduit_echo_ranks_lowest_echo_then_r93(self, clean_registry):
+        """Same pair, OPPOSITE registration order: conduit_echo sighted
+        FIRST must not stick -- a later r93_general sighting must still
+        win for effective_bucket. Together with the r93-then-echo test
+        above, this pins order-independence: the SAME sighting set must
+        resolve to the SAME ledger state regardless of write order (the
+        determinism bug this finding fixes)."""
+        register_candidate(self.KEY, "conduit_echo", "CONDUIT_ECHO")
+        entry = register_candidate(self.KEY, "r93_general", "ADMISSIBLE_A")
+        assert entry["effective_bucket"] == "ADMISSIBLE_A"
+        assert entry["censuses"] == {"r93_general", "conduit_echo"}
+
+    def test_conduit_echo_order_independence_end_state_identical(self):
+        """Direct order-independence pin: registering the SAME two
+        sightings in either order must leave the ledger in an IDENTICAL
+        final state (effective_bucket, censuses, bucket_by_census) --
+        not merely the same effective_bucket value in isolation."""
+        from rmgpy.polymer_conduit import reset_conduit_state
+
+        reset_conduit_state()
+        register_candidate(self.KEY, "r93_general", "ADMISSIBLE_A")
+        register_candidate(self.KEY, "conduit_echo", "CONDUIT_ECHO")
+        forward_order = lookup_candidate(self.KEY)
+        reset_conduit_state()
+
+        register_candidate(self.KEY, "conduit_echo", "CONDUIT_ECHO")
+        register_candidate(self.KEY, "r93_general", "ADMISSIBLE_A")
+        reverse_order = lookup_candidate(self.KEY)
+        reset_conduit_state()
+
+        assert forward_order == reverse_order
+        assert forward_order["effective_bucket"] == "ADMISSIBLE_A"
+
     def test_lookup_is_the_m183_no_double_book_gate(self, clean_registry):
         assert lookup_candidate(self.KEY) is None
         register_candidate(self.KEY, "feature_radical", "FEATURE_RADICAL")
@@ -1012,9 +1055,13 @@ class TestAppendOnlyAnnotation:
 
         from rmgpy.polymer import _refused_census_warned, _warn_once_refused
 
+        # round-50 FR-census scoping: only a GENUINE reason (qssa-invalid /
+        # qssa-unassessable) registers into the real 'feature_radical'
+        # census -- see TestFrCensusScoping for the conduit-deferred
+        # (echo, non-genuine) counterpart of this test.
         entry = {"reaction": "SYN_R(1) + SYN_P(2) <=> SYN_Q(3)",
-                 "radical_class": "eliminating",
-                 "reason": "conduit-deferred"}
+                 "radical_class": "accumulating",
+                 "reason": "qssa-invalid"}
         _refused_census_warned.discard(
             (entry["reaction"], entry["reason"]))
         with caplog.at_level(_logging.WARNING):
@@ -1045,13 +1092,17 @@ class TestAppendOnlyAnnotation:
                                    _warn_once_refused,
                                    stamp_gas_association_refusal)
 
+        # round-50 FR-census scoping: a genuine reason (qssa-invalid) is
+        # what makes this an upstream FEATURE-RADICAL sighting; a
+        # conduit-deferred echo of the SAME row must NOT do this (see
+        # TestFrCensusScoping.test_r93_self_echo_never_creates_fr_membership).
         rxn = self._refused_row()
         label = _reaction_census_label(rxn)
         from rmgpy.polymer import _refused_census_warned
-        _refused_census_warned.discard((label, "conduit-deferred"))
+        _refused_census_warned.discard((label, "qssa-invalid"))
         _warn_once_refused({"reaction": label,
-                            "radical_class": "eliminating",
-                            "reason": "conduit-deferred"})
+                            "radical_class": "accumulating",
+                            "reason": "qssa-invalid"})
         _general_chain_scale_pool_warned.clear()
         with caplog.at_level(_logging.WARNING):
             stamp_gas_association_refusal(rxn)
@@ -1672,9 +1723,12 @@ class TestR42AdmissionCensusDeterminism:
 
         from rmgpy.polymer import _refused_census_warned, _warn_once_refused
 
+        # round-50 FR-census scoping: a genuine reason is required for the
+        # FR line to self-deny -- see TestFrCensusScoping for the
+        # conduit-deferred (echo) counterpart, which must NOT self-deny.
         entry = {"reaction": "SYN_R42(1) + SYN_P42(2) <=> SYN_Q42(3)",
-                 "radical_class": "eliminating",
-                 "reason": "conduit-deferred"}
+                 "radical_class": "accumulating",
+                 "reason": "qssa-invalid"}
         _refused_census_warned.discard((entry["reaction"], entry["reason"]))
         with caplog.at_level(_logging.WARNING):
             _warn_once_refused(entry)
@@ -1843,6 +1897,110 @@ class TestLedgerEpochsAndReset:
         assert v.admitted is False
         assert v.deny_reason == "feature-radical-overlap"
 
+    def test_fr_sticky_across_epochs_scoped_by_reason(self, clean_registry):
+        """round-50 FR-census scoping: the warn-once hook's SCOPED
+        stickiness -- a genuine reason (qssa-invalid / qssa-unassessable)
+        sticks as a real 'feature_radical' sighting and blocks admission
+        across epochs exactly like test_fr_sticky_across_epochs above; a
+        conduit-deferred sighting of a DIFFERENT row echoes into
+        CONDUIT_ECHO instead and G1 ignores it -- it must never block
+        admission of its own (or any other) candidate key."""
+        from rmgpy.polymer import _reaction_census_label, _warn_once_refused
+        from rmgpy.polymer_conduit import (candidate_key_from_label,
+                                           evaluate_conduit_admission,
+                                           lookup_candidate)
+
+        genuine_rxn, genuine_pf = _admissible_fixture()
+        genuine_label = _reaction_census_label(genuine_rxn)
+        _warn_once_refused({"reaction": genuine_label,
+                            "radical_class": "accumulating",
+                            "reason": "qssa-invalid"})
+        genuine_key = candidate_key_from_label(genuine_label)
+        assert lookup_candidate(genuine_key)["effective_bucket"] == (
+            "FEATURE_RADICAL")
+        v_genuine = evaluate_conduit_admission(genuine_rxn, [genuine_pf])
+        assert v_genuine.admitted is False
+        assert v_genuine.deny_reason == "feature-radical-overlap"
+
+        # Distinct species pair (own chain label) so echo_key != genuine_key
+        # -- otherwise the echo sighting would land on the genuine row's
+        # key, which already carries a genuine feature_radical sighting.
+        echo_rxn, echo_pf = _admissible_fixture(reversible=True,
+                                                 label="ECHO_CHAIN")
+        echo_label = _reaction_census_label(echo_rxn)
+        _warn_once_refused({"reaction": echo_label,
+                            "radical_class": "eliminating",
+                            "reason": "conduit-deferred"})
+        echo_key = candidate_key_from_label(echo_label)
+        assert lookup_candidate(echo_key)["effective_bucket"] == (
+            "CONDUIT_ECHO")
+        v_echo = evaluate_conduit_admission(echo_rxn, [echo_pf])
+        assert v_echo.admitted is True
+        assert v_echo.deny_reason is None
+
+    def test_fr_and_echo_censuses_on_same_key_stay_feature_radical(
+            self, clean_registry):
+        """Mixed-membership case: a candidate key that accumulates BOTH a
+        genuine feature_radical sighting AND a conduit_echo sighting must
+        stay FEATURE_RADICAL with precedence='feature_radical' -- the
+        upstream blocker wins regardless of sighting order. This is the
+        exact scenario the old blanket (unscoped) warn-once bug would have
+        gotten wrong by downgrading/echoing over a genuine FR row."""
+        from rmgpy.polymer import _reaction_census_label, _warn_once_refused
+        from rmgpy.polymer_conduit import (candidate_key_from_label,
+                                           lookup_candidate)
+
+        rxn, _pf = _admissible_fixture()
+        label = _reaction_census_label(rxn)
+        key = candidate_key_from_label(label)
+
+        _warn_once_refused({"reaction": label,
+                            "radical_class": "accumulating",
+                            "reason": "qssa-invalid"})
+        entry = lookup_candidate(key)
+        assert entry["censuses"] == {"feature_radical"}
+        assert entry["effective_bucket"] == "FEATURE_RADICAL"
+        assert entry["precedence"] is None
+
+        _warn_once_refused({"reaction": label,
+                            "radical_class": "eliminating",
+                            "reason": "conduit-deferred"})
+        entry = lookup_candidate(key)
+        assert entry["censuses"] == {"feature_radical", "conduit_echo"}
+        assert entry["effective_bucket"] == "FEATURE_RADICAL"
+        assert entry["precedence"] == "feature_radical"
+
+    def test_fr_and_echo_censuses_on_same_key_stay_feature_radical_reverse_order(
+            self, clean_registry):
+        """Same mixed-membership scenario as
+        :meth:`test_fr_and_echo_censuses_on_same_key_stay_feature_radical`,
+        with sighting order REVERSED (echo first, genuine FR second) --
+        the ledger must land in the IDENTICAL final state either way: the
+        upstream blocker wins regardless of which sighting arrives first."""
+        from rmgpy.polymer import _reaction_census_label, _warn_once_refused
+        from rmgpy.polymer_conduit import (candidate_key_from_label,
+                                           lookup_candidate)
+
+        rxn, _pf = _admissible_fixture()
+        label = _reaction_census_label(rxn)
+        key = candidate_key_from_label(label)
+
+        _warn_once_refused({"reaction": label,
+                            "radical_class": "eliminating",
+                            "reason": "conduit-deferred"})
+        entry = lookup_candidate(key)
+        assert entry["censuses"] == {"conduit_echo"}
+        assert entry["effective_bucket"] == "CONDUIT_ECHO"
+        assert entry["precedence"] is None
+
+        _warn_once_refused({"reaction": label,
+                            "radical_class": "accumulating",
+                            "reason": "qssa-invalid"})
+        entry = lookup_candidate(key)
+        assert entry["censuses"] == {"feature_radical", "conduit_echo"}
+        assert entry["effective_bucket"] == "FEATURE_RADICAL"
+        assert entry["precedence"] == "feature_radical"
+
     def test_reset_clears_registry_and_warn_once_together(self):
         """DESIGN §3.3 'reset both or neither': reset_conduit_state clears
         the ledger AND _refused_census_warned, so a post-reset FR
@@ -1854,6 +2012,9 @@ class TestLedgerEpochsAndReset:
                                            register_candidate,
                                            reset_conduit_state,
                                            candidate_key_from_label)
+        # round-50 FR-census scoping: 'conduit-deferred' is a non-genuine
+        # (echo) reason, so this row lands in CONDUIT_ECHO, not
+        # FEATURE_RADICAL -- reset must clear that census entry too.
         label = "RESET_R(1) + RESET_P(2) <=> RESET_Q(3)"
         entry = {"reaction": label, "radical_class": "eliminating",
                  "reason": "conduit-deferred"}
@@ -1867,7 +2028,7 @@ class TestLedgerEpochsAndReset:
         # post-reset re-sighting re-registers (would be starved if the
         # warn-once set had survived the ledger reset)
         _warn_once_refused(entry)
-        assert lookup_candidate(key)["effective_bucket"] == "FEATURE_RADICAL"
+        assert lookup_candidate(key)["effective_bucket"] == "CONDUIT_ECHO"
         reset_conduit_state()
 
     def test_reset_census_registry_is_alias(self):
@@ -1892,3 +2053,190 @@ class TestLedgerEpochsAndReset:
         import rmgpy.polymer as rp
         from rmgpy import polymer_conduit as pc
         assert rp.reset_conduit_state is pc.reset_conduit_state
+
+
+class TestFrCensusScoping:
+    """round-50 (ratified, adversarial review round 50) FR-census scoping
+    fix: a refusal echoing through the warn-once hook (:func:`rmgpy.polymer.
+    _warn_once_refused` / :func:`rmgpy.polymer_conduit.annotate_feature_radical`)
+    for a NON-genuine reason (chiefly 'conduit-deferred', the accumulating=
+    False branch that M18.4 will eventually try to admit) must never join
+    the real 'feature_radical' ledger census -- only qssa-invalid /
+    qssa-unassessable rows do. CONDUIT_ADMISSION_ENABLED stays False
+    throughout: this is a pure census/ledger bookkeeping fix, never a flux
+    change."""
+
+    def test_r93_self_echo_never_creates_fr_membership(self, clean_registry):
+        """A row refused with 'conduit-deferred' (echoed through the same
+        warn-once hook that genuine FR rows go through) must register into
+        CONDUIT_ECHO, not FEATURE_RADICAL -- the downgrade trap this split
+        fixes: previously a candidate's own refusal echo poisoned its own
+        key (and any co-keyed row) as an upstream feature-radical blocker."""
+        from rmgpy.polymer import _reaction_census_label, _warn_once_refused
+        from rmgpy.polymer_conduit import (candidate_key_from_label,
+                                           lookup_candidate)
+
+        rxn, _pf = _admissible_fixture()
+        label = _reaction_census_label(rxn)
+        _warn_once_refused({"reaction": label,
+                            "radical_class": "eliminating",
+                            "reason": "conduit-deferred"})
+        entry = lookup_candidate(candidate_key_from_label(label))
+        assert entry is not None
+        assert entry["censuses"] == {"conduit_echo"}
+        assert "feature_radical" not in entry["censuses"]
+        assert entry["effective_bucket"] == "CONDUIT_ECHO"
+
+    def test_pure_echo_line_carries_admission_verdict_token(
+            self, caplog, clean_registry):
+        """Contract fix: EVERY census line -- including a pure conduit_echo
+        line -- carries the ``[conduit-admission/1 ...]`` verdict token
+        (the module docstring/BUILD_SPEC W1.6 promise). A pure echo
+        sighting never sees a live reaction object, so it cannot fabricate
+        a real G0/G2-G7 verdict; it must stay fail-closed (would_admit=0)
+        with the HONEST 'echo-not-evaluated' reason, never the
+        'feature-radical-overlap' reason (that would misrepresent a key
+        G1 does not actually block as upstream-blocked)."""
+        import logging as _logging
+
+        from rmgpy.polymer import _reaction_census_label, _warn_once_refused
+
+        rxn, _pf = _admissible_fixture()
+        label = _reaction_census_label(rxn)
+        with caplog.at_level(_logging.WARNING):
+            _warn_once_refused({"reaction": label,
+                                "radical_class": "eliminating",
+                                "reason": "conduit-deferred"})
+        msgs = [r.getMessage() for r in caplog.records
+                if r.getMessage().startswith("FEATURE-RADICAL REFUSED "
+                                             "CENSUS: ")]
+        assert len(msgs) == 1
+        assert ("[conduit-admission/1 would_admit=0 "
+                "deny=echo-not-evaluated stage=final]") in msgs[0]
+        assert "deny=feature-radical-overlap" not in msgs[0]
+        # append-only: the M18.2 census suffix rides before the verdict.
+        assert msgs[0].index("[conduit-census/1") < msgs[0].index(
+            "[conduit-admission/1")
+
+    def test_mixed_membership_echo_line_still_self_denies_fr_overlap(
+            self, caplog, clean_registry):
+        """When the SAME key already carries genuine 'feature_radical'
+        membership (from an earlier sighting under a genuine reason), a
+        LATER pure-echo-reason sighting of that same key must still print
+        the real G1 verdict -- deny=feature-radical-overlap -- because G1
+        genuinely blocks this key; 'echo-not-evaluated' is reserved for
+        keys G1 does NOT block."""
+        import logging as _logging
+
+        from rmgpy.polymer import _reaction_census_label, _warn_once_refused
+
+        rxn, _pf = _admissible_fixture()
+        label = _reaction_census_label(rxn)
+        with caplog.at_level(_logging.WARNING):
+            _warn_once_refused({"reaction": label,
+                                "radical_class": "accumulating",
+                                "reason": "qssa-invalid"})
+        caplog.clear()  # drop the genuine-reason line; only the later
+                        # echo-reason line is under test here.
+        with caplog.at_level(_logging.WARNING):
+            _warn_once_refused({"reaction": label,
+                                "radical_class": "eliminating",
+                                "reason": "conduit-deferred"})
+        msgs = [r.getMessage() for r in caplog.records
+                if r.getMessage().startswith("FEATURE-RADICAL REFUSED "
+                                             "CENSUS: ")]
+        assert len(msgs) == 1
+        assert ("[conduit-admission/1 would_admit=0 "
+                "deny=feature-radical-overlap stage=final]") in msgs[0]
+        assert "echo-not-evaluated" not in msgs[0]
+
+    def test_admitted_row_not_downgraded_by_echo_census_entry(
+            self, clean_registry):
+        """An echo-census sighting (conduit-deferred) of a candidate key
+        must never downgrade a WOULD-ADMIT verdict for that same key --
+        only a genuine 'feature_radical' sighting may. Exercised at both
+        consumer sites: G1 (:func:`evaluate_conduit_admission`) and the r42
+        post-registration re-check (:func:`annotate_refused_row`)."""
+        from rmgpy.polymer import _reaction_census_label, _warn_once_refused
+        from rmgpy.polymer_conduit import (annotate_refused_row,
+                                           candidate_key_from_label,
+                                           evaluate_conduit_admission)
+
+        rxn, pf = _admissible_fixture()
+        label = _reaction_census_label(rxn)
+        key = candidate_key_from_label(label)
+
+        # An echo sighting of the SAME key lands first (e.g. from a prior
+        # rebuild epoch's accumulating=False branch).
+        _warn_once_refused({"reaction": label,
+                            "radical_class": "eliminating",
+                            "reason": "conduit-deferred"})
+
+        # G1 still admits: the echo census is invisible to it.
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is True
+        assert v.deny_reason is None
+
+        # The r42 post-registration re-check (annotate_refused_row) must
+        # likewise refuse to downgrade a would-admit verdict on account of
+        # the echo-only sighting.
+        suffix = annotate_refused_row(rxn, [pf], census="r93_general",
+                                      verdict=v)
+        assert "would_admit=1" in suffix
+        assert "deny=feature-radical-overlap" not in suffix
+
+    def test_reason_threading_deterministic_across_rebuild_epochs(
+            self, clean_registry):
+        """Re-running the SAME input rows (same reaction labels, same
+        reasons) across successive rebuild epochs must produce IDENTICAL
+        census contents -- the warn-once dedup keys on (reaction, reason),
+        so re-sighting the identical row in a later epoch is a no-op for
+        the ledger, and a fresh key seen with the same reason in a later
+        epoch resolves to the same census/bucket every time."""
+        from rmgpy.polymer import _reaction_census_label, _warn_once_refused
+        from rmgpy.polymer_conduit import (candidate_key_from_label,
+                                           lookup_candidate,
+                                           reset_conduit_state)
+
+        genuine_rxn, _genuine_pf = _admissible_fixture()
+        genuine_label = _reaction_census_label(genuine_rxn)
+        # Distinct species pair (own chain label) so echo_key != genuine_key
+        # -- otherwise the echo sighting would land on the genuine row's
+        # key and the genuine feature_radical sighting would poison it.
+        echo_rxn, _echo_pf = _admissible_fixture(reversible=True,
+                                                  label="ECHO_CHAIN")
+        echo_label = _reaction_census_label(echo_rxn)
+
+        def run_one_rebuild_epoch():
+            _warn_once_refused({"reaction": genuine_label,
+                                "radical_class": "accumulating",
+                                "reason": "qssa-invalid"})
+            _warn_once_refused({"reaction": echo_label,
+                                "radical_class": "eliminating",
+                                "reason": "conduit-deferred"})
+
+        run_one_rebuild_epoch()
+        genuine_key = candidate_key_from_label(genuine_label)
+        echo_key = candidate_key_from_label(echo_label)
+        first_genuine = lookup_candidate(genuine_key)
+        first_echo = lookup_candidate(echo_key)
+        assert first_genuine["effective_bucket"] == "FEATURE_RADICAL"
+        assert first_echo["effective_bucket"] == "CONDUIT_ECHO"
+
+        # A later rebuild epoch re-sighting the SAME rows (warn-once
+        # dedup makes this a no-op) must reproduce the identical census
+        # state -- not merely an equivalent one.
+        run_one_rebuild_epoch()
+        second_genuine = lookup_candidate(genuine_key)
+        second_echo = lookup_candidate(echo_key)
+        assert second_genuine == first_genuine
+        assert second_echo == first_echo
+
+        # A hard reset + fresh rebuild epoch (as happens at a new RMG run
+        # boundary) must reproduce the SAME census contents from the same
+        # input rows -- reason threading is deterministic, not order- or
+        # run-dependent.
+        reset_conduit_state()
+        run_one_rebuild_epoch()
+        assert lookup_candidate(genuine_key) == first_genuine
+        assert lookup_candidate(echo_key) == first_echo

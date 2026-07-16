@@ -2571,11 +2571,14 @@ def _warn_once_refused(entry: dict) -> None:
     M18.2 (census-only): the moment-credit conduit classifier annotation is
     APPENDED after the unchanged historical message (round-36 P1(b) append-
     only rule). The hook works from the census label string alone -- the
-    caller lives in the solver (untouched by M18.2), and every feature-
-    radical row buckets FEATURE_RADICAL regardless of shape, so no RMG
-    objects are needed. It registers the candidate key so the overlap
-    ledger can apply feature-radical-wins precedence to r93 sightings of
-    the same row (round-36 P1(a)); the hook never raises."""
+    caller lives in the solver (untouched by M18.2), and no RMG objects are
+    needed. round-50 FR-census scoping: the row's refusal ``reason`` is
+    threaded through so the ledger can tell a genuine feature-radical row
+    (qssa-invalid / qssa-unassessable) apart from a conduit-deferred
+    candidate merely echoing through this same warn-once hook -- only the
+    former registers into the 'feature_radical' census that the overlap
+    ledger applies feature-radical-wins precedence against (round-36
+    P1(a)); the hook never raises."""
     key = (entry["reaction"], entry["reason"])
     if key not in _refused_census_warned:
         _refused_census_warned.add(key)
@@ -2585,7 +2588,7 @@ def _warn_once_refused(entry: dict) -> None:
             "no flux applied (stamp-but-keep). Deferred to item 20's "
             "conduit.%s",
             entry["reaction"], entry["radical_class"], entry["reason"],
-            annotate_feature_radical(entry["reaction"]))
+            annotate_feature_radical(entry["reaction"], reason=entry["reason"]))
 
 
 def _reaction_census_label(rxn) -> str:

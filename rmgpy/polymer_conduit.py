@@ -21,7 +21,7 @@ The module has two layers:
   classification dict out. The record contract is::
 
       record = {
-          "census": "r93_general" | "feature_radical",
+          "census": "r93_general" | "feature_radical" | "conduit_echo",
           "reaction": str,                # as written in the census line
           "reversible": bool,             # "<=>" vs "=>"
           "reactants": [species, ...],
@@ -52,7 +52,25 @@ Buckets:
     DEFERRED_A / DEFERRED_B       shape A/B rows failing a gate (reason set)
     DEFERRED_C .. DEFERRED_F      shapes deferred by design in this increment
     FEATURE_RADICAL               upstream feature-radical census (deferred)
+    CONDUIT_ECHO                  a refusal echoing through the FR warn-once
+                                   hook for a NON-genuine reason (round-50
+                                   FR-census scoping; e.g. 'conduit-deferred'):
+                                   NOT an upstream feature-radical blocker,
+                                   just the same candidate refusing again
+                                   through the shared warn-once site. G1
+                                   (:func:`evaluate_conduit_admission`)
+                                   ignores it entirely -- it must never
+                                   deny-by-overlap its own (or any co-keyed)
+                                   candidate the way real 'feature_radical'
+                                   membership does.
     UNCLASSIFIED                  shape not in the A-F vocabulary (reason set)
+
+Precedence when one candidate key is seen across multiple censuses
+(overlap ledger, round-36 P1(a) / round-50 scoping): 'feature_radical'
+(the genuine upstream blocker) ranks highest and wins over everything;
+'conduit_echo' ranks LOWEST -- any other census on the key (including
+r93_general) beats it for ``effective_bucket``, since an echo sighting
+carries no classification information of its own about the row.
 
 Shape vocabulary (roles per side, direction-normalized so the pool-crediting
 side is the product side):
@@ -167,6 +185,10 @@ _SHAPE_TABLE = {
 }
 
 #: Overlap precedence rule (round-36 P1(a)): the upstream blocker wins.
+#: Full order (highest to lowest), see also
+#: :data:`CONDUIT_ECHO_CENSUS`/:meth:`_CensusRegistry._effective_bucket_below_fr`
+#: (round-50 determinism finding): 'feature_radical' > every other census
+#: > 'conduit_echo'.
 PRECEDENCE_RULE = "feature_radical"
 
 
@@ -414,6 +436,17 @@ class _CensusRegistry:
     upstream blocker) no matter what the r93 classifier says; the r93
     verdict is preserved as ``shadow_bucket`` for M18.3. M18.3 must call
     :meth:`lookup` before booking a candidate and skip keys already booked.
+
+    CONDUIT-ECHO RANKS LOWEST (round-50 determinism finding): below
+    feature_radical, the censuses are NOT last-write-wins -- 'conduit_echo'
+    is an ordered LOWEST-precedence rank, so any other census sighted on
+    the same key (chiefly 'r93_general') always beats it for
+    ``effective_bucket``, in EITHER registration order. Without this, a key
+    seen r93_general-then-conduit_echo and one seen
+    conduit_echo-then-r93_general would resolve to different
+    effective_bucket values for what is otherwise an identical sighting
+    set -- an order dependency across rebuild epochs that violates this
+    module's determinism contract. See :meth:`_effective_bucket_below_fr`.
     """
 
     def __init__(self):
@@ -445,11 +478,31 @@ class _CensusRegistry:
                 entry["precedence"] = (
                     PRECEDENCE_RULE if len(entry["censuses"]) > 1 else None)
             else:
-                entry["effective_bucket"] = bucket
+                entry["effective_bucket"] = self._effective_bucket_below_fr(
+                    entry)
                 entry["shadow_bucket"] = None
                 entry["precedence"] = None
             return dict(entry, censuses=set(entry["censuses"]),
                         epochs=set(entry["epochs"]))
+
+    @staticmethod
+    def _effective_bucket_below_fr(entry):
+        """Ordered precedence among the non-feature_radical censuses seen
+        on ``entry`` (round-50 determinism finding): 'conduit_echo' is an
+        explicit LOWEST-precedence rank -- any OTHER census sighted on this
+        key (today, only 'r93_general') always wins for
+        ``effective_bucket``, regardless of which was registered first or
+        last. A key seen ONLY via conduit_echo falls back to its own echo
+        bucket. Expressed as a rank over ``entry["censuses"]`` rather than
+        a last-write special case so a future non-echo census slots in
+        without new branching."""
+        non_echo = entry["censuses"] - {CONDUIT_ECHO_CENSUS}
+        if non_echo:
+            # Deterministic tie-break by census name; today exactly one
+            # non-echo, non-FR census exists ('r93_general').
+            winner = sorted(non_echo)[0]
+            return entry["bucket_by_census"][winner]
+        return entry["bucket_by_census"][CONDUIT_ECHO_CENSUS]
 
     def lookup(self, key):
         with self._lock:
@@ -747,7 +800,12 @@ CANDIDATE_KEY_NOTE = ("run-scoped provenance only; species indices are not "
 
 #: Closed deny-reason vocabulary (BUILD_SPEC W1.3; used by census + tests).
 #: admission-evaluation-error:* is the G7 family (suffixed with the
-#: exception type name).
+#: exception type name). 'echo-not-evaluated' (round-50 finding, contract
+#: fix) is the label-only :func:`annotate_feature_radical` hook's own
+#: reason: a pure conduit_echo sighting never carries a live reaction
+#: object, so G0/G2-G7 never run there -- fail-closed default-deny stays,
+#: with an HONEST reason (never fabricate "feature-radical-overlap" for a
+#: key G1 does not actually block).
 ADMISSION_DENY_REASONS = frozenset({
     "classifier-not-admissible", "classifier-divergence",
     "feature-radical-overlap", "direction-inadmissible",
@@ -755,7 +813,7 @@ ADMISSION_DENY_REASONS = frozenset({
     "gas-mw-threshold-unresolvable", "gas-mw-over-threshold",
     "landing-cone-violation", "destination-unresolvable",
     "chain-not-condensed", "not-balanced", "kinetics-not-exportable",
-    "kinetics-not-yet-assigned",
+    "kinetics-not-yet-assigned", "echo-not-evaluated",
 })
 
 #: PROVISIONAL deny reasons (G6 re-adjudication defect fix): the r93 stamp
@@ -1030,25 +1088,71 @@ def get_conduit_flux_totals():
     return {k: dict(v) for k, v in _CONDUIT_FLUX_TOTALS.items()}
 
 
-def annotate_feature_radical(reaction_label):
+#: round-50 FR-census scoping (ratified, adversarial review round 50):
+#: ONLY these refusal reasons are genuine upstream feature-radical blockers.
+#: Every other reason seen at the warn-once hook (chiefly
+#: 'conduit-deferred', the accumulating=False branch -- exactly the
+#: population moment_credit_conduit/1 (M18.4) will eventually try to
+#: admit) is a candidate ECHOING through the same warn-once site, not a
+#: genuine FR sighting, and must NOT poison the 'feature_radical' census:
+#: doing so previously made a row's own refusal echo permanently G1-deny
+#: itself (and any co-keyed row) as "feature-radical-overlap" -- the
+#: downgrade trap this split fixes.
+GENUINE_FEATURE_RADICAL_REASONS = frozenset({"qssa-invalid",
+                                             "qssa-unassessable"})
+
+#: Census name for a non-genuine (echoed) refusal sighting recorded via
+#: :func:`annotate_feature_radical`. Deliberately a DIFFERENT ledger census
+#: than 'feature_radical' -- G1 (:func:`evaluate_conduit_admission`) and the
+#: r42 post-registration downgrade (:func:`annotate_refused_row`) key on
+#: literal membership in the 'feature_radical' census set, so a row seen
+#: ONLY here can never trigger FR-overlap denial of itself or of any other
+#: row sharing its candidate key.
+CONDUIT_ECHO_CENSUS = "conduit_echo"
+
+
+def annotate_feature_radical(reaction_label, reason=None):
     """String-only annotation hook for the FEATURE-RADICAL census line
     (emitted via :func:`rmgpy.polymer._warn_once_refused`; its caller lives
     in the solver, which M18.2 must not edit, so this hook works from the
-    census label alone -- sufficient because every feature-radical row
-    buckets FEATURE_RADICAL regardless of shape). NEVER raises."""
+    census label alone). round-50 FR-census scoping: ``reason`` (the row's
+    ``polymer_refused_reason``) decides which ledger census the sighting
+    registers into -- only :data:`GENUINE_FEATURE_RADICAL_REASONS` land in
+    the real 'feature_radical' census that G1 and the r42 downgrade consult;
+    every other reason (esp. 'conduit-deferred') lands in
+    :data:`CONDUIT_ECHO_CENSUS`, which no FR consumer reads. ``reason=None``
+    (unknown/legacy caller) is treated as non-genuine -- fail-closed against
+    accidentally re-widening the FR census. NEVER raises."""
     try:
         key = candidate_key_from_label(reaction_label)
-        entry = register_candidate(key, "feature_radical", "FEATURE_RADICAL")
+        is_genuine = reason in GENUINE_FEATURE_RADICAL_REASONS
+        census = "feature_radical" if is_genuine else CONDUIT_ECHO_CENSUS
+        bucket = "FEATURE_RADICAL" if is_genuine else "CONDUIT_ECHO"
+        entry = register_candidate(key, census, bucket)
         result = {"candidate_key": key, "shape": None, "admissible": False}
-        # r42 P1-4(a): EVERY census line carries the admission verdict
-        # tokens (BUILD_SPEC W1.6 promised them on every line, and the FR
-        # line lacked them). An FR sighting is the upstream blocker: once
-        # registered (the line above), any admission evaluation of this
-        # key G1-denies feature-radical-overlap -- printed here so the FR
-        # census line and the ledger can never disagree.
-        return (census_suffix(result, entry)
-                + admission_census_suffix(
-                    _deny(key, "feature-radical-overlap")))
+        suffix = census_suffix(result, entry)
+        # r42 P1-4(a) + round-50 echo-token fix: EVERY census line carries
+        # the admission verdict tokens (BUILD_SPEC W1.6 promised them on
+        # every line; the FR line lacked them, and later a pure echo line
+        # lacked them too). This label-only hook never has the live
+        # reaction object, so it can only speak to the ONE gate it
+        # genuinely evaluates here -- G1, the FR ledger membership check --
+        # never to G0/G2-G7 (which need the live row and only run at the
+        # r93 stamp site). When THIS key genuinely carries 'feature_radical'
+        # membership (this sighting or an earlier one under a genuine
+        # reason), G1 denies feature-radical-overlap -- printed here so the
+        # FR census line and the ledger can never disagree. Otherwise (a
+        # pure echo sighting with no feature_radical co-membership) G1 does
+        # not block it, but nothing else was evaluated here either: stay
+        # fail-closed (never fabricate an admit) with an honest reason that
+        # says so, instead of a fabricated "feature-radical-overlap" deny a
+        # pure echo never earned.
+        if "feature_radical" in entry["censuses"]:
+            verdict = _deny(key, "feature-radical-overlap")
+        else:
+            verdict = _deny(key, "echo-not-evaluated")
+        suffix += admission_census_suffix(verdict)
+        return suffix
     except Exception as exc:  # pragma: no cover - defensive fail-open
         logging.warning(
             "MOMENT-CREDIT CONDUIT CENSUS (M18.2): feature-radical "
