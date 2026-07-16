@@ -3475,11 +3475,23 @@ def stamp_gas_association_refusal(forward, pool_registry=None) -> None:
         # would-be verdict (WOULD-ADMIT / deny reason) for OQ-1 sizing.
         from rmgpy.polymer_conduit import (CONDUIT_ADMISSION_ENABLED,
                                            CANDIDATE_KEY_NOTE,
+                                           PROVISIONAL_DENY_REASONS,
                                            AdmissionVerdict,
                                            annotate_refused_row,
                                            evaluate_conduit_admission,
                                            lookup_candidate)
         verdict = evaluate_conduit_admission(forward, row_pools)
+        if verdict.deny_reason in PROVISIONAL_DENY_REASONS:
+            # G6 re-adjudication defect fix: this stamp site runs BEFORE
+            # make_new_reaction assigns kinetics (deliberately -- it must
+            # precede check_existing so dedup can merge adjudication onto
+            # the canonical object), so a family-generated row always
+            # reaches G6 with kinetics None. The deny above is PROVISIONAL
+            # (would_admit stays 0, fail-closed); mark the row so
+            # readjudicate_conduit_admission can re-run G6 against the
+            # final kinetics after the kinetics conversion/barrier block
+            # (or across the canonical-dedup merge).
+            forward.polymer_conduit_admission_pending = True
         if verdict.admitted:
             # r42 P1-4(b): G1 consulted the ledger at EVALUATION time;
             # re-consult at the STAMPING decision point so a
@@ -3776,6 +3788,75 @@ def _warn_general_chain_scale_pool_coupling(reaction_label: str,
         reaction_label, conduit_suffix)
 
 
+def readjudicate_conduit_admission(forward) -> None:
+    """M18.3 G6 re-adjudication hook (adjudicated defect fix): resolve a
+    PROVISIONAL ``kinetics-not-yet-assigned`` admission verdict against the
+    row's now-final kinetics.
+
+    The r93 stamp site (:func:`stamp_gas_association_refusal`) is called
+    from ``make_new_reaction`` (rmgpy/rmg/model.py) BEFORE
+    ``check_for_existing_reaction`` -- deliberately, so canonical dedup can
+    :func:`merge_polymer_adjudication_stamps` onto the surviving object --
+    and therefore BEFORE kinetics assignment: a family-generated
+    TemplateReaction always reaches G6 with ``kinetics is None`` and denies
+    provisionally (``kinetics-not-yet-assigned``, would_admit=0,
+    fail-closed). ``make_new_reaction`` calls this hook at BOTH exits a
+    stamped row can take:
+
+    * the new-reaction path, AFTER the kinetics conversion /
+      barrier-correction block (the kinetics are final there), and
+    * the canonical-dedup early return, AFTER the merge transferred the
+      discarded candidate's pending marker onto the canonical object
+      (whose kinetics are already final) -- so a provisional stamp merged
+      onto an existing canonical reaction cannot escape re-adjudication.
+
+    CENSUS/LEDGER-ONLY while ``CONDUIT_ADMISSION_ENABLED`` is False: the
+    refusal itself is never touched here. The hook re-runs the FULL
+    admission evaluation (kinetics was the only outstanding gate;
+    re-running every gate is deterministic and fail-closed -- genuinely
+    non-Arrhenius kinetics now FINAL-denies ``kinetics-not-exportable``),
+    re-registers the census sighting, and emits ONE loud census line whose
+    ``[conduit-admission/1 ...]`` tokens carry the FINAL verdict. The M18.4
+    live-admission arm must route through this hook for family-generated
+    rows (their stamp-time G6 can never pass); that wiring stays deferred
+    with the flag. If the kinetics are STILL None (``generate_kinetics``
+    disabled callers), the pending marker stays set and the provisional
+    deny stands: uncertainty never admits. NEVER raises (census-only code
+    must not change generation behavior)."""
+    try:
+        if not getattr(forward, "polymer_conduit_admission_pending", False):
+            return
+        if getattr(forward, "kinetics", None) is None:
+            return  # still unresolved: provisional deny stands, marker kept
+        from rmgpy.polymer_conduit import (annotate_refused_row,
+                                           evaluate_conduit_admission)
+        reactants = getattr(forward, "reactants", None) or []
+        products = getattr(forward, "products", None) or []
+        row_pools = ([s for s in reactants if isinstance(s, Polymer)]
+                     + [s for s in products if isinstance(s, Polymer)])
+        verdict = evaluate_conduit_admission(forward, row_pools)
+        forward.polymer_conduit_admission_pending = False
+        forward.polymer_conduit_admission_readjudicated = True
+        # annotate_refused_row applies the r42 P1-4(b) post-registration FR
+        # re-check itself, so an FR sighting that landed since the stamp
+        # still can never print would_admit=1 on this line.
+        suffix = annotate_refused_row(forward, row_pools,
+                                      census="r93_general", verdict=verdict)
+        logging.warning(
+            "POLYMER REFUSAL CENSUS (r93 general branch, G6 "
+            "re-adjudication): %s -- kinetics finalized after the "
+            "provisional kinetics-not-yet-assigned verdict; the FINAL "
+            "admission verdict follows (census-only: the refusal stands "
+            "while CONDUIT_ADMISSION_ENABLED is False).%s",
+            _reaction_census_label(forward), suffix)
+    except Exception as exc:  # pragma: no cover - defensive fail-open
+        logging.warning(
+            "MOMENT-CREDIT CONDUIT ADMISSION (G6 re-adjudication): hook "
+            "failed for a refused row (%s: %s); the provisional census "
+            "verdict stands (census-only code path).",
+            type(exc).__name__, exc)
+
+
 def _stamp_reference_state_split_refusal(forward, reactants, products,
                                          pool_registry) -> None:
     """r87 shape B (FR1 run-3): refuse (stamp-but-keep, "conduit-deferred")
@@ -3967,6 +4048,13 @@ def merge_polymer_adjudication_stamps(source, target) -> None:
       ``polymer_eject_units`` / ``is_end_group_reaction`` FILL the canonical's
       unstamped (NONE / zero / False) slots only -- a live canonical stamp is
       never overwritten (it was made with its own full handshake context).
+    * ``polymer_conduit_admission_pending`` (G6 re-adjudication defect fix)
+      TRANSFERS onto a canonical that has not already been re-adjudicated,
+      so a PROVISIONAL kinetics-not-yet-assigned admission verdict on the
+      discarded candidate cannot die with it: the dedup early-return's
+      :func:`readjudicate_conduit_admission` call then resolves it against
+      the canonical object's (final) kinetics. A canonical already carrying
+      a FINAL re-adjudicated verdict is never demoted back to provisional.
 
     No-op for ordinary gas chemistry (every getattr defaults falsy).
     """
@@ -3988,6 +4076,11 @@ def merge_polymer_adjudication_stamps(source, target) -> None:
         target.polymer_eject_units = float(source.polymer_eject_units)
     if getattr(source, "is_end_group_reaction", False):
         target.is_end_group_reaction = True
+    if (getattr(source, "polymer_conduit_admission_pending", False)
+            and not getattr(target,
+                            "polymer_conduit_admission_readjudicated",
+                            False)):
+        target.polymer_conduit_admission_pending = True
 
 
 def _chain_radical_lost_to_gas(forward, polymer_reactants):

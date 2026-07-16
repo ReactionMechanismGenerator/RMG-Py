@@ -44,7 +44,7 @@ from rmgpy import settings
 from rmgpy.constraints import fails_species_constraints, pass_cutting_threshold
 from rmgpy.data.kinetics.depository import DepositoryReaction
 from rmgpy.data.kinetics.family import KineticsFamily, TemplateReaction, _handshake_structures
-from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_h_loss_shape_evidence, is_end_group_reaction, merge_polymer_adjudication_stamps, restamp_flipped_polymer_archetype, stamp_gas_association_refusal, stamp_polymer_flux_archetype
+from rmgpy.polymer import MassFluxAccumulator, Polymer, PolymerCrosslinkError, PolymerFluxArchetype, collect_polymer_pool_registry, compute_h_loss_shape_evidence, is_end_group_reaction, merge_polymer_adjudication_stamps, readjudicate_conduit_admission, restamp_flipped_polymer_archetype, stamp_gas_association_refusal, stamp_polymer_flux_archetype
 from rmgpy.data.kinetics.library import KineticsLibrary, LibraryReaction
 from rmgpy.data.rmg import get_db
 from rmgpy.data.vaporLiquidMassTransfer import vapor_liquid_mass_transfer
@@ -809,6 +809,14 @@ class CoreEdgeReactionModel:
                 # qssa-invalid wins over conduit-deferred inside the merge.
                 if rxn is not None:
                     merge_polymer_adjudication_stamps(forward, rxn)
+                    # G6 re-adjudication defect fix: if the discarded
+                    # candidate carried a PROVISIONAL kinetics-not-yet-
+                    # assigned admission verdict, the merge transferred its
+                    # pending marker; resolve it HERE against the canonical
+                    # object's final kinetics -- this early return never
+                    # reaches the post-kinetics hook below. Census-only,
+                    # never raises.
+                    readjudicate_conduit_admission(rxn)
                 return rxn, False
 
         # Generate the reaction pairs if not yet defined
@@ -905,6 +913,16 @@ class CoreEdgeReactionModel:
                         "For reaction %s, Ea corrected from %.1f to %.1f kJ/mol "
                         "(pool-product H0 clamp reverted to real-product result).",
                         forward, polluted / 1000., ea_correct / 1000.)
+
+        # G6 re-adjudication defect fix: the r93 admission stamp above ran
+        # BEFORE kinetics assignment, so a family-generated row's G6 verdict
+        # was the PROVISIONAL kinetics-not-yet-assigned deny. The kinetics
+        # conversion / barrier-correction block is done -- re-adjudicate G6
+        # against the final kinetics and census the FINAL verdict
+        # (would_admit=1, or kinetics-not-exportable for genuinely
+        # non-Arrhenius rates). Census-only, never raises; no-op unless the
+        # row carries the pending marker.
+        readjudicate_conduit_admission(forward)
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)

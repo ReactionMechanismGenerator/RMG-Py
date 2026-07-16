@@ -755,7 +755,20 @@ ADMISSION_DENY_REASONS = frozenset({
     "gas-mw-threshold-unresolvable", "gas-mw-over-threshold",
     "landing-cone-violation", "destination-unresolvable",
     "chain-not-condensed", "not-balanced", "kinetics-not-exportable",
+    "kinetics-not-yet-assigned",
 })
+
+#: PROVISIONAL deny reasons (G6 re-adjudication defect fix): the r93 stamp
+#: site (rmgpy/rmg/model.py make_new_reaction, BEFORE check_existing) runs
+#: before make_new_reaction assigns kinetics, so family-generated
+#: TemplateReactions always arrive at G6 with ``kinetics is None`` -- that
+#: is a sequencing artifact, not a property of the row's eventual kinetics.
+#: Such rows deny provisionally (a provisional row NEVER prints
+#: would_admit=1) and get G6 re-evaluated against the now-final kinetics by
+#: :func:`rmgpy.polymer.readjudicate_conduit_admission` after the kinetics
+#: conversion / barrier-correction block (and across the canonical-dedup
+#: merge). Every other deny reason is FINAL.
+PROVISIONAL_DENY_REASONS = frozenset({"kinetics-not-yet-assigned"})
 
 
 @dataclass(frozen=True)
@@ -928,8 +941,21 @@ def evaluate_conduit_admission(forward, row_pools):
         # (which the serializer tripwire then catches by RAISING).
         if not forward.is_balanced():
             return _deny(key, "not-balanced")
+        if forward.kinetics is None:
+            # G6 PROVISIONAL deny (re-adjudication defect fix): the only
+            # call chain into this evaluator (stamp_gas_association_refusal
+            # <- make_new_reaction) runs BEFORE kinetics assignment, so a
+            # family-generated row's kinetics is ALWAYS None here --
+            # "kinetics-not-exportable" would misdescribe the row's eventual
+            # kinetics. Deny provisionally (would_admit stays 0, fail-closed)
+            # and let readjudicate_conduit_admission re-run this gate once
+            # the final kinetics exists (PROVISIONAL_DENY_REASONS).
+            return _deny(key, "kinetics-not-yet-assigned")
         from rmgpy.kinetics.arrhenius import Arrhenius as _Arrhenius
         if type(forward.kinetics) is not _Arrhenius:
+            # FINAL, fail-closed last word: genuinely non-Arrhenius kinetics
+            # (Chebyshev/MultiArrhenius/PDep/...; strict type -- subclasses
+            # included) is not directly serializable and never admits.
             return _deny(key, "kinetics-not-exportable")
 
         # All gates passed affirmatively -> ADMIT (dead behind the flag).

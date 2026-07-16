@@ -72,6 +72,8 @@ cdef class Reaction:
     cdef public double polymer_eject_units
     cdef public object polymer_conduit_params
     cdef public object polymer_conduit_dst_pool
+    cdef public bint polymer_conduit_admission_pending
+    cdef public bint polymer_conduit_admission_readjudicated
     cdef public object rank
 
     cpdef bint is_isomerization(self)

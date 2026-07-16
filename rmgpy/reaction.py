@@ -202,6 +202,18 @@ class Reaction:
         # re-evaluated at every solver rebuild (DESIGN §3.3).
         self.polymer_conduit_params = None
         self.polymer_conduit_dst_pool = None
+        # G6 re-adjudication markers (adjudicated defect fix): the r93 stamp
+        # site runs BEFORE make_new_reaction assigns kinetics, so its G6
+        # verdict on a family-generated row is the PROVISIONAL
+        # kinetics-not-yet-assigned deny. _pending marks the row for
+        # rmgpy.polymer.readjudicate_conduit_admission (called after the
+        # kinetics conversion/barrier block, and at the canonical-dedup
+        # early return after the stamp merge); _readjudicated marks a FINAL
+        # re-adjudicated verdict so a later duplicate's merge can never
+        # demote it back to provisional. Like the polymer fields above, NOT
+        # serialized in __reduce__ (census/ledger bookkeeping only).
+        self.polymer_conduit_admission_pending = False
+        self.polymer_conduit_admission_readjudicated = False
 
     def __repr__(self):
         """
