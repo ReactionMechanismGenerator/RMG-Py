@@ -513,8 +513,18 @@ def close_conduit_lifecycle():
     THIS run's log rather than being deferred to the next run's initialize
     or left to the fragile process-exit path. Idempotent
     (:meth:`_LabelOracleState.close_lifecycle`): safe to call alongside the
-    reset boundary and the atexit guard without double-emitting."""
-    return _LABEL_ORACLE.close_lifecycle()
+    reset boundary and the atexit guard without double-emitting.
+
+    Design §1.2 'Close-hook extension' (round-68 amendment 6): ALSO closes
+    the CORE EPOCH provider's lifecycle, emitting one ``CONDUIT EPOCH
+    MAP/1`` line per distinct epoch advanced this lifecycle
+    (:meth:`_EpochProvider.close_lifecycle`) -- idempotent and never-raising
+    exactly like the oracle close above. The return value stays the
+    oracle's health line (unchanged shape/contract for existing callers);
+    the epoch-provider close is invoked for its emission side effect."""
+    oracle_line = _LABEL_ORACLE.close_lifecycle()
+    _EPOCH_PROVIDER.close_lifecycle()
+    return oracle_line
 
 
 # round-56 F1(c)(d): atexit is KEPT, but strictly as a LAST-RESORT guard for
@@ -528,16 +538,437 @@ def close_conduit_lifecycle():
 # in the SAME module namespace, which would register a second callback):
 # guard the register() call with a flag stored on the persistent ``atexit``
 # module itself (NOT a module-level name, which reload would reset). The
-# registered function references ``_LABEL_ORACLE`` BY NAME, so a reload that
-# rebinds the module global still closes the CURRENT oracle through the same
-# (in-place-updated) module __dict__.
+# registered function references ``close_conduit_lifecycle`` BY NAME, so a
+# reload that rebinds the module global still closes the CURRENT singletons
+# through the same (in-place-updated) module __dict__.
+#
+# round-70 P2-d: this last-resort path used to call ONLY
+# ``_LABEL_ORACLE.close_lifecycle()``, skipping the CORE EPOCH provider
+# entirely -- a process that crashed/exited before RMG.finish reached
+# _conduit_lifecycle_close would lose that run's EPOCH MAP/HEALTH lines even
+# though the label-oracle health line still landed. Route through the SAME
+# :func:`close_conduit_lifecycle` the production finish hook uses so no
+# surface is skipped; it is idempotent and never-raising exactly like the
+# oracle-only call it replaces.
 def _close_conduit_lifecycle_atexit():  # pragma: no cover - process teardown
-    _LABEL_ORACLE.close_lifecycle()
+    close_conduit_lifecycle()
 
 
 if not getattr(atexit, "_conduit_lifecycle_atexit_registered", False):
     atexit.register(_close_conduit_lifecycle_atexit)
     atexit._conduit_lifecycle_atexit_registered = True
+
+
+def _canonical_sig_sha16(signature):
+    """Token-safe digest of a raw core-topology signature (design §1.1
+    'Token-safe digest encoding'): the raw signature is a nested
+    ``((label,index)...),((index,label)...))`` tuple (`polymer.py:7703-7707`)
+    -- not itself log-token-safe -- so only its sha256 (truncated to the
+    first 16 hex chars) ever leaves this module. ``repr()`` of a tuple of
+    hashable, order-stable primitives is deterministic across processes for
+    the same signature, matching the module's determinism contract (design
+    §1.2 'Determinism'). NEVER raises: an unrepresentable/exotic signature
+    still yields a stable, charset-safe fallback digest rather than
+    propagating an exception into the census/generation path."""
+    try:
+        payload = repr(signature).encode("utf-8", errors="backslashreplace")
+    except Exception:  # pragma: no cover - defensive fail-closed
+        payload = repr(None).encode("utf-8")
+    return hashlib.sha256(payload).hexdigest()[:16]
+
+
+#: round-70 P2-e: warn-once dedup state for the advance-after-close anomaly
+#: line in :meth:`_EpochProvider.advance` -- a single lifecycle key (there
+#: is only one meaningful event here, unlike the ``(census, bucket)``-keyed
+#: sets below) so a hot post-close caller cannot spam the log once per call.
+#: Checked/set under :data:`_WARN_ONCE_LOCK` via :func:`_warn_once` (both
+#: defined later in this module; referenced here only at call time, after
+#: the whole module has finished loading). Cleared once per lifecycle by
+#: :func:`reset_conduit_state`, mirroring :data:`_bucket_anomaly_warned`.
+_epoch_advance_after_close_warned = set()
+
+#: round-71 P1: warn-once dedup state for the sighting-on-burned-epoch
+#: anomaly line in :meth:`_EpochProvider.note_sighted` -- keyed by the
+#: (already-burned) ordinal token, since more than one such token could in
+#: principle exist per lifecycle. Should never fire in production (a burn
+#: only follows a raise, which aborts the rebuild before any further
+#: sighting could register), but stays rate-limited defensively like every
+#: other anomaly line in this class. Checked/set under
+#: :data:`_WARN_ONCE_LOCK` via :func:`_warn_once`. Cleared once per
+#: lifecycle by :func:`reset_conduit_state`, mirroring
+#: :data:`_epoch_advance_after_close_warned`.
+_epoch_sighting_on_burned_warned = set()
+
+
+class _EpochProvider:
+    """Process-wide CORE EPOCH provider singleton (design §1.1-§1.4),
+    mirroring the :class:`_CensusRegistry` (`CENSUS_REGISTRY`) and
+    :class:`_LabelOracleState` (`_LABEL_ORACLE`) singleton patterns above:
+    one module-global instance, one :class:`threading.Lock` guarding all
+    state, an idempotent-per-lifecycle close hook, and a lifecycle reset
+    that the module's "reset both or neither" boundary
+    (:func:`reset_conduit_state`) drives alongside the other singletons.
+
+    A CORE EPOCH is a run-local ATTEMPTED-rebuild ordinal bound to a
+    core-topology signature (design §1.1): ``current_epoch()`` returns a
+    short ``e{N}`` token (never the raw signature -- see
+    :func:`_canonical_sig_sha16`), or the pre-first-advance sentinel
+    ``"epre"``. Epochs are monotone in TIME, not in signature-space: a
+    signature that reverts to an earlier value (A->B->A) still earns a NEW
+    ordinal (design §1.2).
+
+    Every public method NEVER raises into the census/generation path
+    (module contract, design §1.4 'Constraints fixed'): on an internal
+    error each method logs a versioned ``CONDUIT EPOCH PROVIDER ANOMALY/1``
+    line (mirroring the ``CONDUIT CLASSIFIER ORACLE ANOMALY/1`` pattern
+    above) and degrades to the last-known-good state rather than
+    propagating the exception."""
+
+    def __init__(self):
+        self._lock = threading.Lock()
+        self._ordinal = -1                    # -1 before first advance
+        self._current_sig = None              # last-advanced raw signature
+        self._sig_by_ordinal = {}             # {ordinal: sha256_hex[:16]}
+        self._advanced_this_lifecycle = []     # [(ordinal, sha16), ...]
+        # round-70 P1-a: burned accounting is a SET of burned ordinal
+        # TOKENS (e.g. "e3") rather than a blind incrementing counter, so
+        # burning the same ordinal twice (idempotent double-report) is a
+        # no-op instead of double-counting. A rebuild failure that follows
+        # a DEDUP no-op advance (no new ordinal was created) can never
+        # burn anything -- it increments the separate ``_failed_attempts``
+        # counter instead (see :meth:`note_conduit_rebuild_failed`).
+        self._burned_ordinals = set()
+        self._failed_attempts = 0
+        # round-71 P1: SET of ordinal TOKENS a census producer has
+        # resolved epoch=None (or an explicit epoch=) through THIS
+        # provider for (:meth:`note_sighted`, driven from
+        # :meth:`_CensusRegistry.register`). A token in this set was
+        # ACTUALLY SEEN carrying a real census sighting -- the burn
+        # decision in :meth:`note_conduit_rebuild_failed` consults it so
+        # "burned" never again means "created AND rebuild raised" when the
+        # ordinal in fact went on to be sighted first (the finding: the
+        # polymer initialize path registers sightings early, then a LATER
+        # tripwire in the same initialize can still raise).
+        self._sighted_ordinals = set()
+        # round-71 P1: rebuild failures whose token WAS sighted before the
+        # failure hook ran -- kept separate from ``_burned_ordinals`` so
+        # "burned" stays honestly "attempted, never sighted".
+        self._failed_after_sighting = 0
+        self._closed = False                   # EPOCH MAP emitted this lifecycle
+        self._epoch_map_lines = None           # cached lines once closed
+        # round-71 P2: set on FIRST ACTIVITY -- the first advance()
+        # attempt (any outcome: created, dedup no-op, or post-close
+        # degrade), the first note_sighted() resolution, or the first
+        # note_conduit_rebuild_failed() report. A provider that was NEVER
+        # opened has nothing to report: :meth:`close_lifecycle` emits
+        # NOTHING (no MAP lines -- there are none -- and no HEALTH line
+        # either) instead of a fake ``epochs=0 ... last=epre`` line, e.g.
+        # for a run that fails before RMG.initialize ever opens a
+        # lifecycle.
+        self._opened = False
+
+    def current_epoch(self):
+        """``f"e{ordinal}"`` if an advance has fired, else the sentinel
+        ``"epre"`` (design §1.1/§1.4). Never raises; never returns
+        ``None``."""
+        try:
+            with self._lock:
+                ordinal = self._ordinal
+        except Exception:  # pragma: no cover - defensive fail-closed
+            return "epre"
+        return f"e{ordinal}" if ordinal >= 0 else "epre"
+
+    def advance(self, signature):
+        """Advance to a new core epoch for ``signature`` (design §1.2).
+        Identical-consecutive-signature is a no-op (returns the current
+        token); any other signature -- including a revert to a prior value
+        -- increments the ordinal and returns the new token. Records the
+        signature's sha16 digest in the audit map and appends to this
+        lifecycle's EPOCH MAP backlog. NEVER raises: on internal failure,
+        degrades to the last-known-good token via :meth:`current_epoch`.
+
+        Returns ``(token, created)`` (round-70 P1-a/P1-b): ``created`` is
+        True only when a NEW ordinal was actually minted this call, so
+        callers (chiefly ``RMG._advance_conduit_epoch``) can tell a genuine
+        new epoch apart from a dedup no-op or a post-close degrade -- the
+        distinction :meth:`note_conduit_rebuild_failed` needs to decide
+        whether a subsequent rebuild failure may burn an ordinal.
+
+        round-70 P2-e (advance-after-close): once :meth:`close_lifecycle`
+        has fired for the current lifecycle, a further ``advance()`` must
+        NOT mint a new ordinal -- those epochs would never be emitted by
+        an EPOCH MAP line (close already ran). It instead returns the
+        CURRENT token unchanged with ``created=False`` and logs a
+        rate-limited ``CONDUIT EPOCH PROVIDER ANOMALY/1
+        event=advance-after-close`` line (once per lifecycle)."""
+        try:
+            with self._lock:
+                self._opened = True  # round-71 P2: first advance attempt
+                if self._closed:
+                    ordinal = self._ordinal
+                    token = f"e{ordinal}" if ordinal >= 0 else "epre"
+                    after_close = True
+                else:
+                    after_close = False
+                    if signature == self._current_sig:
+                        ordinal = self._ordinal
+                        token = f"e{ordinal}" if ordinal >= 0 else "epre"
+                        return (token, False)
+                    sig_sha = _canonical_sig_sha16(signature)
+                    self._ordinal += 1
+                    self._current_sig = signature
+                    self._sig_by_ordinal[self._ordinal] = sig_sha
+                    self._advanced_this_lifecycle.append(
+                        (self._ordinal, sig_sha))
+                    return (f"e{self._ordinal}", True)
+            # after_close is always True to reach here (every branch above
+            # either returns or falls through only on after_close).
+            _warn_once(
+                _epoch_advance_after_close_warned, "advance-after-close",
+                "CONDUIT EPOCH PROVIDER ANOMALY/1 event=advance-after-close "
+                "reason=advance-after-close action=return-current-token")
+            return (token, False)
+        except Exception as exc:  # pragma: no cover - defensive fail-closed
+            logging.warning(
+                "CONDUIT EPOCH PROVIDER ANOMALY/1 event=advance-failed "
+                "reason=%s action=degrade-to-current-epoch",
+                type(exc).__name__)
+            return (self.current_epoch(), False)
+
+    def note_sighted(self, token):
+        """Mark ordinal ``token`` (e.g. ``"e3"``) SIGHTED (round-71 P1
+        finding): called from :meth:`_CensusRegistry.register` every time
+        a census producer (``register_candidate`` /
+        ``annotate_refused_row`` / ``annotate_feature_radical``) resolves
+        an ``epoch`` for a sighting through this provider -- both the
+        ``epoch=None`` fallback (:func:`current_epoch`) and an
+        explicitly-passed ``epoch=`` token are marked. This is cheap (one
+        set add under the lock) and counts as lifecycle "activity" (round-71
+        P2, see :meth:`close_lifecycle`). The pre-advance ``"epre"``
+        sentinel and a missing token are never marked -- they name no real
+        ordinal.
+
+        Decision (round-71 P1, explicit-epoch case): marking is
+        unconditional -- it does not first check that ``token`` is a
+        currently-known/created ordinal. The ONLY consumer of the sighted
+        set is the burn-vs-``failed_after_sighting`` decision below, which
+        itself only ever tests an actually provider-created token (the one
+        ``advance()`` returned with ``created=True``); marking a synthetic
+        or test-only epoch string (e.g. ``"sig-1"``) sighted has no
+        observable downstream effect, so the cheaper unconditional add was
+        chosen over an extra "is this a real ordinal" membership check.
+
+        Ordering subtlety (round-71 P1): the burn decision in
+        :meth:`note_conduit_rebuild_failed` is taken at failure-hook time
+        against whatever this set contains AT THAT MOMENT -- a sighting
+        registered here BEFORE the failure hook runs (the exact scenario
+        the finding describes: the polymer initialize path registers a
+        sighting early via ``stamp_gas_association_refusal``, then a LATER
+        tripwire in that same initialize raises) correctly flips the
+        outcome to ``failed_after_sighting`` instead of burning. A sighting
+        landing here AFTER its token has already been burned should never
+        happen in production (a burn only follows a raise, which aborts
+        the rebuild before any further sighting can be registered against
+        it); if it somehow does, this does NOT un-burn the token or
+        mutate burn history -- it logs a rate-limited
+        ``CONDUIT EPOCH PROVIDER ANOMALY/1 event=sighting-on-burned-epoch``
+        line, once per token per lifecycle, via the same warn-once
+        machinery as the advance-after-close anomaly. NEVER raises."""
+        try:
+            if not token or token == "epre":
+                return
+            with self._lock:
+                self._opened = True  # round-71 P2: sighting is activity
+                already_burned = token in self._burned_ordinals
+                self._sighted_ordinals.add(token)
+            if already_burned:
+                _warn_once(
+                    _epoch_sighting_on_burned_warned, token,
+                    "CONDUIT EPOCH PROVIDER ANOMALY/1 "
+                    "event=sighting-on-burned-epoch epoch=%s "
+                    "reason=sighting-on-burned-epoch "
+                    "action=keep-burned-history", token)
+        except Exception:  # pragma: no cover - defensive fail-closed
+            pass
+
+    def note_conduit_rebuild_failed(self, token=None, created=False):
+        """Mark the just-advanced ordinal as BURNED (design §1.2/§1.4
+        amendment 7; round-70 P1-a honest accounting; round-71 P1
+        sighting-aware refinement): the advance fired AND created a new
+        ordinal (``created=True``, ``token`` naming it), but the rebuild it
+        labeled then raised. If that ordinal was NEVER sighted (no census
+        producer resolved a sighting against it before this call), it is
+        burned -- "attempted, never sighted" stays true. The burned set is
+        idempotent -- burning the same ``token`` twice is a no-op, never a
+        double count.
+
+        round-71 P1: when ``created`` is True AND ``token`` WAS already
+        sighted (see :meth:`note_sighted`) -- the polymer initialize path
+        registers a census sighting early, then a LATER tripwire in that
+        same initialize still raises -- the ordinal is NOT burned (burning
+        it would corrupt "burned = attempted, never sighted" by
+        simultaneously claiming the epoch was both sighted and never
+        sighted). Instead the separate ``_failed_after_sighting`` counter
+        increments, an honest third outcome distinct from both "burned"
+        and "failed_attempts". No re-evaluation happens later: the
+        sighted/not-sighted decision is taken exactly once, at the moment
+        this hook runs, against whatever :attr:`_sighted_ordinals`
+        contains at that instant.
+
+        When ``created`` is False (a DEDUP no-op advance never minted an
+        ordinal to burn) or ``token`` is missing (the advance itself
+        failed internally -- round-70 P1-b, no reliable ordinal-created
+        signal exists), nothing is burned or counted as
+        failed-after-sighting; instead the separate ``_failed_attempts``
+        counter increments, so a rebuild failure can never corrupt
+        burned-epoch accounting by attributing itself to an ordinal that
+        was never actually (re)created. NEVER raises."""
+        try:
+            with self._lock:
+                self._opened = True  # round-71 P2: a failure is activity
+                if created and token:
+                    if token in self._sighted_ordinals:
+                        self._failed_after_sighting += 1
+                    else:
+                        self._burned_ordinals.add(token)
+                else:
+                    self._failed_attempts += 1
+        except Exception:  # pragma: no cover - defensive fail-closed
+            pass
+
+    def close_lifecycle(self):
+        """Boundary emitter (design §1.2 'Close-hook extension', mirroring
+        :meth:`_LabelOracleState.close_lifecycle`): emit one
+        ``CONDUIT EPOCH MAP/1`` line per distinct epoch advanced THIS
+        lifecycle, in ordinal order, followed by exactly one
+        ``CONDUIT EPOCH HEALTH/1`` summary line (round-70 P1/P2-c; round-71
+        P1 adds the ``failed_after_sighting=`` field) -- ``epochs=`` the
+        count of ordinals actually created this lifecycle, ``burned=`` the
+        size of the burned-ordinal set, ``failed_attempts=`` rebuild
+        failures that could not be attributed to a created ordinal,
+        ``failed_after_sighting=`` rebuild failures whose created ordinal
+        WAS already sighted (so honestly NOT burned -- see
+        :meth:`note_conduit_rebuild_failed`), ``last=`` the current token.
+        Field order is fixed and documented here; it must not change
+        without updating every format pin in the test suite. All cached
+        together. Idempotent per lifecycle -- a second call before the next
+        :meth:`reset` returns the cached lines WITHOUT re-emitting
+        anything, so both the production end-of-run hook
+        (:func:`close_conduit_lifecycle`) and the lifecycle-reset boundary
+        (:meth:`reset`) can call this safely.
+
+        round-71 P2 (virgin-lifecycle guard): if NOTHING has happened this
+        lifecycle -- no advance attempt, no sighting, no recorded failure
+        (:attr:`_opened` is still False) -- this emits NOTHING: no MAP
+        lines (there genuinely are none) and no HEALTH line either,
+        instead of the previous fake ``epochs=0 burned=0
+        failed_attempts=0 failed_after_sighting=0 last=epre`` line a
+        never-opened provider used to print (e.g. for a run that fails
+        before RMG.initialize ever calls :func:`reset_conduit_state`).
+        This is a TRUE no-op -- it does NOT set ``self._closed`` -- so a
+        later real close (once the lifecycle has since seen activity)
+        still fires normally; this mirrors
+        :meth:`_LabelOracleState.close_lifecycle`'s existing
+        open-lifecycle guard for the exact same reason.
+
+        NEVER raises."""
+        try:
+            with self._lock:
+                if self._closed:
+                    return list(self._epoch_map_lines or [])
+                if not self._opened:
+                    # round-71 P2: virgin lifecycle -- stay a true no-op.
+                    return []
+                advanced = list(self._advanced_this_lifecycle)
+                burned_count = len(self._burned_ordinals)
+                failed_attempts = self._failed_attempts
+                failed_after_sighting = self._failed_after_sighting
+                ordinal = self._ordinal
+                self._closed = True
+            last = f"e{ordinal}" if ordinal >= 0 else "epre"
+            lines = []
+            for o, sig_sha in advanced:
+                parent = f"e{o - 1}" if o > 0 else "-"
+                lines.append(
+                    f"CONDUIT EPOCH MAP/1 epoch=e{o} "
+                    f"sig_sha={sig_sha} parent={parent}")
+            lines.append(
+                f"CONDUIT EPOCH HEALTH/1 epochs={len(advanced)} "
+                f"burned={burned_count} failed_attempts={failed_attempts} "
+                f"failed_after_sighting={failed_after_sighting} "
+                f"last={last}")
+            with self._lock:
+                self._epoch_map_lines = lines
+            for line in lines:
+                logging.warning(line)
+            return list(lines)
+        except Exception as exc:  # pragma: no cover - defensive fail-closed
+            logging.warning(
+                "CONDUIT EPOCH PROVIDER ANOMALY/1 event=close-lifecycle-failed "
+                "reason=%s action=skip-map-emission", type(exc).__name__)
+            return []
+
+    def reset(self):
+        """Lifecycle reset (design §1.2 'Lifecycle reset', the same "reset
+        both or neither" discipline :func:`reset_conduit_state` applies to
+        every other singleton): close the OUTGOING lifecycle first (so its
+        ``CONDUIT EPOCH MAP/1`` lines are emitted from pre-clear state --
+        same ordering the label oracle uses), then clear all state so the
+        next run restarts at ``epre`` -> ``e0``. NEVER raises."""
+        self.close_lifecycle()
+        try:
+            with self._lock:
+                self._ordinal = -1
+                self._current_sig = None
+                self._sig_by_ordinal = {}
+                self._advanced_this_lifecycle = []
+                self._burned_ordinals = set()
+                self._failed_attempts = 0
+                self._sighted_ordinals = set()
+                self._failed_after_sighting = 0
+                self._closed = False
+                self._epoch_map_lines = None
+                self._opened = False
+        except Exception:  # pragma: no cover - defensive fail-closed
+            pass
+
+
+#: Process-wide CORE EPOCH provider instance (design §1.1).
+_EPOCH_PROVIDER = _EpochProvider()
+
+
+def current_epoch():
+    """Module-level accessor for :meth:`_EpochProvider.current_epoch`
+    (design §1.2)."""
+    return _EPOCH_PROVIDER.current_epoch()
+
+
+def advance_conduit_epoch(signature):
+    """Module-level accessor for :meth:`_EpochProvider.advance` (design
+    §1.2). Production callers (rmgpy/rmg/main.py) call this before every
+    RMG-owned polymer rebuild/simulate with
+    ``core_topology_signature(core_species, core_reactions)``.
+
+    round-70 P1-a/P1-b: returns ``(token, created)`` -- ``created`` is True
+    only when a NEW ordinal was actually minted, so callers can tell a
+    genuine advance apart from a dedup no-op (or a post-close degrade) and
+    pass that outcome on to :func:`note_conduit_rebuild_failed` honestly."""
+    return _EPOCH_PROVIDER.advance(signature)
+
+
+def note_conduit_rebuild_failed(token=None, created=False):
+    """Module-level accessor for
+    :meth:`_EpochProvider.note_conduit_rebuild_failed` (design §1.2/§1.4
+    amendment 7; round-70 P1-a/P1-b honest accounting). Production callers
+    (rmgpy/rmg/main.py) call this from the ``except`` around each guarded
+    advance site when the labeled rebuild then raises, passing the
+    ``(token, created)`` outcome of the immediately-preceding
+    :func:`advance_conduit_epoch` call at that same site: only a
+    ``created=True`` advance's ordinal may ever be burned; everything else
+    (a dedup no-op, or an advance that itself failed internally) increments
+    ``failed_attempts`` instead."""
+    return _EPOCH_PROVIDER.note_conduit_rebuild_failed(
+        token=token, created=created)
 
 
 def active_pool_state_labels():
@@ -955,8 +1386,30 @@ class _CensusRegistry:
             # id (or RMG iteration int) under which this sighting was
             # recorded. Bookkeeping only -- FR stickiness stays set-membership
             # of "feature_radical" in censuses, across ALL epochs of the run.
-            if epoch is not None:
-                entry["epochs"].add(epoch)
+            #
+            # m18.4 §1.3: DELIBERATE CONTRACT CHANGE -- epoch=None used to
+            # leave entry["epochs"] untouched (skip). It now falls back to
+            # the process-wide CORE EPOCH provider's current token
+            # (:func:`current_epoch`): every production caller passes
+            # epoch=None today (design §INVERSION-1), so this single
+            # fallback wires ALL of them (annotate_refused_row,
+            # annotate_feature_radical) with zero edits to polymer.py. An
+            # explicit epoch= argument still overrides the fallback.
+            if epoch is None:
+                epoch = current_epoch()
+            entry["epochs"].add(epoch)
+            # round-71 P1 finding: mark this token SIGHTED on the process-
+            # wide CORE EPOCH provider -- whether ``epoch`` came from the
+            # fallback above or was passed explicitly (see
+            # :meth:`_EpochProvider.note_sighted` for the explicit-token
+            # decision). This is what lets a LATER rebuild failure on the
+            # SAME epoch tell "attempted, never sighted" (burn) apart from
+            # "attempted, but this row was sighted first" (NOT a burn --
+            # see :meth:`_EpochProvider.note_conduit_rebuild_failed`).
+            # Never raises; cheap (one set add under the provider's own
+            # lock, a different lock than this one -- no cross-singleton
+            # deadlock risk).
+            _EPOCH_PROVIDER.note_sighted(epoch)
             sightings = entry["bucket_sightings_by_census"].setdefault(
                 census, set())
             sightings.add(bucket)
@@ -1168,9 +1621,13 @@ def reset_conduit_state():
 
     Import-safe: the rmgpy.polymer sets are cleared lazily so this module
     keeps its no-module-level-RMG-imports contract."""
-    # Close the outgoing label-oracle lifecycle FIRST (its health line is
-    # computed from pre-clear state), then clear everything together.
+    # Close the outgoing label-oracle and CORE EPOCH provider lifecycles
+    # FIRST (their health/MAP lines are computed from pre-clear state),
+    # then clear everything together. m18.4 §1.2 'Lifecycle reset': the
+    # provider joins the "reset both or neither" contract alongside the
+    # registry and flux totals below.
     _LABEL_ORACLE.reset()
+    _EPOCH_PROVIDER.reset()
     CENSUS_REGISTRY.reset()
     _CONDUIT_FLUX_TOTALS.clear()
     # round-58 P2-B: the unknown-bucket and F3 token-anomaly warn-once
@@ -1179,7 +1636,12 @@ def reset_conduit_state():
     # dedup key from the previous run. round-60 P2-3: cleared atomically
     # under _WARN_ONCE_LOCK (via _warn_once_clear) so this reset can never
     # race a concurrent _warn_once() check-then-add on either set.
-    _warn_once_clear(_bucket_anomaly_warned, _admission_token_anomaly_warned)
+    # round-70 P2-e: the advance-after-close anomaly dedup set joins the
+    # same both-or-neither contract, for the same reason. round-71 P1: the
+    # sighting-on-burned-epoch anomaly dedup set joins it too.
+    _warn_once_clear(_bucket_anomaly_warned, _admission_token_anomaly_warned,
+                     _epoch_advance_after_close_warned,
+                     _epoch_sighting_on_burned_warned)
     try:
         import rmgpy.polymer as _polymer
         _polymer._refused_census_warned.clear()

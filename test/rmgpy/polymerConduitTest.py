@@ -15,7 +15,10 @@ opposing the admitted direction, near-threshold gas products, unresolved
 species) -- the real census has NO rows in those regimes (see census_report.md).
 """
 
+import ast
 import copy
+import textwrap
+import types
 
 import pytest
 
@@ -2120,11 +2123,17 @@ class TestLedgerEpochsAndReset:
         entry = lookup_candidate(self.KEY)
         assert entry["epochs"] == {"sig-1", "sig-3"}
 
-    def test_epoch_none_allowed(self, clean_registry):
+    def test_epoch_none_falls_back_to_provider_token(self, clean_registry):
+        """m18.4 §1.3 DELIBERATE CONTRACT CHANGE: epoch=None used to leave
+        entry["epochs"] empty (skip); it now falls back to the process-wide
+        CORE EPOCH provider's current token. Before any advance, that
+        token is the "epre" sentinel -- see
+        TestEpochProvider.test_register_epoch_none_pre_advance_uses_epre
+        and .../_post_advance_uses_current_token for the full pin."""
         from rmgpy.polymer_conduit import (lookup_candidate,
                                            register_candidate)
         register_candidate(self.KEY, "r93_general", "ADMISSIBLE_A")
-        assert lookup_candidate(self.KEY)["epochs"] == set()
+        assert lookup_candidate(self.KEY)["epochs"] == {"epre"}
 
     def test_fr_sticky_across_epochs(self, clean_registry):
         """An FR sighting in epoch 1 still blocks admission when the row is
@@ -2299,6 +2308,1032 @@ class TestLedgerEpochsAndReset:
         import rmgpy.polymer as rp
         from rmgpy import polymer_conduit as pc
         assert rp.reset_conduit_state is pc.reset_conduit_state
+
+
+# ---------------------------------------------------------------------------
+# m18.4 commit 1: core-epoch provider (design §1.1-§1.4)
+# ---------------------------------------------------------------------------
+
+_TOKEN_CHARSET_RE_SOURCE = r"^[A-Za-z0-9_.-]+$"
+
+
+class TestEpochProvider:
+    """m18.4 design §1.1-§1.4 (commit 1): the process-wide CORE EPOCH
+    provider -- pre-first-advance sentinel, ordinal monotonicity,
+    identical-signature no-op, revert-to-earlier-signature still advances,
+    burned-epoch counter, determinism, charset/format pins, lifecycle
+    reset, and the register() epoch=None -> provider fallback (including
+    the explicit-epoch-override pin)."""
+
+    def test_sentinel_before_any_advance(self, clean_registry):
+        from rmgpy.polymer_conduit import current_epoch
+        assert current_epoch() == "epre"
+
+    def test_ordinal_monotonicity_across_distinct_signatures(
+            self, clean_registry):
+        """round-70: advance_conduit_epoch() now returns (token, created)."""
+        from rmgpy.polymer_conduit import advance_conduit_epoch
+        assert advance_conduit_epoch(("sig-A",)) == ("e0", True)
+        assert advance_conduit_epoch(("sig-B",)) == ("e1", True)
+        assert advance_conduit_epoch(("sig-C",)) == ("e2", True)
+
+    def test_identical_signature_is_a_noop(self, clean_registry):
+        """round-70: the dedup no-op advance returns created=False."""
+        from rmgpy.polymer_conduit import advance_conduit_epoch, current_epoch
+        assert advance_conduit_epoch(("sig-A",)) == ("e0", True)
+        assert advance_conduit_epoch(("sig-A",)) == ("e0", False)
+        assert advance_conduit_epoch(("sig-A",)) == ("e0", False)
+        assert current_epoch() == "e0"
+
+    def test_revert_to_earlier_signature_still_gets_new_ordinal(
+            self, clean_registry):
+        """A -> B -> A yields e0, e1, e2 -- NOT e0, e1, e0 (design §1.2:
+        epochs are monotone in time, not signature-space). round-70: every
+        one of these is a genuine advance, so created=True throughout."""
+        from rmgpy.polymer_conduit import advance_conduit_epoch
+        assert advance_conduit_epoch(("sig-A",)) == ("e0", True)
+        assert advance_conduit_epoch(("sig-B",)) == ("e1", True)
+        assert advance_conduit_epoch(("sig-A",)) == ("e2", True)
+
+    def test_burned_ordinal_set_records_created_ordinal(self, clean_registry):
+        """round-70 P1-a: burned accounting is now a SET of burned ordinal
+        TOKENS (never a blind incrementing counter) -- reporting the same
+        still-current created ordinal burned twice is idempotent, not a
+        double count. Passing the (token, created) outcome explicitly is
+        the caller's job now (see TestConduitEpochAdvanceSites for the
+        RMG-helper-level pin of that data flow)."""
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed)
+        assert _EPOCH_PROVIDER._burned_ordinals == set()
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+        token, created = advance_conduit_epoch(("sig-A",))
+        assert (token, created) == ("e0", True)
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._burned_ordinals == {"e0"}
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+        # Idempotent: reporting the SAME still-current created ordinal
+        # burned again does not double-burn or leak into failed_attempts.
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._burned_ordinals == {"e0"}
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+
+    def test_determinism_across_repeated_identical_sequences(
+            self, clean_registry):
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           reset_conduit_state)
+        sequence = [("sig-A",), ("sig-B",), ("sig-A",), ("sig-C",)]
+        tokens_run1 = [advance_conduit_epoch(sig) for sig in sequence]
+        reset_conduit_state()
+        tokens_run2 = [advance_conduit_epoch(sig) for sig in sequence]
+        assert tokens_run1 == tokens_run2 == [
+            ("e0", True), ("e1", True), ("e2", True), ("e3", True)]
+
+    def test_every_emitted_token_matches_charset(self, caplog,
+                                                 clean_registry):
+        import logging as _logging
+        import re as _re
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           close_conduit_lifecycle,
+                                           current_epoch)
+        charset = _re.compile(_TOKEN_CHARSET_RE_SOURCE)
+        assert charset.match(current_epoch())
+        with caplog.at_level(_logging.WARNING):
+            e0, _created0 = advance_conduit_epoch(("sig-A",))
+            e1, _created1 = advance_conduit_epoch(("sig-B",))
+            assert charset.match(e0)
+            assert charset.match(e1)
+            close_conduit_lifecycle()
+        for line in _r55_lines(caplog, "CONDUIT EPOCH MAP/1"):
+            for token in line.split():
+                if "=" in token:
+                    key, _, value = token.partition("=")
+                    assert charset.match(value), (key, value)
+
+    def test_epoch_map_line_format_single_epoch(self, caplog,
+                                                clean_registry):
+        import logging as _logging
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           close_conduit_lifecycle)
+        with caplog.at_level(_logging.WARNING):
+            advance_conduit_epoch(("only-sig",))
+            close_conduit_lifecycle()
+        lines = _r55_lines(caplog, "CONDUIT EPOCH MAP/1")
+        assert len(lines) == 1
+        prefix, _, rest = lines[0].partition("epoch=e0 ")
+        assert prefix == "CONDUIT EPOCH MAP/1 "
+        assert rest.startswith("sig_sha=")
+        sig_sha, _, tail = rest.partition(" ")
+        assert len(sig_sha) == len("sig_sha=") + 16
+        assert tail == "parent=-"
+
+    def test_epoch_map_line_format_parent_chain(self, caplog,
+                                                clean_registry):
+        import logging as _logging
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           close_conduit_lifecycle)
+        with caplog.at_level(_logging.WARNING):
+            advance_conduit_epoch(("sig-A",))
+            advance_conduit_epoch(("sig-B",))
+            close_conduit_lifecycle()
+        lines = _r55_lines(caplog, "CONDUIT EPOCH MAP/1")
+        assert len(lines) == 2
+        assert lines[0].startswith("CONDUIT EPOCH MAP/1 epoch=e0 ")
+        assert lines[0].endswith("parent=-")
+        assert lines[1].startswith("CONDUIT EPOCH MAP/1 epoch=e1 ")
+        assert lines[1].endswith("parent=e0")
+
+    def test_epoch_map_close_is_idempotent_per_lifecycle(self, caplog,
+                                                          clean_registry):
+        import logging as _logging
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           close_conduit_lifecycle)
+        with caplog.at_level(_logging.WARNING):
+            advance_conduit_epoch(("sig-A",))
+            close_conduit_lifecycle()
+            caplog.clear()
+            close_conduit_lifecycle()  # second close: no-op, no re-emit
+        assert not _r55_lines(caplog, "CONDUIT EPOCH MAP/1")
+
+    def test_reset_returns_provider_to_epre_and_clears_maps(
+            self, clean_registry):
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           current_epoch,
+                                           reset_conduit_state)
+        advance_conduit_epoch(("sig-A",))
+        advance_conduit_epoch(("sig-B",))
+        assert current_epoch() == "e1"
+        reset_conduit_state()
+        assert current_epoch() == "epre"
+        assert _EPOCH_PROVIDER._ordinal == -1
+        assert _EPOCH_PROVIDER._current_sig is None
+        assert _EPOCH_PROVIDER._sig_by_ordinal == {}
+        assert _EPOCH_PROVIDER._advanced_this_lifecycle == []
+
+    def test_reset_both_or_neither_provider_included(self, clean_registry):
+        """m18.4 §1.2 'reset both or neither': the provider resets in the
+        SAME reset_conduit_state() call as the registry and flux totals --
+        not tested in detail here, just that the provider is included."""
+        from rmgpy.polymer_conduit import (CENSUS_REGISTRY,
+                                           _CONDUIT_FLUX_TOTALS,
+                                           advance_conduit_epoch,
+                                           current_epoch,
+                                           reset_conduit_state,
+                                           register_candidate)
+        advance_conduit_epoch(("sig-A",))
+        register_candidate("PROVREG_A(1)<>PROVREG_B(2)", "r93_general",
+                           "ADMISSIBLE_A")
+        _CONDUIT_FLUX_TOTALS["k"] = {"grams": 1.0, "revoked": False}
+        reset_conduit_state()
+        assert current_epoch() == "epre"
+        assert CENSUS_REGISTRY.counts()[2] == 0
+        assert _CONDUIT_FLUX_TOTALS == {}
+
+    def test_register_epoch_none_uses_provider_token_post_advance(
+            self, clean_registry):
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           lookup_candidate,
+                                           register_candidate)
+        advance_conduit_epoch(("sig-A",))
+        register_candidate("PROVFB_A(1)<>PROVFB_B(2)", "r93_general",
+                           "ADMISSIBLE_A")
+        entry = lookup_candidate("PROVFB_A(1)<>PROVFB_B(2)")
+        assert entry["epochs"] == {"e0"}
+
+    def test_register_epoch_none_pre_advance_uses_epre(self, clean_registry):
+        from rmgpy.polymer_conduit import lookup_candidate, register_candidate
+        register_candidate("PROVFB_C(1)<>PROVFB_D(2)", "r93_general",
+                           "ADMISSIBLE_A")
+        entry = lookup_candidate("PROVFB_C(1)<>PROVFB_D(2)")
+        assert entry["epochs"] == {"epre"}
+
+    def test_explicit_epoch_overrides_provider_fallback(self, clean_registry):
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           lookup_candidate,
+                                           register_candidate)
+        advance_conduit_epoch(("sig-A",))
+        register_candidate("PROVFB_E(1)<>PROVFB_F(2)", "r93_general",
+                           "ADMISSIBLE_A", epoch="e7")
+        entry = lookup_candidate("PROVFB_E(1)<>PROVFB_F(2)")
+        assert entry["epochs"] == {"e7"}
+        assert "e0" not in entry["epochs"]
+
+    def test_concurrent_advance_stress(self, clean_registry):
+        """Light thread-safety pin (no existing thread-safety test in this
+        file for CENSUS_REGISTRY/_LABEL_ORACLE to mirror in detail):
+        concurrent advances must never corrupt the ordinal sequence -- the
+        final ordinal count equals the number of DISTINCT signatures
+        actually advanced, and every returned token is charset-valid."""
+        import re as _re
+        import threading as _threading
+        from rmgpy.polymer_conduit import advance_conduit_epoch, current_epoch
+
+        charset = _re.compile(_TOKEN_CHARSET_RE_SOURCE)
+        n_threads = 8
+        results = [None] * n_threads
+        barrier = _threading.Barrier(n_threads)
+
+        def worker(i):
+            barrier.wait()
+            results[i] = advance_conduit_epoch((f"sig-{i}",))
+
+        threads = [_threading.Thread(target=worker, args=(i,))
+                  for i in range(n_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert all(charset.match(tok) for tok, _created in results)
+        assert all(created for _tok, created in results)
+        assert len(set(results)) == n_threads  # every distinct sig advanced
+        assert current_epoch() == f"e{n_threads - 1}"
+
+
+class TestR70EpochHealthAndLifecycleGuards:
+    """round-70 P1/P2-c, P2-d, P2-e: the CONDUIT EPOCH HEALTH/1 summary
+    line's exact format, the atexit last-resort close routing through
+    BOTH the label-oracle and epoch-provider surfaces, and the
+    advance-after-close degrade-to-current-token semantics."""
+
+    def test_epoch_health_line_exact_format(self, caplog, clean_registry):
+        """P1/P2-c; round-71 P1 adds failed_after_sighting=: exactly one
+        CONDUIT EPOCH HEALTH/1 line per lifecycle close, with epochs= the
+        created-ordinal count, burned= the size of the burned-ordinal set,
+        failed_attempts= the counter of rebuild failures not attributable
+        to a created ordinal, failed_after_sighting= rebuild failures
+        whose created ordinal was already sighted (so NOT burned), and
+        last= the current token -- in that fixed field order."""
+        import logging as _logging
+
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                            close_conduit_lifecycle,
+                                            note_conduit_rebuild_failed)
+
+        with caplog.at_level(_logging.WARNING):
+            token_a, created_a = advance_conduit_epoch(("sig-A",))
+            note_conduit_rebuild_failed(token=token_a, created=created_a)
+            advance_conduit_epoch(("sig-B",))
+            # a dedup no-op advance followed by a "failure" report must
+            # land in failed_attempts, not burn e1.
+            token_b, created_b = advance_conduit_epoch(("sig-B",))
+            note_conduit_rebuild_failed(token=token_b, created=created_b)
+            close_conduit_lifecycle()
+
+        lines = _r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")
+        assert len(lines) == 1
+        assert lines[0] == (
+            "CONDUIT EPOCH HEALTH/1 epochs=2 burned=1 failed_attempts=1 "
+            "failed_after_sighting=0 last=e1")
+
+    def test_epoch_health_line_idempotent_per_lifecycle(self, caplog,
+                                                          clean_registry):
+        """Mirrors the EPOCH MAP idempotency pin: a second close before
+        the next reset must not re-emit the HEALTH/1 line."""
+        import logging as _logging
+
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                            close_conduit_lifecycle)
+
+        advance_conduit_epoch(("sig-only",))
+        with caplog.at_level(_logging.WARNING):
+            close_conduit_lifecycle()
+            caplog.clear()
+            close_conduit_lifecycle()  # no-op, must not re-emit
+            assert _r55_lines(caplog, "CONDUIT EPOCH HEALTH/1") == []
+
+    def test_atexit_last_resort_closes_both_oracle_and_epoch_surfaces(
+            self, caplog, clean_registry):
+        """P2-d: the process-exit last-resort guard must route through
+        close_conduit_lifecycle() (closing BOTH the label-oracle and the
+        CORE EPOCH provider), not just the label oracle alone -- a
+        process that crashes before RMG.finish must still emit both
+        surfaces' health lines."""
+        import logging as _logging
+
+        from rmgpy.polymer_conduit import (_close_conduit_lifecycle_atexit,
+                                            advance_conduit_epoch)
+
+        advance_conduit_epoch(("sig-atexit",))
+        with caplog.at_level(_logging.WARNING):
+            _close_conduit_lifecycle_atexit()
+
+        oracle_lines = _r55_lines(caplog, "CONDUIT CLASSIFIER ORACLE HEALTH/1")
+        epoch_health_lines = _r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")
+        assert len(oracle_lines) == 1
+        assert len(epoch_health_lines) == 1
+
+    def test_atexit_last_resort_is_never_raising_and_idempotent(
+            self, clean_registry):
+        """The atexit guard must be a pure no-op on a second call (the
+        production finish hook already closed the lifecycle) and must
+        never raise regardless of prior state."""
+        from rmgpy.polymer_conduit import _close_conduit_lifecycle_atexit
+
+        _close_conduit_lifecycle_atexit()
+        _close_conduit_lifecycle_atexit()  # must not raise
+
+    def test_advance_after_close_returns_current_token_unchanged(
+            self, caplog, clean_registry):
+        """P2-e: once close_conduit_lifecycle() has fired, a further
+        advance() call with a NEW signature must NOT mint a new ordinal
+        -- it returns the current token unchanged with created=False,
+        never raises, and logs the rate-limited anomaly line exactly
+        once per lifecycle."""
+        import logging as _logging
+
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                            close_conduit_lifecycle,
+                                            current_epoch)
+
+        advance_conduit_epoch(("sig-A",))
+        close_conduit_lifecycle()
+        current_token = current_epoch()
+        assert current_token == "e0"
+
+        with caplog.at_level(_logging.WARNING):
+            result_1 = advance_conduit_epoch(("sig-B-never-created",))
+            result_2 = advance_conduit_epoch(("sig-C-never-created",))
+
+        assert result_1 == (current_token, False)
+        assert result_2 == (current_token, False)
+        assert current_epoch() == current_token  # no new ordinal minted
+
+        anomalies = _r55_lines(
+            caplog, "CONDUIT EPOCH PROVIDER ANOMALY/1 event=advance-after-close")
+        assert len(anomalies) == 1  # rate-limited: once per lifecycle
+        assert anomalies[0] == (
+            "CONDUIT EPOCH PROVIDER ANOMALY/1 event=advance-after-close "
+            "reason=advance-after-close action=return-current-token")
+
+
+class TestR71SightingAwareBurnAndVirginClose:
+    """round-71 P1/P2 NO-GO fixes.
+
+    P1: burned-epoch accounting is now sighting-aware. Previously
+    "burned" meant "the outer guarded call failed after this epoch was
+    created" -- but the polymer initialize path registers census
+    sightings EARLY (stamp_gas_association_refusal -> annotate_refused_row
+    -> register()), and a LATER tripwire in that same initialize can still
+    raise, so an epoch could be BOTH sighted and burned, corrupting
+    "burned = attempted, never sighted". A token that was sighted (via the
+    epoch=None provider fallback OR a matching explicit epoch=) before its
+    failure hook runs is no longer burned; it counts toward the new
+    failed_after_sighting instead. A sighting that (should never, but)
+    lands AFTER its token was already burned does not un-burn history --
+    it logs a rate-limited anomaly.
+
+    P2: a NEVER-OPENED provider's close_lifecycle() -- no advance, no
+    sighting, no recorded failure -- now emits NOTHING (no MAP lines, no
+    HEALTH line) instead of a fake ``epochs=0 ... last=epre`` line, e.g.
+    for a run that fails before RMG.initialize ever opens a lifecycle.
+    """
+
+    def test_sighting_before_failure_prevents_burn(self, clean_registry):
+        """The exact finding scenario: advance (created) -> a sighting
+        registers via the epoch=None provider fallback -> the failure hook
+        runs -> the ordinal is NOT burned; failed_after_sighting=1
+        instead."""
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed,
+                                           register_candidate)
+        token, created = advance_conduit_epoch(("sig-sighted",))
+        assert (token, created) == ("e0", True)
+        # Sighting registers early, via the epoch=None fallback -- exactly
+        # the polymer initialize path's stamp_gas_association_refusal ->
+        # annotate_refused_row -> register() shape.
+        register_candidate("R71_A(1)<>R71_B(2)", "r93_general",
+                           "ADMISSIBLE_A")
+        assert _EPOCH_PROVIDER._sighted_ordinals == {"e0"}
+        # A LATER tripwire in the same initialize still raises.
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._burned_ordinals == set()
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+        assert _EPOCH_PROVIDER._failed_after_sighting == 1
+
+    def test_health_line_reflects_failed_after_sighting(self, caplog,
+                                                         clean_registry):
+        import logging as _logging
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           close_conduit_lifecycle,
+                                           note_conduit_rebuild_failed,
+                                           register_candidate)
+        with caplog.at_level(_logging.WARNING):
+            token, created = advance_conduit_epoch(("sig-sighted-health",))
+            register_candidate("R71_C(1)<>R71_D(2)", "r93_general",
+                               "ADMISSIBLE_A")
+            note_conduit_rebuild_failed(token=token, created=created)
+            close_conduit_lifecycle()
+        lines = _r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")
+        assert len(lines) == 1
+        assert lines[0] == (
+            "CONDUIT EPOCH HEALTH/1 epochs=1 burned=0 failed_attempts=0 "
+            "failed_after_sighting=1 last=e0")
+
+    def test_unsighted_ordinal_keeps_old_burn_semantics(self, clean_registry):
+        """An advance whose ordinal is NEVER sighted before its failure
+        hook runs is still burned (not failed_after_sighting) -- the
+        round-70 behaviour is unchanged for the honest "never sighted"
+        case."""
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed)
+        token, created = advance_conduit_epoch(("sig-unsighted",))
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._burned_ordinals == {"e0"}
+        assert _EPOCH_PROVIDER._failed_after_sighting == 0
+
+    def test_explicit_epoch_sighting_also_prevents_burn(self, clean_registry):
+        """An explicitly-passed epoch= token that matches a currently
+        known ordinal is ALSO marked sighted -- not only the epoch=None
+        fallback path."""
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed,
+                                           register_candidate)
+        token, created = advance_conduit_epoch(("sig-explicit",))
+        assert token == "e0"
+        register_candidate("R71_E(1)<>R71_F(2)", "r93_general",
+                           "ADMISSIBLE_A", epoch="e0")
+        assert _EPOCH_PROVIDER._sighted_ordinals == {"e0"}
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._burned_ordinals == set()
+        assert _EPOCH_PROVIDER._failed_after_sighting == 1
+
+    def test_sighting_on_burned_epoch_emits_rate_limited_anomaly(
+            self, caplog, clean_registry):
+        """A sighting landing AFTER its token was already burned must NOT
+        un-burn it -- it logs a rate-limited CONDUIT EPOCH PROVIDER
+        ANOMALY/1 event=sighting-on-burned-epoch line instead, once per
+        token per lifecycle, without mutating burn history."""
+        import logging as _logging
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed,
+                                           register_candidate)
+        token, created = advance_conduit_epoch(("sig-burned",))
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._burned_ordinals == {"e0"}
+        with caplog.at_level(_logging.WARNING):
+            register_candidate("R71_G(1)<>R71_H(2)", "r93_general",
+                               "ADMISSIBLE_A", epoch="e0")
+            register_candidate("R71_I(1)<>R71_J(2)", "r93_general",
+                               "ADMISSIBLE_A", epoch="e0")
+        # Burn history is never mutated by a late sighting.
+        assert _EPOCH_PROVIDER._burned_ordinals == {"e0"}
+        anomalies = _r55_lines(
+            caplog,
+            "CONDUIT EPOCH PROVIDER ANOMALY/1 event=sighting-on-burned-epoch")
+        assert len(anomalies) == 1  # rate-limited: once per token per lifecycle
+        assert anomalies[0] == (
+            "CONDUIT EPOCH PROVIDER ANOMALY/1 event=sighting-on-burned-epoch "
+            "epoch=e0 reason=sighting-on-burned-epoch "
+            "action=keep-burned-history")
+
+    def test_virgin_close_emits_nothing(self, caplog, clean_registry):
+        """round-71 P2: a provider that never saw ANY activity (no
+        advance, no sighting, no recorded failure) must emit NOTHING on
+        close -- no MAP lines, no HEALTH line -- rather than a fake
+        epochs=0 ... last=epre line."""
+        import logging as _logging
+        from rmgpy.polymer_conduit import close_conduit_lifecycle
+        with caplog.at_level(_logging.WARNING):
+            close_conduit_lifecycle()
+        assert not _r55_lines(caplog, "CONDUIT EPOCH MAP/1")
+        assert not _r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")
+
+    def test_close_after_activity_emits_once(self, caplog, clean_registry):
+        import logging as _logging
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           close_conduit_lifecycle)
+        with caplog.at_level(_logging.WARNING):
+            advance_conduit_epoch(("sig-activity",))
+            close_conduit_lifecycle()
+        assert len(_r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")) == 1
+
+    def test_double_close_after_activity_still_once(self, caplog,
+                                                     clean_registry):
+        import logging as _logging
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           close_conduit_lifecycle)
+        with caplog.at_level(_logging.WARNING):
+            advance_conduit_epoch(("sig-double-close",))
+            close_conduit_lifecycle()
+            caplog.clear()
+            close_conduit_lifecycle()  # second close: no-op
+        assert not _r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")
+
+    def test_close_before_open_is_true_noop_later_activity_still_closes(
+            self, caplog, clean_registry):
+        """A close-before-any-activity call must be a TRUE no-op -- it
+        does NOT set self._closed -- so activity that happens AFTER it
+        still gets a real close later (mirrors main.py's
+        execute()/initialize() "close before any open = full no-op"
+        contract, now true for BOTH lifecycle surfaces)."""
+        import logging as _logging
+        from rmgpy.polymer_conduit import (advance_conduit_epoch,
+                                           close_conduit_lifecycle)
+        close_conduit_lifecycle()  # virgin no-op, before any activity
+        with caplog.at_level(_logging.WARNING):
+            advance_conduit_epoch(("sig-after-virgin-close",))
+            close_conduit_lifecycle()
+        assert len(_r55_lines(caplog, "CONDUIT EPOCH HEALTH/1")) == 1
+
+    def test_reset_returns_provider_to_never_opened(self, clean_registry):
+        from rmgpy.polymer_conduit import (_EPOCH_PROVIDER,
+                                           advance_conduit_epoch,
+                                           note_conduit_rebuild_failed,
+                                           register_candidate,
+                                           reset_conduit_state)
+        token, created = advance_conduit_epoch(("sig-reset",))
+        register_candidate("R71_K(1)<>R71_L(2)", "r93_general",
+                           "ADMISSIBLE_A")
+        note_conduit_rebuild_failed(token=token, created=created)
+        assert _EPOCH_PROVIDER._opened is True
+        reset_conduit_state()
+        assert _EPOCH_PROVIDER._opened is False
+        assert _EPOCH_PROVIDER._sighted_ordinals == set()
+        assert _EPOCH_PROVIDER._failed_after_sighting == 0
+        assert _EPOCH_PROVIDER._burned_ordinals == set()
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+
+
+class TestConduitEpochAdvanceSites:
+    """m18.4 design §1.2/§4 item 2 (commit 2): the four RMG-owned (non-RMS)
+    polymer rebuild/simulate sites in rmgpy/rmg/main.py must each advance
+    the CORE EPOCH immediately before the call, and mark the just-advanced
+    epoch BURNED (amendment 7) if the call then raises -- without changing
+    the original exception's propagation.
+
+    Structural half: an AST pin, mirroring the existing
+    ``test_close_wrapper_try_finally_encloses_initialize_and_all_returns``
+    style above (match by CONTENT/identity, never by position alone; ship a
+    negative self-test proving the matcher actually rejects the
+    adversarial shapes it claims to catch). Behavioral half: exercises the
+    new ``RMG._advance_conduit_epoch`` / ``RMG._note_conduit_rebuild_failed``
+    helper methods through the commit-1 provider's public API
+    (``current_epoch`` / ``advance_conduit_epoch`` / burned counter),
+    confirming the dedup/burn semantics documented on
+    :meth:`_EpochProvider.advance` (identical-consecutive-signature is a
+    no-op; any other signature -- including a revert -- earns a new
+    ordinal) actually reach production through these call sites.
+
+    Per design §2.5: the ``epochs_seen``/``burned`` COUNTS surface on
+    ``CONDUIT STANDING ADMIT HEALTH/1``, which is emitted by the
+    ``_StandingAdmitRegistry`` health hook -- that registry is commit 3
+    (out of scope here). Commit 2 only wires the ``note_conduit_rebuild_
+    failed()`` marking calls; it adds no new health-line emission of its
+    own (the existing ``CONDUIT EPOCH MAP/1`` line from commit 1 already
+    reports per-epoch ``sig_sha``/``parent``, and is unaffected by commit 2
+    other than firing from real production call sites now)."""
+
+    # ----------------------------------------------------------------- #
+    # Structural: AST pin on the four main.py sites.
+    # ----------------------------------------------------------------- #
+
+    @staticmethod
+    def _call_name(node):
+        """Best-effort dotted-tail name of a Call's func (mirrors the
+        helper of the same name in the P1-2 close-wrapper pin above)."""
+        target = node.func
+        if isinstance(target, ast.Name):
+            return target.id
+        if isinstance(target, ast.Attribute):
+            return target.attr
+        return None
+
+    @classmethod
+    def _stmt_lists(cls, root):
+        """Yield every statement list (body/orelse/finalbody) in the
+        tree rooted at ``root``."""
+        for n in ast.walk(root):
+            for field in ("body", "orelse", "finalbody"):
+                lst = getattr(n, field, None)
+                if isinstance(lst, list) and lst and isinstance(lst[0], ast.stmt):
+                    yield lst
+
+    @classmethod
+    def _immediately_preceded_by_advance(cls, root, target_stmt):
+        """True iff ``target_stmt`` is a member of some statement list in
+        ``root`` and the statement immediately before it in THAT SAME list
+        is exactly ``self._advance_conduit_epoch()`` (an ``Expr`` wrapping
+        a bare call whose name resolves to ``_advance_conduit_epoch``).
+        Matched by list membership (object identity), never by absolute
+        line number, so it survives comment/blank-line reflow."""
+        for lst in cls._stmt_lists(root):
+            if target_stmt in lst:
+                idx = lst.index(target_stmt)
+                if idx == 0:
+                    return False
+                prev = lst[idx - 1]
+                return (isinstance(prev, ast.Expr)
+                        and isinstance(prev.value, ast.Call)
+                        and cls._call_name(prev.value) == "_advance_conduit_epoch")
+        return False
+
+    @classmethod
+    def _guarded_try_for_call(cls, root, matches_target_call):
+        """Find the innermost ``ast.Try`` in ``root`` whose body contains a
+        call satisfying ``matches_target_call`` AND whose (single) handler
+        marks the epoch burned then RE-RAISES as its last two statements
+        -- ``except: self._note_conduit_rebuild_failed(); raise`` -- the
+        exact never-raise-into-generation shape amendment 7 requires
+        (design §1.4 'Burned epoch'; the marking call must not swallow or
+        alter the original exception's propagation). Returns the Try node,
+        or ``None`` if no Try matches both the call AND the handler shape
+        (so a burned-marking call that DOESN'T re-raise, or that isn't
+        paired with the matching call, does not satisfy this)."""
+        for try_node in ast.walk(root):
+            if not isinstance(try_node, ast.Try):
+                continue
+            body_nodes = [n for stmt in try_node.body for n in ast.walk(stmt)]
+            has_target_call = any(
+                isinstance(n, ast.Call) and matches_target_call(n)
+                for n in body_nodes)
+            if not has_target_call:
+                continue
+            if len(try_node.handlers) != 1:
+                continue
+            handler_body = try_node.handlers[0].body
+            if len(handler_body) != 2:
+                continue
+            note_stmt, raise_stmt = handler_body
+            note_ok = (isinstance(note_stmt, ast.Expr)
+                       and isinstance(note_stmt.value, ast.Call)
+                       and cls._call_name(note_stmt.value)
+                       == "_note_conduit_rebuild_failed")
+            raise_ok = isinstance(raise_stmt, ast.Raise) and raise_stmt.exc is None
+            if note_ok and raise_ok:
+                return try_node
+        return None
+
+    @staticmethod
+    def _kwarg(call_node, name):
+        for kw in call_node.keywords:
+            if kw.arg == name:
+                return kw.value
+        return None
+
+    @classmethod
+    def _is_initialize_model_filter_build(cls, node):
+        """Site 1/4 (main.py, initial filter build): a call to
+        ``reaction_system.initialize_model(...)`` with a literal
+        ``filter_reactions=True`` keyword -- unique among main.py's
+        ``initialize_model`` calls."""
+        if cls._call_name(node) != "initialize_model":
+            return False
+        val = cls._kwarg(node, "filter_reactions")
+        return isinstance(val, ast.Constant) and val.value is True
+
+    @classmethod
+    def _is_primary_per_iteration_simulate(cls, node):
+        """Site 2/4: the primary per-iteration ``simulate(...)`` -- unique
+        keyword ``prune=prune`` among main.py's ``simulate`` calls."""
+        if cls._call_name(node) != "simulate":
+            return False
+        val = cls._kwarg(node, "prune")
+        return isinstance(val, ast.Name) and val.id == "prune"
+
+    @classmethod
+    def _is_post_enlarge_raw_filter_simulate(cls, node):
+        """Site 3/4: the post-enlarge raw-filter ``simulate(...)`` --
+        unique keyword ``model_settings=temp_model_settings``."""
+        if cls._call_name(node) != "simulate":
+            return False
+        val = cls._kwarg(node, "model_settings")
+        return isinstance(val, ast.Name) and val.id == "temp_model_settings"
+
+    @classmethod
+    def _is_sensitivity_simulate(cls, node):
+        """Site 4/4: the sensitivity ``simulate(...)`` inside
+        ``run_model_analysis`` -- unique keyword ``sensitivity=True``."""
+        if cls._call_name(node) != "simulate":
+            return False
+        val = cls._kwarg(node, "sensitivity")
+        return isinstance(val, ast.Constant) and val.value is True
+
+    def _assert_site_pinned(self, root, matcher, label):
+        try_node = self._guarded_try_for_call(root, matcher)
+        assert try_node is not None, (
+            "%s: no try/except found wrapping the target call with the "
+            "burned-epoch-then-reraise handler shape" % label)
+        assert self._immediately_preceded_by_advance(root, try_node), (
+            "%s: the guarded try must be immediately preceded by "
+            "self._advance_conduit_epoch() in the same statement list"
+            % label)
+
+    def test_site1_initial_filter_build_pinned(self):
+        """main.py:906-923 (landed): initial filter build."""
+        import inspect
+        import textwrap
+
+        from rmgpy.rmg.main import RMG
+
+        source = textwrap.dedent(inspect.getsource(RMG.execute))
+        root = ast.parse(source).body[0]
+        self._assert_site_pinned(
+            root, self._is_initialize_model_filter_build, "site1")
+
+    def test_site2_primary_per_iteration_simulate_pinned(self):
+        """main.py:1069-1090 (landed): primary per-iteration simulate."""
+        import inspect
+        import textwrap
+
+        from rmgpy.rmg.main import RMG
+
+        source = textwrap.dedent(inspect.getsource(RMG.execute))
+        root = ast.parse(source).body[0]
+        self._assert_site_pinned(
+            root, self._is_primary_per_iteration_simulate, "site2")
+
+    def test_site3_post_enlarge_raw_filter_simulate_pinned(self):
+        """main.py:1198-1218 (landed): post-enlarge raw-filter simulate."""
+        import inspect
+        import textwrap
+
+        from rmgpy.rmg.main import RMG
+
+        source = textwrap.dedent(inspect.getsource(RMG.execute))
+        root = ast.parse(source).body[0]
+        self._assert_site_pinned(
+            root, self._is_post_enlarge_raw_filter_simulate, "site3")
+
+    def test_site4_sensitivity_simulate_pinned(self):
+        """main.py:1373-1393 (landed): sensitivity simulate inside
+        run_model_analysis (a SEPARATE method from execute())."""
+        import inspect
+        import textwrap
+
+        from rmgpy.rmg.main import RMG
+
+        source = textwrap.dedent(inspect.getsource(RMG.run_model_analysis))
+        root = ast.parse(source).body[0]
+        self._assert_site_pinned(
+            root, self._is_sensitivity_simulate, "site4")
+
+    def test_exactly_four_advance_call_sites_in_main_module(self):
+        """Breadth pin (amendment 1): main.py must call
+        ``self._advance_conduit_epoch()`` from exactly four call sites
+        module-wide -- not one (the original draft's single pre-primary-
+        simulate site, rejected by round-68 amendment 1) and not more (a
+        stray fifth site would silently widen scope beyond the adjudicated
+        four)."""
+        import inspect
+
+        from rmgpy.rmg import main as main_module
+
+        source = inspect.getsource(main_module)
+        tree = ast.parse(source)
+        calls = [n for n in ast.walk(tree)
+                 if isinstance(n, ast.Call)
+                 and self._call_name(n) == "_advance_conduit_epoch"]
+        assert len(calls) == 4, (
+            "expected exactly 4 call sites for self._advance_conduit_epoch() "
+            "in rmgpy/rmg/main.py, found %d" % len(calls))
+
+    def test_matcher_rejects_advance_call_not_immediately_preceding(self):
+        """Negative self-test (mirrors the existing round-64/65 matcher
+        self-tests above): an intervening statement between the advance
+        call and the guarded try must make the pin FAIL, proving the
+        matcher does not just check "an advance call exists somewhere
+        earlier" but exact same-list adjacency."""
+        source = textwrap.dedent("""
+            def f():
+                self._advance_conduit_epoch()
+                logging.info("unexpected intervening statement")
+                try:
+                    reaction_system.simulate(prune=prune)
+                except:
+                    self._note_conduit_rebuild_failed()
+                    raise
+            """)
+        root = ast.parse(source).body[0]
+        try_node = self._guarded_try_for_call(
+            root, self._is_primary_per_iteration_simulate)
+        assert try_node is not None
+        assert not self._immediately_preceded_by_advance(root, try_node), (
+            "matcher must reject a guarded try that is NOT immediately "
+            "preceded by the advance call in the same statement list")
+
+    def test_matcher_rejects_handler_that_swallows_instead_of_reraising(self):
+        """Negative self-test: a handler that marks the epoch burned but
+        does NOT re-raise (silently swallowing the original rebuild
+        failure) must be REJECTED -- amendment 7 requires the burned
+        marking to ride alongside the existing exception propagation,
+        never replace it."""
+        source = textwrap.dedent("""
+            def f():
+                self._advance_conduit_epoch()
+                try:
+                    reaction_system.simulate(prune=prune)
+                except:
+                    self._note_conduit_rebuild_failed()
+            """)
+        root = ast.parse(source).body[0]
+        try_node = self._guarded_try_for_call(
+            root, self._is_primary_per_iteration_simulate)
+        assert try_node is None, (
+            "matcher must reject a handler that marks the epoch burned "
+            "but does not re-raise")
+
+    def test_matcher_rejects_note_call_missing_entirely(self):
+        """Negative self-test: a plain bare-reraise handler with NO
+        burned-epoch marking at all must be REJECTED -- proves the
+        matcher actually requires the marking call, not just any
+        try/except/raise around the target call."""
+        source = textwrap.dedent("""
+            def f():
+                self._advance_conduit_epoch()
+                try:
+                    reaction_system.simulate(prune=prune)
+                except:
+                    raise
+            """)
+        root = ast.parse(source).body[0]
+        try_node = self._guarded_try_for_call(
+            root, self._is_primary_per_iteration_simulate)
+        assert try_node is None, (
+            "matcher must reject a handler with no burned-epoch marking "
+            "call at all")
+
+    # ----------------------------------------------------------------- #
+    # Behavioral: the RMG helper methods through the commit-1 provider's
+    # public API (dedup/burn semantics reaching production call sites).
+    # ----------------------------------------------------------------- #
+
+    @staticmethod
+    def _fake_rmg_with_core(species, reactions):
+        from rmgpy.rmg.main import RMG
+
+        rmg = RMG.__new__(RMG)
+        core = types.SimpleNamespace(species=species, reactions=reactions)
+        rmg.reaction_model = types.SimpleNamespace(core=core)
+        return rmg
+
+    def test_advance_helper_moves_epoch_off_sentinel(self, clean_registry):
+        from rmgpy.polymer_conduit import current_epoch
+
+        assert current_epoch() == "epre"
+        rmg = self._fake_rmg_with_core(
+            [types.SimpleNamespace(label="A", index=1)],
+            [types.SimpleNamespace(label="R1", index=1)])
+        rmg._advance_conduit_epoch()
+        assert current_epoch() == "e0"
+
+    def test_advance_helper_identical_core_is_a_noop(self, clean_registry):
+        """Dedup semantics (design §1.2, confirmed by reading
+        ``_EpochProvider.advance``): 'if signature == self._current_sig:
+        ... no-op, return current token' -- calling the helper twice with
+        an UNCHANGED core must not burn a second ordinal."""
+        from rmgpy.polymer_conduit import current_epoch
+
+        species = [types.SimpleNamespace(label="A", index=1)]
+        reactions = [types.SimpleNamespace(label="R1", index=1)]
+        rmg = self._fake_rmg_with_core(species, reactions)
+        rmg._advance_conduit_epoch()
+        assert current_epoch() == "e0"
+        rmg._advance_conduit_epoch()  # same species/reactions objects
+        assert current_epoch() == "e0"
+
+    def test_advance_helper_changed_core_gets_new_ordinal(self, clean_registry):
+        from rmgpy.polymer_conduit import current_epoch
+
+        species = [types.SimpleNamespace(label="A", index=1)]
+        reactions = [types.SimpleNamespace(label="R1", index=1)]
+        rmg = self._fake_rmg_with_core(species, reactions)
+        rmg._advance_conduit_epoch()
+        assert current_epoch() == "e0"
+        reactions.append(types.SimpleNamespace(label="R2", index=2))
+        rmg._advance_conduit_epoch()
+        assert current_epoch() == "e1"
+
+    def test_note_rebuild_failed_helper_burns_created_ordinal(
+            self, clean_registry):
+        """round-70 P1-a/P1-b: the burned set (never a blind counter) gets
+        the CREATED ordinal's token, sourced from the explicit
+        ``(token, created, ok)`` outcome ``_advance_conduit_epoch`` records
+        on ``self._last_conduit_advance`` -- never inferred."""
+        from rmgpy.polymer_conduit import _EPOCH_PROVIDER, current_epoch
+
+        rmg = self._fake_rmg_with_core(
+            [types.SimpleNamespace(label="A", index=1)],
+            [types.SimpleNamespace(label="R1", index=1)])
+        assert _EPOCH_PROVIDER._burned_ordinals == set()
+        rmg._advance_conduit_epoch()
+        assert rmg._last_conduit_advance == ("e0", True, True)
+        rmg._note_conduit_rebuild_failed()
+        assert _EPOCH_PROVIDER._burned_ordinals == {"e0"}
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+        # the burned ordinal is never reused -- a subsequent advance with
+        # a genuinely NEW core still earns the next ordinal (e1), not a
+        # replay of the burned one (e0).
+        rmg.reaction_model.core.reactions.append(
+            types.SimpleNamespace(label="R2", index=2))
+        rmg._advance_conduit_epoch()
+        assert current_epoch() == "e1"
+
+    def test_note_rebuild_failed_helper_dedup_advance_does_not_burn(
+            self, clean_registry):
+        """round-70 test 1 (dedup-then-failure): a rebuild failure that
+        follows a DEDUP no-op advance (unchanged core -> created=False)
+        must NOT burn anything -- it increments failed_attempts instead."""
+        from rmgpy.polymer_conduit import _EPOCH_PROVIDER
+
+        species = [types.SimpleNamespace(label="A", index=1)]
+        reactions = [types.SimpleNamespace(label="R1", index=1)]
+        rmg = self._fake_rmg_with_core(species, reactions)
+        rmg._advance_conduit_epoch()  # creates e0
+        assert rmg._last_conduit_advance == ("e0", True, True)
+        rmg._advance_conduit_epoch()  # SAME core -> dedup no-op
+        assert rmg._last_conduit_advance == ("e0", False, True)
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+        rmg._note_conduit_rebuild_failed()
+        assert _EPOCH_PROVIDER._burned_ordinals == set()
+        assert _EPOCH_PROVIDER._failed_attempts == 1
+
+    def test_note_rebuild_failed_helper_created_then_failed_burns_once(
+            self, clean_registry):
+        """round-70 test 2 (created-then-failed): an advance that creates a
+        new ordinal, followed by a rebuild failure, burns that ordinal
+        exactly once; a second failure report for the same still-current
+        ordinal does not double-burn (idempotent set, not a counter)."""
+        from rmgpy.polymer_conduit import _EPOCH_PROVIDER
+
+        rmg = self._fake_rmg_with_core(
+            [types.SimpleNamespace(label="A", index=1)],
+            [types.SimpleNamespace(label="R1", index=1)])
+        rmg._advance_conduit_epoch()
+        assert rmg._last_conduit_advance == ("e0", True, True)
+        rmg._note_conduit_rebuild_failed()
+        assert _EPOCH_PROVIDER._burned_ordinals == {"e0"}
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+        # A second failure report while the SAME advance outcome is still
+        # the last-recorded one (no new advance in between) must not
+        # double-burn or leak into failed_attempts.
+        rmg._note_conduit_rebuild_failed()
+        assert _EPOCH_PROVIDER._burned_ordinals == {"e0"}
+        assert _EPOCH_PROVIDER._failed_attempts == 0
+
+    def test_note_rebuild_failed_helper_advance_internal_failure_only_counts(
+            self, clean_registry, monkeypatch):
+        """round-70 test 3 (advance-internal-failure, P1-b): when the
+        advance call itself raises internally (ok=False), the wrapper must
+        never claim a created ordinal exists to burn -- only
+        failed_attempts increments."""
+        from rmgpy.polymer_conduit import _EPOCH_PROVIDER
+
+        def boom(_sig):
+            raise RuntimeError("advance-boom")
+
+        monkeypatch.setattr("rmgpy.polymer_conduit.advance_conduit_epoch",
+                            boom)
+        rmg = self._fake_rmg_with_core(
+            [types.SimpleNamespace(label="A", index=1)],
+            [types.SimpleNamespace(label="R1", index=1)])
+        rmg._advance_conduit_epoch()
+        assert rmg._last_conduit_advance == (None, False, False)
+        rmg._note_conduit_rebuild_failed()
+        assert _EPOCH_PROVIDER._burned_ordinals == set()
+        assert _EPOCH_PROVIDER._failed_attempts == 1
+
+    def test_advance_helper_never_raises_on_internal_failure(
+            self, clean_registry, monkeypatch, caplog):
+        """Never-raise discipline (module contract, design §1.4): if the
+        underlying provider call blows up, the helper must swallow it and
+        log at debug, never propagate into the generation loop."""
+        import logging as _logging
+
+        def boom(_sig):
+            raise RuntimeError("advance-boom")
+
+        monkeypatch.setattr("rmgpy.polymer_conduit.advance_conduit_epoch",
+                            boom)
+        rmg = self._fake_rmg_with_core(
+            [types.SimpleNamespace(label="A", index=1)],
+            [types.SimpleNamespace(label="R1", index=1)])
+        with caplog.at_level(_logging.DEBUG):
+            rmg._advance_conduit_epoch()  # must not raise
+        assert any("conduit core-epoch advance failed" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_note_rebuild_failed_helper_never_raises_on_internal_failure(
+            self, clean_registry, monkeypatch, caplog):
+        import logging as _logging
+
+        def boom():
+            raise RuntimeError("note-boom")
+
+        monkeypatch.setattr(
+            "rmgpy.polymer_conduit.note_conduit_rebuild_failed", boom)
+        rmg = self._fake_rmg_with_core(
+            [types.SimpleNamespace(label="A", index=1)],
+            [types.SimpleNamespace(label="R1", index=1)])
+        with caplog.at_level(_logging.DEBUG):
+            rmg._note_conduit_rebuild_failed()  # must not raise
+        assert any("conduit burned-epoch marking failed" in r.getMessage()
+                   for r in caplog.records)
 
 
 class TestFrCensusScoping:

@@ -849,10 +849,15 @@ class RMG(util.Subject):
         # reset (or the last-resort process-exit atexit guard). Moving the
         # try to enclose the initialize() call closes that gap.
         # _conduit_lifecycle_close() is a guarded no-op when no lifecycle
-        # is open at all (it delegates to close_conduit_lifecycle() ->
-        # _LabelOracleState.close_lifecycle(), which returns None on
-        # virgin/never-opened state) and never raises, so this is also
-        # safe for failures that occur BEFORE initialize() ever calls
+        # is open at all (it delegates to close_conduit_lifecycle(), which
+        # closes BOTH the label-oracle and CORE EPOCH provider surfaces --
+        # _LabelOracleState.close_lifecycle() returns None on a
+        # virgin/never-opened state, and round-71 P2 gives
+        # _EpochProvider.close_lifecycle() the same virgin-lifecycle guard:
+        # it emits nothing -- no MAP lines, no fake "epochs=0 ... last=epre"
+        # HEALTH line -- rather than fabricating health for a lifecycle
+        # that never opened) and never raises, so this is also safe for
+        # failures that occur BEFORE initialize() ever calls
         # reset_conduit_state().
         #
         # The finally never swallows or re-raises; it only ensures the
@@ -903,17 +908,24 @@ class RMG(util.Subject):
                         )
 
                     else:
-                        reaction_system.initialize_model(
-                            core_species=self.reaction_model.core.species,
-                            core_reactions=self.reaction_model.core.reactions,
-                            edge_species=[],
-                            edge_reactions=[],
-                            pdep_networks=self.reaction_model.network_list,
-                            atol=self.simulator_settings_list[0].atol,
-                            rtol=self.simulator_settings_list[0].rtol,
-                            filter_reactions=True,
-                            conditions=self.rmg_memories[index].get_cond(),
-                        )
+                        # Core epoch advance (design m184-epoch-registry
+                        # §1.2/§4 item 2, site 1/4): initial filter build.
+                        self._advance_conduit_epoch()
+                        try:
+                            reaction_system.initialize_model(
+                                core_species=self.reaction_model.core.species,
+                                core_reactions=self.reaction_model.core.reactions,
+                                edge_species=[],
+                                edge_reactions=[],
+                                pdep_networks=self.reaction_model.network_list,
+                                atol=self.simulator_settings_list[0].atol,
+                                rtol=self.simulator_settings_list[0].rtol,
+                                filter_reactions=True,
+                                conditions=self.rmg_memories[index].get_cond(),
+                            )
+                        except:
+                            self._note_conduit_rebuild_failed()
+                            raise
 
                         self.update_reaction_threshold_and_react_flags(
                             rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
@@ -1059,19 +1071,28 @@ class RMG(util.Subject):
                                             assert len(obj_temp) > 0
                                     obj = obj_temp
                                 else:
-                                    terminated, resurrected, obj, new_surface_species, new_surface_reactions, t, x = reaction_system.simulate(
-                                        core_species=self.reaction_model.core.species,
-                                        core_reactions=self.reaction_model.core.reactions,
-                                        edge_species=self.reaction_model.edge.species,
-                                        edge_reactions=self.reaction_model.edge.reactions,
-                                        surface_species=self.reaction_model.surface.species,
-                                        surface_reactions=self.reaction_model.surface.reactions,
-                                        pdep_networks=self.reaction_model.network_list,
-                                        prune=prune,
-                                        model_settings=model_settings,
-                                        simulator_settings=simulator_settings,
-                                        conditions=self.rmg_memories[index].get_cond(),
-                                    )
+                                    # Core epoch advance (design
+                                    # m184-epoch-registry §1.2/§4 item 2,
+                                    # site 2/4): primary per-iteration
+                                    # simulate.
+                                    self._advance_conduit_epoch()
+                                    try:
+                                        terminated, resurrected, obj, new_surface_species, new_surface_reactions, t, x = reaction_system.simulate(
+                                            core_species=self.reaction_model.core.species,
+                                            core_reactions=self.reaction_model.core.reactions,
+                                            edge_species=self.reaction_model.edge.species,
+                                            edge_reactions=self.reaction_model.edge.reactions,
+                                            surface_species=self.reaction_model.surface.species,
+                                            surface_reactions=self.reaction_model.surface.reactions,
+                                            pdep_networks=self.reaction_model.network_list,
+                                            prune=prune,
+                                            model_settings=model_settings,
+                                            simulator_settings=simulator_settings,
+                                            conditions=self.rmg_memories[index].get_cond(),
+                                        )
+                                    except:
+                                        self._note_conduit_rebuild_failed()
+                                        raise
                             except:
                                 logging.error("Model core reactions:")
                                 if len(self.reaction_model.core.reactions) > 5:
@@ -1179,18 +1200,27 @@ class RMG(util.Subject):
                                             else:
                                                 reaction_system.max_edge_species_rate_ratios = max_edge_species_rate_ratios
                                         else:
-                                            reaction_system.simulate(
-                                                core_species=self.reaction_model.core.species,
-                                                core_reactions=self.reaction_model.core.reactions,
-                                                edge_species=[],
-                                                edge_reactions=[],
-                                                surface_species=self.reaction_model.surface.species,
-                                                surface_reactions=self.reaction_model.surface.reactions,
-                                                pdep_networks=self.reaction_model.network_list,
-                                                model_settings=temp_model_settings,
-                                                simulator_settings=simulator_settings,
-                                                conditions=self.rmg_memories[index].get_cond(),
-                                            )
+                                            # Core epoch advance (design
+                                            # m184-epoch-registry §1.2/§4
+                                            # item 2, site 3/4): post-enlarge
+                                            # raw-filter simulate.
+                                            self._advance_conduit_epoch()
+                                            try:
+                                                reaction_system.simulate(
+                                                    core_species=self.reaction_model.core.species,
+                                                    core_reactions=self.reaction_model.core.reactions,
+                                                    edge_species=[],
+                                                    edge_reactions=[],
+                                                    surface_species=self.reaction_model.surface.species,
+                                                    surface_reactions=self.reaction_model.surface.reactions,
+                                                    pdep_networks=self.reaction_model.network_list,
+                                                    model_settings=temp_model_settings,
+                                                    simulator_settings=simulator_settings,
+                                                    conditions=self.rmg_memories[index].get_cond(),
+                                                )
+                                            except:
+                                                self._note_conduit_rebuild_failed()
+                                                raise
                                     except:
                                         self.update_reaction_threshold_and_react_flags(
                                             rxn_sys_unimol_threshold=reaction_system.unimolecular_threshold,
@@ -1345,20 +1375,27 @@ class RMG(util.Subject):
                     csvfile_path = os.path.join(self.output_directory, "solver", "sensitivity_{0}_SPC_{1}.csv".format(index + 1, spec.index))
                     sens_worksheet.append(csvfile_path)
 
-                terminated, resurrected, obj, surface_species, surface_reactions, t, x = reaction_system.simulate(
-                    core_species=self.reaction_model.core.species,
-                    core_reactions=self.reaction_model.core.reactions,
-                    edge_species=self.reaction_model.edge.species,
-                    edge_reactions=self.reaction_model.edge.reactions,
-                    surface_species=[],
-                    surface_reactions=[],
-                    pdep_networks=self.reaction_model.network_list,
-                    sensitivity=True,
-                    sens_worksheet=sens_worksheet,
-                    model_settings=ModelSettings(tol_move_to_core=1e8, tol_interrupt_simulation=1e8),
-                    simulator_settings=self.simulator_settings_list[-1],
-                    conditions=reaction_system.sens_conditions,
-                )
+                # Core epoch advance (design m184-epoch-registry §1.2/§4
+                # item 2, site 4/4): sensitivity simulate.
+                self._advance_conduit_epoch()
+                try:
+                    terminated, resurrected, obj, surface_species, surface_reactions, t, x = reaction_system.simulate(
+                        core_species=self.reaction_model.core.species,
+                        core_reactions=self.reaction_model.core.reactions,
+                        edge_species=self.reaction_model.edge.species,
+                        edge_reactions=self.reaction_model.edge.reactions,
+                        surface_species=[],
+                        surface_reactions=[],
+                        pdep_networks=self.reaction_model.network_list,
+                        sensitivity=True,
+                        sens_worksheet=sens_worksheet,
+                        model_settings=ModelSettings(tol_move_to_core=1e8, tol_interrupt_simulation=1e8),
+                        simulator_settings=self.simulator_settings_list[-1],
+                        conditions=reaction_system.sens_conditions,
+                    )
+                except:
+                    self._note_conduit_rebuild_failed()
+                    raise
 
                 plot_sensitivity(self.output_directory, index, reaction_system.sensitive_species, number=number)
 
@@ -2362,6 +2399,83 @@ class RMG(util.Subject):
             logging.warning(f"Failed to write polymer_pools.json sidecar: {e}", exc_info=True)
 
         self.save_profiler_info()
+
+    def _advance_conduit_epoch(self):
+        """Guarded CORE EPOCH advance (design m184-epoch-registry §1.2/§4
+        item 2): called immediately before each of the four RMG-owned
+        (non-RMS) polymer rebuild/simulate sites so that any
+        ``register()``/``annotate_*`` sighting that follows sees the
+        current core-topology's epoch token rather than a stale one.
+
+        Computed from the CURRENT core (``self.reaction_model.core``), same
+        object main.py already reads at these sites (e.g. the
+        ``core_topology_signature`` staleness check in
+        :meth:`save_everything`). Runs unconditionally -- like
+        :func:`rmgpy.polymer_conduit.reset_conduit_state` /
+        :meth:`_conduit_lifecycle_close`, both of which already fire on
+        every RMG run without a polymer-only gate -- because the epoch
+        token is only ever consumed by the polymer conduit's own
+        ``register()`` fallback (:INVERSION-1); a non-polymer run just
+        advances epochs nobody reads.
+
+        NEVER raises into generation (module contract, design §1.4
+        'Constraints fixed'): an internal failure here must not abort
+        model generation.
+
+        round-70 P1-a/P1-b: records the explicit outcome of THIS advance
+        on ``self._last_conduit_advance`` as ``(token, created, ok)`` --
+        ``created`` is True only when a NEW ordinal was actually minted
+        (never on a dedup no-op), ``ok`` is False when the advance call
+        itself raised internally (still caught and swallowed here, exactly
+        as before, but the caught-outcome is now explicit rather than
+        silently absent). :meth:`_note_conduit_rebuild_failed` reads this
+        recorded outcome -- never re-derives or infers it -- to decide
+        whether the immediately-following rebuild failure may burn an
+        ordinal."""
+        try:
+            from rmgpy.polymer import core_topology_signature
+            from rmgpy.polymer_conduit import advance_conduit_epoch
+            token, created = advance_conduit_epoch(core_topology_signature(
+                self.reaction_model.core.species,
+                self.reaction_model.core.reactions))
+            self._last_conduit_advance = (token, created, True)
+        except Exception as exc:  # pragma: no cover - defensive fail-open
+            self._last_conduit_advance = (None, False, False)
+            logging.debug(
+                "conduit core-epoch advance failed (%s: %s); "
+                "census-only bookkeeping, run output unaffected.",
+                type(exc).__name__, exc, exc_info=True)
+
+    def _note_conduit_rebuild_failed(self):
+        """Guarded burned-epoch marker (design m184-epoch-registry
+        §1.2/§1.4 amendment 7; round-70 P1-a/P1-b honest accounting):
+        called from the ``except`` path alongside each of the four
+        :meth:`_advance_conduit_epoch` call sites when the rebuild/simulate
+        the just-advanced epoch labeled then raised.
+
+        Reads the explicit ``(token, created, ok)`` outcome recorded by the
+        immediately-preceding :meth:`_advance_conduit_epoch` call at this
+        same site and passes it on honestly: the epoch is accounted as
+        BURNED only when that advance both succeeded (``ok``) AND actually
+        created a new ordinal (``created``); a dedup no-op advance, or one
+        whose own internal call raised (``ok=False`` -- no reliable
+        ordinal-created signal exists), instead increments the separate
+        ``failed_attempts`` counter -- never a burn.
+
+        NEVER raises into generation; never changes the original
+        exception's propagation -- callers invoke this and then re-raise
+        unconditionally."""
+        try:
+            from rmgpy.polymer_conduit import note_conduit_rebuild_failed
+            token, created, ok = getattr(
+                self, "_last_conduit_advance", (None, False, False))
+            note_conduit_rebuild_failed(
+                token=token, created=bool(created and ok))
+        except Exception as exc:  # pragma: no cover - defensive fail-open
+            logging.debug(
+                "conduit burned-epoch marking failed (%s: %s); "
+                "census-only bookkeeping, run output unaffected.",
+                type(exc).__name__, exc, exc_info=True)
 
     def _conduit_lifecycle_close(self):
         """Guarded, idempotent close of the conduit census/label-oracle
