@@ -317,6 +317,7 @@ FLUX_SCISSION_FRAGMENT = 3
 FLUX_UNRESOLVED = 4
 FLUX_DISCRETE_CHIP = 5
 FLUX_VOLATILE_EJECTION = 6
+FLUX_MOMENT_CREDIT_CONDUIT = 7
 
 
 # ======================================================================================
@@ -3239,10 +3240,84 @@ class HybridPolymerSystem(ReactionSystem):
         # alpha-methylstyrene off a styrene pool). Same chain(core, edge)
         # order so the index matches r_idx in the residual.
         self.reaction_eject_units = np.zeros(n_rxn, dtype=np.float64)
+        # M18.4 conduit-admission (arch 7 = FLUX_MOMENT_CREDIT_CONDUIT) row
+        # params, flattened from the object-side stamp
+        # (rmgpy/polymer.py admit arm: polymer_conduit_dst_pool +
+        # polymer_conduit_params). dst is stamped as a pool LABEL string and
+        # is the AUTHORITATIVE destination (resolved to an index here, NOT via
+        # the product-side pool scan below). u = chain_units is the only field
+        # the residual credit arm consumes; conduit_gas_mw + candidate_key ride
+        # along for the (later) accepted-step grams booking -- mw+key are
+        # sufficient, so NO gas species index is stored (admission stamps the
+        # gas token as "label(index)", which a bare-label core map would
+        # mis-resolve for a real admitted row). Same chain(core, edge) order so
+        # the index matches r_idx in the residual.
+        self.conduit_dst_pool_index = np.full(n_rxn, -1, dtype=np.int32)
+        self.conduit_chain_units_u = np.zeros(n_rxn, dtype=np.float64)
+        self.conduit_gas_units_a = np.zeros(n_rxn, dtype=np.float64)
+        self.conduit_gas_mw = np.zeros(n_rxn, dtype=np.float64)
+        self.conduit_candidate_key = [None] * n_rxn
+        _pool_label_to_index = {p.label: j
+                                for j, p in enumerate(self.polymer_pools)}
         for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
             self.reaction_flux_archetype[i] = int(getattr(rxn, "polymer_flux_archetype", 0))
             self.reaction_chip_units[i] = int(getattr(rxn, "polymer_chip_units", 0))
             self.reaction_eject_units[i] = float(getattr(rxn, "polymer_eject_units", 0.0))
+            if self.reaction_flux_archetype[i] == FLUX_MOMENT_CREDIT_CONDUIT:
+                # Validate the admitted arch-7 stamp BEFORE trusting any field:
+                # a missing/degenerate chain_units, absent gas product, or a
+                # REVERSIBLE stamp (signed r_mol_s = rf-rr has no reverse
+                # moment law -- admitted rows are supposed to be
+                # irreversible-export rewritten) all signal mis-stamping.
+                # Refuse the whole row LOUDLY (flux-dead), mirroring the
+                # dst-less refusal below; never default a bad field to a
+                # zero-u / phantom credit. Fail-closed on any parse error (G7).
+                params = getattr(rxn, "polymer_conduit_params", None) or {}
+                refuse_reason = None
+                try:
+                    cu = params.get("chain_units", None)
+                    gas_products = params.get("gas_products") or []
+                    gp0 = gas_products[0] if gas_products else {}
+                    gas_mw = gp0.get("mw_g_mol", None)
+                    if bool(getattr(rxn, "reversible", False)):
+                        refuse_reason = (
+                            "it is reversible (admitted conduit rows must be "
+                            "irreversible-export rewritten; signed r_mol_s has "
+                            "no reverse moment law)")
+                    elif (cu is None or not math.isfinite(float(cu))
+                            or float(cu) < 1.0):
+                        refuse_reason = (
+                            "chain_units %r is missing, non-finite, or < 1.0"
+                            % (cu,))
+                    elif not gas_products or not gp0.get("species"):
+                        refuse_reason = (
+                            "gas_products is empty or has no species token")
+                    elif (gas_mw is None or not math.isfinite(float(gas_mw))
+                            or float(gas_mw) <= 0.0):
+                        refuse_reason = (
+                            "gas product mw_g_mol %r is missing, non-finite, "
+                            "or <= 0" % (gas_mw,))
+                    elif not params.get("candidate_key"):
+                        refuse_reason = "candidate_key is missing"
+                except Exception as exc:
+                    refuse_reason = ("malformed conduit params (%s: %s)"
+                                     % (type(exc).__name__, exc))
+                if refuse_reason is not None:
+                    logging.warning(
+                        "MOMENT-CREDIT CONDUIT: row %d (%s) stamped arch 7 but "
+                        "%s; refusing the row (zero flux).",
+                        i, str(rxn), refuse_reason)
+                    self.reaction_refused[i] = 1
+                    self.reaction_flux_archetype[i] = FLUX_NONE
+                else:
+                    dst_label = getattr(rxn, "polymer_conduit_dst_pool", None)
+                    self.conduit_dst_pool_index[i] = _pool_label_to_index.get(
+                        dst_label, -1)
+                    self.conduit_chain_units_u[i] = float(cu)
+                    self.conduit_gas_units_a[i] = float(
+                        params.get("gas_units", 0.0))
+                    self.conduit_candidate_key[i] = params.get("candidate_key")
+                    self.conduit_gas_mw[i] = float(gas_mw)
         # Item 17 (spec 2026-06-12 SS3(e)): generation-time stamps, captured
         # AFTER the stamp-read loop and BEFORE the init demotion pass
         # (:NONE->UNRESOLVED + unresolvable stamped shapes) mutates the
@@ -3508,7 +3583,8 @@ class HybridPolymerSystem(ReactionSystem):
         _arch_names = {FLUX_MIGRATION: "MIGRATION",
                        FLUX_SCISSION_FRAGMENT: "SCISSION_FRAGMENT",
                        FLUX_DISCRETE_CHIP: "DISCRETE_CHIP",
-                       FLUX_VOLATILE_EJECTION: "VOLATILE_EJECTION"}
+                       FLUX_VOLATILE_EJECTION: "VOLATILE_EJECTION",
+                       FLUX_MOMENT_CREDIT_CONDUIT: "MOMENT_CREDIT_CONDUIT"}
         spawned_refusals = []      # (row_idx, rxn, archetype name, labels)
         demotion_anomalies = []    # (row_idx, rxn, archetype name)
         self.spawned_pool_refusal_census = []
@@ -3534,6 +3610,30 @@ class HybridPolymerSystem(ReactionSystem):
                             dst = pool_j
             self.reaction_src_pool[i] = src
             self.reaction_dst_pool[i] = dst
+            if self.reaction_flux_archetype[i] == FLUX_MOMENT_CREDIT_CONDUIT:
+                # Arch 7 (credit-only conduit): the destination is
+                # AUTHORITATIVE from the stamped pool label
+                # (conduit_dst_pool_index), NOT the product-side pool scan;
+                # src stays NULL (no source-pool debit). Overwrite so
+                # reaction_dst_pool -- and hence the SGH destination-pool arm
+                # and the residual credit arm -- see the stamped destination.
+                dst = int(self.conduit_dst_pool_index[i])
+                self.reaction_dst_pool[i] = dst
+                if dst == -1:
+                    # dst-less conduit credit row: its destination pool label
+                    # did not resolve to a configured pool, so it can credit
+                    # NOTHING. Refuse it LOUDLY (flux-dead) rather than leaving
+                    # a live arch-7 stamp that silently injects zero moment
+                    # flux.
+                    logging.warning(
+                        "MOMENT-CREDIT CONDUIT: row %d (%s) stamped arch 7 but "
+                        "its destination pool %r did not resolve to a "
+                        "configured pool; refusing the row (zero flux).",
+                        i, str(combined_rxns[i]),
+                        getattr(combined_rxns[i], "polymer_conduit_dst_pool",
+                                None))
+                    self.reaction_refused[i] = 1
+                    self.reaction_flux_archetype[i] = FLUX_NONE
             if self.reaction_flux_archetype[i] == FLUX_NONE and (src != -1 or dst != -1):
                 if self.reaction_refused[i]:
                     # Refused row (adjudicated, flux-dead via
@@ -6258,6 +6358,29 @@ class HybridPolymerSystem(ReactionSystem):
                                 dn_dt[s_idx[1]] += rr_mol * chip_a
                                 dn_dt[s_idx[2]] += rr_mol * (
                                     2.0 * chip_a * chip_e_n + chip_a * chip_a)
+                elif arch == FLUX_MOMENT_CREDIT_CONDUIT:
+                    # Moment-credit conduit (M18.4, DESIGN §2): an admitted
+                    # refused-class row consumes a real chain-scale discrete
+                    # and CREDITS the destination pool a Dirac point-mass
+                    # bundle (1, u, u^2) per event -- credit-ONLY, so there is
+                    # NO source-pool debit (src is NULL) and NO extra gas
+                    # dn/dt write here (the reactant discrete and the single
+                    # gas product are already moved by the standard section-4
+                    # net-rate stoichiometry). u = chain_units is precomputed
+                    # at admission and flattened into conduit_chain_units_u.
+                    # F is the net event flux r_mol_s (mol/s), the SAME
+                    # variable the sibling archetype arms consume; irreversible
+                    # export (OQ-2) means rr = 0, so r_mol_s = rf*V_rxn = F.
+                    dst = self.reaction_dst_pool[r_idx]
+                    # dst == -1 cannot reach here (init refuses dst-less arch-7
+                    # rows, flux-dead); the check is defensive only.
+                    if dst != -1:
+                        F = r_mol_s
+                        u = self.conduit_chain_units_u[r_idx]
+                        d_idx = self.polymer_pools[dst].mu_indices
+                        dn_dt[d_idx[0]] += F
+                        dn_dt[d_idx[1]] += F * u
+                        dn_dt[d_idx[2]] += F * u * u
                 elif arch == FLUX_UNRESOLVED:
                     # Legacy mu1-only transfer (pre-apportionment behavior),
                     # replicated exactly: -r per reactant proxy, +r per
