@@ -356,3 +356,292 @@ class TestConduitMomentCreditArchetype:
         rs, _rxn, _slots, _iD, _iGp = _build_conduit_row(
             dst_pool="NO_SUCH_POOL")
         self._assert_refused_and_zero_credit(rs)
+
+
+# =========================================================================
+# INCREMENT 2 (M18.4 DESIGN §4.4): accepted-step GRAMS booking WRITER.
+#
+# The run-level accumulator rmgpy.polymer_conduit._CONDUIT_FLUX_TOTALS gains
+# its FIRST writer: per admitted arch-7 candidate_key, the grams of gas
+# emitted over each ACCEPTED integrator step, TRAPEZOID-integrated:
+#     grams += 0.5 * (F_prev + F_curr) * dt * gas_mw
+# where F_curr is the net event flux RECOMPUTED side-effect-freely from the
+# ACCEPTED state self.y (NOT read from any residual scratch -- after step()
+# the residual reflects a Jacobian-FD-perturbed / rejected-trial state),
+# F_prev is that flux at the previous accepted step, dt the accepted-step
+# length, gas_mw the single gas product's molar mass. The writer lives on the
+# accepted-step hook (_phase_gate_flux_census -> _book_conduit_flux_accepted),
+# NEVER the residual, so the many REJECTED Newton-trial residual evaluations
+# per step cannot overcount.
+#
+# The two load-bearing tests here are the POISON test (proves booking reads
+# the ACCEPTED state, not the poisoned last-residual scratch -- RED against
+# the old scratch-reading impl, GREEN after the accepted-state recompute) and
+# the INTEGRATION test (drives real DASPK accepted steps and checks the
+# trapezoid accumulation equals the solver's own consumed-moles integral).
+# =========================================================================
+
+
+class TestConduitFluxBookingIncrement2:
+
+    def setup_method(self, _method):
+        # Isolate the process-wide accumulator for each test.
+        from rmgpy.polymer_conduit import reset_conduit_state
+        reset_conduit_state()
+
+    def teardown_method(self, _method):
+        from rmgpy.polymer_conduit import reset_conduit_state
+        reset_conduit_state()
+
+    def test_poison_booking_reads_accepted_state_not_residual_scratch(self):
+        """THE poison test (would have caught the scratch-reading bug).
+
+        DASPK re-invokes residual() on Newton/corrector trials AND via the
+        finite-difference Jacobian (_scoped_fd_jacobian sets _jac_scope=True
+        and calls perturbed residuals), so after step() returns an ACCEPTED
+        step the last residual evaluation reflects a perturbed / rejected-trial
+        state -- NOT the accepted solution. A booker that reads a residual
+        scratch would book that poisoned flux; a booker that RECOMPUTES F from
+        the accepted self.y ignores the poison.
+
+        We prime the trapezoid endpoint at the accepted state, then DELIBERATELY
+        poison by running a perturbed residual (10x the accepted D
+        concentration -- exactly what an FD-Jacobian column / a rejected large
+        trial leaves behind), then fire the accepted-step hook. Booking must
+        equal F(accepted self.y) * dt * gas_mw, ignoring the 10x poison.
+
+        RED on the old scratch-rectangle impl (books 10x); GREEN on the
+        accepted-state recompute.
+        """
+        from rmgpy.polymer_conduit import get_conduit_flux_totals
+
+        rs, _slots, iD, _iGp = _admitted_conduit_row()
+        # F at the ACCEPTED state: k*[D]*V_poly = 2.0 mol/s (solver-derived).
+        F_acc = -rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0][iD]
+        assert F_acc > 0.0
+
+        # Prime the accepted-state trapezoid endpoint at t=0 (dt=0: primes
+        # F_prev = F_acc, books nothing).
+        rs._conduit_prev_accepted_t = None
+        rs.t = 0.0
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+        assert get_conduit_flux_totals() == {}, "dt=0 priming snapshot booked"
+
+        # POISON: the LAST residual before the accepted-step hook runs on a
+        # perturbed state (here 10x the accepted D concentration). self.y --
+        # the accepted solution -- is untouched.
+        poison_y = rs.y.copy()
+        poison_y[iD] *= 10.0
+        rs.residual(0.0, poison_y, np.zeros_like(poison_y))
+
+        # Accepted step of length dt fires the hook. Booking must use the
+        # accepted self.y (F_acc), not the 10x poison.
+        dt = 2.5e-3
+        rs.t = dt
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+
+        booked = get_conduit_flux_totals()["tdd-arch7-key"]["grams"]
+        # F_acc is constant across the (state-frozen) step, so the trapezoid
+        # 0.5*(F_prev + F_curr)*dt reduces to F_acc*dt. Assert the SOLVER's
+        # real booked grams equal the accepted-state delta-mass.
+        expected = F_acc * dt * GAS_MW
+        assert np.isclose(booked, expected, rtol=0, atol=1e-15), (
+            f"booked grams {booked!r} != F_accepted*dt*gas_mw {expected!r} -- "
+            f"booking read a poisoned residual state instead of self.y")
+        # And the poison is genuinely distinguishing: a scratch read would have
+        # booked ~10x this value.
+        assert not np.isclose(booked, 10.0 * expected, rtol=1e-6, atol=0), (
+            "booked value matches the 10x poison -- scratch was read")
+
+    def test_integration_accepted_steps_match_analytic_integral(self):
+        """INTEGRATION test: drive REAL DASPK accepted steps (initialize_solver
+        + step) through the real accepted-step hook and assert the
+        trapezoid-accumulated grams equal the solver's OWN consumed-moles
+        integral. Proves the hook books from real accepted state (which every
+        internal FD-Jacobian residual poisons), not a mock.
+
+        The fixture is first-order decay of D (dn/dt[D] = -F, F = k*[D]*V_poly),
+        so the exact emitted gas mass over any interval is
+        gas_mw * (moles of D consumed) -- a SOLVER state difference (self.y),
+        not a restatement of test inputs. The first accepted step primes
+        F_prev and books nothing, so the booked interval is [t1, t_end]."""
+        from rmgpy.polymer_conduit import get_conduit_flux_totals
+
+        rs, _slots, iD, _iGp = _admitted_conduit_row()
+        rs.initialize_solver()
+
+        primed_D = None
+        n_steps = 0
+        for i in range(60):
+            rs.step(1.0)                      # one accepted DASPK step
+            rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+            n_steps += 1
+            if i == 0:
+                # D moles at the first accepted step (this step primed F_prev
+                # and booked nothing -- booking starts from here).
+                primed_D = rs.y[iD]
+            if rs.t >= 1.0:
+                break
+        assert n_steps >= 3, (
+            f"only {n_steps} accepted steps -- need several to exercise the "
+            f"trapezoid across real steps")
+
+        end_D = rs.y[iD]
+        analytic_grams = GAS_MW * (primed_D - end_D)
+        assert analytic_grams > 0.0, "no D consumed -- fixture carried no flux"
+
+        booked = get_conduit_flux_totals()["tdd-arch7-key"]["grams"]
+        assert np.isclose(booked, analytic_grams, rtol=1e-3, atol=0), (
+            f"trapezoid-booked grams {booked!r} != analytic gas mass "
+            f"{analytic_grams!r} = gas_mw*(D consumed over booked interval); "
+            f"the accepted-step hook is not booking from real accepted state")
+
+    def test_trapezoid_rule_not_right_rectangle(self):
+        """White-box: with F_prev != F_curr the writer books the TRAPEZOID
+        0.5*(F_prev+F_curr)*dt*gas_mw, NOT the right-endpoint rectangle
+        F_curr*dt*gas_mw. Halving D between two accepted snapshots halves F,
+        so the two rules give distinguishable answers."""
+        from rmgpy.polymer_conduit import get_conduit_flux_totals
+
+        rs, _slots, iD, _iGp = _admitted_conduit_row()
+        # Prime F_prev at the initial accepted state: F_prev = k*[D]*V_poly.
+        rs._conduit_prev_accepted_t = None
+        rs.t = 0.0
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+        F_prev = 2.0                          # k=2, [D]=1, V_poly=1
+
+        # Advance the accepted state so the NEXT F differs: halve D -> half F.
+        rs.y[iD] = rs.y[iD] * 0.5
+        F_curr = 1.0                          # k=2, [D]=0.5, V_poly=1
+
+        dt = 1.0e-3
+        rs.t = dt
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+
+        booked = get_conduit_flux_totals()["tdd-arch7-key"]["grams"]
+        trapezoid = 0.5 * (F_prev + F_curr) * dt * GAS_MW
+        rectangle = F_curr * dt * GAS_MW
+        assert np.isclose(booked, trapezoid, rtol=0, atol=1e-15), (
+            f"booked {booked!r} != trapezoid {trapezoid!r}")
+        assert not np.isclose(booked, rectangle, rtol=1e-9, atol=0), (
+            f"booked {booked!r} matches right-rectangle {rectangle!r} -- "
+            f"trapezoid rule not applied")
+
+    def test_booking_is_additive_across_accepted_steps(self):
+        """Two booked accepted steps accumulate (writer must += , not
+        overwrite). Constant accepted state -> trapezoid == F*dt per step."""
+        from rmgpy.polymer_conduit import get_conduit_flux_totals
+
+        rs, _slots, _iD, _iGp = _admitted_conduit_row()
+        F = 2.0
+
+        rs._conduit_prev_accepted_t = None
+        rs.t = 0.0
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)     # prime, book 0
+
+        dt1, dt2 = 1.0e-3, 4.0e-3
+        rs.t = dt1
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)     # book dt1
+        rs.t = dt1 + dt2
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)     # book dt2
+
+        booked = get_conduit_flux_totals()["tdd-arch7-key"]["grams"]
+        assert np.isclose(booked, F * (dt1 + dt2) * GAS_MW, rtol=0, atol=1e-15), (
+            f"booked grams {booked!r} != F*(dt1+dt2)*gas_mw "
+            f"{F * (dt1 + dt2) * GAS_MW!r} -- writer overwrote instead of "
+            f"accumulating")
+
+    def test_revoked_key_books_zero(self):
+        """A candidate_key already flagged ``revoked`` accumulates NOTHING on
+        subsequent accepted steps (its prior grams stay counted -- it
+        happened)."""
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.polymer_conduit import get_conduit_flux_totals
+
+        rs, _slots, _iD, _iGp = _admitted_conduit_row()
+
+        # Prime the trapezoid endpoint (books nothing).
+        rs._conduit_prev_accepted_t = None
+        rs.t = 0.0
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+
+        # Pre-flag the key revoked with a non-zero prior mass.
+        pc._CONDUIT_FLUX_TOTALS["tdd-arch7-key"] = {"grams": 5.0, "revoked": True}
+
+        rs.t = 3.0e-3
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+
+        entry = get_conduit_flux_totals()["tdd-arch7-key"]
+        assert entry["revoked"] is True
+        assert entry["grams"] == 5.0, (
+            f"revoked key accumulated {entry['grams']!r} != 5.0 (prior mass) "
+            f"-- writer ignored the revoked flag")
+
+    def test_writer_inert_on_zero_dt(self):
+        """No booking on a non-advancing snapshot (dt <= 0): the first primed
+        accepted snapshot and any rebuild-boundary re-null must not fabricate
+        grams."""
+        from rmgpy.polymer_conduit import get_conduit_flux_totals
+
+        rs, _slots, _iD, _iGp = _admitted_conduit_row()
+        # prev == None -> first snapshot books dt=0.
+        rs._conduit_prev_accepted_t = None
+        rs.t = 7.0e-3
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+        assert get_conduit_flux_totals() == {}, (
+            "writer booked on the first (dt=0) accepted snapshot")
+
+    def test_poisoned_prior_total_is_not_propagated(self):
+        """round-84 guard: a PRE-EXISTING accumulator already poisoned
+        (negative / non-finite, from any source) must NOT be silently extended
+        -- the writer leaves the entry untouched instead of storing prior+grams,
+        which the artifact emitter (rmgpy/polymer.py) would blindly float. A
+        NEGATIVE prior is the clean discriminator (nan+x==nan and inf+x==inf are
+        indistinguishable from 'unchanged')."""
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.polymer_conduit import get_conduit_flux_totals
+
+        rs, _slots, _iD, _iGp = _admitted_conduit_row()
+        rs._conduit_prev_accepted_t = None
+        rs.t = 0.0
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)          # prime, book 0
+
+        # Pre-poison the (non-revoked) accumulator with a negative total.
+        pc._CONDUIT_FLUX_TOTALS["tdd-arch7-key"] = {"grams": -5.0,
+                                                    "revoked": False}
+        rs.t = 3.0e-3
+        rs._phase_gate_flux_census([], [], [], 1.0, 0.0)          # would-be booking step
+
+        entry = get_conduit_flux_totals()["tdd-arch7-key"]
+        assert entry["grams"] == -5.0, (
+            f"poisoned prior total was extended to {entry['grams']!r} instead "
+            f"of being left unchanged (-5.0) -- prior-total guard did not fire")
+
+    def test_anomalous_dt_skips_booking_and_preserves_fprev(self):
+        """round-84 guard: a non-finite or NEGATIVE accepted-step dt is anomalous
+        -- book nothing AND do not advance the trapezoid endpoint F_prev (a
+        garbage delta must neither drop mass silently nor seed the next step with
+        a poisoned F_prev). Reserve the silent no-book path for dt == 0 only. The
+        old ``book = isfinite(dt) and dt > 0`` fell through to the prime path and
+        advanced F_prev, so this test is RED against that."""
+        from rmgpy.polymer_conduit import get_conduit_flux_totals
+
+        for bad_dt in (float("nan"), float("inf"), -1.0e-3):
+            rs, _slots, iD, _iGp = _admitted_conduit_row()
+            # Prime F_prev = 2.0 (k=2, [D]=1, V_poly=1) at the initial state.
+            rs._conduit_prev_accepted_t = None
+            rs.t = 0.0
+            rs._phase_gate_flux_census([], [], [], 1.0, 0.0)
+            assert rs.conduit_prev_accepted_flux[0] == 2.0
+
+            # Change the accepted state so a WRONGFUL F_prev advance would show
+            # (F_curr would become 1.0), then inject the anomalous dt directly.
+            rs.y[iD] = rs.y[iD] * 0.5
+            rs._book_conduit_flux_accepted(bad_dt)
+
+            assert get_conduit_flux_totals() == {}, (
+                f"anomalous dt {bad_dt!r} booked grams "
+                f"{get_conduit_flux_totals()!r}")
+            assert rs.conduit_prev_accepted_flux[0] == 2.0, (
+                f"anomalous dt {bad_dt!r} advanced F_prev to "
+                f"{rs.conduit_prev_accepted_flux[0]!r} (expected unchanged 2.0)")
