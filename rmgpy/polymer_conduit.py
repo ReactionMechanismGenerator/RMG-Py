@@ -111,13 +111,21 @@ from typing import Optional, Tuple
 
 #: Repeat-unit (monomer) of the phenol-formaldehyde proxy. The deck comment
 #: calls it "C8H9O" but the deck's own SMILES is C9H10O — the SMILES is trusted.
+#: These PF constants are the OFFLINE / pure-core DEFAULT only; the in-repo
+#: adapter derives the chain-scale thresholds from the ROW'S OWN live monomer
+#: metadata (see :func:`chain_scale_thresholds_for_pools`) so a non-PF pool
+#: (e.g. the novolac deck, monomer MW 120.148) is not measured against PF's
+#: yardstick.
 MONOMER_FORMULA = "C9H10O"
 MONOMER_MW = 134.178          # g/mol  (9*12.011 + 10*1.008 + 15.999)
 MONOMER_HEAVY_ATOMS = 10
 
 #: Chain-scale test (mirrors rmgpy/polymer.py refusal logic): a discrete is
 #: chain-scale iff it reaches >= 2.5 monomer-equivalents on BOTH the mass and
-#: heavy-atom axes.
+#: heavy-atom axes. CHAIN_SCALE_MW / CHAIN_SCALE_HEAVY are the PF-baseline
+#: DEFAULTS; :func:`is_chain_scale` / :func:`species_role` / :func:`classify_record`
+#: accept per-row overrides so the live adapter can supply thresholds derived
+#: from the row's own monomer instead of these hardcoded PF values.
 CHAIN_SCALE_FACTOR = 2.5
 CHAIN_SCALE_MW = CHAIN_SCALE_FACTOR * MONOMER_MW              # 335.445
 CHAIN_SCALE_HEAVY = CHAIN_SCALE_FACTOR * MONOMER_HEAVY_ATOMS  # 25.0
@@ -132,9 +140,20 @@ GAS_MW_THRESHOLD = GAS_MW_FACTOR * MONOMER_MW                 # 201.267 g/mol
 #: Near-threshold band for census reporting (+-10% of the threshold).
 NEAR_THRESHOLD_BAND = 0.10
 
-#: Known pool-label prefix. Every polymer pool in poly_102_conduit3 (configured
-#: pool + spawned mod pools) carries this prefix; spawned pools resolve to it.
-POOL_LABEL_PREFIXES = ("phenol_formaldehyde",)
+#: Known pool-label prefixes. Every polymer pool carries one of these prefixes;
+#: a configured pool label and all of its spawned daughters (``*_mod``,
+#: ``*_mod_2/3/4``, and the ``*_mu0/mu1/mu2`` moment pseudo-species) share the
+#: prefix, so ``startswith`` on the base name recognizes the whole family.
+#:
+#: The label whitelist is the established POOL idiom here (mirrored by
+#: :data:`POOL_STATE_RESOLVABLE_LABELS`); the pure core classifies pool
+#: participants by label with no live RMG object, so extending the whitelist is
+#: the idiomatic fix rather than introducing a structural/role-metadata test.
+#: ``novolac`` was added because the phase-6 novolac smoke deck labels its live
+#: pool ``novolac`` (daughters ``novolac_mod``, ``novolac_mod_2/3/4``); without
+#: it those pools failed :func:`is_pool` and drove 329x
+#: ``classifier-not-admissible`` census denials.
+POOL_LABEL_PREFIXES = ("phenol_formaldehyde", "novolac")
 
 #: Condensed chip species that RESOLVE to a pool state (sidecar
 #: condensed_species list, polymer_pools.json schema 2.5). The live machinery
@@ -197,21 +216,28 @@ def is_pool_state_resolvable(species):
     return _role_label(species) in POOL_STATE_RESOLVABLE_LABELS
 
 
-def is_chain_scale(species):
-    """Chain-scale discrete: >= 2.5 monomer-equiv on mass AND heavy atoms."""
+def is_chain_scale(species, chain_scale_mw=CHAIN_SCALE_MW,
+                   chain_scale_heavy=CHAIN_SCALE_HEAVY):
+    """Chain-scale discrete: >= 2.5 monomer-equiv on mass AND heavy atoms.
+
+    ``chain_scale_mw`` / ``chain_scale_heavy`` default to the PF-baseline module
+    constants; the live adapter passes thresholds derived from the row's own
+    monomer (:func:`chain_scale_thresholds_for_pools`) so a non-PF pool is
+    measured against its own yardstick, not PF's."""
     mw = species.get("mw")
     heavy = species.get("heavy_atoms")
     if mw is None or heavy is None:
         return False
-    return mw >= CHAIN_SCALE_MW and heavy >= CHAIN_SCALE_HEAVY
+    return mw >= chain_scale_mw and heavy >= chain_scale_heavy
 
 
-def species_role(species):
+def species_role(species, chain_scale_mw=CHAIN_SCALE_MW,
+                 chain_scale_heavy=CHAIN_SCALE_HEAVY):
     if is_pool(species) or is_pool_state_resolvable(species):
         return POOL
     if species.get("mw") is None:
         return UNKNOWN
-    if is_chain_scale(species):
+    if is_chain_scale(species, chain_scale_mw, chain_scale_heavy):
         return CHAIN
     return DISC
 
@@ -232,11 +258,14 @@ def near_threshold(species, threshold=GAS_MW_THRESHOLD, band=NEAR_THRESHOLD_BAND
 # Row-level classification (pure core)
 # ---------------------------------------------------------------------------
 
-def _side_roles(side):
-    return tuple(sorted(species_role(s) for s in side))
+def _side_roles(side, chain_scale_mw=CHAIN_SCALE_MW,
+                chain_scale_heavy=CHAIN_SCALE_HEAVY):
+    return tuple(sorted(
+        species_role(s, chain_scale_mw, chain_scale_heavy) for s in side))
 
 
-def _resolve_shape(record):
+def _resolve_shape(record, chain_scale_mw=CHAIN_SCALE_MW,
+                   chain_scale_heavy=CHAIN_SCALE_HEAVY):
     """Return (shape, admitted_direction, chain_side, pool_side).
 
     Direction is normalized so the pool-crediting side is the product side:
@@ -244,8 +273,8 @@ def _resolve_shape(record):
     side) is the consumed side. admitted_direction is "forward" when the
     normalized orientation matches the row as written, "reverse" otherwise.
     """
-    r_roles = _side_roles(record["reactants"])
-    p_roles = _side_roles(record["products"])
+    r_roles = _side_roles(record["reactants"], chain_scale_mw, chain_scale_heavy)
+    p_roles = _side_roles(record["products"], chain_scale_mw, chain_scale_heavy)
     if (r_roles, p_roles) in _SHAPE_TABLE:
         return _SHAPE_TABLE[(r_roles, p_roles)], "forward", record["reactants"], record["products"]
     if (p_roles, r_roles) in _SHAPE_TABLE:
@@ -262,13 +291,20 @@ def _destination_pool(consumed_side, produced_side):
     return None
 
 
-def classify_record(record, gas_mw_threshold=GAS_MW_THRESHOLD):
-    """Classify one refusal record. Returns a new dict (input not mutated)."""
+def classify_record(record, gas_mw_threshold=GAS_MW_THRESHOLD,
+                    chain_scale_mw=CHAIN_SCALE_MW,
+                    chain_scale_heavy=CHAIN_SCALE_HEAVY):
+    """Classify one refusal record. Returns a new dict (input not mutated).
+
+    ``chain_scale_mw`` / ``chain_scale_heavy`` default to the PF-baseline module
+    constants; the live census/admission callers pass thresholds derived from
+    the row's own monomer (:func:`chain_scale_thresholds_for_pools`)."""
     all_species = list(record["reactants"]) + list(record["products"])
     has_unresolved = any(s.get("mw") is None for s in all_species)
     has_link_marker = any(s.get("link_marker") for s in all_species)
 
-    shape, direction, consumed, produced = _resolve_shape(record)
+    shape, direction, consumed, produced = _resolve_shape(
+        record, chain_scale_mw, chain_scale_heavy)
 
     result = {
         "census": record["census"],
@@ -319,7 +355,9 @@ def classify_record(record, gas_mw_threshold=GAS_MW_THRESHOLD):
     ]
     result["gas_reactants_over_threshold"] = [
         s["token"] for s in consumed
-        if not is_pool(s) and not is_chain_scale(s) and not gas_mw_ok(s, gas_mw_threshold)
+        if not is_pool(s)
+        and not is_chain_scale(s, chain_scale_mw, chain_scale_heavy)
+        and not gas_mw_ok(s, gas_mw_threshold)
     ]
 
     if shape not in ("A", "B"):
@@ -349,9 +387,12 @@ def classify_record(record, gas_mw_threshold=GAS_MW_THRESHOLD):
     return result
 
 
-def classify_all(records, gas_mw_threshold=GAS_MW_THRESHOLD):
+def classify_all(records, gas_mw_threshold=GAS_MW_THRESHOLD,
+                 chain_scale_mw=CHAIN_SCALE_MW,
+                 chain_scale_heavy=CHAIN_SCALE_HEAVY):
     """Classify an iterable of records. Returns a list of result dicts."""
-    return [classify_record(r, gas_mw_threshold) for r in records]
+    return [classify_record(r, gas_mw_threshold, chain_scale_mw,
+                            chain_scale_heavy) for r in records]
 
 
 def bucket_counts(results):
@@ -569,6 +610,35 @@ def gas_mw_threshold_for_pools(row_pools):
     return GAS_MW_FACTOR * min(mws)
 
 
+def chain_scale_thresholds_for_pools(row_pools):
+    """Chain-scale (mass, heavy-atom) thresholds from the ROW'S OWN pools:
+    ``CHAIN_SCALE_FACTOR`` x the LIVE monomer MW / monomer heavy-atom count,
+    NOT the hardcoded PF constants.
+
+    Each axis is reduced independently with ``min`` over the row's pools,
+    mirroring the in-repo :func:`rmgpy.polymer._discrete_is_chain_scale_proxy_derived`
+    (polymer-sized against AT LEAST ONE pool) and the conservative ``min``
+    convention of :func:`gas_mw_threshold_for_pools`: the smallest monomer sets
+    the loosest bar, so a discrete that is chain-scale relative to any of the
+    row's pools is admitted as CHAIN. An axis with no usable live value falls
+    back to its PF-baseline module default; the PF deck reproduces the old
+    335.445 / 25.0 exactly (live PF monomer MW 134.178, heavy 10)."""
+    from rmgpy.polymer import _heavy_atom_count
+
+    mws, heavies = [], []
+    for poly in row_pools or []:
+        mw = float(getattr(poly, "monomer_mw_g_mol", 0.0) or 0.0)
+        if mw > 0.0:
+            mws.append(mw)
+        heavy = _heavy_atom_count(getattr(poly, "monomer", None))
+        if heavy > 0:
+            heavies.append(heavy)
+    chain_scale_mw = CHAIN_SCALE_FACTOR * min(mws) if mws else CHAIN_SCALE_MW
+    chain_scale_heavy = (CHAIN_SCALE_FACTOR * min(heavies) if heavies
+                         else CHAIN_SCALE_HEAVY)
+    return chain_scale_mw, chain_scale_heavy
+
+
 def _species_entry(species, row_pools):
     """Species record from a live RMG object, reusing the in-repo predicates.
 
@@ -697,7 +767,9 @@ def annotate_refused_row(forward, row_pools, census="r93_general",
         record = _apply_iso_overrides(
             record_from_reaction(forward, row_pools, census=census))
         threshold = gas_mw_threshold_for_pools(row_pools)
-        result = classify_record(record, gas_mw_threshold=threshold)
+        cs_mw, cs_heavy = chain_scale_thresholds_for_pools(row_pools)
+        result = classify_record(record, gas_mw_threshold=threshold,
+                                 chain_scale_mw=cs_mw, chain_scale_heavy=cs_heavy)
         if record.get("label_isomorphism_divergence"):
             result["flags"].append("label-isomorphism-divergence")
         entry = register_candidate(result["candidate_key"], census,
@@ -807,6 +879,11 @@ def evaluate_conduit_admission(forward, row_pools):
         record = _apply_iso_overrides(
             record_from_reaction(forward, row_pools, census="r93_general"))
         key = conduit_candidate_key(record)
+        # Role classification must use thresholds derived from the row's OWN
+        # live monomer, not the hardcoded PF constants (else a near-threshold
+        # non-PF chain is misbucketed CHAIN<->DISC and the gates read a wrong
+        # shape).
+        cs_mw, cs_heavy = chain_scale_thresholds_for_pools(row_pools)
 
         # G0 (part 1) -- classifier divergence: a label/isomorphism
         # divergence is a finding, never an admission basis.
@@ -823,15 +900,15 @@ def evaluate_conduit_admission(forward, row_pools):
         # classifier buckets such rows UNCLASSIFIED; uncertainty never
         # admits.
         r_side, p_side = record["reactants"], record["products"]
-        if any(species_role(s) == UNKNOWN
+        if any(species_role(s, cs_mw, cs_heavy) == UNKNOWN
                for s in list(r_side) + list(p_side)):
             return _deny(key, "classifier-not-admissible")
 
         # G2 -- direction/orientation [r39-P1]: the shape must resolve with
         # a UNIQUE chain_to_pool admitted direction (chain strictly on the
         # consumed side, pool participation strictly on the credited side).
-        r_roles = [species_role(s) for s in r_side]
-        p_roles = [species_role(s) for s in p_side]
+        r_roles = [species_role(s, cs_mw, cs_heavy) for s in r_side]
+        p_roles = [species_role(s, cs_mw, cs_heavy) for s in p_side]
         if (POOL in p_roles and POOL not in r_roles
                 and CHAIN in r_roles and CHAIN not in p_roles):
             direction = "forward"
@@ -861,7 +938,8 @@ def evaluate_conduit_admission(forward, row_pools):
         # G3 -- gas product: EXACTLY ONE non-pool species on the credited
         # side, with stoichiometric multiplicity 1 [r39-P5] (tokens counted
         # WITH repeats: a stoich-2 product appears twice).
-        gas_entries = [s for s in produced if species_role(s) != POOL]
+        gas_entries = [s for s in produced
+                       if species_role(s, cs_mw, cs_heavy) != POOL]
         if len(gas_entries) != 1:
             return _deny(key, "gas-product-count")
         gas = gas_entries[0]
@@ -885,7 +963,8 @@ def evaluate_conduit_admission(forward, row_pools):
 
         # G0 (part 2) -- the classifier's own verdict, with the admission
         # threshold: nothing broader than shapes A/B is admitted.
-        result = classify_record(record, gas_mw_threshold=threshold)
+        result = classify_record(record, gas_mw_threshold=threshold,
+                                 chain_scale_mw=cs_mw, chain_scale_heavy=cs_heavy)
         if result["bucket"] not in ("ADMISSIBLE_A", "ADMISSIBLE_B"):
             return _deny(key, "classifier-not-admissible")
 
@@ -909,7 +988,7 @@ def evaluate_conduit_admission(forward, row_pools):
         # (chain-scale proxy-derived) so the consumer's step-2 phase gate
         # passes the event (V_rxn = V_poly).
         chain_positions = [i for i, s in enumerate(consumed)
-                           if species_role(s) == CHAIN]
+                           if species_role(s, cs_mw, cs_heavy) == CHAIN]
         if len(chain_positions) != 1:
             return _deny(key, "classifier-not-admissible")
         chain_obj = consumed_objs[chain_positions[0]]
@@ -923,7 +1002,7 @@ def evaluate_conduit_admission(forward, row_pools):
         #   u     = u_raw - a + d/M
         # guard: u >= 1.0  (per-event surplus mu1 - mu0 = u - 1 >= 0).
         consumed_mws = [s.get("mw") for s in consumed
-                        if species_role(s) != POOL]
+                        if species_role(s, cs_mw, cs_heavy) != POOL]
         if any(mw is None for mw in consumed_mws):
             return _deny(key, "classifier-not-admissible")
         defect = float(
