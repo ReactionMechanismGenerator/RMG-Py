@@ -317,6 +317,7 @@ FLUX_SCISSION_FRAGMENT = 3
 FLUX_UNRESOLVED = 4
 FLUX_DISCRETE_CHIP = 5
 FLUX_VOLATILE_EJECTION = 6
+FLUX_MOMENT_CREDIT_CONDUIT = 7
 
 
 # ======================================================================================
@@ -3239,10 +3240,101 @@ class HybridPolymerSystem(ReactionSystem):
         # alpha-methylstyrene off a styrene pool). Same chain(core, edge)
         # order so the index matches r_idx in the residual.
         self.reaction_eject_units = np.zeros(n_rxn, dtype=np.float64)
+        # M18.4 conduit-admission (arch 7 = FLUX_MOMENT_CREDIT_CONDUIT) row
+        # params, flattened from the object-side stamp
+        # (rmgpy/polymer.py admit arm: polymer_conduit_dst_pool +
+        # polymer_conduit_params). dst is stamped as a pool LABEL string and
+        # is the AUTHORITATIVE destination (resolved to an index here, NOT via
+        # the product-side pool scan below). u = chain_units is the only field
+        # the residual credit arm consumes; conduit_gas_mw + candidate_key ride
+        # along for the (later) accepted-step grams booking -- mw+key are
+        # sufficient, so NO gas species index is stored (admission stamps the
+        # gas token as "label(index)", which a bare-label core map would
+        # mis-resolve for a real admitted row). Same chain(core, edge) order so
+        # the index matches r_idx in the residual.
+        self.conduit_dst_pool_index = np.full(n_rxn, -1, dtype=np.int32)
+        self.conduit_chain_units_u = np.zeros(n_rxn, dtype=np.float64)
+        self.conduit_gas_units_a = np.zeros(n_rxn, dtype=np.float64)
+        self.conduit_gas_mw = np.zeros(n_rxn, dtype=np.float64)
+        self.conduit_candidate_key = [None] * n_rxn
+        # M18.4 increment 2 (adversarial-review rebuild): per-row TRAPEZOID
+        # endpoint memory F_prev_accepted [mol/s] -- the arch-7 net event flux
+        # recomputed side-effect-freely from the PREVIOUS accepted state. The
+        # accepted-step writer books 0.5*(F_prev + F_curr)*dt*gas_mw, so this
+        # holds F at the previous accepted snapshot (0 until first primed). It
+        # is NOT written by the residual (the residual leaves state at a
+        # Jacobian-FD-perturbed / rejected-trial point, never the accepted
+        # solution); _book_conduit_flux_accepted recomputes F from self.y.
+        # Re-created (nulled) here on every model rebuild together with the
+        # prev-time below, so no trapezoid ever spans a rebuild boundary. Same
+        # chain(core, edge) index order as the sibling conduit arrays.
+        self.conduit_prev_accepted_flux = np.zeros(n_rxn, dtype=np.float64)
+        # Previous ACCEPTED-step time for the conduit grams delta (dt = t_now -
+        # t_prev). None => not yet primed (first accepted snapshot books dt=0);
+        # re-nulled on every model rebuild so a fresh simulate() never books a
+        # stale/negative dt across the boundary.
+        self._conduit_prev_accepted_t = None
+        _pool_label_to_index = {p.label: j
+                                for j, p in enumerate(self.polymer_pools)}
         for i, rxn in enumerate(itertools.chain(core_reactions, edge_reactions)):
             self.reaction_flux_archetype[i] = int(getattr(rxn, "polymer_flux_archetype", 0))
             self.reaction_chip_units[i] = int(getattr(rxn, "polymer_chip_units", 0))
             self.reaction_eject_units[i] = float(getattr(rxn, "polymer_eject_units", 0.0))
+            if self.reaction_flux_archetype[i] == FLUX_MOMENT_CREDIT_CONDUIT:
+                # Validate the admitted arch-7 stamp BEFORE trusting any field:
+                # a missing/degenerate chain_units, absent gas product, or a
+                # REVERSIBLE stamp (signed r_mol_s = rf-rr has no reverse
+                # moment law -- admitted rows are supposed to be
+                # irreversible-export rewritten) all signal mis-stamping.
+                # Refuse the whole row LOUDLY (flux-dead), mirroring the
+                # dst-less refusal below; never default a bad field to a
+                # zero-u / phantom credit. Fail-closed on any parse error (G7).
+                params = getattr(rxn, "polymer_conduit_params", None) or {}
+                refuse_reason = None
+                try:
+                    cu = params.get("chain_units", None)
+                    gas_products = params.get("gas_products") or []
+                    gp0 = gas_products[0] if gas_products else {}
+                    gas_mw = gp0.get("mw_g_mol", None)
+                    if bool(getattr(rxn, "reversible", False)):
+                        refuse_reason = (
+                            "it is reversible (admitted conduit rows must be "
+                            "irreversible-export rewritten; signed r_mol_s has "
+                            "no reverse moment law)")
+                    elif (cu is None or not math.isfinite(float(cu))
+                            or float(cu) < 1.0):
+                        refuse_reason = (
+                            "chain_units %r is missing, non-finite, or < 1.0"
+                            % (cu,))
+                    elif not gas_products or not gp0.get("species"):
+                        refuse_reason = (
+                            "gas_products is empty or has no species token")
+                    elif (gas_mw is None or not math.isfinite(float(gas_mw))
+                            or float(gas_mw) <= 0.0):
+                        refuse_reason = (
+                            "gas product mw_g_mol %r is missing, non-finite, "
+                            "or <= 0" % (gas_mw,))
+                    elif not params.get("candidate_key"):
+                        refuse_reason = "candidate_key is missing"
+                except Exception as exc:
+                    refuse_reason = ("malformed conduit params (%s: %s)"
+                                     % (type(exc).__name__, exc))
+                if refuse_reason is not None:
+                    logging.warning(
+                        "MOMENT-CREDIT CONDUIT: row %d (%s) stamped arch 7 but "
+                        "%s; refusing the row (zero flux).",
+                        i, str(rxn), refuse_reason)
+                    self.reaction_refused[i] = 1
+                    self.reaction_flux_archetype[i] = FLUX_NONE
+                else:
+                    dst_label = getattr(rxn, "polymer_conduit_dst_pool", None)
+                    self.conduit_dst_pool_index[i] = _pool_label_to_index.get(
+                        dst_label, -1)
+                    self.conduit_chain_units_u[i] = float(cu)
+                    self.conduit_gas_units_a[i] = float(
+                        params.get("gas_units", 0.0))
+                    self.conduit_candidate_key[i] = params.get("candidate_key")
+                    self.conduit_gas_mw[i] = float(gas_mw)
         # Item 17 (spec 2026-06-12 SS3(e)): generation-time stamps, captured
         # AFTER the stamp-read loop and BEFORE the init demotion pass
         # (:NONE->UNRESOLVED + unresolvable stamped shapes) mutates the
@@ -3508,7 +3600,8 @@ class HybridPolymerSystem(ReactionSystem):
         _arch_names = {FLUX_MIGRATION: "MIGRATION",
                        FLUX_SCISSION_FRAGMENT: "SCISSION_FRAGMENT",
                        FLUX_DISCRETE_CHIP: "DISCRETE_CHIP",
-                       FLUX_VOLATILE_EJECTION: "VOLATILE_EJECTION"}
+                       FLUX_VOLATILE_EJECTION: "VOLATILE_EJECTION",
+                       FLUX_MOMENT_CREDIT_CONDUIT: "MOMENT_CREDIT_CONDUIT"}
         spawned_refusals = []      # (row_idx, rxn, archetype name, labels)
         demotion_anomalies = []    # (row_idx, rxn, archetype name)
         self.spawned_pool_refusal_census = []
@@ -3534,6 +3627,30 @@ class HybridPolymerSystem(ReactionSystem):
                             dst = pool_j
             self.reaction_src_pool[i] = src
             self.reaction_dst_pool[i] = dst
+            if self.reaction_flux_archetype[i] == FLUX_MOMENT_CREDIT_CONDUIT:
+                # Arch 7 (credit-only conduit): the destination is
+                # AUTHORITATIVE from the stamped pool label
+                # (conduit_dst_pool_index), NOT the product-side pool scan;
+                # src stays NULL (no source-pool debit). Overwrite so
+                # reaction_dst_pool -- and hence the SGH destination-pool arm
+                # and the residual credit arm -- see the stamped destination.
+                dst = int(self.conduit_dst_pool_index[i])
+                self.reaction_dst_pool[i] = dst
+                if dst == -1:
+                    # dst-less conduit credit row: its destination pool label
+                    # did not resolve to a configured pool, so it can credit
+                    # NOTHING. Refuse it LOUDLY (flux-dead) rather than leaving
+                    # a live arch-7 stamp that silently injects zero moment
+                    # flux.
+                    logging.warning(
+                        "MOMENT-CREDIT CONDUIT: row %d (%s) stamped arch 7 but "
+                        "its destination pool %r did not resolve to a "
+                        "configured pool; refusing the row (zero flux).",
+                        i, str(combined_rxns[i]),
+                        getattr(combined_rxns[i], "polymer_conduit_dst_pool",
+                                None))
+                    self.reaction_refused[i] = 1
+                    self.reaction_flux_archetype[i] = FLUX_NONE
             if self.reaction_flux_archetype[i] == FLUX_NONE and (src != -1 or dst != -1):
                 if self.reaction_refused[i]:
                     # Refused row (adjudicated, flux-dead via
@@ -4253,6 +4370,192 @@ class HybridPolymerSystem(ReactionSystem):
                 bimolecular_threshold_rate_constant,
                 trimolecular_threshold_rate_constant)
 
+    def _recompute_conduit_accepted_flux(self, r_idx):
+        """SIDE-EFFECT-FREE recompute of the arch-7 net event flux
+        F = r_mol_s [mol/s] at the ACCEPTED state ``self.y``.
+
+        The residual() CANNOT be trusted as the flux source at the accepted
+        step: it is a DASPK callback re-invoked on Newton/corrector iterations
+        and by the finite-difference Jacobian helper
+        :meth:`_scoped_fd_jacobian` (which sets ``_jac_scope=True`` and calls
+        perturbed residuals), so after :meth:`step` returns the accepted step
+        the last residual evaluation reflects a Jacobian-FD-perturbed or
+        rejected-trial state, NOT the accepted solution -- and base.pyx's
+        simulate() does not refresh rates before the accepted-step hook, so
+        core_reaction_rates is stale for the same reason. We therefore
+        RECOMPUTE F from ``self.y`` here, mirroring residual()'s rate
+        primitives EXACTLY but writing ONLY to locals (no dn_dt, no
+        diagnostics, no shared arrays).
+
+        Mirrors residual() §2-§6 for one row, read-only:
+          * V_gas from the accepted gas moles (ideal-gas, residual §2), local;
+          * concentrations = softclamp(y)/V with the SAME negative-only
+            softclamp extension residual §3 applies, into a LOCAL y_head;
+          * rf = kf * prod(_C(reactant slots)) with residual's _C read rules
+            (pool proxy -> 1, edge -> 0, else C_gas/C_poly);
+          * V_rxn == V_poly: arch-7 admission REQUIRES a condensed chain
+            reactant (polymer_conduit.evaluate_conduit_admission G5 chain
+            phase, ~L908-917), so the residual's phase selection
+            (is_poly_event -> V_rxn = V_poly, ~L5795/5799) is always poly for
+            an arch-7 row; and irreversible export (kr == 0) makes
+            r_mol_s = rf * V_rxn = rf * V_poly = F. Returns F [mol/s]."""
+        n_core = self.num_core_species
+        y = self.y
+        mask = self.gas_species_mask
+        # V_gas at the ACCEPTED state (residual §2), into a LOCAL -- never
+        # touch self.V_gas / self.V (those belong to the residual).
+        if self.constant_gas_volume:
+            V_gas = self.V_gas0
+        else:
+            n_gas = float(np.sum(y[:n_core][mask]))
+            V_gas = (constants.R * self.T.value_si * n_gas / self.P.value_si
+                     if n_gas > 0.0 else 1.0)
+        V_poly = self.V_poly
+        # softclamp exactly as residual §3 (negative entries only), into a
+        # LOCAL copy so self.y is never mutated.
+        y_head = y[:n_core]
+        neg = y_head < 0.0
+        if neg.any():
+            y_head = y_head.copy()
+            yn = y_head[neg]
+            y_head[neg] = yn * np.exp(yn / self._softclamp_lam)
+        s2p = self.species_to_pool_indices
+        ir = self.reactant_indices
+        rf = self.kf[r_idx]
+        for slot in range(3):
+            idx = ir[r_idx, slot]
+            if idx == -1:
+                continue
+            if idx >= n_core:
+                # Edge reactant: no state in y -> concentration 0 (residual
+                # _C parity), rf vanishes.
+                rf = 0.0
+                break
+            if s2p[idx] != -1:
+                continue                 # pool proxy: unit activity (C == 1)
+            rf *= (y_head[idx] / V_gas) if mask[idx] else (y_head[idx] / V_poly)
+        return rf * V_poly
+
+    def _book_conduit_flux_accepted(self, double dt):
+        """M18.4 increment 2 WRITER (DESIGN §4.4), adversarial-review rebuild:
+        accumulate, per admitted arch-7 conduit candidate_key, the GRAMS of
+        gas emitted over ONE ACCEPTED integrator step of length ``dt`` [s],
+        into the run-level ``rmgpy.polymer_conduit._CONDUIT_FLUX_TOTALS`` store
+        ``{key: {"grams": float, "revoked": bool}}``.
+
+        Called ONLY from :meth:`_phase_gate_flux_census`, itself invoked once
+        per ACCEPTED snapshot from base.pyx's simulate() loop (never from the
+        residual). F is recomputed side-effect-freely from the ACCEPTED
+        ``self.y`` (:meth:`_recompute_conduit_accepted_flux`) -- NOT read from
+        any residual scratch, which after step() reflects a Jacobian-perturbed
+        / rejected-trial state.
+
+        TRAPEZOID rule (fix 2): grams += 0.5*(F_prev + F_curr) * dt * gas_mw,
+        where F_prev is the accepted-state F of the PREVIOUS accepted step
+        (``conduit_prev_accepted_flux``; 0 at the first primed snapshot). The
+        right-endpoint rectangle F_curr*dt it replaces is badly biased for
+        coarse steps.
+
+        REVOKED handling (DESIGN: "a REVOKED row's accumulated mass stays
+        counted -- it happened"): a key already flagged ``revoked`` is NOT
+        accumulated further, but its existing grams are left untouched.
+
+        Fix 5 -- CORE rows only: the arch-7 credit state is meaningful for core
+        rows; an edge conduit row is neither designed nor tested here and is
+        skipped explicitly.
+
+        Fix 4 -- GUARDS: a non-finite/negative F, dt, or grams is skipped
+        (logged), never allowed to poison the totals or F_prev.
+
+        Inert in normal runs: with CONDUIT_ADMISSION_ENABLED False no reaction
+        is stamped archetype 7, so the loop finds no live conduit row and books
+        nothing. Never raises (best-effort diagnostic accumulator)."""
+        keys = self.conduit_candidate_key
+        if keys is None:
+            return
+        prev_flux = self.conduit_prev_accepted_flux
+        n_core_rxn = self.num_core_reactions
+        # dt SEMANTICS: dt == 0 is the DESIGNED prime (first accepted snapshot /
+        # rebuild-boundary re-null) -- book nothing but still advance F_prev in
+        # the loop below. A non-finite or NEGATIVE dt is anomalous (clock went
+        # backward / NaN): log it and return WITHOUT booking AND without
+        # advancing the trapezoid endpoints, so a garbage delta neither drops
+        # mass silently nor seeds the next step's trapezoid with a poisoned
+        # F_prev. Reserve the silent no-book path strictly for dt == 0.
+        # (fix 4 / round 84)
+        if (not np.isfinite(dt)) or dt < 0.0:
+            logging.warning(
+                "MOMENT-CREDIT CONDUIT (M18.4 increment 2): anomalous accepted-"
+                "step dt %r; skipping booking and NOT advancing trapezoid "
+                "endpoints this step.", dt)
+            return
+        book = dt > 0.0
+        totals = None
+        if book:
+            try:
+                from rmgpy.polymer_conduit import _CONDUIT_FLUX_TOTALS as totals
+            except Exception as exc:
+                # The run-level census is load-bearing: surface the failure
+                # loudly rather than silently dropping this step's grams.
+                logging.warning(
+                    "MOMENT-CREDIT CONDUIT (M18.4 increment 2): could not "
+                    "import _CONDUIT_FLUX_TOTALS (%s: %s); accepted-step grams "
+                    "NOT booked this step.", type(exc).__name__, exc)
+                return
+        for r_idx in range(len(keys)):
+            if self.reaction_flux_archetype[r_idx] != FLUX_MOMENT_CREDIT_CONDUIT:
+                continue
+            if r_idx >= n_core_rxn:
+                continue  # fix 5: edge arch-7 rows are out of scope here
+            F_curr = self._recompute_conduit_accepted_flux(r_idx)
+            if not np.isfinite(F_curr) or F_curr < 0.0:
+                logging.warning(
+                    "MOMENT-CREDIT CONDUIT (M18.4 increment 2): recomputed "
+                    "accepted-state flux for core row %d is non-finite/negative "
+                    "(%r); skipping (no booking, F_prev zeroed).",
+                    r_idx, F_curr)
+                prev_flux[r_idx] = 0.0
+                continue
+            F_prev = prev_flux[r_idx]
+            # Advance the trapezoid endpoint for the NEXT accepted step even on
+            # a non-booking (dt<=0) priming snapshot.
+            prev_flux[r_idx] = F_curr
+            if not book:
+                continue
+            key = keys[r_idx]
+            if not key:
+                continue
+            entry = totals.get(key)
+            # REVOKED: keep what was already booked, add nothing more.
+            if entry is not None and entry.get("revoked"):
+                continue
+            grams = 0.5 * (F_prev + F_curr) * dt * self.conduit_gas_mw[r_idx]
+            if not np.isfinite(grams) or grams < 0.0:
+                logging.warning(
+                    "MOMENT-CREDIT CONDUIT (M18.4 increment 2): computed grams "
+                    "for key %r is non-finite/negative (%r); skipping to avoid "
+                    "poisoning the totals.", key, grams)
+                continue
+            if entry is None:
+                totals[key] = {"grams": grams, "revoked": False}
+            else:
+                # Guard the PRE-EXISTING accumulator too (round 84): a total
+                # already poisoned (non-finite/negative, from any source) must
+                # not be silently propagated -- the artifact emitter floats it
+                # blindly (rmgpy/polymer.py). Validate BOTH prior and post-add;
+                # leave the entry untouched and log if either is bad.
+                prior = entry.get("grams", 0.0)
+                new_total = prior + grams
+                if (not np.isfinite(prior) or prior < 0.0
+                        or not np.isfinite(new_total) or new_total < 0.0):
+                    logging.warning(
+                        "MOMENT-CREDIT CONDUIT (M18.4 increment 2): pre-existing "
+                        "or updated total for key %r is non-finite/negative "
+                        "(prior=%r, new=%r); leaving totals unchanged.",
+                        key, prior, new_total)
+                    continue
+                entry["grams"] = new_total
+
     def _phase_gate_flux_census(self, core_species, edge_species,
                                 edge_reactions, char_rate, tol_move_to_core):
         """RIDER R2 dynamic half (item 17, spec 2026-06-12 SS3(e)): emit one
@@ -4277,6 +4580,18 @@ class HybridPolymerSystem(ReactionSystem):
         # the r81 hard-error semantics live here now (the residual's
         # trial-state census never raises).
         self._assert_pool_moments_accepted()
+        # M18.4 increment 2: book admitted-conduit gas GRAMS for THIS accepted
+        # step (DESIGN §4.4). Placed on the accepted-step hook (never the
+        # residual) so REJECTED Newton trials cannot overcount, and BEFORE the
+        # char_rate==0 return so a no-enlargement step still books its flux.
+        # dt is the accepted-step length t_now - t_prev; the first primed
+        # snapshot books dt=0, and a rebuild-boundary re-null makes dt<=0 (no
+        # booking) rather than a stale/negative delta.
+        conduit_dt = 0.0
+        if self._conduit_prev_accepted_t is not None:
+            conduit_dt = self.t - self._conduit_prev_accepted_t
+        self._conduit_prev_accepted_t = self.t
+        self._book_conduit_flux_accepted(conduit_dt)
         if char_rate == 0.0:
             return  # the base.pyx singularity path owns the no-flux case
         gate_codes = getattr(self, "edge_reaction_gate_code", None)
@@ -6258,6 +6573,37 @@ class HybridPolymerSystem(ReactionSystem):
                                 dn_dt[s_idx[1]] += rr_mol * chip_a
                                 dn_dt[s_idx[2]] += rr_mol * (
                                     2.0 * chip_a * chip_e_n + chip_a * chip_a)
+                elif arch == FLUX_MOMENT_CREDIT_CONDUIT:
+                    # Moment-credit conduit (M18.4, DESIGN §2): an admitted
+                    # refused-class row consumes a real chain-scale discrete
+                    # and CREDITS the destination pool a Dirac point-mass
+                    # bundle (1, u, u^2) per event -- credit-ONLY, so there is
+                    # NO source-pool debit (src is NULL) and NO extra gas
+                    # dn/dt write here (the reactant discrete and the single
+                    # gas product are already moved by the standard section-4
+                    # net-rate stoichiometry). u = chain_units is precomputed
+                    # at admission and flattened into conduit_chain_units_u.
+                    # F is the net event flux r_mol_s (mol/s), the SAME
+                    # variable the sibling archetype arms consume; irreversible
+                    # export (OQ-2) means rr = 0, so r_mol_s = rf*V_rxn = F.
+                    # NOTE: the residual deliberately does NOT stash F for the
+                    # accepted-step grams booking. The residual is a DASPK
+                    # callback re-run on Newton trials and by the FD Jacobian
+                    # (_scoped_fd_jacobian, perturbed state), so any scratch it
+                    # left would reflect a perturbed/rejected point, not the
+                    # accepted solution. _book_conduit_flux_accepted instead
+                    # RECOMPUTES F from the accepted self.y off the accepted-
+                    # step hook (side-effect-free mirror of this arm's rate).
+                    dst = self.reaction_dst_pool[r_idx]
+                    # dst == -1 cannot reach here (init refuses dst-less arch-7
+                    # rows, flux-dead); the check is defensive only.
+                    if dst != -1:
+                        F = r_mol_s
+                        u = self.conduit_chain_units_u[r_idx]
+                        d_idx = self.polymer_pools[dst].mu_indices
+                        dn_dt[d_idx[0]] += F
+                        dn_dt[d_idx[1]] += F * u
+                        dn_dt[d_idx[2]] += F * u * u
                 elif arch == FLUX_UNRESOLVED:
                     # Legacy mu1-only transfer (pre-apportionment behavior),
                     # replicated exactly: -r per reactant proxy, +r per

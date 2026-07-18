@@ -901,6 +901,7 @@ class TestHybridPolymerReactor:
         assert solver_mod.FLUX_UNRESOLVED == int(PolymerFluxArchetype.UNRESOLVED) == 4
         assert solver_mod.FLUX_DISCRETE_CHIP == int(PolymerFluxArchetype.DISCRETE_CHIP) == 5
         assert solver_mod.FLUX_VOLATILE_EJECTION == int(PolymerFluxArchetype.VOLATILE_EJECTION) == 6
+        assert solver_mod.FLUX_MOMENT_CREDIT_CONDUIT == int(PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT) == 7
 
     def test_unstamped_proxy_reaction_remaps_to_unresolved(self):
         """
