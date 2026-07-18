@@ -1141,7 +1141,8 @@ class TestAdapterDivergenceAndThreshold:
 # ---------------------------------------------------------------------------
 
 def _admissible_fixture(reversible=True, aligned=True, extra_gas=0,
-                        pool_mw=True, kinetics=True, label="CHAIN"):
+                        pool_mw=True, kinetics=True, label="CHAIN",
+                        gas_veto=True):
     """Live shape-A admission fixture: CHAIN => phenol_formaldehyde + CH2O,
     element-balanced against the pool's real representative molecule (the
     chain is the proxy molecule with one H replaced by CH2OH, so
@@ -1161,7 +1162,8 @@ def _admissible_fixture(reversible=True, aligned=True, extra_gas=0,
     assert proxy_smiles.startswith("C")
     chain = Species(molecule=[Molecule().from_smiles("OCC" + proxy_smiles[1:])])
     chain.label = label
-    set_polymer_gas_veto(chain)
+    if gas_veto:
+        set_polymer_gas_veto(chain)
     gas = Species(molecule=[Molecule().from_smiles("C=O")])
     gas.label = "CH2O"
     products = [pf, gas] + [gas] * extra_gas
@@ -1343,19 +1345,56 @@ class TestAdmissionGates:
         assert any("DENYING fail-closed" in r.getMessage()
                    for r in caplog.records)
 
-    def test_non_chain_scale_chain_denies_condensed(self, clean_registry):
-        """The consumed species must be melt-classified (chain-scale
-        proxy-derived) so the consumer's phase gate passes the event."""
-        from rmgpy.polymer_conduit import evaluate_conduit_admission
+    def test_non_chain_scale_chain_denies_classifier(self, clean_registry):
+        """A chain that is NOT chain-scale relative to its OWN pool is
+        demoted CHAIN->DISC by the pool-DERIVED yardstick (the fixed
+        classifier derives the chain-scale bar from the row's live monomer,
+        not the hardcoded PF constant). With no CHAIN role on either side the
+        G2 direction/orientation gate denies at classification, BEFORE the G5
+        phase gate is ever reached -- the row is denied fail-closed either
+        way; only the deny label reflects the consistent pool-derived bar."""
+        from rmgpy.polymer_conduit import (CHAIN_SCALE_FACTOR,
+                                           evaluate_conduit_admission)
         rxn, pf = _admissible_fixture()
-        # A huge pool monomer MW pushes the pool-relative chain-scale bar
-        # above the chain while the record-level CHAIN role (module
-        # constants) still holds.
+        # Chain proxy is 434.57 g/mol / 32 heavy atoms. A large pool monomer
+        # MW lifts the pool-relative chain-scale mass bar
+        # (CHAIN_SCALE_FACTOR*400 = 1000 g/mol) above the chain, so it is no
+        # longer chain-scale against its own pool.
         pf.monomer_mw_g_mol = 400.0
+        assert 434.57 < CHAIN_SCALE_FACTOR * pf.monomer_mw_g_mol
         v = evaluate_conduit_admission(rxn, [pf])
         assert v.admitted is False
-        # chain 464.6 g/mol < 2.5*400: fails the pool-relative dual-axis
-        # chain-scale conjunct -> chain-not-condensed
+        # Demoted to DISC -> no CHAIN role -> G2 direction gate denies at
+        # classification, before G5's chain-not-condensed can ever fire.
+        assert v.deny_reason == "classifier-not-admissible"
+
+    def test_chain_scale_non_condensed_denies_g5(self, clean_registry):
+        """G5 phase-gate coverage: a chain that IS chain-scale relative to
+        its pool (so it passes the G2 direction gate as CHAIN) but carries NO
+        melt/proxy-derivation evidence (no is_polymer_proxy tag, no gas veto)
+        is NOT melt-classified, so the G5 phase gate denies it
+        ``chain-not-condensed`` -- the consumer's step-2 phase gate
+        (V_rxn = V_poly) must never be fed a non-condensed event."""
+        from rmgpy.polymer import _discrete_is_chain_scale_proxy_derived
+        from rmgpy.polymer_conduit import (CHAIN,
+                                           chain_scale_thresholds_for_pools,
+                                           evaluate_conduit_admission,
+                                           record_from_reaction, species_role)
+        # Default PF monomer MW keeps the 434.57 g/mol / 32-heavy chain
+        # chain-scale (>= 2.5*134.178 g/mol AND >= 2.5*10 heavy), so it passes
+        # G2 as CHAIN; gas_veto=False strips the only melt-evidence the
+        # fixture stamps, so the G5 phase gate refuses it.
+        rxn, pf = _admissible_fixture(reversible=False, gas_veto=False)
+        cs_mw, cs_heavy = chain_scale_thresholds_for_pools([pf])
+        record = record_from_reaction(rxn, [pf], census="r93_general")
+        # precondition: still classifies CHAIN (reaches G5)...
+        assert CHAIN in [species_role(s, cs_mw, cs_heavy)
+                         for s in record["reactants"]]
+        # ...but is NOT proxy-derived / melt-classified (fails the G5 gate).
+        assert not _discrete_is_chain_scale_proxy_derived(rxn.reactants[0],
+                                                          [pf])
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
         assert v.deny_reason == "chain-not-condensed"
 
 
@@ -1892,3 +1931,180 @@ class TestLedgerEpochsAndReset:
         import rmgpy.polymer as rp
         from rmgpy import polymer_conduit as pc
         assert rp.reset_conduit_state is pc.reset_conduit_state
+
+
+# ---------------------------------------------------------------------------
+# Latent classifier-census defects (Codex review, 2026-07): novolac pools
+# mis-classified as non-POOL, and near-threshold non-PF chains mis-bucketed
+# because chain-scale thresholds were hardcoded to the PF monomer.
+# ---------------------------------------------------------------------------
+
+import sys
+import types
+
+from rmgpy.polymer_conduit import (
+    CHAIN,
+    CHAIN_SCALE_HEAVY,
+    CHAIN_SCALE_MW,
+    DISC,
+    POOL,
+    chain_scale_thresholds_for_pools,
+)
+
+
+def _cs_species(label, mw, heavy, index=1, formula=None, token=None):
+    """Minimal pure-core species record (no live RMG object)."""
+    return {
+        "token": token or f"{label}({index})",
+        "label": label,
+        "index": index,
+        "formula": formula,
+        "mw": mw,
+        "heavy_atoms": heavy,
+        "link_marker": False,
+    }
+
+
+def _cs_shape_a_record(chain_sp, gas_sp, pool_sp):
+    """A shape-A row: [CHAIN] -> [DISC gas, POOL] (reversible source)."""
+    return {
+        "census": "r93_general",
+        "reaction": f"{chain_sp['token']} <=> {gas_sp['token']} + {pool_sp['token']}",
+        "reversible": True,
+        "reactants": [chain_sp],
+        "products": [gas_sp, pool_sp],
+        "log_reason": "",
+    }
+
+
+class TestNovolacPoolClassification:
+    """BUG 1: a live pool labeled ``novolac`` (and its ``novolac_mod*``
+    daughters) must classify as POOL. Before the fix POOL_LABEL_PREFIXES only
+    listed ``phenol_formaldehyde``, so ``is_pool`` returned False for every
+    novolac pool -- the 329x classifier-not-admissible census-denial defect."""
+
+    def test_novolac_and_daughters_are_pool(self):
+        for label in ("novolac", "novolac_mod", "novolac_mod_2",
+                      "novolac_mod_3", "novolac_mod_4", "novolac_mu1"):
+            sp = _cs_species(label, mw=404.55, heavy=30)
+            assert is_pool(sp), f"{label} should be recognized as a pool"
+            # A pool participant is POOL regardless of its (chain-sized) MW.
+            assert species_role(sp) == POOL, f"{label} role should be POOL"
+
+    def test_phenol_formaldehyde_still_pool(self):
+        # Regression guard: the PF prefix is untouched.
+        assert is_pool(_cs_species("phenol_formaldehyde", 404.55, 30))
+        assert is_pool(_cs_species("phenol_formaldehyde_mod_2", 404.55, 30))
+
+    def test_novolac_shape_a_row_is_admissible_not_unclassified(self):
+        # Chain reactant is chain-scale; product side is a small gas + the
+        # novolac pool. With novolac recognized as POOL the shape is A and the
+        # row is ADMISSIBLE_A. Before the fix the "novolac" product was scored
+        # by size (chain-scale -> CHAIN), yielding a (CHAIN, DISC) product side
+        # that is outside the shape vocabulary -> UNCLASSIFIED.
+        chain = _cs_species("bigchain", mw=600.0, heavy=44, index=100)
+        gas = _cs_species("CO", mw=28.01, heavy=2, index=8, formula="CO1")
+        pool = _cs_species("novolac", mw=404.55, heavy=30, index=2)
+        result = classify_record(_cs_shape_a_record(chain, gas, pool))
+        assert result["bucket"] == "ADMISSIBLE_A"
+        assert result["destination_pool"] == "novolac"
+
+
+class TestNovolacChainScaleThresholds:
+    """BUG 2: chain-scale role must be decided against the ROW'S OWN monomer,
+    not the hardcoded PF monomer (MW 134.178 / 10 heavy atoms). The novolac
+    monomer is MW 120.148 / 9 heavy atoms, so a chain of MW ~315 / 23 heavy is
+    chain-scale for novolac (>= 2.5*120.148 and >= 2.5*9) but sub-threshold for
+    PF (< 2.5*134.178). Before the fix such a near-threshold novolac chain was
+    silently mis-bucketed as DISC."""
+
+    # Live novolac monomer metadata (per the smoke-run polymer_pools.json).
+    NOVOLAC_MW = 120.148
+    NOVOLAC_HEAVY = 9
+    CS_MW = 2.5 * 120.148    # 300.37
+    CS_HEAVY = 2.5 * 9       # 22.5
+
+    def _near_threshold_chain(self):
+        # Between the novolac (300.37 / 22.5) and PF (335.445 / 25) bars.
+        # A discrete chain fragment (NOT a pool-labeled species).
+        return _cs_species("C=Cc1ccc(CC)cc1O_dimer", mw=315.0, heavy=23, index=200)
+
+    def test_pf_default_thresholds_misbucket_novolac_chain_as_disc(self):
+        # Documents the defect: with PF defaults the novolac chain is DISC.
+        sp = self._near_threshold_chain()
+        assert not is_chain_scale(sp)  # PF default: 315 < 335.445
+        assert species_role(sp) == DISC
+
+    def test_live_novolac_thresholds_make_it_chain(self):
+        sp = self._near_threshold_chain()
+        assert is_chain_scale(sp, self.CS_MW, self.CS_HEAVY)
+        assert species_role(sp, self.CS_MW, self.CS_HEAVY) == CHAIN
+
+    def test_classify_record_uses_live_thresholds(self):
+        # Same shape-A row classified with PF defaults vs novolac thresholds.
+        chain = self._near_threshold_chain()
+        gas = _cs_species("CO", mw=28.01, heavy=2, index=8, formula="CO1")
+        pool = _cs_species("phenol_formaldehyde", mw=404.55, heavy=30, index=2)
+        record = _cs_shape_a_record(chain, gas, pool)
+
+        # PF defaults: chain reads DISC -> (DISC, POOL) product side with a
+        # DISC reactant side is outside the shape vocabulary -> UNCLASSIFIED.
+        pf = classify_record(record)
+        assert pf["bucket"] == "UNCLASSIFIED"
+
+        # Live novolac thresholds: chain reads CHAIN -> shape A -> ADMISSIBLE_A.
+        nv = classify_record(record, chain_scale_mw=self.CS_MW,
+                             chain_scale_heavy=self.CS_HEAVY)
+        assert nv["shape"] == "A"
+        assert nv["bucket"] == "ADMISSIBLE_A"
+
+    def test_pf_row_thresholds_unchanged_by_derivation(self):
+        # Regression: deriving from a PF monomer reproduces the old constants.
+        assert self.CS_MW != CHAIN_SCALE_MW  # novolac differs from PF
+        pf_mw = 2.5 * MONOMER_MW
+        assert pf_mw == CHAIN_SCALE_MW == 335.445
+
+
+class TestChainScaleThresholdsForPools:
+    """The adapter helper that supplies the live per-row thresholds. Uses a
+    stub ``rmgpy.polymer._heavy_atom_count`` so it runs without a Cython
+    build."""
+
+    def _install_fake_polymer(self, monkeypatch):
+        fake = types.ModuleType("rmgpy.polymer")
+        fake._heavy_atom_count = lambda mol: (
+            0 if mol is None else int(getattr(mol, "heavy", 0)))
+        monkeypatch.setitem(sys.modules, "rmgpy.polymer", fake)
+
+    def _pool(self, mw, heavy):
+        return types.SimpleNamespace(
+            monomer_mw_g_mol=mw,
+            monomer=types.SimpleNamespace(heavy=heavy))
+
+    def test_derives_from_live_monomer(self, monkeypatch):
+        self._install_fake_polymer(monkeypatch)
+        cs_mw, cs_heavy = chain_scale_thresholds_for_pools(
+            [self._pool(120.148, 9)])
+        assert cs_mw == pytest.approx(300.37)
+        assert cs_heavy == pytest.approx(22.5)
+
+    def test_min_over_multiple_pools(self, monkeypatch):
+        self._install_fake_polymer(monkeypatch)
+        cs_mw, cs_heavy = chain_scale_thresholds_for_pools(
+            [self._pool(134.178, 10), self._pool(120.148, 9)])
+        # min() over pools -> loosest (smallest) bar.
+        assert cs_mw == pytest.approx(300.37)
+        assert cs_heavy == pytest.approx(22.5)
+
+    def test_falls_back_to_pf_defaults(self, monkeypatch):
+        self._install_fake_polymer(monkeypatch)
+        cs_mw, cs_heavy = chain_scale_thresholds_for_pools([])
+        assert cs_mw == CHAIN_SCALE_MW
+        assert cs_heavy == CHAIN_SCALE_HEAVY
+
+    def test_pf_pool_reproduces_old_constants(self, monkeypatch):
+        self._install_fake_polymer(monkeypatch)
+        cs_mw, cs_heavy = chain_scale_thresholds_for_pools(
+            [self._pool(134.178, 10)])
+        assert cs_mw == pytest.approx(CHAIN_SCALE_MW)
+        assert cs_heavy == pytest.approx(CHAIN_SCALE_HEAVY)
