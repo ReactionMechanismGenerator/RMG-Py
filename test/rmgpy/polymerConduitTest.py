@@ -1141,7 +1141,8 @@ class TestAdapterDivergenceAndThreshold:
 # ---------------------------------------------------------------------------
 
 def _admissible_fixture(reversible=True, aligned=True, extra_gas=0,
-                        pool_mw=True, kinetics=True, label="CHAIN"):
+                        pool_mw=True, kinetics=True, label="CHAIN",
+                        gas_veto=True):
     """Live shape-A admission fixture: CHAIN => phenol_formaldehyde + CH2O,
     element-balanced against the pool's real representative molecule (the
     chain is the proxy molecule with one H replaced by CH2OH, so
@@ -1161,7 +1162,8 @@ def _admissible_fixture(reversible=True, aligned=True, extra_gas=0,
     assert proxy_smiles.startswith("C")
     chain = Species(molecule=[Molecule().from_smiles("OCC" + proxy_smiles[1:])])
     chain.label = label
-    set_polymer_gas_veto(chain)
+    if gas_veto:
+        set_polymer_gas_veto(chain)
     gas = Species(molecule=[Molecule().from_smiles("C=O")])
     gas.label = "CH2O"
     products = [pf, gas] + [gas] * extra_gas
@@ -1343,19 +1345,56 @@ class TestAdmissionGates:
         assert any("DENYING fail-closed" in r.getMessage()
                    for r in caplog.records)
 
-    def test_non_chain_scale_chain_denies_condensed(self, clean_registry):
-        """The consumed species must be melt-classified (chain-scale
-        proxy-derived) so the consumer's phase gate passes the event."""
-        from rmgpy.polymer_conduit import evaluate_conduit_admission
+    def test_non_chain_scale_chain_denies_classifier(self, clean_registry):
+        """A chain that is NOT chain-scale relative to its OWN pool is
+        demoted CHAIN->DISC by the pool-DERIVED yardstick (the fixed
+        classifier derives the chain-scale bar from the row's live monomer,
+        not the hardcoded PF constant). With no CHAIN role on either side the
+        G2 direction/orientation gate denies at classification, BEFORE the G5
+        phase gate is ever reached -- the row is denied fail-closed either
+        way; only the deny label reflects the consistent pool-derived bar."""
+        from rmgpy.polymer_conduit import (CHAIN_SCALE_FACTOR,
+                                           evaluate_conduit_admission)
         rxn, pf = _admissible_fixture()
-        # A huge pool monomer MW pushes the pool-relative chain-scale bar
-        # above the chain while the record-level CHAIN role (module
-        # constants) still holds.
+        # Chain proxy is 434.57 g/mol / 32 heavy atoms. A large pool monomer
+        # MW lifts the pool-relative chain-scale mass bar
+        # (CHAIN_SCALE_FACTOR*400 = 1000 g/mol) above the chain, so it is no
+        # longer chain-scale against its own pool.
         pf.monomer_mw_g_mol = 400.0
+        assert 434.57 < CHAIN_SCALE_FACTOR * pf.monomer_mw_g_mol
         v = evaluate_conduit_admission(rxn, [pf])
         assert v.admitted is False
-        # chain 464.6 g/mol < 2.5*400: fails the pool-relative dual-axis
-        # chain-scale conjunct -> chain-not-condensed
+        # Demoted to DISC -> no CHAIN role -> G2 direction gate denies at
+        # classification, before G5's chain-not-condensed can ever fire.
+        assert v.deny_reason == "classifier-not-admissible"
+
+    def test_chain_scale_non_condensed_denies_g5(self, clean_registry):
+        """G5 phase-gate coverage: a chain that IS chain-scale relative to
+        its pool (so it passes the G2 direction gate as CHAIN) but carries NO
+        melt/proxy-derivation evidence (no is_polymer_proxy tag, no gas veto)
+        is NOT melt-classified, so the G5 phase gate denies it
+        ``chain-not-condensed`` -- the consumer's step-2 phase gate
+        (V_rxn = V_poly) must never be fed a non-condensed event."""
+        from rmgpy.polymer import _discrete_is_chain_scale_proxy_derived
+        from rmgpy.polymer_conduit import (CHAIN,
+                                           chain_scale_thresholds_for_pools,
+                                           evaluate_conduit_admission,
+                                           record_from_reaction, species_role)
+        # Default PF monomer MW keeps the 434.57 g/mol / 32-heavy chain
+        # chain-scale (>= 2.5*134.178 g/mol AND >= 2.5*10 heavy), so it passes
+        # G2 as CHAIN; gas_veto=False strips the only melt-evidence the
+        # fixture stamps, so the G5 phase gate refuses it.
+        rxn, pf = _admissible_fixture(reversible=False, gas_veto=False)
+        cs_mw, cs_heavy = chain_scale_thresholds_for_pools([pf])
+        record = record_from_reaction(rxn, [pf], census="r93_general")
+        # precondition: still classifies CHAIN (reaches G5)...
+        assert CHAIN in [species_role(s, cs_mw, cs_heavy)
+                         for s in record["reactants"]]
+        # ...but is NOT proxy-derived / melt-classified (fails the G5 gate).
+        assert not _discrete_is_chain_scale_proxy_derived(rxn.reactants[0],
+                                                          [pf])
+        v = evaluate_conduit_admission(rxn, [pf])
+        assert v.admitted is False
         assert v.deny_reason == "chain-not-condensed"
 
 
