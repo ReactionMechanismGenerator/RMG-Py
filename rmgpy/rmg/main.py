@@ -146,6 +146,7 @@ class RMG(util.Subject):
     `save_edge_species`                                        ``True`` to save chemkin and HTML files of the edge species, ``False`` otherwise
     `keep_irreversible`                                        ``True`` to keep ireversibility of library reactions as is ('<=>' or '=>'). ``False`` (default) to force all library reactions to be reversible ('<=>')
     `trimolecular_product_reversible`                          ``True`` (default) to allow families with trimolecular products to react in the reverse direction, ``False`` otherwise
+    `tolerate_missing_reverse_reactions`                       ``False`` (default) to raise a fatal error when an own-reverse family finds no matching reverse reaction; ``True`` or a positive integer to drop (and audit-log) such reactions instead
     `pressure_dependence`                                      Whether to process unimolecular (pressure-dependent) reaction networks
     `quantum_mechanics`                                        Whether to apply quantum mechanical calculations instead of group additivity to certain molecular types.
     `ml_estimator`                                             To use thermo estimation with machine learning
@@ -227,6 +228,7 @@ class RMG(util.Subject):
         self.save_edge_species = None
         self.keep_irreversible = None
         self.trimolecular_product_reversible = None
+        self.tolerate_missing_reverse_reactions = False
         self.pressure_dependence = None
         self.quantum_mechanics = None
         self.ml_estimator = None
