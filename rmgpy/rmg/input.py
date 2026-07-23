@@ -2152,7 +2152,7 @@ def pressure_dependence(
 def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=False, units='si', saveRestartPeriod=None,
             generateOutputHTML=False, generatePlots=False, generatePESDiagrams=False, saveSimulationProfiles=False, verboseComments=False,
             saveEdgeSpecies=False, keepIrreversible=False, trimolecularProductReversible=True, wallTime='00:00:00:00',
-            saveSeedModulus=-1):
+            saveSeedModulus=-1, polymerConduitAdmission=None):
     if saveRestartPeriod:
         logging.warning("`saveRestartPeriod` flag was set in the input file, but this feature has been removed. Please "
                         "remove this line from the input file. This will throw an error after RMG-Py 3.1. For "
@@ -2177,6 +2177,19 @@ def options(name='Seed', generateSeedEachIteration=True, saveSeedToDatabase=Fals
             'Edge species saving was turned on. This will slow down model generation for large simulations.')
     rmg.save_edge_species = saveEdgeSpecies
     rmg.keep_irreversible = keepIrreversible
+    # M18.4 polymer conduit-admission opt-in (default-off). None inherits
+    # the module-constant fallback (rmgpy.polymer_conduit.
+    # CONDUIT_ADMISSION_ENABLED, also False); True enables live moment-credit
+    # conduit admission for THIS deck only. Threaded onto the reaction model
+    # in RMG.load_input and read by readjudicate_conduit_admission.
+    # FAIL-CLOSED type check: input files are exec'd, so a truthy non-bool
+    # (e.g. polymerConduitAdmission="off") would otherwise silently ENABLE a
+    # prediction-changing feature. Reject anything that is not None/bool.
+    if polymerConduitAdmission is not None and not isinstance(polymerConduitAdmission, bool):
+        raise InputError(
+            "polymerConduitAdmission should be True, False, or None (for the "
+            "default-off fallback), not {0!r}.".format(polymerConduitAdmission))
+    rmg.polymer_conduit_admission = polymerConduitAdmission
     rmg.trimolecular_product_reversible = trimolecularProductReversible
     rmg.walltime = wallTime
     rmg.save_seed_modulus = saveSeedModulus
@@ -2748,6 +2761,11 @@ def save_input_file(path, rmg):
     f.write('    saveSimulationProfiles = {0},\n'.format(rmg.save_simulation_profiles))
     f.write('    saveEdgeSpecies = {0},\n'.format(rmg.save_edge_species))
     f.write('    keepIrreversible = {0},\n'.format(rmg.keep_irreversible))
+    # M18.4: round-trip the conduit-admission opt-in only when a deck set it
+    # explicitly (True or False); the default (None) case emits no line, so
+    # the vast majority of regenerated inputs stay byte-identical.
+    if getattr(rmg, 'polymer_conduit_admission', None) is not None:
+        f.write('    polymerConduitAdmission = {0},\n'.format(rmg.polymer_conduit_admission))
     f.write('    trimolecularProductReversible = {0},\n'.format(rmg.trimolecular_product_reversible))
     f.write('    verboseComments = {0},\n'.format(rmg.verbose_comments))
     f.write('    wallTime = {0},\n'.format(rmg.walltime))

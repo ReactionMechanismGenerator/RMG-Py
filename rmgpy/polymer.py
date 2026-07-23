@@ -3950,12 +3950,24 @@ def _warn_general_chain_scale_pool_coupling(reaction_label: str,
         reaction_label, conduit_suffix)
 
 
-def readjudicate_conduit_admission(forward) -> None:
+def readjudicate_conduit_admission(forward, admission_enabled=None) -> None:
     """M18.3 G6 re-adjudication hook (adjudicated defect fix; OQ-2
     relocation): resolve a PENDING admission verdict against the row's
     now-final kinetics, and -- the ONE live admission/rewrite site -- apply
     the admit-stamp + [r39-P1] irreversible export rewrite when the FINAL
     verdict admits.
+
+    OPT-IN gate (M18.4, per-deck/RMG-input opt-in, default-off): the live
+    admission arm fires only when admission is ENABLED for this run.
+    ``admission_enabled`` is the resolved per-run override threaded from the
+    reaction model (``CoreEdgeReactionModel.conduit_admission_enabled``,
+    itself set from the ``options(polymerConduitAdmission=...)`` input flag):
+    ``None`` (the default, and what non-model callers pass) INHERITS the
+    module-level :data:`~rmgpy.polymer_conduit.CONDUIT_ADMISSION_ENABLED`
+    fallback (also False); ``True``/``False`` explicitly enable/disable this
+    run. So a deck must OPT IN to change its prediction -- no deck's
+    generation behavior moves unless it asks, and the module constant stays
+    the default-off fallback (never flipped for the opt-in).
 
     The r93 stamp site (:func:`stamp_gas_association_refusal`) is called
     from ``make_new_reaction`` (rmgpy/rmg/model.py) BEFORE
@@ -4019,6 +4031,16 @@ def readjudicate_conduit_admission(forward) -> None:
                                            annotate_refused_row,
                                            evaluate_conduit_admission,
                                            lookup_candidate)
+        # Resolve the per-run opt-in (M18.4, default-off): a threaded
+        # True/False from the reaction model overrides; None (non-model
+        # callers, or a deck that never opted in) inherits the module
+        # constant fallback -- which itself stays False. FAIL-CLOSED
+        # identity check (``is True``, NOT ``bool(...)``): only the literal
+        # True opens the gate, so a truthy non-bool that slips past input
+        # validation (e.g. the string "off") can never silently admit.
+        effective_admission_enabled = (
+            CONDUIT_ADMISSION_ENABLED if admission_enabled is None
+            else admission_enabled is True)
         reactants = getattr(forward, "reactants", None) or []
         products = getattr(forward, "products", None) or []
         row_pools = ([s for s in reactants if isinstance(s, Polymer)]
@@ -4038,7 +4060,7 @@ def readjudicate_conduit_admission(forward) -> None:
                     candidate_key=verdict.candidate_key)
         forward.polymer_conduit_admission_pending = False
         forward.polymer_conduit_admission_readjudicated = True
-        if verdict.admitted and CONDUIT_ADMISSION_ENABLED:
+        if verdict.admitted and effective_admission_enabled:
             # THE live-admission arm (relocated from the pre-dedup stamp
             # site, OQ-2): this object is the CANONICAL, post-dedup,
             # post-kinetics reaction, so the mutation can never be dropped

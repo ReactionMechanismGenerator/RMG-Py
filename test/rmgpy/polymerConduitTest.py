@@ -1937,6 +1937,122 @@ class TestM18LiveAdmissionRelocation:
                    for r in caplog.records)
 
 
+class TestM18OptInOverride:
+    """M18.4 opt-in wiring: ``readjudicate_conduit_admission`` now takes a
+    per-run ``admission_enabled`` override (threaded from
+    ``CoreEdgeReactionModel.conduit_admission_enabled``, itself set from the
+    ``options(polymerConduitAdmission=...)`` input flag). The precedence
+    contract these tests LOCK:
+
+    * ``admission_enabled=True`` ADMITS even while the module constant
+      ``CONDUIT_ADMISSION_ENABLED`` stays False -- the whole point of the
+      opt-in: a deck enables live admission WITHOUT the global flag being
+      flipped (so no OTHER deck's generation behavior moves).
+    * ``admission_enabled=False`` REFUSES even if the module constant were
+      True -- an explicit per-deck opt-OUT wins over any global enable.
+    * ``admission_enabled=None`` (the default, and what every non-model
+      caller passes) INHERITS the module constant -- the default-off
+      fallback, and the reason the existing relocation tests still pass.
+
+    The production module constant is pinned False by
+    ``TestAdmissionGates.test_flag_is_false``; these tests never flip it to
+    prove the True case -- that is exactly what the per-call override buys."""
+
+    def test_optin_true_admits_while_module_constant_false(
+            self, caplog, clean_registry):
+        """Core opt-in proof: admission_enabled=True admits with the module
+        constant still at its production False -- no global flip needed."""
+        import logging as _logging
+
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+
+        assert pc.CONDUIT_ADMISSION_ENABLED is False  # not touched
+        rxn, _ = _admissible_fixture(reversible=True)
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(rxn)
+        assert rxn.polymer_conduit_admission_pending is True
+
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(rxn, admission_enabled=True)
+
+        assert int(rxn.polymer_flux_archetype) == int(
+            PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+        assert rxn.polymer_refused is False
+        assert rxn.reversible is False
+        assert rxn.polymer_conduit_params is not None
+        assert any("MOMENT-CREDIT CONDUIT ADMITTED" in r.getMessage()
+                   for r in caplog.records)
+
+    def test_optin_false_refuses_even_when_module_constant_true(
+            self, caplog, clean_registry, monkeypatch):
+        """Explicit opt-OUT wins: admission_enabled=False refuses even with
+        the module constant monkeypatched True (a hypothetical global
+        enable) -- the row stays census-only and reversible."""
+        import logging as _logging
+
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+
+        monkeypatch.setattr(pc, "CONDUIT_ADMISSION_ENABLED", True)
+        rxn, _ = _admissible_fixture(reversible=True)
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(rxn)
+        assert rxn.polymer_conduit_admission_pending is True
+
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(rxn, admission_enabled=False)
+
+        # re-adjudicated but NOT admitted: no conduit stamp, still reversible
+        assert rxn.polymer_conduit_admission_readjudicated is True
+        assert int(getattr(rxn, "polymer_flux_archetype", 0)) != int(
+            PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+        assert rxn.reversible is True
+        assert not any("MOMENT-CREDIT CONDUIT ADMITTED" in r.getMessage()
+                       for r in caplog.records)
+
+    def test_optin_none_inherits_module_constant_both_directions(
+            self, caplog, clean_registry, monkeypatch):
+        """admission_enabled=None inherits the module constant: refuses
+        while it is False, admits once it is True -- the default-off
+        fallback that keeps the existing (no-param) call sites correct."""
+        import logging as _logging
+
+        import rmgpy.polymer_conduit as pc
+        from rmgpy.polymer import (PolymerFluxArchetype,
+                                   _general_chain_scale_pool_warned,
+                                   readjudicate_conduit_admission,
+                                   stamp_gas_association_refusal)
+
+        conduit_archetype = int(PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)
+
+        # constant False -> None inherits -> refuse
+        assert pc.CONDUIT_ADMISSION_ENABLED is False
+        off_rxn, _ = _admissible_fixture(reversible=True, label="OFFCHAIN")
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(off_rxn)
+        readjudicate_conduit_admission(off_rxn, admission_enabled=None)
+        assert int(getattr(off_rxn, "polymer_flux_archetype", 0)) != \
+            conduit_archetype
+        assert off_rxn.reversible is True
+
+        # constant True -> None inherits -> admit
+        monkeypatch.setattr(pc, "CONDUIT_ADMISSION_ENABLED", True)
+        on_rxn, _ = _admissible_fixture(reversible=True, label="ONCHAIN")
+        _general_chain_scale_pool_warned.clear()
+        stamp_gas_association_refusal(on_rxn)
+        with caplog.at_level(_logging.WARNING):
+            readjudicate_conduit_admission(on_rxn, admission_enabled=None)
+        assert int(on_rxn.polymer_flux_archetype) == conduit_archetype
+        assert on_rxn.reversible is False
+
+
 class TestLandingConeEqualityBoundary:
     """T6 (admission-side leg) -- the ratified equality-boundary fixture:
     u_raw EXACTLY a + 1 (credit u == 1.0, point mass ON the cone). The

@@ -226,6 +226,11 @@ class RMG(util.Subject):
         self.verbose_comments = None
         self.save_edge_species = None
         self.keep_irreversible = None
+        # M18.4 polymer conduit-admission opt-in (default-off). None =
+        # inherit the module-constant fallback (off); set by the
+        # options(polymerConduitAdmission=...) input flag and copied onto
+        # the reaction model in load_input.
+        self.polymer_conduit_admission = None
         self.trimolecular_product_reversible = None
         self.pressure_dependence = None
         self.quantum_mechanics = None
@@ -278,6 +283,17 @@ class RMG(util.Subject):
 
         self.reaction_model.verbose_comments = self.verbose_comments
         self.reaction_model.save_edge_species = self.save_edge_species
+        # M18.4 opt-in: thread the (default-off) conduit-admission flag onto
+        # the reaction model, where readjudicate_conduit_admission reads it.
+        self.reaction_model.conduit_admission_enabled = getattr(
+            self, "polymer_conduit_admission", None)
+        if self.reaction_model.conduit_admission_enabled is True:
+            # Loud, once-per-run banner: this is an opt-in, prediction-changing
+            # feature, so its active state must be auditable in the log.
+            logging.warning(
+                "Polymer moment-credit conduit admission is ENABLED for this "
+                "run (options(polymerConduitAdmission=True)); admitted conduit "
+                "rows will change the predicted evolved-gas moment balance.")
 
         if self.quantum_mechanics:
             self.reaction_model.quantum_mechanics = self.quantum_mechanics

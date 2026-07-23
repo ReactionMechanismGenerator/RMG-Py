@@ -239,6 +239,14 @@ class CoreEdgeReactionModel:
         self.polymer_flux_accumulator = MassFluxAccumulator()
         self.polymer_flux_snapshot = None
         self.polymer_flux_snapshot_iteration = -1
+        # M18.4 opt-in (default-off): the resolved per-run conduit-admission
+        # override, set from the RMG object's polymer_conduit_admission (the
+        # options(polymerConduitAdmission=...) input flag) in
+        # RMG.load_input. None = inherit the module-constant fallback (off);
+        # True/False = explicit per-deck enable/disable. Threaded into
+        # readjudicate_conduit_admission so no deck's generation behavior
+        # changes unless it opts in.
+        self.conduit_admission_enabled = None
         self.thermo_tol_keep_spc_in_edge = np.inf
         self.Gfmax = np.inf
         self.Gmax = np.inf
@@ -832,7 +840,8 @@ class CoreEdgeReactionModel:
                     # object's final kinetics -- this early return never
                     # reaches the post-kinetics hook below. Census-only,
                     # never raises.
-                    readjudicate_conduit_admission(rxn)
+                    readjudicate_conduit_admission(
+                        rxn, admission_enabled=self.conduit_admission_enabled)
                 return rxn, False
 
         # Generate the reaction pairs if not yet defined
@@ -938,7 +947,8 @@ class CoreEdgeReactionModel:
         # (would_admit=1, or kinetics-not-exportable for genuinely
         # non-Arrhenius rates). Census-only, never raises; no-op unless the
         # row carries the pending marker.
-        readjudicate_conduit_admission(forward)
+        readjudicate_conduit_admission(
+            forward, admission_enabled=self.conduit_admission_enabled)
 
         # Since the reaction is new, add it to the list of new reactions
         self.new_reaction_list.append(forward)
