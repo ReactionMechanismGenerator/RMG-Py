@@ -357,6 +357,71 @@ class TestConduitMomentCreditArchetype:
             dst_pool="NO_SUCH_POOL")
         self._assert_refused_and_zero_credit(rs)
 
+    def test_arch7_dst_pool_that_is_sgh_carrier_is_refused_at_build(self):
+        """SGH-dst guard (increment-3): a LIVE arch-7 conduit row whose
+        destination pool is ALSO an inventory-depletion side_group_homolysis
+        (SGH-v2) carrier is a HARD build error at initialize_model. arch-7
+        credits the dst pool's mu1 (dmu1_dst += F*u); SGH-v2 seeds
+        Z(0) = sites*mu1(0) ONCE and depletes it independently, so it REQUIRES
+        a stationary carrier mu1 -- a conduit crediting that mu1 would strand
+        or double-count the removable-X (Br) inventory. This exercises the
+        DESTINATION-pool arm of _assert_sgh_carrier_mu1_stationary
+        (rmgpy/solver/polymer.pyx ~2425-2429), distinct from the source-pool
+        and legacy FLUX_UNRESOLVED arms already covered in solverPolymerTest.py
+        -- and the arm the M18.4 opt-in makes reachable, since only a
+        LIVE (non-refused) arch-7 row is scanned (a conduit-deferred row hits
+        the refused `continue` first). Contrast
+        test_arch7_unresolvable_dst_pool_is_refused: a bad dst label is a
+        SOFT census-only refuse; an SGH collision RAISES.
+        """
+        # Pool 'A' is the arch-7 destination AND a valid SGH-v2 carrier: the
+        # ONLY violation is the moving-dst-mu1-on-an-SGH-carrier collision.
+        A = _spc("CCCC", "A")            # dst pool proxy      (core 0, poly)
+        A_mu0 = _spc("CO", "A_mu0")      # dst mu0             (core 1)
+        A_mu1 = _spc("C=O", "A_mu1")     # dst mu1             (core 2)
+        A_mu2 = _spc("C#N", "A_mu2")     # dst mu2             (core 3)
+        D = _spc("CCCCCCCC", "D")        # chain-scale discrete reactant (core 4)
+        Gp = _spc("[CH3]", "Gp")         # arch-7 single gas product (core 5)
+        Br = _spc("[Br]", "Br_rad")      # SGH ejected radical (core 6, gas)
+        core = [A, A_mu0, A_mu1, A_mu2, D, Gp, Br]
+        mask = np.array([False, False, False, False, False, True, True],
+                        dtype=bool)
+
+        rxn = Reaction(
+            reactants=[D], products=[Gp, A],
+            kinetics=Arrhenius(A=(2.0, "1/s"), n=0.0, Ea=(0.0, "kcal/mol"),
+                               T0=(298.15, "K")),
+            reversible=False)
+        # Stamp exactly what the M18.4 admit arm stamps: a live arch-7 row.
+        rxn.polymer_flux_archetype = 7   # PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT
+        rxn.polymer_conduit_dst_pool = "A"
+        rxn.polymer_conduit_params = _default_conduit_params()
+
+        # A well-formed inventory-depletion SGH channel (mirrors the
+        # solverPolymerTest.py _sgh_channel default) so gas/shape validation
+        # passes and the mu1-mover dst arm is what fires.
+        sgh_channel = dict(label="aliphatic_C-Br", A=1.0e13, n=0.5, Ea=1.2e5,
+                           site_selector="aliphatic", sites_per_unit=2.0,
+                           gas_product="[Br]")
+        pool_a = PolymerPoolConfig(
+            label="A", xs=2, explicit_dp_to_species_index={},
+            mu_indices=(1, 2, 3), monomer_poly_index=None,
+            k_scission=0.0, k_unzip=0.0, tail_kinetics=None,
+            monomer_mw_g_mol=DST_MONOMER_MW,
+            chain_mass_defect_g_mol=0.0,          # SGH-v2 carrier carries no defect
+            side_group_homolysis=[sgh_channel],
+            side_group_gas_indices=(6,))          # Br at core 6 (gas-masked)
+        rs = HybridPolymerSystem(
+            T=800.0, P=1.0e5, initial_mole_fractions={D: 1.0, Gp: 0.0},
+            V_poly=1.0, polymer_pools=[pool_a], mass_transfer=[],
+            gas_species_mask=mask.copy(), constant_gas_volume=False,
+            initial_polymer_moments={"A": (1.0, 5.0, 30.0)}, termination=[],
+            allow_unstamped_proxy_rows=True)
+        with pytest.raises(ValueError,
+                           match=r"SGH-v2 carrier pool 'A'.*stationary mu1.*"
+                                 r"archetype=7.*destination pool"):
+            rs.initialize_model(core, [rxn], [], [])
+
 
 # =========================================================================
 # INCREMENT 2 (M18.4 DESIGN §4.4): accepted-step GRAMS booking WRITER.

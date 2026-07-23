@@ -288,20 +288,28 @@ def _restamp_and_extend(artifact, species, reactions):
             rxn.polymer_eject_units = _validated_eject_units(e)
         # moment_credit_conduit/1 (schema 3.1, DESIGN §2.2): validate every
         # §2.1 reject rule (incl. the §2.4 cross-pins against the chem.yaml
-        # composition MWs), then REFUSE the replay FAIL-CLOSED. The
-        # compiled oracle has NO conduit dispatch arm yet (that is the
-        # M18.4 solver increment), and its moment-isolation invariant
-        # (validate_configuration: "Moments must evolve only via
-        # tail_kinetics") forbids any consumer-side moment write -- so a
-        # live conduit row is UNREPLAYABLE here in M18.3. Restamping it
-        # anyway would integrate its species flux (chain consumed, gas
-        # released) while crediting NO pool moments: silent condensed-mass
-        # fabrication, the exact failure class the closed archetype
-        # vocabulary exists to stop (and the one the numpy consumer's T7
-        # proof pins). The bundle law's trajectory verification lives in
-        # the numpy reference consumer (test/rmgpy/tools/
-        # numpy_moments_consumer.py, DESIGN §2.2) until the solver arm
-        # lands.
+        # composition MWs), then DISPATCH (M18.4). The compiled oracle's
+        # arch-7 residual arm (rmgpy/solver/polymer.pyx FLUX_MOMENT_CREDIT_
+        # CONDUIT, ~3280-3337 stamp-read + ~3630-3653 dst-pool resolution)
+        # already implements the dst-only moment-credit law (dmu0_dst+=F,
+        # dmu1_dst+=F*u, dmu2_dst+=F*u*u, NO source debit) -- it is a
+        # SEPARATE residual write, outside reaction stoichiometry, so the
+        # moment-isolation invariant (validate_configuration: "Moments must
+        # evolve only via tail_kinetics", which only scans reactant_indices/
+        # product_indices for moment pseudo-species) never sees it and
+        # requires no change. What was missing here was restoring, onto the
+        # replayed reaction object, the same object-side stamp the
+        # generation admit arm sets (rmgpy/polymer.py
+        # readjudicate_conduit_admission, ~4048-4064): the archetype int is
+        # already restamped generically above (this function's shared
+        # ``rxn.polymer_flux_archetype = arch`` line), so the two fields
+        # still needed are the destination pool label and the closed params
+        # dict the solver reads chain_units/gas_units/gas_products[0].
+        # mw_g_mol/candidate_key from (polymer.pyx ~3295-3337) and resolves
+        # conduit_dst_pool_index from (polymer.pyx ~3630-3638, AUTHORITATIVE
+        # over the product-side pool scan). A malformed row still refuses
+        # fail-closed: _validate_conduit_entry's strict §2.1 checks run
+        # BEFORE any attribute is restored.
         if arch_name == "moment_credit_conduit/1":
             # g/mol from the chem.yaml composition MWs. The
             # Species.molecular_weight quantity stores SI kg/molecule
@@ -316,17 +324,8 @@ def _restamp_and_extend(artifact, species, reactions):
             _validate_conduit_entry(
                 e, artifact.get("pools", []),
                 artifact.get("conventions") or {}, species_mw=species_mw)
-            raise ValueError(
-                f"reactions[] entry {e.get('id')!r} is a LIVE "
-                f"moment_credit_conduit/1 row: this runner's compiled "
-                f"oracle has no conduit dispatch arm yet (M18.4; the "
-                f"solver's moment-isolation invariant forbids any "
-                f"consumer-side moment write), so the row cannot be "
-                f"replayed faithfully -- integrating it without the pool "
-                f"moment credit would silently fabricate condensed-mass "
-                f"loss. Refusing the whole replay (fail-closed). Use the "
-                f"numpy reference consumer for conduit-bundle trajectories "
-                f"until the M18.4 solver dispatch lands.")
+            rxn.polymer_conduit_dst_pool = e["dst_pool"]
+            rxn.polymer_conduit_params = dict(e["params"])
         # Physically-melt classification, like MW, must cross the artifact
         # boundary: the reference-state tripwire's tag branch reads
         # is_polymer_proxy, which generation world stamps by blanket-tagging
