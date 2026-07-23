@@ -125,6 +125,13 @@ class HybridPolymerReactor(ReactionSystem):
         else:
             self.Trange = [Quantity(t) for t in temperature]
             self.temperature = [Quantity(t) for t in temperature]
+            # Seed the scalar working attr from the range floor. RMG's
+            # ranged-reactor main loop injects each sampled condition point
+            # via ReactionSystem.initialize_model(conditions={'T': ...}),
+            # which overwrites self.T (base.pyx) -- but ONLY under
+            # `hasattr(self, 'T')`, so the seed must exist. The solver build
+            # (to_solver_object) reads self.T, never the list blueprint attr.
+            self.T = self.Trange[0]
 
         if type(pressure) != list:
             self.P = Quantity(pressure)
@@ -133,6 +140,9 @@ class HybridPolymerReactor(ReactionSystem):
         else:
             self.Prange = [Quantity(p) for p in pressure]
             self.pressure = [Quantity(p) for p in pressure]
+            # Same seeding contract as self.T above (base.pyx guards the
+            # sampled-condition injection with `hasattr(self, 'P')`).
+            self.P = self.Prange[0]
 
         self.initialMoles = initialMoles
         self.initial_mole_fractions = initialMoles
@@ -325,7 +335,12 @@ class HybridPolymerReactor(ReactionSystem):
 
         V_gas0 = None
         if total_gas_moles > 0:
-            V_gas0 = (total_gas_moles * constants.R * self.temperature.value_si) / self.pressure.value_si
+            # self.T / self.P are the scalar WORKING conditions (seeded in
+            # __init__, overwritten per sampled point by base.pyx's
+            # initialize_model conditions injection); self.temperature /
+            # self.pressure are the blueprint record and are LISTS for a
+            # ranged reactor -- never call .value_si on them here.
+            V_gas0 = (total_gas_moles * constants.R * self.T.value_si) / self.P.value_si
 
         # Enforce consistency for constant volume constraint
         if self.constant_gas_volume and (V_gas0 is None or V_gas0 <= 0):
@@ -457,8 +472,8 @@ class HybridPolymerReactor(ReactionSystem):
         # Note: We pass 'initialMoles' to the solver's 'initial_mole_fractions' argument
         # to satisfy the base class signature, but the solver correctly interprets them as moles.
         solver = HybridPolymerSystem(
-            T=self.temperature.value_si,
-            P=self.pressure.value_si,
+            T=self.T.value_si,   # scalar working condition (ranged-safe), NOT the list blueprint attr
+            P=self.P.value_si,   # scalar working condition (ranged-safe), NOT the list blueprint attr
             initial_mole_fractions=self.initialMoles,  # Passed as moles
             V_poly=V_poly,
             polymer_pools=pool_configs,

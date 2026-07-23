@@ -9555,3 +9555,62 @@ class TestConcertedLossFeatureDaughter:
             [Molecule(smiles=self.DEHYD), Molecule(smiles='O')],
             [self.pf])
         assert gases == [None, None]
+
+
+# ---------------------------------------------------------------------------
+# hybrid_polymer_reactor deck reader: ranged T/P -> n_sims (main-loop sweep)
+# ---------------------------------------------------------------------------
+
+def _read_hybrid_polymer_reactor(temperature, pressure):
+    """Drive the rmg_input.hybrid_polymer_reactor deck reader with the shared
+    compile fixture (moles=0.2 matches initial_mass/Mn so no disagreement
+    warning) and return the appended HybridPolymerReactor system."""
+    from unittest.mock import MagicMock
+    import rmgpy.rmg.input as rmg_input
+
+    blueprint, _initial_moles, species_dict, poly = _build_compile_inputs(moles=0.2)
+    mock_rmg = MagicMock()
+    mock_rmg.reaction_systems = []
+    old_rmg, old_sd = rmg_input.rmg, rmg_input.species_dict
+    rmg_input.rmg, rmg_input.species_dict = mock_rmg, species_dict
+    try:
+        rmg_input.hybrid_polymer_reactor(
+            temperature=temperature,
+            pressure=pressure,
+            initialMoles={poly.label: 0.2},
+            polymerPhase=blueprint,
+            terminationTime=(1.0, 's'))
+    finally:
+        rmg_input.rmg, rmg_input.species_dict = old_rmg, old_sd
+    assert len(mock_rmg.reaction_systems) == 1
+    return mock_rmg.reaction_systems[0]
+
+
+def test_hybrid_polymer_reactor_reader_ranged_tp_sets_n_sims():
+    """A ranged deck (list T AND list P) must arm the main-loop sweep with the
+    simple_reactor default n_sims=6 -- previously the reader never passed
+    n_sims, so it defaulted to 1 and a ranged reactor would never sweep."""
+    system = _read_hybrid_polymer_reactor(
+        temperature=[(750.0, 'K'), (4000.0, 'K')],
+        pressure=[(0.1, 'bar'), (1.0, 'bar')])
+    assert system.n_sims == 6
+    assert [t.value_si for t in system.Trange] == pytest.approx([750.0, 4000.0])
+    assert [p.value_si for p in system.Prange] == pytest.approx([1.0e4, 1.0e5])
+
+
+def test_hybrid_polymer_reactor_reader_scalar_tp_forces_single_sim():
+    """A fully-scalar deck collapses to a single simulation (n_sims == 1),
+    mirroring simple_reactor's not-ranged rule."""
+    system = _read_hybrid_polymer_reactor(
+        temperature=(800.0, 'K'),
+        pressure=(1.0, 'bar'))
+    assert system.n_sims == 1
+
+
+def test_hybrid_polymer_reactor_reader_half_ranged_keeps_sweep():
+    """simple_reactor parity: n_sims collapses to 1 ONLY when NEITHER T nor P
+    is ranged -- a T-range with scalar P still sweeps."""
+    system = _read_hybrid_polymer_reactor(
+        temperature=[(750.0, 'K'), (4000.0, 'K')],
+        pressure=(1.0, 'bar'))
+    assert system.n_sims == 6
