@@ -4044,20 +4044,92 @@ class TestConduitLoader:
         rs, core, all_rxns = _build_census_only(chem_path, artifact)
         assert rs is not None
 
-    def test_live_conduit_row_refuses_replay_until_m18_4(self, tmp_path):
-        """M18.3 fail-closed pin: the compiled oracle has NO conduit
-        dispatch arm (its moment-isolation invariant forbids any
-        consumer-side moment write), so a LIVE conduit row must refuse the
-        whole replay LOUDLY -- restamping it would integrate species flux
-        with no pool credit (silent condensed-mass fabrication, the T7
-        class). The row VALIDATES first (all reject rules run), then the
-        replay seam refuses. Flip this pin when the M18.4 solver dispatch
-        lands."""
+    def test_well_formed_live_conduit_row_dispatches_and_restamps(
+            self, tmp_path):
+        """M18.4 dispatch arm (closes OQ-10): a WELL-FORMED live
+        moment_credit_conduit/1 row VALIDATES (every §2.1 reject rule
+        runs) and then DISPATCHES -- no ValueError -- because the compiled
+        oracle's arch-7 residual arm (rmgpy/solver/polymer.pyx
+        FLUX_MOMENT_CREDIT_CONDUIT) already implements the dst-only
+        moment-credit law as a residual write outside reaction
+        stoichiometry, so the moment-isolation invariant
+        (validate_configuration's "Moments must evolve only via
+        tail_kinetics" reactant/product-index scan) never sees it. The
+        runner's job is only to restore the object-side stamp the
+        generation admit arm sets (rmgpy/polymer.py
+        readjudicate_conduit_admission): archetype (already restamped
+        generically), dst pool label, and the closed params dict."""
         chem_path, art_path, u = _conduit_deck(tmp_path)
         artifact = _load_conduit_artifact(art_path)
         assert artifact["schema_version"] == "3.1"
-        with pytest.raises(ValueError, match=r"M18\.4"):
-            _build_conduit(chem_path, artifact)
+        rs, core, all_rxns = _build_conduit(chem_path, artifact)
+        (rxn,) = [r for r in all_rxns
+                  if getattr(r, "polymer_flux_archetype", 0)
+                  == int(PolymerFluxArchetype.MOMENT_CREDIT_CONDUIT)]
+        assert rxn.polymer_conduit_dst_pool == "poly"
+        assert rxn.polymer_conduit_params["chain_units"] == pytest.approx(u)
+        assert rxn.polymer_conduit_params["admission_direction"] == \
+            "chain_to_pool"
+        assert rxn.polymer_conduit_params["candidate_key"] == \
+            "CH2O(4)+poly(2)<>CHAIN(3)"
+
+    def test_well_formed_live_conduit_row_credits_dst_pool_moments(
+            self, tmp_path):
+        """Solver-arm parity (M18.4): the integrated residual at t=0
+        credits the destination pool's moments per the dst-only conduit
+        law (dmu0_dst=F, dmu1_dst=F*u, dmu2_dst=F*u*u; NO source-pool
+        debit -- the row's only reactant is a plain species, not a pool),
+        the (mu0, mu1, mu2) closure dmu2*dmu0 == dmu1**2, and the mass
+        closure M*dmu1_dst - d*dmu0_dst == F*(sum_MW_reactants - gas_MW)
+        (d = chain_mass_defect_g_mol, 0.0 in this fixture)."""
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        rs, core, all_rxns = _build_conduit(chem_path, artifact)
+        labels = [s.label for s in core]
+        idx = {lab: k for k, lab in enumerate(labels)}
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        # F is the reaction's net forward rate: CHAIN(3) is consumed by
+        # no other reaction in this one-row system, so its species-level
+        # residual is exactly -F.
+        big_f = -dn[idx["CHAIN(3)"]]
+        assert big_f > 0.0
+        assert dn[idx["poly_mu0"]] == pytest.approx(big_f, rel=1e-9)
+        assert dn[idx["poly_mu1"]] == pytest.approx(big_f * u, rel=1e-9)
+        assert dn[idx["poly_mu2"]] == pytest.approx(
+            big_f * u * u, rel=1e-9)
+        # closure
+        assert dn[idx["poly_mu2"]] * dn[idx["poly_mu0"]] == pytest.approx(
+            dn[idx["poly_mu1"]] ** 2, rel=1e-9)
+        # mass closure: M*dmu1 - d*dmu0 == F*(sum MW(reactants) - MW(gas))
+        # species-level quantity value_si is kg/molecule (species.py)
+        chain_mw = (core[idx["CHAIN(3)"]].molecular_weight.value_si
+                    * 6.02214179e23 * 1000.0)
+        gas_mw = (core[idx["CH2O(4)"]].molecular_weight.value_si
+                  * 6.02214179e23 * 1000.0)
+        m = (chain_mw - gas_mw) / u
+        d = 0.0
+        lhs = m * dn[idx["poly_mu1"]] - d * dn[idx["poly_mu0"]]
+        rhs = big_f * (chain_mw - gas_mw)
+        assert lhs == pytest.approx(rhs, rel=1e-6)
+
+    def test_well_formed_live_conduit_row_no_source_pool_debit(
+            self, tmp_path):
+        """No source-pool debit: moment_credit_conduit/1 rows carry
+        src_pool: null by construction (validated in
+        _validate_conduit_entry), so there is no source pool to debit --
+        this fixture's only Polymer pool ("poly") is itself the credited
+        destination, and its moments must show ONLY the credit (all
+        positive), never a matching negative debit term anywhere in the
+        pool's residual entries."""
+        chem_path, art_path, u = _conduit_deck(tmp_path)
+        artifact = _load_conduit_artifact(art_path)
+        rs, core, all_rxns = _build_conduit(chem_path, artifact)
+        labels = [s.label for s in core]
+        idx = {lab: k for k, lab in enumerate(labels)}
+        dn = rs.residual(0.0, rs.y, np.zeros_like(rs.y))[0]
+        assert dn[idx["poly_mu0"]] > 0.0
+        assert dn[idx["poly_mu1"]] > 0.0
+        assert dn[idx["poly_mu2"]] > 0.0
 
     def test_3_2_rejected_loudly(self, tmp_path):
         chem_path, art_path, u = _conduit_deck(tmp_path)
@@ -4107,9 +4179,10 @@ class TestConduitLoader:
         """r42 P1-1 producer->runner ROUND-TRIP pin: the REAL emitter with
         an EMPTY accumulator (the only M18.3 state) writes the all-zero
         census block beside its conduit row, and the runner accepts that
-        exact shape through every census/row gate -- refusing ONLY at the
-        M18.4 fail-closed replay seam (the W5.4 pin, unchanged). Before
-        r42 the emitter omitted the block and its own runner rejected the
+        exact shape through every census/row gate -- then DISPATCHES at
+        the M18.4 seam (the W5.4 pin flipped: OQ-10 closed the seam's
+        fail-closed refusal into a real dispatch arm). Before r42 the
+        emitter omitted the block and its own runner rejected the
         artifact as malformed (self-incompatibility)."""
         chem_path, art_path, u = _conduit_deck(tmp_path,
                                                inject_census=False)
@@ -4119,8 +4192,8 @@ class TestConduitLoader:
         assert census["unserialized_gas_mass_g"] == 0.0
         assert census["revoked_gas_mass_g"] == 0.0
         assert census["units"] == "g"
-        with pytest.raises(ValueError, match=r"M18\.4"):
-            _build_conduit(chem_path, artifact)
+        rs, core, all_rxns = _build_conduit(chem_path, artifact)
+        assert rs is not None
 
     def test_runner_warns_on_unserialized_mass(self, tmp_path, caplog):
         """T4(d): unserialized_gas_mass_g > 0 WARNS (not refuses) so the
